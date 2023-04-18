@@ -50,6 +50,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **API**: Added `physics::move_character` function to correctly move character controllers. This is used by the third-person camera example.
 - **API**: `Uvec2`/`Uvec3`/`Uvec4`/`U8` can now be used for component values.
 - **API**: A new `message` API has been added to allow for sending messages between client and server WASM, and from one WASM module to another. Messages are defined in `ambient.toml` and are structured. Message subscriptions return handles that can be used to cancel their subscriptions.
+- **API**: A new `camera` API has been added on the client for operations that involve the camera, including `screen_ray` for calculating a ray from the camera through a screen position. Thanks to [@owenpalmer](https://github.com/owenpalmer) for implementing this in [#316](https://github.com/AmbientRun/Ambient/pull/316).
 - **Physics**: `physics::{add_impulse, add_force_at_position, add_impulse_at_position, get_velocity_at_position}` have been added.
 - **Client**: The client's window title is now automatically changed to the name of the project running on the server. Thanks to [@MavethGH](https://github.com/MavethGH) for implementing this in [#178](https://github.com/AmbientRun/Ambient/pull/178).
 - **Client**: Added a basic headless mode to enable automatic CI testing of projects.
