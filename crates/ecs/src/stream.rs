@@ -276,6 +276,9 @@ impl WorldChange {
                 }
                 let mut data = data.clone();
                 data.filter(&|comp| (filter.component_filter)(comp, WorldStreamCompEvent::AddComponent));
+                if data.is_empty() {
+                    return None;
+                }
                 Some(Self::AddComponents(*id, data.clone()))
             }
             Self::RemoveComponents(id, comps) => {
