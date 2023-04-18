@@ -93,7 +93,10 @@ fn to_token_stream(
             let name_uppercase_ident: syn::Path = syn::parse_str(&name.to_ascii_uppercase())?;
             let component_ty = type_to_token_stream(&component.type_, context, false)?;
 
-            let mut doc_comment = format!("**{}**", component.name);
+            let mut doc_comment = format!(
+                "**{}**",
+                component.name.as_ref().map(|x| x as &str).unwrap_or(name)
+            );
 
             if let Some(desc) = &component.description {
                 if !desc.is_empty() {

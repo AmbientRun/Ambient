@@ -74,7 +74,7 @@ fn generate_make(
 ) -> anyhow::Result<TokenStream> {
     let make_comment = format!(
         "Makes a *{}*.\n\n{}\n\n{}",
-        concept.name,
+        concept.name.as_ref().map(|x| x as &str).unwrap_or(name),
         concept.description.as_ref().unwrap_or(&"".to_string()),
         generate_component_list_doc_comment(concept_tree, component_tree, context, concept)?
     );
@@ -134,7 +134,7 @@ fn generate_is(
 ) -> anyhow::Result<TokenStream> {
     let is_comment = format!(
         "Checks if the entity is a *{}*.\n\n{}\n\n{}",
-        concept.name,
+        concept.name.as_ref().map(|x| x as &str).unwrap_or(name),
         concept.description.as_ref().unwrap_or(&"".to_string()),
         generate_component_list_doc_comment(concept_tree, component_tree, context, concept)?,
     );
@@ -192,7 +192,7 @@ fn generate_concept(
 ) -> anyhow::Result<TokenStream> {
     let fn_comment = format!(
         "Returns the components that comprise *{}* as a tuple.\n\n{}\n\n{}",
-        concept.name,
+        concept.name.as_ref().map(|x| x as &str).unwrap_or(name),
         concept.description.as_ref().unwrap_or(&"".to_string()),
         generate_component_list_doc_comment(concept_tree, component_tree, context, concept)?,
     );
@@ -493,7 +493,7 @@ mod tests {
                         (
                             IdentifierPathBuf::new(format!("component{idx}")).unwrap(),
                             Component {
-                                name: format!("Component {idx}"),
+                                name: Some(format!("Component {idx}")),
                                 description: None,
                                 type_: ComponentType::String(ty.to_string()),
                                 attributes: vec![],
@@ -512,7 +512,7 @@ mod tests {
                 (
                     IdentifierPathBuf::new("concept0").unwrap(),
                     Concept {
-                        name: String::new(),
+                        name: None,
                         description: None,
                         extends: vec![],
                         components: BTreeMap::from_iter([(
@@ -525,7 +525,7 @@ mod tests {
                 (
                     IdentifierPathBuf::new("concept1").unwrap(),
                     Concept {
-                        name: String::new(),
+                        name: None,
                         description: None,
                         extends: vec![IdentifierPathBuf::new("concept0").unwrap()],
                         components: BTreeMap::from_iter([(
@@ -538,7 +538,7 @@ mod tests {
                 (
                     IdentifierPathBuf::new("concept2").unwrap(),
                     Concept {
-                        name: String::new(),
+                        name: None,
                         description: None,
                         extends: vec![],
                         components: BTreeMap::from_iter([(
@@ -551,7 +551,7 @@ mod tests {
                 (
                     IdentifierPathBuf::new("concept3").unwrap(),
                     Concept {
-                        name: String::new(),
+                        name: None,
                         description: None,
                         extends: vec![
                             IdentifierPathBuf::new("concept1").unwrap(),

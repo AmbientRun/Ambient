@@ -33,7 +33,7 @@ pub fn all_defined_components(
                 path: full_path.to_string(),
                 ty: component_type_to_primitive(&component.type_)?,
                 attributes: ExternalComponentAttributes {
-                    name: Some(component.name.clone()),
+                    name: component.name.clone(),
                     description: component.description.clone(),
                     flags: ExternalComponentFlagAttributes::from_iter(
                         component.attributes.iter().map(|s| s.as_str()),

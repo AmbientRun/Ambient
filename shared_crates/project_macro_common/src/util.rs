@@ -61,7 +61,8 @@ pub fn tree_to_token_stream<
             } else {
                 let name_ident: syn::Path = syn::parse_str(name)?;
                 let doc_comment_fragment = ns.namespace.as_ref().map(|n| {
-                    let mut doc_comment = format!("**{}**", n.name);
+                    let mut doc_comment =
+                        format!("**{}**", n.name.as_ref().map(|x| x as &str).unwrap_or(name));
                     if let Some(desc) = &n.description {
                         if !desc.is_empty() {
                             doc_comment += &format!(": {}", desc.replace('\n', "\n\n"));
