@@ -154,7 +154,7 @@ pub trait Source: Send {
         SampleIter::new(self)
     }
 
-    fn gain(self, gain: f32) -> Gain<Self>
+    fn gain(self, gain: Arc<Mutex<f32>>) -> Gain<Self>
     where
         Self: Sized,
     {

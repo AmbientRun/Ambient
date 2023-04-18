@@ -16,7 +16,13 @@ pub(crate) fn load(world: &World, url: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub(crate) fn play(world: &World, url: String, looping: bool, amp: f32) -> anyhow::Result<()> {
+pub(crate) fn play(
+    world: &World,
+    url: String,
+    looping: bool,
+    amp: f32,
+    uid: u32,
+) -> anyhow::Result<()> {
     let assets = world.resource(asset_cache()).clone();
     let asset_url = AbsAssetUrl::from_asset_key(url).to_string();
     let audio_url = AudioFromUrl {
@@ -36,6 +42,7 @@ pub(crate) fn play(world: &World, url: String, looping: bool, amp: f32) -> anyho
                             looping,
                             amp,
                             asset_url.replace("ambient-assets:/", ""),
+                            uid,
                         ))
                         .unwrap();
                 }
@@ -47,18 +54,36 @@ pub(crate) fn play(world: &World, url: String, looping: bool, amp: f32) -> anyho
 }
 
 pub(crate) fn stop(world: &World, url: String) -> anyhow::Result<()> {
-    // let assets = world.resource(asset_cache()).clone();
-    // let asset_url = AbsAssetUrl::from_asset_key(url).to_string();
-    // let audio_url = AudioFromUrl { url: AbsAssetUrl::parse(asset_url).context("Failed to parse audio url")? };
-
     let runtime = world.resource(runtime()).clone();
     let async_run = world.resource(async_run()).clone();
     runtime.spawn(async move {
-        // let track = audio_url.get(&assets).await;
-
         async_run.run(move |world| {
             let sender = world.resource(audio_sender());
             sender.send(AudioMessage::Stop(url)).unwrap();
+        });
+    });
+    Ok(())
+}
+
+pub(crate) fn set_amp(world: &World, url: String, amp: f32) -> anyhow::Result<()> {
+    let runtime = world.resource(runtime()).clone();
+    let async_run = world.resource(async_run()).clone();
+    runtime.spawn(async move {
+        async_run.run(move |world| {
+            let sender = world.resource(audio_sender());
+            sender.send(AudioMessage::UpdateVolume(url, amp)).unwrap();
+        });
+    });
+    Ok(())
+}
+
+pub(crate) fn stop_by_id(world: &World, uid: u32) -> anyhow::Result<()> {
+    let runtime = world.resource(runtime()).clone();
+    let async_run = world.resource(async_run()).clone();
+    runtime.spawn(async move {
+        async_run.run(move |world| {
+            let sender = world.resource(audio_sender());
+            sender.send(AudioMessage::StopById(uid)).unwrap();
         });
     });
     Ok(())

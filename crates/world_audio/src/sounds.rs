@@ -27,8 +27,10 @@ components!("audio", {
 });
 
 pub enum AudioMessage {
-    Track(Arc<ambient_audio::track::Track>, bool, f32, String),
+    Track(Arc<ambient_audio::track::Track>, bool, f32, String, u32),
+    UpdateVolume(String, f32),
     Stop(String),
+    StopById(u32),
 }
 
 /// TODO: hook this into the Attenuation inside ambient_audio

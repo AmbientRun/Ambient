@@ -23,28 +23,42 @@ pub struct AudioTrack {
 
 impl AudioTrack {
     /// Set whether or not the track should loop.
-    pub fn looping(&self, looping: bool) -> Self {
-        Self {
-            looping,
-            ..self.clone()
-        }
+    pub fn looping(&mut self, looping: bool) -> &mut Self {
+        self.looping = looping;
+        self
     }
 
     /// Set the volume of the track.
-    pub fn volume(&self, volume: f32) -> Self {
-        Self {
-            volume,
-            ..self.clone()
-        }
+    pub fn volume(&mut self, volume: f32) -> &mut Self {
+        let good_volume = volume.clamp(0.0, 1.0);
+        self.volume = good_volume;
+        wit::audio::set_amp(&self.name, good_volume);
+        self
     }
 
     /// Play the track.
-    pub fn play(&self) {
-        wit::audio::play(&self.name, self.looping, self.volume);
+    pub fn play(&self) -> AudioTrackId {
+        let uid = rand::random::<u32>();
+        wit::audio::play(&self.name, self.looping, self.volume, uid);
+        AudioTrackId { uid }
     }
 
     /// Stop the track.
     pub fn stop(&self) {
         wit::audio::stop(&self.name);
+    }
+}
+
+/// Audio tracks are identified by an [AudioTrackId].
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct AudioTrackId {
+    /// The unique id of the audio track.
+    pub uid: u32,
+}
+
+impl AudioTrackId {
+    /// Stop the track.
+    pub fn stop(&self) {
+        wit::audio::stop_by_id(self.uid);
     }
 }

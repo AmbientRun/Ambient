@@ -162,10 +162,12 @@ async fn main() {
         bandwidth: 6.0,
     }));
 
-    let ambience = Track::from_wav(
-        std::fs::read("example_assets/ambience.wav")
-            .unwrap()
-            .to_vec(),
+    let ambience = Track::from_vorbis(
+        std::fs::read(
+            "../../guest/rust/examples/games/pong/assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg",
+        )
+        .unwrap()
+        .to_vec(),
     )
     .unwrap()
     .decode()

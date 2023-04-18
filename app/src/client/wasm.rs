@@ -5,6 +5,7 @@ use ambient_ecs::{EntityId, SystemGroup, World};
 use ambient_wasm::shared::{get_module_name, MessageType};
 use ambient_world_audio::{audio_sender, AudioMessage};
 use flume::{Receiver, Sender};
+use parking_lot::Mutex;
 
 pub fn systems() -> SystemGroup {
     ambient_wasm::client::systems()
@@ -28,20 +29,57 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
 
     std::thread::spawn(move || {
         let stream = ambient_audio::AudioStream::new().unwrap();
-        let mut sounds = std::collections::HashMap::new();
+        let mut sound_info = std::collections::HashMap::new();
         while let Ok(message) = rx.recv() {
             match message {
-                AudioMessage::Track(t, looping, amp, url) => {
+                AudioMessage::Track(t, looping, amp, url, uid) => {
+                    let gain = Arc::new(Mutex::new(amp.clamp(0.0, 1.0)));
+                    let gain_clone = gain.clone();
+
                     let sound = match looping {
-                        true => stream.mixer().play(t.decode().repeat().gain(amp.clamp(0.0, 1.0))),
-                        false => stream.mixer().play(t.decode().gain(amp.clamp(0.0, 1.0))),
+                        true => stream.mixer().play(t.decode().repeat().gain(gain_clone)),
+                        false => stream.mixer().play(t.decode().gain(gain_clone)),
                     };
-                    sounds.insert(url, sound);
+                    sound.wait();
+                    sound_info.insert(uid, (url, looping, gain, sound.id));
                 }
-                AudioMessage::Stop(url) => {
-                    let sound = sounds.get(&url).unwrap();
-                    stream.mixer().stop(sound);
-                    sounds.remove(&url).unwrap();
+                AudioMessage::UpdateVolume(target_url, amp) => {
+                    for (_, (url, _, gain, _)) in sound_info.iter_mut() {
+                        if url == &target_url {
+                            let mut gain_locked = gain.lock();
+                            *gain_locked = amp.clamp(0.0, 1.0);
+                        }
+                    }
+                    // log::info!("Updated volume for all sounds with url {} to {}", target_url, amp);
+                }
+                AudioMessage::Stop(target_url) => {
+                    let mut keys_to_remove: Vec<u32> = Vec::new();
+
+                    for (key, value) in sound_info.iter() {
+                        let (url, _, _, _) = value;
+                        if url == &target_url {
+                            keys_to_remove.push(*key);
+                        }
+                    }
+
+                    for key in keys_to_remove {
+                        let value = sound_info.remove(&key);
+                        if let Some((_, _, _, sound_id)) = value {
+                            stream.mixer().stop(sound_id);
+                        }
+                    }
+                    log::info!("Stopped all sounds with url {}", target_url);
+                }
+                AudioMessage::StopById(uid) => {
+                    let (_, _, _, id) = match sound_info.remove(&uid) {
+                        Some(id) => id,
+                        None => {
+                            log::error!("No sound with id {}", uid);
+                            continue;
+                        }
+                    };
+                    log::info!("Stopped sound with id {}", uid);
+                    stream.mixer().stop(id);
                 }
             }
         }

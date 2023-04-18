@@ -80,11 +80,19 @@ impl wit::audio::Host for Bindings {
         crate::shared::implementation::audio::load(self.world_mut(), url)
     }
 
-    fn play(&mut self, name: String, looping: bool, amp: f32) -> anyhow::Result<()> {
-        crate::shared::implementation::audio::play(self.world_mut(), name, looping, amp)
+    fn play(&mut self, name: String, looping: bool, amp: f32, uid: u32) -> anyhow::Result<()> {
+        crate::shared::implementation::audio::play(self.world_mut(), name, looping, amp, uid)
     }
 
     fn stop(&mut self, url: String) -> anyhow::Result<()> {
         crate::shared::implementation::audio::stop(self.world_mut(), url)
+    }
+
+    fn stop_by_id(&mut self, uid: u32) -> anyhow::Result<()> {
+        crate::shared::implementation::audio::stop_by_id(self.world_mut(), uid)
+    }
+
+    fn set_amp(&mut self, url: String, amp: f32) -> anyhow::Result<()> {
+        crate::shared::implementation::audio::set_amp(self.world_mut(), url, amp)
     }
 }

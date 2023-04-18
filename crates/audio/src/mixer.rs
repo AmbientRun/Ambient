@@ -28,7 +28,7 @@ struct PlayingSound {
 
 /// Handle to a playing sound
 pub struct Sound {
-    id: SoundId,
+    pub id: SoundId,
     mixer: AudioMixer,
 }
 
@@ -153,8 +153,8 @@ impl AudioMixer {
         }
     }
 
-    pub fn stop(&self, sound: &Sound) {
-        self.inner.sources.lock().remove(sound.id);
+    pub fn stop(&self, key: SoundId) {
+        self.inner.sources.lock().remove(key);
     }
 
     fn notify_sound_waiters(&self, id: SoundId) {
