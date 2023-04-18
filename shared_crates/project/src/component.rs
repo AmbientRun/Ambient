@@ -3,7 +3,7 @@ use serde::Deserialize;
 #[derive(Deserialize, Clone, Debug, PartialEq)]
 pub struct Component {
     pub name: String,
-    pub description: String,
+    pub description: Option<String>,
     #[serde(rename = "type")]
     pub type_: ComponentType,
     #[serde(default)]

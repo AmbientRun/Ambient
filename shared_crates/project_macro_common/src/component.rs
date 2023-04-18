@@ -95,8 +95,10 @@ fn to_token_stream(
 
             let mut doc_comment = format!("**{}**", component.name);
 
-            if !component.description.is_empty() {
-                doc_comment += &format!(": {}", component.description.replace('\n', "\n\n"));
+            if let Some(desc) = &component.description {
+                if !desc.is_empty() {
+                    doc_comment += &format!(": {}", desc.replace('\n', "\n\n"));
+                }
             }
 
             // Metadata

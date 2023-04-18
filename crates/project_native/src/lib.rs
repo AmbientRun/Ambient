@@ -34,7 +34,7 @@ pub fn all_defined_components(
                 ty: component_type_to_primitive(&component.type_)?,
                 attributes: ExternalComponentAttributes {
                     name: Some(component.name.clone()),
-                    description: Some(component.description.clone()),
+                    description: component.description.clone(),
                     flags: ExternalComponentFlagAttributes::from_iter(
                         component.attributes.iter().map(|s| s.as_str()),
                     ),
