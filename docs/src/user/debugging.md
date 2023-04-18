@@ -52,3 +52,9 @@ By default, physics debugging is on. To debug your scene, install and start PVD,
 When assets are compiled by the assets pipeline, the resulting artifacts will be output to the `build` directory in your project. These can be examined to determine whether or not your source was accurately compiled by the asset pipeline.
 
 Additionally, if there are fatal errors or warnings, the asset pipeline will report them during the compilation process.
+
+## Networking
+
+### Debugging which components are sent over the network
+
+Use the environment flag `AMBIENT_DEBUG_ENTITY_STREAM` to debug entities and components sent over the network to the client. `AMBIENT_DEBUG_ENTITY_STREAM=FULL` will output everything, `AMBIENT_DEBUG_ENTITY_STREAM=true` (or anything else) will output a summary.

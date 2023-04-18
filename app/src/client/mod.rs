@@ -110,7 +110,17 @@ fn MainApp(
                 (systems(), resources)
             }),
             create_rpc_registry: cb(shared::create_server_rpc_registry),
-            on_in_entities: None,
+            on_in_entities: if std::env::var("AMBIENT_DEBUG_ENTITY_STREAM") == Ok("FULL".to_string()) {
+                Some(cb(move |diff| {
+                    log::info!("Entity stream: {:?}", diff);
+                }))
+            } else if std::env::var("AMBIENT_DEBUG_ENTITY_STREAM").is_ok() {
+                Some(cb(move |diff| {
+                    log::info!("Entity stream: {}", diff);
+                }))
+            } else {
+                None
+            },
             inner: Dock::el(vec![
                 if let Some(seconds) = golden_image_test.filter(|_| loaded) {
                     GoldenImageTest::el(project_path, seconds)
