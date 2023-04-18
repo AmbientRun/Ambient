@@ -81,6 +81,15 @@ impl wit::client_input::Host for Bindings {
             .clone()
             .into_bindgen())
     }
+
+    fn set_cursor(&mut self, icon: wit::client_input::CursorIcon) -> anyhow::Result<()> {
+        Ok(self
+            .world()
+            .resource(ambient_core::window::window_ctl())
+            .send(ambient_core::window::WindowCtl::SetCursorIcon(
+                icon.from_bindgen().into(),
+            ))?)
+    }
 }
 impl wit::client_camera::Host for Bindings {
     fn screen_ray(

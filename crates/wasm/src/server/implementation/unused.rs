@@ -26,6 +26,10 @@ impl wit::client_input::Host for Bindings {
     fn get_previous(&mut self) -> anyhow::Result<wit::client_input::Input> {
         unsupported()
     }
+
+    fn set_cursor(&mut self, _: wit::client_input::CursorIcon) -> anyhow::Result<()> {
+        unsupported()
+    }
 }
 impl wit::client_camera::Host for Bindings {
     fn screen_ray(

@@ -79,10 +79,13 @@ pub mod ecs {
 }
 
 pub mod window {
-    use ambient_window_types::CursorIcon;
+    use ambient_shared_types::CursorIcon;
 
-    pub fn set_cursor(_world: &crate::ecs::World, _cursor: CursorIcon) {
-        // TODO: Once we have client side scripting this needs to be hooked up to that
+    pub fn set_cursor(_world: &crate::ecs::World, cursor: CursorIcon) {
+        #[cfg(feature = "client")]
+        super::api::input::set_cursor(cursor);
+        #[cfg(not(feature = "client"))]
+        let _ = cursor;
     }
     pub fn get_clipboard() -> Option<String> {
         None

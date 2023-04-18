@@ -16,5 +16,5 @@ path = "src/client.rs"
 required-features = ["client"]
 
 [features]
-client = ["ambient_api/client"]
-server = ["ambient_api/server"]
+client = ["ambient_api/client", "ambient_ui_components/client"]
+server = ["ambient_api/server", "ambient_ui_components/server"]

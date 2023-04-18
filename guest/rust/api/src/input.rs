@@ -1,8 +1,11 @@
 use std::collections::HashSet;
 
 use crate::{
-    global::Vec2,
-    internal::{conversion::FromBindgen, wit},
+    global::{CursorIcon, Vec2},
+    internal::{
+        conversion::{FromBindgen, IntoBindgen},
+        wit,
+    },
 };
 
 #[allow(missing_docs)]
@@ -487,4 +490,9 @@ pub fn get_previous() -> Input {
 pub fn get_delta() -> (InputDelta, Input) {
     let (p, c) = (get_previous(), get());
     (c.delta(&p), c)
+}
+
+/// Sets the cursor icon.
+pub fn set_cursor(icon: CursorIcon) {
+    wit::client_input::set_cursor(icon.into_bindgen());
 }

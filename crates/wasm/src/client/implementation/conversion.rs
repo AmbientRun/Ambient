@@ -390,3 +390,52 @@ impl IntoBindgen for ambient_shared_types::MouseButton {
         }
     }
 }
+
+impl FromBindgen for wit::client_input::CursorIcon {
+    type Item = ambient_shared_types::CursorIcon;
+
+    fn from_bindgen(self) -> Self::Item {
+        type Wci = wit::client_input::CursorIcon;
+        type Aci = ambient_shared_types::CursorIcon;
+
+        match self {
+            Wci::DefaultIcon => Aci::Default,
+            Wci::Crosshair => Aci::Crosshair,
+            Wci::Hand => Aci::Hand,
+            Wci::Arrow => Aci::Arrow,
+            Wci::Move => Aci::Move,
+            Wci::Text => Aci::Text,
+            Wci::Wait => Aci::Wait,
+            Wci::Help => Aci::Help,
+            Wci::Progress => Aci::Progress,
+
+            Wci::NotAllowed => Aci::NotAllowed,
+            Wci::ContextMenu => Aci::ContextMenu,
+            Wci::Cell => Aci::Cell,
+            Wci::VerticalText => Aci::VerticalText,
+            Wci::Alias => Aci::Alias,
+            Wci::Copy => Aci::Copy,
+            Wci::NoDrop => Aci::NoDrop,
+            Wci::Grab => Aci::Grab,
+            Wci::Grabbing => Aci::Grabbing,
+            Wci::AllScroll => Aci::AllScroll,
+            Wci::ZoomIn => Aci::ZoomIn,
+            Wci::ZoomOut => Aci::ZoomOut,
+
+            Wci::EResize => Aci::EResize,
+            Wci::NResize => Aci::NResize,
+            Wci::NeResize => Aci::NeResize,
+            Wci::NwResize => Aci::NwResize,
+            Wci::SResize => Aci::SResize,
+            Wci::SeResize => Aci::SeResize,
+            Wci::SwResize => Aci::SwResize,
+            Wci::WResize => Aci::WResize,
+            Wci::EwResize => Aci::EwResize,
+            Wci::NsResize => Aci::NsResize,
+            Wci::NeswResize => Aci::NeswResize,
+            Wci::NwseResize => Aci::NwseResize,
+            Wci::ColResize => Aci::ColResize,
+            Wci::RowResize => Aci::RowResize,
+        }
+    }
+}

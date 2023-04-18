@@ -215,6 +215,63 @@ default interface client-input {
         mouse-buttons: list<mouse-button>,
     }
 
+    variant cursor-icon {
+        /// The platform-dependent default cursor.
+        default-icon,
+        /// A simple crosshair.
+        crosshair,
+        /// A hand (often used to indicate links in web browsers).
+        hand,
+        /// Self explanatory.
+        arrow,
+        /// Indicates something is to be moved.
+        move,
+        /// Indicates text that may be selected or edited.
+        text,
+        /// Program busy indicator.
+        wait,
+        /// Help indicator (often rendered as a "?")
+        help,
+        /// Progress indicator. Shows that processing is being done. But in contrast
+        /// with "Wait" the user may still interact with the program. Often rendered
+        /// as a spinning beach ball, or an arrow with a watch or hourglass.
+        progress,
+
+        /// Cursor showing that something cannot be done.
+        not-allowed,
+        context-menu,
+        cell,
+        vertical-text,
+        alias,
+        copy,
+        no-drop,
+        /// Indicates something can be grabbed.
+        grab,
+        /// Indicates something is grabbed.
+        grabbing,
+        all-scroll,
+        zoom-in,
+        zoom-out,
+
+        /// Indicate that some edge is to be moved. For example, the 'SeResize' cursor
+        /// is used when the movement starts from the south-east corner of the box.
+        e-resize,
+        n-resize,
+        ne-resize,
+        nw-resize,
+        s-resize,
+        se-resize,
+        sw-resize,
+        w-resize,
+        ew-resize,
+        ns-resize,
+        nesw-resize,
+        nwse-resize,
+        col-resize,
+        row-resize,
+    }
+
     get: func() -> input
     get-previous: func() -> input
+    set-cursor: func(icon: cursor-icon)
 }

@@ -9,12 +9,16 @@ use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 use super::wit;
 
 /// Converts from a Rust representation to a wit-bindgen representation.
+///
+/// Implemented on the Rust type to convert to a WIT type.
 pub trait IntoBindgen {
     type Item;
     fn into_bindgen(self) -> Self::Item;
 }
 
 /// Converts from a wit-bindgen representation to a Rust representation.
+///
+/// Implemented on the WIT type to convert to a Rust type.
 #[allow(clippy::wrong_self_convention)]
 pub trait FromBindgen {
     type Item;

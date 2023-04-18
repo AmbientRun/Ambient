@@ -32,3 +32,6 @@ convert_case = { workspace = true }
 [features]
 native = ["ambient_element/native", "ambient_shared_types/native", "ambient_sys"]
 guest = ["ambient_element/guest", "ambient_guest_bridge/guest"]
+
+client = ["ambient_guest_bridge/client"]
+server = ["ambient_guest_bridge/server"]

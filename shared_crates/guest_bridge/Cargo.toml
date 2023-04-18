@@ -39,3 +39,6 @@ native = [
   "ambient_shared_types/native"
 ]
 guest = ["dep:ambient_api"]
+
+client = ["ambient_api?/client"]
+server = ["ambient_api?/server"]

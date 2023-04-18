@@ -1,5 +1,5 @@
 use crate::{
-    global::{EntityId, Mat4, Quat, Vec2, Vec3, Vec4},
+    global::{CursorIcon, EntityId, Mat4, Quat, Vec2, Vec3, Vec4},
     internal::wit,
 };
 use glam::{UVec2, UVec3, UVec4};
@@ -177,6 +177,54 @@ impl FromBindgen for wit::types::Mat4 {
             self.z.from_bindgen(),
             self.w.from_bindgen(),
         )
+    }
+}
+
+impl IntoBindgen for CursorIcon {
+    type Item = wit::client_input::CursorIcon;
+    fn into_bindgen(self) -> Self::Item {
+        type Ci = CursorIcon;
+        type Wci = wit::client_input::CursorIcon;
+
+        match self {
+            Ci::Default => Wci::DefaultIcon,
+            Ci::Crosshair => Wci::Crosshair,
+            Ci::Hand => Wci::Hand,
+            Ci::Arrow => Wci::Arrow,
+            Ci::Move => Wci::Move,
+            Ci::Text => Wci::Text,
+            Ci::Wait => Wci::Wait,
+            Ci::Help => Wci::Help,
+            Ci::Progress => Wci::Progress,
+
+            Ci::NotAllowed => Wci::NotAllowed,
+            Ci::ContextMenu => Wci::ContextMenu,
+            Ci::Cell => Wci::Cell,
+            Ci::VerticalText => Wci::VerticalText,
+            Ci::Alias => Wci::Alias,
+            Ci::Copy => Wci::Copy,
+            Ci::NoDrop => Wci::NoDrop,
+            Ci::Grab => Wci::Grab,
+            Ci::Grabbing => Wci::Grabbing,
+            Ci::AllScroll => Wci::AllScroll,
+            Ci::ZoomIn => Wci::ZoomIn,
+            Ci::ZoomOut => Wci::ZoomOut,
+
+            Ci::EResize => Wci::EResize,
+            Ci::NResize => Wci::NResize,
+            Ci::NeResize => Wci::NeResize,
+            Ci::NwResize => Wci::NwResize,
+            Ci::SResize => Wci::SResize,
+            Ci::SeResize => Wci::SeResize,
+            Ci::SwResize => Wci::SwResize,
+            Ci::WResize => Wci::WResize,
+            Ci::EwResize => Wci::EwResize,
+            Ci::NsResize => Wci::NsResize,
+            Ci::NeswResize => Wci::NeswResize,
+            Ci::NwseResize => Wci::NwseResize,
+            Ci::ColResize => Wci::ColResize,
+            Ci::RowResize => Wci::RowResize,
+        }
     }
 }
 
