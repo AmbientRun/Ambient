@@ -15,9 +15,11 @@ fn main() {
     // .as_source();
 
     let source = Track::from_vorbis(
-        std::fs::read("example_assets/footstep04.ogg")
-            .unwrap()
-            .to_vec(),
+        std::fs::read(
+            "../../guest/rust/examples/games/pong/assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg",
+        )
+        .unwrap()
+        .to_vec(),
     )
     .unwrap();
 
