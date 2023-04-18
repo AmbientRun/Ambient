@@ -157,6 +157,23 @@ impl wit::server_physics::Host for Bindings {
         Ok(())
     }
 
+    fn create_revolute_joint(
+        &mut self,
+        entity0: wit::types::EntityId,
+        transform0: wit::types::Mat4,
+        entity1: wit::types::EntityId,
+        transform1: wit::types::Mat4,
+    ) -> anyhow::Result<()> {
+        ambient_physics::helpers::create_revolute_joint(
+            self.world_mut(),
+            entity0.from_bindgen(),
+            transform0.from_bindgen(),
+            entity1.from_bindgen(),
+            transform1.from_bindgen(),
+        );
+        Ok(())
+    }
+
     fn raycast_first(
         &mut self,
         origin: wit::types::Vec3,

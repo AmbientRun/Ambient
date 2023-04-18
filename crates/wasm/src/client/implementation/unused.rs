@@ -76,6 +76,16 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 
+    fn create_revolute_joint(
+        &mut self,
+        _entity0: wit::types::EntityId,
+        _transform0: wit::types::Mat4,
+        _entity1: wit::types::EntityId,
+        _transform1: wit::types::Mat4,
+    ) -> anyhow::Result<()> {
+        unsupported()
+    }
+
     fn raycast_first(
         &mut self,
         _origin: wit::types::Vec3,

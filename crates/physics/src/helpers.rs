@@ -3,14 +3,20 @@ use std::collections::HashSet;
 use ambient_core::transform::{get_world_position, rotation, translation};
 use ambient_ecs::{query, ECSError, EntityId, World};
 use anyhow::{bail, Context};
-use glam::{vec3, Vec3};
+use glam::{vec3, Mat4, Vec3};
 use itertools::Itertools;
 use physxx::{
-    AsPxActor, AsPxRigidActor, PxActor, PxActorTypeFlag, PxBase, PxBoxGeometry, PxConvexMeshGeometry, PxJoint, PxMeshScale, PxOverlapCallback, PxQueryFilterData, PxQueryFlag, PxRevoluteJointRef, PxRigidActor, PxRigidActorRef, PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef, PxSceneRef, PxShape, PxSphereGeometry, PxTransform, PxTriangleMeshGeometry, PxUserData, PxForceMode
+    AsPxActor, AsPxRigidActor, PxActor, PxActorRef, PxActorTypeFlag, PxBase, PxBoxGeometry, PxConvexMeshGeometry, PxForceMode, PxJoint,
+    PxMeshScale, PxOverlapCallback, PxPhysicsRef, PxQueryFilterData, PxQueryFlag, PxRevoluteJointRef, PxRigidActor, PxRigidActorRef,
+    PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef, PxSceneRef, PxShape, PxSphereGeometry, PxTransform,
+    PxTriangleMeshGeometry, PxUserData,
 };
 
 use crate::{
-    collider::{collider_shapes_convex, collider_type, kinematic}, main_physics_scene, physx::{physics, physics_controlled, physics_shape, revolute_joint, rigid_dynamic}, unit_mass, unit_velocity, ColliderScene, PxActorUserData, PxShapeUserData
+    collider::{collider_shapes_convex, collider_type, kinematic},
+    main_physics_scene,
+    physx::{physics, physics_controlled, physics_shape, revolute_joint, rigid_actor, rigid_dynamic, rigid_static},
+    unit_mass, unit_velocity, ColliderScene, PxActorUserData, PxShapeUserData,
 };
 
 pub fn convert_rigid_static_to_dynamic(world: &mut World, id: EntityId) {
@@ -89,6 +95,20 @@ pub fn update_physics_controlled(world: &mut World, actor: PxRigidActorRef) {
                 }
             }
         }
+    }
+}
+
+pub fn get_actor(world: &World, id: EntityId) -> Option<PxActorRef> {
+    if let Ok(body) = world.get_ref(id, rigid_dynamic()) {
+        Some(body.as_actor())
+    } else if let Ok(body) = world.get_ref(id, rigid_actor()) {
+        Some(body.as_actor())
+    } else if let Ok(body) = world.get_ref(id, rigid_static()) {
+        Some(body.as_actor())
+    } else if let Ok(shape) = world.get_ref(id, physics_shape()) {
+        shape.get_actor().map(|x| x.as_actor())
+    } else {
+        None
     }
 }
 
@@ -173,6 +193,17 @@ pub fn update_actor_entity_transforms(world: &mut World, actor: PxRigidActorRef)
             }
         }
     }
+}
+
+pub fn create_revolute_joint(world: &mut World, id0: EntityId, transform1: Mat4, id1: EntityId, transform0: Mat4) {
+    let actor0 = get_actor(world, id0).and_then(|x| x.to_rigid_actor());
+    let actor1 = get_actor(world, id1).and_then(|x| x.to_rigid_actor());
+    let (_, rot0, pos0) = transform0.to_scale_rotation_translation();
+    let (_, rot1, pos1) = transform1.to_scale_rotation_translation();
+
+    let joint = PxRevoluteJointRef::new(PxPhysicsRef::get(), actor0, &PxTransform::new(pos0, rot0), actor1, &PxTransform::new(pos1, rot1));
+    world.add_component(id0, revolute_joint(), joint).unwrap();
+    world.add_component(id1, revolute_joint(), joint).unwrap();
 }
 
 pub fn get_entity_revolute_joint(world: &World, id: EntityId) -> Option<PxRevoluteJointRef> {

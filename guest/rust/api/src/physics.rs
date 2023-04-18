@@ -5,6 +5,7 @@ use crate::{
         wit,
     },
 };
+use glam::Mat4;
 
 /// Applies a `force` (a [Vec3]) to the `entity` (an [EntityId]) specified.
 ///
@@ -125,6 +126,21 @@ pub fn start_motor(entity: EntityId, velocity: f32) {
 /// Stops a motor on `entity`. Does nothing if the motor is not running.
 pub fn stop_motor(entity: EntityId) {
     wit::server_physics::stop_motor(entity.into_bindgen())
+}
+
+/// Creates a revolute joint. entity0 or entity1 can either be `EntityId::null()` to bind this to the world frame.
+pub fn crate_revolute_joint(
+    entity0: EntityId,
+    transform0: Mat4,
+    entity1: EntityId,
+    transform1: Mat4,
+) {
+    wit::server_physics::create_revolute_joint(
+        entity0.into_bindgen(),
+        transform0.into_bindgen(),
+        entity1.into_bindgen(),
+        transform1.into_bindgen(),
+    )
 }
 
 /// Where a [raycast] hit.
