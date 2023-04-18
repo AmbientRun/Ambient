@@ -27,6 +27,7 @@ async fn start() {
 
     tracing::info!("Hello, Wasm!");
 
+    ambient_ecs::init_components();
     ambient_core::init_all_components();
 
     if let Err(err) = run().await {
