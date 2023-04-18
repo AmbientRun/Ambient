@@ -4,12 +4,17 @@ name = "Third person camera"
 version = "0.0.1"
 
 [components]
-player_camera_ref = { type = "EntityId", name = "Player camera ref", description = "The player's camera.", attributes = ["Debuggable"] }
-player_movement_direction = { type = "Vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = ["Debuggable"] }
-player_mouse_delta_x = { type = "F32", name = "Player mouse delta X", description = "The player's mouse delta X.", attributes = ["Debuggable"] }
+player_camera_ref = { type = "EntityId", name = "Player camera ref", description = "The player's camera.", attributes = [
+    "Debuggable",
+] }
+player_movement_direction = { type = "Vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
+    "Debuggable",
+] }
+player_mouse_delta_x = { type = "F32", name = "Player mouse delta X", description = "The player's mouse delta X.", attributes = [
+    "Debuggable",
+] }
 
 [messages.input]
-name = "Input"
 description = "Describes the input state of the player."
 [messages.input.fields]
 direction = { type = "Vec2", name = "Direction", description = "The movement direction of the player." }

@@ -4,7 +4,10 @@ name = "Minigolf"
 version = "0.0.1"
 
 [components]
-next_player_hue = { type = "F32", name = "Next Player Hue", description = "Controls the hue (in degrees) to use for the next player's color.", attributes = ["Debuggable", "Resource"] }
+next_player_hue = { type = "F32", name = "Next Player Hue", description = "Controls the hue (in degrees) to use for the next player's color.", attributes = [
+    "Debuggable",
+    "Resource",
+] }
 
 ball = { type = "Empty", name = "Ball", description = "Used to tag a ball" }
 origin = { type = "Vec3", name = "Origin", description = "An object's origin in world space" }
@@ -47,7 +50,6 @@ player_camera_radius = 15.0
 player_camera_rotation = [3.141592, 0.610865]
 
 [messages.input]
-name = "Input"
 description = "Player input"
 [messages.input.fields]
 camera_rotation = { type = "Vec2", name = "Camera Rotation", description = "The rotation (radians) to rotate the camera by" }
@@ -55,11 +57,9 @@ camera_zoom = { type = "F32", name = "Camera Zoom", description = "The amount to
 shoot = { type = "Bool", name = "Shoot", description = "Whether or not to shoot the ball" }
 
 [messages.hit]
-name = "Hit"
 description = "Hit."
 fields = { ball = "EntityId" }
 
 [messages.bonk]
-name = "Bonk"
 description = "Collision between two objects."
 fields = { ball = "EntityId" }
