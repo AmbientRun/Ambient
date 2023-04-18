@@ -221,10 +221,10 @@ mod tests {
         version = "0.0.1"
 
         [components]
-        "core" = { name = "Core", description = "" }
-        "core::app" = { name = "App", description = "" }
+        "core" = { name = "Core" }
+        "core::app" = { name = "App" }
 
-        "core::app::main_scene" = { name = "Main Scene", description = "", type = "Empty" }
+        "core::app::main_scene" = { name = "Main Scene", type = "Empty" }
         "#;
 
         assert_eq!(
@@ -264,7 +264,7 @@ mod tests {
                         IdentifierPathBuf::new("core::app::main_scene").unwrap(),
                         Component {
                             name: "Main Scene".to_string(),
-                            description: Some("".to_string()),
+                            description: None,
                             type_: ComponentType::String("Empty".to_string()),
                             attributes: vec![],
                             default: None,

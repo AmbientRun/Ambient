@@ -363,23 +363,23 @@ fn can_generate_concepts_with_all_supported_types() {
         version = "0.0.1"
 
         [components]
-        empty = { type = "Empty", name = "Empty", description = "" }
-        bool = { type = "Bool", name = "Bool", description = "" }
-        entity_id = { type = "EntityId", name = "EntityId", description = "" }
-        f32 = { type = "F32", name = "F32", description = "" }
-        f64 = { type = "F64", name = "F64", description = "" }
-        mat4 = { type = "Mat4", name = "Mat4", description = "" }
-        i32 = { type = "I32", name = "I32", description = "" }
-        quat = { type = "Quat", name = "Quat", description = "" }
-        string = { type = "String", name = "String", description = "" }
-        u32 = { type = "U32", name = "U32", description = "" }
-        u64 = { type = "U64", name = "U64", description = "" }
-        vec2 = { type = "Vec2", name = "Vec2", description = "" }
-        vec3 = { type = "Vec3", name = "Vec3", description = "" }
-        vec4 = { type = "Vec4", name = "Vec4", description = "" }
-        vec_vec2 = { type = { type = "Vec", element_type = "Vec2" }, name = "VecVec2", description = "" }
-        option_string1 = { type = { type = "Option", element_type = "String" }, name = "OptionString1", description = "" }
-        option_string2 = { type = { type = "Option", element_type = "String" }, name = "OptionString2", description = "" }
+        empty = { type = "Empty", name = "Empty" }
+        bool = { type = "Bool", name = "Bool" }
+        entity_id = { type = "EntityId", name = "EntityId" }
+        f32 = { type = "F32", name = "F32" }
+        f64 = { type = "F64", name = "F64" }
+        mat4 = { type = "Mat4", name = "Mat4" }
+        i32 = { type = "I32", name = "I32" }
+        quat = { type = "Quat", name = "Quat" }
+        string = { type = "String", name = "String" }
+        u32 = { type = "U32", name = "U32" }
+        u64 = { type = "U64", name = "U64" }
+        vec2 = { type = "Vec2", name = "Vec2" }
+        vec3 = { type = "Vec3", name = "Vec3" }
+        vec4 = { type = "Vec4", name = "Vec4" }
+        vec_vec2 = { type = { type = "Vec", element_type = "Vec2" }, name = "VecVec2" }
+        option_string1 = { type = { type = "Option", element_type = "String" }, name = "OptionString1" }
+        option_string2 = { type = { type = "Option", element_type = "String" }, name = "OptionString2" }
 
         [concepts.everything]
         name = "Everything"
