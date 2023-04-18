@@ -1061,7 +1061,6 @@ fn can_generate_message() {
         version = "0.0.1"
 
         [messages.my_cool_message]
-        name = "The Coolest Message Out There"
         description = "Proof that cool messages do exist."
         [messages.my_cool_message.fields]
         test1 = "Vec3"
@@ -1084,7 +1083,7 @@ fn can_generate_message() {
             use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError, ModuleMessage}};
 
             #[derive(Clone, Debug)]
-            #[doc = "**The Coolest Message Out There**: Proof that cool messages do exist."]
+            #[doc = "**my_cool_message**: Proof that cool messages do exist."]
             pub struct MyCoolMessage {
                 pub test1: ambient_api2::global::Vec3,
                 pub test2: Vec<ambient_api2::global::EntityId>,
@@ -1141,7 +1140,6 @@ fn can_generate_runtime_message() {
         version = "0.0.1"
 
         [messages.my_cool_message]
-        name = "The Coolest Message Out There"
         description = "Proof that cool messages do exist."
         fields = {}
     "#};
@@ -1162,7 +1160,7 @@ fn can_generate_runtime_message() {
             use ambient_api2::{prelude::*, message::{Message, MessageSerde, MessageSerdeError, RuntimeMessage}};
 
             #[derive(Clone, Debug)]
-            #[doc = "**The Coolest Message Out There**: Proof that cool messages do exist."]
+            #[doc = "**my_cool_message**: Proof that cool messages do exist."]
             pub struct MyCoolMessage { }
             impl MyCoolMessage {
                 pub fn new( ) -> Self {
