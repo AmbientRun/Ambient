@@ -26,5 +26,16 @@ ambient_window_types = { path = "../window_types" }
 arboard = { workspace = true, optional = true}
 
 [features]
-native = ["ambient_ecs", "ambient_core", "ambient_layout", "ambient_renderer", "ambient_text", "ambient_rect", "ambient_input", "ambient_window_types/native", "ambient_sys", "arboard"]
-guest = ["ambient_api"]
+native = [
+  "dep:ambient_ecs",
+  "dep:ambient_core",
+  "dep:ambient_layout",
+  "dep:ambient_renderer",
+  "dep:ambient_text",
+  "dep:ambient_rect",
+  "dep:ambient_input",
+  "dep:ambient_sys",
+  "dep:arboard",
+  "ambient_window_types/native"
+]
+guest = ["dep:ambient_api"]

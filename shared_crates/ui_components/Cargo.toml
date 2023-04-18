@@ -31,6 +31,5 @@ indexmap = { workspace = true }
 convert_case = { workspace = true }
 
 [features]
-default = ["guest"]
 native = ["ambient_element/native", "ambient_window_types/native", "ambient_sys"]
-guest = ["ambient_element/guest","ambient_guest_bridge/guest"]
+guest = ["ambient_element/guest", "ambient_guest_bridge/guest"]

@@ -8,7 +8,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_guest_bridge = { path = "../guest_bridge" }
+ambient_guest_bridge = { path = "../guest_bridge", default-features = false }
 ambient_element_component = { path = "../element_component" }
 ambient_cb = { path = "../../libs/cb" }
 ambient_friendly_id = { path = "../../libs/friendly_id" }
@@ -33,5 +33,5 @@ tokio = { workspace = true }
 
 [features]
 default = ["native"]
-native = ["ambient_sys", "ambient_core",  "ambient_guest_bridge/native",  "tokio"]
+native = ["dep:ambient_sys", "dep:ambient_core", "dep:tokio", "ambient_guest_bridge/native"]
 guest = ["ambient_guest_bridge/guest"]
