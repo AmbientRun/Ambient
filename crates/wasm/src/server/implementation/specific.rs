@@ -170,8 +170,7 @@ impl wit::server_physics::Host for Bindings {
             transform0.from_bindgen(),
             entity1.from_bindgen(),
             transform1.from_bindgen(),
-        );
-        Ok(())
+        )
     }
 
     fn raycast_first(
