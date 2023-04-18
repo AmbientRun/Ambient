@@ -48,19 +48,18 @@ pub fn camera_systems() -> SystemGroup {
                     }
                 }
             }),
-            query_mut((projection(),), (near(), fovy(), aspect_ratio())).incl(perspective_infinite_reverse()).to_system(
-                |q, world, qs, _| {
-                    for (_, (projection,), (&near, &fovy, &aspect_ratio)) in q.iter(world, qs) {
-                        *projection = glam::Mat4::perspective_infinite_reverse_lh(fovy, aspect_ratio, near);
-                        if projection.is_nan() {
-                            tracing::error!(near, fovy, aspect_ratio, "Perspective projection is NaN");
-                        }
+            query((near(), fovy(), aspect_ratio())).incl(projection()).incl(perspective_infinite_reverse()).to_system(|q, world, qs, _| {
+                for (id, (near, fovy, aspect_ratio)) in q.collect_cloned(world, qs) {
+                    let proj = glam::Mat4::perspective_infinite_reverse_lh(fovy, aspect_ratio, near);
+                    world.set_if_changed(id, projection(), proj).unwrap();
+                    if proj.is_nan() {
+                        tracing::error!(near, fovy, aspect_ratio, "Perspective projection is NaN");
                     }
-                },
-            ),
-            query_mut((projection(),), (near(), far(), fovy(), aspect_ratio())).incl(perspective()).to_system(|q, world, qs, _| {
-                for (_, (projection,), (&near, &far, &fovy, &aspect_ratio)) in q.iter(world, qs) {
-                    *projection = perspective_reverse(fovy, aspect_ratio, near, far);
+                }
+            }),
+            query((near(), far(), fovy(), aspect_ratio())).incl(projection()).incl(perspective()).to_system(|q, world, qs, _| {
+                for (id, (near, far, fovy, aspect_ratio)) in q.collect_cloned(world, qs) {
+                    world.set_if_changed(id, projection(), perspective_reverse(fovy, aspect_ratio, near, far)).unwrap();
                 }
             }),
             query(orthographic_from_window())
