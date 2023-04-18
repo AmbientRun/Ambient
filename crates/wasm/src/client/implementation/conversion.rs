@@ -10,7 +10,7 @@ impl IntoBindgen for ambient_input::PlayerRawInput {
         Self::Item {
             keys: self.keys.into_iter().map(|k| k.into_bindgen()).collect(),
             mouse_position: self.mouse_position.into_bindgen(),
-            cursor_position: self.cursor_position.into_bindgen(),
+            mouse_delta: self.mouse_delta.into_bindgen(),
             mouse_wheel: self.mouse_wheel,
             mouse_buttons: self
                 .mouse_buttons

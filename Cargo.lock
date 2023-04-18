@@ -1465,6 +1465,7 @@ dependencies = [
  "wasi-cap-std-sync",
  "wasi-common",
  "wasmtime",
+ "winit",
  "wit-bindgen-core 0.4.0 (git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404)",
  "wit-bindgen-rust 0.4.0 (git+https://github.com/bytecodealliance/wit-bindgen.git?rev=7ec986ba6bab38b4ccf5a771200c689c77f1e404)",
  "wit-component",

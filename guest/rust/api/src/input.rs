@@ -415,6 +415,10 @@ pub struct Input {
     pub keys: HashSet<KeyCode>,
     /// The current position of the mouse.
     pub mouse_position: Vec2,
+    /// The movement of the mouse since the last frame. Note that this is not affected by cursor locking, unlike [mouse_position].
+    ///
+    /// Use this for any kind of movement that should be relative to the mouse's position, such as camera rotation.
+    pub mouse_delta: Vec2,
     /// The current scroll position.
     pub mouse_wheel: f32,
     /// All of the mouse buttons being pressed this frame.
@@ -427,6 +431,7 @@ impl FromBindgen for wit::client_input::Input {
         Self::Item {
             keys: self.keys.into_iter().map(|k| k.from_bindgen()).collect(),
             mouse_position: self.mouse_position.from_bindgen(),
+            mouse_delta: self.mouse_delta.from_bindgen(),
             mouse_wheel: self.mouse_wheel,
             mouse_buttons: self
                 .mouse_buttons
@@ -446,6 +451,8 @@ pub struct InputDelta {
     /// All of the keys that were released this frame.
     pub keys_released: HashSet<KeyCode>,
     /// The change between last frame's mouse position and this frame.
+    ///
+    /// Note that this is equal to [Input::mouse_delta], not the delta of [Input::mouse_position].
     pub mouse_position: Vec2,
     /// The amount the mouse wheel has scrolled since the last frame.
     pub mouse_wheel: f32,
@@ -463,7 +470,7 @@ impl Input {
         InputDelta {
             keys: &c.keys - &p.keys,
             keys_released: &p.keys - &c.keys,
-            mouse_position: c.mouse_position - p.mouse_position,
+            mouse_position: c.mouse_delta,
             mouse_wheel: c.mouse_wheel - p.mouse_wheel,
             mouse_buttons: &c.mouse_buttons - &p.mouse_buttons,
             mouse_buttons_released: &p.mouse_buttons - &c.mouse_buttons,
@@ -495,4 +502,60 @@ pub fn get_delta() -> (InputDelta, Input) {
 /// Sets the cursor icon.
 pub fn set_cursor(icon: CursorIcon) {
     wit::client_input::set_cursor(icon.into_bindgen());
+}
+
+/// Sets the cursor's visibility.
+pub fn set_cursor_visible(visible: bool) {
+    wit::client_input::set_cursor_visible(visible);
+}
+
+/// Sets the cursor's lock state. If set, the cursor will not be able to move outside of the window.
+///
+/// You may want to combine this with [set_cursor_visible].
+pub fn set_cursor_lock(locked: bool) {
+    wit::client_input::set_cursor_lock(locked);
+}
+
+/// Helper utility that will lock and hide the cursor if necessary.
+///
+/// Will unlock the cursor when dropped.
+pub struct CursorLockGuard {
+    locked: bool,
+}
+impl CursorLockGuard {
+    /// Creates a new [CursorLockGuard] with the given lock state.
+    pub fn new(locked: bool) -> Self {
+        let mut guard = Self { locked: !locked };
+        guard.set_locked(locked);
+        guard
+    }
+
+    /// Locks and hides the cursor if necessary.
+    pub fn set_locked(&mut self, locked: bool) {
+        if locked != self.locked {
+            set_cursor_lock(locked);
+            set_cursor_visible(!locked);
+        }
+        self.locked = locked;
+    }
+
+    /// Returns whether or not the cursor is currently locked.
+    pub fn is_locked(&self) -> bool {
+        self.locked
+    }
+
+    /// Helper that calls [set_lock] with `true`.
+    pub fn lock(&mut self) {
+        self.set_locked(true);
+    }
+
+    /// Helper that calls [set_lock] with `false`.
+    pub fn unlock(&mut self) {
+        self.set_locked(false);
+    }
+}
+impl Drop for CursorLockGuard {
+    fn drop(&mut self) {
+        self.set_locked(false);
+    }
 }

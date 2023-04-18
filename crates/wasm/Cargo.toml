@@ -49,6 +49,7 @@ serde_json = { workspace = true }
 serde = { workspace = true }
 slotmap = { workspace = true }
 tokio = { workspace = true }
+winit = { workspace = true }
 
 wasmtime = { workspace = true }
 wasmtime-wasi = { workspace = true }

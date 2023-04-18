@@ -10,8 +10,9 @@ use ambient_shared_types::VirtualKeyCode;
 pub fn systems_final() -> SystemGroup {
     SystemGroup::new(
         "player/client_systems_final",
-        vec![query_mut(player_prev_raw_input(), player_raw_input()).to_system(|q, world, qs, _| {
-            for (_, prev, input) in q.iter(world, qs) {
+        vec![query_mut((player_prev_raw_input(), player_raw_input()), ()).to_system(|q, world, qs, _| {
+            for (_, (prev, input), ()) in q.iter(world, qs) {
+                input.mouse_delta = glam::Vec2::ZERO;
                 *prev = input.clone();
             }
         })],
@@ -65,9 +66,10 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
         });
     });
 
-    hooks.use_runtime_message::<messages::WindowMouseMotion>(move |world, _| {
+    hooks.use_runtime_message::<messages::WindowMouseMotion>(move |world, msg| {
         process_input(world, has_focus, |input| {
             input.mouse_position = *world.resource(cursor_position());
+            input.mouse_delta += msg.delta;
         });
     });
 

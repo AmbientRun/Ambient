@@ -9,6 +9,7 @@ use ambient_network::client::game_client;
 use ambient_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl};
 use ambient_world_audio::{audio_sender, AudioMessage};
 use anyhow::Context;
+use winit::window::CursorGrabMode;
 
 use super::Bindings;
 use crate::shared::{
@@ -89,6 +90,32 @@ impl wit::client_input::Host for Bindings {
             .send(ambient_core::window::WindowCtl::SetCursorIcon(
                 icon.from_bindgen().into(),
             ))?)
+    }
+
+    fn set_cursor_visible(&mut self, visible: bool) -> anyhow::Result<()> {
+        Ok(self
+            .world()
+            .resource(ambient_core::window::window_ctl())
+            .send(ambient_core::window::WindowCtl::ShowCursor(visible))?)
+    }
+
+    fn set_cursor_lock(&mut self, lock: bool) -> anyhow::Result<()> {
+        let grab_mode = if lock {
+            if cfg!(target_os = "windows") || cfg!(target_os = "linux") {
+                CursorGrabMode::Confined
+            } else if cfg!(target_os = "macos") {
+                CursorGrabMode::Locked
+            } else {
+                anyhow::bail!("Unsupported platform for cursor lock.")
+            }
+        } else {
+            CursorGrabMode::None
+        };
+
+        Ok(self
+            .world()
+            .resource(ambient_core::window::window_ctl())
+            .send(ambient_core::window::WindowCtl::GrabCursor(grab_mode))?)
     }
 }
 impl wit::client_camera::Host for Bindings {

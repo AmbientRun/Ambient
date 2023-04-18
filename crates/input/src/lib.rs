@@ -12,8 +12,7 @@ pub mod picking;
 pub struct PlayerRawInput {
     pub keys: HashSet<ambient_shared_types::VirtualKeyCode>,
     pub mouse_position: Vec2,
-    /// cursor position is _not_ the sum of mouse_deltas; mouse_delta is
-    pub cursor_position: Vec2,
+    pub mouse_delta: Vec2,
     pub mouse_wheel: f32,
     pub mouse_buttons: HashSet<ambient_shared_types::MouseButton>,
 }
