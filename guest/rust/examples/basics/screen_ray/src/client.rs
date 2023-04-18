@@ -1,6 +1,6 @@
 use ambient_api::{
     components::core::{
-        app::{main_scene, window_logical_size},
+        app::main_scene,
         camera::aspect_ratio_from_window,
         transform::{lookat_center, translation},
     },
@@ -21,14 +21,7 @@ pub fn main() {
     ambient_api::messages::Frame::subscribe(move |_| {
         let input = input::get();
 
-        let window_size =
-            entity::get_component(entity::resources(), window_logical_size()).unwrap();
-
-        // Calculate normalized device coordinates
-        let ndc_x = (2.0 * input.mouse_position.x / window_size.x as f32) - 1.0;
-        let ndc_y = 1.0 - (2.0 * input.mouse_position.y / window_size.y as f32);
-
-        let ndc = vec2(ndc_x, ndc_y);
+        let ndc = camera::screen_to_clip_space(input.mouse_position);
         let ray = camera::screen_ray(camera, ndc);
 
         // Send screen ray to server

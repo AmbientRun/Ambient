@@ -132,6 +132,16 @@ impl wit::client_camera::Host for Bindings {
         ray.dir *= -1.;
         Ok(ray.into_bindgen())
     }
+
+    fn screen_to_clip_space(
+        &mut self,
+        screen_pos: wit::types::Vec2,
+    ) -> anyhow::Result<wit::types::Vec2> {
+        Ok(
+            ambient_core::window::screen_to_clip_space(self.world(), screen_pos.from_bindgen())
+                .into_bindgen(),
+        )
+    }
 }
 impl wit::client_audio::Host for Bindings {
     fn load(&mut self, url: String) -> anyhow::Result<()> {
