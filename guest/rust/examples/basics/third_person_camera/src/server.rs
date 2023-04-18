@@ -2,7 +2,7 @@ use ambient_api::{
     components::core::{
         physics::{
             character_controller_height, character_controller_radius, physics_controlled,
-            plane_collider, sphere_collider, visualizing,
+            plane_collider, sphere_collider,
         },
         player::player,
         primitives::{cube, quad},
@@ -28,9 +28,8 @@ pub fn main() {
     Entity::new()
         .with_merge(make_transformable())
         .with_merge(make_sphere())
-        .with(sphere_collider(), 1.)
+        .with(sphere_collider(), 0.5)
         .with(translation(), vec3(5., 5., 1.))
-        .with_default(visualizing())
         .spawn();
 
     spawn_query(player()).bind(move |players| {
@@ -43,8 +42,7 @@ pub fn main() {
                     .with(color(), Vec4::ONE)
                     .with(character_controller_height(), 2.)
                     .with(character_controller_radius(), 0.5)
-                    .with_default(physics_controlled())
-                    .with_default(visualizing()),
+                    .with_default(physics_controlled()),
             );
         }
     });
