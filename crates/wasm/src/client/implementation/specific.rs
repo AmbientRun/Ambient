@@ -3,7 +3,13 @@
 //! If implementing a trait that is also available on the server, it should go in [super].
 
 use ambient_audio::AudioFromUrl;
-use ambient_core::{asset_cache, async_ecs::async_run, player::local_user_id, runtime};
+use ambient_core::{
+    asset_cache,
+    async_ecs::async_run,
+    player::local_user_id,
+    runtime,
+    window::{window_ctl, WindowCtl},
+};
 use ambient_input::{player_prev_raw_input, player_raw_input};
 use ambient_network::client::game_client;
 use ambient_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl};
@@ -179,6 +185,14 @@ impl wit::client_audio::Host for Bindings {
                 };
             });
         });
+        Ok(())
+    }
+}
+impl wit::client_window::Host for Bindings {
+    fn set_fullscreen(&mut self, fullscreen: bool) -> anyhow::Result<()> {
+        self.world_mut()
+            .resource(window_ctl())
+            .send(WindowCtl::SetFullscreen(fullscreen))?;
         Ok(())
     }
 }

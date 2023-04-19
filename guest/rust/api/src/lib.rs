@@ -26,6 +26,9 @@ pub mod input;
 pub mod message;
 /// Player-specific functionality.
 pub mod player;
+/// Window-specific functionality.
+#[cfg(feature = "client")]
+pub mod window;
 
 /// Helper functions for the camera.
 #[cfg(feature = "client")]

@@ -1,0 +1,3 @@
+default interface client-window {
+    set-fullscreen: func(fullscreen: bool)
+}

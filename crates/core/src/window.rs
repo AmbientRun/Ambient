@@ -32,4 +32,5 @@ pub enum WindowCtl {
     SetCursorIcon(CursorIcon),
     ShowCursor(bool),
     SetTitle(String),
+    SetFullscreen(bool),
 }

@@ -37,7 +37,7 @@ use renderers::{examples_renderer, ui_renderer, UIRender};
 use winit::{
     event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
-    window::{Window, WindowBuilder},
+    window::{Fullscreen, Window, WindowBuilder},
 };
 
 use crate::renderers::ExamplesRender;
@@ -537,6 +537,11 @@ impl App {
                         WindowCtl::SetTitle(title) => {
                             if let Some(window) = &self.window {
                                 window.set_title(&title);
+                            }
+                        }
+                        WindowCtl::SetFullscreen(fullscreen) => {
+                            if let Some(window) = &self.window {
+                                window.set_fullscreen(if fullscreen { Some(Fullscreen::Borderless(None)) } else { None });
                             }
                         }
                     }
