@@ -2,7 +2,7 @@ use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_editor_derive::ElementEditor;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
-use ambient_ui::*;
+use ambient_ui_native::*;
 use glam::*;
 
 #[derive(Debug, Clone, Default, ElementEditor)]

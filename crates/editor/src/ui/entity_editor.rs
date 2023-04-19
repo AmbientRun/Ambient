@@ -13,7 +13,7 @@ use ambient_intent::client_push_intent;
 use ambient_network::{client::GameClient, hooks::use_remote_component};
 use ambient_physics::collider::{character_controller_height, character_controller_radius, collider_type, mass};
 use ambient_std::{cb, Cb};
-use ambient_ui::{
+use ambient_ui_native::{
     align_horizontal, align_vertical,
     layout::{fit_horizontal, margin, Borders, Fit},
     space_between_items, Align, Button, ButtonStyle, DropdownSelect, Editor, EditorPrompt, FlowColumn, FlowRow, ScreenContainer, StylesExt,

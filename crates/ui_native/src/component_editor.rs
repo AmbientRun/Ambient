@@ -6,7 +6,7 @@ use ambient_ecs::{AttributeConstructor, Component, ComponentAttribute, Component
 use ambient_element::Element;
 use ambient_renderer::{cast_shadows, color, overlay};
 use ambient_std::cb;
-use ambient_ui_components::editor::{ChangeCb, Editor, EditorOpts};
+use ambient_ui::editor::{ChangeCb, Editor, EditorOpts};
 
 type EditFn<T> = fn(ComponentEntryEditor, ChangeCb<T>, EditorOpts) -> Element;
 type ViewFn = fn(ComponentEntryEditor, EditorOpts) -> Element;
@@ -82,7 +82,7 @@ where
     }
 }
 
-/// Adds the `Editable` attribute to multiple components where depending on `ambient_ui` is not
+/// Adds the `Editable` attribute to multiple components where depending on `ambient_ui_native` is not
 /// possible.
 pub fn hydrate_editable() {
     fn set<T: ComponentValue + Editor>(component: Component<T>) {

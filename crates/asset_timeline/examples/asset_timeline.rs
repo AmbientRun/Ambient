@@ -8,7 +8,7 @@ use ambient_ecs::World;
 use ambient_element::{ElementComponentExt, Group};
 use ambient_std::asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt};
 use ambient_sys::task::JoinHandle;
-use ambient_ui::{Button, FocusRoot, WindowSized};
+use ambient_ui_native::{Button, FocusRoot, WindowSized};
 use async_trait::async_trait;
 
 #[derive(PartialEq, Eq, Debug)]

@@ -8,7 +8,7 @@ edition = "2021"
 
 [dependencies]
 ambient_asset_cache = { path = "../asset_cache" }
-ambient_ui = { path = "../ui" }
+ambient_ui_native = { path = "../ui_native" }
 ambient_ecs = { path = "../ecs" }
 ambient_renderer = { path = "../renderer" }
 ambient_gpu = { path = "../gpu" }

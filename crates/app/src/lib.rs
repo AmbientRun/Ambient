@@ -63,7 +63,7 @@ pub fn init_all_components() {
     ambient_cameras::init_all_components();
     init_components();
     ambient_renderer::init_all_components();
-    ambient_ui::init_all_components();
+    ambient_ui_native::init_all_components();
     ambient_input::init_all_components();
     ambient_model::init_components();
     ambient_cameras::init_all_components();
@@ -80,7 +80,7 @@ pub fn gpu_world_sync_systems() -> SystemGroup<GpuWorldSyncEvent> {
             Box::new(ambient_core::transform::transform_gpu_systems()),
             Box::new(ambient_renderer::gpu_world_systems()),
             Box::new(ambient_core::bounding::gpu_world_systems()),
-            Box::new(ambient_ui::layout::gpu_world_systems()),
+            Box::new(ambient_ui_native::layout::gpu_world_systems()),
         ],
     )
 }
@@ -97,7 +97,7 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
             Box::new(lod_system()),
             Box::new(ambient_renderer::systems()),
             Box::new(ambient_system()),
-            if full { Box::new(ambient_ui::systems()) } else { Box::new(DummySystem) },
+            if full { Box::new(ambient_ui_native::systems()) } else { Box::new(DummySystem) },
             Box::new(ambient_model::model_systems()),
             Box::new(ambient_animation::animation_systems()),
             Box::new(TransformSystem::new()),

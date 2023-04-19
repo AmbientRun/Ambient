@@ -16,7 +16,7 @@ use glam::{vec2, vec3, Quat, Vec2, Vec3, Vec4};
 use itertools::Itertools;
 
 use crate::{height, mesh_to_local_from_size, width, Text, UIBase};
-use ambient_ui_components::Rectangle;
+use ambient_ui::Rectangle;
 
 #[derive(Copy, Debug, Clone)]
 pub struct GraphStyle {

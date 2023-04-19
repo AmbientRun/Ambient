@@ -16,7 +16,7 @@ use ambient_ecs::{
 };
 use ambient_gizmos::{gizmos, GizmoPrimitive};
 use ambient_std::line_hash;
-use ambient_ui::{
+use ambient_ui_native::{
     background_color,
     rect::{line_from, line_to, line_width},
 };

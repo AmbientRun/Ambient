@@ -20,7 +20,7 @@ use ambient_std::{
     fps_counter::FpsSample,
     to_byte_unit, CallbackFn, Cb,
 };
-use ambient_ui::{Button, Centered, FlowColumn, FlowRow, Image, MeasureSize, Text, Throbber};
+use ambient_ui_native::{Button, Centered, FlowColumn, FlowRow, Image, MeasureSize, Text, Throbber};
 use anyhow::Context;
 use bytes::Bytes;
 use glam::{uvec2, UVec2};

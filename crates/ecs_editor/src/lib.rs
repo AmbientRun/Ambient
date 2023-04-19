@@ -4,7 +4,7 @@ use ambient_ecs::{with_component_registry, ComponentDesc, Entity, EntityId, Quer
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::color;
 use ambient_std::{cb, Cb};
-use ambient_ui::{fit_horizontal, space_between_items, Button, ButtonStyle, Fit, FlowColumn, FlowRow, Text, UIExt, STREET};
+use ambient_ui_native::{fit_horizontal, space_between_items, Button, ButtonStyle, Fit, FlowColumn, FlowRow, Text, UIExt, STREET};
 use glam::{vec4, Vec4};
 use itertools::Itertools;
 

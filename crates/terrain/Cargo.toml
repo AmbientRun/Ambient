@@ -17,7 +17,7 @@ ambient_core = { path = "../core" }
 ambient_meshes = { path = "../meshes" }
 ambient_element = { path = "../../shared_crates/element" }
 ambient_renderer = { path = "../renderer" }
-ambient_ui = { path = "../ui" }
+ambient_ui_native = { path = "../ui_native" }
 ambient_network = { path = "../network" }
 ambient_intent = { path = "../intent" }
 ambient_physics = { path = "../physics" }

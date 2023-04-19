@@ -10,7 +10,7 @@ use ambient_std::{
     shapes::{Plane, Ray, RayIntersectable},
     Cb,
 };
-use ambient_ui::{space_between_items, Button, FlowRow, HighjackMouse, Hotkey, Separator, STREET};
+use ambient_ui_native::{space_between_items, Button, FlowRow, HighjackMouse, Hotkey, Separator, STREET};
 use anyhow::Context;
 use glam::{vec3, Mat4, Quat, Vec2, Vec3, Vec3Swizzles};
 use itertools::Itertools;

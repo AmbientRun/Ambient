@@ -170,7 +170,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_ui_components"
+name = "ambient_ui"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_cb",
@@ -267,7 +267,7 @@ name = "button"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_ui_components",
+ "ambient_ui",
 ]
 
 [[package]]
@@ -315,7 +315,7 @@ name = "counter"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_ui_components",
+ "ambient_ui",
 ]
 
 [[package]]
@@ -340,7 +340,7 @@ name = "dock_layout"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_ui_components",
+ "ambient_ui",
 ]
 
 [[package]]
@@ -375,7 +375,7 @@ name = "editors"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_ui_components",
+ "ambient_ui",
  "indexmap",
 ]
 
@@ -406,7 +406,7 @@ name = "flow_layout"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_ui_components",
+ "ambient_ui",
 ]
 
 [[package]]
@@ -414,7 +414,7 @@ name = "fog"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_ui_components",
+ "ambient_ui",
 ]
 
 [[package]]
@@ -978,7 +978,7 @@ name = "rect"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_ui_components",
+ "ambient_ui",
 ]
 
 [[package]]
@@ -1027,7 +1027,7 @@ version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
  "ambient_friendly_id",
- "ambient_ui_components",
+ "ambient_ui",
 ]
 
 [[package]]
@@ -1081,7 +1081,7 @@ name = "skinmesh"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_ui_components",
+ "ambient_ui",
 ]
 
 [[package]]
@@ -1098,7 +1098,7 @@ name = "slider"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_ui_components",
+ "ambient_ui",
 ]
 
 [[package]]
@@ -1152,7 +1152,7 @@ name = "text"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_ui_components",
+ "ambient_ui",
 ]
 
 [[package]]
@@ -1210,7 +1210,7 @@ name = "todo"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api",
- "ambient_ui_components",
+ "ambient_ui",
 ]
 
 [[package]]

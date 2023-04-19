@@ -33,7 +33,7 @@ ambient_layout = { path = "../crates/layout" }
 ambient_text = { path = "../crates/text" }
 ambient_wasm = { path = "../crates/wasm" }
 ambient_std = { path = "../crates/std" }
-ambient_ui = { path = "../crates/ui" }
+ambient_ui_native = { path = "../crates/ui_native" }
 ambient_world_audio = { path = "../crates/world_audio" }
 ambient_sky = { path = "../crates/sky" }
 ambient_water = { path = "../crates/water" }

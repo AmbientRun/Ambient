@@ -64,7 +64,7 @@ dependencies = [
  "ambient_model",
  "ambient_std",
  "ambient_sys",
- "ambient_ui",
+ "ambient_ui_native",
  "anyhow",
  "async-trait",
  "convert_case 0.6.0",
@@ -91,7 +91,7 @@ dependencies = [
  "ambient_renderer",
  "ambient_std",
  "ambient_sys",
- "ambient_ui",
+ "ambient_ui_native",
  "anyhow",
  "flume",
  "glam",
@@ -390,7 +390,7 @@ dependencies = [
  "ambient_renderer",
  "ambient_std",
  "ambient_sys",
- "ambient_ui",
+ "ambient_ui_native",
  "anyhow",
  "async-trait",
  "bytemuck",
@@ -600,7 +600,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_ui"
+name = "ambient_ui_native"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_core",
@@ -617,7 +617,6 @@ dependencies = [
  "ambient_std",
  "ambient_sys",
  "ambient_text",
- "ambient_ui_components",
  "anyhow",
  "arboard",
  "async-trait",
@@ -641,7 +640,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_ui_components"
+name = "ambient_ui"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_cb",
@@ -675,7 +674,7 @@ dependencies = [
  "ambient_renderer",
  "ambient_std",
  "ambient_sys",
- "ambient_ui",
+ "ambient_ui_native",
  "anyhow",
  "chrono",
  "futures",

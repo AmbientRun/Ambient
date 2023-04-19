@@ -4,7 +4,7 @@ use ambient_audio::{hrtf::HrtfLib, Attenuation, AudioEmitter, AudioListener, Aud
 use ambient_ecs::{components, query, EntityId, Resource, World};
 use ambient_element::ElementComponentExt;
 use ambient_std::{cb, Cb};
-use ambient_ui::{
+use ambient_ui_native::{
     graph::{Graph, GraphStyle},
     Editor, FlowColumn,
 };
@@ -38,7 +38,7 @@ pub enum AudioMessage {
 pub struct AttenuationEditorVisual(Attenuation);
 
 impl Editor for AttenuationEditorVisual {
-    fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, opts: ambient_ui::EditorOpts) -> ambient_element::Element {
+    fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, opts: ambient_ui_native::EditorOpts) -> ambient_element::Element {
         let editor = Attenuation::editor(*self, cb(move |v| on_change(v.into())), opts);
 
         let x_max = self.inverse(0.01);

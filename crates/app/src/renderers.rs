@@ -11,7 +11,7 @@ use ambient_gpu::{
 };
 use ambient_renderer::{renderer_stats, RenderTarget, Renderer, RendererConfig, RendererTarget};
 use ambient_std::{asset_cache::SyncAssetKeyExt, color::Color};
-use ambient_ui::app_background_color;
+use ambient_ui_native::app_background_color;
 use glam::{uvec2, UVec2};
 use parking_lot::Mutex;
 use wgpu::FilterMode;

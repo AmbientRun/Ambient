@@ -17,7 +17,7 @@ use ambient_renderer::{RenderTarget, Renderer};
 use ambient_rpc::RpcRegistry;
 use ambient_shared_types::{ModifiersState, VirtualKeyCode};
 use ambient_std::{asset_cache::SyncAssetKeyExt, color::Color, download_asset::AssetsCacheDir, line_hash, Cb};
-use ambient_ui::{
+use ambient_ui_native::{
     fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit, FlowColumn, FlowRow, Image, UIExt,
 };
 use glam::Vec3;

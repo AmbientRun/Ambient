@@ -4,7 +4,7 @@ use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_ecs::generated::messages;
 use ambient_element::{ElementComponent, ElementComponentExt};
-use ambient_ui::{padding, space_between_items, Borders, Button, Cb, FlowColumn, FlowRow, Text, STREET};
+use ambient_ui_native::{padding, space_between_items, Borders, Button, Cb, FlowColumn, FlowRow, Text, STREET};
 use tracing_subscriber::EnvFilter;
 
 #[derive(Debug, Clone)]

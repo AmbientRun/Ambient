@@ -18,7 +18,9 @@ pub(crate) const MAX_SPEED: f32 = 5.0;
 /// radians/block
 pub(crate) const MAX_ANGULAR_SPEED: f32 = 0.5;
 
-#[derive(Copy, Debug, Clone, serde::Serialize, serde::Deserialize, ambient_ui::ElementEditor)]
+#[derive(
+    Copy, Debug, Clone, serde::Serialize, serde::Deserialize, ambient_ui_native::ElementEditor,
+)]
 pub struct AudioEmitter {
     pub amplitude: f32,
     pub pos: Vec3,
@@ -67,7 +69,7 @@ impl AudioListener {
 ///
 /// See:
 /// https://www.desmos.com/calculator/mpbzwayz5f
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, ambient_ui::ElementEditor)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, ambient_ui_native::ElementEditor)]
 pub enum Attenuation {
     /// 1/(ax^2)
     #[editor("Inverse polynomial 1 / ({a}*x^2 + {b}*x + {c}")]
