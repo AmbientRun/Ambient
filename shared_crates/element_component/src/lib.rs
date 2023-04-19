@@ -27,9 +27,8 @@ use quote::{quote, ToTokens};
 /// ```ignore
 /// #[derive(std::clone::Clone, std::fmt::Debug)]
 /// pub struct FancyText {
-///     pub
 ///     /// The message to display
-///     msg: String,
+///     pub msg: String,
 ///     pub alpha: f32,
 /// }
 /// impl ambient_element::ElementComponent for FancyText {
@@ -145,14 +144,28 @@ fn do_derive_element_component(input: TokenStream, item: TokenStream) -> TokenSt
     }
     check_type_is_mut_ref(get_pat_type(&hooks[0]).unwrap().ty.as_ref(), "Hooks");
 
-    let struct_body = if props.is_empty() {
+    let pub_props = props
+        .iter()
+        .flat_map(get_pat_type)
+        .map(|pt| {
+            let attrs = &pt.attrs;
+            let pat = pt.pat.as_ref();
+            let ty = pt.ty.as_ref();
+            quote! {
+                #(#attrs)*
+                pub #pat: #ty
+            }
+        })
+        .collect_vec();
+
+    let struct_body = if pub_props.is_empty() {
         quote! {
             ;
         }
     } else {
         quote! {
             {
-                #(pub #props,)*
+                #(#pub_props,)*
             }
         }
     };
@@ -165,10 +178,21 @@ fn do_derive_element_component(input: TokenStream, item: TokenStream) -> TokenSt
     };
 
     let el_block = with_el.then(|| {
+        let args = props
+            .iter()
+            .flat_map(get_pat_type)
+            .map(|pt| {
+                let pat = pt.pat.as_ref();
+                let ty = pt.ty.as_ref();
+                quote! { #pat: #ty }
+            })
+            .collect_vec();
+
         quote! {
             impl #generic_params #name #generic_idents #where_clause {
                 #[allow(clippy::too_many_arguments)]
-                pub fn el(#(#props),*) -> ambient_element::Element {
+                /// Create an `Element` from this component.
+                pub fn el(#(#args),*) -> ambient_element::Element {
                     use ambient_element::ElementComponentExt;
                     Self #props_names_braced .el()
                 }
@@ -274,6 +298,7 @@ mod test {
             }
             impl ZeroArg {
                 #[allow(clippy::too_many_arguments)]
+                /// Create an `Element` from this component.
                 pub fn el() -> ambient_element::Element {
                     use ambient_element::ElementComponentExt;
                     Self.el()
@@ -299,9 +324,8 @@ mod test {
         let output = quote! {
             #[derive(std::clone::Clone, std::fmt::Debug)]
             pub struct FancyText {
-                pub
                 /// The message to display
-                msg: String,
+                pub msg: String,
             }
             impl ambient_element::ElementComponent for FancyText {
                 fn render(self: Box<Self>,  _: &mut ambient_element::Hooks) -> ambient_element::Element {
@@ -311,9 +335,17 @@ mod test {
                     }
                 }
             }
+            impl FancyText {
+                #[allow(clippy::too_many_arguments)]
+                /// Create an `Element` from this component.
+                pub fn el(msg: String) -> ambient_element::Element {
+                    use ambient_element::ElementComponentExt;
+                    Self { msg } .el()
+                }
+            }
         };
 
-        assert_eq!(super::do_derive_element_component(quote! {without_el}, input).to_string(), output.to_string());
+        assert_eq!(super::do_derive_element_component(quote! {}, input).to_string(), output.to_string());
     }
 
     #[test]
@@ -372,6 +404,7 @@ mod test {
             }
             impl Choice {
                 #[allow(clippy::too_many_arguments)]
+                /// Create an `Element` from this component.
                 pub fn el(msg: CowStr, choices: Vec<(CowStr, WorldCallback)>, post: WorldCallback) -> ambient_element::Element {
                     use ambient_element::ElementComponentExt;
                     Self { msg, choices, post }.el()
@@ -443,6 +476,7 @@ mod test {
             }
             impl<T1: Debug + 'static, T2> GenericComponent<T1, T2> where T2: Debug + 'static {
                 #[allow(clippy::too_many_arguments)]
+                /// Create an `Element` from this component.
                 pub fn el(a: T1, b: T2) -> ambient_element::Element {
                     use ambient_element::ElementComponentExt;
                     Self { a, b }.el()

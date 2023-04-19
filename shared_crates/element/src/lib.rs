@@ -209,6 +209,7 @@ pub fn ambient_system() -> SystemGroup {
 macro_rules! define_el_function_for_vec_element_newtype {
     ($type:ty) => {
         impl $type {
+            /// Creates an [Element] of this type from a vector of [Element]s
             pub fn el(contents: impl std::iter::IntoIterator<Item = Element>) -> Element {
                 Self(contents.into_iter().collect()).el()
             }
@@ -219,7 +220,8 @@ macro_rules! define_el_function_for_vec_element_newtype {
 #[cfg(feature = "native")]
 pub fn render_parented_with_component(world: &mut World, id: EntityId, handle: Component<ShareableElementTree>, mut element: Element) {
     use ambient_core::{
-        hierarchy::{children, parent}, transform::{local_to_parent, local_to_world}
+        hierarchy::{children, parent},
+        transform::{local_to_parent, local_to_world},
     };
     element = element.with(parent(), id);
     if !element.has_component(local_to_parent()) {
