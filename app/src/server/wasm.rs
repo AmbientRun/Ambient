@@ -1,8 +1,8 @@
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::{collections::HashMap, path::{PathBuf, Component}, sync::Arc, borrow::Cow};
 
 use ambient_ecs::{EntityId, SystemGroup, World};
 use ambient_project::Identifier;
-use ambient_std::asset_url::ASSETS_PROTOCOL_SCHEME;
+use ambient_std::asset_url::AbsAssetUrl;
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{
     client_bytecode_from_url, get_module_name, module_bytecode, remote_paired_id, spawn_module, MessageType, ModuleBytecode,
@@ -63,7 +63,16 @@ pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_p
 
             if target == "client" {
                 let relative_path = path.strip_prefix(&build_dir)?;
-                let bytecode_url = format!("{}:/{}", ASSETS_PROTOCOL_SCHEME, relative_path.to_string_lossy());
+                let asset_key: String = itertools::Itertools::intersperse(
+                    relative_path
+                        .components()
+                        .map(|c| match c {
+                            Component::Normal(c) => c.to_string_lossy(),
+                            _ => unreachable!(),
+                        }),
+                    Cow::Borrowed("/"),
+                ).collect();
+                let bytecode_url = AbsAssetUrl::from_asset_key(asset_key).to_string();
                 world.add_component(id, client_bytecode_from_url(), bytecode_url)?;
             } else {
                 let bytecode = std::fs::read(path)?;

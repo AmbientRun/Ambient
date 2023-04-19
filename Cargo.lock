@@ -145,6 +145,7 @@ dependencies = [
  "glam 0.22.0",
  "image",
  "image_hasher",
+ "itertools",
  "local-ip-address",
  "log",
  "parking_lot",
