@@ -6,7 +6,7 @@ use ambient_api::{
     entity::{AnimationAction, AnimationController},
     prelude::*,
 };
-use ambient_ui_components::prelude::*;
+use ambient_ui::prelude::*;
 
 #[main]
 pub fn main() {

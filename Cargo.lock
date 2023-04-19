@@ -1337,7 +1337,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_ui_components"
+name = "ambient_ui"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_cb",
@@ -1379,7 +1379,7 @@ dependencies = [
  "ambient_std",
  "ambient_sys",
  "ambient_text",
- "ambient_ui_components",
+ "ambient_ui",
  "anyhow",
  "arboard",
  "async-trait",

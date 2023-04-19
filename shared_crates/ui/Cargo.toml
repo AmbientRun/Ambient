@@ -1,5 +1,5 @@
 [package]
-name = "ambient_ui_components"
+name = "ambient_ui"
 version = { workspace = true }
 edition = "2021"
 
