@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ambient_audio::{hrtf::HrtfLib, Attenuation, AudioEmitter, AudioListener, AudioMixer, Sound, Source};
+use ambient_audio::{hrtf::HrtfLib, Attenuation, AudioEmitter, AudioListener, AudioMixer, Sound, SoundId, Source};
 use ambient_ecs::{components, query, EntityId, Resource, World};
 use ambient_element::ElementComponentExt;
 use ambient_std::{cb, Cb};
@@ -31,6 +31,13 @@ pub enum AudioMessage {
     UpdateVolume(String, f32),
     Stop(String),
     StopById(u32),
+}
+
+pub struct SoundInfo {
+    pub url: String,
+    pub looping: bool,
+    pub gain: Arc<Mutex<f32>>,
+    pub id: SoundId,
 }
 
 /// TODO: hook this into the Attenuation inside ambient_audio

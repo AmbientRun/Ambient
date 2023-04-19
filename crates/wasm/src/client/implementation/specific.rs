@@ -161,7 +161,7 @@ impl wit::client_audio::Host for Bindings {
         Ok(())
     }
 
-    fn play(&mut self, url: String, looping: bool, amp: f32, uid: u32) -> anyhow::Result<()> {
+    fn play(&mut self, url: String, looping: bool, volume: f32, uid: u32) -> anyhow::Result<()> {
         let world = self.world();
         let assets = world.resource(asset_cache()).clone();
         let asset_url = AbsAssetUrl::from_asset_key(url).to_string();
@@ -180,7 +180,7 @@ impl wit::client_audio::Host for Bindings {
                             .send(AudioMessage::Track(
                                 track,
                                 looping,
-                                amp,
+                                volume,
                                 asset_url.replace("ambient-assets:/", ""),
                                 uid,
                             ))
@@ -206,14 +206,16 @@ impl wit::client_audio::Host for Bindings {
         Ok(())
     }
 
-    fn set_amp(&mut self, url: String, amp: f32) -> anyhow::Result<()> {
+    fn set_volume(&mut self, url: String, volume: f32) -> anyhow::Result<()> {
         let world = self.world();
         let runtime = world.resource(runtime()).clone();
         let async_run = world.resource(async_run()).clone();
         runtime.spawn(async move {
             async_run.run(move |world| {
                 let sender = world.resource(audio_sender());
-                sender.send(AudioMessage::UpdateVolume(url, amp)).unwrap();
+                sender
+                    .send(AudioMessage::UpdateVolume(url, volume))
+                    .unwrap();
             });
         });
         Ok(())

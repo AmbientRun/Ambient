@@ -1,7 +1,7 @@
 use ambient_audio::Source;
 use ambient_ecs::{EntityId, SystemGroup, World};
 use ambient_wasm::shared::{get_module_name, MessageType};
-use ambient_world_audio::{audio_sender, AudioMessage};
+use ambient_world_audio::{audio_sender, AudioMessage, SoundInfo};
 use flume::{Receiver, Sender};
 use parking_lot::Mutex;
 use std::sync::Arc;
@@ -28,7 +28,7 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
 
     std::thread::spawn(move || {
         let stream = ambient_audio::AudioStream::new().unwrap();
-        let mut sound_info = std::collections::HashMap::new();
+        let mut sound_info_lib = std::collections::HashMap::new();
         while let Ok(message) = rx.recv() {
             match message {
                 AudioMessage::Track(t, looping, amp, url, uid) => {
@@ -40,12 +40,13 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                         false => stream.mixer().play(t.decode().gain(gain_clone)),
                     };
                     sound.wait();
-                    sound_info.insert(uid, (url, looping, gain, sound.id));
+                    let sound_info = SoundInfo { url, looping, gain, id: sound.id };
+                    sound_info_lib.insert(uid, sound_info);
                 }
                 AudioMessage::UpdateVolume(target_url, amp) => {
-                    for (_, (url, _, gain, _)) in sound_info.iter_mut() {
-                        if url == &target_url {
-                            let mut gain_locked = gain.lock();
+                    for (_, info) in sound_info_lib.iter_mut() {
+                        if info.url == target_url {
+                            let mut gain_locked = info.gain.lock();
                             *gain_locked = amp;
                         }
                     }
@@ -54,24 +55,23 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                 AudioMessage::Stop(target_url) => {
                     let mut keys_to_remove: Vec<u32> = Vec::new();
 
-                    for (key, value) in sound_info.iter() {
-                        let (url, _, _, _) = value;
-                        if url == &target_url {
+                    for (key, info) in sound_info_lib.iter() {
+                        if info.url == target_url {
                             keys_to_remove.push(*key);
                         }
                     }
 
                     for key in keys_to_remove {
-                        let value = sound_info.remove(&key);
-                        if let Some((_, _, _, sound_id)) = value {
-                            stream.mixer().stop(sound_id);
+                        let info = sound_info_lib.remove(&key);
+                        if let Some(info) = info {
+                            stream.mixer().stop(info.id);
                         }
                     }
                     log::info!("Stopped all sounds with url {}", target_url);
                 }
                 AudioMessage::StopById(uid) => {
-                    let (_, _, _, id) = match sound_info.remove(&uid) {
-                        Some(id) => id,
+                    let id = match sound_info_lib.remove(&uid) {
+                        Some(info) => info.id,
                         None => {
                             log::error!("No sound with id {}", uid);
                             continue;

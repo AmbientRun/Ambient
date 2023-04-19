@@ -31,7 +31,7 @@ impl AudioTrack {
     /// Set the volume of the track.
     pub fn volume(&mut self, volume: f32) -> &mut Self {
         self.volume = volume;
-        wit::client_audio::set_amp(&self.name, volume);
+        wit::client_audio::set_volume(&self.name, volume);
         self
     }
 

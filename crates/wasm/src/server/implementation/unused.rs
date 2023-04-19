@@ -54,13 +54,19 @@ impl wit::client_audio::Host for Bindings {
     fn load(&mut self, _url: String) -> anyhow::Result<()> {
         unsupported()
     }
-    fn play(&mut self, _name: String, _looping: bool, _amp: f32, _uid: u32) -> anyhow::Result<()> {
+    fn play(
+        &mut self,
+        _name: String,
+        _looping: bool,
+        _volume: f32,
+        _uid: u32,
+    ) -> anyhow::Result<()> {
         unsupported()
     }
     fn stop(&mut self, _name: String) -> anyhow::Result<()> {
         unsupported()
     }
-    fn set_amp(&mut self, _name: String, _amp: f32) -> anyhow::Result<()> {
+    fn set_volume(&mut self, _name: String, _volume: f32) -> anyhow::Result<()> {
         unsupported()
     }
     fn stop_by_id(&mut self, _id: u32) -> anyhow::Result<()> {
@@ -68,7 +74,7 @@ impl wit::client_audio::Host for Bindings {
     }
 }
 impl wit::client_window::Host for Bindings {
-    fn set_fullscreen(&mut self, fullscreen: bool) -> anyhow::Result<()> {
+    fn set_fullscreen(&mut self, _fullscreen: bool) -> anyhow::Result<()> {
         unsupported()
     }
 }
