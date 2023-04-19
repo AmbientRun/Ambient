@@ -8,7 +8,6 @@ version = {workspace = true}
 
 [dependencies]
 ambient_api = {workspace = true}
-ambient_ui = {workspace = true}
 
 [[bin]]
 name = "client_fog"
