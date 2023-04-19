@@ -101,7 +101,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - run: cd guest/rust/api/api_macros && cargo publish
+      - run: cd guest/rust/api_core/api_macros && cargo publish
+      - run: cd guest/rust/api_core && cargo publish
       - run: cd guest/rust/api && cargo publish
 
   publish-release:
