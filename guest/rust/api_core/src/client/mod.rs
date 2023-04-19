@@ -6,3 +6,6 @@ pub mod input;
 
 /// **\[Client-only\]** Helper functions for the camera.
 pub mod camera;
+
+/// **\[Client-only\]** Window-specific functionality.
+pub mod window;

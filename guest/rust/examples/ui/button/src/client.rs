@@ -11,7 +11,9 @@ fn App(_hooks: &mut Hooks) -> Element {
 
     FlowRow(vec![
         FlowColumn(vec![
-            Button::new("Regular", |_| {}).el(),
+            Button::new("Regular", |_| println!("Regular pressed"))
+                .hotkey(VirtualKeyCode::Space)
+                .el(),
             Button::new("Primary", |_| {})
                 .style(ButtonStyle::Primary)
                 .tooltip(Text::el("Tooltip"))

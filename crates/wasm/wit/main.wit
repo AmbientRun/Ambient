@@ -12,6 +12,7 @@ world bindings {
     import client-player: pkg.client-player
     import client-input: pkg.client-input
     import client-camera: pkg.client-camera
+    import client-window: pkg.client-window
 
     import server-physics: pkg.server-physics
     import server-message: pkg.server-message
