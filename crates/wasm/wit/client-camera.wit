@@ -3,4 +3,5 @@ default interface client-camera {
 
     clip-space-ray: func(camera: entity-id, clip-space-pos: vec2) -> ray
     screen-to-clip-space: func(screen-pos: vec2) -> vec2
+    screen-to-world-direction: func(camera: entity-id, screen-pos: vec2) -> ray
 }
