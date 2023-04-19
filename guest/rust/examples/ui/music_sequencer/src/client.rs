@@ -2,9 +2,8 @@ use ambient_api::prelude::*;
 use ambient_ui_components::prelude::*;
 use components::{cursor, note_selection};
 
-#[element_component]
-fn App(hooks: &mut Hooks) -> Element {
-    let card_inner = |selected, highlight, _row| {
+fn make_row(text: &str, note_selection_now: &Vec<bool>, cursor_now: u8, pos: u8) -> Element {
+    let card_inner = |selected: bool, highlight: bool| {
         FlowRow(vec![Text::el("")])
             .el()
             .with_background(match highlight {
@@ -13,48 +12,21 @@ fn App(hooks: &mut Hooks) -> Element {
             })
             .with_padding_even(20.)
     };
-    let items = hooks.use_query((note_selection(), cursor()));
-
-    let (_id, (_note_selection, _cursor)) = &items[0];
-
     FlowColumn::el(vec![
+        Text::el(text),
         FlowRow::el(
-            _note_selection[0..16]
+            note_selection_now[pos as usize..pos as usize + 16]
                 .iter()
                 .enumerate()
                 .map(|(index, &selected)| {
-                    let is_on_cursor = *_cursor == index as u8;
+                    let is_on_cursor = cursor_now == index as u8;
                     let row = 0;
-                    FlowRow::el([
-                        Button::new(card_inner(selected, is_on_cursor, row), move |_| {
-                            messages::Click::new(index as u8).send_server_reliable();
-                        })
-                        .toggled(selected)
-                        .style(ButtonStyle::Card)
-                        .el(),
-                    ])
-                }),
-        )
-        .with_background(vec4(0.1, 0.1, 0.1, 1.))
-        .with_default(fit_vertical_children())
-        .with_default(fit_horizontal_children())
-        .with_padding_even(10.)
-        .with(space_between_items(), 2.),
-        FlowRow::el(
-            _note_selection[16..32]
-                .iter()
-                .enumerate()
-                .map(|(index, &selected)| {
-                    let is_on_cursor = *_cursor == index as u8;
-                    let row = 1;
-                    FlowRow::el([
-                        Button::new(card_inner(selected, is_on_cursor, row), move |_| {
-                            messages::Click::new(index as u8 + 16).send_server_reliable();
-                        })
-                        .toggled(selected)
-                        .style(ButtonStyle::Card)
-                        .el(),
-                    ])
+                    FlowRow::el([Button::new(card_inner(selected, is_on_cursor), move |_| {
+                        messages::Click::new(index as u8 + pos).send_server_reliable();
+                    })
+                    .toggled(selected)
+                    .style(ButtonStyle::Card)
+                    .el()])
                 }),
         )
         .with_background(vec4(0.1, 0.1, 0.1, 1.))
@@ -65,18 +37,40 @@ fn App(hooks: &mut Hooks) -> Element {
     ])
 }
 
+#[element_component]
+fn App(hooks: &mut Hooks) -> Element {
+    let items = hooks.use_query((note_selection(), cursor()));
+
+    let (_id, (note_selection_now, cursor_now)) = &items[0];
+
+    FlowColumn::el(vec![
+        make_row("Kick Drum", note_selection_now, *cursor_now, 0),
+        make_row("Snare Drum", note_selection_now, *cursor_now, 16),
+        make_row("Closed Hihat", note_selection_now, *cursor_now, 32),
+        make_row("Open Hihat", note_selection_now, *cursor_now, 48),
+        make_row("Low Conga", note_selection_now, *cursor_now, 64),
+        make_row("Mid Conga", note_selection_now, *cursor_now, 80),
+        make_row("High Tom", note_selection_now, *cursor_now, 96),
+        make_row("Mid Tom", note_selection_now, *cursor_now, 112),
+    ])
+}
+
 #[main]
 pub fn main() {
     App.el().spawn_interactive();
     let mut bd = audio::load(asset::url("assets/BD2500.ogg").unwrap());
     let mut sd = audio::load(asset::url("assets/SD7550.ogg").unwrap());
-    messages::Play::subscribe(move |_source, data| match data.index {
-        0 => {
-            bd.play();
+    let mut ch = audio::load(asset::url("assets/CH.ogg").unwrap());
+    let mut oh = audio::load(asset::url("assets/OH75.ogg").unwrap());
+    let mut lc = audio::load(asset::url("assets/LC00.ogg").unwrap());
+    let mut mc = audio::load(asset::url("assets/MC00.ogg").unwrap());
+    let mut ht = audio::load(asset::url("assets/HT75.ogg").unwrap());
+    let mut mt = audio::load(asset::url("assets/MT75.ogg").unwrap());
+
+    messages::Play::subscribe(move |_source, data| {
+        let sounds = [&bd, &sd, &ch, &oh, &lc, &mc, &ht, &mt];
+        if let Some(sound) = sounds.get(data.index as usize) {
+            sound.play();
         }
-        1 => {
-            sd.play();
-        }
-        _ => {}
     });
 }

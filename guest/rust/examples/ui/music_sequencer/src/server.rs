@@ -5,7 +5,7 @@ use components::{note_selection, cursor};
 pub async fn main() {
     let mut value = 0_u8;
     let mother = Entity::new()
-    .with(note_selection(), vec![false; 32])
+    .with(note_selection(), vec![false; 128])
     .with(cursor(), 0)
     .spawn();
 
@@ -18,12 +18,12 @@ pub async fn main() {
         value = (value + 1) % 16;
         entity::set_component(mother, cursor(), value);
         let mut v = entity::get_component(mother, note_selection()).unwrap();
-        if v[value as usize] {
-            messages::Play::new(0_u8).send_client_broadcast_reliable();
-        };
-        if v[value as usize + 16] {
-            messages::Play::new(1_u8).send_client_broadcast_reliable();
-        };
+        for i in 0..8 {
+            let index = value as usize + i * 16;
+            if v[index] {
+                messages::Play::new(i as u8).send_client_broadcast_reliable();
+            }
+        }
         sleep(0.125).await;
     }
 }
