@@ -67,3 +67,8 @@ impl wit::client_audio::Host for Bindings {
         unsupported()
     }
 }
+impl wit::client_window::Host for Bindings {
+    fn set_fullscreen(&mut self, fullscreen: bool) -> anyhow::Result<()> {
+        unsupported()
+    }
+}

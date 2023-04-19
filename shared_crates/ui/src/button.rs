@@ -1,7 +1,10 @@
 use std::{
-    fmt::Debug, str::FromStr, sync::{
-        atomic::{AtomicBool, Ordering}, Arc
-    }
+    fmt::Debug,
+    str::FromStr,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
 };
 
 use ambient_cb::{cb, Callback, Cb};
@@ -10,9 +13,15 @@ use ambient_element::{element_component, to_owned, Element, ElementComponent, El
 use ambient_guest_bridge::{
     components::{
         layout::{
-            align_vertical_center, fit_horizontal_parent, height, margin_top, min_height, padding_bottom, padding_left, padding_right, padding_top, space_between_items
-        }, rect::{border_color, border_radius, border_thickness}, rendering::color, text::font_style
-    }, ecs::World, messages, run_async
+            align_vertical_center, fit_horizontal_parent, height, margin_top, min_height, padding_bottom, padding_left, padding_right,
+            padding_top, space_between_items,
+        },
+        rect::{border_color, border_radius, border_thickness},
+        rendering::color,
+        text::font_style,
+    },
+    ecs::World,
+    messages, run_async,
 };
 use ambient_shared_types::{CursorIcon, ModifiersState, VirtualKeyCode};
 use futures::{future::BoxFuture, Future, FutureExt};
@@ -20,7 +29,11 @@ use glam::*;
 use parking_lot::Mutex;
 
 use crate::{
-    default_theme::{cutout_color, primary_color, secondary_color}, dropdown::Tooltip, layout::{FlowColumn, FlowRow}, text::Text, UIBase, UIElement, UIExt
+    default_theme::{cutout_color, primary_color, secondary_color},
+    dropdown::Tooltip,
+    layout::{FlowColumn, FlowRow},
+    text::Text,
+    UIBase, UIElement, UIExt,
 };
 
 #[derive(Clone, Debug)]
@@ -390,20 +403,25 @@ impl ElementComponent for Hotkey {
         hooks.use_runtime_message::<messages::WindowKeyboardInput>({
             let is_pressed = is_pressed.clone();
             move |world, event| {
-                let pressed = event.pressed;
                 let modifiers = ModifiersState::from_bits(event.modifiers).unwrap();
 
                 // FIXME: get_ref returns `&T` on native, but `T` on guest
                 if let Some(virtual_keycode) = event.keycode.as_deref().and_then(|x| VirtualKeyCode::from_str(x).ok()) {
-                    let shortcut_pressed = modifiers == hotkey_modifier && virtual_keycode == hotkey;
-                    if shortcut_pressed {
-                        on_invoke.0(world);
-                        if pressed {
+                    if virtual_keycode != hotkey {
+                        return;
+                    }
+                    if event.pressed {
+                        if modifiers == hotkey_modifier {
                             if let Some(on_is_pressed_changed) = on_is_pressed_changed.clone() {
                                 on_is_pressed_changed.0(true);
                             }
                             is_pressed.store(true, Ordering::Relaxed);
-                        } else {
+                        }
+                    } else {
+                        let pressed = is_pressed.load(Ordering::Relaxed);
+
+                        if pressed {
+                            on_invoke.0(world);
                             if let Some(on_is_pressed_changed) = on_is_pressed_changed.clone() {
                                 on_is_pressed_changed.0(false);
                             }
