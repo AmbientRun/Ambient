@@ -40,3 +40,24 @@ pub fn normalize(path: &Path) -> PathBuf {
     }
     ret
 }
+
+/// Convert a path to a string using `/` as a separator independent of the platform.
+#[cfg(feature = "uncategorized")]
+pub fn path_to_unix_string(path: impl AsRef<Path>) -> String {
+    use std::borrow::Cow;
+    use std::path::Component;
+
+    itertools::Itertools::intersperse(
+        path
+            .as_ref()
+            .components()
+            .map(|c| match c {
+                Component::Prefix(..) => unreachable!(),
+                Component::RootDir => Cow::Borrowed(""),
+                Component::CurDir => Cow::Borrowed("."),
+                Component::ParentDir => Cow::Borrowed(".."),
+                Component::Normal(c) => c.to_string_lossy(),
+            }),
+        Cow::Borrowed("/"),
+    ).collect()
+}
