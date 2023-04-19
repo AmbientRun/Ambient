@@ -251,15 +251,31 @@ fn test_abs_asset_url() {
 fn test_abs_asset_url_join() {
     assert_eq!(AbsAssetUrl::parse("http://t.c/a/b/c.png").unwrap().join("d.png").unwrap().to_string(), "http://t.c/a/b/d.png");
     assert_eq!(AbsAssetUrl::parse("http://t.c/a/b/c.png/").unwrap().join("d.png").unwrap().to_string(), "http://t.c/a/b/c.png/d.png");
-    assert_eq!(AbsAssetUrl::parse(format!("{}:/a/b/c.png", ASSETS_PROTOCOL_SCHEME)).unwrap().join("d.png").unwrap().to_string(), format!("{}:/a/b/d.png", ASSETS_PROTOCOL_SCHEME));
-    assert_eq!(AbsAssetUrl::parse(format!("{}:/a/b/c.png/", ASSETS_PROTOCOL_SCHEME)).unwrap().join("d.png").unwrap().to_string(), format!("{}:/a/b/c.png/d.png", ASSETS_PROTOCOL_SCHEME));
+    assert_eq!(
+        AbsAssetUrl::parse(format!("{}:/a/b/c.png", ASSETS_PROTOCOL_SCHEME)).unwrap().join("d.png").unwrap().to_string(),
+        format!("{}:/a/b/d.png", ASSETS_PROTOCOL_SCHEME)
+    );
+    assert_eq!(
+        AbsAssetUrl::parse(format!("{}:/a/b/c.png/", ASSETS_PROTOCOL_SCHEME)).unwrap().join("d.png").unwrap().to_string(),
+        format!("{}:/a/b/c.png/d.png", ASSETS_PROTOCOL_SCHEME)
+    );
 }
 
 #[test]
 fn test_abs_asset_url_to_download_url() {
     let base_url = AbsAssetUrl::parse("http://t.c/content/").unwrap();
-    assert_eq!(AbsAssetUrl::parse(format!("{}:/a/b/c.png", ASSETS_PROTOCOL_SCHEME)).unwrap().to_download_url_with_base(&base_url).unwrap().to_string(), "http://t.c/content/a/b/c.png");
-    assert_eq!(AbsAssetUrl::parse("http://t.c/content/a/b/c.png").unwrap().to_download_url_with_base(&base_url).unwrap().to_string(), "http://t.c/content/a/b/c.png");
+    assert_eq!(
+        AbsAssetUrl::parse(format!("{}:/a/b/c.png", ASSETS_PROTOCOL_SCHEME))
+            .unwrap()
+            .to_download_url_with_base(&base_url)
+            .unwrap()
+            .to_string(),
+        "http://t.c/content/a/b/c.png"
+    );
+    assert_eq!(
+        AbsAssetUrl::parse("http://t.c/content/a/b/c.png").unwrap().to_download_url_with_base(&base_url).unwrap().to_string(),
+        "http://t.c/content/a/b/c.png"
+    );
 }
 
 /// This is either an absolute url (which can also be an absolute file:// url),
@@ -406,7 +422,7 @@ impl<'de> Deserialize<'de> for AssetUrl {
 /// we can render a correct editor ui when used in a ui context.
 ///
 /// An TypedAssetUrl will be rendered with a Browse button next to it in the UI,
-/// which takes you to the AssetBrowser. See `ambient_ui/src/asset_url` for
+/// which takes you to the AssetBrowser. See `ambient_ui_native/src/asset_url` for
 /// the UI implementation and `dims_asset_browser` for the asset browser implementation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(transparent)]

@@ -5,7 +5,7 @@ use ambient_ecs::{Entity, World};
 use ambient_ecs_editor::ECSEditor;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use ambient_std::cb;
-use ambient_ui::{FocusRoot, ScrollArea, WindowSized};
+use ambient_ui_native::{FocusRoot, ScrollArea, WindowSized};
 
 #[derive(Debug, Clone)]
 struct ECSEditorUIWorld;

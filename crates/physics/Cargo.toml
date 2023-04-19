@@ -9,7 +9,7 @@ edition = "2021"
 
 [dependencies]
 ambient_ecs = { path = "../ecs" }
-ambient_ui = { path = "../ui" }
+ambient_ui_native = { path = "../ui_native" }
 ambient_std = { path = "../std" }
 ambient_editor_derive = { path = "../../shared_crates/editor_derive" }
 ambient_core = { path = "../core" }

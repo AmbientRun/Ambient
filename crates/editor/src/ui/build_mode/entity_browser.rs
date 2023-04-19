@@ -8,7 +8,9 @@ use ambient_network::{
     rpc::rpc_world_diff,
 };
 use ambient_std::{cb, Cb};
-use ambient_ui::{fit_horizontal, space_between_items, Button, ButtonStyle, DialogScreen, Fit, FlowColumn, FlowRow, ScrollArea, STREET};
+use ambient_ui_native::{
+    fit_horizontal, space_between_items, Button, ButtonStyle, DialogScreen, Fit, FlowColumn, FlowRow, ScrollArea, STREET,
+};
 use itertools::Itertools;
 
 #[derive(Debug, Clone)]

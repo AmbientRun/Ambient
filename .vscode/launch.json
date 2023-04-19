@@ -561,7 +561,7 @@
                 "args": [
                     "build",
                     "--example=button",
-                    "--package=ambient_ui"
+                    "--package=ambient_ui_native"
                 ],
                 "filter": {
                     "name": "button",
@@ -585,7 +585,7 @@
                 "args": [
                     "build",
                     "--example=dock_layout",
-                    "--package=ambient_ui"
+                    "--package=ambient_ui_native"
                 ],
                 "filter": {
                     "name": "dock_layout",
@@ -609,7 +609,7 @@
                 "args": [
                     "build",
                     "--example=element_editor",
-                    "--package=ambient_ui"
+                    "--package=ambient_ui_native"
                 ],
                 "filter": {
                     "name": "element_editor",
@@ -630,7 +630,7 @@
                 "args": [
                     "build",
                     "--example=flow_layout",
-                    "--package=ambient_ui"
+                    "--package=ambient_ui_native"
                 ],
                 "filter": {
                     "name": "flow_layout",
@@ -654,7 +654,7 @@
                 "args": [
                     "build",
                     "--example=image",
-                    "--package=ambient_ui"
+                    "--package=ambient_ui_native"
                 ],
                 "filter": {
                     "name": "image",
@@ -675,7 +675,7 @@
                 "args": [
                     "build",
                     "--example=input",
-                    "--package=ambient_ui"
+                    "--package=ambient_ui_native"
                 ],
                 "filter": {
                     "name": "input",
@@ -696,7 +696,7 @@
                 "args": [
                     "build",
                     "--example=rect",
-                    "--package=ambient_ui"
+                    "--package=ambient_ui_native"
                 ],
                 "filter": {
                     "name": "rect",
@@ -720,7 +720,7 @@
                 "args": [
                     "build",
                     "--example=screens",
-                    "--package=ambient_ui"
+                    "--package=ambient_ui_native"
                 ],
                 "filter": {
                     "name": "screens",
@@ -741,7 +741,7 @@
                 "args": [
                     "build",
                     "--example=slider",
-                    "--package=ambient_ui"
+                    "--package=ambient_ui_native"
                 ],
                 "filter": {
                     "name": "slider",
@@ -765,7 +765,7 @@
                 "args": [
                     "build",
                     "--example=text",
-                    "--package=ambient_ui"
+                    "--package=ambient_ui_native"
                 ],
                 "filter": {
                     "name": "text",
@@ -786,7 +786,7 @@
                 "args": [
                     "build",
                     "--example=todo",
-                    "--package=ambient_ui"
+                    "--package=ambient_ui_native"
                 ],
                 "filter": {
                     "name": "todo",
@@ -810,7 +810,7 @@
                 "args": [
                     "build",
                     "--example=ui",
-                    "--package=ambient_ui"
+                    "--package=ambient_ui_native"
                 ],
                 "filter": {
                     "name": "ui",

@@ -11,7 +11,7 @@ ambient_sys = { path = "../sys" }
 ambient_app = { path = "../app" }
 ambient_meshes = { path = "../meshes" }
 ambient_core = { path = "../core" }
-ambient_ui = { path = "../ui" }
+ambient_ui_native = { path = "../ui_native" }
 ambient_ecs = { path = "../ecs" }
 ambient_network = { path = "../network" }
 ambient_std = { path = "../std" }

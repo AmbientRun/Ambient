@@ -18,7 +18,7 @@ ambient_core = { workspace = true }
 ambient_std = { workspace = true }
 ambient_ecs = { workspace = true }
 ambient_app = { workspace = true }
-ambient_ui = { workspace = true }
+ambient_ui_native = { workspace = true }
 ambient_cameras = { workspace = true }
 ambient_renderer = { workspace = true }
 ambient_element = { workspace = true }

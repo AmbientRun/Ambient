@@ -1,7 +1,7 @@
 use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_ui::*;
+use ambient_ui_native::*;
 
 #[derive(Debug, Clone)]
 struct TodoList;

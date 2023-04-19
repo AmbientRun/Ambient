@@ -15,7 +15,7 @@ ambient_gpu = { path = "../gpu" }
 ambient_renderer = { path = "../renderer" }
 ambient_cameras = { path = "../cameras" }
 ambient_ecs = { path = "../ecs" }
-ambient_ui = { path = "../ui" }
+ambient_ui_native = { path = "../ui_native" }
 ambient_input = { path = "../input" }
 ambient_model = { path = "../model" }
 ambient_animation = { path = "../animation" }
@@ -44,7 +44,7 @@ hotload-includes = [
     'ambient_gpu/hotload-includes',
     'ambient_renderer/hotload-includes',
     'ambient_gizmos/hotload-includes',
-    'ambient_ui/hotload-includes',
+    'ambient_ui_native/hotload-includes',
     'ambient_model/hotload-includes',
 ]
 

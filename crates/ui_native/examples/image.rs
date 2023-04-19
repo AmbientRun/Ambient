@@ -4,7 +4,7 @@ use ambient_app::{gpu, App, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_element::{ElementComponentExt, ElementTree};
 use ambient_gpu::texture::Texture;
-use ambient_ui::{
+use ambient_ui_native::{
     layout::{height, width},
     *,
 };

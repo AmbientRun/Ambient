@@ -15,7 +15,7 @@ ambient_renderer = { path = "../renderer" }
 ambient_meshes = { path = "../meshes" }
 ambient_gpu = { path = "../gpu" }
 ambient_editor_derive = { path = "../../shared_crates/editor_derive" }
-ambient_ui = { path = "../ui" }
+ambient_ui_native = { path = "../ui_native" }
 futures = { workspace = true }
 glam = { workspace = true }
 itertools = { workspace = true }

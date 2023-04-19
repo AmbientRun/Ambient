@@ -128,7 +128,7 @@ dependencies = [
  "ambient_std",
  "ambient_sys",
  "ambient_text",
- "ambient_ui",
+ "ambient_ui_native",
  "ambient_wasm",
  "ambient_water",
  "ambient_world_audio",
@@ -177,7 +177,7 @@ dependencies = [
  "ambient_model",
  "ambient_std",
  "ambient_sys",
- "ambient_ui",
+ "ambient_ui_native",
  "anyhow",
  "async-trait",
  "convert_case 0.6.0",
@@ -236,7 +236,7 @@ dependencies = [
  "ambient_renderer",
  "ambient_std",
  "ambient_sys",
- "ambient_ui",
+ "ambient_ui_native",
  "anyhow",
  "flume",
  "glam 0.22.0",
@@ -285,7 +285,7 @@ dependencies = [
  "ambient_renderer",
  "ambient_std",
  "ambient_sys",
- "ambient_ui",
+ "ambient_ui_native",
  "async-trait",
  "chrono",
  "env_logger 0.10.0",
@@ -302,7 +302,7 @@ version = "0.2.0-dev"
 dependencies = [
  "ambient_std",
  "ambient_sys",
- "ambient_ui",
+ "ambient_ui_native",
  "approx",
  "async-trait",
  "byteorder",
@@ -457,7 +457,7 @@ dependencies = [
  "ambient_rpc",
  "ambient_shared_types",
  "ambient_std",
- "ambient_ui",
+ "ambient_ui_native",
  "glam 0.22.0",
  "log",
  "wgpu 0.14.2",
@@ -479,7 +479,7 @@ dependencies = [
  "ambient_primitives",
  "ambient_renderer",
  "ambient_std",
- "ambient_ui",
+ "ambient_ui_native",
  "env_logger 0.10.0",
  "glam 0.22.0",
  "log",
@@ -533,7 +533,7 @@ dependencies = [
  "ambient_element",
  "ambient_renderer",
  "ambient_std",
- "ambient_ui",
+ "ambient_ui_native",
  "env_logger 0.10.0",
  "glam 0.22.0",
  "itertools",
@@ -568,7 +568,7 @@ dependencies = [
  "ambient_std",
  "ambient_sys",
  "ambient_terrain",
- "ambient_ui",
+ "ambient_ui_native",
  "ambient_world_audio",
  "anyhow",
  "arboard",
@@ -604,7 +604,7 @@ dependencies = [
 name = "ambient_editor_derive"
 version = "0.2.0-dev"
 dependencies = [
- "ambient_ui",
+ "ambient_ui_native",
  "convert_case 0.6.0",
  "itertools",
  "pretty_assertions",
@@ -745,7 +745,7 @@ dependencies = [
  "ambient_network",
  "ambient_rpc",
  "ambient_std",
- "ambient_ui",
+ "ambient_ui_native",
  "anyhow",
  "atomic_refcell",
  "chrono",
@@ -803,7 +803,7 @@ dependencies = [
  "ambient_renderer",
  "ambient_std",
  "ambient_sys",
- "ambient_ui",
+ "ambient_ui_native",
  "anyhow",
  "async-trait",
  "bytemuck",
@@ -834,7 +834,7 @@ dependencies = [
  "ambient_primitives",
  "ambient_renderer",
  "ambient_std",
- "ambient_ui",
+ "ambient_ui_native",
  "anyhow",
  "async-recursion",
  "async-trait",
@@ -876,7 +876,7 @@ dependencies = [
  "ambient_renderer",
  "ambient_std",
  "ambient_terrain",
- "ambient_ui",
+ "ambient_ui_native",
  "async-trait",
  "bytemuck",
  "glam 0.22.0",
@@ -904,7 +904,7 @@ dependencies = [
  "ambient_rpc",
  "ambient_std",
  "ambient_sys",
- "ambient_ui",
+ "ambient_ui_native",
  "anyhow",
  "async-trait",
  "bincode",
@@ -950,7 +950,7 @@ dependencies = [
  "ambient_primitives",
  "ambient_renderer",
  "ambient_std",
- "ambient_ui",
+ "ambient_ui_native",
  "anyhow",
  "async-trait",
  "futures",
@@ -1283,7 +1283,7 @@ dependencies = [
  "ambient_renderer",
  "ambient_std",
  "ambient_sys",
- "ambient_ui",
+ "ambient_ui_native",
  "anyhow",
  "async-trait",
  "bitflags",
@@ -1337,7 +1337,30 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_ui"
+name = "ambient_ui_components"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_cb",
+ "ambient_color",
+ "ambient_element",
+ "ambient_guest_bridge",
+ "ambient_math",
+ "ambient_shared_types",
+ "ambient_sys",
+ "ambient_time",
+ "convert_case 0.6.0",
+ "futures",
+ "glam 0.22.0",
+ "indexmap",
+ "itertools",
+ "parking_lot",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "ambient_ui_native"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_app",
@@ -1381,29 +1404,6 @@ dependencies = [
  "tracing-subscriber",
  "wgpu 0.14.2",
  "winit",
-]
-
-[[package]]
-name = "ambient_ui_components"
-version = "0.2.0-dev"
-dependencies = [
- "ambient_cb",
- "ambient_color",
- "ambient_element",
- "ambient_guest_bridge",
- "ambient_math",
- "ambient_shared_types",
- "ambient_sys",
- "ambient_time",
- "convert_case 0.6.0",
- "futures",
- "glam 0.22.0",
- "indexmap",
- "itertools",
- "parking_lot",
- "rand 0.8.5",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -1501,7 +1501,7 @@ dependencies = [
  "ambient_primitives",
  "ambient_renderer",
  "ambient_std",
- "ambient_ui",
+ "ambient_ui_native",
  "anyhow",
  "atomic_refcell",
  "closure",

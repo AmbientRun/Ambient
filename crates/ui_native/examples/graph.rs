@@ -5,7 +5,7 @@ use ambient_cameras::UICamera;
 use ambient_core::runtime;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_std::{time::Clock, IntoDuration};
-use ambient_ui::{
+use ambient_ui_native::{
     self,
     graph::{Graph, GraphScaleKind, GraphStyle},
     *,
