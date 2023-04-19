@@ -35,6 +35,8 @@ fn setup_logging() -> anyhow::Result<()> {
                 "cranelift_codegen",
                 "naga",
                 "tracing",
+                "symphonia_core",
+                "symphonia_bundle_mp3",
                 "wgpu_core",
                 "wgpu_hal",
             ],
