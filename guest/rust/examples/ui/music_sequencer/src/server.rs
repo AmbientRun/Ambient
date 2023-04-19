@@ -17,7 +17,7 @@ pub async fn main() {
     loop {
         value = (value + 1) % 16;
         entity::set_component(mother, cursor(), value);
-        let mut v = entity::get_component(mother, note_selection()).unwrap();
+        let v = entity::get_component(mother, note_selection()).unwrap();
         for i in 0..8 {
             let index = value as usize + i * 16;
             if v[index] {

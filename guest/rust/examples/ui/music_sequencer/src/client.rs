@@ -2,8 +2,8 @@ use ambient_api::prelude::*;
 use ambient_ui::prelude::*;
 use components::{cursor, note_selection};
 
-fn make_row(text: &str, note_selection_now: &Vec<bool>, cursor_now: u8, pos: u8) -> Element {
-    let card_inner = |selected: bool, highlight: bool| {
+fn make_row(text: &str, note_selection_now: &[bool], cursor_now: u8, pos: u8) -> Element {
+    let card_inner = |_selected: bool, highlight: bool| {
         FlowRow(vec![Text::el("")])
             .el()
             .with_background(match highlight {
@@ -20,7 +20,6 @@ fn make_row(text: &str, note_selection_now: &Vec<bool>, cursor_now: u8, pos: u8)
                 .enumerate()
                 .map(|(index, &selected)| {
                     let is_on_cursor = cursor_now == index as u8;
-                    let row = 0;
                     FlowRow::el([Button::new(card_inner(selected, is_on_cursor), move |_| {
                         messages::Click::new(index as u8 + pos).send_server_reliable();
                     })
@@ -58,14 +57,14 @@ fn App(hooks: &mut Hooks) -> Element {
 #[main]
 pub fn main() {
     App.el().spawn_interactive();
-    let mut bd = audio::load(asset::url("assets/BD2500.ogg").unwrap());
-    let mut sd = audio::load(asset::url("assets/SD7550.ogg").unwrap());
-    let mut ch = audio::load(asset::url("assets/CH.ogg").unwrap());
-    let mut oh = audio::load(asset::url("assets/OH75.ogg").unwrap());
-    let mut lc = audio::load(asset::url("assets/LC00.ogg").unwrap());
-    let mut mc = audio::load(asset::url("assets/MC00.ogg").unwrap());
-    let mut ht = audio::load(asset::url("assets/HT75.ogg").unwrap());
-    let mut mt = audio::load(asset::url("assets/MT75.ogg").unwrap());
+    let bd = audio::load(asset::url("assets/BD2500.ogg").unwrap());
+    let sd = audio::load(asset::url("assets/SD7550.ogg").unwrap());
+    let ch = audio::load(asset::url("assets/CH.ogg").unwrap());
+    let oh = audio::load(asset::url("assets/OH75.ogg").unwrap());
+    let lc = audio::load(asset::url("assets/LC00.ogg").unwrap());
+    let mc = audio::load(asset::url("assets/MC00.ogg").unwrap());
+    let ht = audio::load(asset::url("assets/HT75.ogg").unwrap());
+    let mt = audio::load(asset::url("assets/MT75.ogg").unwrap());
 
     messages::Play::subscribe(move |_source, data| {
         let sounds = [&bd, &sd, &ch, &oh, &lc, &mc, &ht, &mt];
