@@ -1,0 +1,25 @@
+[package]
+name = "music_sequencer"
+
+edition = "2021"
+publish = false
+rust-version = { workspace = true }
+version = { workspace = true }
+
+[dependencies]
+ambient_api = { workspace = true }
+ambient_ui_components = { workspace = true }
+
+[[bin]]
+name = "seq_client"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "seq_server"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client", "ambient_ui_components/client"]
+server = ["ambient_api/server", "ambient_ui_components/server"]
