@@ -127,7 +127,7 @@ pub fn orthographic_reverse(left: f32, right: f32, bottom: f32, top: f32, near: 
     Mat4::orthographic_lh(left, right, bottom, top, far, near)
 }
 
-pub fn screen_ray(world: &World, camera: EntityId, mouse_origin: Vec2) -> Result<Ray, ECSError> {
+pub fn clip_space_ray(world: &World, camera: EntityId, mouse_origin: Vec2) -> Result<Ray, ECSError> {
     let camera_projection = world.get(camera, projection())?;
     let camera_view = world.get(camera, inv_local_to_world())?;
     let camera_pv = (camera_projection * camera_view).inverse();

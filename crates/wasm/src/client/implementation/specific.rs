@@ -24,7 +24,7 @@ use crate::shared::{
     wit,
 };
 
-use ambient_core::camera::screen_ray;
+use ambient_core::camera::clip_space_ray;
 
 impl wit::client_message::Host for Bindings {
     fn send(
@@ -125,12 +125,12 @@ impl wit::client_input::Host for Bindings {
     }
 }
 impl wit::client_camera::Host for Bindings {
-    fn screen_ray(
+    fn clip_space_ray(
         &mut self,
         camera: wit::types::EntityId,
         clip_space_pos: wit::types::Vec2,
     ) -> anyhow::Result<wit::types::Ray> {
-        let mut ray = screen_ray(
+        let mut ray = clip_space_ray(
             self.world(),
             camera.from_bindgen(),
             clip_space_pos.from_bindgen(),

@@ -22,7 +22,7 @@ pub fn main() {
         let input = input::get();
 
         let ndc = camera::screen_to_clip_space(input.mouse_position);
-        let ray = camera::screen_ray(camera, ndc);
+        let ray = camera::clip_space_ray(camera, ndc);
 
         // Send screen ray to server
         messages::Input {
