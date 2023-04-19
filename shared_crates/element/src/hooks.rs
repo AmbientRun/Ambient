@@ -197,7 +197,7 @@ impl<'a> Hooks<'a> {
 
     /// Spawns the provided future as a task.
     ///
-    /// The task is aborted when this [Element] is removed.
+    /// The task is aborted when this [crate::Element] is removed.
     #[cfg(feature = "native")]
     #[tracing::instrument(level = "debug", skip_all)]
     pub fn use_task<Fut: Future<Output = ()> + Send + 'static>(&mut self, task: impl FnOnce(&mut World) -> Fut + Send + Sync + 'static) {

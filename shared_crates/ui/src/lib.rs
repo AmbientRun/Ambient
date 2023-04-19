@@ -1,13 +1,49 @@
+//! A UI library for [Ambient](https://github.com/AmbientRun/Ambient). Built on top of [ambient_element](https://crates.io/crates/ambient_element).
+//!
+//! Ambient's UI system is heavily inspired by React (with hooks), and follows many of the same patterns.
+//! Take a look at the [React documentation](https://react.dev/reference/react) to learn how hooks work in general.
+//!
+//! ## Getting started
+//!
+//! Here's a minimal, complete example of a counter app:
+//!
+//! ```ignore
+//! use ambient_api::prelude::*;
+//! use ambient_ui::prelude::*;
+//!
+//! #[element_component]
+//! fn App(hooks: &mut Hooks) -> Element {
+//!     let (count, set_count) = hooks.use_state(0);
+//!     FlowColumn::el([
+//!         Text::el(format!("We've counted to {count} now")),
+//!         Button::new("Increase", move |_| set_count(count + 1)).el(),
+//!     ])
+//! }
+//!
+//! #[main]
+//! pub fn main() {
+//!     App.el().spawn_interactive();
+//! }
+//! ```
+//!
+//! [See all UI examples here](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui).
+#![deny(missing_docs)]
+
 use ambient_cb::{cb, Cb};
 use ambient_element::{
-    define_el_function_for_vec_element_newtype, element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks
+    define_el_function_for_vec_element_newtype, element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_guest_bridge::{
     components::{
-        app::{ui_scene, window_logical_size, window_physical_size}, layout::{
-            gpu_ui_size, height, margin_bottom, margin_left, margin_right, margin_top, mesh_to_local_from_size, padding_bottom, padding_left, padding_right, padding_top, width
-        }, rect::{background_color, rect}, transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation}
-    }, messages
+        app::{ui_scene, window_logical_size, window_physical_size},
+        layout::{
+            gpu_ui_size, height, margin_bottom, margin_left, margin_right, margin_top, mesh_to_local_from_size, padding_bottom,
+            padding_left, padding_right, padding_top, width,
+        },
+        rect::{background_color, rect},
+        transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation},
+    },
+    messages,
 };
 use clickarea::ClickArea;
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
@@ -27,6 +63,7 @@ pub mod tabs;
 pub mod text;
 pub mod throbber;
 
+/// A base element for all UI elements. It contains all the components needed for a UI element to work.
 #[element_component]
 pub fn UIBase(_: &mut Hooks) -> Element {
     Element::new()
@@ -39,7 +76,7 @@ pub fn UIBase(_: &mut Hooks) -> Element {
 }
 
 /// This only exists so that we can implement `From<String>` for [Text](text::Text), and then use it in
-/// for instance [Button](button::Button)
+/// for instance [Button](button::Button).
 pub struct UIElement(pub Element);
 impl From<Element> for UIElement {
     fn from(el: Element) -> Self {
@@ -49,6 +86,7 @@ impl From<Element> for UIElement {
 
 // We need `clone` as resource is a ref on host and a copy on guest
 #[allow(clippy::clone_on_copy)]
+/// A hook that returns the current window physical resolution (i.e. not taking DPI scaling into account)
 pub fn use_window_physical_resolution(hooks: &mut Hooks) -> UVec2 {
     let (res, set_res) = hooks.use_state(hooks.world.resource(window_physical_size()).clone());
     hooks.use_frame(move |world| {
@@ -61,6 +99,7 @@ pub fn use_window_physical_resolution(hooks: &mut Hooks) -> UVec2 {
 }
 // We need `clone` as resource is a ref on host and a copy on guest
 #[allow(clippy::clone_on_copy)]
+/// A hook that returns the current window logical resolution (i.e. taking DPI scaling into account)
 pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
     let (res, set_res) = hooks.use_state(hooks.world.resource(window_logical_size()).clone());
     hooks.use_frame(move |world| {
@@ -72,13 +111,14 @@ pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
     res
 }
 
-/// A simple UI rect. Use components such as `width`, `height`, `background_color`, `border_color`, `border_radius` and `border_thickness`
+/// A simple UI rect. Use components like `width`, `height`, `background_color`, `border_color`, `border_radius` and `border_thickness`
 /// to control its appearance
 #[element_component]
 pub fn Rectangle(_hooks: &mut Hooks) -> Element {
     with_rect(UIBase.el()).with(width(), 100.).with(height(), 100.).with(background_color(), Vec4::ONE)
 }
 
+/// Converts the given element into a rect.
 pub fn with_rect(element: Element) -> Element {
     element
         .init(rect(), ())
@@ -89,7 +129,7 @@ pub fn with_rect(element: Element) -> Element {
         .init(ui_scene(), ())
 }
 
-/// A simple UI line. Use components such as `line_from`, `line_to`, `line_width`, `background_color`, `border_color`, `border_radius` and `border_thickness`
+/// A simple UI line. Use components like `line_from`, `line_to`, `line_width`, `background_color`, `border_color`, `border_radius` and `border_thickness`
 /// to control its appearance
 #[element_component]
 pub fn Line(_hooks: &mut Hooks) -> Element {
@@ -97,15 +137,19 @@ pub fn Line(_hooks: &mut Hooks) -> Element {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+/// Keeps track of which element has focus.
 pub struct Focus(Option<(String, u128)>);
 impl Focus {
+    /// Creates a new focus tracker.
     pub fn new(focus: Option<String>) -> Self {
         Self(focus.map(|x| (x, rand::random())))
     }
 }
+/// A hook that returns the current focus state for this element and a callback to set the focus state.
 pub fn use_focus(hooks: &mut Hooks) -> (bool, Cb<dyn Fn(bool) + Sync + Send>) {
     use_focus_for_instance_id(hooks, hooks.instance_id.clone())
 }
+/// A hook that returns the current focus state for this element, given a specific `instance_id`, and a callback to set the focus state.
 pub fn use_focus_for_instance_id(hooks: &mut Hooks, instance_id: String) -> (bool, Cb<dyn Fn(bool) + Sync + Send>) {
     let (focus, set_focus) = hooks.consume_context::<Focus>().expect("No FocusRoot available");
     let focused = if let Focus(Some((focused, _))) = &focus { focused == &instance_id } else { false };
@@ -118,7 +162,7 @@ pub fn use_focus_for_instance_id(hooks: &mut Hooks, instance_id: String) -> (boo
 }
 
 #[derive(Debug, Clone)]
-/// Provides a context for focusable UI elements
+/// Provides a context for focusable UI elements.
 pub struct FocusRoot(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(FocusRoot);
 impl ElementComponent for FocusRoot {
@@ -146,10 +190,15 @@ fn FocusResetter(hooks: &mut Hooks) -> Element {
     Element::new()
 }
 
+/// A trait that provides helper methods for UI elements.
 pub trait UIExt {
+    /// Wraps this element in a [ClickArea] element.
     fn with_clickarea(self) -> ClickArea;
+    /// Adds a background color to this element.
     fn with_background(self, color: Vec4) -> Self;
+    /// Adds padding to all sides of this element.
     fn with_padding_even(self, padding: f32) -> Self;
+    /// Adds margin to all sides of this element.
     fn with_margin_even(self, margin: f32) -> Self;
 }
 impl UIExt for Element {

@@ -5,8 +5,10 @@ use ambient_color::Color;
 use ambient_element::{element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::layout::{
-        fit_horizontal_none, fit_horizontal_parent, fit_vertical_parent, height, margin_right, margin_top, min_width, padding_bottom, padding_top, space_between_items, width
-    }, messages
+        fit_horizontal_none, fit_horizontal_parent, fit_vertical_parent, height, margin_right, margin_top, min_width, padding_bottom,
+        padding_top, space_between_items, width,
+    },
+    messages,
 };
 use ambient_shared_types::VirtualKeyCode;
 use indexmap::IndexMap;
@@ -14,13 +16,20 @@ use itertools::Itertools;
 
 use super::{Editor, EditorOpts};
 use crate::{
-    button::{Button, ButtonStyle}, default_theme::{StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET}, dropdown::Dropdown, layout::{FlowColumn, FlowRow}, use_focus, UIBase, UIExt
+    button::{Button, ButtonStyle},
+    default_theme::{StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET},
+    dropdown::Dropdown,
+    layout::{FlowColumn, FlowRow},
+    use_focus, UIBase, UIExt,
 };
 
 #[element_component]
+/// An editor for a list of items that implement [Editor]; each item can be edited, moved up or down, or deleted.
 pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static>(
     _: &mut Hooks,
+    /// The list of items to edit.
     value: Vec<T>,
+    /// A callback that is called when the list of items is changed.
     on_change: Option<Cb<dyn Fn(Vec<T>) + Sync + Send>>,
 ) -> Element {
     if let Some(on_change) = on_change {
@@ -117,11 +126,17 @@ impl<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> Edit
 }
 
 #[derive(Debug, Clone)]
+/// A [MinimalListEditorWithItemEditor] that uses the default editor for the items.
 pub struct MinimalListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> {
+    /// The list of items to edit.
     pub value: Vec<T>,
+    /// A callback that is called when the list of items is changed.
     pub on_change: Option<Cb<dyn Fn(Vec<T>) + Sync + Send>>,
+    /// Options for the item editor.
     pub item_opts: EditorOpts,
+    /// Preset items that can be added to the list.
     pub add_presets: Option<Vec<T>>,
+    /// The title for the add button.
     pub add_title: String,
 }
 impl<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent for MinimalListEditor<T> {
@@ -140,12 +155,19 @@ impl<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> Elem
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Clone)]
+/// A configurable list editor that allows you to specify the editor for the items, and to provide other preset options.
 pub struct MinimalListEditorWithItemEditor<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> {
+    /// The list of items to edit.
     pub value: Vec<T>,
+    /// A callback that is called when the list of items is changed.
     pub on_change: Option<Cb<dyn Fn(Vec<T>) + Sync + Send>>,
+    /// Options for the item editor.
     pub item_opts: EditorOpts,
+    /// Preset items that can be added to the list.
     pub add_presets: Option<Vec<T>>,
+    /// The title of the add button.
     pub add_title: String,
+    /// The editor for the items.
     pub item_editor: Cb<dyn Fn(T, Option<Cb<dyn Fn(T) + Sync + Send>>, EditorOpts) -> Element + Sync + Send>,
 }
 impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent for MinimalListEditorWithItemEditor<T> {
@@ -258,11 +280,17 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Clone)]
+/// A single item in a list editor
 pub struct MinimalListEditorItem<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> {
+    /// The value of the item.
     pub value: T,
+    /// A callback that is called when the item is changed.
     pub on_change: Option<Cb<dyn Fn(T) + Sync + Send>>,
+    /// A callback that is called when the item is deleted.
     pub on_delete: Option<Cb<dyn Fn() + Sync + Send>>,
+    /// Options for the item editor.
     pub item_opts: EditorOpts,
+    /// The editor for the item.
     pub item_editor: Cb<dyn Fn(T, Option<Cb<dyn Fn(T) + Sync + Send>>, EditorOpts) -> Element + Sync + Send>,
 }
 impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent for MinimalListEditorItem<T> {
@@ -306,11 +334,16 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Clone)]
+/// An editor for a [HashMap]. The key and value types must implement [Editor].
+///
+/// The pairs are sorted by key.
 pub struct KeyValueEditor<
     K: Editor + std::fmt::Debug + Clone + Default + Hash + PartialEq + Eq + PartialOrd + Ord + Sync + Send + 'static,
     V: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static,
 > {
+    /// The value to edit.
     pub value: HashMap<K, V>,
+    /// A callback that is called when the value is changed.
     pub on_change: Option<Cb<dyn Fn(HashMap<K, V>) + Sync + Send>>,
 }
 impl<
@@ -394,13 +427,18 @@ impl<
 }
 
 #[derive(Debug, Clone)]
+/// An editor for a [IndexMap]. The key and value types must implement [Editor].
 pub struct IndexMapEditor<K, V> {
+    /// The value to edit.
     value: Arc<IndexMap<K, V>>,
+    /// A callback that is called when the value is changed.
     on_change: Cb<dyn Fn(IndexMap<K, V>) + Send + Sync>,
+
     use_row_instead_of_column: bool,
 }
 
 impl<K, V> IndexMapEditor<K, V> {
+    /// Create a new [IndexMapEditor] with the given value and callback.
     pub fn new(value: IndexMap<K, V>, on_change: Cb<dyn Fn(IndexMap<K, V>) + Send + Sync>, use_row_instead_of_column: bool) -> Self {
         Self { value: Arc::new(value), on_change, use_row_instead_of_column }
     }
@@ -433,8 +471,6 @@ where
     }
 }
 
-/// Editor is implemented for IndexMap and not HashMap since order needs to be
-/// preserved
 impl<K, V> Editor for IndexMap<K, V>
 where
     K: std::hash::Hash + Eq + Send + Sync + Debug + 'static + Clone + Editor + Default,

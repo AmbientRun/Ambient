@@ -1,3 +1,8 @@
+//! Implements all of the [Element]s used for layouting.
+//!
+//! The layout is roughly based on [Windows Forms](https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/layout?view=netdesktop-6.0#container-flow-layout).
+//!
+//! There are two major layout components, [Dock] and [Flow] (which includes [FlowColumn] and [FlowRow]).
 use crate::{use_window_logical_resolution, UIBase, UIExt};
 use ambient_cb::Cb;
 use ambient_color::Color;
@@ -17,6 +22,7 @@ use glam::{vec2, vec3, Vec2};
 use itertools::Itertools;
 
 #[derive(Debug, Clone)]
+/// A [Dock] that is always the size of the window.
 pub struct WindowSized(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(WindowSized);
 impl ElementComponent for WindowSized {
@@ -26,7 +32,12 @@ impl ElementComponent for WindowSized {
     }
 }
 
-/// See <https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/layout?view=netdesktop-6.0#dock>
+/// A docking layout, where each child specifies which side of the parent it should be docked to.
+/// It is top-down: it starts with a given area (say the screen) and then divides it into smaller pieces with each new element added to it.
+///
+/// The child specifies which side to dock to using the `docking_` components.
+///
+/// See <https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/layout?view=netdesktop-6.0#dock>.
 #[derive(Debug, Clone)]
 pub struct Dock(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(Dock);
@@ -36,7 +47,10 @@ impl ElementComponent for Dock {
     }
 }
 
-/// See <https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/layout?view=netdesktop-6.0#container-flow-layout>
+/// A flow layout.
+/// It is bottom-up: it auto-resizes itself to fit its constituent components.
+///
+/// See <https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/layout?view=netdesktop-6.0#container-flow-layout>.
 #[derive(Debug, Clone)]
 pub struct Flow(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(Flow);
@@ -46,9 +60,9 @@ impl ElementComponent for Flow {
     }
 }
 
-/// A bookcase layout is a min-max layout; it should be a list of BookFiles, where each BookFile
-/// has a `container` and a `book`. The book's determine the size of the entire Bookcase, but their
-/// sizes are not manipulated. The containers are resized to fit the bookcase though, to aline them.
+/// A bookcase layout is a min-max layout; it should be a list of [BookFile]s, where each [BookFile]
+/// has a `container` and a `book`. The book's determine the size of the entire [Bookcase], but their
+/// sizes are not manipulated. The containers are resized to fit the bookcase though, to align them.
 #[derive(Debug, Clone)]
 pub struct Bookcase(pub Vec<BookFile>);
 impl ElementComponent for Bookcase {
@@ -60,8 +74,11 @@ impl ElementComponent for Bookcase {
     }
 }
 #[derive(Debug, Clone)]
+/// An entry in a [Bookcase].
 pub struct BookFile {
+    /// The container for the book.
     container: Element,
+    /// The book itself.
     book: Element,
 }
 impl ElementComponent for BookFile {
@@ -70,6 +87,8 @@ impl ElementComponent for BookFile {
     }
 }
 
+/// A [FlowColumn] is a [Flow] that is oriented vertically.
+///
 /// See <https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/layout?view=netdesktop-6.0#container-flow-layout>
 #[derive(Debug, Clone)]
 pub struct FlowColumn(pub Vec<Element>);
@@ -91,6 +110,8 @@ impl ElementComponent for FlowColumn {
     }
 }
 
+//// A [FlowRow] is a [Flow] that is oriented horizontally.
+///
 /// See <https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/layout?view=netdesktop-6.0#container-flow-layout>
 #[derive(Debug, Clone)]
 pub struct FlowRow(pub Vec<Element>);
@@ -112,6 +133,8 @@ impl ElementComponent for FlowRow {
     }
 }
 
+/// A [Centered] is a [Flow] that is oriented vertically and is centered.
+///
 #[derive(Debug, Clone)]
 pub struct Centered(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(Centered);
@@ -132,8 +155,17 @@ impl ElementComponent for Centered {
     }
 }
 
+/// A [FixedGrid] is a grid of elements with a fixed stride.
 #[element_component]
-pub fn FixedGrid(_: &mut Hooks, items: Vec<Element>, item_stride: Vec2, items_horizontal: usize) -> Element {
+pub fn FixedGrid(
+    _: &mut Hooks,
+    /// The items to put in the grid. Must be a multiple of `items_horizontal`. (i.e. a 2D array represented as a 1D array)
+    items: Vec<Element>,
+    /// The display stride between items (i.e. how much space each item has).
+    item_stride: Vec2,
+    /// The number of items in a row.
+    items_horizontal: usize,
+) -> Element {
     UIBase.el().children(
         items
             .into_iter()
@@ -147,8 +179,15 @@ pub fn FixedGrid(_: &mut Hooks, items: Vec<Element>, item_stride: Vec2, items_ho
     )
 }
 
+/// Measures the size of its inner element and calls the callback when it changes.
 #[element_component]
-pub fn MeasureSize(hooks: &mut Hooks, inner: Element, on_change: Cb<dyn Fn(Vec2) + Sync + Send + 'static>) -> Element {
+pub fn MeasureSize(
+    hooks: &mut Hooks,
+    /// The element to measure.
+    inner: Element,
+    /// The callback to call when the size changes.
+    on_change: Cb<dyn Fn(Vec2) + Sync + Send + 'static>,
+) -> Element {
     let (id, set_id) = hooks.use_state(None);
     let (current, set_current) = hooks.use_state(Vec2::ZERO);
     hooks.use_frame(move |world| {
@@ -166,7 +205,12 @@ pub fn MeasureSize(hooks: &mut Hooks, inner: Element, on_change: Cb<dyn Fn(Vec2)
 }
 
 #[element_component]
-pub fn Separator(_hooks: &mut Hooks, vertical: bool) -> Element {
+/// A simple separator, similar to `<hr>` in HTML.
+pub fn Separator(
+    _hooks: &mut Hooks,
+    /// Whether the separator is vertical or horizontal.
+    vertical: bool,
+) -> Element {
     let el = Flow(vec![]).el().with_background(Color::rgba(0., 0., 0., 0.8).into());
     if vertical {
         el.with(width(), 1.).with_default(fit_horizontal_none()).with_default(fit_vertical_parent())

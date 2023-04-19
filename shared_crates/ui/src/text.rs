@@ -1,3 +1,5 @@
+//! Defines a text element.
+
 use crate::{UIBase, UIElement};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::components::{
@@ -9,7 +11,7 @@ use ambient_guest_bridge::components::{
 };
 use glam::{vec4, Mat4};
 
-/// A text element. Use the `text`, `font_size`, `font` and `color` components to set its state
+/// A text element. Use the [text], [font_size], [font_family] and [color] components to set its state.
 #[element_component(without_el)]
 pub fn Text(_hooks: &mut Hooks) -> Element {
     UIBase
@@ -26,6 +28,7 @@ pub fn Text(_hooks: &mut Hooks) -> Element {
         .init(text(), "".to_string())
 }
 impl Text {
+    /// Creates a new text element with the given text.
     pub fn el(value: impl Into<String>) -> Element {
         Text.el().with(text(), value.into())
     }
@@ -47,7 +50,14 @@ impl From<&String> for UIElement {
 }
 
 #[element_component]
-pub fn FontAwesomeIcon(_hooks: &mut Hooks, icon: u32, solid: bool) -> Element {
+/// A FontAwesome icon.
+pub fn FontAwesomeIcon(
+    _hooks: &mut Hooks,
+    /// The icon codepoint.
+    icon: u32,
+    /// Whether the icon should be solid or not.
+    solid: bool,
+) -> Element {
     Text::el(char::from_u32(icon).unwrap().to_string())
         .with(font_family(), if solid { "FontAwesomeSolid" } else { "FontAwesome" }.to_string())
 }
