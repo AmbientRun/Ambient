@@ -46,3 +46,6 @@ parking_lot = { workspace = true }
 async-trait = { workspace = true }
 dyn-clonable = { workspace = true }
 cargo_toml = { workspace = true }
+symphonia = { workspace = true }
+vorbis_rs = { workspace = true }
+rand = { workspace = true }
