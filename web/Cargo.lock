@@ -600,46 +600,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_ui_native"
-version = "0.2.0-dev"
-dependencies = [
- "ambient_core",
- "ambient_ecs",
- "ambient_editor_derive",
- "ambient_element",
- "ambient_gpu",
- "ambient_input",
- "ambient_layout",
- "ambient_meshes",
- "ambient_rect",
- "ambient_renderer",
- "ambient_shared_types",
- "ambient_std",
- "ambient_sys",
- "ambient_text",
- "anyhow",
- "arboard",
- "async-trait",
- "bytemuck",
- "closure",
- "convert_case 0.6.0",
- "futures",
- "glam",
- "indexmap",
- "itertools",
- "log",
- "ordered-float",
- "parking_lot",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tracing",
- "wgpu",
- "winit",
-]
-
-[[package]]
 name = "ambient_ui"
 version = "0.2.0-dev"
 dependencies = [
@@ -660,6 +620,47 @@ dependencies = [
  "rand",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "ambient_ui_native"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_editor_derive",
+ "ambient_element",
+ "ambient_gpu",
+ "ambient_input",
+ "ambient_layout",
+ "ambient_meshes",
+ "ambient_rect",
+ "ambient_renderer",
+ "ambient_shared_types",
+ "ambient_std",
+ "ambient_sys",
+ "ambient_text",
+ "ambient_ui",
+ "anyhow",
+ "arboard",
+ "async-trait",
+ "bytemuck",
+ "closure",
+ "convert_case 0.6.0",
+ "futures",
+ "glam",
+ "indexmap",
+ "itertools",
+ "log",
+ "ordered-float",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "wgpu",
+ "winit",
 ]
 
 [[package]]

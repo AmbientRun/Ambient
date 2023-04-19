@@ -8,18 +8,18 @@ version = { workspace = true }
 
 [dependencies]
 ambient_api = { workspace = true }
-ambient_ui_components = { workspace = true }
+ambient_ui = { workspace = true }
 
 [[bin]]
-name = "seq_client"
+name = "music_sequencer_client"
 path = "src/client.rs"
 required-features = ["client"]
 
 [[bin]]
-name = "seq_server"
+name = "music_sequencer_server"
 path = "src/server.rs"
 required-features = ["server"]
 
 [features]
-client = ["ambient_api/client", "ambient_ui_components/client"]
-server = ["ambient_api/server", "ambient_ui_components/server"]
+client = ["ambient_api/client", "ambient_ui/client"]
+server = ["ambient_api/server", "ambient_ui/server"]

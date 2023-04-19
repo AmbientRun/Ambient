@@ -1,5 +1,5 @@
 use ambient_api::prelude::*;
-use ambient_ui_components::prelude::*;
+use ambient_ui::prelude::*;
 use components::{cursor, note_selection};
 
 fn make_row(text: &str, note_selection_now: &Vec<bool>, cursor_now: u8, pos: u8) -> Element {
