@@ -32,7 +32,7 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
         while let Ok(message) = rx.recv() {
             match message {
                 AudioMessage::Track(t, looping, amp, url, uid) => {
-                    let gain = Arc::new(Mutex::new(amp.clamp(0.0, 1.0)));
+                    let gain = Arc::new(Mutex::new(amp));
                     let gain_clone = gain.clone();
 
                     let sound = match looping {
@@ -46,7 +46,7 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                     for (_, (url, _, gain, _)) in sound_info.iter_mut() {
                         if url == &target_url {
                             let mut gain_locked = gain.lock();
-                            *gain_locked = amp.clamp(0.0, 1.0);
+                            *gain_locked = amp;
                         }
                     }
                     // log::info!("Updated volume for all sounds with url {} to {}", target_url, amp);

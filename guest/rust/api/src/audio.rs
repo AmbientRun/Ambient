@@ -30,9 +30,8 @@ impl AudioTrack {
 
     /// Set the volume of the track.
     pub fn volume(&mut self, volume: f32) -> &mut Self {
-        let good_volume = volume.clamp(0.0, 1.0);
-        self.volume = good_volume;
-        wit::client_audio::set_amp(&self.name, good_volume);
+        self.volume = volume;
+        wit::client_audio::set_amp(&self.name, volume);
         self
     }
 

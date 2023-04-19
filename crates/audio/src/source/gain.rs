@@ -3,24 +3,44 @@ use parking_lot::Mutex;
 use std::fmt::Debug;
 use std::sync::Arc;
 
-#[derive(Debug, Clone)]
-pub struct Gain<S> {
-    source: S,
-    gain: Arc<Mutex<f32>>,
+pub trait GainValue: Clone {
+    fn get_value(&self) -> f32;
 }
 
-impl<S: Source> Gain<S> {
-    pub fn new(source: S, gain: Arc<Mutex<f32>>) -> Self {
-        Self { gain, source }
+impl GainValue for f32 {
+    fn get_value(&self) -> f32 {
+        *self
     }
 }
 
-impl<S> Source for Gain<S>
+impl GainValue for Arc<Mutex<f32>> {
+    fn get_value(&self) -> f32 {
+        *self.lock()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Gain<S, G>
+where
+    G: GainValue,
+{
+    source: S,
+    gain: G,
+}
+
+impl<S: Source, G: GainValue> Gain<S, G> {
+    pub fn new(source: S, gain: G) -> Self {
+        Self { source, gain }
+    }
+}
+
+impl<S, G> Source for Gain<S, G>
 where
     S: Source,
+    G: GainValue + Send,
 {
     fn next_sample(&mut self) -> Option<crate::Frame> {
-        Some(self.source.next_sample()? * *self.gain.lock())
+        Some(self.source.next_sample()? * self.gain.get_value())
     }
 
     fn sample_rate(&self) -> crate::SampleRate {
