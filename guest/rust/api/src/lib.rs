@@ -6,13 +6,11 @@
 //!
 //! Ambient has first-class support for Rust. Please report any issues you encounter to the repository.
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
+
 #[cfg(feature = "client")]
-#[doc(inline)]
 pub use ambient_api_core::client::*;
 #[cfg(feature = "server")]
-#[doc(inline)]
 pub use ambient_api_core::server::*;
-#[doc(inline)]
 pub use ambient_api_core::*;
 
 pub use ambient_ui;
