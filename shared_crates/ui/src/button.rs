@@ -241,7 +241,7 @@ pub fn Button(
         if let Some(on_is_pressed_changed) = on_is_pressed_changed {
             on_is_pressed_changed(world, is_pressed);
         }
-        Box::new(|_| {})
+        |_| {}
     });
     hooks.use_runtime_message::<messages::WindowMouseInput>({
         to_owned![set_is_pressed, on_invoked, set_is_working];

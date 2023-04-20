@@ -60,11 +60,11 @@ pub fn TextEditor(
             if auto_focus {
                 set_focused(true);
             }
-            Box::new(move |_| {
+            move |_| {
                 if focused {
                     set_focused(false);
                 }
-            })
+            }
         }
     });
     hooks.use_runtime_message::<messages::WindowKeyboardCharacter>({

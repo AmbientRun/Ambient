@@ -122,7 +122,7 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
                     log_network_result!(game_client.rpc(rpc_join_instance, MAIN_INSTANCE_ID.to_string()).await);
                 }
             });
-            Box::new(|_| {})
+            |_| {}
         }
     });
 

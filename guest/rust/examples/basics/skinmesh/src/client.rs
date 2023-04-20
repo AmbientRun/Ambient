@@ -65,7 +65,7 @@ fn App(hooks: &mut Hooks, unit: EntityId) -> Element {
             },
         );
 
-        Box::new(|_| {})
+        |_| {}
     });
 
     FocusRoot::el([FlowRow::el([

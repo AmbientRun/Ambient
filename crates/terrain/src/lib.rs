@@ -657,7 +657,7 @@ pub fn use_async_asset<T: Asset + Clone + Sync + Send + std::fmt::Debug + 'stati
         world.resource(runtime()).spawn(async move {
             set_value(Some(asset_key.get(&assets).await));
         });
-        Box::new(|_| {})
+        |_| {}
     });
     value
 }
@@ -707,7 +707,7 @@ impl ElementComponent for Terrain {
         //                 Err(err) => log::error!("Failed to load terrain textures: {:?}", err)
         //             }
         //         });
-        //         Box::new(|_| {})
+        //         |_| {}
         //     }),
         // );
         hooks.use_frame(closure!(clone material_def, |world| {
