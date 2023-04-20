@@ -2,7 +2,7 @@ use ambient_api::{
     components::core::{
         app::main_scene,
         camera::aspect_ratio_from_window,
-        transform::{lookat_center, translation},
+        transform::{lookat_target, translation},
     },
     concepts::make_perspective_infinite_reverse_camera,
     prelude::*,
@@ -15,7 +15,7 @@ pub fn main() {
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with_default(main_scene())
         .with(translation(), Vec3::ONE * 5.)
-        .with(lookat_center(), vec3(0., 0., 0.))
+        .with(lookat_target(), vec3(0., 0., 0.))
         .spawn();
 
     ambient_api::messages::Frame::subscribe(move |_| {

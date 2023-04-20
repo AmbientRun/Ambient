@@ -16,7 +16,7 @@ use crate::{
 };
 
 pub use ambient_ecs::generated::components::core::transform::{
-    cylindrical_billboard_z, euler_rotation, inv_local_to_world, local_to_parent, local_to_world, lookat_center, lookat_up, mesh_to_local,
+    cylindrical_billboard_z, euler_rotation, inv_local_to_world, local_to_parent, local_to_world, lookat_target, lookat_up, mesh_to_local,
     mesh_to_world, reset_scale, rotation, scale, spherical_billboard, translation,
 };
 
@@ -120,7 +120,7 @@ impl TransformSystem {
                         }),
                     query_mut((local_to_world(),), (translation().changed(), rotation().changed(), scale().changed()))
                         .excl(local_to_parent())
-                        .excl(lookat_center())
+                        .excl(lookat_target())
                         .excl(fbx_complex_transform())
                         .to_system(|query, world, state, _| {
                             for (_, (local_to_world,), (&translation, &rotation, &scale)) in query.iter(world, state) {
@@ -129,7 +129,7 @@ impl TransformSystem {
                         }),
                     query_mut((local_to_world(),), (translation().changed(), rotation().changed()))
                         .excl(local_to_parent())
-                        .excl(lookat_center())
+                        .excl(lookat_target())
                         .excl(scale())
                         .excl(fbx_complex_transform())
                         .to_system(|q, world, qs, _| {
@@ -139,7 +139,7 @@ impl TransformSystem {
                         }),
                     query_mut((local_to_world(),), (translation().changed(), scale().changed()))
                         .excl(local_to_parent())
-                        .excl(lookat_center())
+                        .excl(lookat_target())
                         .excl(rotation())
                         .excl(fbx_complex_transform())
                         .to_system(|q, world, qs, _| {
@@ -149,7 +149,7 @@ impl TransformSystem {
                         }),
                     query_mut((local_to_world(),), (rotation().changed(), scale().changed()))
                         .excl(local_to_parent())
-                        .excl(lookat_center())
+                        .excl(lookat_target())
                         .excl(translation())
                         .excl(fbx_complex_transform())
                         .to_system(|q, world, qs, _| {
@@ -159,7 +159,7 @@ impl TransformSystem {
                         }),
                     query_mut((local_to_world(),), (translation().changed(),))
                         .excl(local_to_parent())
-                        .excl(lookat_center())
+                        .excl(lookat_target())
                         .excl(scale())
                         .excl(rotation())
                         .excl(fbx_complex_transform())
@@ -170,7 +170,7 @@ impl TransformSystem {
                         }),
                     query_mut((local_to_world(),), (scale().changed(),))
                         .excl(local_to_parent())
-                        .excl(lookat_center())
+                        .excl(lookat_target())
                         .excl(translation())
                         .excl(rotation())
                         .excl(fbx_complex_transform())
@@ -181,7 +181,7 @@ impl TransformSystem {
                         }),
                     query_mut((local_to_world(),), (rotation().changed(),))
                         .excl(local_to_parent())
-                        .excl(lookat_center())
+                        .excl(lookat_target())
                         .excl(translation())
                         .excl(scale())
                         .excl(fbx_complex_transform())
@@ -191,19 +191,19 @@ impl TransformSystem {
                             }
                         }),
                     // Make sure lookat has all the components
-                    ensure_has_component(lookat_center(), local_to_world(), Default::default()),
-                    ensure_has_component(lookat_center(), inv_local_to_world(), Default::default()),
-                    ensure_has_component(lookat_center(), translation(), Default::default()),
-                    ensure_has_component(lookat_center(), lookat_up(), Vec3::Z),
+                    ensure_has_component(lookat_target(), local_to_world(), Default::default()),
+                    ensure_has_component(lookat_target(), inv_local_to_world(), Default::default()),
+                    ensure_has_component(lookat_target(), translation(), Default::default()),
+                    ensure_has_component(lookat_target(), lookat_up(), Vec3::Z),
                     query_mut(
                         (local_to_world(), inv_local_to_world()),
-                        (translation().changed(), lookat_center().changed(), lookat_up().changed()),
+                        (translation().changed(), lookat_target().changed(), lookat_up().changed()),
                     )
                     .excl(local_to_parent())
                     .excl(fbx_complex_transform())
                     .to_system(|q, world, qs, _| {
-                        for (_, (local_to_world, inv_local_to_world), (&translation, &lookat_center, &lookat_up)) in q.iter(world, qs) {
-                            *inv_local_to_world = Mat4::look_at_lh(translation, lookat_center, lookat_up);
+                        for (_, (local_to_world, inv_local_to_world), (&translation, &lookat_target, &lookat_up)) in q.iter(world, qs) {
+                            *inv_local_to_world = Mat4::look_at_lh(translation, lookat_target, lookat_up);
                             *local_to_world = inv_local_to_world.inverse();
                         }
                     }),
@@ -261,7 +261,7 @@ impl TransformSystem {
                             *mesh_to_world = local_to_world;
                         }
                     }),
-                    query_mut((inv_local_to_world(),), (local_to_world().changed(),)).excl(lookat_center()).to_system(|q, world, qs, _| {
+                    query_mut((inv_local_to_world(),), (local_to_world().changed(),)).excl(lookat_target()).to_system(|q, world, qs, _| {
                         for (_, (inv_local_to_world,), (local_to_world,)) in q.iter(world, qs) {
                             *inv_local_to_world = local_to_world.inverse();
                         }

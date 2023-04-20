@@ -7,7 +7,7 @@ use ambient_api::{
             cast_shadows, color, fog_color, fog_density, fog_height_falloff, light_diffuse, sky,
             sun,
         },
-        transform::{lookat_center, rotation, scale, translation},
+        transform::{lookat_target, rotation, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
@@ -21,7 +21,7 @@ fn main() {
         .with_default(main_scene())
         .with_default(fog())
         .with(translation(), vec3(0., -5., 3.))
-        .with(lookat_center(), vec3(0., 0., 2.))
+        .with(lookat_target(), vec3(0., 0., 2.))
         .spawn();
 
     let sun = Entity::new()

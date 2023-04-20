@@ -5,7 +5,7 @@ use ambient_api::{
         camera::aspect_ratio_from_window,
         primitives::cube,
         rendering::color,
-        transform::{lookat_center, scale, translation},
+        transform::{lookat_target, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
@@ -22,7 +22,7 @@ pub fn main() {
         .with_default(main_scene())
         .with(translation(), vec3(SIZE as f32, SIZE as f32, SIZE as f32))
         .with(
-            lookat_center(),
+            lookat_target(),
             vec3(SIZE as f32 / 2., SIZE as f32 / 2., 0.),
         )
         .spawn();

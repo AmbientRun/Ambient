@@ -60,7 +60,7 @@ pub fn LookatCamera(_: &mut Hooks, eye: Vec3, lookat: Vec3, up: Vec3) -> Element
         .init_default(projection())
         .init_default(projection_view())
         .with(translation(), eye)
-        .with(lookat_center(), lookat)
+        .with(lookat_target(), lookat)
         .with(lookat_up(), up)
 }
 

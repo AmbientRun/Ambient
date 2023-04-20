@@ -14,7 +14,7 @@ pub fn main() {
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with_default(main_scene())
         .with(translation(), vec3(2., 2., 3.0))
-        .with(lookat_center(), vec3(0., 0., 1.))
+        .with(lookat_target(), vec3(0., 0., 1.))
         .spawn();
 
     Entity::new()
