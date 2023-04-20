@@ -353,7 +353,7 @@ impl ElementComponent for GameClientView {
         // When the GameClientView is despawned, stop the task.
         {
             let task = task.clone();
-            hooks.use_spawn(move |_| Box::new(move |_| task.abort()));
+            hooks.use_spawn(move |_| move |_| task.abort());
         }
 
         if let Some(err) = error {

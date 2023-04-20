@@ -79,9 +79,9 @@ impl ElementComponent for GridGuide {
         {
             let game_state = game_client.game_state.clone();
             hooks.use_spawn(move |_| {
-                Box::new(move |_| {
+                move |_| {
                     game_state.lock().world.despawn(entity);
-                })
+                }
             });
         }
 
@@ -92,7 +92,7 @@ impl ElementComponent for GridGuide {
             let transform = Mat4::from_scale_rotation_translation(Vec3::splat(BLUEBOARD_SIZE), rotation, point);
             state.world.set(entity, local_to_world(), transform).expect("Entity was despawned");
 
-            Box::new(|_| {})
+            |_| {}
         });
 
         Element::new()
@@ -124,9 +124,9 @@ impl ElementComponent for AxisGuide {
         {
             let game_state = game_client.game_state.clone();
             hooks.use_spawn(move |_| {
-                Box::new(move |_| {
+                move |_| {
                     game_state.lock().world.despawn(entity);
-                })
+                }
             });
         }
 

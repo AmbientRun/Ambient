@@ -157,9 +157,13 @@ impl<'a> Hooks<'a> {
     /// Execute a function upon the world the first time is mounted, E.g;
     /// rendered.
     #[tracing::instrument(level = "debug", skip_all)]
-    pub fn use_spawn<F: FnOnce(&mut World) -> DespawnFn + Sync + Send + 'static>(&mut self, func: F) {
+    pub fn use_spawn<F: FnOnce(&mut World) -> R + Sync + Send + 'static, R: FnOnce(&mut World) + Sync + Send + 'static>(
+        &mut self,
+        func: F,
+    ) {
         if let Some(ref mut on_spawn) = self.on_spawn {
-            on_spawn.push(Box::new(func) as SpawnFn);
+            let spawn_fn: SpawnFn = Box::new(move |w| Box::new(func(w)));
+            on_spawn.push(spawn_fn);
         }
     }
 
@@ -190,7 +194,7 @@ impl<'a> Hooks<'a> {
                 let listener = T::subscribe(move |event| {
                     (handler.lock().as_ref().unwrap())(&mut World, &event);
                 });
-                Box::new(|_| listener.stop())
+                |_| listener.stop()
             });
         }
     }
@@ -234,7 +238,7 @@ impl<'a> Hooks<'a> {
                 set_state(Some(res))
             });
 
-            Box::new(move |_| task.abort())
+            move |_| task.abort()
         });
 
         state
@@ -351,10 +355,10 @@ impl<'a> Hooks<'a> {
     ///
     /// The provided functions returns a function which is run when the part is
     /// removed or `use_effect` is run again.
-    pub fn use_effect<D: PartialEq + Debug + Sync + Send + 'static>(
+    pub fn use_effect<D: PartialEq + Debug + Sync + Send + 'static, R: FnOnce(&mut World) + Sync + Send + 'static>(
         &mut self,
         dependencies: D,
-        run: impl FnOnce(&mut World, &D) -> Box<dyn FnOnce(&mut World) + Sync + Send> + Sync + Send,
+        run: impl FnOnce(&mut World, &D) -> R + Sync + Send,
     ) {
         struct Cleanup(Box<dyn FnOnce(&mut World) + Sync + Send>);
         impl Debug for Cleanup {
@@ -367,12 +371,12 @@ impl<'a> Hooks<'a> {
         {
             let cleanup_prev = cleanup_prev.clone();
             self.use_spawn(move |_| {
-                Box::new(move |world| {
+                move |world| {
                     let mut cleanup_prev = cleanup_prev.lock();
                     if let Some(cleanup_prev) = cleanup_prev.take() {
                         cleanup_prev.0(world);
                     }
-                })
+                }
             });
         }
 
@@ -384,7 +388,7 @@ impl<'a> Hooks<'a> {
                 cleanup_prev.0(self.world);
             }
             profiling::scope!("use_effect_run");
-            *cleanup_prev = Some(Cleanup(run(self.world, &dependencies)));
+            *cleanup_prev = Some(Cleanup(Box::new(run(self.world, &dependencies))));
             *prev_deps = Some(dependencies);
         }
     }
@@ -430,11 +434,11 @@ impl<'a> Hooks<'a> {
                 let refresh = refresh.clone();
                 move |_| refresh()
             });
-            Box::new(|_| {
+            |_| {
                 s.stop();
                 d.stop();
                 c.stop();
-            })
+            }
         });
         query.evaluate()
     }
@@ -450,9 +454,9 @@ impl<'a> Hooks<'a> {
                     cb();
                 }
             });
-            Box::new(move |_| {
+            move |_| {
                 thread.abort();
-            })
+            }
         });
         #[cfg(feature = "guest")]
         self.use_spawn(move |world| {
@@ -468,9 +472,9 @@ impl<'a> Hooks<'a> {
                     }
                 });
             }
-            Box::new(move |_| {
+            move |_| {
                 exit.store(true, std::sync::atomic::Ordering::SeqCst);
-            })
+            }
         });
     }
 
@@ -498,9 +502,9 @@ impl<'a> Hooks<'a> {
                 }
             });
 
-            Box::new(move |_| {
+            move |_| {
                 task.abort();
-            })
+            }
         });
         #[cfg(feature = "guest")]
         self.use_effect(dependencies.clone(), move |world, _| {
@@ -520,9 +524,9 @@ impl<'a> Hooks<'a> {
                     }
                 });
             }
-            Box::new(move |_| {
+            move |_| {
                 exit.store(true, std::sync::atomic::Ordering::SeqCst);
-            })
+            }
         });
     }
 }

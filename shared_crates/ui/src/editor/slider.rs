@@ -91,7 +91,7 @@ impl ElementComponent for Slider {
                     }
                 }
 
-                Box::new(|_| {})
+                |_| {}
             }
         });
         let block_id = hooks.use_ref_with(|_| EntityId::null());

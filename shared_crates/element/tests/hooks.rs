@@ -176,9 +176,9 @@ fn use_effect() {
             hooks.use_effect(self.value, |world, _| {
                 *world.resource_mut(counter()) += 1;
                 *world.resource_mut(n_renders()) += 1;
-                Box::new(|world| {
+                |world| {
                     *world.resource_mut(counter()) -= 1;
-                })
+                }
             });
             Element::new()
         }
