@@ -4,7 +4,7 @@
 //! When the tree is updated, it is compared to the previous tree, and only the differences are applied to the ECS.
 //! This can be used for UI, as well as any other tree-like data structure that you want to be able to update efficiently.
 
-// #![deny(missing_docs)]
+#![deny(missing_docs)]
 
 #[macro_use]
 extern crate derivative;
@@ -121,7 +121,7 @@ impl Element {
         self
     }
     /// Calls [Self::init] with the default value for the component's type.
-    pub fn init_default<T: ComponentValue + Sync + Send + Clone + Default + 'static>(mut self, component: Component<T>) -> Self {
+    pub fn init_default<T: ComponentValue + Sync + Send + Clone + Default + 'static>(self, component: Component<T>) -> Self {
         self.init(component, T::default())
     }
     #[cfg(feature = "native")]
