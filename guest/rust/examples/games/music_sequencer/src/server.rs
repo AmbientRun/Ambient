@@ -37,14 +37,14 @@ pub async fn main() {
     .with(cursor(), 0)
     .spawn();
 
-    let mut color_map = std::sync::Arc::new(std::sync::Mutex::new(std::collections::HashMap::new()));
-    let mut color_map_clone = color_map.clone();
+    let color_map = std::sync::Arc::new(std::sync::Mutex::new(std::collections::HashMap::new()));
+    let color_map_clone = color_map.clone();
 
     // When a player spawns, create their player state.
     spawn_query(user_id())
     .requires(player())
     .bind(move |players| {
-        for (player, player_user_id) in players {
+        for (_player, player_user_id) in players {
             let next_color = hsv_to_rgb(&[
                 entity::get_component(resources(), next_player_hue()).unwrap_or_default(),
                 0.7,
