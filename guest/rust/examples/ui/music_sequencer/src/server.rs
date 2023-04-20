@@ -1,29 +1,24 @@
 use ambient_api::prelude::*;
-use components::{cursor, note_selection};
+use common::NOTE_COUNT;
+use components::note_selection;
+
+mod common;
 
 #[main]
 pub async fn main() {
-    let mut value = 0_u8;
-    let mother = Entity::new()
-        .with(note_selection(), vec![false; 128])
-        .with(cursor(), 0)
-        .spawn();
+    entity::add_component(
+        entity::synchronized_resources(),
+        note_selection(),
+        vec![false; NOTE_COUNT],
+    );
 
     messages::Click::subscribe(move |_source, data| {
-        let mut v = entity::get_component(mother, note_selection()).unwrap();
-        v[data.index as usize] = !v[data.index as usize];
-        entity::set_component(mother, note_selection(), v);
+        entity::mutate_component(
+            entity::synchronized_resources(),
+            note_selection(),
+            |selection| {
+                selection[data.index as usize] = !selection[data.index as usize];
+            },
+        );
     });
-    loop {
-        value = (value + 1) % 16;
-        entity::set_component(mother, cursor(), value);
-        let v = entity::get_component(mother, note_selection()).unwrap();
-        for i in 0..8 {
-            let index = value as usize + i * 16;
-            if v[index] {
-                messages::Play::new(i as u8).send_client_broadcast_reliable();
-            }
-        }
-        sleep(0.125).await;
-    }
 }

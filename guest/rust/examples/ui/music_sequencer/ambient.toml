@@ -5,20 +5,14 @@ version = "0.0.1"
 
 [messages.play]
 description = "Send a message to play the sound at row index."
-fields = { index = "U8" }
+fields = { index = "U32" }
 
 [messages.click]
 description = "Select or deselect a note."
-fields = { index = "U8" }
+fields = { index = "U32" }
 
 [components.note_selection]
-type =  { type = "Vec", element_type = "Bool" }
+type = { type = "Vec", element_type = "Bool" }
 name = "Note selection"
 description = "X and Y of the selected notes."
-attributes = ["Networked", "Debuggable"]
-
-[components.cursor]
-type =  "U8"
-name = "Cursor position"
-description = "From 0 to 16."
 attributes = ["Networked", "Debuggable"]

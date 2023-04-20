@@ -1,7 +1,10 @@
-use ambient_api::prelude::*;
-use components::{cursor, note_selection};
+use ambient_api::{messages::Frame, prelude::*};
+use components::note_selection;
 
-fn make_row(text: &str, note_selection_now: &[bool], cursor_now: u8, pos: u8) -> Element {
+mod common;
+use common::{BEAT_COUNT, SECONDS_PER_NOTE, SOUNDS};
+
+fn make_row(text: &str, note_selection_now: &[bool], cursor_now: usize, pos: usize) -> Element {
     let card_inner = |selected: bool, highlight: bool| {
         FlowRow(vec![Text::el("")])
             .el()
@@ -17,16 +20,17 @@ fn make_row(text: &str, note_selection_now: &[bool], cursor_now: u8, pos: u8) ->
             })
             .with_padding_even(20.)
     };
-    FlowColumn::el(vec![
+    FlowColumn::el([
         Text::el(text),
         FlowRow::el(
-            note_selection_now[pos as usize..pos as usize + 16]
+            note_selection_now[pos..pos + BEAT_COUNT]
                 .iter()
                 .enumerate()
                 .map(|(index, &selected)| {
-                    let is_on_cursor = cursor_now == index as u8;
+                    let is_on_cursor = cursor_now == index;
                     FlowRow::el([Button::new(card_inner(selected, is_on_cursor), move |_| {
-                        messages::Click::new(index as u8 + pos).send_server_reliable();
+                        messages::Click::new(u32::try_from(index + pos).unwrap())
+                            .send_server_reliable();
                     })
                     .style(ButtonStyle::Card)
                     .el()])
@@ -41,39 +45,40 @@ fn make_row(text: &str, note_selection_now: &[bool], cursor_now: u8, pos: u8) ->
 }
 
 #[element_component]
-fn App(hooks: &mut Hooks) -> Element {
-    let items = hooks.use_query((note_selection(), cursor()));
-
-    let (_id, (note_selection_now, cursor_now)) = &items[0];
-
-    FlowColumn::el(vec![
-        make_row("Kick Drum", note_selection_now, *cursor_now, 0),
-        make_row("Snare Drum", note_selection_now, *cursor_now, 16),
-        make_row("Closed Hihat", note_selection_now, *cursor_now, 32),
-        make_row("Open Hihat", note_selection_now, *cursor_now, 48),
-        make_row("Low Conga", note_selection_now, *cursor_now, 64),
-        make_row("Mid Conga", note_selection_now, *cursor_now, 80),
-        make_row("High Tom", note_selection_now, *cursor_now, 96),
-        make_row("Mid Tom", note_selection_now, *cursor_now, 112),
-    ])
+fn App(_hooks: &mut Hooks, cursor: usize, notes: Vec<bool>) -> Element {
+    FlowColumn::el(
+        SOUNDS.iter().enumerate().map(|(i, (label, _))| {
+            make_row(label, &notes, cursor.try_into().unwrap(), i * BEAT_COUNT)
+        }),
+    )
 }
 
 #[main]
 pub fn main() {
-    App.el().spawn_interactive();
-    let bd = audio::load(asset::url("assets/BD2500.ogg").unwrap());
-    let sd = audio::load(asset::url("assets/SD7550.ogg").unwrap());
-    let ch = audio::load(asset::url("assets/CH.ogg").unwrap());
-    let oh = audio::load(asset::url("assets/OH75.ogg").unwrap());
-    let lc = audio::load(asset::url("assets/LC00.ogg").unwrap());
-    let mc = audio::load(asset::url("assets/MC00.ogg").unwrap());
-    let ht = audio::load(asset::url("assets/HT75.ogg").unwrap());
-    let mt = audio::load(asset::url("assets/MT75.ogg").unwrap());
+    let sounds: Vec<_> = SOUNDS
+        .iter()
+        .map(|(_, path)| audio::load(asset::url(path).unwrap()))
+        .collect();
 
-    messages::Play::subscribe(move |_source, data| {
-        let sounds = [&bd, &sd, &ch, &oh, &lc, &mc, &ht, &mt];
-        if let Some(sound) = sounds.get(data.index as usize) {
-            sound.play();
+    let mut cursor = 0;
+    let mut last_note_time = time();
+    let mut tree = Element::new().spawn_tree();
+    Frame::subscribe(move |_| {
+        let Some(notes) = entity::get_component(entity::synchronized_resources(), note_selection()) else { return; };
+
+        let now = time();
+        if now - last_note_time > SECONDS_PER_NOTE {
+            cursor = (cursor + 1) % BEAT_COUNT;
+            last_note_time = now;
+
+            for (i, sound) in sounds.iter().enumerate() {
+                if notes[i * BEAT_COUNT + cursor] {
+                    sound.play();
+                }
+            }
+            tree.migrate_root(&mut World, App::el(cursor, notes));
         }
+
+        tree.update(&mut World);
     });
 }
