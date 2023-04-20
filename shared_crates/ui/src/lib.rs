@@ -9,7 +9,6 @@
 //!
 //! ```ignore
 //! use ambient_api::prelude::*;
-//! use ambient_ui::prelude::*;
 //!
 //! #[element_component]
 //! fn App(hooks: &mut Hooks) -> Element {
@@ -112,7 +111,7 @@ pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
 }
 
 /// A simple UI rect. Use components like `width`, `height`, `background_color`, `border_color`, `border_radius` and `border_thickness`
-/// to control its appearance
+/// to control its appearance.
 #[element_component]
 pub fn Rectangle(_hooks: &mut Hooks) -> Element {
     with_rect(UIBase.el()).with(width(), 100.).with(height(), 100.).with(background_color(), Vec4::ONE)
@@ -130,7 +129,7 @@ pub fn with_rect(element: Element) -> Element {
 }
 
 /// A simple UI line. Use components like `line_from`, `line_to`, `line_width`, `background_color`, `border_color`, `border_radius` and `border_thickness`
-/// to control its appearance
+/// to control its appearance.
 #[element_component]
 pub fn Line(_hooks: &mut Hooks) -> Element {
     with_rect(UIBase.el()).with(background_color(), Vec4::ONE)

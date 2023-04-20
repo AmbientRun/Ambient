@@ -3,6 +3,13 @@
 //! It is backed by the Ambient ECS; the virtual tree is converted into a real tree of entities and components.
 //! When the tree is updated, it is compared to the previous tree, and only the differences are applied to the ECS.
 //! This can be used for UI, as well as any other tree-like data structure that you want to be able to update efficiently.
+//!
+//! To pass data into the root of an Element tree, pass the data into its properties when constructing it and/or update the root
+//! of the tree using [ElementTree::migrate_root].
+//!
+//! To receive data from an Element tree, we recommend you use messaging. This includes sending messages to the server and/or
+//! standard messaging channels in Rust (e.g. `std::sync::mpsc::channel`). We do not generally recommend trying to send data
+//! out of the tree directly, as this can be difficult to reason about.
 
 #![deny(missing_docs)]
 
@@ -218,6 +225,19 @@ impl Element {
         ElementTree::new(&mut World, self)
     }
     /// This spawns the element tree and sets up listeners to automatically update it.
+    ///
+    /// This is equivalent to calling [Self::spawn_tree] and then calling [ElementTree::update] on the tree each frame.
+    ///
+    /// You may want to update the tree manually if you want to replace the root [Element]:
+    /// ```ignore
+    /// let mut tree = Element::new().spawn_tree();
+    /// Frame::subscribe(move |_| {
+    ///     if some_condition {
+    ///         tree.migrate_root(&mut World, App::el(new_properties));
+    ///     }
+    ///     tree.update(&mut World);
+    /// });
+    /// ```
     #[cfg(feature = "guest")]
     pub fn spawn_interactive(self) {
         use ambient_guest_bridge::api::{message::RuntimeMessage, messages, prelude::OkEmpty};
