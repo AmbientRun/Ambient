@@ -324,9 +324,9 @@ dependencies = [
  "ambient_layout",
  "ambient_rect",
  "ambient_renderer",
+ "ambient_shared_types",
  "ambient_sys",
  "ambient_text",
- "ambient_window_types",
  "arboard",
 ]
 
@@ -338,7 +338,6 @@ dependencies = [
  "ambient_ecs",
  "ambient_shared_types",
  "ambient_std",
- "ambient_window_types",
  "glam",
  "serde",
  "serde_json",
@@ -496,6 +495,12 @@ dependencies = [
 [[package]]
 name = "ambient_shared_types"
 version = "0.2.0-dev"
+dependencies = [
+ "bitflags",
+ "serde",
+ "strum",
+ "winit",
+]
 
 [[package]]
 name = "ambient_std"
@@ -595,6 +600,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_ui"
+version = "0.2.0-dev"
+dependencies = [
+ "ambient_cb",
+ "ambient_color",
+ "ambient_element",
+ "ambient_guest_bridge",
+ "ambient_math",
+ "ambient_shared_types",
+ "ambient_sys",
+ "ambient_time",
+ "convert_case 0.6.0",
+ "futures",
+ "glam",
+ "indexmap",
+ "itertools",
+ "parking_lot",
+ "rand",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "ambient_ui_native"
 version = "0.2.0-dev"
 dependencies = [
@@ -613,7 +641,6 @@ dependencies = [
  "ambient_sys",
  "ambient_text",
  "ambient_ui",
- "ambient_window_types",
  "anyhow",
  "arboard",
  "async-trait",
@@ -634,30 +661,6 @@ dependencies = [
  "tracing",
  "wgpu",
  "winit",
-]
-
-[[package]]
-name = "ambient_ui"
-version = "0.2.0-dev"
-dependencies = [
- "ambient_cb",
- "ambient_color",
- "ambient_element",
- "ambient_guest_bridge",
- "ambient_math",
- "ambient_shared_types",
- "ambient_sys",
- "ambient_time",
- "ambient_window_types",
- "convert_case 0.6.0",
- "futures",
- "glam",
- "indexmap",
- "itertools",
- "parking_lot",
- "rand",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -685,16 +688,6 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
-]
-
-[[package]]
-name = "ambient_window_types"
-version = "0.2.0-dev"
-dependencies = [
- "bitflags",
- "serde",
- "strum",
- "winit",
 ]
 
 [[package]]

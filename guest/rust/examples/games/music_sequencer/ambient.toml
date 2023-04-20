@@ -1,0 +1,27 @@
+[project]
+id = "music_sequencer"
+name = "Music sequencer"
+version = "0.0.1"
+
+[messages.play]
+description = "Send a message to play the sound at row index."
+fields = { index = "U32" }
+
+[messages.click]
+description = "Select or deselect a note."
+fields = { index = "U32" }
+
+[components.note_selection]
+type = { type = "Vec", element_type = "Vec4" }
+name = "Note selection"
+description = "X and Y of the selected notes."
+attributes = ["Networked", "Debuggable"]
+
+[components.next_player_hue]
+type = "F32"
+name = "Next Player Hue"
+description = "Controls the hue (in degrees) to use for the next player's color."
+attributes = [
+    "Debuggable",
+    "Resource",
+]

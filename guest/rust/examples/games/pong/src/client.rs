@@ -12,9 +12,11 @@ use constants::*;
 
 #[main]
 fn main() {
-    let bgm = audio::load(asset::url("assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg").unwrap());
-    let ping = audio::load(asset::url("assets/ping.ogg").unwrap());
-    bgm.looping(true).volume(0.2).play();
+    let mut bgm =
+        audio::load(asset::url("assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg").unwrap());
+    let mut ping = audio::load(asset::url("assets/ping.ogg").unwrap());
+    let _id = bgm.looping(true).volume(0.2).play();
+    let mut is_playing = true;
 
     messages::Ping::subscribe(move |_, _| {
         ping.looping(false).volume(0.9).play();
@@ -26,6 +28,7 @@ fn main() {
 
     ambient_api::messages::Frame::subscribe(move |_| {
         let input = input::get();
+        let delta = input::get_delta().0;
         let mut direction = 0.0;
 
         if input.keys.contains(&KeyCode::Up) {
@@ -33,6 +36,25 @@ fn main() {
         }
         if input.keys.contains(&KeyCode::Down) {
             direction -= 1.0;
+        }
+
+        if delta.keys.contains(&KeyCode::Key1) {
+            bgm.volume(bgm.volume - 0.1);
+        }
+
+        if delta.keys.contains(&KeyCode::Key2) {
+            bgm.volume(bgm.volume + 0.1);
+        }
+
+        if delta.keys.contains(&KeyCode::Key3) {
+            if is_playing {
+                bgm.stop();
+            } else {
+                bgm.play();
+            }
+            is_playing = !is_playing;
+            // you can also use the id to stop the sound
+            // _id.stop();
         }
 
         messages::Input::new(direction).send_server_unreliable();

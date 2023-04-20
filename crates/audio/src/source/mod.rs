@@ -16,7 +16,12 @@ mod spatial;
 pub mod streaming_source;
 mod uniform;
 use std::{
-    self, f32::consts::TAU, fmt::Debug, ops::{Deref, DerefMut, RangeBounds}, sync::Arc, time::Duration
+    self,
+    f32::consts::TAU,
+    fmt::Debug,
+    ops::{Deref, DerefMut, RangeBounds},
+    sync::Arc,
+    time::Duration,
 };
 
 pub use buffered::*;
@@ -35,7 +40,10 @@ pub use uniform::*;
 
 use self::{history::History, mix::Mix, oscilloscope::Oscilloscope, pad_to::PadTo};
 use crate::{
-    blt::{BilinearTransform, Hpf, Lpf, TransferFunction}, hrtf::HrtfLib, value::{Constant, Value}, AudioEmitter, AudioListener, Frame, SampleRate
+    blt::{BilinearTransform, Hpf, Lpf, TransferFunction},
+    hrtf::HrtfLib,
+    value::{Constant, Value},
+    AudioEmitter, AudioListener, Frame, SampleRate,
 };
 
 /// A source represents a continuous stream of stereo audio samples.
@@ -146,9 +154,10 @@ pub trait Source: Send {
         SampleIter::new(self)
     }
 
-    fn gain(self, gain: f32) -> Gain<Self>
+    fn gain<G>(self, gain: G) -> Gain<Self, G>
     where
         Self: Sized,
+        G: GainValue,
     {
         Gain::new(self, gain)
     }

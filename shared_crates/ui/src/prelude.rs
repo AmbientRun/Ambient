@@ -7,4 +7,7 @@ pub use crate::{
 };
 pub use ambient_cb::{cb, Cb};
 pub use ambient_element::{self, element_component, Element, ElementComponent, ElementComponentExt, ElementTree, Group, Hooks, Memo, Wrap};
-pub use ambient_guest_bridge::components::{app::*, ecs::*, input::*, layout::*, player::*, rect::*, rendering::*, text::*, transform::*};
+pub use ambient_guest_bridge::{
+    components::{app::*, ecs::*, input::*, layout::*, player::*, rect::*, rendering::*, text::*, transform::*},
+    ecs::World,
+};

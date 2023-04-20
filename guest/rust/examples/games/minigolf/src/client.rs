@@ -17,9 +17,9 @@ fn main() {
         .send_server_unreliable();
     });
 
-    let ballhit = audio::load(asset::url("assets/ball-hit.ogg").unwrap());
+    let mut ballhit = audio::load(asset::url("assets/ball-hit.ogg").unwrap());
 
-    let balldrop = audio::load(asset::url("assets/ball-drop.ogg").unwrap());
+    let mut balldrop = audio::load(asset::url("assets/ball-drop.ogg").unwrap());
 
     messages::Hit::subscribe(move |_source, data| {
         let ball = data.ball;
