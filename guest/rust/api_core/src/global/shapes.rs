@@ -6,7 +6,7 @@ use crate::{
 };
 use glam::{vec3, Vec3};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 /// Ray represented by an origin and a direction
 pub struct Ray {
     /// Origin of the ray
