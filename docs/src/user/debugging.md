@@ -2,13 +2,15 @@
 
 ## ECS
 
-When the client is run with the `AMBIENT_DEBUGGER` environment variable, or with the `--debugger` flag, several buttons are shown at the top:
+When the client is run with the `AMBIENT_DEBUGGER` environment variable, or with the `--debugger` flag, the game is surrounded with a debugger:
 
 ```sh
-AMBIENT_DEBUGGER=1 ambient run examples/minigolf # or `$env:AMBIENT_DEBUGGER=1` on Windows/PowerShell, or `ambient run --debugger examples/minigolf`
+AMBIENT_DEBUGGER=1 ambient run examples/minigolf
+# or `$env:AMBIENT_DEBUGGER=1` on Windows/PowerShell
+# or `ambient run --debugger examples/minigolf`
 ```
 
-![Debug buttons at the top of the window with `AMBIENT_DEBUGGER`](debug_buttons.png)
+![Debugger surrounding the game with `AMBIENT_DEBUGGER`](debugger.png)
 
 These can be used to inspect the state of the client and server ECSes, as well as the renderer. When one of these buttons are pressed, a YAML file will be created with the corresponding state, and its path will be written to `stdout`:
 
