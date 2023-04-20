@@ -1,5 +1,4 @@
 use ambient_api::prelude::*;
-use ambient_ui::prelude::*;
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {

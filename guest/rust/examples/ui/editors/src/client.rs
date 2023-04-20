@@ -1,5 +1,4 @@
 use ambient_api::prelude::*;
-use ambient_ui::prelude::*;
 use indexmap::IndexMap;
 
 #[element_component]
