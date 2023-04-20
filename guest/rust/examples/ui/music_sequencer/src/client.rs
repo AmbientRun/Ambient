@@ -2,19 +2,16 @@ use ambient_api::prelude::*;
 use ambient_ui::prelude::*;
 use components::{cursor, note_selection};
 
-fn make_row(text: &str, note_selection_now: &[bool], cursor_now: u8, pos: u8) -> Element {
-    let card_inner = |selected: bool, highlight: bool| {
+fn make_row(text: &str, note_selection_now: &[Vec4], cursor_now: u8, pos: u8) -> Element {
+    let card_inner = |selected_color: Vec4, highlight: bool| {
         FlowRow(vec![Text::el("")])
             .el()
             .with_background(match highlight {
-                true => match selected {
-                    true => vec4(0.2, 0.5, 0.2, 1.),
-                    false => vec4(0.5, 0.5, 0.5, 1.),
+                true => match selected_color == vec4(0.2, 0.2, 0.2, 1.0) {
+                    true => vec4(0.5, 0.5, 0.5, 1.),
+                    false => selected_color - vec4(0.0, 0.0, 0.0, 0.2),
                 },
-                false => match selected {
-                    true => vec4(0.2, 0.8, 0.2, 1.),
-                    false => vec4(0.2, 0.2, 0.2, 1.),
-                },
+                false => selected_color,
             })
             .with_padding_even(20.)
     };
@@ -24,11 +21,14 @@ fn make_row(text: &str, note_selection_now: &[bool], cursor_now: u8, pos: u8) ->
             note_selection_now[pos as usize..pos as usize + 16]
                 .iter()
                 .enumerate()
-                .map(|(index, &selected)| {
+                .map(|(index, &selected_color)| {
                     let is_on_cursor = cursor_now == index as u8;
-                    FlowRow::el([Button::new(card_inner(selected, is_on_cursor), move |_| {
-                        messages::Click::new(index as u8 + pos).send_server_reliable();
-                    })
+                    FlowRow::el([Button::new(
+                        card_inner(selected_color, is_on_cursor),
+                        move |_| {
+                            messages::Click::new(index as u8 + pos).send_server_reliable();
+                        },
+                    )
                     .style(ButtonStyle::Card)
                     .el()])
                 }),
