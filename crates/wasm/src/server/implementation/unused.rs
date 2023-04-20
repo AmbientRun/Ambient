@@ -57,6 +57,14 @@ impl wit::client_camera::Host for Bindings {
     ) -> anyhow::Result<wit::types::Ray> {
         unsupported()
     }
+
+    fn world_to_screen(
+        &mut self,
+        _camera: wit::types::EntityId,
+        _world_pos: wit::types::Vec3,
+    ) -> anyhow::Result<wit::types::Vec2> {
+        unsupported()
+    }
 }
 impl wit::client_audio::Host for Bindings {
     fn load(&mut self, _url: String) -> anyhow::Result<()> {

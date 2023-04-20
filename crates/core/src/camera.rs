@@ -137,6 +137,13 @@ pub fn clip_space_ray(world: &World, camera: EntityId, mouse_origin: Vec2) -> Re
     Ok(Ray::new(camera_mouse_origin, camera_mouse_dir))
 }
 
+pub fn world_to_clip_space(world: &World, camera: EntityId, world_position: Vec3) -> Result<Vec2, ECSError> {
+    let camera_projection = world.get(camera, projection())?;
+    let camera_view = world.get(camera, inv_local_to_world())?;
+    let camera_pv = camera_projection * camera_view;
+    Ok(camera_pv.project_point3(world_position).xy())
+}
+
 pub fn get_active_camera(world: &World, scene: Component<()>, user_id: Option<&String>) -> Option<EntityId> {
     query((scene, active_camera()))
         .iter(world, None)
