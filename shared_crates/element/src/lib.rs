@@ -1,6 +1,6 @@
 //! Element is a React-inspired virtual tree library for the Ambient runtime.
 //!
-//! It is backed by the Ambient ECS, which is used as the source of truth for the tree.
+//! It is backed by the Ambient ECS; the virtual tree is converted into a real tree of entities and components.
 //! When the tree is updated, it is compared to the previous tree, and only the differences are applied to the ECS.
 //! This can be used for UI, as well as any other tree-like data structure that you want to be able to update efficiently.
 
