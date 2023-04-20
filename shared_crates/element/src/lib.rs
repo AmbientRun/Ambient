@@ -1,3 +1,11 @@
+//! Element is a React-inspired virtual tree library for the Ambient runtime.
+//!
+//! It is backed by the Ambient ECS; the virtual tree is converted into a real tree of entities and components.
+//! When the tree is updated, it is compared to the previous tree, and only the differences are applied to the ECS.
+//! This can be used for UI, as well as any other tree-like data structure that you want to be able to update efficiently.
+
+#![deny(missing_docs)]
+
 #[macro_use]
 extern crate derivative;
 
@@ -23,11 +31,13 @@ pub use tree::*;
 
 #[cfg(feature = "native")]
 components!("app", {
+    /// The element tree state for an entity.
     element_tree: ShareableElementTree,
 });
 pub use ambient_guest_bridge::components::app::{element, element_unmanaged_children};
 
 #[clonable]
+/// A trait for types that can be converted to `Any` and can also be cloned.
 pub trait AnyCloneable: AsAny + Clone + std::fmt::Debug {}
 impl<T: Clone + std::fmt::Debug + Any + 'static> AnyCloneable for T {}
 impl as_any::Downcast for dyn AnyCloneable {}
@@ -38,23 +48,34 @@ impl as_any::Downcast for dyn AnyCloneable + Send + Sync {}
 type InstanceId = String;
 
 #[clonable]
-pub trait ElementComponent: std::fmt::Debug + PartName + Clone + Sync + Send {
+/// The base trait for all element components. These are similar to React components.
+///
+/// The `render` method is called to create the virtual tree for this component.
+/// It will only be called when the component is first created, or when one of its dependencies changes.
+/// These dependencies can include properties or state introduced by [Hooks].
+pub trait ElementComponent: std::fmt::Debug + ElementComponentName + Clone + Sync + Send {
+    /// Render the virtual tree for this component.
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element;
 }
-pub trait PartName {
-    fn part_name(&self) -> &'static str;
+/// Contains the name of the type implementing [ElementComponent].
+pub trait ElementComponentName {
+    /// Returns the name of the type implementing [ElementComponent].
+    fn element_component_name(&self) -> &'static str;
 }
-impl<T> PartName for T {
-    fn part_name(&self) -> &'static str {
+impl<T> ElementComponentName for T {
+    fn element_component_name(&self) -> &'static str {
         std::any::type_name::<T>()
     }
 }
 impl<T: ElementComponent + 'static> From<T> for Element {
     fn from(part: T) -> Self {
-        Element::from_part(Box::new(part))
+        Element::from_element_component(Box::new(part))
     }
 }
+
+/// A convenience trait for converting an [ElementComponent] into an [Element].
 pub trait ElementComponentExt {
+    /// Converts an [ElementComponent] into an [Element].
     fn el(self) -> Element;
 }
 impl<T: ElementComponent + 'static> ElementComponentExt for T {
@@ -64,42 +85,47 @@ impl<T: ElementComponent + 'static> ElementComponentExt for T {
 }
 
 #[derive(Clone, Debug)]
+/// A rendered [ElementComponent] instance.
 pub struct Element {
     config: ElementConfig,
     children: Vec<Element>,
 }
 impl Element {
+    /// Creates a new [Element] with no children.
     pub fn new() -> Self {
         Self { config: ElementConfig::new(), children: Vec::new() }
     }
-    pub fn from_part(part: Box<dyn ElementComponent>) -> Self {
+    /// Creates a new [Element] from the given component.
+    pub fn from_element_component(part: Box<dyn ElementComponent>) -> Self {
         let mut s = Self::new();
         s.config.part = Some(part);
         s
     }
-    /// convenience method to construct a vec from a single Element
+    /// Convenience method to construct a `Vec<Element>` from a single [Element].
     pub fn vec_of(self) -> Vec<Self> {
         vec![self]
     }
+    /// Adds the given `component` with `value` to the element.
     pub fn with<T: ComponentValue + Sync + Send + Clone + 'static>(mut self, component: Component<T>, value: T) -> Self {
         self.config.components.set(component, value);
         self
     }
+    /// Adds the given `component` with the default value for the component's type to the element.
     pub fn with_default<T: ComponentValue + Sync + Send + Clone + Default + 'static>(mut self, component: Component<T>) -> Self {
         self.config.components.set(component, T::default());
         self
     }
-    /// Sets the component of the element component instantiation
+    /// Sets the given `component` to `value` on the element during initialization only.
     pub fn init<T: ComponentValue + Sync + Send + Clone + 'static>(mut self, component: Component<T>, value: T) -> Self {
         self.config.init_components.set(component, value);
         self
     }
-    /// See [`Element::init`]
-    pub fn init_default<T: ComponentValue + Sync + Send + Clone + Default + 'static>(mut self, component: Component<T>) -> Self {
-        self.config.init_components.set(component, T::default());
-        self
+    /// Calls [Self::init] with the default value for the component's type.
+    pub fn init_default<T: ComponentValue + Sync + Send + Clone + Default + 'static>(self, component: Component<T>) -> Self {
+        self.init(component, T::default())
     }
     #[cfg(feature = "native")]
+    /// Extends the element with all of the values from the given [Entity].
     pub fn extend(mut self, entity_data: Entity) -> Self {
         for unit in entity_data.into_iter() {
             self.config.components.set_writer(unit.desc(), Arc::new(move |_, ed| ed.set_entry(unit.clone())));
@@ -115,34 +141,43 @@ impl Element {
         self
     }
 
-    /// Warning: this only removes components on the current element.
+    /// Removes the given `component` from the element.
     ///
-    /// TODO: Make this remove components on the super element too.
+    /// Warning: this only removes components on the current element.
+    // TODO: Make this remove components on the super element too.
     pub fn remove<T: ComponentValue + Clone>(mut self, component: Component<T>) -> Self {
         self.config.components.remove(component);
         self.config.init_components.remove(component);
         self
     }
+    /// Sets the children of the element.
     pub fn children(mut self, children: Vec<Element>) -> Self {
         self.children = children;
         self
     }
+    /// Set the function used to spawn the element.
     pub fn spawner<F: Fn(&mut World, Entity) -> EntityId + Sync + Send + 'static>(mut self, handler: F) -> Self {
         self.config.spawner = Arc::new(handler);
         self
     }
+    /// Set the function used to despawn the element.
     pub fn despawner<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(mut self, handler: F) -> Self {
         self.config.despawner = Arc::new(handler);
         self
     }
+    /// Set the callback to call when the element is spawned.
     pub fn on_spawned<F: Fn(&mut World, EntityId, &str) + Sync + Send + 'static>(mut self, handler: F) -> Self {
         self.config.on_spawned = Some(Arc::new(handler));
         self
     }
+    /// Set the callback to call when the element is despawned.
     pub fn on_despawn<F: Fn(&mut World, EntityId, &str) + Sync + Send + 'static>(mut self, handler: F) -> Self {
         self.config.on_despawn = Some(Arc::new(handler));
         self
     }
+    /// Set the unique key used to identify this element.
+    ///
+    /// This is used to disambiguate elements with the same type. This should be used when rendering lists of elements.
     pub fn key<T: Into<String>>(mut self, key: T) -> Self {
         self.config.key = key.into();
         self
@@ -152,6 +187,7 @@ impl Element {
         self.config.memo_key = Some(memo_key.into());
         self
     }
+    /// Returns true if the element has the given `component`.
     pub fn has_component(&self, component: impl Into<ComponentDesc>) -> bool {
         let index = component.into().index() as usize;
         self.config.components.0.contains_key(&index) || self.config.init_components.0.contains_key(&index)
@@ -201,11 +237,14 @@ impl Default for Element {
 }
 
 #[cfg(feature = "native")]
+/// The systems required to drive [ElementTree]s.
 pub fn ambient_system() -> SystemGroup {
     ElementTree::systems_for_component(element_tree())
 }
 
 #[macro_export]
+/// Helper macro to define a `el` function for a newtype of a vector of [Element]s.
+#[doc(hidden)]
 macro_rules! define_el_function_for_vec_element_newtype {
     ($type:ty) => {
         impl $type {
@@ -218,6 +257,7 @@ macro_rules! define_el_function_for_vec_element_newtype {
 }
 
 #[cfg(feature = "native")]
+/// Render the given tree underneath `id`.
 pub fn render_parented_with_component(world: &mut World, id: EntityId, handle: Component<ShareableElementTree>, mut element: Element) {
     use ambient_core::{
         hierarchy::{children, parent},

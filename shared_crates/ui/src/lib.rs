@@ -147,7 +147,7 @@ impl Focus {
 }
 /// A hook that returns the current focus state for this element and a callback to set the focus state.
 pub fn use_focus(hooks: &mut Hooks) -> (bool, Cb<dyn Fn(bool) + Sync + Send>) {
-    use_focus_for_instance_id(hooks, hooks.instance_id.clone())
+    use_focus_for_instance_id(hooks, hooks.instance_id().to_owned())
 }
 /// A hook that returns the current focus state for this element, given a specific `instance_id`, and a callback to set the focus state.
 pub fn use_focus_for_instance_id(hooks: &mut Hooks, instance_id: String) -> (bool, Cb<dyn Fn(bool) + Sync + Send>) {

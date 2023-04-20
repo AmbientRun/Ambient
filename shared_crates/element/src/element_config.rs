@@ -40,7 +40,7 @@ impl ElementConfig {
         }
     }
     pub(crate) fn get_element_key(&self, short: bool) -> String {
-        let name = if let Some(element) = &self.part { element.as_ref().part_name() } else { "Entity" };
+        let name = if let Some(element) = &self.part { element.as_ref().element_component_name() } else { "Entity" };
         let name = if short { name.split("::").last().unwrap() } else { name };
         if !self.key.is_empty() {
             format!("{}_{}", name, self.key)
