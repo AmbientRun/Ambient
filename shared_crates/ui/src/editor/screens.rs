@@ -6,16 +6,26 @@ use ambient_guest_bridge::components::layout::{align_vertical_center, space_betw
 
 use super::{ChangeCb, Editor, EditorOpts};
 use crate::{
-    button::{Button, ButtonStyle}, default_theme::{StylesExt, STREET}, layout::{FlowColumn, FlowRow}, screens::{DialogScreen, ScreenContainer}, scroll_area::ScrollArea, text::Text
+    button::{Button, ButtonStyle},
+    default_theme::{StylesExt, STREET},
+    layout::{FlowColumn, FlowRow},
+    screens::{DialogScreen, ScreenContainer},
+    scroll_area::ScrollArea,
+    text::Text,
 };
 
-/// Delegates a type editor to edit in a new `screen`
+/// Delegates a type editor to edit in a new `screen`.
 #[derive(Debug, Clone)]
 pub struct OffscreenEditor<T> {
+    /// The value to edit.
     pub value: T,
+    /// Options for the editor.
     pub opts: EditorOpts,
+    /// The editor to use.
     pub editor: Cb<dyn Fn(T, Option<ChangeCb<T>>, EditorOpts) -> Element + Sync + Send>,
+    /// Callback for when the value is confirmed.
     pub on_confirm: Option<ChangeCb<T>>,
+    /// The title of the editor.
     pub title: String,
 }
 

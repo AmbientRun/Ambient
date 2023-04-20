@@ -1,3 +1,5 @@
+//! Implements a button UI element, as well as variants thereof.
+
 use std::{
     fmt::Debug,
     str::FromStr,
@@ -37,15 +39,19 @@ use crate::{
 };
 
 #[derive(Clone, Debug)]
+/// The callback invoked when a button is clicked.
 pub enum ButtonCb {
+    /// A synchronous callback.
     Sync(ButtonCallback),
+    /// An asynchronous callback.
     Async(Callback<(), BoxFuture<'static, ()>>),
 }
 
-/// The type of function invoked by a button
+/// The type of function invoked by a button.
 pub type ButtonCallback<Ret = ()> = Cb<dyn Fn(&mut World) -> Ret + Sync + Send>;
 
 impl ButtonCb {
+    /// Invokes this callback.
     pub fn invoke(&self, world: &mut World, set_is_working: Cb<dyn Fn(bool) + Sync + Send>) {
         match self {
             ButtonCb::Sync(cb) => cb.0(world),
@@ -62,12 +68,17 @@ impl ButtonCb {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+/// The style of a button.
 pub enum ButtonStyle {
+    /// A regular button: uses variants of the cutout color for all states except hover, where it uses the secondary color.
     Regular,
+    /// A primary button: uses variants of the secondary color.
     Primary,
+    /// A flat button: has no background, has limited padding.
     Flat,
-    /// Card buttons are meant to be used with "complex" child elements
+    /// A card button: meant to be used with "complex" child elements.
     Card,
+    /// An inline button: has no additional styling aside from an underline, similar to a link on a webpage.
     Inline,
 }
 impl ButtonStyle {
@@ -199,16 +210,26 @@ impl ButtonStyle {
 }
 
 #[element_component]
+/// A button UI element.
 pub fn Button(
     hooks: &mut Hooks,
+    /// The content of the button; typically text, as provided by one of the constructor functions.
     content: Element,
+    /// Whether or not the button is disabled.
     disabled: bool,
+    /// Whether or not the button can be toggled.
     toggled: bool,
+    /// The style of the button.
     style: ButtonStyle,
+    /// The hotkey for the button.
     hotkey: Option<VirtualKeyCode>,
+    /// The hotkey input modifiers for the button.
     hotkey_modifier: ModifiersState,
+    /// The tooltip for the button.
     tooltip: Option<Element>,
+    /// The callback to invoke when the button is pressed.
     on_invoked: ButtonCb,
+    /// The callback to invoke when the current pressed state changes.
     on_is_pressed_changed: Option<Cb<dyn Fn(&mut World, bool) + Sync + Send>>,
 ) -> Element {
     let (is_pressed, set_is_pressed) = hooks.use_state(false);
@@ -220,7 +241,7 @@ pub fn Button(
         if let Some(on_is_pressed_changed) = on_is_pressed_changed {
             on_is_pressed_changed(world, is_pressed);
         }
-        Box::new(|_| {})
+        |_| {}
     });
     hooks.use_runtime_message::<messages::WindowMouseInput>({
         to_owned![set_is_pressed, on_invoked, set_is_working];
@@ -277,10 +298,12 @@ pub fn Button(
     }
 }
 impl Button {
+    /// Create a new [Button] with the given content and callback.
     pub fn new<T: Into<UIElement>>(content: T, on_invoked: impl Fn(&mut World) + Sync + Send + 'static) -> Self {
         let content: UIElement = content.into();
         Self::new_inner(content, cb(on_invoked))
     }
+    /// Create a new [Button] with the given content and callback as a [Cb].
     pub fn new_inner<T: Into<UIElement>>(content: T, on_invoked: Cb<dyn Fn(&mut World) + Sync + Send + 'static>) -> Self {
         let content: UIElement = content.into();
         Self {
@@ -295,6 +318,7 @@ impl Button {
             on_is_pressed_changed: None,
         }
     }
+    /// Create a new one-shot [Button] with the given content and a callback that is only invoked once.
     pub fn new_once<T: Into<UIElement>>(content: T, on_invoked: impl FnOnce(&mut World) + Sync + Send + 'static) -> Self {
         let on_invoked = Arc::new(Mutex::new(Some(on_invoked)));
         Self::new(content, move |world| {
@@ -306,6 +330,7 @@ impl Button {
             on_invoked.expect("'Once' button called more than once")(world);
         })
     }
+    /// Create a new [Button] with the given content and a callback that returns a [Future] (i.e. is `async`).
     pub fn new_async<F: Future<Output = ()> + Send + 'static, T: Into<UIElement>>(
         content: T,
         on_invoked: impl Fn() -> F + Sync + Send + 'static,
@@ -323,6 +348,7 @@ impl Button {
             on_is_pressed_changed: None,
         }
     }
+    /// Create a new one-shot [Button] with the given content and a callback that returns a [Future] (i.e. is `async`) and is only invoked once.
     pub fn new_async_once<F: Future + Send + 'static, T: Into<UIElement>>(
         content: T,
         on_invoked: impl FnOnce() -> F + Sync + Send + 'static,
@@ -340,6 +366,7 @@ impl Button {
             .boxed()
         })
     }
+    /// Create a new [Button] with the given content that sets the given value to the given desired value when clicked.
     pub fn new_value<T: Into<UIElement>, V: PartialEq + Copy + Send + Sync + 'static>(
         content: T,
         value: V,
@@ -348,31 +375,38 @@ impl Button {
     ) -> Button {
         Button::new(content, move |_| set_value(desired_value)).toggled(value == desired_value)
     }
+    /// Set whether or not the button is disabled.
     pub fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
+    /// Set the style of the button.
     pub fn style(mut self, style: ButtonStyle) -> Self {
         self.style = style;
         self
     }
+    /// Set the hotkey of the button.
     pub fn hotkey(mut self, hotkey: VirtualKeyCode) -> Self {
         self.hotkey = Some(hotkey);
         self
     }
+    /// Set the modifiers for the hotkey of the button.
     pub fn hotkey_modifier(mut self, hotkey_modifier: ModifiersState) -> Self {
         self.hotkey_modifier = hotkey_modifier;
         self
     }
+    /// Set the tooltip of the button.
     pub fn tooltip(mut self, tooltip: impl Into<UIElement>) -> Self {
         let tooltip: UIElement = tooltip.into();
         self.tooltip = Some(tooltip.0);
         self
     }
+    /// Set whether or not the button can be toggled.
     pub fn toggled(mut self, toggled: bool) -> Self {
         self.toggled = toggled;
         self
     }
+    /// Set the callback that is invoked when the current pressed state of the button changes.
     pub fn on_is_pressed_changed(mut self, handle: impl Fn(&mut World, bool) + Sync + Send + 'static) -> Self {
         self.on_is_pressed_changed = Some(cb(handle));
         self
@@ -380,17 +414,25 @@ impl Button {
 }
 
 #[derive(Clone, Debug)]
+/// An element that will invoke a callback when a hotkey is pressed.
 pub struct Hotkey {
+    /// The hotkey that will invoke the callback.
     pub hotkey: VirtualKeyCode,
+    /// The keyboard modifiers for the hotkey.
     pub hotkey_modifier: ModifiersState,
+    /// The callback that is invoked when the current state of the hotkey changes.
     pub on_is_pressed_changed: Option<Cb<dyn Fn(bool) + Sync + Send>>,
+    /// The callback that is invoked when the hotkey is pressed.
     pub on_invoke: Cb<dyn Fn(&mut World) + Sync + Send>,
+    /// What to render for this element.
     pub content: Element,
 }
 impl Hotkey {
+    /// Create a new [Hotkey] with the given content and callback.
     pub fn new(hotkey: VirtualKeyCode, on_invoke: impl Fn(&mut World) + Sync + Send + 'static, content: Element) -> Self {
         Self { hotkey, hotkey_modifier: ModifiersState::empty(), on_invoke: cb(on_invoke), content, on_is_pressed_changed: None }
     }
+    /// Set the keyboard modifiers for the hotkey.
     pub fn hotkey_modifier(mut self, hotkey_modifier: ModifiersState) -> Self {
         self.hotkey_modifier = hotkey_modifier;
         self

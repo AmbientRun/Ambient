@@ -1,3 +1,5 @@
+//! Provides an [Editor] trait for values that can be edited in the UI, and implementations for common types.
+
 mod collections;
 mod primitives;
 mod screens;
@@ -17,11 +19,15 @@ pub use text_editor::*;
 pub use time::*;
 
 use crate::{
-    button::{Button, ButtonStyle}, layout::FlowRow, text::Text
+    button::{Button, ButtonStyle},
+    layout::FlowRow,
+    text::Text,
 };
 
 #[derive(Clone, Debug)]
+/// Options for the [Editor] type.
 pub struct EditorOpts {
+    /// If true, enums can be changed to a different variant.
     pub enum_can_change_type: bool,
 }
 
@@ -31,10 +37,16 @@ impl Default for EditorOpts {
     }
 }
 
+/// Callback for when an editor changes its value.
 pub type ChangeCb<T> = Cb<dyn Fn(T) + Sync + Send>;
 
+/// A trait for types that can be edited in the UI.
+///
+/// Implementing this trait allows you to make a UI editor for any value of your type.
 pub trait Editor {
+    /// Create an editor [Element] for this value.
     fn editor(self, on_change: ChangeCb<Self>, opts: EditorOpts) -> Element;
+    /// Creates an editor [Element] for this value, or a view [Element] if `on_change` is `None`.
     fn edit_or_view(self, on_change: Option<ChangeCb<Self>>, opts: EditorOpts) -> Element
     where
         Self: Sized,
@@ -45,6 +57,9 @@ pub trait Editor {
             self.view(opts)
         }
     }
+    /// Viewer for this value.
+    ///
+    /// By default, this will call [Editor::editor] with a no-op callback.
     fn view(self, opts: EditorOpts) -> Element
     where
         Self: Sized,

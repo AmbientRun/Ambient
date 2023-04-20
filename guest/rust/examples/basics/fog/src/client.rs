@@ -12,7 +12,6 @@ use ambient_api::{
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
 };
-use ambient_ui::prelude::*;
 
 #[main]
 fn main() {

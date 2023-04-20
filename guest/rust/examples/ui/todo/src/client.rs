@@ -1,5 +1,4 @@
 use ambient_api::prelude::*;
-use ambient_ui::prelude::*;
 use components::{todo_item, todo_time};
 
 #[element_component]

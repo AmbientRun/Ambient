@@ -1,13 +1,13 @@
 use ambient_api::prelude::*;
-use components::{note_selection, cursor};
+use components::{cursor, note_selection};
 
 #[main]
 pub async fn main() {
     let mut value = 0_u8;
     let mother = Entity::new()
-    .with(note_selection(), vec![false; 128])
-    .with(cursor(), 0)
-    .spawn();
+        .with(note_selection(), vec![false; 128])
+        .with(cursor(), 0)
+        .spawn();
 
     messages::Click::subscribe(move |_source, data| {
         let mut v = entity::get_component(mother, note_selection()).unwrap();

@@ -33,11 +33,11 @@ impl ElementComponent for SelectArea {
 
         let client = game_client.clone();
         hooks.use_spawn(move |_| {
-            Box::new(move |w| {
+            move |w| {
                 w.resource(runtime()).spawn(async move {
                     log_network_result!(client.rpc(rpc_select, (SelectMethod::Manual(Default::default()), SelectMode::Clear)).await);
                 });
-            })
+            }
         });
 
         hooks.use_runtime_message::<messages::WindowMouseMotion>(move |world, event| {

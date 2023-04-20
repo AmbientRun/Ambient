@@ -82,12 +82,14 @@ pub(crate) enum ElementParent {
 }
 
 #[derive(Debug)]
+/// A tree of instantiated [Element]s.
 pub struct ElementTree {
     pub(crate) instances: HashMap<InstanceId, ElementInstance>,
     pub(crate) hooks_env: Arc<Mutex<HooksEnvironment>>,
     pub(crate) root: Option<InstanceId>,
 }
 impl ElementTree {
+    /// Creates a new [ElementTree] from the given [Element].
     pub fn new(world: &mut World, element: Element) -> Self {
         let mut s = Self { instances: HashMap::new(), hooks_env: Arc::new(Mutex::new(HooksEnvironment::new())), root: None };
         let (_, instance) = s.create(world, element, None, ElementParent::None);
@@ -95,6 +97,7 @@ impl ElementTree {
         s.root = Some(instance);
         s
     }
+    /// Gets the [EntityId] of the entity at the root of this tree, if available.
     pub fn root_entity(&self) -> Option<EntityId> {
         self.root.as_ref().map(|root| {
             let root = self.instances.get(root).unwrap();
@@ -103,6 +106,7 @@ impl ElementTree {
     }
 
     #[cfg(feature = "native")]
+    /// Render with component
     pub fn render_with_component(world: &mut World, id: EntityId, handle: Component<ShareableElementTree>, element: Element) {
         if let Ok(tree) = world.get_ref(id, handle).map(|x| x.clone()) {
             tree.0.lock().migrate_root(world, element);
@@ -112,10 +116,12 @@ impl ElementTree {
         }
     }
     #[cfg(feature = "native")]
+    /// Render
     pub fn render(world: &mut World, id: EntityId, element: Element) {
         Self::render_with_component(world, id, element_tree(), element)
     }
     #[cfg(feature = "native")]
+    /// Get the systems for this component
     pub fn systems_for_component(component: Component<ShareableElementTree>) -> SystemGroup {
         SystemGroup::new(
             "ElementTree::systems_for_component",
@@ -143,16 +149,21 @@ impl ElementTree {
         }
     }
 
+    /// Get the number of instances in this tree.
     pub fn n_instances(&self) -> usize {
         self.instances.len()
     }
 
+    /// Migrate the root of this tree to another [Element].
+    ///
+    /// This can be used to change the root of the tree and/or supply new state at the root level.
     pub fn migrate_root(&mut self, world: &mut World, element: Element) {
         if let Some((_, new_root)) = self.migrate(world, self.root.clone(), None, ElementParent::None, Some(element)) {
             self.root = Some(new_root);
         }
     }
 
+    /// Remove the root of this tree.
     pub fn remove_root(&mut self, world: &mut World) {
         if let Some(root) = self.root.clone() {
             self.remove(world, &root);
@@ -377,6 +388,7 @@ impl ElementTree {
     }
 
     #[profiling::function]
+    /// Update the tree and re-render instances as required.
     pub fn update(&mut self, world: &mut World) {
         let frame_listeners = self.hooks_env.lock().frame_listeners.clone();
         for listeners in frame_listeners.values() {
@@ -461,6 +473,7 @@ impl ElementTree {
         let instance = self.instances.get(instance_id).unwrap();
         instance.dump(self, indent)
     }
+    /// Dump the state of this tree to a string.
     pub fn dump(&self, indent: usize) -> String {
         if let Some(root) = self.root.clone() {
             self.dump_instance(&root, indent)
@@ -468,6 +481,9 @@ impl ElementTree {
             "No root".to_string()
         }
     }
+
+    #[cfg(feature = "native")]
+    /// Dumps the state to a tmp file
     pub fn dump_to_tmp_file(&self) {
         std::fs::write("tmp/elements.txt", self.dump(0)).expect("Unable to write file");
         tracing::info!("Wrote elements to tmp/elements.txt");
@@ -480,11 +496,14 @@ impl std::fmt::Display for ElementTree {
 }
 
 #[derive(Debug, Clone)]
+/// A shareable element tree. This is used to share the same tree between multiple contexts.
 pub struct ShareableElementTree(pub Arc<Mutex<ElementTree>>);
 impl ShareableElementTree {
+    /// Create a new shareable element tree for an [Element].
     pub fn new(world: &mut World, element: Element) -> Self {
         Self(Arc::new(Mutex::new(ElementTree::new(world, element))))
     }
+    /// Remove this tree from the world.
     pub fn remove(&self, world: &mut World) {
         self.0.lock().remove_root(world);
     }

@@ -182,7 +182,7 @@ fn GoldenImageTest(hooks: &mut Hooks, project_path: Option<PathBuf>, seconds: f3
             exit(1);
         });
 
-        Box::new(|_| {})
+        |_| {}
     });
     Element::new()
 }

@@ -1,13 +1,26 @@
+//! Implements a dropdown element.
+
 use ambient_element::{element_component, to_owned, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::components::{layout::margin_top, rect::border_radius, transform::translation};
 use glam::{vec3, Vec4};
 
 use crate::{
-    default_theme::{tooltip_background_color, SMALL_ROUNDING, STREET}, layout::FlowColumn, UIBase, UIExt
+    default_theme::{tooltip_background_color, SMALL_ROUNDING, STREET},
+    layout::FlowColumn,
+    UIBase, UIExt,
 };
 
 #[element_component]
-pub fn Dropdown(_: &mut Hooks, content: Element, dropdown: Element, show: bool) -> Element {
+/// A dropdown element: shows the `dropdown` when `show` is specified.
+pub fn Dropdown(
+    _: &mut Hooks,
+    /// The content (always shown).
+    content: Element,
+    /// The dropdown to show.
+    dropdown: Element,
+    /// Whether or not to show the dropdown.
+    show: bool,
+) -> Element {
     FlowColumn::el([
         content,
         if show {
@@ -19,7 +32,14 @@ pub fn Dropdown(_: &mut Hooks, content: Element, dropdown: Element, show: bool) 
 }
 
 #[element_component]
-pub fn Tooltip(hooks: &mut Hooks, inner: Element, tooltip: Element) -> Element {
+/// A tooltip element: shows the `tooltip` when the `inner` is hovered.
+pub fn Tooltip(
+    hooks: &mut Hooks,
+    /// The element to render; when hovered over, `tooltip` will be shown.
+    inner: Element,
+    /// The tooltip to show.
+    tooltip: Element,
+) -> Element {
     let (hover, set_hover) = hooks.use_state(false);
     Dropdown {
         content: inner,

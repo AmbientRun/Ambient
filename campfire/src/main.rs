@@ -9,7 +9,8 @@ mod release;
 #[command(propagate_version = true)]
 pub enum Cli {
     /// Generate documentation for Ambient
-    Doc,
+    #[command(subcommand)]
+    Doc(doc::Doc),
     /// Example-related functionality
     #[command(subcommand)]
     Example(example::Example),
@@ -28,7 +29,7 @@ fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli {
-        Cli::Doc => doc::main(),
+        Cli::Doc(doc) => doc::main(&doc),
         Cli::Example(ex) => example::main(&ex),
         Cli::Release(re) => release::main(&re),
     }

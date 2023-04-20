@@ -83,13 +83,13 @@ pub fn HighjackMouse(
             ctl.send(WindowCtl::GrabCursor(CursorGrabMode::Locked)).ok();
             ctl.send(WindowCtl::ShowCursor(false)).ok();
         }
-        Box::new(move |world| {
+        move |world| {
             if hide_mouse {
                 let ctl = world.resource(window_ctl());
                 ctl.send(WindowCtl::GrabCursor(CursorGrabMode::None)).ok();
                 ctl.send(WindowCtl::ShowCursor(true)).ok();
             }
-        })
+        }
     });
 
     hooks.use_runtime_message::<messages::WindowMouseMotion>({

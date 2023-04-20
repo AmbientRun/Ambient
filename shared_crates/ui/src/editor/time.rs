@@ -15,6 +15,7 @@ use crate::{layout::FlowRow, text::Text};
 use super::{ChangeCb, Editor, EditorOpts, TextEditor};
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize)]
+/// A duration that can be edited.
 pub struct EditableDuration {
     dur: Duration,
     valid: bool,
@@ -22,10 +23,12 @@ pub struct EditableDuration {
 }
 
 impl EditableDuration {
+    /// Create a new [EditableDuration].
     pub fn new(dur: Duration, valid: bool, input: String) -> Self {
         Self { dur, valid, input }
     }
 
+    /// Get the duration.
     pub fn dur(&self) -> Duration {
         self.dur
     }
@@ -58,12 +61,16 @@ impl From<String> for EditableDuration {
 }
 
 #[derive(Debug, Clone)]
+/// An editor for [EditableDuration].
 pub struct DurationEditor {
+    /// The value to edit.
     pub value: EditableDuration,
+    /// Callback for when the value changes.
     pub on_change: Cb<dyn Fn(EditableDuration) + Sync + Send>,
 }
 
 impl DurationEditor {
+    /// Create a new [DurationEditor].
     pub fn new(value: EditableDuration, on_change: Cb<dyn Fn(EditableDuration) + Sync + Send>) -> Self {
         Self { value, on_change }
     }
@@ -92,8 +99,13 @@ impl Editor for EditableDuration {
 }
 
 #[derive(Debug, Clone)]
+/// An editor for [SystemTime].
+///
+/// At present, this does not support editing and is purely display-only.
 pub struct SystemTimeEditor {
+    /// The value to edit.
     pub value: SystemTime,
+    /// Callback for when the value changes.
     pub on_change: Option<Cb<dyn Fn(SystemTime) + Sync + Send>>,
 }
 impl ElementComponent for SystemTimeEditor {

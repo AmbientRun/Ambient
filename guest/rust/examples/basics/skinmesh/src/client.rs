@@ -6,7 +6,6 @@ use ambient_api::{
     entity::{AnimationAction, AnimationController},
     prelude::*,
 };
-use ambient_ui::prelude::*;
 
 #[main]
 pub fn main() {
@@ -65,7 +64,7 @@ fn App(hooks: &mut Hooks, unit: EntityId) -> Element {
             },
         );
 
-        Box::new(|_| {})
+        |_| {}
     });
 
     FocusRoot::el([FlowRow::el([

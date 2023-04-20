@@ -17,7 +17,7 @@ ambient_input = { path = "../../crates/input", optional = true }
 ambient_sys = { path = "../../crates/sys", optional = true }
 
 # Guest only
-ambient_api = { path = "../../guest/rust/api", optional = true }
+ambient_api_core = { path = "../../guest/rust/api_core", optional = true }
 
 # Shared
 ambient_shared_types = { path = "../shared_types" }
@@ -38,7 +38,7 @@ native = [
   "dep:arboard",
   "ambient_shared_types/native"
 ]
-guest = ["dep:ambient_api"]
+guest = ["dep:ambient_api_core"]
 
-client = ["ambient_api?/client"]
-server = ["ambient_api?/server"]
+client = ["ambient_api_core?/client"]
+server = ["ambient_api_core?/server"]

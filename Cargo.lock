@@ -189,7 +189,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_api"
+name = "ambient_api_core"
 version = "0.2.0-dev"
 dependencies = [
  "ambient_api_macros",
@@ -710,7 +710,7 @@ dependencies = [
 name = "ambient_guest_bridge"
 version = "0.2.0-dev"
 dependencies = [
- "ambient_api",
+ "ambient_api_core",
  "ambient_core",
  "ambient_ecs",
  "ambient_input",

@@ -84,9 +84,9 @@ impl ElementComponent for TerrainRaycastPicker {
                 .spawn_static(&mut game_state.lock().world);
 
             set_vis_brush_id(Some(new_vis_brush_id));
-            Box::new(move |_ui_world| {
+            move |_ui_world| {
                 game_state.lock().world.despawn(new_vis_brush_id);
-            })
+            }
         });
         hooks.use_runtime_message::<messages::WindowMouseInput>({
             let set_mousedown = set_mousedown.clone();
