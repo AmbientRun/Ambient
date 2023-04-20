@@ -4,19 +4,16 @@ use components::note_selection;
 mod common;
 use common::{BEAT_COUNT, SECONDS_PER_NOTE, SOUNDS};
 
-fn make_row(text: &str, note_selection_now: &[bool], cursor_now: usize, pos: usize) -> Element {
-    let card_inner = |selected: bool, highlight: bool| {
+fn make_row(text: &str, note_selection_now: &[Vec4], cursor_now: usize, pos: usize) -> Element {
+    let card_inner = |selected_color: Vec4, highlight: bool| {
         FlowRow(vec![Text::el("")])
             .el()
             .with_background(match highlight {
-                true => match selected {
-                    true => vec4(0.2, 0.5, 0.2, 1.),
-                    false => vec4(0.5, 0.5, 0.5, 1.),
+                true => match selected_color == vec4(0.2, 0.2, 0.2, 1.0) {
+                    true => vec4(0.5, 0.5, 0.5, 1.),
+                    false => selected_color - vec4(0.0, 0.0, 0.0, 0.2),
                 },
-                false => match selected {
-                    true => vec4(0.2, 0.8, 0.2, 1.),
-                    false => vec4(0.2, 0.2, 0.2, 1.),
-                },
+                false => selected_color,
             })
             .with_padding_even(20.)
     };
@@ -45,11 +42,12 @@ fn make_row(text: &str, note_selection_now: &[bool], cursor_now: usize, pos: usi
 }
 
 #[element_component]
-fn App(_hooks: &mut Hooks, cursor: usize, notes: Vec<bool>) -> Element {
+fn App(_hooks: &mut Hooks, cursor: usize, notes: Vec<Vec4>) -> Element {
     FlowColumn::el(
-        SOUNDS.iter().enumerate().map(|(i, (label, _))| {
-            make_row(label, &notes, cursor.try_into().unwrap(), i * BEAT_COUNT)
-        }),
+        SOUNDS
+            .iter()
+            .enumerate()
+            .map(|(i, (label, _))| make_row(label, &notes, cursor, i * BEAT_COUNT)),
     )
 }
 
@@ -72,7 +70,7 @@ pub fn main() {
             last_note_time = now;
 
             for (i, sound) in sounds.iter().enumerate() {
-                if notes[i * BEAT_COUNT + cursor] {
+                if notes[i * BEAT_COUNT + cursor] != vec4(0.2, 0.2, 0.2, 1.) {
                     sound.play();
                 }
             }
