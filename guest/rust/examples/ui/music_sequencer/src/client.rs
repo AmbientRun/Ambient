@@ -3,12 +3,18 @@ use ambient_ui::prelude::*;
 use components::{cursor, note_selection};
 
 fn make_row(text: &str, note_selection_now: &[bool], cursor_now: u8, pos: u8) -> Element {
-    let card_inner = |_selected: bool, highlight: bool| {
+    let card_inner = |selected: bool, highlight: bool| {
         FlowRow(vec![Text::el("")])
             .el()
             .with_background(match highlight {
-                true => vec4(0.3, 0.3, 0.3, 1.),
-                false => vec4(0.7, 0.7, 0.7, 1.),
+                true => match selected {
+                    true => vec4(0.2, 0.5, 0.2, 1.),
+                    false => vec4(0.5, 0.5, 0.5, 1.),
+                },
+                false => match selected {
+                    true => vec4(0.2, 0.8, 0.2, 1.),
+                    false => vec4(0.2, 0.2, 0.2, 1.),
+                },
             })
             .with_padding_even(20.)
     };
@@ -23,7 +29,6 @@ fn make_row(text: &str, note_selection_now: &[bool], cursor_now: u8, pos: u8) ->
                     FlowRow::el([Button::new(card_inner(selected, is_on_cursor), move |_| {
                         messages::Click::new(index as u8 + pos).send_server_reliable();
                     })
-                    .toggled(selected)
                     .style(ButtonStyle::Card)
                     .el()])
                 }),
