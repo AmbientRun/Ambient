@@ -506,7 +506,7 @@ impl<'a> Hooks<'a> {
         });
     }
 
-    /// Run `cb` every `seconds` seconds, passing in the current value of `dependencies`.
+    /// Run `cb` every `duration`, passing in the current value of `dependencies`.
     ///
     /// This should be used when the callback depends on some value that can change over time.
     pub fn use_interval_deps<D>(
