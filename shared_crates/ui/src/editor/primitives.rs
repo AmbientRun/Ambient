@@ -9,15 +9,23 @@ use itertools::Itertools;
 
 use super::{ChangeCb, Editor, EditorOpts, TextEditor};
 use crate::{
-    button::{Button, ButtonStyle}, default_theme::STREET, layout::{FlowColumn, FlowRow}, text::{FontAwesomeIcon, Text}, use_focus_for_instance_id
+    button::{Button, ButtonStyle},
+    default_theme::STREET,
+    layout::{FlowColumn, FlowRow},
+    text::{FontAwesomeIcon, Text},
+    use_focus_for_instance_id,
 };
 
 #[derive(Debug, Clone)]
+/// An editor for a value that can be parsed from a string.
 pub struct ParseableInput<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> {
+    /// The current value.
     pub value: T,
+    /// Callback for when the value changes.
     pub on_change: Cb<dyn Fn(T) + Sync + Send>,
 }
 impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> ParseableInput<T> {
+    /// Create a new `ParseableInput` with the given value and callback.
     pub fn new(value: T, on_change: impl Fn(T) + Sync + Send + 'static) -> Self {
         Self { value, on_change: cb(on_change) }
     }
@@ -48,10 +56,15 @@ impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> Ele
 }
 
 #[derive(Debug, Clone)]
+/// An editor for a value that can be parsed from a string, but with custom parsing and stringification.
 pub struct CustomParseInput<T> {
+    /// The current value.
     pub value: T,
+    /// Callback for when the string needs to be parsed.
     pub parse: Cb<dyn Fn(&str) -> Option<T> + Sync + Send>,
+    /// Callback for when the value needs to be stringified.
     pub to_string: Cb<dyn Fn(&T) -> String + Sync + Send>,
+    /// Callback for when the value changes.
     pub on_change: Cb<dyn Fn(T) + Sync + Send>,
 }
 
@@ -81,10 +94,15 @@ impl<T: Debug + Clone + Sync + Send + 'static> ElementComponent for CustomParseI
     }
 }
 
+/// A [ParseableInput] for [f32].
 pub type F32Input = ParseableInput<f32>;
+/// A [ParseableInput] for [i32].
 pub type I32Input = ParseableInput<i32>;
+/// A [ParseableInput] for [u32].
 pub type U32Input = ParseableInput<u32>;
+/// A [ParseableInput] for [u64].
 pub type U64Input = ParseableInput<u64>;
+/// A [ParseableInput] for [usize].
 pub type UsizeInput = ParseableInput<usize>;
 
 impl Editor for Duration {
@@ -153,11 +171,15 @@ impl Editor for usize {
 }
 
 #[derive(Clone, Debug)]
+/// A checkbox.
 pub struct Checkbox {
+    /// Whether or not the checkbox is checked.
     pub value: bool,
+    /// Callback for when the checkbox is toggled.
     pub on_change: Cb<dyn Fn(bool) + Sync + Send>,
 }
 impl Checkbox {
+    /// Create a new checkbox.
     pub fn new(value: bool, on_change: impl Fn(bool) + Sync + Send + 'static) -> Self {
         Self { value, on_change: cb(on_change) }
     }
@@ -186,11 +208,14 @@ impl Editor for bool {
 }
 
 #[derive(Debug, Clone)]
+/// A row with a title and an element, used as part of larger editors.
+
 pub struct EditorRow {
     title: String,
     editor: Element,
 }
 impl EditorRow {
+    /// Create a new editor row.
     pub fn el(title: impl Into<String>, editor: Element) -> Element {
         let title: String = title.into();
         EditorRow { title: title.to_case(Case::Title), editor }.el()
@@ -204,6 +229,7 @@ impl ElementComponent for EditorRow {
 }
 
 #[derive(Debug, Clone)]
+/// Legacy newtype for [FlowColumn].
 pub struct EditorColumn(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(EditorColumn);
 impl ElementComponent for EditorColumn {
@@ -232,9 +258,13 @@ impl Editor for Vec4 {
 }
 
 #[derive(Debug, Clone)]
+/// An editor for a fixed-size array.
 pub struct ArrayEditor<const C: usize, T> {
+    /// The array to edit.
     pub value: [T; C],
+    /// The names of the fields of the array.
     pub field_names: Option<&'static [&'static str; C]>,
+    /// Callback for when the array is changed.
     pub on_change: Cb<dyn Fn([T; C]) + Sync + Send>,
 }
 

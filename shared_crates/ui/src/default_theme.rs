@@ -1,3 +1,4 @@
+//! Defines the default theme for the UI.
 use glam::{vec4, Vec4};
 
 use crate::UIExt;
@@ -10,39 +11,51 @@ use ambient_guest_bridge::components::{
     text::font_size,
 };
 
+/// The primary color.
 pub fn primary_color() -> Color {
     Color::hex("DE0B5D").unwrap()
 }
+/// The secondary color.
 pub fn secondary_color() -> Color {
     Color::hex("ffac04").unwrap()
 }
+/// The color used for the background of the app.
 pub fn app_background_color() -> Color {
     Color::hex("1B1B1B").unwrap()
 }
+/// The error color.
 pub fn error_color() -> Color {
     Color::hex("750631").unwrap()
 }
-/// A color slightly darker than the app_background
+/// A color slightly darker than [app_background_color].
 pub fn cutout_color() -> Color {
     Color::hex("151515").unwrap()
 }
+/// The color used for tooltip backgrounds.
 pub fn tooltip_background_color() -> Color {
     Color::rgba(0., 0., 0., 0.9)
 }
 
-/// Default margin/padding
+/// Default margin/padding.
 pub const STREET: f32 = 10.;
-/// Default rounding of corners
+/// Default rounding of corners.
 pub const SMALL_ROUNDING: f32 = 3.;
 
+/// A trait that adds some default styles to elements.
 pub trait StylesExt {
+    /// Apply the default style for a section header.
     fn section_style(self) -> Self;
+    /// Apply the default style for a header.
     fn header_style(self) -> Self;
+    /// Apply the default style for a small text.
     fn small_style(self) -> Self;
+    /// Apply the default style for an error text.
     fn error_text_style(self) -> Self;
+    /// Apply the default style for a floating panel.
     fn floating_panel(self) -> Self;
+    /// Apply the default style for a panel.
     fn panel(self) -> Self;
-    /// A list of items with some space between them
+    /// A list of items with some space between them.
     fn keyboard(self) -> Self;
 }
 impl StylesExt for Element {
@@ -72,7 +85,11 @@ impl StylesExt for Element {
     }
 }
 
+/// Character code for the "add" icon.
 pub const COLLECTION_ADD_ICON: &str = "\u{f055}";
+/// Character code for the "delete" icon.
 pub const COLLECTION_DELETE_ICON: &str = "\u{f6bf}";
+/// Character code for the "move up" icon.
 pub const MOVE_UP_ICON: &str = "\u{f062}";
+/// Character code for the "move down" icon.
 pub const MOVE_DOWN_ICON: &str = "\u{f063}";

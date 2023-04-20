@@ -1,3 +1,4 @@
+//! Defines a throbber.
 use std::time::Duration;
 
 use ambient_element::ElementComponent;
@@ -9,7 +10,6 @@ use crate::text::Text;
 /// Shows an animated progress bar to indicate that progress is
 /// being made and has not frozen.
 pub struct Throbber;
-
 impl ElementComponent for Throbber {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
         let (index, set_index) = hooks.use_state(0);

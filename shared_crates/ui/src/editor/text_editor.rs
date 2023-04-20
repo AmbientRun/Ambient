@@ -6,26 +6,38 @@ use ambient_cb::{cb, Cb};
 use ambient_element::{element_component, to_owned, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::{
-        layout::{height, min_height, min_width, width}, rendering::color, text::text, transform::translation
-    }, messages, window::set_cursor
+        layout::{height, min_height, min_width, width},
+        rendering::color,
+        text::text,
+        transform::translation,
+    },
+    messages,
+    window::set_cursor,
 };
+use ambient_shared_types::{CursorIcon, VirtualKeyCode};
 #[cfg(feature = "native")]
 use ambient_sys::time::Instant;
-use ambient_shared_types::{CursorIcon, VirtualKeyCode};
 use glam::*;
 use itertools::Itertools;
 
 use super::{Editor, EditorOpts};
 use crate::{layout::FlowRow, text::Text, use_focus, Rectangle, UIBase, UIExt};
 
+/// A text editor.
 #[element_component]
 pub fn TextEditor(
     hooks: &mut Hooks,
+    /// The string to edit.
     value: String,
+    /// Callback for when the value is changed.
     on_change: Cb<dyn Fn(String) + Sync + Send>,
+    /// Callback for when the user presses enter.
     on_submit: Option<Cb<dyn Fn(String) + Sync + Send>>,
+    /// Whether the text should be obfuscated with '*' characters.
     password: bool,
+    /// The placeholder text to display when the value is empty.
     placeholder: Option<String>,
+    /// Whether the text editor should be focused when it is created.
     auto_focus: bool,
 ) -> Element {
     let (focused, set_focused) = use_focus(hooks);
@@ -48,11 +60,11 @@ pub fn TextEditor(
             if auto_focus {
                 set_focused(true);
             }
-            Box::new(move |_| {
+            move |_| {
                 if focused {
                     set_focused(false);
                 }
-            })
+            }
         }
     });
     hooks.use_runtime_message::<messages::WindowKeyboardCharacter>({
@@ -162,22 +174,26 @@ pub fn TextEditor(
 }
 
 impl TextEditor {
+    /// Create a new text editor.
     pub fn new(value: String, on_change: Cb<dyn Fn(String) + Sync + Send>) -> Self {
         Self { value, on_change, on_submit: None, password: false, placeholder: None, auto_focus: false }
     }
+    /// Set the `on_submit` callback.
     pub fn on_submit(mut self, on_submit: impl Fn(String) + Sync + Send + 'static) -> Self {
         self.on_submit = Some(cb(on_submit));
         self
     }
+    /// Set the placeholder text.
     pub fn placeholder<T: Into<String>>(mut self, placeholder: Option<T>) -> Self {
         self.placeholder = placeholder.map(|x| x.into());
         self
     }
+    /// Set whether or not the text should be hidden.
     pub fn password(mut self) -> Self {
         self.password = true;
         self
     }
-    /// Focus the text box automatically when it's spawned
+    /// Focus the text box automatically when it's spawned.
     pub fn auto_focus(mut self) -> Self {
         self.auto_focus = true;
         self

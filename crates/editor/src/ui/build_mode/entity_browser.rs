@@ -40,7 +40,7 @@ impl ElementComponent for EntityBrowser {
             let all_tags = entities.iter().flat_map(|entity| &entity.2).sorted().dedup().cloned().collect_vec();
             set_entities(entities);
             set_all_tags(all_tags);
-            Box::new(|_| {})
+            |_| {}
         });
         FlowColumn::el([
             FlowRow(

@@ -1,19 +1,20 @@
-pub use ambient_api as api;
+pub use ambient_api_core as api;
 pub use api::{components::core as components, concepts, message::*, messages};
 
 use std::future::Future;
 pub fn run_async(_world: &ecs::World, future: impl Future<Output = ()> + Send + 'static) {
-    ambient_api::prelude::run_async(async {
+    api::prelude::run_async(async {
         future.await;
         api::prelude::OkEmpty
     });
 }
 pub async fn sleep(seconds: f32) {
-    ambient_api::prelude::sleep(seconds).await;
+    api::prelude::sleep(seconds).await;
 }
 
 pub mod ecs {
-    pub use ambient_api::{
+    use super::api;
+    pub use api::{
         ecs::{Component, SupportedValue as ComponentValue, UntypedComponent},
         prelude::{Entity, EntityId},
     };
@@ -22,41 +23,41 @@ pub mod ecs {
     pub struct World;
     impl World {
         pub fn spawn(&self, entity: Entity) -> EntityId {
-            ambient_api::entity::spawn(&entity)
+            api::entity::spawn(&entity)
         }
         pub fn despawn(&self, entity_id: EntityId) -> bool {
-            ambient_api::entity::despawn(entity_id)
+            api::entity::despawn(entity_id)
         }
         pub fn exists(&self, entity_id: EntityId) -> bool {
-            ambient_api::entity::exists(entity_id)
+            api::entity::exists(entity_id)
         }
         pub fn set<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>, value: T) -> Result<(), ECSError> {
             // TODO: set_component needs to return errors
-            ambient_api::entity::set_component(entity_id, component, value);
+            api::entity::set_component(entity_id, component, value);
             Ok(())
         }
         pub fn add_component<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>, value: T) -> Result<(), ECSError> {
             // TODO: add_component needs to return errors
-            ambient_api::entity::add_component(entity_id, component, value);
+            api::entity::add_component(entity_id, component, value);
             Ok(())
         }
         pub fn add_components(&self, entity_id: EntityId, components: Entity) -> Result<(), ECSError> {
             // TODO: add_components needs to return errors
-            ambient_api::entity::add_components(entity_id, components);
+            api::entity::add_components(entity_id, components);
             Ok(())
         }
         pub fn get<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> Result<T, ECSError> {
-            ambient_api::entity::get_component(entity_id, component).ok_or_else(|| ECSError::EntityDoesntHaveComponent)
+            api::entity::get_component(entity_id, component).ok_or_else(|| ECSError::EntityDoesntHaveComponent)
         }
         // TODO: This should actually return &T
         pub fn get_ref<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> Result<T, ECSError> {
             self.get(entity_id, component)
         }
         pub fn has_component<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> bool {
-            ambient_api::entity::has_component(entity_id, component)
+            api::entity::has_component(entity_id, component)
         }
         pub fn resource<T: ComponentValue>(&self, component: Component<T>) -> T {
-            ambient_api::entity::get_component(ambient_api::entity::resources(), component).unwrap()
+            api::entity::get_component(api::entity::resources(), component).unwrap()
         }
     }
     #[derive(Debug)]
@@ -83,7 +84,7 @@ pub mod window {
 
     pub fn set_cursor(_world: &crate::ecs::World, cursor: CursorIcon) {
         #[cfg(feature = "client")]
-        super::api::input::set_cursor(cursor);
+        super::api::client::input::set_cursor(cursor);
         #[cfg(not(feature = "client"))]
         let _ = cursor;
     }

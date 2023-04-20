@@ -1,21 +1,34 @@
+//! Defines elements that can be used to select an item from a list.
 use ambient_cb::Cb;
 use ambient_element::{to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::{
-        layout::{margin_left, margin_top}, rect::border_radius
-    }, messages
+        layout::{margin_left, margin_top},
+        rect::border_radius,
+    },
+    messages,
 };
 use glam::Vec4;
 
 use crate::{
-    button::{Button, ButtonStyle}, default_theme::{tooltip_background_color, SMALL_ROUNDING, STREET}, dropdown::Dropdown, layout::{FlowColumn, FlowRow}, text::Text, UIExt
+    button::{Button, ButtonStyle},
+    default_theme::{tooltip_background_color, SMALL_ROUNDING, STREET},
+    dropdown::Dropdown,
+    layout::{FlowColumn, FlowRow},
+    text::Text,
+    UIExt,
 };
 
 #[derive(Debug, Clone)]
+/// A dropdown select element. Presents a button next to `content` that, when clicked, shows a dropdown with the items in `items`.
 pub struct DropdownSelect {
+    /// The content (always shown)
     pub content: Element,
+    /// The callback to call when an item is selected. Called with the index of the item.
     pub on_select: Cb<dyn Fn(usize) + Sync + Send>,
+    /// The items to select from.
     pub items: Vec<Element>,
+    /// Whether or not the button used for the dropdown should be inline or not.
     pub inline: bool,
 }
 impl ElementComponent for DropdownSelect {
@@ -79,10 +92,15 @@ impl ElementComponent for DropdownSelect {
 }
 
 #[derive(Debug, Clone)]
+/// A [DropdownSelect] that shows the current item for you automatically.
 pub struct ListSelect {
+    /// The index of the currently selected item.
     pub value: usize,
+    /// The callback to call when an item is selected. Called with the index of the item.
     pub on_change: Cb<dyn Fn(usize) + Sync + Send>,
+    /// The items to select from.
     pub items: Vec<Element>,
+    /// Whether or not the button used for the dropdown should be inline or not.
     pub inline: bool,
 }
 impl ElementComponent for ListSelect {

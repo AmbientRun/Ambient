@@ -8,7 +8,6 @@ version = { workspace = true }
 
 [dependencies]
 ambient_api = {workspace = true}
-ambient_ui = {workspace = true}
 
 [[bin]]
 name = "counter_client"
@@ -16,5 +15,5 @@ path = "src/client.rs"
 required-features = ["client"]
 
 [features]
-client = ["ambient_api/client", "ambient_ui/client"]
-server = ["ambient_api/server", "ambient_ui/server"]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

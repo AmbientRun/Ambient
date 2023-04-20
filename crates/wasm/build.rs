@@ -55,7 +55,7 @@ fn main() {
             for (filename, contents) in files.iter() {
                 std::fs::write(
                     guest_path
-                        .join("api")
+                        .join("api_core")
                         .join("src")
                         .join("internal")
                         .join(filename),

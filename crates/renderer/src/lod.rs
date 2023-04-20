@@ -15,7 +15,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::primitives;
 
-const MAX_LOD_LEVELS: usize = 16;
+/// Maximum number of LOD levels
+pub const MAX_LOD_LEVELS: usize = 16;
 #[repr(transparent)]
 /// Represents clip space size cutoffs for the lod levels.
 ///
@@ -24,7 +25,7 @@ const MAX_LOD_LEVELS: usize = 16;
 pub struct LodCutoffs([f32; MAX_LOD_LEVELS]);
 
 impl LodCutoffs {
-    /// Construct lod levels, truncates and logs if `lods` exceed [`MAX_LOG_LEVELS`]
+    /// Construct lod levels, truncates and logs if `lods` exceed [`MAX_LOD_LEVELS`]
     pub fn new(lods: &[f32]) -> Self {
         let mut val = [0.0; MAX_LOD_LEVELS];
         if lods.len() > MAX_LOD_LEVELS {

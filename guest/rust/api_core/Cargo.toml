@@ -1,9 +1,9 @@
 [package]
-description = "The API to the Ambient Runtime"
-documentation = "https://docs.rs/ambient_api"
+description = "The API to the Ambient Runtime (core)"
+documentation = "https://docs.rs/ambient_api_core"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-name = "ambient_api"
+name = "ambient_api_core"
 readme = "../../../README.md"
 repository = "https://github.com/AmbientRun/Ambient"
 rust-version = { workspace = true }
@@ -15,15 +15,21 @@ all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
-ambient_api_core = { workspace = true }
-ambient_ui = { workspace = true }
+ambient_api_macros = { workspace = true }
+ambient_shared_types = { workspace = true }
+ambient_project_rt = { workspace = true }
 
 anyhow = { workspace = true }
+byteorder = { workspace = true }
+data-encoding = { workspace = true }
 futures = { workspace = true }
 once_cell = { workspace = true }
+paste = { workspace = true }
+thiserror = { workspace = true }
 rand = { workspace = true }
 glam = { workspace = true }
+wit-bindgen = { workspace = true }
 
 [features]
-client = ["ambient_api_core/client", "ambient_ui/client"]
-server = ["ambient_api_core/server", "ambient_ui/server"]
+client = []
+server = []
