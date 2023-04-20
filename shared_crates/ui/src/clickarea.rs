@@ -1,14 +1,21 @@
+//! Defines the [ClickArea] element.
+
 use ambient_cb::{cb, Cb};
 use ambient_element::{to_owned, Element, ElementComponent, Hooks};
 use ambient_guest_bridge::{
-    components::input::{mouse_over, mouse_pickable_max, mouse_pickable_min}, ecs::{EntityId, World}, messages
+    components::input::{mouse_over, mouse_pickable_max, mouse_pickable_min},
+    ecs::{EntityId, World},
+    messages,
 };
 use ambient_shared_types::MouseButton;
 use glam::{Vec2, Vec3};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// The state of a mouse button.
 pub enum MouseInput {
+    /// The button is pressed.
     Pressed,
+    /// The button is released.
     Released,
 }
 impl From<bool> for MouseInput {
@@ -22,15 +29,23 @@ impl From<bool> for MouseInput {
 }
 
 #[derive(Debug, Clone)]
+/// An area that tracks mouse events.
 pub struct ClickArea {
+    /// The inner element.
     pub inner: Element,
+    /// Callback for when the mouse enters the area.
     pub on_mouse_enter: Vec<Cb<dyn Fn(&mut World, EntityId) + Sync + Send>>,
+    /// Callback for when the mouse leaves the area.
     pub on_mouse_leave: Vec<Cb<dyn Fn(&mut World, EntityId) + Sync + Send>>,
+    /// Callback for when the mouse hovers over the area.
     pub on_mouse_hover: Vec<Cb<dyn Fn(&mut World, EntityId) + Sync + Send>>,
+    /// Callback for when a mouse button is.
     pub on_mouse_input: Vec<Cb<dyn Fn(&mut World, EntityId, MouseInput, MouseButton) + Sync + Send>>,
+    /// Callback for when the mouse wheel is scrolled.
     pub on_mouse_wheel: Vec<Cb<dyn Fn(&mut World, EntityId, Vec2, bool) + Sync + Send>>,
 }
 impl ClickArea {
+    /// Create a new ClickArea.
     pub fn new(inner: Element) -> Self {
         Self {
             inner,
@@ -41,27 +56,32 @@ impl ClickArea {
             on_mouse_wheel: Vec::new(),
         }
     }
+    /// Set the callback for when the mouse hovers over the area.
     pub fn on_mouse_hover<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(mut self, handle: F) -> Self {
         self.on_mouse_hover.push(cb(handle));
         self
     }
+    /// Set the callback for when the mouse enters the area.
     pub fn on_mouse_enter<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(mut self, handle: F) -> Self {
         self.on_mouse_enter.push(cb(handle));
         self
     }
+    /// Set the callback for when the mouse leaves the area.
     pub fn on_mouse_leave<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(mut self, handle: F) -> Self {
         self.on_mouse_leave.push(cb(handle));
         self
     }
+    /// Set the callback for when a mouse button is pressed or released.
     pub fn on_mouse_input<F: Fn(&mut World, EntityId, MouseInput, MouseButton) + Sync + Send + 'static>(mut self, handle: F) -> Self {
         self.on_mouse_input.push(cb(handle));
         self
     }
+    /// Set the callback for when the mouse wheel is scrolled.
     pub fn on_mouse_wheel<F: Fn(&mut World, EntityId, Vec2, bool) + Sync + Send + 'static>(mut self, handle: F) -> Self {
         self.on_mouse_wheel.push(cb(handle));
         self
     }
-
+    /// Set the callback for when a mouse button is pressed.
     pub fn on_mouse_down<F: Fn(&mut World, EntityId, MouseButton) + Sync + Send + 'static>(self, handle: F) -> Self {
         self.on_mouse_input(move |world, id, state, button| {
             if state == MouseInput::Pressed {
@@ -69,6 +89,7 @@ impl ClickArea {
             }
         })
     }
+    /// Set the callback for when a mouse button is released.
     pub fn on_mouse_up<F: Fn(&mut World, EntityId, MouseButton) + Sync + Send + 'static>(self, handle: F) -> Self {
         self.on_mouse_input(move |world, id, state, button| {
             if state == MouseInput::Released {

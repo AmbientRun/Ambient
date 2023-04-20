@@ -1,3 +1,4 @@
+//! Defines a scroll area.
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::{
@@ -12,6 +13,7 @@ use glam::vec3;
 use crate::{layout::Flow, UIBase};
 
 #[derive(Debug, Clone)]
+/// A scroll area that can be used to scroll its child.
 pub struct ScrollArea(pub Element);
 impl ElementComponent for ScrollArea {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
@@ -31,6 +33,7 @@ impl ElementComponent for ScrollArea {
     }
 }
 impl ScrollArea {
+    /// Creates a new scroll area as an [Element].
     pub fn el(element: Element) -> Element {
         Self(element).el()
     }

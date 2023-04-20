@@ -27,21 +27,32 @@ use crate::{
 };
 
 #[derive(Clone, Debug)]
+/// A slider for a floating-point value.
 pub struct Slider {
+    /// The value to edit.
     pub value: f32,
+    /// Callback for when the value is changed.
     pub on_change: Option<Cb<dyn Fn(f32) + Sync + Send>>,
+    /// The minimum value.
     pub min: f32,
+    /// The maximum value.
     pub max: f32,
+    /// The width of the slider.
     pub width: f32,
+    /// Whether the slider should be logarithmic.
     pub logarithmic: bool,
+    /// The number of decimal places to round to.
     pub round: Option<u32>,
+    /// The suffix to append to the value (display-only).
     pub suffix: Option<&'static str>,
 }
 impl Slider {
+    /// Creates a new slider.
     pub fn new(value: f32, on_change: impl Fn(f32) + Sync + Send + 'static) -> Self {
         Self { value, on_change: Some(cb(on_change)), min: 0., max: 1., width: 100., logarithmic: false, round: None, suffix: None }
     }
     #[cfg(feature = "guest")]
+    /// Creates a new slider that edits a component on an entity.
     pub fn new_for_entity_component(hooks: &mut Hooks, entity: EntityId, component: ambient_guest_bridge::ecs::Component<f32>) -> Self {
         use ambient_guest_bridge::api::entity;
         let rerender = hooks.use_rerender_signal();
@@ -169,13 +180,21 @@ impl ElementComponent for Slider {
 }
 
 #[derive(Clone, Debug)]
+/// A slider for an integer value.
 pub struct IntegerSlider {
+    /// The current value of the slider.
     pub value: i32,
+    /// The callback that is called when the value changes.
     pub on_change: Option<Cb<dyn Fn(i32) + Sync + Send>>,
+    /// The minimum value of the slider.
     pub min: i32,
+    /// The maximum value of the slider.
     pub max: i32,
+    /// The width of the slider.
     pub width: f32,
+    /// Whether the slider should use a logarithmic scale.
     pub logarithmic: bool,
+    /// The suffix of the slider (display-only).
     pub suffix: Option<&'static str>,
 }
 impl ElementComponent for IntegerSlider {

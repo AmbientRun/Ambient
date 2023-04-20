@@ -4,7 +4,8 @@ use itertools::Itertools;
 
 use super::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
 
-/// Useful for introducing an intermediate component node in a tree
+/// Wraps the inner [Element].
+/// This is useful for introducing an intermediate component node in a tree.
 #[derive(Debug, Clone)]
 pub struct Wrap(pub Element);
 impl ElementComponent for Wrap {
@@ -14,7 +15,7 @@ impl ElementComponent for Wrap {
 }
 
 #[derive(Debug, Clone)]
-/// Wrap multiple elements in a flat hierarchy
+/// Wrap multiple [Element]s in a flat hierarchy.
 pub struct Group(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(Group);
 impl ElementComponent for Group {
@@ -34,6 +35,7 @@ impl<T: ElementComponent + Clone + 'static> ElementComponent for HashMap<String,
 }
 
 #[derive(Debug, Clone)]
+/// Memoize the [ElementComponent], such that it is only re-rendered if the component changes.
 pub struct Memo<P: ElementComponent + PartialEq + Clone + 'static>(pub P);
 impl<P: ElementComponent + PartialEq + Clone + 'static> ElementComponent for Memo<P> {
     fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {

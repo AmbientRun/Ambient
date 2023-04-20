@@ -25,3 +25,9 @@ If you're running Wayland, you may have to start ambient with: `WAYLAND_DISPLAY=
 ### Runtime error: import `...` has the wrong type
 
 This can occur when you have `.wasm` files in your `build` folder that are using an old version of the Ambient API. Delete the `build` folder and try again - this should force them to be regenerated.
+
+
+
+### Failed to download "file address, starting with an ip address":error trying to connect: tcp connect error: *etc* (os error 10060)
+
+This can happen if your anti-virus is blocking the connection to the ip address: try deactivating it, then run the ambient project again with 'ambient run'.
