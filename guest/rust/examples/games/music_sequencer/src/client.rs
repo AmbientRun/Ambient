@@ -11,11 +11,11 @@ fn make_row(text: &str, note_selection_now: &[u32], cursor_now: usize, pos: usiz
             .with_background(match highlight {
                 true => match hue == 0 {
                     true => vec4(0.5, 0.5, 0.5, 1.),
-                    false => hsv_to_rgb(&[hue as f32 / 360., 0.7, 0.8]).extend(1.) * 2.2,
+                    false => hsv_to_rgb(&[hue as f32, 0.7, 0.8]).extend(1.) * 2.2,
                 },
                 false => match hue == 0 {
                     true => vec4(0.2, 0.2, 0.2, 1.),
-                    false => hsv_to_rgb(&[hue as f32 / 360., 0.7, 1.0]).extend(1.) * 2.2,
+                    false => hsv_to_rgb(&[hue as f32, 0.7, 1.0]).extend(1.) * 2.2,
                 },
             })
             .with(width(), 50.)
