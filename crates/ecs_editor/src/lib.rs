@@ -1,156 +1,137 @@
-use std::{collections::HashMap, time::Duration};
+use std::sync::Arc;
 
-use ambient_ecs::{with_component_registry, ComponentDesc, Entity, EntityId, Query, World, WorldDiff};
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_core::name;
+use ambient_ecs::{query, EntityId, World};
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_renderer::color;
 use ambient_std::{cb, Cb};
-use ambient_ui_native::{fit_horizontal, space_between_items, Button, ButtonStyle, Fit, FlowColumn, FlowRow, Text, UIExt, STREET};
-use glam::{vec4, Vec4};
+use ambient_ui_native::{margin, Borders, Button, ButtonStyle, FlowColumn, FlowRow, Text, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET};
+use glam::vec4;
 use itertools::Itertools;
 
-#[derive(Debug, Clone)]
-pub struct ECSEditor {
-    pub get_world: Cb<dyn Fn(Cb<dyn Fn(&World) + Sync + Send>) + Sync + Send>,
-    pub on_change: Cb<dyn Fn(&mut World, WorldDiff) + Sync + Send>,
+pub trait InspectableWorld: Sync + Send + std::fmt::Debug {
+    fn get_entities(&self, parent: Option<EntityId>, cb: Cb<dyn Fn(Vec<InspectedEntity>) + Sync + Send>);
+    fn get_components(&self, entity: EntityId, cb: Cb<dyn Fn(Vec<InspectedComponent>) + Sync + Send>);
 }
-impl ElementComponent for ECSEditor {
-    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let Self { get_world, on_change } = *self;
-        let (components, set_components) = hooks.use_state(HashMap::<ComponentDesc, bool>::new());
-        let (entity_datas, set_entity_datas) = hooks.use_state(Vec::new());
-        let (entities, set_entities) = hooks.use_state(Vec::new());
-        let (edit_filter, set_edit_filter) = hooks.use_state(false);
-        hooks.use_interval_deps(Duration::from_millis(500), false, components.clone(), {
-            let get_world = get_world.clone();
-            move |components| {
-                let mut query = Query::all();
-                for (&comp, incl) in components {
-                    if *incl {
-                        query = query.incl_ref(comp);
-                    } else {
-                        query = query.excl_ref(comp);
-                    }
-                }
-                let set_entity_datas = set_entity_datas.clone();
-                let set_entities = set_entities.clone();
-                get_world(cb(move |world| {
-                    set_entities(query.iter(world, None).map(|ea| ea.id()).collect());
-                    set_entity_datas(
-                        query.iter(world, None).take(20).map(|ea| (ea.id(), world.clone_entity(ea.id()).unwrap())).collect_vec(),
-                    );
-                }));
-            }
-        });
+#[derive(Debug, Clone)]
+pub struct InspectedEntity {
+    pub id: EntityId,
+    pub name: Option<String>,
+}
+#[derive(Debug, Clone)]
+pub struct InspectedComponent {
+    pub name: String,
+    pub value: String,
+}
 
-        let render_component = |id: &str, comp: ComponentDesc| {
-            let toggled = components.get(&comp).cloned();
-            let components = components.clone();
-            let set_components = set_components.clone();
-            let on_change = on_change.clone();
-            let entities = entities.clone();
-            FlowRow::el([
-                Button::new("\u{f6bf}", {
-                    move |world| {
-                        let entities = entities.clone();
-                        let mut diff = WorldDiff::new();
-                        for id in &entities {
-                            diff = diff.remove_component(*id, comp);
-                        }
-                        on_change(world, diff);
-                    }
-                })
-                .style(ButtonStyle::Flat)
-                .tooltip("Delete component from all selected entities")
-                .el(),
-                Text::el(id)
-                    .with(
-                        color(),
-                        match toggled {
-                            Some(true) => vec4(0., 1., 0., 1.),
-                            Some(false) => vec4(1., 0., 0., 1.),
-                            None => Vec4::ONE,
-                        },
-                    )
-                    .with_clickarea()
-                    .on_mouse_up(move |_, _, _| {
-                        let mut comps = components.clone();
-                        if let Some(v) = comps.get(&comp).cloned() {
-                            if v {
-                                comps.insert(comp, false);
-                            } else {
-                                comps.remove(&comp);
-                            }
+#[derive(Debug, Clone)]
+pub struct InspectableAsyncWorld(pub Cb<dyn Fn(Cb<dyn Fn(&World) + Sync + Send>) + Sync + Send>);
+impl InspectableWorld for InspectableAsyncWorld {
+    fn get_entities(&self, parent: Option<ambient_ecs::EntityId>, callback: ambient_std::Cb<dyn Fn(Vec<InspectedEntity>) + Sync + Send>) {
+        (self.0)(cb(move |world| {
+            let entities = if let Some(parent) = parent {
+                query(ambient_core::hierarchy::parent())
+                    .collect_cloned(world, None)
+                    .into_iter()
+                    .filter_map(|(id, this_parent)| {
+                        if this_parent == parent {
+                            Some(InspectedEntity { id, name: world.get_ref(id, name()).map(|x| x.clone()).ok() })
                         } else {
-                            comps.insert(comp, true);
+                            None
                         }
-                        set_components(comps);
                     })
-                    .el(),
-            ])
-            .with(space_between_items(), 5.)
-        };
-        FlowColumn::el([
-            Button::new("Filter", move |_| set_edit_filter(!edit_filter)).toggled(edit_filter).el(),
-            if edit_filter {
-                FlowRow::el(with_component_registry(|r| {
-                    r.all()
-                        .map(|c| (c.path(), c))
-                        .sorted_by_key(|(id, _)| id.to_string())
-                        .map(|(path, comp)| render_component(&path, comp))
-                        .collect_vec()
-                }))
-                .with(fit_horizontal(), Fit::Parent)
-                .with(space_between_items(), STREET)
+                    .collect_vec()
             } else {
-                Element::new()
-            },
-            FlowColumn::el([
-                Text::el(format!("{} entities selected", entities.len())),
-                FlowColumn::el(
-                    entity_datas.into_iter().map(|(id, data)| EntityEditor { id, data, on_change: on_change.clone() }.el()).collect_vec(),
-                ),
-            ]),
-        ])
-        .with(fit_horizontal(), Fit::Parent)
+                query(())
+                    .excl(ambient_core::hierarchy::parent())
+                    .collect_cloned(world, None)
+                    .into_iter()
+                    .map(|(id, _)| InspectedEntity { id, name: world.get_ref(id, name()).map(|x| x.clone()).ok() })
+                    .collect_vec()
+            };
+            callback(entities);
+        }));
     }
-}
 
-#[derive(Debug, Clone)]
-struct EntityEditor {
-    id: EntityId,
-    data: Entity,
-    on_change: Cb<dyn Fn(&mut World, WorldDiff) + Sync + Send>,
-}
-
-impl ElementComponent for EntityEditor {
-    fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
-        let Self { id, data, on_change } = *self;
-
-        FlowRow::el([
-            FlowColumn::el([
-                Text::el(id.to_string()),
-                Button::new("\u{f6bf}", move |world| on_change(world, WorldDiff::new().despawn(vec![id]))).style(ButtonStyle::Flat).el(),
-            ]),
-            FlowColumn::el(
-                data.iter()
-                    .map(|entry| {
-                        FlowRow::el([
-                            Text::el(format!("{}:", entry.desc().path())).with(color(), vec4(1., 1., 0., 1.)),
-                            Text::el(ellipsis_text(format!("{:?}", entry.as_debug()))),
-                        ])
-                        .with(space_between_items(), STREET)
+    fn get_components(&self, entity: EntityId, callback: Cb<dyn Fn(Vec<InspectedComponent>) + Sync + Send>) {
+        (self.0)(cb(move |world: &World| {
+            let comps = if let Ok(comps) = world.get_components(entity) {
+                comps
+                    .into_iter()
+                    .map(|comp| InspectedComponent {
+                        name: comp.path(),
+                        value: format!("{:?}", world.get_entry(entity, comp).unwrap().as_debug()),
                     })
-                    .collect_vec(),
-            ),
-        ])
-        .with(space_between_items(), STREET)
+                    .collect_vec()
+            } else {
+                Vec::new()
+            };
+            callback(comps);
+        }));
     }
 }
 
-fn ellipsis_text(text: String) -> String {
-    if text.len() > 30 {
-        format!("{}...", &text[0..30])
+#[element_component]
+pub fn ECSEditor(_hooks: &mut Hooks, world: Arc<dyn InspectableWorld>) -> Element {
+    EntityList { world, parent: None }.el()
+}
+
+#[element_component]
+fn EntityList(hooks: &mut Hooks, world: Arc<dyn InspectableWorld>, parent: Option<EntityId>) -> Element {
+    let (show_all, set_show_all) = hooks.use_state(false);
+    let (entities, set_entities) = hooks.use_state(Vec::new());
+    const MAX: usize = 30;
+    hooks.use_interval(0.5, {
+        let world = world.clone();
+        move || {
+            world.get_entities(parent, set_entities.clone());
+        }
+    });
+    if entities.len() < MAX || show_all {
+        FlowColumn::el(entities.into_iter().map(|e| EntityBlock { world: world.clone(), entity: e }.el()).collect_vec())
     } else {
-        text
+        let hidden = entities.len() - MAX;
+        FlowColumn::el([
+            FlowColumn::el(entities.into_iter().take(MAX).map(|e| EntityBlock { world: world.clone(), entity: e }.el()).collect_vec()),
+            Button::new(format!("{} hidden. See all", hidden), move |_| set_show_all(true)).el(),
+        ])
     }
+}
+
+#[element_component]
+fn EntityBlock(hooks: &mut Hooks, world: Arc<dyn InspectableWorld>, entity: InspectedEntity) -> Element {
+    let (expanded, set_expanded) = hooks.use_state(false);
+    let (components, set_components) = hooks.use_state(false);
+    FlowColumn::el([
+        FlowRow::el([
+            Button::new(if expanded { MOVE_DOWN_ICON } else { MOVE_UP_ICON }, move |_| set_expanded(!expanded))
+                .style(ButtonStyle::Flat)
+                .el(),
+            Button::new(if let Some(name) = &entity.name { name.to_string() } else { entity.id.to_string() }, move |_| {
+                set_components(!components)
+            })
+            .style(ButtonStyle::Flat)
+            .toggled(components)
+            .el(),
+        ]),
+        if components { EntityComponents { world: world.clone(), entity: entity.id }.el() } else { Element::new() },
+        if expanded { EntityList { world, parent: Some(entity.id) }.el().with(margin(), Borders::left(STREET)) } else { Element::new() },
+    ])
+}
+
+#[element_component]
+fn EntityComponents(hooks: &mut Hooks, world: Arc<dyn InspectableWorld>, entity: EntityId) -> Element {
+    let (components, set_components) = hooks.use_state(Vec::new());
+    hooks.use_interval(0.5, {
+        let world = world.clone();
+        move || {
+            world.get_components(entity, set_components.clone());
+        }
+    });
+    FlowColumn::el(components.into_iter().map(|e| ComponentBlock { component: e }.el()).collect_vec())
+}
+
+#[element_component]
+fn ComponentBlock(_hooks: &mut Hooks, component: InspectedComponent) -> Element {
+    FlowRow::el([Text::el(format!("{}: ", component.name)).with(color(), vec4(1., 1., 0., 1.)), Text::el(component.value)])
 }

@@ -22,6 +22,7 @@ pub fn main() {
         .with_default(quad())
         .with(scale(), Vec3::ONE * 10.)
         .with(color(), vec4(0.5, 0.5, 0.5, 1.))
+        .with(name(), "Floor".to_string())
         .spawn();
 
     let unit_id = Entity::new()
@@ -30,6 +31,7 @@ pub fn main() {
             prefab_from_url(),
             asset::url("assets/Peasant Man.fbx").unwrap(),
         )
+        .with(name(), "Peasant".to_string())
         .spawn();
 
     App::el(unit_id).spawn_interactive()

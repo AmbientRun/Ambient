@@ -1,17 +1,17 @@
-use ambient_core::{name, runtime, selectable, tags};
+use ambient_core::{name, selectable, tags};
 use ambient_ecs::{query, EntityId};
-use ambient_ecs_editor::ECSEditor;
+use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_network::{
     client::{game_client, GameClient},
-    is_remote_entity, log_network_result,
-    rpc::rpc_world_diff,
+    is_remote_entity,
 };
 use ambient_std::{cb, Cb};
 use ambient_ui_native::{
-    fit_horizontal, space_between_items, Button, ButtonStyle, DialogScreen, Fit, FlowColumn, FlowRow, ScrollArea, STREET,
+    fit_horizontal, space_between_items, Button, ButtonStyle, DialogScreen, Fit, FlowColumn, FlowRow, ScrollArea, ScrollAreaSizing, STREET,
 };
 use itertools::Itertools;
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct EntityBrowser {
@@ -95,7 +95,8 @@ impl ElementComponent for EntityBrowserScreen {
         let Self { on_select, on_back } = *self;
         let (advanced, set_advanced) = hooks.use_state(false);
         DialogScreen(
-            ScrollArea(
+            ScrollArea::el(
+                ScrollAreaSizing::FitChildrenWidth,
                 FlowColumn::el([
                     FlowRow::el([
                         Button::new("Back", {
@@ -109,22 +110,13 @@ impl ElementComponent for EntityBrowserScreen {
                     ])
                     .with(space_between_items(), STREET),
                     if advanced {
-                        ECSEditor {
-                            get_world: cb({
-                                let game_client = hooks.world.resource(game_client()).clone();
-                                move |run| {
-                                    let state = game_client.as_ref().unwrap().game_state.lock();
-                                    run(&state.world);
-                                }
-                            }),
-                            on_change: cb(|world, diff| {
-                                let client = world.resource(game_client()).clone().unwrap();
-                                world.resource(runtime()).spawn(async move {
-                                    log_network_result!(client.rpc(rpc_world_diff, diff).await);
-                                });
-                            }),
-                        }
-                        .el()
+                        ECSEditor::el(Arc::new(InspectableAsyncWorld(cb({
+                            let game_client = hooks.world.resource(game_client()).clone();
+                            move |cb| {
+                                let state = game_client.as_ref().unwrap().game_state.lock();
+                                cb(&state.world);
+                            }
+                        }))))
                         .memoize_subtree("")
                     } else {
                         EntityBrowser {
@@ -138,7 +130,6 @@ impl ElementComponent for EntityBrowserScreen {
                 .with(space_between_items(), STREET)
                 .with(fit_horizontal(), Fit::Parent),
             )
-            .el()
             .with(fit_horizontal(), Fit::Parent),
         )
         .el()

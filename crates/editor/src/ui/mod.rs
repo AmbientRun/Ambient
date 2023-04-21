@@ -28,7 +28,7 @@ use ambient_ui_native::{
     command_modifier, height,
     layout::{docking, space_between_items, width, Borders, Docking},
     margin, use_window_logical_resolution, Button, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey, Rectangle, ScreenContainer, ScrollArea,
-    Separator, StylesExt, Text, UIExt, WindowSized, STREET,
+    ScrollAreaSizing, Separator, StylesExt, Text, UIExt, WindowSized, STREET,
 };
 use build_mode::*;
 use glam::{vec3, Vec3};
@@ -271,6 +271,7 @@ fn TerrainMaterialEditor(hooks: &mut Hooks) -> Element {
     FlowColumn::el([
         EditorPlayerInputHandler.el(),
         ScrollArea::el(
+            ScrollAreaSizing::FitChildrenWidth,
             FlowColumn::el([
                 FlowRow::el([
                     CopyPasteButtons { value, on_change: set_value.clone() }.el().with(margin(), Borders::bottom(STREET)),
@@ -354,6 +355,7 @@ fn NaturalLayersEditor(hooks: &mut Hooks) -> Element {
     FlowColumn::el([
         EditorPlayerInputHandler.el(),
         ScrollArea::el(
+            ScrollAreaSizing::FitChildrenWidth,
             FlowColumn::el([
                 FlowRow::el([
                     CopyPasteButtons { value, on_change: set_value.clone() }.el().with(margin(), Borders::bottom(STREET)),

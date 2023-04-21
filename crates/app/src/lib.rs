@@ -10,7 +10,7 @@ use ambient_core::{
     frame_index,
     gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
     hierarchy::dump_world_hierarchy_to_tmp_file,
-    remove_at_time_system, runtime, time,
+    name, remove_at_time_system, runtime, time,
     transform::TransformSystem,
     window::{cursor_position, get_window_sizes, window_logical_size, window_physical_size, window_scale_factor, WindowCtl},
     RuntimeKey, TimeResourcesSystem,
@@ -135,6 +135,7 @@ impl AppResources {
 pub fn world_instance_resources(resources: AppResources) -> Entity {
     let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
     Entity::new()
+        .with(name(), "Resources".to_string())
         .with(self::gpu(), resources.gpu.clone())
         .with(gizmos(), Gizmos::new())
         .with(self::runtime(), resources.runtime)

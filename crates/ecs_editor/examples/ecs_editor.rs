@@ -1,34 +1,29 @@
 use ambient_app::AppBuilder;
 use ambient_cameras::UICamera;
 use ambient_core::async_ecs::async_run;
-use ambient_ecs::{Entity, World};
-use ambient_ecs_editor::ECSEditor;
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
+use ambient_ecs::World;
+use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
+use ambient_element::{element_component, Element, ElementComponentExt, Group, Hooks};
 use ambient_std::cb;
-use ambient_ui_native::{FocusRoot, ScrollArea, WindowSized};
+use ambient_ui_native::{FocusRoot, ScrollArea, ScrollAreaSizing, WindowSized};
+use std::sync::Arc;
 
-#[derive(Debug, Clone)]
-struct ECSEditorUIWorld;
-impl ElementComponent for ECSEditorUIWorld {
-    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let async_run = hooks.world.resource(async_run()).clone();
-        ECSEditor {
-            get_world: cb(move |run| {
-                let run = run.clone();
-                async_run.run(move |world| run(world));
-            }),
-            on_change: cb(|world, diff| {
-                diff.apply(world, Entity::new(), false);
-            }),
-        }
-        .el()
-    }
+#[element_component]
+fn ECSEditorUIWorld(hooks: &mut Hooks) -> Element {
+    let async_run = hooks.world.resource(async_run()).clone();
+    ECSEditor { world: Arc::new(InspectableAsyncWorld(cb(move |cb| async_run.run(move |world| cb(world))))) }.el()
 }
 
 fn init(world: &mut World) {
-    Group(vec![UICamera.el(), FocusRoot(vec![WindowSized(vec![ScrollArea::el(ECSEditorUIWorld.el().memoize_subtree(""))]).el()]).el()])
-        .el()
-        .spawn_interactive(world);
+    Group(vec![
+        UICamera.el(),
+        FocusRoot(vec![
+            WindowSized(vec![ScrollArea::el(ScrollAreaSizing::FitChildrenWidth, ECSEditorUIWorld.el().memoize_subtree(""))]).el()
+        ])
+        .el(),
+    ])
+    .el()
+    .spawn_interactive(world);
 }
 
 #[tokio::main]

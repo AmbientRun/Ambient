@@ -8,7 +8,7 @@ use std::{
 };
 
 use ambient_core::{
-    asset_cache, no_sync,
+    asset_cache, name, no_sync,
     player::{get_by_user_id, player},
     project_name,
 };
@@ -92,6 +92,7 @@ impl RpcArgs {
 
 pub fn create_player_entity_data(user_id: &str, entities_tx: Sender<Vec<u8>>, stats_tx: Sender<FpsSample>) -> Entity {
     Entity::new()
+        .with(name(), format!("Player {}", user_id))
         .with(ambient_core::player::player(), ())
         .with(ambient_core::player::user_id(), user_id.to_string())
         .with(player_entity_stream(), entities_tx)

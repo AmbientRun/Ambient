@@ -13,7 +13,7 @@ use crate::{
     editor::{Editor, TextEditor},
     layout::{FlowColumn, FlowRow},
     screens::DialogScreen,
-    scroll_area::ScrollArea,
+    scroll_area::{ScrollArea, ScrollAreaSizing},
     text::Text,
 };
 
@@ -184,42 +184,40 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static>
     validator: Option<Cb<dyn Fn(&T) -> bool + Sync + Send>>,
 ) -> Element {
     let (value, set_value) = hooks.use_state(value);
-    DialogScreen(
-        ScrollArea(
-            FlowColumn::el([
-                Text::el(title).header_style(),
-                value.clone().editor(set_value, Default::default()),
-                FlowRow(vec![
-                    Button::new("Ok", {
-                        let set_screen = set_screen.clone();
-                        let value = value.clone();
-                        move |world| {
-                            set_screen(None);
-                            on_ok(world, value.clone());
-                        }
+    DialogScreen(ScrollArea::el(
+        ScrollAreaSizing::FitParentWidth,
+        FlowColumn::el([
+            Text::el(title).header_style(),
+            value.clone().editor(set_value, Default::default()),
+            FlowRow(vec![
+                Button::new("Ok", {
+                    let set_screen = set_screen.clone();
+                    let value = value.clone();
+                    move |world| {
+                        set_screen(None);
+                        on_ok(world, value.clone());
+                    }
+                })
+                .disabled(validator.map(|vv| !vv(&value)).unwrap_or(false))
+                .style(ButtonStyle::Primary)
+                .el(),
+                if let Some(on_cancel) = on_cancel {
+                    Button::new("Cancel", move |world| {
+                        set_screen(None);
+                        on_cancel(world);
                     })
-                    .disabled(validator.map(|vv| !vv(&value)).unwrap_or(false))
-                    .style(ButtonStyle::Primary)
-                    .el(),
-                    if let Some(on_cancel) = on_cancel {
-                        Button::new("Cancel", move |world| {
-                            set_screen(None);
-                            on_cancel(world);
-                        })
-                        .style(ButtonStyle::Flat)
-                        .el()
-                    } else {
-                        Element::new()
-                    },
-                ])
-                .el()
-                .with(space_between_items(), STREET)
-                .with_default(align_vertical_center()),
+                    .style(ButtonStyle::Flat)
+                    .el()
+                } else {
+                    Element::new()
+                },
             ])
-            .with(space_between_items(), STREET),
-        )
-        .el(),
-    )
+            .el()
+            .with(space_between_items(), STREET)
+            .with_default(align_vertical_center()),
+        ])
+        .with(space_between_items(), STREET),
+    ))
     .el()
 }
 

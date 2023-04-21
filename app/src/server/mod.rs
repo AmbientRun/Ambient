@@ -5,14 +5,14 @@ use std::{
     sync::Arc,
 };
 
-use ambient_core::{app_start_time, asset_cache, dtime, no_sync, project_name, time};
+use ambient_core::{app_start_time, asset_cache, dtime, name, no_sync, project_name, time};
 use ambient_ecs::{
     dont_store, world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup, World, WorldEventsSystem,
     WorldStreamCompEvent,
 };
 use ambient_network::{
     persistent_resources,
-    server::{ForkingEvent, GameServer, ShutdownEvent, ProxySettings},
+    server::{ForkingEvent, GameServer, ProxySettings, ShutdownEvent},
     synced_resources,
 };
 use ambient_prefab::PrefabFromUrl;
@@ -91,9 +91,16 @@ pub fn start(
         let name = manifest.project.name.clone().unwrap_or_else(|| "Ambient".into());
         server_world.add_components(server_world.resource_entity(), Entity::new().with(project_name(), name)).unwrap();
 
-        Entity::new().with(synced_resources(), ()).with(dont_store(), ()).spawn(&mut server_world);
+        Entity::new()
+            .with(ambient_core::name(), "Synced resources".to_string())
+            .with(synced_resources(), ())
+            .with(dont_store(), ())
+            .spawn(&mut server_world);
         // Note: this should not be reset every time the server is created. Remove this when it becomes possible to load/save worlds.
-        Entity::new().with(persistent_resources(), ()).spawn(&mut server_world);
+        Entity::new()
+            .with(ambient_core::name(), "Persistent resources".to_string())
+            .with(persistent_resources(), ())
+            .spawn(&mut server_world);
 
         wasm::initialize(&mut server_world, project_path.clone(), &manifest).unwrap();
 
@@ -143,7 +150,11 @@ fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool 
 }
 
 fn create_resources(assets: AssetCache) -> Entity {
-    let mut server_resources = Entity::new().with(asset_cache(), assets.clone()).with(no_sync(), ()).with_default(world_events());
+    let mut server_resources = Entity::new()
+        .with(name(), "Resources".to_string())
+        .with(asset_cache(), assets.clone())
+        .with(no_sync(), ())
+        .with_default(world_events());
     ambient_physics::create_server_resources(&assets, &mut server_resources);
     server_resources.merge(ambient_core::async_ecs::async_ecs_resources());
     server_resources.set(ambient_core::runtime(), RuntimeHandle::current());

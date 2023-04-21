@@ -1171,6 +1171,7 @@ description = "Base components for a camera. You will need other components to m
 extends = ["transformable"]
 
 [concepts.camera.components]
+"core::app::name" = "Camera"
 "core::camera::near" = 0.10000000149011612
 "core::camera::projection" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 "core::camera::projection_view" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]

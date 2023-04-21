@@ -56,12 +56,12 @@ struct Example;
 impl ElementComponent for Example {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (state, set_state) = hooks.use_state(MyStruct::new());
-        FocusRoot(vec![ScrollArea(
+        FocusRoot(vec![ScrollArea::el(
+            ScrollAreaSizing::FitChildrenWidth,
             FlowColumn(vec![MyStruct::editor(state.clone(), set_state, Default::default()), Text::el(format!("{state:#?}"))])
                 .el()
                 .with(space_between_items(), STREET),
-        )
-        .el()])
+        )])
         .el()
     }
 }
