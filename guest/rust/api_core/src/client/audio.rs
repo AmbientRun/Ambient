@@ -2,9 +2,10 @@ use crate::internal::wit;
 
 /// Load an audio file from `url`, and return an [AudioTrack] that can be used to play the audio.
 pub fn load(url: String) -> AudioTrack {
-    wit::client_audio::load(&url);
+    let actuall_url = url.replace(".mp3", ".ogg");
+    wit::client_audio::load(&actuall_url);
     AudioTrack {
-        name: url,
+        name: actuall_url,
         looping: false,
         volume: 1.0,
     }
