@@ -4,6 +4,33 @@
 //! When the tree is updated, it is compared to the previous tree, and only the differences are applied to the ECS.
 //! This can be used for UI, as well as any other tree-like data structure that you want to be able to update efficiently.
 //!
+//! # Idioms
+//!
+//! By convention, most [ElementComponent]s define an `el` method that returns an [Element] of that type. This `el`
+//! takes the properties to make it easy to both construct the component and instantiate it as an [Element].
+//!
+//! In addition to this, [ElementComponentExt] adds an `el` method to all [ElementComponent]s that converts them to
+//! an [Element].
+//!
+//! This means that an [ElementComponent] that looks like this
+//! ```ignore
+//! #[element_component]
+//! fn MyComponent(hooks: &mut Hooks, a: u32, b: String) -> Element {
+//!    // ...
+//! }
+//! ```
+//!
+//! can be instantiated as an [Element] using either of these methods:
+//! ```ignore
+//! MyComponent { a: 42, b: "hello".to_string() }.el()
+//! ```
+//! or
+//! ```ignore
+//! MyComponent::el(42, "hello".to_string())
+//! ```
+//!
+//! # Passing data in
+//!
 //! To pass data into the root of an Element tree, pass the data into its properties when constructing it and/or update the root
 //! of the tree using [ElementTree::migrate_root].
 //!
@@ -81,6 +108,8 @@ impl<T: ElementComponent + 'static> From<T> for Element {
 }
 
 /// A convenience trait for converting an [ElementComponent] into an [Element].
+///
+/// For more information on this, see the [top-level documentation](crate).
 pub trait ElementComponentExt {
     /// Converts an [ElementComponent] into an [Element].
     fn el(self) -> Element;
