@@ -2,20 +2,24 @@ use ambient_api::{messages::Frame, prelude::*};
 use components::note_selection;
 
 mod common;
-use common::{BEAT_COUNT, SECONDS_PER_NOTE, SOUNDS};
+use common::{hsv_to_rgb, BEAT_COUNT, SECONDS_PER_NOTE, SOUNDS};
 
-fn make_row(text: &str, note_selection_now: &[Vec4], cursor_now: usize, pos: usize) -> Element {
-    let card_inner = |selected_color: Vec4, highlight: bool| {
-        FlowRow(vec![Text::el("")])
+fn make_row(text: &str, note_selection_now: &[u32], cursor_now: usize, pos: usize) -> Element {
+    let card_inner = |hue: u32, highlight: bool| {
+        Rectangle
             .el()
             .with_background(match highlight {
-                true => match selected_color == vec4(0.2, 0.2, 0.2, 1.0) {
+                true => match hue == 0 {
                     true => vec4(0.5, 0.5, 0.5, 1.),
-                    false => selected_color - vec4(0.0, 0.0, 0.0, 0.2),
+                    false => hsv_to_rgb(&[hue as f32 / 360., 0.7, 0.8]).extend(1.) * 2.2,
                 },
-                false => selected_color,
+                false => match hue == 0 {
+                    true => vec4(0.2, 0.2, 0.2, 1.),
+                    false => hsv_to_rgb(&[hue as f32 / 360., 0.7, 1.0]).extend(1.) * 2.2,
+                },
             })
-            .with_padding_even(20.)
+            .with(width(), 50.)
+            .with(height(), 50.)
     };
     FlowColumn::el([
         Text::el(text),
@@ -42,7 +46,7 @@ fn make_row(text: &str, note_selection_now: &[Vec4], cursor_now: usize, pos: usi
 }
 
 #[element_component]
-fn App(_hooks: &mut Hooks, cursor: usize, notes: Vec<Vec4>) -> Element {
+fn App(_hooks: &mut Hooks, cursor: usize, notes: Vec<u32>) -> Element {
     FlowColumn::el(
         SOUNDS
             .iter()
@@ -70,13 +74,12 @@ pub fn main() {
             last_note_time = now;
 
             for (i, sound) in sounds.iter().enumerate() {
-                if notes[i * BEAT_COUNT + cursor] != vec4(0.2, 0.2, 0.2, 1.) {
+                if notes[i * BEAT_COUNT + cursor] != 0 {
                     sound.play();
                 }
             }
             tree.migrate_root(&mut World, App::el(cursor, notes));
         }
-
         tree.update(&mut World);
     });
 }
