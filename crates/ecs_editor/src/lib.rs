@@ -6,9 +6,7 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_layout::{fit_horizontal, max_width, width};
 use ambient_renderer::color;
 use ambient_std::{cb, Cb};
-use ambient_ui_native::{
-    background_color, margin, Borders, Button, ButtonStyle, FlowColumn, FlowRow, Text, UIExt, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET,
-};
+use ambient_ui_native::{margin, Borders, Button, ButtonStyle, FlowColumn, FlowRow, Text, UIExt, CHEVRON_DOWN, CHEVRON_RIGHT, STREET};
 use glam::vec4;
 use itertools::Itertools;
 
@@ -111,7 +109,7 @@ fn EntityBlock(hooks: &mut Hooks, world: Arc<dyn InspectableWorld>, entity: Insp
     let (components, set_components) = hooks.use_state(false);
     FlowColumn::el([
         FlowRow::el([
-            Button::new(if expanded { MOVE_DOWN_ICON } else { MOVE_UP_ICON }, move |_| set_expanded(!expanded))
+            Button::new(if expanded { CHEVRON_DOWN } else { CHEVRON_RIGHT }, move |_| set_expanded(!expanded))
                 .style(ButtonStyle::Flat)
                 .el(),
             Button::new(if let Some(name) = &entity.name { name.to_string() } else { entity.id.to_string() }, move |_| {
