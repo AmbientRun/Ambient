@@ -4,18 +4,18 @@ use components::note_selection;
 mod common;
 use common::{hsv_to_rgb, BEAT_COUNT, SECONDS_PER_NOTE, SOUNDS};
 
-fn make_row(text: &str, note_selection_now: &[f32], cursor_now: usize, pos: usize) -> Element {
-    let card_inner = |hue: f32, highlight: bool| {
+fn make_row(text: &str, note_selection_now: &[u32], cursor_now: usize, pos: usize) -> Element {
+    let card_inner = |hue: u32, highlight: bool| {
         Rectangle
             .el()
             .with_background(match highlight {
-                true => match hue == 0.0 {
+                true => match hue == 0 {
                     true => vec4(0.5, 0.5, 0.5, 1.),
-                    false => hsv_to_rgb(&[hue, 0.7, 1.0]).extend(1.) * 2.2 - vec4(0., 0., 0., 0.3),
+                    false => hsv_to_rgb(&[hue as f32 / 360., 0.7, 0.8]).extend(1.) * 2.2,
                 },
-                false => match hue == 0.0 {
+                false => match hue == 0 {
                     true => vec4(0.2, 0.2, 0.2, 1.),
-                    false => hsv_to_rgb(&[hue, 0.7, 1.0]).extend(1.) * 2.2,
+                    false => hsv_to_rgb(&[hue as f32 / 360., 0.7, 1.0]).extend(1.) * 2.2,
                 },
             })
             .with(width(), 50.)
@@ -46,7 +46,7 @@ fn make_row(text: &str, note_selection_now: &[f32], cursor_now: usize, pos: usiz
 }
 
 #[element_component]
-fn App(_hooks: &mut Hooks, cursor: usize, notes: Vec<f32>) -> Element {
+fn App(_hooks: &mut Hooks, cursor: usize, notes: Vec<u32>) -> Element {
     FlowColumn::el(
         SOUNDS
             .iter()
@@ -74,7 +74,7 @@ pub fn main() {
             last_note_time = now;
 
             for (i, sound) in sounds.iter().enumerate() {
-                if notes[i * BEAT_COUNT + cursor] != 0.0 {
+                if notes[i * BEAT_COUNT + cursor] != 0 {
                     sound.play();
                 }
             }

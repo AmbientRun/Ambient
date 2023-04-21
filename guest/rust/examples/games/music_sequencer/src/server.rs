@@ -14,7 +14,7 @@ mod common;
 #[main]
 pub async fn main() {
 
-    entity::add_component(resources(), next_player_hue(), 0.);
+    entity::add_component(resources(), next_player_hue(), 0);
 
     // When a player spawns, create their player state.
     spawn_query(user_id())
@@ -22,7 +22,7 @@ pub async fn main() {
     .bind(move |players| {
         for (player, _player_user_id) in players {
             let mut h = entity::get_component(resources(), next_player_hue()).unwrap();
-            h = (h + 102.5) % 360.;
+            h = (h + 103) % 360;
             entity::add_component(player, player_hue(), h);
             entity::set_component(resources(), next_player_hue(), h);
         };
@@ -31,7 +31,7 @@ pub async fn main() {
     entity::add_component(
         entity::synchronized_resources(),
         note_selection(),
-        vec![0.0; NOTE_COUNT],
+        vec![0; NOTE_COUNT],
     );
 
     messages::Click::subscribe(move |source, data| {
@@ -42,7 +42,7 @@ pub async fn main() {
             note_selection(),
             |selection| {
                 if selection[data.index as usize] == color_to_set {
-                    selection[data.index as usize] = 0.0;
+                    selection[data.index as usize] = 0;
                 } else {
                     selection[data.index as usize] = color_to_set;
                 }
