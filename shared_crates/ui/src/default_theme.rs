@@ -93,3 +93,11 @@ pub const COLLECTION_DELETE_ICON: &str = "\u{f6bf}";
 pub const MOVE_UP_ICON: &str = "\u{f062}";
 /// Character code for the "move down" icon.
 pub const MOVE_DOWN_ICON: &str = "\u{f063}";
+/// Character code for the "right chevron" icon.
+pub const CHEVRON_RIGHT: &str = "\u{f054}";
+/// Character code for the "left chevron" icon.
+pub const CHEVRON_LEFT: &str = "\u{f053}";
+/// Character code for the "down chevron" icon.
+pub const CHEVRON_DOWN: &str = "\u{f078}";
+/// Character code for the "up chevron" icon.
+pub const CHEVRON_UP: &str = "\u{f077}";

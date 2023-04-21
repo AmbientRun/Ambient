@@ -20,6 +20,11 @@ impl AsyncRun {
         self.0.send(Box::new(action)).ok();
     }
 }
+impl std::fmt::Debug for AsyncRun {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("AsyncRun").finish()
+    }
+}
 
 pub fn async_ecs_resources() -> Entity {
     Entity::new().with(async_run(), AsyncRun::new())

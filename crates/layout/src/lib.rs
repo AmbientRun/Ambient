@@ -13,7 +13,8 @@ use serde::{Deserialize, Serialize};
 pub mod guest_api;
 
 pub use ambient_ecs::generated::components::core::layout::{
-    gpu_ui_size, height, is_book_file, mesh_to_local_from_size, min_height, min_width, screen, space_between_items, width,
+    gpu_ui_size, height, is_book_file, max_height, max_width, mesh_to_local_from_size, min_height, min_width, screen, space_between_items,
+    width,
 };
 
 components!("layout", {

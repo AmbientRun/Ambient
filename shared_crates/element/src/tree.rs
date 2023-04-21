@@ -16,7 +16,10 @@ use ambient_friendly_id::friendly_id;
 use ambient_guest_bridge::api::components::core::ecs::{children, parent};
 #[cfg(feature = "native")]
 use ambient_guest_bridge::ecs::{query, Component, SystemGroup};
-use ambient_guest_bridge::ecs::{Entity, EntityId, World};
+use ambient_guest_bridge::{
+    components::app::name,
+    ecs::{Entity, EntityId, World},
+};
 use itertools::Itertools;
 use parking_lot::Mutex;
 use tracing::debug_span;
@@ -237,7 +240,7 @@ impl ElementTree {
         } else {
             let instance = self.instances.get(instance_id).unwrap();
             if instance.entity.is_null() {
-                let mut entity_data = Entity::new().with_default(crate::element());
+                let mut entity_data = Entity::new().with_default(crate::element()).with_default(name());
                 if let Some(parent_entity) = instance.parent_entity {
                     entity_data = entity_data.with(parent(), parent_entity);
                 }
@@ -255,6 +258,7 @@ impl ElementTree {
                 instance.config.init_components.write_to_entity_data(world, &mut components);
                 let name = world.get_ref(entity, crate::element()).unwrap().clone();
                 world.set(entity, crate::element(), format!("{}({})/{}", instance.config.get_element_key(true), entity, name)).unwrap();
+                world.set(entity, self::name(), instance.config.get_element_key(true)).unwrap();
             }
             instance.entity = entity;
             spawn

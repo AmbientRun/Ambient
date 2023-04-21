@@ -10,7 +10,7 @@ use crate::{
     default_theme::{StylesExt, STREET},
     layout::{FlowColumn, FlowRow},
     screens::{DialogScreen, ScreenContainer},
-    scroll_area::ScrollArea,
+    scroll_area::{ScrollArea, ScrollAreaSizing},
     text::Text,
 };
 
@@ -83,22 +83,20 @@ fn EditorScreen<T: Debug + Clone + Sync + Send + 'static + Editor>(
     opts: EditorOpts,
 ) -> Element {
     let (value, set_value) = hooks.use_state(value);
-    DialogScreen(
-        ScrollArea(
-            FlowColumn::el([
-                Text::el(title).header_style(),
-                editor(value.clone(), if edit { Some(set_value.clone()) } else { None }, opts),
-                FlowRow(vec![
-                    Button::new_once("Ok", move |_| on_confirm(value)).style(ButtonStyle::Primary).el(),
-                    Button::new_once("Cancel", move |_| on_cancel()).style(ButtonStyle::Flat).el(),
-                ])
-                .el()
-                .with(space_between_items(), STREET)
-                .with_default(align_vertical_center()),
+    DialogScreen(ScrollArea::el(
+        ScrollAreaSizing::FitParentWidth,
+        FlowColumn::el([
+            Text::el(title).header_style(),
+            editor(value.clone(), if edit { Some(set_value.clone()) } else { None }, opts),
+            FlowRow(vec![
+                Button::new_once("Ok", move |_| on_confirm(value)).style(ButtonStyle::Primary).el(),
+                Button::new_once("Cancel", move |_| on_cancel()).style(ButtonStyle::Flat).el(),
             ])
-            .with(space_between_items(), STREET),
-        )
-        .el(),
-    )
+            .el()
+            .with(space_between_items(), STREET)
+            .with_default(align_vertical_center()),
+        ])
+        .with(space_between_items(), STREET),
+    ))
     .el()
 }

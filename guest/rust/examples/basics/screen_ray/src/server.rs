@@ -25,6 +25,7 @@ pub fn main() {
         if let Some(hit) = physics::raycast_first(msg.ray_origin, msg.ray_dir) {
             // Set position of cube to the raycast hit position
             entity::set_component(cube_id, translation(), hit.position);
+            messages::WorldPosition::new(hit.position).send_client_broadcast_unreliable();
         }
     });
 }

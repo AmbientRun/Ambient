@@ -75,7 +75,8 @@ impl ElementComponent for Example {
             });
         }
 
-        ScrollArea(
+        ScrollArea::el(
+            ScrollAreaSizing::FitChildrenWidth,
             FlowColumn(vec![
                 Graph {
                     points: points.0,
@@ -116,7 +117,6 @@ impl ElementComponent for Example {
             .with(padding(), Borders::even(32.0))
             .with(space_between_items(), 128.0),
         )
-        .el()
     }
 }
 

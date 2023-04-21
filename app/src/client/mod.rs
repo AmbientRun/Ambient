@@ -13,12 +13,14 @@ use ambient_network::client::{
     GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, GameClientWorld, UseOnce,
 };
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
-use ambient_ui_native::{Button, Dock, FlowColumn, FocusRoot, MeasureSize, ScrollArea, StylesExt, Text, UIExt, WindowSized, STREET};
+use ambient_ui_native::{
+    Button, Dock, FlowColumn, FocusRoot, MeasureSize, ScrollArea, ScrollAreaSizing, StylesExt, Text, UIExt, WindowSized, STREET,
+};
 use glam::{uvec2, vec4, Vec2};
 
 use crate::{cli::RunCli, shared};
-use ambient_ecs_editor::ECSEditor;
-use ambient_layout::{docking, padding, width, Borders};
+use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
+use ambient_layout::{docking, padding, Borders};
 
 pub mod player;
 mod wasm;
@@ -191,10 +193,8 @@ fn GoldenImageTest(hooks: &mut Hooks, project_path: Option<PathBuf>, seconds: f3
 fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     let (state, _) = hooks.consume_context::<GameClient>().unwrap();
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
-    let (show_ecs, set_show_ecs) = hooks.use_state(false);
+    let (show_ecs, set_show_ecs) = hooks.use_state(true);
     let (ecs_size, set_ecs_size) = hooks.use_state(Vec2::ZERO);
-
-    const ECS_WIDTH: f32 = 600.;
 
     hooks.use_frame({
         let state = state.clone();
@@ -225,19 +225,19 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                         .el(),
                     if show_ecs {
                         ScrollArea::el(
+                            ScrollAreaSizing::FitChildrenWidth,
                             ECSEditor {
-                                get_world: cb({
+                                world: Arc::new(InspectableAsyncWorld(cb({
                                     let state = state.clone();
                                     move |res| {
                                         let state = state.game_state.lock();
                                         res(&state.world)
                                     }
-                                }),
-                                on_change: cb(|_, _| {}),
+                                }))),
                             }
-                            .el(),
+                            .el()
+                            .memoize_subtree(state.uid),
                         )
-                        .with(width(), ECS_WIDTH)
                     } else {
                         Element::new()
                     },
