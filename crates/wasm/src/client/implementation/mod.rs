@@ -1,10 +1,6 @@
 //! Used to implement all the *shared* host functions on the client.
 //!
 //! If implementing a trait that is only available on the client, it should go in [specific].
-
-use ambient_core::asset_cache;
-use ambient_std::asset_url::AbsAssetUrl;
-
 use crate::shared::{self, wit};
 
 use super::Bindings;
@@ -173,11 +169,7 @@ impl wit::player::Host for Bindings {
     }
 }
 impl wit::asset::Host for Bindings {
-    fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
-        let assets = self.world().resource(asset_cache()).clone();
-        let asset_url = AbsAssetUrl::from_asset_key(path);
-        asset_url
-            .to_download_url(&assets)
-            .map(|url| Some(url.to_string()))
+    fn url(&mut self, path: String) -> anyhow::Result<Result<String, wit::asset::UrlError>> {
+        shared::implementation::asset::url(self.world(), path, true)
     }
 }

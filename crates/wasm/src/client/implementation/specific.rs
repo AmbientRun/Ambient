@@ -153,7 +153,7 @@ impl wit::client_audio::Host for Bindings {
     fn load(&mut self, url: String) -> anyhow::Result<()> {
         let world = self.world();
         let assets = world.resource(asset_cache()).clone();
-        let asset_url = AbsAssetUrl::from_asset_key(url).to_string();
+        let asset_url = AbsAssetUrl::from_asset_key(url)?.to_string();
         let audio_url = AudioFromUrl {
             url: AbsAssetUrl::parse(asset_url).context("Failed to parse audio url")?,
         };
@@ -164,7 +164,7 @@ impl wit::client_audio::Host for Bindings {
     fn play(&mut self, url: String, looping: bool, volume: f32, uid: u32) -> anyhow::Result<()> {
         let world = self.world();
         let assets = world.resource(asset_cache()).clone();
-        let asset_url = AbsAssetUrl::from_asset_key(url).to_string();
+        let asset_url = AbsAssetUrl::from_asset_key(url)?.to_string();
         let audio_url = AudioFromUrl {
             url: AbsAssetUrl::parse(asset_url.clone()).context("Failed to parse audio url")?,
         };

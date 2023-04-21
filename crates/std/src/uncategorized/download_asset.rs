@@ -140,7 +140,10 @@ impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
             return Ok(Arc::new(ambient_sys::fs::read(path).await.context(format!("Failed to read file at: {:}", self.url.0))?));
         }
 
-        let body = download(&assets, self.url.to_download_url(&assets)?, |resp| async { Ok(resp.bytes().await?) }).await?.to_vec();
+        let body =
+            download(&assets, self.url.to_download_url(&assets).map_err(anyhow::Error::new)?, |resp| async { Ok(resp.bytes().await?) })
+                .await?
+                .to_vec();
         assert!(!body.is_empty());
         Ok(Arc::new(body))
     }
@@ -192,7 +195,7 @@ impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
             dir.pop();
             std::fs::create_dir_all(&dir).context(format!("Failed to create asset dir: {dir:?}"))?;
             let tmp_path = path.with_extension(".downloading");
-            download(&assets, self.url.to_download_url(&assets)?, {
+            download(&assets, self.url.to_download_url(&assets).map_err(anyhow::Error::new)?, {
                 let tmp_path = tmp_path.clone();
                 move |mut resp| {
                     let tmp_path = tmp_path.clone();
