@@ -14,6 +14,10 @@ pub fn screen_to_clip_space(world: &World, screen_pos: Vec2) -> Vec2 {
     let screen_size = *world.resource(window_logical_size());
     interpolate(screen_pos, Vec2::ZERO, screen_size.as_vec2(), vec2(-1., 1.), vec2(1., -1.))
 }
+pub fn clip_to_screen_space(world: &World, clip_pos: Vec2) -> Vec2 {
+    let screen_size = *world.resource(window_logical_size());
+    interpolate(clip_pos, vec2(-1., 1.), vec2(1., -1.), Vec2::ZERO, screen_size.as_vec2())
+}
 pub fn get_mouse_clip_space_position(world: &World) -> Vec2 {
     let mouse_position = *world.resource(cursor_position());
     screen_to_clip_space(world, mouse_position)

@@ -24,7 +24,10 @@ use crate::shared::{
     wit,
 };
 
-use ambient_core::camera::screen_ray;
+use ambient_core::camera::{
+    clip_space_ray,
+    world_to_clip_space,
+};
 
 impl wit::client_message::Host for Bindings {
     fn send(
@@ -125,12 +128,12 @@ impl wit::client_input::Host for Bindings {
     }
 }
 impl wit::client_camera::Host for Bindings {
-    fn screen_ray(
+    fn clip_space_ray(
         &mut self,
         camera: wit::types::EntityId,
         clip_space_pos: wit::types::Vec2,
     ) -> anyhow::Result<wit::types::Ray> {
-        let mut ray = screen_ray(
+        let mut ray = clip_space_ray(
             self.world(),
             camera.from_bindgen(),
             clip_space_pos.from_bindgen(),
@@ -146,6 +149,33 @@ impl wit::client_camera::Host for Bindings {
         Ok(
             ambient_core::window::screen_to_clip_space(self.world(), screen_pos.from_bindgen())
                 .into_bindgen(),
+        )
+    }
+
+    fn screen_to_world_direction(
+        &mut self,
+        camera: wit::types::EntityId,
+        screen_pos: wit::types::Vec2,
+    ) -> anyhow::Result<wit::types::Ray> {
+        let clip_space = ambient_core::window::screen_to_clip_space(self.world(), screen_pos.from_bindgen());
+        let mut ray = clip_space_ray(self.world(), camera.from_bindgen(), clip_space)?;
+        ray.dir *= -1.;
+        Ok(ray.into_bindgen())
+    }
+
+    fn world_to_screen(
+        &mut self,
+        camera: wit::types::EntityId,
+        world_pos: wit::types::Vec3,
+    ) -> anyhow::Result<wit::types::Vec2> {
+        let clip_pos = world_to_clip_space(
+            self.world(),
+            camera.from_bindgen(),
+            world_pos.from_bindgen()
+        )?;
+        Ok(
+            ambient_core::window::clip_to_screen_space(self.world(), clip_pos)
+                .into_bindgen()
         )
     }
 }

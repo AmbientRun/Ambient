@@ -1,5 +1,5 @@
 use ambient_core::{
-    camera::{get_active_camera, screen_ray},
+    camera::{get_active_camera, clip_space_ray},
     player::{local_user_id, user_id},
     transform::local_to_world,
     ui_scene,
@@ -50,7 +50,7 @@ pub fn frame_systems() -> SystemGroup {
                         Some(cam) => cam,
                         None => return,
                     };
-                    let ray = screen_ray(world, camera, mouse_origin).unwrap_or_default();
+                    let ray = clip_space_ray(world, camera, mouse_origin).unwrap_or_default();
 
                     let prev_intersecting = world.get(id, picker_intersecting()).unwrap_or_default();
 

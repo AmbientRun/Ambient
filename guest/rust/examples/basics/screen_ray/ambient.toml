@@ -3,7 +3,9 @@ id = "screen_ray"
 name = "screen_ray"
 version = "0.0.1"
 
-[messages.input]
 [messages.input.fields]
-ray_origin = { type = "Vec3", name = "", description = "" }
-ray_dir = { type = "Vec3", name = "", description = "" }
+ray_origin = { type = "Vec3" }
+ray_dir = { type = "Vec3" }
+
+[messages.world_position.fields]
+position = { type = "Vec3" }

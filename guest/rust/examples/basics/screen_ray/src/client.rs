@@ -20,9 +20,7 @@ pub fn main() {
 
     ambient_api::messages::Frame::subscribe(move |_| {
         let input = input::get();
-
-        let ndc = camera::screen_to_clip_space(input.mouse_position);
-        let ray = camera::screen_ray(camera, ndc);
+        let ray = camera::screen_to_world_direction(camera, input.mouse_position);
 
         // Send screen ray to server
         messages::Input {
@@ -31,4 +29,25 @@ pub fn main() {
         }
         .send_server_unreliable();
     });
+
+    WorldPosition::el(camera).spawn_interactive();
+}
+
+#[element_component]
+fn WorldPosition(hooks: &mut Hooks, camera: EntityId) -> Element {
+    let (position, set_position) = hooks.use_state(None);
+    hooks.use_module_message::<messages::WorldPosition>(move |_, _, msg| {
+        set_position(Some(msg.position));
+    });
+
+    position
+        .map(|position| {
+            Text::el(position.to_string())
+                .with(
+                    translation(),
+                    camera::world_to_screen(camera, position).extend(0.0),
+                )
+                .with(color(), Vec4::ONE)
+        })
+        .unwrap_or_default()
 }

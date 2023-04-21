@@ -36,7 +36,7 @@ impl wit::client_input::Host for Bindings {
     }
 }
 impl wit::client_camera::Host for Bindings {
-    fn screen_ray(
+    fn clip_space_ray(
         &mut self,
         _camera: wit::types::EntityId,
         _clip_space_pos: wit::types::Vec2,
@@ -46,6 +46,22 @@ impl wit::client_camera::Host for Bindings {
     fn screen_to_clip_space(
         &mut self,
         _screen_pos: wit::types::Vec2,
+    ) -> anyhow::Result<wit::types::Vec2> {
+        unsupported()
+    }
+
+    fn screen_to_world_direction(
+        &mut self,
+        _camera: wit::types::EntityId,
+        _screen_pos: wit::types::Vec2,
+    ) -> anyhow::Result<wit::types::Ray> {
+        unsupported()
+    }
+
+    fn world_to_screen(
+        &mut self,
+        _camera: wit::types::EntityId,
+        _world_pos: wit::types::Vec3,
     ) -> anyhow::Result<wit::types::Vec2> {
         unsupported()
     }
