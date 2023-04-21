@@ -4,7 +4,7 @@ use ambient_api::{
         camera::aspect_ratio_from_window,
         primitives::{cube, quad, sphere_radius, sphere_sectors, sphere_stacks},
         rendering::color,
-        transform::{lookat_center, scale, translation},
+        transform::{lookat_target, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     prelude::*,
@@ -17,7 +17,7 @@ pub fn main() {
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with_default(main_scene())
         .with(translation(), vec3(5., 5., 6.))
-        .with(lookat_center(), vec3(0., 0., 2.))
+        .with(lookat_target(), vec3(0., 0., 2.))
         .spawn();
 
     Entity::new()

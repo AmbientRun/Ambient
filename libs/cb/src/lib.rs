@@ -18,6 +18,10 @@ impl<T: ?Sized> Deref for CbDebuggable<T> {
     }
 }
 
+/// A helper type for callbacks that wraps around a function type with an `Arc` that implements `Debug`.
+///
+/// This is used to allow for shared ownership of a function, and to make it easy to embed
+/// a callback in a struct that implements `Debug`.
 pub type Cb<T> = Arc<CbDebuggable<T>>;
 
 /// Helper for constructing a [Cb].
