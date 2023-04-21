@@ -3,9 +3,12 @@ use std::sync::Arc;
 use ambient_core::name;
 use ambient_ecs::{query, EntityId, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_layout::{fit_horizontal, max_width, width};
 use ambient_renderer::color;
 use ambient_std::{cb, Cb};
-use ambient_ui_native::{margin, Borders, Button, ButtonStyle, FlowColumn, FlowRow, Text, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET};
+use ambient_ui_native::{
+    background_color, margin, Borders, Button, ButtonStyle, FlowColumn, FlowRow, Text, UIExt, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET,
+};
 use glam::vec4;
 use itertools::Itertools;
 
@@ -87,14 +90,18 @@ fn EntityList(hooks: &mut Hooks, world: Arc<dyn InspectableWorld>, parent: Optio
             world.get_entities(parent, set_entities.clone());
         }
     });
-    if entities.len() < MAX || show_all {
-        FlowColumn::el(entities.into_iter().map(|e| EntityBlock { world: world.clone(), entity: e }.el()).collect_vec())
+    let n_entities = entities.len();
+    let entity_list = FlowColumn::el(
+        entities
+            .into_iter()
+            .take(if show_all { usize::MAX } else { MAX })
+            .map(|e| EntityBlock { world: world.clone(), entity: e.clone() }.el().memoize_subtree(e.id.to_string()))
+            .collect_vec(),
+    );
+    if n_entities < MAX || show_all {
+        entity_list
     } else {
-        let hidden = entities.len() - MAX;
-        FlowColumn::el([
-            FlowColumn::el(entities.into_iter().take(MAX).map(|e| EntityBlock { world: world.clone(), entity: e }.el()).collect_vec()),
-            Button::new(format!("{} hidden. See all", hidden), move |_| set_show_all(true)).el(),
-        ])
+        FlowColumn::el([entity_list, Button::new(format!("{} hidden. See all", n_entities - MAX), move |_| set_show_all(true)).el()])
     }
 }
 
@@ -114,7 +121,11 @@ fn EntityBlock(hooks: &mut Hooks, world: Arc<dyn InspectableWorld>, entity: Insp
             .toggled(components)
             .el(),
         ]),
-        if components { EntityComponents { world: world.clone(), entity: entity.id }.el() } else { Element::new() },
+        if components {
+            EntityComponents { world: world.clone(), entity: entity.id }.el().memoize_subtree(entity.id.to_string())
+        } else {
+            Element::new()
+        },
         if expanded { EntityList { world, parent: Some(entity.id) }.el().with(margin(), Borders::left(STREET)) } else { Element::new() },
     ])
 }
@@ -128,10 +139,28 @@ fn EntityComponents(hooks: &mut Hooks, world: Arc<dyn InspectableWorld>, entity:
             world.get_components(entity, set_components.clone());
         }
     });
-    FlowColumn::el(components.into_iter().map(|e| ComponentBlock { component: e }.el()).collect_vec())
+    FlowColumn::el(
+        components
+            .into_iter()
+            .enumerate()
+            .map(|(i, e)| ComponentBlock { component: e.clone(), odd: i % 2 == 0 }.el().memoize_subtree(format!("{:?}", e)))
+            .collect_vec(),
+    )
 }
 
 #[element_component]
-fn ComponentBlock(_hooks: &mut Hooks, component: InspectedComponent) -> Element {
-    FlowRow::el([Text::el(format!("{}: ", component.name)).with(color(), vec4(1., 1., 0., 1.)), Text::el(component.value)])
+fn ComponentBlock(_hooks: &mut Hooks, component: InspectedComponent, odd: bool) -> Element {
+    let inner = FlowRow::el([
+        FlowRow::el([Text::el(component.name).with(color(), vec4(1., 1., 1., 1.)).with(max_width(), 250.)])
+            .with(fit_horizontal(), ambient_layout::Fit::None)
+            .with(width(), 260.),
+        FlowRow::el([Text::el(component.value).with(max_width(), 300.)])
+            .with(fit_horizontal(), ambient_layout::Fit::None)
+            .with(width(), 300.),
+    ]);
+    if odd {
+        inner.with_background(vec4(0.1, 0.1, 0.1, 1.))
+    } else {
+        inner
+    }
 }

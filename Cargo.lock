@@ -534,6 +534,7 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_element",
+ "ambient_layout",
  "ambient_renderer",
  "ambient_std",
  "ambient_ui_native",

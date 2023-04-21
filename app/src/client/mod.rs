@@ -235,7 +235,8 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                                     }
                                 }))),
                             }
-                            .el(),
+                            .el()
+                            .memoize_subtree(state.uid),
                         )
                     } else {
                         Element::new()

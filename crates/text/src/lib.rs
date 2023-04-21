@@ -4,7 +4,7 @@ use std::{num::NonZeroU32, ops::Deref, str::FromStr, sync::Arc};
 use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, runtime, transform::*, window::window_scale_factor};
 use ambient_ecs::{components, ensure_has_component, query, Debuggable, Entity, SystemGroup};
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::Texture};
-use ambient_layout::{height, min_height, min_width, width};
+use ambient_layout::{height, max_height, max_width, min_height, min_width, width};
 use ambient_renderer::{gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, SharedMaterial};
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt},
@@ -270,15 +270,15 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                     let text = world.get(id, text_case()).unwrap_or_default().format(text);
                     let min_width = world.get(id, min_width()).unwrap_or(0.);
                     let min_height = world.get(id, min_height()).unwrap_or(0.);
+                    let max_width = world.get(id, max_width()).unwrap_or(f32::MAX);
+                    let max_height = world.get(id, max_height()).unwrap_or(f32::MAX);
 
                     loop {
                         let process_result = {
                             let mut brush = glyph_brush.lock();
-                            let section = Section::default().add_text(glyph_brush::Text::new(&text).with_scale(pt_size_to_px_scale(
-                                &*font,
-                                font_size,
-                                scale_factor,
-                            )));
+                            let section = Section::default()
+                                .with_bounds((max_width, max_height))
+                                .add_text(glyph_brush::Text::new(&text).with_scale(pt_size_to_px_scale(&*font, font_size, scale_factor)));
                             if let Some(bounds) = brush.glyph_bounds(&section) {
                                 if world.has_component(id, width()) {
                                     world.set_if_changed(id, width(), (bounds.max.x / scale_factor).max(min_width)).unwrap();

@@ -538,6 +538,18 @@ name = "Minimum width"
 description = "The minimum width of a UI element."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::layout::max_height"]
+type = "F32"
+name = "Maximum height"
+description = "The maximum height of a UI element."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::max_width"]
+type = "F32"
+name = "Maximum width"
+description = "The maximum width of a UI element."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::layout::orientation_horizontal"]
 type = "Empty"
 name = "Orientation horizontal"

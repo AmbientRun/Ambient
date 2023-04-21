@@ -18,7 +18,7 @@ use ambient_std::{
     asset_url::ContentBaseUrlKey,
     cb,
     fps_counter::FpsSample,
-    to_byte_unit, CallbackFn, Cb,
+    friendly_id, to_byte_unit, CallbackFn, Cb,
 };
 use ambient_ui_native::{Button, Centered, FlowColumn, FlowRow, Image, MeasureSize, Text, Throbber};
 use anyhow::Context;
@@ -59,6 +59,7 @@ pub struct GameClient {
     pub rpc_registry: Arc<RpcRegistry<server::RpcArgs>>,
     pub user_id: String,
     pub game_state: Arc<Mutex<ClientGameState>>,
+    pub uid: String,
 }
 
 impl GameClient {
@@ -68,7 +69,7 @@ impl GameClient {
         game_state: Arc<Mutex<ClientGameState>>,
         user_id: String,
     ) -> Self {
-        Self { connection, rpc_registry, user_id, game_state }
+        Self { connection, rpc_registry, user_id, game_state, uid: friendly_id() }
     }
 
     const SIZE_LIMIT: usize = 100_000_000;
