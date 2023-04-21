@@ -12,7 +12,7 @@ description = "Select or deselect a note."
 fields = { index = "U32" }
 
 [components.note_selection]
-type = { type = "Vec", element_type = "Vec4" }
+type = { type = "Vec", element_type = "F32" }
 name = "Note selection"
 description = "X and Y of the selected notes."
 attributes = ["Networked", "Debuggable"]
@@ -25,3 +25,8 @@ attributes = [
     "Debuggable",
     "Resource",
 ]
+
+[components.player_hue]
+type = { type = "F32" }
+name = "Player Hue"
+attributes = ["Networked", "Debuggable"]
