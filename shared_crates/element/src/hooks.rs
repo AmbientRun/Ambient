@@ -15,6 +15,8 @@ use ambient_core::runtime;
 use ambient_guest_bridge::ecs::{world_events, ComponentQuery, FrameEvent, QueryState, TypedReadQuery};
 use ambient_guest_bridge::ecs::{ComponentValue, World};
 use ambient_guest_bridge::RuntimeMessage;
+#[cfg(feature = "guest")]
+use ambient_guest_bridge::{ModuleMessage, Source};
 #[cfg(feature = "native")]
 use ambient_sys::task;
 use as_any::Downcast;
@@ -215,6 +217,21 @@ impl<'a> Hooks<'a> {
                 |_| listener.stop()
             });
         }
+    }
+
+    /// Register a function to be called when a [ModuleMessage] is received.
+    ///
+    /// The subscription will be automatically cancelled when this [Element](crate::Element) is unmounted.
+    #[cfg(feature = "guest")]
+    pub fn use_module_message<T: ModuleMessage>(&mut self, func: impl Fn(&mut World, Source, &T) + Sync + Send + 'static) {
+        let handler = self.use_ref_with(|_| None);
+        *handler.lock() = Some(cb(func));
+        self.use_effect((), move |_, _| {
+            let listener = T::subscribe(move |source, event| {
+                (handler.lock().as_ref().unwrap())(&mut World, source, &event);
+            });
+            |_| listener.stop()
+        });
     }
 
     /// Spawns the provided future as a task.
