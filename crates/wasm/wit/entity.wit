@@ -25,7 +25,7 @@ default interface entity {
     }
 
     spawn: func(data: entity-data) -> entity-id
-    despawn: func(entity: entity-id) -> bool
+    despawn: func(entity: entity-id) -> option<entity-data>
     set-animation-controller: func(entity: entity-id, animation-controller: animation-controller)
     in-area: func(position: vec3, radius: float32) -> list<entity-id>
 

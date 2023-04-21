@@ -19,7 +19,10 @@ impl wit::entity::Host for Bindings {
         )
     }
 
-    fn despawn(&mut self, entity: wit::types::EntityId) -> anyhow::Result<bool> {
+    fn despawn(
+        &mut self,
+        entity: wit::types::EntityId,
+    ) -> anyhow::Result<Option<wit::entity::EntityData>> {
         shared::implementation::entity::despawn(
             unsafe { self.world_ref.world_mut() },
             &mut self.base.spawned_entities,

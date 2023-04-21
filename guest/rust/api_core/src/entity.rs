@@ -31,9 +31,9 @@ pub async fn wait_for_component<T: SupportedValue>(entity: EntityId, component: 
 
 /// Despawns `entity` from the world. `entity` will not work with any other functions afterwards.
 ///
-/// Returns whether or not the entity was removed.
-pub fn despawn(entity: EntityId) -> bool {
-    wit::entity::despawn(entity.into_bindgen())
+/// Returns the data of the despawned entity, if it existed.
+pub fn despawn(entity: EntityId) -> Option<Entity> {
+    wit::entity::despawn(entity.into_bindgen()).from_bindgen()
 }
 /// Set the animation (controller) for `entity`.
 pub fn set_animation_controller(entity: EntityId, controller: AnimationController) {

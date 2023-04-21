@@ -11,7 +11,7 @@ use super::{
         conversion::{FromBindgen, IntoBindgen},
         wit,
     },
-    component::convert_components_to_entity_data,
+    component::{convert_components_to_entity_data, convert_entity_data_to_components},
 };
 
 pub fn spawn(
@@ -28,10 +28,12 @@ pub fn despawn(
     world: &mut World,
     spawned_entities: &mut HashSet<EntityId>,
     id: wit::types::EntityId,
-) -> anyhow::Result<bool> {
+) -> anyhow::Result<Option<wit::entity::EntityData>> {
     let id = id.from_bindgen();
     spawned_entities.remove(&id);
-    Ok(world.despawn(id).is_some())
+    Ok(world
+        .despawn(id)
+        .map(|e| convert_entity_data_to_components(&e)))
 }
 
 pub fn set_animation_controller(
