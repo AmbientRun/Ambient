@@ -22,8 +22,8 @@ pub struct SphericalCamera {
     orientation: SphericalCoords,
 }
 impl SphericalCamera {
-    fn translation(&self, lookat_center: glam::Vec3) -> glam::Vec3 {
-        lookat_center + glam::Vec3::from(self.orientation)
+    fn translation(&self, lookat_target: glam::Vec3) -> glam::Vec3 {
+        lookat_target + glam::Vec3::from(self.orientation)
     }
 }
 
@@ -40,7 +40,7 @@ pub fn new(lookat: glam::Vec3, orientation: SphericalCoords) -> Entity {
         .with_default(projection())
         .with_default(projection_view())
         .with(translation(), spherical.translation(lookat))
-        .with(lookat_center(), lookat)
+        .with(lookat_target(), lookat)
         .with(lookat_up(), glam::vec3(0., 0., 1.))
         .with(spherical_camera(), spherical)
         .with(camera_movement_speed(), 0.1)
@@ -49,9 +49,9 @@ pub fn new(lookat: glam::Vec3, orientation: SphericalCoords) -> Entity {
 pub fn spherical_camera_system() -> SystemGroup<Event<'static, ()>> {
     SystemGroup::new(
         "spherical_camera_system",
-        vec![query_mut((spherical_camera(), translation(), lookat_center(), camera_movement_speed()), ()).to_system(
+        vec![query_mut((spherical_camera(), translation(), lookat_target(), camera_movement_speed()), ()).to_system(
             |q, world, qs, event| {
-                for (_, (spherical_camera, translation, lookat_center, speed), ()) in q.iter(world, qs) {
+                for (_, (spherical_camera, translation, lookat_target, speed), ()) in q.iter(world, qs) {
                     match event {
                         Event::DeviceEvent { event: DeviceEvent::MouseMotion { delta }, .. } => {
                             if spherical_camera.is_rotating {
@@ -113,8 +113,8 @@ pub fn spherical_camera_system() -> SystemGroup<Event<'static, ()>> {
                             if spherical_camera.is_right_pressed {
                                 velocity -= rotation * glam::Vec3::Y;
                             }
-                            *lookat_center += velocity * (*speed);
-                            *translation = spherical_camera.translation(*lookat_center);
+                            *lookat_target += velocity * (*speed);
+                            *translation = spherical_camera.translation(*lookat_target);
                         }
                         _ => {}
                     }

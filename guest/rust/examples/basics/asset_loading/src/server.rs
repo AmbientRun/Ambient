@@ -3,7 +3,7 @@ use ambient_api::{
         app::main_scene,
         camera::aspect_ratio_from_window,
         prefab::{prefab_from_url, spawned},
-        transform::{lookat_center, rotation, translation},
+        transform::{lookat_target, rotation, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
@@ -16,7 +16,7 @@ pub async fn main() {
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with_default(main_scene())
         .with(translation(), vec3(5., 5., 4.))
-        .with(lookat_center(), vec3(0., 0., 0.))
+        .with(lookat_target(), vec3(0., 0., 0.))
         .spawn();
 
     let cube_id = Entity::new()

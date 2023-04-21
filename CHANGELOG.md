@@ -80,6 +80,7 @@ These PRs are not directly user-facing, but improve the development experience. 
   - `physics::apply_force` is now `physics::add_force`.
   - `physics::explode_bomb` is now `physics::add_radial_impulse`, and takes a `FalloffRadius` enum.
 - **API**: All input functionality has moved to `input` on the clientside.
+- **API**: The `lookat_center` component has been renamed to `lookat_target`.
 - **Physics**: Convex shapes are now used if a body is neither static or kinematic.
 
 #### Non-breaking

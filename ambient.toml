@@ -1088,16 +1088,16 @@ name = "Local to World"
 description = "Transformation from the entity's local space to worldspace."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::transform::lookat_center"]
+[components."core::transform::lookat_target"]
 type = "Vec3"
-name = "Look-at center"
+name = "Look-at target"
 description = "The position that this entity should be looking at."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::transform::lookat_up"]
 type = "Vec3"
 name = "Look-at up"
-description = "When combined with `lookat_center`, the up vector for this entity."
+description = "When combined with `lookat_target`, the up vector for this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::transform::mesh_to_local"]
