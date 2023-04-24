@@ -9,10 +9,7 @@ use ambient_core::{
     main_scene, mesh, runtime,
     transform::{local_to_world, mesh_to_world},
 };
-use ambient_ecs::{query, Entity, SystemGroup};
-
-pub use ambient_ecs::generated::components::core::rendering::decal_from_url;
-
+use ambient_ecs::{components, query, Entity, MakeDefault, Networked, Store, SystemGroup};
 use ambient_gpu::shader_module::{Shader, ShaderModule};
 use ambient_meshes::CubeMeshKey;
 use ambient_renderer::{
@@ -21,12 +18,17 @@ use ambient_renderer::{
     primitives, renderer_shader, MaterialShader, RendererShader, GLOBALS_BIND_GROUP, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP,
 };
 use ambient_std::{
-    asset_url::AbsAssetUrl,
+    asset_url::{MaterialAssetType, TypedAssetUrl},
     cb, include_file,
     shapes::AABB,
     unwrap_log_warn,
 };
 use glam::{Vec3, Vec4};
+
+components!("decals", {
+    @[MakeDefault,  Networked, Store]
+    decal: TypedAssetUrl<MaterialAssetType>,
+});
 
 pub struct DecalShaderKey {
     pub material_shader: Arc<MaterialShader>,
@@ -71,19 +73,18 @@ impl SyncAssetKey<Arc<RendererShader>> for DecalShaderKey {
 pub fn client_systems() -> SystemGroup {
     SystemGroup::new(
         "decals_client",
-        vec![query(decal_from_url().changed()).to_system(|q, world, qs, _| {
-            for (id, url) in q.collect_cloned(world, qs) {
-                let url = match AbsAssetUrl::parse(url) {
-                    Ok(value) => value,
-                    Err(err) => {
-                        log::warn!("Failed to parse decal_from_url url: {:?}", err);
-                        continue;
-                    }
+        vec![query(decal().changed()).to_system(|q, world, qs, _| {
+            for (id, decal) in q.collect_cloned(world, qs) {
+                let decal = if let Some(url) = decal.abs() {
+                    url
+                } else {
+                    log::error!("Decal was not an absolute url: {}", decal);
+                    continue;
                 };
                 let assets = world.resource(asset_cache()).clone();
                 let async_run = world.resource(async_run()).clone();
                 world.resource(runtime()).spawn(async move {
-                    let mat = unwrap_log_warn!(PbrMaterialFromUrl(url).get(&assets).await);
+                    let mat = unwrap_log_warn!(PbrMaterialFromUrl(decal).get(&assets).await);
                     async_run.run(move |world| {
                         let aabb = AABB { min: -Vec3::ONE, max: Vec3::ONE };
                         let mut data = Entity::new()
