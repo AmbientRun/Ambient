@@ -8,7 +8,7 @@ use ambient_network::{
 };
 
 use anyhow::Context;
-use bytes::Bytes;
+use bytes::{Buf, Bytes};
 use quinn::RecvStream;
 
 use std::{
@@ -33,7 +33,7 @@ pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> 
     let remote_module_id = cursor.read_u128::<byteorder::BigEndian>()?;
     let remote_module_id = EntityId(remote_module_id);
 
-    let name_len = usize::try_from(cursor.read_u32::<byteorder::BigEndian>()?)?;
+    let name_len: usize = cursor.get_u32().try_into()?;
     let mut name = vec![0u8; name_len];
     cursor.read_exact(&mut name)?;
     let name = String::from_utf8(name)?;

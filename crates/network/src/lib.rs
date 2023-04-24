@@ -37,6 +37,7 @@ pub mod hooks;
 pub mod protocol;
 pub mod rpc;
 pub mod server;
+pub mod proto;
 
 pub const RPC_BISTREAM_ID: u32 = 1;
 pub const WASM_BISTREAM_ID: u32 = 2;
