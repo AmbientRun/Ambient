@@ -1016,6 +1016,12 @@ name = "PBR material from URL"
 description = "Load a PBR material from the URL and attach it to this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::rendering::decal_from_url"]
+type = "String"
+name = "Decal material from URL"
+description = "Load a Decal material from the URL and attach it to this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::rendering::sky"]
 type = "Empty"
 name = "Sky"

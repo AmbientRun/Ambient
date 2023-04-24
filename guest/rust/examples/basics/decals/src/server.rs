@@ -3,12 +3,17 @@ use ambient_api::{
         app::main_scene,
         camera::aspect_ratio_from_window,
         primitives::{quad, cube},
-        rendering::{color, renderer_shader},
-        transform::{lookat_center, rotation, scale, translation},
+        rendering::{color, transparency_group},
+        transform::{lookat_target, rotation, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera},
     prelude::*,
 };
+
+use core::f32::consts::PI;
+
+// from discussion at
+// https://discord.com/channels/894505972289134632/1078283561540530216/1096581219925377195
 
 #[main]
 pub fn main() {
@@ -24,30 +29,29 @@ pub fn main() {
         .with(scale(), Vec3::ONE * 10.)
         .spawn();
 
-
     Entity::new()
         .with_default(cube())
         .with(scale(), vec3(2., 2., 4.))
         .with(rotation(), Quat::from_rotation_y(PI / 4.) * Quat::from_rotation_z(PI / 4.))
         .with(
-            renderer_shader(),
-            cb(move |assets, config| {
-                DecalShaderKey { material_shader: PbrMaterialShaderKey.get(assets), lit: true, shadow_cascades: config.shadow_cascades }
-                    .get(assets)
-            }),
+            decal_from_url(),
+            asset::url("assets/pipeline.json/0/mat.json").unwrap(),
         )
-        .init(material(), PbrMaterial::base_color_from_file(&assets, "assets/checkerboard.png").into())
-        .spawn_static(world);
+        .spawn();
 
-    let transparent = SharedMaterial::new(FlatMaterial::new(assets, vec4(0., 1., 0., 0.5), Some(true)));
-    Cube.el()
+     Entity::new()
+        .with_default(cube())
         .with(scale(), vec3(2., 2., 4.))
         .with(rotation(), Quat::from_rotation_y(PI / 4.) * Quat::from_rotation_z(PI / 4.))
-        .with(material(), transparent)
-        .spawn_static(world);
+        .with(color(), vec4(0., 1., 0., 0.5))
+        .with(transparency_group(), 0)
+        .spawn();
 
-    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .with(active_camera(), 0.)
-        .with(main_scene(), ())
-        .spawn(world);
+    Entity::new()
+        .with_merge(make_perspective_infinite_reverse_camera())
+        .with(aspect_ratio_from_window(), EntityId::resources())
+        .with(translation(), vec3(5., 5., 6.))
+        .with(lookat_target(), vec3(0., 0., 2.))
+        .with_default(main_scene())
+        .spawn();
 }

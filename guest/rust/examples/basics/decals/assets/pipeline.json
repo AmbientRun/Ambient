@@ -1,0 +1,11 @@
+{
+  "pipeline": {
+    "type": "Materials",
+    "importer": {
+      "type": "Single",
+      "name": "checkerboard",
+      "base_color": "checkerboard.png"
+    },
+    "output_quads": true
+  }
+}
