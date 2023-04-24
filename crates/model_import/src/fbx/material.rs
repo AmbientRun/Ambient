@@ -11,6 +11,17 @@ use crate::{
     TextureResolver,
 };
 
+// Valid keys for FbxMaterial::textures:
+pub const DIFFUSE_COLOR_KEY: &str = "DiffuseColor";
+// pub const TRANSPARENCY_FACTOR_KEY: &str = "TransparencyFactor";
+// pub const TRANSPARENT_COLOR_KEY: &str = "TransparentColor";
+pub const NORMAL_MAP_KEY: &str = "NormalMap";
+// pub const SPECULAR_FACTOR_KEY: &str = "SpecularFactor";
+pub const SPECULAR_COLOR_KEY: &str = "SpecularColor";
+// pub const SHININESS_EXPONENT_KEY: &str = "ShininessExponent";
+// pub const REFLECTION_FACTOR_KEY: &str = "ReflectionFactor";
+// pub const EMISSIVE_COLOR_KEY: &str = "EmissiveColor";
+
 #[derive(Debug)]
 pub struct FbxMaterial {
     pub id: i64,
@@ -26,13 +37,7 @@ pub struct FbxMaterial {
     pub opacity: Option<f32>,
     pub reflectivity: Option<f32>,
 
-    pub diffuse_color_texture: Option<i64>,
-    pub alpha_texture: Option<i64>,
-    pub normalmap: Option<i64>,
-    pub specular_factor_texture: Option<i64>,
-    pub specular_color_texture: Option<i64>,
-    pub shininess_exponent_texture: Option<i64>,
-    pub reflection_factor_texture: Option<i64>,
+    pub textures: HashMap<String, i64>,
 }
 impl FbxMaterial {
     pub fn from_node(node: NodeHandle) -> Self {
@@ -53,13 +58,7 @@ impl FbxMaterial {
             opacity: None,
             reflectivity: None,
 
-            diffuse_color_texture: None,
-            alpha_texture: None,
-            normalmap: None,
-            specular_factor_texture: None,
-            specular_color_texture: None,
-            shininess_exponent_texture: None,
-            reflection_factor_texture: None,
+            textures: Default::default(),
         };
         for prop in props.children() {
             let prop_type = prop.attributes()[0].get_string().unwrap();
@@ -112,8 +111,8 @@ impl FbxMaterial {
     ) -> PbrMaterialDesc {
         let find_video_with_filename =
             |filename: &str, exclude_id: i64| videos.iter().find(|v| *v.0 != exclude_id && v.1.filename == filename).map(|v| *v.0);
-        let get_map = |id: Option<i64>| {
-            let id = id?;
+        let get_map = |id: Option<&i64>| {
+            let id = *id?;
             let video_id = textures.get(&id)?.video?;
             if let Some(image) = images.get(&video_id) {
                 return Some((image.clone(), id));
@@ -133,12 +132,12 @@ impl FbxMaterial {
             source: Some(source),
             base_color_factor: self.diffuse_color.map(|x| x.extend(self.opacity.unwrap_or(1.))),
             emissive_factor: self.emissive.map(|x| x.extend(0.)),
-            base_color: get_map(self.diffuse_color_texture).map(img_to_asset),
+            base_color: get_map(self.textures.get(DIFFUSE_COLOR_KEY)).map(img_to_asset),
 
-            normalmap: get_map(self.normalmap).map(img_to_asset),
+            normalmap: get_map(self.textures.get(NORMAL_MAP_KEY)).map(img_to_asset),
 
             // TODO: These PBR "conversions" are probably wrong
-            metallic_roughness: get_map(self.specular_color_texture)
+            metallic_roughness: get_map(self.textures.get(SPECULAR_COLOR_KEY))
                 .map(|x| {
                     let mut img = asset_crate.images.content.get(&x.0.id).unwrap().clone();
                     for pixel in img.pixels_mut() {
@@ -155,7 +154,7 @@ impl FbxMaterial {
             alpha_cutoff: Some(0.5),
             metallic: 0.0,
             opacity: None,
-            roughness: self.specular_color_texture.map(|_| 1.).unwrap_or(0.8),
+            roughness: self.textures.get(SPECULAR_COLOR_KEY).map(|_| 1.).unwrap_or(0.8),
         }
     }
 }
