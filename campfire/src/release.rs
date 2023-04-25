@@ -78,6 +78,10 @@ fn update_version(new_version: &str) -> anyhow::Result<()> {
             .join("\n")
     })?;
 
+    // Run `cargo check` in the root and API to force the lockfile to update
+    check(".")?;
+    check("guest/rust")?;
+
     Ok(())
 }
 
@@ -156,4 +160,17 @@ fn edit_toml(path: impl AsRef<Path>, f: impl Fn(&mut toml_edit::Document)) -> an
         f(&mut toml);
         toml.to_string()
     })
+}
+
+fn check(path: impl AsRef<Path>) -> anyhow::Result<()> {
+    let path = path.as_ref();
+    let mut command = std::process::Command::new("cargo");
+    command.current_dir(path);
+    command.args(&["check"]);
+
+    if !command.spawn()?.wait()?.success() {
+        anyhow::bail!("Failed to check Rust code at {}", path.display());
+    }
+
+    Ok(())
 }
