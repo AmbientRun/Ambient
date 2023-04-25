@@ -1,5 +1,4 @@
 use ambient_api::{entity::synchronized_resources, prelude::*};
-use common::BEAT_COUNT;
 use components::{bpm, next_player_hue, player_hue, track, track_audio_url, track_note_selection};
 
 use ambient_api::{
@@ -32,7 +31,7 @@ pub async fn main() {
             .with(name(), track_name.to_string())
             .with(track(), idx as u32)
             .with(track_audio_url(), track_url.to_string())
-            .with(track_note_selection(), vec![0; BEAT_COUNT])
+            .with(track_note_selection(), vec![0; common::NOTE_COUNT])
             .spawn();
     }
 

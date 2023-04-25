@@ -1,7 +1,6 @@
 use ambient_api::{entity::synchronized_resources, messages::Frame, prelude::*};
 
 mod common;
-use common::BEAT_COUNT;
 use components::bpm;
 
 #[main]
@@ -20,7 +19,7 @@ pub fn main() {
         let now = time();
         if now - last_note_time > seconds_per_note(bpm) {
             last_note_time = now;
-            cursor = (cursor + 1) % BEAT_COUNT;
+            cursor = (cursor + 1) % common::NOTE_COUNT;
             tree.migrate_root(&mut World, App::el(cursor));
         }
         tree.update(&mut World);

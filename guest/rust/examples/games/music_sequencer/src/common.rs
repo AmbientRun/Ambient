@@ -1,1 +1,1 @@
-pub const BEAT_COUNT: usize = 16;
+pub const NOTE_COUNT: usize = 16;
