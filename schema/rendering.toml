@@ -116,3 +116,9 @@ type = "Empty"
 name = "Water"
 description = "Add a realistic water plane to this entity."
 attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rendering::decal_from_url"]
+type = "String"
+name = "Decal material from URL"
+description = "Load a Decal material from the URL and attach it to this entity."
+attributes = ["Debuggable", "Networked", "Store"]
