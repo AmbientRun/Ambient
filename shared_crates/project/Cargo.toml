@@ -12,6 +12,7 @@ proc-macro2 = "1.0"
 serde = { workspace = true }
 toml = { workspace = true }
 thiserror = { workspace = true }
+anyhow = { workspace = true }
 
 [dev-dependencies]
 paste = { workspace = true }

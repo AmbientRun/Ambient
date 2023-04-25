@@ -140,9 +140,7 @@ fn main() -> anyhow::Result<()> {
     let manifest = cli
         .project()
         .map(|_| {
-            anyhow::Ok(ambient_project::Manifest::parse(
-                &std::fs::read_to_string(project_path.join("ambient.toml")).context("No project manifest was found. Please create one.")?,
-            )?)
+            anyhow::Ok(ambient_project::Manifest::from_file(project_path.join("ambient.toml")).context("Failed to read ambient.toml.")?)
         })
         .transpose()?;
 
