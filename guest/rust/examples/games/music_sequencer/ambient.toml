@@ -3,18 +3,26 @@ id = "music_sequencer"
 name = "Music sequencer"
 version = "0.0.1"
 
-[messages.play]
-description = "Send a message to play the sound at row index."
-fields = { index = "U32" }
-
 [messages.click]
 description = "Select or deselect a note."
-fields = { index = "U32" }
+fields = { track_id = "EntityId", index = "U32" }
 
-[components.note_selection]
+[components.track]
+type = "U32"
+name = "Track"
+description = "A track is a sequence of notes. The value corresponds to the index of the track."
+attributes = ["Networked", "Debuggable"]
+
+[components.track_audio_url]
+type = "String"
+name = "Track Audio URL"
+description = "The URL of the audio file to play for a given track."
+attributes = ["Networked", "Debuggable"]
+
+[components.track_note_selection]
 type = { type = "Vec", element_type = "U32" }
-name = "Note selection"
-description = "X and Y of the selected notes."
+name = "Track note selection"
+description = "The notes that are currently selected for a given track."
 attributes = ["Networked", "Debuggable"]
 
 [components.next_player_hue]

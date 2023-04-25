@@ -2,19 +2,7 @@
 
 use ambient_api::prelude::*;
 
-pub const SOUNDS: [(&str, &str); 8] = [
-    ("Kick Drum", "assets/BD2500.wav"),
-    ("Snare Drum", "assets/SD7550.wav"),
-    ("Closed Hihat", "assets/CH.wav"),
-    ("Open Hihat", "assets/OH75.wav"),
-    ("Low Conga", "assets/LC00.wav"),
-    ("Mid Conga", "assets/MC00.wav"),
-    ("High Tom", "assets/HT75.wav"),
-    ("Mid Tom", "assets/MT75.wav"),
-];
-
 pub const BEAT_COUNT: usize = 16;
-pub const NOTE_COUNT: usize = SOUNDS.len() * BEAT_COUNT;
 pub const BEATS_PER_MINUTE: usize = 120;
 pub const SECONDS_PER_BEAT: f32 = 60.0 / BEATS_PER_MINUTE as f32;
 pub const SECONDS_PER_NOTE: f32 = SECONDS_PER_BEAT / 4.0;
