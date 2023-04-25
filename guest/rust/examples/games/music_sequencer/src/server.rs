@@ -1,6 +1,6 @@
-use ambient_api::prelude::*;
+use ambient_api::{entity::synchronized_resources, prelude::*};
 use common::BEAT_COUNT;
-use components::{next_player_hue, player_hue, track, track_audio_url, track_note_selection};
+use components::{bpm, next_player_hue, player_hue, track, track_audio_url, track_note_selection};
 
 use ambient_api::{
     components::core::player::{player, user_id},
@@ -9,23 +9,25 @@ use ambient_api::{
 
 mod common;
 
-const TRACKS: [(&str, &str); 8] = [
-    ("Kick Drum", "assets/BD2500.wav"),
-    ("Snare Drum", "assets/SD7550.wav"),
-    ("Closed Hihat", "assets/CH.wav"),
-    ("Open Hihat", "assets/OH75.wav"),
-    ("Low Conga", "assets/LC00.wav"),
-    ("Mid Conga", "assets/MC00.wav"),
-    ("High Tom", "assets/HT75.wav"),
-    ("Mid Tom", "assets/MT75.wav"),
-];
-
 #[main]
 pub async fn main() {
     entity::add_component(resources(), next_player_hue(), 0);
+    entity::add_component(synchronized_resources(), bpm(), 120);
 
     // Create the tracks.
-    for (idx, (track_name, track_url)) in TRACKS.iter().enumerate() {
+    for (idx, (track_name, track_url)) in [
+        ("Kick Drum", "assets/BD2500.wav"),
+        ("Snare Drum", "assets/SD7550.wav"),
+        ("Closed Hihat", "assets/CH.wav"),
+        ("Open Hihat", "assets/OH75.wav"),
+        ("Low Conga", "assets/LC00.wav"),
+        ("Mid Conga", "assets/MC00.wav"),
+        ("High Tom", "assets/HT75.wav"),
+        ("Mid Tom", "assets/MT75.wav"),
+    ]
+    .iter()
+    .enumerate()
+    {
         Entity::new()
             .with(name(), track_name.to_string())
             .with(track(), idx as u32)
@@ -34,7 +36,7 @@ pub async fn main() {
             .spawn();
     }
 
-    // When a player spawns, create their player state.
+    // When a player spawns, give them a color.
     spawn_query(user_id())
         .requires(player())
         .bind(move |players| {
@@ -45,6 +47,11 @@ pub async fn main() {
                 entity::set_component(resources(), next_player_hue(), h);
             }
         });
+
+    // When a player requests a BPM change, update it.
+    messages::SetBpm::subscribe(|_source, data| {
+        entity::set_component(synchronized_resources(), bpm(), data.bpm);
+    });
 
     // When a player clicks on a note, toggle it.
     messages::Click::subscribe(move |source, data| {

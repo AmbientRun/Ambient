@@ -1,19 +1,26 @@
-use ambient_api::{messages::Frame, prelude::*};
+use ambient_api::{entity::synchronized_resources, messages::Frame, prelude::*};
 
 mod common;
-use common::{hsv_to_rgb, BEAT_COUNT, SECONDS_PER_NOTE};
+use common::BEAT_COUNT;
+use components::bpm;
 
 #[main]
 pub fn main() {
     let mut cursor = 0;
     let mut last_note_time = time();
+    let mut last_bpm = 0;
     let mut tree = Element::new().spawn_tree();
     Frame::subscribe(move |_| {
-        let now = time();
-        if now - last_note_time > SECONDS_PER_NOTE {
-            cursor = (cursor + 1) % BEAT_COUNT;
-            last_note_time = now;
+        let bpm = entity::get_component(synchronized_resources(), bpm()).unwrap_or_default();
+        if bpm != last_bpm {
+            cursor = 0;
+            last_bpm = bpm;
+        }
 
+        let now = time();
+        if now - last_note_time > seconds_per_note(bpm) {
+            last_note_time = now;
+            cursor = (cursor + 1) % BEAT_COUNT;
             tree.migrate_root(&mut World, App::el(cursor));
         }
         tree.update(&mut World);
@@ -25,11 +32,28 @@ fn App(hooks: &mut Hooks, cursor: usize) -> Element {
     let mut tracks = hooks.use_query((components::track(), components::track_note_selection()));
     tracks.sort_by_key(|t| t.1 .0);
 
-    FlowColumn::el(
-        tracks
-            .into_iter()
-            .map(|(track_id, (_, track_selection))| Track::el(track_id, track_selection, cursor)),
-    )
+    FocusRoot::el([FlowColumn::el(
+        std::iter::once(
+            IntegerSlider {
+                value: entity::get_component(synchronized_resources(), bpm()).unwrap_or_default()
+                    as i32,
+                on_change: Some(cb(|new_bpm| {
+                    messages::SetBpm::new(new_bpm as u32).send_server_reliable()
+                })),
+                min: 30,
+                max: 300,
+                width: 300.0,
+                logarithmic: false,
+                suffix: Some(" BPM"),
+            }
+            .el(),
+        )
+        .chain(
+            tracks.into_iter().map(|(track_id, (_, track_selection))| {
+                Track::el(track_id, track_selection, cursor)
+            }),
+        ),
+    )])
 }
 
 #[element_component]
@@ -93,4 +117,26 @@ fn Note(_hooks: &mut Hooks, hue: u32, highlight: bool) -> Element {
         })
         .with(width(), 50.)
         .with(height(), 50.)
+}
+
+fn seconds_per_note(bpm: u32) -> f32 {
+    let seconds_per_beat = 60.0 / (bpm as f32).max(1.0);
+    seconds_per_beat / 4.0
+}
+
+fn hsv_to_rgb([h, s, v]: &[f32; 3]) -> Vec3 {
+    let c = v * s;
+    let p = (h / 60.) % 6.;
+    let x = c * (1.0 - ((p % 2.) - 1.).abs());
+    let m = Vec3::ONE * (v - c);
+
+    m + match p.trunc() as i32 {
+        0 => vec3(c, x, 0.),
+        1 => vec3(x, c, 0.),
+        2 => vec3(0., c, x),
+        3 => vec3(0., x, c),
+        4 => vec3(x, 0., c),
+        5 => vec3(c, 0., x),
+        _ => vec3(0., 0., 0.),
+    }
 }

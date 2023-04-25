@@ -7,6 +7,10 @@ version = "0.0.1"
 description = "Select or deselect a note."
 fields = { track_id = "EntityId", index = "U32" }
 
+[messages.set_bpm]
+description = "Set the BPM."
+fields = { bpm = "U32" }
+
 [components.track]
 type = "U32"
 name = "Track"
@@ -29,12 +33,15 @@ attributes = ["Networked", "Debuggable"]
 type = "U32"
 name = "Next Player Hue"
 description = "Controls the hue (in degrees) to use for the next player's color."
-attributes = [
-    "Debuggable",
-    "Resource",
-]
+attributes = ["Debuggable", "Resource"]
 
 [components.player_hue]
 type = { type = "U32" }
 name = "Player Hue"
+attributes = ["Networked", "Debuggable"]
+
+[components.bpm]
+type = { type = "U32" }
+name = "BPM"
+description = "The number of beats per minute."
 attributes = ["Networked", "Debuggable"]
