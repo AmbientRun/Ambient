@@ -30,7 +30,6 @@ pub fn main() {
         .spawn();
 
     Entity::new()
-        .with_default(cube())
         .with(scale(), vec3(2., 2., 4.))
         .with(rotation(), Quat::from_rotation_y(PI / 4.) * Quat::from_rotation_z(PI / 4.))
         .with(
