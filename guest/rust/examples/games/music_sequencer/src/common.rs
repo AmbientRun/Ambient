@@ -3,14 +3,14 @@
 use ambient_api::prelude::*;
 
 pub const SOUNDS: [(&str, &str); 8] = [
-    ("Kick Drum", "assets/BD2500.ogg"),
-    ("Snare Drum", "assets/SD7550.ogg"),
-    ("Closed Hihat", "assets/CH.ogg"),
-    ("Open Hihat", "assets/OH75.ogg"),
-    ("Low Conga", "assets/LC00.ogg"),
-    ("Mid Conga", "assets/MC00.ogg"),
-    ("High Tom", "assets/HT75.ogg"),
-    ("Mid Tom", "assets/MT75.ogg"),
+    ("Kick Drum", "assets/BD2500.wav"),
+    ("Snare Drum", "assets/SD7550.wav"),
+    ("Closed Hihat", "assets/CH.wav"),
+    ("Open Hihat", "assets/OH75.wav"),
+    ("Low Conga", "assets/LC00.wav"),
+    ("Mid Conga", "assets/MC00.wav"),
+    ("High Tom", "assets/HT75.wav"),
+    ("Mid Tom", "assets/MT75.wav"),
 ];
 
 pub const BEAT_COUNT: usize = 16;

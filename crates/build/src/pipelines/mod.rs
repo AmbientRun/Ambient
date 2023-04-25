@@ -9,7 +9,7 @@ use image::ImageFormat;
 use out_asset::{OutAsset, OutAssetContent, OutAssetPreview};
 use serde::{Deserialize, Serialize};
 
-use self::{materials::MaterialsPipeline, models::ModelsPipeline};
+use self::{audio::AudioPipeline, materials::MaterialsPipeline, models::ModelsPipeline};
 
 pub mod audio;
 pub mod context;
@@ -27,8 +27,8 @@ pub enum PipelineConfig {
     /// Will import specific materials without needing to be part of a model.
     Materials(MaterialsPipeline),
     /// The audio asset pipeline.
-    /// Will import supported audio file formats and produce Ogg Vorbis files to be used by the runtime.
-    Audio,
+    /// Will import supported audio file formats and produce Ogg Vorbis or WAV files to be used by the runtime.
+    Audio(AudioPipeline),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -53,7 +53,7 @@ impl Pipeline {
         let mut assets = match &self.pipeline {
             PipelineConfig::Models(config) => models::pipeline(&ctx, config.clone()).await,
             PipelineConfig::Materials(config) => materials::pipeline(&ctx, config.clone()).await,
-            PipelineConfig::Audio => audio::pipeline(&ctx).await,
+            PipelineConfig::Audio(config) => audio::pipeline(&ctx, config.clone()).await,
         };
         for asset in &mut assets {
             asset.tags.extend(self.tags.clone());
