@@ -5,7 +5,6 @@ rust-version = { workspace = true }
 edition = "2021"
 description = "Common implementation of a proc-macro that generates boilerplate from an `ambient.toml`."
 license = "MIT OR Apache-2.0"
-documentation = "https://docs.rs/ambient_project_macro"
 repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]

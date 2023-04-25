@@ -1,7 +1,11 @@
 [package]
 name = "ambient_guest_bridge"
-version = { workspace = true }
 edition = "2021"
+description = "Crate for the Ambient runtime that allows code to target either native host code or the API exposed to guest code."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+rust-version = { workspace = true }
+version = { workspace = true }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

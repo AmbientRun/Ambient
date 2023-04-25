@@ -1,9 +1,11 @@
 [package]
 name = "ambient_friendly_id"
-version = { workspace = true }
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Streamlined replacement of `friendly_id`."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
 rand = { workspace = true }

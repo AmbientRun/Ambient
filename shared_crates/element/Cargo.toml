@@ -1,11 +1,12 @@
 
 [package]
 name = "ambient_element"
-version = { workspace = true }
-rust-version = { workspace = true }
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Element is a React-inspired virtual tree library for the Ambient runtime."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
 ambient_guest_bridge = { path = "../guest_bridge", default-features = false }

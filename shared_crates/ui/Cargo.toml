@@ -1,7 +1,11 @@
 [package]
 name = "ambient_ui"
-version = { workspace = true }
 edition = "2021"
+description = "A UI library for the Ambient runtime, built on top of Ambient's Element library."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+rust-version = { workspace = true }
+version = { workspace = true }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
