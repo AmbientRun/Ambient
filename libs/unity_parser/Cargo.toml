@@ -8,7 +8,7 @@ rust-version = { workspace = true }
 version = { workspace = true }
 
 [dependencies]
-ambient_std = { path = "../../crates/std" }
+ambient_std = { path = "../../crates/std" , version = "0.2.0-dev" }
 yaml-rust = { workspace = true }
 itertools = { workspace = true }
 glam = { workspace = true }
