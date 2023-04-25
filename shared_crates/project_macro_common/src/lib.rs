@@ -3,6 +3,8 @@ extern crate proc_macro;
 use ambient_project::{IdentifierPathBuf, Manifest};
 use quote::quote;
 
+use proc_macro2::Ident;
+use std::path::Path;
 use tree::Tree;
 
 #[cfg(test)]
@@ -14,8 +16,7 @@ mod message;
 mod tree;
 mod util;
 
-pub const MANIFEST: &str = include_str!("../../../ambient.toml");
-
+pub const MANIFEST_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../ambient.toml");
 pub enum Context {
     Host,
     Guest {
@@ -25,12 +26,47 @@ pub enum Context {
 }
 
 pub fn implementation(
-    (file_path, contents): (Option<String>, String),
+    file_path: impl AsRef<Path>,
     context: Context,
     is_api_manifest: bool,
     validate_namespaces_documented: bool,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
-    let manifest: Manifest = toml::from_str(&contents)?;
+    let manifest = Manifest::from_file(file_path.as_ref())?;
+    let mut file_paths = vec![file_path.as_ref().to_str().unwrap().to_string()];
+    let dir = file_path.as_ref().parent().unwrap();
+    for include in &manifest.project.includes {
+        let path = dir.join(include);
+        let file_path = path.to_str().unwrap().to_string();
+        file_paths.push(file_path);
+    }
+    let force_reload = file_paths.into_iter().enumerate().map(|(i, file_path)| {
+        let name = Ident::new(
+            &format!("_PROJECT_MANIFEST_{}", i),
+            proc_macro2::Span::call_site(),
+        );
+        quote! { const #name: &'static str = include_str!(#file_path); }
+    });
+
+    let inner = implementation_for_manifest(
+        manifest,
+        context,
+        is_api_manifest,
+        validate_namespaces_documented,
+    )?;
+
+    Ok(quote!(
+        #(#force_reload)*
+
+        #inner
+    ))
+}
+
+pub fn implementation_for_manifest(
+    manifest: Manifest,
+    context: Context,
+    is_api_manifest: bool,
+    validate_namespaces_documented: bool,
+) -> anyhow::Result<proc_macro2::TokenStream> {
     let project_path = if !is_api_manifest {
         manifest.project_path()
     } else {
@@ -47,11 +83,7 @@ pub fn implementation(
     let message_tree = Tree::new(&manifest.messages, validate_namespaces_documented)?;
     let message_tokens = message::tree_to_token_stream(&message_tree, &context, is_api_manifest)?;
 
-    let manifest = file_path.map(
-        |file_path| quote! { const _PROJECT_MANIFEST: &'static str = include_str!(#file_path); },
-    );
     Ok(quote!(
-        #manifest
         /// Auto-generated component definitions. These come from `ambient.toml` in the root of the project.
         pub mod components {
             #components_tokens

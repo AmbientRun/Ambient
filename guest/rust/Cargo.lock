@@ -134,6 +134,7 @@ dependencies = [
 name = "ambient_project"
 version = "0.2.0-dev"
 dependencies = [
+ "anyhow",
  "proc-macro2",
  "quote",
  "serde",

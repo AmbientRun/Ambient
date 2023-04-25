@@ -94,7 +94,7 @@ impl ToTokens for IdentifierPathBuf {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct Identifier(pub(super) String);
 impl Identifier {
     pub fn new(id: impl Into<String>) -> Result<Self, &'static str> {

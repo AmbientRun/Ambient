@@ -1,10 +1,8 @@
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
+use std::path::Path;
 
-pub fn main_impl(
-    item: TokenStream,
-    ambient_toml: (Option<String>, String),
-) -> anyhow::Result<TokenStream> {
+pub fn main_impl(item: TokenStream, ambient_toml: impl AsRef<Path>) -> anyhow::Result<TokenStream> {
     let mut item: syn::ItemFn = syn::parse2(item)?;
     let fn_name = quote::format_ident!("{}_impl", item.sig.ident);
     item.sig.ident = fn_name.clone();
