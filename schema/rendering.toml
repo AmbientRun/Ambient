@@ -1,4 +1,8 @@
 
+[components."core::rendering"]
+name = "Rendering"
+description = "Rendering-related state, including global rendering parameters and per-entity state."
+
 [components."core::rendering::cast_shadows"]
 type = "Empty"
 name = "Cast shadows"
