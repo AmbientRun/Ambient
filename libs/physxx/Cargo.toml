@@ -1,11 +1,12 @@
 [package]
 name = "physxx"
-version = { workspace = true }
-rust-version = { workspace = true }
 authors = ["Fredrik Norén <fredrik.jw.noren@gmail.com>"]
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Wrapper around the PhysX C++ API that aims to preserve the original API as much as possible."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
 physx-sys = "0.8.2"

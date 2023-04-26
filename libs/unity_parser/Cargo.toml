@@ -1,13 +1,14 @@
 [package]
 name = "ambient_unity_parser"
-version = { workspace = true }
-rust-version = { workspace = true }
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "A basic parser for Unity assets."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
-ambient_std = { path = "../../crates/std" }
+ambient_std = { path = "../../crates/std" , version = "0.2.0-rc1" }
 yaml-rust = { workspace = true }
 itertools = { workspace = true }
 glam = { workspace = true }

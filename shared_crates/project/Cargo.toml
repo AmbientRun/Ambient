@@ -1,8 +1,11 @@
 [package]
 name = "ambient_project"
-version = { workspace = true }
-rust-version = { workspace = true }
 edition = "2021"
+description = "Definition of the Ambient project manifest format."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
 quote = "1.0"

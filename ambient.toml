@@ -1,7 +1,7 @@
 [project]
 id = "runtime_components"
 name = "Runtime Components"
-version = "0.2.0-dev"
+version = "0.2.0-rc1"
 
 includes = ["schema/app_.toml",
     "schema/camera.toml",
