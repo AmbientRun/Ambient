@@ -14,7 +14,7 @@ use tracing_subscriber::{filter::LevelFilter, fmt::time::UtcTime, prelude::*, re
 use tracing_web::MakeConsoleWriter;
 use wasm_bindgen::prelude::wasm_bindgen;
 
-#[wasm_bindgen(start)]
+#[wasm_bindgen]
 pub async fn start() {
     let fmt_layer = tracing_subscriber::fmt::layer()
         .with_ansi(false) // Only partially supported across browsers
