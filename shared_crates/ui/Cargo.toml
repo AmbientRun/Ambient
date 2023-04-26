@@ -11,17 +11,17 @@ version = { workspace = true }
 
 [dependencies]
 # Shared
-ambient_element = { path = "../element", default-features = false , version = "0.2.0-rc1" }
-ambient_guest_bridge = { path = "../guest_bridge", default-features = false , version = "0.2.0-rc1" }
+ambient_element = { path = "../element", default-features = false , version = "0.2.0-rc2" }
+ambient_guest_bridge = { path = "../guest_bridge", default-features = false , version = "0.2.0-rc2" }
 
-ambient_cb = { path = "../../libs/cb" , version = "0.2.0-rc1" }
-ambient_color = { path = "../../libs/color" , version = "0.2.0-rc1" }
-ambient_math = { path = "../../libs/math" , version = "0.2.0-rc1" }
-ambient_time = { path = "../../libs/time" , version = "0.2.0-rc1" }
-ambient_shared_types = { path = "../shared_types" , version = "0.2.0-rc1" }
+ambient_cb = { path = "../../libs/cb" , version = "0.2.0-rc2" }
+ambient_color = { path = "../../libs/color" , version = "0.2.0-rc2" }
+ambient_math = { path = "../../libs/math" , version = "0.2.0-rc2" }
+ambient_time = { path = "../../libs/time" , version = "0.2.0-rc2" }
+ambient_shared_types = { path = "../shared_types" , version = "0.2.0-rc2" }
 
 # Host only
-ambient_sys = { path = "../../crates/sys", optional = true , version = "0.2.0-rc1" }
+ambient_sys = { path = "../../crates/sys", optional = true , version = "0.2.0-rc2" }
 
 glam = { workspace = true }
 itertools = { workspace = true }
