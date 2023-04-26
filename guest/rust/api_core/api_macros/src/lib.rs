@@ -2,7 +2,6 @@ extern crate proc_macro;
 
 use std::path::PathBuf;
 
-use anyhow::Context;
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 
