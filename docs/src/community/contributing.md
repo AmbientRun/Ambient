@@ -1,12 +1,29 @@
 # Contributing
 
+## Campfire
+
+Campfire is our internal tool for working with the repository. It has several commands that can be used to help with development, which you can find by running `cargo campfire --help`.
+
+It is also aliased to `cargo cf` for convenience.
+
+Running an example can be done like this:
+
+```sh
+cargo cf run decals
+```
+
+By default, Campfire will build Ambient with the `debug` profile. To build with the `release` profile and to build the assets with `--relase`, use the `--release` flag before the example and after:
+
+```sh
+cargo cf run --release decals -- --release
+```
+
 ## API docs
 
 To see the latest version of the API docs, run the following command in the `Ambient` repository:
 
 ```sh
-cd guest/rust
-cargo doc -p ambient_api --open --no-deps
+cargo campfire doc api --open
 ```
 
 ## Adding to the API

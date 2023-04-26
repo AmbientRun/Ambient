@@ -8,15 +8,7 @@ pub enum Example {
     /// Clean all example build artifacts
     Clean,
     /// Run an example
-    Run {
-        /// The name of the example to run
-        example: String,
-        /// Whether or not to run Ambient in release mode
-        #[arg(short, long, default_value_t = false)]
-        release: bool,
-        /// The args to pass through to `ambient`
-        args: Vec<String>,
-    },
+    Run(Run),
     /// Run all the examples in order
     RunAll {
         /// Whether or not to run Ambient in release mode
@@ -29,20 +21,29 @@ pub enum Example {
     CheckAll,
 }
 
+#[derive(Parser, Clone)]
+#[clap(trailing_var_arg = true)]
+/// Run an example
+pub struct Run {
+    /// The name of the example to run
+    pub example: String,
+    /// Whether or not to run Ambient in release mode
+    #[arg(short, long, default_value_t = false)]
+    pub release: bool,
+    /// The args to pass through to `ambient`
+    pub args: Vec<String>,
+}
+
 pub(crate) fn main(args: &Example) -> anyhow::Result<()> {
     match args {
         Example::Clean => clean(),
-        Example::Run {
-            example,
-            release,
-            args,
-        } => run(&example, *release, args),
+        Example::Run(args) => run(args),
         Example::RunAll { release, args } => run_all(*release, args),
         Example::CheckAll => check_all(),
     }
 }
 
-fn clean() -> anyhow::Result<()> {
+pub(crate) fn clean() -> anyhow::Result<()> {
     log::info!("Cleaning examples...");
     for example_path in all_examples()? {
         let build_path = example_path.join("build");
@@ -57,17 +58,23 @@ fn clean() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn run(name: &str, release: bool, args: &[String]) -> anyhow::Result<()> {
+pub(crate) fn run(args: &Run) -> anyhow::Result<()> {
+    let Run {
+        example,
+        release,
+        args,
+    } = args;
+
     let example_path = all_examples()?
         .into_iter()
-        .find(|p| p.ends_with(name))
-        .ok_or_else(|| anyhow::anyhow!("no example found with name {}", name))?;
+        .find(|p| p.ends_with(example))
+        .ok_or_else(|| anyhow::anyhow!("no example found with name {}", example))?;
 
     log::info!(
         "Running example {} (Ambient built with release: {release}, extra args {args:?})...",
         example_path.display()
     );
-    run_project(&example_path, release, args)
+    run_project(&example_path, *release, args)
 }
 
 fn run_all(release: bool, args: &[String]) -> anyhow::Result<()> {

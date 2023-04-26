@@ -5,8 +5,7 @@ mod example;
 mod release;
 
 #[derive(Parser, Clone)]
-#[command(author, version, about, long_about = None)]
-#[command(propagate_version = true)]
+#[command(author, version, about, long_about = None, propagate_version = true, trailing_var_arg = true)]
 pub enum Cli {
     /// Generate documentation for Ambient
     #[command(subcommand)]
@@ -17,6 +16,12 @@ pub enum Cli {
     /// Release-related functionality
     #[command(subcommand)]
     Release(release::Release),
+
+    // Helper aliases for subcommands
+    /// Clean all build artifacts for all examples.
+    Clean,
+    /// Run an example. Alias for `example run`.
+    Run(example::Run),
 }
 
 fn main() -> anyhow::Result<()> {
@@ -32,5 +37,8 @@ fn main() -> anyhow::Result<()> {
         Cli::Doc(doc) => doc::main(&doc),
         Cli::Example(ex) => example::main(&ex),
         Cli::Release(re) => release::main(&re),
+
+        Cli::Clean => example::clean(),
+        Cli::Run(run) => example::run(&run),
     }
 }
