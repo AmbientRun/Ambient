@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use clap::Parser;
 
 #[derive(Parser, Clone)]
+#[clap(trailing_var_arg = true)]
 pub enum Example {
     /// Clean all example build artifacts
     Clean,
@@ -10,9 +11,20 @@ pub enum Example {
     Run {
         /// The name of the example to run
         example: String,
+        /// Whether or not to run Ambient in release mode
+        #[arg(short, long, default_value_t = false)]
+        release: bool,
+        /// The args to pass through to `ambient`
+        args: Vec<String>,
     },
     /// Run all the examples in order
-    RunAll,
+    RunAll {
+        /// Whether or not to run Ambient in release mode
+        #[arg(short, long, default_value_t = false)]
+        release: bool,
+        /// The args to pass through to `ambient`
+        args: Vec<String>,
+    },
     /// Check all the examples
     CheckAll,
 }
@@ -20,8 +32,12 @@ pub enum Example {
 pub(crate) fn main(args: &Example) -> anyhow::Result<()> {
     match args {
         Example::Clean => clean(),
-        Example::Run { example } => run(&example),
-        Example::RunAll => run_all(),
+        Example::Run {
+            example,
+            release,
+            args,
+        } => run(&example, *release, args),
+        Example::RunAll { release, args } => run_all(*release, args),
         Example::CheckAll => check_all(),
     }
 }
@@ -41,20 +57,26 @@ fn clean() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn run(name: &str) -> anyhow::Result<()> {
+fn run(name: &str, release: bool, args: &[String]) -> anyhow::Result<()> {
     let example_path = all_examples()?
         .into_iter()
         .find(|p| p.ends_with(name))
         .ok_or_else(|| anyhow::anyhow!("no example found with name {}", name))?;
 
-    log::info!("Running example {}...", example_path.display());
-    run_project(&example_path)
+    log::info!(
+        "Running example {} (Ambient built with release: {release}, extra args {args:?})...",
+        example_path.display()
+    );
+    run_project(&example_path, release, args)
 }
 
-fn run_all() -> anyhow::Result<()> {
+fn run_all(release: bool, args: &[String]) -> anyhow::Result<()> {
     for example_path in all_examples()? {
-        log::info!("Running example {}...", example_path.display());
-        run_project(&example_path)?;
+        log::info!(
+            "Running example {} (Ambient built with release: {release}, extra args {args:?})...",
+            example_path.display()
+        );
+        run_project(&example_path, release, args)?;
     }
 
     Ok(())
@@ -89,14 +111,25 @@ fn check_all() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn run_project(project: &Path) -> anyhow::Result<()> {
-    run_ambient(&["run", project.to_string_lossy().as_ref()])
+fn run_project(project: &Path, ambient_release: bool, extra_args: &[String]) -> anyhow::Result<()> {
+    let mut args = vec!["run"];
+    let project = project.to_string_lossy();
+    args.push(&project);
+    if !extra_args.is_empty() {
+        args.extend(extra_args.iter().map(|s| s.as_str()));
+    }
+    run_ambient(&args, ambient_release)
 }
 
-fn run_ambient(args: &[&str]) -> anyhow::Result<()> {
+fn run_ambient(args: &[&str], release: bool) -> anyhow::Result<()> {
     // TODO: consider running other versions of Ambient
-    std::process::Command::new("cargo")
-        .args(&["run", "-p", "ambient"])
+    let mut command = std::process::Command::new("cargo");
+    command.arg("run");
+    if release {
+        command.arg("--release");
+    }
+    command
+        .args(&["-p", "ambient"])
         .args(args)
         .spawn()?
         .wait()?;
