@@ -122,6 +122,7 @@ jobs:
       - run: cd shared_crates/project && cargo publish
       - run: cd shared_crates/project_macro_common && cargo publish
       - run: cd shared_crates/project_rt && cargo publish
+      - run: cd shared_crates/shared_types && cargo publish
 
       # API core: depends on project for macro
       - name: Sleep for 30 seconds
@@ -134,7 +135,6 @@ jobs:
       - name: Sleep for 30 seconds
         run: sleep 30
         shell: bash
-      - run: cd shared_crates/shared_types && cargo publish
       - run: cd shared_crates/guest_bridge && cargo publish -F guest
       - run: cd shared_crates/element_component && cargo publish
       - run: cd shared_crates/element && cargo publish --no-default-features -F guest
