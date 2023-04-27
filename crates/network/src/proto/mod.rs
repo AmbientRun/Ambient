@@ -14,24 +14,18 @@ use crate::server::{datagram_handlers, uni_stream_handlers, ServerState};
 /// Handles the server side protocol logic.
 pub struct Server {
     user_id: String,
-    diffs_rx: RecvStream<'static, Bytes>,
     state: Arc<Mutex<ServerState>>,
     assets: AssetCache,
 }
 
 impl Server {
-    pub fn new(user_id: String, diffs_rx: RecvStream<'static, Bytes>, state: Arc<Mutex<ServerState>>, assets: AssetCache) -> Self {
-        Self { user_id, diffs_rx, state, assets }
+    pub fn new(user_id: String, state: Arc<Mutex<ServerState>>, assets: AssetCache) -> Self {
+        Self { user_id, state, assets }
     }
 
-    /// Processes diffs, returning a stream of bytes to be sent over the network
-    async fn process_diffs(&mut self) -> Option<Bytes> {
-        self.diffs_rx.next().await
-    }
-
-    #[tracing::instrument(level = "info", skip(self))]
     /// Processes an incoming datagram
-    async fn process_datagram(&mut self, mut datagram: Bytes) -> anyhow::Result<()> {
+    #[tracing::instrument(level = "info", skip(self))]
+    pub async fn process_datagram(&mut self, mut datagram: Bytes) -> anyhow::Result<()> {
         let id = datagram.get_u32();
 
         tracing::info!("Received datagram {id}");
@@ -52,7 +46,7 @@ impl Server {
     }
 
     #[tracing::instrument(level = "info", skip_all)]
-    async fn process_uni<E: Into<anyhow::Error>>(&mut self, mut stream: impl AsyncRead + Unpin) -> anyhow::Result<()> {
+    pub async fn process_uni<E: Into<anyhow::Error>>(&mut self, mut stream: impl AsyncRead + Unpin) -> anyhow::Result<()> {
         let id = stream.read_u32().await?;
 
         let handler = {

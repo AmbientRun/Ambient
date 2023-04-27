@@ -38,10 +38,10 @@ use tokio::{
 use tracing::{debug_span, Instrument};
 
 use crate::{
-    client_connection::ClientConnection,
+    client_connection::ConnectionInner,
     connection::Connection,
-    create_server,
-    protocol::{ClientInfo, ServerInfo, ServerProtocol},
+    create_server, proto,
+    protocol::{ClientInfo, ServerConnection, ServerInfo},
     NetworkError, RPC_BISTREAM_ID,
 };
 use colored::Colorize;
@@ -56,7 +56,7 @@ components!("network::server", {
 
     player_entity_stream: Sender<Vec<u8>>,
     player_stats_stream: Sender<FpsSample>,
-    player_connection: ClientConnection,
+    player_connection: ConnectionInner,
 });
 
 pub type BiStreamHandlers = HashMap<
@@ -560,7 +560,7 @@ async fn start_proxy_connection(
 /// Setup the protocol and enter the update loop for a new connected client
 #[tracing::instrument(skip_all)]
 fn run_connection(
-    connection: ClientConnection,
+    connection: ConnectionInner,
     state: SharedServerState,
     world_stream_filter: WorldStreamFilter,
     assets: AssetCache,
@@ -760,7 +760,7 @@ fn run_connection(
                     }
                 };
 
-                match client.run(connection, server_info).await {
+                match client.run(connection, server_info, state.clone(), assets.clone()).await {
                     Ok(()) => {}
                     Err(err) if err.is_closed() => {
                         log::info!("Connection closed by client");
@@ -808,53 +808,51 @@ impl<'a> ClientInstance<'a> {
     #[tracing::instrument(skip_all)]
     pub async fn run(
         mut self,
-        conn: ClientConnection,
+        conn: ConnectionInner,
         server_info: ServerInfo,
+        state: SharedServerState,
+        assets: AssetCache,
     ) -> Result<(), NetworkError> {
         log::debug!("Connecting to client");
-        let mut proto = ServerProtocol::new(conn, server_info).await?;
+        let mut conn = ServerConnection::new(conn, server_info).await?;
 
         log::debug!("Client loop starting");
         let mut entities_rx = self.diffs_rx.stream();
         let mut stats_rx = self.stats_rx.stream();
 
         tokio::task::block_in_place(|| {
-            (self.on_init)(proto.client_info().clone());
+            (self.on_init)(conn.client_info().clone());
         });
-        let user_id = proto.client_info().user_id.clone();
+        let user_id = conn.client_info().user_id.clone();
         self.user_id = Some(user_id.clone());
+
+        let proto = proto::Server::new(user_id, state.clone(), assets.clone());
 
         loop {
             tokio::select! {
                 Some(msg) = entities_rx.next() => {
                     let span = tracing::debug_span!("world diff");
-                    proto.diff_stream.send_bytes(msg).instrument(span).await?;
+                    conn.diff_stream.send_bytes(msg).instrument(span).await?;
                 }
                 Some(msg) = stats_rx.next() => {
                     let span = tracing::debug_span!("stats");
-                    proto.stat_stream.send(&msg).instrument(span).await?;
+                    conn.stat_stream.send(&msg).instrument(span).await?;
                 }
 
-                Ok(mut datagram) = proto.conn.read_datagram() => {
-                    let _span = tracing::debug_span!("datagram").entered();
-                    let data = datagram.split_off(4);
-                    let handler_id = u32::from_be_bytes(datagram[0..4].try_into().unwrap());
-                    tokio::task::block_in_place(|| (self.on_datagram)(&user_id, handler_id, data))
-                }
-                Ok((tx, mut rx)) = proto.conn.accept_bi() => {
-                    let span = tracing::debug_span!("bistream");
-                    let stream_id = rx.read_u32().instrument(span).await;
-                    if let Ok(stream_id) = stream_id {
-                        tokio::task::block_in_place(|| { (self.on_bi_stream)(&user_id, stream_id, tx, rx); })
-                    }
-                }
-                Ok(mut rx) = proto.conn.accept_uni() => {
-                    let span = tracing::debug_span!("unistream");
-                    let stream_id = rx.read_u32().instrument(span).await;
-                    if let Ok(stream_id) = stream_id {
-                        tokio::task::block_in_place(|| { (self.on_uni_stream)(&user_id, stream_id,  rx); })
-                    }
-                }
+                // Ok(mut datagram) = conn.read_datagram() => {
+                //     proto.process_datagram(datagram).await;
+                // }
+                // Ok((tx, mut rx)) = conn.accept_bi() => {
+                //     todo!("process bi")
+                //     // let span = tracing::debug_span!("bistream");
+                //     // let stream_id = rx.read_u32().instrument(span).await;
+                //     // if let Ok(stream_id) = stream_id {
+                //     //     tokio::task::block_in_place(|| { (self.on_bi_stream)(&user_id, stream_id, tx, rx); })
+                //     // }
+                // }
+                // Ok(mut stream) = conn.conn.accept_uni() => {
+                //     proto.process_uni(stream).await;
+                // }
             }
         }
     }

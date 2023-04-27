@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use bytes::Bytes;
-use quinn::{SendStream, RecvStream};
+use quinn::{RecvStream, SendStream};
 
 use crate::NetworkError;
 

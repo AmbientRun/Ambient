@@ -290,7 +290,8 @@ fn send_networked(
         .collect();
 
     for connection in connections {
-        message::send_networked(world, connection, module_id, &name, &data, reliable)?;
+        todo!()
+        // message::send_networked(world, connection, module_id, &name, &data, reliable)?;
     }
 
     Ok(())

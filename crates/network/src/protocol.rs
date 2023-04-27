@@ -5,7 +5,7 @@ use futures::io::BufReader;
 use quinn::{Connection, RecvStream};
 
 use crate::{
-    client_connection::ClientConnection, next_bincode_bi_stream, open_bincode_bi_stream, IncomingStream, NetworkError, OutgoingStream,
+    client_connection::ConnectionInner, next_bincode_bi_stream, open_bincode_bi_stream, IncomingStream, NetworkError, OutgoingStream,
 };
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -70,42 +70,45 @@ impl ClientProtocol {
     }
 }
 
-/// The server side protocol instantiation of the client communication
-pub struct ServerProtocol {
-    pub(crate) conn: ClientConnection,
+/// The server side connection to a client or a proxied client
+pub struct ServerConnection {
+    pub(crate) conn: ConnectionInner,
+    control_stream: OutgoingStream,
 
     pub(crate) diff_stream: OutgoingStream,
     pub(crate) stat_stream: OutgoingStream,
     client_info: ClientInfo,
 }
 
-impl ServerProtocol {
-    pub async fn new(conn: ClientConnection, server_info: ServerInfo) -> Result<Self, NetworkError> {
+impl ServerConnection {
+    /// Establishes a connection to the client
+    pub async fn new(conn: ConnectionInner, server_info: ServerInfo) -> Result<Self, NetworkError> {
         // The client now sends the player id
-        let (mut tx, mut rx) = next_bincode_bi_stream(&conn).await?;
+        // let (mut tx, mut rx) = next_bincode_bi_stream(&conn).await?;
 
-        let user_id: String = rx.next().await?;
+        // let user_id: String = rx.next().await?;
 
-        log::debug!("Received handshake from {user_id:?}");
+        // log::debug!("Received handshake from {user_id:?}");
 
-        let external_components = ComponentRegistry::get().all_external().map(|x| x.0).collect();
+        // let external_components = ComponentRegistry::get().all_external().map(|x| x.0).collect();
 
-        // Respond
-        let client_info = ClientInfo { user_id, external_components };
-        log::debug!("Responding with {client_info:?}");
-        tx.send(&client_info).await?;
+        // // Respond
+        // let client_info = ClientInfo { user_id, external_components };
+        // log::debug!("Responding with {client_info:?}");
+        // tx.send(&client_info).await?;
 
-        // Send the project name to the client so it can title its window correctly
-        tx.send(&server_info).await?;
+        // // Send the project name to the client so it can title its window correctly
+        // tx.send(&server_info).await?;
 
-        // Great, now open all required streams
-        let mut diff_stream = OutgoingStream::open_uni(&conn).await?;
-        // Send "something" to notify the client of the new stream
-        diff_stream.send(&()).await?;
-        let mut stat_stream = OutgoingStream::open_uni(&conn).await?;
-        stat_stream.send(&()).await?;
+        // // Great, now open all required streams
+        // let mut diff_stream = OutgoingStream::open_uni(&conn).await?;
+        // // Send "something" to notify the client of the new stream
+        // diff_stream.send(&()).await?;
+        // let mut stat_stream = OutgoingStream::open_uni(&conn).await?;
+        // stat_stream.send(&()).await?;
 
-        Ok(Self { conn, diff_stream, stat_stream, client_info })
+        // Ok(Self { conn, diff_stream, stat_stream, client_info })
+        todo!()
     }
 
     pub fn client_info(&self) -> &ClientInfo {
