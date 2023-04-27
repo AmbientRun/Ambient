@@ -16,8 +16,8 @@ use smallvec::SmallVec;
 use wgpu::DepthBiasState;
 
 use super::{
-    cast_shadows, get_active_sun, FSMain, RendererCollectState, RendererResources, ShadowAndUIGlobals, TreeRenderer, TreeRendererConfig,
-    MAX_SHADOW_CASCADES,
+    cast_shadows, get_active_sun, FSMain, RendererCollectState, RendererResources,
+    ShadowAndUIGlobals, TreeRenderer, TreeRendererConfig, MAX_SHADOW_CASCADES,
 };
 use crate::{bind_groups::BindGroups, default_sun_direction, PostSubmitFunc, RendererConfig};
 
@@ -31,12 +31,19 @@ pub struct ShadowsRenderer {
 
 impl std::fmt::Debug for ShadowsRenderer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ShadowsRenderer").field("config", &self.config).field("shadow_view", &self.shadow_view).finish()
+        f.debug_struct("ShadowsRenderer")
+            .field("config", &self.config)
+            .field("shadow_view", &self.shadow_view)
+            .finish()
     }
 }
 
 impl ShadowsRenderer {
-    pub fn new(assets: AssetCache, renderer_resources: RendererResources, config: RendererConfig) -> Self {
+    pub fn new(
+        assets: AssetCache,
+        renderer_resources: RendererResources,
+        config: RendererConfig,
+    ) -> Self {
         let gpu = GpuKey.get(&assets);
 
         let shadow_texture = Arc::new(Texture::new(
@@ -59,8 +66,10 @@ impl ShadowsRenderer {
             },
         ));
 
-        let shadow_view =
-            shadow_texture.create_view(&wgpu::TextureViewDescriptor { aspect: wgpu::TextureAspect::DepthOnly, ..Default::default() });
+        let shadow_view = shadow_texture.create_view(&wgpu::TextureViewDescriptor {
+            aspect: wgpu::TextureAspect::DepthOnly,
+            ..Default::default()
+        });
 
         Self {
             renderer: TreeRenderer::new(TreeRendererConfig {
@@ -68,13 +77,19 @@ impl ShadowsRenderer {
                 assets: assets.clone(),
                 renderer_config: config.clone(),
                 targets: vec![],
-                filter: ArchetypeFilter::new().incl(main_scene()).incl(cast_shadows()),
+                filter: ArchetypeFilter::new()
+                    .incl(main_scene())
+                    .incl(cast_shadows()),
                 renderer_resources: renderer_resources.clone(),
                 fs_main: FSMain::Shadow,
                 opaque_only: false,
                 depth_stencil: true,
                 cull_mode: Some(wgpu::Face::Front),
-                depth_bias: DepthBiasState { constant: -2, slope_scale: -1.5, clamp: 0.0 },
+                depth_bias: DepthBiasState {
+                    constant: -2,
+                    slope_scale: -1.5,
+                    clamp: 0.0,
+                },
             }),
             cascades: (0..config.shadow_cascades)
                 .map(|i| ShadowCascade {
@@ -88,7 +103,10 @@ impl ShadowsRenderer {
                         base_array_layer: i,
                         array_layer_count: NonZeroU32::new(1),
                     }),
-                    globals: ShadowAndUIGlobals::new(assets.clone(), renderer_resources.globals_layout.clone()),
+                    globals: ShadowAndUIGlobals::new(
+                        assets.clone(),
+                        renderer_resources.globals_layout.clone(),
+                    ),
                     camera: Camera::default(),
                     collect_state: RendererCollectState::new(&assets),
                 })
@@ -105,9 +123,11 @@ impl ShadowsRenderer {
         self.cascades.len()
     }
 
-    #[profiling::function]
+    #[ambient_profiling::function]
     pub fn update(&mut self, world: &mut World) {
-        let main_camera = Camera::get_active(world, main_scene(), world.resource_opt(local_user_id())).unwrap_or_default();
+        let main_camera =
+            Camera::get_active(world, main_scene(), world.resource_opt(local_user_id()))
+                .unwrap_or_default();
 
         let sun_direction = if let Some(sun) = get_active_sun(world, main_scene()) {
             get_world_rotation(world, sun).unwrap().mul_vec3(Vec3::X)
@@ -118,21 +138,24 @@ impl ShadowsRenderer {
         self.renderer.update(world);
 
         for (i, cascade) in self.cascades.iter_mut().enumerate() {
-            profiling::scope!("Shadow cascade update");
+            ambient_profiling::scope!("Shadow cascade update");
             let new_camera = main_camera.create_snapping_shadow_camera(
                 sun_direction,
                 i as u32,
                 self.config.shadow_cascades,
                 self.config.shadow_map_resolution,
             );
-            cascade.globals.update(world, main_scene(), new_camera.projection_view());
+            cascade
+                .globals
+                .update(world, main_scene(), new_camera.projection_view());
             cascade.camera = new_camera;
             cascade.collect_state.set_camera(i as u32 + 1);
         }
     }
 
     pub fn stats(&self) -> String {
-        let shadow_entities: usize = self.renderer.n_entities() * self.config.shadow_cascades as usize;
+        let shadow_entities: usize =
+            self.renderer.n_entities() * self.config.shadow_cascades as usize;
         let shadow_nodes: usize = self.renderer.n_nodes();
         format!("shadow: {shadow_entities}/{shadow_nodes}")
     }
@@ -154,25 +177,47 @@ impl ShadowsRenderer {
         post_submit: &mut Vec<PostSubmitFunc>,
     ) {
         for (i, cascade) in self.cascades.iter_mut().enumerate() {
-            profiling::scope!("Shadow dynamic render");
-            self.renderer.run_collect(encoder, post_submit, bind_groups.mesh_meta, bind_groups.entities, &mut cascade.collect_state);
+            ambient_profiling::scope!("Shadow dynamic render");
+            self.renderer.run_collect(
+                encoder,
+                post_submit,
+                bind_groups.mesh_meta,
+                bind_groups.entities,
+                &mut cascade.collect_state,
+            );
             let label = format!("Shadow cascade {i}");
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some(&label),
                 color_attachments: &[],
                 depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
                     view: &cascade.dynamic_target,
-                    depth_ops: Some(wgpu::Operations { load: wgpu::LoadOp::Clear(0.0), store: true }),
-                    stencil_ops: Some(wgpu::Operations { load: wgpu::LoadOp::Load, store: true }),
+                    depth_ops: Some(wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(0.0),
+                        store: true,
+                    }),
+                    stencil_ops: Some(wgpu::Operations {
+                        load: wgpu::LoadOp::Load,
+                        store: true,
+                    }),
                 }),
             });
 
             let globals = cascade.globals.create_bind_group(mesh_buffer);
 
-            render_pass.set_index_buffer(mesh_buffer.index_buffer.buffer().slice(..), wgpu::IndexFormat::Uint32);
-            self.renderer.render(&mut render_pass, &cascade.collect_state, &BindGroups { globals, ..*bind_groups });
+            render_pass.set_index_buffer(
+                mesh_buffer.index_buffer.buffer().slice(..),
+                wgpu::IndexFormat::Uint32,
+            );
+            self.renderer.render(
+                &mut render_pass,
+                &cascade.collect_state,
+                &BindGroups {
+                    globals,
+                    ..*bind_groups
+                },
+            );
             {
-                profiling::scope!("Drop render pass");
+                ambient_profiling::scope!("Drop render pass");
                 drop(render_pass);
             }
         }

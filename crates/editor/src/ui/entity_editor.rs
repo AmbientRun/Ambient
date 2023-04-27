@@ -6,18 +6,21 @@ use ambient_core::{
     transform::{scale, translation},
 };
 use ambient_ecs::{
-    with_component_registry, Component, ComponentDesc, ComponentEntry, ComponentValue, Entity, EntityId, PrimitiveComponentType, World,
+    with_component_registry, Component, ComponentDesc, ComponentEntry, ComponentValue, Entity,
+    EntityId, PrimitiveComponentType, World,
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_intent::client_push_intent;
 use ambient_network::{client::GameClient, hooks::use_remote_component};
-use ambient_physics::collider::{character_controller_height, character_controller_radius, collider_type, mass};
+use ambient_physics::collider::{
+    character_controller_height, character_controller_radius, collider_type, mass,
+};
 use ambient_std::{cb, Cb};
 use ambient_ui_native::{
     align_horizontal, align_vertical,
     layout::{fit_horizontal, margin, Borders, Fit},
-    space_between_items, Align, Button, ButtonStyle, DropdownSelect, Editor, EditorPrompt, FlowColumn, FlowRow, ScreenContainer, StylesExt,
-    Text, STREET,
+    space_between_items, Align, Button, ButtonStyle, DropdownSelect, Editor, EditorPrompt,
+    FlowColumn, FlowRow, ScreenContainer, StylesExt, Text, STREET,
 };
 use glam::{Vec2, Vec3, Vec4};
 use itertools::Itertools;
@@ -39,7 +42,7 @@ pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
         false,
         entity_id,
         closure!(clone set_entity, clone game_client, |&entity_id| {
-            profiling::scope!("EntityEditor::update_entity_data");
+            ambient_profiling::scope!("EntityEditor::update_entity_data");
             let game_state = game_client.game_state.lock();
             if let Ok(data) = game_state.world.clone_entity(entity_id) {
                 set_entity(Some(data));
@@ -49,18 +52,29 @@ pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
         }),
     );
 
-    let name = use_remote_component(hooks, entity_id, name()).unwrap_or(format!("Entity {entity_id}"));
+    let name =
+        use_remote_component(hooks, entity_id, name()).unwrap_or(format!("Entity {entity_id}"));
     let runtime = hooks.world.resource(runtime()).clone();
 
     if let Some(entity) = entity {
         let _translation = entity.get_cloned(translation());
         FlowColumn(vec![
             Text::el(name).section_style(),
-            if let Some(mass) = entity.get(mass()) { Text::el(format!("{mass} kg")).small_style() } else { Element::new() },
+            if let Some(mass) = entity.get(mass()) {
+                Text::el(format!("{mass} kg")).small_style()
+            } else {
+                Element::new()
+            },
             EntityComponentsEditor {
                 value: entity,
                 on_change: cb(move |change| {
-                    runtime.spawn(client_push_intent(game_client.clone(), intent_component_change(), (entity_id, change), None, None));
+                    runtime.spawn(client_push_intent(
+                        game_client.clone(),
+                        intent_component_change(),
+                        (entity_id, change),
+                        None,
+                        None,
+                    ));
                 }),
             }
             .el()
@@ -97,7 +111,9 @@ impl EntityComponentChange {
     /// Returns a EntityComponentChange which can be used to revert this change
     pub fn apply_to_entity(&self, world: &mut World, id: EntityId) -> EntityComponentChange {
         match self {
-            EntityComponentChange::Change(entry) => EntityComponentChange::Change(world.set_entry(id, entry.clone()).unwrap()),
+            EntityComponentChange::Change(entry) => {
+                EntityComponentChange::Change(world.set_entry(id, entry.clone()).unwrap())
+            }
             EntityComponentChange::Add(entry) => {
                 world.add_entry(id, entry.clone()).unwrap();
                 EntityComponentChange::Remove(entry.desc())
@@ -121,11 +137,17 @@ impl EntityComponentChange {
 }
 
 #[tracing::instrument(level = "info", skip_all)]
-#[profiling::function]
+#[ambient_profiling::function]
 #[element_component]
-fn EntityComponentsEditor(_hooks: &mut Hooks, value: Entity, on_change: Cb<dyn Fn(EntityComponentChange) + Sync + Send>) -> Element {
+fn EntityComponentsEditor(
+    _hooks: &mut Hooks,
+    value: Entity,
+    on_change: Cb<dyn Fn(EntityComponentChange) + Sync + Send>,
+) -> Element {
     let mut missing_components = Vec::new();
-    fn reg_component<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync + Send + 'static>(
+    fn reg_component<
+        T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync + Send + 'static,
+    >(
         entity: &Entity,
         on_change: Cb<dyn Fn(EntityComponentChange) + Sync + Send>,
         missing_components: &mut Vec<(String, Arc<dyn Fn() + Sync + Send>)>,
@@ -151,7 +173,12 @@ fn EntityComponentsEditor(_hooks: &mut Hooks, value: Entity, on_change: Cb<dyn F
         } else {
             missing_components.push((
                 display_name.to_string(),
-                Arc::new(move || on_change(EntityComponentChange::Add(ComponentEntry::new(component, on_create())))),
+                Arc::new(move || {
+                    on_change(EntityComponentChange::Add(ComponentEntry::new(
+                        component,
+                        on_create(),
+                    )))
+                }),
             ));
             None
         }
@@ -159,7 +186,15 @@ fn EntityComponentsEditor(_hooks: &mut Hooks, value: Entity, on_change: Cb<dyn F
 
     macro_rules! reg_default_component {
         ($name:expr, $short:expr, $component:expr) => {
-            reg_component(&value, on_change.clone(), &mut missing_components, $name, $short, $component, Default::default)
+            reg_component(
+                &value,
+                on_change.clone(),
+                &mut missing_components,
+                $name,
+                $short,
+                $component,
+                Default::default,
+            )
         };
     }
 
@@ -170,8 +205,16 @@ fn EntityComponentsEditor(_hooks: &mut Hooks, value: Entity, on_change: Cb<dyn F
         reg_default_component!("Scale", true, scale()),
         // reg_default_component!("Model", false, model_def()),
         // reg_default_component!("Decal", false, decal()),
-        reg_default_component!("Character collider radius", false, character_controller_radius()),
-        reg_default_component!("Character collider height", false, character_controller_height()),
+        reg_default_component!(
+            "Character collider radius",
+            false,
+            character_controller_radius()
+        ),
+        reg_default_component!(
+            "Character collider height",
+            false,
+            character_controller_height()
+        ),
         // reg_default_component!("Collider", false, collider()),
         reg_default_component!("Collider type", true, collider_type()),
         reg_default_component!("Mass", true, mass()),
@@ -185,8 +228,10 @@ fn EntityComponentsEditor(_hooks: &mut Hooks, value: Entity, on_change: Cb<dyn F
     .collect_vec();
 
     with_component_registry(|cr| {
-        profiling::scope!("setup_component_editors");
-        fn register_dynamic_component<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync + Send + Default + 'static>(
+        ambient_profiling::scope!("setup_component_editors");
+        fn register_dynamic_component<
+            T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync + Send + Default + 'static,
+        >(
             (entity, on_change, missing_components): (
                 &Entity,
                 Cb<dyn Fn(EntityComponentChange) + Sync + Send>,
@@ -195,7 +240,15 @@ fn EntityComponentsEditor(_hooks: &mut Hooks, value: Entity, on_change: Cb<dyn F
             display_name: &str,
             desc: ComponentDesc,
         ) -> Option<(String, Element)> {
-            reg_component(entity, on_change, missing_components, display_name, true, Component::<T>::new(desc), Default::default)
+            reg_component(
+                entity,
+                on_change,
+                missing_components,
+                display_name,
+                true,
+                Component::<T>::new(desc),
+                Default::default,
+            )
         }
 
         for (comp, desc) in cr.all_external() {
@@ -204,20 +257,40 @@ fn EntityComponentsEditor(_hooks: &mut Hooks, value: Entity, on_change: Cb<dyn F
             let t = (&value, on_change.clone(), &mut missing_components);
 
             let element = match comp.ty {
-                PrimitiveComponentType::Empty => register_dynamic_component::<()>(t, &display_name, desc),
-                PrimitiveComponentType::Bool => register_dynamic_component::<bool>(t, &display_name, desc),
+                PrimitiveComponentType::Empty => {
+                    register_dynamic_component::<()>(t, &display_name, desc)
+                }
+                PrimitiveComponentType::Bool => {
+                    register_dynamic_component::<bool>(t, &display_name, desc)
+                }
                 // ExternalEcsComponent::EntityId => register_dynamic_component(t, &display_name, desc),
-                PrimitiveComponentType::F32 => register_dynamic_component::<f32>(t, &display_name, desc),
+                PrimitiveComponentType::F32 => {
+                    register_dynamic_component::<f32>(t, &display_name, desc)
+                }
                 // ExternalEcsComponent::F64 => register_dynamic_component(t, &display_name, desc),
                 // ExternalEcsComponent::Mat4 => register_dynamic_component(t, &display_name, desc),
-                PrimitiveComponentType::I32 => register_dynamic_component::<i32>(t, &display_name, desc),
+                PrimitiveComponentType::I32 => {
+                    register_dynamic_component::<i32>(t, &display_name, desc)
+                }
                 // ExternalEcsComponent::Quat => register_dynamic_component(t, &display_name, desc),
-                PrimitiveComponentType::String => register_dynamic_component::<String>(t, &display_name, desc),
-                PrimitiveComponentType::U32 => register_dynamic_component::<u32>(t, &display_name, desc),
-                PrimitiveComponentType::U64 => register_dynamic_component::<u64>(t, &display_name, desc),
-                PrimitiveComponentType::Vec2 => register_dynamic_component::<Vec2>(t, &display_name, desc),
-                PrimitiveComponentType::Vec3 => register_dynamic_component::<Vec3>(t, &display_name, desc),
-                PrimitiveComponentType::Vec4 => register_dynamic_component::<Vec4>(t, &display_name, desc),
+                PrimitiveComponentType::String => {
+                    register_dynamic_component::<String>(t, &display_name, desc)
+                }
+                PrimitiveComponentType::U32 => {
+                    register_dynamic_component::<u32>(t, &display_name, desc)
+                }
+                PrimitiveComponentType::U64 => {
+                    register_dynamic_component::<u64>(t, &display_name, desc)
+                }
+                PrimitiveComponentType::Vec2 => {
+                    register_dynamic_component::<Vec2>(t, &display_name, desc)
+                }
+                PrimitiveComponentType::Vec3 => {
+                    register_dynamic_component::<Vec3>(t, &display_name, desc)
+                }
+                PrimitiveComponentType::Vec4 => {
+                    register_dynamic_component::<Vec4>(t, &display_name, desc)
+                }
                 _ => None,
             };
 
@@ -236,7 +309,10 @@ fn EntityComponentsEditor(_hooks: &mut Hooks, value: Entity, on_change: Cb<dyn F
             .map(|x| x.1)
             .chain([
                 if !missing_components.is_empty() {
-                    let items = missing_components.iter().map(|x| Text::el(x.0.to_string())).collect_vec();
+                    let items = missing_components
+                        .iter()
+                        .map(|x| Text::el(x.0.to_string()))
+                        .collect_vec();
                     DropdownSelect {
                         content: Text::el("Add component"),
                         on_select: cb(move |index| missing_components[index].1()),
@@ -250,9 +326,16 @@ fn EntityComponentsEditor(_hooks: &mut Hooks, value: Entity, on_change: Cb<dyn F
                 if let Some(anim_error) = value.get_ref(animation_errors()) {
                     let anim_error = anim_error.clone();
                     Button::new(
-                        FlowRow::el([Text::el(format!("Animation errors:\n{}", anim_error.split(": ").join(":\n"))).error_text_style()]),
+                        FlowRow::el([Text::el(format!(
+                            "Animation errors:\n{}",
+                            anim_error.split(": ").join(":\n")
+                        ))
+                        .error_text_style()]),
                         move |_| {
-                            arboard::Clipboard::new().unwrap().set_text(anim_error.clone()).ok();
+                            arboard::Clipboard::new()
+                                .unwrap()
+                                .set_text(anim_error.clone())
+                                .ok();
                         },
                     )
                     .style(ButtonStyle::Flat)
@@ -266,7 +349,7 @@ fn EntityComponentsEditor(_hooks: &mut Hooks, value: Entity, on_change: Cb<dyn F
     .with(space_between_items(), STREET)
 }
 
-#[profiling::function]
+#[ambient_profiling::function]
 #[element_component]
 fn ComponentEditor<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync + Send + 'static>(
     hooks: &mut Hooks,

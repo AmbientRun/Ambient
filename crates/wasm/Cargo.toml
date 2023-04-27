@@ -41,7 +41,7 @@ log = { workspace = true }
 once_cell = { workspace = true }
 parking_lot = { workspace = true }
 paste = { workspace = true }
-profiling = { workspace = true }
+ambient_profiling = { workspace = true }
 quinn = { workspace = true }
 reqwest = { workspace = true }
 serde_bytes = { workspace = true }

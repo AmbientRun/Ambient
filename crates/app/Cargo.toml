@@ -26,7 +26,7 @@ winit = { workspace = true }
 flume = { workspace = true }
 glam = { workspace = true }
 tokio = { workspace = true }
-profiling = { workspace = true }
+ambient_profiling = { workspace = true }
 anyhow = { workspace = true }
 wgpu = { workspace = true }
 puffin = { workspace = true, optional = true }
@@ -38,7 +38,7 @@ parking_lot = { workspace = true }
 ambient_primitives = { path = "../primitives" }
 
 [features]
-profile = ["puffin", "puffin_http", "profiling/profile-with-puffin"]
+profile = ["puffin", "puffin_http", "ambient_profiling/profile-with-puffin"]
 hotload-includes = [
     "ambient_std/hotload-includes",
     'ambient_gpu/hotload-includes',

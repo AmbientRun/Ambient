@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
-use ambient_app::{gpu_world_sync_systems, world_instance_resources, world_instance_systems, AppResources};
+use ambient_app::{
+    gpu_world_sync_systems, world_instance_resources, world_instance_systems, AppResources,
+};
 use ambient_core::{
     camera::{get_active_camera, projection_view},
     gpu_ecs::GpuWorldSyncEvent,
@@ -60,14 +62,37 @@ impl ClientGameState {
             .with(ambient_core::player::local_user_id(), player_id.clone())
             .with(game_screen_render_target(), render_target)
             .with_merge(client_resources);
-        game_world.add_components(game_world.resource_entity(), local_resources).unwrap();
+        game_world
+            .add_components(game_world.resource_entity(), local_resources)
+            .unwrap();
 
-        let systems = SystemGroup::new("game", vec![Box::new(client_systems), Box::new(world_instance_systems(true))]);
-        let mut renderer =
-            Renderer::new(world, assets.clone(), RendererConfig { scene: main_scene(), shadows: true, ..Default::default() });
+        let systems = SystemGroup::new(
+            "game",
+            vec![
+                Box::new(client_systems),
+                Box::new(world_instance_systems(true)),
+            ],
+        );
+        let mut renderer = Renderer::new(
+            world,
+            assets.clone(),
+            RendererConfig {
+                scene: main_scene(),
+                shadows: true,
+                ..Default::default()
+            },
+        );
         renderer.post_transparent = Some(Box::new(GizmoRenderer::new(&assets)));
 
-        let ui_renderer = Renderer::new(world, assets.clone(), RendererConfig { scene: ui_scene(), shadows: false, ..Default::default() });
+        let ui_renderer = Renderer::new(
+            world,
+            assets.clone(),
+            RendererConfig {
+                scene: ui_scene(),
+                shadows: false,
+                ..Default::default()
+            },
+        );
 
         Self {
             world: game_world,
@@ -80,15 +105,21 @@ impl ClientGameState {
             user_id: player_id,
         }
     }
-    #[profiling::function]
+    #[ambient_profiling::function]
     pub fn on_frame(&mut self, target: &RenderTarget) {
         self.world.next_frame();
         self.systems.run(&mut self.world, &FrameEvent);
-        self.temporary_systems.retain_mut(|system| !(system.0)(&mut self.world));
+        self.temporary_systems
+            .retain_mut(|system| !(system.0)(&mut self.world));
 
-        self.gpu_world_sync_systems.run(&mut self.world, &GpuWorldSyncEvent);
+        self.gpu_world_sync_systems
+            .run(&mut self.world, &GpuWorldSyncEvent);
         let gpu = GpuKey.get(&self.assets);
-        let mut encoder = gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("GameState.render") });
+        let mut encoder = gpu
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: Some("GameState.render"),
+            });
         let mut post_submit = Vec::new();
         self.renderer.render(
             &mut self.world,
@@ -97,14 +128,23 @@ impl ClientGameState {
             RendererTarget::Target(target),
             Some(Color::rgba(0., 0., 0., 1.)),
         );
-        self.ui_renderer.render(&mut self.world, &mut encoder, &mut post_submit, RendererTarget::Target(target), None);
+        self.ui_renderer.render(
+            &mut self.world,
+            &mut encoder,
+            &mut post_submit,
+            RendererTarget::Target(target),
+            None,
+        );
         gpu.queue.submit(Some(encoder.finish()));
         for action in post_submit {
             action();
         }
     }
     /// Adds a temporary system; when it returns true it's removed
-    pub fn add_temporary_system(&mut self, system: impl FnMut(&mut World) -> bool + Sync + Send + 'static) {
+    pub fn add_temporary_system(
+        &mut self,
+        system: impl FnMut(&mut World) -> bool + Sync + Send + 'static,
+    ) {
         self.temporary_systems.push(TempSystem(Box::new(system)));
     }
 
@@ -140,14 +180,23 @@ impl ClientGameState {
     }
     pub fn clip_to_screen_space(&self, p: Vec3) -> Vec2 {
         let screen_size = *self.world.resource(window_physical_size());
-        interpolate(p.xy(), vec2(-1., 1.), vec2(1., -1.), Vec2::ZERO, screen_size.as_vec2())
+        interpolate(
+            p.xy(),
+            vec2(-1., 1.),
+            vec2(1., -1.),
+            Vec2::ZERO,
+            screen_size.as_vec2(),
+        )
     }
     pub fn world_to_screen_space(&self, p: Vec3) -> Vec2 {
         self.clip_to_screen_space(self.world_to_clip_space(p))
     }
 
     pub fn is_master_client(&self) -> bool {
-        let first = query((user_id(), player())).iter(&self.world, None).map(|(_, (id, _))| id.clone()).min();
+        let first = query((user_id(), player()))
+            .iter(&self.world, None)
+            .map(|(_, (id, _))| id.clone())
+            .min();
         Some(&self.user_id) == first.as_ref()
     }
 }

@@ -5,7 +5,10 @@ use ambient_sys::{task::RuntimeHandle, time::Instant, time::SystemTime};
 use chrono::{DateTime, Utc};
 use std::{sync::Arc, time::Duration};
 
-use ambient_ecs::{components, query, Debuggable, Description, DynSystem, FrameEvent, Name, Networked, Resource, Store, System, World};
+use ambient_ecs::{
+    components, query, Debuggable, Description, DynSystem, FrameEvent, Name, Networked, Resource,
+    Store, System, World,
+};
 use ambient_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey};
@@ -22,7 +25,8 @@ pub mod transform;
 pub mod window;
 
 pub use ambient_ecs::generated::components::core::app::{
-    description, dtime, main_scene, map_seed, name, project_name, selectable, snap_to_ground, tags, ui_scene,
+    description, dtime, main_scene, map_seed, name, project_name, selectable, snap_to_ground, tags,
+    ui_scene,
 };
 
 components!("app", {
@@ -99,11 +103,15 @@ pub struct FixedTimestepSystem {
 }
 impl FixedTimestepSystem {
     pub fn new(timestep: f32, system: DynSystem) -> Self {
-        Self { system, timestep, acc: 0. }
+        Self {
+            system,
+            timestep,
+            acc: 0.,
+        }
     }
 }
 impl System for FixedTimestepSystem {
-    #[profiling::function]
+    #[ambient_profiling::function]
     fn run(&mut self, world: &mut World, event: &FrameEvent) {
         let dtime = *world.resource(self::dtime());
         self.acc += dtime;
@@ -120,21 +128,37 @@ pub struct TimeResourcesSystem {
 }
 impl TimeResourcesSystem {
     pub fn new() -> Self {
-        Self { frame_time: Instant::now() }
+        Self {
+            frame_time: Instant::now(),
+        }
     }
 }
 impl System for TimeResourcesSystem {
     fn run(&mut self, world: &mut World, _event: &FrameEvent) {
         let dtime = self.frame_time.elapsed().as_secs_f32();
         self.frame_time = Instant::now();
-        let time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
-        world.set(world.resource_entity(), self::time(), time).unwrap();
-        world.set(world.resource_entity(), self::dtime(), dtime).unwrap();
-        world.set(world.resource_entity(), frame_index(), world.resource(frame_index()) + 1).unwrap();
+        let time = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap();
+        world
+            .set(world.resource_entity(), self::time(), time)
+            .unwrap();
+        world
+            .set(world.resource_entity(), self::dtime(), dtime)
+            .unwrap();
+        world
+            .set(
+                world.resource_entity(),
+                frame_index(),
+                world.resource(frame_index()) + 1,
+            )
+            .unwrap();
     }
 }
 
-#[derive(Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Debug, Hash, Default)]
+#[derive(
+    Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Debug, Hash, Default,
+)]
 pub enum GameMode {
     #[default]
     Edit,

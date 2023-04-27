@@ -35,7 +35,7 @@ itertools = { workspace = true }
 closure = { workspace = true }
 glam = { workspace = true }
 ordered-float = { workspace = true }
-profiling = { workspace = true }
+ambient_profiling = { workspace = true }
 atomic_refcell = "0.1.8"
 tracing = { workspace = true }
 derive_more = { workspace = true }

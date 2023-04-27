@@ -12,12 +12,15 @@ use ambient_core::{
     hierarchy::dump_world_hierarchy_to_tmp_file,
     name, remove_at_time_system, runtime, time,
     transform::TransformSystem,
-    window::{cursor_position, get_window_sizes, window_logical_size, window_physical_size, window_scale_factor, WindowCtl},
+    window::{
+        cursor_position, get_window_sizes, window_logical_size, window_physical_size,
+        window_scale_factor, WindowCtl,
+    },
     RuntimeKey, TimeResourcesSystem,
 };
 use ambient_ecs::{
-    components, world_events, Debuggable, DynSystem, Entity, FrameEvent, MakeDefault, MaybeResource, System, SystemGroup, World,
-    WorldEventsSystem,
+    components, world_events, Debuggable, DynSystem, Entity, FrameEvent, MakeDefault,
+    MaybeResource, System, SystemGroup, World, WorldEventsSystem,
 };
 use ambient_element::ambient_system;
 use ambient_gizmos::{gizmos, Gizmos};
@@ -93,11 +96,19 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
             Box::new(async_ecs_systems()),
             remove_at_time_system(),
             Box::new(WorldEventsSystem),
-            if full { Box::new(ambient_input::picking::frame_systems()) } else { Box::new(DummySystem) },
+            if full {
+                Box::new(ambient_input::picking::frame_systems())
+            } else {
+                Box::new(DummySystem)
+            },
             Box::new(lod_system()),
             Box::new(ambient_renderer::systems()),
             Box::new(ambient_system()),
-            if full { Box::new(ambient_ui_native::systems()) } else { Box::new(DummySystem) },
+            if full {
+                Box::new(ambient_ui_native::systems())
+            } else {
+                Box::new(DummySystem)
+            },
             Box::new(ambient_model::model_systems()),
             Box::new(ambient_animation::animation_systems()),
             Box::new(TransformSystem::new()),
@@ -133,7 +144,9 @@ impl AppResources {
 }
 
 pub fn world_instance_resources(resources: AppResources) -> Entity {
-    let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
+    let current_time = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap();
     Entity::new()
         .with(name(), "Resources".to_string())
         .with(self::gpu(), resources.gpu.clone())
@@ -152,9 +165,18 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         .with_merge(ambient_input::resources())
         .with_merge(ambient_input::picking::resources())
         .with_merge(ambient_core::async_ecs::async_ecs_resources())
-        .with(ambient_core::window::window_physical_size(), resources.window_physical_size)
-        .with(ambient_core::window::window_logical_size(), resources.window_logical_size)
-        .with(ambient_core::window::window_scale_factor(), resources.window_scale_factor)
+        .with(
+            ambient_core::window::window_physical_size(),
+            resources.window_physical_size,
+        )
+        .with(
+            ambient_core::window::window_logical_size(),
+            resources.window_logical_size,
+        )
+        .with(
+            ambient_core::window::window_scale_factor(),
+            resources.window_scale_factor,
+        )
         .with(ambient_core::window::window_ctl(), resources.ctl_tx)
 }
 
@@ -207,7 +229,10 @@ impl AppBuilder {
         Self::new().examples_systems(true)
     }
     pub fn simple_ui() -> Self {
-        Self::new().ui_renderer(true).main_renderer(false).examples_systems(true)
+        Self::new()
+            .ui_renderer(true)
+            .main_renderer(false)
+            .examples_systems(true)
     }
     pub fn simple_dual() -> Self {
         Self::new().ui_renderer(true).main_renderer(true)
@@ -283,7 +308,10 @@ impl AppBuilder {
         let puffin_server = {
             let puffin_addr = format!(
                 "0.0.0.0:{}",
-                std::env::var("PUFFIN_PORT").ok().and_then(|port| port.parse::<u16>().ok()).unwrap_or(puffin_http::DEFAULT_PORT)
+                std::env::var("PUFFIN_PORT")
+                    .ok()
+                    .and_then(|port| port.parse::<u16>().ok())
+                    .unwrap_or(puffin_http::DEFAULT_PORT)
             );
             match puffin_http::Server::new(&puffin_addr) {
                 Ok(server) => {
@@ -303,7 +331,9 @@ impl AppBuilder {
 
         let runtime = RuntimeHandle::current();
 
-        let assets = self.asset_cache.unwrap_or_else(|| AssetCache::new(runtime.clone()));
+        let assets = self
+            .asset_cache
+            .unwrap_or_else(|| AssetCache::new(runtime.clone()));
 
         let mut world = World::new("main_app");
         let gpu = Arc::new(Gpu::with_config(window.as_deref(), true).await);
@@ -316,19 +346,29 @@ impl AppBuilder {
         tracing::debug!("Inserting app resources");
         let (ctl_tx, ctl_rx) = flume::unbounded();
 
-        let (window_physical_size, window_logical_size, window_scale_factor) = if let Some(window) = window.as_ref() {
-            get_window_sizes(window)
-        } else {
-            let headless_size = self.headless.unwrap();
-            (headless_size, headless_size, 1.)
-        };
+        let (window_physical_size, window_logical_size, window_scale_factor) =
+            if let Some(window) = window.as_ref() {
+                get_window_sizes(window)
+            } else {
+                let headless_size = self.headless.unwrap();
+                (headless_size, headless_size, 1.)
+            };
 
-        let app_resources =
-            AppResources { gpu, runtime: runtime.clone(), assets, ctl_tx, window_physical_size, window_logical_size, window_scale_factor };
+        let app_resources = AppResources {
+            gpu,
+            runtime: runtime.clone(),
+            assets,
+            ctl_tx,
+            window_physical_size,
+            window_logical_size,
+            window_scale_factor,
+        };
 
         let resources = world_instance_resources(app_resources);
 
-        world.add_components(world.resource_entity(), resources).unwrap();
+        world
+            .add_components(world.resource_entity(), resources)
+            .unwrap();
         tracing::debug!("Setup renderers");
         if self.ui_renderer || self.main_renderer {
             // let _span = info_span!("setup_renderers").entered();
@@ -338,7 +378,8 @@ impl AppBuilder {
                 world.add_resource(ui_renderer(), renderer);
             } else {
                 tracing::debug!("Setting up ExamplesRenderer");
-                let renderer = ExamplesRender::new(&mut world, self.ui_renderer, self.main_renderer);
+                let renderer =
+                    ExamplesRender::new(&mut world, self.ui_renderer, self.main_renderer);
                 tracing::debug!("Created examples renderer");
                 let renderer = Arc::new(Mutex::new(renderer));
                 world.add_resource(examples_renderer(), renderer);
@@ -349,7 +390,11 @@ impl AppBuilder {
 
         let mut window_event_systems = SystemGroup::new(
             "window_event_systems",
-            vec![Box::new(assets_camera_systems()), Box::new(ambient_input::event_systems()), Box::new(renderers::systems())],
+            vec![
+                Box::new(assets_camera_systems()),
+                Box::new(ambient_input::event_systems()),
+                Box::new(renderers::systems()),
+            ],
         );
         if self.examples_systems {
             window_event_systems.add(Box::new(ExamplesSystem));
@@ -359,7 +404,13 @@ impl AppBuilder {
             window_focused: true,
             window,
             runtime,
-            systems: SystemGroup::new("app", vec![Box::new(MeshBufferUpdate), Box::new(world_instance_systems(true))]),
+            systems: SystemGroup::new(
+                "app",
+                vec![
+                    Box::new(MeshBufferUpdate),
+                    Box::new(world_instance_systems(true)),
+                ],
+            ),
             world,
             gpu_world_sync_systems: gpu_world_sync_systems(),
             window_event_systems,
@@ -377,7 +428,10 @@ impl AppBuilder {
     /// Runs the app by blocking the main thread
     #[cfg(not(target_os = "unknown"))]
     pub fn block_on(self, init: impl for<'x> AsyncInit<'x>) {
-        let rt = tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap();
+        let rt = tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap();
 
         rt.block_on(async move {
             let mut app = self.build().await.unwrap();
@@ -456,10 +510,21 @@ impl App {
             tracing::debug!("Event: {event:?}");
             // HACK(philpax): treat dpi changes as resize events. Ideally we'd handle this in handle_event proper,
             // but https://github.com/rust-windowing/winit/issues/1968 restricts us
-            if let Event::WindowEvent { window_id, event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } } = &event {
+            if let Event::WindowEvent {
+                window_id,
+                event:
+                    WindowEvent::ScaleFactorChanged {
+                        new_inner_size,
+                        scale_factor,
+                    },
+            } = &event
+            {
                 *self.world.resource_mut(window_scale_factor()) = *scale_factor;
                 self.handle_static_event(
-                    &Event::WindowEvent { window_id: *window_id, event: WindowEvent::Resized(**new_inner_size) },
+                    &Event::WindowEvent {
+                        window_id: *window_id,
+                        event: WindowEvent::Resized(**new_inner_size),
+                    },
                     control_flow,
                 );
             } else if let Some(event) = event.to_static() {
@@ -476,10 +541,21 @@ impl App {
             event_loop.run(move |event, _, control_flow| {
                 // HACK(philpax): treat dpi changes as resize events. Ideally we'd handle this in handle_event proper,
                 // but https://github.com/rust-windowing/winit/issues/1968 restricts us
-                if let Event::WindowEvent { window_id, event: WindowEvent::ScaleFactorChanged { new_inner_size, scale_factor } } = &event {
+                if let Event::WindowEvent {
+                    window_id,
+                    event:
+                        WindowEvent::ScaleFactorChanged {
+                            new_inner_size,
+                            scale_factor,
+                        },
+                } = &event
+                {
                     *self.world.resource_mut(window_scale_factor()) = *scale_factor;
                     self.handle_static_event(
-                        &Event::WindowEvent { window_id: *window_id, event: WindowEvent::Resized(**new_inner_size) },
+                        &Event::WindowEvent {
+                            window_id: *window_id,
+                            event: WindowEvent::Resized(**new_inner_size),
+                        },
                         control_flow,
                     );
                 } else if let Some(event) = event.to_static() {
@@ -498,7 +574,11 @@ impl App {
         }
     }
 
-    pub fn handle_static_event(&mut self, event: &Event<'static, ()>, control_flow: &mut ControlFlow) {
+    pub fn handle_static_event(
+        &mut self,
+        event: &Event<'static, ()>,
+        control_flow: &mut ControlFlow,
+    ) {
         *control_flow = ControlFlow::Poll;
 
         // From: https://github.com/gfx-rs/wgpu/issues/1783
@@ -542,23 +622,29 @@ impl App {
                         }
                         WindowCtl::SetFullscreen(fullscreen) => {
                             if let Some(window) = &self.window {
-                                window.set_fullscreen(if fullscreen { Some(Fullscreen::Borderless(None)) } else { None });
+                                window.set_fullscreen(if fullscreen {
+                                    Some(Fullscreen::Borderless(None))
+                                } else {
+                                    None
+                                });
                             }
                         }
                     }
                 }
 
-                profiling::scope!("frame");
+                ambient_profiling::scope!("frame");
                 world.next_frame();
 
                 {
-                    profiling::scope!("systems");
+                    ambient_profiling::scope!("systems");
                     systems.run(world, &FrameEvent);
                     gpu_world_sync_systems.run(world, &GpuWorldSyncEvent);
                 }
 
                 if let Some(fps) = self.fps.frame_next() {
-                    world.set(world.resource_entity(), self::fps_stats(), fps.clone()).unwrap();
+                    world
+                        .set(world.resource_entity(), self::fps_stats(), fps.clone())
+                        .unwrap();
                     if self.update_title_with_fps_stats {
                         if let Some(window) = &self.window {
                             window.set_title(&format!(
@@ -574,7 +660,7 @@ impl App {
                 if let Some(window) = &self.window {
                     window.request_redraw();
                 }
-                profiling::finish_frame!();
+                ambient_profiling::finish_frame!();
             }
 
             Event::WindowEvent { event, .. } => match event {
@@ -593,8 +679,16 @@ impl App {
                         let scale_factor = window.scale_factor();
                         let logical_size = (size.as_dvec2() / scale_factor).as_uvec2();
 
-                        world.set_if_changed(world.resource_entity(), window_physical_size(), size).unwrap();
-                        world.set_if_changed(world.resource_entity(), window_logical_size(), logical_size).unwrap();
+                        world
+                            .set_if_changed(world.resource_entity(), window_physical_size(), size)
+                            .unwrap();
+                        world
+                            .set_if_changed(
+                                world.resource_entity(),
+                                window_logical_size(),
+                                logical_size,
+                            )
+                            .unwrap();
                     }
                 }
                 WindowEvent::CloseRequested => {
@@ -618,8 +712,14 @@ impl App {
                 WindowEvent::CursorMoved { position, .. } => {
                     if self.window_focused {
                         let p = vec2(position.x as f32, position.y as f32)
-                            / self.window.as_ref().map(|x| x.scale_factor() as f32).unwrap_or(1.);
-                        world.set(world.resource_entity(), cursor_position(), p).unwrap();
+                            / self
+                                .window
+                                .as_ref()
+                                .map(|x| x.scale_factor() as f32)
+                                .unwrap_or(1.);
+                        world
+                            .set(world.resource_entity(), cursor_position(), p)
+                            .unwrap();
                     }
                 }
                 _ => {}
@@ -642,14 +742,22 @@ impl System<Event<'static, ()>> for ExamplesSystem {
             Event::WindowEvent {
                 event:
                     WindowEvent::KeyboardInput {
-                        input: KeyboardInput { virtual_keycode: Some(virtual_keycode), state: ElementState::Pressed, .. },
+                        input:
+                            KeyboardInput {
+                                virtual_keycode: Some(virtual_keycode),
+                                state: ElementState::Pressed,
+                                ..
+                            },
                         ..
                     },
                 ..
             } => match virtual_keycode {
                 VirtualKeyCode::F1 => dump_world_hierarchy_to_tmp_file(world),
                 VirtualKeyCode::F2 => world.dump_to_tmp_file(),
-                VirtualKeyCode::F3 => world.resource(examples_renderer()).lock().dump_to_tmp_file(),
+                VirtualKeyCode::F3 => world
+                    .resource(examples_renderer())
+                    .lock()
+                    .dump_to_tmp_file(),
                 _ => {}
             },
             _ => {}
@@ -661,7 +769,7 @@ impl System<Event<'static, ()>> for ExamplesSystem {
 pub struct MeshBufferUpdate;
 impl System for MeshBufferUpdate {
     fn run(&mut self, world: &mut World, _event: &FrameEvent) {
-        profiling::scope!("MeshBufferUpdate.run");
+        ambient_profiling::scope!("MeshBufferUpdate.run");
         let assets = world.resource(asset_cache()).clone();
         let mesh_buffer = MeshBufferKey.get(&assets);
         let mut mesh_buffer = mesh_buffer.lock();

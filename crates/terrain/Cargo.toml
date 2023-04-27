@@ -33,7 +33,7 @@ itertools = { workspace = true }
 bytemuck = { workspace = true }
 serde_json = { workspace = true }
 closure = { workspace = true }
-profiling = { workspace = true }
+ambient_profiling = { workspace = true }
 bitflags = { workspace = true }
 rand = { workspace = true }
 rand_pcg = { workspace = true }
