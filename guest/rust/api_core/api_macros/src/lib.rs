@@ -12,7 +12,7 @@ mod main_macro;
 pub fn api_project(_input: TokenStream) -> TokenStream {
     TokenStream::from(
         ambient_project_macro_common::implementation(
-            &PathBuf::from(ambient_project_macro_common::MANIFEST_PATH),
+            &PathBuf::from(ambient_schema::MANIFEST_PATH),
             ambient_project_macro_common::Context::Guest {
                 api_path: syn::Path::from(syn::Ident::new("crate", Span::call_site())),
                 fully_qualified_path: true,

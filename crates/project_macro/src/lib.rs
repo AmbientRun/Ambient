@@ -8,7 +8,7 @@ use std::path::PathBuf;
 pub fn host_project(_input: TokenStream) -> TokenStream {
     TokenStream::from(
         ambient_project_macro_common::implementation(
-            &PathBuf::from(ambient_project_macro_common::MANIFEST_PATH),
+            &PathBuf::from(ambient_schema::MANIFEST_PATH),
             ambient_project_macro_common::Context::Host,
             true,
             true,

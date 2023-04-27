@@ -16,7 +16,6 @@ mod message;
 mod tree;
 mod util;
 
-pub const MANIFEST_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../ambient.toml");
 pub enum Context {
     Host,
     Guest {

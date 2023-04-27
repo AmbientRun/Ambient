@@ -213,6 +213,7 @@ version = "0.2.0-rc2"
 dependencies = [
  "ambient_project",
  "ambient_project_macro_common",
+ "ambient_schema",
  "anyhow",
  "proc-macro2 1.0.56",
  "quote 1.0.26",
@@ -1030,6 +1031,7 @@ name = "ambient_project_macro"
 version = "0.2.0-rc2"
 dependencies = [
  "ambient_project_macro_common",
+ "ambient_schema",
  "proc-macro2 1.0.56",
  "syn 1.0.109",
 ]
@@ -1168,6 +1170,10 @@ dependencies = [
  "reqwest",
  "serde_json",
 ]
+
+[[package]]
+name = "ambient_schema"
+version = "0.2.0-rc2"
 
 [[package]]
 name = "ambient_shared_types"

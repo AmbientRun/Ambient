@@ -55,6 +55,7 @@ version = "0.2.0-rc2"
 dependencies = [
  "ambient_project",
  "ambient_project_macro_common",
+ "ambient_schema",
  "anyhow",
  "indoc",
  "proc-macro2",
@@ -165,6 +166,10 @@ dependencies = [
  "glam",
  "thiserror",
 ]
+
+[[package]]
+name = "ambient_schema"
+version = "0.2.0-rc2"
 
 [[package]]
 name = "ambient_shared_types"
