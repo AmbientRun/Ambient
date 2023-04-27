@@ -5361,8 +5361,8 @@ dependencies = [
 
 [[package]]
 name = "profiling"
-version = "1.0.7"
-source = "git+https://github.com/philpax/profiling.git#0167b1da12e301b2a19c90a02684527a0f54f935"
+version = "1.0.8"
+source = "git+https://github.com/AmbientRun/profiling.git#aac6831554027bc7c436844ed01d8560246719e5"
 dependencies = [
  "profiling-procmacros",
  "puffin",
@@ -5370,8 +5370,8 @@ dependencies = [
 
 [[package]]
 name = "profiling-procmacros"
-version = "1.0.7"
-source = "git+https://github.com/philpax/profiling.git#0167b1da12e301b2a19c90a02684527a0f54f935"
+version = "1.0.8"
+source = "git+https://github.com/AmbientRun/profiling.git#aac6831554027bc7c436844ed01d8560246719e5"
 dependencies = [
  "quote 1.0.26",
  "syn 1.0.109",

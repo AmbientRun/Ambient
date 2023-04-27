@@ -10,7 +10,7 @@ rust-version = "1.67"
 
 [workspace.dependencies]
 aho-corasick = "0.7.20"
-profiling = { version = "1.0.7", features = [
+profiling = { version = "1.0.8", features = [
     "profile-with-puffin",
 ] } # TEMP: https://github.com/aclysma/profiling/pull/45
 tracing = "0.1.35"
@@ -157,4 +157,4 @@ wit-bindgen-rust = { git = "https://github.com/bytecodealliance/wit-bindgen.git"
 wit-component = "0.7.3"
 
 [patch.crates-io]
-profiling = { git = "https://github.com/philpax/profiling.git" }
+profiling = { git = "https://github.com/AmbientRun/profiling.git" }
