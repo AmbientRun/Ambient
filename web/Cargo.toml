@@ -1,5 +1,5 @@
 [workspace]
-members = ["client"]
+members = ["client", "dioxus_example"]
 default-members = ["client"]
 resolver = "2"
 
