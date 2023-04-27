@@ -2042,8 +2042,11 @@ name = "campfire"
 version = "0.2.0-rc3"
 dependencies = [
  "anyhow",
+ "cargo-lock",
+ "cargo_toml",
  "clap 4.2.1",
  "log",
+ "petgraph",
  "rustdoc-json",
  "rustdoc-types",
  "serde_json",
@@ -2123,6 +2126,18 @@ dependencies = [
  "once_cell",
  "rustix 0.37.11",
  "winx",
+]
+
+[[package]]
+name = "cargo-lock"
+version = "9.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e11c675378efb449ed3ce8de78d75d0d80542fc98487c26aba28eb3b82feac72"
+dependencies = [
+ "semver 1.0.17",
+ "serde",
+ "toml 0.7.3",
+ "url",
 ]
 
 [[package]]
@@ -3144,6 +3159,12 @@ name = "fixed-vec-deque"
 version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1ed20dca398154f12a72106dfef4ec6478b322345c8988abb6a0ae0a48ebfa5"
+
+[[package]]
+name = "fixedbitset"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 
 [[package]]
 name = "flate2"
@@ -5243,6 +5264,16 @@ name = "percent-encoding"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
+
+[[package]]
+name = "petgraph"
+version = "0.6.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4dd7d28ee937e54fe3080c91faa1c3a46c06de6252988a7f4592ba2310ef22a4"
+dependencies = [
+ "fixedbitset",
+ "indexmap",
+]
 
 [[package]]
 name = "physx-sys"

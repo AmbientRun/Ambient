@@ -14,3 +14,6 @@ toml_edit = { workspace = true }
 rustdoc-json = "0.8.0"
 rustdoc-types = "0.20.0"
 simplelog = "0.12.1"
+cargo-lock = "9.0"
+cargo_toml = "0.15"
+petgraph = "0.6"
