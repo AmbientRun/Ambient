@@ -1,4 +1,6 @@
-use ambient_ecs::{query, Component, ComponentValue, EntityId, Networked, Serializable, Store, World};
+use ambient_ecs::{
+    query, Component, ComponentValue, EntityId, Networked, Serializable, Store, World,
+};
 use std::{
     io::ErrorKind,
     net::{IpAddr, Ipv4Addr, SocketAddr},
@@ -15,7 +17,7 @@ use quinn::{
 use rand::Rng;
 use rustls::{Certificate, PrivateKey, RootCertStore};
 use thiserror::Error;
-use tokio::io::AsyncWriteExt;
+use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
 use tokio_util::codec::{FramedRead, FramedWrite, LengthDelimitedCodec};
 
 pub use ambient_ecs::generated::components::core::network::{
@@ -210,18 +212,22 @@ impl NetworkError {
 
 /// Abstracts the serialization for a fixed size stream.
 #[derive(Debug)]
-pub struct IncomingStream {
-    pub stream: FramedRead<quinn::RecvStream, LengthDelimitedCodec>,
+/// Length delimited framed stream of [`Bytes`]
+pub struct IncomingStream<S> {
+    pub stream: FramedRead<S, LengthDelimitedCodec>,
 }
-impl IncomingStream {
+
+impl IncomingStream<quinn::RecvStream> {
     /// Accept a new uni-directional peer stream. Waits for the server to open a
     /// stream.
     pub async fn accept_incoming(conn: &quinn::Connection) -> Result<Self, NetworkError> {
         let stream = conn.accept_uni().await.map_err(NetworkError::from)?;
         Ok(Self::new(stream))
     }
+}
 
-    pub fn new(stream: quinn::RecvStream) -> Self {
+impl<S: AsyncRead> IncomingStream<S> {
+    pub fn new(stream: S) -> Self {
         let mut codec = LengthDelimitedCodec::new();
         codec.set_max_frame_length(1_024 * 1_024 * 1_024);
         Self {
@@ -246,10 +252,12 @@ impl IncomingStream {
 }
 
 #[derive(Debug)]
-pub struct OutgoingStream {
-    pub stream: FramedWrite<quinn::SendStream, LengthDelimitedCodec>,
+/// Length delimited framed stream of [`Bytes`]
+pub struct OutgoingStream<S> {
+    pub stream: FramedWrite<S, LengthDelimitedCodec>,
 }
-impl OutgoingStream {
+
+impl OutgoingStream<quinn::SendStream> {
     /// Are you sure you don't want [open_uni_with_id] instead?
     pub async fn open_uni<C: Connection>(conn: &C) -> Result<Self, NetworkError> {
         Ok(OutgoingStream::new(conn.open_uni().await?))
@@ -259,8 +267,10 @@ impl OutgoingStream {
         stream.stream.get_mut().write_u32(id).await?;
         Ok(stream)
     }
+}
 
-    pub fn new(stream: quinn::SendStream) -> Self {
+impl<S: AsyncWrite> OutgoingStream<S> {
+    pub fn new(stream: S) -> Self {
         let mut codec = LengthDelimitedCodec::new();
         codec.set_max_frame_length(1_024 * 1_024 * 1_024);
         Self {
@@ -284,7 +294,13 @@ impl OutgoingStream {
 /// Are you sure you don't want [open_bincode_bi_stream_with_id] instead?
 pub async fn open_bincode_bi_stream<C: Connection>(
     conn: &C,
-) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
+) -> Result<
+    (
+        OutgoingStream<quinn::SendStream>,
+        IncomingStream<quinn::RecvStream>,
+    ),
+    NetworkError,
+> {
     let (send, recv) = conn.open_bi().await?;
     Ok((OutgoingStream::new(send), IncomingStream::new(recv)))
 }
@@ -292,7 +308,13 @@ pub async fn open_bincode_bi_stream<C: Connection>(
 pub async fn open_bincode_bi_stream_with_id<C: Connection>(
     conn: &C,
     id: u32,
-) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
+) -> Result<
+    (
+        OutgoingStream<quinn::SendStream>,
+        IncomingStream<quinn::RecvStream>,
+    ),
+    NetworkError,
+> {
     let (mut send, recv) = conn.open_bi().await?;
     send.write_u32(id).await?;
     Ok((OutgoingStream::new(send), IncomingStream::new(recv)))
@@ -300,7 +322,13 @@ pub async fn open_bincode_bi_stream_with_id<C: Connection>(
 
 pub async fn next_bincode_bi_stream<C: Connection>(
     conn: &C,
-) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
+) -> Result<
+    (
+        OutgoingStream<quinn::SendStream>,
+        IncomingStream<quinn::RecvStream>,
+    ),
+    NetworkError,
+> {
     let (send, recv) = conn.accept_bi().await?;
     let send = OutgoingStream::new(send);
     let recv = IncomingStream::new(recv);

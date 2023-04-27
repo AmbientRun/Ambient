@@ -2,10 +2,12 @@ use ambient_ecs::{ComponentRegistry, ExternalComponentDesc, WorldDiff};
 use ambient_std::asset_url::AbsAssetUrl;
 use anyhow::{Context, Result};
 use futures::io::BufReader;
-use quinn::{Connection, RecvStream};
+use quinn::{Connection, RecvStream, SendStream};
+use tokio_util::codec::{FramedRead, FramedWrite};
 
 use crate::{
-    client_connection::ConnectionInner, next_bincode_bi_stream, open_bincode_bi_stream, IncomingStream, NetworkError, OutgoingStream,
+    client_connection::ConnectionInner, codec::FramedCodec, next_bincode_bi_stream, open_bincode_bi_stream, proto::ServerRequest,
+    IncomingStream, NetworkError, OutgoingStream,
 };
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -13,9 +15,9 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 #[derive(Debug)]
 pub struct ClientProtocol {
     pub(crate) conn: Connection,
-    pub(crate) stat_stream: IncomingStream,
+    pub(crate) stat_stream: IncomingStream<quinn::RecvStream>,
     client_info: ClientInfo,
-    pub(crate) diff_stream: IncomingStream,
+    pub(crate) diff_stream: IncomingStream<quinn::RecvStream>,
     /// Miscellaneous info from the server
     pub(crate) server_info: ServerInfo,
 }
@@ -70,21 +72,27 @@ impl ClientProtocol {
     }
 }
 
+type FramedRecvStream<T> = FramedRead<RecvStream, FramedCodec<T>>;
+type FramedSendStream<T> = FramedWrite<SendStream, FramedCodec<T>>;
+
 /// The server side connection to a client or a proxied client
 pub struct ServerConnection {
     pub(crate) conn: ConnectionInner,
-    control_stream: OutgoingStream,
+    pub(crate) control_send: FramedSendStream<ServerRequest>,
+    pub(crate) control_recv: FramedRecvStream<ServerRequest>,
 
-    pub(crate) diff_stream: OutgoingStream,
-    pub(crate) stat_stream: OutgoingStream,
+    pub(crate) diff_stream: OutgoingStream<quinn::RecvStream>,
+    pub(crate) stat_stream: OutgoingStream<quinn::SendStream>,
     client_info: ClientInfo,
 }
 
 impl ServerConnection {
     /// Establishes a connection to the client
     pub async fn new(conn: ConnectionInner, server_info: ServerInfo) -> Result<Self, NetworkError> {
-        // The client now sends the player id
-        // let (mut tx, mut rx) = next_bincode_bi_stream(&conn).await?;
+        // The client now opens a control stream
+        let (mut send, mut recv) = conn.accept_bi().await?;
+        let control_recv = FramedRead::new(recv, FramedCodec::new());
+        let control_send = FramedWrite::new(send, FramedCodec::new());
 
         // let user_id: String = rx.next().await?;
 
@@ -100,15 +108,15 @@ impl ServerConnection {
         // // Send the project name to the client so it can title its window correctly
         // tx.send(&server_info).await?;
 
-        // // Great, now open all required streams
-        // let mut diff_stream = OutgoingStream::open_uni(&conn).await?;
+        // Great, now open all required streams
+        let mut diff_stream = OutgoingStream::new(conn.open_uni().await?);
         // // Send "something" to notify the client of the new stream
         // diff_stream.send(&()).await?;
-        // let mut stat_stream = OutgoingStream::open_uni(&conn).await?;
+        let mut stat_stream = OutgoingStream::new(conn.open_uni().await?);
         // stat_stream.send(&()).await?;
 
         // Ok(Self { conn, diff_stream, stat_stream, client_info })
-        todo!()
+        Ok(Self { conn, control_send, control_recv, diff_stream: todo!(), stat_stream: todo!(), client_info: todo!() })
     }
 
     pub fn client_info(&self) -> &ClientInfo {

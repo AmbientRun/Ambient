@@ -9,20 +9,75 @@ use parking_lot::Mutex;
 use tokio::io::{AsyncRead, AsyncReadExt};
 use tracing::info_span;
 
-use crate::server::{datagram_handlers, uni_stream_handlers, ServerState};
+use crate::{
+    protocol::ClientInfo,
+    server::{datagram_handlers, uni_stream_handlers, ServerState, SharedServerState},
+};
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub enum ServerRequest {
+    /// Connect to the server with the specified user id
+    RequestConnect(String),
+    /// Peer wants to disconnect
+    Disconnect,
+}
+
+pub enum ServerResponse {
+    Ok,
+    AlreadyConnected,
+    Denied,
+}
 
 /// Handles the server side protocol logic.
-pub struct Server {
+pub enum Server {
+    PendingConnection(PendingConnection),
+    Connected(ConnectedClient),
+    Disconnected,
+}
+
+pub struct PendingConnection {
+    state: SharedServerState,
+}
+
+pub struct ConnectedClient {
+    state: SharedServerState,
     user_id: String,
-    state: Arc<Mutex<ServerState>>,
-    assets: AssetCache,
+}
+
+pub struct Server {
+    // conn_state: ConnectionState,
+    // assets: AssetCache,
 }
 
 impl Server {
-    pub fn new(user_id: String, state: Arc<Mutex<ServerState>>, assets: AssetCache) -> Self {
-        Self { user_id, state, assets }
+    pub fn new(state: Arc<Mutex<ServerState>>, assets: AssetCache) -> Self {
+        Self { conn_state: ConnectionState::PendingConnection(PendingConnection { state }), assets }
     }
 
+    /// Processes a client request
+    pub async fn process_request(&mut self, frame: ServerRequest) -> ServerResponse {
+        match frame {
+            ServerRequest::RequestConnect(user_id) => {
+                // Connect the user
+                if self.user_id.is_some() {
+                    tracing::error!(?user_id, existing = ?self.user_id, "User already connected");
+                    ServerResponse::AlreadyConnected
+                } else {
+                    tracing::info!("User connected");
+                    self.user_id = Some(user_id);
+                    ServerResponse::Ok
+                }
+            }
+            ServerRequest::Disconnect => {
+                tracing::info!("Client wants to disconnect");
+                self.user_id = None;
+                ServerResponse::Ok
+            }
+        }
+    }
+}
+
+impl ConnectedClient {
     /// Processes an incoming datagram
     #[tracing::instrument(level = "info", skip(self))]
     pub async fn process_datagram(&mut self, mut datagram: Bytes) -> anyhow::Result<()> {

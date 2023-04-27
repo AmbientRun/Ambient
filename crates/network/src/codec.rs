@@ -14,7 +14,7 @@ pub struct FramedCodec<T> {
 }
 
 impl<T> FramedCodec<T> {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self { len: None, _marker: PhantomData }
     }
 }
