@@ -11,6 +11,10 @@ log = { workspace = true }
 serde_json = { workspace = true }
 toml_edit = { workspace = true }
 
+toml = "0.5.8"
+regex = "1.5.4"
+markdown-extract = "2.0.0"
 rustdoc-json = "0.8.0"
 rustdoc-types = "0.20.0"
 simplelog = "0.12.1"
+cargo-msrv="0.16.0-beta.11"
