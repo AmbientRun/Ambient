@@ -14,12 +14,16 @@ pub enum Release {
         #[clap()]
         new_version: String,
     },
+
+    /// Validates release artifacts
+    Check {},
 }
 
 pub(crate) fn main(args: &Release) -> anyhow::Result<()> {
     match args {
         Release::UpdateVersion { new_version } => update_version(new_version),
         Release::UpdateMsrv { new_version } => update_msrv(new_version),
+        Release::Check {} => check_release(),
     }
 }
 
@@ -29,6 +33,19 @@ const ROOT_CARGO: &str = "Cargo.toml";
 const WEB_CARGO: &str = "web/Cargo.toml";
 const GUEST_RUST_CARGO: &str = "guest/rust/Cargo.toml";
 const INSTALLING_DOCS: &str = "docs/src/user/installing.md";
+
+fn check_release() -> anyhow::Result<()>{
+    // https://github.com/AmbientRun/Ambient/issues/314
+    // the Dockerfile can run an Ambient server
+    // the MSRV is correct for both the host and the API
+    // both the runtime and the guest can build with no errors
+    // the CHANGELOG's unreleased section is empty
+    // README.md and docs/src/introduction.md match their introductory text
+
+    run_docker_build()?
+    check_docker_server()?
+    Ok(())
+}
 
 fn update_version(new_version: &str) -> anyhow::Result<()> {
     if !new_version.starts_with(char::is_numeric) {
@@ -142,6 +159,24 @@ fn update_msrv(new_version: &str) -> anyhow::Result<()> {
         document.replace_range(begin_index..end_index, new_version);
         document
     })?;
+
+    Ok(())
+}
+
+fn run_docker_build() -> anyhow::Result<()> {
+    std::process::Command::new("docker")
+        .args(["build", "-t", "ambient_check"])
+        .spawn()?
+        .wait()?;
+
+    Ok(())
+}
+
+fn check_docker_server() -> anyhow::Result<()> {
+    std::process::Command::new("docker")
+        .args(["run", "--rm", "-it", "-e", "bash", "-v", "./:/app ambient"])
+        .spawn()?
+        .wait()?;
 
     Ok(())
 }
