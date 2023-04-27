@@ -1,10 +1,8 @@
 #![allow(non_snake_case)]
 use dioxus::prelude::*;
-use wasm_bindgen::JsCast;
-
-use web_sys::{console, window};
 
 fn main() {
+    ambient_web::init_ambient(true, true);
     dioxus_web::launch(App);
 }
 

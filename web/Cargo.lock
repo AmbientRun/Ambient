@@ -88,6 +88,7 @@ dependencies = [
  "ambient_gpu",
  "ambient_input",
  "ambient_model",
+ "ambient_profiling",
  "ambient_renderer",
  "ambient_std",
  "ambient_sys",
@@ -96,7 +97,6 @@ dependencies = [
  "flume",
  "glam",
  "parking_lot",
- "profiling",
  "thread-priority",
  "tokio",
  "tracing",
@@ -157,6 +157,7 @@ version = "0.2.0-rc3"
 dependencies = [
  "ambient_ecs",
  "ambient_gpu",
+ "ambient_profiling",
  "ambient_std",
  "ambient_sys",
  "bytemuck",
@@ -169,7 +170,6 @@ dependencies = [
  "ordered-float 3.6.0",
  "parking_lot",
  "paste",
- "profiling",
  "serde",
  "tokio",
  "tracing",
@@ -182,6 +182,7 @@ dependencies = [
 name = "ambient_ecs"
 version = "0.2.0-rc3"
 dependencies = [
+ "ambient_profiling",
  "ambient_project_macro",
  "ambient_project_rt",
  "ambient_shared_types",
@@ -202,7 +203,6 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "paste",
- "profiling",
  "rand",
  "reqwest",
  "serde",
@@ -237,6 +237,7 @@ dependencies = [
  "ambient_element_component",
  "ambient_friendly_id",
  "ambient_guest_bridge",
+ "ambient_profiling",
  "ambient_sys",
  "as-any",
  "atomic_refcell",
@@ -245,7 +246,6 @@ dependencies = [
  "futures",
  "itertools",
  "parking_lot",
- "profiling",
  "tokio",
  "tracing",
 ]
@@ -276,6 +276,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_gpu",
  "ambient_meshes",
+ "ambient_profiling",
  "ambient_renderer",
  "ambient_std",
  "bytemuck",
@@ -283,7 +284,6 @@ dependencies = [
  "glam",
  "log",
  "once_cell",
- "profiling",
  "serde",
  "wgpu",
 ]
@@ -352,10 +352,10 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_input",
+ "ambient_profiling",
  "glam",
  "itertools",
  "log",
- "profiling",
  "serde",
 ]
 
@@ -402,6 +402,26 @@ dependencies = [
  "tracing",
  "url",
  "wgpu",
+]
+
+[[package]]
+name = "ambient_profiling"
+version = "1.0.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd78220128ea4004eb8072b6df5949dfa367ff16ef1a23e23b2d95f95e5db489"
+dependencies = [
+ "ambient_profiling_procmacros",
+ "puffin",
+]
+
+[[package]]
+name = "ambient_profiling_procmacros"
+version = "1.0.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7086fcbaeb14e6b1b49d58158591c1f39b24bcc5ea634748bebae76a71ead310"
+dependencies = [
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -475,6 +495,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_gpu",
  "ambient_meshes",
+ "ambient_profiling",
  "ambient_std",
  "ambient_sys",
  "anyhow",
@@ -487,7 +508,6 @@ dependencies = [
  "log",
  "ordered-float 3.6.0",
  "parking_lot",
- "profiling",
  "serde",
  "smallvec",
  "tracing",
@@ -517,6 +537,7 @@ dependencies = [
  "ambient_color",
  "ambient_friendly_id",
  "ambient_math",
+ "ambient_profiling",
  "ambient_sys",
  "anyhow",
  "as-any",
@@ -535,7 +556,6 @@ dependencies = [
  "parking_lot",
  "percent-encoding",
  "pin-project",
- "profiling",
  "rand",
  "relative-path",
  "reqwest",
@@ -3286,31 +3306,18 @@ dependencies = [
 
 [[package]]
 name = "profiling"
-version = "1.0.8"
+version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "332cd62e95873ea4f41f3dfd6bbbfc5b52aec892d7e8d534197c4720a0bbbab2"
-dependencies = [
- "profiling-procmacros",
- "puffin",
-]
-
-[[package]]
-name = "profiling-procmacros"
-version = "1.0.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a10adb8d151bb1280afb8bed41ae5db26be1b056964947133c7525b0bf39c0b0"
-dependencies = [
- "quote",
- "syn 1.0.109",
-]
+checksum = "74605f360ce573babfe43964cbe520294dcb081afbf8c108fc6e23036b4da2df"
 
 [[package]]
 name = "puffin"
-version = "0.12.1"
+version = "0.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "023514fb1e29a290a5c8237ceba94a30e4637be78df9f168ae991c1b957457e2"
+checksum = "a7b2c7a01f569fb03e2ff1f5376537f294001447bd23ce75ca51054fcd223fe4"
 dependencies = [
  "byteorder",
+ "instant",
  "once_cell",
 ]
 
