@@ -16,7 +16,7 @@ ambient_project_macro = { path = "../project_macro" }
 itertools = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
-profiling = { workspace = true }
+ambient_profiling = { workspace = true }
 yaml-rust = { workspace = true }
 log = { workspace = true }
 derive_more = { workspace = true }
