@@ -24,13 +24,17 @@ pub(crate) fn main(args: &Release) -> anyhow::Result<()> {
 }
 
 const DOCKERFILE: &str = "Dockerfile";
-const AMBIENT_MANIFEST: &str = "ambient.toml";
+const AMBIENT_MANIFEST: &str = "shared_crates/schema/src/ambient.toml";
 const ROOT_CARGO: &str = "Cargo.toml";
 const WEB_CARGO: &str = "web/Cargo.toml";
 const GUEST_RUST_CARGO: &str = "guest/rust/Cargo.toml";
 const INSTALLING_DOCS: &str = "docs/src/user/installing.md";
 
 fn update_version(new_version: &str) -> anyhow::Result<()> {
+    if !new_version.starts_with(char::is_numeric) {
+        anyhow::bail!("version must start with an integer");
+    }
+
     edit_toml(AMBIENT_MANIFEST, |toml| {
         toml["project"]["version"] = toml_edit::value(new_version);
     })?;

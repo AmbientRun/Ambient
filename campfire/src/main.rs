@@ -25,7 +25,7 @@ pub enum Cli {
 }
 
 fn main() -> anyhow::Result<()> {
-    if !std::path::Path::new("ambient.toml").exists() {
+    if !std::path::Path::new("shared_crates/schema/src/ambient.toml").exists() {
         anyhow::bail!("ambient.toml not found. Please run this from the root of the Ambient repository (preferably using `cargo campfire`).");
     }
 
