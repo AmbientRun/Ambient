@@ -82,7 +82,7 @@ impl ExamplesRender {
 
         tracing::debug!("Creating self");
 
-        let is_srgb = gpu.swapchain_format().describe().srgb;
+        let is_srgb = gpu.swapchain_format().is_srgb();
         let gamma_correction = if !is_srgb {
             tracing::info!("Output format is not in srgb colorspace. Applying manual gamma correction");
             Some(2.2)

@@ -1,4 +1,4 @@
-use std::{num::NonZeroU32, sync::Arc};
+use std::{sync::Arc};
 
 use ambient_core::{camera::Camera, main_scene, player::local_user_id, transform::*};
 use ambient_ecs::{ArchetypeFilter, World};
@@ -87,7 +87,7 @@ impl ShadowsRenderer {
                         base_mip_level: 0,
                         mip_level_count: None,
                         base_array_layer: i,
-                        array_layer_count: NonZeroU32::new(1),
+                        array_layer_count: Some(1),
                     }),
                     globals: ShadowAndUIGlobals::new(assets.clone(), renderer_resources.globals_layout.clone()),
                     camera: Camera::default(),

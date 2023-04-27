@@ -1,5 +1,5 @@
 use core::fmt;
-use std::{num::NonZeroU32, ops::Deref, str::FromStr, sync::Arc};
+use std::{ops::Deref, str::FromStr, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, gpu, mesh, runtime, transform::*, window::window_scale_factor};
 use ambient_ecs::{components, ensure_has_component, query, Debuggable, Entity, SystemGroup};
@@ -306,8 +306,8 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                                         tex_data,
                                         wgpu::ImageDataLayout {
                                             offset: 0,
-                                            bytes_per_row: NonZeroU32::new(rect.width()),
-                                            rows_per_image: NonZeroU32::new(rect.height()),
+                                            bytes_per_row: Some(rect.width()),
+                                            rows_per_image: Some(rect.height()),
                                         },
                                         wgpu::Extent3d { width: rect.width(), height: rect.height(), depth_or_array_layers: 1 },
                                     );
