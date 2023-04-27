@@ -15,6 +15,7 @@ ambient_cameras = { path = "../crates/cameras" }
 ambient_core = { path = "../crates/core" }
 ambient_debugger = { path = "../crates/debugger" }
 ambient_decals = { path = "../crates/decals" }
+ambient_deploy = { path = "../crates/deploy" }
 ambient_ecs = { path = "../crates/ecs" }
 ambient_gizmos = { path = "../crates/gizmos" }
 ambient_gpu = { path = "../crates/gpu" }

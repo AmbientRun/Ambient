@@ -164,6 +164,22 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
+    // If this is just a deploy then deploy and exit
+    if let Cli::Deploy { token, api_server, .. } = &cli {
+        let Some(auth_token) = token else {
+            anyhow::bail!("-t/--token is required for deploy");
+        };
+        let manifest = manifest.as_ref().expect("no manifest");
+        let response = runtime.block_on(ambient_deploy::deploy(
+            api_server.clone().unwrap_or("https://api.ambient.run".to_string()),
+            auth_token,
+            project_path,
+            manifest,
+        ))?;
+        log::info!("Version {} deployed successfully", response.id);
+        return Ok(());
+    }
+
     // Otherwise, either connect to a server or host one
     let server_addr = if let Cli::Join { host, .. } = &cli {
         if let Some(mut host) = host.clone() {

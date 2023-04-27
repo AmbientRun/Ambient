@@ -1,0 +1,18 @@
+[package]
+name = "ambient_deploy"
+version = { workspace = true }
+rust-version = { workspace = true }
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ambient_cloud_proto = { path = "../../../Cloud/proto" }     # FIXME
+ambient_project = { path = "../../shared_crates/project" }
+ambient_sys = { path = "../sys" }
+
+anyhow = { workspace = true }
+log = { workspace = true }
+tokio-stream = { workspace = true }
+tonic = { workspace = true }
+walkdir = { workspace = true }
