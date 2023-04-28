@@ -2044,7 +2044,6 @@ dependencies = [
  "anyhow",
  "clap 4.2.1",
  "log",
- "markdown-extract",
  "regex",
  "rustdoc-json",
  "rustdoc-types",
@@ -2295,7 +2294,7 @@ version = "4.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f9644cd56d6b87dbe899ef8b053e331c0637664e9e21a33dfcdc36093f5c5c4"
 dependencies = [
- "heck 0.4.1",
+ "heck",
  "proc-macro2 1.0.56",
  "quote 1.0.26",
  "syn 2.0.14",
@@ -3887,15 +3886,6 @@ dependencies = [
 
 [[package]]
 name = "heck"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d621efb26863f0e9924c6ac577e8275e5e6b77455db64ffa6c65c904e9e132c"
-dependencies = [
- "unicode-segmentation",
-]
-
-[[package]]
-name = "heck"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
@@ -4533,16 +4523,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "943968aefb9b0fdf36cccc03f6cd9d6698b23574ab49eccc185ae6c5cb6ad43e"
 dependencies = [
  "futures",
-]
-
-[[package]]
-name = "markdown-extract"
-version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "100bbce669c24b715ba02de1ac38bd05651851001827c4af317659043349002e"
-dependencies = [
- "regex",
- "structopt",
 ]
 
 [[package]]
@@ -5382,30 +5362,6 @@ checksum = "7f4c021e1093a56626774e81216a4ce732a735e5bad4868a03f3ed65ca0c3919"
 dependencies = [
  "once_cell",
  "toml_edit",
-]
-
-[[package]]
-name = "proc-macro-error"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da25490ff9892aab3fcf7c36f08cfb902dd3e71ca0f9f9517bea02a73a5ce38c"
-dependencies = [
- "proc-macro-error-attr",
- "proc-macro2 1.0.56",
- "quote 1.0.26",
- "syn 1.0.109",
- "version_check",
-]
-
-[[package]]
-name = "proc-macro-error-attr"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1be40180e52ecc98ad80b184934baf3d0d29f979574e439af5a55274b35f869"
-dependencies = [
- "proc-macro2 1.0.56",
- "quote 1.0.26",
- "version_check",
 ]
 
 [[package]]
@@ -6674,30 +6630,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
-name = "structopt"
-version = "0.3.26"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c6b5c64445ba8094a6ab0c3cd2ad323e07171012d9c98b0b15651daf1787a10"
-dependencies = [
- "clap 2.34.0",
- "lazy_static",
- "structopt-derive",
-]
-
-[[package]]
-name = "structopt-derive"
-version = "0.4.18"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dcb5ae327f9cc13b68763b5749770cb9e048a99bd9dfdfa58d0cf05d5f64afe0"
-dependencies = [
- "heck 0.3.3",
- "proc-macro-error",
- "proc-macro2 1.0.56",
- "quote 1.0.26",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "strum"
 version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6712,7 +6644,7 @@ version = "0.24.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e385be0d24f186b4ce2f9982191e7101bb737312ad61c1f2f984f34bcf85d59"
 dependencies = [
- "heck 0.4.1",
+ "heck",
  "proc-macro2 1.0.56",
  "quote 1.0.26",
  "rustversion",
@@ -7927,7 +7859,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd2cf93f3c8a6f443d8a9098fddc5fd887783c0fe725dc10c54ca9280546421d"
 dependencies = [
  "anyhow",
- "heck 0.4.1",
+ "heck",
  "wit-parser 0.6.4",
 ]
 
@@ -8654,7 +8586,7 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "14fcc3d5bf43d128133472f7bb52c4ffb31a737630884de9c3fbc08d3e653fa4"
 dependencies = [
- "heck 0.4.1",
+ "heck",
  "wasm-metadata",
  "wit-bindgen-core",
  "wit-bindgen-rust-lib",
@@ -8667,7 +8599,7 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fa319183c54985769494d8605af4da74b6c66e700cafa30ba18ad469246907d"
 dependencies = [
- "heck 0.4.1",
+ "heck",
  "wit-bindgen-core",
 ]
 
