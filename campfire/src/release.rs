@@ -10,24 +10,45 @@ use std::str;
 pub enum Release {
     /// Changes the Ambient version across all crates and documentation to match the given version
     UpdateVersion {
-        #[clap()]
+        #[arg()]
         new_version: String,
     },
     /// Changes the minimum supported Rust version across all crates and documentation to match the given version
     UpdateMsrv {
-        #[clap()]
+        #[arg()]
         new_version: String,
     },
 
     /// Validates release artifacts
-    Check {},
+    Check {
+        #[arg(long)]
+        no_docker: bool,
+
+        #[arg(long)]
+        no_msrv: bool,
+
+        #[arg(long)]
+        no_build: bool,
+
+        #[arg(long)]
+        no_changelog: bool,
+
+        #[arg(long)]
+        no_readme: bool,
+    },
 }
 
 pub(crate) fn main(args: &Release) -> anyhow::Result<()> {
     match args {
         Release::UpdateVersion { new_version } => update_version(new_version),
         Release::UpdateMsrv { new_version } => update_msrv(new_version),
-        Release::Check {} => check_release(),
+        Release::Check {
+            no_docker,
+            no_msrv,
+            no_build,
+            no_changelog,
+            no_readme,
+        } => check_release(*no_docker, *no_msrv, *no_build, *no_changelog, *no_readme),
     }
 }
 
@@ -41,23 +62,39 @@ const CHANGELOG: &str = "CHANGELOG.md";
 const README: &str = "README.md";
 const INTRODUCTION: &str = "docs/src/introduction.md";
 
-fn check_release() -> anyhow::Result<()> {
+fn check_release(
+    no_docker: bool,
+    no_msrv: bool,
+    no_build: bool,
+    no_changelog: bool,
+    no_readme: bool,
+) -> anyhow::Result<()> {
     // https://github.com/AmbientRun/Ambient/issues/314
     // the Dockerfile can run an Ambient server
-    check_docker_build()?;
-    check_docker_run()?;
+    if !no_docker {
+        check_docker_build()?;
+        check_docker_run()?;
+    }
 
     // the MSRV is correct for both the host and the API
-    check_msrv()?;
+    if !no_msrv {
+        check_msrv()?;
+    }
 
     // both the runtime and the guest can build with no errors
-    check_builds()?;
+    if !no_build {
+        check_builds()?;
+    }
 
     // the CHANGELOG's unreleased section is empty
-    check_changelog()?;
+    if !no_changelog {
+        check_changelog()?;
+    }
 
     // README.md and docs/src/introduction.md match their introductory text
-    check_readme()?;
+    if !no_readme {
+        check_readme()?;
+    }
 
     Ok(())
 }
