@@ -13,7 +13,7 @@ pub fn systems() -> SystemGroup {
     ambient_wasm::server::systems()
 }
 
-pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_project::Manifest) -> anyhow::Result<()> {
+pub fn initialize(world: &mut World, project_path: AbsAssetUrl, manifest: &ambient_project::Manifest) -> anyhow::Result<()> {
     let messenger = Arc::new(|world: &World, id: EntityId, type_: MessageType, message: &str| {
         let name = get_module_name(world, id);
         let (prefix, level) = match type_ {
@@ -29,7 +29,8 @@ pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_p
 
     ambient_wasm::server::initialize(world, messenger)?;
 
-    let build_dir = project_path.join("build");
+    let build_dir = project_path.push("build");
+    // TODO: implement build metadata with lists of file for both client and server
 
     let mut modules_to_entity_ids = HashMap::new();
     for target in ["client", "server"] {

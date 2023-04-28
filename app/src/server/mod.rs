@@ -38,7 +38,7 @@ pub fn start(
     runtime: &tokio::runtime::Runtime,
     assets: AssetCache,
     cli: Cli,
-    project_path: PathBuf,
+    project_path: AbsAssetUrl,
     manifest: &ambient_project::Manifest,
 ) -> u16 {
     log::info!("Creating server");
@@ -74,9 +74,13 @@ pub fn start(
     let http_interface_port = cli.host().unwrap().http_interface_port.unwrap_or(HTTP_INTERFACE_PORT);
 
     // here the key is inserted into the asset cache
-    let key = format!("http://{public_host}:{http_interface_port}/content/");
-    ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(key).unwrap());
-    start_http_interface(runtime, &project_path, http_interface_port);
+    if let Ok(Some(project_path_fs)) = project_path.to_file_path() {
+        let key = format!("http://{public_host}:{http_interface_port}/content/");
+        ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(key).unwrap());
+        start_http_interface(runtime, &project_path_fs, http_interface_port);
+    } else {
+        ServerBaseUrlKey.insert(&assets, project_path.clone());
+    }
 
     ComponentRegistry::get_mut().add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
 
@@ -105,7 +109,10 @@ pub fn start(
         wasm::initialize(&mut server_world, project_path.clone(), &manifest).unwrap();
 
         if let Cli::View { asset_path, .. } = cli.clone() {
-            let asset_path = AbsAssetUrl::from_file_path(project_path.join("build").join(asset_path).join("prefabs/main.json"));
+            let asset_path = project_path
+                .push("build").expect("pushing 'build' shouldn't fail")
+                .push(asset_path.to_string_lossy()).expect("FIXME")
+                .push("prefabs/main.json").expect("pushing 'prefabs/main.json' shouldn't fail");
             log::info!("Spawning asset from {:?}", asset_path);
             let obj = PrefabFromUrl(asset_path.into()).get(&assets).await.unwrap();
             obj.spawn_into_world(&mut server_world, None);

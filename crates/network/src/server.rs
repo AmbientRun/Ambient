@@ -290,7 +290,7 @@ impl ServerState {
 #[derive(Debug, Clone)]
 pub struct ProxySettings {
     pub endpoint: String,
-    pub project_path: PathBuf,
+    pub project_path: AbsAssetUrl,
     pub pre_cache_assets: bool,
     pub project_id: String,
 }
@@ -519,13 +519,19 @@ async fn start_proxy_connection(
 
     static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
-    let assets_path = settings.project_path.join("build");
     let builder = ambient_proxy::client::builder()
         .endpoint(endpoint.clone())
         .proxy_server(settings.endpoint.clone())
         .project_id(settings.project_id.clone())
-        .assets_path(assets_path)
         .user_agent(APP_USER_AGENT.to_string());
+
+    let assets_path = settings.project_path.push("build").expect("Pushing to path cannot fail");
+    let builder = if let Ok(Some(assets_file_path)) = assets_path.to_file_path() {
+        builder.assets_path(assets_file_path)
+    } else {
+        // TODO: handle URL case
+        builder
+    };
 
     log::info!("Connecting to proxy server");
     let proxy = match builder.build().await {

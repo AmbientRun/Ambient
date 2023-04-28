@@ -26,7 +26,7 @@ pub mod player;
 mod wasm;
 
 /// Construct an app and enter the main client view
-pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli, project_path: Option<PathBuf>) {
+pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli, golden_image_output_dir: Option<PathBuf>) {
     let user_id = run.user_id.clone().unwrap_or_else(|| format!("user_{}", friendly_id()));
     let headless = if run.headless { Some(uvec2(600, 600)) } else { None };
 
@@ -39,7 +39,7 @@ pub async fn run(assets: AssetCache, server_addr: SocketAddr, run: &RunCli, proj
         .update_title_with_fps_stats(false)
         .run(move |app, _runtime| {
             *app.world.resource_mut(window_title()) = "Ambient".to_string();
-            MainApp { server_addr, user_id, show_debug: is_debug, golden_image_test: run.golden_image_test, project_path }
+            MainApp { server_addr, user_id, show_debug: is_debug, golden_image_test: run.golden_image_test, golden_image_output_dir }
                 .el()
                 .spawn_interactive(&mut app.world);
         })
@@ -68,7 +68,7 @@ fn TitleUpdater(hooks: &mut Hooks) -> Element {
 fn MainApp(
     hooks: &mut Hooks,
     server_addr: SocketAddr,
-    project_path: Option<PathBuf>,
+    golden_image_output_dir: Option<PathBuf>,
     user_id: String,
     show_debug: bool,
     golden_image_test: Option<f32>,
@@ -125,7 +125,7 @@ fn MainApp(
             },
             inner: Dock::el(vec![
                 if let Some(seconds) = golden_image_test.filter(|_| loaded) {
-                    GoldenImageTest::el(project_path, seconds)
+                    GoldenImageTest::el(golden_image_output_dir, seconds)
                 } else {
                     Element::new()
                 },
@@ -137,11 +137,11 @@ fn MainApp(
 }
 
 #[element_component]
-fn GoldenImageTest(hooks: &mut Hooks, project_path: Option<PathBuf>, seconds: f32) -> Element {
+fn GoldenImageTest(hooks: &mut Hooks, golden_image_output_dir: Option<PathBuf>, seconds: f32) -> Element {
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
     let render_target_ref = hooks.use_ref_with(|_| render_target.clone());
     *render_target_ref.lock() = render_target.clone();
-    let screenshot_path = project_path.unwrap_or(PathBuf::new()).join("screenshot.png");
+    let screenshot_path = golden_image_output_dir.unwrap_or(PathBuf::new()).join("screenshot.png");
     let (old_screnshot, _) = hooks.use_state_with(|_| {
         tracing::info!("Loading screenshot from {:?}", screenshot_path);
         Some(Arc::new(image::open(&screenshot_path).ok()?))
