@@ -1,0 +1,22 @@
+
+[components."core::network"]
+name = "Network"
+description = "Network-related state."
+
+[components."core::network::is_remote_entity"]
+type = "Empty"
+name = "Is remote entity"
+description = "If attached, this entity was not spawned locally (e.g. if this is the client, it was spawned by the server)."
+attributes = ["Debuggable", "Networked"]
+
+[components."core::network::persistent_resources"]
+type = "Empty"
+name = "Persistent resources"
+description = "If attached, this entity contains global resources that are persisted to disk and synchronized to clients."
+attributes = ["Debuggable", "Networked"]
+
+[components."core::network::synced_resources"]
+type = "Empty"
+name = "Synchronized resources"
+description = "If attached, this entity contains global resources that are synchronized to clients, but not persisted."
+attributes = ["Debuggable", "Networked"]

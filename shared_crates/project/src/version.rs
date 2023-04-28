@@ -3,7 +3,7 @@ use std::{fmt::Display, num::NonZeroUsize};
 use serde::{de::Visitor, Deserialize, Serialize};
 use thiserror::Error;
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Default)]
 pub struct Version {
     major: u32,
     minor: u32,
@@ -105,13 +105,14 @@ impl<'de> Visitor<'de> for VersionVisitor {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Default)]
 pub enum VersionSuffix {
     Other(String),
     Dev,
     Alpha(Option<NonZeroUsize>),
     Beta(Option<NonZeroUsize>),
     ReleaseCandidate(Option<NonZeroUsize>),
+    #[default]
     Final,
 }
 impl VersionSuffix {

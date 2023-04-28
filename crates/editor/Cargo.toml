@@ -44,7 +44,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 anyhow = { workspace = true }
 log = { workspace = true }
-profiling = { workspace = true }
+ambient_profiling = { workspace = true }
 closure = { workspace = true }
 wgpu = { workspace = true }
 winit = { workspace = true }

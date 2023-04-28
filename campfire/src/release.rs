@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use clap::Parser;
 
 #[derive(Parser, Clone)]
@@ -22,13 +24,17 @@ pub(crate) fn main(args: &Release) -> anyhow::Result<()> {
 }
 
 const DOCKERFILE: &str = "Dockerfile";
-const AMBIENT_MANIFEST: &str = "ambient.toml";
+const AMBIENT_MANIFEST: &str = "shared_crates/schema/src/ambient.toml";
 const ROOT_CARGO: &str = "Cargo.toml";
 const WEB_CARGO: &str = "web/Cargo.toml";
 const GUEST_RUST_CARGO: &str = "guest/rust/Cargo.toml";
 const INSTALLING_DOCS: &str = "docs/src/user/installing.md";
 
 fn update_version(new_version: &str) -> anyhow::Result<()> {
+    if !new_version.starts_with(char::is_numeric) {
+        anyhow::bail!("version must start with an integer");
+    }
+
     edit_toml(AMBIENT_MANIFEST, |toml| {
         toml["project"]["version"] = toml_edit::value(new_version);
     })?;
@@ -43,20 +49,21 @@ fn update_version(new_version: &str) -> anyhow::Result<()> {
 
     edit_toml(GUEST_RUST_CARGO, |toml| {
         toml["workspace"]["package"]["version"] = toml_edit::value(new_version);
-
-        for (key, value) in toml["workspace"]["dependencies"]
-            .as_table_like_mut()
-            .expect("dependencies is not a table")
-            .iter_mut()
-        {
-            if !key.starts_with("ambient_") {
-                continue;
-            }
-
-            let Some(table) = value.as_table_like_mut() else { continue; };
-            table.insert("version", toml_edit::value(new_version));
-        }
+        update_ambient_dependency_versions(&mut toml["workspace"]["dependencies"], new_version);
     })?;
+
+    // Fix all of the dependency versions for Ambient crates
+    for path in ["libs", "shared_crates"] {
+        for dir in std::fs::read_dir(path)?
+            .filter_map(Result::ok)
+            .map(|de| de.path())
+            .filter(|p| p.is_dir())
+        {
+            edit_toml(dir.join("Cargo.toml"), |toml| {
+                update_ambient_dependency_versions(&mut toml["dependencies"], new_version);
+            })?;
+        }
+    }
 
     edit_file(INSTALLING_DOCS, |document| {
         const PREFIX: &str = "cargo install --git https://github.com/AmbientRun/Ambient.git --tag";
@@ -75,7 +82,26 @@ fn update_version(new_version: &str) -> anyhow::Result<()> {
             .join("\n")
     })?;
 
+    // Run `cargo check` in the root and API to force the lockfile to update
+    check(".")?;
+    check("guest/rust")?;
+
     Ok(())
+}
+
+fn update_ambient_dependency_versions(dependencies: &mut toml_edit::Item, new_version: &str) {
+    for (key, value) in dependencies
+        .as_table_like_mut()
+        .expect("dependencies is not a table")
+        .iter_mut()
+    {
+        if !key.starts_with("ambient_") {
+            continue;
+        }
+
+        let Some(table) = value.as_table_like_mut() else { continue; };
+        table.insert("version", toml_edit::value(new_version));
+    }
 }
 
 fn update_msrv(new_version: &str) -> anyhow::Result<()> {
@@ -91,7 +117,7 @@ fn update_msrv(new_version: &str) -> anyhow::Result<()> {
         toml["workspace"]["package"]["rust-version"] = toml_edit::value(new_version);
     })?;
 
-    edit_file(DOCKERFILE, |document: String| {
+    edit_file(DOCKERFILE, |document| {
         const PREFIX: &str = "FROM rust:";
         document
             .lines()
@@ -106,12 +132,13 @@ fn update_msrv(new_version: &str) -> anyhow::Result<()> {
             .join("\n")
     })?;
 
-    edit_file(INSTALLING_DOCS, |mut document| {
+    edit_file(INSTALLING_DOCS, |document| {
         let begin = "<!-- rust-version-begin !-->";
         let end = "<!-- rust-version-end !-->";
         let begin_index = document.find(begin).expect("no begin") + begin.len();
         let end_index = document.find(end).expect("no end");
 
+        let mut document = document.to_owned();
         document.replace_range(begin_index..end_index, new_version);
         document
     })?;
@@ -119,18 +146,35 @@ fn update_msrv(new_version: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn edit_file(path: &str, f: impl Fn(String) -> String) -> anyhow::Result<()> {
+fn edit_file(path: impl AsRef<Path>, f: impl Fn(&str) -> String) -> anyhow::Result<()> {
+    let path = path.as_ref();
     let input = std::fs::read_to_string(path)?;
-    let output = f(input);
-    std::fs::write(path, output)?;
+    let output = f(&input);
+    // Only write the output if the difference is more than trailing newline
+    if input.trim() != output.trim() {
+        std::fs::write(path, output)?;
+    }
 
     Ok(())
 }
 
-fn edit_toml(path: &str, f: impl Fn(&mut toml_edit::Document)) -> anyhow::Result<()> {
+fn edit_toml(path: impl AsRef<Path>, f: impl Fn(&mut toml_edit::Document)) -> anyhow::Result<()> {
     edit_file(path, |input| {
         let mut toml = input.parse::<toml_edit::Document>().unwrap();
         f(&mut toml);
         toml.to_string()
     })
+}
+
+fn check(path: impl AsRef<Path>) -> anyhow::Result<()> {
+    let path = path.as_ref();
+    let mut command = std::process::Command::new("cargo");
+    command.current_dir(path);
+    command.args(&["check"]);
+
+    if !command.spawn()?.wait()?.success() {
+        anyhow::bail!("Failed to check Rust code at {}", path.display());
+    }
+
+    Ok(())
 }

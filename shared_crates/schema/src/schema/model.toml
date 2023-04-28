@@ -1,0 +1,22 @@
+
+[components."core::model"]
+name = "Model"
+description = "Information about models attached to entities."
+
+[components."core::model::model_animatable"]
+type = "Bool"
+name = "Model animatable"
+description = "Controls whether this model can be animated."
+attributes = ["MaybeResource", "Debuggable", "Networked", "Store"]
+
+[components."core::model::model_from_url"]
+type = "String"
+name = "Model from URL"
+description = "Load a model from the given URL or relative path."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::model::model_loaded"]
+type = "Empty"
+name = "Model loaded"
+description = "If attached, this entity has a model attached to it."
+attributes = ["Debuggable", "Networked", "Store"]

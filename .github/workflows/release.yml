@@ -101,8 +101,50 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
+
+      # The following order was determined from looking at the `cargo tree` output for
+      # `ambient_api`. It is *very* likely you will need to change this if you change
+      # how these projects depend on each other.
+      #
+      # Sleeps are inserted to ensure that we are not rate-limited between groups of publishes.
+
+      # Libraries: used by guest bridge, but get them out of the way first
+      - run: cd libs/friendly_id && cargo publish
+      - run: cd libs/cb && cargo publish
+      - run: cd libs/math && cargo publish
+      - run: cd libs/time && cargo publish
+      - run: cd libs/color && cargo publish
+
+      # Project: core definitions, macros
+      - name: Sleep for 30 seconds
+        run: sleep 30
+        shell: bash
+      - run: cd shared_crates/project && cargo publish
+      - run: cd shared_crates/project_macro_common && cargo publish
+      - run: cd shared_crates/project_rt && cargo publish
+      - run: cd shared_crates/shared_types && cargo publish
+      - run: cd shared_crates/schema && cargo publish
+
+      # API core: depends on project for macro
+      - name: Sleep for 30 seconds
+        run: sleep 30
+        shell: bash
       - run: cd guest/rust/api_core/api_macros && cargo publish
       - run: cd guest/rust/api_core && cargo publish
+
+      # Guest bridge/UI: depends on API core
+      - name: Sleep for 30 seconds
+        run: sleep 30
+        shell: bash
+      - run: cd shared_crates/guest_bridge && cargo publish -F guest
+      - run: cd shared_crates/element_component && cargo publish
+      - run: cd shared_crates/element && cargo publish --no-default-features -F guest
+      - run: cd shared_crates/ui && cargo publish --no-default-features -F guest
+
+      # API: depends on API core + UI
+      - name: Sleep for 30 seconds
+        run: sleep 30
+        shell: bash
       - run: cd guest/rust/api && cargo publish
 
   publish-release:

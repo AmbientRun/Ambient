@@ -24,10 +24,7 @@ use crate::shared::{
     wit,
 };
 
-use ambient_core::camera::{
-    clip_space_ray,
-    world_to_clip_space,
-};
+use ambient_core::camera::{clip_space_ray, world_to_clip_space};
 
 impl wit::client_message::Host for Bindings {
     fn send(
@@ -157,7 +154,8 @@ impl wit::client_camera::Host for Bindings {
         camera: wit::types::EntityId,
         screen_pos: wit::types::Vec2,
     ) -> anyhow::Result<wit::types::Ray> {
-        let clip_space = ambient_core::window::screen_to_clip_space(self.world(), screen_pos.from_bindgen());
+        let clip_space =
+            ambient_core::window::screen_to_clip_space(self.world(), screen_pos.from_bindgen());
         let mut ray = clip_space_ray(self.world(), camera.from_bindgen(), clip_space)?;
         ray.dir *= -1.;
         Ok(ray.into_bindgen())
@@ -171,22 +169,17 @@ impl wit::client_camera::Host for Bindings {
         let clip_pos = world_to_clip_space(
             self.world(),
             camera.from_bindgen(),
-            world_pos.from_bindgen()
+            world_pos.from_bindgen(),
         )?;
-        Ok(
-            ambient_core::window::clip_to_screen_space(self.world(), clip_pos)
-                .into_bindgen()
-        )
+        Ok(ambient_core::window::clip_to_screen_space(self.world(), clip_pos).into_bindgen())
     }
 }
 impl wit::client_audio::Host for Bindings {
     fn load(&mut self, url: String) -> anyhow::Result<()> {
         let world = self.world();
         let assets = world.resource(asset_cache()).clone();
-        let asset_url = AbsAssetUrl::from_asset_key(url).to_string();
-        let audio_url = AudioFromUrl {
-            url: AbsAssetUrl::parse(asset_url).context("Failed to parse audio url")?,
-        };
+        let parsed_url = AbsAssetUrl::parse(url).context("Failed to parse asset url")?;
+        let audio_url = AudioFromUrl { url: parsed_url };
         let _track = audio_url.peek(&assets);
         Ok(())
     }
