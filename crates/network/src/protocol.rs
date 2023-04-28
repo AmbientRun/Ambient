@@ -73,60 +73,6 @@ impl ClientProtocol {
     }
 }
 
-type FramedRecvStream<T> = FramedRead<RecvStream, FramedCodec<T>>;
-type FramedSendStream<T> = FramedWrite<SendStream, FramedCodec<T>>;
-
-/// The server side connection to a client or a proxied client
-pub struct ServerConnection {
-    pub(crate) conn: ConnectionInner,
-    pub(crate) control_send: FramedSendStream<ClientControlFrame>,
-    pub(crate) control_recv: FramedRecvStream<ClientControlFrame>,
-
-    pub(crate) diff_stream: OutgoingStream<quinn::SendStream>,
-    pub(crate) stat_stream: OutgoingStream<quinn::SendStream>,
-}
-
-/// Prevent moving out fields.
-///
-/// TODO: send disconnect.
-impl Drop for ServerConnection {
-    fn drop(&mut self) {
-        log::info!("Dropping server connection");
-    }
-}
-
-impl ServerConnection {
-    /// Establishes a connection to the client
-    pub async fn new(conn: ConnectionInner, server_info: ServerInfo) -> Result<Self, NetworkError> {
-        // The client now opens a control stream
-        let control_recv = FramedRead::new(conn.accept_uni().await?, FramedCodec::new());
-        let control_send = FramedWrite::new(conn.open_uni().await?, FramedCodec::new());
-
-        let diff_stream = OutgoingStream::new(conn.open_uni().await?);
-        let stat_stream = OutgoingStream::new(conn.open_uni().await?);
-        // stat_stream.send(&()).await?;
-
-        // Ok(Self { conn, diff_stream, stat_stream, client_info })
-        Ok(Self { conn, control_send, control_recv, diff_stream, stat_stream })
-    }
-
-    pub async fn read_datagram(&self) -> Result<Bytes, NetworkError> {
-        self.conn.read_datagram().await
-    }
-
-    pub async fn accept_uni(&self) -> Result<RecvStream, NetworkError> {
-        self.conn.accept_uni().await
-    }
-
-    pub async fn accept_bi(&self) -> Result<(SendStream, RecvStream), NetworkError> {
-        self.conn.accept_bi().await
-    }
-
-    pub async fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError> {
-        self.conn.send_datagram(data).await
-    }
-}
-
 /// Contains things such as username (TODO) and user_id
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct ClientInfo {

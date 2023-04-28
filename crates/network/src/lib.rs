@@ -269,7 +269,7 @@ impl OutgoingStream<quinn::SendStream> {
     }
 }
 
-impl<S: AsyncWrite> OutgoingStream<S> {
+impl<S: Unpin + AsyncWrite> OutgoingStream<S> {
     pub fn new(stream: S) -> Self {
         let mut codec = LengthDelimitedCodec::new();
         codec.set_max_frame_length(1_024 * 1_024 * 1_024);

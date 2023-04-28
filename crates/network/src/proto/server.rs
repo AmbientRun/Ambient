@@ -73,11 +73,7 @@ impl ConnectedClient {
     }
 
     #[tracing::instrument(level = "info", skip(state, stream))]
-    pub async fn process_uni<E: Into<anyhow::Error>>(
-        &mut self,
-        state: &SharedServerState,
-        mut stream: impl AsyncRead + Unpin,
-    ) -> anyhow::Result<()> {
+    pub async fn process_uni(&mut self, state: &SharedServerState, mut stream: impl AsyncRead + Unpin) -> anyhow::Result<()> {
         let id = stream.read_u32().await?;
 
         let handler = {
@@ -96,7 +92,7 @@ impl ConnectedClient {
     }
 
     #[tracing::instrument(level = "info", skip(state, send, recv))]
-    pub async fn process_bi<E: Into<anyhow::Error>>(
+    pub async fn process_bi(
         &mut self,
         state: &SharedServerState,
         send: impl AsyncWrite + Unpin,

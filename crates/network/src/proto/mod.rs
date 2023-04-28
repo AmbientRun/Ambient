@@ -1,3 +1,5 @@
+use crate::protocol::ServerInfo;
+
 pub mod server;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -9,8 +11,9 @@ pub enum ClientControlFrame {
     Disconnect,
 }
 
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub enum ServerControlFrame {
-    ServerInfo,
+    ServerInfo(ServerInfo),
     /// Graceful disconnect
     Disconnect,
 }

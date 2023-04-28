@@ -43,8 +43,8 @@ use crate::{
     codec::FramedCodec,
     connection::Connection,
     create_server,
-    proto::{self, ServerControlFrame},
-    protocol::{ClientInfo, ServerConnection, ServerInfo},
+    proto::{self, ClientControlFrame, ServerControlFrame},
+    protocol::{ClientInfo, ServerInfo},
     NetworkError, OutgoingStream, RPC_BISTREAM_ID,
 };
 use colored::Colorize;
@@ -418,7 +418,7 @@ impl GameServer {
 
 
                     log::debug!("Accepted connection");
-                    run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone(), ServerBaseUrlKey.get(&assets));
+                    handle_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone(), ServerBaseUrlKey.get(&assets));
                 }
                 _ = sim_interval.tick() => {
                     fps_counter.frame_start();
@@ -569,6 +569,9 @@ async fn start_proxy_connection(
     }
 }
 
+pub type FramedRecvStream<T> = FramedRead<RecvStream, FramedCodec<T>>;
+pub type FramedSendStream<T> = FramedWrite<SendStream, FramedCodec<T>>;
+
 /// Setup the protocol and enter the update loop for a new connected client
 async fn handle_connection(
     conn: ConnectionInner,
@@ -584,6 +587,7 @@ async fn handle_connection(
     //         let handle = handle.clone();
     //         tokio::spawn(async move {
     let (diffs_tx, diffs_rx) = flume::unbounded();
+    let (control_tx, control_rx) = flume::unbounded();
     let (stats_tx, stats_rx) = flume::unbounded();
 
     let new_player_connection = conn.clone();
@@ -592,23 +596,18 @@ async fn handle_connection(
         let user_id = &client.user_id;
         log::debug!("[{}] Locking world", user_id);
         let mut state = state.lock();
-        // If there's an old player
+        // If there's an old player send a graceful disconnect
         let reconnecting = if let Some(player) = state.players.get_mut(user_id) {
-            if let Some(handle) = player.abort_handle.get() {
-                handle.abort();
-            }
-            player.abort_handle = handle.clone();
+            player.control.send(ServerControlFrame::Disconnect).ok();
+
+            player.control = control_tx;
             player.connection_id = connection_id.clone();
             log::debug!("[{}] Player reconnecting", user_id);
             true
         } else {
             state.players.insert(
                 user_id.clone(),
-                Player {
-                    instance: MAIN_INSTANCE_ID.to_string(),
-                    abort_handle: handle.clone(),
-                    connection_id: connection_id.clone(),
-                },
+                Player { instance: MAIN_INSTANCE_ID.to_string(), control: control_tx, connection_id: connection_id.clone() },
             );
             false
         };
@@ -749,17 +748,6 @@ async fn handle_connection(
         }
     };
 
-    // let client = ClientInstance {
-    //     diffs_rx,
-    //     stats_rx,
-    //     on_init: &on_init,
-    //     on_bi_stream: &on_bi_stream,
-    //     on_uni_stream: &on_uni_stream,
-    //     on_datagram: &on_datagram,
-    //     on_disconnect: &on_disconnect,
-    //     user_id: None,
-    // };
-
     let server_info = {
         let state = state.lock();
         let instance = state.instances.get(MAIN_INSTANCE_ID).unwrap();
@@ -771,16 +759,25 @@ async fn handle_connection(
         }
     };
 
-    let server = proto::server::ServerState::default();
+    let mut server = proto::server::ServerState::default();
 
-    let control_recv = FramedRead::new(conn.accept_uni().await?, FramedCodec::new());
-    let control_send = FramedWrite::new(conn.open_uni().await?, FramedCodec::new());
+    let mut control_recv: FramedRecvStream<ClientControlFrame> = FramedRead::new(conn.accept_uni().await?, FramedCodec::new());
+    let mut control_send: FramedSendStream<ServerControlFrame> = FramedWrite::new(conn.open_uni().await?, FramedCodec::new());
 
-    let diff_stream = OutgoingStream::new(conn.open_uni().await?);
-    let stat_stream = OutgoingStream::new(conn.open_uni().await?);
+    let mut control_rx = control_rx.into_stream();
+    let mut diff_stream = OutgoingStream::new(conn.open_uni().await?);
+    let mut stat_stream = OutgoingStream::new(conn.open_uni().await?);
+
+    let mut diffs_rx = diffs_rx.into_stream();
+    let mut stats_rx = stats_rx.into_stream();
+
+    use futures::SinkExt;
+
+    // Send who we are
+    control_send.send(ServerControlFrame::ServerInfo(server_info)).await?;
 
     loop {
-        match server {
+        match &mut server {
             // Before a connection has been established, only process the control stream
             proto::server::ServerState::PendingConnection => {
                 if let Some(frame) = control_recv.next().await {
@@ -791,6 +788,18 @@ async fn handle_connection(
                 tokio::select! {
                     Some(frame) = control_recv.next() => {
                         server.process_control(frame?).await?;
+                    }
+                    Some(msg) = diffs_rx.next() => {
+                        let span = tracing::debug_span!("world diff");
+                        diff_stream.send_bytes(msg).instrument(span).await?;
+                    }
+                    Some(msg) = control_rx.next() => {
+                        let span = tracing::debug_span!("control");
+                        control_send.send(msg).instrument(span).await?;
+                    }
+                    Some(msg) = stats_rx.next() => {
+                        let span = tracing::debug_span!("stats");
+                        stat_stream.send(&msg).instrument(span).await?;
                     }
                     stream = conn.accept_uni() => {
                         connected.process_uni(&state, stream?).await?;
