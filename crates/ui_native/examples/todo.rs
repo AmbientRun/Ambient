@@ -1,4 +1,4 @@
-use ambient_app::{App, AppBuilder};
+use ambient_app::{AmbientWindow, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_ui_native::*;
@@ -10,8 +10,24 @@ impl ElementComponent for TodoList {
         let (dishes, set_dishes) = hooks.use_state(false);
         let (laundry, set_laundry) = hooks.use_state(false);
         FlowColumn(vec![
-            FlowRow(vec![Checkbox { value: laundry, on_change: set_laundry }.el(), Text::el("Laundry")]).el(),
-            FlowRow(vec![Checkbox { value: dishes, on_change: set_dishes }.el(), Text::el("Dishes")]).el(),
+            FlowRow(vec![
+                Checkbox {
+                    value: laundry,
+                    on_change: set_laundry,
+                }
+                .el(),
+                Text::el("Laundry"),
+            ])
+            .el(),
+            FlowRow(vec![
+                Checkbox {
+                    value: dishes,
+                    on_change: set_dishes,
+                }
+                .el(),
+                Text::el("Dishes"),
+            ])
+            .el(),
             match (dishes, laundry) {
                 (true, true) => Text::el("Yay!"),
                 (false, false) => Text::el("Stop watching Netflix dude..."),
@@ -22,7 +38,7 @@ impl ElementComponent for TodoList {
     }
 }
 
-async fn init(app: &mut App) {
+async fn init(app: &mut AmbientWindow) {
     let world = &mut app.world;
     TodoList.el().spawn_interactive(world);
 

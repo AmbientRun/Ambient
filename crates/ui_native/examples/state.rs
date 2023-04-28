@@ -1,10 +1,12 @@
 use std::sync::Arc;
 
-use ambient_app::{App, AppBuilder};
+use ambient_app::{AmbientWindow, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_ecs::generated::messages;
 use ambient_element::{ElementComponent, ElementComponentExt};
-use ambient_ui_native::{padding, space_between_items, Borders, Button, Cb, FlowColumn, FlowRow, Text, STREET};
+use ambient_ui_native::{
+    padding, space_between_items, Borders, Button, Cb, FlowColumn, FlowRow, Text, STREET,
+};
 use tracing_subscriber::EnvFilter;
 
 #[derive(Debug, Clone)]
@@ -34,14 +36,22 @@ struct Shared(Arc<String>);
 
 impl Clone for Shared {
     fn clone(&self) -> Self {
-        tracing::info!("Cloning {}. Strong: {}", &self.0, Arc::strong_count(&self.0));
+        tracing::info!(
+            "Cloning {}. Strong: {}",
+            &self.0,
+            Arc::strong_count(&self.0)
+        );
         Self(self.0.clone())
     }
 }
 
 impl Drop for Shared {
     fn drop(&mut self) {
-        tracing::info!("Dropping {}. Strong: {}", &self.0, Arc::strong_count(&self.0));
+        tracing::info!(
+            "Dropping {}. Strong: {}",
+            &self.0,
+            Arc::strong_count(&self.0)
+        );
     }
 }
 
@@ -87,7 +97,11 @@ impl ElementComponent for Main {
 
         let (show_b, set_show_b) = hooks.use_state(true);
         if show_b {
-            FlowColumn::el([A { value, set_value }.el(), Button::new("Hide", move |_| set_show_b(false)).el(), B { shared }.el()])
+            FlowColumn::el([
+                A { value, set_value }.el(),
+                Button::new("Hide", move |_| set_show_b(false)).el(),
+                B { shared }.el(),
+            ])
         } else {
             FlowColumn::el([
                 A { value, set_value }.el(),
@@ -99,14 +113,16 @@ impl ElementComponent for Main {
     }
 }
 
-async fn init(app: &mut App) {
+async fn init(app: &mut AmbientWindow) {
     let world = &mut app.world;
     Main.el().spawn_interactive(world);
     UICamera.el().spawn_interactive(world);
 }
 
 fn main() {
-    tracing_subscriber::fmt().with_env_filter(EnvFilter::from_default_env()).init();
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        .init();
 
     AppBuilder::simple_ui().block_on(init)
 }

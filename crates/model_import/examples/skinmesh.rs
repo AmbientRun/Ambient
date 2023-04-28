@@ -1,5 +1,5 @@
 use ambient_animation::{animation_controller, AnimationController};
-use ambient_app::{App, AppBuilder};
+use ambient_app::{AmbientWindow, AppBuilder};
 use ambient_core::{
     asset_cache,
     camera::{active_camera, far},
@@ -18,13 +18,19 @@ use ambient_std::{
 use glam::*;
 use winit::event::{Event, VirtualKeyCode, WindowEvent};
 
-async fn init(app: &mut App) {
+async fn init(app: &mut AmbientWindow) {
     let world = &mut app.world;
 
     let assets = world.resource(asset_cache()).clone();
 
-    Cube.el().with(translation(), vec3(8., 0., 0.)).with(color(), vec4(1., 0., 0., 1.)).spawn_static(world);
-    Cube.el().with(translation(), vec3(0., 8., 0.)).with(color(), vec4(0., 1., 0., 1.)).spawn_static(world);
+    Cube.el()
+        .with(translation(), vec3(8., 0., 0.))
+        .with(color(), vec4(1., 0., 0., 1.))
+        .spawn_static(world);
+    Cube.el()
+        .with(translation(), vec3(0., 8., 0.))
+        .with(color(), vec4(0., 1., 0., 1.))
+        .spawn_static(world);
     Quad.el().with(scale(), Vec3::ONE * 10.).spawn_static(world);
 
     let model = ModelCrate::local_import(
@@ -37,7 +43,9 @@ async fn init(app: &mut App) {
     .unwrap();
 
     let entities = model.batch_spawn(world, &Default::default(), 2);
-    world.add_component(entities[1], translation(), vec3(2., 0., 0.)).unwrap();
+    world
+        .add_component(entities[1], translation(), vec3(2., 0., 0.))
+        .unwrap();
 
     world
         .add_component(
@@ -47,11 +55,14 @@ async fn init(app: &mut App) {
         )
         .unwrap();
 
-    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .with(active_camera(), 0.)
-        .with(main_scene(), ())
-        .with(far(), 2000.)
-        .spawn(world);
+    ambient_cameras::spherical::new(
+        vec3(0., 0., 0.),
+        SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.),
+    )
+    .with(active_camera(), 0.)
+    .with(main_scene(), ())
+    .with(far(), 2000.)
+    .spawn(world);
 
     let entity = entities[0];
 

@@ -1,4 +1,4 @@
-use ambient_app::{App, AppBuilder};
+use ambient_app::{AmbientWindow, AppBuilder};
 use ambient_core::{
     asset_cache,
     camera::{active_camera, far},
@@ -8,7 +8,9 @@ use ambient_core::{
 use ambient_ecs::Entity;
 use ambient_element::ElementComponentExt;
 use ambient_model::{model_from_url, ModelFromUrl};
-use ambient_model_import::{MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform};
+use ambient_model_import::{
+    MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform,
+};
 use ambient_primitives::{Cube, Quad};
 use ambient_renderer::{color, materials::pbr_material::PbrMaterialDesc};
 use ambient_std::{
@@ -19,7 +21,7 @@ use ambient_std::{
 use glam::*;
 use reqwest::Url;
 
-async fn init(app: &mut App) {
+async fn init(app: &mut AmbientWindow) {
     let world = &mut app.world;
     let assets = world.resource(asset_cache()).clone();
 
@@ -94,30 +96,46 @@ async fn init(app: &mut App) {
     let mut model_defs = Vec::new();
     for pipeline in asset_pipelines.iter() {
         let model_url = pipeline.produce_local_model_url(&assets).await.unwrap();
-        model_defs.push(ModelFromUrl(TypedAssetUrl::new(Url::from_file_path(model_url).unwrap())));
+        model_defs.push(ModelFromUrl(TypedAssetUrl::new(
+            Url::from_file_path(model_url).unwrap(),
+        )));
     }
 
     // "Regular" spawning
     for (i, model_def) in model_defs.iter().enumerate() {
         let xy = vec2(i as f32 * 3., 0.);
-        Cube.el().with(translation(), xy.extend(-0.9)).with(color(), vec4(0.3, 0.3, 0.3, 1.)).spawn_static(world);
+        Cube.el()
+            .with(translation(), xy.extend(-0.9))
+            .with(color(), vec4(0.3, 0.3, 0.3, 1.))
+            .spawn_static(world);
         let model = model_def.get(&assets).await.unwrap();
         let entity = model.spawn(world, &Default::default());
-        world.add_component(entity, translation(), xy.extend(0.1)).unwrap();
+        world
+            .add_component(entity, translation(), xy.extend(0.1))
+            .unwrap();
     }
 
     // Attaching
     for (i, mod_def) in model_defs.iter().enumerate() {
         let xy = vec2(i as f32 * 3., 3.);
-        Cube.el().with(translation(), xy.extend(-0.9)).with(color(), vec4(0.3, 0.3, 0.3, 1.)).spawn_static(world);
-        Entity::new().with(model_from_url(), mod_def.0.to_string()).with(translation(), xy.extend(0.1)).spawn(world);
+        Cube.el()
+            .with(translation(), xy.extend(-0.9))
+            .with(color(), vec4(0.3, 0.3, 0.3, 1.))
+            .spawn_static(world);
+        Entity::new()
+            .with(model_from_url(), mod_def.0.to_string())
+            .with(translation(), xy.extend(0.1))
+            .spawn(world);
     }
 
-    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .with(active_camera(), 0.)
-        .with(main_scene(), ())
-        .with(far(), 2000.)
-        .spawn(world);
+    ambient_cameras::spherical::new(
+        vec3(0., 0., 0.),
+        SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.),
+    )
+    .with(active_camera(), 0.)
+    .with(main_scene(), ())
+    .with(far(), 2000.)
+    .spawn(world);
 }
 
 fn main() {

@@ -1,6 +1,6 @@
 use std::{sync::Arc, time::Duration};
 
-use ambient_app::{App, AppBuilder};
+use ambient_app::{AmbientWindow, AppBuilder};
 use ambient_asset_timeline::LocalAssetTimelineVisualizer;
 use ambient_cameras::UICamera;
 use ambient_core::{asset_cache, runtime};
@@ -83,7 +83,7 @@ fn load_and_abort_asset_no_keepalive(world: &mut World) {
     });
 }
 
-async fn init(app: &mut App) {
+async fn init(app: &mut AmbientWindow) {
     let world = &mut app.world;
     // load_model(world);
     Group(vec![
@@ -98,7 +98,11 @@ async fn init(app: &mut App) {
                 load_asset_no_keepalive(world);
             })
             .el(),
-            Button::new("Load and abort asset (no keepalive)", load_and_abort_asset_no_keepalive).el(),
+            Button::new(
+                "Load and abort asset (no keepalive)",
+                load_and_abort_asset_no_keepalive,
+            )
+            .el(),
             LocalAssetTimelineVisualizer.el(),
         ])
         .el()])

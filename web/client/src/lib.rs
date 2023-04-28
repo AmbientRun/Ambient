@@ -100,7 +100,7 @@ pub fn View(hooks: &mut Hooks) -> Element {
     .with(space_between_items(), 10.)
 }
 
-async fn init(app: &mut App) {
+async fn init(app: &mut AmbientWindow) {
     let world = &mut app.world;
 
     Group(vec![

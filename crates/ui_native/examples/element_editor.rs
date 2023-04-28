@@ -1,4 +1,4 @@
-use ambient_app::{App, AppBuilder};
+use ambient_app::{AmbientWindow, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_editor_derive::ElementEditor;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
@@ -58,17 +58,22 @@ impl ElementComponent for Example {
         let (state, set_state) = hooks.use_state(MyStruct::new());
         FocusRoot(vec![ScrollArea::el(
             ScrollAreaSizing::FitChildrenWidth,
-            FlowColumn(vec![MyStruct::editor(state.clone(), set_state, Default::default()), Text::el(format!("{state:#?}"))])
-                .el()
-                .with(space_between_items(), STREET),
+            FlowColumn(vec![
+                MyStruct::editor(state.clone(), set_state, Default::default()),
+                Text::el(format!("{state:#?}")),
+            ])
+            .el()
+            .with(space_between_items(), STREET),
         )])
         .el()
     }
 }
 
-async fn init(app: &mut App) {
+async fn init(app: &mut AmbientWindow) {
     let world = &mut app.world;
-    Group(vec![UICamera.el(), Example.el()]).el().spawn_interactive(world);
+    Group(vec![UICamera.el(), Example.el()])
+        .el()
+        .spawn_interactive(world);
 }
 
 fn main() {

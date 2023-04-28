@@ -1,4 +1,4 @@
-use ambient_app::{App, AppBuilder};
+use ambient_app::{AmbientWindow, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::{asset_cache, runtime};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
@@ -27,14 +27,18 @@ impl ElementComponent for Example {
 
         // After 5 seconds, on rerender, this component crashes the app
         FlowColumn(vec![
-            Image { texture: Some(texture) }.el().with_background(Color::rgba(1.0, 1.0, 0.0, 1.0).into()),
+            Image {
+                texture: Some(texture),
+            }
+            .el()
+            .with_background(Color::rgba(1.0, 1.0, 0.0, 1.0).into()),
             Text::el("Hello, World!").with_background(Color::rgba(0.5, 0.0, 1.0, 1.0).into()),
         ])
         .el()
     }
 }
 
-async fn init(app: &mut App) {
+async fn init(app: &mut AmbientWindow) {
     let world = &mut app.world;
     Example.el().spawn_interactive(world);
     UICamera.el().spawn_interactive(world);

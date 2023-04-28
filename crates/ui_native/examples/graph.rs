@@ -1,6 +1,6 @@
 use std::f32::consts::TAU;
 
-use ambient_app::{App, AppBuilder};
+use ambient_app::{AmbientWindow, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::runtime;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
@@ -82,7 +82,10 @@ impl ElementComponent for Example {
                     points: points.0,
                     width: 800.0,
                     height: 200.0,
-                    style: GraphStyle { color: vec4(1.0, 0.0, 0.0, 1.0), ..Default::default() },
+                    style: GraphStyle {
+                        color: vec4(1.0, 0.0, 0.0, 1.0),
+                        ..Default::default()
+                    },
                     x_scale: GraphScaleKind::Fixed { count: 8 },
                     y_bounds: Some((-2.0, 2.0)),
                     ..Default::default()
@@ -92,7 +95,10 @@ impl ElementComponent for Example {
                     points: points.1,
                     width: 600.0,
                     height: 200.0,
-                    style: GraphStyle { color: vec4(1.0, 1.0, 0.0, 1.0), ..Default::default() },
+                    style: GraphStyle {
+                        color: vec4(1.0, 1.0, 0.0, 1.0),
+                        ..Default::default()
+                    },
                     ..Default::default()
                 }
                 .el(),
@@ -100,7 +106,10 @@ impl ElementComponent for Example {
                     points: points.2,
                     width: 400.0,
                     height: 200.0,
-                    style: GraphStyle { color: vec4(0.5, 0.0, 1.0, 1.0), ..Default::default() },
+                    style: GraphStyle {
+                        color: vec4(0.5, 0.0, 1.0, 1.0),
+                        ..Default::default()
+                    },
                     ..Default::default()
                 }
                 .el(),
@@ -108,7 +117,10 @@ impl ElementComponent for Example {
                     points: history.iter().copied().collect_vec(),
                     width: 800.0,
                     height: 300.0,
-                    x_scale: GraphScaleKind::Dynamic { spacing: 64.0, snap: false },
+                    x_scale: GraphScaleKind::Dynamic {
+                        spacing: 64.0,
+                        snap: false,
+                    },
                     ..Default::default()
                 }
                 .el(),
@@ -120,7 +132,7 @@ impl ElementComponent for Example {
     }
 }
 
-async fn init(app: &mut App) {
+async fn init(app: &mut AmbientWindow) {
     let world = &mut app.world;
     Example.el().spawn_interactive(world);
     UICamera.el().spawn_interactive(world);

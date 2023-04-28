@@ -1,18 +1,24 @@
-use ambient_app::{App, AppBuilder};
+use ambient_app::{AmbientWindow, AppBuilder};
 use ambient_core::{camera::active_camera, main_scene};
 use ambient_gizmos::{gizmos, GizmoPrimitive};
 use ambient_std::{line_hash, math::SphericalCoords};
 use glam::*;
 
-async fn init(app: &mut App) {
+async fn init(app: &mut AmbientWindow) {
     let world = &mut app.world;
 
-    world.resource(gizmos()).scope(line_hash!()).draw(GizmoPrimitive::sphere(vec3(0., 0., 0.), 1.));
+    world
+        .resource(gizmos())
+        .scope(line_hash!())
+        .draw(GizmoPrimitive::sphere(vec3(0., 0., 0.), 1.));
 
-    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .with(active_camera(), 0.)
-        .with(main_scene(), ())
-        .spawn(world);
+    ambient_cameras::spherical::new(
+        vec3(0., 0., 0.),
+        SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.),
+    )
+    .with(active_camera(), 0.)
+    .with(main_scene(), ())
+    .spawn(world);
 }
 
 fn main() {
