@@ -233,14 +233,44 @@ fn check_docker_run() -> anyhow::Result<()> {
 
 fn check_msrv() -> anyhow::Result<()> {
     println!("checking MSRV...");
-    let msrv_out = std::process::Command::new("cargo")
-        .args(["msrv", "--output-format", "minimal"])
-        .output()?;
 
-    let msrv_str = str::from_utf8(&msrv_out.stdout).unwrap().trim();
+    let msrv = {
+        let output = std::process::Command::new("cargo")
+            .args([
+                "msrv",
+                "--output-format",
+                "json",
+                "--min",
+                "1.60.0",
+                "--include-all-patch-releases",
+            ])
+            .output()?;
+        if !output.status.success() {
+            anyhow::bail!("failed to execute cargo msrv");
+        }
+
+        let msrv_out = String::from_utf8(output.stdout)?;
+        let last_line = msrv_out
+            .lines()
+            .last()
+            .ok_or_else(|| anyhow::anyhow!("cargo msrv output is empty"))?;
+
+        #[derive(Deserialize)]
+        struct MsrvOutput {
+            msrv: String,
+            success: bool,
+        }
+
+        let output = serde_json::from_str::<MsrvOutput>(last_line)
+            .context("could not parse cargo msrv output")?;
+
+        if !output.success {
+            anyhow::bail!("cargo msrv reported failure");
+        }
+        output.msrv
+    };
 
     let cargo_files = [ROOT_CARGO, WEB_CARGO, GUEST_RUST_CARGO];
-
     for cargo_file in &cargo_files {
         let cargo_toml = std::fs::read_to_string(cargo_file)?;
         let cargo_toml_parsed = cargo_toml.parse::<toml::Value>()?;
@@ -253,13 +283,15 @@ fn check_msrv() -> anyhow::Result<()> {
             .ok_or_else(|| anyhow::anyhow!("Could not find rust-version in {}", cargo_file))?;
 
         ensure!(
-            rust_version == msrv_str,
+            rust_version == msrv,
             "{} does not match MSRV: expected {}, found {}",
             cargo_file,
-            msrv_str,
+            msrv,
             rust_version
         );
     }
+
+    // TODO: check dockerfile
 
     println!("MSRV OK");
     Ok(())
