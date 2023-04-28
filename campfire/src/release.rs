@@ -377,7 +377,7 @@ fn check_changelog() -> anyhow::Result<()> {
     // commented out Markdown, so it has to have some degree of smarts about it
     let _changelog = std::fs::read_to_string(CHANGELOG)?;
 
-    log::info!("CHANGELOG OK.");
+    log::info!("CHANGELOG skipped (unimplemented, see code).");
     Ok(())
 }
 
