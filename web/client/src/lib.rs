@@ -37,19 +37,20 @@ pub fn init_ambient(logging: bool, panic: bool) {
 }
 
 #[wasm_bindgen]
-pub async fn start() {
-    if let Err(err) = run().await {
+pub async fn start(target: Option<web_sys::HtmlElement>) {
+    if let Err(err) = run(target).await {
         tracing::error!("{err:?}")
     }
 }
 
-async fn run() -> anyhow::Result<()> {
+async fn run(target: Option<web_sys::HtmlElement>) -> anyhow::Result<()> {
     use ambient_sys::timer::TimerWheel;
     ambient_sys::task::spawn(TimerWheel::new().start());
 
     use anyhow::Context;
     let mut app = App::builder()
         .ui_renderer(true)
+        .parent_element(target)
         .build()
         .await
         .context("Failed to build app")?;
