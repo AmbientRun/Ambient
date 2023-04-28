@@ -25,6 +25,7 @@ impl From<ProxiedConnection> for ConnectionInner {
 }
 
 impl ConnectionInner {
+    #[inline]
     pub async fn open_uni(&self) -> Result<SendStream, NetworkError> {
         match self {
             ConnectionInner::Direct(conn) => Ok(conn.open_uni().await?),
@@ -32,6 +33,7 @@ impl ConnectionInner {
         }
     }
 
+    #[inline]
     pub async fn open_bi(&self) -> Result<(SendStream, RecvStream), NetworkError> {
         match self {
             ConnectionInner::Direct(conn) => Ok(conn.open_bi().await?),
@@ -39,6 +41,7 @@ impl ConnectionInner {
         }
     }
 
+    #[inline]
     pub async fn accept_uni(&self) -> Result<RecvStream, NetworkError> {
         match self {
             ConnectionInner::Direct(conn) => Ok(conn.accept_uni().await?),
@@ -46,6 +49,7 @@ impl ConnectionInner {
         }
     }
 
+    #[inline]
     pub async fn accept_bi(&self) -> Result<(SendStream, RecvStream), NetworkError> {
         match self {
             ConnectionInner::Direct(conn) => Ok(conn.accept_bi().await?),
@@ -53,6 +57,7 @@ impl ConnectionInner {
         }
     }
 
+    #[inline]
     pub async fn read_datagram(&self) -> Result<Bytes, NetworkError> {
         match self {
             ConnectionInner::Direct(conn) => Ok(conn.read_datagram().await?),
@@ -60,7 +65,8 @@ impl ConnectionInner {
         }
     }
 
-    fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError> {
+    #[inline]
+    pub async fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError> {
         match self {
             ClientConnection::Direct(conn) => Ok(conn.send_datagram(data)?),
             ClientConnection::Proxied(conn) => Ok(conn.send_datagram(data)?),

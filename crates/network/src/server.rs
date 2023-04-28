@@ -35,14 +35,17 @@ use tokio::{
     io::AsyncReadExt,
     time::{interval, MissedTickBehavior},
 };
+use tokio_util::codec::{FramedRead, FramedWrite};
 use tracing::{debug_span, Instrument};
 
 use crate::{
     client_connection::ConnectionInner,
+    codec::FramedCodec,
     connection::Connection,
-    create_server, proto,
+    create_server,
+    proto::{self, ServerControlFrame},
     protocol::{ClientInfo, ServerConnection, ServerInfo},
-    NetworkError, RPC_BISTREAM_ID,
+    NetworkError, OutgoingStream, RPC_BISTREAM_ID,
 };
 use colored::Colorize;
 
@@ -175,19 +178,19 @@ pub const MAIN_INSTANCE_ID: &str = "main";
 
 pub struct Player {
     pub instance: String,
-    pub abort_handle: Arc<OnceCell<tokio::task::JoinHandle<()>>>,
+    pub control: flume::Sender<ServerControlFrame>,
     pub connection_id: String,
 }
 
 impl Player {
     pub fn new(
         instance: String,
-        abort_handle: Arc<OnceCell<tokio::task::JoinHandle<()>>>,
+        control: flume::Sender<ServerControlFrame>,
         connection_id: String,
     ) -> Self {
         Self {
             instance,
-            abort_handle,
+            control,
             connection_id,
         }
     }
@@ -195,14 +198,16 @@ impl Player {
     pub fn new_local(instance: String) -> Self {
         Self {
             instance,
-            abort_handle: Arc::new(OnceCell::new()),
+            control: todo!(),
             connection_id: friendly_id(),
         }
     }
 }
 
 pub type SharedServerState = Arc<Mutex<ServerState>>;
+
 pub struct ServerState {
+    pub assets: AssetCache,
     pub instances: HashMap<String, WorldInstance>,
     pub players: HashMap<String, Player>,
     pub create_server_systems: Arc<dyn Fn(&mut World) -> SystemGroup + Sync + Send>,
@@ -210,10 +215,11 @@ pub struct ServerState {
     pub create_shutdown_systems: Arc<dyn Fn() -> SystemGroup<ShutdownEvent> + Sync + Send>,
 }
 impl ServerState {
-    pub fn new_local() -> Self {
+    pub fn new_local(assets: AssetCache) -> Self {
         let world_stream_filter =
             WorldStreamFilter::new(ArchetypeFilter::new(), Arc::new(|_, _| false));
         Self {
+            assets,
             instances: [(
                 MAIN_INSTANCE_ID.to_string(),
                 WorldInstance {
@@ -230,12 +236,14 @@ impl ServerState {
         }
     }
     pub fn new(
+        assets: AssetCache,
         instances: HashMap<String, WorldInstance>,
         create_server_systems: Arc<dyn Fn(&mut World) -> SystemGroup + Sync + Send>,
         create_on_forking_systems: Arc<dyn Fn() -> SystemGroup<ForkingEvent> + Sync + Send>,
         create_shutdown_systems: Arc<dyn Fn() -> SystemGroup<ShutdownEvent> + Sync + Send>,
     ) -> Self {
         Self {
+            assets,
             instances,
             players: Default::default(),
             create_server_systems,
@@ -354,6 +362,7 @@ impl GameServer {
         let world_stream_filter =
             WorldStreamFilter::new(ArchetypeFilter::new().excl(no_sync()), is_sync_component);
         let state = Arc::new(Mutex::new(ServerState::new(
+            assets.clone(),
             [(
                 MAIN_INSTANCE_ID.to_string(),
                 WorldInstance {
@@ -461,7 +470,7 @@ impl GameServer {
 async fn start_proxy_connection(
     endpoint: Endpoint,
     settings: ProxySettings,
-    state: Arc<Mutex<ServerState>>,
+    state: SharedServerState,
     world_stream_filter: WorldStreamFilter,
     assets: AssetCache,
 ) {
@@ -505,7 +514,7 @@ async fn start_proxy_connection(
         Arc::new(
             move |_player_id, conn: ambient_proxy::client::ProxiedConnection| {
                 log::debug!("Accepted connection via proxy");
-                run_connection(
+                handle_connection(
                     conn.into(),
                     state.clone(),
                     world_stream_filter.clone(),
@@ -524,7 +533,10 @@ async fn start_proxy_connection(
         .project_id(settings.project_id.clone())
         .user_agent(APP_USER_AGENT.to_string());
 
-    let assets_path = settings.project_path.push("build").expect("Pushing to path cannot fail");
+    let assets_path = settings
+        .project_path
+        .push("build")
+        .expect("Pushing to path cannot fail");
     let builder = if let Ok(Some(assets_file_path)) = assets_path.to_file_path() {
         builder.assets_path(assets_file_path)
     } else {
@@ -558,228 +570,269 @@ async fn start_proxy_connection(
 }
 
 /// Setup the protocol and enter the update loop for a new connected client
-#[tracing::instrument(skip_all)]
-fn run_connection(
-    connection: ConnectionInner,
+async fn handle_connection(
+    conn: ConnectionInner,
     state: SharedServerState,
     world_stream_filter: WorldStreamFilter,
     assets: AssetCache,
     content_base_url: AbsAssetUrl,
-) {
+) -> anyhow::Result<()> {
     let connection_id = friendly_id();
-    let handle = Arc::new(OnceCell::new());
-    handle
-        .set({
-            let handle = handle.clone();
-            tokio::spawn(async move {
-                let (diffs_tx, diffs_rx) = flume::unbounded();
-                let (stats_tx, stats_rx) = flume::unbounded();
+    // let handle = Arc::new(OnceCell::new());
+    // handle
+    //     .set({
+    //         let handle = handle.clone();
+    //         tokio::spawn(async move {
+    let (diffs_tx, diffs_rx) = flume::unbounded();
+    let (stats_tx, stats_rx) = flume::unbounded();
 
-                let new_player_connection = connection.clone();
+    let new_player_connection = conn.clone();
 
-                let on_init = |client: ClientInfo| {
-                    let user_id = &client.user_id;
-                    log::debug!("[{}] Locking world", user_id);
-                    let mut state = state.lock();
-                    // If there's an old player
-                    let reconnecting = if let Some(player) = state.players.get_mut(user_id) {
-                        if let Some(handle) = player.abort_handle.get() {
-                            handle.abort();
-                        }
-                        player.abort_handle = handle.clone();
-                        player.connection_id = connection_id.clone();
-                        log::debug!("[{}] Player reconnecting", user_id);
-                        true
-                    } else {
-                        state.players.insert(
-                            user_id.clone(),
-                            Player {
-                                instance: MAIN_INSTANCE_ID.to_string(),
-                                abort_handle: handle.clone(),
-                                connection_id: connection_id.clone(),
-                            },
-                        );
-                        false
-                    };
+    let on_init = |client: ClientInfo| {
+        let user_id = &client.user_id;
+        log::debug!("[{}] Locking world", user_id);
+        let mut state = state.lock();
+        // If there's an old player
+        let reconnecting = if let Some(player) = state.players.get_mut(user_id) {
+            if let Some(handle) = player.abort_handle.get() {
+                handle.abort();
+            }
+            player.abort_handle = handle.clone();
+            player.connection_id = connection_id.clone();
+            log::debug!("[{}] Player reconnecting", user_id);
+            true
+        } else {
+            state.players.insert(
+                user_id.clone(),
+                Player {
+                    instance: MAIN_INSTANCE_ID.to_string(),
+                    abort_handle: handle.clone(),
+                    connection_id: connection_id.clone(),
+                },
+            );
+            false
+        };
 
-                    let instance = state.instances.get_mut(MAIN_INSTANCE_ID).unwrap();
+        let instance = state.instances.get_mut(MAIN_INSTANCE_ID).unwrap();
 
-                    // Bring world stream up to the current time
-                    log::debug!("[{}] Broadcasting diffs", user_id);
-                    instance.broadcast_diffs();
-                    log::debug!("[{}] Creating init diff", user_id);
+        // Bring world stream up to the current time
+        log::debug!("[{}] Broadcasting diffs", user_id);
+        instance.broadcast_diffs();
+        log::debug!("[{}] Creating init diff", user_id);
 
-                    let diff = world_stream_filter.initial_diff(&instance.world);
-                    let diff = bincode::serialize(&diff).unwrap();
+        let diff = world_stream_filter.initial_diff(&instance.world);
+        let diff = bincode::serialize(&diff).unwrap();
 
-                    log_result!(diffs_tx.send(diff));
-                    log::debug!("[{}] Init diff sent", user_id);
+        log_result!(diffs_tx.send(diff));
+        log::debug!("[{}] Init diff sent", user_id);
 
-                    if !reconnecting {
-                        instance.spawn_player(
-                            create_player_entity_data(user_id, diffs_tx.clone(), stats_tx.clone())
-                                .with(player_connection(), new_player_connection.clone()),
-                        );
-                        log::info!("[{}] Player spawned", user_id);
-                    } else {
-                        let entity = get_by_user_id(&instance.world, user_id).unwrap();
-                        instance
-                            .world
-                            .set(entity, player_entity_stream(), diffs_tx.clone())
-                            .unwrap();
-                        instance
-                            .world
-                            .set(entity, player_stats_stream(), stats_tx.clone())
-                            .unwrap();
-                        instance
-                            .world
-                            .set(entity, player_connection(), new_player_connection.clone())
-                            .unwrap();
-                        log::info!("[{}] Player reconnected", user_id);
+        if !reconnecting {
+            instance.spawn_player(
+                create_player_entity_data(user_id, diffs_tx.clone(), stats_tx.clone())
+                    .with(player_connection(), new_player_connection.clone()),
+            );
+            log::info!("[{}] Player spawned", user_id);
+        } else {
+            let entity = get_by_user_id(&instance.world, user_id).unwrap();
+            instance
+                .world
+                .set(entity, player_entity_stream(), diffs_tx.clone())
+                .unwrap();
+            instance
+                .world
+                .set(entity, player_stats_stream(), stats_tx.clone())
+                .unwrap();
+            instance
+                .world
+                .set(entity, player_connection(), new_player_connection.clone())
+                .unwrap();
+            log::info!("[{}] Player reconnected", user_id);
+        }
+    };
+
+    let on_disconnect = |user_id: &Option<String>| {
+        if let Some(user_id) = user_id {
+            log::debug!("[{}] Disconnecting", user_id);
+            let mut state = state.lock();
+            if state
+                .players
+                .get(user_id)
+                .map(|p| p.connection_id != connection_id)
+                .unwrap_or(false)
+            {
+                log::info!("[{}] Disconnected (reconnection)", user_id);
+                return;
+            }
+            if let Some(player) = state.players.remove(user_id) {
+                state
+                    .instances
+                    .get_mut(&player.instance)
+                    .unwrap()
+                    .despawn_player(user_id);
+            }
+
+            log::info!("[{}] Disconnected", user_id);
+        }
+    };
+
+    let on_bi_stream = |user_id: &String, handler_id, tx, rx| {
+        let _span = debug_span!("on_bi_stream").entered();
+        let handler = {
+            let state = state.lock();
+            let world = match state.get_player_world(user_id) {
+                Some(world) => world,
+                None => {
+                    log::error!("Player missing for rpc."); // Probably disconnected
+                    return;
+                }
+            };
+
+            world
+                .resource(bi_stream_handlers())
+                .get(&handler_id)
+                .cloned()
+        };
+        if let Some(handler) = handler {
+            handler(state.clone(), assets.clone(), user_id, tx, rx);
+        } else {
+            log::error!("Unrecognized stream handler id: {}", handler_id);
+        }
+    };
+
+    let on_uni_stream = |user_id: &String, handler_id, rx| {
+        let _span = debug_span!("on_uni_stream").entered();
+        let handler = {
+            let state = state.lock();
+            let world = match state.get_player_world(user_id) {
+                Some(world) => world,
+                None => {
+                    log::error!("Player missing for rpc."); // Probably disconnected
+                    return;
+                }
+            };
+
+            world
+                .resource(uni_stream_handlers())
+                .get(&handler_id)
+                .cloned()
+        };
+        if let Some(handler) = handler {
+            handler(state.clone(), assets.clone(), user_id, rx);
+        } else {
+            log::error!("Unrecognized stream handler id: {}", handler_id);
+        }
+    };
+
+    let on_datagram = |user_id: &String, handler_id: u32, bytes: Bytes| {
+        let state = state.clone();
+        let handler = {
+            let state = state.lock();
+            let world = match state.get_player_world(user_id) {
+                Some(world) => world,
+                None => {
+                    log::warn!("Player missing for datagram."); // Probably disconnected
+                    return;
+                }
+            };
+            world
+                .resource(datagram_handlers())
+                .get(&handler_id)
+                .cloned()
+        };
+        match handler {
+            Some(handler) => {
+                handler(state, assets.clone(), user_id, bytes);
+            }
+            None => {
+                log::error!("No such datagram handler: {:?}", handler_id);
+            }
+        }
+    };
+
+    // let client = ClientInstance {
+    //     diffs_rx,
+    //     stats_rx,
+    //     on_init: &on_init,
+    //     on_bi_stream: &on_bi_stream,
+    //     on_uni_stream: &on_uni_stream,
+    //     on_datagram: &on_datagram,
+    //     on_disconnect: &on_disconnect,
+    //     user_id: None,
+    // };
+
+    let server_info = {
+        let state = state.lock();
+        let instance = state.instances.get(MAIN_INSTANCE_ID).unwrap();
+        let world = &instance.world;
+        ServerInfo {
+            project_name: world.resource(project_name()).clone(),
+            content_base_url,
+            ..Default::default()
+        }
+    };
+
+    let server = proto::server::ServerState::default();
+
+    let control_recv = FramedRead::new(conn.accept_uni().await?, FramedCodec::new());
+    let control_send = FramedWrite::new(conn.open_uni().await?, FramedCodec::new());
+
+    let diff_stream = OutgoingStream::new(conn.open_uni().await?);
+    let stat_stream = OutgoingStream::new(conn.open_uni().await?);
+
+    loop {
+        match server {
+            // Before a connection has been established, only process the control stream
+            proto::server::ServerState::PendingConnection => {
+                if let Some(frame) = control_recv.next().await {
+                    server.process_control(frame?).await?;
+                }
+            }
+            proto::server::ServerState::Connected(connected) => {
+                tokio::select! {
+                    Some(frame) = control_recv.next() => {
+                        server.process_control(frame?).await?;
                     }
-                };
-
-                let on_disconnect = |user_id: &Option<String>| {
-                    if let Some(user_id) = user_id {
-                        log::debug!("[{}] Disconnecting", user_id);
-                        let mut state = state.lock();
-                        if state
-                            .players
-                            .get(user_id)
-                            .map(|p| p.connection_id != connection_id)
-                            .unwrap_or(false)
-                        {
-                            log::info!("[{}] Disconnected (reconnection)", user_id);
-                            return;
-                        }
-                        if let Some(player) = state.players.remove(user_id) {
-                            state
-                                .instances
-                                .get_mut(&player.instance)
-                                .unwrap()
-                                .despawn_player(user_id);
-                        }
-
-                        log::info!("[{}] Disconnected", user_id);
+                    stream = conn.accept_uni() => {
+                        connected.process_uni(&state, stream?).await?;
                     }
-                };
-
-                let on_bi_stream = |user_id: &String, handler_id, tx, rx| {
-                    let _span = debug_span!("on_bi_stream").entered();
-                    let handler = {
-                        let state = state.lock();
-                        let world = match state.get_player_world(user_id) {
-                            Some(world) => world,
-                            None => {
-                                log::error!("Player missing for rpc."); // Probably disconnected
-                                return;
-                            }
-                        };
-
-                        world
-                            .resource(bi_stream_handlers())
-                            .get(&handler_id)
-                            .cloned()
-                    };
-                    if let Some(handler) = handler {
-                        handler(state.clone(), assets.clone(), user_id, tx, rx);
-                    } else {
-                        log::error!("Unrecognized stream handler id: {}", handler_id);
+                    stream = conn.accept_bi() => {
+                        let (send, recv) = stream?;
+                        connected.process_bi(&state, send, recv).await?;
                     }
-                };
+                    datagram = conn.read_datagram() => {
+                        connected.process_datagram(&state, datagram?).await?;
+                    }
+                }
+            }
+            proto::server::ServerState::Disconnected => {
+                tracing::info!("Client disconnected");
+                break;
+            }
+        }
+    }
 
-                let on_uni_stream = |user_id: &String, handler_id, rx| {
-                    let _span = debug_span!("on_uni_stream").entered();
-                    let handler = {
-                        let state = state.lock();
-                        let world = match state.get_player_world(user_id) {
-                            Some(world) => world,
-                            None => {
-                                log::error!("Player missing for rpc."); // Probably disconnected
-                                return;
-                            }
-                        };
+    Ok(())
 
-                        world
-                            .resource(uni_stream_handlers())
-                            .get(&handler_id)
-                            .cloned()
-                    };
-                    if let Some(handler) = handler {
-                        handler(state.clone(), assets.clone(), user_id, rx);
-                    } else {
-                        log::error!("Unrecognized stream handler id: {}", handler_id);
-                    }
-                };
+    // match client.run(connection, server_info, state.clone(), assets.clone()).await {
+    //     Ok(()) => {}
+    //     Err(err) if err.is_closed() => {
+    //         log::info!("Connection closed by client");
+    //     }
+    //     Err(err) if err.is_end_of_stream() => {
+    //         log::warn!("Stream was closed prematurely");
+    //     }
+    //     Err(NetworkError::IOError(err)) if err.kind() == std::io::ErrorKind::NotConnected => {
+    //         log::warn!("Not connected: {err:?}");
+    //     }
+    //     Err(err) => {
+    //         log::error!("Server error: {err:?}");
+    //     }
+    // };
 
-                let on_datagram = |user_id: &String, handler_id: u32, bytes: Bytes| {
-                    let state = state.clone();
-                    let handler = {
-                        let state = state.lock();
-                        let world = match state.get_player_world(user_id) {
-                            Some(world) => world,
-                            None => {
-                                log::warn!("Player missing for datagram."); // Probably disconnected
-                                return;
-                            }
-                        };
-                        world
-                            .resource(datagram_handlers())
-                            .get(&handler_id)
-                            .cloned()
-                    };
-                    match handler {
-                        Some(handler) => {
-                            handler(state, assets.clone(), user_id, bytes);
-                        }
-                        None => {
-                            log::error!("No such datagram handler: {:?}", handler_id);
-                        }
-                    }
-                };
-
-                let client = ClientInstance {
-                    diffs_rx,
-                    stats_rx,
-                    on_init: &on_init,
-                    on_bi_stream: &on_bi_stream,
-                    on_uni_stream: &on_uni_stream,
-                    on_datagram: &on_datagram,
-                    on_disconnect: &on_disconnect,
-                    user_id: None,
-                };
-
-                let server_info = {
-                    let state = state.lock();
-                    let instance = state.instances.get(MAIN_INSTANCE_ID).unwrap();
-                    let world = &instance.world;
-                    ServerInfo {
-                        project_name: world.resource(project_name()).clone(),
-                        content_base_url,
-                        ..Default::default()
-                    }
-                };
-
-                match client.run(connection, server_info, state.clone(), assets.clone()).await {
-                    Ok(()) => {}
-                    Err(err) if err.is_closed() => {
-                        log::info!("Connection closed by client");
-                    }
-                    Err(err) if err.is_end_of_stream() => {
-                        log::warn!("Stream was closed prematurely");
-                    }
-                    Err(NetworkError::IOError(err))
-                        if err.kind() == std::io::ErrorKind::NotConnected =>
-                    {
-                        log::warn!("Not connected: {err:?}");
-                    }
-                    Err(err) => {
-                        log::error!("Server error: {err:?}");
-                    }
-                };
-            })
-        })
-        .expect("Player handle set twice");
+    // Ok(()) as anyhow::Result<()>
+    // })
+    // })
+    // .expect("Player handle set twice");
 }
 
 /// Manages the server side client communication
@@ -813,47 +866,48 @@ impl<'a> ClientInstance<'a> {
         state: SharedServerState,
         assets: AssetCache,
     ) -> Result<(), NetworkError> {
-        log::debug!("Connecting to client");
-        let mut conn = ServerConnection::new(conn, server_info).await?;
+        unimplemented!()
+        // log::debug!("Connecting to client");
+        // let mut conn = ServerConnection::new(conn, server_info).await?;
 
-        log::debug!("Client loop starting");
-        let mut entities_rx = self.diffs_rx.stream();
-        let mut stats_rx = self.stats_rx.stream();
+        // log::debug!("Client loop starting");
+        // let mut entities_rx = self.diffs_rx.stream();
+        // let mut stats_rx = self.stats_rx.stream();
 
-        tokio::task::block_in_place(|| {
-            (self.on_init)(conn.client_info().clone());
-        });
-        let user_id = conn.client_info().user_id.clone();
-        self.user_id = Some(user_id.clone());
+        // tokio::task::block_in_place(|| {
+        //     (self.on_init)(conn.client_info().clone());
+        // });
+        // let user_id = conn.client_info().user_id.clone();
+        // self.user_id = Some(user_id.clone());
 
-        let proto = proto::Server::new(user_id, state.clone(), assets.clone());
+        // let proto = proto::Server::new(user_id, state.clone(), assets.clone());
 
-        loop {
-            tokio::select! {
-                Some(msg) = entities_rx.next() => {
-                    let span = tracing::debug_span!("world diff");
-                    conn.diff_stream.send_bytes(msg).instrument(span).await?;
-                }
-                Some(msg) = stats_rx.next() => {
-                    let span = tracing::debug_span!("stats");
-                    conn.stat_stream.send(&msg).instrument(span).await?;
-                }
+        // loop {
+        //     tokio::select! {
+        //         Some(msg) = entities_rx.next() => {
+        //             let span = tracing::debug_span!("world diff");
+        //             conn.diff_stream.send_bytes(msg).instrument(span).await?;
+        //         }
+        //         Some(msg) = stats_rx.next() => {
+        //             let span = tracing::debug_span!("stats");
+        //             conn.stat_stream.send(&msg).instrument(span).await?;
+        //         }
 
-                // Ok(mut datagram) = conn.read_datagram() => {
-                //     proto.process_datagram(datagram).await;
-                // }
-                // Ok((tx, mut rx)) = conn.accept_bi() => {
-                //     todo!("process bi")
-                //     // let span = tracing::debug_span!("bistream");
-                //     // let stream_id = rx.read_u32().instrument(span).await;
-                //     // if let Ok(stream_id) = stream_id {
-                //     //     tokio::task::block_in_place(|| { (self.on_bi_stream)(&user_id, stream_id, tx, rx); })
-                //     // }
-                // }
-                // Ok(mut stream) = conn.conn.accept_uni() => {
-                //     proto.process_uni(stream).await;
-                // }
-            }
-        }
+        // Ok(mut datagram) = conn.read_datagram() => {
+        //     proto.process_datagram(datagram).await;
+        // }
+        // Ok((tx, mut rx)) = conn.accept_bi() => {
+        //     todo!("process bi")
+        //     // let span = tracing::debug_span!("bistream");
+        //     // let stream_id = rx.read_u32().instrument(span).await;
+        //     // if let Ok(stream_id) = stream_id {
+        //     //     tokio::task::block_in_place(|| { (self.on_bi_stream)(&user_id, stream_id, tx, rx); })
+        //     // }
+        // }
+        // Ok(mut stream) = conn.conn.accept_uni() => {
+        //     proto.process_uni(stream).await;
+        // }
+        // }
+        // }
     }
 }

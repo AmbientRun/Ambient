@@ -1,13 +1,14 @@
 use ambient_ecs::{ComponentRegistry, ExternalComponentDesc, WorldDiff};
 use ambient_std::asset_url::AbsAssetUrl;
 use anyhow::{Context, Result};
+use bytes::Bytes;
 use futures::io::BufReader;
 use quinn::{Connection, RecvStream, SendStream};
 use tokio_util::codec::{FramedRead, FramedWrite};
 
 use crate::{
-    client_connection::ConnectionInner, codec::FramedCodec, next_bincode_bi_stream, open_bincode_bi_stream, proto::ServerRequest,
-    IncomingStream, NetworkError, OutgoingStream,
+    client_connection::ConnectionInner, codec::FramedCodec, open_bincode_bi_stream, proto::ClientControlFrame, IncomingStream,
+    NetworkError, OutgoingStream,
 };
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -78,49 +79,51 @@ type FramedSendStream<T> = FramedWrite<SendStream, FramedCodec<T>>;
 /// The server side connection to a client or a proxied client
 pub struct ServerConnection {
     pub(crate) conn: ConnectionInner,
-    pub(crate) control_send: FramedSendStream<ServerRequest>,
-    pub(crate) control_recv: FramedRecvStream<ServerRequest>,
+    pub(crate) control_send: FramedSendStream<ClientControlFrame>,
+    pub(crate) control_recv: FramedRecvStream<ClientControlFrame>,
 
-    pub(crate) diff_stream: OutgoingStream<quinn::RecvStream>,
+    pub(crate) diff_stream: OutgoingStream<quinn::SendStream>,
     pub(crate) stat_stream: OutgoingStream<quinn::SendStream>,
-    client_info: ClientInfo,
+}
+
+/// Prevent moving out fields.
+///
+/// TODO: send disconnect.
+impl Drop for ServerConnection {
+    fn drop(&mut self) {
+        log::info!("Dropping server connection");
+    }
 }
 
 impl ServerConnection {
     /// Establishes a connection to the client
     pub async fn new(conn: ConnectionInner, server_info: ServerInfo) -> Result<Self, NetworkError> {
         // The client now opens a control stream
-        let (mut send, mut recv) = conn.accept_bi().await?;
-        let control_recv = FramedRead::new(recv, FramedCodec::new());
-        let control_send = FramedWrite::new(send, FramedCodec::new());
+        let control_recv = FramedRead::new(conn.accept_uni().await?, FramedCodec::new());
+        let control_send = FramedWrite::new(conn.open_uni().await?, FramedCodec::new());
 
-        // let user_id: String = rx.next().await?;
-
-        // log::debug!("Received handshake from {user_id:?}");
-
-        // let external_components = ComponentRegistry::get().all_external().map(|x| x.0).collect();
-
-        // // Respond
-        // let client_info = ClientInfo { user_id, external_components };
-        // log::debug!("Responding with {client_info:?}");
-        // tx.send(&client_info).await?;
-
-        // // Send the project name to the client so it can title its window correctly
-        // tx.send(&server_info).await?;
-
-        // Great, now open all required streams
-        let mut diff_stream = OutgoingStream::new(conn.open_uni().await?);
-        // // Send "something" to notify the client of the new stream
-        // diff_stream.send(&()).await?;
-        let mut stat_stream = OutgoingStream::new(conn.open_uni().await?);
+        let diff_stream = OutgoingStream::new(conn.open_uni().await?);
+        let stat_stream = OutgoingStream::new(conn.open_uni().await?);
         // stat_stream.send(&()).await?;
 
         // Ok(Self { conn, diff_stream, stat_stream, client_info })
-        Ok(Self { conn, control_send, control_recv, diff_stream: todo!(), stat_stream: todo!(), client_info: todo!() })
+        Ok(Self { conn, control_send, control_recv, diff_stream, stat_stream })
     }
 
-    pub fn client_info(&self) -> &ClientInfo {
-        &self.client_info
+    pub async fn read_datagram(&self) -> Result<Bytes, NetworkError> {
+        self.conn.read_datagram().await
+    }
+
+    pub async fn accept_uni(&self) -> Result<RecvStream, NetworkError> {
+        self.conn.accept_uni().await
+    }
+
+    pub async fn accept_bi(&self) -> Result<(SendStream, RecvStream), NetworkError> {
+        self.conn.accept_bi().await
+    }
+
+    pub async fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError> {
+        self.conn.send_datagram(data).await
     }
 }
 

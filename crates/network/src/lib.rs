@@ -226,7 +226,7 @@ impl IncomingStream<quinn::RecvStream> {
     }
 }
 
-impl<S: AsyncRead> IncomingStream<S> {
+impl<S: Unpin + AsyncRead> IncomingStream<S> {
     pub fn new(stream: S) -> Self {
         let mut codec = LengthDelimitedCodec::new();
         codec.set_max_frame_length(1_024 * 1_024 * 1_024);
