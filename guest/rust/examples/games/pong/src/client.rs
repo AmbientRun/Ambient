@@ -13,13 +13,13 @@ use constants::*;
 use components::track_audio_url;
 
 #[main]
-fn main() {
+async fn main() {
     let ping_url = asset::url("assets/ping.ogg").unwrap();
     let mut ping = audio::load(ping_url);
     let mut is_playing = true;
 
     let url_from_server =
-        entity::get_component(entity::synchronized_resources(), track_audio_url()).unwrap();
+        entity::wait_for_component(entity::synchronized_resources(), track_audio_url()).await;
     println!("url_from_server: {:?}", &url_from_server);
 
     // this is just to demo that you can load a sound from a url from the server

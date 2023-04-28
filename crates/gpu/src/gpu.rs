@@ -3,7 +3,7 @@ use std::sync::Arc;
 use ambient_std::asset_cache::SyncAssetKey;
 use bytemuck::{Pod, Zeroable};
 use glam::{uvec2, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
-use wgpu::{PresentMode, TextureFormat};
+use wgpu::{PresentMode, TextureFormat, InstanceDescriptor};
 use winit::window::Window;
 
 // #[cfg(debug_assertions)]
@@ -48,8 +48,13 @@ impl Gpu {
         #[cfg(target_os = "unknown")]
         let backend = wgpu::Backends::all();
 
-        let instance = wgpu::Instance::new(backend);
-        let surface = window.map(|window| unsafe { instance.create_surface(window) });
+        let instance = wgpu::Instance::new(InstanceDescriptor{
+            backends: backend,
+            // TODO upgrade to Dxc ?
+            // https://docs.rs/wgpu/latest/wgpu/enum.Dx12Compiler.html
+            dx12_shader_compiler: wgpu::Dx12Compiler::Fxc
+        });
+        let surface = window.map(|window| unsafe { instance.create_surface(window).unwrap()});
         #[cfg(not(target_os = "unknown"))]
         {
             tracing::debug!("Available adapters:");
@@ -99,9 +104,9 @@ impl Gpu {
 
         tracing::info!("Device limits:\n{:#?}", device.limits());
 
-        let swapchain_format = surface.as_ref().map(|surface| surface.get_supported_formats(&adapter)[0]);
+        let swapchain_format = surface.as_ref().map(|surface| surface.get_capabilities(&adapter).formats[0]);
         tracing::debug!("Swapchain format: {swapchain_format:?}");
-        let swapchain_mode = surface.as_ref().map(|surface| surface.get_supported_present_modes(&adapter)).as_ref().map(|modes| {
+        let swapchain_mode = surface.as_ref().map(|surface| surface.get_capabilities(&adapter).present_modes).as_ref().map(|modes| {
             [PresentMode::Immediate, PresentMode::Fifo, PresentMode::Mailbox]
                 .into_iter()
                 .find(|pm| modes.contains(pm))
@@ -143,6 +148,7 @@ impl Gpu {
             height: size.y,
             present_mode,
             alpha_mode: wgpu::CompositeAlphaMode::Auto,
+            view_formats: vec![]
         }
     }
 }
