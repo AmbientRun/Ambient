@@ -17,7 +17,7 @@ tracing = "0.1.35"
 tracing-tree = { git = "https://github.com/TmLev/tracing-tree" }
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 tracing-log = { version = "0.1" }
-wgpu = "0.14.2"
+wgpu = "0.16.0"
 winit = { version = "0.28.1", features = ["serde"] }
 futures = { version = "0.3", default-features = false, features = ["std"] }
 tokio = { version = "1.20", features = ["parking_lot"] }
