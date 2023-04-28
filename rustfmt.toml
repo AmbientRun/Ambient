@@ -1,5 +1,0 @@
-max_width = 140
-use_small_heuristics = "Max"
-imports_layout = "Horizontal"
-imports_granularity = "Crate"
-group_imports = "StdExternalCrate"

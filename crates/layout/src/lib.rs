@@ -4,7 +4,10 @@ use ambient_core::{
     hierarchy::{children, parent},
     transform::{local_to_parent, local_to_world, mesh_to_local, translation},
 };
-use ambient_ecs::{components, query, query_mut, Debuggable, Description, DynSystem, EntityId, Name, Networked, Store, SystemGroup, World};
+use ambient_ecs::{
+    components, query, query_mut, Debuggable, Description, DynSystem, EntityId, Name, Networked,
+    Store, SystemGroup, World,
+};
 use ambient_input::picking::mouse_pickable;
 use glam::{vec2, vec3, vec4, Mat4, Vec2};
 use itertools::Itertools;
@@ -13,8 +16,8 @@ use serde::{Deserialize, Serialize};
 pub mod guest_api;
 
 pub use ambient_ecs::generated::components::core::layout::{
-    gpu_ui_size, height, is_book_file, max_height, max_width, mesh_to_local_from_size, min_height, min_width, screen, space_between_items,
-    width,
+    gpu_ui_size, height, is_book_file, max_height, max_width, mesh_to_local_from_size, min_height,
+    min_width, screen, space_between_items, width,
 };
 
 components!("layout", {
@@ -45,30 +48,65 @@ pub struct Borders {
     pub right: f32,
 }
 impl Borders {
-    pub const ZERO: Borders = Borders { top: 0., bottom: 0., left: 0., right: 0. };
+    pub const ZERO: Borders = Borders {
+        top: 0.,
+        bottom: 0.,
+        left: 0.,
+        right: 0.,
+    };
     pub fn top(top: f32) -> Self {
-        Self { top, ..Default::default() }
+        Self {
+            top,
+            ..Default::default()
+        }
     }
     pub fn bottom(bottom: f32) -> Self {
-        Self { bottom, ..Default::default() }
+        Self {
+            bottom,
+            ..Default::default()
+        }
     }
     pub fn left(left: f32) -> Self {
-        Self { left, ..Default::default() }
+        Self {
+            left,
+            ..Default::default()
+        }
     }
     pub fn right(right: f32) -> Self {
-        Self { right, ..Default::default() }
+        Self {
+            right,
+            ..Default::default()
+        }
     }
     pub fn horizontal(left_right: f32) -> Self {
-        Self { left: left_right, right: left_right, ..Default::default() }
+        Self {
+            left: left_right,
+            right: left_right,
+            ..Default::default()
+        }
     }
     pub fn vertical(top_bottom: f32) -> Self {
-        Self { top: top_bottom, bottom: top_bottom, ..Default::default() }
+        Self {
+            top: top_bottom,
+            bottom: top_bottom,
+            ..Default::default()
+        }
     }
     pub fn even(value: f32) -> Self {
-        Self { top: value, bottom: value, left: value, right: value }
+        Self {
+            top: value,
+            bottom: value,
+            left: value,
+            right: value,
+        }
     }
     pub fn rect(top_bottom: f32, left_right: f32) -> Self {
-        Self { top: top_bottom, bottom: top_bottom, left: left_right, right: left_right }
+        Self {
+            top: top_bottom,
+            bottom: top_bottom,
+            left: left_right,
+            right: left_right,
+        }
     }
     pub fn component_by_index(&self, index: usize) -> f32 {
         match index {
@@ -153,64 +191,70 @@ pub fn layout_systems() -> SystemGroup {
         vec![
             Box::new(guest_api::systems()),
             // For all "normal" components, i.e. non-layout components
-            query((width().changed(),)).excl(layout()).to_system_with_name("layout/width_non_layout", |q, world, qs, _| {
-                for (id, _) in q.collect_cloned(world, qs) {
-                    invalidate_parent_layout(world, id, Orientation::Horizontal);
-                }
-            }),
-            query((height().changed(),)).excl(layout()).to_system_with_name("layout/height_non_layout", |q, world, qs, _| {
-                for (id, _) in q.collect_cloned(world, qs) {
-                    invalidate_parent_layout(world, id, Orientation::Vertical);
-                }
-            }),
-            query((width().changed(), height().changed(), children().changed(), layout().changed()))
-                .optional_changed(parent())
-                .to_system_with_name("layout/main", |q, world, qs, _| {
-                    let qs = qs.unwrap();
-                    for _ in 0..100 {
-                        let mut changed = false;
-                        for (id, (_, _, children, layout)) in q.collect_cloned(world, Some(qs)) {
-                            // dump_world_hierarchy_to_tmp_file(world);
-                            changed = true;
-                            match layout {
-                                Layout::Dock => {
-                                    dock_layout(world, id, children);
-                                }
-                                Layout::Flow => {
-                                    flow_layout(world, id, children);
-                                }
-                                Layout::Bookcase => {
-                                    bookcase_layout(world, id, children);
-                                }
-                                Layout::WidthToChildren => {
-                                    width_to_children(world, id, children);
-                                }
+            query((width().changed(),))
+                .excl(layout())
+                .to_system_with_name("layout/width_non_layout", |q, world, qs, _| {
+                    for (id, _) in q.collect_cloned(world, qs) {
+                        invalidate_parent_layout(world, id, Orientation::Horizontal);
+                    }
+                }),
+            query((height().changed(),))
+                .excl(layout())
+                .to_system_with_name("layout/height_non_layout", |q, world, qs, _| {
+                    for (id, _) in q.collect_cloned(world, qs) {
+                        invalidate_parent_layout(world, id, Orientation::Vertical);
+                    }
+                }),
+            query((
+                width().changed(),
+                height().changed(),
+                children().changed(),
+                layout().changed(),
+            ))
+            .optional_changed(parent())
+            .to_system_with_name("layout/main", |q, world, qs, _| {
+                let qs = qs.unwrap();
+                for _ in 0..100 {
+                    let mut changed = false;
+                    for (id, (_, _, children, layout)) in q.collect_cloned(world, Some(qs)) {
+                        // dump_world_hierarchy_to_tmp_file(world);
+                        changed = true;
+                        match layout {
+                            Layout::Dock => {
+                                dock_layout(world, id, children);
+                            }
+                            Layout::Flow => {
+                                flow_layout(world, id, children);
+                            }
+                            Layout::Bookcase => {
+                                bookcase_layout(world, id, children);
+                            }
+                            Layout::WidthToChildren => {
+                                width_to_children(world, id, children);
                             }
                         }
-                        if !changed {
-                            return;
-                        }
                     }
-                    log::warn!("Layout ran the full 100 iterations");
-                }),
-            query_mut((mesh_to_local(),), (width().changed(), height().changed())).incl(mesh_to_local_from_size()).to_system_with_name(
-                "layout/mesh_to_local",
-                |q, world, qs, _| {
+                    if !changed {
+                        return;
+                    }
+                }
+                log::warn!("Layout ran the full 100 iterations");
+            }),
+            query_mut((mesh_to_local(),), (width().changed(), height().changed()))
+                .incl(mesh_to_local_from_size())
+                .to_system_with_name("layout/mesh_to_local", |q, world, qs, _| {
                     for (_, (mesh_to_local,), (&width, &height)) in q.iter(world, qs) {
                         *mesh_to_local = Mat4::from_scale(vec3(width, height, 1.));
                     }
-                },
-            ),
+                }),
             Box::new(screens_systems()),
             node_clickable_system(),
-            query_mut((gpu_ui_size(),), (width().changed(), height().changed())).to_system_with_name(
-                "layout/gpu_ui_size",
-                |q, world, qs, _| {
+            query_mut((gpu_ui_size(),), (width().changed(), height().changed()))
+                .to_system_with_name("layout/gpu_ui_size", |q, world, qs, _| {
                     for (_, (size,), (width, height)) in q.iter(world, qs) {
                         *size = vec4(*width, *height, 0., 0.);
                     }
-                },
-            ),
+                }),
         ],
     )
 }
@@ -218,32 +262,59 @@ pub fn layout_systems() -> SystemGroup {
 pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
     SystemGroup::new(
         "layout/gpu_world",
-        vec![Box::new(ComponentToGpuSystem::new(GpuComponentFormat::Vec4, gpu_ui_size(), gpu_components::ui_size()))],
+        vec![Box::new(ComponentToGpuSystem::new(
+            GpuComponentFormat::Vec4,
+            gpu_ui_size(),
+            gpu_components::ui_size(),
+        ))],
     )
 }
 
 const Z_DELTA: f32 = -0.00001;
 
-#[profiling::function]
+#[ambient_profiling::function]
 fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     let padding = world.get(id, padding()).unwrap_or(Borders::ZERO);
-    let orientation = world.get(id, orientation()).unwrap_or(Orientation::Vertical);
+    let orientation = world
+        .get(id, orientation())
+        .unwrap_or(Orientation::Vertical);
     let default_dock = match orientation {
         Orientation::Vertical => Docking::Top,
         Orientation::Horizontal => Docking::Left,
     };
-    let mut remaining_size = vec2(world.get(id, width()).unwrap_or(0.), world.get(id, height()).unwrap_or(0.)) - padding.border_size();
+    let mut remaining_size = vec2(
+        world.get(id, width()).unwrap_or(0.),
+        world.get(id, height()).unwrap_or(0.),
+    ) - padding.border_size();
     let mut remaining_offset = padding.offset();
     for (i, &c) in children.iter().enumerate() {
-        let dock = world.get(c, docking()).unwrap_or(if i == children.len() - 1 { Docking::Fill } else { default_dock });
+        let dock = world
+            .get(c, docking())
+            .unwrap_or(if i == children.len() - 1 {
+                Docking::Fill
+            } else {
+                default_dock
+            });
         let child_fit_horizontal = world.get(c, fit_horizontal()).unwrap_or(Fit::Parent);
         let child_fit_vertical = world.get(c, fit_vertical()).unwrap_or(Fit::Parent);
         let child_margin = world.get(c, margin()).unwrap_or(Borders::ZERO);
         match dock {
             Docking::Top => {
-                world.set_if_changed(c, translation(), (remaining_offset + child_margin.offset()).extend(Z_DELTA)).ok();
+                world
+                    .set_if_changed(
+                        c,
+                        translation(),
+                        (remaining_offset + child_margin.offset()).extend(Z_DELTA),
+                    )
+                    .ok();
                 if child_fit_horizontal != Fit::Children {
-                    world.set_if_changed(c, width(), remaining_size.x - child_margin.get_horizontal()).ok();
+                    world
+                        .set_if_changed(
+                            c,
+                            width(),
+                            remaining_size.x - child_margin.get_horizontal(),
+                        )
+                        .ok();
                 }
                 let height = world.get(c, height()).unwrap_or(0.) + child_margin.get_vertical();
                 remaining_offset.y += height;
@@ -263,14 +334,28 @@ fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
                     )
                     .ok();
                 if child_fit_horizontal != Fit::Children {
-                    world.set_if_changed(c, width(), remaining_size.x - child_margin.get_horizontal()).ok();
+                    world
+                        .set_if_changed(
+                            c,
+                            width(),
+                            remaining_size.x - child_margin.get_horizontal(),
+                        )
+                        .ok();
                 }
                 remaining_size.y -= height + child_margin.get_vertical();
             }
             Docking::Left => {
-                world.set_if_changed(c, translation(), (remaining_offset + child_margin.offset()).extend(Z_DELTA)).ok();
+                world
+                    .set_if_changed(
+                        c,
+                        translation(),
+                        (remaining_offset + child_margin.offset()).extend(Z_DELTA),
+                    )
+                    .ok();
                 if child_fit_vertical != Fit::Children {
-                    world.set_if_changed(c, height(), remaining_size.y - child_margin.get_vertical()).ok();
+                    world
+                        .set_if_changed(c, height(), remaining_size.y - child_margin.get_vertical())
+                        .ok();
                 }
                 let width = world.get(c, width()).unwrap_or(0.) + child_margin.get_horizontal();
                 remaining_offset.x += width;
@@ -290,17 +375,33 @@ fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
                     )
                     .ok();
                 if child_fit_vertical != Fit::Children {
-                    world.set_if_changed(c, height(), remaining_size.y - child_margin.get_vertical()).ok();
+                    world
+                        .set_if_changed(c, height(), remaining_size.y - child_margin.get_vertical())
+                        .ok();
                 }
                 remaining_size.x -= width + child_margin.get_horizontal();
             }
             Docking::Fill => {
-                world.set_if_changed(c, translation(), (remaining_offset + child_margin.offset()).extend(Z_DELTA)).ok();
+                world
+                    .set_if_changed(
+                        c,
+                        translation(),
+                        (remaining_offset + child_margin.offset()).extend(Z_DELTA),
+                    )
+                    .ok();
                 if child_fit_horizontal != Fit::Children {
-                    world.set_if_changed(c, width(), remaining_size.x - child_margin.get_horizontal()).ok();
+                    world
+                        .set_if_changed(
+                            c,
+                            width(),
+                            remaining_size.x - child_margin.get_horizontal(),
+                        )
+                        .ok();
                 }
                 if child_fit_vertical != Fit::Children {
-                    world.set_if_changed(c, height(), remaining_size.y - child_margin.get_vertical()).ok();
+                    world
+                        .set_if_changed(c, height(), remaining_size.y - child_margin.get_vertical())
+                        .ok();
                 }
                 remaining_offset.x += remaining_size.x;
                 remaining_offset.y += remaining_size.y;
@@ -311,24 +412,41 @@ fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     }
 }
 
-#[profiling::function]
+#[ambient_profiling::function]
 fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
-    let orientation = world.get(id, orientation()).unwrap_or(Orientation::Horizontal);
+    let orientation = world
+        .get(id, orientation())
+        .unwrap_or(Orientation::Horizontal);
     let space_between_items = world.get(id, space_between_items()).unwrap_or(0.);
     let self_padding = world.get(id, padding()).unwrap_or(Borders::ZERO);
-    let self_size = vec2(world.get(id, width()).unwrap_or(0.), world.get(id, height()).unwrap_or(0.));
+    let self_size = vec2(
+        world.get(id, width()).unwrap_or(0.),
+        world.get(id, height()).unwrap_or(0.),
+    );
     let mut offset = Vec2::ZERO;
     let self_fit_horizontal = world.get(id, fit_horizontal()).unwrap_or(Fit::None);
     let self_fit_vertical = world.get(id, fit_vertical()).unwrap_or(Fit::None);
     let self_min_width = world.get(id, min_width()).unwrap_or(0.);
     let self_min_height = world.get(id, min_height()).unwrap_or(0.);
-    let self_max_width = if self_fit_horizontal == Fit::Children { f32::INFINITY } else { self_size.x };
-    let self_max_height = if self_fit_vertical == Fit::Children { f32::INFINITY } else { self_size.y };
+    let self_max_width = if self_fit_horizontal == Fit::Children {
+        f32::INFINITY
+    } else {
+        self_size.x
+    };
+    let self_max_height = if self_fit_vertical == Fit::Children {
+        f32::INFINITY
+    } else {
+        self_size.y
+    };
     let mut children_width: f32 = 0.;
     let mut children_height: f32 = 0.;
     let mut line_width = 0.;
     let mut line_height = 0.;
-    let children = children.iter().filter(|id| world.has_component(**id, local_to_parent())).copied().collect_vec();
+    let children = children
+        .iter()
+        .filter(|id| world.has_component(**id, local_to_parent()))
+        .copied()
+        .collect_vec();
     let items = children
         .iter()
         .map(|&c| {
@@ -369,7 +487,8 @@ fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
             }
             children_width = children_width.max(offset.x + child_size.x);
             children_height = children_height.max(offset.y + child_size.y);
-            let child_position = vec3(child_margin.left, child_margin.top, 0.) + offset.floor().extend(Z_DELTA);
+            let child_position =
+                vec3(child_margin.left, child_margin.top, 0.) + offset.floor().extend(Z_DELTA);
             match orientation {
                 Orientation::Horizontal => offset.x += child_size.x + space_between_items,
                 Orientation::Vertical => offset.y += child_size.y + space_between_items,
@@ -381,11 +500,21 @@ fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
         })
         .collect_vec();
 
-    let inner_width = children_width.max(self_min_width - self_padding.get_horizontal()) + self_padding.get_horizontal();
-    let inner_height = children_height.max(self_min_height - self_padding.get_vertical()) + self_padding.get_vertical();
+    let inner_width = children_width.max(self_min_width - self_padding.get_horizontal())
+        + self_padding.get_horizontal();
+    let inner_height = children_height.max(self_min_height - self_padding.get_vertical())
+        + self_padding.get_vertical();
 
-    let new_self_width = if self_fit_horizontal == Fit::Children { inner_width } else { self_size.x };
-    let new_self_height = if self_fit_vertical == Fit::Children { inner_height } else { self_size.y };
+    let new_self_width = if self_fit_horizontal == Fit::Children {
+        inner_width
+    } else {
+        self_size.x
+    };
+    let new_self_height = if self_fit_vertical == Fit::Children {
+        inner_height
+    } else {
+        self_size.y
+    };
 
     let align_horizontal = world.get(id, align_horizontal()).unwrap_or(Align::Begin);
     let align_vertical = world.get(id, align_vertical()).unwrap_or(Align::Begin);
@@ -407,14 +536,16 @@ fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
         let child_fit_horizontal = world.get(c, fit_horizontal()).unwrap_or(Fit::None);
         let child_fit_vertical = world.get(c, fit_vertical()).unwrap_or(Fit::None);
         let child_width = if child_fit_horizontal == Fit::Parent {
-            let child_new_width = new_self_width - child_base_position.x - child_margin.right - self_padding.right;
+            let child_new_width =
+                new_self_width - child_base_position.x - child_margin.right - self_padding.right;
             world.set_if_changed(c, width(), child_new_width).ok();
             child_new_width
         } else {
             world.get(c, width()).unwrap_or(0.)
         };
         let child_height = if child_fit_vertical == Fit::Parent {
-            let child_new_height = new_self_height - child_base_position.y - child_margin.bottom - self_padding.bottom;
+            let child_new_height =
+                new_self_height - child_base_position.y - child_margin.bottom - self_padding.bottom;
             world.set_if_changed(c, height(), child_new_height).ok();
             child_new_height
         } else {
@@ -453,25 +584,44 @@ fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     }
 }
 
-#[profiling::function]
+#[ambient_profiling::function]
 fn bookcase_layout(world: &mut World, id: EntityId, files: Vec<EntityId>) {
-    let orientation = world.get(id, orientation()).unwrap_or(Orientation::Horizontal);
-    let self_size = vec2(world.get(id, width()).unwrap_or(0.), world.get(id, height()).unwrap_or(0.));
+    let orientation = world
+        .get(id, orientation())
+        .unwrap_or(Orientation::Horizontal);
+    let self_size = vec2(
+        world.get(id, width()).unwrap_or(0.),
+        world.get(id, height()).unwrap_or(0.),
+    );
     let mut children_size = Vec2::ZERO;
     let mut offset = Vec2::ZERO;
     let to_update = files
         .iter()
         .map(|&file| {
-            assert!(world.has_component(file, is_book_file()), "Each child of a Bookcase should be a BookFile");
-            let file_childs = world.get_ref(file, children()).expect("BookFile must contain children");
+            assert!(
+                world.has_component(file, is_book_file()),
+                "Each child of a Bookcase should be a BookFile"
+            );
+            let file_childs = world
+                .get_ref(file, children())
+                .expect("BookFile must contain children");
             let container = file_childs[0];
             let book = file_childs[1];
-            let book_size = vec2(world.get(book, width()).unwrap_or(0.), world.get(book, height()).unwrap_or(0.));
+            let book_size = vec2(
+                world.get(book, width()).unwrap_or(0.),
+                world.get(book, height()).unwrap_or(0.),
+            );
             children_size.x = children_size.x.max(book_size.x);
             children_size.y = children_size.y.max(book_size.y);
-            world.set_if_changed(file, translation(), offset.extend(Z_DELTA)).ok();
-            world.set_if_changed(container, translation(), Vec2::ZERO.extend(Z_DELTA)).ok();
-            world.set_if_changed(book, translation(), Vec2::ZERO.extend(Z_DELTA * 10.)).ok();
+            world
+                .set_if_changed(file, translation(), offset.extend(Z_DELTA))
+                .ok();
+            world
+                .set_if_changed(container, translation(), Vec2::ZERO.extend(Z_DELTA))
+                .ok();
+            world
+                .set_if_changed(book, translation(), Vec2::ZERO.extend(Z_DELTA * 10.))
+                .ok();
             if orientation == Orientation::Vertical {
                 offset.y += book_size.y;
             } else {
@@ -482,14 +632,22 @@ fn bookcase_layout(world: &mut World, id: EntityId, files: Vec<EntityId>) {
         .collect_vec();
     for (container, book_size) in to_update {
         if orientation == Orientation::Vertical {
-            world.set_if_changed(container, width(), children_size.x).ok();
+            world
+                .set_if_changed(container, width(), children_size.x)
+                .ok();
             world.set_if_changed(container, height(), book_size.y).ok();
         } else {
             world.set_if_changed(container, width(), book_size.x).ok();
-            world.set_if_changed(container, height(), children_size.y).ok();
+            world
+                .set_if_changed(container, height(), children_size.y)
+                .ok();
         }
     }
-    let new_size = if orientation == Orientation::Vertical { vec2(children_size.x, offset.y) } else { vec2(offset.x, children_size.x) };
+    let new_size = if orientation == Orientation::Vertical {
+        vec2(children_size.x, offset.y)
+    } else {
+        vec2(offset.x, children_size.x)
+    };
     if new_size.x != self_size.x {
         world.set(id, width(), new_size.x).ok();
         invalidate_parent_layout(world, id, Orientation::Horizontal);
@@ -500,7 +658,7 @@ fn bookcase_layout(world: &mut World, id: EntityId, files: Vec<EntityId>) {
     }
 }
 
-#[profiling::function]
+#[ambient_profiling::function]
 fn width_to_children(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     let self_width = world.get(id, width()).unwrap_or(0.);
     for c in children {
@@ -510,7 +668,9 @@ fn width_to_children(world: &mut World, id: EntityId, children: Vec<EntityId>) {
 
 fn invalidate_parent_layout(world: &mut World, id: EntityId, orientation: Orientation) {
     let self_is_parent_fit = match orientation {
-        Orientation::Horizontal => world.get(id, fit_horizontal()).unwrap_or(Fit::None) == Fit::Parent,
+        Orientation::Horizontal => {
+            world.get(id, fit_horizontal()).unwrap_or(Fit::None) == Fit::Parent
+        }
         Orientation::Vertical => world.get(id, fit_vertical()).unwrap_or(Fit::None) == Fit::Parent,
     };
     if self_is_parent_fit {
@@ -542,16 +702,18 @@ fn node_clickable_system() -> DynSystem {
 fn screens_systems() -> SystemGroup {
     SystemGroup::new(
         "layout/screens",
-        vec![query((local_to_world().changed(), children().changed())).incl(screen()).to_system(|q, world, qs, _| {
-            for (_, (ltw, children)) in q.collect_cloned(world, qs) {
-                let (_, _, pos) = ltw.to_scale_rotation_translation();
-                for c in children {
-                    if let Ok(p) = world.get_mut(c, translation()) {
-                        p.x = -pos.x;
-                        p.y = -pos.y;
+        vec![query((local_to_world().changed(), children().changed()))
+            .incl(screen())
+            .to_system(|q, world, qs, _| {
+                for (_, (ltw, children)) in q.collect_cloned(world, qs) {
+                    let (_, _, pos) = ltw.to_scale_rotation_translation();
+                    for c in children {
+                        if let Ok(p) = world.get_mut(c, translation()) {
+                            p.x = -pos.x;
+                            p.y = -pos.y;
+                        }
                     }
                 }
-            }
-        })],
+            })],
     )
 }

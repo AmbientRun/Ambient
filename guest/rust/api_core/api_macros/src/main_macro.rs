@@ -1,8 +1,8 @@
+use ambient_project_macro_common::ManifestSource;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use std::path::Path;
 
-pub fn main_impl(item: TokenStream, ambient_toml: impl AsRef<Path>) -> anyhow::Result<TokenStream> {
+pub fn main_impl(item: TokenStream, ambient_toml: ManifestSource) -> anyhow::Result<TokenStream> {
     let mut item: syn::ItemFn = syn::parse2(item)?;
     let fn_name = quote::format_ident!("{}_impl", item.sig.ident);
     item.sig.ident = fn_name.clone();
@@ -13,7 +13,7 @@ pub fn main_impl(item: TokenStream, ambient_toml: impl AsRef<Path>) -> anyhow::R
     let mut path = syn::Path::from(syn::Ident::new("ambient_api", spans));
     path.leading_colon = Some(syn::Token![::](spans));
 
-    let project_boilerplate = ambient_project_macro_common::implementation(
+    let project_boilerplate = ambient_project_macro_common::generate_code(
         ambient_toml,
         ambient_project_macro_common::Context::Guest {
             api_path: path.clone(),
@@ -45,6 +45,7 @@ pub fn main_impl(item: TokenStream, ambient_toml: impl AsRef<Path>) -> anyhow::R
 #[cfg(test)]
 mod tests {
     use super::main_impl;
+    use ambient_project_macro_common::ManifestSource;
     use proc_macro2::TokenStream;
     use quote::quote;
 
@@ -101,7 +102,7 @@ mod tests {
         };
 
         assert_eq!(
-            main_impl(body, (None, AMBIENT_TOML.to_owned()))
+            main_impl(body, ManifestSource::String(AMBIENT_TOML.to_owned()))
                 .unwrap()
                 .to_string(),
             output.to_string()
@@ -133,7 +134,7 @@ mod tests {
         };
 
         assert_eq!(
-            main_impl(body, (None, AMBIENT_TOML.to_owned()))
+            main_impl(body, ManifestSource::String(AMBIENT_TOML.to_owned()))
                 .unwrap()
                 .to_string(),
             output.to_string()

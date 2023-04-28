@@ -140,7 +140,11 @@ impl World {
         world
     }
     /// Clones all entities specified in the source world and returns a new world with them
-    pub fn from_entities(world: &World, entities: impl IntoIterator<Item = EntityId>, serializable_only: bool) -> Self {
+    pub fn from_entities(
+        world: &World,
+        entities: impl IntoIterator<Item = EntityId>,
+        serializable_only: bool,
+    ) -> Self {
         let mut res = World::new_with_config("from_entities", false);
         for id in entities {
             let mut entity = world.clone_entity(id).unwrap();
@@ -155,7 +159,9 @@ impl World {
     #[cfg(not(target_os = "unknown"))]
     pub async fn from_file(path: impl AsRef<std::path::Path>) -> anyhow::Result<Self> {
         use anyhow::Context;
-        let content = tokio::fs::read(&path).await.with_context(|| format!("No such file: {:?}", path.as_ref()))?;
+        let content = tokio::fs::read(&path)
+            .await
+            .with_context(|| format!("No such file: {:?}", path.as_ref()))?;
         Self::from_slice(&content)
     }
 
@@ -183,7 +189,10 @@ impl World {
         if let std::collections::hash_map::Entry::Vacant(e) = self.locs.entry(entity_id) {
             e.insert(EntityLocation::empty());
             let version = self.inc_version();
-            self.batch_spawn_with_ids_internal(EntityMoveData::from_entity_data(entity_data, version), vec![entity_id]);
+            self.batch_spawn_with_ids_internal(
+                EntityMoveData::from_entity_data(entity_data, version),
+                vec![entity_id],
+            );
             true
         } else {
             false
@@ -191,18 +200,28 @@ impl World {
     }
     pub fn batch_spawn_with_ids(&mut self, entity_data: Entity, ids: Vec<EntityId>) {
         if let Some(events) = &mut self.shape_change_events {
-            events.add_events(ids.iter().map(|id| WorldChange::Spawn(Some(*id), entity_data.clone())));
+            events.add_events(
+                ids.iter()
+                    .map(|id| WorldChange::Spawn(Some(*id), entity_data.clone())),
+            );
         }
         let version = self.inc_version();
-        self.batch_spawn_with_ids_internal(EntityMoveData::from_entity_data(entity_data, version), ids.clone());
+        self.batch_spawn_with_ids_internal(
+            EntityMoveData::from_entity_data(entity_data, version),
+            ids.clone(),
+        );
     }
     fn batch_spawn_with_ids_internal(&mut self, entity_data: EntityMoveData, ids: Vec<EntityId>) {
-        let arch_id = self.archetypes.iter().position(|x| x.active_components == entity_data.active_components);
+        let arch_id = self
+            .archetypes
+            .iter()
+            .position(|x| x.active_components == entity_data.active_components);
         let arch_id = if let Some(arch_id) = arch_id {
             arch_id
         } else {
             let arch_id = self.archetypes.len();
-            self.archetypes.push(Archetype::new(arch_id, entity_data.components()));
+            self.archetypes
+                .push(Archetype::new(arch_id, entity_data.components()));
             arch_id
         };
         let arch = &mut self.archetypes[arch_id];
@@ -219,7 +238,10 @@ impl World {
             if let Some(events) = &mut self.shape_change_events {
                 events.add_event(WorldChange::Despawn(entity_id));
             }
-            let arch = self.archetypes.get_mut(loc.archetype).expect("No such archetype");
+            let arch = self
+                .archetypes
+                .get_mut(loc.archetype)
+                .expect("No such archetype");
             let last_entity_in_arch = *arch.entity_indices_to_ids.last().unwrap();
             if last_entity_in_arch != entity_id {
                 self.locs.get_mut(&last_entity_in_arch).unwrap().index = loc.index;
@@ -231,12 +253,15 @@ impl World {
         }
     }
     pub fn despawn_all(&mut self) {
-        let entity_ids: Vec<EntityId> = query_mut((), ()).iter(self, None).map(|(id, _, _)| id).collect();
+        let entity_ids: Vec<EntityId> = query_mut((), ())
+            .iter(self, None)
+            .map(|(id, _, _)| id)
+            .collect();
         for id in entity_ids {
             self.despawn(id);
         }
     }
-    #[profiling::function]
+    #[ambient_profiling::function]
     pub fn next_frame(&mut self) {
         for arch in &mut self.archetypes {
             arch.next_frame();
@@ -257,10 +282,17 @@ impl World {
         Ok(std::mem::replace(p, value))
     }
 
-    pub fn set_entry(&mut self, entity_id: EntityId, entry: ComponentEntry) -> Result<ComponentEntry, ECSError> {
+    pub fn set_entry(
+        &mut self,
+        entity_id: EntityId,
+        entry: ComponentEntry,
+    ) -> Result<ComponentEntry, ECSError> {
         if let Some(loc) = self.locs.get(&entity_id) {
             let version = self.inc_version();
-            let arch = self.archetypes.get_mut(loc.archetype).expect("Archetype doesn't exist");
+            let arch = self
+                .archetypes
+                .get_mut(loc.archetype)
+                .expect("Archetype doesn't exist");
             arch.replace_with_entry(entity_id, loc.index, entry, version)
         } else {
             Err(ECSError::NoSuchEntity { entity_id })
@@ -270,7 +302,10 @@ impl World {
     pub fn set_components(&mut self, entity_id: EntityId, data: Entity) -> Result<(), ECSError> {
         if let Some(loc) = self.locs.get(&entity_id) {
             let version = self.inc_version();
-            let arch = self.archetypes.get_mut(loc.archetype).expect("Archetype doesn't exist");
+            let arch = self
+                .archetypes
+                .get_mut(loc.archetype)
+                .expect("Archetype doesn't exist");
             for entry in data {
                 arch.replace_with_entry(entity_id, loc.index, entry, version)?;
             }
@@ -293,56 +328,105 @@ impl World {
         }
         Ok(())
     }
-    pub fn get_mut<T: ComponentValue>(&mut self, entity_id: EntityId, component: Component<T>) -> Result<&mut T, ECSError> {
+    pub fn get_mut<T: ComponentValue>(
+        &mut self,
+        entity_id: EntityId,
+        component: Component<T>,
+    ) -> Result<&mut T, ECSError> {
         self.get_mut_unsafe(entity_id, component)
     }
-    pub(crate) fn get_mut_unsafe<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> Result<&mut T, ECSError> {
+    pub(crate) fn get_mut_unsafe<T: ComponentValue>(
+        &self,
+        entity_id: EntityId,
+        component: Component<T>,
+    ) -> Result<&mut T, ECSError> {
         if let Some(loc) = self.locs.get(&entity_id) {
             let version = self.inc_version();
-            let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
+            let arch = self
+                .archetypes
+                .get(loc.archetype)
+                .expect("Archetype doesn't exist");
             match arch.get_component_mut(loc.index, entity_id, component, version) {
                 Some(d) => Ok(d),
-                None => Err(ECSError::EntityDoesntHaveComponent { component_index: component.desc().index() as _, name: component.path() }),
+                None => Err(ECSError::EntityDoesntHaveComponent {
+                    component_index: component.desc().index() as _,
+                    name: component.path(),
+                }),
             }
         } else {
             Err(ECSError::NoSuchEntity { entity_id })
         }
     }
-    pub fn get<T: Copy + ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> Result<T, ECSError> {
+    pub fn get<T: Copy + ComponentValue>(
+        &self,
+        entity_id: EntityId,
+        component: Component<T>,
+    ) -> Result<T, ECSError> {
         self.get_ref(entity_id, component).map(|x| *x)
     }
-    pub fn get_cloned<T: Clone + ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> Result<T, ECSError> {
+    pub fn get_cloned<T: Clone + ComponentValue>(
+        &self,
+        entity_id: EntityId,
+        component: Component<T>,
+    ) -> Result<T, ECSError> {
         self.get_ref(entity_id, component).map(|x| x.clone())
     }
-    pub fn get_ref<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> Result<&T, ECSError> {
+    pub fn get_ref<T: ComponentValue>(
+        &self,
+        entity_id: EntityId,
+        component: Component<T>,
+    ) -> Result<&T, ECSError> {
         if let Some(loc) = self.locs.get(&entity_id) {
-            let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
+            let arch = self
+                .archetypes
+                .get(loc.archetype)
+                .expect("Archetype doesn't exist");
             match arch.get_component(loc.index, component) {
                 Some(d) => Ok(d),
-                None => {
-                    Err(ECSError::EntityDoesntHaveComponent { component_index: component.desc().index() as usize, name: component.path() })
-                }
+                None => Err(ECSError::EntityDoesntHaveComponent {
+                    component_index: component.desc().index() as usize,
+                    name: component.path(),
+                }),
             }
         } else {
             Err(ECSError::NoSuchEntity { entity_id })
         }
     }
-    pub fn get_entry(&self, entity_id: EntityId, component: ComponentDesc) -> Result<ComponentEntry, ECSError> {
+    pub fn get_entry(
+        &self,
+        entity_id: EntityId,
+        component: ComponentDesc,
+    ) -> Result<ComponentEntry, ECSError> {
         if let Some(loc) = self.locs.get(&entity_id) {
-            let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
+            let arch = self
+                .archetypes
+                .get(loc.archetype)
+                .expect("Archetype doesn't exist");
             match arch.get_component_buffer_untyped(component) {
                 Some(d) => Ok(d.clone_value_boxed(loc.index)),
-                None => Err(ECSError::EntityDoesntHaveComponent { component_index: component.index() as usize, name: component.path() }),
+                None => Err(ECSError::EntityDoesntHaveComponent {
+                    component_index: component.index() as usize,
+                    name: component.path(),
+                }),
             }
         } else {
             Err(ECSError::NoSuchEntity { entity_id })
         }
     }
     pub fn has_component_index(&self, entity_id: EntityId, component_index: u32) -> bool {
-        self.archetype_for_entity(entity_id).map(|arch| arch.active_components.contains_index(component_index as usize)).unwrap_or(false)
+        self.archetype_for_entity(entity_id)
+            .map(|arch| {
+                arch.active_components
+                    .contains_index(component_index as usize)
+            })
+            .unwrap_or(false)
     }
     #[inline]
-    pub fn has_component_ref(&self, entity_id: EntityId, component: impl Into<ComponentDesc>) -> bool {
+    pub fn has_component_ref(
+        &self,
+        entity_id: EntityId,
+        component: impl Into<ComponentDesc>,
+    ) -> bool {
         self.has_component_index(entity_id, component.into().index() as _)
     }
     #[inline]
@@ -350,11 +434,16 @@ impl World {
         self.has_component_ref(entity_id, component.into())
     }
     pub fn has_components(&self, entity_id: EntityId, components: &ComponentSet) -> bool {
-        self.archetype_for_entity(entity_id).map(|arch| arch.active_components.is_superset(components)).unwrap_or(false)
+        self.archetype_for_entity(entity_id)
+            .map(|arch| arch.active_components.is_superset(components))
+            .unwrap_or(false)
     }
     pub fn get_components(&self, entity_id: EntityId) -> Result<Vec<ComponentDesc>, ECSError> {
         if let Some(loc) = self.locs.get(&entity_id) {
-            let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
+            let arch = self
+                .archetypes
+                .get(loc.archetype)
+                .expect("Archetype doesn't exist");
             Ok(arch.components.iter().map(|x| x.component).collect_vec())
         } else {
             Err(ECSError::NoSuchEntity { entity_id })
@@ -372,27 +461,49 @@ impl World {
     }
 
     pub fn entities(&self) -> Vec<(EntityId, Entity)> {
-        query(()).iter(self, None).map(|(id, _)| (id, self.clone_entity(id).unwrap())).collect()
+        query(())
+            .iter(self, None)
+            .map(|(id, _)| (id, self.clone_entity(id).unwrap()))
+            .collect()
     }
     pub fn exists(&self, entity_id: EntityId) -> bool {
         self.locs.contains_key(&entity_id)
     }
 
-    fn map_entity(&mut self, entity_id: EntityId, map: impl FnOnce(MapEntity) -> MapEntity) -> Result<(), ECSError> {
+    fn map_entity(
+        &mut self,
+        entity_id: EntityId,
+        map: impl FnOnce(MapEntity) -> MapEntity,
+    ) -> Result<(), ECSError> {
         if let Some(loc) = self.locs.get(&entity_id).cloned() {
             let version = self.inc_version();
-            let prev_comps = self.archetypes.get_mut(loc.archetype).expect("No such archetype").active_components.clone();
+            let prev_comps = self
+                .archetypes
+                .get_mut(loc.archetype)
+                .expect("No such archetype")
+                .active_components
+                .clone();
 
-            let mapping = map(MapEntity { sets: HashMap::new(), removes: HashSet::new(), active_components: prev_comps.clone() });
+            let mapping = map(MapEntity {
+                sets: HashMap::new(),
+                removes: HashSet::new(),
+                active_components: prev_comps.clone(),
+            });
 
             if mapping.active_components == prev_comps {
                 assert_eq!(mapping.removes.len(), 0);
-                let arch = self.archetypes.get_mut(loc.archetype).expect("No such archetype");
+                let arch = self
+                    .archetypes
+                    .get_mut(loc.archetype)
+                    .expect("No such archetype");
                 for (_, value) in mapping.sets.into_iter() {
                     arch.set_component_raw(loc.index, entity_id, value, version);
                 }
             } else {
-                let arch = self.archetypes.get_mut(loc.archetype).expect("No such archetype");
+                let arch = self
+                    .archetypes
+                    .get_mut(loc.archetype)
+                    .expect("No such archetype");
                 let last_entity_in_arch = *arch.entity_indices_to_ids.last().unwrap();
                 if entity_id != last_entity_in_arch {
                     self.locs.get_mut(&last_entity_in_arch).unwrap().index = loc.index;
@@ -413,7 +524,10 @@ impl World {
         // Safety check against adding a resource to an entity
         if entity_id != self.resource_entity() {
             if let Some(component) = data.iter().find(|c| c.has_attribute::<Resource>()) {
-                return Err(ECSError::AddedResourceToEntity { component_path: component.path(), entity_id });
+                return Err(ECSError::AddedResourceToEntity {
+                    component_path: component.path(),
+                    entity_id,
+                });
             }
         }
 
@@ -423,20 +537,34 @@ impl World {
         self.map_entity(entity_id, |ed| ed.append(data))
     }
     // will also replace the existing component of the same type if it exists
-    pub fn add_component<T: ComponentValue>(&mut self, entity_id: EntityId, component: Component<T>, value: T) -> Result<(), ECSError> {
+    pub fn add_component<T: ComponentValue>(
+        &mut self,
+        entity_id: EntityId,
+        component: Component<T>,
+        value: T,
+    ) -> Result<(), ECSError> {
         self.add_components(entity_id, Entity::new().with(component, value))
     }
 
     pub fn add_resource<T: ComponentValue>(&mut self, component: Component<T>, value: T) {
-        self.add_component(self.resource_entity(), component, value).unwrap()
+        self.add_component(self.resource_entity(), component, value)
+            .unwrap()
     }
 
     /// Does nothing if the component does not exist
-    pub fn remove_component(&mut self, entity_id: EntityId, component: impl Into<ComponentDesc>) -> Result<(), ECSError> {
+    pub fn remove_component(
+        &mut self,
+        entity_id: EntityId,
+        component: impl Into<ComponentDesc>,
+    ) -> Result<(), ECSError> {
         self.remove_components(entity_id, vec![component.into()])
     }
 
-    pub fn remove_components(&mut self, entity_id: EntityId, components: Vec<ComponentDesc>) -> Result<(), ECSError> {
+    pub fn remove_components(
+        &mut self,
+        entity_id: EntityId,
+        components: Vec<ComponentDesc>,
+    ) -> Result<(), ECSError> {
         if let Some(events) = &mut self.shape_change_events {
             events.add_event(WorldChange::RemoveComponents(entity_id, components.clone()));
         }
@@ -456,7 +584,10 @@ impl World {
             None => panic!("Resource {} does not exist", component.path()),
         }
     }
-    pub fn resource_mut_opt<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T> {
+    pub fn resource_mut_opt<T: ComponentValue>(
+        &mut self,
+        component: Component<T>,
+    ) -> Option<&mut T> {
         Self::warn_on_non_resource_component(component);
         self.get_mut(self.resource_entity(), component).ok()
     }
@@ -476,12 +607,22 @@ impl World {
         self.locs.get(&id)
     }
     /// Returns the content version of this component, which only changes when the component is written to (not when the entity changes archetype)
-    pub fn get_component_content_version(&self, entity_id: EntityId, index: u32) -> Result<u64, ECSError> {
+    pub fn get_component_content_version(
+        &self,
+        entity_id: EntityId,
+        index: u32,
+    ) -> Result<u64, ECSError> {
         if let Some(loc) = self.locs.get(&entity_id) {
-            let arch = self.archetypes.get(loc.archetype).expect("Archetype doesn't exist");
+            let arch = self
+                .archetypes
+                .get(loc.archetype)
+                .expect("Archetype doesn't exist");
             match arch.get_component_content_version(*loc, index) {
                 Some(d) => Ok(d),
-                None => Err(ECSError::EntityDoesntHaveComponent { component_index: index as _, name: "".to_string() }),
+                None => Err(ECSError::EntityDoesntHaveComponent {
+                    component_index: index as _,
+                    name: "".to_string(),
+                }),
             }
         } else {
             Err(ECSError::NoSuchEntity { entity_id })
@@ -559,7 +700,10 @@ impl World {
     }
     pub fn dump_entity(&self, entity_id: EntityId, indent: usize, f: &mut dyn std::io::Write) {
         if let Some(loc) = self.locs.get(&entity_id) {
-            let arch = self.archetypes.get(loc.archetype).expect("No such archetype");
+            let arch = self
+                .archetypes
+                .get(loc.archetype)
+                .expect("No such archetype");
 
             arch.dump_entity(loc.index, indent, f);
         } else {
@@ -568,9 +712,15 @@ impl World {
         }
     }
 
-    pub fn dump_entity_to_yml(&self, entity_id: EntityId) -> Option<(String, yaml_rust::yaml::Hash)> {
+    pub fn dump_entity_to_yml(
+        &self,
+        entity_id: EntityId,
+    ) -> Option<(String, yaml_rust::yaml::Hash)> {
         if let Some(loc) = self.locs.get(&entity_id) {
-            let arch = self.archetypes.get(loc.archetype).expect("No such archetype");
+            let arch = self
+                .archetypes
+                .get(loc.archetype)
+                .expect("No such archetype");
             Some(arch.dump_entity_to_yml(loc.index))
         } else {
             None
@@ -591,7 +741,11 @@ impl World {
 }
 impl World {
     fn archetype_for_entity(&self, id: EntityId) -> Option<&Archetype> {
-        self.locs.get(&id).map(|loc| self.archetypes.get(loc.archetype).expect("Archetype doesn't exist"))
+        self.locs.get(&id).map(|loc| {
+            self.archetypes
+                .get(loc.archetype)
+                .expect("Archetype doesn't exist")
+        })
     }
 }
 
@@ -605,16 +759,26 @@ unsafe impl Send for World {}
 unsafe impl Sync for World {}
 
 // TODO(fred): Move this into the actual components instead
-pub static COMPONENT_ENTITY_ID_MIGRATERS: Mutex<Vec<fn(&mut World, EntityId, &HashMap<EntityId, EntityId>)>> = Mutex::new(Vec::new());
+pub static COMPONENT_ENTITY_ID_MIGRATERS: Mutex<
+    Vec<fn(&mut World, EntityId, &HashMap<EntityId, EntityId>)>,
+> = Mutex::new(Vec::new());
 
 #[derive(Debug, Clone, Serialize, Deserialize, Error, PartialEq)]
 pub enum ECSError {
     #[error("Entity doesn't have component: {component_index} {name}")]
-    EntityDoesntHaveComponent { component_index: usize, name: String },
+    EntityDoesntHaveComponent {
+        component_index: usize,
+        name: String,
+    },
     #[error("No such entity: {entity_id}")]
     NoSuchEntity { entity_id: EntityId },
-    #[error("Attempted to add resource component `{component_path}` to non-resource entity {entity_id}")]
-    AddedResourceToEntity { component_path: String, entity_id: EntityId },
+    #[error(
+        "Attempted to add resource component `{component_path}` to non-resource entity {entity_id}"
+    )]
+    AddedResourceToEntity {
+        component_path: String,
+        entity_id: EntityId,
+    },
 }
 
 struct MapEntity {
@@ -667,7 +831,9 @@ impl Command {
                 Ok(())
             }
             Command::AddComponent(entity, entry) => world.add_entry(entity, entry),
-            Command::RemoveComponent(entity, component) => world.remove_component(entity, component),
+            Command::RemoveComponent(entity, component) => {
+                world.remove_component(entity, component)
+            }
             Command::Despawn(id) => {
                 if world.despawn(id).is_none() {
                     Err(ECSError::NoSuchEntity { entity_id: id })
@@ -684,21 +850,45 @@ impl Commands {
     pub fn new() -> Self {
         Self(Vec::new())
     }
-    pub fn set<T: ComponentValue>(&mut self, entity_id: EntityId, component: Component<T>, value: impl Into<T>) {
-        self.0.push(Command::Set(entity_id, ComponentEntry::new(component, value.into())))
+    pub fn set<T: ComponentValue>(
+        &mut self,
+        entity_id: EntityId,
+        component: Component<T>,
+        value: impl Into<T>,
+    ) {
+        self.0.push(Command::Set(
+            entity_id,
+            ComponentEntry::new(component, value.into()),
+        ))
     }
-    pub fn add_component<T: ComponentValue>(&mut self, entity_id: EntityId, component: Component<T>, value: T) {
-        self.0.push(Command::AddComponent(entity_id, ComponentEntry::new(component, value)))
+    pub fn add_component<T: ComponentValue>(
+        &mut self,
+        entity_id: EntityId,
+        component: Component<T>,
+        value: T,
+    ) {
+        self.0.push(Command::AddComponent(
+            entity_id,
+            ComponentEntry::new(component, value),
+        ))
     }
-    pub fn remove_component<T: ComponentValue>(&mut self, entity_id: EntityId, component: impl Into<ComponentDesc>) {
-        self.0.push(Command::RemoveComponent(entity_id, component.into()));
+    pub fn remove_component<T: ComponentValue>(
+        &mut self,
+        entity_id: EntityId,
+        component: impl Into<ComponentDesc>,
+    ) {
+        self.0
+            .push(Command::RemoveComponent(entity_id, component.into()));
     }
     pub fn despawn(&mut self, entity_id: EntityId) {
         self.0.push(Command::Despawn(entity_id));
     }
 
     /// Defers a function to execute upon the world.
-    pub fn defer(&mut self, func: impl Fn(&mut World) -> Result<(), ECSError> + Sync + Send + 'static) {
+    pub fn defer(
+        &mut self,
+        func: impl Fn(&mut World) -> Result<(), ECSError> + Sync + Send + 'static,
+    ) {
         self.0.push(Command::Defer(Box::new(func)))
     }
 
@@ -740,7 +930,9 @@ impl Clone for CloneableAtomicU64 {
 pub struct ComponentSet(pub BitSet);
 impl ComponentSet {
     pub fn new() -> Self {
-        Self(BitSet::with_capacity(with_component_registry(|cr| cr.component_count())))
+        Self(BitSet::with_capacity(with_component_registry(|cr| {
+            cr.component_count()
+        })))
     }
 
     pub fn insert(&mut self, component: ComponentDesc) {
@@ -783,7 +975,11 @@ impl Serialize for ComponentSet {
     where
         S: serde::Serializer,
     {
-        ComponentSetSerialized(self.0.len() as u64, self.0.clone().into_bit_vec().to_bytes()).serialize(serializer)
+        ComponentSetSerialized(
+            self.0.len() as u64,
+            self.0.clone().into_bit_vec().to_bytes(),
+        )
+        .serialize(serializer)
     }
 }
 impl<'de> Deserialize<'de> for ComponentSet {

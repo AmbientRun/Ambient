@@ -10,8 +10,8 @@ use ambient_gpu::{
 };
 use ambient_meshes::QuadMeshKey;
 use ambient_renderer::{
-    bind_groups::BindGroups, get_mesh_data_module, get_overlay_modules, PostSubmitFunc, RendererTarget, SubRenderer, GLOBALS_BIND_GROUP,
-    GLOBALS_BIND_GROUP_SIZE,
+    bind_groups::BindGroups, get_mesh_data_module, get_overlay_modules, PostSubmitFunc,
+    RendererTarget, SubRenderer, GLOBALS_BIND_GROUP, GLOBALS_BIND_GROUP_SIZE,
 };
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
@@ -20,7 +20,10 @@ use ambient_std::{
 use bytemuck::{Pod, Zeroable};
 use glam::{vec2, Mat4, Quat, Vec2, Vec3};
 use once_cell::sync::OnceCell;
-use wgpu::{BindGroupEntry, BindGroupLayout, BindGroupLayoutEntry, BlendState, BufferUsages, ColorTargetState, ColorWrites, ShaderStages};
+use wgpu::{
+    BindGroupEntry, BindGroupLayout, BindGroupLayoutEntry, BlendState, BufferUsages,
+    ColorTargetState, ColorWrites, ShaderStages,
+};
 
 use super::{gizmos, GizmoPrimitive};
 
@@ -69,17 +72,29 @@ impl Debug for GizmoRenderer {
 impl GizmoRenderer {
     pub fn new(assets: &AssetCache) -> Self {
         let gpu = GpuKey.get(assets);
-        let buffer =
-            TypedBuffer::new(gpu.clone(), "Gizmo Buffer", 128, 0, BufferUsages::STORAGE | BufferUsages::COPY_DST | BufferUsages::COPY_SRC);
+        let buffer = TypedBuffer::new(
+            gpu.clone(),
+            "Gizmo Buffer",
+            128,
+            0,
+            BufferUsages::STORAGE | BufferUsages::COPY_DST | BufferUsages::COPY_SRC,
+        );
 
         let layout = get_gizmos_layout().get(assets);
 
-        Self { gpu, quad: QuadMeshKey.get(assets), pipeline: OnceCell::new(), buffer, primitives: Vec::new(), layout }
+        Self {
+            gpu,
+            quad: QuadMeshKey.get(assets),
+            pipeline: OnceCell::new(),
+            buffer,
+            primitives: Vec::new(),
+            layout,
+        }
     }
 }
 
 impl SubRenderer for GizmoRenderer {
-    #[profiling::function]
+    #[ambient_profiling::function]
     fn render<'a>(
         &'a mut self,
         world: &World,
@@ -90,13 +105,19 @@ impl SubRenderer for GizmoRenderer {
         _: &mut Vec<PostSubmitFunc>,
     ) {
         let gizmos = world.resource(gizmos());
-        let camera = Camera::get_active(world, main_scene(), world.resource_opt(local_user_id())).unwrap_or_default();
+        let camera = Camera::get_active(world, main_scene(), world.resource_opt(local_user_id()))
+            .unwrap_or_default();
         let primitives = &mut self.primitives;
 
         primitives.clear();
 
         gizmos.scopes().for_each(|scope| {
-            primitives.extend(scope.primitives.iter().map(|v| Gizmo::from_primitive(v, camera.position())));
+            primitives.extend(
+                scope
+                    .primitives
+                    .iter()
+                    .map(|v| Gizmo::from_primitive(v, camera.position())),
+            );
         });
 
         if primitives.is_empty() {
@@ -142,8 +163,16 @@ impl SubRenderer for GizmoRenderer {
             label: Some("Gizmo bind group"),
             layout: &self.layout,
             entries: &[
-                BindGroupEntry { binding: 0, resource: wgpu::BindingResource::Buffer(self.buffer.buffer().as_entire_buffer_binding()) },
-                BindGroupEntry { binding: 1, resource: wgpu::BindingResource::TextureView(target.depth()) },
+                BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::Buffer(
+                        self.buffer.buffer().as_entire_buffer_binding(),
+                    ),
+                },
+                BindGroupEntry {
+                    binding: 1,
+                    resource: wgpu::BindingResource::TextureView(target.depth()),
+                },
             ],
         });
 
@@ -152,12 +181,18 @@ impl SubRenderer for GizmoRenderer {
             color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                 view: target.color(),
                 resolve_target: None,
-                ops: wgpu::Operations { load: wgpu::LoadOp::Load, store: true },
+                ops: wgpu::Operations {
+                    load: wgpu::LoadOp::Load,
+                    store: true,
+                },
             })],
             depth_stencil_attachment: None,
         });
 
-        render_pass.set_index_buffer(mesh_buffer.index_buffer.buffer().slice(..), wgpu::IndexFormat::Uint32);
+        render_pass.set_index_buffer(
+            mesh_buffer.index_buffer.buffer().slice(..),
+            wgpu::IndexFormat::Uint32,
+        );
 
         let indices = mesh_buffer.indices_of(&self.quad);
         render_pass.set_pipeline(pipeline.pipeline());
@@ -185,7 +220,12 @@ struct Gizmo {
 impl Gizmo {
     pub fn from_primitive(prim: &GizmoPrimitive, camera_pos: Vec3) -> Self {
         match *prim {
-            GizmoPrimitive::Sphere { origin, radius, color, border_width } => Self {
+            GizmoPrimitive::Sphere {
+                origin,
+                radius,
+                color,
+                border_width,
+            } => Self {
                 model: Mat4::from_scale_rotation_translation(
                     Vec3::splat(radius),
                     Quat::from_rotation_arc(Vec3::Z, (origin - camera_pos).normalize()),
@@ -197,7 +237,12 @@ impl Gizmo {
                 scale: Vec2::splat(radius),
                 inner_corner: 1.,
             },
-            GizmoPrimitive::Line { start, end, radius, color } => {
+            GizmoPrimitive::Line {
+                start,
+                end,
+                radius,
+                color,
+            } => {
                 let dir = start - end;
                 let len = dir.length();
                 let dir = dir.normalize_or_zero();
@@ -210,7 +255,11 @@ impl Gizmo {
 
                 let scale = vec2(len * 0.5, radius);
                 Self {
-                    model: Mat4::from_scale_rotation_translation(scale.extend(0.), Quat::from_rotation_arc(tan, billboard) * rot, mid),
+                    model: Mat4::from_scale_rotation_translation(
+                        scale.extend(0.),
+                        Quat::from_rotation_arc(tan, billboard) * rot,
+                        mid,
+                    ),
                     color,
                     corner: 1.,
                     border_width: len,
@@ -218,8 +267,20 @@ impl Gizmo {
                     inner_corner: 0.0,
                 }
             }
-            GizmoPrimitive::Rect { origin, extents, corner: corner_radius, inner_corner, thickness, normal, color } => Self {
-                model: Mat4::from_scale_rotation_translation(extents.extend(0.), Quat::from_rotation_arc(Vec3::Z, normal), origin),
+            GizmoPrimitive::Rect {
+                origin,
+                extents,
+                corner: corner_radius,
+                inner_corner,
+                thickness,
+                normal,
+                color,
+            } => Self {
+                model: Mat4::from_scale_rotation_translation(
+                    extents.extend(0.),
+                    Quat::from_rotation_arc(Vec3::Z, normal),
+                    origin,
+                ),
                 color,
                 corner: corner_radius,
                 scale: extents,

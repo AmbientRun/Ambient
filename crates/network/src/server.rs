@@ -13,8 +13,8 @@ use ambient_core::{
     project_name,
 };
 use ambient_ecs::{
-    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Resource, System, SystemGroup, World,
-    WorldStream, WorldStreamCompEvent, WorldStreamFilter,
+    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent,
+    Resource, System, SystemGroup, World, WorldStream, WorldStreamCompEvent, WorldStreamFilter,
 };
 use ambient_proxy::client::AllocatedEndpoint;
 use ambient_rpc::RpcRegistry;
@@ -60,9 +60,14 @@ components!("network::server", {
     player_connection: ClientConnection,
 });
 
-pub type BiStreamHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, SendStream, RecvStream) + Sync + Send>>;
-pub type UniStreamHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, RecvStream) + Sync + Send>>;
-pub type DatagramHandlers = HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, Bytes) + Sync + Send>>;
+pub type BiStreamHandlers = HashMap<
+    u32,
+    Arc<dyn Fn(SharedServerState, AssetCache, &String, SendStream, RecvStream) + Sync + Send>,
+>;
+pub type UniStreamHandlers =
+    HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, RecvStream) + Sync + Send>>;
+pub type DatagramHandlers =
+    HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, Bytes) + Sync + Send>>;
 
 #[derive(Debug, Clone, Copy)]
 pub struct ForkingEvent;
@@ -90,7 +95,11 @@ impl RpcArgs {
     }
 }
 
-pub fn create_player_entity_data(user_id: &str, entities_tx: Sender<Vec<u8>>, stats_tx: Sender<FpsSample>) -> Entity {
+pub fn create_player_entity_data(
+    user_id: &str,
+    entities_tx: Sender<Vec<u8>>,
+    stats_tx: Sender<FpsSample>,
+) -> Entity {
     Entity::new()
         .with(name(), format!("Player {}", user_id))
         .with(ambient_core::player::player(), ())
@@ -100,7 +109,10 @@ pub fn create_player_entity_data(user_id: &str, entities_tx: Sender<Vec<u8>>, st
         .with_default(dont_store())
 }
 
-pub fn register_rpc_bi_stream_handler(handlers: &mut BiStreamHandlers, rpc_registry: RpcRegistry<RpcArgs>) {
+pub fn register_rpc_bi_stream_handler(
+    handlers: &mut BiStreamHandlers,
+    rpc_registry: RpcRegistry<RpcArgs>,
+) {
     handlers.insert(
         RPC_BISTREAM_ID,
         Arc::new(move |state, _assets, user_id, mut send, recv| {
@@ -110,7 +122,10 @@ pub fn register_rpc_bi_stream_handler(handlers: &mut BiStreamHandlers, rpc_regis
             tokio::spawn(async move {
                 let try_block = || async {
                     let req = recv.read_to_end(100_000_000).await?;
-                    let args = RpcArgs { state, user_id: user_id.to_string() };
+                    let args = RpcArgs {
+                        state,
+                        user_id: user_id.to_string(),
+                    };
                     let resp = rpc_registry.run_req(args, &req).await?;
                     send.write_all(&resp).await?;
                     send.finish().await?;
@@ -137,7 +152,7 @@ impl WorldInstance {
         }
         let msg = bincode::serialize(&diff).unwrap();
 
-        profiling::scope!("Send MsgEntities");
+        ambient_profiling::scope!("Send MsgEntities");
         for (_, (entity_stream,)) in query((player_entity_stream(),)).iter(&self.world, None) {
             let msg = msg.clone();
             if let Err(_err) = entity_stream.send(msg) {
@@ -149,7 +164,9 @@ impl WorldInstance {
         query((player(),)).iter(&self.world, None).count()
     }
     pub fn step(&mut self, time: Duration) {
-        self.world.set(self.world.resource_entity(), ambient_core::time(), time).unwrap();
+        self.world
+            .set(self.world.resource_entity(), ambient_core::time(), time)
+            .unwrap();
         self.systems.run(&mut self.world, &FrameEvent);
         self.world.next_frame();
     }
@@ -164,12 +181,24 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(instance: String, abort_handle: Arc<OnceCell<tokio::task::JoinHandle<()>>>, connection_id: String) -> Self {
-        Self { instance, abort_handle, connection_id }
+    pub fn new(
+        instance: String,
+        abort_handle: Arc<OnceCell<tokio::task::JoinHandle<()>>>,
+        connection_id: String,
+    ) -> Self {
+        Self {
+            instance,
+            abort_handle,
+            connection_id,
+        }
     }
 
     pub fn new_local(instance: String) -> Self {
-        Self { instance, abort_handle: Arc::new(OnceCell::new()), connection_id: friendly_id() }
+        Self {
+            instance,
+            abort_handle: Arc::new(OnceCell::new()),
+            connection_id: friendly_id(),
+        }
     }
 }
 
@@ -183,7 +212,8 @@ pub struct ServerState {
 }
 impl ServerState {
     pub fn new_local() -> Self {
-        let world_stream_filter = WorldStreamFilter::new(ArchetypeFilter::new(), Arc::new(|_, _| false));
+        let world_stream_filter =
+            WorldStreamFilter::new(ArchetypeFilter::new(), Arc::new(|_, _| false));
         Self {
             instances: [(
                 MAIN_INSTANCE_ID.to_string(),
@@ -206,11 +236,19 @@ impl ServerState {
         create_on_forking_systems: Arc<dyn Fn() -> SystemGroup<ForkingEvent> + Sync + Send>,
         create_shutdown_systems: Arc<dyn Fn() -> SystemGroup<ShutdownEvent> + Sync + Send>,
     ) -> Self {
-        Self { instances, players: Default::default(), create_server_systems, create_on_forking_systems, create_shutdown_systems }
+        Self {
+            instances,
+            players: Default::default(),
+            create_server_systems,
+            create_on_forking_systems,
+            create_shutdown_systems,
+        }
     }
 
     pub fn step(&mut self) {
-        let time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
+        let time = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap();
         for instance in self.instances.values_mut() {
             instance.step(time);
         }
@@ -224,13 +262,18 @@ impl ServerState {
         self.instances.values().map(|i| i.player_count()).sum()
     }
     pub fn get_player_world_instance_mut(&mut self, user_id: &str) -> Option<&mut WorldInstance> {
-        self.players.get(user_id).and_then(|player| self.instances.get_mut(&player.instance))
+        self.players
+            .get(user_id)
+            .and_then(|player| self.instances.get_mut(&player.instance))
     }
     pub fn get_player_world_instance(&self, user_id: &str) -> Option<&WorldInstance> {
-        self.players.get(user_id).and_then(|player| self.instances.get(&player.instance))
+        self.players
+            .get(user_id)
+            .and_then(|player| self.instances.get(&player.instance))
     }
     pub fn get_player_world_mut(&mut self, user_id: &str) -> Option<&mut World> {
-        self.get_player_world_instance_mut(user_id).map(|i| &mut i.world)
+        self.get_player_world_instance_mut(user_id)
+            .map(|i| &mut i.world)
     }
     pub fn get_player_world(&self, user_id: &str) -> Option<&World> {
         self.get_player_world_instance(user_id).map(|i| &i.world)
@@ -260,13 +303,22 @@ pub struct GameServer {
     proxy_settings: Option<ProxySettings>,
 }
 impl GameServer {
-    pub async fn new_with_port(port: u16, use_inactivity_shutdown: bool, proxy_settings: Option<ProxySettings>) -> anyhow::Result<Self> {
+    pub async fn new_with_port(
+        port: u16,
+        use_inactivity_shutdown: bool,
+        proxy_settings: Option<ProxySettings>,
+    ) -> anyhow::Result<Self> {
         let server_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
 
         let endpoint = create_server(server_addr)?;
 
         log::debug!("GameServer listening on port {}", port);
-        Ok(Self { endpoint, port, use_inactivity_shutdown, proxy_settings })
+        Ok(Self {
+            endpoint,
+            port,
+            use_inactivity_shutdown,
+            proxy_settings,
+        })
     }
     pub async fn new_with_port_in_range(
         port_range: Range<u16>,
@@ -294,9 +346,14 @@ impl GameServer {
         create_shutdown_systems: Arc<dyn Fn() -> SystemGroup<ShutdownEvent> + Sync + Send>,
         is_sync_component: Arc<dyn Fn(ComponentDesc, WorldStreamCompEvent) -> bool + Sync + Send>,
     ) -> SharedServerState {
-        let Self { endpoint, proxy_settings, .. } = self;
+        let Self {
+            endpoint,
+            proxy_settings,
+            ..
+        } = self;
         let assets = world.resource(asset_cache()).clone();
-        let world_stream_filter = WorldStreamFilter::new(ArchetypeFilter::new().excl(no_sync()), is_sync_component);
+        let world_stream_filter =
+            WorldStreamFilter::new(ArchetypeFilter::new().excl(no_sync()), is_sync_component);
         let state = Arc::new(Mutex::new(ServerState::new(
             [(
                 MAIN_INSTANCE_ID.to_string(),
@@ -326,7 +383,14 @@ impl GameServer {
             let world_stream_filter = world_stream_filter.clone();
             let assets = assets.clone();
             tokio::spawn(async move {
-                start_proxy_connection(endpoint.clone(), proxy_settings, state.clone(), world_stream_filter.clone(), assets.clone()).await;
+                start_proxy_connection(
+                    endpoint.clone(),
+                    proxy_settings,
+                    state.clone(),
+                    world_stream_filter.clone(),
+                    assets.clone(),
+                )
+                .await;
             });
         }
 
@@ -352,8 +416,8 @@ impl GameServer {
                     fps_counter.frame_start();
                     let mut state = state.lock();
                     tokio::task::block_in_place(|| {
-                        profiling::finish_frame!();
-                        profiling::scope!("sim_tick");
+                        ambient_profiling::finish_frame!();
+                        ambient_profiling::scope!("sim_tick");
                         state.step();
                         state.broadcast_diffs();
                         if let Some(sample) = fps_counter.frame_end() {
@@ -407,29 +471,50 @@ async fn start_proxy_connection(
 
     let on_endpoint_allocated = {
         let content_base_url = content_base_url.clone();
-        Arc::new(move |AllocatedEndpoint { id, allocated_endpoint, external_endpoint, assets_root, .. }: AllocatedEndpoint| {
-            log::debug!("Allocated proxy endpoint. Allocation id: {}", id);
-            log::info!("Proxy sees this server as {}", external_endpoint);
-            log::info!("Proxy allocated an endpoint, use `{}` to join", format!("ambient join {}", allocated_endpoint).bright_green());
+        Arc::new(
+            move |AllocatedEndpoint {
+                      id,
+                      allocated_endpoint,
+                      external_endpoint,
+                      assets_root,
+                      ..
+                  }: AllocatedEndpoint| {
+                log::debug!("Allocated proxy endpoint. Allocation id: {}", id);
+                log::info!("Proxy sees this server as {}", external_endpoint);
+                log::info!(
+                    "Proxy allocated an endpoint, use `{}` to join",
+                    format!("ambient join {}", allocated_endpoint).bright_green()
+                );
 
-            // set the content base url to point to proxy provided value
-            match AbsAssetUrl::parse(&assets_root) {
-                Ok(url) => {
-                    log::debug!("Got content base root from proxy: {}", url);
-                    *content_base_url.write() = url;
+                // set the content base url to point to proxy provided value
+                match AbsAssetUrl::parse(&assets_root) {
+                    Ok(url) => {
+                        log::debug!("Got content base root from proxy: {}", url);
+                        *content_base_url.write() = url;
+                    }
+                    Err(err) => {
+                        log::warn!("Failed to parse assets root url ({}): {}", assets_root, err)
+                    }
                 }
-                Err(err) => log::warn!("Failed to parse assets root url ({}): {}", assets_root, err),
-            }
-        })
+            },
+        )
     };
 
     let on_player_connected = {
         let assets = assets.clone();
         let content_base_url = content_base_url.clone();
-        Arc::new(move |_player_id, conn: ambient_proxy::client::ProxiedConnection| {
-            log::debug!("Accepted connection via proxy");
-            run_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone(), content_base_url.read().clone());
-        })
+        Arc::new(
+            move |_player_id, conn: ambient_proxy::client::ProxiedConnection| {
+                log::debug!("Accepted connection via proxy");
+                run_connection(
+                    conn.into(),
+                    state.clone(),
+                    world_stream_filter.clone(),
+                    assets.clone(),
+                    content_base_url.read().clone(),
+                );
+            },
+        )
     };
 
     static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
@@ -534,9 +619,18 @@ fn run_connection(
                         log::info!("[{}] Player spawned", user_id);
                     } else {
                         let entity = get_by_user_id(&instance.world, user_id).unwrap();
-                        instance.world.set(entity, player_entity_stream(), diffs_tx.clone()).unwrap();
-                        instance.world.set(entity, player_stats_stream(), stats_tx.clone()).unwrap();
-                        instance.world.set(entity, player_connection(), new_player_connection.clone()).unwrap();
+                        instance
+                            .world
+                            .set(entity, player_entity_stream(), diffs_tx.clone())
+                            .unwrap();
+                        instance
+                            .world
+                            .set(entity, player_stats_stream(), stats_tx.clone())
+                            .unwrap();
+                        instance
+                            .world
+                            .set(entity, player_connection(), new_player_connection.clone())
+                            .unwrap();
                         log::info!("[{}] Player reconnected", user_id);
                     }
                 };
@@ -545,12 +639,21 @@ fn run_connection(
                     if let Some(user_id) = user_id {
                         log::debug!("[{}] Disconnecting", user_id);
                         let mut state = state.lock();
-                        if state.players.get(user_id).map(|p| p.connection_id != connection_id).unwrap_or(false) {
+                        if state
+                            .players
+                            .get(user_id)
+                            .map(|p| p.connection_id != connection_id)
+                            .unwrap_or(false)
+                        {
                             log::info!("[{}] Disconnected (reconnection)", user_id);
                             return;
                         }
                         if let Some(player) = state.players.remove(user_id) {
-                            state.instances.get_mut(&player.instance).unwrap().despawn_player(user_id);
+                            state
+                                .instances
+                                .get_mut(&player.instance)
+                                .unwrap()
+                                .despawn_player(user_id);
                         }
 
                         log::info!("[{}] Disconnected", user_id);
@@ -569,7 +672,10 @@ fn run_connection(
                             }
                         };
 
-                        world.resource(bi_stream_handlers()).get(&handler_id).cloned()
+                        world
+                            .resource(bi_stream_handlers())
+                            .get(&handler_id)
+                            .cloned()
                     };
                     if let Some(handler) = handler {
                         handler(state.clone(), assets.clone(), user_id, tx, rx);
@@ -590,7 +696,10 @@ fn run_connection(
                             }
                         };
 
-                        world.resource(uni_stream_handlers()).get(&handler_id).cloned()
+                        world
+                            .resource(uni_stream_handlers())
+                            .get(&handler_id)
+                            .cloned()
                     };
                     if let Some(handler) = handler {
                         handler(state.clone(), assets.clone(), user_id, rx);
@@ -610,7 +719,10 @@ fn run_connection(
                                 return;
                             }
                         };
-                        world.resource(datagram_handlers()).get(&handler_id).cloned()
+                        world
+                            .resource(datagram_handlers())
+                            .get(&handler_id)
+                            .cloned()
                     };
                     match handler {
                         Some(handler) => {
@@ -637,7 +749,11 @@ fn run_connection(
                     let state = state.lock();
                     let instance = state.instances.get(MAIN_INSTANCE_ID).unwrap();
                     let world = &instance.world;
-                    ServerInfo { project_name: world.resource(project_name()).clone(), content_base_url, ..Default::default() }
+                    ServerInfo {
+                        project_name: world.resource(project_name()).clone(),
+                        content_base_url,
+                        ..Default::default()
+                    }
                 };
 
                 match client.run(connection, server_info).await {
@@ -648,7 +764,9 @@ fn run_connection(
                     Err(err) if err.is_end_of_stream() => {
                         log::warn!("Stream was closed prematurely");
                     }
-                    Err(NetworkError::IOError(err)) if err.kind() == std::io::ErrorKind::NotConnected => {
+                    Err(NetworkError::IOError(err))
+                        if err.kind() == std::io::ErrorKind::NotConnected =>
+                    {
                         log::warn!("Not connected: {err:?}");
                     }
                     Err(err) => {
@@ -684,7 +802,11 @@ impl<'a> Drop for ClientInstance<'a> {
 
 impl<'a> ClientInstance<'a> {
     #[tracing::instrument(skip_all)]
-    pub async fn run(mut self, conn: ClientConnection, server_info: ServerInfo) -> Result<(), NetworkError> {
+    pub async fn run(
+        mut self,
+        conn: ClientConnection,
+        server_info: ServerInfo,
+    ) -> Result<(), NetworkError> {
         log::debug!("Connecting to client");
         let mut proto = ServerProtocol::new(conn, server_info).await?;
 

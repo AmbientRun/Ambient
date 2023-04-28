@@ -83,7 +83,7 @@ pub fn systems() -> SystemGroup {
         vec![
             query((module_bytecode(), module_enabled().changed())).to_system(
                 move |q, world, qs, _| {
-                    profiling::scope!("WASM module reloads");
+                    ambient_profiling::scope!("WASM module reloads");
                     let modules = q
                         .iter(world, qs)
                         .filter(|(id, (_, enabled))| {
@@ -99,7 +99,7 @@ pub fn systems() -> SystemGroup {
                 },
             ),
             Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("WASM module app events");
+                ambient_profiling::scope!("WASM module app events");
                 let events = app_events_reader
                     .iter(world.resource(world_events()))
                     .map(|(_, event)| event.clone())
@@ -118,14 +118,14 @@ pub fn systems() -> SystemGroup {
                 }
             })),
             Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("WASM module frame event");
+                ambient_profiling::scope!("WASM module frame event");
                 // trigger frame event
                 ambient_ecs::generated::messages::Frame::new()
                     .run(world, None)
                     .unwrap();
             })),
             Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("WASM module collision event");
+                ambient_profiling::scope!("WASM module collision event");
                 // trigger collision event
                 let collisions = match world.resource_opt(collisions()) {
                     Some(collisions) => collisions.lock().clone(),
@@ -138,7 +138,7 @@ pub fn systems() -> SystemGroup {
                 }
             })),
             Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("WASM module collider loads");
+                ambient_profiling::scope!("WASM module collider loads");
                 // trigger collider loads
                 let collider_loads = match world.resource_opt(collider_loads()) {
                     Some(collider_loads) => collider_loads.clone(),
@@ -154,7 +154,7 @@ pub fn systems() -> SystemGroup {
                     .unwrap();
             })),
             Box::new(FnSystem::new(move |world, _| {
-                profiling::scope!("WASM module pending messages");
+                ambient_profiling::scope!("WASM module pending messages");
 
                 let pending_messages =
                     std::mem::take(world.resource_mut(message::pending_messages()));
@@ -280,7 +280,7 @@ fn run(
     message_name: &str,
     message_data: &[u8],
 ) {
-    profiling::scope!(
+    ambient_profiling::scope!(
         "run",
         format!("{} - {}", get_module_name(world, id), message_name)
     );

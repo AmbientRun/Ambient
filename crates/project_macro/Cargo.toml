@@ -8,5 +8,6 @@ proc-macro = true
 
 [dependencies]
 ambient_project_macro_common = { path = "../../shared_crates/project_macro_common" }
+ambient_schema = { path = "../../shared_crates/schema" }
 syn = { workspace = true }
 proc-macro2 = { workspace = true }
