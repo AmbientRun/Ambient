@@ -340,7 +340,8 @@ fn check_builds() -> anyhow::Result<()> {
         .wait()?;
 
     std::process::Command::new("cargo")
-        .args(["build", "--release", "--target-dir", "guest/rust"])
+        .current_dir("guest/rust")
+        .args(["build", "--release"])
         .spawn()?
         .wait()?;
 
