@@ -52,6 +52,7 @@ impl Texture {
     }
 
     fn size_in_bytes_from_desc(descriptor: &wgpu::TextureDescriptor) -> u64 {
+        tracing::info!("descriptor: {:?}", descriptor);
         let mut mip_size = (descriptor.size.width as u64 * descriptor.size.height as u64 * descriptor.size.depth_or_array_layers as u64)
             * descriptor.format.block_size(None).unwrap() as u64;
         let mut size_in_bytes = mip_size;
@@ -124,7 +125,7 @@ impl Texture {
                 format,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::RENDER_ATTACHMENT,
                 label,
-                view_formats: &[]
+                view_formats: &[],
             },
         );
         texture.write(image.as_raw());
@@ -147,7 +148,7 @@ impl Texture {
                 format,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 label,
-                view_formats: &[]
+                view_formats: &[],
             },
             &img.into_vec(),
         )
@@ -178,7 +179,7 @@ impl Texture {
                 format,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::RENDER_ATTACHMENT,
                 label,
-                view_formats: &[]
+                view_formats: &[],
             },
         );
         for (layer, img) in data.into_iter().enumerate() {
@@ -226,7 +227,7 @@ impl Texture {
                 format: wgpu::TextureFormat::R32Float,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 label: Some("texture"),
-                view_formats: &[]
+                view_formats: &[],
             },
             bytemuck::cast_slice(data.as_slice().unwrap()),
         )
@@ -237,11 +238,7 @@ impl Texture {
         self.gpu.queue.write_texture(
             wgpu::ImageCopyTexture { texture: &self.handle, mip_level: 0, origin: wgpu::Origin3d::ZERO, aspect: wgpu::TextureAspect::All },
             bytemuck::cast_slice(data.as_slice().unwrap()),
-            wgpu::ImageDataLayout {
-                offset: 0,
-                bytes_per_row: Some(4 * size.width),
-                rows_per_image: Some(size.height)
-            },
+            wgpu::ImageDataLayout { offset: 0, bytes_per_row: Some(4 * size.width), rows_per_image: Some(size.height) },
             size,
         );
     }
@@ -285,7 +282,7 @@ impl Texture {
                 format: wgpu::TextureFormat::Rgba8Unorm,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 label: Some("Texture.new_single_color_texture"),
-                view_formats: &[]
+                view_formats: &[],
             },
             bytemuck::cast_slice(&[color.x as u8, color.y as u8, color.z as u8, color.w as u8]),
         )
@@ -302,7 +299,7 @@ impl Texture {
                 format: wgpu::TextureFormat::Rgba8Unorm,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 label: Some("default_texture"),
-                view_formats: &[]
+                view_formats: &[],
             },
             bytemuck::cast_slice(
                 &colors.into_iter().flat_map(|color| vec![color.x as u8, color.y as u8, color.z as u8, color.w as u8]).collect_vec(),
@@ -632,7 +629,7 @@ mod tests {
                 format: wgpu::TextureFormat::Rgba8UnormSrgb,
                 usage: wgpu::TextureUsages::COPY_SRC,
                 label: None,
-                view_formats: &[]
+                view_formats: &[],
             },
             bytemuck::cast_slice(&[255, 255, 255, 255]),
         );
