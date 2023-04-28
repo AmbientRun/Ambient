@@ -8,7 +8,9 @@ use aho_corasick::AhoCorasick;
 use ambient_std::{asset_cache::*, CowStr};
 use anyhow::Context;
 use itertools::Itertools;
-use wgpu::{BindGroupLayout, BindGroupLayoutEntry, ComputePipelineDescriptor, DepthBiasState, TextureFormat};
+use wgpu::{
+    BindGroupLayout, BindGroupLayoutEntry, ComputePipelineDescriptor, DepthBiasState, TextureFormat,
+};
 
 use super::gpu::{Gpu, GpuKey, DEFAULT_SAMPLE_COUNT};
 
@@ -78,12 +80,18 @@ pub struct ShaderIdent {
 impl ShaderIdent {
     /// Shortcut for unescaped text replacement
     pub fn raw(name: impl Into<CowStr>, value: impl Into<CowStr>) -> Self {
-        Self { name: name.into(), value: WgslValue::Raw(value.into()) }
+        Self {
+            name: name.into(),
+            value: WgslValue::Raw(value.into()),
+        }
     }
 
     /// Replaces any occurence of `name` with the wgsl representation of `value`
     pub fn constant(name: impl Into<CowStr>, value: impl Into<WgslValue>) -> Self {
-        Self { name: name.into(), value: value.into() }
+        Self {
+            name: name.into(),
+            value: value.into(),
+        }
     }
 }
 
@@ -135,14 +143,18 @@ impl ShaderModule {
         self
     }
 
-    pub fn with_bindings(mut self, bindings: impl IntoIterator<Item = (CowStr, BindGroupLayoutEntry)>) -> Self {
+    pub fn with_bindings(
+        mut self,
+        bindings: impl IntoIterator<Item = (CowStr, BindGroupLayoutEntry)>,
+    ) -> Self {
         self.bindings.extend(bindings.into_iter());
         self
     }
 
     pub fn with_binding_desc(mut self, desc: BindGroupDesc<'static>) -> Self {
         let group = desc.label.clone();
-        self.bindings.extend(desc.entries.iter().map(|&entry| (group.clone(), entry)));
+        self.bindings
+            .extend(desc.entries.iter().map(|&entry| (group.clone(), entry)));
         self
     }
 
@@ -151,13 +163,19 @@ impl ShaderModule {
         self
     }
 
-    pub fn with_dependencies(mut self, modules: impl IntoIterator<Item = Arc<ShaderModule>>) -> Self {
+    pub fn with_dependencies(
+        mut self,
+        modules: impl IntoIterator<Item = Arc<ShaderModule>>,
+    ) -> Self {
         self.dependencies.extend(modules);
         self
     }
 
     fn sanitized_label(&self) -> String {
-        self.name.replace(|v: char| !v.is_ascii_alphanumeric() && !"_-.".contains(v), "?")
+        self.name.replace(
+            |v: char| !v.is_ascii_alphanumeric() && !"_-.".contains(v),
+            "?",
+        )
     }
 }
 
@@ -172,8 +190,12 @@ impl<'a> SyncAssetKey<Arc<wgpu::BindGroupLayout>> for BindGroupDesc<'a> {
     fn load(&self, assets: AssetCache) -> Arc<wgpu::BindGroupLayout> {
         let gpu = GpuKey.get(&assets);
 
-        let layout =
-            gpu.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { label: Some(&*self.label), entries: &self.entries });
+        let layout = gpu
+            .device
+            .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                label: Some(&*self.label),
+                entries: &self.entries,
+            });
 
         Arc::new(layout)
     }
@@ -184,7 +206,9 @@ impl<'a> SyncAssetKey<Arc<wgpu::BindGroupLayout>> for BindGroupDesc<'a> {
 /// # Panics
 ///
 /// If the dependency graph contains a cycle
-fn resolve_module_graph<'a>(roots: impl IntoIterator<Item = &'a ShaderModule>) -> Vec<&'a ShaderModule> {
+fn resolve_module_graph<'a>(
+    roots: impl IntoIterator<Item = &'a ShaderModule>,
+) -> Vec<&'a ShaderModule> {
     enum VisitedState {
         Pending,
         Visited,
@@ -203,12 +227,19 @@ fn resolve_module_graph<'a>(roots: impl IntoIterator<Item = &'a ShaderModule>) -
                 slot.insert(VisitedState::Pending);
             }
             btree_map::Entry::Occupied(slot) => match slot.get() {
-                VisitedState::Pending => panic!("Circular dependency for module: {:?} in {:?}", module.name, backtrace),
+                VisitedState::Pending => panic!(
+                    "Circular dependency for module: {:?} in {:?}",
+                    module.name, backtrace
+                ),
                 VisitedState::Visited => return,
             },
         }
 
-        let backtrace = backtrace.iter().copied().chain([&*module.name]).collect_vec();
+        let backtrace = backtrace
+            .iter()
+            .copied()
+            .chain([&*module.name])
+            .collect_vec();
 
         // Ensure dependencies are satisfied first
         for module in &module.dependencies {
@@ -260,14 +291,24 @@ impl Shader {
         let modules = resolve_module_graph([module]);
 
         // Resolve all bind groups, resolving the names to an index
-        let bind_group_index: BTreeMap<_, _> = bind_group_names.iter().enumerate().map(|(a, &b)| (b, a)).collect();
-        let mut bind_groups =
-            bind_group_names.iter().map(|group| BindGroupDesc { label: Cow::Borrowed(*group), entries: Default::default() }).collect_vec();
+        let bind_group_index: BTreeMap<_, _> = bind_group_names
+            .iter()
+            .enumerate()
+            .map(|(a, &b)| (b, a))
+            .collect();
+        let mut bind_groups = bind_group_names
+            .iter()
+            .map(|group| BindGroupDesc {
+                label: Cow::Borrowed(*group),
+                entries: Default::default(),
+            })
+            .collect_vec();
 
         for module in &modules {
             for (group, binding) in &module.bindings {
-                let index =
-                    *bind_group_index.get(&**group).with_context(|| format!("Failed to resolve bind group: {group} in {}", module.name))?;
+                let index = *bind_group_index.get(&**group).with_context(|| {
+                    format!("Failed to resolve bind group: {group} in {}", module.name)
+                })?;
 
                 let desc = &mut bind_groups[index];
                 desc.entries.push(*binding);
@@ -275,7 +316,10 @@ impl Shader {
         }
 
         // Now for the fun part: constructing the binding group layout descriptors
-        let bind_group_layouts = bind_groups.iter().map(|desc| desc.get(assets)).collect_vec();
+        let bind_group_layouts = bind_groups
+            .iter()
+            .map(|desc| desc.get(assets))
+            .collect_vec();
         if bind_group_layouts.len() > 4 {
             anyhow::bail!(
                 "Maximum bind group layout count exceeded. Expected a maximum of 4, found {}: {bind_group_names:?}",
@@ -286,13 +330,25 @@ impl Shader {
         // Efficiently replace all identifiers
         let (patterns, replace_with): (Vec<_>, Vec<_>) = modules
             .iter()
-            .flat_map(|v| v.idents.iter().map(|ShaderIdent { name, value }| (format!("{name}"), value.to_wgsl())))
-            .chain(bind_group_index.iter().map(|(name, &index)| (name.to_string(), (index as u32).to_string())))
+            .flat_map(|v| {
+                v.idents
+                    .iter()
+                    .map(|ShaderIdent { name, value }| (format!("{name}"), value.to_wgsl()))
+            })
+            .chain(
+                bind_group_index
+                    .iter()
+                    .map(|(name, &index)| (name.to_string(), (index as u32).to_string())),
+            )
             .unzip();
 
         tracing::debug!(
             "Preprocessing shader using {}",
-            patterns.iter().zip_eq(&replace_with).map(|(a, b)| { format!("{a} => {b}") }).format("\n")
+            patterns
+                .iter()
+                .zip_eq(&replace_with)
+                .map(|(a, b)| { format!("{a} => {b}") })
+                .format("\n")
         );
 
         // Collect the raw source code
@@ -319,9 +375,16 @@ impl Shader {
 
         let module = gpu
             .device
-            .create_shader_module(wgpu::ShaderModuleDescriptor { label: Some(&label), source: wgpu::ShaderSource::Wgsl(source.into()) });
+            .create_shader_module(wgpu::ShaderModuleDescriptor {
+                label: Some(&label),
+                source: wgpu::ShaderSource::Wgsl(source.into()),
+            });
 
-        Ok(Arc::new(Self { module, bind_group_layouts, label }))
+        Ok(Arc::new(Self {
+            module,
+            bind_group_layouts,
+            label,
+        }))
     }
 
     #[inline]
@@ -335,47 +398,77 @@ impl Shader {
         &self.module
     }
 
-    pub fn to_pipeline(self: &Arc<Self>, gpu: &Gpu, info: GraphicsPipelineInfo) -> GraphicsPipeline {
-        let layout = gpu.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some(&self.label),
-            bind_group_layouts: &self.layouts().iter().map(|v| &**v).collect_vec(),
-            push_constant_ranges: &[],
-        });
+    pub fn to_pipeline(
+        self: &Arc<Self>,
+        gpu: &Gpu,
+        info: GraphicsPipelineInfo,
+    ) -> GraphicsPipeline {
+        let layout = gpu
+            .device
+            .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                label: Some(&self.label),
+                bind_group_layouts: &self.layouts().iter().map(|v| &**v).collect_vec(),
+                push_constant_ranges: &[],
+            });
 
-        let pipeline = gpu.device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some(&self.label),
-            layout: Some(&layout),
-            vertex: wgpu::VertexState { module: self.module(), entry_point: info.vs_main, buffers: &[] },
-            primitive: wgpu::PrimitiveState {
-                front_face: info.front_face,
-                cull_mode: info.cull_mode,
-                topology: info.topology,
-                ..Default::default()
-            },
-            fragment: Some(wgpu::FragmentState { module: self.module(), entry_point: info.fs_main, targets: info.targets }),
-            depth_stencil: info.depth,
-            multisample: wgpu::MultisampleState { count: DEFAULT_SAMPLE_COUNT, mask: !0, alpha_to_coverage_enabled: false },
-            multiview: None,
-        });
+        let pipeline = gpu
+            .device
+            .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+                label: Some(&self.label),
+                layout: Some(&layout),
+                vertex: wgpu::VertexState {
+                    module: self.module(),
+                    entry_point: info.vs_main,
+                    buffers: &[],
+                },
+                primitive: wgpu::PrimitiveState {
+                    front_face: info.front_face,
+                    cull_mode: info.cull_mode,
+                    topology: info.topology,
+                    ..Default::default()
+                },
+                fragment: Some(wgpu::FragmentState {
+                    module: self.module(),
+                    entry_point: info.fs_main,
+                    targets: info.targets,
+                }),
+                depth_stencil: info.depth,
+                multisample: wgpu::MultisampleState {
+                    count: DEFAULT_SAMPLE_COUNT,
+                    mask: !0,
+                    alpha_to_coverage_enabled: false,
+                },
+                multiview: None,
+            });
 
-        GraphicsPipeline { pipeline, shader: self.clone() }
+        GraphicsPipeline {
+            pipeline,
+            shader: self.clone(),
+        }
     }
 
     pub fn to_compute_pipeline(self: &Arc<Self>, gpu: &Gpu, entry_point: &str) -> ComputePipeline {
-        let layout = gpu.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some(&self.label),
-            bind_group_layouts: &self.layouts().iter().map(|v| &**v).collect_vec(),
-            push_constant_ranges: &[],
-        });
+        let layout = gpu
+            .device
+            .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                label: Some(&self.label),
+                bind_group_layouts: &self.layouts().iter().map(|v| &**v).collect_vec(),
+                push_constant_ranges: &[],
+            });
 
-        let pipeline = gpu.device.create_compute_pipeline(&ComputePipelineDescriptor {
-            label: Some(&self.label),
-            layout: Some(&layout),
-            module: self.module(),
-            entry_point,
-        });
+        let pipeline = gpu
+            .device
+            .create_compute_pipeline(&ComputePipelineDescriptor {
+                label: Some(&self.label),
+                layout: Some(&layout),
+                module: self.module(),
+                entry_point,
+            });
 
-        ComputePipeline { pipeline, shader: self.clone() }
+        ComputePipeline {
+            pipeline,
+            shader: self.clone(),
+        }
     }
 }
 
@@ -442,7 +535,7 @@ pub const DEPTH_FORMAT: TextureFormat = TextureFormat::Depth32Float;
 // - While encoding [CommandEncoder].BeginRenderPass([RenderPassDescriptor "Shadow cascade 0"]).
 
 // Adding a stencil part crashes the gpu
-pub const DEPTH_FORMAT: TextureFormat = TextureFormat::Depth24PlusStencil8;
+pub const DEPTH_FORMAT: TextureFormat = TextureFormat::Depth32Float;
 
 impl<'a> GraphicsPipelineInfo<'a> {
     pub fn with_depth(self) -> GraphicsPipelineInfo<'a> {
@@ -460,7 +553,10 @@ impl<'a> GraphicsPipelineInfo<'a> {
     }
 
     pub fn with_depth_bias(mut self, state: DepthBiasState) -> GraphicsPipelineInfo<'a> {
-        self.depth.as_mut().expect("Attempt to set depth bias without a depth buffer").bias = state;
+        self.depth
+            .as_mut()
+            .expect("Attempt to set depth bias without a depth buffer")
+            .bias = state;
         self
     }
 }

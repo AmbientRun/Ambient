@@ -1,4 +1,4 @@
-use std::{sync::Arc};
+use std::sync::Arc;
 
 use ambient_core::{camera::Camera, main_scene, player::local_user_id, transform::*};
 use ambient_ecs::{ArchetypeFilter, World};
@@ -63,12 +63,11 @@ impl ShadowsRenderer {
                     | wgpu::TextureUsages::TEXTURE_BINDING
                     | wgpu::TextureUsages::COPY_SRC
                     | wgpu::TextureUsages::COPY_DST,
-                view_formats: &[]
+                view_formats: &[],
             },
         ));
 
         let shadow_view = shadow_texture.create_view(&wgpu::TextureViewDescriptor {
-            aspect: wgpu::TextureAspect::DepthOnly,
             ..Default::default()
         });
 
@@ -196,10 +195,7 @@ impl ShadowsRenderer {
                         load: wgpu::LoadOp::Clear(0.0),
                         store: true,
                     }),
-                    stencil_ops: Some(wgpu::Operations {
-                        load: wgpu::LoadOp::Load,
-                        store: true,
-                    }),
+                    stencil_ops: None,
                 }),
             });
 
