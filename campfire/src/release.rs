@@ -236,19 +236,27 @@ fn edit_toml(path: impl AsRef<Path>, f: impl Fn(&mut toml_edit::Document)) -> an
 }
 
 fn check_docker_build() -> anyhow::Result<()> {
-    std::process::Command::new("docker")
+    log::info!("Building Docker image...");
+    let success = std::process::Command::new("docker")
         .args(["build", ".", "-t", "ambient_campfire"])
         .spawn()?
-        .wait()?;
+        .wait()?
+        .success();
+    if !success {
+        anyhow::bail!("failed to build Docker image");
+    }
+    log::info!("Built Docker image.");
 
     Ok(())
 }
 
 fn check_docker_run() -> anyhow::Result<()> {
-    std::process::Command::new("docker")
+    log::info!("Running Docker instance...");
+    let success = std::process::Command::new("docker")
         .args([
             "run",
             "--rm",
+            "-it",
             "-v",
             &format!(
                 "{}:/app",
@@ -261,13 +269,18 @@ fn check_docker_run() -> anyhow::Result<()> {
             "--help",
         ])
         .spawn()?
-        .wait()?;
+        .wait()?
+        .success();
+    if !success {
+        anyhow::bail!("failed to execute cargo run in Docker instance");
+    }
+    log::info!("Ran Docker instance.");
 
     Ok(())
 }
 
 fn check_msrv() -> anyhow::Result<()> {
-    println!("checking MSRV...");
+    log::info!("Checking MSRV...");
 
     let msrv = {
         let output = std::process::Command::new("cargo")
@@ -328,40 +341,48 @@ fn check_msrv() -> anyhow::Result<()> {
 
     // TODO: check dockerfile
 
-    println!("MSRV OK");
+    log::info!("MSRV OK.");
     Ok(())
 }
 
 fn check_builds() -> anyhow::Result<()> {
-    println!("checking Builds...");
-    std::process::Command::new("cargo")
+    log::info!("Checking builds...");
+    let success = std::process::Command::new("cargo")
         .args(["build", "--release"])
         .spawn()?
-        .wait()?;
+        .wait()?
+        .success();
+    if !success {
+        anyhow::bail!("failed to build root crate");
+    }
 
-    std::process::Command::new("cargo")
+    let success = std::process::Command::new("cargo")
         .current_dir("guest/rust")
         .args(["build", "--release"])
         .spawn()?
-        .wait()?;
+        .wait()?
+        .success();
+    if !success {
+        anyhow::bail!("failed to build guest crate");
+    }
 
-    println!("Builds Ok");
+    log::info!("Builds OK.");
     Ok(())
 }
 
 fn check_changelog() -> anyhow::Result<()> {
-    println!("checking CHANGELOG...");
+    log::info!("Checking CHANGELOG...");
 
     // TODO: Currently unimplemented; the implementation needs to handle
     // commented out Markdown, so it has to have some degree of smarts about it
     let _changelog = std::fs::read_to_string(CHANGELOG)?;
 
-    println!("CHANGELOG OK");
+    log::info!("CHANGELOG OK.");
     Ok(())
 }
 
 fn check_readme() -> anyhow::Result<()> {
-    println!("checking README Intro....");
+    log::info!("Checking README intro...");
     let intro = std::fs::read_to_string(INTRODUCTION)?
         .lines()
         .skip(1) // Skip the first line: # Introduction // not in the README
@@ -375,7 +396,7 @@ fn check_readme() -> anyhow::Result<()> {
         "README intro content does not match!"
     );
 
-    println!("README intro OK");
+    log::info!("README intro OK.");
     Ok(())
 }
 
