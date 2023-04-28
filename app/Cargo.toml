@@ -15,7 +15,7 @@ ambient_cameras = { path = "../crates/cameras" }
 ambient_core = { path = "../crates/core" }
 ambient_debugger = { path = "../crates/debugger" }
 ambient_decals = { path = "../crates/decals" }
-ambient_deploy = { path = "../crates/deploy" }
+ambient_deploy = { path = "../crates/deploy", optional = true }
 ambient_ecs = { path = "../crates/ecs" }
 ambient_gizmos = { path = "../crates/gizmos" }
 ambient_gpu = { path = "../crates/gpu" }
@@ -77,6 +77,7 @@ rusty-hook = "^0.11.2"
 
 [features]
 default = ["assimp"]
+deploy = ["ambient_deploy"]
 production = []
 profile = ["ambient_app/profile"]
 assimp = ["ambient_model_import/russimp"]

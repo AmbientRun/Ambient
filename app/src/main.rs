@@ -165,6 +165,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     // If this is just a deploy then deploy and exit
+    #[cfg(feature = "deploy")]
     if let Cli::Deploy { token, api_server, .. } = &cli {
         let Some(auth_token) = token else {
             anyhow::bail!("-t/--token is required for deploy");
@@ -172,7 +173,8 @@ fn main() -> anyhow::Result<()> {
         let manifest = manifest.as_ref().expect("no manifest");
         let response = runtime.block_on(ambient_deploy::deploy(
             &runtime,
-            api_server.clone().unwrap_or("https://api.ambient.run".to_string()),
+            // FIXME: switch to https once we have a cert
+            api_server.clone().unwrap_or("http://api.ambient.run".to_string()),
             auth_token,
             project_path,
             manifest,
