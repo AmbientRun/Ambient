@@ -256,30 +256,44 @@ fn publish(execute: bool) -> anyhow::Result<()> {
         .collect::<Vec<_>>();
     packages.reverse();
 
-    fn does_manifest_exist(name: &str) -> bool {
-        let Some(stripped) = name.strip_prefix("ambient_") else { return false; };
-        [
-            Path::new("crates").join(stripped).join("Cargo.toml"),
-            Path::new("libs").join(stripped).join("Cargo.toml"),
-            Path::new("shared_crates").join(stripped).join("Cargo.toml"),
-            "guest/rust/api/Cargo.toml".into(),
-            "guest/rust/api_core/api_macros/Cargo.toml".into(),
-            "guest/rust/api_core/Cargo.toml".into(),
-        ]
-        .into_iter()
-        .filter(|p| p.exists())
-        .any(|p| {
-            let toml_contents = std::fs::read_to_string(&p).unwrap();
-            let manifest = &cargo_toml::Manifest::from_str(&toml_contents).unwrap();
-
-            manifest.package().name == name
-        })
+    #[derive(Default)]
+    struct Manifests {
+        cache: HashMap<PathBuf, cargo_toml::Manifest>,
     }
+    impl Manifests {
+        fn exists(&mut self, name: &str) -> bool {
+            let Some(stripped) = name.strip_prefix("ambient") else { return false; };
+            let stripped = stripped.strip_prefix("_").unwrap_or(name);
+
+            [
+                Path::new("crates").join(stripped).join("Cargo.toml"),
+                Path::new("libs").join(stripped).join("Cargo.toml"),
+                Path::new("shared_crates").join(stripped).join("Cargo.toml"),
+                "guest/rust/api/Cargo.toml".into(),
+                "guest/rust/api_core/api_macros/Cargo.toml".into(),
+                "guest/rust/api_core/Cargo.toml".into(),
+                "app/Cargo.toml".into(),
+            ]
+            .into_iter()
+            .filter(|p| p.exists())
+            .any(|p| {
+                let manifest = self.cache.entry(p.clone()).or_insert_with(|| {
+                    // Intentionally manually read the file as we do not want to
+                    // use `cargo_toml`'s dependency resolution.
+                    cargo_toml::Manifest::from_str(&std::fs::read_to_string(&p).unwrap())
+                        .expect(&format!("failed to parse {:?}", p))
+                });
+
+                manifest.package().name == name
+            })
+        }
+    }
+    let mut manifests = Manifests::default();
 
     let packages = packages
         .iter()
         .map(|p| p.repr().split_ascii_whitespace().next().unwrap())
-        .filter(|p| does_manifest_exist(p))
+        .filter(|p| manifests.exists(p))
         .collect::<Vec<_>>();
 
     dbg!(packages);
