@@ -1,12 +1,12 @@
 use std::path::Path;
 
+use anyhow::{bail, ensure, Context};
 use clap::Parser;
-use std::path::PathBuf;
 use markdown_extract::extract_from_path;
 use regex::Regex;
-use anyhow::{ensure, bail};
+use serde::Deserialize;
+use std::path::PathBuf;
 use std::str;
-
 
 #[derive(Parser, Clone)]
 pub enum Release {
@@ -43,7 +43,7 @@ const CHANGELOG: &str = "CHANGELOG.md";
 const README: &str = "README.md";
 const INTRODUCTION: &str = "docs/src/introduction.md";
 
-fn check_release() -> anyhow::Result<()>{
+fn check_release() -> anyhow::Result<()> {
     // https://github.com/AmbientRun/Ambient/issues/314
     // the Dockerfile can run an Ambient server
     check_docker_build()?;
@@ -200,8 +200,6 @@ fn edit_toml(path: impl AsRef<Path>, f: impl Fn(&mut toml_edit::Document)) -> an
     })
 }
 
-
-
 fn check_docker_build() -> anyhow::Result<()> {
     std::process::Command::new("docker")
         .args(["build", ".", "-t", "ambient_campfire"])
@@ -213,13 +211,25 @@ fn check_docker_build() -> anyhow::Result<()> {
 
 fn check_docker_run() -> anyhow::Result<()> {
     std::process::Command::new("docker")
-        .args(["run", "--rm", "-d", "ambient_campfire"])
+        .args([
+            "run",
+            "--rm",
+            "-v",
+            &format!(
+                "{}:/app",
+                std::env::current_dir()?.to_string_lossy().as_ref(),
+            ),
+            "ambient_campfire",
+            "cargo",
+            "run",
+            "--",
+            "--help",
+        ])
         .spawn()?
         .wait()?;
 
     Ok(())
 }
-
 
 fn check_msrv() -> anyhow::Result<()> {
     println!("checking MSRV...");
@@ -255,7 +265,6 @@ fn check_msrv() -> anyhow::Result<()> {
     Ok(())
 }
 
-
 fn check_builds() -> anyhow::Result<()> {
     println!("checking Builds...");
     std::process::Command::new("cargo")
@@ -272,14 +281,14 @@ fn check_builds() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn check_changelog() -> anyhow::Result<()>{
+fn check_changelog() -> anyhow::Result<()> {
     println!("checking CHANGELOG...");
     let header_regex = Regex::new(r"\bunreleased\b")?;
     let unreleased_content = extract_from_path(&PathBuf::from(CHANGELOG), &header_regex)?;
     match unreleased_content.is_empty() {
         false => {
-          bail!("Unreleased content in CHANGELOG.md");
-        },
+            bail!("Unreleased content in CHANGELOG.md");
+        }
         true => {
             println!("CHANGELOG OK");
             Ok(())
@@ -297,12 +306,14 @@ fn check_readme() -> anyhow::Result<()> {
 
     let readme = std::fs::read_to_string(README)?;
 
-    ensure!(readme.contains(&intro), "README intro content does not match!");
+    ensure!(
+        readme.contains(&intro),
+        "README intro content does not match!"
+    );
 
     println!("README intro OK");
     Ok(())
 }
-
 
 fn check(path: impl AsRef<Path>) -> anyhow::Result<()> {
     let path = path.as_ref();
