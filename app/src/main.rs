@@ -171,6 +171,7 @@ fn main() -> anyhow::Result<()> {
         };
         let manifest = manifest.as_ref().expect("no manifest");
         let response = runtime.block_on(ambient_deploy::deploy(
+            &runtime,
             api_server.clone().unwrap_or("https://api.ambient.run".to_string()),
             auth_token,
             project_path,

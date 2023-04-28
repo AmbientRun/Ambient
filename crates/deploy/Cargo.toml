@@ -7,12 +7,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_cloud_proto = { path = "../../../Cloud/proto" }     # FIXME
 ambient_project = { path = "../../shared_crates/project" }
 ambient_sys = { path = "../sys" }
 
 anyhow = { workspace = true }
+flume = { workspace = true }
 log = { workspace = true }
+prost = { workspace = true }
+tokio = { workspace = true }
 tokio-stream = { workspace = true }
 tonic = { workspace = true }
 walkdir = { workspace = true }
+
+[build-dependencies]
+tonic-build = { workspace = true }
