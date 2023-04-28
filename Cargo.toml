@@ -22,11 +22,7 @@ tracing-log = { version = "0.1" }
 wgpu = "0.14.2"
 winit = { version = "0.28.1", features = ["serde"] }
 futures = { version = "0.3", default-features = false, features = ["std"] }
-prost = "0.11"
 tokio = { version = "1.20", features = ["parking_lot"] }
-tokio-stream = "0.1"
-tonic = { version = "0.9" }
-tonic-build = "0.9"
 bytemuck = { version = "1.10", features = ["derive"] }
 glam = { version = "0.22", features = ["bytemuck", "serde", "rand"] }
 gltf = "1.1.0"
