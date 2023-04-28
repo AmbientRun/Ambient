@@ -34,10 +34,18 @@ impl ServerState {
     /// Processes a client request
     pub async fn process_control(&mut self, frame: ClientControlFrame) -> anyhow::Result<()> {
         match (frame, &self) {
+            (_, Self::Disconnected) => {
+                tracing::info!("Client is disconnected, ignoring control frame");
+                Ok(())
+            }
             (ClientControlFrame::Connect(user_id), Self::PendingConnection) => {
                 // Connect the user
                 tracing::info!("User connected");
                 *self = Self::Connected(ConnectedClient { user_id });
+                Ok(())
+            }
+            (ClientControlFrame::Connect(_), Self::Connected(_)) => {
+                tracing::warn!("Client already connected");
                 Ok(())
             }
             (ClientControlFrame::Disconnect, _) => {
@@ -46,6 +54,22 @@ impl ServerState {
                 Ok(())
             }
         }
+    }
+
+    pub fn disconnect(&mut self, state: &SharedServerState) {
+        if let Self::Connected(ConnectedClient { user_id }) = self {
+            tracing::info!(?user_id, "User disconnected");
+            let mut state = state.lock();
+
+            if let Some(player) = state.players.remove(user_id) {
+                tracing::debug!("Despawning the player from world: {:?}", player.instance);
+                state.instances.get_mut(&player.instance).unwrap().despawn_player(&user_id);
+            }
+        } else {
+            tracing::warn!("Tried to disconnect a client that was not connected");
+        }
+
+        *self = Self::Disconnected;
     }
 }
 
