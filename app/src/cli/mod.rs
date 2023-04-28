@@ -34,7 +34,7 @@ pub enum Cli {
     Deploy {
         #[command(flatten)]
         project_args: ProjectCli,
-        /// API server endpoint, defaults to https://api.ambient.run
+        /// API server endpoint, defaults to http://api.ambient.run
         #[arg(long)]
         api_server: Option<String>,
         /// Authentication token

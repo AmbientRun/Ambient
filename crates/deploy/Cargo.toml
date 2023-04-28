@@ -18,7 +18,7 @@ walkdir = { workspace = true }
 
 prost = "0.11"
 tokio-stream = "0.1"
-tonic = { version = "0.9" }
+tonic = "0.9"
 
 [build-dependencies]
 tonic-build = "0.9"

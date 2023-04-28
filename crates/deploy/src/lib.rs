@@ -5,7 +5,11 @@ pub mod deploy_proto {
 use std::path::Path;
 
 use ambient_project::Manifest;
-use tonic::{metadata::MetadataValue, transport::Channel, Request};
+use tonic::{
+    metadata::MetadataValue,
+    transport::Channel,
+    Request,
+};
 use walkdir::WalkDir;
 
 use deploy_proto::{deployer_client::DeployerClient, DeployAssetRequest, DeployAssetsResponse};
@@ -45,7 +49,7 @@ pub async fn deploy(
 
     // iterate over all files to deploy (ambient.toml and everything in the build directory)
     let file_paths = std::iter::once(path.as_ref().join("ambient.toml")).chain(
-        WalkDir::new(&path.as_ref().join("build"))
+        WalkDir::new(path.as_ref().join("build"))
             .into_iter()
             .filter_map(|e| e.ok())
             .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
