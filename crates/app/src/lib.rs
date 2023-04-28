@@ -281,6 +281,7 @@ impl AppBuilder {
         self
     }
 
+    #[cfg(target_os = "unknown")]
     pub fn parent_element(mut self, value: Option<web_sys::HtmlElement>) -> Self {
         self.parent_element = value;
         self
