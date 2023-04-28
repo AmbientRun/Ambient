@@ -145,11 +145,11 @@ colored = "2.0.0"
 # WASM dependencies. Should be able to move off these once this all begins to stabilise a little.
 #
 
-wasmtime = { version = "7.0.0", features = ["component-model"] }
+wasmtime = { version = "8.0.1", features = ["component-model"] }
 # Use published versions of these crates when available, or pull them in ourselves
 wasmtime-wasi = { package = "host", git = "https://github.com/AmbientRun/preview2-prototyping.git", branch = "sync" }
 wasi-cap-std-sync = { git = "https://github.com/AmbientRun/preview2-prototyping.git", branch = "sync" }
 wasi-common = { git = "https://github.com/AmbientRun/preview2-prototyping.git", branch = "sync" }
-wit-bindgen-core = "0.5.0"
-wit-bindgen-rust = "0.5.0"
+wit-bindgen-core = "0.6.0"
+wit-bindgen-rust = "0.6.0"
 wit-component = "0.8.1"
