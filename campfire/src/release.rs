@@ -192,7 +192,7 @@ fn edit_file(path: impl AsRef<Path>, f: impl Fn(&str) -> String) -> anyhow::Resu
     Ok(())
 }
 
-fn edit_toml(path: &str, f: impl Fn(&mut toml_edit::Document)) -> anyhow::Result<()> {
+fn edit_toml(path: impl AsRef<Path>, f: impl Fn(&mut toml_edit::Document)) -> anyhow::Result<()> {
     edit_file(path, |input| {
         let mut toml = input.parse::<toml_edit::Document>().unwrap();
         f(&mut toml);
