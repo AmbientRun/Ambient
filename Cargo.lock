@@ -2044,10 +2044,13 @@ dependencies = [
  "anyhow",
  "clap 4.2.1",
  "log",
+ "regex",
  "rustdoc-json",
  "rustdoc-types",
+ "serde",
  "serde_json",
  "simplelog",
+ "toml 0.5.11",
  "toml_edit",
 ]
 
