@@ -193,6 +193,8 @@ pub struct AppBuilder {
     pub examples_systems: bool,
     pub headless: Option<UVec2>,
     pub update_title_with_fps_stats: bool,
+    #[cfg(target_os = "unknown")]
+    pub parent_element: Option<web_sys::HtmlElement>,
 }
 
 pub trait AsyncInit<'a> {
@@ -223,6 +225,8 @@ impl AppBuilder {
             examples_systems: false,
             headless: None,
             update_title_with_fps_stats: true,
+            #[cfg(target_os = "unknown")]
+            parent_element: None,
         }
     }
     pub fn simple() -> Self {
@@ -277,6 +281,12 @@ impl AppBuilder {
         self
     }
 
+    #[cfg(target_os = "unknown")]
+    pub fn parent_element(mut self, value: Option<web_sys::HtmlElement>) -> Self {
+        self.parent_element = value;
+        self
+    }
+
     pub async fn build(self) -> anyhow::Result<App> {
         crate::init_all_components();
         let (window, event_loop) = if self.headless.is_some() {
@@ -295,13 +305,15 @@ impl AppBuilder {
 
             let canvas = window.canvas();
 
-            let window = web_sys::window().unwrap();
-            let document = window.document().unwrap();
-            let body = document.body().unwrap();
+            let target = self.parent_element.unwrap_or_else(|| {
+                let window = web_sys::window().unwrap();
+                let document = window.document().unwrap();
+                document.body().unwrap()
+            });
 
             // Set a background color for the canvas to make it easier to tell where the canvas is for debugging purposes.
             canvas.style().set_css_text("background-color: crimson;");
-            body.append_child(&canvas).unwrap();
+            target.append_child(&canvas).unwrap();
         }
 
         #[cfg(feature = "profile")]
