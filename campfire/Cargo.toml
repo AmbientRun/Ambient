@@ -11,8 +11,9 @@ log = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 toml_edit = { workspace = true }
+itertools = { workspace = true }
+toml = { workspace = true }
 
-toml = "0.5.8"
 regex = "1.5.4"
 rustdoc-json = "0.8.0"
 rustdoc-types = "0.20.0"

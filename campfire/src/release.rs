@@ -1,10 +1,12 @@
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
+    process::Command,
 };
 
 use anyhow::{ensure, Context};
 use clap::Parser;
+use itertools::Itertools;
 use serde::Deserialize;
 use std::str;
 
@@ -228,75 +230,133 @@ fn publish(execute: bool) -> anyhow::Result<()> {
     // that share crates. None of the existing tooling, as far as I can tell,
     // handles this well.
     //
-    // To deal with this, this constructs a graph of the dependencies between
-    // crates, and then publishes them in the correct order. These dependencies
-    // are resolved across *both* workspaces using their `Cargo.lock`s.
-    //
-    // However, this is complicated by the presence of cycles in the dependency
-    // graph as a result of dev-dependencies for testing. To work around this,
-    // we parse through all of the manifests, locate the dev-dependencies,
-    // and delete their corresponding edges.
-    //
-    // Once this is done, we topologically sort the graph and publish in that order.
+    // To deal with this, we use `guppy` to construct a graph for each workspace,
+    // and then we fuse them together to produce the final publish list in topological
+    // order.
 
     use guppy::graph::DependencyDirection;
 
-    let graph = guppy::MetadataCommand::new()
-        .manifest_path(ROOT_CARGO)
-        .build_graph()?;
-    let package_id = graph
-        .resolve_package_name("ambient")
-        .package_ids(DependencyDirection::Forward)
-        .next()
-        .unwrap();
-    let mut packages = graph
-        .query_forward([package_id])?
-        .resolve()
-        .package_ids(DependencyDirection::Forward)
-        .collect::<Vec<_>>();
-    packages.reverse();
-
-    #[derive(Default)]
-    struct Manifests {
-        cache: HashMap<PathBuf, cargo_toml::Manifest>,
-    }
-    impl Manifests {
-        fn exists(&mut self, name: &str) -> bool {
-            let Some(stripped) = name.strip_prefix("ambient") else { return false; };
-            let stripped = stripped.strip_prefix("_").unwrap_or(name);
-
-            [
-                Path::new("crates").join(stripped).join("Cargo.toml"),
-                Path::new("libs").join(stripped).join("Cargo.toml"),
-                Path::new("shared_crates").join(stripped).join("Cargo.toml"),
-                "guest/rust/api/Cargo.toml".into(),
-                "guest/rust/api_core/api_macros/Cargo.toml".into(),
-                "guest/rust/api_core/Cargo.toml".into(),
-                "app/Cargo.toml".into(),
-            ]
-            .into_iter()
-            .filter(|p| p.exists())
-            .any(|p| {
-                let manifest = self.cache.entry(p.clone()).or_insert_with(|| {
-                    // Intentionally manually read the file as we do not want to
-                    // use `cargo_toml`'s dependency resolution.
-                    cargo_toml::Manifest::from_str(&std::fs::read_to_string(&p).unwrap())
-                        .expect(&format!("failed to parse {:?}", p))
-                });
-
-                manifest.package().name == name
-            })
-        }
-    }
     let mut manifests = Manifests::default();
 
-    let packages = packages
-        .iter()
-        .map(|p| p.repr().split_ascii_whitespace().next().unwrap())
-        .filter(|p| manifests.exists(p))
-        .collect::<Vec<_>>();
+    let ambient_packages = {
+        let ambient_graph = guppy::MetadataCommand::new()
+            .manifest_path(ROOT_CARGO)
+            .build_graph()?;
+        let ambient_id = ambient_graph
+            .resolve_package_name("ambient")
+            .package_ids(DependencyDirection::Forward)
+            .next()
+            .unwrap();
+        let ambient_wasm_id = ambient_graph
+            .resolve_package_name("ambient_wasm")
+            .package_ids(DependencyDirection::Forward)
+            .next()
+            .unwrap();
 
-    dbg!(packages);
+        let mut ambient_packages = ambient_graph
+            .query_forward([ambient_id])?
+            .resolve()
+            .package_ids(DependencyDirection::Forward)
+            .filter(|id| {
+                // We purposely exclude the WASM crate, as well as anything
+                // that depends on it, as it has Git dependencies that we
+                // can't publish at present.
+                !ambient_graph
+                    .depends_on(id, ambient_wasm_id)
+                    .unwrap_or(true)
+            })
+            .collect::<Vec<_>>();
+        ambient_packages.reverse();
+
+        ambient_packages
+            .iter()
+            .map(|p| p.repr().split_ascii_whitespace().next().unwrap())
+            .filter(|p| manifests.exists(p))
+            .map(|p| p.to_string())
+            .collect::<Vec<_>>()
+    };
+
+    let api_packages = {
+        let api_graph = guppy::MetadataCommand::new()
+            .manifest_path(GUEST_RUST_CARGO)
+            .build_graph()?;
+        let api_id = api_graph
+            .resolve_package_name("ambient_api")
+            .package_ids(DependencyDirection::Forward)
+            .next()
+            .unwrap();
+
+        let mut api_packages = api_graph
+            .query_forward([api_id])?
+            .resolve()
+            .package_ids(DependencyDirection::Forward)
+            .collect::<Vec<_>>();
+        api_packages.reverse();
+
+        api_packages
+            .iter()
+            .map(|p| p.repr().split_ascii_whitespace().next().unwrap())
+            .filter(|p| manifests.exists(p))
+            .filter(|p| !ambient_packages.iter().any(|tp| tp == p))
+            .map(|p| p.to_string())
+            .collect::<Vec<_>>()
+    };
+
+    #[derive(Debug)]
+    enum Task {
+        Publish(PathBuf),
+        Wait(usize),
+    }
+
+    let tasks = ambient_packages
+        .into_iter()
+        .chain(api_packages)
+        .map(|p| {
+            manifests
+                .path(&p)
+                .unwrap()
+                .parent()
+                .unwrap()
+                .canonicalize()
+                .unwrap()
+        })
+        .map(Task::Publish)
+        .chunks(5)
+        .into_iter()
+        .flat_map(|c| c.chain(std::iter::once(Task::Wait(5))))
+        .collect_vec();
+    // Remove the last wait
+    let tasks = &tasks[0..tasks.len() - 1];
+
+    match execute {
+        true => {
+            for task in tasks {
+                match task {
+                    Task::Publish(path) => {
+                        let status = Command::new("cargo")
+                            .arg("publish")
+                            .current_dir(path)
+                            .spawn()?
+                            .wait()?;
+                        if !status.success() {
+                            anyhow::bail!("failed to upload {}", path.display());
+                        }
+                    }
+                    Task::Wait(seconds) => {
+                        std::thread::sleep(std::time::Duration::from_secs((*seconds).try_into()?))
+                    }
+                }
+            }
+        }
+        false => {
+            for task in tasks {
+                match task {
+                    Task::Publish(path) => println!("cd {} && cargo publish", path.display()),
+                    Task::Wait(seconds) => println!("sleep {}", seconds),
+                }
+            }
+        }
+    }
 
     Ok(())
 }
@@ -323,7 +383,7 @@ fn edit_toml(path: impl AsRef<Path>, f: impl Fn(&mut toml_edit::Document)) -> an
 
 fn check_docker_build() -> anyhow::Result<()> {
     log::info!("Building Docker image...");
-    let success = std::process::Command::new("docker")
+    let success = Command::new("docker")
         .args(["build", ".", "-t", "ambient_campfire"])
         .spawn()?
         .wait()?
@@ -338,7 +398,7 @@ fn check_docker_build() -> anyhow::Result<()> {
 
 fn check_docker_run() -> anyhow::Result<()> {
     log::info!("Running Docker instance...");
-    let success = std::process::Command::new("docker")
+    let success = Command::new("docker")
         .args([
             "run",
             "--rm",
@@ -369,7 +429,7 @@ fn check_msrv() -> anyhow::Result<()> {
     log::info!("Checking MSRV...");
 
     let msrv = {
-        let output = std::process::Command::new("cargo")
+        let output = Command::new("cargo")
             .args([
                 "msrv",
                 "--output-format",
@@ -433,7 +493,7 @@ fn check_msrv() -> anyhow::Result<()> {
 
 fn check_builds() -> anyhow::Result<()> {
     log::info!("Checking builds...");
-    let success = std::process::Command::new("cargo")
+    let success = Command::new("cargo")
         .args(["build", "--release"])
         .spawn()?
         .wait()?
@@ -442,7 +502,7 @@ fn check_builds() -> anyhow::Result<()> {
         anyhow::bail!("failed to build root crate");
     }
 
-    let success = std::process::Command::new("cargo")
+    let success = Command::new("cargo")
         .current_dir("guest/rust")
         .args(["build", "--release"])
         .spawn()?
@@ -488,7 +548,7 @@ fn check_readme() -> anyhow::Result<()> {
 
 fn check(path: impl AsRef<Path>) -> anyhow::Result<()> {
     let path = path.as_ref();
-    let mut command = std::process::Command::new("cargo");
+    let mut command = Command::new("cargo");
     command.current_dir(path);
     command.args(&["check"]);
 
@@ -497,4 +557,47 @@ fn check(path: impl AsRef<Path>) -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+#[derive(Default)]
+/// Helper that caches manifests for faster lookup so that we can easily
+/// determine if a particular package actually belongs to Ambient
+struct Manifests {
+    cache: HashMap<PathBuf, cargo_toml::Manifest>,
+}
+impl Manifests {
+    fn path(&mut self, name: &str) -> Option<PathBuf> {
+        let Some(stripped) = name.strip_prefix("ambient") else { return None; };
+        let stripped = stripped.strip_prefix("_").unwrap_or(name);
+
+        [
+            Path::new("crates").join(stripped).join("Cargo.toml"),
+            Path::new("libs").join(stripped).join("Cargo.toml"),
+            Path::new("shared_crates").join(stripped).join("Cargo.toml"),
+            "guest/rust/api/Cargo.toml".into(),
+            "guest/rust/api_core/api_macros/Cargo.toml".into(),
+            "guest/rust/api_core/Cargo.toml".into(),
+            "app/Cargo.toml".into(),
+        ]
+        .into_iter()
+        .filter(|p| p.exists())
+        .find_map(|p| {
+            let manifest = self.cache.entry(p.clone()).or_insert_with(|| {
+                // Intentionally manually read the file as we do not want to
+                // use `cargo_toml`'s dependency resolution.
+                cargo_toml::Manifest::from_str(&std::fs::read_to_string(&p).unwrap())
+                    .expect(&format!("failed to parse {:?}", p))
+            });
+
+            if manifest.package().name == name {
+                Some(p)
+            } else {
+                None
+            }
+        })
+    }
+
+    fn exists(&mut self, name: &str) -> bool {
+        self.path(name).is_some()
+    }
 }

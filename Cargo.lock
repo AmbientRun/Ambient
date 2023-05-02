@@ -2063,6 +2063,7 @@ dependencies = [
  "cargo_toml",
  "clap 4.2.5",
  "guppy",
+ "itertools",
  "log",
  "regex",
  "rustdoc-json",
@@ -2070,7 +2071,7 @@ dependencies = [
  "serde",
  "serde_json",
  "simplelog",
- "toml 0.5.11",
+ "toml 0.7.3",
  "toml_edit",
 ]
 
