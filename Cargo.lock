@@ -376,6 +376,7 @@ dependencies = [
  "slugify",
  "symphonia",
  "tokio",
+ "toml 0.7.3",
  "tracing",
  "vorbis_rs",
  "walkdir",

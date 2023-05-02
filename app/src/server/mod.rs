@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
     net::SocketAddr,
-    path::{Path, PathBuf},
+    path::Path,
     sync::Arc,
 };
 
@@ -40,6 +40,7 @@ pub fn start(
     cli: Cli,
     project_path: AbsAssetUrl,
     manifest: &ambient_project::Manifest,
+    metadata: &ambient_build::Metadata,
 ) -> u16 {
     log::info!("Creating server");
     let host_cli = cli.host().unwrap();
@@ -79,12 +80,13 @@ pub fn start(
         ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(key).unwrap());
         start_http_interface(runtime, &project_path_fs, http_interface_port);
     } else {
-        ServerBaseUrlKey.insert(&assets, project_path.clone());
+        ServerBaseUrlKey.insert(&assets, project_path.push("build/").unwrap());
     }
 
     ComponentRegistry::get_mut().add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
 
     let manifest = manifest.clone();
+    let metadata = metadata.clone();
     runtime.spawn(async move {
         let mut server_world = World::new_with_config("server", true);
         server_world.init_shape_change_tracking();
@@ -106,7 +108,7 @@ pub fn start(
             .with(persistent_resources(), ())
             .spawn(&mut server_world);
 
-        wasm::initialize(&mut server_world, project_path.clone(), &manifest).unwrap();
+        wasm::initialize(&mut server_world, assets.clone(), project_path.clone(), &manifest, &metadata).await.unwrap();
 
         if let Cli::View { asset_path, .. } = cli.clone() {
             let asset_path = project_path

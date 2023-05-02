@@ -15,6 +15,26 @@ use walkdir::WalkDir;
 
 pub mod pipelines;
 
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+pub struct Metadata {
+    client_component_paths: Vec<String>,
+    server_component_paths: Vec<String>,
+}
+
+impl Metadata {
+    pub fn component_paths(&self, target: &str) -> &[String] {
+        match target {
+            "client" => &self.client_component_paths,
+            "server" => &self.server_component_paths,
+            _ => panic!("Unknown target `{}`", target),
+        }
+    }
+
+    pub fn parse(contents: &str) -> anyhow::Result<Self> {
+        toml::from_str(contents).context("failed to parse build metadata")
+    }
+}
+
 /// This takes the path to an Ambient project and builds it. An Ambient project is expected to
 /// have the following structure:
 ///
@@ -22,7 +42,7 @@ pub mod pipelines;
 /// src/**  This is where you store Rust source files
 /// build  This is the output directory, and is created when building
 /// ambient.toml  This is a metadata file to describe the project
-pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manifest: &ProjectManifest, optimize: bool) {
+pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manifest: &ProjectManifest, optimize: bool) -> Metadata {
     log::info!(
         "Building project `{}` ({})",
         manifest.project.id,
@@ -37,6 +57,7 @@ pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manife
     std::fs::create_dir_all(&build_path).unwrap();
     build_assets(physics, &assets_path, &build_path).await;
     build_rust_if_available(&path, manifest, &build_path, optimize).await.unwrap();
+    store_metadata(&build_path).await.unwrap()
 }
 
 async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
@@ -114,4 +135,28 @@ async fn build_rust_if_available(project_path: &Path, manifest: &ProjectManifest
     }
 
     Ok(())
+}
+
+fn get_component_paths(target: &str, build_path: &Path) -> Vec<String> {
+    std::fs::read_dir(build_path.join(target))
+        .ok()
+        .map(
+            |rd| rd
+                .filter_map(Result::ok)
+                .map(|p| p.path())
+                .filter(|p| p.extension().unwrap_or_default() == "wasm")
+                .map(|p| p.strip_prefix(build_path).unwrap().to_string_lossy().to_string())
+                .collect()
+        )
+        .unwrap_or_default()
+}
+
+async fn store_metadata(build_path: &Path) -> anyhow::Result<Metadata> {
+    let metadata = Metadata {
+        client_component_paths: get_component_paths("client", build_path),
+        server_component_paths: get_component_paths("server", build_path),
+    };
+    let metadata_path = build_path.join("metadata.toml");
+    tokio::fs::write(&metadata_path, toml::to_string_pretty(&metadata)?).await?;
+    Ok(metadata)
 }

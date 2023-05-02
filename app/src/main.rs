@@ -1,6 +1,6 @@
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
-    download_asset::AssetsCacheOnDisk, asset_url::AbsAssetUrl,
+    download_asset::AssetsCacheOnDisk, asset_url::{AbsAssetUrl, ContentBaseUrlKey},
 };
 use clap::Parser;
 
@@ -119,25 +119,28 @@ fn main() -> anyhow::Result<()> {
 
     let cli = Cli::parse();
 
-    let project_path = cli.project().and_then(|p| p.path);
-    let (project_path, project_fs_path) = match project_path {
+    let project_path = cli.project().and_then(|p| p.path.clone());
+    let (project_fs_path, project_path) = match project_path {
         Some(project_path) if project_path.starts_with("http://") || project_path.starts_with("https://") => {
-            (AbsAssetUrl::parse(project_path)?, None)
+            let url = AbsAssetUrl::parse(project_path)?;
+            // project path is a URL, so let's use it as the content base URL
+            ContentBaseUrlKey.insert(&assets, url.push("build/")?);
+            (None, url)
         }
         Some(project_path) => {
             let project_path = std::path::PathBuf::from(project_path);
             let current_dir = std::env::current_dir()?;
-            if project_path.is_absolute() { project_path } else { ambient_std::path::normalize(&current_dir.join(project_path)) };
+            let project_path = if project_path.is_absolute() { project_path } else { ambient_std::path::normalize(&current_dir.join(project_path)) };
 
             if project_path.exists() && !project_path.is_dir() {
                 anyhow::bail!("Project path {project_path:?} exists and is not a directory.");
             }
             let url = AbsAssetUrl::from_directory_path(project_path);
-            (url, url.to_file_path().ok().flatten())
+            (url.to_file_path().ok().flatten(), url)
         }
         None => {
             let url = AbsAssetUrl::from_directory_path(std::env::current_dir()?);
-            (url, url.to_file_path().ok().flatten())
+            (url.to_file_path().ok().flatten(), url)
         }
     };
 
@@ -157,32 +160,40 @@ fn main() -> anyhow::Result<()> {
     let manifest = cli
         .project()
         .map(|_| {
-            if let Some(path) = project_fs_path {
+            if let Some(path) = &project_fs_path {
                 // load manifest from file
                 anyhow::Ok(ambient_project::Manifest::from_file(path.join("ambient.toml")).context("Failed to read ambient.toml.")?)
             } else {
-                // project_path is a URL, so download an already built manifest from URL
-                let manifest_url = project_path.push("build/ambient.toml").unwrap();
+                // project_path is a URL, so download the manifest
+                // FIXME: handle imports
+                let manifest_url = project_path.push("ambient.toml").unwrap();
                 let manifest_data = runtime.block_on(manifest_url.download_string(&assets)).context("Failed to download ambient.toml.")?;
                 anyhow::Ok(ambient_project::Manifest::parse(&manifest_data).context("Failed to parse downloaded ambient.toml.")?)
             }
         })
         .transpose()?;
 
-    if let Some(manifest) = manifest.as_ref() {
+    let metadata = if let Some(manifest) = manifest.as_ref() {
         if !cli.project().unwrap().no_build && project_fs_path.is_some() {
             let project_name = manifest.project.name.as_deref().unwrap_or("project");
             log::info!("Building {}", project_name);
-            runtime.block_on(ambient_build::build(
+            let metadata = runtime.block_on(ambient_build::build(
                 PhysicsKey.get(&assets),
                 &assets,
-                project_fs_path.unwrap(),
+                project_fs_path.clone().unwrap(),
                 manifest,
                 cli.project().map(|p| p.release).unwrap_or(false),
             ));
             log::info!("Done building {}", project_name);
+            Some(metadata)
+        } else {
+            let metadata_url = project_path.push("build/metadata.toml").unwrap();
+            let metadata_data = runtime.block_on(metadata_url.download_string(&assets)).context("Failed to download build/metadata.toml.")?;
+            Some(ambient_build::Metadata::parse(&metadata_data)?)
         }
-    }
+    } else {
+        None
+    };
 
     // If this is just a build, exit now
     if matches!(&cli, Cli::Build { .. }) {
@@ -200,7 +211,7 @@ fn main() -> anyhow::Result<()> {
             format!("127.0.0.1:{QUIC_INTERFACE_PORT}").parse()?
         }
     } else {
-        let port = server::start(&runtime, assets.clone(), cli.clone(), project_path, manifest.as_ref().expect("no manifest"));
+        let port = server::start(&runtime, assets.clone(), cli.clone(), project_path, manifest.as_ref().expect("no manifest"), metadata.as_ref().expect("no build metadata"));
         format!("127.0.0.1:{port}").parse()?
     };
 
@@ -208,7 +219,7 @@ fn main() -> anyhow::Result<()> {
     let handle = runtime.handle().clone();
     if let Some(run) = cli.run() {
         // If we have run parameters, start a client and join a server
-        runtime.block_on(client::run(assets, server_addr, run, project_path.to_file_path().ok().flatten()));
+        runtime.block_on(client::run(assets, server_addr, run, project_fs_path));
     } else {
         // Otherwise, wait for the Ctrl+C signal
         handle.block_on(async move {
