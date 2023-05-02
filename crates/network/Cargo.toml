@@ -46,6 +46,7 @@ once_cell = { workspace = true }
 byteorder = { workspace = true }
 colored = { workspace = true }
 enum_dispatch = { workspace = true }
+pin-project = "1.0"
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 async-trait = { workspace = true }

@@ -4,7 +4,8 @@ use ambient_core::{
 };
 use ambient_ecs::{EntityId, World};
 use ambient_network::{
-    connection::Connection, log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
+    client::DynRecv, connection::Connection, log_network_result, WASM_DATAGRAM_ID,
+    WASM_UNISTREAM_ID,
 };
 
 use anyhow::Context;
@@ -47,7 +48,7 @@ pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> 
 }
 
 /// Reads an incoming unistream and dispatches to WASM
-pub fn on_unistream(world: &mut World, user_id: Option<String>, recv_stream: RecvStream) {
+pub fn on_unistream(world: &mut World, user_id: Option<String>, recv_stream: DynRecv) {
     let async_run = world.resource(async_run()).clone();
     world.resource(runtime()).spawn(async move {
         log_network_result!(unistream_handler(async_run, user_id, recv_stream).await);
@@ -56,7 +57,7 @@ pub fn on_unistream(world: &mut World, user_id: Option<String>, recv_stream: Rec
     async fn unistream_handler(
         async_run: AsyncRun,
         user_id: Option<String>,
-        mut recv_stream: RecvStream,
+        mut recv_stream: DynRecv,
     ) -> anyhow::Result<()> {
         use tokio::io::AsyncReadExt;
 
@@ -68,7 +69,12 @@ pub fn on_unistream(world: &mut World, user_id: Option<String>, recv_stream: Rec
         recv_stream.read_exact(&mut name).await?;
         let name = String::from_utf8(name)?;
 
-        let data = recv_stream.read_to_end(MAX_STREAM_LENGTH).await?;
+        let mut data = Vec::new();
+
+        recv_stream
+            .take(MAX_STREAM_LENGTH as _)
+            .read_to_end(&mut data)
+            .await?;
 
         async_run.run(move |world| {
             log_network_result!(process_network_message(

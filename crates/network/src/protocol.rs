@@ -7,8 +7,8 @@ use quinn::{Connection, RecvStream, SendStream};
 use tokio_util::codec::{FramedRead, FramedWrite};
 
 use crate::{
-    client_connection::ConnectionInner, codec::FramedCodec, open_bincode_bi_stream, proto::ClientControlFrame, IncomingStream,
-    NetworkError, OutgoingStream,
+    client_connection::ConnectionInner, codec::FramedCodec, open_bincode_bi_stream, proto::ServerControl, IncomingStream, NetworkError,
+    OutgoingStream,
 };
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");

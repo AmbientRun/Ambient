@@ -34,7 +34,7 @@ impl Client {
         tracing::info!(user_id = self.user_id, "Sending connect request");
 
         self.connected = true;
-        ServerControl::Connect(self.user_id)
+        ServerControl::Connect(self.user_id.clone())
     }
 
     /// Processes an incoming control frame from the server.
@@ -66,8 +66,8 @@ impl Client {
     #[tracing::instrument(level = "info", skip(send, recv))]
     pub async fn process_bi_stream<R, S>(&mut self, send: S, mut recv: R) -> anyhow::Result<()>
     where
-        R: 'static + Unpin + AsyncRead,
-        S: 'static + Unpin + AsyncWrite,
+        R: 'static + Send + Sync + Unpin + AsyncRead,
+        S: 'static + Send + Sync + Unpin + AsyncWrite,
     {
         let id = recv.read_u32().await?;
         let mut gs = self.game_state.lock();
@@ -76,7 +76,7 @@ impl Client {
         let handler = world.resource(bi_stream_handlers()).get(&id).with_context(|| format!("No handler for stream {id}"))?.clone();
 
         let _span = info_span!("process_bi_stream", id).entered();
-        handler(world, self.assets.clone(), &self.user_id, Box::pin(send), Box::pin(recv));
+        handler(world, self.assets.clone(), Box::pin(send), Box::pin(recv));
 
         Ok(())
     }

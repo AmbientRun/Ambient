@@ -956,6 +956,7 @@ dependencies = [
  "manual_future",
  "once_cell",
  "parking_lot",
+ "pin-project",
  "quinn",
  "rand 0.8.5",
  "rustls 0.20.8",

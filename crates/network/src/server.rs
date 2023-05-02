@@ -2,10 +2,22 @@ use std::{
     collections::HashMap,
     net::{IpAddr, Ipv4Addr, SocketAddr},
     ops::Range,
+    path::PathBuf,
+    pin::Pin,
     sync::Arc,
     time::Duration,
 };
 
+use crate::{
+    client::{DynRecv, DynSend},
+    client_connection::ConnectionInner,
+    codec::FramedCodec,
+    connection::Connection,
+    create_server,
+    proto::{self, ClientControl, ServerControl},
+    protocol::{ClientInfo, ServerInfo},
+    stream, NetworkError, OutgoingStream, RPC_BISTREAM_ID,
+};
 use ambient_core::{
     asset_cache, name, no_sync,
     player::{get_by_user_id, player},
@@ -26,28 +38,17 @@ use ambient_std::{
 use ambient_sys::time::{Instant, SystemTime};
 use anyhow::bail;
 use bytes::Bytes;
+use colored::Colorize;
 use flume::Sender;
 use futures::StreamExt;
-use once_cell::sync::OnceCell;
 use parking_lot::{Mutex, RwLock};
 use quinn::{Endpoint, RecvStream, SendStream};
 use tokio::{
-    io::AsyncReadExt,
+    io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt},
     time::{interval, MissedTickBehavior},
 };
 use tokio_util::codec::{FramedRead, FramedWrite};
 use tracing::{debug_span, Instrument};
-
-use crate::{
-    client_connection::ConnectionInner,
-    codec::FramedCodec,
-    connection::Connection,
-    create_server,
-    proto::{self, ClientControlFrame, ServerControlFrame},
-    protocol::{ClientInfo, ServerInfo},
-    NetworkError, OutgoingStream, RPC_BISTREAM_ID,
-};
-use colored::Colorize;
 
 components!("network::server", {
     @[Resource]
@@ -62,14 +63,13 @@ components!("network::server", {
     player_connection: ConnectionInner,
 });
 
-pub type BiStreamHandlers = HashMap<
-    u32,
-    Arc<dyn Fn(SharedServerState, AssetCache, &String, SendStream, RecvStream) + Sync + Send>,
->;
-pub type UniStreamHandlers =
-    HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, RecvStream) + Sync + Send>>;
-pub type DatagramHandlers =
-    HashMap<u32, Arc<dyn Fn(SharedServerState, AssetCache, &String, Bytes) + Sync + Send>>;
+pub type BiStreamHandler = Arc<dyn Fn(SharedServerState, AssetCache, &str, DynSend, DynRecv) + Sync + Send>;
+pub type UniStreamHandler = Arc<dyn Fn(SharedServerState, AssetCache, &str, DynRecv) + Sync + Send>;
+pub type DatagramHandler = Arc<dyn Fn(SharedServerState, AssetCache, &str, Bytes) + Sync + Send>;
+
+pub type BiStreamHandlers = HashMap<u32, BiStreamHandler>;
+pub type UniStreamHandlers = HashMap<u32, UniStreamHandler>;
+pub type DatagramHandlers = HashMap<u32, DatagramHandler>;
 
 #[derive(Debug, Clone, Copy)]
 pub struct ForkingEvent;
@@ -123,14 +123,12 @@ pub fn register_rpc_bi_stream_handler(
             let rpc_registry = rpc_registry.clone();
             tokio::spawn(async move {
                 let try_block = || async {
-                    let req = recv.read_to_end(100_000_000).await?;
-                    let args = RpcArgs {
-                        state,
-                        user_id: user_id.to_string(),
-                    };
-                    let resp = rpc_registry.run_req(args, &req).await?;
+                    let mut buf = Vec::new();
+                    recv.take(1024 * 1024 * 1024).read_to_end(&mut buf).await?;
+                    let args = RpcArgs { state, user_id: user_id.to_string() };
+                    let resp = rpc_registry.run_req(args, &buf).await?;
                     send.write_all(&resp).await?;
-                    send.finish().await?;
+                    // send.finish().await?;
                     Ok(()) as Result<(), NetworkError>
                 };
                 log_result!(try_block().await);
@@ -178,21 +176,13 @@ pub const MAIN_INSTANCE_ID: &str = "main";
 
 pub struct Player {
     pub instance: String,
-    pub control: flume::Sender<ServerControlFrame>,
+    pub control: flume::Sender<ClientControl>,
     pub connection_id: String,
 }
 
 impl Player {
-    pub fn new(
-        instance: String,
-        control: flume::Sender<ServerControlFrame>,
-        connection_id: String,
-    ) -> Self {
-        Self {
-            instance,
-            control,
-            connection_id,
-        }
+    pub fn new(instance: String, control: flume::Sender<ClientControl>, connection_id: String) -> Self {
+        Self { instance, control, connection_id }
     }
 
     pub fn new_local(instance: String) -> Self {
@@ -598,7 +588,7 @@ async fn handle_connection(
         let mut state = state.lock();
         // If there's an old player send a graceful disconnect
         let reconnecting = if let Some(player) = state.players.get_mut(user_id) {
-            player.control.send(ServerControlFrame::Disconnect).ok();
+            player.control.send(ClientControl::Disconnect).ok();
 
             player.control = control_tx;
             player.connection_id = connection_id.clone();
@@ -761,12 +751,12 @@ async fn handle_connection(
 
     let mut server = proto::server::ServerState::default();
 
-    let mut control_recv: FramedRecvStream<ClientControlFrame> = FramedRead::new(conn.accept_uni().await?, FramedCodec::new());
-    let mut control_send: FramedSendStream<ServerControlFrame> = FramedWrite::new(conn.open_uni().await?, FramedCodec::new());
+    let mut control_recv = stream::RecvStream::new(conn.accept_uni().await?);
+    let mut control_send = stream::SendStream::new(conn.open_uni().await?);
 
     let mut control_rx = control_rx.into_stream();
-    let mut diff_stream = OutgoingStream::new(conn.open_uni().await?);
-    let mut stat_stream = OutgoingStream::new(conn.open_uni().await?);
+    let mut diff_stream = stream::SendStream::new(conn.open_uni().await?);
+    let mut stat_stream = stream::SendStream::new(conn.open_uni().await?);
 
     let mut diffs_rx = diffs_rx.into_stream();
     let mut stats_rx = stats_rx.into_stream();
@@ -774,7 +764,7 @@ async fn handle_connection(
     use futures::SinkExt;
 
     // Send who we are
-    control_send.send(ServerControlFrame::ServerInfo(server_info)).await?;
+    control_send.send(ClientControl::ServerInfo(server_info)).await?;
 
     loop {
         match &mut server {
@@ -791,7 +781,7 @@ async fn handle_connection(
                     }
                     Some(msg) = diffs_rx.next() => {
                         let span = tracing::debug_span!("world diff");
-                        diff_stream.send_bytes(msg).instrument(span).await?;
+                        diff_stream.send(msg).instrument(span).await?;
                     }
                     Some(msg) = control_rx.next() => {
                         let span = tracing::debug_span!("control");
@@ -799,7 +789,7 @@ async fn handle_connection(
                     }
                     Some(msg) = stats_rx.next() => {
                         let span = tracing::debug_span!("stats");
-                        stat_stream.send(&msg).instrument(span).await?;
+                        stat_stream.send(msg).instrument(span).await?;
                     }
                     stream = conn.accept_uni() => {
                         connected.process_uni(&state, stream?).await?;

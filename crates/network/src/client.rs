@@ -3,6 +3,7 @@ use std::{
     fmt::{Debug, Display},
     future::Future,
     net::SocketAddr,
+    pin::Pin,
     sync::Arc,
     time::Duration,
 };
@@ -31,14 +32,19 @@ use glam::{uvec2, UVec2};
 use parking_lot::Mutex;
 use quinn::{Connection, RecvStream, SendStream};
 use serde::{de::DeserializeOwned, Serialize};
-use tokio::io::AsyncReadExt;
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
+use tokio_util::codec::{FramedRead, FramedWrite};
 use tracing::{debug_span, Instrument};
 
 use crate::{
     client_game_state::ClientGameState,
-    create_client_endpoint_random_port, is_remote_entity, log_network_result,
+    codec::FramedCodec,
+    create_client_endpoint_random_port, log_network_result,
+    proto::{ClientControl, ServerControl},
     protocol::{ClientInfo, ClientProtocol, ServerInfo},
-    rpc_request, server, NetworkError,
+    rpc_request,
+    server::{self, FramedRecvStream, FramedSendStream},
+    NetworkError,
 };
 
 components!("network::client", {
@@ -52,11 +58,16 @@ components!("network::client", {
     datagram_handlers: DatagramHandlers,
 });
 
-pub type BiStreamHandlers =
-    HashMap<u32, Arc<dyn Fn(&mut World, AssetCache, SendStream, RecvStream) + Sync + Send>>;
-pub type UniStreamHandlers =
-    HashMap<u32, Arc<dyn Fn(&mut World, AssetCache, RecvStream) + Sync + Send>>;
-pub type DatagramHandlers = HashMap<u32, Arc<dyn Fn(&mut World, AssetCache, Bytes) + Sync + Send>>;
+pub type DynSend = Pin<Box<dyn AsyncWrite + Send + Sync>>;
+pub type DynRecv = Pin<Box<dyn AsyncRead + Send + Sync>>;
+
+type BiStreamHandler = Arc<dyn Fn(&mut World, AssetCache, DynSend, DynRecv) + Sync + Send>;
+type UniStreamHandler = Arc<dyn Fn(&mut World, AssetCache, DynRecv) + Sync + Send>;
+type DatagramHandler = Arc<dyn Fn(&mut World, AssetCache, Bytes) + Sync + Send>;
+
+pub type BiStreamHandlers = HashMap<u32, BiStreamHandler>;
+pub type UniStreamHandlers = HashMap<u32, UniStreamHandler>;
+pub type DatagramHandlers = HashMap<u32, DatagramHandler>;
 
 #[derive(Debug, Clone)]
 /// Manages the client side connection to the server.
@@ -325,63 +336,47 @@ impl ElementComponent for GameClientView {
                     };
 
                     let mut on_diff = |diff| {
-                        if let Some(on_in_entities) = &on_in_entities {
-                            on_in_entities(&diff);
-                        }
-                        let mut gs = game_state.lock();
-                        diff.apply(
-                            &mut gs.world,
-                            Entity::new().with(is_remote_entity(), ()),
-                            false,
-                        );
+                        // if let Some(on_in_entities) = &on_in_entities {
+                        //     on_in_entities(&diff);
+                        // }
+                        // let mut gs = game_state.lock();
+                        // diff.apply(&mut gs.world, Entity::new().with(is_remote_entity(), ()), false);
                     };
 
-                    let on_bi_stream = |handler_id, tx, rx| {
-                        let _span = debug_span!("on_bi_stream").entered();
-                        let mut gs = game_state.lock();
-                        let handler = gs
-                            .world
-                            .resource(bi_stream_handlers())
-                            .get(&handler_id)
-                            .cloned();
-                        if let Some(handler) = handler {
-                            handler(&mut gs.world, assets.clone(), tx, rx);
-                        } else {
-                            log::error!("Unrecognized stream handler id: {}", handler_id);
-                        }
-                    };
+                    // let on_bi_stream = |handler_id, tx, rx| {
+                    // let _span = debug_span!("on_bi_stream").entered();
+                    // let mut gs = game_state.lock();
+                    // let handler = gs.world.resource(bi_stream_handlers()).get(&handler_id).cloned();
+                    // if let Some(handler) = handler {
+                    //     handler(&mut gs.world, assets.clone(), tx, rx);
+                    // } else {
+                    //     log::error!("Unrecognized stream handler id: {}", handler_id);
+                    // }
+                    // };
 
-                    let on_uni_stream = |handler_id, rx| {
-                        let _span = debug_span!("on_uni_stream").entered();
-                        let mut gs = game_state.lock();
-                        let handler = gs
-                            .world
-                            .resource(uni_stream_handlers())
-                            .get(&handler_id)
-                            .cloned();
-                        if let Some(handler) = handler {
-                            handler(&mut gs.world, assets.clone(), rx);
-                        } else {
-                            log::error!("Unrecognized stream handler id: {}", handler_id);
-                        }
-                    };
+                    // let on_uni_stream = |handler_id, rx| {
+                    // let _span = debug_span!("on_uni_stream").entered();
+                    // let mut gs = game_state.lock();
+                    // let handler = gs.world.resource(uni_stream_handlers()).get(&handler_id).cloned();
+                    // if let Some(handler) = handler {
+                    //     handler(&mut gs.world, assets.clone(), rx);
+                    // } else {
+                    //     log::error!("Unrecognized stream handler id: {}", handler_id);
+                    // }
+                    // };
 
-                    let on_datagram = |handler_id: u32, bytes: Bytes| {
-                        let mut gs = game_state.lock();
-                        let handler = gs
-                            .world
-                            .resource(datagram_handlers())
-                            .get(&handler_id)
-                            .cloned();
-                        match handler {
-                            Some(handler) => {
-                                handler(&mut gs.world, assets.clone(), bytes);
-                            }
-                            None => {
-                                log::error!("No such datagram handler: {:?}", handler_id);
-                            }
-                        }
-                    };
+                    // let on_datagram = |handler_id: u32, bytes: Bytes| {
+                    // let mut gs = game_state.lock();
+                    // let handler = gs.world.resource(datagram_handlers()).get(&handler_id).cloned();
+                    // match handler {
+                    //     Some(handler) => {
+                    //         handler(&mut gs.world, assets.clone(), bytes);
+                    //     }
+                    //     None => {
+                    //         log::error!("No such datagram handler: {:?}", handler_id);
+                    //     }
+                    // }
+                    // };
 
                     let mut on_server_stats = |stats| {
                         on_server_stats(stats);
@@ -397,9 +392,9 @@ impl ElementComponent for GameClientView {
                         user_id,
                         on_init: &mut on_init,
                         on_diff: &mut on_diff,
-                        on_bi_stream: &on_bi_stream,
-                        on_uni_stream: &on_uni_stream,
-                        on_datagram: &on_datagram,
+                        on_bi_stream: todo!(),
+                        on_uni_stream: todo!(),
+                        on_datagram: todo!(),
                         on_server_stats: &mut on_server_stats,
                         on_client_stats: &mut on_network_stats,
                         on_disconnect,
@@ -455,6 +450,15 @@ impl ElementComponent for GameClientView {
         }
     }
 }
+
+async fn handle_connection(conn: Connection) -> anyhow::Result<()> {
+    let mut control_send: FramedSendStream<ServerControl> = FramedWrite::new(conn.open_uni().await?, FramedCodec::new());
+
+    let mut control_recv: FramedRecvStream<ClientControl> = FramedRead::new(conn.accept_uni().await?, FramedCodec::new());
+
+    Ok(())
+}
+
 #[element_component]
 pub fn GameClientWorld(hooks: &mut Hooks) -> Element {
     let (render_target, set_render_target) =

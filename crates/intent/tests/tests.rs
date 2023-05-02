@@ -112,7 +112,7 @@ fn register_intents(reg: &mut IntentRegistry) {
 }
 
 fn setup_state() -> SharedServerState {
-    let mut state = ServerState::new_local();
+    let mut state = ServerState::new_local(todo!());
 
     let user_id = "user1".to_string();
     state.players.insert(user_id.clone(), Player::new_local(MAIN_INSTANCE_ID.to_string()));

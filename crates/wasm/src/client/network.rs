@@ -1,6 +1,6 @@
 use ambient_ecs::World;
 use ambient_network::{
-    client::{bi_stream_handlers, datagram_handlers, uni_stream_handlers},
+    client::{bi_stream_handlers, datagram_handlers, uni_stream_handlers, DynRecv, DynSend},
     log_network_result, WASM_BISTREAM_ID, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
 };
 use ambient_std::asset_cache::AssetCache;
@@ -33,12 +33,12 @@ fn on_datagram(world: &mut World, _asset_cache: AssetCache, bytes: Bytes) {
 fn on_bistream(
     _world: &mut World,
     _asset_cache: AssetCache,
-    _send_stream: SendStream,
-    _recv_stream: RecvStream,
+    _send_stream: DynSend,
+    _recv_stream: DynRecv,
 ) {
     unimplemented!("Bistreams are not supported");
 }
 
-fn on_unistream(world: &mut World, _asset_cache: AssetCache, recv_stream: RecvStream) {
+fn on_unistream(world: &mut World, _asset_cache: AssetCache, recv_stream: DynRecv) {
     message::on_unistream(world, None, recv_stream)
 }

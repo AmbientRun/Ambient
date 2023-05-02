@@ -1,10 +1,11 @@
 use crate::protocol::ServerInfo;
 
+mod client;
 pub mod server;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-/// Sent by the client to the server to control or influence the connection
-pub enum ClientControlFrame {
+/// Frame used by the client to send requests to the server
+pub enum ServerControl {
     /// Connect to the server with the specified user id
     Connect(String),
     /// Client wants to disconnect
@@ -12,7 +13,8 @@ pub enum ClientControlFrame {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub enum ServerControlFrame {
+/// Frame used by the server to send control information to the client
+pub enum ClientControl {
     ServerInfo(ServerInfo),
     /// Graceful disconnect
     Disconnect,

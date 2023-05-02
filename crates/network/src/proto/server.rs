@@ -4,11 +4,11 @@ use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
 use tracing::info_span;
 
 use crate::{
-    server::{datagram_handlers, uni_stream_handlers, SharedServerState},
-    NetworkError,
+    server::SharedServerState,
+    server::{bi_stream_handlers, datagram_handlers, uni_stream_handlers},
 };
 
-use super::ClientControlFrame;
+use super::ServerControl;
 
 /// The server can be in multiple states depending on what has been received from the client.
 ///
@@ -32,23 +32,23 @@ pub struct ConnectedClient {
 
 impl ServerState {
     /// Processes a client request
-    pub async fn process_control(&mut self, frame: ClientControlFrame) -> anyhow::Result<()> {
+    pub async fn process_control(&mut self, frame: ServerControl) -> anyhow::Result<()> {
         match (frame, &self) {
             (_, Self::Disconnected) => {
                 tracing::info!("Client is disconnected, ignoring control frame");
                 Ok(())
             }
-            (ClientControlFrame::Connect(user_id), Self::PendingConnection) => {
+            (ServerControl::Connect(user_id), Self::PendingConnection) => {
                 // Connect the user
                 tracing::info!("User connected");
                 *self = Self::Connected(ConnectedClient { user_id });
                 Ok(())
             }
-            (ClientControlFrame::Connect(_), Self::Connected(_)) => {
+            (ServerControl::Connect(_), Self::Connected(_)) => {
                 tracing::warn!("Client already connected");
                 Ok(())
             }
-            (ClientControlFrame::Disconnect, _) => {
+            (ServerControl::Disconnect, _) => {
                 tracing::info!("Client wants to disconnect");
                 *self = Self::Disconnected;
                 Ok(())
@@ -56,7 +56,7 @@ impl ServerState {
         }
     }
 
-    pub fn disconnect(&mut self, state: &SharedServerState) {
+    pub fn process_disconnect(&mut self, state: &SharedServerState) {
         if let Self::Connected(ConnectedClient { user_id }) = self {
             tracing::info!(?user_id, "User disconnected");
             let mut state = state.lock();
@@ -81,47 +81,67 @@ impl ConnectedClient {
 
         tracing::info!(?id, "Received datagram");
 
-        let handler = {
-            let state = state.lock();
-            let world = state.get_player_world(&self.user_id).context("Failed to get player world")?;
-
-            world.resource(datagram_handlers()).get(&id).context("No handler for datagram: {id}")?.clone()
+        let (handler, assets) = {
+            let mut state = state.lock();
+            let world = state.get_player_world_mut(&self.user_id).context("Failed to get player world")?;
+            (
+                world.resource(datagram_handlers()).get(&id).with_context(|| format!("No handler for datagram: {id}"))?.clone(),
+                state.assets.clone(),
+            )
         };
 
         {
-            let _span = info_span!("handle_datagram", id = id);
-            handler(state.clone(), todo!(), &self.user_id, datagram);
+            let _span = info_span!("handle_datagram", id).entered();
+            handler(state.clone(), assets, &self.user_id, datagram);
         }
 
         Ok(())
     }
 
     #[tracing::instrument(level = "info", skip(state, stream))]
-    pub async fn process_uni(&mut self, state: &SharedServerState, mut stream: impl AsyncRead + Unpin) -> anyhow::Result<()> {
+    pub async fn process_uni<R>(&mut self, state: &SharedServerState, mut stream: R) -> anyhow::Result<()>
+    where
+        R: 'static + Send + Sync + AsyncRead + Unpin,
+    {
         let id = stream.read_u32().await?;
 
-        let handler = {
+        let (handler, assets) = {
             let mut state = state.lock();
-            let world = state.get_player_world(&self.user_id).context("Failed to get player world")?;
-
-            world.resource(uni_stream_handlers()).get(&id).context("No handler for datagram: {id}")?.clone()
+            let world = state.get_player_world_mut(&self.user_id).context("Failed to get player world")?;
+            (
+                world.resource(uni_stream_handlers()).get(&id).with_context(|| format!("No handler for uni stream: {id}"))?.clone(),
+                state.assets.clone(),
+            )
         };
         {
-            let _span = info_span!("handle_datagram", id = id);
-            todo!()
-            // handler(self.state.clone(), self.assets.clone(), &self.user_id, stream);
+            let _span = info_span!("handle_datagram", id).entered();
+            handler(state.clone(), assets, &self.user_id, Box::pin(stream));
         }
 
         Ok(())
     }
 
     #[tracing::instrument(level = "info", skip(state, send, recv))]
-    pub async fn process_bi(
-        &mut self,
-        state: &SharedServerState,
-        send: impl AsyncWrite + Unpin,
-        recv: impl AsyncRead + Unpin,
-    ) -> anyhow::Result<()> {
-        todo!()
+    pub async fn process_bi<S, R>(&mut self, state: &SharedServerState, send: S, mut recv: R) -> anyhow::Result<()>
+    where
+        R: 'static + Send + Sync + Unpin + AsyncRead,
+        S: 'static + Send + Sync + Unpin + AsyncWrite,
+    {
+        let id = recv.read_u32().await?;
+
+        let (handler, assets) = {
+            let mut state = state.lock();
+            let world = state.get_player_world_mut(&self.user_id).context("Failed to get player world")?;
+            (
+                world.resource(bi_stream_handlers()).get(&id).with_context(|| format!("No handler for bi stream: {id}"))?.clone(),
+                state.assets.clone(),
+            )
+        };
+        {
+            let _span = info_span!("handle_bi", id).entered();
+            handler(state.clone(), assets, &self.user_id, Box::pin(send), Box::pin(recv));
+        }
+
+        Ok(())
     }
 }
