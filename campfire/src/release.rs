@@ -179,6 +179,9 @@ fn update_ambient_dependency_versions(dependencies: &mut toml_edit::Item, new_ve
         }
 
         let Some(table) = value.as_table_like_mut() else { continue; };
+        if table.contains_key("workspace") {
+            continue;
+        }
         table.insert("version", toml_edit::value(new_version));
     }
 }
