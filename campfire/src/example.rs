@@ -100,11 +100,11 @@ fn check_all() -> anyhow::Result<()> {
 
             let mut command = std::process::Command::new("cargo");
             command.current_dir(root_path);
-            command.args(&["clippy"]);
+            command.args(["clippy"]);
             command.env("RUSTFLAGS", "-Dwarnings");
 
             if !features.is_empty() {
-                command.args(&["--features", features]);
+                command.args(["--features", features]);
             }
 
             if !command.spawn()?.wait()?.success() {
@@ -135,11 +135,7 @@ fn run_ambient(args: &[&str], release: bool) -> anyhow::Result<()> {
     if release {
         command.arg("--release");
     }
-    command
-        .args(&["-p", "ambient"])
-        .args(args)
-        .spawn()?
-        .wait()?;
+    command.args(["-p", "ambient"]).args(args).spawn()?.wait()?;
 
     Ok(())
 }
@@ -160,7 +156,6 @@ fn all_examples() -> anyhow::Result<Vec<PathBuf>> {
 
 fn all_directories_in(path: &Path) -> anyhow::Result<impl Iterator<Item = PathBuf>> {
     Ok(std::fs::read_dir(path)?
-        .into_iter()
         .filter_map(Result::ok)
         .map(|de| de.path())
         .filter(|p| p.is_dir()))

@@ -3,6 +3,9 @@ name = "ambient_app"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
+description = "Ambient app implementation. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

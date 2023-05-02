@@ -3,8 +3,9 @@ name = "ambient_debugger"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Ambient debugger. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
 ambient_ui_native = { path = "../ui_native" }

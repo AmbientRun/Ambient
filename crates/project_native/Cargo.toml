@@ -3,6 +3,9 @@ name = "ambient_project_native"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
+description = "Extensions to `ambient_project` that are only relevant to the host. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
 ambient_ecs = { path = "../ecs" }

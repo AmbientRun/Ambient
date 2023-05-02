@@ -5,6 +5,7 @@ use std::{
 };
 
 use anyhow::{ensure, Context};
+use cargo_toml::Inheritable;
 use clap::Parser;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -34,6 +35,9 @@ pub enum Release {
         no_docker: bool,
 
         #[arg(long)]
+        no_crates_io_validity: bool,
+
+        #[arg(long)]
         no_msrv: bool,
 
         #[arg(long)]
@@ -54,11 +58,19 @@ pub(crate) fn main(args: &Release) -> anyhow::Result<()> {
         Release::Publish { execute } => publish(*execute),
         Release::Check {
             no_docker,
+            no_crates_io_validity,
             no_msrv,
             no_build,
             no_changelog,
             no_readme,
-        } => check_release(*no_docker, *no_msrv, *no_build, *no_changelog, *no_readme),
+        } => check_release(
+            *no_docker,
+            *no_crates_io_validity,
+            *no_msrv,
+            *no_build,
+            *no_changelog,
+            *no_readme,
+        ),
     }
 }
 
@@ -74,6 +86,7 @@ const INTRODUCTION: &str = "docs/src/introduction.md";
 
 fn check_release(
     no_docker: bool,
+    no_crates_io_validity: bool,
     no_msrv: bool,
     no_build: bool,
     no_changelog: bool,
@@ -84,6 +97,11 @@ fn check_release(
     if !no_docker {
         check_docker_build()?;
         check_docker_run()?;
+    }
+
+    // the packages can all be published to crates.io
+    if !no_crates_io_validity {
+        check_crates_io_validity()?;
     }
 
     // the MSRV is correct for both the host and the API
@@ -229,81 +247,7 @@ fn update_msrv(new_version: &str) -> anyhow::Result<()> {
 }
 
 fn publish(execute: bool) -> anyhow::Result<()> {
-    // Our publishing process is complicated by the presence of two workspaces
-    // that share crates. None of the existing tooling, as far as I can tell,
-    // handles this well.
-    //
-    // To deal with this, we use `guppy` to construct a graph for each workspace,
-    // and then we fuse them together to produce the final publish list in topological
-    // order.
-
-    use guppy::graph::DependencyDirection;
-
-    let mut manifests = Manifests::default();
-
-    let ambient_packages = {
-        let ambient_graph = guppy::MetadataCommand::new()
-            .manifest_path(ROOT_CARGO)
-            .build_graph()?;
-        let ambient_id = ambient_graph
-            .resolve_package_name("ambient")
-            .package_ids(DependencyDirection::Forward)
-            .next()
-            .unwrap();
-        let ambient_wasm_id = ambient_graph
-            .resolve_package_name("ambient_wasm")
-            .package_ids(DependencyDirection::Forward)
-            .next()
-            .unwrap();
-
-        let mut ambient_packages = ambient_graph
-            .query_forward([ambient_id])?
-            .resolve()
-            .package_ids(DependencyDirection::Forward)
-            .filter(|id| {
-                // We purposely exclude the WASM crate, as well as anything
-                // that depends on it, as it has Git dependencies that we
-                // can't publish at present.
-                !ambient_graph
-                    .depends_on(id, ambient_wasm_id)
-                    .unwrap_or(true)
-            })
-            .collect::<Vec<_>>();
-        ambient_packages.reverse();
-
-        ambient_packages
-            .iter()
-            .map(|p| p.repr().split_ascii_whitespace().next().unwrap())
-            .filter(|p| manifests.exists(p))
-            .map(|p| p.to_string())
-            .collect::<Vec<_>>()
-    };
-
-    let api_packages = {
-        let api_graph = guppy::MetadataCommand::new()
-            .manifest_path(GUEST_RUST_CARGO)
-            .build_graph()?;
-        let api_id = api_graph
-            .resolve_package_name("ambient_api")
-            .package_ids(DependencyDirection::Forward)
-            .next()
-            .unwrap();
-
-        let mut api_packages = api_graph
-            .query_forward([api_id])?
-            .resolve()
-            .package_ids(DependencyDirection::Forward)
-            .collect::<Vec<_>>();
-        api_packages.reverse();
-
-        api_packages
-            .iter()
-            .map(|p| p.repr().split_ascii_whitespace().next().unwrap())
-            .filter(|p| manifests.exists(p))
-            .filter(|p| !ambient_packages.iter().any(|tp| tp == p))
-            .map(|p| p.to_string())
-            .collect::<Vec<_>>()
-    };
+    let crates = get_all_publishable_packages()?;
 
     #[derive(Debug)]
     enum Task {
@@ -311,18 +255,9 @@ fn publish(execute: bool) -> anyhow::Result<()> {
         Wait(usize),
     }
 
-    let tasks = ambient_packages
+    let tasks = crates
         .into_iter()
-        .chain(api_packages)
-        .map(|p| {
-            manifests
-                .path(&p)
-                .unwrap()
-                .parent()
-                .unwrap()
-                .canonicalize()
-                .unwrap()
-        })
+        .map(|p| p.0.parent().unwrap().canonicalize().unwrap())
         .map(Task::Publish)
         .chunks(5)
         .into_iter()
@@ -424,6 +359,47 @@ fn check_docker_run() -> anyhow::Result<()> {
         anyhow::bail!("failed to execute cargo run in Docker instance");
     }
     log::info!("Ran Docker instance.");
+
+    Ok(())
+}
+
+fn check_crates_io_validity() -> anyhow::Result<()> {
+    let crates = get_all_publishable_packages()?;
+    for (path, manifest) in crates {
+        let Some(package) = manifest.package else { anyhow::bail!("no package for {}", path.display()) };
+
+        anyhow::ensure!(
+            non_empty_inheritable_string(&package.license),
+            "no license in {}",
+            path.display()
+        );
+
+        anyhow::ensure!(
+            non_empty_inheritable_string(&package.description),
+            "no description in {}",
+            path.display()
+        );
+
+        anyhow::ensure!(
+            non_empty_inheritable_string(&package.repository),
+            "no repository in {}",
+            path.display()
+        );
+
+        let parent_path = path.parent().unwrap();
+        anyhow::ensure!(
+            parent_path.join("README.md").is_file(),
+            "no README.md in {}",
+            parent_path.display()
+        );
+    }
+
+    fn non_empty_inheritable_string(s: &Option<Inheritable<String>>) -> bool {
+        s.as_ref()
+            .and_then(|s| s.get().ok())
+            .map(|s| !s.is_empty())
+            .unwrap_or(false)
+    }
 
     Ok(())
 }
@@ -553,13 +529,97 @@ fn check(path: impl AsRef<Path>) -> anyhow::Result<()> {
     let path = path.as_ref();
     let mut command = Command::new("cargo");
     command.current_dir(path);
-    command.args(&["check"]);
+    command.args(["check"]);
 
     if !command.spawn()?.wait()?.success() {
         anyhow::bail!("Failed to check Rust code at {}", path.display());
     }
 
     Ok(())
+}
+
+fn get_all_publishable_packages() -> anyhow::Result<Vec<(PathBuf, cargo_toml::Manifest)>> {
+    // Our publishing process is complicated by the presence of two workspaces
+    // that share crates. None of the existing tooling, as far as I can tell,
+    // handles this well.
+    //
+    // To deal with this, we use `guppy` to construct a graph for each workspace,
+    // and then we fuse them together to produce the final publish list in topological
+    // order.
+
+    use guppy::graph::DependencyDirection;
+
+    let mut manifests = Manifests::default();
+
+    let ambient_packages = {
+        let ambient_graph = guppy::MetadataCommand::new()
+            .manifest_path(ROOT_CARGO)
+            .build_graph()?;
+        let ambient_id = ambient_graph
+            .resolve_package_name("ambient")
+            .package_ids(DependencyDirection::Forward)
+            .next()
+            .unwrap();
+        let ambient_wasm_id = ambient_graph
+            .resolve_package_name("ambient_wasm")
+            .package_ids(DependencyDirection::Forward)
+            .next()
+            .unwrap();
+
+        let mut ambient_packages = ambient_graph
+            .query_forward([ambient_id])?
+            .resolve()
+            .package_ids(DependencyDirection::Forward)
+            .filter(|id| {
+                // We purposely exclude the WASM crate, as well as anything
+                // that depends on it, as it has Git dependencies that we
+                // can't publish at present.
+                !ambient_graph
+                    .depends_on(id, ambient_wasm_id)
+                    .unwrap_or(true)
+            })
+            .collect::<Vec<_>>();
+        ambient_packages.reverse();
+
+        ambient_packages
+            .iter()
+            .map(|p| p.repr().split_ascii_whitespace().next().unwrap())
+            .filter(|p| manifests.exists(p))
+            .map(|p| p.to_string())
+            .collect::<Vec<_>>()
+    };
+
+    let api_packages = {
+        let api_graph = guppy::MetadataCommand::new()
+            .manifest_path(GUEST_RUST_CARGO)
+            .build_graph()?;
+        let api_id = api_graph
+            .resolve_package_name("ambient_api")
+            .package_ids(DependencyDirection::Forward)
+            .next()
+            .unwrap();
+
+        let mut api_packages = api_graph
+            .query_forward([api_id])?
+            .resolve()
+            .package_ids(DependencyDirection::Forward)
+            .collect::<Vec<_>>();
+        api_packages.reverse();
+
+        api_packages
+            .iter()
+            .map(|p| p.repr().split_ascii_whitespace().next().unwrap())
+            .filter(|p| manifests.exists(p))
+            .filter(|p| !ambient_packages.iter().any(|tp| tp == p))
+            .map(|p| p.to_string())
+            .collect::<Vec<_>>()
+    };
+
+    Ok(ambient_packages
+        .into_iter()
+        .chain(api_packages)
+        .map(|p| manifests.get(&p).unwrap())
+        .collect_vec())
 }
 
 #[derive(Default)]
@@ -569,9 +629,9 @@ struct Manifests {
     cache: HashMap<PathBuf, cargo_toml::Manifest>,
 }
 impl Manifests {
-    fn path(&mut self, name: &str) -> Option<PathBuf> {
+    fn get(&mut self, name: &str) -> Option<(PathBuf, cargo_toml::Manifest)> {
         let Some(stripped) = name.strip_prefix("ambient") else { return None; };
-        let stripped = stripped.strip_prefix("_").unwrap_or(name);
+        let stripped = stripped.strip_prefix('_').unwrap_or(name);
 
         [
             Path::new("crates").join(stripped).join("Cargo.toml"),
@@ -589,11 +649,11 @@ impl Manifests {
                 // Intentionally manually read the file as we do not want to
                 // use `cargo_toml`'s dependency resolution.
                 cargo_toml::Manifest::from_str(&std::fs::read_to_string(&p).unwrap())
-                    .expect(&format!("failed to parse {:?}", p))
+                    .unwrap_or_else(|_| panic!("failed to parse {:?}", p))
             });
 
             if manifest.package().name == name {
-                Some(p)
+                Some((p, manifest.clone()))
             } else {
                 None
             }
@@ -601,6 +661,6 @@ impl Manifests {
     }
 
     fn exists(&mut self, name: &str) -> bool {
-        self.path(name).is_some()
+        self.get(name).is_some()
     }
 }

@@ -282,6 +282,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
             ambient_profiling::scope!("handle_intent_move");
             let world = ctx.world;
 
+            #[allow(dead_code)]
             enum SurfaceOffset {
                 Keep { _normal: Vec3 },
                 Update,
@@ -387,6 +388,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
             ambient_profiling::scope!("handle_intent_move");
             let world = ctx.world;
 
+            #[allow(dead_code)]
             enum SurfaceOffset {
                 Keep { _normal: Vec3 },
                 Update,

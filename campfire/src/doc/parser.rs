@@ -170,7 +170,7 @@ impl Enum {
                 }
                 rdt::VariantKind::Struct { fields, .. } => Some(Type::Struct(Struct {
                     name: name.clone(),
-                    fields: convert_plain_fields(ctx, source_crate, &fields),
+                    fields: convert_plain_fields(ctx, source_crate, fields),
                 })),
             };
 
