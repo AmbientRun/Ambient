@@ -1,6 +1,6 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Clone, Debug, PartialEq)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Component {
     pub name: Option<String>,
     pub description: Option<String>,
@@ -12,7 +12,7 @@ pub struct Component {
     pub default: Option<toml::Value>,
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(untagged)]
 pub enum ComponentType {
     String(String),

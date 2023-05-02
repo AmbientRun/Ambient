@@ -57,6 +57,7 @@ pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manife
     std::fs::create_dir_all(&build_path).unwrap();
     build_assets(physics, &assets_path, &build_path).await;
     build_rust_if_available(&path, manifest, &build_path, optimize).await.unwrap();
+    store_manifest(manifest, &build_path).await.unwrap();
     store_metadata(&build_path).await.unwrap()
 }
 
@@ -151,12 +152,18 @@ fn get_component_paths(target: &str, build_path: &Path) -> Vec<String> {
         .unwrap_or_default()
 }
 
+async fn store_manifest(manifest: &ProjectManifest, build_path: &Path) -> anyhow::Result<()> {
+    let manifest_path = build_path.join("ambient.toml");
+    tokio::fs::write(&manifest_path, toml::to_string(&manifest)?).await?;
+    Ok(())
+}
+
 async fn store_metadata(build_path: &Path) -> anyhow::Result<Metadata> {
     let metadata = Metadata {
         client_component_paths: get_component_paths("client", build_path),
         server_component_paths: get_component_paths("server", build_path),
     };
     let metadata_path = build_path.join("metadata.toml");
-    tokio::fs::write(&metadata_path, toml::to_string_pretty(&metadata)?).await?;
+    tokio::fs::write(&metadata_path, toml::to_string(&metadata)?).await?;
     Ok(metadata)
 }

@@ -164,9 +164,8 @@ fn main() -> anyhow::Result<()> {
                 // load manifest from file
                 anyhow::Ok(ambient_project::Manifest::from_file(path.join("ambient.toml")).context("Failed to read ambient.toml.")?)
             } else {
-                // project_path is a URL, so download the manifest
-                // FIXME: handle imports
-                let manifest_url = project_path.push("ambient.toml").unwrap();
+                // project_path is a URL, so download the pre-build manifest (with resolved imports)
+                let manifest_url = project_path.push("build/ambient.toml").unwrap();
                 let manifest_data = runtime.block_on(manifest_url.download_string(&assets)).context("Failed to download ambient.toml.")?;
                 anyhow::Ok(ambient_project::Manifest::parse(&manifest_data).context("Failed to parse downloaded ambient.toml.")?)
             }
