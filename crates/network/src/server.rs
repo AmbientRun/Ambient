@@ -528,8 +528,7 @@ async fn start_proxy_connection(
     let builder = if let Ok(Some(assets_file_path)) = assets_path.to_file_path() {
         builder.assets_path(assets_file_path)
     } else {
-        // TODO: handle URL case
-        builder
+        builder.assets_root_override(content_base_url.read().to_string())
     };
 
     log::info!("Connecting to proxy server");
