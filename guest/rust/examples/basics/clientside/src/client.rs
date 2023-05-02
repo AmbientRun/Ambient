@@ -13,10 +13,8 @@ use components::{grid_side_length, grid_x, grid_y};
 
 #[main]
 pub async fn main() {
-    entity::wait_for_component(entity::synchronized_resources(), grid_side_length()).await;
-
     let side_length =
-        entity::get_component(entity::synchronized_resources(), grid_side_length()).unwrap();
+        entity::wait_for_component(entity::synchronized_resources(), grid_side_length()).await;
 
     let id = Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())

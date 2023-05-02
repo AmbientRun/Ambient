@@ -3,18 +3,21 @@ name = "ambient_decals"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
+description = "Ambient decals. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_asset_cache = { path = "../asset_cache" }
-ambient_ui_native = { path = "../ui_native" }
-ambient_ecs = { path = "../ecs" }
-ambient_renderer = { path = "../renderer" }
-ambient_gpu = { path = "../gpu" }
-ambient_std = { path = "../std" }
-ambient_core = { path = "../core" }
-ambient_meshes = { path = "../meshes" }
+ambient_asset_cache = { path = "../asset_cache" , version = "0.2.0-rc5" }
+ambient_ui_native = { path = "../ui_native" , version = "0.2.0-rc5" }
+ambient_ecs = { path = "../ecs" , version = "0.2.0-rc5" }
+ambient_renderer = { path = "../renderer" , version = "0.2.0-rc5" }
+ambient_gpu = { path = "../gpu" , version = "0.2.0-rc5" }
+ambient_std = { path = "../std" , version = "0.2.0-rc5" }
+ambient_core = { path = "../core" , version = "0.2.0-rc5" }
+ambient_meshes = { path = "../meshes" , version = "0.2.0-rc5" }
 log = { workspace = true }
 glam = { workspace = true }
 

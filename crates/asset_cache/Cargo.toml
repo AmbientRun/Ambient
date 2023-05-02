@@ -3,11 +3,14 @@ name = "ambient_asset_cache"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
+description = "Asset cache for the Ambient runtime. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_sys = { path = "../sys" }
+ambient_sys = { path = "../sys" , version = "0.2.0-rc5" }
 serde = { workspace = true }
 as-any = { workspace = true }
 async-trait = { workspace = true }

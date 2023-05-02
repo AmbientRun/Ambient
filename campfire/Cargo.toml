@@ -8,9 +8,15 @@ publish = false
 anyhow = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 log = { workspace = true }
+serde = { workspace = true }
 serde_json = { workspace = true }
 toml_edit = { workspace = true }
+itertools = { workspace = true }
+toml = { workspace = true }
 
+regex = "1.5.4"
 rustdoc-json = "0.8.0"
 rustdoc-types = "0.20.0"
 simplelog = "0.12.1"
+cargo_toml = "0.15"
+guppy = "0.15"

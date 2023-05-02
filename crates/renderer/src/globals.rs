@@ -293,6 +293,7 @@ fn create_dummy_shadow_texture(gpu: Arc<Gpu>) -> Arc<Texture> {
             dimension: wgpu::TextureDimension::D2,
             format: DEPTH_FORMAT,
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
+            view_formats: &[]
         },
     ))
 }

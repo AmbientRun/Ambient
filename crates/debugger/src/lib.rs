@@ -1,4 +1,4 @@
-use std::{num::NonZeroU32, sync::Arc};
+use std::{sync::Arc};
 
 use ambient_core::{
     asset_cache,
@@ -188,7 +188,7 @@ fn ShadowMapViz(hooks: &mut Hooks, get_state: GetDebuggerState, cascade: u32) ->
             tex = Some(renderer.shadows.as_ref().map(|x| {
                 Arc::new(x.shadow_texture.create_view(&wgpu::TextureViewDescriptor {
                     base_array_layer: cascade,
-                    array_layer_count: NonZeroU32::new(1),
+                    array_layer_count: Some(1),
                     dimension: Some(wgpu::TextureViewDimension::D2),
                     ..Default::default()
                 }))
