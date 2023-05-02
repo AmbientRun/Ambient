@@ -5,7 +5,7 @@ members = ["crates/*", "libs/*", "shared_crates/*", "app", "campfire"]
 resolver = "2"
 
 [workspace.package]
-version = "0.2.0-rc4"
+version = "0.2.0-rc5"
 rust-version = "1.67.0"
 
 [workspace.dependencies]
