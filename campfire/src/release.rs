@@ -149,17 +149,11 @@ fn update_version(new_version: &str) -> anyhow::Result<()> {
         update_ambient_dependency_versions(&mut toml["workspace"]["dependencies"], new_version);
     })?;
 
-    // Fix all of the dependency versions for Ambient crates
-    for path in ["libs", "shared_crates"] {
-        for dir in std::fs::read_dir(path)?
-            .filter_map(Result::ok)
-            .map(|de| de.path())
-            .filter(|p| p.is_dir())
-        {
-            edit_toml(dir.join("Cargo.toml"), |toml| {
-                update_ambient_dependency_versions(&mut toml["dependencies"], new_version);
-            })?;
-        }
+    // Fix all of the dependency versions of publishable Ambient crates
+    for (path, _) in get_all_publishable_packages()? {
+        edit_toml(path, |toml| {
+            update_ambient_dependency_versions(&mut toml["dependencies"], new_version);
+        })?;
     }
 
     edit_file(INSTALLING_DOCS, |document| {
@@ -261,7 +255,7 @@ fn publish(execute: bool) -> anyhow::Result<()> {
         .map(Task::Publish)
         .chunks(5)
         .into_iter()
-        .flat_map(|c| c.chain(std::iter::once(Task::Wait(5))))
+        .flat_map(|c| c.chain(std::iter::once(Task::Wait(30))))
         .collect_vec();
     // Remove the last wait
     let tasks = &tasks[0..tasks.len() - 1];
@@ -289,7 +283,9 @@ fn publish(execute: bool) -> anyhow::Result<()> {
         false => {
             for task in tasks {
                 match task {
-                    Task::Publish(path) => println!("cd {} && cargo publish", path.display()),
+                    Task::Publish(path) => {
+                        println!("cd {} && cargo publish && cd -", path.display())
+                    }
                     Task::Wait(seconds) => println!("sleep {}", seconds),
                 }
             }
