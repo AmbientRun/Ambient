@@ -187,9 +187,14 @@ impl wit::client_audio::Host for Bindings {
     fn play(&mut self, url: String, looping: bool, volume: f32, uid: u32) -> anyhow::Result<()> {
         let world = self.world();
         let assets = world.resource(asset_cache()).clone();
-        let asset_url = AbsAssetUrl::from_asset_key(url).to_string();
+        let abs_url = AbsAssetUrl::parse(url).context("Failed to parse audio url")?;
+        let download_url = abs_url
+            .to_download_url(&assets)
+            .map(|url| Some(url.to_string()))
+            .unwrap()
+            .unwrap_or(abs_url.to_string());
         let audio_url = AudioFromUrl {
-            url: AbsAssetUrl::parse(asset_url.clone()).context("Failed to parse audio url")?,
+            url: AbsAssetUrl::parse(download_url.clone()).context("Failed to get audio url")?,
         };
         let runtime = world.resource(runtime()).clone();
         let async_run = world.resource(async_run()).clone();
@@ -204,7 +209,7 @@ impl wit::client_audio::Host for Bindings {
                                 track,
                                 looping,
                                 volume,
-                                asset_url.replace("ambient-assets:/", ""),
+                                download_url.replace("ambient-assets:/", ""),
                                 uid,
                             ))
                             .unwrap();

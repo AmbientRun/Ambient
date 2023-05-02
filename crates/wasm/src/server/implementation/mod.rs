@@ -2,7 +2,6 @@
 //!
 //! If implementing a trait that is only available on the server, it should go in [specific].
 
-use ambient_core::asset_cache;
 use ambient_std::asset_url::AbsAssetUrl;
 
 use crate::shared::{self, wit};
@@ -173,10 +172,6 @@ impl wit::player::Host for Bindings {
 }
 impl wit::asset::Host for Bindings {
     fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
-        let assets = self.world().resource(asset_cache()).clone();
-        let asset_url = AbsAssetUrl::from_asset_key(path);
-        asset_url
-            .to_download_url(&assets)
-            .map(|url| Some(url.to_string()))
+        Ok(Some(AbsAssetUrl::from_asset_key(path).to_string()))
     }
 }
