@@ -43,6 +43,32 @@ If the player initiates a _different_ connection while a player of the given
 _user_id_ already exists in the world, the previous player will be despawned and
 sent a server initiated `Disconnect` whereafter the old connection is closed.
 
+## Streams
+
+The _client_ and _server_ have the capability to initiate unidirectional and
+bidirectional streams.
+
+Each stream is prefixed with an `u32` describing the stream _type_ and in
+extent, handler delegate which can read the rest of the stream, and write if the
+stream is bidirectional.
+
+If no handler is registered the stream _should_ be closed. The connection should
+**not** be closed.
+
+Multiple streams and handlers _may_ exist at the same time for both the same and
+different stream types. Handler _may_ employ external synchronization to ensure
+the logic is not subject to async _race-conditions_.
+
+## Datagrams
+
+Datagrams can be sent by both the client and server.
+
+Each datagram is prefixed with an `u32` describing the datagram _type_ and
+handler which receives the rest of the datagram.
+
+If no handler is registered the datagram _should_ be ignored. The connection
+should **not** be closed.
+
 ## Authentication (TODO)
 
 Method to ensure that the `user_id` is authentic and can not be spoofed by
@@ -67,7 +93,7 @@ or assuming a _good-enough_ default value.
 
 Most commonly, these errors arise from unknown `enum` variants or missing fields
 due to _small_ version mismatches between the client and server. In such a case,
-the frame should be discard, and the stream should _not_ be closed.
+the frame should be discard, and the stream should **not** be closed.
 
 Other kinds of errors arise from delegates of opened streams or datagrams. These
 are most often a result of faulty logic or incorrect data, or in other cases a
