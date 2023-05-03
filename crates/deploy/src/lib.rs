@@ -5,26 +5,26 @@ pub mod deploy_proto {
 use std::path::Path;
 
 use ambient_project::Manifest;
-use tonic::{
-    metadata::MetadataValue,
-    transport::Channel,
-    Request,
-};
+use tonic::{metadata::MetadataValue, transport::Channel, Request};
 use walkdir::WalkDir;
 
 use deploy_proto::{deployer_client::DeployerClient, DeployAssetRequest, DeployAssetsResponse};
 
-async fn asset_from_file_path(base_path: impl AsRef<Path>, file_path: impl AsRef<Path>) -> anyhow::Result<DeployAssetRequest> {
-    let path = file_path.as_ref().strip_prefix(base_path)?.to_string_lossy().to_string();
+async fn asset_from_file_path(
+    base_path: impl AsRef<Path>,
+    file_path: impl AsRef<Path>,
+) -> anyhow::Result<DeployAssetRequest> {
+    let path = file_path
+        .as_ref()
+        .strip_prefix(base_path)?
+        .to_string_lossy()
+        .to_string();
     let content = ambient_sys::fs::read(file_path.as_ref()).await?;
     Ok(DeployAssetRequest { path, content })
 }
 
 /// This takes the path to an Ambient project and deploys it. An Ambient project is expected to
-/// be already built and have the following structure:
-///
-/// - build  The build directory, created when building
-/// - ambient.toml  This is a metadata file to describe the project
+/// be already built.
 pub async fn deploy(
     runtime: &tokio::runtime::Runtime,
     api_server: String,
@@ -35,7 +35,11 @@ pub async fn deploy(
     log::info!(
         "Deploying project `{}` ({})",
         manifest.project.id,
-        manifest.project.name.as_deref().unwrap_or_else(|| manifest.project.id.as_ref())
+        manifest
+            .project
+            .name
+            .as_deref()
+            .unwrap_or_else(|| manifest.project.id.as_ref())
     );
 
     let channel = Channel::from_shared(api_server)?.connect().await?;
@@ -47,14 +51,12 @@ pub async fn deploy(
         Ok(req)
     });
 
-    // iterate over all files to deploy (ambient.toml and everything in the build directory)
-    let file_paths = std::iter::once(path.as_ref().join("ambient.toml")).chain(
-        WalkDir::new(path.as_ref().join("build"))
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
-            .map(|x| x.into_path()),
-    );
+    // iterate over all files to deploy (everything in the build directory)
+    let file_paths = WalkDir::new(path.as_ref().join("build"))
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
+        .map(|x| x.into_path());
 
     // create a separate task for reading files
     let (tx, rx) = flume::unbounded::<DeployAssetRequest>();
