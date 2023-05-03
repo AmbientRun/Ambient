@@ -16,6 +16,9 @@ rustdoc-args = ["--cfg", "docsrs"]
 [dependencies]
 ambient_api_core = { workspace = true }
 ambient_ui = { workspace = true }
+ambient_element = { workspace = true }
+ambient_cb = { workspace = true }
+ambient_editor_derive = { workspace = true }
 
 anyhow = { workspace = true }
 futures = { workspace = true }
@@ -24,5 +27,13 @@ rand = { workspace = true }
 glam = { workspace = true }
 
 [features]
-client = ["ambient_api_core/client", "ambient_ui/client"]
-server = ["ambient_api_core/server", "ambient_ui/server"]
+client = [
+    "ambient_api_core/client",
+    "ambient_ui/client",
+    "ambient_element/guest",
+]
+server = [
+    "ambient_api_core/server",
+    "ambient_ui/server",
+    "ambient_element/guest",
+]

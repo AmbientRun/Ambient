@@ -1,9 +1,4 @@
-use ambient_app::{App, AppBuilder};
-use ambient_cameras::UICamera;
-use ambient_editor_derive::ElementEditor;
-use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
-use ambient_ui_native::*;
-use glam::*;
+use ambient_api::prelude::*;
 
 #[derive(Debug, Clone, Default, ElementEditor)]
 pub struct MyStruct {
@@ -51,27 +46,22 @@ pub struct SubStruct {
     my_enum_third: MyEnum,
 }
 
-#[derive(Debug, Clone)]
-struct Example;
-impl ElementComponent for Example {
-    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (state, set_state) = hooks.use_state(MyStruct::new());
-        FocusRoot(vec![ScrollArea::el(
-            ScrollAreaSizing::FitChildrenWidth,
-            FlowColumn(vec![MyStruct::editor(state.clone(), set_state, Default::default()), Text::el(format!("{state:#?}"))])
-                .el()
-                .with(space_between_items(), STREET),
-        )])
+#[element_component]
+fn App(hooks: &mut Hooks) -> Element {
+    let (state, set_state) = hooks.use_state(MyStruct::new());
+    FocusRoot(vec![ScrollArea::el(
+        ScrollAreaSizing::FitChildrenWidth,
+        FlowColumn(vec![
+            MyStruct::editor(state.clone(), set_state, Default::default()),
+            Text::el(format!("{state:#?}")),
+        ])
         .el()
-    }
+        .with(space_between_items(), STREET),
+    )])
+    .el()
 }
 
-async fn init(app: &mut App) {
-    let world = &mut app.world;
-    Group(vec![UICamera.el(), Example.el()]).el().spawn_interactive(world);
-}
-
-fn main() {
-    env_logger::init();
-    AppBuilder::simple_ui().block_on(init);
+#[main]
+pub fn main() {
+    App.el().spawn_interactive();
 }

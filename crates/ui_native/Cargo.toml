@@ -21,6 +21,7 @@ ambient_renderer = { path = "../renderer" , version = "0.2.0-rc5" }
 ambient_layout = { path = "../layout" , version = "0.2.0-rc5" }
 ambient_text = { path = "../text" , version = "0.2.0-rc5" }
 ambient_rect = { path = "../rect" , version = "0.2.0-rc5" }
+ambient_cb = { path = "../../libs/cb" , version = "0.2.0-rc5" }
 ambient_element = { path = "../../shared_crates/element" , version = "0.2.0-rc5" }
 ambient_ui = { path = "../../shared_crates/ui", default-features = false, features = ["native"] , version = "0.2.0-rc5" }
 ambient_editor_derive = { path = "../../shared_crates/editor_derive" , version = "0.2.0-rc5" }

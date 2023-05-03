@@ -11,15 +11,13 @@ use ambient_core::{
     ui_scene,
 };
 use ambient_ecs::{
-    components, dont_store, ensure_has_component, ensure_has_component_with_default, query, Entity,
-    EntityId, FnSystem, Networked, SystemGroup, World,
+    components, dont_store, ensure_has_component, ensure_has_component_with_default,
+    generated::components::core::rect::{background_color, line_from, line_to, line_width},
+    query, Entity, EntityId, FnSystem, Networked, SystemGroup, World,
 };
 use ambient_gizmos::{gizmos, GizmoPrimitive};
 use ambient_std::line_hash;
-use ambient_ui_native::{
-    background_color,
-    rect::{line_from, line_to, line_width},
-};
+
 use glam::{vec4, Vec3};
 use itertools::Itertools;
 use physxx::{

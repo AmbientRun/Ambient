@@ -6,8 +6,9 @@ use proc_macro2::{Ident, Span, TokenStream};
 use proc_macro_crate::{crate_name, FoundCrate};
 use quote::{quote, ToTokens};
 use syn::{
-    punctuated::Punctuated, spanned::Spanned, token::Comma, AngleBracketedGenericArguments, Data, DataEnum, DataStruct, DeriveInput, Field,
-    Fields, FieldsNamed, FieldsUnnamed, Lit, LitStr, Path, PathArguments, Token, Type, TypePath, Variant,
+    punctuated::Punctuated, spanned::Spanned, token::Comma, AngleBracketedGenericArguments, Data,
+    DataEnum, DataStruct, DeriveInput, Field, Fields, FieldsNamed, FieldsUnnamed, Lit, LitStr,
+    Path, PathArguments, Token, Type, TypePath, Variant,
 };
 
 mod attributes;
@@ -38,10 +39,92 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
     //     _ => quote!(crate),
     // };
 
-    let ui_crate = match crate_name("ambient_ui_native") {
-        Ok(FoundCrate::Itself) => Ident::new("crate", Span::call_site()),
-        Ok(FoundCrate::Name(name)) => Ident::new(&name, Span::call_site()),
-        Err(err) => panic!("Missing crate `ambient_ui_native`. {err:?}"),
+    let ui_crate = match crate_name("ambient_ui") {
+        Ok(FoundCrate::Itself) => {
+            let name = Ident::new("crate", Span::call_site());
+            quote! { #name }
+        }
+        Ok(FoundCrate::Name(name)) => {
+            let name = Ident::new(&name, Span::call_site());
+            quote! { #name }
+        }
+        Err(_) => match crate_name("ambient_api") {
+            Ok(FoundCrate::Itself) => unreachable!(),
+            Ok(FoundCrate::Name(name)) => {
+                let name = Ident::new(&name, Span::call_site());
+                quote! { #name::ui }
+            }
+            Err(_) => match crate_name("ambient_ui_native") {
+                Ok(FoundCrate::Itself) => unreachable!(),
+                Ok(FoundCrate::Name(name)) => {
+                    let name = Ident::new(&name, Span::call_site());
+                    quote! { #name::ui }
+                }
+                Err(err) => panic!("Missing crate `ambient_ui` or `ambient_api`. {err:?}"),
+            },
+        },
+    };
+
+    let element_crate = match crate_name("ambient_element") {
+        Ok(FoundCrate::Itself) => unreachable!(),
+        Ok(FoundCrate::Name(name)) => {
+            let name = Ident::new(&name, Span::call_site());
+            quote! { #name }
+        }
+        Err(_) => match crate_name("ambient_api") {
+            Ok(FoundCrate::Itself) => unreachable!(),
+            Ok(FoundCrate::Name(name)) => {
+                let name = Ident::new(&name, Span::call_site());
+                quote! { #name::element }
+            }
+            Err(_) => match crate_name("ambient_ui_native") {
+                Ok(FoundCrate::Itself) => unreachable!(),
+                Ok(FoundCrate::Name(name)) => {
+                    let name = Ident::new(&name, Span::call_site());
+                    quote! { #name::element }
+                }
+                Err(err) => panic!("Missing crate `ambient_element` or `ambient_api`. {err:?}"),
+            },
+        },
+    };
+
+    let layout_crate = match crate_name("ambient_api") {
+        Ok(FoundCrate::Itself) => unreachable!(),
+        Ok(FoundCrate::Name(name)) => {
+            let name = Ident::new(&name, Span::call_site());
+            quote! { #name::components::core::layout }
+        }
+        Err(_) => match crate_name("ambient_ui_native") {
+            Ok(FoundCrate::Itself) => unreachable!(),
+            Ok(FoundCrate::Name(name)) => {
+                let name = Ident::new(&name, Span::call_site());
+                quote! { #name::layout }
+            }
+            Err(err) => panic!("Missing crate `ambient_api` or `ambient_ui_native`. {err:?}"),
+        },
+    };
+
+    let cb_crate = match crate_name("ambient_cb") {
+        Ok(FoundCrate::Itself) => unreachable!(),
+        Ok(FoundCrate::Name(name)) => {
+            let name = Ident::new(&name, Span::call_site());
+            quote! { #name }
+        }
+        Err(_) => match crate_name("ambient_api") {
+            Ok(FoundCrate::Itself) => unreachable!(),
+            Ok(FoundCrate::Name(name)) => {
+                let name = Ident::new(&name, Span::call_site());
+                quote! { #name::cb }
+            }
+            Err(_) => match crate_name("ambient_ui_native") {
+                Ok(FoundCrate::Itself) => unreachable!(),
+                Ok(FoundCrate::Name(name)) => {
+                    let name = Ident::new(&name, Span::call_site());
+                    quote! { #name::cb }
+                }
+                Err(err) => panic!("Missing crate `ambient_api` or `ambient_ui_native`. {err:?}"),
+            },
+        },
     };
 
     let attributes = EditorAttrs::parse(&input.attrs);
@@ -49,52 +132,62 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
     let type_name = input.ident.clone();
 
     let editor_impl = if let Some(title) = attributes.prompt.as_ref() {
-        let title = title.clone().unwrap_or_else(|| LitStr::new(&type_name.to_string(), Span::call_site()));
+        let title = title
+            .clone()
+            .unwrap_or_else(|| LitStr::new(&type_name.to_string(), Span::call_site()));
 
         quote! {
-            impl #ui_crate::Editor for #type_name {
-                fn editor(self, on_change: #ui_crate::ChangeCb<Self>, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
-                    let editor = #ui_crate::cb(|value, on_change, opts| #editor_name { value, on_change, opts }.into());
-                    #ui_crate::OffscreenEditor { title: #title.into(), opts, value: self, on_confirm: Some(on_change), editor }.into()
+            impl #ui_crate::editor::Editor for #type_name {
+                fn editor(self, on_change: #ui_crate::editor::ChangeCb<Self>, opts: #ui_crate::editor::EditorOpts) -> #element_crate::Element {
+                    let editor = #cb_crate::cb(|value, on_change, opts| #editor_name { value, on_change, opts }.into());
+                    #ui_crate::editor::OffscreenEditor { title: #title.into(), opts, value: self, on_confirm: Some(on_change), editor }.into()
                 }
 
-                fn view(self, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
-                    let editor = #ui_crate::cb(|value, on_change, opts| #editor_name { value, on_change, opts }.into());
-                    #ui_crate::OffscreenEditor { title: #title.into(), opts, value: self, on_confirm: None, editor }.into()
+                fn view(self, opts: #ui_crate::editor::EditorOpts) -> #element_crate::Element {
+                    let editor = #cb_crate::cb(|value, on_change, opts| #editor_name { value, on_change, opts }.into());
+                    #ui_crate::editor::OffscreenEditor { title: #title.into(), opts, value: self, on_confirm: None, editor }.into()
                 }
             }
         }
     } else {
         quote! {
 
-            impl #ui_crate::Editor for #type_name {
-                fn editor(self, on_change: #ui_crate::ChangeCb<Self>, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
+            impl #ui_crate::editor::Editor for #type_name {
+                fn editor(self, on_change: #ui_crate::editor::ChangeCb<Self>, opts: #ui_crate::editor::EditorOpts) -> #element_crate::Element {
                     #editor_name { value: self, on_change: Some(on_change), opts }.into()
                 }
 
-                fn view(self, opts: #ui_crate::EditorOpts) -> #ui_crate::element::Element {
+                fn view(self, opts: #ui_crate::editor::EditorOpts) -> #element_crate::Element {
                     #editor_name { value: self, on_change: None, opts }.into()
                 }
             }
         }
     };
 
-    let body = body_to_tokens(&ui_crate, attributes, type_name.clone(), input);
+    let body = body_to_tokens(
+        &ui_crate,
+        &cb_crate,
+        &element_crate,
+        attributes,
+        type_name.clone(),
+        input,
+    );
 
     quote! {
 
         #[derive(Clone, Debug)]
         pub struct #editor_name {
             pub value: #type_name,
-            pub on_change: Option<#ui_crate::Cb<dyn Fn(#type_name) + ::std::marker::Sync + ::std::marker::Send>>,
-            pub opts: #ui_crate::EditorOpts,
+            pub on_change: Option<#cb_crate::Cb<dyn Fn(#type_name) + ::std::marker::Sync + ::std::marker::Send>>,
+            pub opts: #ui_crate::editor::EditorOpts,
         }
 
         #[automatically_derived]
-        impl #ui_crate::element::ElementComponent for #editor_name {
-            fn render(self: Box<Self>, hooks: &mut #ui_crate::element::Hooks) -> #ui_crate::element::Element {
-                use #ui_crate::element::{Element, ElementComponentExt};
-                use #ui_crate::{Editor, EditorRow, EditorColumn, Slider, IntegerSlider, ListSelect, DropdownSelect, FlowRow, FlowColumn, Text, layout::{margin, Borders, fit_horizontal, Fit}};
+        impl #element_crate::ElementComponent for #editor_name {
+            fn render(self: Box<Self>, hooks: &mut #element_crate::Hooks) -> #element_crate::Element {
+                use #element_crate::{Element, ElementComponentExt};
+                use #ui_crate::{editor::{Editor, EditorRow, EditorColumn, Slider, IntegerSlider}, select::{ListSelect, DropdownSelect}, layout::{FlowRow, FlowColumn}, text::Text};
+                use #layout_crate::{margin, fit_horizontal_parent};
                 let Self { value, on_change, opts } = *self;
                 #body
             }
@@ -104,11 +197,28 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
     }
 }
 
-fn body_to_tokens(ui_crate: &Ident, attrs: EditorAttrs, type_name: Ident, input: DeriveInput) -> TokenStream {
+fn body_to_tokens(
+    ui_crate: &TokenStream,
+    cb_crate: &TokenStream,
+    element_crate: &TokenStream,
+    attrs: EditorAttrs,
+    type_name: Ident,
+    input: DeriveInput,
+) -> TokenStream {
     match input.data {
-        Data::Struct(DataStruct { fields: Fields::Named(fields), .. }) => {
+        Data::Struct(DataStruct {
+            fields: Fields::Named(fields),
+            ..
+        }) => {
             let inline = inline_text(attrs.inline);
-            let field_editors = fields_editor(ui_crate, quote! { #type_name }, &fields.named, inline, false);
+            let field_editors = fields_editor(
+                ui_crate,
+                cb_crate,
+                quote! { #type_name },
+                &fields.named,
+                inline,
+                false,
+            );
             let field_destruct = fields.named.iter().map(|field| {
                 let field_ident = &field.ident;
                 quote! { #field_ident }
@@ -118,9 +228,19 @@ fn body_to_tokens(ui_crate: &Ident, attrs: EditorAttrs, type_name: Ident, input:
                 #field_editors
             }
         }
-        Data::Struct(DataStruct { fields: Fields::Unnamed(fields), .. }) => {
+        Data::Struct(DataStruct {
+            fields: Fields::Unnamed(fields),
+            ..
+        }) => {
             let inline = inline_text(attrs.inline);
-            let field_editors = fields_editor(ui_crate, quote! { #type_name }, &fields.unnamed, inline, true);
+            let field_editors = fields_editor(
+                ui_crate,
+                cb_crate,
+                quote! { #type_name },
+                &fields.unnamed,
+                inline,
+                true,
+            );
             let field_destruct = fields.unnamed.iter().enumerate().map(|(i, _field)| {
                 let name = Ident::new(&format!("field_{i}"), Span::call_site());
                 quote! { #name }
@@ -130,12 +250,22 @@ fn body_to_tokens(ui_crate: &Ident, attrs: EditorAttrs, type_name: Ident, input:
                 #field_editors
             }
         }
-        Data::Enum(DataEnum { variants, .. }) => enum_to_tokens(ui_crate, type_name, variants, attrs),
+        Data::Enum(DataEnum { variants, .. }) => enum_to_tokens(
+            ui_crate,
+            cb_crate,
+            element_crate,
+            type_name,
+            variants,
+            attrs,
+        ),
         _ => panic!("this derive macro only works on structs and enums with named fields"),
     }
 }
 
-fn create_enum_variant_constructor(type_name: Ident, variants: &Punctuated<Variant, Comma>) -> TokenStream {
+fn create_enum_variant_constructor(
+    type_name: Ident,
+    variants: &Punctuated<Variant, Comma>,
+) -> TokenStream {
     let variants_constructors = variants.iter().enumerate().map(|(i, variant)| {
         let variant_ident = &variant.ident;
         match &variant.fields {
@@ -169,7 +299,14 @@ fn create_enum_variant_constructor(type_name: Ident, variants: &Punctuated<Varia
     }
 }
 
-fn enum_to_tokens(ui_crate: &Ident, type_name: Ident, variants: Punctuated<Variant, Comma>, attrs: EditorAttrs) -> TokenStream {
+fn enum_to_tokens(
+    ui_crate: &TokenStream,
+    cb_crate: &TokenStream,
+    element_crate: &TokenStream,
+    type_name: Ident,
+    variants: Punctuated<Variant, Comma>,
+    attrs: EditorAttrs,
+) -> TokenStream {
     let value_matches = variants.iter().enumerate().map(|(i, variant)| {
         let variant_ident = &variant.ident;
         match variant.fields {
@@ -188,7 +325,14 @@ fn enum_to_tokens(ui_crate: &Ident, type_name: Ident, variants: Punctuated<Varia
 
         match &variant.fields {
             Fields::Named(FieldsNamed { named, .. }) => {
-                let editors = fields_editor(ui_crate, quote! { #type_name::#variant_ident }, named, inline, false);
+                let editors = fields_editor(
+                    ui_crate,
+                    cb_crate,
+                    quote! { #type_name::#variant_ident },
+                    named,
+                    inline,
+                    false,
+                );
                 let field_destruct = named.iter().map(|field| {
                     let field_ident = &field.ident;
                     quote! { #field_ident }
@@ -196,7 +340,14 @@ fn enum_to_tokens(ui_crate: &Ident, type_name: Ident, variants: Punctuated<Varia
                 quote! { #type_name::#variant_ident { #(#field_destruct),* } => #editors, }
             }
             Fields::Unnamed(FieldsUnnamed { unnamed, .. }) => {
-                let editors = fields_editor(ui_crate, quote! { #type_name::#variant_ident }, unnamed, inline, true);
+                let editors = fields_editor(
+                    ui_crate,
+                    cb_crate,
+                    quote! { #type_name::#variant_ident },
+                    unnamed,
+                    inline,
+                    true,
+                );
                 let field_destruct = unnamed.iter().enumerate().map(|(i, _field)| {
                     let name = Ident::new(&format!("field_{i}"), Span::call_site());
                     quote! { #name }
@@ -208,7 +359,7 @@ fn enum_to_tokens(ui_crate: &Ident, type_name: Ident, variants: Punctuated<Varia
                 let editor = if let Some(inline) = inline {
                     quote! { #ui_crate::Text::el(#inline) }
                 } else {
-                    quote! { #ui_crate::element::Element::new() }
+                    quote! { #element_crate::Element::new() }
                 };
                 quote! { #type_name::#variant_ident => #editor, }
             }
@@ -220,7 +371,7 @@ fn enum_to_tokens(ui_crate: &Ident, type_name: Ident, variants: Punctuated<Varia
         }
     };
     let on_change_cb = quote! {
-        #ui_crate::cb(move |index| on_change.0(create_variant(index)))
+        #cb_crate::cb(move |index| on_change.0(create_variant(index)))
     };
     let inner = if has_inline {
         let variants_readonly_items = variants.iter().enumerate().map(|(i, _)| {
@@ -268,10 +419,10 @@ fn enum_to_tokens(ui_crate: &Ident, type_name: Ident, variants: Punctuated<Varia
                         inline: true
                     }.el()
                 } else {
-                    #ui_crate::element::Element::new()
+                    #element_crate::Element::new()
                 }
             } else {
-                #ui_crate::element::Element::new()
+                #element_crate::Element::new()
             },
         };
 
@@ -294,7 +445,8 @@ fn enum_to_tokens(ui_crate: &Ident, type_name: Ident, variants: Punctuated<Varia
 }
 
 fn fields_editor(
-    ui_crate: &Ident,
+    ui_crate: &TokenStream,
+    cb_crate: &TokenStream,
     type_ctor: TokenStream,
     fields: &Punctuated<Field, Comma>,
     inline: Option<String>,
@@ -338,8 +490,8 @@ fn fields_editor(
         };
 
         let on_change_cb = quote! {
-            on_change.clone().map(|on_change| -> #ui_crate::Cb<dyn Fn(#field_ty) + ::std::marker::Sync + ::std::marker::Send> {
-                #ui_crate::cb({
+            on_change.clone().map(|on_change| -> #cb_crate::Cb<dyn Fn(#field_ty) + ::std::marker::Sync + ::std::marker::Send> {
+                #cb_crate::cb({
                     #(#other_fields_cloned)*
                     move |v| {
                         on_change.0(#type_ctor #fields_expanded);
@@ -388,13 +540,13 @@ fn fields_editor(
 
             quote! {
                 {
-                    let editor = #ui_crate::cb( <#field_ty_colon as ambient_ui_native::Editor>::edit_or_view );
-                    #ui_crate::OffscreenEditor { title: #title.into(), value: #field_name.clone(), on_confirm: #on_change_cb, opts: Default::default(), editor }.into()
+                    let editor = #cb_crate::cb( <#field_ty_colon as #ui_crate::editor::Editor>::edit_or_view );
+                    #ui_crate::editor::OffscreenEditor { title: #title.into(), value: #field_name.clone(), on_confirm: #on_change_cb, opts: Default::default(), editor }.into()
                 }
             }
         } else {
             quote! {
-                <#field_ty_colon as ambient_ui_native::Editor>::edit_or_view(#field_name.clone(), #on_change_cb, Default::default())
+                <#field_ty_colon as #ui_crate::editor::Editor>::edit_or_view(#field_name.clone(), #on_change_cb, Default::default())
             }
         };
 
@@ -408,14 +560,17 @@ fn fields_editor(
             .map(|row| {
                 let field_editors = row.into_iter().enumerate().map(|(i, item)| {
                     let margin = if i > 0 {
-                        quote! { .set(margin(), Borders::left(5.)) }
+                        quote! { .set(margin(), vec4(0., 0., 0., 5.)) }
                     } else {
                         quote! {}
                     };
                     match item {
                         Inline::Text(text) => quote! { Text::el(#text)#margin },
                         Inline::Field(field) => {
-                            let field_editor = fields.get(&field).unwrap_or_else(|| panic!("No such field: {field:?}")).clone();
+                            let field_editor = fields
+                                .get(&field)
+                                .unwrap_or_else(|| panic!("No such field: {field:?}"))
+                                .clone();
                             quote! { #field_editor #margin }
                         }
                     }
@@ -432,14 +587,18 @@ fn fields_editor(
         } else {
             quote! {
                 FlowColumn(vec![
-                    #(#rows .set(fit_horizontal(), Fit::Parent)),*
+                    #(#rows .set(fit_horizontal_parent(), ())),*
                 ]).el()
-                    .set(fit_horizontal(), Fit::Parent)
+                    .set(fit_horizontal_parent(), ())
             }
         }
     } else {
         let field_editors = field_editors.map(|(field_text_name, editor)| {
-            let field_text_name = if unnamed { "".to_string() } else { field_text_name };
+            let field_text_name = if unnamed {
+                "".to_string()
+            } else {
+                field_text_name
+            };
             quote! {
                 EditorRow::el(#field_text_name, #editor),
             }
@@ -454,9 +613,17 @@ fn fields_editor(
 
 fn type_with_colon(ty: &Type) -> Type {
     let mut ty = ty.clone();
-    if let Type::Path(TypePath { path: Path { segments, .. }, .. }) = &mut ty {
+    if let Type::Path(TypePath {
+        path: Path { segments, .. },
+        ..
+    }) = &mut ty
+    {
         if let Some(first) = segments.first_mut() {
-            if let PathArguments::AngleBracketed(AngleBracketedGenericArguments { colon2_token, .. }) = &mut first.arguments {
+            if let PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                colon2_token,
+                ..
+            }) = &mut first.arguments
+            {
                 *colon2_token = Some(Token![::](Span::call_site()));
             }
         }

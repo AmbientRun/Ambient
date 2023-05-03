@@ -16,6 +16,7 @@ let samples = [
     ["guest/rust/examples/basics/first_person_camera", 60],
     ["guest/rust/examples/basics/third_person_camera", 60],
     ["guest/rust/examples/games/tictactoe", 30],
+    ["guest/rust/examples/ui/auto_editor", 60],
     ["guest/rust/examples/ui/button", 60],
     ["guest/rust/examples/ui/dock_layout", 60],
     ["guest/rust/examples/ui/editors", 60],
