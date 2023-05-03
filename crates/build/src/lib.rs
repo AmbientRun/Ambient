@@ -6,7 +6,7 @@ use std::{
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_physics::physx::{Physics, PhysicsKey};
 use ambient_project::Manifest as ProjectManifest;
-use ambient_std::asset_url::AbsAssetUrl;
+use ambient_std::{asset_url::AbsAssetUrl, path::path_to_unix_string};
 use anyhow::Context;
 use futures::FutureExt;
 use itertools::Itertools;
@@ -146,7 +146,7 @@ fn get_component_paths(target: &str, build_path: &Path) -> Vec<String> {
                 .filter_map(Result::ok)
                 .map(|p| p.path())
                 .filter(|p| p.extension().unwrap_or_default() == "wasm")
-                .map(|p| p.strip_prefix(build_path).unwrap().to_string_lossy().to_string())
+                .map(|p| path_to_unix_string(p.strip_prefix(build_path).unwrap()))
                 .collect()
         )
         .unwrap_or_default()
