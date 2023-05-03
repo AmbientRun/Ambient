@@ -10,25 +10,26 @@ fn test_base(body: TokenStream) -> TokenStream {
         #[derive(Clone, Debug)]
         pub struct TestEditor {
             pub value: Test,
-            pub on_change: Option<ambient_ui_native::Cb<dyn Fn(Test) + ::std::marker::Sync + ::std::marker::Send>>,
-            pub opts: ambient_ui_native::EditorOpts,
+            pub on_change: Option<ambient_ui_native::cb::Cb<dyn Fn(Test) + ::std::marker::Sync + ::std::marker::Send>>,
+            pub opts: ambient_ui_native::ui::editor::EditorOpts,
         }
         #[automatically_derived]
         impl ambient_ui_native::element::ElementComponent for TestEditor {
             fn render(self: Box<Self>, hooks: &mut ambient_ui_native::element::Hooks) -> ambient_ui_native::element::Element {
                 use ambient_ui_native::element::{Element, ElementComponentExt};
-                use ambient_ui_native::{Editor, EditorRow, EditorColumn, Slider, IntegerSlider, ListSelect, DropdownSelect, FlowRow, FlowColumn, Text, layout::{margin, Borders, fit_horizontal, Fit}};
+                use ambient_ui_native::ui::{editor::{Editor, EditorRow, EditorColumn, Slider, IntegerSlider}, select::{ListSelect, DropdownSelect}, layout::{FlowRow, FlowColumn}, text::Text};
+                use ambient_ui_native::layout::{margin, fit_horizontal_parent};
                 let Self { value, on_change, opts } = *self;
                 #body
             }
         }
 
-        impl ambient_ui_native::Editor for Test {
-            fn editor(self, on_change: ambient_ui_native::ChangeCb<Self>, opts: ambient_ui_native::EditorOpts) -> ambient_ui_native::element::Element {
+        impl ambient_ui_native::ui::editor::Editor for Test {
+            fn editor(self, on_change: ambient_ui_native::ui::editor::ChangeCb<Self>, opts: ambient_ui_native::ui::editor::EditorOpts) -> ambient_ui_native::element::Element {
                 TestEditor { value: self, on_change: Some(on_change), opts }.into()
             }
 
-            fn view(self, opts: ambient_ui_native::EditorOpts) -> ambient_ui_native::element::Element {
+            fn view(self, opts: ambient_ui_native::ui::editor::EditorOpts) -> ambient_ui_native::element::Element {
                 TestEditor { value: self, on_change: None, opts }.into()
             }
         }
@@ -53,8 +54,8 @@ fn test_struct() {
 
                 EditorRow::el(
                     "my_f32_field",
-                    <f32 as ambient_ui_native::Editor>::edit_or_view(my_f32_field.clone(), on_change.clone().map(|on_change| -> ambient_ui_native::Cb<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send> {
-                        ambient_ui_native::cb({
+                    <f32 as ambient_ui_native::ui::editor::Editor>::edit_or_view(my_f32_field.clone(), on_change.clone().map(|on_change| -> ambient_ui_native::cb::Cb<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send> {
+                        ambient_ui_native::cb::cb({
                             let my_option = my_option.clone();
                             move |v| {
                                 on_change.0(Test { my_f32_field: v, my_option: my_option.clone() });
@@ -65,8 +66,8 @@ fn test_struct() {
 
                 EditorRow::el(
                     "my_option",
-                    <Option::<bool> as ambient_ui_native::Editor>::edit_or_view(my_option.clone(), on_change.clone().map(|on_change| -> ambient_ui_native::Cb<dyn Fn(Option<bool>) + ::std::marker::Sync + ::std::marker::Send> {
-                        ambient_ui_native::cb({
+                    <Option::<bool> as ambient_ui_native::ui::editor::Editor>::edit_or_view(my_option.clone(), on_change.clone().map(|on_change| -> ambient_ui_native::cb::Cb<dyn Fn(Option<bool>) + ::std::marker::Sync + ::std::marker::Send> {
+                        ambient_ui_native::cb::cb({
                             let my_f32_field = my_f32_field.clone();
                             move |v| {
                                 on_change.0(Test { my_f32_field: my_f32_field.clone(), my_option: v });
@@ -107,7 +108,7 @@ fn test_enum() {
                             Test::Second { .. } => 1usize,
                             Test::Third(_) => 2usize,
                         },
-                        on_change: ambient_ui_native::cb(
+                        on_change: ambient_ui_native::cb::cb(
                             move |index| on_change.0(create_variant(index))
                         ),
                         items: vec![
@@ -130,8 +131,8 @@ fn test_enum() {
 
                     EditorRow::el(
                         "testy",
-                        <f32 as ambient_ui_native::Editor>::edit_or_view(testy.clone(), on_change.clone().map(|on_change| -> ambient_ui_native::Cb<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send> {
-                            ambient_ui_native::cb({
+                        <f32 as ambient_ui_native::ui::editor::Editor>::edit_or_view(testy.clone(), on_change.clone().map(|on_change| -> ambient_ui_native::cb::Cb<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send> {
+                            ambient_ui_native::cb::cb({
                                 move |v| {
                                     on_change.0(Test::Second { testy: v });
                                 }
@@ -145,8 +146,8 @@ fn test_enum() {
 
                     EditorRow::el(
                         "",
-                        <f32 as ambient_ui_native::Editor>::edit_or_view(field_0.clone(), on_change.clone().map(|on_change| -> ambient_ui_native::Cb<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send> {
-                            ambient_ui_native::cb({
+                        <f32 as ambient_ui_native::ui::editor::Editor>::edit_or_view(field_0.clone(), on_change.clone().map(|on_change| -> ambient_ui_native::cb::Cb<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send> {
+                            ambient_ui_native::cb::cb({
                                 move |v| {
                                     on_change.0(Test::Third(v));
                                 }
@@ -212,22 +213,22 @@ fn test_enum_inline() {
                 Test::First { testy } => FlowRow(vec![
 
                     Text::el("Hello "),
-                    <f32 as ambient_ui_native::Editor>::edit_or_view(testy.clone(), on_change.clone().map(|on_change| -> ambient_ui_native::Cb<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send> {
-                        ambient_ui_native::cb({
+                    <f32 as ambient_ui_native::ui::editor::Editor>::edit_or_view(testy.clone(), on_change.clone().map(|on_change| -> ambient_ui_native::cb::Cb<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send> {
+                        ambient_ui_native::cb::cb({
                             move |v| {
                                 on_change.0(Test::First { testy: v });
                             }
                         })
                     }), Default::default())
-                    .set(margin(), Borders::left(5.))
+                    .set(margin(), vec4(0., 0., 0., 5.))
 
                 ]).el(),
             };
             if opts.enum_can_change_type {
                 if let Some(on_change) = on_change {
-                    ambient_ui_native::DropdownSelect {
+                    DropdownSelect {
                         content: field_editors,
-                        on_select: ambient_ui_native::cb(
+                        on_select: ambient_ui_native::cb::cb(
                             move |index| on_change.0(create_variant(index))
                         ),
                         items: vec![
@@ -264,8 +265,8 @@ fn test_custom_editor() {
 
                 EditorRow::el(
                     "my_f32_field",
-                    test_editor(my_f32_field.clone(), on_change.clone().map(|on_change| -> ambient_ui_native::Cb<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send> {
-                        ambient_ui_native::cb({
+                    test_editor(my_f32_field.clone(), on_change.clone().map(|on_change| -> ambient_ui_native::cb::Cb<dyn Fn(f32) + ::std::marker::Sync + ::std::marker::Send> {
+                        ambient_ui_native::cb::cb({
                             move |v| {
                                 on_change.0(Test { my_f32_field: v });
                             }
