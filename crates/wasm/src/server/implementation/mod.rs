@@ -41,7 +41,6 @@ impl wit::entity::Host for Bindings {
         )
     }
 
-
     fn set_animation_blend(
         &mut self,
         entity: wit::types::EntityId,
@@ -56,17 +55,6 @@ impl wit::entity::Host for Bindings {
             &times,
             absolute_time,
         )
-    }
-
-    fn has_animation_clip(&mut self, clip_url: String) -> anyhow::Result<bool> {
-        shared::implementation::entity::has_animation_clip(self.world_mut(), &clip_url)
-    }
-
-    fn get_animation_clips(
-        &mut self,
-        clip_urls: Vec<String>,
-    ) -> anyhow::Result<Vec<wit::entity::AnimationClip>> {
-        shared::implementation::entity::get_animation_clips(self.world_mut(), &clip_urls)
     }
 
     fn exists(&mut self, entity: wit::types::EntityId) -> anyhow::Result<bool> {
@@ -201,5 +189,19 @@ impl wit::player::Host for Bindings {
 impl wit::asset::Host for Bindings {
     fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
         Ok(Some(AbsAssetUrl::from_asset_key(path).to_string()))
+    }
+
+    fn get_animation_asset_status(
+        &mut self,
+        clip_url: String,
+    ) -> anyhow::Result<wit::asset::AssetCacheStatus> {
+        shared::implementation::asset::get_animation_asset_status(self.world_mut(), &clip_url)
+    }
+
+    fn get_animation_asset_metadata(
+        &mut self,
+        clip_urls: Vec<String>,
+    ) -> anyhow::Result<Vec<wit::asset::AnimationAssetMetadata>> {
+        shared::implementation::asset::get_animation_asset_metadata(self.world_mut(), &clip_urls)
     }
 }

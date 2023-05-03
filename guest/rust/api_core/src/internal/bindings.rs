@@ -138,6 +138,46 @@ pub mod asset{
   #[cfg(target_arch = "wasm32")]
   static __FORCE_SECTION_REF: fn() = super::__link_section;
   
+  /// Cache status of an asset
+  #[derive(Clone)]
+  pub enum AssetCacheStatus{
+    /// Ready to be used
+    Ready,
+    /// Not yet loaded
+    NotLoaded,
+    /// Asset has an error
+    FailedLoading(wit_bindgen::rt::string::String),
+  }
+  impl core::fmt::Debug for AssetCacheStatus {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+      match self {
+        AssetCacheStatus::Ready => {
+          f.debug_tuple("AssetCacheStatus::Ready").finish()
+        }
+        AssetCacheStatus::NotLoaded => {
+          f.debug_tuple("AssetCacheStatus::NotLoaded").finish()
+        }
+        AssetCacheStatus::FailedLoading(e) => {
+          f.debug_tuple("AssetCacheStatus::FailedLoading").field(e).finish()
+        }
+      }
+    }
+  }
+  /// Animation asset metdata
+  #[derive(Clone)]
+  pub struct AnimationAssetMetadata {
+    /// BinderId for the animation tracks
+    pub binders: wit_bindgen::rt::vec::Vec::<wit_bindgen::rt::string::String>,
+    /// Duration in seconds
+    pub duration: f32,
+    /// Cache status of an animation asset
+    pub status: AssetCacheStatus,
+  }
+  impl core::fmt::Debug for AnimationAssetMetadata {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+      f.debug_struct("AnimationAssetMetadata").field("binders", &self.binders).field("duration", &self.duration).field("status", &self.status).finish()
+    }
+  }
   #[allow(clippy::all)]
   pub fn url(path: &str,) -> Option<wit_bindgen::rt::string::String>{
     
@@ -174,314 +214,47 @@ pub mod asset{
       }
     }
   }
-  
-}
-
-
-#[allow(clippy::all)]
-pub mod component{
-  #[used]
-  #[doc(hidden)]
-  #[cfg(target_arch = "wasm32")]
-  static __FORCE_SECTION_REF: fn() = super::__link_section;
-  
-  pub type EntityId = super::types::EntityId;
-  pub type Mat4 = super::types::Mat4;
-  pub type Quat = super::types::Quat;
-  pub type Vec2 = super::types::Vec2;
-  pub type Vec3 = super::types::Vec3;
-  pub type Vec4 = super::types::Vec4;
-  pub type Uvec2 = super::types::Uvec2;
-  pub type Uvec3 = super::types::Uvec3;
-  pub type Uvec4 = super::types::Uvec4;
-  #[repr(u8)]
-  #[derive(Clone, Copy, PartialEq, Eq)]
-  pub enum QueryEvent {
-    Frame,
-    Spawn,
-    Despawn,
-  }
-  impl core::fmt::Debug for QueryEvent {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-      match self {
-        QueryEvent::Frame => {
-          f.debug_tuple("QueryEvent::Frame").finish()
-        }
-        QueryEvent::Spawn => {
-          f.debug_tuple("QueryEvent::Spawn").finish()
-        }
-        QueryEvent::Despawn => {
-          f.debug_tuple("QueryEvent::Despawn").finish()
-        }
-      }
-    }
-  }
-  #[derive(Clone)]
-  pub struct QueryBuild<'a,> {
-    pub components: &'a [u32],
-    pub include: &'a [u32],
-    pub exclude: &'a [u32],
-    pub changed: &'a [u32],
-  }
-  impl<'a,> core::fmt::Debug for QueryBuild<'a,> {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-      f.debug_struct("QueryBuild").field("components", &self.components).field("include", &self.include).field("exclude", &self.exclude).field("changed", &self.changed).finish()
-    }
-  }
-  #[derive(Clone)]
-  pub enum VecValue{
-    TypeEmpty(wit_bindgen::rt::vec::Vec::<()>),
-    TypeBool(wit_bindgen::rt::vec::Vec::<bool>),
-    TypeEntityId(wit_bindgen::rt::vec::Vec::<EntityId>),
-    TypeF32(wit_bindgen::rt::vec::Vec::<f32>),
-    TypeF64(wit_bindgen::rt::vec::Vec::<f64>),
-    TypeMat4(wit_bindgen::rt::vec::Vec::<Mat4>),
-    TypeI32(wit_bindgen::rt::vec::Vec::<i32>),
-    TypeQuat(wit_bindgen::rt::vec::Vec::<Quat>),
-    TypeString(wit_bindgen::rt::vec::Vec::<wit_bindgen::rt::string::String>),
-    TypeU8(wit_bindgen::rt::vec::Vec::<u8>),
-    TypeU32(wit_bindgen::rt::vec::Vec::<u32>),
-    TypeU64(wit_bindgen::rt::vec::Vec::<u64>),
-    TypeVec2(wit_bindgen::rt::vec::Vec::<Vec2>),
-    TypeVec3(wit_bindgen::rt::vec::Vec::<Vec3>),
-    TypeVec4(wit_bindgen::rt::vec::Vec::<Vec4>),
-    TypeUvec2(wit_bindgen::rt::vec::Vec::<Uvec2>),
-    TypeUvec3(wit_bindgen::rt::vec::Vec::<Uvec3>),
-    TypeUvec4(wit_bindgen::rt::vec::Vec::<Uvec4>),
-  }
-  impl core::fmt::Debug for VecValue {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-      match self {
-        VecValue::TypeEmpty(e) => {
-          f.debug_tuple("VecValue::TypeEmpty").field(e).finish()
-        }
-        VecValue::TypeBool(e) => {
-          f.debug_tuple("VecValue::TypeBool").field(e).finish()
-        }
-        VecValue::TypeEntityId(e) => {
-          f.debug_tuple("VecValue::TypeEntityId").field(e).finish()
-        }
-        VecValue::TypeF32(e) => {
-          f.debug_tuple("VecValue::TypeF32").field(e).finish()
-        }
-        VecValue::TypeF64(e) => {
-          f.debug_tuple("VecValue::TypeF64").field(e).finish()
-        }
-        VecValue::TypeMat4(e) => {
-          f.debug_tuple("VecValue::TypeMat4").field(e).finish()
-        }
-        VecValue::TypeI32(e) => {
-          f.debug_tuple("VecValue::TypeI32").field(e).finish()
-        }
-        VecValue::TypeQuat(e) => {
-          f.debug_tuple("VecValue::TypeQuat").field(e).finish()
-        }
-        VecValue::TypeString(e) => {
-          f.debug_tuple("VecValue::TypeString").field(e).finish()
-        }
-        VecValue::TypeU8(e) => {
-          f.debug_tuple("VecValue::TypeU8").field(e).finish()
-        }
-        VecValue::TypeU32(e) => {
-          f.debug_tuple("VecValue::TypeU32").field(e).finish()
-        }
-        VecValue::TypeU64(e) => {
-          f.debug_tuple("VecValue::TypeU64").field(e).finish()
-        }
-        VecValue::TypeVec2(e) => {
-          f.debug_tuple("VecValue::TypeVec2").field(e).finish()
-        }
-        VecValue::TypeVec3(e) => {
-          f.debug_tuple("VecValue::TypeVec3").field(e).finish()
-        }
-        VecValue::TypeVec4(e) => {
-          f.debug_tuple("VecValue::TypeVec4").field(e).finish()
-        }
-        VecValue::TypeUvec2(e) => {
-          f.debug_tuple("VecValue::TypeUvec2").field(e).finish()
-        }
-        VecValue::TypeUvec3(e) => {
-          f.debug_tuple("VecValue::TypeUvec3").field(e).finish()
-        }
-        VecValue::TypeUvec4(e) => {
-          f.debug_tuple("VecValue::TypeUvec4").field(e).finish()
-        }
-      }
-    }
-  }
-  #[derive(Clone)]
-  pub enum OptionValue{
-    TypeEmpty(Option<()>),
-    TypeBool(Option<bool>),
-    TypeEntityId(Option<EntityId>),
-    TypeF32(Option<f32>),
-    TypeF64(Option<f64>),
-    TypeMat4(Option<Mat4>),
-    TypeI32(Option<i32>),
-    TypeQuat(Option<Quat>),
-    TypeString(Option<wit_bindgen::rt::string::String>),
-    TypeU8(Option<u8>),
-    TypeU32(Option<u32>),
-    TypeU64(Option<u64>),
-    TypeVec2(Option<Vec2>),
-    TypeVec3(Option<Vec3>),
-    TypeVec4(Option<Vec4>),
-    TypeUvec2(Option<Uvec2>),
-    TypeUvec3(Option<Uvec3>),
-    TypeUvec4(Option<Uvec4>),
-  }
-  impl core::fmt::Debug for OptionValue {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-      match self {
-        OptionValue::TypeEmpty(e) => {
-          f.debug_tuple("OptionValue::TypeEmpty").field(e).finish()
-        }
-        OptionValue::TypeBool(e) => {
-          f.debug_tuple("OptionValue::TypeBool").field(e).finish()
-        }
-        OptionValue::TypeEntityId(e) => {
-          f.debug_tuple("OptionValue::TypeEntityId").field(e).finish()
-        }
-        OptionValue::TypeF32(e) => {
-          f.debug_tuple("OptionValue::TypeF32").field(e).finish()
-        }
-        OptionValue::TypeF64(e) => {
-          f.debug_tuple("OptionValue::TypeF64").field(e).finish()
-        }
-        OptionValue::TypeMat4(e) => {
-          f.debug_tuple("OptionValue::TypeMat4").field(e).finish()
-        }
-        OptionValue::TypeI32(e) => {
-          f.debug_tuple("OptionValue::TypeI32").field(e).finish()
-        }
-        OptionValue::TypeQuat(e) => {
-          f.debug_tuple("OptionValue::TypeQuat").field(e).finish()
-        }
-        OptionValue::TypeString(e) => {
-          f.debug_tuple("OptionValue::TypeString").field(e).finish()
-        }
-        OptionValue::TypeU8(e) => {
-          f.debug_tuple("OptionValue::TypeU8").field(e).finish()
-        }
-        OptionValue::TypeU32(e) => {
-          f.debug_tuple("OptionValue::TypeU32").field(e).finish()
-        }
-        OptionValue::TypeU64(e) => {
-          f.debug_tuple("OptionValue::TypeU64").field(e).finish()
-        }
-        OptionValue::TypeVec2(e) => {
-          f.debug_tuple("OptionValue::TypeVec2").field(e).finish()
-        }
-        OptionValue::TypeVec3(e) => {
-          f.debug_tuple("OptionValue::TypeVec3").field(e).finish()
-        }
-        OptionValue::TypeVec4(e) => {
-          f.debug_tuple("OptionValue::TypeVec4").field(e).finish()
-        }
-        OptionValue::TypeUvec2(e) => {
-          f.debug_tuple("OptionValue::TypeUvec2").field(e).finish()
-        }
-        OptionValue::TypeUvec3(e) => {
-          f.debug_tuple("OptionValue::TypeUvec3").field(e).finish()
-        }
-        OptionValue::TypeUvec4(e) => {
-          f.debug_tuple("OptionValue::TypeUvec4").field(e).finish()
-        }
-      }
-    }
-  }
-  #[derive(Clone)]
-  pub enum Value{
-    TypeEmpty(()),
-    TypeBool(bool),
-    TypeEntityId(EntityId),
-    TypeF32(f32),
-    TypeF64(f64),
-    TypeMat4(Mat4),
-    TypeI32(i32),
-    TypeQuat(Quat),
-    TypeString(wit_bindgen::rt::string::String),
-    TypeU8(u8),
-    TypeU32(u32),
-    TypeU64(u64),
-    TypeVec2(Vec2),
-    TypeVec3(Vec3),
-    TypeVec4(Vec4),
-    TypeUvec2(Uvec2),
-    TypeUvec3(Uvec3),
-    TypeUvec4(Uvec4),
-    TypeVec(VecValue),
-    TypeOption(OptionValue),
-  }
-  impl core::fmt::Debug for Value {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-      match self {
-        Value::TypeEmpty(e) => {
-          f.debug_tuple("Value::TypeEmpty").field(e).finish()
-        }
-        Value::TypeBool(e) => {
-          f.debug_tuple("Value::TypeBool").field(e).finish()
-        }
-        Value::TypeEntityId(e) => {
-          f.debug_tuple("Value::TypeEntityId").field(e).finish()
-        }
-        Value::TypeF32(e) => {
-          f.debug_tuple("Value::TypeF32").field(e).finish()
-        }
-        Value::TypeF64(e) => {
-          f.debug_tuple("Value::TypeF64").field(e).finish()
-        }
-        Value::TypeMat4(e) => {
-          f.debug_tuple("Value::TypeMat4").field(e).finish()
-        }
-        Value::TypeI32(e) => {
-          f.debug_tuple("Value::TypeI32").field(e).finish()
-        }
-        Value::TypeQuat(e) => {
-          f.debug_tuple("Value::TypeQuat").field(e).finish()
-        }
-        Value::TypeString(e) => {
-          f.debug_tuple("Value::TypeString").field(e).finish()
-        }
-        Value::TypeU8(e) => {
-          f.debug_tuple("Value::TypeU8").field(e).finish()
-        }
-        Value::TypeU32(e) => {
-          f.debug_tuple("Value::TypeU32").field(e).finish()
-        }
-        Value::TypeU64(e) => {
-          f.debug_tuple("Value::TypeU64").field(e).finish()
-        }
-        Value::TypeVec2(e) => {
-          f.debug_tuple("Value::TypeVec2").field(e).finish()
-        }
-        Value::TypeVec3(e) => {
-          f.debug_tuple("Value::TypeVec3").field(e).finish()
-        }
-        Value::TypeVec4(e) => {
-          f.debug_tuple("Value::TypeVec4").field(e).finish()
-        }
-        Value::TypeUvec2(e) => {
-          f.debug_tuple("Value::TypeUvec2").field(e).finish()
-        }
-        Value::TypeUvec3(e) => {
-          f.debug_tuple("Value::TypeUvec3").field(e).finish()
-        }
-        Value::TypeUvec4(e) => {
-          f.debug_tuple("Value::TypeUvec4").field(e).finish()
-        }
-        Value::TypeVec(e) => {
-          f.debug_tuple("Value::TypeVec").field(e).finish()
-        }
-        Value::TypeOption(e) => {
-          f.debug_tuple("Value::TypeOption").field(e).finish()
-        }
-      }
-    }
-  }
-  pub type Entity<'a,> = &'a [(u32,&'a Value,)];
   #[allow(clippy::all)]
-  pub fn get_index(id: &str,) -> Option<u32>{
+  pub fn get_animation_asset_status(clip_url: &str,) -> AssetCacheStatus{
+    
+    #[allow(unused_imports)]
+    use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+    unsafe {
+      
+      #[repr(align(4))]
+      struct RetArea([u8; 12]);
+      let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+      let vec0 = clip_url;
+      let ptr0 = vec0.as_ptr() as i32;
+      let len0 = vec0.len() as i32;
+      let ptr1 = ret_area.as_mut_ptr() as i32;
+      #[link(wasm_import_module = "asset")]
+      extern "C" {
+        #[cfg_attr(target_arch = "wasm32", link_name = "get-animation-asset-status")]
+        #[cfg_attr(not(target_arch = "wasm32"), link_name = "asset_get-animation-asset-status")]
+        fn wit_import(
+        _: i32, _: i32, _: i32, );
+      }
+      wit_import(ptr0, len0, ptr1);
+      {{match i32::from(*((ptr1 + 0) as *const u8)) {
+        0 => AssetCacheStatus::Ready,
+        1 => AssetCacheStatus::NotLoaded,
+        #[cfg(debug_assertions)]2 => AssetCacheStatus::FailedLoading({
+          let len2 = *((ptr1 + 8) as *const i32) as usize;
+          
+          {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr1 + 4) as *const i32) as *mut _, len2, len2))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr1 + 4) as *const i32) as *mut _, len2, len2)).unwrap()}}
+        }),
+        #[cfg(not(debug_assertions))]_ => AssetCacheStatus::FailedLoading({
+          let len2 = *((ptr1 + 8) as *const i32) as usize;
+          
+          {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr1 + 4) as *const i32) as *mut _, len2, len2))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr1 + 4) as *const i32) as *mut _, len2, len2)).unwrap()}}
+        }),
+        #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
+      }}}
+    }
+  }
+  #[allow(clippy::all)]
+  pub fn get_animation_asset_metadata(clips: &[&str],) -> wit_bindgen::rt::vec::Vec::<AnimationAssetMetadata>{
     
     #[allow(unused_imports)]
     use wit_bindgen::rt::{alloc, vec::Vec, string::String};
@@ -490,2195 +263,1857 @@ pub mod component{
       #[repr(align(4))]
       struct RetArea([u8; 8]);
       let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-      let vec0 = id;
-      let ptr0 = vec0.as_ptr() as i32;
-      let len0 = vec0.len() as i32;
-      let ptr1 = ret_area.as_mut_ptr() as i32;
-      #[link(wasm_import_module = "component")]
-      extern "C" {
-        #[cfg_attr(target_arch = "wasm32", link_name = "get-index")]
-        #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_get-index")]
-        fn wit_import(
-        _: i32, _: i32, _: i32, );
-      }
-      wit_import(ptr0, len0, ptr1);
-      match i32::from(*((ptr1 + 0) as *const u8)) {
-        0 => None,
-        1 => Some(*((ptr1 + 4) as *const i32) as u32),
-        #[cfg(not(debug_assertions))]
-        _ => core::hint::unreachable_unchecked(),
-        #[cfg(debug_assertions)]
-        _ => panic!("invalid enum discriminant"),
+      let vec1 = clips;
+      let len1 = vec1.len() as i32;
+      let layout1 = alloc::Layout::from_size_align_unchecked(vec1.len() * 8, 4);
+      let result1 = if layout1.size() != 0
+      {
+        let ptr = alloc::alloc(layout1);
+        if ptr.is_null()
+        {
+          alloc::handle_alloc_error(layout1);
+        }
+        ptr
+      }else {
+        core::ptr::null_mut()
+      };
+      for (i, e) in vec1.into_iter().enumerate() {
+        let base = result1 as i32 + (i as i32) * 8;
+        {
+          let vec0 = e;
+          let ptr0 = vec0.as_ptr() as i32;
+          let len0 = vec0.len() as i32;
+          *((base + 4) as *mut i32) = len0;
+          *((base + 0) as *mut i32) = ptr0;
+          
+        }}
+        let ptr2 = ret_area.as_mut_ptr() as i32;
+        #[link(wasm_import_module = "asset")]
+        extern "C" {
+          #[cfg_attr(target_arch = "wasm32", link_name = "get-animation-asset-metadata")]
+          #[cfg_attr(not(target_arch = "wasm32"), link_name = "asset_get-animation-asset-metadata")]
+          fn wit_import(
+          _: i32, _: i32, _: i32, );
+        }
+        wit_import(result1 as i32, len1, ptr2);
+        let base6 = *((ptr2 + 0) as *const i32);
+        let len6 = *((ptr2 + 4) as *const i32);
+        let mut result6 = Vec::with_capacity(len6 as usize);
+        for i in 0..len6 {
+          let base = base6 + i *24;
+          result6.push({
+            let base4 = *((base + 0) as *const i32);
+            let len4 = *((base + 4) as *const i32);
+            let mut result4 = Vec::with_capacity(len4 as usize);
+            for i in 0..len4 {
+              let base = base4 + i *8;
+              result4.push({
+                let len3 = *((base + 4) as *const i32) as usize;
+                
+                {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 0) as *const i32) as *mut _, len3, len3))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 0) as *const i32) as *mut _, len3, len3)).unwrap()}}
+              });
+            }
+            wit_bindgen::rt::dealloc(base4, (len4 as usize) * 8, 4);
+            
+            AnimationAssetMetadata{binders:result4, duration:*((base + 8) as *const f32), status:{{match i32::from(*((base + 12) as *const u8)) {
+              0 => AssetCacheStatus::Ready,
+              1 => AssetCacheStatus::NotLoaded,
+              #[cfg(debug_assertions)]2 => AssetCacheStatus::FailedLoading({
+                let len5 = *((base + 20) as *const i32) as usize;
+                
+                {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 16) as *const i32) as *mut _, len5, len5))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 16) as *const i32) as *mut _, len5, len5)).unwrap()}}
+              }),
+              #[cfg(not(debug_assertions))]_ => AssetCacheStatus::FailedLoading({
+                let len5 = *((base + 20) as *const i32) as usize;
+                
+                {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 16) as *const i32) as *mut _, len5, len5))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 16) as *const i32) as *mut _, len5, len5)).unwrap()}}
+              }),
+              #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
+            }}}, }
+          });
+        }
+        wit_bindgen::rt::dealloc(base6, (len6 as usize) * 24, 4);
+        if layout1.size() != 0 {
+          alloc::dealloc(result1, layout1);
+        }
+        result6
       }
     }
-  }
-  #[allow(clippy::all)]
-  pub fn get_component(entity: EntityId,index: u32,) -> Option<Value>{
     
-    #[allow(unused_imports)]
-    use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-    unsafe {
-      
-      #[repr(align(8))]
-      struct RetArea([u8; 96]);
-      let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-      let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-      let ptr1 = ret_area.as_mut_ptr() as i32;
-      #[link(wasm_import_module = "component")]
-      extern "C" {
-        #[cfg_attr(target_arch = "wasm32", link_name = "get-component")]
-        #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_get-component")]
-        fn wit_import(
-        _: i64, _: i64, _: i32, _: i32, );
+  }
+  
+  
+  #[allow(clippy::all)]
+  pub mod component{
+    #[used]
+    #[doc(hidden)]
+    #[cfg(target_arch = "wasm32")]
+    static __FORCE_SECTION_REF: fn() = super::__link_section;
+    
+    pub type EntityId = super::types::EntityId;
+    pub type Mat4 = super::types::Mat4;
+    pub type Quat = super::types::Quat;
+    pub type Vec2 = super::types::Vec2;
+    pub type Vec3 = super::types::Vec3;
+    pub type Vec4 = super::types::Vec4;
+    pub type Uvec2 = super::types::Uvec2;
+    pub type Uvec3 = super::types::Uvec3;
+    pub type Uvec4 = super::types::Uvec4;
+    #[repr(u8)]
+    #[derive(Clone, Copy, PartialEq, Eq)]
+    pub enum QueryEvent {
+      Frame,
+      Spawn,
+      Despawn,
+    }
+    impl core::fmt::Debug for QueryEvent {
+      fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+          QueryEvent::Frame => {
+            f.debug_tuple("QueryEvent::Frame").finish()
+          }
+          QueryEvent::Spawn => {
+            f.debug_tuple("QueryEvent::Spawn").finish()
+          }
+          QueryEvent::Despawn => {
+            f.debug_tuple("QueryEvent::Despawn").finish()
+          }
+        }
       }
-      wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_i32(index), ptr1);
-      match i32::from(*((ptr1 + 0) as *const u8)) {
-        0 => None,
-        1 => Some({{match i32::from(*((ptr1 + 8) as *const u8)) {
-          0 => Value::TypeEmpty(()),
-          1 => Value::TypeBool({
-            #[cfg(not(debug_assertions))]
-            { core::mem::transmute::<u8, bool>(i32::from(*((ptr1 + 16) as *const u8)) as u8) }
-            #[cfg(debug_assertions)]
-            {
-              match i32::from(*((ptr1 + 16) as *const u8)) {
-                0 => false,
-                1 => true,
-                _ => panic!("invalid bool discriminant"),
+    }
+    #[derive(Clone)]
+    pub struct QueryBuild<'a,> {
+      pub components: &'a [u32],
+      pub include: &'a [u32],
+      pub exclude: &'a [u32],
+      pub changed: &'a [u32],
+    }
+    impl<'a,> core::fmt::Debug for QueryBuild<'a,> {
+      fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("QueryBuild").field("components", &self.components).field("include", &self.include).field("exclude", &self.exclude).field("changed", &self.changed).finish()
+      }
+    }
+    #[derive(Clone)]
+    pub enum VecValue{
+      TypeEmpty(wit_bindgen::rt::vec::Vec::<()>),
+      TypeBool(wit_bindgen::rt::vec::Vec::<bool>),
+      TypeEntityId(wit_bindgen::rt::vec::Vec::<EntityId>),
+      TypeF32(wit_bindgen::rt::vec::Vec::<f32>),
+      TypeF64(wit_bindgen::rt::vec::Vec::<f64>),
+      TypeMat4(wit_bindgen::rt::vec::Vec::<Mat4>),
+      TypeI32(wit_bindgen::rt::vec::Vec::<i32>),
+      TypeQuat(wit_bindgen::rt::vec::Vec::<Quat>),
+      TypeString(wit_bindgen::rt::vec::Vec::<wit_bindgen::rt::string::String>),
+      TypeU8(wit_bindgen::rt::vec::Vec::<u8>),
+      TypeU32(wit_bindgen::rt::vec::Vec::<u32>),
+      TypeU64(wit_bindgen::rt::vec::Vec::<u64>),
+      TypeVec2(wit_bindgen::rt::vec::Vec::<Vec2>),
+      TypeVec3(wit_bindgen::rt::vec::Vec::<Vec3>),
+      TypeVec4(wit_bindgen::rt::vec::Vec::<Vec4>),
+      TypeUvec2(wit_bindgen::rt::vec::Vec::<Uvec2>),
+      TypeUvec3(wit_bindgen::rt::vec::Vec::<Uvec3>),
+      TypeUvec4(wit_bindgen::rt::vec::Vec::<Uvec4>),
+    }
+    impl core::fmt::Debug for VecValue {
+      fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+          VecValue::TypeEmpty(e) => {
+            f.debug_tuple("VecValue::TypeEmpty").field(e).finish()
+          }
+          VecValue::TypeBool(e) => {
+            f.debug_tuple("VecValue::TypeBool").field(e).finish()
+          }
+          VecValue::TypeEntityId(e) => {
+            f.debug_tuple("VecValue::TypeEntityId").field(e).finish()
+          }
+          VecValue::TypeF32(e) => {
+            f.debug_tuple("VecValue::TypeF32").field(e).finish()
+          }
+          VecValue::TypeF64(e) => {
+            f.debug_tuple("VecValue::TypeF64").field(e).finish()
+          }
+          VecValue::TypeMat4(e) => {
+            f.debug_tuple("VecValue::TypeMat4").field(e).finish()
+          }
+          VecValue::TypeI32(e) => {
+            f.debug_tuple("VecValue::TypeI32").field(e).finish()
+          }
+          VecValue::TypeQuat(e) => {
+            f.debug_tuple("VecValue::TypeQuat").field(e).finish()
+          }
+          VecValue::TypeString(e) => {
+            f.debug_tuple("VecValue::TypeString").field(e).finish()
+          }
+          VecValue::TypeU8(e) => {
+            f.debug_tuple("VecValue::TypeU8").field(e).finish()
+          }
+          VecValue::TypeU32(e) => {
+            f.debug_tuple("VecValue::TypeU32").field(e).finish()
+          }
+          VecValue::TypeU64(e) => {
+            f.debug_tuple("VecValue::TypeU64").field(e).finish()
+          }
+          VecValue::TypeVec2(e) => {
+            f.debug_tuple("VecValue::TypeVec2").field(e).finish()
+          }
+          VecValue::TypeVec3(e) => {
+            f.debug_tuple("VecValue::TypeVec3").field(e).finish()
+          }
+          VecValue::TypeVec4(e) => {
+            f.debug_tuple("VecValue::TypeVec4").field(e).finish()
+          }
+          VecValue::TypeUvec2(e) => {
+            f.debug_tuple("VecValue::TypeUvec2").field(e).finish()
+          }
+          VecValue::TypeUvec3(e) => {
+            f.debug_tuple("VecValue::TypeUvec3").field(e).finish()
+          }
+          VecValue::TypeUvec4(e) => {
+            f.debug_tuple("VecValue::TypeUvec4").field(e).finish()
+          }
+        }
+      }
+    }
+    #[derive(Clone)]
+    pub enum OptionValue{
+      TypeEmpty(Option<()>),
+      TypeBool(Option<bool>),
+      TypeEntityId(Option<EntityId>),
+      TypeF32(Option<f32>),
+      TypeF64(Option<f64>),
+      TypeMat4(Option<Mat4>),
+      TypeI32(Option<i32>),
+      TypeQuat(Option<Quat>),
+      TypeString(Option<wit_bindgen::rt::string::String>),
+      TypeU8(Option<u8>),
+      TypeU32(Option<u32>),
+      TypeU64(Option<u64>),
+      TypeVec2(Option<Vec2>),
+      TypeVec3(Option<Vec3>),
+      TypeVec4(Option<Vec4>),
+      TypeUvec2(Option<Uvec2>),
+      TypeUvec3(Option<Uvec3>),
+      TypeUvec4(Option<Uvec4>),
+    }
+    impl core::fmt::Debug for OptionValue {
+      fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+          OptionValue::TypeEmpty(e) => {
+            f.debug_tuple("OptionValue::TypeEmpty").field(e).finish()
+          }
+          OptionValue::TypeBool(e) => {
+            f.debug_tuple("OptionValue::TypeBool").field(e).finish()
+          }
+          OptionValue::TypeEntityId(e) => {
+            f.debug_tuple("OptionValue::TypeEntityId").field(e).finish()
+          }
+          OptionValue::TypeF32(e) => {
+            f.debug_tuple("OptionValue::TypeF32").field(e).finish()
+          }
+          OptionValue::TypeF64(e) => {
+            f.debug_tuple("OptionValue::TypeF64").field(e).finish()
+          }
+          OptionValue::TypeMat4(e) => {
+            f.debug_tuple("OptionValue::TypeMat4").field(e).finish()
+          }
+          OptionValue::TypeI32(e) => {
+            f.debug_tuple("OptionValue::TypeI32").field(e).finish()
+          }
+          OptionValue::TypeQuat(e) => {
+            f.debug_tuple("OptionValue::TypeQuat").field(e).finish()
+          }
+          OptionValue::TypeString(e) => {
+            f.debug_tuple("OptionValue::TypeString").field(e).finish()
+          }
+          OptionValue::TypeU8(e) => {
+            f.debug_tuple("OptionValue::TypeU8").field(e).finish()
+          }
+          OptionValue::TypeU32(e) => {
+            f.debug_tuple("OptionValue::TypeU32").field(e).finish()
+          }
+          OptionValue::TypeU64(e) => {
+            f.debug_tuple("OptionValue::TypeU64").field(e).finish()
+          }
+          OptionValue::TypeVec2(e) => {
+            f.debug_tuple("OptionValue::TypeVec2").field(e).finish()
+          }
+          OptionValue::TypeVec3(e) => {
+            f.debug_tuple("OptionValue::TypeVec3").field(e).finish()
+          }
+          OptionValue::TypeVec4(e) => {
+            f.debug_tuple("OptionValue::TypeVec4").field(e).finish()
+          }
+          OptionValue::TypeUvec2(e) => {
+            f.debug_tuple("OptionValue::TypeUvec2").field(e).finish()
+          }
+          OptionValue::TypeUvec3(e) => {
+            f.debug_tuple("OptionValue::TypeUvec3").field(e).finish()
+          }
+          OptionValue::TypeUvec4(e) => {
+            f.debug_tuple("OptionValue::TypeUvec4").field(e).finish()
+          }
+        }
+      }
+    }
+    #[derive(Clone)]
+    pub enum Value{
+      TypeEmpty(()),
+      TypeBool(bool),
+      TypeEntityId(EntityId),
+      TypeF32(f32),
+      TypeF64(f64),
+      TypeMat4(Mat4),
+      TypeI32(i32),
+      TypeQuat(Quat),
+      TypeString(wit_bindgen::rt::string::String),
+      TypeU8(u8),
+      TypeU32(u32),
+      TypeU64(u64),
+      TypeVec2(Vec2),
+      TypeVec3(Vec3),
+      TypeVec4(Vec4),
+      TypeUvec2(Uvec2),
+      TypeUvec3(Uvec3),
+      TypeUvec4(Uvec4),
+      TypeVec(VecValue),
+      TypeOption(OptionValue),
+    }
+    impl core::fmt::Debug for Value {
+      fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+          Value::TypeEmpty(e) => {
+            f.debug_tuple("Value::TypeEmpty").field(e).finish()
+          }
+          Value::TypeBool(e) => {
+            f.debug_tuple("Value::TypeBool").field(e).finish()
+          }
+          Value::TypeEntityId(e) => {
+            f.debug_tuple("Value::TypeEntityId").field(e).finish()
+          }
+          Value::TypeF32(e) => {
+            f.debug_tuple("Value::TypeF32").field(e).finish()
+          }
+          Value::TypeF64(e) => {
+            f.debug_tuple("Value::TypeF64").field(e).finish()
+          }
+          Value::TypeMat4(e) => {
+            f.debug_tuple("Value::TypeMat4").field(e).finish()
+          }
+          Value::TypeI32(e) => {
+            f.debug_tuple("Value::TypeI32").field(e).finish()
+          }
+          Value::TypeQuat(e) => {
+            f.debug_tuple("Value::TypeQuat").field(e).finish()
+          }
+          Value::TypeString(e) => {
+            f.debug_tuple("Value::TypeString").field(e).finish()
+          }
+          Value::TypeU8(e) => {
+            f.debug_tuple("Value::TypeU8").field(e).finish()
+          }
+          Value::TypeU32(e) => {
+            f.debug_tuple("Value::TypeU32").field(e).finish()
+          }
+          Value::TypeU64(e) => {
+            f.debug_tuple("Value::TypeU64").field(e).finish()
+          }
+          Value::TypeVec2(e) => {
+            f.debug_tuple("Value::TypeVec2").field(e).finish()
+          }
+          Value::TypeVec3(e) => {
+            f.debug_tuple("Value::TypeVec3").field(e).finish()
+          }
+          Value::TypeVec4(e) => {
+            f.debug_tuple("Value::TypeVec4").field(e).finish()
+          }
+          Value::TypeUvec2(e) => {
+            f.debug_tuple("Value::TypeUvec2").field(e).finish()
+          }
+          Value::TypeUvec3(e) => {
+            f.debug_tuple("Value::TypeUvec3").field(e).finish()
+          }
+          Value::TypeUvec4(e) => {
+            f.debug_tuple("Value::TypeUvec4").field(e).finish()
+          }
+          Value::TypeVec(e) => {
+            f.debug_tuple("Value::TypeVec").field(e).finish()
+          }
+          Value::TypeOption(e) => {
+            f.debug_tuple("Value::TypeOption").field(e).finish()
+          }
+        }
+      }
+    }
+    pub type Entity<'a,> = &'a [(u32,&'a Value,)];
+    #[allow(clippy::all)]
+    pub fn get_index(id: &str,) -> Option<u32>{
+      
+      #[allow(unused_imports)]
+      use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+      unsafe {
+        
+        #[repr(align(4))]
+        struct RetArea([u8; 8]);
+        let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+        let vec0 = id;
+        let ptr0 = vec0.as_ptr() as i32;
+        let len0 = vec0.len() as i32;
+        let ptr1 = ret_area.as_mut_ptr() as i32;
+        #[link(wasm_import_module = "component")]
+        extern "C" {
+          #[cfg_attr(target_arch = "wasm32", link_name = "get-index")]
+          #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_get-index")]
+          fn wit_import(
+          _: i32, _: i32, _: i32, );
+        }
+        wit_import(ptr0, len0, ptr1);
+        match i32::from(*((ptr1 + 0) as *const u8)) {
+          0 => None,
+          1 => Some(*((ptr1 + 4) as *const i32) as u32),
+          #[cfg(not(debug_assertions))]
+          _ => core::hint::unreachable_unchecked(),
+          #[cfg(debug_assertions)]
+          _ => panic!("invalid enum discriminant"),
+        }
+      }
+    }
+    #[allow(clippy::all)]
+    pub fn get_component(entity: EntityId,index: u32,) -> Option<Value>{
+      
+      #[allow(unused_imports)]
+      use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+      unsafe {
+        
+        #[repr(align(8))]
+        struct RetArea([u8; 96]);
+        let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+        let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+        let ptr1 = ret_area.as_mut_ptr() as i32;
+        #[link(wasm_import_module = "component")]
+        extern "C" {
+          #[cfg_attr(target_arch = "wasm32", link_name = "get-component")]
+          #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_get-component")]
+          fn wit_import(
+          _: i64, _: i64, _: i32, _: i32, );
+        }
+        wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_i32(index), ptr1);
+        match i32::from(*((ptr1 + 0) as *const u8)) {
+          0 => None,
+          1 => Some({{match i32::from(*((ptr1 + 8) as *const u8)) {
+            0 => Value::TypeEmpty(()),
+            1 => Value::TypeBool({
+              #[cfg(not(debug_assertions))]
+              { core::mem::transmute::<u8, bool>(i32::from(*((ptr1 + 16) as *const u8)) as u8) }
+              #[cfg(debug_assertions)]
+              {
+                match i32::from(*((ptr1 + 16) as *const u8)) {
+                  0 => false,
+                  1 => true,
+                  _ => panic!("invalid bool discriminant"),
+                }
               }
-            }
-          }),
-          2 => Value::TypeEntityId(super::types::EntityId{id0:*((ptr1 + 16) as *const i64) as u64, id1:*((ptr1 + 24) as *const i64) as u64, }),
-          3 => Value::TypeF32(*((ptr1 + 16) as *const f32)),
-          4 => Value::TypeF64(*((ptr1 + 16) as *const f64)),
-          5 => Value::TypeMat4(super::types::Mat4{x:super::types::Vec4{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), w:*((ptr1 + 28) as *const f32), }, y:super::types::Vec4{x:*((ptr1 + 32) as *const f32), y:*((ptr1 + 36) as *const f32), z:*((ptr1 + 40) as *const f32), w:*((ptr1 + 44) as *const f32), }, z:super::types::Vec4{x:*((ptr1 + 48) as *const f32), y:*((ptr1 + 52) as *const f32), z:*((ptr1 + 56) as *const f32), w:*((ptr1 + 60) as *const f32), }, w:super::types::Vec4{x:*((ptr1 + 64) as *const f32), y:*((ptr1 + 68) as *const f32), z:*((ptr1 + 72) as *const f32), w:*((ptr1 + 76) as *const f32), }, }),
-          6 => Value::TypeI32(*((ptr1 + 16) as *const i32)),
-          7 => Value::TypeQuat(super::types::Quat{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), w:*((ptr1 + 28) as *const f32), }),
-          8 => Value::TypeString({
-            let len2 = *((ptr1 + 20) as *const i32) as usize;
-            
-            {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr1 + 16) as *const i32) as *mut _, len2, len2))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr1 + 16) as *const i32) as *mut _, len2, len2)).unwrap()}}
-          }),
-          9 => Value::TypeU8(i32::from(*((ptr1 + 16) as *const u8)) as u8),
-          10 => Value::TypeU32(*((ptr1 + 16) as *const i32) as u32),
-          11 => Value::TypeU64(*((ptr1 + 16) as *const i64) as u64),
-          12 => Value::TypeVec2(super::types::Vec2{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), }),
-          13 => Value::TypeVec3(super::types::Vec3{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), }),
-          14 => Value::TypeVec4(super::types::Vec4{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), w:*((ptr1 + 28) as *const f32), }),
-          15 => Value::TypeUvec2(super::types::Uvec2{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, }),
-          16 => Value::TypeUvec3(super::types::Uvec3{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, z:*((ptr1 + 24) as *const i32) as u32, }),
-          17 => Value::TypeUvec4(super::types::Uvec4{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, z:*((ptr1 + 24) as *const i32) as u32, w:*((ptr1 + 28) as *const i32) as u32, }),
-          18 => Value::TypeVec({{match i32::from(*((ptr1 + 16) as *const u8)) {
-            0 => VecValue::TypeEmpty({
-              let len3 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len3, len3)
             }),
-            1 => VecValue::TypeBool({
-              let base4 = *((ptr1 + 20) as *const i32);
-              let len4 = *((ptr1 + 24) as *const i32);
-              let mut result4 = Vec::with_capacity(len4 as usize);
-              for i in 0..len4 {
-                let base = base4 + i *1;
-                result4.push({
+            2 => Value::TypeEntityId(super::types::EntityId{id0:*((ptr1 + 16) as *const i64) as u64, id1:*((ptr1 + 24) as *const i64) as u64, }),
+            3 => Value::TypeF32(*((ptr1 + 16) as *const f32)),
+            4 => Value::TypeF64(*((ptr1 + 16) as *const f64)),
+            5 => Value::TypeMat4(super::types::Mat4{x:super::types::Vec4{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), w:*((ptr1 + 28) as *const f32), }, y:super::types::Vec4{x:*((ptr1 + 32) as *const f32), y:*((ptr1 + 36) as *const f32), z:*((ptr1 + 40) as *const f32), w:*((ptr1 + 44) as *const f32), }, z:super::types::Vec4{x:*((ptr1 + 48) as *const f32), y:*((ptr1 + 52) as *const f32), z:*((ptr1 + 56) as *const f32), w:*((ptr1 + 60) as *const f32), }, w:super::types::Vec4{x:*((ptr1 + 64) as *const f32), y:*((ptr1 + 68) as *const f32), z:*((ptr1 + 72) as *const f32), w:*((ptr1 + 76) as *const f32), }, }),
+            6 => Value::TypeI32(*((ptr1 + 16) as *const i32)),
+            7 => Value::TypeQuat(super::types::Quat{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), w:*((ptr1 + 28) as *const f32), }),
+            8 => Value::TypeString({
+              let len2 = *((ptr1 + 20) as *const i32) as usize;
+              
+              {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr1 + 16) as *const i32) as *mut _, len2, len2))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr1 + 16) as *const i32) as *mut _, len2, len2)).unwrap()}}
+            }),
+            9 => Value::TypeU8(i32::from(*((ptr1 + 16) as *const u8)) as u8),
+            10 => Value::TypeU32(*((ptr1 + 16) as *const i32) as u32),
+            11 => Value::TypeU64(*((ptr1 + 16) as *const i64) as u64),
+            12 => Value::TypeVec2(super::types::Vec2{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), }),
+            13 => Value::TypeVec3(super::types::Vec3{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), }),
+            14 => Value::TypeVec4(super::types::Vec4{x:*((ptr1 + 16) as *const f32), y:*((ptr1 + 20) as *const f32), z:*((ptr1 + 24) as *const f32), w:*((ptr1 + 28) as *const f32), }),
+            15 => Value::TypeUvec2(super::types::Uvec2{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, }),
+            16 => Value::TypeUvec3(super::types::Uvec3{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, z:*((ptr1 + 24) as *const i32) as u32, }),
+            17 => Value::TypeUvec4(super::types::Uvec4{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, z:*((ptr1 + 24) as *const i32) as u32, w:*((ptr1 + 28) as *const i32) as u32, }),
+            18 => Value::TypeVec({{match i32::from(*((ptr1 + 16) as *const u8)) {
+              0 => VecValue::TypeEmpty({
+                let len3 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len3, len3)
+              }),
+              1 => VecValue::TypeBool({
+                let base4 = *((ptr1 + 20) as *const i32);
+                let len4 = *((ptr1 + 24) as *const i32);
+                let mut result4 = Vec::with_capacity(len4 as usize);
+                for i in 0..len4 {
+                  let base = base4 + i *1;
+                  result4.push({
+                    #[cfg(not(debug_assertions))]
+                    { core::mem::transmute::<u8, bool>(i32::from(*((base + 0) as *const u8)) as u8) }
+                    #[cfg(debug_assertions)]
+                    {
+                      match i32::from(*((base + 0) as *const u8)) {
+                        0 => false,
+                        1 => true,
+                        _ => panic!("invalid bool discriminant"),
+                      }
+                    }
+                  });
+                }
+                wit_bindgen::rt::dealloc(base4, (len4 as usize) * 1, 1);
+                
+                result4
+              }),
+              2 => VecValue::TypeEntityId({
+                let len5 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len5, len5)
+              }),
+              3 => VecValue::TypeF32({
+                let len6 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len6, len6)
+              }),
+              4 => VecValue::TypeF64({
+                let len7 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len7, len7)
+              }),
+              5 => VecValue::TypeMat4({
+                let len8 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len8, len8)
+              }),
+              6 => VecValue::TypeI32({
+                let len9 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len9, len9)
+              }),
+              7 => VecValue::TypeQuat({
+                let len10 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len10, len10)
+              }),
+              8 => VecValue::TypeString({
+                let base12 = *((ptr1 + 20) as *const i32);
+                let len12 = *((ptr1 + 24) as *const i32);
+                let mut result12 = Vec::with_capacity(len12 as usize);
+                for i in 0..len12 {
+                  let base = base12 + i *8;
+                  result12.push({
+                    let len11 = *((base + 4) as *const i32) as usize;
+                    
+                    {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 0) as *const i32) as *mut _, len11, len11))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 0) as *const i32) as *mut _, len11, len11)).unwrap()}}
+                  });
+                }
+                wit_bindgen::rt::dealloc(base12, (len12 as usize) * 8, 4);
+                
+                result12
+              }),
+              9 => VecValue::TypeU8({
+                let len13 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len13, len13)
+              }),
+              10 => VecValue::TypeU32({
+                let len14 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len14, len14)
+              }),
+              11 => VecValue::TypeU64({
+                let len15 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len15, len15)
+              }),
+              12 => VecValue::TypeVec2({
+                let len16 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len16, len16)
+              }),
+              13 => VecValue::TypeVec3({
+                let len17 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len17, len17)
+              }),
+              14 => VecValue::TypeVec4({
+                let len18 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len18, len18)
+              }),
+              15 => VecValue::TypeUvec2({
+                let len19 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len19, len19)
+              }),
+              16 => VecValue::TypeUvec3({
+                let len20 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len20, len20)
+              }),
+              #[cfg(debug_assertions)]17 => VecValue::TypeUvec4({
+                let len21 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len21, len21)
+              }),
+              #[cfg(not(debug_assertions))]_ => VecValue::TypeUvec4({
+                let len21 = *((ptr1 + 24) as *const i32) as usize;
+                
+                Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len21, len21)
+              }),
+              #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
+            }}}),
+            #[cfg(debug_assertions)]19 => Value::TypeOption({{match i32::from(*((ptr1 + 16) as *const u8)) {
+              0 => OptionValue::TypeEmpty(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(()),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              1 => OptionValue::TypeBool(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some({
                   #[cfg(not(debug_assertions))]
-                  { core::mem::transmute::<u8, bool>(i32::from(*((base + 0) as *const u8)) as u8) }
+                  { core::mem::transmute::<u8, bool>(i32::from(*((ptr1 + 25) as *const u8)) as u8) }
                   #[cfg(debug_assertions)]
                   {
-                    match i32::from(*((base + 0) as *const u8)) {
+                    match i32::from(*((ptr1 + 25) as *const u8)) {
                       0 => false,
                       1 => true,
                       _ => panic!("invalid bool discriminant"),
                     }
                   }
-                });
-              }
-              wit_bindgen::rt::dealloc(base4, (len4 as usize) * 1, 1);
-              
-              result4
-            }),
-            2 => VecValue::TypeEntityId({
-              let len5 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len5, len5)
-            }),
-            3 => VecValue::TypeF32({
-              let len6 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len6, len6)
-            }),
-            4 => VecValue::TypeF64({
-              let len7 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len7, len7)
-            }),
-            5 => VecValue::TypeMat4({
-              let len8 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len8, len8)
-            }),
-            6 => VecValue::TypeI32({
-              let len9 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len9, len9)
-            }),
-            7 => VecValue::TypeQuat({
-              let len10 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len10, len10)
-            }),
-            8 => VecValue::TypeString({
-              let base12 = *((ptr1 + 20) as *const i32);
-              let len12 = *((ptr1 + 24) as *const i32);
-              let mut result12 = Vec::with_capacity(len12 as usize);
-              for i in 0..len12 {
-                let base = base12 + i *8;
-                result12.push({
-                  let len11 = *((base + 4) as *const i32) as usize;
+                }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              2 => OptionValue::TypeEntityId(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::EntityId{id0:*((ptr1 + 32) as *const i64) as u64, id1:*((ptr1 + 40) as *const i64) as u64, }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              3 => OptionValue::TypeF32(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(*((ptr1 + 28) as *const f32)),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              4 => OptionValue::TypeF64(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(*((ptr1 + 32) as *const f64)),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              5 => OptionValue::TypeMat4(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Mat4{x:super::types::Vec4{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }, y:super::types::Vec4{x:*((ptr1 + 44) as *const f32), y:*((ptr1 + 48) as *const f32), z:*((ptr1 + 52) as *const f32), w:*((ptr1 + 56) as *const f32), }, z:super::types::Vec4{x:*((ptr1 + 60) as *const f32), y:*((ptr1 + 64) as *const f32), z:*((ptr1 + 68) as *const f32), w:*((ptr1 + 72) as *const f32), }, w:super::types::Vec4{x:*((ptr1 + 76) as *const f32), y:*((ptr1 + 80) as *const f32), z:*((ptr1 + 84) as *const f32), w:*((ptr1 + 88) as *const f32), }, }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              6 => OptionValue::TypeI32(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(*((ptr1 + 28) as *const i32)),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              7 => OptionValue::TypeQuat(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Quat{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              8 => OptionValue::TypeString(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some({
+                  let len22 = *((ptr1 + 32) as *const i32) as usize;
                   
-                  {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 0) as *const i32) as *mut _, len11, len11))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 0) as *const i32) as *mut _, len11, len11)).unwrap()}}
-                });
-              }
-              wit_bindgen::rt::dealloc(base12, (len12 as usize) * 8, 4);
-              
-              result12
-            }),
-            9 => VecValue::TypeU8({
-              let len13 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len13, len13)
-            }),
-            10 => VecValue::TypeU32({
-              let len14 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len14, len14)
-            }),
-            11 => VecValue::TypeU64({
-              let len15 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len15, len15)
-            }),
-            12 => VecValue::TypeVec2({
-              let len16 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len16, len16)
-            }),
-            13 => VecValue::TypeVec3({
-              let len17 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len17, len17)
-            }),
-            14 => VecValue::TypeVec4({
-              let len18 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len18, len18)
-            }),
-            15 => VecValue::TypeUvec2({
-              let len19 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len19, len19)
-            }),
-            16 => VecValue::TypeUvec3({
-              let len20 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len20, len20)
-            }),
-            #[cfg(debug_assertions)]17 => VecValue::TypeUvec4({
-              let len21 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len21, len21)
-            }),
-            #[cfg(not(debug_assertions))]_ => VecValue::TypeUvec4({
-              let len21 = *((ptr1 + 24) as *const i32) as usize;
-              
-              Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len21, len21)
-            }),
-            #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
-          }}}),
-          #[cfg(debug_assertions)]19 => Value::TypeOption({{match i32::from(*((ptr1 + 16) as *const u8)) {
-            0 => OptionValue::TypeEmpty(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(()),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            1 => OptionValue::TypeBool(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some({
+                  {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len22, len22))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len22, len22)).unwrap()}}
+                }),
                 #[cfg(not(debug_assertions))]
-                { core::mem::transmute::<u8, bool>(i32::from(*((ptr1 + 25) as *const u8)) as u8) }
+                _ => core::hint::unreachable_unchecked(),
                 #[cfg(debug_assertions)]
-                {
-                  match i32::from(*((ptr1 + 25) as *const u8)) {
-                    0 => false,
-                    1 => true,
-                    _ => panic!("invalid bool discriminant"),
-                  }
-                }
+                _ => panic!("invalid enum discriminant"),
               }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            2 => OptionValue::TypeEntityId(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::EntityId{id0:*((ptr1 + 32) as *const i64) as u64, id1:*((ptr1 + 40) as *const i64) as u64, }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            3 => OptionValue::TypeF32(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(*((ptr1 + 28) as *const f32)),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            4 => OptionValue::TypeF64(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(*((ptr1 + 32) as *const f64)),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            5 => OptionValue::TypeMat4(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Mat4{x:super::types::Vec4{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }, y:super::types::Vec4{x:*((ptr1 + 44) as *const f32), y:*((ptr1 + 48) as *const f32), z:*((ptr1 + 52) as *const f32), w:*((ptr1 + 56) as *const f32), }, z:super::types::Vec4{x:*((ptr1 + 60) as *const f32), y:*((ptr1 + 64) as *const f32), z:*((ptr1 + 68) as *const f32), w:*((ptr1 + 72) as *const f32), }, w:super::types::Vec4{x:*((ptr1 + 76) as *const f32), y:*((ptr1 + 80) as *const f32), z:*((ptr1 + 84) as *const f32), w:*((ptr1 + 88) as *const f32), }, }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            6 => OptionValue::TypeI32(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(*((ptr1 + 28) as *const i32)),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            7 => OptionValue::TypeQuat(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Quat{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            8 => OptionValue::TypeString(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some({
-                let len22 = *((ptr1 + 32) as *const i32) as usize;
-                
-                {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len22, len22))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len22, len22)).unwrap()}}
-              }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            9 => OptionValue::TypeU8(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(i32::from(*((ptr1 + 25) as *const u8)) as u8),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            10 => OptionValue::TypeU32(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(*((ptr1 + 28) as *const i32) as u32),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            11 => OptionValue::TypeU64(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(*((ptr1 + 32) as *const i64) as u64),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            12 => OptionValue::TypeVec2(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Vec2{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            13 => OptionValue::TypeVec3(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Vec3{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            14 => OptionValue::TypeVec4(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Vec4{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            15 => OptionValue::TypeUvec2(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Uvec2{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            16 => OptionValue::TypeUvec3(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Uvec3{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
-          }}}),
-          #[cfg(not(debug_assertions))]_ => Value::TypeOption({{match i32::from(*((ptr1 + 16) as *const u8)) {
-            0 => OptionValue::TypeEmpty(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(()),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            1 => OptionValue::TypeBool(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some({
+              9 => OptionValue::TypeU8(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(i32::from(*((ptr1 + 25) as *const u8)) as u8),
                 #[cfg(not(debug_assertions))]
-                { core::mem::transmute::<u8, bool>(i32::from(*((ptr1 + 25) as *const u8)) as u8) }
+                _ => core::hint::unreachable_unchecked(),
                 #[cfg(debug_assertions)]
-                {
-                  match i32::from(*((ptr1 + 25) as *const u8)) {
-                    0 => false,
-                    1 => true,
-                    _ => panic!("invalid bool discriminant"),
+                _ => panic!("invalid enum discriminant"),
+              }),
+              10 => OptionValue::TypeU32(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(*((ptr1 + 28) as *const i32) as u32),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              11 => OptionValue::TypeU64(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(*((ptr1 + 32) as *const i64) as u64),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              12 => OptionValue::TypeVec2(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Vec2{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              13 => OptionValue::TypeVec3(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Vec3{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              14 => OptionValue::TypeVec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Vec4{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              15 => OptionValue::TypeUvec2(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Uvec2{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              16 => OptionValue::TypeUvec3(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Uvec3{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
+            }}}),
+            #[cfg(not(debug_assertions))]_ => Value::TypeOption({{match i32::from(*((ptr1 + 16) as *const u8)) {
+              0 => OptionValue::TypeEmpty(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(()),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              1 => OptionValue::TypeBool(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some({
+                  #[cfg(not(debug_assertions))]
+                  { core::mem::transmute::<u8, bool>(i32::from(*((ptr1 + 25) as *const u8)) as u8) }
+                  #[cfg(debug_assertions)]
+                  {
+                    match i32::from(*((ptr1 + 25) as *const u8)) {
+                      0 => false,
+                      1 => true,
+                      _ => panic!("invalid bool discriminant"),
+                    }
                   }
-                }
+                }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
               }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            2 => OptionValue::TypeEntityId(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::EntityId{id0:*((ptr1 + 32) as *const i64) as u64, id1:*((ptr1 + 40) as *const i64) as u64, }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            3 => OptionValue::TypeF32(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(*((ptr1 + 28) as *const f32)),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            4 => OptionValue::TypeF64(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(*((ptr1 + 32) as *const f64)),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            5 => OptionValue::TypeMat4(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Mat4{x:super::types::Vec4{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }, y:super::types::Vec4{x:*((ptr1 + 44) as *const f32), y:*((ptr1 + 48) as *const f32), z:*((ptr1 + 52) as *const f32), w:*((ptr1 + 56) as *const f32), }, z:super::types::Vec4{x:*((ptr1 + 60) as *const f32), y:*((ptr1 + 64) as *const f32), z:*((ptr1 + 68) as *const f32), w:*((ptr1 + 72) as *const f32), }, w:super::types::Vec4{x:*((ptr1 + 76) as *const f32), y:*((ptr1 + 80) as *const f32), z:*((ptr1 + 84) as *const f32), w:*((ptr1 + 88) as *const f32), }, }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            6 => OptionValue::TypeI32(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(*((ptr1 + 28) as *const i32)),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            7 => OptionValue::TypeQuat(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Quat{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            8 => OptionValue::TypeString(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some({
-                let len22 = *((ptr1 + 32) as *const i32) as usize;
-                
-                {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len22, len22))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len22, len22)).unwrap()}}
+              2 => OptionValue::TypeEntityId(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::EntityId{id0:*((ptr1 + 32) as *const i64) as u64, id1:*((ptr1 + 40) as *const i64) as u64, }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
               }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            9 => OptionValue::TypeU8(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(i32::from(*((ptr1 + 25) as *const u8)) as u8),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            10 => OptionValue::TypeU32(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(*((ptr1 + 28) as *const i32) as u32),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            11 => OptionValue::TypeU64(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(*((ptr1 + 32) as *const i64) as u64),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            12 => OptionValue::TypeVec2(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Vec2{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            13 => OptionValue::TypeVec3(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Vec3{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            14 => OptionValue::TypeVec4(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Vec4{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            15 => OptionValue::TypeUvec2(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Uvec2{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            16 => OptionValue::TypeUvec3(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Uvec3{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
-            #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
-              0 => None,
-              1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
-              #[cfg(not(debug_assertions))]
-              _ => core::hint::unreachable_unchecked(),
-              #[cfg(debug_assertions)]
-              _ => panic!("invalid enum discriminant"),
-            }),
+              3 => OptionValue::TypeF32(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(*((ptr1 + 28) as *const f32)),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              4 => OptionValue::TypeF64(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(*((ptr1 + 32) as *const f64)),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              5 => OptionValue::TypeMat4(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Mat4{x:super::types::Vec4{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }, y:super::types::Vec4{x:*((ptr1 + 44) as *const f32), y:*((ptr1 + 48) as *const f32), z:*((ptr1 + 52) as *const f32), w:*((ptr1 + 56) as *const f32), }, z:super::types::Vec4{x:*((ptr1 + 60) as *const f32), y:*((ptr1 + 64) as *const f32), z:*((ptr1 + 68) as *const f32), w:*((ptr1 + 72) as *const f32), }, w:super::types::Vec4{x:*((ptr1 + 76) as *const f32), y:*((ptr1 + 80) as *const f32), z:*((ptr1 + 84) as *const f32), w:*((ptr1 + 88) as *const f32), }, }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              6 => OptionValue::TypeI32(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(*((ptr1 + 28) as *const i32)),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              7 => OptionValue::TypeQuat(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Quat{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              8 => OptionValue::TypeString(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some({
+                  let len22 = *((ptr1 + 32) as *const i32) as usize;
+                  
+                  {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len22, len22))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len22, len22)).unwrap()}}
+                }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              9 => OptionValue::TypeU8(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(i32::from(*((ptr1 + 25) as *const u8)) as u8),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              10 => OptionValue::TypeU32(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(*((ptr1 + 28) as *const i32) as u32),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              11 => OptionValue::TypeU64(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(*((ptr1 + 32) as *const i64) as u64),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              12 => OptionValue::TypeVec2(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Vec2{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              13 => OptionValue::TypeVec3(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Vec3{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              14 => OptionValue::TypeVec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Vec4{x:*((ptr1 + 28) as *const f32), y:*((ptr1 + 32) as *const f32), z:*((ptr1 + 36) as *const f32), w:*((ptr1 + 40) as *const f32), }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              15 => OptionValue::TypeUvec2(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Uvec2{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              16 => OptionValue::TypeUvec3(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Uvec3{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+                0 => None,
+                1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
+                #[cfg(not(debug_assertions))]
+                _ => core::hint::unreachable_unchecked(),
+                #[cfg(debug_assertions)]
+                _ => panic!("invalid enum discriminant"),
+              }),
+              #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
+            }}}),
             #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
           }}}),
-          #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
-        }}}),
-        #[cfg(not(debug_assertions))]
-        _ => core::hint::unreachable_unchecked(),
-        #[cfg(debug_assertions)]
-        _ => panic!("invalid enum discriminant"),
+          #[cfg(not(debug_assertions))]
+          _ => core::hint::unreachable_unchecked(),
+          #[cfg(debug_assertions)]
+          _ => panic!("invalid enum discriminant"),
+        }
       }
     }
-  }
-  #[allow(clippy::all)]
-  pub fn add_component(entity: EntityId,index: u32,value: &Value,){
-    
-    #[allow(unused_imports)]
-    use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-    unsafe {
-      let mut cleanup_list = Vec::new();
+    #[allow(clippy::all)]
+    pub fn add_component(entity: EntityId,index: u32,value: &Value,){
       
-      #[repr(align(8))]
-      struct RetArea([u8; 112]);
-      let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-      let ptr0 = ret_area.as_mut_ptr() as i32;let super::types::EntityId{ id0:id01, id1:id11, } = entity;
-      *((ptr0 + 0) as *mut i64) = wit_bindgen::rt::as_i64(id01);
-      *((ptr0 + 8) as *mut i64) = wit_bindgen::rt::as_i64(id11);
-      *((ptr0 + 16) as *mut i32) = wit_bindgen::rt::as_i32(index);
-      match value {
-        Value::TypeEmpty(e) => {
-          *((ptr0 + 24) as *mut u8) = (0i32) as u8;
-          let () = e;
-          
-        },
-        Value::TypeBool(e) => {
-          *((ptr0 + 24) as *mut u8) = (1i32) as u8;
-          *((ptr0 + 32) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
-          
-        },
-        Value::TypeEntityId(e) => {
-          *((ptr0 + 24) as *mut u8) = (2i32) as u8;
-          let super::types::EntityId{ id0:id03, id1:id13, } = e;
-          *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(id03);
-          *((ptr0 + 40) as *mut i64) = wit_bindgen::rt::as_i64(id13);
-          
-        },
-        Value::TypeF32(e) => {
-          *((ptr0 + 24) as *mut u8) = (3i32) as u8;
-          *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(e);
-          
-        },
-        Value::TypeF64(e) => {
-          *((ptr0 + 24) as *mut u8) = (4i32) as u8;
-          *((ptr0 + 32) as *mut f64) = wit_bindgen::rt::as_f64(e);
-          
-        },
-        Value::TypeMat4(e) => {
-          *((ptr0 + 24) as *mut u8) = (5i32) as u8;
-          let super::types::Mat4{ x:x4, y:y4, z:z4, w:w4, } = e;
-          let super::types::Vec4{ x:x5, y:y5, z:z5, w:w5, } = x4;
-          *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x5);
-          *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y5);
-          *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z5);
-          *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w5);
-          let super::types::Vec4{ x:x6, y:y6, z:z6, w:w6, } = y4;
-          *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(x6);
-          *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(y6);
-          *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(z6);
-          *((ptr0 + 60) as *mut f32) = wit_bindgen::rt::as_f32(w6);
-          let super::types::Vec4{ x:x7, y:y7, z:z7, w:w7, } = z4;
-          *((ptr0 + 64) as *mut f32) = wit_bindgen::rt::as_f32(x7);
-          *((ptr0 + 68) as *mut f32) = wit_bindgen::rt::as_f32(y7);
-          *((ptr0 + 72) as *mut f32) = wit_bindgen::rt::as_f32(z7);
-          *((ptr0 + 76) as *mut f32) = wit_bindgen::rt::as_f32(w7);
-          let super::types::Vec4{ x:x8, y:y8, z:z8, w:w8, } = w4;
-          *((ptr0 + 80) as *mut f32) = wit_bindgen::rt::as_f32(x8);
-          *((ptr0 + 84) as *mut f32) = wit_bindgen::rt::as_f32(y8);
-          *((ptr0 + 88) as *mut f32) = wit_bindgen::rt::as_f32(z8);
-          *((ptr0 + 92) as *mut f32) = wit_bindgen::rt::as_f32(w8);
-          
-        },
-        Value::TypeI32(e) => {
-          *((ptr0 + 24) as *mut u8) = (6i32) as u8;
-          *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(e);
-          
-        },
-        Value::TypeQuat(e) => {
-          *((ptr0 + 24) as *mut u8) = (7i32) as u8;
-          let super::types::Quat{ x:x9, y:y9, z:z9, w:w9, } = e;
-          *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x9);
-          *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y9);
-          *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z9);
-          *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w9);
-          
-        },
-        Value::TypeString(e) => {
-          *((ptr0 + 24) as *mut u8) = (8i32) as u8;
-          let vec10 = e;
-          let ptr10 = vec10.as_ptr() as i32;
-          let len10 = vec10.len() as i32;
-          *((ptr0 + 36) as *mut i32) = len10;
-          *((ptr0 + 32) as *mut i32) = ptr10;
-          
-        },
-        Value::TypeU8(e) => {
-          *((ptr0 + 24) as *mut u8) = (9i32) as u8;
-          *((ptr0 + 32) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
-          
-        },
-        Value::TypeU32(e) => {
-          *((ptr0 + 24) as *mut u8) = (10i32) as u8;
-          *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(e);
-          
-        },
-        Value::TypeU64(e) => {
-          *((ptr0 + 24) as *mut u8) = (11i32) as u8;
-          *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(e);
-          
-        },
-        Value::TypeVec2(e) => {
-          *((ptr0 + 24) as *mut u8) = (12i32) as u8;
-          let super::types::Vec2{ x:x11, y:y11, } = e;
-          *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x11);
-          *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y11);
-          
-        },
-        Value::TypeVec3(e) => {
-          *((ptr0 + 24) as *mut u8) = (13i32) as u8;
-          let super::types::Vec3{ x:x12, y:y12, z:z12, } = e;
-          *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x12);
-          *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y12);
-          *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z12);
-          
-        },
-        Value::TypeVec4(e) => {
-          *((ptr0 + 24) as *mut u8) = (14i32) as u8;
-          let super::types::Vec4{ x:x13, y:y13, z:z13, w:w13, } = e;
-          *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x13);
-          *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y13);
-          *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z13);
-          *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w13);
-          
-        },
-        Value::TypeUvec2(e) => {
-          *((ptr0 + 24) as *mut u8) = (15i32) as u8;
-          let super::types::Uvec2{ x:x14, y:y14, } = e;
-          *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x14);
-          *((ptr0 + 36) as *mut i32) = wit_bindgen::rt::as_i32(y14);
-          
-        },
-        Value::TypeUvec3(e) => {
-          *((ptr0 + 24) as *mut u8) = (16i32) as u8;
-          let super::types::Uvec3{ x:x15, y:y15, z:z15, } = e;
-          *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x15);
-          *((ptr0 + 36) as *mut i32) = wit_bindgen::rt::as_i32(y15);
-          *((ptr0 + 40) as *mut i32) = wit_bindgen::rt::as_i32(z15);
-          
-        },
-        Value::TypeUvec4(e) => {
-          *((ptr0 + 24) as *mut u8) = (17i32) as u8;
-          let super::types::Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
-          *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x16);
-          *((ptr0 + 36) as *mut i32) = wit_bindgen::rt::as_i32(y16);
-          *((ptr0 + 40) as *mut i32) = wit_bindgen::rt::as_i32(z16);
-          *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(w16);
-          
-        },
-        Value::TypeVec(e) => {
-          *((ptr0 + 24) as *mut u8) = (18i32) as u8;
-          match e {
-            VecValue::TypeEmpty(e) => {
-              *((ptr0 + 32) as *mut u8) = (0i32) as u8;
-              let vec17 = e;
-              let ptr17 = vec17.as_ptr() as i32;
-              let len17 = vec17.len() as i32;
-              *((ptr0 + 40) as *mut i32) = len17;
-              *((ptr0 + 36) as *mut i32) = ptr17;
-              
-            },
-            VecValue::TypeBool(e) => {
-              *((ptr0 + 32) as *mut u8) = (1i32) as u8;
-              let vec18 = e;
-              let len18 = vec18.len() as i32;
-              let layout18 = alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
-              let result18 = if layout18.size() != 0
-              {
-                let ptr = alloc::alloc(layout18);
-                if ptr.is_null()
+      #[allow(unused_imports)]
+      use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+      unsafe {
+        let mut cleanup_list = Vec::new();
+        
+        #[repr(align(8))]
+        struct RetArea([u8; 112]);
+        let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+        let ptr0 = ret_area.as_mut_ptr() as i32;let super::types::EntityId{ id0:id01, id1:id11, } = entity;
+        *((ptr0 + 0) as *mut i64) = wit_bindgen::rt::as_i64(id01);
+        *((ptr0 + 8) as *mut i64) = wit_bindgen::rt::as_i64(id11);
+        *((ptr0 + 16) as *mut i32) = wit_bindgen::rt::as_i32(index);
+        match value {
+          Value::TypeEmpty(e) => {
+            *((ptr0 + 24) as *mut u8) = (0i32) as u8;
+            let () = e;
+            
+          },
+          Value::TypeBool(e) => {
+            *((ptr0 + 24) as *mut u8) = (1i32) as u8;
+            *((ptr0 + 32) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
+            
+          },
+          Value::TypeEntityId(e) => {
+            *((ptr0 + 24) as *mut u8) = (2i32) as u8;
+            let super::types::EntityId{ id0:id03, id1:id13, } = e;
+            *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(id03);
+            *((ptr0 + 40) as *mut i64) = wit_bindgen::rt::as_i64(id13);
+            
+          },
+          Value::TypeF32(e) => {
+            *((ptr0 + 24) as *mut u8) = (3i32) as u8;
+            *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(e);
+            
+          },
+          Value::TypeF64(e) => {
+            *((ptr0 + 24) as *mut u8) = (4i32) as u8;
+            *((ptr0 + 32) as *mut f64) = wit_bindgen::rt::as_f64(e);
+            
+          },
+          Value::TypeMat4(e) => {
+            *((ptr0 + 24) as *mut u8) = (5i32) as u8;
+            let super::types::Mat4{ x:x4, y:y4, z:z4, w:w4, } = e;
+            let super::types::Vec4{ x:x5, y:y5, z:z5, w:w5, } = x4;
+            *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x5);
+            *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y5);
+            *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z5);
+            *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w5);
+            let super::types::Vec4{ x:x6, y:y6, z:z6, w:w6, } = y4;
+            *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(x6);
+            *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(y6);
+            *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(z6);
+            *((ptr0 + 60) as *mut f32) = wit_bindgen::rt::as_f32(w6);
+            let super::types::Vec4{ x:x7, y:y7, z:z7, w:w7, } = z4;
+            *((ptr0 + 64) as *mut f32) = wit_bindgen::rt::as_f32(x7);
+            *((ptr0 + 68) as *mut f32) = wit_bindgen::rt::as_f32(y7);
+            *((ptr0 + 72) as *mut f32) = wit_bindgen::rt::as_f32(z7);
+            *((ptr0 + 76) as *mut f32) = wit_bindgen::rt::as_f32(w7);
+            let super::types::Vec4{ x:x8, y:y8, z:z8, w:w8, } = w4;
+            *((ptr0 + 80) as *mut f32) = wit_bindgen::rt::as_f32(x8);
+            *((ptr0 + 84) as *mut f32) = wit_bindgen::rt::as_f32(y8);
+            *((ptr0 + 88) as *mut f32) = wit_bindgen::rt::as_f32(z8);
+            *((ptr0 + 92) as *mut f32) = wit_bindgen::rt::as_f32(w8);
+            
+          },
+          Value::TypeI32(e) => {
+            *((ptr0 + 24) as *mut u8) = (6i32) as u8;
+            *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(e);
+            
+          },
+          Value::TypeQuat(e) => {
+            *((ptr0 + 24) as *mut u8) = (7i32) as u8;
+            let super::types::Quat{ x:x9, y:y9, z:z9, w:w9, } = e;
+            *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x9);
+            *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y9);
+            *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z9);
+            *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w9);
+            
+          },
+          Value::TypeString(e) => {
+            *((ptr0 + 24) as *mut u8) = (8i32) as u8;
+            let vec10 = e;
+            let ptr10 = vec10.as_ptr() as i32;
+            let len10 = vec10.len() as i32;
+            *((ptr0 + 36) as *mut i32) = len10;
+            *((ptr0 + 32) as *mut i32) = ptr10;
+            
+          },
+          Value::TypeU8(e) => {
+            *((ptr0 + 24) as *mut u8) = (9i32) as u8;
+            *((ptr0 + 32) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
+            
+          },
+          Value::TypeU32(e) => {
+            *((ptr0 + 24) as *mut u8) = (10i32) as u8;
+            *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(e);
+            
+          },
+          Value::TypeU64(e) => {
+            *((ptr0 + 24) as *mut u8) = (11i32) as u8;
+            *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(e);
+            
+          },
+          Value::TypeVec2(e) => {
+            *((ptr0 + 24) as *mut u8) = (12i32) as u8;
+            let super::types::Vec2{ x:x11, y:y11, } = e;
+            *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x11);
+            *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y11);
+            
+          },
+          Value::TypeVec3(e) => {
+            *((ptr0 + 24) as *mut u8) = (13i32) as u8;
+            let super::types::Vec3{ x:x12, y:y12, z:z12, } = e;
+            *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x12);
+            *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y12);
+            *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z12);
+            
+          },
+          Value::TypeVec4(e) => {
+            *((ptr0 + 24) as *mut u8) = (14i32) as u8;
+            let super::types::Vec4{ x:x13, y:y13, z:z13, w:w13, } = e;
+            *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x13);
+            *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y13);
+            *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z13);
+            *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w13);
+            
+          },
+          Value::TypeUvec2(e) => {
+            *((ptr0 + 24) as *mut u8) = (15i32) as u8;
+            let super::types::Uvec2{ x:x14, y:y14, } = e;
+            *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x14);
+            *((ptr0 + 36) as *mut i32) = wit_bindgen::rt::as_i32(y14);
+            
+          },
+          Value::TypeUvec3(e) => {
+            *((ptr0 + 24) as *mut u8) = (16i32) as u8;
+            let super::types::Uvec3{ x:x15, y:y15, z:z15, } = e;
+            *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x15);
+            *((ptr0 + 36) as *mut i32) = wit_bindgen::rt::as_i32(y15);
+            *((ptr0 + 40) as *mut i32) = wit_bindgen::rt::as_i32(z15);
+            
+          },
+          Value::TypeUvec4(e) => {
+            *((ptr0 + 24) as *mut u8) = (17i32) as u8;
+            let super::types::Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
+            *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x16);
+            *((ptr0 + 36) as *mut i32) = wit_bindgen::rt::as_i32(y16);
+            *((ptr0 + 40) as *mut i32) = wit_bindgen::rt::as_i32(z16);
+            *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(w16);
+            
+          },
+          Value::TypeVec(e) => {
+            *((ptr0 + 24) as *mut u8) = (18i32) as u8;
+            match e {
+              VecValue::TypeEmpty(e) => {
+                *((ptr0 + 32) as *mut u8) = (0i32) as u8;
+                let vec17 = e;
+                let ptr17 = vec17.as_ptr() as i32;
+                let len17 = vec17.len() as i32;
+                *((ptr0 + 40) as *mut i32) = len17;
+                *((ptr0 + 36) as *mut i32) = ptr17;
+                
+              },
+              VecValue::TypeBool(e) => {
+                *((ptr0 + 32) as *mut u8) = (1i32) as u8;
+                let vec18 = e;
+                let len18 = vec18.len() as i32;
+                let layout18 = alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
+                let result18 = if layout18.size() != 0
                 {
-                  alloc::handle_alloc_error(layout18);
-                }
-                ptr
-              }else {
-                core::ptr::null_mut()
-              };
-              for (i, e) in vec18.into_iter().enumerate() {
-                let base = result18 as i32 + (i as i32) * 1;
-                {
-                  *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
-                  
-                }}
-                *((ptr0 + 40) as *mut i32) = len18;
-                *((ptr0 + 36) as *mut i32) = result18 as i32;
-                cleanup_list.extend_from_slice(&[(result18, layout18),]);
-                
-              },
-              VecValue::TypeEntityId(e) => {
-                *((ptr0 + 32) as *mut u8) = (2i32) as u8;
-                let vec19 = e;
-                let ptr19 = vec19.as_ptr() as i32;
-                let len19 = vec19.len() as i32;
-                *((ptr0 + 40) as *mut i32) = len19;
-                *((ptr0 + 36) as *mut i32) = ptr19;
-                
-              },
-              VecValue::TypeF32(e) => {
-                *((ptr0 + 32) as *mut u8) = (3i32) as u8;
-                let vec20 = e;
-                let ptr20 = vec20.as_ptr() as i32;
-                let len20 = vec20.len() as i32;
-                *((ptr0 + 40) as *mut i32) = len20;
-                *((ptr0 + 36) as *mut i32) = ptr20;
-                
-              },
-              VecValue::TypeF64(e) => {
-                *((ptr0 + 32) as *mut u8) = (4i32) as u8;
-                let vec21 = e;
-                let ptr21 = vec21.as_ptr() as i32;
-                let len21 = vec21.len() as i32;
-                *((ptr0 + 40) as *mut i32) = len21;
-                *((ptr0 + 36) as *mut i32) = ptr21;
-                
-              },
-              VecValue::TypeMat4(e) => {
-                *((ptr0 + 32) as *mut u8) = (5i32) as u8;
-                let vec22 = e;
-                let ptr22 = vec22.as_ptr() as i32;
-                let len22 = vec22.len() as i32;
-                *((ptr0 + 40) as *mut i32) = len22;
-                *((ptr0 + 36) as *mut i32) = ptr22;
-                
-              },
-              VecValue::TypeI32(e) => {
-                *((ptr0 + 32) as *mut u8) = (6i32) as u8;
-                let vec23 = e;
-                let ptr23 = vec23.as_ptr() as i32;
-                let len23 = vec23.len() as i32;
-                *((ptr0 + 40) as *mut i32) = len23;
-                *((ptr0 + 36) as *mut i32) = ptr23;
-                
-              },
-              VecValue::TypeQuat(e) => {
-                *((ptr0 + 32) as *mut u8) = (7i32) as u8;
-                let vec24 = e;
-                let ptr24 = vec24.as_ptr() as i32;
-                let len24 = vec24.len() as i32;
-                *((ptr0 + 40) as *mut i32) = len24;
-                *((ptr0 + 36) as *mut i32) = ptr24;
-                
-              },
-              VecValue::TypeString(e) => {
-                *((ptr0 + 32) as *mut u8) = (8i32) as u8;
-                let vec26 = e;
-                let len26 = vec26.len() as i32;
-                let layout26 = alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
-                let result26 = if layout26.size() != 0
-                {
-                  let ptr = alloc::alloc(layout26);
+                  let ptr = alloc::alloc(layout18);
                   if ptr.is_null()
                   {
-                    alloc::handle_alloc_error(layout26);
+                    alloc::handle_alloc_error(layout18);
                   }
                   ptr
                 }else {
                   core::ptr::null_mut()
                 };
-                for (i, e) in vec26.into_iter().enumerate() {
-                  let base = result26 as i32 + (i as i32) * 8;
+                for (i, e) in vec18.into_iter().enumerate() {
+                  let base = result18 as i32 + (i as i32) * 1;
                   {
-                    let vec25 = e;
-                    let ptr25 = vec25.as_ptr() as i32;
-                    let len25 = vec25.len() as i32;
-                    *((base + 4) as *mut i32) = len25;
-                    *((base + 0) as *mut i32) = ptr25;
+                    *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                     
                   }}
-                  *((ptr0 + 40) as *mut i32) = len26;
-                  *((ptr0 + 36) as *mut i32) = result26 as i32;
-                  cleanup_list.extend_from_slice(&[(result26, layout26),]);
+                  *((ptr0 + 40) as *mut i32) = len18;
+                  *((ptr0 + 36) as *mut i32) = result18 as i32;
+                  cleanup_list.extend_from_slice(&[(result18, layout18),]);
                   
                 },
-                VecValue::TypeU8(e) => {
-                  *((ptr0 + 32) as *mut u8) = (9i32) as u8;
-                  let vec27 = e;
-                  let ptr27 = vec27.as_ptr() as i32;
-                  let len27 = vec27.len() as i32;
-                  *((ptr0 + 40) as *mut i32) = len27;
-                  *((ptr0 + 36) as *mut i32) = ptr27;
-                  
-                },
-                VecValue::TypeU32(e) => {
-                  *((ptr0 + 32) as *mut u8) = (10i32) as u8;
-                  let vec28 = e;
-                  let ptr28 = vec28.as_ptr() as i32;
-                  let len28 = vec28.len() as i32;
-                  *((ptr0 + 40) as *mut i32) = len28;
-                  *((ptr0 + 36) as *mut i32) = ptr28;
-                  
-                },
-                VecValue::TypeU64(e) => {
-                  *((ptr0 + 32) as *mut u8) = (11i32) as u8;
-                  let vec29 = e;
-                  let ptr29 = vec29.as_ptr() as i32;
-                  let len29 = vec29.len() as i32;
-                  *((ptr0 + 40) as *mut i32) = len29;
-                  *((ptr0 + 36) as *mut i32) = ptr29;
-                  
-                },
-                VecValue::TypeVec2(e) => {
-                  *((ptr0 + 32) as *mut u8) = (12i32) as u8;
-                  let vec30 = e;
-                  let ptr30 = vec30.as_ptr() as i32;
-                  let len30 = vec30.len() as i32;
-                  *((ptr0 + 40) as *mut i32) = len30;
-                  *((ptr0 + 36) as *mut i32) = ptr30;
-                  
-                },
-                VecValue::TypeVec3(e) => {
-                  *((ptr0 + 32) as *mut u8) = (13i32) as u8;
-                  let vec31 = e;
-                  let ptr31 = vec31.as_ptr() as i32;
-                  let len31 = vec31.len() as i32;
-                  *((ptr0 + 40) as *mut i32) = len31;
-                  *((ptr0 + 36) as *mut i32) = ptr31;
-                  
-                },
-                VecValue::TypeVec4(e) => {
-                  *((ptr0 + 32) as *mut u8) = (14i32) as u8;
-                  let vec32 = e;
-                  let ptr32 = vec32.as_ptr() as i32;
-                  let len32 = vec32.len() as i32;
-                  *((ptr0 + 40) as *mut i32) = len32;
-                  *((ptr0 + 36) as *mut i32) = ptr32;
-                  
-                },
-                VecValue::TypeUvec2(e) => {
-                  *((ptr0 + 32) as *mut u8) = (15i32) as u8;
-                  let vec33 = e;
-                  let ptr33 = vec33.as_ptr() as i32;
-                  let len33 = vec33.len() as i32;
-                  *((ptr0 + 40) as *mut i32) = len33;
-                  *((ptr0 + 36) as *mut i32) = ptr33;
-                  
-                },
-                VecValue::TypeUvec3(e) => {
-                  *((ptr0 + 32) as *mut u8) = (16i32) as u8;
-                  let vec34 = e;
-                  let ptr34 = vec34.as_ptr() as i32;
-                  let len34 = vec34.len() as i32;
-                  *((ptr0 + 40) as *mut i32) = len34;
-                  *((ptr0 + 36) as *mut i32) = ptr34;
-                  
-                },
-                VecValue::TypeUvec4(e) => {
-                  *((ptr0 + 32) as *mut u8) = (17i32) as u8;
-                  let vec35 = e;
-                  let ptr35 = vec35.as_ptr() as i32;
-                  let len35 = vec35.len() as i32;
-                  *((ptr0 + 40) as *mut i32) = len35;
-                  *((ptr0 + 36) as *mut i32) = ptr35;
-                  
-                },
-              };
-              
-            },
-            Value::TypeOption(e) => {
-              *((ptr0 + 24) as *mut u8) = (19i32) as u8;
-              match e {
-                OptionValue::TypeEmpty(e) => {
-                  *((ptr0 + 32) as *mut u8) = (0i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      let () = e;
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
-                        
-                      }
-                    },
-                  };
-                },
-                OptionValue::TypeBool(e) => {
-                  *((ptr0 + 32) as *mut u8) = (1i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      *((ptr0 + 41) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
-                        
-                      }
-                    },
-                  };
-                },
-                OptionValue::TypeEntityId(e) => {
+                VecValue::TypeEntityId(e) => {
                   *((ptr0 + 32) as *mut u8) = (2i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      let super::types::EntityId{ id0:id037, id1:id137, } = e;
-                      *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(id037);
-                      *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(id137);
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
-                        
-                      }
-                    },
-                  };
+                  let vec19 = e;
+                  let ptr19 = vec19.as_ptr() as i32;
+                  let len19 = vec19.len() as i32;
+                  *((ptr0 + 40) as *mut i32) = len19;
+                  *((ptr0 + 36) as *mut i32) = ptr19;
+                  
                 },
-                OptionValue::TypeF32(e) => {
+                VecValue::TypeF32(e) => {
                   *((ptr0 + 32) as *mut u8) = (3i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(e);
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
-                        
-                      }
-                    },
-                  };
+                  let vec20 = e;
+                  let ptr20 = vec20.as_ptr() as i32;
+                  let len20 = vec20.len() as i32;
+                  *((ptr0 + 40) as *mut i32) = len20;
+                  *((ptr0 + 36) as *mut i32) = ptr20;
+                  
                 },
-                OptionValue::TypeF64(e) => {
+                VecValue::TypeF64(e) => {
                   *((ptr0 + 32) as *mut u8) = (4i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      *((ptr0 + 48) as *mut f64) = wit_bindgen::rt::as_f64(e);
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
-                        
-                      }
-                    },
-                  };
+                  let vec21 = e;
+                  let ptr21 = vec21.as_ptr() as i32;
+                  let len21 = vec21.len() as i32;
+                  *((ptr0 + 40) as *mut i32) = len21;
+                  *((ptr0 + 36) as *mut i32) = ptr21;
+                  
                 },
-                OptionValue::TypeMat4(e) => {
+                VecValue::TypeMat4(e) => {
                   *((ptr0 + 32) as *mut u8) = (5i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      let super::types::Mat4{ x:x38, y:y38, z:z38, w:w38, } = e;
-                      let super::types::Vec4{ x:x39, y:y39, z:z39, w:w39, } = x38;
-                      *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x39);
-                      *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y39);
-                      *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z39);
-                      *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w39);
-                      let super::types::Vec4{ x:x40, y:y40, z:z40, w:w40, } = y38;
-                      *((ptr0 + 60) as *mut f32) = wit_bindgen::rt::as_f32(x40);
-                      *((ptr0 + 64) as *mut f32) = wit_bindgen::rt::as_f32(y40);
-                      *((ptr0 + 68) as *mut f32) = wit_bindgen::rt::as_f32(z40);
-                      *((ptr0 + 72) as *mut f32) = wit_bindgen::rt::as_f32(w40);
-                      let super::types::Vec4{ x:x41, y:y41, z:z41, w:w41, } = z38;
-                      *((ptr0 + 76) as *mut f32) = wit_bindgen::rt::as_f32(x41);
-                      *((ptr0 + 80) as *mut f32) = wit_bindgen::rt::as_f32(y41);
-                      *((ptr0 + 84) as *mut f32) = wit_bindgen::rt::as_f32(z41);
-                      *((ptr0 + 88) as *mut f32) = wit_bindgen::rt::as_f32(w41);
-                      let super::types::Vec4{ x:x42, y:y42, z:z42, w:w42, } = w38;
-                      *((ptr0 + 92) as *mut f32) = wit_bindgen::rt::as_f32(x42);
-                      *((ptr0 + 96) as *mut f32) = wit_bindgen::rt::as_f32(y42);
-                      *((ptr0 + 100) as *mut f32) = wit_bindgen::rt::as_f32(z42);
-                      *((ptr0 + 104) as *mut f32) = wit_bindgen::rt::as_f32(w42);
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
-                        
-                      }
-                    },
-                  };
+                  let vec22 = e;
+                  let ptr22 = vec22.as_ptr() as i32;
+                  let len22 = vec22.len() as i32;
+                  *((ptr0 + 40) as *mut i32) = len22;
+                  *((ptr0 + 36) as *mut i32) = ptr22;
+                  
                 },
-                OptionValue::TypeI32(e) => {
+                VecValue::TypeI32(e) => {
                   *((ptr0 + 32) as *mut u8) = (6i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(e);
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
-                        
-                      }
-                    },
-                  };
+                  let vec23 = e;
+                  let ptr23 = vec23.as_ptr() as i32;
+                  let len23 = vec23.len() as i32;
+                  *((ptr0 + 40) as *mut i32) = len23;
+                  *((ptr0 + 36) as *mut i32) = ptr23;
+                  
                 },
-                OptionValue::TypeQuat(e) => {
+                VecValue::TypeQuat(e) => {
                   *((ptr0 + 32) as *mut u8) = (7i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      let super::types::Quat{ x:x43, y:y43, z:z43, w:w43, } = e;
-                      *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x43);
-                      *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y43);
-                      *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z43);
-                      *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w43);
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
-                        
-                      }
-                    },
-                  };
+                  let vec24 = e;
+                  let ptr24 = vec24.as_ptr() as i32;
+                  let len24 = vec24.len() as i32;
+                  *((ptr0 + 40) as *mut i32) = len24;
+                  *((ptr0 + 36) as *mut i32) = ptr24;
+                  
                 },
-                OptionValue::TypeString(e) => {
+                VecValue::TypeString(e) => {
                   *((ptr0 + 32) as *mut u8) = (8i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      let vec44 = e;
-                      let ptr44 = vec44.as_ptr() as i32;
-                      let len44 = vec44.len() as i32;
-                      *((ptr0 + 48) as *mut i32) = len44;
-                      *((ptr0 + 44) as *mut i32) = ptr44;
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
-                        
-                      }
-                    },
+                  let vec26 = e;
+                  let len26 = vec26.len() as i32;
+                  let layout26 = alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
+                  let result26 = if layout26.size() != 0
+                  {
+                    let ptr = alloc::alloc(layout26);
+                    if ptr.is_null()
+                    {
+                      alloc::handle_alloc_error(layout26);
+                    }
+                    ptr
+                  }else {
+                    core::ptr::null_mut()
                   };
-                },
-                OptionValue::TypeU8(e) => {
-                  *((ptr0 + 32) as *mut u8) = (9i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      *((ptr0 + 41) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
+                  for (i, e) in vec26.into_iter().enumerate() {
+                    let base = result26 as i32 + (i as i32) * 8;
+                    {
+                      let vec25 = e;
+                      let ptr25 = vec25.as_ptr() as i32;
+                      let len25 = vec25.len() as i32;
+                      *((base + 4) as *mut i32) = len25;
+                      *((base + 0) as *mut i32) = ptr25;
                       
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                    }}
+                    *((ptr0 + 40) as *mut i32) = len26;
+                    *((ptr0 + 36) as *mut i32) = result26 as i32;
+                    cleanup_list.extend_from_slice(&[(result26, layout26),]);
+                    
+                  },
+                  VecValue::TypeU8(e) => {
+                    *((ptr0 + 32) as *mut u8) = (9i32) as u8;
+                    let vec27 = e;
+                    let ptr27 = vec27.as_ptr() as i32;
+                    let len27 = vec27.len() as i32;
+                    *((ptr0 + 40) as *mut i32) = len27;
+                    *((ptr0 + 36) as *mut i32) = ptr27;
+                    
+                  },
+                  VecValue::TypeU32(e) => {
+                    *((ptr0 + 32) as *mut u8) = (10i32) as u8;
+                    let vec28 = e;
+                    let ptr28 = vec28.as_ptr() as i32;
+                    let len28 = vec28.len() as i32;
+                    *((ptr0 + 40) as *mut i32) = len28;
+                    *((ptr0 + 36) as *mut i32) = ptr28;
+                    
+                  },
+                  VecValue::TypeU64(e) => {
+                    *((ptr0 + 32) as *mut u8) = (11i32) as u8;
+                    let vec29 = e;
+                    let ptr29 = vec29.as_ptr() as i32;
+                    let len29 = vec29.len() as i32;
+                    *((ptr0 + 40) as *mut i32) = len29;
+                    *((ptr0 + 36) as *mut i32) = ptr29;
+                    
+                  },
+                  VecValue::TypeVec2(e) => {
+                    *((ptr0 + 32) as *mut u8) = (12i32) as u8;
+                    let vec30 = e;
+                    let ptr30 = vec30.as_ptr() as i32;
+                    let len30 = vec30.len() as i32;
+                    *((ptr0 + 40) as *mut i32) = len30;
+                    *((ptr0 + 36) as *mut i32) = ptr30;
+                    
+                  },
+                  VecValue::TypeVec3(e) => {
+                    *((ptr0 + 32) as *mut u8) = (13i32) as u8;
+                    let vec31 = e;
+                    let ptr31 = vec31.as_ptr() as i32;
+                    let len31 = vec31.len() as i32;
+                    *((ptr0 + 40) as *mut i32) = len31;
+                    *((ptr0 + 36) as *mut i32) = ptr31;
+                    
+                  },
+                  VecValue::TypeVec4(e) => {
+                    *((ptr0 + 32) as *mut u8) = (14i32) as u8;
+                    let vec32 = e;
+                    let ptr32 = vec32.as_ptr() as i32;
+                    let len32 = vec32.len() as i32;
+                    *((ptr0 + 40) as *mut i32) = len32;
+                    *((ptr0 + 36) as *mut i32) = ptr32;
+                    
+                  },
+                  VecValue::TypeUvec2(e) => {
+                    *((ptr0 + 32) as *mut u8) = (15i32) as u8;
+                    let vec33 = e;
+                    let ptr33 = vec33.as_ptr() as i32;
+                    let len33 = vec33.len() as i32;
+                    *((ptr0 + 40) as *mut i32) = len33;
+                    *((ptr0 + 36) as *mut i32) = ptr33;
+                    
+                  },
+                  VecValue::TypeUvec3(e) => {
+                    *((ptr0 + 32) as *mut u8) = (16i32) as u8;
+                    let vec34 = e;
+                    let ptr34 = vec34.as_ptr() as i32;
+                    let len34 = vec34.len() as i32;
+                    *((ptr0 + 40) as *mut i32) = len34;
+                    *((ptr0 + 36) as *mut i32) = ptr34;
+                    
+                  },
+                  VecValue::TypeUvec4(e) => {
+                    *((ptr0 + 32) as *mut u8) = (17i32) as u8;
+                    let vec35 = e;
+                    let ptr35 = vec35.as_ptr() as i32;
+                    let len35 = vec35.len() as i32;
+                    *((ptr0 + 40) as *mut i32) = len35;
+                    *((ptr0 + 36) as *mut i32) = ptr35;
+                    
+                  },
+                };
+                
+              },
+              Value::TypeOption(e) => {
+                *((ptr0 + 24) as *mut u8) = (19i32) as u8;
+                match e {
+                  OptionValue::TypeEmpty(e) => {
+                    *((ptr0 + 32) as *mut u8) = (0i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        let () = e;
                         
-                      }
-                    },
-                  };
-                },
-                OptionValue::TypeU32(e) => {
-                  *((ptr0 + 32) as *mut u8) = (10i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(e);
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeBool(e) => {
+                    *((ptr0 + 32) as *mut u8) = (1i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        *((ptr0 + 41) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                         
-                      }
-                    },
-                  };
-                },
-                OptionValue::TypeU64(e) => {
-                  *((ptr0 + 32) as *mut u8) = (11i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(e);
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeEntityId(e) => {
+                    *((ptr0 + 32) as *mut u8) = (2i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        let super::types::EntityId{ id0:id037, id1:id137, } = e;
+                        *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(id037);
+                        *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(id137);
                         
-                      }
-                    },
-                  };
-                },
-                OptionValue::TypeVec2(e) => {
-                  *((ptr0 + 32) as *mut u8) = (12i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      let super::types::Vec2{ x:x45, y:y45, } = e;
-                      *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x45);
-                      *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y45);
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeF32(e) => {
+                    *((ptr0 + 32) as *mut u8) = (3i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(e);
                         
-                      }
-                    },
-                  };
-                },
-                OptionValue::TypeVec3(e) => {
-                  *((ptr0 + 32) as *mut u8) = (13i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      let super::types::Vec3{ x:x46, y:y46, z:z46, } = e;
-                      *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x46);
-                      *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y46);
-                      *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z46);
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeF64(e) => {
+                    *((ptr0 + 32) as *mut u8) = (4i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        *((ptr0 + 48) as *mut f64) = wit_bindgen::rt::as_f64(e);
                         
-                      }
-                    },
-                  };
-                },
-                OptionValue::TypeVec4(e) => {
-                  *((ptr0 + 32) as *mut u8) = (14i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      let super::types::Vec4{ x:x47, y:y47, z:z47, w:w47, } = e;
-                      *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x47);
-                      *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y47);
-                      *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z47);
-                      *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w47);
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeMat4(e) => {
+                    *((ptr0 + 32) as *mut u8) = (5i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        let super::types::Mat4{ x:x38, y:y38, z:z38, w:w38, } = e;
+                        let super::types::Vec4{ x:x39, y:y39, z:z39, w:w39, } = x38;
+                        *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x39);
+                        *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y39);
+                        *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z39);
+                        *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w39);
+                        let super::types::Vec4{ x:x40, y:y40, z:z40, w:w40, } = y38;
+                        *((ptr0 + 60) as *mut f32) = wit_bindgen::rt::as_f32(x40);
+                        *((ptr0 + 64) as *mut f32) = wit_bindgen::rt::as_f32(y40);
+                        *((ptr0 + 68) as *mut f32) = wit_bindgen::rt::as_f32(z40);
+                        *((ptr0 + 72) as *mut f32) = wit_bindgen::rt::as_f32(w40);
+                        let super::types::Vec4{ x:x41, y:y41, z:z41, w:w41, } = z38;
+                        *((ptr0 + 76) as *mut f32) = wit_bindgen::rt::as_f32(x41);
+                        *((ptr0 + 80) as *mut f32) = wit_bindgen::rt::as_f32(y41);
+                        *((ptr0 + 84) as *mut f32) = wit_bindgen::rt::as_f32(z41);
+                        *((ptr0 + 88) as *mut f32) = wit_bindgen::rt::as_f32(w41);
+                        let super::types::Vec4{ x:x42, y:y42, z:z42, w:w42, } = w38;
+                        *((ptr0 + 92) as *mut f32) = wit_bindgen::rt::as_f32(x42);
+                        *((ptr0 + 96) as *mut f32) = wit_bindgen::rt::as_f32(y42);
+                        *((ptr0 + 100) as *mut f32) = wit_bindgen::rt::as_f32(z42);
+                        *((ptr0 + 104) as *mut f32) = wit_bindgen::rt::as_f32(w42);
                         
-                      }
-                    },
-                  };
-                },
-                OptionValue::TypeUvec2(e) => {
-                  *((ptr0 + 32) as *mut u8) = (15i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      let super::types::Uvec2{ x:x48, y:y48, } = e;
-                      *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x48);
-                      *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y48);
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeI32(e) => {
+                    *((ptr0 + 32) as *mut u8) = (6i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(e);
                         
-                      }
-                    },
-                  };
-                },
-                OptionValue::TypeUvec3(e) => {
-                  *((ptr0 + 32) as *mut u8) = (16i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      let super::types::Uvec3{ x:x49, y:y49, z:z49, } = e;
-                      *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x49);
-                      *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y49);
-                      *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z49);
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeQuat(e) => {
+                    *((ptr0 + 32) as *mut u8) = (7i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        let super::types::Quat{ x:x43, y:y43, z:z43, w:w43, } = e;
+                        *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x43);
+                        *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y43);
+                        *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z43);
+                        *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w43);
                         
-                      }
-                    },
-                  };
-                },
-                OptionValue::TypeUvec4(e) => {
-                  *((ptr0 + 32) as *mut u8) = (17i32) as u8;
-                  match e {
-                    Some(e) => {
-                      *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                      let super::types::Uvec4{ x:x50, y:y50, z:z50, w:w50, } = e;
-                      *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x50);
-                      *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y50);
-                      *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z50);
-                      *((ptr0 + 56) as *mut i32) = wit_bindgen::rt::as_i32(w50);
-                      
-                    },
-                    None => {
-                      {
-                        *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeString(e) => {
+                    *((ptr0 + 32) as *mut u8) = (8i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        let vec44 = e;
+                        let ptr44 = vec44.as_ptr() as i32;
+                        let len44 = vec44.len() as i32;
+                        *((ptr0 + 48) as *mut i32) = len44;
+                        *((ptr0 + 44) as *mut i32) = ptr44;
                         
-                      }
-                    },
-                  };
-                },
-              };
-              
-            },
-          };
-          
-          #[link(wasm_import_module = "component")]
-          extern "C" {
-            #[cfg_attr(target_arch = "wasm32", link_name = "add-component")]
-            #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_add-component")]
-            fn wit_import(
-            _: i32, );
-          }
-          wit_import(ptr0);
-          for (ptr, layout) in cleanup_list {
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeU8(e) => {
+                    *((ptr0 + 32) as *mut u8) = (9i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        *((ptr0 + 41) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
+                        
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeU32(e) => {
+                    *((ptr0 + 32) as *mut u8) = (10i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                        
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeU64(e) => {
+                    *((ptr0 + 32) as *mut u8) = (11i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(e);
+                        
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeVec2(e) => {
+                    *((ptr0 + 32) as *mut u8) = (12i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        let super::types::Vec2{ x:x45, y:y45, } = e;
+                        *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x45);
+                        *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y45);
+                        
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeVec3(e) => {
+                    *((ptr0 + 32) as *mut u8) = (13i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        let super::types::Vec3{ x:x46, y:y46, z:z46, } = e;
+                        *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x46);
+                        *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y46);
+                        *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z46);
+                        
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeVec4(e) => {
+                    *((ptr0 + 32) as *mut u8) = (14i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        let super::types::Vec4{ x:x47, y:y47, z:z47, w:w47, } = e;
+                        *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x47);
+                        *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y47);
+                        *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z47);
+                        *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w47);
+                        
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeUvec2(e) => {
+                    *((ptr0 + 32) as *mut u8) = (15i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        let super::types::Uvec2{ x:x48, y:y48, } = e;
+                        *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x48);
+                        *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y48);
+                        
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeUvec3(e) => {
+                    *((ptr0 + 32) as *mut u8) = (16i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        let super::types::Uvec3{ x:x49, y:y49, z:z49, } = e;
+                        *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x49);
+                        *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y49);
+                        *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z49);
+                        
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                  OptionValue::TypeUvec4(e) => {
+                    *((ptr0 + 32) as *mut u8) = (17i32) as u8;
+                    match e {
+                      Some(e) => {
+                        *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                        let super::types::Uvec4{ x:x50, y:y50, z:z50, w:w50, } = e;
+                        *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x50);
+                        *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y50);
+                        *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z50);
+                        *((ptr0 + 56) as *mut i32) = wit_bindgen::rt::as_i32(w50);
+                        
+                      },
+                      None => {
+                        {
+                          *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                          
+                        }
+                      },
+                    };
+                  },
+                };
+                
+              },
+            };
             
-            if layout.size() != 0 {
+            #[link(wasm_import_module = "component")]
+            extern "C" {
+              #[cfg_attr(target_arch = "wasm32", link_name = "add-component")]
+              #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_add-component")]
+              fn wit_import(
+              _: i32, );
+            }
+            wit_import(ptr0);
+            for (ptr, layout) in cleanup_list {
               
-              alloc::dealloc(ptr, layout);
+              if layout.size() != 0 {
+                
+                alloc::dealloc(ptr, layout);
+                
+              }
               
             }
-            
           }
         }
-      }
-      #[allow(clippy::all)]
-      pub fn add_components(entity: EntityId,data: Entity<'_,>,){
-        
-        #[allow(unused_imports)]
-        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-        unsafe {
-          let mut cleanup_list = Vec::new();
-          let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-          let vec51 = data;
-          let len51 = vec51.len() as i32;
-          let layout51 = alloc::Layout::from_size_align_unchecked(vec51.len() * 96, 8);
-          let result51 = if layout51.size() != 0
-          {
-            let ptr = alloc::alloc(layout51);
-            if ptr.is_null()
+        #[allow(clippy::all)]
+        pub fn add_components(entity: EntityId,data: Entity<'_,>,){
+          
+          #[allow(unused_imports)]
+          use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+          unsafe {
+            let mut cleanup_list = Vec::new();
+            let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+            let vec51 = data;
+            let len51 = vec51.len() as i32;
+            let layout51 = alloc::Layout::from_size_align_unchecked(vec51.len() * 96, 8);
+            let result51 = if layout51.size() != 0
             {
-              alloc::handle_alloc_error(layout51);
-            }
-            ptr
-          }else {
-            core::ptr::null_mut()
-          };
-          for (i, e) in vec51.into_iter().enumerate() {
-            let base = result51 as i32 + (i as i32) * 96;
-            {
-              let (t1_0, t1_1, ) = e;
-              *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t1_0);
-              match t1_1 {
-                Value::TypeEmpty(e) => {
-                  *((base + 8) as *mut u8) = (0i32) as u8;
-                  let () = e;
-                  
-                },
-                Value::TypeBool(e) => {
-                  *((base + 8) as *mut u8) = (1i32) as u8;
-                  *((base + 16) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
-                  
-                },
-                Value::TypeEntityId(e) => {
-                  *((base + 8) as *mut u8) = (2i32) as u8;
-                  let super::types::EntityId{ id0:id03, id1:id13, } = e;
-                  *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(id03);
-                  *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(id13);
-                  
-                },
-                Value::TypeF32(e) => {
-                  *((base + 8) as *mut u8) = (3i32) as u8;
-                  *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(e);
-                  
-                },
-                Value::TypeF64(e) => {
-                  *((base + 8) as *mut u8) = (4i32) as u8;
-                  *((base + 16) as *mut f64) = wit_bindgen::rt::as_f64(e);
-                  
-                },
-                Value::TypeMat4(e) => {
-                  *((base + 8) as *mut u8) = (5i32) as u8;
-                  let super::types::Mat4{ x:x4, y:y4, z:z4, w:w4, } = e;
-                  let super::types::Vec4{ x:x5, y:y5, z:z5, w:w5, } = x4;
-                  *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x5);
-                  *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y5);
-                  *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z5);
-                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w5);
-                  let super::types::Vec4{ x:x6, y:y6, z:z6, w:w6, } = y4;
-                  *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(x6);
-                  *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(y6);
-                  *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(z6);
-                  *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(w6);
-                  let super::types::Vec4{ x:x7, y:y7, z:z7, w:w7, } = z4;
-                  *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(x7);
-                  *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(y7);
-                  *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(z7);
-                  *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(w7);
-                  let super::types::Vec4{ x:x8, y:y8, z:z8, w:w8, } = w4;
-                  *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(x8);
-                  *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(y8);
-                  *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(z8);
-                  *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(w8);
-                  
-                },
-                Value::TypeI32(e) => {
-                  *((base + 8) as *mut u8) = (6i32) as u8;
-                  *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
-                  
-                },
-                Value::TypeQuat(e) => {
-                  *((base + 8) as *mut u8) = (7i32) as u8;
-                  let super::types::Quat{ x:x9, y:y9, z:z9, w:w9, } = e;
-                  *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x9);
-                  *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y9);
-                  *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z9);
-                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w9);
-                  
-                },
-                Value::TypeString(e) => {
-                  *((base + 8) as *mut u8) = (8i32) as u8;
-                  let vec10 = e;
-                  let ptr10 = vec10.as_ptr() as i32;
-                  let len10 = vec10.len() as i32;
-                  *((base + 20) as *mut i32) = len10;
-                  *((base + 16) as *mut i32) = ptr10;
-                  
-                },
-                Value::TypeU8(e) => {
-                  *((base + 8) as *mut u8) = (9i32) as u8;
-                  *((base + 16) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
-                  
-                },
-                Value::TypeU32(e) => {
-                  *((base + 8) as *mut u8) = (10i32) as u8;
-                  *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
-                  
-                },
-                Value::TypeU64(e) => {
-                  *((base + 8) as *mut u8) = (11i32) as u8;
-                  *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(e);
-                  
-                },
-                Value::TypeVec2(e) => {
-                  *((base + 8) as *mut u8) = (12i32) as u8;
-                  let super::types::Vec2{ x:x11, y:y11, } = e;
-                  *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x11);
-                  *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y11);
-                  
-                },
-                Value::TypeVec3(e) => {
-                  *((base + 8) as *mut u8) = (13i32) as u8;
-                  let super::types::Vec3{ x:x12, y:y12, z:z12, } = e;
-                  *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x12);
-                  *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y12);
-                  *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z12);
-                  
-                },
-                Value::TypeVec4(e) => {
-                  *((base + 8) as *mut u8) = (14i32) as u8;
-                  let super::types::Vec4{ x:x13, y:y13, z:z13, w:w13, } = e;
-                  *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x13);
-                  *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y13);
-                  *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z13);
-                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w13);
-                  
-                },
-                Value::TypeUvec2(e) => {
-                  *((base + 8) as *mut u8) = (15i32) as u8;
-                  let super::types::Uvec2{ x:x14, y:y14, } = e;
-                  *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x14);
-                  *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y14);
-                  
-                },
-                Value::TypeUvec3(e) => {
-                  *((base + 8) as *mut u8) = (16i32) as u8;
-                  let super::types::Uvec3{ x:x15, y:y15, z:z15, } = e;
-                  *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x15);
-                  *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y15);
-                  *((base + 24) as *mut i32) = wit_bindgen::rt::as_i32(z15);
-                  
-                },
-                Value::TypeUvec4(e) => {
-                  *((base + 8) as *mut u8) = (17i32) as u8;
-                  let super::types::Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
-                  *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x16);
-                  *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y16);
-                  *((base + 24) as *mut i32) = wit_bindgen::rt::as_i32(z16);
-                  *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(w16);
-                  
-                },
-                Value::TypeVec(e) => {
-                  *((base + 8) as *mut u8) = (18i32) as u8;
-                  match e {
-                    VecValue::TypeEmpty(e) => {
-                      *((base + 16) as *mut u8) = (0i32) as u8;
-                      let vec17 = e;
-                      let ptr17 = vec17.as_ptr() as i32;
-                      let len17 = vec17.len() as i32;
-                      *((base + 24) as *mut i32) = len17;
-                      *((base + 20) as *mut i32) = ptr17;
-                      
-                    },
-                    VecValue::TypeBool(e) => {
-                      *((base + 16) as *mut u8) = (1i32) as u8;
-                      let vec18 = e;
-                      let len18 = vec18.len() as i32;
-                      let layout18 = alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
-                      let result18 = if layout18.size() != 0
-                      {
-                        let ptr = alloc::alloc(layout18);
-                        if ptr.is_null()
-                        {
-                          alloc::handle_alloc_error(layout18);
-                        }
-                        ptr
-                      }else {
-                        core::ptr::null_mut()
-                      };
-                      for (i, e) in vec18.into_iter().enumerate() {
-                        let base = result18 as i32 + (i as i32) * 1;
-                        {
-                          *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
-                          
-                        }}
-                        *((base + 24) as *mut i32) = len18;
-                        *((base + 20) as *mut i32) = result18 as i32;
-                        cleanup_list.extend_from_slice(&[(result18, layout18),]);
-                        
-                      },
-                      VecValue::TypeEntityId(e) => {
-                        *((base + 16) as *mut u8) = (2i32) as u8;
-                        let vec19 = e;
-                        let ptr19 = vec19.as_ptr() as i32;
-                        let len19 = vec19.len() as i32;
-                        *((base + 24) as *mut i32) = len19;
-                        *((base + 20) as *mut i32) = ptr19;
-                        
-                      },
-                      VecValue::TypeF32(e) => {
-                        *((base + 16) as *mut u8) = (3i32) as u8;
-                        let vec20 = e;
-                        let ptr20 = vec20.as_ptr() as i32;
-                        let len20 = vec20.len() as i32;
-                        *((base + 24) as *mut i32) = len20;
-                        *((base + 20) as *mut i32) = ptr20;
-                        
-                      },
-                      VecValue::TypeF64(e) => {
-                        *((base + 16) as *mut u8) = (4i32) as u8;
-                        let vec21 = e;
-                        let ptr21 = vec21.as_ptr() as i32;
-                        let len21 = vec21.len() as i32;
-                        *((base + 24) as *mut i32) = len21;
-                        *((base + 20) as *mut i32) = ptr21;
-                        
-                      },
-                      VecValue::TypeMat4(e) => {
-                        *((base + 16) as *mut u8) = (5i32) as u8;
-                        let vec22 = e;
-                        let ptr22 = vec22.as_ptr() as i32;
-                        let len22 = vec22.len() as i32;
-                        *((base + 24) as *mut i32) = len22;
-                        *((base + 20) as *mut i32) = ptr22;
-                        
-                      },
-                      VecValue::TypeI32(e) => {
-                        *((base + 16) as *mut u8) = (6i32) as u8;
-                        let vec23 = e;
-                        let ptr23 = vec23.as_ptr() as i32;
-                        let len23 = vec23.len() as i32;
-                        *((base + 24) as *mut i32) = len23;
-                        *((base + 20) as *mut i32) = ptr23;
-                        
-                      },
-                      VecValue::TypeQuat(e) => {
-                        *((base + 16) as *mut u8) = (7i32) as u8;
-                        let vec24 = e;
-                        let ptr24 = vec24.as_ptr() as i32;
-                        let len24 = vec24.len() as i32;
-                        *((base + 24) as *mut i32) = len24;
-                        *((base + 20) as *mut i32) = ptr24;
-                        
-                      },
-                      VecValue::TypeString(e) => {
-                        *((base + 16) as *mut u8) = (8i32) as u8;
-                        let vec26 = e;
-                        let len26 = vec26.len() as i32;
-                        let layout26 = alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
-                        let result26 = if layout26.size() != 0
-                        {
-                          let ptr = alloc::alloc(layout26);
-                          if ptr.is_null()
-                          {
-                            alloc::handle_alloc_error(layout26);
-                          }
-                          ptr
-                        }else {
-                          core::ptr::null_mut()
-                        };
-                        for (i, e) in vec26.into_iter().enumerate() {
-                          let base = result26 as i32 + (i as i32) * 8;
-                          {
-                            let vec25 = e;
-                            let ptr25 = vec25.as_ptr() as i32;
-                            let len25 = vec25.len() as i32;
-                            *((base + 4) as *mut i32) = len25;
-                            *((base + 0) as *mut i32) = ptr25;
-                            
-                          }}
-                          *((base + 24) as *mut i32) = len26;
-                          *((base + 20) as *mut i32) = result26 as i32;
-                          cleanup_list.extend_from_slice(&[(result26, layout26),]);
-                          
-                        },
-                        VecValue::TypeU8(e) => {
-                          *((base + 16) as *mut u8) = (9i32) as u8;
-                          let vec27 = e;
-                          let ptr27 = vec27.as_ptr() as i32;
-                          let len27 = vec27.len() as i32;
-                          *((base + 24) as *mut i32) = len27;
-                          *((base + 20) as *mut i32) = ptr27;
-                          
-                        },
-                        VecValue::TypeU32(e) => {
-                          *((base + 16) as *mut u8) = (10i32) as u8;
-                          let vec28 = e;
-                          let ptr28 = vec28.as_ptr() as i32;
-                          let len28 = vec28.len() as i32;
-                          *((base + 24) as *mut i32) = len28;
-                          *((base + 20) as *mut i32) = ptr28;
-                          
-                        },
-                        VecValue::TypeU64(e) => {
-                          *((base + 16) as *mut u8) = (11i32) as u8;
-                          let vec29 = e;
-                          let ptr29 = vec29.as_ptr() as i32;
-                          let len29 = vec29.len() as i32;
-                          *((base + 24) as *mut i32) = len29;
-                          *((base + 20) as *mut i32) = ptr29;
-                          
-                        },
-                        VecValue::TypeVec2(e) => {
-                          *((base + 16) as *mut u8) = (12i32) as u8;
-                          let vec30 = e;
-                          let ptr30 = vec30.as_ptr() as i32;
-                          let len30 = vec30.len() as i32;
-                          *((base + 24) as *mut i32) = len30;
-                          *((base + 20) as *mut i32) = ptr30;
-                          
-                        },
-                        VecValue::TypeVec3(e) => {
-                          *((base + 16) as *mut u8) = (13i32) as u8;
-                          let vec31 = e;
-                          let ptr31 = vec31.as_ptr() as i32;
-                          let len31 = vec31.len() as i32;
-                          *((base + 24) as *mut i32) = len31;
-                          *((base + 20) as *mut i32) = ptr31;
-                          
-                        },
-                        VecValue::TypeVec4(e) => {
-                          *((base + 16) as *mut u8) = (14i32) as u8;
-                          let vec32 = e;
-                          let ptr32 = vec32.as_ptr() as i32;
-                          let len32 = vec32.len() as i32;
-                          *((base + 24) as *mut i32) = len32;
-                          *((base + 20) as *mut i32) = ptr32;
-                          
-                        },
-                        VecValue::TypeUvec2(e) => {
-                          *((base + 16) as *mut u8) = (15i32) as u8;
-                          let vec33 = e;
-                          let ptr33 = vec33.as_ptr() as i32;
-                          let len33 = vec33.len() as i32;
-                          *((base + 24) as *mut i32) = len33;
-                          *((base + 20) as *mut i32) = ptr33;
-                          
-                        },
-                        VecValue::TypeUvec3(e) => {
-                          *((base + 16) as *mut u8) = (16i32) as u8;
-                          let vec34 = e;
-                          let ptr34 = vec34.as_ptr() as i32;
-                          let len34 = vec34.len() as i32;
-                          *((base + 24) as *mut i32) = len34;
-                          *((base + 20) as *mut i32) = ptr34;
-                          
-                        },
-                        VecValue::TypeUvec4(e) => {
-                          *((base + 16) as *mut u8) = (17i32) as u8;
-                          let vec35 = e;
-                          let ptr35 = vec35.as_ptr() as i32;
-                          let len35 = vec35.len() as i32;
-                          *((base + 24) as *mut i32) = len35;
-                          *((base + 20) as *mut i32) = ptr35;
-                          
-                        },
-                      };
-                      
-                    },
-                    Value::TypeOption(e) => {
-                      *((base + 8) as *mut u8) = (19i32) as u8;
-                      match e {
-                        OptionValue::TypeEmpty(e) => {
-                          *((base + 16) as *mut u8) = (0i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              let () = e;
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeBool(e) => {
-                          *((base + 16) as *mut u8) = (1i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              *((base + 25) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeEntityId(e) => {
-                          *((base + 16) as *mut u8) = (2i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              let super::types::EntityId{ id0:id037, id1:id137, } = e;
-                              *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(id037);
-                              *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(id137);
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeF32(e) => {
-                          *((base + 16) as *mut u8) = (3i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(e);
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeF64(e) => {
-                          *((base + 16) as *mut u8) = (4i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              *((base + 32) as *mut f64) = wit_bindgen::rt::as_f64(e);
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeMat4(e) => {
-                          *((base + 16) as *mut u8) = (5i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              let super::types::Mat4{ x:x38, y:y38, z:z38, w:w38, } = e;
-                              let super::types::Vec4{ x:x39, y:y39, z:z39, w:w39, } = x38;
-                              *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x39);
-                              *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y39);
-                              *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z39);
-                              *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w39);
-                              let super::types::Vec4{ x:x40, y:y40, z:z40, w:w40, } = y38;
-                              *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(x40);
-                              *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(y40);
-                              *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(z40);
-                              *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(w40);
-                              let super::types::Vec4{ x:x41, y:y41, z:z41, w:w41, } = z38;
-                              *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(x41);
-                              *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(y41);
-                              *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(z41);
-                              *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(w41);
-                              let super::types::Vec4{ x:x42, y:y42, z:z42, w:w42, } = w38;
-                              *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(x42);
-                              *((base + 80) as *mut f32) = wit_bindgen::rt::as_f32(y42);
-                              *((base + 84) as *mut f32) = wit_bindgen::rt::as_f32(z42);
-                              *((base + 88) as *mut f32) = wit_bindgen::rt::as_f32(w42);
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeI32(e) => {
-                          *((base + 16) as *mut u8) = (6i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(e);
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeQuat(e) => {
-                          *((base + 16) as *mut u8) = (7i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              let super::types::Quat{ x:x43, y:y43, z:z43, w:w43, } = e;
-                              *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x43);
-                              *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y43);
-                              *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z43);
-                              *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w43);
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeString(e) => {
-                          *((base + 16) as *mut u8) = (8i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              let vec44 = e;
-                              let ptr44 = vec44.as_ptr() as i32;
-                              let len44 = vec44.len() as i32;
-                              *((base + 32) as *mut i32) = len44;
-                              *((base + 28) as *mut i32) = ptr44;
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeU8(e) => {
-                          *((base + 16) as *mut u8) = (9i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              *((base + 25) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeU32(e) => {
-                          *((base + 16) as *mut u8) = (10i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(e);
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeU64(e) => {
-                          *((base + 16) as *mut u8) = (11i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(e);
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeVec2(e) => {
-                          *((base + 16) as *mut u8) = (12i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              let super::types::Vec2{ x:x45, y:y45, } = e;
-                              *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x45);
-                              *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y45);
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeVec3(e) => {
-                          *((base + 16) as *mut u8) = (13i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              let super::types::Vec3{ x:x46, y:y46, z:z46, } = e;
-                              *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x46);
-                              *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y46);
-                              *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z46);
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeVec4(e) => {
-                          *((base + 16) as *mut u8) = (14i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              let super::types::Vec4{ x:x47, y:y47, z:z47, w:w47, } = e;
-                              *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x47);
-                              *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y47);
-                              *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z47);
-                              *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w47);
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeUvec2(e) => {
-                          *((base + 16) as *mut u8) = (15i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              let super::types::Uvec2{ x:x48, y:y48, } = e;
-                              *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x48);
-                              *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y48);
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeUvec3(e) => {
-                          *((base + 16) as *mut u8) = (16i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              let super::types::Uvec3{ x:x49, y:y49, z:z49, } = e;
-                              *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x49);
-                              *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y49);
-                              *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z49);
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                        OptionValue::TypeUvec4(e) => {
-                          *((base + 16) as *mut u8) = (17i32) as u8;
-                          match e {
-                            Some(e) => {
-                              *((base + 24) as *mut u8) = (1i32) as u8;
-                              let super::types::Uvec4{ x:x50, y:y50, z:z50, w:w50, } = e;
-                              *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x50);
-                              *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y50);
-                              *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z50);
-                              *((base + 40) as *mut i32) = wit_bindgen::rt::as_i32(w50);
-                              
-                            },
-                            None => {
-                              {
-                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                
-                              }
-                            },
-                          };
-                        },
-                      };
-                      
-                    },
-                  };
-                  
-                }}
-                
-                #[link(wasm_import_module = "component")]
-                extern "C" {
-                  #[cfg_attr(target_arch = "wasm32", link_name = "add-components")]
-                  #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_add-components")]
-                  fn wit_import(
-                  _: i64, _: i64, _: i32, _: i32, );
-                }
-                wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), result51 as i32, len51);
-                if layout51.size() != 0 {
-                  alloc::dealloc(result51, layout51);
-                }
-                for (ptr, layout) in cleanup_list {
-                  
-                  if layout.size() != 0 {
-                    
-                    alloc::dealloc(ptr, layout);
-                    
-                  }
-                  
-                }
+              let ptr = alloc::alloc(layout51);
+              if ptr.is_null()
+              {
+                alloc::handle_alloc_error(layout51);
               }
-            }
-            #[allow(clippy::all)]
-            pub fn set_component(entity: EntityId,index: u32,value: &Value,){
-              
-              #[allow(unused_imports)]
-              use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-              unsafe {
-                let mut cleanup_list = Vec::new();
-                
-                #[repr(align(8))]
-                struct RetArea([u8; 112]);
-                let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                let ptr0 = ret_area.as_mut_ptr() as i32;let super::types::EntityId{ id0:id01, id1:id11, } = entity;
-                *((ptr0 + 0) as *mut i64) = wit_bindgen::rt::as_i64(id01);
-                *((ptr0 + 8) as *mut i64) = wit_bindgen::rt::as_i64(id11);
-                *((ptr0 + 16) as *mut i32) = wit_bindgen::rt::as_i32(index);
-                match value {
+              ptr
+            }else {
+              core::ptr::null_mut()
+            };
+            for (i, e) in vec51.into_iter().enumerate() {
+              let base = result51 as i32 + (i as i32) * 96;
+              {
+                let (t1_0, t1_1, ) = e;
+                *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t1_0);
+                match t1_1 {
                   Value::TypeEmpty(e) => {
-                    *((ptr0 + 24) as *mut u8) = (0i32) as u8;
+                    *((base + 8) as *mut u8) = (0i32) as u8;
                     let () = e;
                     
                   },
                   Value::TypeBool(e) => {
-                    *((ptr0 + 24) as *mut u8) = (1i32) as u8;
-                    *((ptr0 + 32) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
+                    *((base + 8) as *mut u8) = (1i32) as u8;
+                    *((base + 16) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                     
                   },
                   Value::TypeEntityId(e) => {
-                    *((ptr0 + 24) as *mut u8) = (2i32) as u8;
+                    *((base + 8) as *mut u8) = (2i32) as u8;
                     let super::types::EntityId{ id0:id03, id1:id13, } = e;
-                    *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(id03);
-                    *((ptr0 + 40) as *mut i64) = wit_bindgen::rt::as_i64(id13);
+                    *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(id03);
+                    *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(id13);
                     
                   },
                   Value::TypeF32(e) => {
-                    *((ptr0 + 24) as *mut u8) = (3i32) as u8;
-                    *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(e);
+                    *((base + 8) as *mut u8) = (3i32) as u8;
+                    *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(e);
                     
                   },
                   Value::TypeF64(e) => {
-                    *((ptr0 + 24) as *mut u8) = (4i32) as u8;
-                    *((ptr0 + 32) as *mut f64) = wit_bindgen::rt::as_f64(e);
+                    *((base + 8) as *mut u8) = (4i32) as u8;
+                    *((base + 16) as *mut f64) = wit_bindgen::rt::as_f64(e);
                     
                   },
                   Value::TypeMat4(e) => {
-                    *((ptr0 + 24) as *mut u8) = (5i32) as u8;
+                    *((base + 8) as *mut u8) = (5i32) as u8;
                     let super::types::Mat4{ x:x4, y:y4, z:z4, w:w4, } = e;
                     let super::types::Vec4{ x:x5, y:y5, z:z5, w:w5, } = x4;
-                    *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x5);
-                    *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y5);
-                    *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z5);
-                    *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w5);
+                    *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x5);
+                    *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y5);
+                    *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z5);
+                    *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w5);
                     let super::types::Vec4{ x:x6, y:y6, z:z6, w:w6, } = y4;
-                    *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(x6);
-                    *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(y6);
-                    *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(z6);
-                    *((ptr0 + 60) as *mut f32) = wit_bindgen::rt::as_f32(w6);
+                    *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(x6);
+                    *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(y6);
+                    *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(z6);
+                    *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(w6);
                     let super::types::Vec4{ x:x7, y:y7, z:z7, w:w7, } = z4;
-                    *((ptr0 + 64) as *mut f32) = wit_bindgen::rt::as_f32(x7);
-                    *((ptr0 + 68) as *mut f32) = wit_bindgen::rt::as_f32(y7);
-                    *((ptr0 + 72) as *mut f32) = wit_bindgen::rt::as_f32(z7);
-                    *((ptr0 + 76) as *mut f32) = wit_bindgen::rt::as_f32(w7);
+                    *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(x7);
+                    *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(y7);
+                    *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(z7);
+                    *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(w7);
                     let super::types::Vec4{ x:x8, y:y8, z:z8, w:w8, } = w4;
-                    *((ptr0 + 80) as *mut f32) = wit_bindgen::rt::as_f32(x8);
-                    *((ptr0 + 84) as *mut f32) = wit_bindgen::rt::as_f32(y8);
-                    *((ptr0 + 88) as *mut f32) = wit_bindgen::rt::as_f32(z8);
-                    *((ptr0 + 92) as *mut f32) = wit_bindgen::rt::as_f32(w8);
+                    *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(x8);
+                    *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(y8);
+                    *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(z8);
+                    *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(w8);
                     
                   },
                   Value::TypeI32(e) => {
-                    *((ptr0 + 24) as *mut u8) = (6i32) as u8;
-                    *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                    *((base + 8) as *mut u8) = (6i32) as u8;
+                    *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
                     
                   },
                   Value::TypeQuat(e) => {
-                    *((ptr0 + 24) as *mut u8) = (7i32) as u8;
+                    *((base + 8) as *mut u8) = (7i32) as u8;
                     let super::types::Quat{ x:x9, y:y9, z:z9, w:w9, } = e;
-                    *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x9);
-                    *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y9);
-                    *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z9);
-                    *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w9);
+                    *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x9);
+                    *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y9);
+                    *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z9);
+                    *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w9);
                     
                   },
                   Value::TypeString(e) => {
-                    *((ptr0 + 24) as *mut u8) = (8i32) as u8;
+                    *((base + 8) as *mut u8) = (8i32) as u8;
                     let vec10 = e;
                     let ptr10 = vec10.as_ptr() as i32;
                     let len10 = vec10.len() as i32;
-                    *((ptr0 + 36) as *mut i32) = len10;
-                    *((ptr0 + 32) as *mut i32) = ptr10;
+                    *((base + 20) as *mut i32) = len10;
+                    *((base + 16) as *mut i32) = ptr10;
                     
                   },
                   Value::TypeU8(e) => {
-                    *((ptr0 + 24) as *mut u8) = (9i32) as u8;
-                    *((ptr0 + 32) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
+                    *((base + 8) as *mut u8) = (9i32) as u8;
+                    *((base + 16) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
                     
                   },
                   Value::TypeU32(e) => {
-                    *((ptr0 + 24) as *mut u8) = (10i32) as u8;
-                    *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                    *((base + 8) as *mut u8) = (10i32) as u8;
+                    *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
                     
                   },
                   Value::TypeU64(e) => {
-                    *((ptr0 + 24) as *mut u8) = (11i32) as u8;
-                    *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(e);
+                    *((base + 8) as *mut u8) = (11i32) as u8;
+                    *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(e);
                     
                   },
                   Value::TypeVec2(e) => {
-                    *((ptr0 + 24) as *mut u8) = (12i32) as u8;
+                    *((base + 8) as *mut u8) = (12i32) as u8;
                     let super::types::Vec2{ x:x11, y:y11, } = e;
-                    *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x11);
-                    *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y11);
+                    *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x11);
+                    *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y11);
                     
                   },
                   Value::TypeVec3(e) => {
-                    *((ptr0 + 24) as *mut u8) = (13i32) as u8;
+                    *((base + 8) as *mut u8) = (13i32) as u8;
                     let super::types::Vec3{ x:x12, y:y12, z:z12, } = e;
-                    *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x12);
-                    *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y12);
-                    *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z12);
+                    *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x12);
+                    *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y12);
+                    *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z12);
                     
                   },
                   Value::TypeVec4(e) => {
-                    *((ptr0 + 24) as *mut u8) = (14i32) as u8;
+                    *((base + 8) as *mut u8) = (14i32) as u8;
                     let super::types::Vec4{ x:x13, y:y13, z:z13, w:w13, } = e;
-                    *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x13);
-                    *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y13);
-                    *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z13);
-                    *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w13);
+                    *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x13);
+                    *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y13);
+                    *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z13);
+                    *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w13);
                     
                   },
                   Value::TypeUvec2(e) => {
-                    *((ptr0 + 24) as *mut u8) = (15i32) as u8;
+                    *((base + 8) as *mut u8) = (15i32) as u8;
                     let super::types::Uvec2{ x:x14, y:y14, } = e;
-                    *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x14);
-                    *((ptr0 + 36) as *mut i32) = wit_bindgen::rt::as_i32(y14);
+                    *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x14);
+                    *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y14);
                     
                   },
                   Value::TypeUvec3(e) => {
-                    *((ptr0 + 24) as *mut u8) = (16i32) as u8;
+                    *((base + 8) as *mut u8) = (16i32) as u8;
                     let super::types::Uvec3{ x:x15, y:y15, z:z15, } = e;
-                    *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x15);
-                    *((ptr0 + 36) as *mut i32) = wit_bindgen::rt::as_i32(y15);
-                    *((ptr0 + 40) as *mut i32) = wit_bindgen::rt::as_i32(z15);
+                    *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x15);
+                    *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y15);
+                    *((base + 24) as *mut i32) = wit_bindgen::rt::as_i32(z15);
                     
                   },
                   Value::TypeUvec4(e) => {
-                    *((ptr0 + 24) as *mut u8) = (17i32) as u8;
+                    *((base + 8) as *mut u8) = (17i32) as u8;
                     let super::types::Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
-                    *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x16);
-                    *((ptr0 + 36) as *mut i32) = wit_bindgen::rt::as_i32(y16);
-                    *((ptr0 + 40) as *mut i32) = wit_bindgen::rt::as_i32(z16);
-                    *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(w16);
+                    *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x16);
+                    *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y16);
+                    *((base + 24) as *mut i32) = wit_bindgen::rt::as_i32(z16);
+                    *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(w16);
                     
                   },
                   Value::TypeVec(e) => {
-                    *((ptr0 + 24) as *mut u8) = (18i32) as u8;
+                    *((base + 8) as *mut u8) = (18i32) as u8;
                     match e {
                       VecValue::TypeEmpty(e) => {
-                        *((ptr0 + 32) as *mut u8) = (0i32) as u8;
+                        *((base + 16) as *mut u8) = (0i32) as u8;
                         let vec17 = e;
                         let ptr17 = vec17.as_ptr() as i32;
                         let len17 = vec17.len() as i32;
-                        *((ptr0 + 40) as *mut i32) = len17;
-                        *((ptr0 + 36) as *mut i32) = ptr17;
+                        *((base + 24) as *mut i32) = len17;
+                        *((base + 20) as *mut i32) = ptr17;
                         
                       },
                       VecValue::TypeBool(e) => {
-                        *((ptr0 + 32) as *mut u8) = (1i32) as u8;
+                        *((base + 16) as *mut u8) = (1i32) as u8;
                         let vec18 = e;
                         let len18 = vec18.len() as i32;
                         let layout18 = alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
@@ -2699,67 +2134,67 @@ pub mod component{
                             *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                             
                           }}
-                          *((ptr0 + 40) as *mut i32) = len18;
-                          *((ptr0 + 36) as *mut i32) = result18 as i32;
+                          *((base + 24) as *mut i32) = len18;
+                          *((base + 20) as *mut i32) = result18 as i32;
                           cleanup_list.extend_from_slice(&[(result18, layout18),]);
                           
                         },
                         VecValue::TypeEntityId(e) => {
-                          *((ptr0 + 32) as *mut u8) = (2i32) as u8;
+                          *((base + 16) as *mut u8) = (2i32) as u8;
                           let vec19 = e;
                           let ptr19 = vec19.as_ptr() as i32;
                           let len19 = vec19.len() as i32;
-                          *((ptr0 + 40) as *mut i32) = len19;
-                          *((ptr0 + 36) as *mut i32) = ptr19;
+                          *((base + 24) as *mut i32) = len19;
+                          *((base + 20) as *mut i32) = ptr19;
                           
                         },
                         VecValue::TypeF32(e) => {
-                          *((ptr0 + 32) as *mut u8) = (3i32) as u8;
+                          *((base + 16) as *mut u8) = (3i32) as u8;
                           let vec20 = e;
                           let ptr20 = vec20.as_ptr() as i32;
                           let len20 = vec20.len() as i32;
-                          *((ptr0 + 40) as *mut i32) = len20;
-                          *((ptr0 + 36) as *mut i32) = ptr20;
+                          *((base + 24) as *mut i32) = len20;
+                          *((base + 20) as *mut i32) = ptr20;
                           
                         },
                         VecValue::TypeF64(e) => {
-                          *((ptr0 + 32) as *mut u8) = (4i32) as u8;
+                          *((base + 16) as *mut u8) = (4i32) as u8;
                           let vec21 = e;
                           let ptr21 = vec21.as_ptr() as i32;
                           let len21 = vec21.len() as i32;
-                          *((ptr0 + 40) as *mut i32) = len21;
-                          *((ptr0 + 36) as *mut i32) = ptr21;
+                          *((base + 24) as *mut i32) = len21;
+                          *((base + 20) as *mut i32) = ptr21;
                           
                         },
                         VecValue::TypeMat4(e) => {
-                          *((ptr0 + 32) as *mut u8) = (5i32) as u8;
+                          *((base + 16) as *mut u8) = (5i32) as u8;
                           let vec22 = e;
                           let ptr22 = vec22.as_ptr() as i32;
                           let len22 = vec22.len() as i32;
-                          *((ptr0 + 40) as *mut i32) = len22;
-                          *((ptr0 + 36) as *mut i32) = ptr22;
+                          *((base + 24) as *mut i32) = len22;
+                          *((base + 20) as *mut i32) = ptr22;
                           
                         },
                         VecValue::TypeI32(e) => {
-                          *((ptr0 + 32) as *mut u8) = (6i32) as u8;
+                          *((base + 16) as *mut u8) = (6i32) as u8;
                           let vec23 = e;
                           let ptr23 = vec23.as_ptr() as i32;
                           let len23 = vec23.len() as i32;
-                          *((ptr0 + 40) as *mut i32) = len23;
-                          *((ptr0 + 36) as *mut i32) = ptr23;
+                          *((base + 24) as *mut i32) = len23;
+                          *((base + 20) as *mut i32) = ptr23;
                           
                         },
                         VecValue::TypeQuat(e) => {
-                          *((ptr0 + 32) as *mut u8) = (7i32) as u8;
+                          *((base + 16) as *mut u8) = (7i32) as u8;
                           let vec24 = e;
                           let ptr24 = vec24.as_ptr() as i32;
                           let len24 = vec24.len() as i32;
-                          *((ptr0 + 40) as *mut i32) = len24;
-                          *((ptr0 + 36) as *mut i32) = ptr24;
+                          *((base + 24) as *mut i32) = len24;
+                          *((base + 20) as *mut i32) = ptr24;
                           
                         },
                         VecValue::TypeString(e) => {
-                          *((ptr0 + 32) as *mut u8) = (8i32) as u8;
+                          *((base + 16) as *mut u8) = (8i32) as u8;
                           let vec26 = e;
                           let len26 = vec26.len() as i32;
                           let layout26 = alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
@@ -2784,429 +2219,429 @@ pub mod component{
                               *((base + 0) as *mut i32) = ptr25;
                               
                             }}
-                            *((ptr0 + 40) as *mut i32) = len26;
-                            *((ptr0 + 36) as *mut i32) = result26 as i32;
+                            *((base + 24) as *mut i32) = len26;
+                            *((base + 20) as *mut i32) = result26 as i32;
                             cleanup_list.extend_from_slice(&[(result26, layout26),]);
                             
                           },
                           VecValue::TypeU8(e) => {
-                            *((ptr0 + 32) as *mut u8) = (9i32) as u8;
+                            *((base + 16) as *mut u8) = (9i32) as u8;
                             let vec27 = e;
                             let ptr27 = vec27.as_ptr() as i32;
                             let len27 = vec27.len() as i32;
-                            *((ptr0 + 40) as *mut i32) = len27;
-                            *((ptr0 + 36) as *mut i32) = ptr27;
+                            *((base + 24) as *mut i32) = len27;
+                            *((base + 20) as *mut i32) = ptr27;
                             
                           },
                           VecValue::TypeU32(e) => {
-                            *((ptr0 + 32) as *mut u8) = (10i32) as u8;
+                            *((base + 16) as *mut u8) = (10i32) as u8;
                             let vec28 = e;
                             let ptr28 = vec28.as_ptr() as i32;
                             let len28 = vec28.len() as i32;
-                            *((ptr0 + 40) as *mut i32) = len28;
-                            *((ptr0 + 36) as *mut i32) = ptr28;
+                            *((base + 24) as *mut i32) = len28;
+                            *((base + 20) as *mut i32) = ptr28;
                             
                           },
                           VecValue::TypeU64(e) => {
-                            *((ptr0 + 32) as *mut u8) = (11i32) as u8;
+                            *((base + 16) as *mut u8) = (11i32) as u8;
                             let vec29 = e;
                             let ptr29 = vec29.as_ptr() as i32;
                             let len29 = vec29.len() as i32;
-                            *((ptr0 + 40) as *mut i32) = len29;
-                            *((ptr0 + 36) as *mut i32) = ptr29;
+                            *((base + 24) as *mut i32) = len29;
+                            *((base + 20) as *mut i32) = ptr29;
                             
                           },
                           VecValue::TypeVec2(e) => {
-                            *((ptr0 + 32) as *mut u8) = (12i32) as u8;
+                            *((base + 16) as *mut u8) = (12i32) as u8;
                             let vec30 = e;
                             let ptr30 = vec30.as_ptr() as i32;
                             let len30 = vec30.len() as i32;
-                            *((ptr0 + 40) as *mut i32) = len30;
-                            *((ptr0 + 36) as *mut i32) = ptr30;
+                            *((base + 24) as *mut i32) = len30;
+                            *((base + 20) as *mut i32) = ptr30;
                             
                           },
                           VecValue::TypeVec3(e) => {
-                            *((ptr0 + 32) as *mut u8) = (13i32) as u8;
+                            *((base + 16) as *mut u8) = (13i32) as u8;
                             let vec31 = e;
                             let ptr31 = vec31.as_ptr() as i32;
                             let len31 = vec31.len() as i32;
-                            *((ptr0 + 40) as *mut i32) = len31;
-                            *((ptr0 + 36) as *mut i32) = ptr31;
+                            *((base + 24) as *mut i32) = len31;
+                            *((base + 20) as *mut i32) = ptr31;
                             
                           },
                           VecValue::TypeVec4(e) => {
-                            *((ptr0 + 32) as *mut u8) = (14i32) as u8;
+                            *((base + 16) as *mut u8) = (14i32) as u8;
                             let vec32 = e;
                             let ptr32 = vec32.as_ptr() as i32;
                             let len32 = vec32.len() as i32;
-                            *((ptr0 + 40) as *mut i32) = len32;
-                            *((ptr0 + 36) as *mut i32) = ptr32;
+                            *((base + 24) as *mut i32) = len32;
+                            *((base + 20) as *mut i32) = ptr32;
                             
                           },
                           VecValue::TypeUvec2(e) => {
-                            *((ptr0 + 32) as *mut u8) = (15i32) as u8;
+                            *((base + 16) as *mut u8) = (15i32) as u8;
                             let vec33 = e;
                             let ptr33 = vec33.as_ptr() as i32;
                             let len33 = vec33.len() as i32;
-                            *((ptr0 + 40) as *mut i32) = len33;
-                            *((ptr0 + 36) as *mut i32) = ptr33;
+                            *((base + 24) as *mut i32) = len33;
+                            *((base + 20) as *mut i32) = ptr33;
                             
                           },
                           VecValue::TypeUvec3(e) => {
-                            *((ptr0 + 32) as *mut u8) = (16i32) as u8;
+                            *((base + 16) as *mut u8) = (16i32) as u8;
                             let vec34 = e;
                             let ptr34 = vec34.as_ptr() as i32;
                             let len34 = vec34.len() as i32;
-                            *((ptr0 + 40) as *mut i32) = len34;
-                            *((ptr0 + 36) as *mut i32) = ptr34;
+                            *((base + 24) as *mut i32) = len34;
+                            *((base + 20) as *mut i32) = ptr34;
                             
                           },
                           VecValue::TypeUvec4(e) => {
-                            *((ptr0 + 32) as *mut u8) = (17i32) as u8;
+                            *((base + 16) as *mut u8) = (17i32) as u8;
                             let vec35 = e;
                             let ptr35 = vec35.as_ptr() as i32;
                             let len35 = vec35.len() as i32;
-                            *((ptr0 + 40) as *mut i32) = len35;
-                            *((ptr0 + 36) as *mut i32) = ptr35;
+                            *((base + 24) as *mut i32) = len35;
+                            *((base + 20) as *mut i32) = ptr35;
                             
                           },
                         };
                         
                       },
                       Value::TypeOption(e) => {
-                        *((ptr0 + 24) as *mut u8) = (19i32) as u8;
+                        *((base + 8) as *mut u8) = (19i32) as u8;
                         match e {
                           OptionValue::TypeEmpty(e) => {
-                            *((ptr0 + 32) as *mut u8) = (0i32) as u8;
+                            *((base + 16) as *mut u8) = (0i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                *((base + 24) as *mut u8) = (1i32) as u8;
                                 let () = e;
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeBool(e) => {
-                            *((ptr0 + 32) as *mut u8) = (1i32) as u8;
+                            *((base + 16) as *mut u8) = (1i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                *((ptr0 + 41) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
+                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                *((base + 25) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeEntityId(e) => {
-                            *((ptr0 + 32) as *mut u8) = (2i32) as u8;
+                            *((base + 16) as *mut u8) = (2i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                *((base + 24) as *mut u8) = (1i32) as u8;
                                 let super::types::EntityId{ id0:id037, id1:id137, } = e;
-                                *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(id037);
-                                *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(id137);
+                                *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(id037);
+                                *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(id137);
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeF32(e) => {
-                            *((ptr0 + 32) as *mut u8) = (3i32) as u8;
+                            *((base + 16) as *mut u8) = (3i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(e);
+                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(e);
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeF64(e) => {
-                            *((ptr0 + 32) as *mut u8) = (4i32) as u8;
+                            *((base + 16) as *mut u8) = (4i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                *((ptr0 + 48) as *mut f64) = wit_bindgen::rt::as_f64(e);
+                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                *((base + 32) as *mut f64) = wit_bindgen::rt::as_f64(e);
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeMat4(e) => {
-                            *((ptr0 + 32) as *mut u8) = (5i32) as u8;
+                            *((base + 16) as *mut u8) = (5i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                *((base + 24) as *mut u8) = (1i32) as u8;
                                 let super::types::Mat4{ x:x38, y:y38, z:z38, w:w38, } = e;
                                 let super::types::Vec4{ x:x39, y:y39, z:z39, w:w39, } = x38;
-                                *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x39);
-                                *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y39);
-                                *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z39);
-                                *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w39);
+                                *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x39);
+                                *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y39);
+                                *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z39);
+                                *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w39);
                                 let super::types::Vec4{ x:x40, y:y40, z:z40, w:w40, } = y38;
-                                *((ptr0 + 60) as *mut f32) = wit_bindgen::rt::as_f32(x40);
-                                *((ptr0 + 64) as *mut f32) = wit_bindgen::rt::as_f32(y40);
-                                *((ptr0 + 68) as *mut f32) = wit_bindgen::rt::as_f32(z40);
-                                *((ptr0 + 72) as *mut f32) = wit_bindgen::rt::as_f32(w40);
+                                *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(x40);
+                                *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(y40);
+                                *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(z40);
+                                *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(w40);
                                 let super::types::Vec4{ x:x41, y:y41, z:z41, w:w41, } = z38;
-                                *((ptr0 + 76) as *mut f32) = wit_bindgen::rt::as_f32(x41);
-                                *((ptr0 + 80) as *mut f32) = wit_bindgen::rt::as_f32(y41);
-                                *((ptr0 + 84) as *mut f32) = wit_bindgen::rt::as_f32(z41);
-                                *((ptr0 + 88) as *mut f32) = wit_bindgen::rt::as_f32(w41);
+                                *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(x41);
+                                *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(y41);
+                                *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(z41);
+                                *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(w41);
                                 let super::types::Vec4{ x:x42, y:y42, z:z42, w:w42, } = w38;
-                                *((ptr0 + 92) as *mut f32) = wit_bindgen::rt::as_f32(x42);
-                                *((ptr0 + 96) as *mut f32) = wit_bindgen::rt::as_f32(y42);
-                                *((ptr0 + 100) as *mut f32) = wit_bindgen::rt::as_f32(z42);
-                                *((ptr0 + 104) as *mut f32) = wit_bindgen::rt::as_f32(w42);
+                                *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(x42);
+                                *((base + 80) as *mut f32) = wit_bindgen::rt::as_f32(y42);
+                                *((base + 84) as *mut f32) = wit_bindgen::rt::as_f32(z42);
+                                *((base + 88) as *mut f32) = wit_bindgen::rt::as_f32(w42);
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeI32(e) => {
-                            *((ptr0 + 32) as *mut u8) = (6i32) as u8;
+                            *((base + 16) as *mut u8) = (6i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(e);
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeQuat(e) => {
-                            *((ptr0 + 32) as *mut u8) = (7i32) as u8;
+                            *((base + 16) as *mut u8) = (7i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                *((base + 24) as *mut u8) = (1i32) as u8;
                                 let super::types::Quat{ x:x43, y:y43, z:z43, w:w43, } = e;
-                                *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x43);
-                                *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y43);
-                                *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z43);
-                                *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w43);
+                                *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x43);
+                                *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y43);
+                                *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z43);
+                                *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w43);
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeString(e) => {
-                            *((ptr0 + 32) as *mut u8) = (8i32) as u8;
+                            *((base + 16) as *mut u8) = (8i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                *((base + 24) as *mut u8) = (1i32) as u8;
                                 let vec44 = e;
                                 let ptr44 = vec44.as_ptr() as i32;
                                 let len44 = vec44.len() as i32;
-                                *((ptr0 + 48) as *mut i32) = len44;
-                                *((ptr0 + 44) as *mut i32) = ptr44;
+                                *((base + 32) as *mut i32) = len44;
+                                *((base + 28) as *mut i32) = ptr44;
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeU8(e) => {
-                            *((ptr0 + 32) as *mut u8) = (9i32) as u8;
+                            *((base + 16) as *mut u8) = (9i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                *((ptr0 + 41) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
+                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                *((base + 25) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeU32(e) => {
-                            *((ptr0 + 32) as *mut u8) = (10i32) as u8;
+                            *((base + 16) as *mut u8) = (10i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(e);
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeU64(e) => {
-                            *((ptr0 + 32) as *mut u8) = (11i32) as u8;
+                            *((base + 16) as *mut u8) = (11i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(e);
+                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(e);
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeVec2(e) => {
-                            *((ptr0 + 32) as *mut u8) = (12i32) as u8;
+                            *((base + 16) as *mut u8) = (12i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                *((base + 24) as *mut u8) = (1i32) as u8;
                                 let super::types::Vec2{ x:x45, y:y45, } = e;
-                                *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x45);
-                                *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y45);
+                                *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x45);
+                                *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y45);
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeVec3(e) => {
-                            *((ptr0 + 32) as *mut u8) = (13i32) as u8;
+                            *((base + 16) as *mut u8) = (13i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                *((base + 24) as *mut u8) = (1i32) as u8;
                                 let super::types::Vec3{ x:x46, y:y46, z:z46, } = e;
-                                *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x46);
-                                *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y46);
-                                *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z46);
+                                *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x46);
+                                *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y46);
+                                *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z46);
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeVec4(e) => {
-                            *((ptr0 + 32) as *mut u8) = (14i32) as u8;
+                            *((base + 16) as *mut u8) = (14i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                *((base + 24) as *mut u8) = (1i32) as u8;
                                 let super::types::Vec4{ x:x47, y:y47, z:z47, w:w47, } = e;
-                                *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x47);
-                                *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y47);
-                                *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z47);
-                                *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w47);
+                                *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x47);
+                                *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y47);
+                                *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z47);
+                                *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w47);
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeUvec2(e) => {
-                            *((ptr0 + 32) as *mut u8) = (15i32) as u8;
+                            *((base + 16) as *mut u8) = (15i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                *((base + 24) as *mut u8) = (1i32) as u8;
                                 let super::types::Uvec2{ x:x48, y:y48, } = e;
-                                *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x48);
-                                *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y48);
+                                *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x48);
+                                *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y48);
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeUvec3(e) => {
-                            *((ptr0 + 32) as *mut u8) = (16i32) as u8;
+                            *((base + 16) as *mut u8) = (16i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                *((base + 24) as *mut u8) = (1i32) as u8;
                                 let super::types::Uvec3{ x:x49, y:y49, z:z49, } = e;
-                                *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x49);
-                                *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y49);
-                                *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z49);
+                                *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x49);
+                                *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y49);
+                                *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z49);
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
                             };
                           },
                           OptionValue::TypeUvec4(e) => {
-                            *((ptr0 + 32) as *mut u8) = (17i32) as u8;
+                            *((base + 16) as *mut u8) = (17i32) as u8;
                             match e {
                               Some(e) => {
-                                *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                *((base + 24) as *mut u8) = (1i32) as u8;
                                 let super::types::Uvec4{ x:x50, y:y50, z:z50, w:w50, } = e;
-                                *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x50);
-                                *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y50);
-                                *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z50);
-                                *((ptr0 + 56) as *mut i32) = wit_bindgen::rt::as_i32(w50);
+                                *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x50);
+                                *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y50);
+                                *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z50);
+                                *((base + 40) as *mut i32) = wit_bindgen::rt::as_i32(w50);
                                 
                               },
                               None => {
                                 {
-                                  *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                  *((base + 24) as *mut u8) = (0i32) as u8;
                                   
                                 }
                               },
@@ -3217,1645 +2652,2242 @@ pub mod component{
                       },
                     };
                     
-                    #[link(wasm_import_module = "component")]
-                    extern "C" {
-                      #[cfg_attr(target_arch = "wasm32", link_name = "set-component")]
-                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_set-component")]
-                      fn wit_import(
-                      _: i32, );
-                    }
-                    wit_import(ptr0);
-                    for (ptr, layout) in cleanup_list {
+                  }}
+                  
+                  #[link(wasm_import_module = "component")]
+                  extern "C" {
+                    #[cfg_attr(target_arch = "wasm32", link_name = "add-components")]
+                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_add-components")]
+                    fn wit_import(
+                    _: i64, _: i64, _: i32, _: i32, );
+                  }
+                  wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), result51 as i32, len51);
+                  if layout51.size() != 0 {
+                    alloc::dealloc(result51, layout51);
+                  }
+                  for (ptr, layout) in cleanup_list {
+                    
+                    if layout.size() != 0 {
                       
-                      if layout.size() != 0 {
-                        
-                        alloc::dealloc(ptr, layout);
-                        
-                      }
+                      alloc::dealloc(ptr, layout);
                       
                     }
+                    
                   }
                 }
-                #[allow(clippy::all)]
-                pub fn set_components(entity: EntityId,data: Entity<'_,>,){
+              }
+              #[allow(clippy::all)]
+              pub fn set_component(entity: EntityId,index: u32,value: &Value,){
+                
+                #[allow(unused_imports)]
+                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                unsafe {
+                  let mut cleanup_list = Vec::new();
                   
-                  #[allow(unused_imports)]
-                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                  unsafe {
-                    let mut cleanup_list = Vec::new();
-                    let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                    let vec51 = data;
-                    let len51 = vec51.len() as i32;
-                    let layout51 = alloc::Layout::from_size_align_unchecked(vec51.len() * 96, 8);
-                    let result51 = if layout51.size() != 0
-                    {
-                      let ptr = alloc::alloc(layout51);
-                      if ptr.is_null()
-                      {
-                        alloc::handle_alloc_error(layout51);
-                      }
-                      ptr
-                    }else {
-                      core::ptr::null_mut()
-                    };
-                    for (i, e) in vec51.into_iter().enumerate() {
-                      let base = result51 as i32 + (i as i32) * 96;
-                      {
-                        let (t1_0, t1_1, ) = e;
-                        *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t1_0);
-                        match t1_1 {
-                          Value::TypeEmpty(e) => {
-                            *((base + 8) as *mut u8) = (0i32) as u8;
-                            let () = e;
-                            
-                          },
-                          Value::TypeBool(e) => {
-                            *((base + 8) as *mut u8) = (1i32) as u8;
-                            *((base + 16) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
-                            
-                          },
-                          Value::TypeEntityId(e) => {
-                            *((base + 8) as *mut u8) = (2i32) as u8;
-                            let super::types::EntityId{ id0:id03, id1:id13, } = e;
-                            *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(id03);
-                            *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(id13);
-                            
-                          },
-                          Value::TypeF32(e) => {
-                            *((base + 8) as *mut u8) = (3i32) as u8;
-                            *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(e);
-                            
-                          },
-                          Value::TypeF64(e) => {
-                            *((base + 8) as *mut u8) = (4i32) as u8;
-                            *((base + 16) as *mut f64) = wit_bindgen::rt::as_f64(e);
-                            
-                          },
-                          Value::TypeMat4(e) => {
-                            *((base + 8) as *mut u8) = (5i32) as u8;
-                            let super::types::Mat4{ x:x4, y:y4, z:z4, w:w4, } = e;
-                            let super::types::Vec4{ x:x5, y:y5, z:z5, w:w5, } = x4;
-                            *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x5);
-                            *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y5);
-                            *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z5);
-                            *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w5);
-                            let super::types::Vec4{ x:x6, y:y6, z:z6, w:w6, } = y4;
-                            *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(x6);
-                            *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(y6);
-                            *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(z6);
-                            *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(w6);
-                            let super::types::Vec4{ x:x7, y:y7, z:z7, w:w7, } = z4;
-                            *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(x7);
-                            *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(y7);
-                            *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(z7);
-                            *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(w7);
-                            let super::types::Vec4{ x:x8, y:y8, z:z8, w:w8, } = w4;
-                            *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(x8);
-                            *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(y8);
-                            *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(z8);
-                            *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(w8);
-                            
-                          },
-                          Value::TypeI32(e) => {
-                            *((base + 8) as *mut u8) = (6i32) as u8;
-                            *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
-                            
-                          },
-                          Value::TypeQuat(e) => {
-                            *((base + 8) as *mut u8) = (7i32) as u8;
-                            let super::types::Quat{ x:x9, y:y9, z:z9, w:w9, } = e;
-                            *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x9);
-                            *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y9);
-                            *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z9);
-                            *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w9);
-                            
-                          },
-                          Value::TypeString(e) => {
-                            *((base + 8) as *mut u8) = (8i32) as u8;
-                            let vec10 = e;
-                            let ptr10 = vec10.as_ptr() as i32;
-                            let len10 = vec10.len() as i32;
-                            *((base + 20) as *mut i32) = len10;
-                            *((base + 16) as *mut i32) = ptr10;
-                            
-                          },
-                          Value::TypeU8(e) => {
-                            *((base + 8) as *mut u8) = (9i32) as u8;
-                            *((base + 16) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
-                            
-                          },
-                          Value::TypeU32(e) => {
-                            *((base + 8) as *mut u8) = (10i32) as u8;
-                            *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
-                            
-                          },
-                          Value::TypeU64(e) => {
-                            *((base + 8) as *mut u8) = (11i32) as u8;
-                            *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(e);
-                            
-                          },
-                          Value::TypeVec2(e) => {
-                            *((base + 8) as *mut u8) = (12i32) as u8;
-                            let super::types::Vec2{ x:x11, y:y11, } = e;
-                            *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x11);
-                            *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y11);
-                            
-                          },
-                          Value::TypeVec3(e) => {
-                            *((base + 8) as *mut u8) = (13i32) as u8;
-                            let super::types::Vec3{ x:x12, y:y12, z:z12, } = e;
-                            *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x12);
-                            *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y12);
-                            *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z12);
-                            
-                          },
-                          Value::TypeVec4(e) => {
-                            *((base + 8) as *mut u8) = (14i32) as u8;
-                            let super::types::Vec4{ x:x13, y:y13, z:z13, w:w13, } = e;
-                            *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x13);
-                            *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y13);
-                            *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z13);
-                            *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w13);
-                            
-                          },
-                          Value::TypeUvec2(e) => {
-                            *((base + 8) as *mut u8) = (15i32) as u8;
-                            let super::types::Uvec2{ x:x14, y:y14, } = e;
-                            *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x14);
-                            *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y14);
-                            
-                          },
-                          Value::TypeUvec3(e) => {
-                            *((base + 8) as *mut u8) = (16i32) as u8;
-                            let super::types::Uvec3{ x:x15, y:y15, z:z15, } = e;
-                            *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x15);
-                            *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y15);
-                            *((base + 24) as *mut i32) = wit_bindgen::rt::as_i32(z15);
-                            
-                          },
-                          Value::TypeUvec4(e) => {
-                            *((base + 8) as *mut u8) = (17i32) as u8;
-                            let super::types::Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
-                            *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x16);
-                            *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y16);
-                            *((base + 24) as *mut i32) = wit_bindgen::rt::as_i32(z16);
-                            *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(w16);
-                            
-                          },
-                          Value::TypeVec(e) => {
-                            *((base + 8) as *mut u8) = (18i32) as u8;
-                            match e {
-                              VecValue::TypeEmpty(e) => {
-                                *((base + 16) as *mut u8) = (0i32) as u8;
-                                let vec17 = e;
-                                let ptr17 = vec17.as_ptr() as i32;
-                                let len17 = vec17.len() as i32;
-                                *((base + 24) as *mut i32) = len17;
-                                *((base + 20) as *mut i32) = ptr17;
-                                
-                              },
-                              VecValue::TypeBool(e) => {
-                                *((base + 16) as *mut u8) = (1i32) as u8;
-                                let vec18 = e;
-                                let len18 = vec18.len() as i32;
-                                let layout18 = alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
-                                let result18 = if layout18.size() != 0
-                                {
-                                  let ptr = alloc::alloc(layout18);
-                                  if ptr.is_null()
-                                  {
-                                    alloc::handle_alloc_error(layout18);
-                                  }
-                                  ptr
-                                }else {
-                                  core::ptr::null_mut()
-                                };
-                                for (i, e) in vec18.into_iter().enumerate() {
-                                  let base = result18 as i32 + (i as i32) * 1;
-                                  {
-                                    *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
-                                    
-                                  }}
-                                  *((base + 24) as *mut i32) = len18;
-                                  *((base + 20) as *mut i32) = result18 as i32;
-                                  cleanup_list.extend_from_slice(&[(result18, layout18),]);
-                                  
-                                },
-                                VecValue::TypeEntityId(e) => {
-                                  *((base + 16) as *mut u8) = (2i32) as u8;
-                                  let vec19 = e;
-                                  let ptr19 = vec19.as_ptr() as i32;
-                                  let len19 = vec19.len() as i32;
-                                  *((base + 24) as *mut i32) = len19;
-                                  *((base + 20) as *mut i32) = ptr19;
-                                  
-                                },
-                                VecValue::TypeF32(e) => {
-                                  *((base + 16) as *mut u8) = (3i32) as u8;
-                                  let vec20 = e;
-                                  let ptr20 = vec20.as_ptr() as i32;
-                                  let len20 = vec20.len() as i32;
-                                  *((base + 24) as *mut i32) = len20;
-                                  *((base + 20) as *mut i32) = ptr20;
-                                  
-                                },
-                                VecValue::TypeF64(e) => {
-                                  *((base + 16) as *mut u8) = (4i32) as u8;
-                                  let vec21 = e;
-                                  let ptr21 = vec21.as_ptr() as i32;
-                                  let len21 = vec21.len() as i32;
-                                  *((base + 24) as *mut i32) = len21;
-                                  *((base + 20) as *mut i32) = ptr21;
-                                  
-                                },
-                                VecValue::TypeMat4(e) => {
-                                  *((base + 16) as *mut u8) = (5i32) as u8;
-                                  let vec22 = e;
-                                  let ptr22 = vec22.as_ptr() as i32;
-                                  let len22 = vec22.len() as i32;
-                                  *((base + 24) as *mut i32) = len22;
-                                  *((base + 20) as *mut i32) = ptr22;
-                                  
-                                },
-                                VecValue::TypeI32(e) => {
-                                  *((base + 16) as *mut u8) = (6i32) as u8;
-                                  let vec23 = e;
-                                  let ptr23 = vec23.as_ptr() as i32;
-                                  let len23 = vec23.len() as i32;
-                                  *((base + 24) as *mut i32) = len23;
-                                  *((base + 20) as *mut i32) = ptr23;
-                                  
-                                },
-                                VecValue::TypeQuat(e) => {
-                                  *((base + 16) as *mut u8) = (7i32) as u8;
-                                  let vec24 = e;
-                                  let ptr24 = vec24.as_ptr() as i32;
-                                  let len24 = vec24.len() as i32;
-                                  *((base + 24) as *mut i32) = len24;
-                                  *((base + 20) as *mut i32) = ptr24;
-                                  
-                                },
-                                VecValue::TypeString(e) => {
-                                  *((base + 16) as *mut u8) = (8i32) as u8;
-                                  let vec26 = e;
-                                  let len26 = vec26.len() as i32;
-                                  let layout26 = alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
-                                  let result26 = if layout26.size() != 0
-                                  {
-                                    let ptr = alloc::alloc(layout26);
-                                    if ptr.is_null()
-                                    {
-                                      alloc::handle_alloc_error(layout26);
-                                    }
-                                    ptr
-                                  }else {
-                                    core::ptr::null_mut()
-                                  };
-                                  for (i, e) in vec26.into_iter().enumerate() {
-                                    let base = result26 as i32 + (i as i32) * 8;
-                                    {
-                                      let vec25 = e;
-                                      let ptr25 = vec25.as_ptr() as i32;
-                                      let len25 = vec25.len() as i32;
-                                      *((base + 4) as *mut i32) = len25;
-                                      *((base + 0) as *mut i32) = ptr25;
-                                      
-                                    }}
-                                    *((base + 24) as *mut i32) = len26;
-                                    *((base + 20) as *mut i32) = result26 as i32;
-                                    cleanup_list.extend_from_slice(&[(result26, layout26),]);
-                                    
-                                  },
-                                  VecValue::TypeU8(e) => {
-                                    *((base + 16) as *mut u8) = (9i32) as u8;
-                                    let vec27 = e;
-                                    let ptr27 = vec27.as_ptr() as i32;
-                                    let len27 = vec27.len() as i32;
-                                    *((base + 24) as *mut i32) = len27;
-                                    *((base + 20) as *mut i32) = ptr27;
-                                    
-                                  },
-                                  VecValue::TypeU32(e) => {
-                                    *((base + 16) as *mut u8) = (10i32) as u8;
-                                    let vec28 = e;
-                                    let ptr28 = vec28.as_ptr() as i32;
-                                    let len28 = vec28.len() as i32;
-                                    *((base + 24) as *mut i32) = len28;
-                                    *((base + 20) as *mut i32) = ptr28;
-                                    
-                                  },
-                                  VecValue::TypeU64(e) => {
-                                    *((base + 16) as *mut u8) = (11i32) as u8;
-                                    let vec29 = e;
-                                    let ptr29 = vec29.as_ptr() as i32;
-                                    let len29 = vec29.len() as i32;
-                                    *((base + 24) as *mut i32) = len29;
-                                    *((base + 20) as *mut i32) = ptr29;
-                                    
-                                  },
-                                  VecValue::TypeVec2(e) => {
-                                    *((base + 16) as *mut u8) = (12i32) as u8;
-                                    let vec30 = e;
-                                    let ptr30 = vec30.as_ptr() as i32;
-                                    let len30 = vec30.len() as i32;
-                                    *((base + 24) as *mut i32) = len30;
-                                    *((base + 20) as *mut i32) = ptr30;
-                                    
-                                  },
-                                  VecValue::TypeVec3(e) => {
-                                    *((base + 16) as *mut u8) = (13i32) as u8;
-                                    let vec31 = e;
-                                    let ptr31 = vec31.as_ptr() as i32;
-                                    let len31 = vec31.len() as i32;
-                                    *((base + 24) as *mut i32) = len31;
-                                    *((base + 20) as *mut i32) = ptr31;
-                                    
-                                  },
-                                  VecValue::TypeVec4(e) => {
-                                    *((base + 16) as *mut u8) = (14i32) as u8;
-                                    let vec32 = e;
-                                    let ptr32 = vec32.as_ptr() as i32;
-                                    let len32 = vec32.len() as i32;
-                                    *((base + 24) as *mut i32) = len32;
-                                    *((base + 20) as *mut i32) = ptr32;
-                                    
-                                  },
-                                  VecValue::TypeUvec2(e) => {
-                                    *((base + 16) as *mut u8) = (15i32) as u8;
-                                    let vec33 = e;
-                                    let ptr33 = vec33.as_ptr() as i32;
-                                    let len33 = vec33.len() as i32;
-                                    *((base + 24) as *mut i32) = len33;
-                                    *((base + 20) as *mut i32) = ptr33;
-                                    
-                                  },
-                                  VecValue::TypeUvec3(e) => {
-                                    *((base + 16) as *mut u8) = (16i32) as u8;
-                                    let vec34 = e;
-                                    let ptr34 = vec34.as_ptr() as i32;
-                                    let len34 = vec34.len() as i32;
-                                    *((base + 24) as *mut i32) = len34;
-                                    *((base + 20) as *mut i32) = ptr34;
-                                    
-                                  },
-                                  VecValue::TypeUvec4(e) => {
-                                    *((base + 16) as *mut u8) = (17i32) as u8;
-                                    let vec35 = e;
-                                    let ptr35 = vec35.as_ptr() as i32;
-                                    let len35 = vec35.len() as i32;
-                                    *((base + 24) as *mut i32) = len35;
-                                    *((base + 20) as *mut i32) = ptr35;
-                                    
-                                  },
-                                };
-                                
-                              },
-                              Value::TypeOption(e) => {
-                                *((base + 8) as *mut u8) = (19i32) as u8;
-                                match e {
-                                  OptionValue::TypeEmpty(e) => {
-                                    *((base + 16) as *mut u8) = (0i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        let () = e;
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeBool(e) => {
-                                    *((base + 16) as *mut u8) = (1i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        *((base + 25) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeEntityId(e) => {
-                                    *((base + 16) as *mut u8) = (2i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        let super::types::EntityId{ id0:id037, id1:id137, } = e;
-                                        *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(id037);
-                                        *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(id137);
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeF32(e) => {
-                                    *((base + 16) as *mut u8) = (3i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(e);
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeF64(e) => {
-                                    *((base + 16) as *mut u8) = (4i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        *((base + 32) as *mut f64) = wit_bindgen::rt::as_f64(e);
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeMat4(e) => {
-                                    *((base + 16) as *mut u8) = (5i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        let super::types::Mat4{ x:x38, y:y38, z:z38, w:w38, } = e;
-                                        let super::types::Vec4{ x:x39, y:y39, z:z39, w:w39, } = x38;
-                                        *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x39);
-                                        *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y39);
-                                        *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z39);
-                                        *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w39);
-                                        let super::types::Vec4{ x:x40, y:y40, z:z40, w:w40, } = y38;
-                                        *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(x40);
-                                        *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(y40);
-                                        *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(z40);
-                                        *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(w40);
-                                        let super::types::Vec4{ x:x41, y:y41, z:z41, w:w41, } = z38;
-                                        *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(x41);
-                                        *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(y41);
-                                        *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(z41);
-                                        *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(w41);
-                                        let super::types::Vec4{ x:x42, y:y42, z:z42, w:w42, } = w38;
-                                        *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(x42);
-                                        *((base + 80) as *mut f32) = wit_bindgen::rt::as_f32(y42);
-                                        *((base + 84) as *mut f32) = wit_bindgen::rt::as_f32(z42);
-                                        *((base + 88) as *mut f32) = wit_bindgen::rt::as_f32(w42);
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeI32(e) => {
-                                    *((base + 16) as *mut u8) = (6i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(e);
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeQuat(e) => {
-                                    *((base + 16) as *mut u8) = (7i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        let super::types::Quat{ x:x43, y:y43, z:z43, w:w43, } = e;
-                                        *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x43);
-                                        *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y43);
-                                        *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z43);
-                                        *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w43);
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeString(e) => {
-                                    *((base + 16) as *mut u8) = (8i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        let vec44 = e;
-                                        let ptr44 = vec44.as_ptr() as i32;
-                                        let len44 = vec44.len() as i32;
-                                        *((base + 32) as *mut i32) = len44;
-                                        *((base + 28) as *mut i32) = ptr44;
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeU8(e) => {
-                                    *((base + 16) as *mut u8) = (9i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        *((base + 25) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeU32(e) => {
-                                    *((base + 16) as *mut u8) = (10i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(e);
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeU64(e) => {
-                                    *((base + 16) as *mut u8) = (11i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(e);
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeVec2(e) => {
-                                    *((base + 16) as *mut u8) = (12i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        let super::types::Vec2{ x:x45, y:y45, } = e;
-                                        *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x45);
-                                        *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y45);
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeVec3(e) => {
-                                    *((base + 16) as *mut u8) = (13i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        let super::types::Vec3{ x:x46, y:y46, z:z46, } = e;
-                                        *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x46);
-                                        *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y46);
-                                        *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z46);
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeVec4(e) => {
-                                    *((base + 16) as *mut u8) = (14i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        let super::types::Vec4{ x:x47, y:y47, z:z47, w:w47, } = e;
-                                        *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x47);
-                                        *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y47);
-                                        *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z47);
-                                        *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w47);
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeUvec2(e) => {
-                                    *((base + 16) as *mut u8) = (15i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        let super::types::Uvec2{ x:x48, y:y48, } = e;
-                                        *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x48);
-                                        *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y48);
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeUvec3(e) => {
-                                    *((base + 16) as *mut u8) = (16i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        let super::types::Uvec3{ x:x49, y:y49, z:z49, } = e;
-                                        *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x49);
-                                        *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y49);
-                                        *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z49);
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                  OptionValue::TypeUvec4(e) => {
-                                    *((base + 16) as *mut u8) = (17i32) as u8;
-                                    match e {
-                                      Some(e) => {
-                                        *((base + 24) as *mut u8) = (1i32) as u8;
-                                        let super::types::Uvec4{ x:x50, y:y50, z:z50, w:w50, } = e;
-                                        *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x50);
-                                        *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y50);
-                                        *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z50);
-                                        *((base + 40) as *mut i32) = wit_bindgen::rt::as_i32(w50);
-                                        
-                                      },
-                                      None => {
-                                        {
-                                          *((base + 24) as *mut u8) = (0i32) as u8;
-                                          
-                                        }
-                                      },
-                                    };
-                                  },
-                                };
-                                
-                              },
-                            };
-                            
-                          }}
-                          
-                          #[link(wasm_import_module = "component")]
-                          extern "C" {
-                            #[cfg_attr(target_arch = "wasm32", link_name = "set-components")]
-                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_set-components")]
-                            fn wit_import(
-                            _: i64, _: i64, _: i32, _: i32, );
-                          }
-                          wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), result51 as i32, len51);
-                          if layout51.size() != 0 {
-                            alloc::dealloc(result51, layout51);
-                          }
-                          for (ptr, layout) in cleanup_list {
-                            
-                            if layout.size() != 0 {
-                              
-                              alloc::dealloc(ptr, layout);
-                              
-                            }
-                            
-                          }
-                        }
-                      }
-                      #[allow(clippy::all)]
-                      pub fn has_component(entity: EntityId,index: u32,) -> bool{
-                        
-                        #[allow(unused_imports)]
-                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                        unsafe {
-                          let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                          
-                          #[link(wasm_import_module = "component")]
-                          extern "C" {
-                            #[cfg_attr(target_arch = "wasm32", link_name = "has-component")]
-                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_has-component")]
-                            fn wit_import(
-                            _: i64, _: i64, _: i32, ) -> i32;
-                          }
-                          let ret = wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_i32(index));
-                          {
-                            #[cfg(not(debug_assertions))]
-                            { core::mem::transmute::<u8, bool>(ret as u8) }
-                            #[cfg(debug_assertions)]
-                            {
-                              match ret {
-                                0 => false,
-                                1 => true,
-                                _ => panic!("invalid bool discriminant"),
-                              }
-                            }
-                          }
-                        }
-                      }
-                      #[allow(clippy::all)]
-                      pub fn has_components(entity: EntityId,indices: &[u32],) -> bool{
-                        
-                        #[allow(unused_imports)]
-                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                        unsafe {
-                          let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                          let vec1 = indices;
-                          let ptr1 = vec1.as_ptr() as i32;
-                          let len1 = vec1.len() as i32;
-                          
-                          #[link(wasm_import_module = "component")]
-                          extern "C" {
-                            #[cfg_attr(target_arch = "wasm32", link_name = "has-components")]
-                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_has-components")]
-                            fn wit_import(
-                            _: i64, _: i64, _: i32, _: i32, ) -> i32;
-                          }
-                          let ret = wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), ptr1, len1);
-                          {
-                            #[cfg(not(debug_assertions))]
-                            { core::mem::transmute::<u8, bool>(ret as u8) }
-                            #[cfg(debug_assertions)]
-                            {
-                              match ret {
-                                0 => false,
-                                1 => true,
-                                _ => panic!("invalid bool discriminant"),
-                              }
-                            }
-                          }
-                        }
-                      }
-                      #[allow(clippy::all)]
-                      pub fn remove_component(entity: EntityId,index: u32,){
-                        
-                        #[allow(unused_imports)]
-                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                        unsafe {
-                          let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                          
-                          #[link(wasm_import_module = "component")]
-                          extern "C" {
-                            #[cfg_attr(target_arch = "wasm32", link_name = "remove-component")]
-                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_remove-component")]
-                            fn wit_import(
-                            _: i64, _: i64, _: i32, );
-                          }
-                          wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_i32(index));
-                        }
-                      }
-                      #[allow(clippy::all)]
-                      pub fn remove_components(entity: EntityId,indices: &[u32],){
-                        
-                        #[allow(unused_imports)]
-                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                        unsafe {
-                          let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                          let vec1 = indices;
-                          let ptr1 = vec1.as_ptr() as i32;
-                          let len1 = vec1.len() as i32;
-                          
-                          #[link(wasm_import_module = "component")]
-                          extern "C" {
-                            #[cfg_attr(target_arch = "wasm32", link_name = "remove-components")]
-                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_remove-components")]
-                            fn wit_import(
-                            _: i64, _: i64, _: i32, _: i32, );
-                          }
-                          wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), ptr1, len1);
-                        }
-                      }
-                      #[allow(clippy::all)]
-                      pub fn query(q: QueryBuild<'_,>,t: QueryEvent,) -> u64{
-                        
-                        #[allow(unused_imports)]
-                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                        unsafe {
-                          let QueryBuild{ components:components0, include:include0, exclude:exclude0, changed:changed0, } = q;
-                          let vec1 = components0;
-                          let ptr1 = vec1.as_ptr() as i32;
-                          let len1 = vec1.len() as i32;
-                          let vec2 = include0;
-                          let ptr2 = vec2.as_ptr() as i32;
-                          let len2 = vec2.len() as i32;
-                          let vec3 = exclude0;
-                          let ptr3 = vec3.as_ptr() as i32;
-                          let len3 = vec3.len() as i32;
-                          let vec4 = changed0;
-                          let ptr4 = vec4.as_ptr() as i32;
-                          let len4 = vec4.len() as i32;
-                          
-                          #[link(wasm_import_module = "component")]
-                          extern "C" {
-                            #[cfg_attr(target_arch = "wasm32", link_name = "query")]
-                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_query")]
-                            fn wit_import(
-                            _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, ) -> i64;
-                          }
-                          let ret = wit_import(ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4, match t {
-                            QueryEvent::Frame => 0,
-                            QueryEvent::Spawn => 1,
-                            QueryEvent::Despawn => 2,
-                          });
-                          ret as u64
-                        }
-                      }
-                      #[allow(clippy::all)]
-                      pub fn query_eval(q: u64,) -> wit_bindgen::rt::vec::Vec::<(EntityId,wit_bindgen::rt::vec::Vec::<Value>,)>{
-                        
-                        #[allow(unused_imports)]
-                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                        unsafe {
-                          
-                          #[repr(align(4))]
-                          struct RetArea([u8; 8]);
-                          let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                          let ptr0 = ret_area.as_mut_ptr() as i32;
-                          #[link(wasm_import_module = "component")]
-                          extern "C" {
-                            #[cfg_attr(target_arch = "wasm32", link_name = "query-eval")]
-                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_query-eval")]
-                            fn wit_import(
-                            _: i64, _: i32, );
-                          }
-                          wit_import(wit_bindgen::rt::as_i64(q), ptr0);
-                          let base23 = *((ptr0 + 0) as *const i32);
-                          let len23 = *((ptr0 + 4) as *const i32);
-                          let mut result23 = Vec::with_capacity(len23 as usize);
-                          for i in 0..len23 {
-                            let base = base23 + i *24;
-                            result23.push({
-                              let base22 = *((base + 16) as *const i32);
-                              let len22 = *((base + 20) as *const i32);
-                              let mut result22 = Vec::with_capacity(len22 as usize);
-                              for i in 0..len22 {
-                                let base = base22 + i *88;
-                                result22.push({{match i32::from(*((base + 0) as *const u8)) {
-                                  0 => Value::TypeEmpty(()),
-                                  1 => Value::TypeBool({
-                                    #[cfg(not(debug_assertions))]
-                                    { core::mem::transmute::<u8, bool>(i32::from(*((base + 8) as *const u8)) as u8) }
-                                    #[cfg(debug_assertions)]
-                                    {
-                                      match i32::from(*((base + 8) as *const u8)) {
-                                        0 => false,
-                                        1 => true,
-                                        _ => panic!("invalid bool discriminant"),
-                                      }
-                                    }
-                                  }),
-                                  2 => Value::TypeEntityId(super::types::EntityId{id0:*((base + 8) as *const i64) as u64, id1:*((base + 16) as *const i64) as u64, }),
-                                  3 => Value::TypeF32(*((base + 8) as *const f32)),
-                                  4 => Value::TypeF64(*((base + 8) as *const f64)),
-                                  5 => Value::TypeMat4(super::types::Mat4{x:super::types::Vec4{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), w:*((base + 20) as *const f32), }, y:super::types::Vec4{x:*((base + 24) as *const f32), y:*((base + 28) as *const f32), z:*((base + 32) as *const f32), w:*((base + 36) as *const f32), }, z:super::types::Vec4{x:*((base + 40) as *const f32), y:*((base + 44) as *const f32), z:*((base + 48) as *const f32), w:*((base + 52) as *const f32), }, w:super::types::Vec4{x:*((base + 56) as *const f32), y:*((base + 60) as *const f32), z:*((base + 64) as *const f32), w:*((base + 68) as *const f32), }, }),
-                                  6 => Value::TypeI32(*((base + 8) as *const i32)),
-                                  7 => Value::TypeQuat(super::types::Quat{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), w:*((base + 20) as *const f32), }),
-                                  8 => Value::TypeString({
-                                    let len1 = *((base + 12) as *const i32) as usize;
-                                    
-                                    {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 8) as *const i32) as *mut _, len1, len1))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 8) as *const i32) as *mut _, len1, len1)).unwrap()}}
-                                  }),
-                                  9 => Value::TypeU8(i32::from(*((base + 8) as *const u8)) as u8),
-                                  10 => Value::TypeU32(*((base + 8) as *const i32) as u32),
-                                  11 => Value::TypeU64(*((base + 8) as *const i64) as u64),
-                                  12 => Value::TypeVec2(super::types::Vec2{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), }),
-                                  13 => Value::TypeVec3(super::types::Vec3{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), }),
-                                  14 => Value::TypeVec4(super::types::Vec4{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), w:*((base + 20) as *const f32), }),
-                                  15 => Value::TypeUvec2(super::types::Uvec2{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, }),
-                                  16 => Value::TypeUvec3(super::types::Uvec3{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, z:*((base + 16) as *const i32) as u32, }),
-                                  17 => Value::TypeUvec4(super::types::Uvec4{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, z:*((base + 16) as *const i32) as u32, w:*((base + 20) as *const i32) as u32, }),
-                                  18 => Value::TypeVec({{match i32::from(*((base + 8) as *const u8)) {
-                                    0 => VecValue::TypeEmpty({
-                                      let len2 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len2, len2)
-                                    }),
-                                    1 => VecValue::TypeBool({
-                                      let base3 = *((base + 12) as *const i32);
-                                      let len3 = *((base + 16) as *const i32);
-                                      let mut result3 = Vec::with_capacity(len3 as usize);
-                                      for i in 0..len3 {
-                                        let base = base3 + i *1;
-                                        result3.push({
-                                          #[cfg(not(debug_assertions))]
-                                          { core::mem::transmute::<u8, bool>(i32::from(*((base + 0) as *const u8)) as u8) }
-                                          #[cfg(debug_assertions)]
-                                          {
-                                            match i32::from(*((base + 0) as *const u8)) {
-                                              0 => false,
-                                              1 => true,
-                                              _ => panic!("invalid bool discriminant"),
-                                            }
-                                          }
-                                        });
-                                      }
-                                      wit_bindgen::rt::dealloc(base3, (len3 as usize) * 1, 1);
-                                      
-                                      result3
-                                    }),
-                                    2 => VecValue::TypeEntityId({
-                                      let len4 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len4, len4)
-                                    }),
-                                    3 => VecValue::TypeF32({
-                                      let len5 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len5, len5)
-                                    }),
-                                    4 => VecValue::TypeF64({
-                                      let len6 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len6, len6)
-                                    }),
-                                    5 => VecValue::TypeMat4({
-                                      let len7 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len7, len7)
-                                    }),
-                                    6 => VecValue::TypeI32({
-                                      let len8 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len8, len8)
-                                    }),
-                                    7 => VecValue::TypeQuat({
-                                      let len9 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len9, len9)
-                                    }),
-                                    8 => VecValue::TypeString({
-                                      let base11 = *((base + 12) as *const i32);
-                                      let len11 = *((base + 16) as *const i32);
-                                      let mut result11 = Vec::with_capacity(len11 as usize);
-                                      for i in 0..len11 {
-                                        let base = base11 + i *8;
-                                        result11.push({
-                                          let len10 = *((base + 4) as *const i32) as usize;
-                                          
-                                          {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 0) as *const i32) as *mut _, len10, len10))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 0) as *const i32) as *mut _, len10, len10)).unwrap()}}
-                                        });
-                                      }
-                                      wit_bindgen::rt::dealloc(base11, (len11 as usize) * 8, 4);
-                                      
-                                      result11
-                                    }),
-                                    9 => VecValue::TypeU8({
-                                      let len12 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len12, len12)
-                                    }),
-                                    10 => VecValue::TypeU32({
-                                      let len13 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len13, len13)
-                                    }),
-                                    11 => VecValue::TypeU64({
-                                      let len14 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len14, len14)
-                                    }),
-                                    12 => VecValue::TypeVec2({
-                                      let len15 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len15, len15)
-                                    }),
-                                    13 => VecValue::TypeVec3({
-                                      let len16 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len16, len16)
-                                    }),
-                                    14 => VecValue::TypeVec4({
-                                      let len17 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len17, len17)
-                                    }),
-                                    15 => VecValue::TypeUvec2({
-                                      let len18 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len18, len18)
-                                    }),
-                                    16 => VecValue::TypeUvec3({
-                                      let len19 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len19, len19)
-                                    }),
-                                    #[cfg(debug_assertions)]17 => VecValue::TypeUvec4({
-                                      let len20 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len20, len20)
-                                    }),
-                                    #[cfg(not(debug_assertions))]_ => VecValue::TypeUvec4({
-                                      let len20 = *((base + 16) as *const i32) as usize;
-                                      
-                                      Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len20, len20)
-                                    }),
-                                    #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
-                                  }}}),
-                                  #[cfg(debug_assertions)]19 => Value::TypeOption({{match i32::from(*((base + 8) as *const u8)) {
-                                    0 => OptionValue::TypeEmpty(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(()),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    1 => OptionValue::TypeBool(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some({
-                                        #[cfg(not(debug_assertions))]
-                                        { core::mem::transmute::<u8, bool>(i32::from(*((base + 17) as *const u8)) as u8) }
-                                        #[cfg(debug_assertions)]
-                                        {
-                                          match i32::from(*((base + 17) as *const u8)) {
-                                            0 => false,
-                                            1 => true,
-                                            _ => panic!("invalid bool discriminant"),
-                                          }
-                                        }
-                                      }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    2 => OptionValue::TypeEntityId(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::EntityId{id0:*((base + 24) as *const i64) as u64, id1:*((base + 32) as *const i64) as u64, }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    3 => OptionValue::TypeF32(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(*((base + 20) as *const f32)),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    4 => OptionValue::TypeF64(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(*((base + 24) as *const f64)),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    5 => OptionValue::TypeMat4(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Mat4{x:super::types::Vec4{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }, y:super::types::Vec4{x:*((base + 36) as *const f32), y:*((base + 40) as *const f32), z:*((base + 44) as *const f32), w:*((base + 48) as *const f32), }, z:super::types::Vec4{x:*((base + 52) as *const f32), y:*((base + 56) as *const f32), z:*((base + 60) as *const f32), w:*((base + 64) as *const f32), }, w:super::types::Vec4{x:*((base + 68) as *const f32), y:*((base + 72) as *const f32), z:*((base + 76) as *const f32), w:*((base + 80) as *const f32), }, }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    6 => OptionValue::TypeI32(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(*((base + 20) as *const i32)),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    7 => OptionValue::TypeQuat(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Quat{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    8 => OptionValue::TypeString(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some({
-                                        let len21 = *((base + 24) as *const i32) as usize;
-                                        
-                                        {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len21, len21))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len21, len21)).unwrap()}}
-                                      }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    9 => OptionValue::TypeU8(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(i32::from(*((base + 17) as *const u8)) as u8),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    10 => OptionValue::TypeU32(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(*((base + 20) as *const i32) as u32),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    11 => OptionValue::TypeU64(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(*((base + 24) as *const i64) as u64),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    12 => OptionValue::TypeVec2(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Vec2{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    13 => OptionValue::TypeVec3(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Vec3{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    14 => OptionValue::TypeVec4(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Vec4{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    15 => OptionValue::TypeUvec2(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Uvec2{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    16 => OptionValue::TypeUvec3(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Uvec3{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
-                                  }}}),
-                                  #[cfg(not(debug_assertions))]_ => Value::TypeOption({{match i32::from(*((base + 8) as *const u8)) {
-                                    0 => OptionValue::TypeEmpty(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(()),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    1 => OptionValue::TypeBool(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some({
-                                        #[cfg(not(debug_assertions))]
-                                        { core::mem::transmute::<u8, bool>(i32::from(*((base + 17) as *const u8)) as u8) }
-                                        #[cfg(debug_assertions)]
-                                        {
-                                          match i32::from(*((base + 17) as *const u8)) {
-                                            0 => false,
-                                            1 => true,
-                                            _ => panic!("invalid bool discriminant"),
-                                          }
-                                        }
-                                      }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    2 => OptionValue::TypeEntityId(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::EntityId{id0:*((base + 24) as *const i64) as u64, id1:*((base + 32) as *const i64) as u64, }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    3 => OptionValue::TypeF32(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(*((base + 20) as *const f32)),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    4 => OptionValue::TypeF64(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(*((base + 24) as *const f64)),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    5 => OptionValue::TypeMat4(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Mat4{x:super::types::Vec4{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }, y:super::types::Vec4{x:*((base + 36) as *const f32), y:*((base + 40) as *const f32), z:*((base + 44) as *const f32), w:*((base + 48) as *const f32), }, z:super::types::Vec4{x:*((base + 52) as *const f32), y:*((base + 56) as *const f32), z:*((base + 60) as *const f32), w:*((base + 64) as *const f32), }, w:super::types::Vec4{x:*((base + 68) as *const f32), y:*((base + 72) as *const f32), z:*((base + 76) as *const f32), w:*((base + 80) as *const f32), }, }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    6 => OptionValue::TypeI32(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(*((base + 20) as *const i32)),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    7 => OptionValue::TypeQuat(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Quat{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    8 => OptionValue::TypeString(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some({
-                                        let len21 = *((base + 24) as *const i32) as usize;
-                                        
-                                        {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len21, len21))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len21, len21)).unwrap()}}
-                                      }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    9 => OptionValue::TypeU8(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(i32::from(*((base + 17) as *const u8)) as u8),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    10 => OptionValue::TypeU32(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(*((base + 20) as *const i32) as u32),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    11 => OptionValue::TypeU64(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(*((base + 24) as *const i64) as u64),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    12 => OptionValue::TypeVec2(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Vec2{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    13 => OptionValue::TypeVec3(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Vec3{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    14 => OptionValue::TypeVec4(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Vec4{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    15 => OptionValue::TypeUvec2(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Uvec2{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    16 => OptionValue::TypeUvec3(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Uvec3{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
-                                      0 => None,
-                                      1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
-                                      #[cfg(not(debug_assertions))]
-                                      _ => core::hint::unreachable_unchecked(),
-                                      #[cfg(debug_assertions)]
-                                      _ => panic!("invalid enum discriminant"),
-                                    }),
-                                    #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
-                                  }}}),
-                                  #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
-                                }}});
-                              }
-                              wit_bindgen::rt::dealloc(base22, (len22 as usize) * 88, 8);
-                              
-                              (super::types::EntityId{id0:*((base + 0) as *const i64) as u64, id1:*((base + 8) as *const i64) as u64, }, result22)
-                            });
-                          }
-                          wit_bindgen::rt::dealloc(base23, (len23 as usize) * 24, 8);
-                          result23
-                        }
-                      }
+                  #[repr(align(8))]
+                  struct RetArea([u8; 112]);
+                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                  let ptr0 = ret_area.as_mut_ptr() as i32;let super::types::EntityId{ id0:id01, id1:id11, } = entity;
+                  *((ptr0 + 0) as *mut i64) = wit_bindgen::rt::as_i64(id01);
+                  *((ptr0 + 8) as *mut i64) = wit_bindgen::rt::as_i64(id11);
+                  *((ptr0 + 16) as *mut i32) = wit_bindgen::rt::as_i32(index);
+                  match value {
+                    Value::TypeEmpty(e) => {
+                      *((ptr0 + 24) as *mut u8) = (0i32) as u8;
+                      let () = e;
                       
-                    }
-                    
-                    
-                    #[allow(clippy::all)]
-                    pub mod entity{
-                      #[used]
-                      #[doc(hidden)]
-                      #[cfg(target_arch = "wasm32")]
-                      static __FORCE_SECTION_REF: fn() = super::__link_section;
+                    },
+                    Value::TypeBool(e) => {
+                      *((ptr0 + 24) as *mut u8) = (1i32) as u8;
+                      *((ptr0 + 32) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                       
-                      pub type EntityId = super::types::EntityId;
-                      pub type Vec3 = super::types::Vec3;
-                      pub type EntityData<'a,> = super::component::Entity<'a,>;
-                      /// Animation clip data
-                      #[derive(Clone)]
-                      pub struct AnimationClip {
-                        /// BinderId for the animation tracks
-                        pub binders: wit_bindgen::rt::vec::Vec::<wit_bindgen::rt::string::String>,
-                        /// Duration in seconds
-                        pub duration: f32,
-                        /// If the asset is loaded (duration will be 0 and binders empty if false)
-                        pub loaded: bool,
-                        /// Error that occured while fetching asset
-                        pub error: wit_bindgen::rt::string::String,
-                      }
-                      impl core::fmt::Debug for AnimationClip {
-                        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                          f.debug_struct("AnimationClip").field("binders", &self.binders).field("duration", &self.duration).field("loaded", &self.loaded).field("error", &self.error).finish()
-                        }
-                      }
-                      /// An action in an animation.
-                      #[derive(Clone)]
-                      pub struct AnimationAction<'a,> {
-                        /// The animation clip URL to play.
-                        pub clip_url: &'a str,
-                        /// Whether or not this action should loop
-                        pub looping: bool,
-                        /// How strongly this action applies to the final blend [0-1]
-                        pub weight: f32,
-                      }
-                      impl<'a,> core::fmt::Debug for AnimationAction<'a,> {
-                        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                          f.debug_struct("AnimationAction").field("clip-url", &self.clip_url).field("looping", &self.looping).field("weight", &self.weight).finish()
-                        }
-                      }
-                      /// Controls the animations for an entity.
-                      #[derive(Clone)]
-                      pub struct AnimationController<'a,> {
-                        /// All of the actions that contribute to this animation.
-                        /// Will be blended together.
-                        pub actions: &'a [AnimationAction<'a,>],
-                        /// Whether or not the first action's pose should be used as a base pose.
-                        pub apply_base_pose: bool,
-                      }
-                      impl<'a,> core::fmt::Debug for AnimationController<'a,> {
-                        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                          f.debug_struct("AnimationController").field("actions", &self.actions).field("apply-base-pose", &self.apply_base_pose).finish()
-                        }
-                      }
-                      #[allow(clippy::all)]
-                      pub fn set_animation_blend(entity: EntityId,weights: &[f32],time: &[f32],absolute_time: bool,){
-                        
-                        #[allow(unused_imports)]
-                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                        unsafe {
-                          let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                          let vec1 = weights;
-                          let ptr1 = vec1.as_ptr() as i32;
-                          let len1 = vec1.len() as i32;
-                          let vec2 = time;
-                          let ptr2 = vec2.as_ptr() as i32;
-                          let len2 = vec2.len() as i32;
+                    },
+                    Value::TypeEntityId(e) => {
+                      *((ptr0 + 24) as *mut u8) = (2i32) as u8;
+                      let super::types::EntityId{ id0:id03, id1:id13, } = e;
+                      *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(id03);
+                      *((ptr0 + 40) as *mut i64) = wit_bindgen::rt::as_i64(id13);
+                      
+                    },
+                    Value::TypeF32(e) => {
+                      *((ptr0 + 24) as *mut u8) = (3i32) as u8;
+                      *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(e);
+                      
+                    },
+                    Value::TypeF64(e) => {
+                      *((ptr0 + 24) as *mut u8) = (4i32) as u8;
+                      *((ptr0 + 32) as *mut f64) = wit_bindgen::rt::as_f64(e);
+                      
+                    },
+                    Value::TypeMat4(e) => {
+                      *((ptr0 + 24) as *mut u8) = (5i32) as u8;
+                      let super::types::Mat4{ x:x4, y:y4, z:z4, w:w4, } = e;
+                      let super::types::Vec4{ x:x5, y:y5, z:z5, w:w5, } = x4;
+                      *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x5);
+                      *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y5);
+                      *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z5);
+                      *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w5);
+                      let super::types::Vec4{ x:x6, y:y6, z:z6, w:w6, } = y4;
+                      *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(x6);
+                      *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(y6);
+                      *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(z6);
+                      *((ptr0 + 60) as *mut f32) = wit_bindgen::rt::as_f32(w6);
+                      let super::types::Vec4{ x:x7, y:y7, z:z7, w:w7, } = z4;
+                      *((ptr0 + 64) as *mut f32) = wit_bindgen::rt::as_f32(x7);
+                      *((ptr0 + 68) as *mut f32) = wit_bindgen::rt::as_f32(y7);
+                      *((ptr0 + 72) as *mut f32) = wit_bindgen::rt::as_f32(z7);
+                      *((ptr0 + 76) as *mut f32) = wit_bindgen::rt::as_f32(w7);
+                      let super::types::Vec4{ x:x8, y:y8, z:z8, w:w8, } = w4;
+                      *((ptr0 + 80) as *mut f32) = wit_bindgen::rt::as_f32(x8);
+                      *((ptr0 + 84) as *mut f32) = wit_bindgen::rt::as_f32(y8);
+                      *((ptr0 + 88) as *mut f32) = wit_bindgen::rt::as_f32(z8);
+                      *((ptr0 + 92) as *mut f32) = wit_bindgen::rt::as_f32(w8);
+                      
+                    },
+                    Value::TypeI32(e) => {
+                      *((ptr0 + 24) as *mut u8) = (6i32) as u8;
+                      *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                      
+                    },
+                    Value::TypeQuat(e) => {
+                      *((ptr0 + 24) as *mut u8) = (7i32) as u8;
+                      let super::types::Quat{ x:x9, y:y9, z:z9, w:w9, } = e;
+                      *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x9);
+                      *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y9);
+                      *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z9);
+                      *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w9);
+                      
+                    },
+                    Value::TypeString(e) => {
+                      *((ptr0 + 24) as *mut u8) = (8i32) as u8;
+                      let vec10 = e;
+                      let ptr10 = vec10.as_ptr() as i32;
+                      let len10 = vec10.len() as i32;
+                      *((ptr0 + 36) as *mut i32) = len10;
+                      *((ptr0 + 32) as *mut i32) = ptr10;
+                      
+                    },
+                    Value::TypeU8(e) => {
+                      *((ptr0 + 24) as *mut u8) = (9i32) as u8;
+                      *((ptr0 + 32) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
+                      
+                    },
+                    Value::TypeU32(e) => {
+                      *((ptr0 + 24) as *mut u8) = (10i32) as u8;
+                      *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                      
+                    },
+                    Value::TypeU64(e) => {
+                      *((ptr0 + 24) as *mut u8) = (11i32) as u8;
+                      *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(e);
+                      
+                    },
+                    Value::TypeVec2(e) => {
+                      *((ptr0 + 24) as *mut u8) = (12i32) as u8;
+                      let super::types::Vec2{ x:x11, y:y11, } = e;
+                      *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x11);
+                      *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y11);
+                      
+                    },
+                    Value::TypeVec3(e) => {
+                      *((ptr0 + 24) as *mut u8) = (13i32) as u8;
+                      let super::types::Vec3{ x:x12, y:y12, z:z12, } = e;
+                      *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x12);
+                      *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y12);
+                      *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z12);
+                      
+                    },
+                    Value::TypeVec4(e) => {
+                      *((ptr0 + 24) as *mut u8) = (14i32) as u8;
+                      let super::types::Vec4{ x:x13, y:y13, z:z13, w:w13, } = e;
+                      *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x13);
+                      *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y13);
+                      *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z13);
+                      *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w13);
+                      
+                    },
+                    Value::TypeUvec2(e) => {
+                      *((ptr0 + 24) as *mut u8) = (15i32) as u8;
+                      let super::types::Uvec2{ x:x14, y:y14, } = e;
+                      *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x14);
+                      *((ptr0 + 36) as *mut i32) = wit_bindgen::rt::as_i32(y14);
+                      
+                    },
+                    Value::TypeUvec3(e) => {
+                      *((ptr0 + 24) as *mut u8) = (16i32) as u8;
+                      let super::types::Uvec3{ x:x15, y:y15, z:z15, } = e;
+                      *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x15);
+                      *((ptr0 + 36) as *mut i32) = wit_bindgen::rt::as_i32(y15);
+                      *((ptr0 + 40) as *mut i32) = wit_bindgen::rt::as_i32(z15);
+                      
+                    },
+                    Value::TypeUvec4(e) => {
+                      *((ptr0 + 24) as *mut u8) = (17i32) as u8;
+                      let super::types::Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
+                      *((ptr0 + 32) as *mut i32) = wit_bindgen::rt::as_i32(x16);
+                      *((ptr0 + 36) as *mut i32) = wit_bindgen::rt::as_i32(y16);
+                      *((ptr0 + 40) as *mut i32) = wit_bindgen::rt::as_i32(z16);
+                      *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(w16);
+                      
+                    },
+                    Value::TypeVec(e) => {
+                      *((ptr0 + 24) as *mut u8) = (18i32) as u8;
+                      match e {
+                        VecValue::TypeEmpty(e) => {
+                          *((ptr0 + 32) as *mut u8) = (0i32) as u8;
+                          let vec17 = e;
+                          let ptr17 = vec17.as_ptr() as i32;
+                          let len17 = vec17.len() as i32;
+                          *((ptr0 + 40) as *mut i32) = len17;
+                          *((ptr0 + 36) as *mut i32) = ptr17;
                           
-                          #[link(wasm_import_module = "entity")]
-                          extern "C" {
-                            #[cfg_attr(target_arch = "wasm32", link_name = "set-animation-blend")]
-                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_set-animation-blend")]
-                            fn wit_import(
-                            _: i64, _: i64, _: i32, _: i32, _: i32, _: i32, _: i32, );
-                          }
-                          wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), ptr1, len1, ptr2, len2, match absolute_time { true => 1, false => 0 });
-                        }
-                      }
-                      #[allow(clippy::all)]
-                      pub fn has_animation_clip(clip_url: &str,) -> bool{
-                        
-                        #[allow(unused_imports)]
-                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                        unsafe {
-                          let vec0 = clip_url;
-                          let ptr0 = vec0.as_ptr() as i32;
-                          let len0 = vec0.len() as i32;
-                          
-                          #[link(wasm_import_module = "entity")]
-                          extern "C" {
-                            #[cfg_attr(target_arch = "wasm32", link_name = "has-animation-clip")]
-                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_has-animation-clip")]
-                            fn wit_import(
-                            _: i32, _: i32, ) -> i32;
-                          }
-                          let ret = wit_import(ptr0, len0);
+                        },
+                        VecValue::TypeBool(e) => {
+                          *((ptr0 + 32) as *mut u8) = (1i32) as u8;
+                          let vec18 = e;
+                          let len18 = vec18.len() as i32;
+                          let layout18 = alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
+                          let result18 = if layout18.size() != 0
                           {
-                            #[cfg(not(debug_assertions))]
-                            { core::mem::transmute::<u8, bool>(ret as u8) }
-                            #[cfg(debug_assertions)]
-                            {
-                              match ret {
-                                0 => false,
-                                1 => true,
-                                _ => panic!("invalid bool discriminant"),
-                              }
-                            }
-                          }
-                        }
-                      }
-                      #[allow(clippy::all)]
-                      pub fn get_animation_clips(clips: &[&str],) -> wit_bindgen::rt::vec::Vec::<AnimationClip>{
-                        
-                        #[allow(unused_imports)]
-                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                        unsafe {
-                          
-                          #[repr(align(4))]
-                          struct RetArea([u8; 8]);
-                          let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                          let vec1 = clips;
-                          let len1 = vec1.len() as i32;
-                          let layout1 = alloc::Layout::from_size_align_unchecked(vec1.len() * 8, 4);
-                          let result1 = if layout1.size() != 0
-                          {
-                            let ptr = alloc::alloc(layout1);
+                            let ptr = alloc::alloc(layout18);
                             if ptr.is_null()
                             {
-                              alloc::handle_alloc_error(layout1);
+                              alloc::handle_alloc_error(layout18);
                             }
                             ptr
                           }else {
                             core::ptr::null_mut()
                           };
-                          for (i, e) in vec1.into_iter().enumerate() {
-                            let base = result1 as i32 + (i as i32) * 8;
+                          for (i, e) in vec18.into_iter().enumerate() {
+                            let base = result18 as i32 + (i as i32) * 1;
                             {
-                              let vec0 = e;
-                              let ptr0 = vec0.as_ptr() as i32;
-                              let len0 = vec0.len() as i32;
-                              *((base + 4) as *mut i32) = len0;
-                              *((base + 0) as *mut i32) = ptr0;
+                              *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                               
                             }}
-                            let ptr2 = ret_area.as_mut_ptr() as i32;
-                            #[link(wasm_import_module = "entity")]
-                            extern "C" {
-                              #[cfg_attr(target_arch = "wasm32", link_name = "get-animation-clips")]
-                              #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_get-animation-clips")]
-                              fn wit_import(
-                              _: i32, _: i32, _: i32, );
-                            }
-                            wit_import(result1 as i32, len1, ptr2);
-                            let base6 = *((ptr2 + 0) as *const i32);
-                            let len6 = *((ptr2 + 4) as *const i32);
-                            let mut result6 = Vec::with_capacity(len6 as usize);
-                            for i in 0..len6 {
-                              let base = base6 + i *24;
-                              result6.push({
-                                let base4 = *((base + 0) as *const i32);
-                                let len4 = *((base + 4) as *const i32);
-                                let mut result4 = Vec::with_capacity(len4 as usize);
-                                for i in 0..len4 {
-                                  let base = base4 + i *8;
-                                  result4.push({
-                                    let len3 = *((base + 4) as *const i32) as usize;
-                                    
-                                    {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 0) as *const i32) as *mut _, len3, len3))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 0) as *const i32) as *mut _, len3, len3)).unwrap()}}
-                                  });
-                                }
-                                wit_bindgen::rt::dealloc(base4, (len4 as usize) * 8, 4);
-                                let len5 = *((base + 20) as *const i32) as usize;
+                            *((ptr0 + 40) as *mut i32) = len18;
+                            *((ptr0 + 36) as *mut i32) = result18 as i32;
+                            cleanup_list.extend_from_slice(&[(result18, layout18),]);
+                            
+                          },
+                          VecValue::TypeEntityId(e) => {
+                            *((ptr0 + 32) as *mut u8) = (2i32) as u8;
+                            let vec19 = e;
+                            let ptr19 = vec19.as_ptr() as i32;
+                            let len19 = vec19.len() as i32;
+                            *((ptr0 + 40) as *mut i32) = len19;
+                            *((ptr0 + 36) as *mut i32) = ptr19;
+                            
+                          },
+                          VecValue::TypeF32(e) => {
+                            *((ptr0 + 32) as *mut u8) = (3i32) as u8;
+                            let vec20 = e;
+                            let ptr20 = vec20.as_ptr() as i32;
+                            let len20 = vec20.len() as i32;
+                            *((ptr0 + 40) as *mut i32) = len20;
+                            *((ptr0 + 36) as *mut i32) = ptr20;
+                            
+                          },
+                          VecValue::TypeF64(e) => {
+                            *((ptr0 + 32) as *mut u8) = (4i32) as u8;
+                            let vec21 = e;
+                            let ptr21 = vec21.as_ptr() as i32;
+                            let len21 = vec21.len() as i32;
+                            *((ptr0 + 40) as *mut i32) = len21;
+                            *((ptr0 + 36) as *mut i32) = ptr21;
+                            
+                          },
+                          VecValue::TypeMat4(e) => {
+                            *((ptr0 + 32) as *mut u8) = (5i32) as u8;
+                            let vec22 = e;
+                            let ptr22 = vec22.as_ptr() as i32;
+                            let len22 = vec22.len() as i32;
+                            *((ptr0 + 40) as *mut i32) = len22;
+                            *((ptr0 + 36) as *mut i32) = ptr22;
+                            
+                          },
+                          VecValue::TypeI32(e) => {
+                            *((ptr0 + 32) as *mut u8) = (6i32) as u8;
+                            let vec23 = e;
+                            let ptr23 = vec23.as_ptr() as i32;
+                            let len23 = vec23.len() as i32;
+                            *((ptr0 + 40) as *mut i32) = len23;
+                            *((ptr0 + 36) as *mut i32) = ptr23;
+                            
+                          },
+                          VecValue::TypeQuat(e) => {
+                            *((ptr0 + 32) as *mut u8) = (7i32) as u8;
+                            let vec24 = e;
+                            let ptr24 = vec24.as_ptr() as i32;
+                            let len24 = vec24.len() as i32;
+                            *((ptr0 + 40) as *mut i32) = len24;
+                            *((ptr0 + 36) as *mut i32) = ptr24;
+                            
+                          },
+                          VecValue::TypeString(e) => {
+                            *((ptr0 + 32) as *mut u8) = (8i32) as u8;
+                            let vec26 = e;
+                            let len26 = vec26.len() as i32;
+                            let layout26 = alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
+                            let result26 = if layout26.size() != 0
+                            {
+                              let ptr = alloc::alloc(layout26);
+                              if ptr.is_null()
+                              {
+                                alloc::handle_alloc_error(layout26);
+                              }
+                              ptr
+                            }else {
+                              core::ptr::null_mut()
+                            };
+                            for (i, e) in vec26.into_iter().enumerate() {
+                              let base = result26 as i32 + (i as i32) * 8;
+                              {
+                                let vec25 = e;
+                                let ptr25 = vec25.as_ptr() as i32;
+                                let len25 = vec25.len() as i32;
+                                *((base + 4) as *mut i32) = len25;
+                                *((base + 0) as *mut i32) = ptr25;
                                 
-                                AnimationClip{binders:result4, duration:*((base + 8) as *const f32), loaded:{
-                                  #[cfg(not(debug_assertions))]
-                                  { core::mem::transmute::<u8, bool>(i32::from(*((base + 12) as *const u8)) as u8) }
-                                  #[cfg(debug_assertions)]
+                              }}
+                              *((ptr0 + 40) as *mut i32) = len26;
+                              *((ptr0 + 36) as *mut i32) = result26 as i32;
+                              cleanup_list.extend_from_slice(&[(result26, layout26),]);
+                              
+                            },
+                            VecValue::TypeU8(e) => {
+                              *((ptr0 + 32) as *mut u8) = (9i32) as u8;
+                              let vec27 = e;
+                              let ptr27 = vec27.as_ptr() as i32;
+                              let len27 = vec27.len() as i32;
+                              *((ptr0 + 40) as *mut i32) = len27;
+                              *((ptr0 + 36) as *mut i32) = ptr27;
+                              
+                            },
+                            VecValue::TypeU32(e) => {
+                              *((ptr0 + 32) as *mut u8) = (10i32) as u8;
+                              let vec28 = e;
+                              let ptr28 = vec28.as_ptr() as i32;
+                              let len28 = vec28.len() as i32;
+                              *((ptr0 + 40) as *mut i32) = len28;
+                              *((ptr0 + 36) as *mut i32) = ptr28;
+                              
+                            },
+                            VecValue::TypeU64(e) => {
+                              *((ptr0 + 32) as *mut u8) = (11i32) as u8;
+                              let vec29 = e;
+                              let ptr29 = vec29.as_ptr() as i32;
+                              let len29 = vec29.len() as i32;
+                              *((ptr0 + 40) as *mut i32) = len29;
+                              *((ptr0 + 36) as *mut i32) = ptr29;
+                              
+                            },
+                            VecValue::TypeVec2(e) => {
+                              *((ptr0 + 32) as *mut u8) = (12i32) as u8;
+                              let vec30 = e;
+                              let ptr30 = vec30.as_ptr() as i32;
+                              let len30 = vec30.len() as i32;
+                              *((ptr0 + 40) as *mut i32) = len30;
+                              *((ptr0 + 36) as *mut i32) = ptr30;
+                              
+                            },
+                            VecValue::TypeVec3(e) => {
+                              *((ptr0 + 32) as *mut u8) = (13i32) as u8;
+                              let vec31 = e;
+                              let ptr31 = vec31.as_ptr() as i32;
+                              let len31 = vec31.len() as i32;
+                              *((ptr0 + 40) as *mut i32) = len31;
+                              *((ptr0 + 36) as *mut i32) = ptr31;
+                              
+                            },
+                            VecValue::TypeVec4(e) => {
+                              *((ptr0 + 32) as *mut u8) = (14i32) as u8;
+                              let vec32 = e;
+                              let ptr32 = vec32.as_ptr() as i32;
+                              let len32 = vec32.len() as i32;
+                              *((ptr0 + 40) as *mut i32) = len32;
+                              *((ptr0 + 36) as *mut i32) = ptr32;
+                              
+                            },
+                            VecValue::TypeUvec2(e) => {
+                              *((ptr0 + 32) as *mut u8) = (15i32) as u8;
+                              let vec33 = e;
+                              let ptr33 = vec33.as_ptr() as i32;
+                              let len33 = vec33.len() as i32;
+                              *((ptr0 + 40) as *mut i32) = len33;
+                              *((ptr0 + 36) as *mut i32) = ptr33;
+                              
+                            },
+                            VecValue::TypeUvec3(e) => {
+                              *((ptr0 + 32) as *mut u8) = (16i32) as u8;
+                              let vec34 = e;
+                              let ptr34 = vec34.as_ptr() as i32;
+                              let len34 = vec34.len() as i32;
+                              *((ptr0 + 40) as *mut i32) = len34;
+                              *((ptr0 + 36) as *mut i32) = ptr34;
+                              
+                            },
+                            VecValue::TypeUvec4(e) => {
+                              *((ptr0 + 32) as *mut u8) = (17i32) as u8;
+                              let vec35 = e;
+                              let ptr35 = vec35.as_ptr() as i32;
+                              let len35 = vec35.len() as i32;
+                              *((ptr0 + 40) as *mut i32) = len35;
+                              *((ptr0 + 36) as *mut i32) = ptr35;
+                              
+                            },
+                          };
+                          
+                        },
+                        Value::TypeOption(e) => {
+                          *((ptr0 + 24) as *mut u8) = (19i32) as u8;
+                          match e {
+                            OptionValue::TypeEmpty(e) => {
+                              *((ptr0 + 32) as *mut u8) = (0i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  let () = e;
+                                  
+                                },
+                                None => {
                                   {
-                                    match i32::from(*((base + 12) as *const u8)) {
-                                      0 => false,
-                                      1 => true,
-                                      _ => panic!("invalid bool discriminant"),
-                                    }
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
                                   }
-                                }, error:{#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 16) as *const i32) as *mut _, len5, len5))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 16) as *const i32) as *mut _, len5, len5)).unwrap()}}, }
+                                },
+                              };
+                            },
+                            OptionValue::TypeBool(e) => {
+                              *((ptr0 + 32) as *mut u8) = (1i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  *((ptr0 + 41) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeEntityId(e) => {
+                              *((ptr0 + 32) as *mut u8) = (2i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  let super::types::EntityId{ id0:id037, id1:id137, } = e;
+                                  *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(id037);
+                                  *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(id137);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeF32(e) => {
+                              *((ptr0 + 32) as *mut u8) = (3i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(e);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeF64(e) => {
+                              *((ptr0 + 32) as *mut u8) = (4i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  *((ptr0 + 48) as *mut f64) = wit_bindgen::rt::as_f64(e);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeMat4(e) => {
+                              *((ptr0 + 32) as *mut u8) = (5i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  let super::types::Mat4{ x:x38, y:y38, z:z38, w:w38, } = e;
+                                  let super::types::Vec4{ x:x39, y:y39, z:z39, w:w39, } = x38;
+                                  *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x39);
+                                  *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y39);
+                                  *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z39);
+                                  *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w39);
+                                  let super::types::Vec4{ x:x40, y:y40, z:z40, w:w40, } = y38;
+                                  *((ptr0 + 60) as *mut f32) = wit_bindgen::rt::as_f32(x40);
+                                  *((ptr0 + 64) as *mut f32) = wit_bindgen::rt::as_f32(y40);
+                                  *((ptr0 + 68) as *mut f32) = wit_bindgen::rt::as_f32(z40);
+                                  *((ptr0 + 72) as *mut f32) = wit_bindgen::rt::as_f32(w40);
+                                  let super::types::Vec4{ x:x41, y:y41, z:z41, w:w41, } = z38;
+                                  *((ptr0 + 76) as *mut f32) = wit_bindgen::rt::as_f32(x41);
+                                  *((ptr0 + 80) as *mut f32) = wit_bindgen::rt::as_f32(y41);
+                                  *((ptr0 + 84) as *mut f32) = wit_bindgen::rt::as_f32(z41);
+                                  *((ptr0 + 88) as *mut f32) = wit_bindgen::rt::as_f32(w41);
+                                  let super::types::Vec4{ x:x42, y:y42, z:z42, w:w42, } = w38;
+                                  *((ptr0 + 92) as *mut f32) = wit_bindgen::rt::as_f32(x42);
+                                  *((ptr0 + 96) as *mut f32) = wit_bindgen::rt::as_f32(y42);
+                                  *((ptr0 + 100) as *mut f32) = wit_bindgen::rt::as_f32(z42);
+                                  *((ptr0 + 104) as *mut f32) = wit_bindgen::rt::as_f32(w42);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeI32(e) => {
+                              *((ptr0 + 32) as *mut u8) = (6i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeQuat(e) => {
+                              *((ptr0 + 32) as *mut u8) = (7i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  let super::types::Quat{ x:x43, y:y43, z:z43, w:w43, } = e;
+                                  *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x43);
+                                  *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y43);
+                                  *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z43);
+                                  *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w43);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeString(e) => {
+                              *((ptr0 + 32) as *mut u8) = (8i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  let vec44 = e;
+                                  let ptr44 = vec44.as_ptr() as i32;
+                                  let len44 = vec44.len() as i32;
+                                  *((ptr0 + 48) as *mut i32) = len44;
+                                  *((ptr0 + 44) as *mut i32) = ptr44;
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeU8(e) => {
+                              *((ptr0 + 32) as *mut u8) = (9i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  *((ptr0 + 41) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeU32(e) => {
+                              *((ptr0 + 32) as *mut u8) = (10i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeU64(e) => {
+                              *((ptr0 + 32) as *mut u8) = (11i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(e);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeVec2(e) => {
+                              *((ptr0 + 32) as *mut u8) = (12i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  let super::types::Vec2{ x:x45, y:y45, } = e;
+                                  *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x45);
+                                  *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y45);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeVec3(e) => {
+                              *((ptr0 + 32) as *mut u8) = (13i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  let super::types::Vec3{ x:x46, y:y46, z:z46, } = e;
+                                  *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x46);
+                                  *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y46);
+                                  *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z46);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeVec4(e) => {
+                              *((ptr0 + 32) as *mut u8) = (14i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  let super::types::Vec4{ x:x47, y:y47, z:z47, w:w47, } = e;
+                                  *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x47);
+                                  *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y47);
+                                  *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z47);
+                                  *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w47);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeUvec2(e) => {
+                              *((ptr0 + 32) as *mut u8) = (15i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  let super::types::Uvec2{ x:x48, y:y48, } = e;
+                                  *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x48);
+                                  *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y48);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeUvec3(e) => {
+                              *((ptr0 + 32) as *mut u8) = (16i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  let super::types::Uvec3{ x:x49, y:y49, z:z49, } = e;
+                                  *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x49);
+                                  *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y49);
+                                  *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z49);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeUvec4(e) => {
+                              *((ptr0 + 32) as *mut u8) = (17i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                  let super::types::Uvec4{ x:x50, y:y50, z:z50, w:w50, } = e;
+                                  *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x50);
+                                  *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y50);
+                                  *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z50);
+                                  *((ptr0 + 56) as *mut i32) = wit_bindgen::rt::as_i32(w50);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                          };
+                          
+                        },
+                      };
+                      
+                      #[link(wasm_import_module = "component")]
+                      extern "C" {
+                        #[cfg_attr(target_arch = "wasm32", link_name = "set-component")]
+                        #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_set-component")]
+                        fn wit_import(
+                        _: i32, );
+                      }
+                      wit_import(ptr0);
+                      for (ptr, layout) in cleanup_list {
+                        
+                        if layout.size() != 0 {
+                          
+                          alloc::dealloc(ptr, layout);
+                          
+                        }
+                        
+                      }
+                    }
+                  }
+                  #[allow(clippy::all)]
+                  pub fn set_components(entity: EntityId,data: Entity<'_,>,){
+                    
+                    #[allow(unused_imports)]
+                    use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                    unsafe {
+                      let mut cleanup_list = Vec::new();
+                      let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                      let vec51 = data;
+                      let len51 = vec51.len() as i32;
+                      let layout51 = alloc::Layout::from_size_align_unchecked(vec51.len() * 96, 8);
+                      let result51 = if layout51.size() != 0
+                      {
+                        let ptr = alloc::alloc(layout51);
+                        if ptr.is_null()
+                        {
+                          alloc::handle_alloc_error(layout51);
+                        }
+                        ptr
+                      }else {
+                        core::ptr::null_mut()
+                      };
+                      for (i, e) in vec51.into_iter().enumerate() {
+                        let base = result51 as i32 + (i as i32) * 96;
+                        {
+                          let (t1_0, t1_1, ) = e;
+                          *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t1_0);
+                          match t1_1 {
+                            Value::TypeEmpty(e) => {
+                              *((base + 8) as *mut u8) = (0i32) as u8;
+                              let () = e;
+                              
+                            },
+                            Value::TypeBool(e) => {
+                              *((base + 8) as *mut u8) = (1i32) as u8;
+                              *((base + 16) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
+                              
+                            },
+                            Value::TypeEntityId(e) => {
+                              *((base + 8) as *mut u8) = (2i32) as u8;
+                              let super::types::EntityId{ id0:id03, id1:id13, } = e;
+                              *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(id03);
+                              *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(id13);
+                              
+                            },
+                            Value::TypeF32(e) => {
+                              *((base + 8) as *mut u8) = (3i32) as u8;
+                              *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(e);
+                              
+                            },
+                            Value::TypeF64(e) => {
+                              *((base + 8) as *mut u8) = (4i32) as u8;
+                              *((base + 16) as *mut f64) = wit_bindgen::rt::as_f64(e);
+                              
+                            },
+                            Value::TypeMat4(e) => {
+                              *((base + 8) as *mut u8) = (5i32) as u8;
+                              let super::types::Mat4{ x:x4, y:y4, z:z4, w:w4, } = e;
+                              let super::types::Vec4{ x:x5, y:y5, z:z5, w:w5, } = x4;
+                              *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x5);
+                              *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y5);
+                              *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z5);
+                              *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w5);
+                              let super::types::Vec4{ x:x6, y:y6, z:z6, w:w6, } = y4;
+                              *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(x6);
+                              *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(y6);
+                              *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(z6);
+                              *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(w6);
+                              let super::types::Vec4{ x:x7, y:y7, z:z7, w:w7, } = z4;
+                              *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(x7);
+                              *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(y7);
+                              *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(z7);
+                              *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(w7);
+                              let super::types::Vec4{ x:x8, y:y8, z:z8, w:w8, } = w4;
+                              *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(x8);
+                              *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(y8);
+                              *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(z8);
+                              *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(w8);
+                              
+                            },
+                            Value::TypeI32(e) => {
+                              *((base + 8) as *mut u8) = (6i32) as u8;
+                              *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                              
+                            },
+                            Value::TypeQuat(e) => {
+                              *((base + 8) as *mut u8) = (7i32) as u8;
+                              let super::types::Quat{ x:x9, y:y9, z:z9, w:w9, } = e;
+                              *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x9);
+                              *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y9);
+                              *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z9);
+                              *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w9);
+                              
+                            },
+                            Value::TypeString(e) => {
+                              *((base + 8) as *mut u8) = (8i32) as u8;
+                              let vec10 = e;
+                              let ptr10 = vec10.as_ptr() as i32;
+                              let len10 = vec10.len() as i32;
+                              *((base + 20) as *mut i32) = len10;
+                              *((base + 16) as *mut i32) = ptr10;
+                              
+                            },
+                            Value::TypeU8(e) => {
+                              *((base + 8) as *mut u8) = (9i32) as u8;
+                              *((base + 16) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
+                              
+                            },
+                            Value::TypeU32(e) => {
+                              *((base + 8) as *mut u8) = (10i32) as u8;
+                              *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                              
+                            },
+                            Value::TypeU64(e) => {
+                              *((base + 8) as *mut u8) = (11i32) as u8;
+                              *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(e);
+                              
+                            },
+                            Value::TypeVec2(e) => {
+                              *((base + 8) as *mut u8) = (12i32) as u8;
+                              let super::types::Vec2{ x:x11, y:y11, } = e;
+                              *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x11);
+                              *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y11);
+                              
+                            },
+                            Value::TypeVec3(e) => {
+                              *((base + 8) as *mut u8) = (13i32) as u8;
+                              let super::types::Vec3{ x:x12, y:y12, z:z12, } = e;
+                              *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x12);
+                              *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y12);
+                              *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z12);
+                              
+                            },
+                            Value::TypeVec4(e) => {
+                              *((base + 8) as *mut u8) = (14i32) as u8;
+                              let super::types::Vec4{ x:x13, y:y13, z:z13, w:w13, } = e;
+                              *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x13);
+                              *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y13);
+                              *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z13);
+                              *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w13);
+                              
+                            },
+                            Value::TypeUvec2(e) => {
+                              *((base + 8) as *mut u8) = (15i32) as u8;
+                              let super::types::Uvec2{ x:x14, y:y14, } = e;
+                              *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x14);
+                              *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y14);
+                              
+                            },
+                            Value::TypeUvec3(e) => {
+                              *((base + 8) as *mut u8) = (16i32) as u8;
+                              let super::types::Uvec3{ x:x15, y:y15, z:z15, } = e;
+                              *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x15);
+                              *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y15);
+                              *((base + 24) as *mut i32) = wit_bindgen::rt::as_i32(z15);
+                              
+                            },
+                            Value::TypeUvec4(e) => {
+                              *((base + 8) as *mut u8) = (17i32) as u8;
+                              let super::types::Uvec4{ x:x16, y:y16, z:z16, w:w16, } = e;
+                              *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x16);
+                              *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y16);
+                              *((base + 24) as *mut i32) = wit_bindgen::rt::as_i32(z16);
+                              *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(w16);
+                              
+                            },
+                            Value::TypeVec(e) => {
+                              *((base + 8) as *mut u8) = (18i32) as u8;
+                              match e {
+                                VecValue::TypeEmpty(e) => {
+                                  *((base + 16) as *mut u8) = (0i32) as u8;
+                                  let vec17 = e;
+                                  let ptr17 = vec17.as_ptr() as i32;
+                                  let len17 = vec17.len() as i32;
+                                  *((base + 24) as *mut i32) = len17;
+                                  *((base + 20) as *mut i32) = ptr17;
+                                  
+                                },
+                                VecValue::TypeBool(e) => {
+                                  *((base + 16) as *mut u8) = (1i32) as u8;
+                                  let vec18 = e;
+                                  let len18 = vec18.len() as i32;
+                                  let layout18 = alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
+                                  let result18 = if layout18.size() != 0
+                                  {
+                                    let ptr = alloc::alloc(layout18);
+                                    if ptr.is_null()
+                                    {
+                                      alloc::handle_alloc_error(layout18);
+                                    }
+                                    ptr
+                                  }else {
+                                    core::ptr::null_mut()
+                                  };
+                                  for (i, e) in vec18.into_iter().enumerate() {
+                                    let base = result18 as i32 + (i as i32) * 1;
+                                    {
+                                      *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
+                                      
+                                    }}
+                                    *((base + 24) as *mut i32) = len18;
+                                    *((base + 20) as *mut i32) = result18 as i32;
+                                    cleanup_list.extend_from_slice(&[(result18, layout18),]);
+                                    
+                                  },
+                                  VecValue::TypeEntityId(e) => {
+                                    *((base + 16) as *mut u8) = (2i32) as u8;
+                                    let vec19 = e;
+                                    let ptr19 = vec19.as_ptr() as i32;
+                                    let len19 = vec19.len() as i32;
+                                    *((base + 24) as *mut i32) = len19;
+                                    *((base + 20) as *mut i32) = ptr19;
+                                    
+                                  },
+                                  VecValue::TypeF32(e) => {
+                                    *((base + 16) as *mut u8) = (3i32) as u8;
+                                    let vec20 = e;
+                                    let ptr20 = vec20.as_ptr() as i32;
+                                    let len20 = vec20.len() as i32;
+                                    *((base + 24) as *mut i32) = len20;
+                                    *((base + 20) as *mut i32) = ptr20;
+                                    
+                                  },
+                                  VecValue::TypeF64(e) => {
+                                    *((base + 16) as *mut u8) = (4i32) as u8;
+                                    let vec21 = e;
+                                    let ptr21 = vec21.as_ptr() as i32;
+                                    let len21 = vec21.len() as i32;
+                                    *((base + 24) as *mut i32) = len21;
+                                    *((base + 20) as *mut i32) = ptr21;
+                                    
+                                  },
+                                  VecValue::TypeMat4(e) => {
+                                    *((base + 16) as *mut u8) = (5i32) as u8;
+                                    let vec22 = e;
+                                    let ptr22 = vec22.as_ptr() as i32;
+                                    let len22 = vec22.len() as i32;
+                                    *((base + 24) as *mut i32) = len22;
+                                    *((base + 20) as *mut i32) = ptr22;
+                                    
+                                  },
+                                  VecValue::TypeI32(e) => {
+                                    *((base + 16) as *mut u8) = (6i32) as u8;
+                                    let vec23 = e;
+                                    let ptr23 = vec23.as_ptr() as i32;
+                                    let len23 = vec23.len() as i32;
+                                    *((base + 24) as *mut i32) = len23;
+                                    *((base + 20) as *mut i32) = ptr23;
+                                    
+                                  },
+                                  VecValue::TypeQuat(e) => {
+                                    *((base + 16) as *mut u8) = (7i32) as u8;
+                                    let vec24 = e;
+                                    let ptr24 = vec24.as_ptr() as i32;
+                                    let len24 = vec24.len() as i32;
+                                    *((base + 24) as *mut i32) = len24;
+                                    *((base + 20) as *mut i32) = ptr24;
+                                    
+                                  },
+                                  VecValue::TypeString(e) => {
+                                    *((base + 16) as *mut u8) = (8i32) as u8;
+                                    let vec26 = e;
+                                    let len26 = vec26.len() as i32;
+                                    let layout26 = alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
+                                    let result26 = if layout26.size() != 0
+                                    {
+                                      let ptr = alloc::alloc(layout26);
+                                      if ptr.is_null()
+                                      {
+                                        alloc::handle_alloc_error(layout26);
+                                      }
+                                      ptr
+                                    }else {
+                                      core::ptr::null_mut()
+                                    };
+                                    for (i, e) in vec26.into_iter().enumerate() {
+                                      let base = result26 as i32 + (i as i32) * 8;
+                                      {
+                                        let vec25 = e;
+                                        let ptr25 = vec25.as_ptr() as i32;
+                                        let len25 = vec25.len() as i32;
+                                        *((base + 4) as *mut i32) = len25;
+                                        *((base + 0) as *mut i32) = ptr25;
+                                        
+                                      }}
+                                      *((base + 24) as *mut i32) = len26;
+                                      *((base + 20) as *mut i32) = result26 as i32;
+                                      cleanup_list.extend_from_slice(&[(result26, layout26),]);
+                                      
+                                    },
+                                    VecValue::TypeU8(e) => {
+                                      *((base + 16) as *mut u8) = (9i32) as u8;
+                                      let vec27 = e;
+                                      let ptr27 = vec27.as_ptr() as i32;
+                                      let len27 = vec27.len() as i32;
+                                      *((base + 24) as *mut i32) = len27;
+                                      *((base + 20) as *mut i32) = ptr27;
+                                      
+                                    },
+                                    VecValue::TypeU32(e) => {
+                                      *((base + 16) as *mut u8) = (10i32) as u8;
+                                      let vec28 = e;
+                                      let ptr28 = vec28.as_ptr() as i32;
+                                      let len28 = vec28.len() as i32;
+                                      *((base + 24) as *mut i32) = len28;
+                                      *((base + 20) as *mut i32) = ptr28;
+                                      
+                                    },
+                                    VecValue::TypeU64(e) => {
+                                      *((base + 16) as *mut u8) = (11i32) as u8;
+                                      let vec29 = e;
+                                      let ptr29 = vec29.as_ptr() as i32;
+                                      let len29 = vec29.len() as i32;
+                                      *((base + 24) as *mut i32) = len29;
+                                      *((base + 20) as *mut i32) = ptr29;
+                                      
+                                    },
+                                    VecValue::TypeVec2(e) => {
+                                      *((base + 16) as *mut u8) = (12i32) as u8;
+                                      let vec30 = e;
+                                      let ptr30 = vec30.as_ptr() as i32;
+                                      let len30 = vec30.len() as i32;
+                                      *((base + 24) as *mut i32) = len30;
+                                      *((base + 20) as *mut i32) = ptr30;
+                                      
+                                    },
+                                    VecValue::TypeVec3(e) => {
+                                      *((base + 16) as *mut u8) = (13i32) as u8;
+                                      let vec31 = e;
+                                      let ptr31 = vec31.as_ptr() as i32;
+                                      let len31 = vec31.len() as i32;
+                                      *((base + 24) as *mut i32) = len31;
+                                      *((base + 20) as *mut i32) = ptr31;
+                                      
+                                    },
+                                    VecValue::TypeVec4(e) => {
+                                      *((base + 16) as *mut u8) = (14i32) as u8;
+                                      let vec32 = e;
+                                      let ptr32 = vec32.as_ptr() as i32;
+                                      let len32 = vec32.len() as i32;
+                                      *((base + 24) as *mut i32) = len32;
+                                      *((base + 20) as *mut i32) = ptr32;
+                                      
+                                    },
+                                    VecValue::TypeUvec2(e) => {
+                                      *((base + 16) as *mut u8) = (15i32) as u8;
+                                      let vec33 = e;
+                                      let ptr33 = vec33.as_ptr() as i32;
+                                      let len33 = vec33.len() as i32;
+                                      *((base + 24) as *mut i32) = len33;
+                                      *((base + 20) as *mut i32) = ptr33;
+                                      
+                                    },
+                                    VecValue::TypeUvec3(e) => {
+                                      *((base + 16) as *mut u8) = (16i32) as u8;
+                                      let vec34 = e;
+                                      let ptr34 = vec34.as_ptr() as i32;
+                                      let len34 = vec34.len() as i32;
+                                      *((base + 24) as *mut i32) = len34;
+                                      *((base + 20) as *mut i32) = ptr34;
+                                      
+                                    },
+                                    VecValue::TypeUvec4(e) => {
+                                      *((base + 16) as *mut u8) = (17i32) as u8;
+                                      let vec35 = e;
+                                      let ptr35 = vec35.as_ptr() as i32;
+                                      let len35 = vec35.len() as i32;
+                                      *((base + 24) as *mut i32) = len35;
+                                      *((base + 20) as *mut i32) = ptr35;
+                                      
+                                    },
+                                  };
+                                  
+                                },
+                                Value::TypeOption(e) => {
+                                  *((base + 8) as *mut u8) = (19i32) as u8;
+                                  match e {
+                                    OptionValue::TypeEmpty(e) => {
+                                      *((base + 16) as *mut u8) = (0i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          let () = e;
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeBool(e) => {
+                                      *((base + 16) as *mut u8) = (1i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          *((base + 25) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeEntityId(e) => {
+                                      *((base + 16) as *mut u8) = (2i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          let super::types::EntityId{ id0:id037, id1:id137, } = e;
+                                          *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(id037);
+                                          *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(id137);
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeF32(e) => {
+                                      *((base + 16) as *mut u8) = (3i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(e);
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeF64(e) => {
+                                      *((base + 16) as *mut u8) = (4i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          *((base + 32) as *mut f64) = wit_bindgen::rt::as_f64(e);
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeMat4(e) => {
+                                      *((base + 16) as *mut u8) = (5i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          let super::types::Mat4{ x:x38, y:y38, z:z38, w:w38, } = e;
+                                          let super::types::Vec4{ x:x39, y:y39, z:z39, w:w39, } = x38;
+                                          *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x39);
+                                          *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y39);
+                                          *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z39);
+                                          *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w39);
+                                          let super::types::Vec4{ x:x40, y:y40, z:z40, w:w40, } = y38;
+                                          *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(x40);
+                                          *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(y40);
+                                          *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(z40);
+                                          *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(w40);
+                                          let super::types::Vec4{ x:x41, y:y41, z:z41, w:w41, } = z38;
+                                          *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(x41);
+                                          *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(y41);
+                                          *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(z41);
+                                          *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(w41);
+                                          let super::types::Vec4{ x:x42, y:y42, z:z42, w:w42, } = w38;
+                                          *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(x42);
+                                          *((base + 80) as *mut f32) = wit_bindgen::rt::as_f32(y42);
+                                          *((base + 84) as *mut f32) = wit_bindgen::rt::as_f32(z42);
+                                          *((base + 88) as *mut f32) = wit_bindgen::rt::as_f32(w42);
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeI32(e) => {
+                                      *((base + 16) as *mut u8) = (6i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeQuat(e) => {
+                                      *((base + 16) as *mut u8) = (7i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          let super::types::Quat{ x:x43, y:y43, z:z43, w:w43, } = e;
+                                          *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x43);
+                                          *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y43);
+                                          *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z43);
+                                          *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w43);
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeString(e) => {
+                                      *((base + 16) as *mut u8) = (8i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          let vec44 = e;
+                                          let ptr44 = vec44.as_ptr() as i32;
+                                          let len44 = vec44.len() as i32;
+                                          *((base + 32) as *mut i32) = len44;
+                                          *((base + 28) as *mut i32) = ptr44;
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeU8(e) => {
+                                      *((base + 16) as *mut u8) = (9i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          *((base + 25) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeU32(e) => {
+                                      *((base + 16) as *mut u8) = (10i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeU64(e) => {
+                                      *((base + 16) as *mut u8) = (11i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(e);
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeVec2(e) => {
+                                      *((base + 16) as *mut u8) = (12i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          let super::types::Vec2{ x:x45, y:y45, } = e;
+                                          *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x45);
+                                          *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y45);
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeVec3(e) => {
+                                      *((base + 16) as *mut u8) = (13i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          let super::types::Vec3{ x:x46, y:y46, z:z46, } = e;
+                                          *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x46);
+                                          *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y46);
+                                          *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z46);
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeVec4(e) => {
+                                      *((base + 16) as *mut u8) = (14i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          let super::types::Vec4{ x:x47, y:y47, z:z47, w:w47, } = e;
+                                          *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x47);
+                                          *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y47);
+                                          *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z47);
+                                          *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w47);
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeUvec2(e) => {
+                                      *((base + 16) as *mut u8) = (15i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          let super::types::Uvec2{ x:x48, y:y48, } = e;
+                                          *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x48);
+                                          *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y48);
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeUvec3(e) => {
+                                      *((base + 16) as *mut u8) = (16i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          let super::types::Uvec3{ x:x49, y:y49, z:z49, } = e;
+                                          *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x49);
+                                          *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y49);
+                                          *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z49);
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                    OptionValue::TypeUvec4(e) => {
+                                      *((base + 16) as *mut u8) = (17i32) as u8;
+                                      match e {
+                                        Some(e) => {
+                                          *((base + 24) as *mut u8) = (1i32) as u8;
+                                          let super::types::Uvec4{ x:x50, y:y50, z:z50, w:w50, } = e;
+                                          *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x50);
+                                          *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y50);
+                                          *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z50);
+                                          *((base + 40) as *mut i32) = wit_bindgen::rt::as_i32(w50);
+                                          
+                                        },
+                                        None => {
+                                          {
+                                            *((base + 24) as *mut u8) = (0i32) as u8;
+                                            
+                                          }
+                                        },
+                                      };
+                                    },
+                                  };
+                                  
+                                },
+                              };
+                              
+                            }}
+                            
+                            #[link(wasm_import_module = "component")]
+                            extern "C" {
+                              #[cfg_attr(target_arch = "wasm32", link_name = "set-components")]
+                              #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_set-components")]
+                              fn wit_import(
+                              _: i64, _: i64, _: i32, _: i32, );
+                            }
+                            wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), result51 as i32, len51);
+                            if layout51.size() != 0 {
+                              alloc::dealloc(result51, layout51);
+                            }
+                            for (ptr, layout) in cleanup_list {
+                              
+                              if layout.size() != 0 {
+                                
+                                alloc::dealloc(ptr, layout);
+                                
+                              }
+                              
+                            }
+                          }
+                        }
+                        #[allow(clippy::all)]
+                        pub fn has_component(entity: EntityId,index: u32,) -> bool{
+                          
+                          #[allow(unused_imports)]
+                          use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                          unsafe {
+                            let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                            
+                            #[link(wasm_import_module = "component")]
+                            extern "C" {
+                              #[cfg_attr(target_arch = "wasm32", link_name = "has-component")]
+                              #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_has-component")]
+                              fn wit_import(
+                              _: i64, _: i64, _: i32, ) -> i32;
+                            }
+                            let ret = wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_i32(index));
+                            {
+                              #[cfg(not(debug_assertions))]
+                              { core::mem::transmute::<u8, bool>(ret as u8) }
+                              #[cfg(debug_assertions)]
+                              {
+                                match ret {
+                                  0 => false,
+                                  1 => true,
+                                  _ => panic!("invalid bool discriminant"),
+                                }
+                              }
+                            }
+                          }
+                        }
+                        #[allow(clippy::all)]
+                        pub fn has_components(entity: EntityId,indices: &[u32],) -> bool{
+                          
+                          #[allow(unused_imports)]
+                          use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                          unsafe {
+                            let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                            let vec1 = indices;
+                            let ptr1 = vec1.as_ptr() as i32;
+                            let len1 = vec1.len() as i32;
+                            
+                            #[link(wasm_import_module = "component")]
+                            extern "C" {
+                              #[cfg_attr(target_arch = "wasm32", link_name = "has-components")]
+                              #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_has-components")]
+                              fn wit_import(
+                              _: i64, _: i64, _: i32, _: i32, ) -> i32;
+                            }
+                            let ret = wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), ptr1, len1);
+                            {
+                              #[cfg(not(debug_assertions))]
+                              { core::mem::transmute::<u8, bool>(ret as u8) }
+                              #[cfg(debug_assertions)]
+                              {
+                                match ret {
+                                  0 => false,
+                                  1 => true,
+                                  _ => panic!("invalid bool discriminant"),
+                                }
+                              }
+                            }
+                          }
+                        }
+                        #[allow(clippy::all)]
+                        pub fn remove_component(entity: EntityId,index: u32,){
+                          
+                          #[allow(unused_imports)]
+                          use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                          unsafe {
+                            let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                            
+                            #[link(wasm_import_module = "component")]
+                            extern "C" {
+                              #[cfg_attr(target_arch = "wasm32", link_name = "remove-component")]
+                              #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_remove-component")]
+                              fn wit_import(
+                              _: i64, _: i64, _: i32, );
+                            }
+                            wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_i32(index));
+                          }
+                        }
+                        #[allow(clippy::all)]
+                        pub fn remove_components(entity: EntityId,indices: &[u32],){
+                          
+                          #[allow(unused_imports)]
+                          use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                          unsafe {
+                            let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                            let vec1 = indices;
+                            let ptr1 = vec1.as_ptr() as i32;
+                            let len1 = vec1.len() as i32;
+                            
+                            #[link(wasm_import_module = "component")]
+                            extern "C" {
+                              #[cfg_attr(target_arch = "wasm32", link_name = "remove-components")]
+                              #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_remove-components")]
+                              fn wit_import(
+                              _: i64, _: i64, _: i32, _: i32, );
+                            }
+                            wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), ptr1, len1);
+                          }
+                        }
+                        #[allow(clippy::all)]
+                        pub fn query(q: QueryBuild<'_,>,t: QueryEvent,) -> u64{
+                          
+                          #[allow(unused_imports)]
+                          use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                          unsafe {
+                            let QueryBuild{ components:components0, include:include0, exclude:exclude0, changed:changed0, } = q;
+                            let vec1 = components0;
+                            let ptr1 = vec1.as_ptr() as i32;
+                            let len1 = vec1.len() as i32;
+                            let vec2 = include0;
+                            let ptr2 = vec2.as_ptr() as i32;
+                            let len2 = vec2.len() as i32;
+                            let vec3 = exclude0;
+                            let ptr3 = vec3.as_ptr() as i32;
+                            let len3 = vec3.len() as i32;
+                            let vec4 = changed0;
+                            let ptr4 = vec4.as_ptr() as i32;
+                            let len4 = vec4.len() as i32;
+                            
+                            #[link(wasm_import_module = "component")]
+                            extern "C" {
+                              #[cfg_attr(target_arch = "wasm32", link_name = "query")]
+                              #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_query")]
+                              fn wit_import(
+                              _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, ) -> i64;
+                            }
+                            let ret = wit_import(ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4, match t {
+                              QueryEvent::Frame => 0,
+                              QueryEvent::Spawn => 1,
+                              QueryEvent::Despawn => 2,
+                            });
+                            ret as u64
+                          }
+                        }
+                        #[allow(clippy::all)]
+                        pub fn query_eval(q: u64,) -> wit_bindgen::rt::vec::Vec::<(EntityId,wit_bindgen::rt::vec::Vec::<Value>,)>{
+                          
+                          #[allow(unused_imports)]
+                          use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                          unsafe {
+                            
+                            #[repr(align(4))]
+                            struct RetArea([u8; 8]);
+                            let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                            let ptr0 = ret_area.as_mut_ptr() as i32;
+                            #[link(wasm_import_module = "component")]
+                            extern "C" {
+                              #[cfg_attr(target_arch = "wasm32", link_name = "query-eval")]
+                              #[cfg_attr(not(target_arch = "wasm32"), link_name = "component_query-eval")]
+                              fn wit_import(
+                              _: i64, _: i32, );
+                            }
+                            wit_import(wit_bindgen::rt::as_i64(q), ptr0);
+                            let base23 = *((ptr0 + 0) as *const i32);
+                            let len23 = *((ptr0 + 4) as *const i32);
+                            let mut result23 = Vec::with_capacity(len23 as usize);
+                            for i in 0..len23 {
+                              let base = base23 + i *24;
+                              result23.push({
+                                let base22 = *((base + 16) as *const i32);
+                                let len22 = *((base + 20) as *const i32);
+                                let mut result22 = Vec::with_capacity(len22 as usize);
+                                for i in 0..len22 {
+                                  let base = base22 + i *88;
+                                  result22.push({{match i32::from(*((base + 0) as *const u8)) {
+                                    0 => Value::TypeEmpty(()),
+                                    1 => Value::TypeBool({
+                                      #[cfg(not(debug_assertions))]
+                                      { core::mem::transmute::<u8, bool>(i32::from(*((base + 8) as *const u8)) as u8) }
+                                      #[cfg(debug_assertions)]
+                                      {
+                                        match i32::from(*((base + 8) as *const u8)) {
+                                          0 => false,
+                                          1 => true,
+                                          _ => panic!("invalid bool discriminant"),
+                                        }
+                                      }
+                                    }),
+                                    2 => Value::TypeEntityId(super::types::EntityId{id0:*((base + 8) as *const i64) as u64, id1:*((base + 16) as *const i64) as u64, }),
+                                    3 => Value::TypeF32(*((base + 8) as *const f32)),
+                                    4 => Value::TypeF64(*((base + 8) as *const f64)),
+                                    5 => Value::TypeMat4(super::types::Mat4{x:super::types::Vec4{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), w:*((base + 20) as *const f32), }, y:super::types::Vec4{x:*((base + 24) as *const f32), y:*((base + 28) as *const f32), z:*((base + 32) as *const f32), w:*((base + 36) as *const f32), }, z:super::types::Vec4{x:*((base + 40) as *const f32), y:*((base + 44) as *const f32), z:*((base + 48) as *const f32), w:*((base + 52) as *const f32), }, w:super::types::Vec4{x:*((base + 56) as *const f32), y:*((base + 60) as *const f32), z:*((base + 64) as *const f32), w:*((base + 68) as *const f32), }, }),
+                                    6 => Value::TypeI32(*((base + 8) as *const i32)),
+                                    7 => Value::TypeQuat(super::types::Quat{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), w:*((base + 20) as *const f32), }),
+                                    8 => Value::TypeString({
+                                      let len1 = *((base + 12) as *const i32) as usize;
+                                      
+                                      {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 8) as *const i32) as *mut _, len1, len1))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 8) as *const i32) as *mut _, len1, len1)).unwrap()}}
+                                    }),
+                                    9 => Value::TypeU8(i32::from(*((base + 8) as *const u8)) as u8),
+                                    10 => Value::TypeU32(*((base + 8) as *const i32) as u32),
+                                    11 => Value::TypeU64(*((base + 8) as *const i64) as u64),
+                                    12 => Value::TypeVec2(super::types::Vec2{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), }),
+                                    13 => Value::TypeVec3(super::types::Vec3{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), }),
+                                    14 => Value::TypeVec4(super::types::Vec4{x:*((base + 8) as *const f32), y:*((base + 12) as *const f32), z:*((base + 16) as *const f32), w:*((base + 20) as *const f32), }),
+                                    15 => Value::TypeUvec2(super::types::Uvec2{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, }),
+                                    16 => Value::TypeUvec3(super::types::Uvec3{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, z:*((base + 16) as *const i32) as u32, }),
+                                    17 => Value::TypeUvec4(super::types::Uvec4{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, z:*((base + 16) as *const i32) as u32, w:*((base + 20) as *const i32) as u32, }),
+                                    18 => Value::TypeVec({{match i32::from(*((base + 8) as *const u8)) {
+                                      0 => VecValue::TypeEmpty({
+                                        let len2 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len2, len2)
+                                      }),
+                                      1 => VecValue::TypeBool({
+                                        let base3 = *((base + 12) as *const i32);
+                                        let len3 = *((base + 16) as *const i32);
+                                        let mut result3 = Vec::with_capacity(len3 as usize);
+                                        for i in 0..len3 {
+                                          let base = base3 + i *1;
+                                          result3.push({
+                                            #[cfg(not(debug_assertions))]
+                                            { core::mem::transmute::<u8, bool>(i32::from(*((base + 0) as *const u8)) as u8) }
+                                            #[cfg(debug_assertions)]
+                                            {
+                                              match i32::from(*((base + 0) as *const u8)) {
+                                                0 => false,
+                                                1 => true,
+                                                _ => panic!("invalid bool discriminant"),
+                                              }
+                                            }
+                                          });
+                                        }
+                                        wit_bindgen::rt::dealloc(base3, (len3 as usize) * 1, 1);
+                                        
+                                        result3
+                                      }),
+                                      2 => VecValue::TypeEntityId({
+                                        let len4 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len4, len4)
+                                      }),
+                                      3 => VecValue::TypeF32({
+                                        let len5 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len5, len5)
+                                      }),
+                                      4 => VecValue::TypeF64({
+                                        let len6 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len6, len6)
+                                      }),
+                                      5 => VecValue::TypeMat4({
+                                        let len7 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len7, len7)
+                                      }),
+                                      6 => VecValue::TypeI32({
+                                        let len8 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len8, len8)
+                                      }),
+                                      7 => VecValue::TypeQuat({
+                                        let len9 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len9, len9)
+                                      }),
+                                      8 => VecValue::TypeString({
+                                        let base11 = *((base + 12) as *const i32);
+                                        let len11 = *((base + 16) as *const i32);
+                                        let mut result11 = Vec::with_capacity(len11 as usize);
+                                        for i in 0..len11 {
+                                          let base = base11 + i *8;
+                                          result11.push({
+                                            let len10 = *((base + 4) as *const i32) as usize;
+                                            
+                                            {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 0) as *const i32) as *mut _, len10, len10))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 0) as *const i32) as *mut _, len10, len10)).unwrap()}}
+                                          });
+                                        }
+                                        wit_bindgen::rt::dealloc(base11, (len11 as usize) * 8, 4);
+                                        
+                                        result11
+                                      }),
+                                      9 => VecValue::TypeU8({
+                                        let len12 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len12, len12)
+                                      }),
+                                      10 => VecValue::TypeU32({
+                                        let len13 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len13, len13)
+                                      }),
+                                      11 => VecValue::TypeU64({
+                                        let len14 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len14, len14)
+                                      }),
+                                      12 => VecValue::TypeVec2({
+                                        let len15 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len15, len15)
+                                      }),
+                                      13 => VecValue::TypeVec3({
+                                        let len16 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len16, len16)
+                                      }),
+                                      14 => VecValue::TypeVec4({
+                                        let len17 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len17, len17)
+                                      }),
+                                      15 => VecValue::TypeUvec2({
+                                        let len18 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len18, len18)
+                                      }),
+                                      16 => VecValue::TypeUvec3({
+                                        let len19 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len19, len19)
+                                      }),
+                                      #[cfg(debug_assertions)]17 => VecValue::TypeUvec4({
+                                        let len20 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len20, len20)
+                                      }),
+                                      #[cfg(not(debug_assertions))]_ => VecValue::TypeUvec4({
+                                        let len20 = *((base + 16) as *const i32) as usize;
+                                        
+                                        Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len20, len20)
+                                      }),
+                                      #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
+                                    }}}),
+                                    #[cfg(debug_assertions)]19 => Value::TypeOption({{match i32::from(*((base + 8) as *const u8)) {
+                                      0 => OptionValue::TypeEmpty(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(()),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      1 => OptionValue::TypeBool(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some({
+                                          #[cfg(not(debug_assertions))]
+                                          { core::mem::transmute::<u8, bool>(i32::from(*((base + 17) as *const u8)) as u8) }
+                                          #[cfg(debug_assertions)]
+                                          {
+                                            match i32::from(*((base + 17) as *const u8)) {
+                                              0 => false,
+                                              1 => true,
+                                              _ => panic!("invalid bool discriminant"),
+                                            }
+                                          }
+                                        }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      2 => OptionValue::TypeEntityId(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::EntityId{id0:*((base + 24) as *const i64) as u64, id1:*((base + 32) as *const i64) as u64, }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      3 => OptionValue::TypeF32(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(*((base + 20) as *const f32)),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      4 => OptionValue::TypeF64(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(*((base + 24) as *const f64)),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      5 => OptionValue::TypeMat4(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Mat4{x:super::types::Vec4{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }, y:super::types::Vec4{x:*((base + 36) as *const f32), y:*((base + 40) as *const f32), z:*((base + 44) as *const f32), w:*((base + 48) as *const f32), }, z:super::types::Vec4{x:*((base + 52) as *const f32), y:*((base + 56) as *const f32), z:*((base + 60) as *const f32), w:*((base + 64) as *const f32), }, w:super::types::Vec4{x:*((base + 68) as *const f32), y:*((base + 72) as *const f32), z:*((base + 76) as *const f32), w:*((base + 80) as *const f32), }, }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      6 => OptionValue::TypeI32(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(*((base + 20) as *const i32)),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      7 => OptionValue::TypeQuat(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Quat{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      8 => OptionValue::TypeString(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some({
+                                          let len21 = *((base + 24) as *const i32) as usize;
+                                          
+                                          {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len21, len21))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len21, len21)).unwrap()}}
+                                        }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      9 => OptionValue::TypeU8(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(i32::from(*((base + 17) as *const u8)) as u8),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      10 => OptionValue::TypeU32(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(*((base + 20) as *const i32) as u32),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      11 => OptionValue::TypeU64(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(*((base + 24) as *const i64) as u64),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      12 => OptionValue::TypeVec2(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Vec2{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      13 => OptionValue::TypeVec3(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Vec3{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      14 => OptionValue::TypeVec4(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Vec4{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      15 => OptionValue::TypeUvec2(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Uvec2{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      16 => OptionValue::TypeUvec3(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Uvec3{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
+                                    }}}),
+                                    #[cfg(not(debug_assertions))]_ => Value::TypeOption({{match i32::from(*((base + 8) as *const u8)) {
+                                      0 => OptionValue::TypeEmpty(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(()),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      1 => OptionValue::TypeBool(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some({
+                                          #[cfg(not(debug_assertions))]
+                                          { core::mem::transmute::<u8, bool>(i32::from(*((base + 17) as *const u8)) as u8) }
+                                          #[cfg(debug_assertions)]
+                                          {
+                                            match i32::from(*((base + 17) as *const u8)) {
+                                              0 => false,
+                                              1 => true,
+                                              _ => panic!("invalid bool discriminant"),
+                                            }
+                                          }
+                                        }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      2 => OptionValue::TypeEntityId(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::EntityId{id0:*((base + 24) as *const i64) as u64, id1:*((base + 32) as *const i64) as u64, }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      3 => OptionValue::TypeF32(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(*((base + 20) as *const f32)),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      4 => OptionValue::TypeF64(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(*((base + 24) as *const f64)),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      5 => OptionValue::TypeMat4(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Mat4{x:super::types::Vec4{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }, y:super::types::Vec4{x:*((base + 36) as *const f32), y:*((base + 40) as *const f32), z:*((base + 44) as *const f32), w:*((base + 48) as *const f32), }, z:super::types::Vec4{x:*((base + 52) as *const f32), y:*((base + 56) as *const f32), z:*((base + 60) as *const f32), w:*((base + 64) as *const f32), }, w:super::types::Vec4{x:*((base + 68) as *const f32), y:*((base + 72) as *const f32), z:*((base + 76) as *const f32), w:*((base + 80) as *const f32), }, }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      6 => OptionValue::TypeI32(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(*((base + 20) as *const i32)),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      7 => OptionValue::TypeQuat(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Quat{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      8 => OptionValue::TypeString(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some({
+                                          let len21 = *((base + 24) as *const i32) as usize;
+                                          
+                                          {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len21, len21))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len21, len21)).unwrap()}}
+                                        }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      9 => OptionValue::TypeU8(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(i32::from(*((base + 17) as *const u8)) as u8),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      10 => OptionValue::TypeU32(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(*((base + 20) as *const i32) as u32),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      11 => OptionValue::TypeU64(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(*((base + 24) as *const i64) as u64),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      12 => OptionValue::TypeVec2(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Vec2{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      13 => OptionValue::TypeVec3(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Vec3{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      14 => OptionValue::TypeVec4(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Vec4{x:*((base + 20) as *const f32), y:*((base + 24) as *const f32), z:*((base + 28) as *const f32), w:*((base + 32) as *const f32), }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      15 => OptionValue::TypeUvec2(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Uvec2{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      16 => OptionValue::TypeUvec3(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Uvec3{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
+                                        0 => None,
+                                        1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
+                                        #[cfg(not(debug_assertions))]
+                                        _ => core::hint::unreachable_unchecked(),
+                                        #[cfg(debug_assertions)]
+                                        _ => panic!("invalid enum discriminant"),
+                                      }),
+                                      #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
+                                    }}}),
+                                    #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
+                                  }}});
+                                }
+                                wit_bindgen::rt::dealloc(base22, (len22 as usize) * 88, 8);
+                                
+                                (super::types::EntityId{id0:*((base + 0) as *const i64) as u64, id1:*((base + 8) as *const i64) as u64, }, result22)
                               });
                             }
-                            wit_bindgen::rt::dealloc(base6, (len6 as usize) * 24, 4);
-                            if layout1.size() != 0 {
-                              alloc::dealloc(result1, layout1);
+                            wit_bindgen::rt::dealloc(base23, (len23 as usize) * 24, 8);
+                            result23
+                          }
+                        }
+                        
+                      }
+                      
+                      
+                      #[allow(clippy::all)]
+                      pub mod entity{
+                        #[used]
+                        #[doc(hidden)]
+                        #[cfg(target_arch = "wasm32")]
+                        static __FORCE_SECTION_REF: fn() = super::__link_section;
+                        
+                        pub type EntityId = super::types::EntityId;
+                        pub type Vec3 = super::types::Vec3;
+                        pub type EntityData<'a,> = super::component::Entity<'a,>;
+                        /// An action in an animation.
+                        #[derive(Clone)]
+                        pub struct AnimationAction<'a,> {
+                          /// The animation clip URL to play.
+                          pub clip_url: &'a str,
+                          /// Whether or not this action should loop
+                          pub looping: bool,
+                          /// How strongly this action applies to the final blend [0-1]
+                          pub weight: f32,
+                        }
+                        impl<'a,> core::fmt::Debug for AnimationAction<'a,> {
+                          fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                            f.debug_struct("AnimationAction").field("clip-url", &self.clip_url).field("looping", &self.looping).field("weight", &self.weight).finish()
+                          }
+                        }
+                        /// Controls the animations for an entity.
+                        #[derive(Clone)]
+                        pub struct AnimationController<'a,> {
+                          /// All of the actions that contribute to this animation.
+                          /// Will be blended together.
+                          pub actions: &'a [AnimationAction<'a,>],
+                          /// Whether or not the first action's pose should be used as a base pose.
+                          pub apply_base_pose: bool,
+                        }
+                        impl<'a,> core::fmt::Debug for AnimationController<'a,> {
+                          fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                            f.debug_struct("AnimationController").field("actions", &self.actions).field("apply-base-pose", &self.apply_base_pose).finish()
+                          }
+                        }
+                        #[allow(clippy::all)]
+                        pub fn set_animation_blend(entity: EntityId,weights: &[f32],time: &[f32],absolute_time: bool,){
+                          
+                          #[allow(unused_imports)]
+                          use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                          unsafe {
+                            let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                            let vec1 = weights;
+                            let ptr1 = vec1.as_ptr() as i32;
+                            let len1 = vec1.len() as i32;
+                            let vec2 = time;
+                            let ptr2 = vec2.as_ptr() as i32;
+                            let len2 = vec2.len() as i32;
+                            
+                            #[link(wasm_import_module = "entity")]
+                            extern "C" {
+                              #[cfg_attr(target_arch = "wasm32", link_name = "set-animation-blend")]
+                              #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_set-animation-blend")]
+                              fn wit_import(
+                              _: i64, _: i64, _: i32, _: i32, _: i32, _: i32, _: i32, );
                             }
-                            result6
+                            wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), ptr1, len1, ptr2, len2, match absolute_time { true => 1, false => 0 });
                           }
                         }
                         #[allow(clippy::all)]
@@ -8390,7 +8422,7 @@ pub mod component{
                               
                               #[cfg(target_arch = "wasm32")]
                               #[link_section = "component-type:bindings"]
-                              #[doc(hidden)]pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 20251] = [2, 0, 3, 119, 105, 116, 4, 109, 97, 105, 110, 8, 98, 105, 110, 100, 105, 110, 103, 115, 0, 97, 115, 109, 12, 0, 1, 0, 7, 142, 2, 1, 65, 2, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 4, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 11, 21, 1, 5, 116, 121, 112, 101, 115, 10, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 3, 0, 0, 7, 221, 8, 1, 65, 7, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 109, 97, 116, 52, 1, 66, 40, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 4, 1, 114, 3, 4, 115, 105, 100, 101, 127, 2, 117, 112, 127, 4, 100, 111, 119, 110, 127, 4, 19, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 99, 111, 108, 108, 105, 115, 105, 111, 110, 0, 3, 0, 6, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 1, 0, 4, 9, 97, 100, 100, 45, 102, 111, 114, 99, 101, 0, 1, 8, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 1, 0, 4, 11, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 9, 1, 107, 118, 1, 64, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 7, 105, 109, 112, 117, 108, 115, 101, 118, 6, 114, 97, 100, 105, 117, 115, 118, 14, 102, 97, 108, 108, 111, 102, 102, 45, 114, 97, 100, 105, 117, 115, 10, 1, 0, 4, 18, 97, 100, 100, 45, 114, 97, 100, 105, 97, 108, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 11, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 21, 97, 100, 100, 45, 102, 111, 114, 99, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 12, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 23, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 13, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 0, 3, 4, 24, 103, 101, 116, 45, 118, 101, 108, 111, 99, 105, 116, 121, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 14, 1, 64, 1, 7, 103, 114, 97, 118, 105, 116, 121, 3, 1, 0, 4, 11, 115, 101, 116, 45, 103, 114, 97, 118, 105, 116, 121, 0, 1, 15, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 8, 117, 110, 102, 114, 101, 101, 122, 101, 0, 1, 16, 4, 6, 102, 114, 101, 101, 122, 101, 0, 1, 16, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 118, 101, 108, 111, 99, 105, 116, 121, 118, 1, 0, 4, 11, 115, 116, 97, 114, 116, 45, 109, 111, 116, 111, 114, 0, 1, 17, 4, 10, 115, 116, 111, 112, 45, 109, 111, 116, 111, 114, 0, 1, 16, 1, 64, 4, 6, 97, 99, 116, 111, 114, 48, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 48, 5, 6, 97, 99, 116, 111, 114, 49, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 49, 5, 1, 0, 4, 21, 99, 114, 101, 97, 116, 101, 45, 114, 101, 118, 111, 108, 117, 116, 101, 45, 106, 111, 105, 110, 116, 0, 1, 18, 1, 111, 2, 1, 118, 1, 107, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 20, 4, 13, 114, 97, 121, 99, 97, 115, 116, 45, 102, 105, 114, 115, 116, 0, 1, 21, 1, 112, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 22, 4, 7, 114, 97, 121, 99, 97, 115, 116, 0, 1, 23, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 12, 100, 105, 115, 112, 108, 97, 99, 101, 109, 101, 110, 116, 3, 8, 109, 105, 110, 45, 100, 105, 115, 116, 118, 12, 101, 108, 97, 112, 115, 101, 100, 45, 116, 105, 109, 101, 118, 0, 7, 4, 14, 109, 111, 118, 101, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 0, 1, 24, 4, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 5, 4, 11, 39, 1, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 19, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 3, 2, 0, 7, 174, 4, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 7, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 6, 27, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 25, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 26, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 24, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 4, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 5, 2, 11, 39, 1, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 19, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 3, 4, 0, 7, 75, 1, 65, 2, 1, 66, 3, 1, 107, 115, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 0, 4, 3, 117, 114, 108, 0, 1, 1, 4, 12, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 30, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 5, 0, 11, 35, 1, 12, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 17, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 3, 6, 0, 7, 244, 2, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 5, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 107, 1, 1, 64, 1, 7, 117, 115, 101, 114, 45, 105, 100, 115, 0, 2, 4, 14, 103, 101, 116, 45, 98, 121, 45, 117, 115, 101, 114, 45, 105, 100, 0, 1, 3, 4, 6, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 47, 112, 108, 97, 121, 101, 114, 5, 2, 11, 23, 1, 6, 112, 108, 97, 121, 101, 114, 11, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 3, 8, 0, 7, 211, 3, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 9, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 7, 114, 117, 110, 116, 105, 109, 101, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 6, 115, 101, 114, 118, 101, 114, 0, 0, 6, 99, 108, 105, 101, 110, 116, 1, 115, 0, 4, 6, 115, 111, 117, 114, 99, 101, 0, 3, 0, 2, 1, 64, 0, 1, 0, 4, 4, 105, 110, 105, 116, 0, 1, 4, 1, 112, 125, 1, 64, 4, 4, 116, 105, 109, 101, 118, 14, 109, 101, 115, 115, 97, 103, 101, 45, 115, 111, 117, 114, 99, 101, 3, 12, 109, 101, 115, 115, 97, 103, 101, 45, 110, 97, 109, 101, 115, 12, 109, 101, 115, 115, 97, 103, 101, 45, 100, 97, 116, 97, 5, 1, 0, 4, 4, 101, 120, 101, 99, 0, 1, 6, 4, 5, 103, 117, 101, 115, 116, 16, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 47, 103, 117, 101, 115, 116, 5, 2, 11, 21, 1, 5, 103, 117, 101, 115, 116, 10, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 3, 10, 0, 7, 188, 15, 1, 65, 13, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 94, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 7, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 1, 64, 1, 2, 105, 100, 115, 0, 53, 4, 9, 103, 101, 116, 45, 105, 110, 100, 101, 120, 0, 1, 68, 1, 107, 192, 0, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 197, 0, 4, 13, 103, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 70, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 5, 118, 97, 108, 117, 101, 192, 0, 1, 0, 4, 13, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 100, 97, 116, 97, 195, 0, 1, 0, 4, 14, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 4, 13, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 4, 14, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 127, 4, 13, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 73, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 0, 127, 4, 14, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 74, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 1, 0, 4, 16, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 75, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 1, 0, 4, 17, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 76, 1, 64, 2, 1, 113, 22, 1, 116, 19, 0, 119, 4, 5, 113, 117, 101, 114, 121, 0, 1, 77, 1, 112, 192, 0, 1, 111, 2, 1, 206, 0, 1, 112, 207, 0, 1, 64, 1, 1, 113, 119, 0, 208, 0, 4, 10, 113, 117, 101, 114, 121, 45, 101, 118, 97, 108, 0, 1, 81, 4, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 10, 11, 29, 1, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 14, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 3, 12, 0, 7, 245, 12, 1, 65, 16, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 68, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 7, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 10, 2, 3, 0, 1, 6, 101, 110, 116, 105, 116, 121, 1, 66, 4, 2, 3, 2, 1, 11, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 0, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 9, 115, 117, 98, 115, 99, 114, 105, 98, 101, 0, 1, 2, 4, 5, 101, 118, 101, 110, 116, 18, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 47, 101, 118, 101, 110, 116, 5, 12, 11, 25, 1, 7, 109, 101, 115, 115, 97, 103, 101, 12, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 3, 14, 0, 7, 206, 17, 1, 65, 16, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 68, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 7, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 10, 2, 3, 0, 1, 6, 101, 110, 116, 105, 116, 121, 1, 66, 40, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 11, 4, 11, 101, 110, 116, 105, 116, 121, 45, 100, 97, 116, 97, 0, 3, 0, 6, 1, 112, 115, 1, 114, 4, 7, 98, 105, 110, 100, 101, 114, 115, 8, 8, 100, 117, 114, 97, 116, 105, 111, 110, 118, 6, 108, 111, 97, 100, 101, 100, 127, 5, 101, 114, 114, 111, 114, 115, 4, 14, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 108, 105, 112, 0, 3, 0, 9, 1, 114, 3, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 119, 101, 105, 103, 104, 116, 118, 4, 16, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 0, 3, 0, 11, 1, 112, 12, 1, 114, 2, 7, 97, 99, 116, 105, 111, 110, 115, 13, 15, 97, 112, 112, 108, 121, 45, 98, 97, 115, 101, 45, 112, 111, 115, 101, 127, 4, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 3, 0, 14, 1, 112, 118, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 7, 119, 101, 105, 103, 104, 116, 115, 16, 4, 116, 105, 109, 101, 16, 13, 97, 98, 115, 111, 108, 117, 116, 101, 45, 116, 105, 109, 101, 127, 1, 0, 4, 19, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 108, 101, 110, 100, 0, 1, 17, 1, 64, 1, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 0, 127, 4, 18, 104, 97, 115, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 108, 105, 112, 0, 1, 18, 1, 112, 10, 1, 64, 1, 5, 99, 108, 105, 112, 115, 8, 0, 19, 4, 19, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 108, 105, 112, 115, 0, 1, 20, 1, 64, 1, 4, 100, 97, 116, 97, 7, 0, 1, 4, 5, 115, 112, 97, 119, 110, 0, 1, 21, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 127, 4, 7, 100, 101, 115, 112, 97, 119, 110, 0, 1, 22, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 15, 1, 0, 4, 24, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 1, 23, 1, 112, 1, 1, 64, 2, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 114, 97, 100, 105, 117, 115, 118, 0, 24, 4, 7, 105, 110, 45, 97, 114, 101, 97, 0, 1, 25, 4, 6, 101, 120, 105, 115, 116, 115, 0, 1, 22, 1, 64, 1, 5, 105, 110, 100, 101, 120, 121, 0, 24, 4, 7, 103, 101, 116, 45, 97, 108, 108, 0, 1, 26, 1, 64, 0, 0, 1, 4, 9, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 27, 4, 22, 115, 121, 110, 99, 104, 114, 111, 110, 105, 122, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 27, 4, 19, 112, 101, 114, 115, 105, 115, 116, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 27, 4, 6, 101, 110, 116, 105, 116, 121, 18, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 47, 101, 110, 116, 105, 116, 121, 5, 12, 11, 23, 1, 6, 101, 110, 116, 105, 116, 121, 11, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 3, 16, 0, 7, 92, 1, 65, 2, 1, 66, 2, 1, 64, 1, 10, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 127, 1, 0, 4, 14, 115, 101, 116, 45, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 0, 1, 0, 4, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 5, 0, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 3, 18, 0, 7, 248, 2, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 4, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 64, 0, 0, 1, 4, 9, 103, 101, 116, 45, 108, 111, 99, 97, 108, 0, 1, 2, 4, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 5, 2, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 3, 20, 0, 7, 224, 3, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 7, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 17, 115, 101, 114, 118, 101, 114, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 115, 101, 114, 118, 101, 114, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 4, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 5, 2, 11, 39, 1, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 19, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 3, 22, 0, 7, 192, 16, 1, 65, 6, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 23, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 2, 1, 109, 163, 1, 4, 107, 101, 121, 49, 4, 107, 101, 121, 50, 4, 107, 101, 121, 51, 4, 107, 101, 121, 52, 4, 107, 101, 121, 53, 4, 107, 101, 121, 54, 4, 107, 101, 121, 55, 4, 107, 101, 121, 56, 4, 107, 101, 121, 57, 4, 107, 101, 121, 48, 1, 97, 1, 98, 1, 99, 1, 100, 1, 101, 1, 102, 1, 103, 1, 104, 1, 105, 1, 106, 1, 107, 1, 108, 1, 109, 1, 110, 1, 111, 1, 112, 1, 113, 1, 114, 1, 115, 1, 116, 1, 117, 1, 118, 1, 119, 1, 120, 1, 121, 1, 122, 6, 101, 115, 99, 97, 112, 101, 2, 102, 49, 2, 102, 50, 2, 102, 51, 2, 102, 52, 2, 102, 53, 2, 102, 54, 2, 102, 55, 2, 102, 56, 2, 102, 57, 3, 102, 49, 48, 3, 102, 49, 49, 3, 102, 49, 50, 3, 102, 49, 51, 3, 102, 49, 52, 3, 102, 49, 53, 3, 102, 49, 54, 3, 102, 49, 55, 3, 102, 49, 56, 3, 102, 49, 57, 3, 102, 50, 48, 3, 102, 50, 49, 3, 102, 50, 50, 3, 102, 50, 51, 3, 102, 50, 52, 8, 115, 110, 97, 112, 115, 104, 111, 116, 6, 115, 99, 114, 111, 108, 108, 5, 112, 97, 117, 115, 101, 6, 105, 110, 115, 101, 114, 116, 4, 104, 111, 109, 101, 6, 100, 101, 108, 101, 116, 101, 3, 101, 110, 100, 9, 112, 97, 103, 101, 45, 100, 111, 119, 110, 7, 112, 97, 103, 101, 45, 117, 112, 4, 108, 101, 102, 116, 2, 117, 112, 5, 114, 105, 103, 104, 116, 4, 100, 111, 119, 110, 4, 98, 97, 99, 107, 6, 114, 101, 116, 117, 114, 110, 5, 115, 112, 97, 99, 101, 7, 99, 111, 109, 112, 111, 115, 101, 5, 99, 97, 114, 101, 116, 7, 110, 117, 109, 108, 111, 99, 107, 7, 110, 117, 109, 112, 97, 100, 48, 7, 110, 117, 109, 112, 97, 100, 49, 7, 110, 117, 109, 112, 97, 100, 50, 7, 110, 117, 109, 112, 97, 100, 51, 7, 110, 117, 109, 112, 97, 100, 52, 7, 110, 117, 109, 112, 97, 100, 53, 7, 110, 117, 109, 112, 97, 100, 54, 7, 110, 117, 109, 112, 97, 100, 55, 7, 110, 117, 109, 112, 97, 100, 56, 7, 110, 117, 109, 112, 97, 100, 57, 10, 110, 117, 109, 112, 97, 100, 45, 97, 100, 100, 13, 110, 117, 109, 112, 97, 100, 45, 100, 105, 118, 105, 100, 101, 14, 110, 117, 109, 112, 97, 100, 45, 100, 101, 99, 105, 109, 97, 108, 12, 110, 117, 109, 112, 97, 100, 45, 99, 111, 109, 109, 97, 12, 110, 117, 109, 112, 97, 100, 45, 101, 110, 116, 101, 114, 13, 110, 117, 109, 112, 97, 100, 45, 101, 113, 117, 97, 108, 115, 15, 110, 117, 109, 112, 97, 100, 45, 109, 117, 108, 116, 105, 112, 108, 121, 15, 110, 117, 109, 112, 97, 100, 45, 115, 117, 98, 116, 114, 97, 99, 116, 7, 97, 98, 110, 116, 45, 99, 49, 7, 97, 98, 110, 116, 45, 99, 50, 10, 97, 112, 111, 115, 116, 114, 111, 112, 104, 101, 4, 97, 112, 112, 115, 8, 97, 115, 116, 101, 114, 105, 115, 107, 2, 97, 116, 2, 97, 120, 9, 98, 97, 99, 107, 115, 108, 97, 115, 104, 10, 99, 97, 108, 99, 117, 108, 97, 116, 111, 114, 7, 99, 97, 112, 105, 116, 97, 108, 5, 99, 111, 108, 111, 110, 5, 99, 111, 109, 109, 97, 7, 99, 111, 110, 118, 101, 114, 116, 6, 101, 113, 117, 97, 108, 115, 5, 103, 114, 97, 118, 101, 4, 107, 97, 110, 97, 5, 107, 97, 110, 106, 105, 5, 108, 45, 97, 108, 116, 9, 108, 45, 98, 114, 97, 99, 107, 101, 116, 9, 108, 45, 99, 111, 110, 116, 114, 111, 108, 7, 108, 45, 115, 104, 105, 102, 116, 5, 108, 45, 119, 105, 110, 4, 109, 97, 105, 108, 12, 109, 101, 100, 105, 97, 45, 115, 101, 108, 101, 99, 116, 10, 109, 101, 100, 105, 97, 45, 115, 116, 111, 112, 5, 109, 105, 110, 117, 115, 4, 109, 117, 116, 101, 11, 109, 121, 45, 99, 111, 109, 112, 117, 116, 101, 114, 16, 110, 97, 118, 105, 103, 97, 116, 101, 45, 102, 111, 114, 119, 97, 114, 100, 17, 110, 97, 118, 105, 103, 97, 116, 101, 45, 98, 97, 99, 107, 119, 97, 114, 100, 10, 110, 101, 120, 116, 45, 116, 114, 97, 99, 107, 10, 110, 111, 45, 99, 111, 110, 118, 101, 114, 116, 6, 111, 101, 109, 49, 48, 50, 6, 112, 101, 114, 105, 111, 100, 10, 112, 108, 97, 121, 45, 112, 97, 117, 115, 101, 4, 112, 108, 117, 115, 5, 112, 111, 119, 101, 114, 10, 112, 114, 101, 118, 45, 116, 114, 97, 99, 107, 5, 114, 45, 97, 108, 116, 9, 114, 45, 98, 114, 97, 99, 107, 101, 116, 9, 114, 45, 99, 111, 110, 116, 114, 111, 108, 7, 114, 45, 115, 104, 105, 102, 116, 5, 114, 45, 119, 105, 110, 9, 115, 101, 109, 105, 99, 111, 108, 111, 110, 5, 115, 108, 97, 115, 104, 5, 115, 108, 101, 101, 112, 4, 115, 116, 111, 112, 5, 115, 121, 115, 114, 113, 3, 116, 97, 98, 9, 117, 110, 100, 101, 114, 108, 105, 110, 101, 9, 117, 110, 108, 97, 98, 101, 108, 101, 100, 11, 118, 111, 108, 117, 109, 101, 45, 100, 111, 119, 110, 9, 118, 111, 108, 117, 109, 101, 45, 117, 112, 4, 119, 97, 107, 101, 8, 119, 101, 98, 45, 98, 97, 99, 107, 13, 119, 101, 98, 45, 102, 97, 118, 111, 114, 105, 116, 101, 115, 11, 119, 101, 98, 45, 102, 111, 114, 119, 97, 114, 100, 8, 119, 101, 98, 45, 104, 111, 109, 101, 11, 119, 101, 98, 45, 114, 101, 102, 114, 101, 115, 104, 10, 119, 101, 98, 45, 115, 101, 97, 114, 99, 104, 8, 119, 101, 98, 45, 115, 116, 111, 112, 3, 121, 101, 110, 4, 99, 111, 112, 121, 5, 112, 97, 115, 116, 101, 3, 99, 117, 116, 4, 16, 118, 105, 114, 116, 117, 97, 108, 45, 107, 101, 121, 45, 99, 111, 100, 101, 0, 3, 0, 4, 1, 113, 4, 4, 108, 101, 102, 116, 0, 0, 5, 114, 105, 103, 104, 116, 0, 0, 6, 109, 105, 100, 100, 108, 101, 0, 0, 5, 111, 116, 104, 101, 114, 1, 123, 0, 4, 12, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 0, 3, 0, 6, 1, 112, 5, 1, 112, 7, 1, 114, 5, 4, 107, 101, 121, 115, 8, 14, 109, 111, 117, 115, 101, 45, 112, 111, 115, 105, 116, 105, 111, 110, 1, 11, 109, 111, 117, 115, 101, 45, 100, 101, 108, 116, 97, 1, 11, 109, 111, 117, 115, 101, 45, 119, 104, 101, 101, 108, 118, 13, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 115, 9, 4, 5, 105, 110, 112, 117, 116, 0, 3, 0, 10, 1, 113, 35, 12, 100, 101, 102, 97, 117, 108, 116, 45, 105, 99, 111, 110, 0, 0, 9, 99, 114, 111, 115, 115, 104, 97, 105, 114, 0, 0, 4, 104, 97, 110, 100, 0, 0, 5, 97, 114, 114, 111, 119, 0, 0, 4, 109, 111, 118, 101, 0, 0, 4, 116, 101, 120, 116, 0, 0, 4, 119, 97, 105, 116, 0, 0, 4, 104, 101, 108, 112, 0, 0, 8, 112, 114, 111, 103, 114, 101, 115, 115, 0, 0, 11, 110, 111, 116, 45, 97, 108, 108, 111, 119, 101, 100, 0, 0, 12, 99, 111, 110, 116, 101, 120, 116, 45, 109, 101, 110, 117, 0, 0, 4, 99, 101, 108, 108, 0, 0, 13, 118, 101, 114, 116, 105, 99, 97, 108, 45, 116, 101, 120, 116, 0, 0, 5, 97, 108, 105, 97, 115, 0, 0, 4, 99, 111, 112, 121, 0, 0, 7, 110, 111, 45, 100, 114, 111, 112, 0, 0, 4, 103, 114, 97, 98, 0, 0, 8, 103, 114, 97, 98, 98, 105, 110, 103, 0, 0, 10, 97, 108, 108, 45, 115, 99, 114, 111, 108, 108, 0, 0, 7, 122, 111, 111, 109, 45, 105, 110, 0, 0, 8, 122, 111, 111, 109, 45, 111, 117, 116, 0, 0, 8, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 110, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 101, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 101, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 119, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 99, 111, 108, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 114, 111, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 4, 11, 99, 117, 114, 115, 111, 114, 45, 105, 99, 111, 110, 0, 3, 0, 12, 1, 64, 0, 0, 11, 4, 3, 103, 101, 116, 0, 1, 14, 4, 12, 103, 101, 116, 45, 112, 114, 101, 118, 105, 111, 117, 115, 0, 1, 14, 1, 64, 1, 4, 105, 99, 111, 110, 13, 1, 0, 4, 10, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 0, 1, 15, 1, 64, 1, 7, 118, 105, 115, 105, 98, 108, 101, 127, 1, 0, 4, 18, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 118, 105, 115, 105, 98, 108, 101, 0, 1, 16, 1, 64, 1, 6, 108, 111, 99, 107, 101, 100, 127, 1, 0, 4, 15, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 108, 111, 99, 107, 0, 1, 17, 4, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 5, 3, 11, 35, 1, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 17, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 3, 24, 0, 7, 233, 4, 1, 65, 8, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 3, 114, 97, 121, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 16, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 51, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 50, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 3, 114, 97, 121, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 6, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 112, 111, 115, 3, 0, 5, 4, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 114, 97, 121, 0, 1, 8, 1, 64, 1, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 3, 4, 20, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 0, 1, 9, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 5, 4, 25, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 119, 111, 114, 108, 100, 45, 100, 105, 114, 101, 99, 116, 105, 111, 110, 0, 1, 10, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 1, 0, 3, 4, 15, 119, 111, 114, 108, 100, 45, 116, 111, 45, 115, 99, 114, 101, 101, 110, 0, 1, 11, 4, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 5, 5, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 3, 26, 0, 7, 193, 1, 1, 65, 2, 1, 66, 10, 1, 64, 1, 3, 117, 114, 108, 115, 1, 0, 4, 4, 108, 111, 97, 100, 0, 1, 0, 1, 64, 4, 4, 110, 97, 109, 101, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 118, 111, 108, 117, 109, 101, 118, 3, 117, 105, 100, 121, 1, 0, 4, 4, 112, 108, 97, 121, 0, 1, 1, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 4, 115, 116, 111, 112, 0, 1, 2, 1, 64, 1, 3, 117, 105, 100, 121, 1, 0, 4, 10, 115, 116, 111, 112, 45, 98, 121, 45, 105, 100, 0, 1, 3, 1, 64, 2, 4, 110, 97, 109, 101, 115, 6, 118, 111, 108, 117, 109, 101, 118, 1, 0, 4, 10, 115, 101, 116, 45, 118, 111, 108, 117, 109, 101, 0, 1, 4, 4, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 5, 0, 11, 35, 1, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 17, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 3, 28, 0, 7, 54, 1, 65, 2, 1, 66, 3, 1, 107, 115, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 0, 4, 3, 117, 114, 108, 0, 1, 1, 4, 5, 97, 115, 115, 101, 116, 16, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 47, 97, 115, 115, 101, 116, 5, 0, 11, 21, 1, 5, 97, 115, 115, 101, 116, 10, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 3, 30, 0, 7, 230, 53, 1, 65, 2, 1, 65, 41, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 1, 66, 3, 1, 107, 115, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 0, 4, 3, 117, 114, 108, 0, 1, 1, 3, 5, 97, 115, 115, 101, 116, 16, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 47, 97, 115, 115, 101, 116, 5, 1, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 94, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 4, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 7, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 10, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 1, 64, 1, 2, 105, 100, 115, 0, 53, 4, 9, 103, 101, 116, 45, 105, 110, 100, 101, 120, 0, 1, 68, 1, 107, 192, 0, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 197, 0, 4, 13, 103, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 70, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 5, 118, 97, 108, 117, 101, 192, 0, 1, 0, 4, 13, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 100, 97, 116, 97, 195, 0, 1, 0, 4, 14, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 4, 13, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 4, 14, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 127, 4, 13, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 73, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 0, 127, 4, 14, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 74, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 1, 0, 4, 16, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 75, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 1, 0, 4, 17, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 76, 1, 64, 2, 1, 113, 22, 1, 116, 19, 0, 119, 4, 5, 113, 117, 101, 114, 121, 0, 1, 77, 1, 112, 192, 0, 1, 111, 2, 1, 206, 0, 1, 112, 207, 0, 1, 64, 1, 1, 113, 119, 0, 208, 0, 4, 10, 113, 117, 101, 114, 121, 45, 101, 118, 97, 108, 0, 1, 81, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 11, 2, 3, 0, 2, 6, 101, 110, 116, 105, 116, 121, 1, 66, 40, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 4, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 12, 4, 11, 101, 110, 116, 105, 116, 121, 45, 100, 97, 116, 97, 0, 3, 0, 6, 1, 112, 115, 1, 114, 4, 7, 98, 105, 110, 100, 101, 114, 115, 8, 8, 100, 117, 114, 97, 116, 105, 111, 110, 118, 6, 108, 111, 97, 100, 101, 100, 127, 5, 101, 114, 114, 111, 114, 115, 4, 14, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 108, 105, 112, 0, 3, 0, 9, 1, 114, 3, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 119, 101, 105, 103, 104, 116, 118, 4, 16, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 0, 3, 0, 11, 1, 112, 12, 1, 114, 2, 7, 97, 99, 116, 105, 111, 110, 115, 13, 15, 97, 112, 112, 108, 121, 45, 98, 97, 115, 101, 45, 112, 111, 115, 101, 127, 4, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 3, 0, 14, 1, 112, 118, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 7, 119, 101, 105, 103, 104, 116, 115, 16, 4, 116, 105, 109, 101, 16, 13, 97, 98, 115, 111, 108, 117, 116, 101, 45, 116, 105, 109, 101, 127, 1, 0, 4, 19, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 108, 101, 110, 100, 0, 1, 17, 1, 64, 1, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 0, 127, 4, 18, 104, 97, 115, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 108, 105, 112, 0, 1, 18, 1, 112, 10, 1, 64, 1, 5, 99, 108, 105, 112, 115, 8, 0, 19, 4, 19, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 108, 105, 112, 115, 0, 1, 20, 1, 64, 1, 4, 100, 97, 116, 97, 7, 0, 1, 4, 5, 115, 112, 97, 119, 110, 0, 1, 21, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 127, 4, 7, 100, 101, 115, 112, 97, 119, 110, 0, 1, 22, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 15, 1, 0, 4, 24, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 1, 23, 1, 112, 1, 1, 64, 2, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 114, 97, 100, 105, 117, 115, 118, 0, 24, 4, 7, 105, 110, 45, 97, 114, 101, 97, 0, 1, 25, 4, 6, 101, 120, 105, 115, 116, 115, 0, 1, 22, 1, 64, 1, 5, 105, 110, 100, 101, 120, 121, 0, 24, 4, 7, 103, 101, 116, 45, 97, 108, 108, 0, 1, 26, 1, 64, 0, 0, 1, 4, 9, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 27, 4, 22, 115, 121, 110, 99, 104, 114, 111, 110, 105, 122, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 27, 4, 19, 112, 101, 114, 115, 105, 115, 116, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 27, 3, 6, 101, 110, 116, 105, 116, 121, 18, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 47, 101, 110, 116, 105, 116, 121, 5, 13, 1, 66, 4, 2, 3, 2, 1, 12, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 0, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 9, 115, 117, 98, 115, 99, 114, 105, 98, 101, 0, 1, 2, 3, 7, 109, 101, 115, 115, 97, 103, 101, 18, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 47, 101, 118, 101, 110, 116, 5, 14, 1, 66, 5, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 107, 1, 1, 64, 1, 7, 117, 115, 101, 114, 45, 105, 100, 115, 0, 2, 4, 14, 103, 101, 116, 45, 98, 121, 45, 117, 115, 101, 114, 45, 105, 100, 0, 1, 3, 3, 6, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 47, 112, 108, 97, 121, 101, 114, 5, 15, 1, 66, 10, 1, 64, 1, 3, 117, 114, 108, 115, 1, 0, 4, 4, 108, 111, 97, 100, 0, 1, 0, 1, 64, 4, 4, 110, 97, 109, 101, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 118, 111, 108, 117, 109, 101, 118, 3, 117, 105, 100, 121, 1, 0, 4, 4, 112, 108, 97, 121, 0, 1, 1, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 4, 115, 116, 111, 112, 0, 1, 2, 1, 64, 1, 3, 117, 105, 100, 121, 1, 0, 4, 10, 115, 116, 111, 112, 45, 98, 121, 45, 105, 100, 0, 1, 3, 1, 64, 2, 4, 110, 97, 109, 101, 115, 6, 118, 111, 108, 117, 109, 101, 118, 1, 0, 4, 10, 115, 101, 116, 45, 118, 111, 108, 117, 109, 101, 0, 1, 4, 3, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 5, 16, 1, 66, 7, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 17, 115, 101, 114, 118, 101, 114, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 115, 101, 114, 118, 101, 114, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 3, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 5, 17, 1, 66, 4, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 64, 0, 0, 1, 4, 9, 103, 101, 116, 45, 108, 111, 99, 97, 108, 0, 1, 2, 3, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 5, 18, 1, 66, 23, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 2, 1, 109, 163, 1, 4, 107, 101, 121, 49, 4, 107, 101, 121, 50, 4, 107, 101, 121, 51, 4, 107, 101, 121, 52, 4, 107, 101, 121, 53, 4, 107, 101, 121, 54, 4, 107, 101, 121, 55, 4, 107, 101, 121, 56, 4, 107, 101, 121, 57, 4, 107, 101, 121, 48, 1, 97, 1, 98, 1, 99, 1, 100, 1, 101, 1, 102, 1, 103, 1, 104, 1, 105, 1, 106, 1, 107, 1, 108, 1, 109, 1, 110, 1, 111, 1, 112, 1, 113, 1, 114, 1, 115, 1, 116, 1, 117, 1, 118, 1, 119, 1, 120, 1, 121, 1, 122, 6, 101, 115, 99, 97, 112, 101, 2, 102, 49, 2, 102, 50, 2, 102, 51, 2, 102, 52, 2, 102, 53, 2, 102, 54, 2, 102, 55, 2, 102, 56, 2, 102, 57, 3, 102, 49, 48, 3, 102, 49, 49, 3, 102, 49, 50, 3, 102, 49, 51, 3, 102, 49, 52, 3, 102, 49, 53, 3, 102, 49, 54, 3, 102, 49, 55, 3, 102, 49, 56, 3, 102, 49, 57, 3, 102, 50, 48, 3, 102, 50, 49, 3, 102, 50, 50, 3, 102, 50, 51, 3, 102, 50, 52, 8, 115, 110, 97, 112, 115, 104, 111, 116, 6, 115, 99, 114, 111, 108, 108, 5, 112, 97, 117, 115, 101, 6, 105, 110, 115, 101, 114, 116, 4, 104, 111, 109, 101, 6, 100, 101, 108, 101, 116, 101, 3, 101, 110, 100, 9, 112, 97, 103, 101, 45, 100, 111, 119, 110, 7, 112, 97, 103, 101, 45, 117, 112, 4, 108, 101, 102, 116, 2, 117, 112, 5, 114, 105, 103, 104, 116, 4, 100, 111, 119, 110, 4, 98, 97, 99, 107, 6, 114, 101, 116, 117, 114, 110, 5, 115, 112, 97, 99, 101, 7, 99, 111, 109, 112, 111, 115, 101, 5, 99, 97, 114, 101, 116, 7, 110, 117, 109, 108, 111, 99, 107, 7, 110, 117, 109, 112, 97, 100, 48, 7, 110, 117, 109, 112, 97, 100, 49, 7, 110, 117, 109, 112, 97, 100, 50, 7, 110, 117, 109, 112, 97, 100, 51, 7, 110, 117, 109, 112, 97, 100, 52, 7, 110, 117, 109, 112, 97, 100, 53, 7, 110, 117, 109, 112, 97, 100, 54, 7, 110, 117, 109, 112, 97, 100, 55, 7, 110, 117, 109, 112, 97, 100, 56, 7, 110, 117, 109, 112, 97, 100, 57, 10, 110, 117, 109, 112, 97, 100, 45, 97, 100, 100, 13, 110, 117, 109, 112, 97, 100, 45, 100, 105, 118, 105, 100, 101, 14, 110, 117, 109, 112, 97, 100, 45, 100, 101, 99, 105, 109, 97, 108, 12, 110, 117, 109, 112, 97, 100, 45, 99, 111, 109, 109, 97, 12, 110, 117, 109, 112, 97, 100, 45, 101, 110, 116, 101, 114, 13, 110, 117, 109, 112, 97, 100, 45, 101, 113, 117, 97, 108, 115, 15, 110, 117, 109, 112, 97, 100, 45, 109, 117, 108, 116, 105, 112, 108, 121, 15, 110, 117, 109, 112, 97, 100, 45, 115, 117, 98, 116, 114, 97, 99, 116, 7, 97, 98, 110, 116, 45, 99, 49, 7, 97, 98, 110, 116, 45, 99, 50, 10, 97, 112, 111, 115, 116, 114, 111, 112, 104, 101, 4, 97, 112, 112, 115, 8, 97, 115, 116, 101, 114, 105, 115, 107, 2, 97, 116, 2, 97, 120, 9, 98, 97, 99, 107, 115, 108, 97, 115, 104, 10, 99, 97, 108, 99, 117, 108, 97, 116, 111, 114, 7, 99, 97, 112, 105, 116, 97, 108, 5, 99, 111, 108, 111, 110, 5, 99, 111, 109, 109, 97, 7, 99, 111, 110, 118, 101, 114, 116, 6, 101, 113, 117, 97, 108, 115, 5, 103, 114, 97, 118, 101, 4, 107, 97, 110, 97, 5, 107, 97, 110, 106, 105, 5, 108, 45, 97, 108, 116, 9, 108, 45, 98, 114, 97, 99, 107, 101, 116, 9, 108, 45, 99, 111, 110, 116, 114, 111, 108, 7, 108, 45, 115, 104, 105, 102, 116, 5, 108, 45, 119, 105, 110, 4, 109, 97, 105, 108, 12, 109, 101, 100, 105, 97, 45, 115, 101, 108, 101, 99, 116, 10, 109, 101, 100, 105, 97, 45, 115, 116, 111, 112, 5, 109, 105, 110, 117, 115, 4, 109, 117, 116, 101, 11, 109, 121, 45, 99, 111, 109, 112, 117, 116, 101, 114, 16, 110, 97, 118, 105, 103, 97, 116, 101, 45, 102, 111, 114, 119, 97, 114, 100, 17, 110, 97, 118, 105, 103, 97, 116, 101, 45, 98, 97, 99, 107, 119, 97, 114, 100, 10, 110, 101, 120, 116, 45, 116, 114, 97, 99, 107, 10, 110, 111, 45, 99, 111, 110, 118, 101, 114, 116, 6, 111, 101, 109, 49, 48, 50, 6, 112, 101, 114, 105, 111, 100, 10, 112, 108, 97, 121, 45, 112, 97, 117, 115, 101, 4, 112, 108, 117, 115, 5, 112, 111, 119, 101, 114, 10, 112, 114, 101, 118, 45, 116, 114, 97, 99, 107, 5, 114, 45, 97, 108, 116, 9, 114, 45, 98, 114, 97, 99, 107, 101, 116, 9, 114, 45, 99, 111, 110, 116, 114, 111, 108, 7, 114, 45, 115, 104, 105, 102, 116, 5, 114, 45, 119, 105, 110, 9, 115, 101, 109, 105, 99, 111, 108, 111, 110, 5, 115, 108, 97, 115, 104, 5, 115, 108, 101, 101, 112, 4, 115, 116, 111, 112, 5, 115, 121, 115, 114, 113, 3, 116, 97, 98, 9, 117, 110, 100, 101, 114, 108, 105, 110, 101, 9, 117, 110, 108, 97, 98, 101, 108, 101, 100, 11, 118, 111, 108, 117, 109, 101, 45, 100, 111, 119, 110, 9, 118, 111, 108, 117, 109, 101, 45, 117, 112, 4, 119, 97, 107, 101, 8, 119, 101, 98, 45, 98, 97, 99, 107, 13, 119, 101, 98, 45, 102, 97, 118, 111, 114, 105, 116, 101, 115, 11, 119, 101, 98, 45, 102, 111, 114, 119, 97, 114, 100, 8, 119, 101, 98, 45, 104, 111, 109, 101, 11, 119, 101, 98, 45, 114, 101, 102, 114, 101, 115, 104, 10, 119, 101, 98, 45, 115, 101, 97, 114, 99, 104, 8, 119, 101, 98, 45, 115, 116, 111, 112, 3, 121, 101, 110, 4, 99, 111, 112, 121, 5, 112, 97, 115, 116, 101, 3, 99, 117, 116, 4, 16, 118, 105, 114, 116, 117, 97, 108, 45, 107, 101, 121, 45, 99, 111, 100, 101, 0, 3, 0, 4, 1, 113, 4, 4, 108, 101, 102, 116, 0, 0, 5, 114, 105, 103, 104, 116, 0, 0, 6, 109, 105, 100, 100, 108, 101, 0, 0, 5, 111, 116, 104, 101, 114, 1, 123, 0, 4, 12, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 0, 3, 0, 6, 1, 112, 5, 1, 112, 7, 1, 114, 5, 4, 107, 101, 121, 115, 8, 14, 109, 111, 117, 115, 101, 45, 112, 111, 115, 105, 116, 105, 111, 110, 1, 11, 109, 111, 117, 115, 101, 45, 100, 101, 108, 116, 97, 1, 11, 109, 111, 117, 115, 101, 45, 119, 104, 101, 101, 108, 118, 13, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 115, 9, 4, 5, 105, 110, 112, 117, 116, 0, 3, 0, 10, 1, 113, 35, 12, 100, 101, 102, 97, 117, 108, 116, 45, 105, 99, 111, 110, 0, 0, 9, 99, 114, 111, 115, 115, 104, 97, 105, 114, 0, 0, 4, 104, 97, 110, 100, 0, 0, 5, 97, 114, 114, 111, 119, 0, 0, 4, 109, 111, 118, 101, 0, 0, 4, 116, 101, 120, 116, 0, 0, 4, 119, 97, 105, 116, 0, 0, 4, 104, 101, 108, 112, 0, 0, 8, 112, 114, 111, 103, 114, 101, 115, 115, 0, 0, 11, 110, 111, 116, 45, 97, 108, 108, 111, 119, 101, 100, 0, 0, 12, 99, 111, 110, 116, 101, 120, 116, 45, 109, 101, 110, 117, 0, 0, 4, 99, 101, 108, 108, 0, 0, 13, 118, 101, 114, 116, 105, 99, 97, 108, 45, 116, 101, 120, 116, 0, 0, 5, 97, 108, 105, 97, 115, 0, 0, 4, 99, 111, 112, 121, 0, 0, 7, 110, 111, 45, 100, 114, 111, 112, 0, 0, 4, 103, 114, 97, 98, 0, 0, 8, 103, 114, 97, 98, 98, 105, 110, 103, 0, 0, 10, 97, 108, 108, 45, 115, 99, 114, 111, 108, 108, 0, 0, 7, 122, 111, 111, 109, 45, 105, 110, 0, 0, 8, 122, 111, 111, 109, 45, 111, 117, 116, 0, 0, 8, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 110, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 101, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 101, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 119, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 99, 111, 108, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 114, 111, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 4, 11, 99, 117, 114, 115, 111, 114, 45, 105, 99, 111, 110, 0, 3, 0, 12, 1, 64, 0, 0, 11, 4, 3, 103, 101, 116, 0, 1, 14, 4, 12, 103, 101, 116, 45, 112, 114, 101, 118, 105, 111, 117, 115, 0, 1, 14, 1, 64, 1, 4, 105, 99, 111, 110, 13, 1, 0, 4, 10, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 0, 1, 15, 1, 64, 1, 7, 118, 105, 115, 105, 98, 108, 101, 127, 1, 0, 4, 18, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 118, 105, 115, 105, 98, 108, 101, 0, 1, 16, 1, 64, 1, 6, 108, 111, 99, 107, 101, 100, 127, 1, 0, 4, 15, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 108, 111, 99, 107, 0, 1, 17, 3, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 5, 19, 2, 3, 0, 0, 3, 114, 97, 121, 1, 66, 16, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 0, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 2, 2, 3, 2, 1, 20, 4, 3, 114, 97, 121, 0, 3, 0, 4, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 6, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 112, 111, 115, 3, 0, 5, 4, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 114, 97, 121, 0, 1, 8, 1, 64, 1, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 3, 4, 20, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 0, 1, 9, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 5, 4, 25, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 119, 111, 114, 108, 100, 45, 100, 105, 114, 101, 99, 116, 105, 111, 110, 0, 1, 10, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 1, 0, 3, 4, 15, 119, 111, 114, 108, 100, 45, 116, 111, 45, 115, 99, 114, 101, 101, 110, 0, 1, 11, 3, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 5, 21, 1, 66, 2, 1, 64, 1, 10, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 127, 1, 0, 4, 14, 115, 101, 116, 45, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 0, 1, 0, 3, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 5, 22, 1, 66, 40, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 4, 1, 114, 3, 4, 115, 105, 100, 101, 127, 2, 117, 112, 127, 4, 100, 111, 119, 110, 127, 4, 19, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 99, 111, 108, 108, 105, 115, 105, 111, 110, 0, 3, 0, 6, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 1, 0, 4, 9, 97, 100, 100, 45, 102, 111, 114, 99, 101, 0, 1, 8, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 1, 0, 4, 11, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 9, 1, 107, 118, 1, 64, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 7, 105, 109, 112, 117, 108, 115, 101, 118, 6, 114, 97, 100, 105, 117, 115, 118, 14, 102, 97, 108, 108, 111, 102, 102, 45, 114, 97, 100, 105, 117, 115, 10, 1, 0, 4, 18, 97, 100, 100, 45, 114, 97, 100, 105, 97, 108, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 11, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 21, 97, 100, 100, 45, 102, 111, 114, 99, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 12, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 23, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 13, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 0, 3, 4, 24, 103, 101, 116, 45, 118, 101, 108, 111, 99, 105, 116, 121, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 14, 1, 64, 1, 7, 103, 114, 97, 118, 105, 116, 121, 3, 1, 0, 4, 11, 115, 101, 116, 45, 103, 114, 97, 118, 105, 116, 121, 0, 1, 15, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 8, 117, 110, 102, 114, 101, 101, 122, 101, 0, 1, 16, 4, 6, 102, 114, 101, 101, 122, 101, 0, 1, 16, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 118, 101, 108, 111, 99, 105, 116, 121, 118, 1, 0, 4, 11, 115, 116, 97, 114, 116, 45, 109, 111, 116, 111, 114, 0, 1, 17, 4, 10, 115, 116, 111, 112, 45, 109, 111, 116, 111, 114, 0, 1, 16, 1, 64, 4, 6, 97, 99, 116, 111, 114, 48, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 48, 5, 6, 97, 99, 116, 111, 114, 49, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 49, 5, 1, 0, 4, 21, 99, 114, 101, 97, 116, 101, 45, 114, 101, 118, 111, 108, 117, 116, 101, 45, 106, 111, 105, 110, 116, 0, 1, 18, 1, 111, 2, 1, 118, 1, 107, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 20, 4, 13, 114, 97, 121, 99, 97, 115, 116, 45, 102, 105, 114, 115, 116, 0, 1, 21, 1, 112, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 22, 4, 7, 114, 97, 121, 99, 97, 115, 116, 0, 1, 23, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 12, 100, 105, 115, 112, 108, 97, 99, 101, 109, 101, 110, 116, 3, 8, 109, 105, 110, 45, 100, 105, 115, 116, 118, 12, 101, 108, 97, 112, 115, 101, 100, 45, 116, 105, 109, 101, 118, 0, 7, 4, 14, 109, 111, 118, 101, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 0, 1, 24, 3, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 5, 23, 1, 66, 7, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 6, 27, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 25, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 26, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 24, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 3, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 5, 24, 1, 66, 9, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 7, 114, 117, 110, 116, 105, 109, 101, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 6, 115, 101, 114, 118, 101, 114, 0, 0, 6, 99, 108, 105, 101, 110, 116, 1, 115, 0, 4, 6, 115, 111, 117, 114, 99, 101, 0, 3, 0, 2, 1, 64, 0, 1, 0, 4, 4, 105, 110, 105, 116, 0, 1, 4, 1, 112, 125, 1, 64, 4, 4, 116, 105, 109, 101, 118, 14, 109, 101, 115, 115, 97, 103, 101, 45, 115, 111, 117, 114, 99, 101, 3, 12, 109, 101, 115, 115, 97, 103, 101, 45, 110, 97, 109, 101, 115, 12, 109, 101, 115, 115, 97, 103, 101, 45, 100, 97, 116, 97, 5, 1, 0, 4, 4, 101, 120, 101, 99, 0, 1, 6, 4, 5, 103, 117, 101, 115, 116, 16, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 47, 103, 117, 101, 115, 116, 5, 25, 4, 8, 98, 105, 110, 100, 105, 110, 103, 115, 18, 112, 107, 103, 58, 47, 109, 97, 105, 110, 47, 98, 105, 110, 100, 105, 110, 103, 115, 4, 0, 0, 68, 9, 112, 114, 111, 100, 117, 99, 101, 114, 115, 1, 12, 112, 114, 111, 99, 101, 115, 115, 101, 100, 45, 98, 121, 2, 13, 119, 105, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 48, 46, 55, 46, 52, 16, 119, 105, 116, 45, 98, 105, 110, 100, 103, 101, 110, 45, 114, 117, 115, 116, 5, 48, 46, 52, 46, 48, 11, 19, 1, 4, 109, 97, 105, 110, 9, 112, 107, 103, 58, 47, 109, 97, 105, 110, 3, 32, 0];
+                              #[doc(hidden)]pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 20424] = [2, 0, 3, 119, 105, 116, 4, 109, 97, 105, 110, 8, 98, 105, 110, 100, 105, 110, 103, 115, 0, 97, 115, 109, 12, 0, 1, 0, 7, 142, 2, 1, 65, 2, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 4, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 11, 21, 1, 5, 116, 121, 112, 101, 115, 10, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 3, 0, 0, 7, 221, 8, 1, 65, 7, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 109, 97, 116, 52, 1, 66, 40, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 4, 1, 114, 3, 4, 115, 105, 100, 101, 127, 2, 117, 112, 127, 4, 100, 111, 119, 110, 127, 4, 19, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 99, 111, 108, 108, 105, 115, 105, 111, 110, 0, 3, 0, 6, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 1, 0, 4, 9, 97, 100, 100, 45, 102, 111, 114, 99, 101, 0, 1, 8, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 1, 0, 4, 11, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 9, 1, 107, 118, 1, 64, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 7, 105, 109, 112, 117, 108, 115, 101, 118, 6, 114, 97, 100, 105, 117, 115, 118, 14, 102, 97, 108, 108, 111, 102, 102, 45, 114, 97, 100, 105, 117, 115, 10, 1, 0, 4, 18, 97, 100, 100, 45, 114, 97, 100, 105, 97, 108, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 11, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 21, 97, 100, 100, 45, 102, 111, 114, 99, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 12, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 23, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 13, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 0, 3, 4, 24, 103, 101, 116, 45, 118, 101, 108, 111, 99, 105, 116, 121, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 14, 1, 64, 1, 7, 103, 114, 97, 118, 105, 116, 121, 3, 1, 0, 4, 11, 115, 101, 116, 45, 103, 114, 97, 118, 105, 116, 121, 0, 1, 15, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 8, 117, 110, 102, 114, 101, 101, 122, 101, 0, 1, 16, 4, 6, 102, 114, 101, 101, 122, 101, 0, 1, 16, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 118, 101, 108, 111, 99, 105, 116, 121, 118, 1, 0, 4, 11, 115, 116, 97, 114, 116, 45, 109, 111, 116, 111, 114, 0, 1, 17, 4, 10, 115, 116, 111, 112, 45, 109, 111, 116, 111, 114, 0, 1, 16, 1, 64, 4, 6, 97, 99, 116, 111, 114, 48, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 48, 5, 6, 97, 99, 116, 111, 114, 49, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 49, 5, 1, 0, 4, 21, 99, 114, 101, 97, 116, 101, 45, 114, 101, 118, 111, 108, 117, 116, 101, 45, 106, 111, 105, 110, 116, 0, 1, 18, 1, 111, 2, 1, 118, 1, 107, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 20, 4, 13, 114, 97, 121, 99, 97, 115, 116, 45, 102, 105, 114, 115, 116, 0, 1, 21, 1, 112, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 22, 4, 7, 114, 97, 121, 99, 97, 115, 116, 0, 1, 23, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 12, 100, 105, 115, 112, 108, 97, 99, 101, 109, 101, 110, 116, 3, 8, 109, 105, 110, 45, 100, 105, 115, 116, 118, 12, 101, 108, 97, 112, 115, 101, 100, 45, 116, 105, 109, 101, 118, 0, 7, 4, 14, 109, 111, 118, 101, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 0, 1, 24, 4, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 5, 4, 11, 39, 1, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 19, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 3, 2, 0, 7, 174, 4, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 7, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 6, 27, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 25, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 26, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 24, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 4, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 5, 2, 11, 39, 1, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 19, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 3, 4, 0, 7, 75, 1, 65, 2, 1, 66, 3, 1, 107, 115, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 0, 4, 3, 117, 114, 108, 0, 1, 1, 4, 12, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 30, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 5, 0, 11, 35, 1, 12, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 17, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 3, 6, 0, 7, 244, 2, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 5, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 107, 1, 1, 64, 1, 7, 117, 115, 101, 114, 45, 105, 100, 115, 0, 2, 4, 14, 103, 101, 116, 45, 98, 121, 45, 117, 115, 101, 114, 45, 105, 100, 0, 1, 3, 4, 6, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 47, 112, 108, 97, 121, 101, 114, 5, 2, 11, 23, 1, 6, 112, 108, 97, 121, 101, 114, 11, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 3, 8, 0, 7, 211, 3, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 9, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 7, 114, 117, 110, 116, 105, 109, 101, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 6, 115, 101, 114, 118, 101, 114, 0, 0, 6, 99, 108, 105, 101, 110, 116, 1, 115, 0, 4, 6, 115, 111, 117, 114, 99, 101, 0, 3, 0, 2, 1, 64, 0, 1, 0, 4, 4, 105, 110, 105, 116, 0, 1, 4, 1, 112, 125, 1, 64, 4, 4, 116, 105, 109, 101, 118, 14, 109, 101, 115, 115, 97, 103, 101, 45, 115, 111, 117, 114, 99, 101, 3, 12, 109, 101, 115, 115, 97, 103, 101, 45, 110, 97, 109, 101, 115, 12, 109, 101, 115, 115, 97, 103, 101, 45, 100, 97, 116, 97, 5, 1, 0, 4, 4, 101, 120, 101, 99, 0, 1, 6, 4, 5, 103, 117, 101, 115, 116, 16, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 47, 103, 117, 101, 115, 116, 5, 2, 11, 21, 1, 5, 103, 117, 101, 115, 116, 10, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 3, 10, 0, 7, 188, 15, 1, 65, 13, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 94, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 7, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 1, 64, 1, 2, 105, 100, 115, 0, 53, 4, 9, 103, 101, 116, 45, 105, 110, 100, 101, 120, 0, 1, 68, 1, 107, 192, 0, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 197, 0, 4, 13, 103, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 70, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 5, 118, 97, 108, 117, 101, 192, 0, 1, 0, 4, 13, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 100, 97, 116, 97, 195, 0, 1, 0, 4, 14, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 4, 13, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 4, 14, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 127, 4, 13, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 73, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 0, 127, 4, 14, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 74, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 1, 0, 4, 16, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 75, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 1, 0, 4, 17, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 76, 1, 64, 2, 1, 113, 22, 1, 116, 19, 0, 119, 4, 5, 113, 117, 101, 114, 121, 0, 1, 77, 1, 112, 192, 0, 1, 111, 2, 1, 206, 0, 1, 112, 207, 0, 1, 64, 1, 1, 113, 119, 0, 208, 0, 4, 10, 113, 117, 101, 114, 121, 45, 101, 118, 97, 108, 0, 1, 81, 4, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 10, 11, 29, 1, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 14, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 3, 12, 0, 7, 245, 12, 1, 65, 16, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 68, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 7, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 10, 2, 3, 0, 1, 6, 101, 110, 116, 105, 116, 121, 1, 66, 4, 2, 3, 2, 1, 11, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 0, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 9, 115, 117, 98, 115, 99, 114, 105, 98, 101, 0, 1, 2, 4, 5, 101, 118, 101, 110, 116, 18, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 47, 101, 118, 101, 110, 116, 5, 12, 11, 25, 1, 7, 109, 101, 115, 115, 97, 103, 101, 12, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 3, 14, 0, 7, 197, 16, 1, 65, 16, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 68, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 7, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 10, 2, 3, 0, 1, 6, 101, 110, 116, 105, 116, 121, 1, 66, 32, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 11, 4, 11, 101, 110, 116, 105, 116, 121, 45, 100, 97, 116, 97, 0, 3, 0, 6, 1, 114, 3, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 119, 101, 105, 103, 104, 116, 118, 4, 16, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 0, 3, 0, 8, 1, 112, 9, 1, 114, 2, 7, 97, 99, 116, 105, 111, 110, 115, 10, 15, 97, 112, 112, 108, 121, 45, 98, 97, 115, 101, 45, 112, 111, 115, 101, 127, 4, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 3, 0, 11, 1, 112, 118, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 7, 119, 101, 105, 103, 104, 116, 115, 13, 4, 116, 105, 109, 101, 13, 13, 97, 98, 115, 111, 108, 117, 116, 101, 45, 116, 105, 109, 101, 127, 1, 0, 4, 19, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 108, 101, 110, 100, 0, 1, 14, 1, 64, 1, 4, 100, 97, 116, 97, 7, 0, 1, 4, 5, 115, 112, 97, 119, 110, 0, 1, 15, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 127, 4, 7, 100, 101, 115, 112, 97, 119, 110, 0, 1, 16, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 12, 1, 0, 4, 24, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 1, 17, 1, 112, 1, 1, 64, 2, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 114, 97, 100, 105, 117, 115, 118, 0, 18, 4, 7, 105, 110, 45, 97, 114, 101, 97, 0, 1, 19, 4, 6, 101, 120, 105, 115, 116, 115, 0, 1, 16, 1, 64, 1, 5, 105, 110, 100, 101, 120, 121, 0, 18, 4, 7, 103, 101, 116, 45, 97, 108, 108, 0, 1, 20, 1, 64, 0, 0, 1, 4, 9, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 21, 4, 22, 115, 121, 110, 99, 104, 114, 111, 110, 105, 122, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 21, 4, 19, 112, 101, 114, 115, 105, 115, 116, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 21, 4, 6, 101, 110, 116, 105, 116, 121, 18, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 47, 101, 110, 116, 105, 116, 121, 5, 12, 11, 23, 1, 6, 101, 110, 116, 105, 116, 121, 11, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 3, 16, 0, 7, 92, 1, 65, 2, 1, 66, 2, 1, 64, 1, 10, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 127, 1, 0, 4, 14, 115, 101, 116, 45, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 0, 1, 0, 4, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 5, 0, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 3, 18, 0, 7, 248, 2, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 4, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 64, 0, 0, 1, 4, 9, 103, 101, 116, 45, 108, 111, 99, 97, 108, 0, 1, 2, 4, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 5, 2, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 3, 20, 0, 7, 224, 3, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 7, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 17, 115, 101, 114, 118, 101, 114, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 115, 101, 114, 118, 101, 114, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 4, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 5, 2, 11, 39, 1, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 19, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 3, 22, 0, 7, 192, 16, 1, 65, 6, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 23, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 2, 1, 109, 163, 1, 4, 107, 101, 121, 49, 4, 107, 101, 121, 50, 4, 107, 101, 121, 51, 4, 107, 101, 121, 52, 4, 107, 101, 121, 53, 4, 107, 101, 121, 54, 4, 107, 101, 121, 55, 4, 107, 101, 121, 56, 4, 107, 101, 121, 57, 4, 107, 101, 121, 48, 1, 97, 1, 98, 1, 99, 1, 100, 1, 101, 1, 102, 1, 103, 1, 104, 1, 105, 1, 106, 1, 107, 1, 108, 1, 109, 1, 110, 1, 111, 1, 112, 1, 113, 1, 114, 1, 115, 1, 116, 1, 117, 1, 118, 1, 119, 1, 120, 1, 121, 1, 122, 6, 101, 115, 99, 97, 112, 101, 2, 102, 49, 2, 102, 50, 2, 102, 51, 2, 102, 52, 2, 102, 53, 2, 102, 54, 2, 102, 55, 2, 102, 56, 2, 102, 57, 3, 102, 49, 48, 3, 102, 49, 49, 3, 102, 49, 50, 3, 102, 49, 51, 3, 102, 49, 52, 3, 102, 49, 53, 3, 102, 49, 54, 3, 102, 49, 55, 3, 102, 49, 56, 3, 102, 49, 57, 3, 102, 50, 48, 3, 102, 50, 49, 3, 102, 50, 50, 3, 102, 50, 51, 3, 102, 50, 52, 8, 115, 110, 97, 112, 115, 104, 111, 116, 6, 115, 99, 114, 111, 108, 108, 5, 112, 97, 117, 115, 101, 6, 105, 110, 115, 101, 114, 116, 4, 104, 111, 109, 101, 6, 100, 101, 108, 101, 116, 101, 3, 101, 110, 100, 9, 112, 97, 103, 101, 45, 100, 111, 119, 110, 7, 112, 97, 103, 101, 45, 117, 112, 4, 108, 101, 102, 116, 2, 117, 112, 5, 114, 105, 103, 104, 116, 4, 100, 111, 119, 110, 4, 98, 97, 99, 107, 6, 114, 101, 116, 117, 114, 110, 5, 115, 112, 97, 99, 101, 7, 99, 111, 109, 112, 111, 115, 101, 5, 99, 97, 114, 101, 116, 7, 110, 117, 109, 108, 111, 99, 107, 7, 110, 117, 109, 112, 97, 100, 48, 7, 110, 117, 109, 112, 97, 100, 49, 7, 110, 117, 109, 112, 97, 100, 50, 7, 110, 117, 109, 112, 97, 100, 51, 7, 110, 117, 109, 112, 97, 100, 52, 7, 110, 117, 109, 112, 97, 100, 53, 7, 110, 117, 109, 112, 97, 100, 54, 7, 110, 117, 109, 112, 97, 100, 55, 7, 110, 117, 109, 112, 97, 100, 56, 7, 110, 117, 109, 112, 97, 100, 57, 10, 110, 117, 109, 112, 97, 100, 45, 97, 100, 100, 13, 110, 117, 109, 112, 97, 100, 45, 100, 105, 118, 105, 100, 101, 14, 110, 117, 109, 112, 97, 100, 45, 100, 101, 99, 105, 109, 97, 108, 12, 110, 117, 109, 112, 97, 100, 45, 99, 111, 109, 109, 97, 12, 110, 117, 109, 112, 97, 100, 45, 101, 110, 116, 101, 114, 13, 110, 117, 109, 112, 97, 100, 45, 101, 113, 117, 97, 108, 115, 15, 110, 117, 109, 112, 97, 100, 45, 109, 117, 108, 116, 105, 112, 108, 121, 15, 110, 117, 109, 112, 97, 100, 45, 115, 117, 98, 116, 114, 97, 99, 116, 7, 97, 98, 110, 116, 45, 99, 49, 7, 97, 98, 110, 116, 45, 99, 50, 10, 97, 112, 111, 115, 116, 114, 111, 112, 104, 101, 4, 97, 112, 112, 115, 8, 97, 115, 116, 101, 114, 105, 115, 107, 2, 97, 116, 2, 97, 120, 9, 98, 97, 99, 107, 115, 108, 97, 115, 104, 10, 99, 97, 108, 99, 117, 108, 97, 116, 111, 114, 7, 99, 97, 112, 105, 116, 97, 108, 5, 99, 111, 108, 111, 110, 5, 99, 111, 109, 109, 97, 7, 99, 111, 110, 118, 101, 114, 116, 6, 101, 113, 117, 97, 108, 115, 5, 103, 114, 97, 118, 101, 4, 107, 97, 110, 97, 5, 107, 97, 110, 106, 105, 5, 108, 45, 97, 108, 116, 9, 108, 45, 98, 114, 97, 99, 107, 101, 116, 9, 108, 45, 99, 111, 110, 116, 114, 111, 108, 7, 108, 45, 115, 104, 105, 102, 116, 5, 108, 45, 119, 105, 110, 4, 109, 97, 105, 108, 12, 109, 101, 100, 105, 97, 45, 115, 101, 108, 101, 99, 116, 10, 109, 101, 100, 105, 97, 45, 115, 116, 111, 112, 5, 109, 105, 110, 117, 115, 4, 109, 117, 116, 101, 11, 109, 121, 45, 99, 111, 109, 112, 117, 116, 101, 114, 16, 110, 97, 118, 105, 103, 97, 116, 101, 45, 102, 111, 114, 119, 97, 114, 100, 17, 110, 97, 118, 105, 103, 97, 116, 101, 45, 98, 97, 99, 107, 119, 97, 114, 100, 10, 110, 101, 120, 116, 45, 116, 114, 97, 99, 107, 10, 110, 111, 45, 99, 111, 110, 118, 101, 114, 116, 6, 111, 101, 109, 49, 48, 50, 6, 112, 101, 114, 105, 111, 100, 10, 112, 108, 97, 121, 45, 112, 97, 117, 115, 101, 4, 112, 108, 117, 115, 5, 112, 111, 119, 101, 114, 10, 112, 114, 101, 118, 45, 116, 114, 97, 99, 107, 5, 114, 45, 97, 108, 116, 9, 114, 45, 98, 114, 97, 99, 107, 101, 116, 9, 114, 45, 99, 111, 110, 116, 114, 111, 108, 7, 114, 45, 115, 104, 105, 102, 116, 5, 114, 45, 119, 105, 110, 9, 115, 101, 109, 105, 99, 111, 108, 111, 110, 5, 115, 108, 97, 115, 104, 5, 115, 108, 101, 101, 112, 4, 115, 116, 111, 112, 5, 115, 121, 115, 114, 113, 3, 116, 97, 98, 9, 117, 110, 100, 101, 114, 108, 105, 110, 101, 9, 117, 110, 108, 97, 98, 101, 108, 101, 100, 11, 118, 111, 108, 117, 109, 101, 45, 100, 111, 119, 110, 9, 118, 111, 108, 117, 109, 101, 45, 117, 112, 4, 119, 97, 107, 101, 8, 119, 101, 98, 45, 98, 97, 99, 107, 13, 119, 101, 98, 45, 102, 97, 118, 111, 114, 105, 116, 101, 115, 11, 119, 101, 98, 45, 102, 111, 114, 119, 97, 114, 100, 8, 119, 101, 98, 45, 104, 111, 109, 101, 11, 119, 101, 98, 45, 114, 101, 102, 114, 101, 115, 104, 10, 119, 101, 98, 45, 115, 101, 97, 114, 99, 104, 8, 119, 101, 98, 45, 115, 116, 111, 112, 3, 121, 101, 110, 4, 99, 111, 112, 121, 5, 112, 97, 115, 116, 101, 3, 99, 117, 116, 4, 16, 118, 105, 114, 116, 117, 97, 108, 45, 107, 101, 121, 45, 99, 111, 100, 101, 0, 3, 0, 4, 1, 113, 4, 4, 108, 101, 102, 116, 0, 0, 5, 114, 105, 103, 104, 116, 0, 0, 6, 109, 105, 100, 100, 108, 101, 0, 0, 5, 111, 116, 104, 101, 114, 1, 123, 0, 4, 12, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 0, 3, 0, 6, 1, 112, 5, 1, 112, 7, 1, 114, 5, 4, 107, 101, 121, 115, 8, 14, 109, 111, 117, 115, 101, 45, 112, 111, 115, 105, 116, 105, 111, 110, 1, 11, 109, 111, 117, 115, 101, 45, 100, 101, 108, 116, 97, 1, 11, 109, 111, 117, 115, 101, 45, 119, 104, 101, 101, 108, 118, 13, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 115, 9, 4, 5, 105, 110, 112, 117, 116, 0, 3, 0, 10, 1, 113, 35, 12, 100, 101, 102, 97, 117, 108, 116, 45, 105, 99, 111, 110, 0, 0, 9, 99, 114, 111, 115, 115, 104, 97, 105, 114, 0, 0, 4, 104, 97, 110, 100, 0, 0, 5, 97, 114, 114, 111, 119, 0, 0, 4, 109, 111, 118, 101, 0, 0, 4, 116, 101, 120, 116, 0, 0, 4, 119, 97, 105, 116, 0, 0, 4, 104, 101, 108, 112, 0, 0, 8, 112, 114, 111, 103, 114, 101, 115, 115, 0, 0, 11, 110, 111, 116, 45, 97, 108, 108, 111, 119, 101, 100, 0, 0, 12, 99, 111, 110, 116, 101, 120, 116, 45, 109, 101, 110, 117, 0, 0, 4, 99, 101, 108, 108, 0, 0, 13, 118, 101, 114, 116, 105, 99, 97, 108, 45, 116, 101, 120, 116, 0, 0, 5, 97, 108, 105, 97, 115, 0, 0, 4, 99, 111, 112, 121, 0, 0, 7, 110, 111, 45, 100, 114, 111, 112, 0, 0, 4, 103, 114, 97, 98, 0, 0, 8, 103, 114, 97, 98, 98, 105, 110, 103, 0, 0, 10, 97, 108, 108, 45, 115, 99, 114, 111, 108, 108, 0, 0, 7, 122, 111, 111, 109, 45, 105, 110, 0, 0, 8, 122, 111, 111, 109, 45, 111, 117, 116, 0, 0, 8, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 110, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 101, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 101, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 119, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 99, 111, 108, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 114, 111, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 4, 11, 99, 117, 114, 115, 111, 114, 45, 105, 99, 111, 110, 0, 3, 0, 12, 1, 64, 0, 0, 11, 4, 3, 103, 101, 116, 0, 1, 14, 4, 12, 103, 101, 116, 45, 112, 114, 101, 118, 105, 111, 117, 115, 0, 1, 14, 1, 64, 1, 4, 105, 99, 111, 110, 13, 1, 0, 4, 10, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 0, 1, 15, 1, 64, 1, 7, 118, 105, 115, 105, 98, 108, 101, 127, 1, 0, 4, 18, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 118, 105, 115, 105, 98, 108, 101, 0, 1, 16, 1, 64, 1, 6, 108, 111, 99, 107, 101, 100, 127, 1, 0, 4, 15, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 108, 111, 99, 107, 0, 1, 17, 4, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 5, 3, 11, 35, 1, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 17, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 3, 24, 0, 7, 233, 4, 1, 65, 8, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 3, 114, 97, 121, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 16, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 51, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 50, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 3, 114, 97, 121, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 6, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 112, 111, 115, 3, 0, 5, 4, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 114, 97, 121, 0, 1, 8, 1, 64, 1, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 3, 4, 20, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 0, 1, 9, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 5, 4, 25, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 119, 111, 114, 108, 100, 45, 100, 105, 114, 101, 99, 116, 105, 111, 110, 0, 1, 10, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 1, 0, 3, 4, 15, 119, 111, 114, 108, 100, 45, 116, 111, 45, 115, 99, 114, 101, 101, 110, 0, 1, 11, 4, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 5, 5, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 3, 26, 0, 7, 193, 1, 1, 65, 2, 1, 66, 10, 1, 64, 1, 3, 117, 114, 108, 115, 1, 0, 4, 4, 108, 111, 97, 100, 0, 1, 0, 1, 64, 4, 4, 110, 97, 109, 101, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 118, 111, 108, 117, 109, 101, 118, 3, 117, 105, 100, 121, 1, 0, 4, 4, 112, 108, 97, 121, 0, 1, 1, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 4, 115, 116, 111, 112, 0, 1, 2, 1, 64, 1, 3, 117, 105, 100, 121, 1, 0, 4, 10, 115, 116, 111, 112, 45, 98, 121, 45, 105, 100, 0, 1, 3, 1, 64, 2, 4, 110, 97, 109, 101, 115, 6, 118, 111, 108, 117, 109, 101, 118, 1, 0, 4, 10, 115, 101, 116, 45, 118, 111, 108, 117, 109, 101, 0, 1, 4, 4, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 5, 0, 11, 35, 1, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 17, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 3, 28, 0, 7, 149, 2, 1, 65, 2, 1, 66, 13, 1, 113, 3, 5, 114, 101, 97, 100, 121, 0, 0, 10, 110, 111, 116, 45, 108, 111, 97, 100, 101, 100, 0, 0, 14, 102, 97, 105, 108, 101, 100, 45, 108, 111, 97, 100, 105, 110, 103, 1, 115, 0, 4, 18, 97, 115, 115, 101, 116, 45, 99, 97, 99, 104, 101, 45, 115, 116, 97, 116, 117, 115, 0, 3, 0, 0, 1, 112, 115, 1, 114, 3, 7, 98, 105, 110, 100, 101, 114, 115, 2, 8, 100, 117, 114, 97, 116, 105, 111, 110, 118, 6, 115, 116, 97, 116, 117, 115, 1, 4, 24, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 109, 101, 116, 97, 100, 97, 116, 97, 0, 3, 0, 3, 1, 107, 115, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 5, 4, 3, 117, 114, 108, 0, 1, 6, 1, 64, 1, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 0, 1, 4, 26, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 115, 116, 97, 116, 117, 115, 0, 1, 7, 1, 112, 4, 1, 64, 1, 5, 99, 108, 105, 112, 115, 2, 0, 8, 4, 28, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 109, 101, 116, 97, 100, 97, 116, 97, 0, 1, 9, 4, 5, 97, 115, 115, 101, 116, 16, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 47, 97, 115, 115, 101, 116, 5, 0, 11, 21, 1, 5, 97, 115, 115, 101, 116, 10, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 3, 30, 0, 7, 188, 54, 1, 65, 2, 1, 65, 41, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 1, 66, 13, 1, 113, 3, 5, 114, 101, 97, 100, 121, 0, 0, 10, 110, 111, 116, 45, 108, 111, 97, 100, 101, 100, 0, 0, 14, 102, 97, 105, 108, 101, 100, 45, 108, 111, 97, 100, 105, 110, 103, 1, 115, 0, 4, 18, 97, 115, 115, 101, 116, 45, 99, 97, 99, 104, 101, 45, 115, 116, 97, 116, 117, 115, 0, 3, 0, 0, 1, 112, 115, 1, 114, 3, 7, 98, 105, 110, 100, 101, 114, 115, 2, 8, 100, 117, 114, 97, 116, 105, 111, 110, 118, 6, 115, 116, 97, 116, 117, 115, 1, 4, 24, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 109, 101, 116, 97, 100, 97, 116, 97, 0, 3, 0, 3, 1, 107, 115, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 5, 4, 3, 117, 114, 108, 0, 1, 6, 1, 64, 1, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 0, 1, 4, 26, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 115, 116, 97, 116, 117, 115, 0, 1, 7, 1, 112, 4, 1, 64, 1, 5, 99, 108, 105, 112, 115, 2, 0, 8, 4, 28, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 109, 101, 116, 97, 100, 97, 116, 97, 0, 1, 9, 3, 5, 97, 115, 115, 101, 116, 16, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 47, 97, 115, 115, 101, 116, 5, 1, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 94, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 4, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 7, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 10, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 1, 64, 1, 2, 105, 100, 115, 0, 53, 4, 9, 103, 101, 116, 45, 105, 110, 100, 101, 120, 0, 1, 68, 1, 107, 192, 0, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 197, 0, 4, 13, 103, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 70, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 5, 118, 97, 108, 117, 101, 192, 0, 1, 0, 4, 13, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 100, 97, 116, 97, 195, 0, 1, 0, 4, 14, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 4, 13, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 4, 14, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 127, 4, 13, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 73, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 0, 127, 4, 14, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 74, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 1, 0, 4, 16, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 75, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 1, 0, 4, 17, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 76, 1, 64, 2, 1, 113, 22, 1, 116, 19, 0, 119, 4, 5, 113, 117, 101, 114, 121, 0, 1, 77, 1, 112, 192, 0, 1, 111, 2, 1, 206, 0, 1, 112, 207, 0, 1, 64, 1, 1, 113, 119, 0, 208, 0, 4, 10, 113, 117, 101, 114, 121, 45, 101, 118, 97, 108, 0, 1, 81, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 11, 2, 3, 0, 2, 6, 101, 110, 116, 105, 116, 121, 1, 66, 32, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 4, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 12, 4, 11, 101, 110, 116, 105, 116, 121, 45, 100, 97, 116, 97, 0, 3, 0, 6, 1, 114, 3, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 119, 101, 105, 103, 104, 116, 118, 4, 16, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 0, 3, 0, 8, 1, 112, 9, 1, 114, 2, 7, 97, 99, 116, 105, 111, 110, 115, 10, 15, 97, 112, 112, 108, 121, 45, 98, 97, 115, 101, 45, 112, 111, 115, 101, 127, 4, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 3, 0, 11, 1, 112, 118, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 7, 119, 101, 105, 103, 104, 116, 115, 13, 4, 116, 105, 109, 101, 13, 13, 97, 98, 115, 111, 108, 117, 116, 101, 45, 116, 105, 109, 101, 127, 1, 0, 4, 19, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 108, 101, 110, 100, 0, 1, 14, 1, 64, 1, 4, 100, 97, 116, 97, 7, 0, 1, 4, 5, 115, 112, 97, 119, 110, 0, 1, 15, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 127, 4, 7, 100, 101, 115, 112, 97, 119, 110, 0, 1, 16, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 12, 1, 0, 4, 24, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 1, 17, 1, 112, 1, 1, 64, 2, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 114, 97, 100, 105, 117, 115, 118, 0, 18, 4, 7, 105, 110, 45, 97, 114, 101, 97, 0, 1, 19, 4, 6, 101, 120, 105, 115, 116, 115, 0, 1, 16, 1, 64, 1, 5, 105, 110, 100, 101, 120, 121, 0, 18, 4, 7, 103, 101, 116, 45, 97, 108, 108, 0, 1, 20, 1, 64, 0, 0, 1, 4, 9, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 21, 4, 22, 115, 121, 110, 99, 104, 114, 111, 110, 105, 122, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 21, 4, 19, 112, 101, 114, 115, 105, 115, 116, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 21, 3, 6, 101, 110, 116, 105, 116, 121, 18, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 47, 101, 110, 116, 105, 116, 121, 5, 13, 1, 66, 4, 2, 3, 2, 1, 12, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 0, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 9, 115, 117, 98, 115, 99, 114, 105, 98, 101, 0, 1, 2, 3, 7, 109, 101, 115, 115, 97, 103, 101, 18, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 47, 101, 118, 101, 110, 116, 5, 14, 1, 66, 5, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 107, 1, 1, 64, 1, 7, 117, 115, 101, 114, 45, 105, 100, 115, 0, 2, 4, 14, 103, 101, 116, 45, 98, 121, 45, 117, 115, 101, 114, 45, 105, 100, 0, 1, 3, 3, 6, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 47, 112, 108, 97, 121, 101, 114, 5, 15, 1, 66, 10, 1, 64, 1, 3, 117, 114, 108, 115, 1, 0, 4, 4, 108, 111, 97, 100, 0, 1, 0, 1, 64, 4, 4, 110, 97, 109, 101, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 118, 111, 108, 117, 109, 101, 118, 3, 117, 105, 100, 121, 1, 0, 4, 4, 112, 108, 97, 121, 0, 1, 1, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 4, 115, 116, 111, 112, 0, 1, 2, 1, 64, 1, 3, 117, 105, 100, 121, 1, 0, 4, 10, 115, 116, 111, 112, 45, 98, 121, 45, 105, 100, 0, 1, 3, 1, 64, 2, 4, 110, 97, 109, 101, 115, 6, 118, 111, 108, 117, 109, 101, 118, 1, 0, 4, 10, 115, 101, 116, 45, 118, 111, 108, 117, 109, 101, 0, 1, 4, 3, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 5, 16, 1, 66, 7, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 17, 115, 101, 114, 118, 101, 114, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 115, 101, 114, 118, 101, 114, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 3, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 5, 17, 1, 66, 4, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 64, 0, 0, 1, 4, 9, 103, 101, 116, 45, 108, 111, 99, 97, 108, 0, 1, 2, 3, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 5, 18, 1, 66, 23, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 2, 1, 109, 163, 1, 4, 107, 101, 121, 49, 4, 107, 101, 121, 50, 4, 107, 101, 121, 51, 4, 107, 101, 121, 52, 4, 107, 101, 121, 53, 4, 107, 101, 121, 54, 4, 107, 101, 121, 55, 4, 107, 101, 121, 56, 4, 107, 101, 121, 57, 4, 107, 101, 121, 48, 1, 97, 1, 98, 1, 99, 1, 100, 1, 101, 1, 102, 1, 103, 1, 104, 1, 105, 1, 106, 1, 107, 1, 108, 1, 109, 1, 110, 1, 111, 1, 112, 1, 113, 1, 114, 1, 115, 1, 116, 1, 117, 1, 118, 1, 119, 1, 120, 1, 121, 1, 122, 6, 101, 115, 99, 97, 112, 101, 2, 102, 49, 2, 102, 50, 2, 102, 51, 2, 102, 52, 2, 102, 53, 2, 102, 54, 2, 102, 55, 2, 102, 56, 2, 102, 57, 3, 102, 49, 48, 3, 102, 49, 49, 3, 102, 49, 50, 3, 102, 49, 51, 3, 102, 49, 52, 3, 102, 49, 53, 3, 102, 49, 54, 3, 102, 49, 55, 3, 102, 49, 56, 3, 102, 49, 57, 3, 102, 50, 48, 3, 102, 50, 49, 3, 102, 50, 50, 3, 102, 50, 51, 3, 102, 50, 52, 8, 115, 110, 97, 112, 115, 104, 111, 116, 6, 115, 99, 114, 111, 108, 108, 5, 112, 97, 117, 115, 101, 6, 105, 110, 115, 101, 114, 116, 4, 104, 111, 109, 101, 6, 100, 101, 108, 101, 116, 101, 3, 101, 110, 100, 9, 112, 97, 103, 101, 45, 100, 111, 119, 110, 7, 112, 97, 103, 101, 45, 117, 112, 4, 108, 101, 102, 116, 2, 117, 112, 5, 114, 105, 103, 104, 116, 4, 100, 111, 119, 110, 4, 98, 97, 99, 107, 6, 114, 101, 116, 117, 114, 110, 5, 115, 112, 97, 99, 101, 7, 99, 111, 109, 112, 111, 115, 101, 5, 99, 97, 114, 101, 116, 7, 110, 117, 109, 108, 111, 99, 107, 7, 110, 117, 109, 112, 97, 100, 48, 7, 110, 117, 109, 112, 97, 100, 49, 7, 110, 117, 109, 112, 97, 100, 50, 7, 110, 117, 109, 112, 97, 100, 51, 7, 110, 117, 109, 112, 97, 100, 52, 7, 110, 117, 109, 112, 97, 100, 53, 7, 110, 117, 109, 112, 97, 100, 54, 7, 110, 117, 109, 112, 97, 100, 55, 7, 110, 117, 109, 112, 97, 100, 56, 7, 110, 117, 109, 112, 97, 100, 57, 10, 110, 117, 109, 112, 97, 100, 45, 97, 100, 100, 13, 110, 117, 109, 112, 97, 100, 45, 100, 105, 118, 105, 100, 101, 14, 110, 117, 109, 112, 97, 100, 45, 100, 101, 99, 105, 109, 97, 108, 12, 110, 117, 109, 112, 97, 100, 45, 99, 111, 109, 109, 97, 12, 110, 117, 109, 112, 97, 100, 45, 101, 110, 116, 101, 114, 13, 110, 117, 109, 112, 97, 100, 45, 101, 113, 117, 97, 108, 115, 15, 110, 117, 109, 112, 97, 100, 45, 109, 117, 108, 116, 105, 112, 108, 121, 15, 110, 117, 109, 112, 97, 100, 45, 115, 117, 98, 116, 114, 97, 99, 116, 7, 97, 98, 110, 116, 45, 99, 49, 7, 97, 98, 110, 116, 45, 99, 50, 10, 97, 112, 111, 115, 116, 114, 111, 112, 104, 101, 4, 97, 112, 112, 115, 8, 97, 115, 116, 101, 114, 105, 115, 107, 2, 97, 116, 2, 97, 120, 9, 98, 97, 99, 107, 115, 108, 97, 115, 104, 10, 99, 97, 108, 99, 117, 108, 97, 116, 111, 114, 7, 99, 97, 112, 105, 116, 97, 108, 5, 99, 111, 108, 111, 110, 5, 99, 111, 109, 109, 97, 7, 99, 111, 110, 118, 101, 114, 116, 6, 101, 113, 117, 97, 108, 115, 5, 103, 114, 97, 118, 101, 4, 107, 97, 110, 97, 5, 107, 97, 110, 106, 105, 5, 108, 45, 97, 108, 116, 9, 108, 45, 98, 114, 97, 99, 107, 101, 116, 9, 108, 45, 99, 111, 110, 116, 114, 111, 108, 7, 108, 45, 115, 104, 105, 102, 116, 5, 108, 45, 119, 105, 110, 4, 109, 97, 105, 108, 12, 109, 101, 100, 105, 97, 45, 115, 101, 108, 101, 99, 116, 10, 109, 101, 100, 105, 97, 45, 115, 116, 111, 112, 5, 109, 105, 110, 117, 115, 4, 109, 117, 116, 101, 11, 109, 121, 45, 99, 111, 109, 112, 117, 116, 101, 114, 16, 110, 97, 118, 105, 103, 97, 116, 101, 45, 102, 111, 114, 119, 97, 114, 100, 17, 110, 97, 118, 105, 103, 97, 116, 101, 45, 98, 97, 99, 107, 119, 97, 114, 100, 10, 110, 101, 120, 116, 45, 116, 114, 97, 99, 107, 10, 110, 111, 45, 99, 111, 110, 118, 101, 114, 116, 6, 111, 101, 109, 49, 48, 50, 6, 112, 101, 114, 105, 111, 100, 10, 112, 108, 97, 121, 45, 112, 97, 117, 115, 101, 4, 112, 108, 117, 115, 5, 112, 111, 119, 101, 114, 10, 112, 114, 101, 118, 45, 116, 114, 97, 99, 107, 5, 114, 45, 97, 108, 116, 9, 114, 45, 98, 114, 97, 99, 107, 101, 116, 9, 114, 45, 99, 111, 110, 116, 114, 111, 108, 7, 114, 45, 115, 104, 105, 102, 116, 5, 114, 45, 119, 105, 110, 9, 115, 101, 109, 105, 99, 111, 108, 111, 110, 5, 115, 108, 97, 115, 104, 5, 115, 108, 101, 101, 112, 4, 115, 116, 111, 112, 5, 115, 121, 115, 114, 113, 3, 116, 97, 98, 9, 117, 110, 100, 101, 114, 108, 105, 110, 101, 9, 117, 110, 108, 97, 98, 101, 108, 101, 100, 11, 118, 111, 108, 117, 109, 101, 45, 100, 111, 119, 110, 9, 118, 111, 108, 117, 109, 101, 45, 117, 112, 4, 119, 97, 107, 101, 8, 119, 101, 98, 45, 98, 97, 99, 107, 13, 119, 101, 98, 45, 102, 97, 118, 111, 114, 105, 116, 101, 115, 11, 119, 101, 98, 45, 102, 111, 114, 119, 97, 114, 100, 8, 119, 101, 98, 45, 104, 111, 109, 101, 11, 119, 101, 98, 45, 114, 101, 102, 114, 101, 115, 104, 10, 119, 101, 98, 45, 115, 101, 97, 114, 99, 104, 8, 119, 101, 98, 45, 115, 116, 111, 112, 3, 121, 101, 110, 4, 99, 111, 112, 121, 5, 112, 97, 115, 116, 101, 3, 99, 117, 116, 4, 16, 118, 105, 114, 116, 117, 97, 108, 45, 107, 101, 121, 45, 99, 111, 100, 101, 0, 3, 0, 4, 1, 113, 4, 4, 108, 101, 102, 116, 0, 0, 5, 114, 105, 103, 104, 116, 0, 0, 6, 109, 105, 100, 100, 108, 101, 0, 0, 5, 111, 116, 104, 101, 114, 1, 123, 0, 4, 12, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 0, 3, 0, 6, 1, 112, 5, 1, 112, 7, 1, 114, 5, 4, 107, 101, 121, 115, 8, 14, 109, 111, 117, 115, 101, 45, 112, 111, 115, 105, 116, 105, 111, 110, 1, 11, 109, 111, 117, 115, 101, 45, 100, 101, 108, 116, 97, 1, 11, 109, 111, 117, 115, 101, 45, 119, 104, 101, 101, 108, 118, 13, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 115, 9, 4, 5, 105, 110, 112, 117, 116, 0, 3, 0, 10, 1, 113, 35, 12, 100, 101, 102, 97, 117, 108, 116, 45, 105, 99, 111, 110, 0, 0, 9, 99, 114, 111, 115, 115, 104, 97, 105, 114, 0, 0, 4, 104, 97, 110, 100, 0, 0, 5, 97, 114, 114, 111, 119, 0, 0, 4, 109, 111, 118, 101, 0, 0, 4, 116, 101, 120, 116, 0, 0, 4, 119, 97, 105, 116, 0, 0, 4, 104, 101, 108, 112, 0, 0, 8, 112, 114, 111, 103, 114, 101, 115, 115, 0, 0, 11, 110, 111, 116, 45, 97, 108, 108, 111, 119, 101, 100, 0, 0, 12, 99, 111, 110, 116, 101, 120, 116, 45, 109, 101, 110, 117, 0, 0, 4, 99, 101, 108, 108, 0, 0, 13, 118, 101, 114, 116, 105, 99, 97, 108, 45, 116, 101, 120, 116, 0, 0, 5, 97, 108, 105, 97, 115, 0, 0, 4, 99, 111, 112, 121, 0, 0, 7, 110, 111, 45, 100, 114, 111, 112, 0, 0, 4, 103, 114, 97, 98, 0, 0, 8, 103, 114, 97, 98, 98, 105, 110, 103, 0, 0, 10, 97, 108, 108, 45, 115, 99, 114, 111, 108, 108, 0, 0, 7, 122, 111, 111, 109, 45, 105, 110, 0, 0, 8, 122, 111, 111, 109, 45, 111, 117, 116, 0, 0, 8, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 110, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 101, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 101, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 119, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 99, 111, 108, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 114, 111, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 4, 11, 99, 117, 114, 115, 111, 114, 45, 105, 99, 111, 110, 0, 3, 0, 12, 1, 64, 0, 0, 11, 4, 3, 103, 101, 116, 0, 1, 14, 4, 12, 103, 101, 116, 45, 112, 114, 101, 118, 105, 111, 117, 115, 0, 1, 14, 1, 64, 1, 4, 105, 99, 111, 110, 13, 1, 0, 4, 10, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 0, 1, 15, 1, 64, 1, 7, 118, 105, 115, 105, 98, 108, 101, 127, 1, 0, 4, 18, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 118, 105, 115, 105, 98, 108, 101, 0, 1, 16, 1, 64, 1, 6, 108, 111, 99, 107, 101, 100, 127, 1, 0, 4, 15, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 108, 111, 99, 107, 0, 1, 17, 3, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 5, 19, 2, 3, 0, 0, 3, 114, 97, 121, 1, 66, 16, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 0, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 2, 2, 3, 2, 1, 20, 4, 3, 114, 97, 121, 0, 3, 0, 4, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 6, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 112, 111, 115, 3, 0, 5, 4, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 114, 97, 121, 0, 1, 8, 1, 64, 1, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 3, 4, 20, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 0, 1, 9, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 5, 4, 25, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 119, 111, 114, 108, 100, 45, 100, 105, 114, 101, 99, 116, 105, 111, 110, 0, 1, 10, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 1, 0, 3, 4, 15, 119, 111, 114, 108, 100, 45, 116, 111, 45, 115, 99, 114, 101, 101, 110, 0, 1, 11, 3, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 5, 21, 1, 66, 2, 1, 64, 1, 10, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 127, 1, 0, 4, 14, 115, 101, 116, 45, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 0, 1, 0, 3, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 5, 22, 1, 66, 40, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 4, 1, 114, 3, 4, 115, 105, 100, 101, 127, 2, 117, 112, 127, 4, 100, 111, 119, 110, 127, 4, 19, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 99, 111, 108, 108, 105, 115, 105, 111, 110, 0, 3, 0, 6, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 1, 0, 4, 9, 97, 100, 100, 45, 102, 111, 114, 99, 101, 0, 1, 8, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 1, 0, 4, 11, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 9, 1, 107, 118, 1, 64, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 7, 105, 109, 112, 117, 108, 115, 101, 118, 6, 114, 97, 100, 105, 117, 115, 118, 14, 102, 97, 108, 108, 111, 102, 102, 45, 114, 97, 100, 105, 117, 115, 10, 1, 0, 4, 18, 97, 100, 100, 45, 114, 97, 100, 105, 97, 108, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 11, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 21, 97, 100, 100, 45, 102, 111, 114, 99, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 12, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 23, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 13, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 0, 3, 4, 24, 103, 101, 116, 45, 118, 101, 108, 111, 99, 105, 116, 121, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 14, 1, 64, 1, 7, 103, 114, 97, 118, 105, 116, 121, 3, 1, 0, 4, 11, 115, 101, 116, 45, 103, 114, 97, 118, 105, 116, 121, 0, 1, 15, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 8, 117, 110, 102, 114, 101, 101, 122, 101, 0, 1, 16, 4, 6, 102, 114, 101, 101, 122, 101, 0, 1, 16, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 118, 101, 108, 111, 99, 105, 116, 121, 118, 1, 0, 4, 11, 115, 116, 97, 114, 116, 45, 109, 111, 116, 111, 114, 0, 1, 17, 4, 10, 115, 116, 111, 112, 45, 109, 111, 116, 111, 114, 0, 1, 16, 1, 64, 4, 6, 97, 99, 116, 111, 114, 48, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 48, 5, 6, 97, 99, 116, 111, 114, 49, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 49, 5, 1, 0, 4, 21, 99, 114, 101, 97, 116, 101, 45, 114, 101, 118, 111, 108, 117, 116, 101, 45, 106, 111, 105, 110, 116, 0, 1, 18, 1, 111, 2, 1, 118, 1, 107, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 20, 4, 13, 114, 97, 121, 99, 97, 115, 116, 45, 102, 105, 114, 115, 116, 0, 1, 21, 1, 112, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 22, 4, 7, 114, 97, 121, 99, 97, 115, 116, 0, 1, 23, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 12, 100, 105, 115, 112, 108, 97, 99, 101, 109, 101, 110, 116, 3, 8, 109, 105, 110, 45, 100, 105, 115, 116, 118, 12, 101, 108, 97, 112, 115, 101, 100, 45, 116, 105, 109, 101, 118, 0, 7, 4, 14, 109, 111, 118, 101, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 0, 1, 24, 3, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 5, 23, 1, 66, 7, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 6, 27, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 25, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 26, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 24, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 3, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 5, 24, 1, 66, 9, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 7, 114, 117, 110, 116, 105, 109, 101, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 6, 115, 101, 114, 118, 101, 114, 0, 0, 6, 99, 108, 105, 101, 110, 116, 1, 115, 0, 4, 6, 115, 111, 117, 114, 99, 101, 0, 3, 0, 2, 1, 64, 0, 1, 0, 4, 4, 105, 110, 105, 116, 0, 1, 4, 1, 112, 125, 1, 64, 4, 4, 116, 105, 109, 101, 118, 14, 109, 101, 115, 115, 97, 103, 101, 45, 115, 111, 117, 114, 99, 101, 3, 12, 109, 101, 115, 115, 97, 103, 101, 45, 110, 97, 109, 101, 115, 12, 109, 101, 115, 115, 97, 103, 101, 45, 100, 97, 116, 97, 5, 1, 0, 4, 4, 101, 120, 101, 99, 0, 1, 6, 4, 5, 103, 117, 101, 115, 116, 16, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 47, 103, 117, 101, 115, 116, 5, 25, 4, 8, 98, 105, 110, 100, 105, 110, 103, 115, 18, 112, 107, 103, 58, 47, 109, 97, 105, 110, 47, 98, 105, 110, 100, 105, 110, 103, 115, 4, 0, 0, 68, 9, 112, 114, 111, 100, 117, 99, 101, 114, 115, 1, 12, 112, 114, 111, 99, 101, 115, 115, 101, 100, 45, 98, 121, 2, 13, 119, 105, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 48, 46, 55, 46, 52, 16, 119, 105, 116, 45, 98, 105, 110, 100, 103, 101, 110, 45, 114, 117, 115, 116, 5, 48, 46, 52, 46, 48, 11, 19, 1, 4, 109, 97, 105, 110, 9, 112, 107, 103, 58, 47, 109, 97, 105, 110, 3, 32, 0];
                               
                               #[inline(never)]
                               #[doc(hidden)]

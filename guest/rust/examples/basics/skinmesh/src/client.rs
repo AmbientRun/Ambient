@@ -59,15 +59,13 @@ pub async fn main() {
         },
     );
 
-    let start = &asset::url(START.1).unwrap();
-    let end = &asset::url(END.1).unwrap();
-    block_until(move || {
-        entity::has_animation_clip(start) &&
-        entity::has_animation_clip(end)
-    }).await;
 
+    let start_url = asset::url(START.1).unwrap();
+    let end_url = asset::url(END.1).unwrap();
+    let assets: &[&str] = &[&start_url, &end_url];
 
-    let clips = entity::get_animation_clips(&[&start, &end]);
+    asset::block_until_animations_are_loaded(assets).await;
+    let clips = asset::get_animation_asset_metadata(assets);
 
     App::el(unit_id, [clips[0].duration, clips[1].duration]).spawn_interactive()
 }
@@ -87,6 +85,26 @@ fn App(hooks: &mut Hooks, unit: EntityId, durations: [f32; 2]) -> Element {
             let absolute_time = [durations[0] * t, durations[1] * t];
             entity::set_animation_blend(unit, &[], &absolute_time, true);
             // Alternatively: entity::set_animation_blend(unit, &[], &[*t, *t], false);
+        } else {
+            // Reset on 0
+            entity::set_animation_controller(
+                unit,
+                AnimationController {
+                    actions: &[
+                        AnimationAction {
+                            clip_url: &asset::url(START.1).unwrap(),
+                            looping: true,
+                            weight: 1.,
+                        },
+                        AnimationAction {
+                            clip_url: &asset::url(END.1).unwrap(),
+                            looping: true,
+                            weight: 0.,
+                        },
+                    ],
+                    apply_base_pose: false,
+                },
+            );
         }
         |_| {}
     });
