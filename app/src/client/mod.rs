@@ -37,7 +37,7 @@ pub async fn run(
     assets: AssetCache,
     server_addr: SocketAddr,
     run: &RunCli,
-    project_path: Option<PathBuf>,
+    golden_image_output_dir: Option<PathBuf>,
 ) {
     let user_id = run
         .user_id
@@ -63,7 +63,7 @@ pub async fn run(
                 user_id,
                 show_debug: is_debug,
                 golden_image_test: run.golden_image_test,
-                project_path,
+                golden_image_output_dir,
             }
             .el()
             .spawn_interactive(&mut app.world);
@@ -101,7 +101,7 @@ fn TitleUpdater(hooks: &mut Hooks) -> Element {
 fn MainApp(
     hooks: &mut Hooks,
     server_addr: SocketAddr,
-    project_path: Option<PathBuf>,
+    golden_image_output_dir: Option<PathBuf>,
     user_id: String,
     show_debug: bool,
     golden_image_test: Option<f32>,
@@ -168,7 +168,7 @@ fn MainApp(
             },
             inner: Dock::el(vec![
                 if let Some(seconds) = golden_image_test.filter(|_| loaded) {
-                    GoldenImageTest::el(project_path, seconds)
+                    GoldenImageTest::el(golden_image_output_dir, seconds)
                 } else {
                     Element::new()
                 },
@@ -180,11 +180,11 @@ fn MainApp(
 }
 
 #[element_component]
-fn GoldenImageTest(hooks: &mut Hooks, project_path: Option<PathBuf>, seconds: f32) -> Element {
+fn GoldenImageTest(hooks: &mut Hooks, golden_image_output_dir: Option<PathBuf>, seconds: f32) -> Element {
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
     let render_target_ref = hooks.use_ref_with(|_| render_target.clone());
     *render_target_ref.lock() = render_target.clone();
-    let screenshot_path = project_path
+    let screenshot_path = golden_image_output_dir
         .unwrap_or(PathBuf::new())
         .join("screenshot.png");
     let (old_screnshot, _) = hooks.use_state_with(|_| {

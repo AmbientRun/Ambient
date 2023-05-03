@@ -134,6 +134,15 @@ impl AbsAssetUrl {
         Self(url)
     }
 
+    pub fn file_stem(&self) -> Option<&str> {
+        let last = self.0.path().rsplit('/').next().expect("There should be at least one element");
+        if last.is_empty() {
+            None
+        } else {
+            Some(last.rsplit_once('.').map(|(stem, _)| stem).unwrap_or(last))
+        }
+    }
+
     #[cfg(target_os = "unknown")]
     pub fn to_file_path(&self) -> anyhow::Result<Option<PathBuf>> {
         Ok(None)
@@ -314,12 +323,17 @@ fn test_abs_asset_url() {
         "http://t.c/hello"
     );
 
+    assert_eq!(AbsAssetUrl::parse("http://t.c/a/b/c.png").unwrap().last_dir_name(), Some("b"));
     assert_eq!(
         AbsAssetUrl::parse("http://t.c/a/b/c.png")
             .unwrap()
             .last_dir_name(),
         Some("b")
     );
+
+    assert_eq!(AbsAssetUrl::parse("http://t.c/a/").unwrap().file_stem(), None);
+    assert_eq!(AbsAssetUrl::parse("http://t.c/a/b").unwrap().file_stem().as_deref(), Some("b"));
+    assert_eq!(AbsAssetUrl::parse("http://t.c/a/b/c.png").unwrap().file_stem().as_deref(), Some("c"));
 }
 
 #[test]
