@@ -6,7 +6,9 @@ mod terrain_mode;
 
 use ambient_core::{game_mode, runtime, transform::translation, GameMode};
 use ambient_ecs::{Entity, EntityId};
-use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks, Setter};
+use ambient_element::{
+    element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks, Setter,
+};
 use ambient_intent::{rpc_redo, rpc_undo_head, IntentHistoryVisualizer};
 use ambient_naturals::{get_default_natural_layers, natural_layers, NaturalsPreset};
 use ambient_network::{
@@ -21,14 +23,17 @@ use ambient_physics::make_physics_static;
 use ambient_shared_types::{ModifiersState, VirtualKeyCode};
 use ambient_std::{cb, color::Color, Cb};
 use ambient_terrain::{
-    brushes::{Brush, BrushShape, BrushSize, BrushSmoothness, BrushStrength, HydraulicErosionConfig},
+    brushes::{
+        Brush, BrushShape, BrushSize, BrushSmoothness, BrushStrength, HydraulicErosionConfig,
+    },
     terrain_material_def,
 };
 use ambient_ui_native::{
     command_modifier, height,
     layout::{docking, space_between_items, width, Borders, Docking},
-    margin, use_window_logical_resolution, Button, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey, Rectangle, ScreenContainer, ScrollArea,
-    ScrollAreaSizing, Separator, StylesExt, Text, UIExt, WindowSized, STREET,
+    margin, use_window_logical_resolution, Button, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey,
+    Rectangle, ScreenContainer, ScrollArea, ScrollAreaSizing, Separator, StylesExt, Text, UIExt,
+    WindowSized, STREET,
 };
 use build_mode::*;
 use glam::{vec3, Vec3};
@@ -119,7 +124,11 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
                     );
                     log_network_result!(game_client.rpc(rpc_join_instance, id).await);
                 } else {
-                    log_network_result!(game_client.rpc(rpc_join_instance, MAIN_INSTANCE_ID.to_string()).await);
+                    log_network_result!(
+                        game_client
+                            .rpc(rpc_join_instance, MAIN_INSTANCE_ID.to_string())
+                            .await
+                    );
                 }
             });
             |_| {}
@@ -127,8 +136,12 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
     });
 
     if hide_ui {
-        return Hotkey::new(VirtualKeyCode::Escape, closure!(clone set_hide_ui, |_| set_hide_ui(false)), EditorPlayerInputHandler.el())
-            .el();
+        return Hotkey::new(
+            VirtualKeyCode::Escape,
+            closure!(clone set_hide_ui, |_| set_hide_ui(false)),
+            EditorPlayerInputHandler.el(),
+        )
+        .el();
     }
 
     Group(vec![
@@ -218,9 +231,9 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
             ])
             .floating_panel()
             .keyboard()
-            .with(margin(), Borders::even(STREET).set_bottom(0.))]),
+            .with(margin(), Borders::even(STREET).set_bottom(0.).into())]),
             if user_settings.debug_intents {
-                IntentHistoryVisualizer.el().with(margin(), Borders::even(STREET)).with(docking(), Docking::Top)
+                IntentHistoryVisualizer.el().with(margin(), Borders::even(STREET).into()).with(docking(), Docking::Top)
             } else {
                 Element::new()
             },
@@ -256,7 +269,9 @@ fn ServerInstancesInfo(hooks: &mut Hooks) -> Element {
         instances
             .into_iter()
             .sorted_by_key(|x| x.0.clone())
-            .map(|(key, instance)| Text::el(format!("\u{f6e6} {} ({} players)", key, instance.n_players)))
+            .map(|(key, instance)| {
+                Text::el(format!("\u{f6e6} {} ({} players)", key, instance.n_players))
+            })
             .collect(),
     )
     .el()
@@ -274,7 +289,12 @@ fn TerrainMaterialEditor(hooks: &mut Hooks) -> Element {
             ScrollAreaSizing::FitChildrenWidth,
             FlowColumn::el([
                 FlowRow::el([
-                    CopyPasteButtons { value, on_change: set_value.clone() }.el().with(margin(), Borders::bottom(STREET)),
+                    CopyPasteButtons {
+                        value,
+                        on_change: set_value.clone(),
+                    }
+                    .el()
+                    .with(margin(), Borders::bottom(STREET).into()),
                     // SelectAndDownloadJsonAssetButton2::<TerrainMaterialDef> {
                     //     asset_type: AssetType::TerrainMaterial,
                     //     on_select_file: Cb::new({
@@ -292,7 +312,7 @@ fn TerrainMaterialEditor(hooks: &mut Hooks) -> Element {
             .floating_panel(),
         ),
     ])
-    .with(margin(), Borders::even(STREET))
+    .with(margin(), Borders::even(STREET).into())
 }
 
 #[element_component]
@@ -358,7 +378,12 @@ fn NaturalLayersEditor(hooks: &mut Hooks) -> Element {
             ScrollAreaSizing::FitChildrenWidth,
             FlowColumn::el([
                 FlowRow::el([
-                    CopyPasteButtons { value, on_change: set_value.clone() }.el().with(margin(), Borders::bottom(STREET)),
+                    CopyPasteButtons {
+                        value,
+                        on_change: set_value.clone(),
+                    }
+                    .el()
+                    .with(margin(), Borders::bottom(STREET).into()),
                     // SelectAndDownloadJsonAssetButton2::<Vec<NaturalLayer>> {
                     //     asset_type: AssetType::Biomes,
                     //     on_select_file: Cb::new({
@@ -375,7 +400,7 @@ fn NaturalLayersEditor(hooks: &mut Hooks) -> Element {
             ])
             .floating_panel(),
         )
-        .with(margin(), Borders::even(STREET)),
+        .with(margin(), Borders::even(STREET).into()),
     ])
 }
 
@@ -387,7 +412,10 @@ fn EditorExperienceMode(_hooks: &mut Hooks) -> Element {
 
 #[element_component]
 pub fn UploadingThumbnailDialog(_: &mut Hooks) -> Element {
-    WindowSized(vec![Text::el("Uploading thumbnail...").with(translation(), vec3(300., 300., -0.6))]).el()
+    WindowSized(vec![
+        Text::el("Uploading thumbnail...").with(translation(), vec3(300., 300., -0.6))
+    ])
+    .el()
 }
 
 #[element_component]
@@ -411,7 +439,10 @@ pub fn EditorPlayerInputHandler(_hooks: &mut Hooks) -> Element {
 }
 
 #[element_component]
-pub fn EditorPlayerMovementHandler(_hooks: &mut Hooks, _flag_as_updated: Cb<dyn Fn(()) + Sync + Send>) -> Element {
+pub fn EditorPlayerMovementHandler(
+    _hooks: &mut Hooks,
+    _flag_as_updated: Cb<dyn Fn(()) + Sync + Send>,
+) -> Element {
     // let (player_input, _) = hooks.consume_context::<PlayerInputChanges>().unwrap();
 
     // Element::new()
@@ -539,20 +570,30 @@ pub fn Crosshair(hooks: &mut Hooks) -> Element {
         .with(width(), 2.)
         .with(height(), 2.)
         .with_background(Color::WHITE.into())
-        .with(translation(), vec3(window_size.x / 2. - 1., window_size.y / 2. - 1., -0.01))
+        .with(
+            translation(),
+            vec3(window_size.x / 2. - 1., window_size.y / 2. - 1., -0.01),
+        )
 }
 
 #[derive(Debug, Clone)]
-pub struct CopyPasteButtons<T: Serialize + DeserializeOwned + Send + Sync + std::fmt::Debug + Clone + 'static> {
+pub struct CopyPasteButtons<
+    T: Serialize + DeserializeOwned + Send + Sync + std::fmt::Debug + Clone + 'static,
+> {
     pub value: T,
     pub on_change: Cb<dyn Fn(T) + Send + Sync>,
 }
-impl<T: Serialize + DeserializeOwned + Send + Sync + std::fmt::Debug + Clone + 'static> ElementComponent for CopyPasteButtons<T> {
+impl<T: Serialize + DeserializeOwned + Send + Sync + std::fmt::Debug + Clone + 'static>
+    ElementComponent for CopyPasteButtons<T>
+{
     fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         let Self { value, on_change } = *self;
         FlowRow(vec![
             Button::new("Copy", move |_| {
-                arboard::Clipboard::new().unwrap().set_text(serde_json::to_string_pretty(&value).unwrap()).ok();
+                arboard::Clipboard::new()
+                    .unwrap()
+                    .set_text(serde_json::to_string_pretty(&value).unwrap())
+                    .ok();
             })
             .el(),
             Button::new("Paste", move |_| {
