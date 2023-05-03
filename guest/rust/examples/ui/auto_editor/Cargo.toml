@@ -10,7 +10,7 @@ version = { workspace = true }
 ambient_api = { workspace = true }
 
 [[bin]]
-name = "ui_input_client"
+name = "auto_editor_client"
 path = "src/client.rs"
 required-features = ["client"]
 
