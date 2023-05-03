@@ -11,8 +11,8 @@ use ambient_gpu::{
 };
 use ambient_meshes::QuadMeshKey;
 use ambient_renderer::{
-    color, material, renderer_shader, Material, MaterialShader, RendererConfig, RendererShader, SharedMaterial, StandardShaderKey,
-    MATERIAL_BIND_GROUP,
+    color, material, renderer_shader, Material, MaterialShader, RendererConfig, RendererShader,
+    SharedMaterial, StandardShaderKey, MATERIAL_BIND_GROUP,
 };
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
@@ -22,7 +22,8 @@ use ambient_std::{
 use glam::Vec4;
 use wgpu::BindGroup;
 
-pub(crate) static OLD_CONTENT_SERVER_URL: &str = "https://fra1.digitaloceanspaces.com/dims-content/";
+pub(crate) static OLD_CONTENT_SERVER_URL: &str =
+    "https://fra1.digitaloceanspaces.com/dims-content/";
 
 pub use ambient_ecs::generated::components::core::rendering::water;
 
@@ -98,7 +99,11 @@ impl SyncAssetKey<Arc<MaterialShader>> for WaterMaterialShaderKey {
             shader: Arc::new(
                 ShaderModule::new(
                     "water_scattering",
-                    [include_str!("../../sky/src/atmospheric_scattering.wgsl"), include_str!("water.wgsl")].concat(),
+                    [
+                        ambient_sky::ATMOSPHERIC_SCATTERING_SOURCE,
+                        include_str!("water.wgsl"),
+                    ]
+                    .concat(),
                 )
                 .with_binding_desc(get_water_layout()),
             ),
@@ -107,8 +112,12 @@ impl SyncAssetKey<Arc<MaterialShader>> for WaterMaterialShaderKey {
 }
 
 pub fn get_water_shader(assets: &AssetCache, config: &RendererConfig) -> Arc<RendererShader> {
-    StandardShaderKey { material_shader: WaterMaterialShaderKey.get(assets), lit: true, shadow_cascades: config.shadow_cascades }
-        .get(assets)
+    StandardShaderKey {
+        material_shader: WaterMaterialShaderKey.get(assets),
+        lit: true,
+        shadow_cascades: config.shadow_cascades,
+    }
+    .get(assets)
 }
 
 #[derive(Debug)]
@@ -143,7 +152,9 @@ impl WaterMaterial {
                 layout: &layout,
                 entries: &[wgpu::BindGroupEntry {
                     binding: 0,
-                    resource: wgpu::BindingResource::TextureView(&normals.create_view(&wgpu::TextureViewDescriptor::default())),
+                    resource: wgpu::BindingResource::TextureView(
+                        &normals.create_view(&wgpu::TextureViewDescriptor::default()),
+                    ),
                 }],
                 label: Some("WaterMaterial.bind_group"),
             }),

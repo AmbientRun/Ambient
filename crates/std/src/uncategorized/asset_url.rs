@@ -21,6 +21,8 @@ use crate::{
     Cb,
 };
 
+pub use url::ParseError;
+
 pub const ASSETS_PROTOCOL_SCHEME: &str = "ambient-assets";
 
 #[derive(Debug, Clone)]
@@ -61,7 +63,7 @@ impl AbsAssetUrl {
     pub fn parse(url: impl AsRef<str>) -> anyhow::Result<Self> {
         match Url::parse(url.as_ref()) {
             Ok(url) => Ok(Self(url)),
-            Err(url::ParseError::RelativeUrlWithoutBase) => {
+            Err(ParseError::RelativeUrlWithoutBase) => {
                 Ok(Self(Url::parse(&format!("file://{}/{}", std::env::current_dir().unwrap().to_str().unwrap(), url.as_ref()))?))
             }
             Err(err) => Err(err.into()),
@@ -98,8 +100,8 @@ impl AbsAssetUrl {
         }
     }
 
-    pub fn from_asset_key(key: impl AsRef<str>) -> Self {
-        Self(Url::parse(&format!("{}:/{}", ASSETS_PROTOCOL_SCHEME, key.as_ref().trim_start_matches('/'))).unwrap())
+    pub fn from_asset_key(key: impl AsRef<str>) -> Result<Self, ParseError> {
+        Ok(Self(Url::parse(&format!("{}:/{}", ASSETS_PROTOCOL_SCHEME, key.as_ref().trim_start_matches('/')))?))
     }
 
     pub fn relative_cache_path(&self) -> String {
@@ -148,15 +150,15 @@ impl AbsAssetUrl {
             Ok(None)
         }
     }
-    pub fn resolve(&self, url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
+    pub fn resolve(&self, url_or_relative_path: impl AsRef<str>) -> Result<Self, ParseError> {
         AssetUrl::parse(url_or_relative_path)?.resolve(self)
     }
     /// This appends [path] to the current path, with a `/` joining them
-    pub fn push(&self, path: impl AsRef<str>) -> Result<Self, url::ParseError> {
+    pub fn push(&self, path: impl AsRef<str>) -> Result<Self, ParseError> {
         Ok(AbsAssetUrl(self.as_directory().0.join(path.as_ref())?))
     }
     /// This joins the current url with a relative path. See https://docs.rs/url/latest/url/struct.Url.html#method.join for details how it works
-    pub fn join(&self, path: impl AsRef<str>) -> Result<Self, url::ParseError> {
+    pub fn join(&self, path: impl AsRef<str>) -> Result<Self, ParseError> {
         Ok(AbsAssetUrl(self.0.join(path.as_ref())?))
     }
     /// Returns the decoded path
@@ -194,14 +196,14 @@ impl AbsAssetUrl {
         segs.next()?; // discard
         segs.next()
     }
-    fn to_download_url_with_base(&self, base: &Self) -> anyhow::Result<Url> {
+    fn to_download_url_with_base(&self, base: &Self) -> Result<Url, url::ParseError> {
         if self.0.scheme() == ASSETS_PROTOCOL_SCHEME {
             Ok(base.join(self.0.path().trim_start_matches('/'))?.0)
         } else {
             Ok(self.0.clone())
         }
     }
-    pub fn to_download_url(&self, assets: &AssetCache) -> anyhow::Result<Url> {
+    pub fn to_download_url(&self, assets: &AssetCache) -> Result<Url, url::ParseError> {
         self.to_download_url_with_base(&ContentBaseUrlKey.get(assets))
     }
     pub async fn download_bytes(&self, assets: &AssetCache) -> anyhow::Result<Vec<u8>> {

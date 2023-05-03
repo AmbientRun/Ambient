@@ -8,6 +8,100 @@ use crate::{
     },
 };
 
+/// Gets the local player's most recent raw input state.
+///
+/// To determine if the player just supplied an input, compare it to [get_previous] or use [get_delta].
+pub fn get() -> Input {
+    wit::client_input::get().from_bindgen()
+}
+
+/// Gets the local player's raw input state prior to the most recent update.
+pub fn get_previous() -> Input {
+    wit::client_input::get_previous().from_bindgen()
+}
+
+/// Gets the changes to the local player's raw input state in the last update,
+/// as well as the current raw input state.
+///
+/// This is a wrapper for [get_previous], [get] and [Input::delta].
+pub fn get_delta() -> (InputDelta, Input) {
+    let (p, c) = (get_previous(), get());
+    (c.delta(&p), c)
+}
+
+/// Sets the cursor icon.
+pub fn set_cursor(icon: CursorIcon) {
+    wit::client_input::set_cursor(icon.into_bindgen());
+}
+
+/// Sets the cursor's visibility.
+pub fn set_cursor_visible(visible: bool) {
+    wit::client_input::set_cursor_visible(visible);
+}
+
+/// Sets the cursor's lock state. If set, the cursor will not be able to move outside of the window.
+///
+/// You may want to combine this with [set_cursor_visible] or use [CursorLockGuard] instead.
+pub fn set_cursor_lock(locked: bool) {
+    wit::client_input::set_cursor_lock(locked);
+}
+
+/// Helper utility that will lock and hide the cursor if necessary.
+///
+/// Will unlock the cursor when dropped.
+pub struct CursorLockGuard {
+    locked: bool,
+}
+impl CursorLockGuard {
+    /// Creates a new [CursorLockGuard] with the given lock state.
+    pub fn new(locked: bool) -> Self {
+        let mut guard = Self { locked: !locked };
+        guard.set_locked(locked);
+        guard
+    }
+
+    /// Locks and hides the cursor if necessary.
+    pub fn set_locked(&mut self, locked: bool) {
+        if locked != self.locked {
+            set_cursor_lock(locked);
+            set_cursor_visible(!locked);
+        }
+        self.locked = locked;
+    }
+
+    /// Returns whether or not the cursor is currently locked.
+    pub fn is_locked(&self) -> bool {
+        self.locked
+    }
+
+    /// Helper that calls [Self::set_locked] with `true`.
+    pub fn lock(&mut self) {
+        self.set_locked(true);
+    }
+
+    /// Helper that calls [Self::set_locked] with `false`.
+    pub fn unlock(&mut self) {
+        self.set_locked(false);
+    }
+
+    /// Helper that will unlock if `Escape` has been pressed, and lock if anything else is pressed.
+    ///
+    /// Returns whether or not the cursor is currently locked.
+    pub fn auto_unlock_on_escape(&mut self, input: &Input) -> bool {
+        if input.keys.contains(&KeyCode::Escape) {
+            self.unlock();
+        } else if !input.keys.is_empty() || !input.mouse_buttons.is_empty() {
+            self.lock();
+        }
+        self.is_locked()
+    }
+}
+impl Drop for CursorLockGuard {
+    fn drop(&mut self) {
+        self.set_locked(false);
+    }
+}
+
 #[allow(missing_docs)]
 /// The code associated with a key on the keyboard.
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
@@ -478,96 +572,50 @@ impl Input {
     }
 }
 
-/// Gets the local player's most recent raw input state.
-///
-/// To determine if the player just supplied an input, compare it to [get_previous] or use [get_delta].
-pub fn get() -> Input {
-    wit::client_input::get().from_bindgen()
-}
+impl IntoBindgen for CursorIcon {
+    type Item = wit::client_input::CursorIcon;
+    fn into_bindgen(self) -> Self::Item {
+        type Ci = CursorIcon;
+        type Wci = wit::client_input::CursorIcon;
 
-/// Gets the local player's raw input state prior to the most recent update.
-pub fn get_previous() -> Input {
-    wit::client_input::get_previous().from_bindgen()
-}
+        match self {
+            Ci::Default => Wci::DefaultIcon,
+            Ci::Crosshair => Wci::Crosshair,
+            Ci::Hand => Wci::Hand,
+            Ci::Arrow => Wci::Arrow,
+            Ci::Move => Wci::Move,
+            Ci::Text => Wci::Text,
+            Ci::Wait => Wci::Wait,
+            Ci::Help => Wci::Help,
+            Ci::Progress => Wci::Progress,
 
-/// Gets the changes to the local player's raw input state in the last update,
-/// as well as the current raw input state.
-///
-/// This is a wrapper for [get_previous], [get] and [Input::delta].
-pub fn get_delta() -> (InputDelta, Input) {
-    let (p, c) = (get_previous(), get());
-    (c.delta(&p), c)
-}
+            Ci::NotAllowed => Wci::NotAllowed,
+            Ci::ContextMenu => Wci::ContextMenu,
+            Ci::Cell => Wci::Cell,
+            Ci::VerticalText => Wci::VerticalText,
+            Ci::Alias => Wci::Alias,
+            Ci::Copy => Wci::Copy,
+            Ci::NoDrop => Wci::NoDrop,
+            Ci::Grab => Wci::Grab,
+            Ci::Grabbing => Wci::Grabbing,
+            Ci::AllScroll => Wci::AllScroll,
+            Ci::ZoomIn => Wci::ZoomIn,
+            Ci::ZoomOut => Wci::ZoomOut,
 
-/// Sets the cursor icon.
-pub fn set_cursor(icon: CursorIcon) {
-    wit::client_input::set_cursor(icon.into_bindgen());
-}
-
-/// Sets the cursor's visibility.
-pub fn set_cursor_visible(visible: bool) {
-    wit::client_input::set_cursor_visible(visible);
-}
-
-/// Sets the cursor's lock state. If set, the cursor will not be able to move outside of the window.
-///
-/// You may want to combine this with [set_cursor_visible] or use [CursorLockGuard] instead.
-pub fn set_cursor_lock(locked: bool) {
-    wit::client_input::set_cursor_lock(locked);
-}
-
-/// Helper utility that will lock and hide the cursor if necessary.
-///
-/// Will unlock the cursor when dropped.
-pub struct CursorLockGuard {
-    locked: bool,
-}
-impl CursorLockGuard {
-    /// Creates a new [CursorLockGuard] with the given lock state.
-    pub fn new(locked: bool) -> Self {
-        let mut guard = Self { locked: !locked };
-        guard.set_locked(locked);
-        guard
-    }
-
-    /// Locks and hides the cursor if necessary.
-    pub fn set_locked(&mut self, locked: bool) {
-        if locked != self.locked {
-            set_cursor_lock(locked);
-            set_cursor_visible(!locked);
+            Ci::EResize => Wci::EResize,
+            Ci::NResize => Wci::NResize,
+            Ci::NeResize => Wci::NeResize,
+            Ci::NwResize => Wci::NwResize,
+            Ci::SResize => Wci::SResize,
+            Ci::SeResize => Wci::SeResize,
+            Ci::SwResize => Wci::SwResize,
+            Ci::WResize => Wci::WResize,
+            Ci::EwResize => Wci::EwResize,
+            Ci::NsResize => Wci::NsResize,
+            Ci::NeswResize => Wci::NeswResize,
+            Ci::NwseResize => Wci::NwseResize,
+            Ci::ColResize => Wci::ColResize,
+            Ci::RowResize => Wci::RowResize,
         }
-        self.locked = locked;
-    }
-
-    /// Returns whether or not the cursor is currently locked.
-    pub fn is_locked(&self) -> bool {
-        self.locked
-    }
-
-    /// Helper that calls [Self::set_locked] with `true`.
-    pub fn lock(&mut self) {
-        self.set_locked(true);
-    }
-
-    /// Helper that calls [Self::set_locked] with `false`.
-    pub fn unlock(&mut self) {
-        self.set_locked(false);
-    }
-
-    /// Helper that will unlock if `Escape` has been pressed, and lock if anything else is pressed.
-    ///
-    /// Returns whether or not the cursor is currently locked.
-    pub fn auto_unlock_on_escape(&mut self, input: &Input) -> bool {
-        if input.keys.contains(&KeyCode::Escape) {
-            self.unlock();
-        } else if !input.keys.is_empty() || !input.mouse_buttons.is_empty() {
-            self.lock();
-        }
-        self.is_locked()
-    }
-}
-impl Drop for CursorLockGuard {
-    fn drop(&mut self) {
-        self.set_locked(false);
     }
 }

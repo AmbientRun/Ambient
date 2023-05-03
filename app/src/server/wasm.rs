@@ -60,7 +60,7 @@ pub async fn initialize(world: &mut World, assets: AssetCache, project_path: Abs
             );
 
             if target == "client" {
-                let bytecode_url = AbsAssetUrl::from_asset_key(path).to_string();
+                let bytecode_url = AbsAssetUrl::from_asset_key(path)?.to_string();
                 world.add_component(id, client_bytecode_from_url(), bytecode_url)?;
             } else {
                 let bytecode = component_url.download_bytes(&assets).await?;
