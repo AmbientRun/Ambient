@@ -3,13 +3,12 @@ use ambient_api::{
         app::main_scene,
         camera::{aspect_ratio_from_window, fog, fovy},
         physics::linear_velocity,
-        transform::{lookat_center, rotation, translation},
+        transform::{lookat_target, rotation, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     messages::Frame,
     prelude::*,
 };
-use ambient_ui_components::prelude::*;
 use components::{last_jump_time, player_vehicle, vehicle, vehicle_hud};
 
 mod common;
@@ -25,7 +24,7 @@ pub fn main() {
         .with_default(main_scene())
         .with_default(fog())
         .with(translation(), vec3(5., 5., 2.))
-        .with(lookat_center(), vec3(0., 0., 1.))
+        .with(lookat_target(), vec3(0., 0., 1.))
         .spawn();
 
     spawn_query(vehicle()).bind(move |vehicles| {
@@ -109,7 +108,7 @@ pub fn main() {
         entity::set_component(camera_id, translation(), camera_position);
         entity::set_component(
             camera_id,
-            lookat_center(),
+            lookat_target(),
             camera_position + vehicle_rotation * -Vec3::Y,
         );
         let kph = speed_kph(vehicle_linear_velocity, vehicle_rotation);

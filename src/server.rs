@@ -8,13 +8,15 @@ use ambient_api::{
         },
         player::player as player_component,
         prefab::prefab_from_url,
-        rendering::{cast_shadows, fog_density, light_diffuse, sky, sun, water},
+        rendering::{
+            cast_shadows, fog_color, fog_density, fog_height_falloff, light_diffuse, sky, sun,
+            water,
+        },
         transform::{rotation, scale, translation},
     },
     concepts::make_transformable,
     prelude::*,
 };
-use ambient_ui_components::prelude::{fog_color, fog_height_falloff};
 
 mod common;
 
