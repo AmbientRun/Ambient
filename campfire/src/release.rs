@@ -626,13 +626,18 @@ struct Manifests {
 }
 impl Manifests {
     fn get(&mut self, name: &str) -> Option<(PathBuf, cargo_toml::Manifest)> {
-        let Some(stripped) = name.strip_prefix("ambient") else { return None; };
-        let stripped = stripped.strip_prefix('_').unwrap_or(name);
+        let folder_name = if let Some(stripped) = name.strip_prefix("ambient") {
+            stripped.strip_prefix('_').unwrap_or(stripped)
+        } else {
+            name
+        };
 
         [
-            Path::new("crates").join(stripped).join("Cargo.toml"),
-            Path::new("libs").join(stripped).join("Cargo.toml"),
-            Path::new("shared_crates").join(stripped).join("Cargo.toml"),
+            Path::new("crates").join(folder_name).join("Cargo.toml"),
+            Path::new("libs").join(folder_name).join("Cargo.toml"),
+            Path::new("shared_crates")
+                .join(folder_name)
+                .join("Cargo.toml"),
             "guest/rust/api/Cargo.toml".into(),
             "guest/rust/api_core/api_macros/Cargo.toml".into(),
             "guest/rust/api_core/Cargo.toml".into(),
