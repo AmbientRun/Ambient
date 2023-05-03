@@ -1,12 +1,29 @@
 # Contributing
 
+## Campfire
+
+Campfire is our internal tool for working with the repository. It has several commands that can be used to help with development, which you can find by running `cargo campfire --help`.
+
+It is also aliased to `cargo cf` for convenience.
+
+Running an example can be done like this:
+
+```sh
+cargo cf run decals
+```
+
+By default, Campfire will build Ambient with the `debug` profile. To build with the `release` profile and to build the assets with `--relase`, use the `--release` flag before the example and after:
+
+```sh
+cargo cf run --release decals -- --release
+```
+
 ## API docs
 
 To see the latest version of the API docs, run the following command in the `Ambient` repository:
 
 ```sh
-cd guest/rust
-cargo doc -p ambient_api --open --no-deps
+cargo campfire doc api --open
 ```
 
 ## Adding to the API
@@ -120,8 +137,8 @@ The `screenshots.zip` will show what image the CI produced.
 
 ## Releasing
 
-1. Run `cargo campfire doc` to update the documentation from the codebase.
-2. Run `cargo campfire update-version new_version_here` to update the Ambient version across the crates and documentation.
+1. Run `cargo campfire doc runtime` to update the documentation from the codebase.
+2. Run `cargo campfire release update-version new_version_here` to update the Ambient version across the crates and documentation.
 3. If a new system dependency was added, ensure it is added to `docs/src/installing.md` and `Dockerfile`.
 4. Use `cargo msrv` to check the Rust version for the runtime (the API cannot be checked [at present](https://github.com/foresterre/cargo-msrv/issues/587)). If it's changed, use `cargo campfire release update-msrv`.
 5. Run `cargo campfire example check-all` and ensure all guest projects build without errors.

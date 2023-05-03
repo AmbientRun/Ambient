@@ -1,0 +1,220 @@
+
+[components."core::layout"]
+name = "Layout"
+description = "Layout components such as flow, margins etc."
+
+[components."core::layout::align_horizontal_begin"]
+type = "Empty"
+name = "Align horizontal begin"
+description = "Layout alignment: horizontal begin."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::align_horizontal_center"]
+type = "Empty"
+name = "Align horizontal center"
+description = "Layout alignment: horizontal center."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::align_horizontal_end"]
+type = "Empty"
+name = "Align horizontal end"
+description = "Layout alignment: horizontal end."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::align_vertical_begin"]
+type = "Empty"
+name = "Align vertical begin"
+description = "Layout alignment: vertical begin."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::align_vertical_center"]
+type = "Empty"
+name = "Align vertical center"
+description = "Layout alignment: vertical center."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::align_vertical_end"]
+type = "Empty"
+name = "Align vertical end"
+description = "Layout alignment: vertical end."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::docking_bottom"]
+type = "Empty"
+name = "Docking bottom"
+description = "Layout docking: bottom."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::docking_fill"]
+type = "Empty"
+name = "Docking fill"
+description = "Layout docking: fill."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::docking_left"]
+type = "Empty"
+name = "Docking left"
+description = "Layout docking: left."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::docking_right"]
+type = "Empty"
+name = "Docking right"
+description = "Layout docking: right."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::docking_top"]
+type = "Empty"
+name = "Docking top"
+description = "Layout docking: top."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::fit_horizontal_children"]
+type = "Empty"
+name = "Fit horizontal children"
+description = "Layout fit: horizontal children."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::fit_horizontal_none"]
+type = "Empty"
+name = "Fit horizontal none"
+description = "Layout fit: horizontal none."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::fit_horizontal_parent"]
+type = "Empty"
+name = "Fit horizontal parent"
+description = "Layout fit: horizontal parent."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::fit_vertical_children"]
+type = "Empty"
+name = "Fit vertical children"
+description = "Layout fit: vertical children."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::fit_vertical_none"]
+type = "Empty"
+name = "Fit vertical none"
+description = "Layout fit: vertical none."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::fit_vertical_parent"]
+type = "Empty"
+name = "Fit vertical parent"
+description = "Layout fit: vertical parent."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::gpu_ui_size"]
+type = "Vec4"
+name = "GPU UI size"
+description = "Upload the width and height of this UI element to the GPU."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::height"]
+type = "F32"
+name = "Height"
+description = "The height of a UI element."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::is_book_file"]
+type = "Empty"
+name = "Is book file"
+description = "This is a file in a `layout_bookcase`."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::layout_bookcase"]
+type = "Empty"
+name = "Bookcase layout"
+description = "Min-max bookcase layout."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::layout_dock"]
+type = "Empty"
+name = "Dock layout"
+description = "Top-down dock layout."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::layout_flow"]
+type = "Empty"
+name = "Flow layout"
+description = "Bottom-up flow layout."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::layout_width_to_children"]
+type = "Empty"
+name = "Layout width to children"
+description = "Width to children."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::margin"]
+type = "Vec4"
+name = "Margin"
+description = "Layout margin: [top, right, bottom, left]."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::padding"]
+type = "Vec4"
+name = "Padding"
+description = "Layout padding: [top, right, bottom, left]."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::mesh_to_local_from_size"]
+type = "Empty"
+name = "Mesh to local from size"
+description = "Update the `mesh_to_local` based on the width and height of this entity."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::min_height"]
+type = "F32"
+name = "Minimum height"
+description = "The minimum height of a UI element."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::min_width"]
+type = "F32"
+name = "Minimum width"
+description = "The minimum width of a UI element."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::max_height"]
+type = "F32"
+name = "Maximum height"
+description = "The maximum height of a UI element."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::max_width"]
+type = "F32"
+name = "Maximum width"
+description = "The maximum width of a UI element."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::orientation_horizontal"]
+type = "Empty"
+name = "Orientation horizontal"
+description = "Layout orientation: horizontal."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::orientation_vertical"]
+type = "Empty"
+name = "Orientation vertical"
+description = "Layout orientation: vertical."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::screen"]
+type = "Empty"
+name = "Screen"
+description = "This entity will be treated as a screen. Used by the Screen ui component."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::space_between_items"]
+type = "F32"
+name = "Space between items"
+description = "Space between items in a layout."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::layout::width"]
+type = "F32"
+name = "Width"
+description = "The width of a UI element."
+attributes = ["Debuggable", "Networked", "Store"]

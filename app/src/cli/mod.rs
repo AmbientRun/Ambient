@@ -83,8 +83,8 @@ pub struct RunCli {
 }
 #[derive(Args, Clone)]
 pub struct ProjectCli {
-    /// The path of the project to run; if not specified, this will default to the current directory
-    pub path: Option<PathBuf>,
+    /// The path or URL of the project to run; if not specified, this will default to the current directory
+    pub path: Option<String>,
 
     /// Build all the assets with full optimization; this will make debugging more difficult
     #[arg(short, long)]

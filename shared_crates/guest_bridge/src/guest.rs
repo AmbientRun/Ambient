@@ -25,7 +25,7 @@ pub mod ecs {
         pub fn spawn(&self, entity: Entity) -> EntityId {
             api::entity::spawn(&entity)
         }
-        pub fn despawn(&self, entity_id: EntityId) -> bool {
+        pub fn despawn(&self, entity_id: EntityId) -> Option<Entity> {
             api::entity::despawn(entity_id)
         }
         pub fn exists(&self, entity_id: EntityId) -> bool {

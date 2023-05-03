@@ -37,10 +37,9 @@ impl SyncAssetKey<Arc<ShaderModule>> for GpuWorldShaderModuleKey {
         let config = GpuWorldConfigKey.get(&assets);
         let source = config.wgsl(!self.read_only);
 
-        Arc::new(
-            ShaderModule::new("GpuWorld", source)
-                .with_bindings((config.layout_entries(self.read_only)).map(|v| (ENTITIES_BIND_GROUP.into(), v))),
-        )
+        Arc::new(ShaderModule::new("GpuWorld", source).with_bindings(
+            (config.layout_entries(self.read_only)).map(|v| (ENTITIES_BIND_GROUP.into(), v)),
+        ))
     }
 }
 
@@ -54,10 +53,13 @@ impl SyncAssetKey<Arc<BindGroupLayout>> for GpuWorldBindingGroupLayoutKey {
         let config = GpuWorldConfigKey.get(&assets);
         let gpu = GpuKey.get(&assets);
 
-        Arc::new(gpu.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            label: Some("GpuWorld"),
-            entries: &config.layout_entries(self.read_only).collect_vec(),
-        }))
+        Arc::new(
+            gpu.device
+                .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                    label: Some("GpuWorld"),
+                    entries: &config.layout_entries(self.read_only).collect_vec(),
+                }),
+        )
     }
 }
 
@@ -75,7 +77,10 @@ impl GpuWorld {
         let gpu = GpuKey.get(&assets);
         let config = GpuWorldConfigKey.get(&assets);
 
-        tracing::debug!("Creating Gpu Ecs with buffers: {:#?}", config.buffers.iter().map(|v| v.format).collect_vec());
+        tracing::debug!(
+            "Creating Gpu Ecs with buffers: {:#?}",
+            config.buffers.iter().map(|v| v.format).collect_vec()
+        );
 
         Self {
             layout_buffer: TypedBuffer::new(
@@ -83,15 +88,22 @@ impl GpuWorld {
                 "GpuWorld.layout_buffer",
                 1,
                 1,
-                wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC,
+                wgpu::BufferUsages::STORAGE
+                    | wgpu::BufferUsages::COPY_DST
+                    | wgpu::BufferUsages::COPY_SRC,
             ),
-            buffers: config.buffers.iter().map(|buffer| GpuComponentsBuffer::new(gpu.clone(), buffer.clone())).collect(),
+            buffers: config
+                .buffers
+                .iter()
+                .map(|buffer| GpuComponentsBuffer::new(gpu.clone(), buffer.clone()))
+                .collect(),
             assets,
             gpu,
         }
     }
     pub fn update(&mut self, world: &World) {
-        self.layout_buffer.write(0, &[world.archetypes().len() as i32]);
+        self.layout_buffer
+            .write(0, &[world.archetypes().len() as i32]);
         for buf in self.buffers.iter_mut() {
             let layout_offset = buf.config.layout_offset(world.archetypes().len());
             buf.update(world, &mut self.layout_buffer, layout_offset as u64);
@@ -100,24 +112,44 @@ impl GpuWorld {
     pub fn create_bind_group(&self, read_only: bool) -> wgpu::BindGroup {
         let layout = GpuWorldBindingGroupLayoutKey { read_only }.get(&self.assets);
 
-        let mut buffers = vec![wgpu::BindGroupEntry { binding: 0, resource: self.layout_buffer.buffer().as_entire_binding() }];
+        let mut buffers = vec![wgpu::BindGroupEntry {
+            binding: 0,
+            resource: self.layout_buffer.buffer().as_entire_binding(),
+        }];
 
         for (i, buf) in self.buffers.iter().enumerate() {
-            buffers.push(wgpu::BindGroupEntry { binding: i as u32 + 1, resource: buf.data.buffer.as_entire_binding() });
+            buffers.push(wgpu::BindGroupEntry {
+                binding: i as u32 + 1,
+                resource: buf.data.buffer.as_entire_binding(),
+            });
         }
 
-        self.gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &layout,
-            entries: &buffers,
-            label: Some("EntityBuffers.bind_group"),
-        })
+        self.gpu
+            .device
+            .create_bind_group(&wgpu::BindGroupDescriptor {
+                layout: &layout,
+                entries: &buffers,
+                label: Some("EntityBuffers.bind_group"),
+            })
     }
 
-    pub fn get_buffer(&self, format: GpuComponentFormat, component: &str, archetype: ArchetypeId) -> Option<(&wgpu::Buffer, u64, u64)> {
-        let buff = self.buffers.iter().find(|buff| buff.config.format == format)?;
+    pub fn get_buffer(
+        &self,
+        format: GpuComponentFormat,
+        component: &str,
+        archetype: ArchetypeId,
+    ) -> Option<(&wgpu::Buffer, u64, u64)> {
+        let buff = self
+            .buffers
+            .iter()
+            .find(|buff| buff.config.format == format)?;
         let comp = buff.layout.get(component)?;
         let offset = *comp.get(&archetype)? as u64;
-        Some((&buff.data.buffer, offset * buff.data.item_size(), buff.layout_version))
+        Some((
+            &buff.data.buffer,
+            offset * buff.data.item_size(),
+            buff.layout_version,
+        ))
     }
 }
 
@@ -138,17 +170,28 @@ impl GpuComponentsBuffer {
                 &format!("EntityBuffers.{}.data", config.format),
                 1,
                 1,
-                wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC,
+                wgpu::BufferUsages::STORAGE
+                    | wgpu::BufferUsages::COPY_DST
+                    | wgpu::BufferUsages::COPY_SRC,
                 config.format.size(),
             ),
-            layout: config.components.iter().map(|comp| (comp.name.clone(), HashMap::new())).collect(),
+            layout: config
+                .components
+                .iter()
+                .map(|comp| (comp.name.clone(), HashMap::new()))
+                .collect(),
             config,
             layout_offsets: Vec::new(),
             layout_buffer_offset: 0,
             layout_version: 0,
         }
     }
-    pub fn update(&mut self, world: &World, layout_buffer: &mut TypedBuffer<i32>, layout_buffer_offset: u64) {
+    pub fn update(
+        &mut self,
+        world: &World,
+        layout_buffer: &mut TypedBuffer<i32>,
+        layout_buffer_offset: u64,
+    ) {
         let mut gpu_layout = Vec::new();
         let mut offset = 0;
         for component in &self.config.components {
@@ -166,7 +209,10 @@ impl GpuComponentsBuffer {
             }
             self.layout.insert(component.name.clone(), layout);
         }
-        if gpu_layout != self.layout_offsets || offset != self.data.len() as i32 || layout_buffer_offset != self.layout_buffer_offset {
+        if gpu_layout != self.layout_offsets
+            || offset != self.data.len() as i32
+            || layout_buffer_offset != self.layout_buffer_offset
+        {
             self.layout_version += 1;
         }
         self.layout_buffer_offset = layout_buffer_offset;
@@ -181,7 +227,7 @@ impl GpuComponentsBuffer {
 pub struct GpuWorldUpdate;
 impl System<GpuWorldSyncEvent> for GpuWorldUpdate {
     fn run(&mut self, world: &mut World, _event: &GpuWorldSyncEvent) {
-        profiling::scope!("GpuWorldUpdate.run");
+        ambient_profiling::scope!("GpuWorldUpdate.run");
         world.resource_mut(gpu_world()).clone().lock().update(world);
     }
 }

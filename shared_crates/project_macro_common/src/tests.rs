@@ -1,6 +1,6 @@
 use super::Context;
-use crate::implementation_for_manifest;
-use ambient_project::Manifest;
+use crate::{generate_code, ManifestSource};
+
 use proc_macro2::Span;
 
 pub(crate) fn guest_context() -> Context {
@@ -86,8 +86,8 @@ fn can_generate_components_from_manifest_in_global_namespace() {
         }
     };
 
-    let result = implementation_for_manifest(
-        Manifest::parse(manifest).unwrap(),
+    let result = generate_code(
+        ManifestSource::String(manifest.to_string()),
         guest_context(),
         true,
         true,
@@ -120,8 +120,8 @@ fn can_accept_no_components() {
         }
     };
 
-    let result = implementation_for_manifest(
-        Manifest::parse(manifest).unwrap(),
+    let result = generate_code(
+        ManifestSource::String(manifest.to_string()),
         guest_context(),
         false,
         true,
@@ -177,8 +177,8 @@ fn can_generate_components_from_manifest() {
         }
     };
 
-    let result = implementation_for_manifest(
-        Manifest::parse(manifest).unwrap(),
+    let result = generate_code(
+        ManifestSource::String(manifest.to_string()),
         guest_context(),
         false,
         true,
@@ -221,8 +221,8 @@ fn can_generate_component_with_contained_type() {
         }
     };
 
-    let result = implementation_for_manifest(
-        Manifest::parse(manifest).unwrap(),
+    let result = generate_code(
+        ManifestSource::String(manifest.to_string()),
         guest_context(),
         false,
         true,
@@ -266,8 +266,8 @@ fn can_generate_components_from_manifest_with_org() {
         }
     };
 
-    let result = implementation_for_manifest(
-        Manifest::parse(manifest).unwrap(),
+    let result = generate_code(
+        ManifestSource::String(manifest.to_string()),
         guest_context(),
         false,
         true,
@@ -314,8 +314,8 @@ fn can_generate_components_with_documented_namespace_from_manifest() {
         }
     };
 
-    let result = implementation_for_manifest(
-        Manifest::parse(manifest).unwrap(),
+    let result = generate_code(
+        ManifestSource::String(manifest.to_string()),
         guest_context(),
         false,
         true,
@@ -337,8 +337,8 @@ fn will_error_on_undocumented_namespace() {
         "ns::a_cool_component" = { name = "Cool Component", description = "Cool!", type = "Empty" }
         "#};
 
-    let result = implementation_for_manifest(
-        Manifest::parse(manifest).unwrap(),
+    let result = generate_code(
+        ManifestSource::String(manifest.to_string()),
         guest_context(),
         false,
         true,
@@ -576,8 +576,8 @@ fn can_generate_concepts_with_all_supported_types() {
         }
     };
 
-    let result = implementation_for_manifest(
-        Manifest::parse(manifest).unwrap(),
+    let result = generate_code(
+        ManifestSource::String(manifest.to_string()),
         guest_context(),
         false,
         false,
@@ -692,8 +692,8 @@ fn can_extend_with_multiple_concepts() {
         }
     };
 
-    let result = implementation_for_manifest(
-        Manifest::parse(manifest).unwrap(),
+    let result = generate_code(
+        ManifestSource::String(manifest.to_string()),
         guest_context(),
         false,
         false,
@@ -909,8 +909,8 @@ fn can_generate_concepts() {
         }
     };
 
-    let result = implementation_for_manifest(
-        Manifest::parse(manifest).unwrap(),
+    let result = generate_code(
+        ManifestSource::String(manifest.to_string()),
         guest_context(),
         false,
         false,
@@ -1033,8 +1033,8 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
         }
     };
 
-    let result = implementation_for_manifest(
-        Manifest::parse(manifest).unwrap(),
+    let result = generate_code(
+        ManifestSource::String(manifest.to_string()),
         guest_context(),
         false,
         false,
@@ -1111,8 +1111,8 @@ fn can_generate_message() {
         }
     };
 
-    let result = implementation_for_manifest(
-        Manifest::parse(manifest).unwrap(),
+    let result = generate_code(
+        ManifestSource::String(manifest.to_string()),
         guest_context(),
         false,
         true,
@@ -1173,8 +1173,8 @@ fn can_generate_runtime_message() {
         }
     };
 
-    let result = implementation_for_manifest(
-        Manifest::parse(manifest).unwrap(),
+    let result = generate_code(
+        ManifestSource::String(manifest.to_string()),
         guest_context(),
         true,
         true,

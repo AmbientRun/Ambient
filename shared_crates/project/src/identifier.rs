@@ -76,6 +76,19 @@ impl<'de> Deserialize<'de> for IdentifierPathBuf {
             .map_err(serde::de::Error::custom)
     }
 }
+impl Serialize for IdentifierPathBuf {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer {
+        self.0.iter().fold(String::new(), |mut acc, ident| {
+            if !acc.is_empty() {
+                acc.push_str("::");
+            }
+            acc.push_str(&ident.0);
+            acc
+        }).serialize(serializer)
+    }
+}
 impl Deref for IdentifierPathBuf {
     type Target = [Identifier];
 

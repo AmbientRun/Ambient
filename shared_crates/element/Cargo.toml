@@ -1,21 +1,22 @@
 
 [package]
 name = "ambient_element"
-version = { workspace = true }
-rust-version = { workspace = true }
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Element is a React-inspired virtual tree library for the Ambient runtime."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
-ambient_guest_bridge = { path = "../guest_bridge", default-features = false }
-ambient_element_component = { path = "../element_component" }
-ambient_cb = { path = "../../libs/cb" }
-ambient_friendly_id = { path = "../../libs/friendly_id" }
+ambient_guest_bridge = { path = "../guest_bridge", default-features = false , version = "0.2.0-rc5" }
+ambient_element_component = { path = "../element_component" , version = "0.2.0-rc5" }
+ambient_cb = { path = "../../libs/cb" , version = "0.2.0-rc5" }
+ambient_friendly_id = { path = "../../libs/friendly_id" , version = "0.2.0-rc5" }
 
 # Only on native
-ambient_sys = { path = "../../crates/sys", optional = true }
-ambient_core = { path = "../../crates/core", optional = true }
+ambient_sys = { path = "../../crates/sys", optional = true , version = "0.2.0-rc5" }
+ambient_core = { path = "../../crates/core", optional = true , version = "0.2.0-rc5" }
 tokio = { workspace = true, optional = true }
 
 parking_lot = { workspace = true }
@@ -24,7 +25,7 @@ as-any = { workspace = true }
 dyn-clonable = { workspace = true }
 derivative = { workspace = true }
 tracing = { workspace = true }
-profiling = { workspace = true }
+ambient_profiling = { workspace = true }
 atomic_refcell = { workspace = true }
 futures = { workspace = true }
 

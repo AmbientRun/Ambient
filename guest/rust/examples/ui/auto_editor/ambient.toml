@@ -1,0 +1,4 @@
+[project]
+id = "auto_editor"
+name = "Auto editor"
+version = "0.0.1"

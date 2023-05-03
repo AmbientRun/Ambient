@@ -219,7 +219,7 @@ where
 pub fn get_defs_module() -> Arc<ShaderModule> {
     let iter = [("PI", PI)].iter();
     #[cfg(not(target_os = "unknown"))]
-    let iter = iter.map(|(k, v)| format!("let {k}: f32 = {v};\n"));
+    let iter = iter.map(|(k, v)| format!("const {k}: f32 = {v};\n"));
     #[cfg(target_os = "unknown")]
     let iter = iter.map(|(k, v)| format!("const {k}: f32 = {v};\n"));
 

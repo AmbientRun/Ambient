@@ -3,14 +3,20 @@ use std::{collections::HashMap, sync::Arc};
 use ambient_core::transform::local_to_world;
 use ambient_ecs::{query, ArchetypeFilter, EntityId, QueryState, World};
 use ambient_gpu::{
-    gpu::Gpu, mesh_buffer::{MeshBuffer, MeshMetadata}, shader_module::{GraphicsPipeline, GraphicsPipelineInfo, DEPTH_FORMAT}, typed_buffer::TypedBuffer
+    gpu::Gpu,
+    mesh_buffer::{MeshBuffer, MeshMetadata},
+    shader_module::{GraphicsPipeline, GraphicsPipelineInfo, DEPTH_FORMAT},
+    typed_buffer::TypedBuffer,
 };
 use ambient_std::asset_cache::AssetCache;
 use glam::{Mat4, UVec4, Vec3};
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
 
-use super::{double_sided, get_gpu_primitive_id, primitives, FSMain, RendererResources, RendererShader, SharedMaterial};
+use super::{
+    double_sided, get_gpu_primitive_id, primitives, FSMain, RendererResources, RendererShader,
+    SharedMaterial,
+};
 use crate::{bind_groups::BindGroups, is_transparent, transparency_group, RendererConfig};
 
 pub struct TransparentRendererConfig {
@@ -43,7 +49,10 @@ impl TransparentRenderer {
             "TransparentRenderer.primitives",
             1,
             1,
-            wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::INDIRECT,
+            wgpu::BufferUsages::STORAGE
+                | wgpu::BufferUsages::COPY_DST
+                | wgpu::BufferUsages::COPY_SRC
+                | wgpu::BufferUsages::INDIRECT,
         );
 
         Self {
@@ -62,43 +71,74 @@ impl TransparentRenderer {
             despawn_qs: QueryState::new(),
         }
     }
-    #[profiling::function]
-    pub fn update(&mut self, world: &mut World, mesh_buffer: &MeshBuffer, camera_projection_view: Mat4) {
+    #[ambient_profiling::function]
+    pub fn update(
+        &mut self,
+        world: &mut World,
+        mesh_buffer: &MeshBuffer,
+        camera_projection_view: Mat4,
+    ) {
         let mut spawn_qs = std::mem::replace(&mut self.spawn_qs, QueryState::new());
         let mut despawn_qs = std::mem::replace(&mut self.despawn_qs, QueryState::new());
-        for (id, (primitives,)) in query((primitives().changed(),)).filter(&self.config.filter).iter(world, Some(&mut spawn_qs)) {
+        for (id, (primitives,)) in query((primitives().changed(),))
+            .filter(&self.config.filter)
+            .iter(world, Some(&mut spawn_qs))
+        {
             if let Some(primitive_count) = self.entity_primitive_count.get(&id) {
                 for primitive_index in 0..*primitive_count {
                     self.remove(id, primitive_index);
                 }
             }
             for (primitive_index, primitive) in primitives.iter().enumerate() {
-                let primitive_shader = (primitive.shader)(&self.config.assets, &self.config.renderer_config);
+                let primitive_shader =
+                    (primitive.shader)(&self.config.assets, &self.config.renderer_config);
                 let transparent = is_transparent(world, id, &primitive.material, &primitive_shader);
                 if transparent || self.config.render_opaque {
                     let config = self.config.clone();
-                    let double_sided =
-                        world.get(id, double_sided()).unwrap_or(primitive.material.double_sided().unwrap_or(primitive_shader.double_sided));
-                    let depth_write_enabled = primitive.material.depth_write_enabled().unwrap_or(primitive_shader.depth_write_enabled);
+                    let double_sided = world.get(id, double_sided()).unwrap_or(
+                        primitive
+                            .material
+                            .double_sided()
+                            .unwrap_or(primitive_shader.double_sided),
+                    );
+                    let depth_write_enabled = primitive
+                        .material
+                        .depth_write_enabled()
+                        .unwrap_or(primitive_shader.depth_write_enabled);
                     let shader = self
                         .shaders
                         .entry(primitive_shader.id.clone())
-                        .or_insert_with(|| Arc::new(ShaderNode::new(config, primitive_shader.clone(), double_sided, depth_write_enabled)));
+                        .or_insert_with(|| {
+                            Arc::new(ShaderNode::new(
+                                config,
+                                primitive_shader.clone(),
+                                double_sided,
+                                depth_write_enabled,
+                            ))
+                        });
                     self.primitives.push(TransparentPrimitive {
                         id,
                         primitive_index,
                         shader: shader.clone(),
                         material: primitive.material.clone(),
                         mesh_metadata: MeshMetadata::default(),
-                        transparency_group: world
-                            .get(id, transparency_group())
-                            .unwrap_or(primitive.material.transparency_group().unwrap_or(primitive_shader.transparency_group)),
+                        transparency_group: world.get(id, transparency_group()).unwrap_or(
+                            primitive
+                                .material
+                                .transparency_group()
+                                .unwrap_or(primitive_shader.transparency_group),
+                        ),
                     });
                 }
             }
             self.entity_primitive_count.insert(id, primitives.len());
         }
-        for (id, _) in query(()).incl(primitives()).filter(&self.config.filter).despawned().iter(world, Some(&mut despawn_qs)) {
+        for (id, _) in query(())
+            .incl(primitives())
+            .filter(&self.config.filter)
+            .despawned()
+            .iter(world, Some(&mut despawn_qs))
+        {
             if let Some(primitive_count) = self.entity_primitive_count.get(&id) {
                 for primitive_index in 0..*primitive_count {
                     self.remove(id, primitive_index);
@@ -122,27 +162,45 @@ impl TransparentRenderer {
             (x.transparency_group, OrderedFloat(point.z))
         });
 
-        if self.gpu_primitives.resize(self.primitives.len() as u64, true) {
+        if self
+            .gpu_primitives
+            .resize(self.primitives.len() as u64, true)
+        {
             self.primitives_bind_group = Self::create_primitives_bind_group(
                 &self.config.gpu,
                 &self.config.renderer_resources.primitives_layout,
                 self.gpu_primitives.buffer(),
             );
         }
-        self.gpu_primitives
-            .write(0, &self.primitives.iter().map(|e| get_gpu_primitive_id(world, e.id, e.primitive_index, 0)).collect_vec());
+        self.gpu_primitives.write(
+            0,
+            &self
+                .primitives
+                .iter()
+                .map(|e| get_gpu_primitive_id(world, e.id, e.primitive_index, 0))
+                .collect_vec(),
+        );
     }
 
     fn remove(&mut self, id: EntityId, primitive_index: usize) {
-        self.primitives.retain(|x| !(x.id == id && x.primitive_index == primitive_index));
+        self.primitives
+            .retain(|x| !(x.id == id && x.primitive_index == primitive_index));
     }
 
-    #[profiling::function]
-    pub fn render<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>, bind_groups: &BindGroups<'a>) {
+    #[ambient_profiling::function]
+    pub fn render<'a>(
+        &'a self,
+        render_pass: &mut wgpu::RenderPass<'a>,
+        bind_groups: &BindGroups<'a>,
+    ) {
         let mut is_bound = false;
         // TODO: keep track of the state to avoid state switches (same pipeline multiple times etc.)
         for (i, entry) in self.primitives.iter().enumerate() {
-            let bind_groups = [bind_groups.globals, bind_groups.entities, &self.primitives_bind_group];
+            let bind_groups = [
+                bind_groups.globals,
+                bind_groups.entities,
+                &self.primitives_bind_group,
+            ];
             if !is_bound {
                 for (i, bind_group) in bind_groups.iter().enumerate() {
                     render_pass.set_bind_group(i as _, bind_group, &[]);
@@ -152,7 +210,11 @@ impl TransparentRenderer {
             let metadata = &entry.mesh_metadata;
             if metadata.index_count > 0 {
                 render_pass.set_pipeline(entry.shader.pipeline.pipeline());
-                render_pass.set_bind_group(bind_groups.len() as _, entry.material.bind_group(), &[]);
+                render_pass.set_bind_group(
+                    bind_groups.len() as _,
+                    entry.material.bind_group(),
+                    &[],
+                );
                 // entry.shader.pipeline.bind(render_pass, MATERIAL_BIND_GROUP, entry.material.bind());
 
                 render_pass.draw_indexed(
@@ -164,10 +226,17 @@ impl TransparentRenderer {
         }
     }
 
-    fn create_primitives_bind_group(gpu: &Gpu, layout: &wgpu::BindGroupLayout, buffer: &wgpu::Buffer) -> wgpu::BindGroup {
+    fn create_primitives_bind_group(
+        gpu: &Gpu,
+        layout: &wgpu::BindGroupLayout,
+        buffer: &wgpu::Buffer,
+    ) -> wgpu::BindGroup {
         gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout,
-            entries: &[wgpu::BindGroupEntry { binding: 0, resource: buffer.as_entire_binding() }],
+            entries: &[wgpu::BindGroupEntry {
+                binding: 0,
+                resource: buffer.as_entire_binding(),
+            }],
             label: Some("InstanceDataBuffer.bind_group"),
         })
     }
@@ -190,7 +259,12 @@ struct ShaderNode {
     pipeline: GraphicsPipeline,
 }
 impl ShaderNode {
-    pub fn new(config: Arc<TransparentRendererConfig>, shader: Arc<RendererShader>, double_sided: bool, depth_write_enabled: bool) -> Self {
+    pub fn new(
+        config: Arc<TransparentRendererConfig>,
+        shader: Arc<RendererShader>,
+        double_sided: bool,
+        depth_write_enabled: bool,
+    ) -> Self {
         let gpu = config.gpu.clone();
 
         let pipeline = shader.shader.to_pipeline(
@@ -206,7 +280,11 @@ impl ShaderNode {
                     bias: wgpu::DepthBiasState::default(),
                 }),
                 targets: &config.targets,
-                cull_mode: if double_sided { None } else { Some(wgpu::Face::Back) },
+                cull_mode: if double_sided {
+                    None
+                } else {
+                    Some(wgpu::Face::Back)
+                },
                 ..Default::default()
             },
         );

@@ -23,7 +23,7 @@ pub enum Doc {
 pub(crate) fn main(args: &Doc) -> anyhow::Result<()> {
     match args {
         Doc::Runtime => runtime(),
-        Doc::Api { args } => api(&args),
+        Doc::Api { args } => api(args),
     }
 }
 
@@ -36,7 +36,7 @@ fn api(args: &[String]) -> anyhow::Result<()> {
 
     let mut command = std::process::Command::new("cargo");
     command.current_dir(root_path);
-    command.args(&["+nightly", "doc", "-p", "ambient_api", "--all-features"]);
+    command.args(["+nightly", "doc", "-p", "ambient_api", "--all-features"]);
     command.args(args.iter().map(|s| s.as_str()));
     command.env("RUSTDOCFLAGS", "--cfg docsrs");
 

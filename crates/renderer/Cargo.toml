@@ -3,17 +3,20 @@ name = "ambient_renderer"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
+description = "Ambient renderer. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_sys = { path = "../sys" }
-ambient_std = { path = "../std" }
-ambient_ecs = { path = "../ecs" }
-ambient_gpu = { path = "../gpu" }
-ambient_core = { path = "../core" }
-ambient_meshes = { path = "../meshes" }
-ambient_color = { path = "../../libs/color", features = ["wgpu"] }
+ambient_sys = { path = "../sys" , version = "0.2.0-rc5" }
+ambient_std = { path = "../std" , version = "0.2.0-rc5" }
+ambient_ecs = { path = "../ecs" , version = "0.2.0-rc5" }
+ambient_gpu = { path = "../gpu" , version = "0.2.0-rc5" }
+ambient_core = { path = "../core" , version = "0.2.0-rc5" }
+ambient_meshes = { path = "../meshes" , version = "0.2.0-rc5" }
+ambient_color = { path = "../../libs/color", features = ["wgpu"] , version = "0.2.0-rc5" }
 wgpu = { workspace = true }
 glam = { workspace = true }
 itertools = { workspace = true }
@@ -21,7 +24,7 @@ ordered-float = { workspace = true }
 serde = { workspace = true }
 derive_more = { workspace = true }
 downcast-rs = { workspace = true }
-profiling = { workspace = true }
+ambient_profiling = { workspace = true }
 bytemuck = { workspace = true }
 smallvec = { workspace = true }
 log = { workspace = true }

@@ -11,12 +11,14 @@ use std::{
 
 use ambient_cb::{cb, Callback, Cb};
 use ambient_color::Color;
-use ambient_element::{element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{
+    element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks,
+};
 use ambient_guest_bridge::{
     components::{
         layout::{
-            align_vertical_center, fit_horizontal_parent, height, margin_top, min_height, padding_bottom, padding_left, padding_right,
-            padding_top, space_between_items,
+            align_vertical_center, fit_horizontal_parent, height, margin, min_height, padding,
+            space_between_items,
         },
         rect::{border_color, border_radius, border_thickness},
         rendering::color,
@@ -163,13 +165,17 @@ impl ButtonStyle {
                     .with_default(fit_horizontal_parent())
                     .with(height(), 2.)
                     .with_background(Color::WHITE.into())
-                    .with(margin_top(), 2.),
+                    .with(margin(), vec4(2., 0., 0., 0.)),
             ])
             .with_background(background.into())
         } else {
             let content = content.with(font_style(), "Bold".to_string());
             let tooltip = if let Some(hotkey) = hotkey {
-                let modifier = if hotkey_modifier != ModifiersState::empty() { format!("{hotkey_modifier:?} + ") } else { String::new() };
+                let modifier = if hotkey_modifier != ModifiersState::empty() {
+                    format!("{hotkey_modifier:?} + ")
+                } else {
+                    String::new()
+                };
                 let hotkey = Text::el(format!("[{modifier}{hotkey:?}]"));
                 if let Some(tooltip) = tooltip {
                     Some(FlowColumn::el([tooltip, hotkey]).with(space_between_items(), 10.))
@@ -181,10 +187,23 @@ impl ButtonStyle {
             };
             let mut el = FlowRow(vec![content])
                 .el()
-                .with(padding_top(), 3.)
-                .with(padding_bottom(), 3.)
-                .with(padding_left(), if matches!(self, Self::Card) || matches!(self, Self::Flat) { 3. } else { 16. })
-                .with(padding_right(), if matches!(self, Self::Card) || matches!(self, Self::Flat) { 3. } else { 16. })
+                .with(
+                    padding(),
+                    vec4(
+                        3.,
+                        if matches!(self, Self::Card) || matches!(self, Self::Flat) {
+                            3.
+                        } else {
+                            16.
+                        },
+                        3.,
+                        if matches!(self, Self::Card) || matches!(self, Self::Flat) {
+                            3.
+                        } else {
+                            16.
+                        },
+                    ),
+                )
                 .with_default(align_vertical_center())
                 .with_background(background.into())
                 .with(
@@ -265,7 +284,17 @@ pub fn Button(
     });
 
     let content = style
-        .create_container(is_pressed, is_working, disabled, toggled, hover, hotkey, hotkey_modifier, tooltip, content)
+        .create_container(
+            is_pressed,
+            is_working,
+            disabled,
+            toggled,
+            hover,
+            hotkey,
+            hotkey_modifier,
+            tooltip,
+            content,
+        )
         .with_clickarea()
         .on_mouse_enter({
             to_owned![set_hover];
@@ -299,12 +328,18 @@ pub fn Button(
 }
 impl Button {
     /// Create a new [Button] with the given content and callback.
-    pub fn new<T: Into<UIElement>>(content: T, on_invoked: impl Fn(&mut World) + Sync + Send + 'static) -> Self {
+    pub fn new<T: Into<UIElement>>(
+        content: T,
+        on_invoked: impl Fn(&mut World) + Sync + Send + 'static,
+    ) -> Self {
         let content: UIElement = content.into();
         Self::new_inner(content, cb(on_invoked))
     }
     /// Create a new [Button] with the given content and callback as a [Cb].
-    pub fn new_inner<T: Into<UIElement>>(content: T, on_invoked: Cb<dyn Fn(&mut World) + Sync + Send + 'static>) -> Self {
+    pub fn new_inner<T: Into<UIElement>>(
+        content: T,
+        on_invoked: Cb<dyn Fn(&mut World) + Sync + Send + 'static>,
+    ) -> Self {
         let content: UIElement = content.into();
         Self {
             content: content.0,
@@ -319,7 +354,10 @@ impl Button {
         }
     }
     /// Create a new one-shot [Button] with the given content and a callback that is only invoked once.
-    pub fn new_once<T: Into<UIElement>>(content: T, on_invoked: impl FnOnce(&mut World) + Sync + Send + 'static) -> Self {
+    pub fn new_once<T: Into<UIElement>>(
+        content: T,
+        on_invoked: impl FnOnce(&mut World) + Sync + Send + 'static,
+    ) -> Self {
         let on_invoked = Arc::new(Mutex::new(Some(on_invoked)));
         Self::new(content, move |world| {
             let on_invoked = on_invoked.clone();
@@ -407,7 +445,10 @@ impl Button {
         self
     }
     /// Set the callback that is invoked when the current pressed state of the button changes.
-    pub fn on_is_pressed_changed(mut self, handle: impl Fn(&mut World, bool) + Sync + Send + 'static) -> Self {
+    pub fn on_is_pressed_changed(
+        mut self,
+        handle: impl Fn(&mut World, bool) + Sync + Send + 'static,
+    ) -> Self {
         self.on_is_pressed_changed = Some(cb(handle));
         self
     }
@@ -429,8 +470,18 @@ pub struct Hotkey {
 }
 impl Hotkey {
     /// Create a new [Hotkey] with the given content and callback.
-    pub fn new(hotkey: VirtualKeyCode, on_invoke: impl Fn(&mut World) + Sync + Send + 'static, content: Element) -> Self {
-        Self { hotkey, hotkey_modifier: ModifiersState::empty(), on_invoke: cb(on_invoke), content, on_is_pressed_changed: None }
+    pub fn new(
+        hotkey: VirtualKeyCode,
+        on_invoke: impl Fn(&mut World) + Sync + Send + 'static,
+        content: Element,
+    ) -> Self {
+        Self {
+            hotkey,
+            hotkey_modifier: ModifiersState::empty(),
+            on_invoke: cb(on_invoke),
+            content,
+            on_is_pressed_changed: None,
+        }
     }
     /// Set the keyboard modifiers for the hotkey.
     pub fn hotkey_modifier(mut self, hotkey_modifier: ModifiersState) -> Self {
@@ -440,7 +491,13 @@ impl Hotkey {
 }
 impl ElementComponent for Hotkey {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let Self { on_is_pressed_changed, content, hotkey, hotkey_modifier, on_invoke } = *self;
+        let Self {
+            on_is_pressed_changed,
+            content,
+            hotkey,
+            hotkey_modifier,
+            on_invoke,
+        } = *self;
         let (is_pressed, _) = hooks.use_state_with(|_| Arc::new(AtomicBool::new(false)));
         hooks.use_runtime_message::<messages::WindowKeyboardInput>({
             let is_pressed = is_pressed.clone();
@@ -448,7 +505,11 @@ impl ElementComponent for Hotkey {
                 let modifiers = ModifiersState::from_bits(event.modifiers).unwrap();
 
                 // FIXME: get_ref returns `&T` on native, but `T` on guest
-                if let Some(virtual_keycode) = event.keycode.as_deref().and_then(|x| VirtualKeyCode::from_str(x).ok()) {
+                if let Some(virtual_keycode) = event
+                    .keycode
+                    .as_deref()
+                    .and_then(|x| VirtualKeyCode::from_str(x).ok())
+                {
                     if virtual_keycode != hotkey {
                         return;
                     }

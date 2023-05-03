@@ -1,11 +1,16 @@
 use super::{
     overlay_renderer::{OverlayConfig, OverlayRenderer},
     shadow_renderer::ShadowsRenderer,
-    Culling, FSMain, ForwardGlobals, Outlines, OutlinesConfig, RenderTarget, RendererCollect, RendererCollectState, TransparentRenderer,
-    TransparentRendererConfig, TreeRenderer, TreeRendererConfig,
+    Culling, FSMain, ForwardGlobals, Outlines, OutlinesConfig, RenderTarget, RendererCollect,
+    RendererCollectState, TransparentRenderer, TransparentRendererConfig, TreeRenderer,
+    TreeRendererConfig,
 };
-use crate::{bind_groups::BindGroups, get_common_layout, globals_layout, to_linear_format, ShaderDebugParams};
-use ambient_core::{asset_cache, camera::*, gpu, gpu_ecs::gpu_world, player::local_user_id, ui_scene};
+use crate::{
+    bind_groups::BindGroups, get_common_layout, globals_layout, to_linear_format, ShaderDebugParams,
+};
+use ambient_core::{
+    asset_cache, camera::*, gpu, gpu_ecs::gpu_world, player::local_user_id, ui_scene,
+};
 use ambient_ecs::{ArchetypeFilter, Component, World};
 use ambient_gpu::mesh_buffer::MeshBufferKey;
 use ambient_gpu::{
@@ -58,7 +63,11 @@ impl SyncAssetKey<RendererResources> for RendererResourcesKey {
 
         let globals_layout = globals_layout.get(&assets);
 
-        let mesh_meta_layout = BindGroupDesc { entries: get_mesh_meta_layout(0).entries, label: GLOBALS_BIND_GROUP.into() }.get(&assets);
+        let mesh_meta_layout = BindGroupDesc {
+            entries: get_mesh_meta_layout(0).entries,
+            label: GLOBALS_BIND_GROUP.into(),
+        }
+        .get(&assets);
 
         RendererResources {
             mesh_meta_layout,
@@ -80,13 +89,24 @@ pub struct RendererConfig {
 
 impl Default for RendererConfig {
     fn default() -> Self {
-        Self { scene: ui_scene(), shadows: true, shadow_map_resolution: 1024, shadow_cascades: 5, lod_cutoff_scaling: 1. }
+        Self {
+            scene: ui_scene(),
+            shadows: true,
+            shadow_map_resolution: 1024,
+            shadow_cascades: 5,
+            lod_cutoff_scaling: 1.,
+        }
     }
 }
 
 pub enum RendererTarget<'a> {
     Target(&'a RenderTarget),
-    Direct { color: &'a TextureView, depth: &'a TextureView, normals: &'a TextureView, size: wgpu::Extent3d },
+    Direct {
+        color: &'a TextureView,
+        depth: &'a TextureView,
+        normals: &'a TextureView,
+        size: wgpu::Extent3d,
+    },
 }
 
 impl<'a> RendererTarget<'a> {
@@ -167,14 +187,26 @@ impl Renderer {
         // Need atleast one for array<Camera, SIZE> to be valid
         let shadow_cascades = config.shadow_cascades;
 
-        let shadows =
-            if config.shadows { Some(ShadowsRenderer::new(assets.clone(), renderer_resources.clone(), config.clone())) } else { None };
+        let shadows = if config.shadows {
+            Some(ShadowsRenderer::new(
+                assets.clone(),
+                renderer_resources.clone(),
+                config.clone(),
+            ))
+        } else {
+            None
+        };
 
         let normals_format = to_linear_format(gpu.swapchain_format()).into();
 
         Self {
             culling: Culling::new(&assets, config.clone()),
-            forward_globals: ForwardGlobals::new(gpu.clone(), renderer_resources.globals_layout.clone(), shadow_cascades, config.scene),
+            forward_globals: ForwardGlobals::new(
+                gpu.clone(),
+                renderer_resources.globals_layout.clone(),
+                shadow_cascades,
+                config.scene,
+            ),
             forward_collect_state: RendererCollectState::new(&assets),
             shadows,
             overlays: OverlayRenderer::new(
@@ -217,11 +249,18 @@ impl Renderer {
             solids_frame: RenderTarget::new(
                 gpu.clone(),
                 uvec2(1, 1),
-                Some(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST),
+                Some(
+                    wgpu::TextureUsages::RENDER_ATTACHMENT
+                        | wgpu::TextureUsages::TEXTURE_BINDING
+                        | wgpu::TextureUsages::COPY_DST,
+                ),
             ),
             outlines: Outlines::new(
                 &assets,
-                OutlinesConfig { scene: config.scene, renderer_resources: renderer_resources.clone() },
+                OutlinesConfig {
+                    scene: config.scene,
+                    renderer_resources: renderer_resources.clone(),
+                },
                 config.clone(),
             ),
             mesh_meta_layout: renderer_resources.mesh_meta_layout,
@@ -241,14 +280,21 @@ impl Renderer {
         target: RendererTarget,
         clear: Option<Color>,
     ) {
-        profiling::scope!("Renderer.render");
+        ambient_profiling::scope!("Renderer.render");
 
         if let RendererTarget::Target(target) = &target {
             if self.solids_frame.color_buffer.size != target.color_buffer.size {
                 self.solids_frame = RenderTarget::new(
                     self.gpu.clone(),
-                    uvec2(target.color_buffer.size.width, target.color_buffer.size.height),
-                    Some(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST),
+                    uvec2(
+                        target.color_buffer.size.width,
+                        target.color_buffer.size.height,
+                    ),
+                    Some(
+                        wgpu::TextureUsages::RENDER_ATTACHMENT
+                            | wgpu::TextureUsages::TEXTURE_BINDING
+                            | wgpu::TextureUsages::COPY_DST,
+                    ),
                 );
             }
         }
@@ -259,7 +305,8 @@ impl Renderer {
         // let mesh_data_bind_group = create_mesh_data_bind_group(world, &self.resources_layout, &mesh_buffer);
 
         // // A subset used for the collect state
-        let mesh_meta_bind_group = create_mesh_meta_bind_group(world, &self.mesh_meta_layout, &mesh_buffer);
+        let mesh_meta_bind_group =
+            create_mesh_meta_bind_group(world, &self.mesh_meta_layout, &mesh_buffer);
 
         let entities_bind_group = {
             let gpu_world_h = world.resource(gpu_world()).clone();
@@ -267,16 +314,28 @@ impl Renderer {
             gpu_world.create_bind_group(true)
         };
 
-        let main_camera = Camera::get_active(world, self.config.scene, world.resource_opt(local_user_id())).unwrap_or_default();
+        let main_camera = Camera::get_active(
+            world,
+            self.config.scene,
+            world.resource_opt(local_user_id()),
+        )
+        .unwrap_or_default();
         {
-            profiling::scope!("Update");
+            ambient_profiling::scope!("Update");
             self.culling.run(encoder, world);
 
             self.forward_collect_state.set_camera(0);
             self.forward.update(world);
             self.overlays.update(world);
-            self.forward.run_collect(encoder, post_submit, &mesh_meta_bind_group, &entities_bind_group, &mut self.forward_collect_state);
-            self.transparent.update(world, &mesh_buffer, main_camera.projection_view());
+            self.forward.run_collect(
+                encoder,
+                post_submit,
+                &mesh_meta_bind_group,
+                &entities_bind_group,
+                &mut self.forward_collect_state,
+            );
+            self.transparent
+                .update(world, &mesh_buffer, main_camera.projection_view());
         }
 
         if let Some(shadows) = &mut self.shadows {
@@ -284,7 +343,14 @@ impl Renderer {
         }
 
         self.forward_globals.params.debug_params = self.shader_debug_params;
-        self.forward_globals.update(world, &self.shadows.as_ref().map(|x| x.get_cameras()).unwrap_or_default());
+        self.forward_globals.update(
+            world,
+            &self
+                .shadows
+                .as_ref()
+                .map(|x| x.get_cameras())
+                .unwrap_or_default(),
+        );
         let assets = world.resource(asset_cache()).clone();
 
         let forward_globals_bind_group = self.forward_globals.create_bind_group(
@@ -294,15 +360,18 @@ impl Renderer {
             &mesh_buffer,
         );
 
-        let bind_groups =
-            BindGroups { globals: &forward_globals_bind_group, entities: &entities_bind_group, mesh_meta: &mesh_meta_bind_group };
+        let bind_groups = BindGroups {
+            globals: &forward_globals_bind_group,
+            entities: &entities_bind_group,
+            mesh_meta: &mesh_meta_bind_group,
+        };
 
         if let Some(shadows) = &mut self.shadows {
             shadows.render(&mesh_buffer, encoder, &bind_groups, post_submit);
         }
 
         {
-            profiling::scope!("Forward");
+            ambient_profiling::scope!("Forward");
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Forward"),
                 color_attachments: &[
@@ -310,7 +379,11 @@ impl Renderer {
                         view: target.color(),
                         resolve_target: None,
                         ops: wgpu::Operations {
-                            load: if let Some(clear) = clear { wgpu::LoadOp::Clear(clear.into()) } else { wgpu::LoadOp::Load },
+                            load: if let Some(clear) = clear {
+                                wgpu::LoadOp::Clear(clear.into())
+                            } else {
+                                wgpu::LoadOp::Load
+                            },
                             store: true,
                         },
                     }),
@@ -319,7 +392,11 @@ impl Renderer {
                         resolve_target: None,
                         ops: wgpu::Operations {
                             /// clear color is ignored as the normal buffer should always be initialized with black
-                            load: if clear.is_some() { wgpu::LoadOp::Clear(Color::BLACK.into()) } else { wgpu::LoadOp::Load },
+                            load: if clear.is_some() {
+                                wgpu::LoadOp::Clear(Color::BLACK.into())
+                            } else {
+                                wgpu::LoadOp::Load
+                            },
                             store: true,
                         },
                     }),
@@ -327,26 +404,42 @@ impl Renderer {
                 depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
                     view: target.depth_stencil(),
                     depth_ops: Some(wgpu::Operations {
-                        load: if clear.is_some() { wgpu::LoadOp::Clear(0.0) } else { wgpu::LoadOp::Load },
+                        load: if clear.is_some() {
+                            wgpu::LoadOp::Clear(0.0)
+                        } else {
+                            wgpu::LoadOp::Load
+                        },
                         store: true,
                     }),
                     stencil_ops: None,
                 }),
             });
-            render_pass.set_index_buffer(mesh_buffer.index_buffer.buffer().slice(..), wgpu::IndexFormat::Uint32);
+            render_pass.set_index_buffer(
+                mesh_buffer.index_buffer.buffer().slice(..),
+                wgpu::IndexFormat::Uint32,
+            );
 
-            self.forward.render(&mut render_pass, &self.forward_collect_state, &bind_groups);
+            self.forward
+                .render(&mut render_pass, &self.forward_collect_state, &bind_groups);
             {
-                profiling::scope!("Drop render pass");
+                ambient_profiling::scope!("Drop render pass");
                 drop(render_pass);
             }
         }
 
         if let Some(post_forward) = &mut self.post_forward {
-            post_forward.render(world, &mesh_buffer, encoder, &target, &bind_groups, post_submit);
+            post_forward.render(
+                world,
+                &mesh_buffer,
+                encoder,
+                &target,
+                &bind_groups,
+                post_submit,
+            );
         }
 
-        self.overlays.render(encoder, &target, &bind_groups, &mesh_buffer);
+        self.overlays
+            .render(encoder, &target, &bind_groups, &mesh_buffer);
 
         if let RendererTarget::Target(target) = &target {
             encoder.copy_texture_to_texture(
@@ -367,36 +460,59 @@ impl Renderer {
         }
 
         {
-            profiling::scope!("Transparent");
+            ambient_profiling::scope!("Transparent");
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Transparent"),
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                     view: target.color(),
                     resolve_target: None,
-                    ops: wgpu::Operations { load: wgpu::LoadOp::Load, store: true },
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Load,
+                        store: true,
+                    },
                 })],
                 depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
                     view: target.depth_stencil(),
-                    depth_ops: Some(wgpu::Operations { load: wgpu::LoadOp::Load, store: true }),
+                    depth_ops: Some(wgpu::Operations {
+                        load: wgpu::LoadOp::Load,
+                        store: true,
+                    }),
                     stencil_ops: None,
                 }),
             });
 
-            render_pass.set_index_buffer(mesh_buffer.index_buffer.buffer().slice(..), wgpu::IndexFormat::Uint32);
+            render_pass.set_index_buffer(
+                mesh_buffer.index_buffer.buffer().slice(..),
+                wgpu::IndexFormat::Uint32,
+            );
 
             self.transparent.render(&mut render_pass, &bind_groups);
 
             {
-                profiling::scope!("Drop render pass");
+                ambient_profiling::scope!("Drop render pass");
                 drop(render_pass);
             }
         }
 
         if let Some(post_transparent) = &mut self.post_transparent {
-            post_transparent.render(world, &mesh_buffer, encoder, &target, &bind_groups, post_submit);
+            post_transparent.render(
+                world,
+                &mesh_buffer,
+                encoder,
+                &target,
+                &bind_groups,
+                post_submit,
+            );
         }
 
-        self.outlines.render(world, encoder, post_submit, &target, &bind_groups, &mesh_buffer);
+        self.outlines.render(
+            world,
+            encoder,
+            post_submit,
+            &target,
+            &bind_groups,
+            &mesh_buffer,
+        );
     }
 
     pub fn dump_to_tmp_file(&self) {
@@ -408,7 +524,8 @@ impl Renderer {
 
     pub fn is_rendered(&self) -> bool {
         #[cfg(target_os = "macos")]
-        let res = self.forward_collect_state.counts_cpu.lock().len() == self.forward_collect_state.counts.len() as usize;
+        let res = self.forward_collect_state.counts_cpu.lock().len()
+            == self.forward_collect_state.counts.len() as usize;
         #[cfg(not(target_os = "macos"))]
         let res = true;
         res
@@ -473,7 +590,12 @@ pub(crate) fn get_mesh_data_layout(bind_group_offset: u32) -> BindGroupDesc<'sta
 }
 
 pub(crate) fn get_mesh_meta_layout(bind_group_offset: u32) -> BindGroupDesc<'static> {
-    BindGroupDesc { entries: vec![resource_storage_entry(bind_group_offset + MESH_METADATA_BINDING)], label: GLOBALS_BIND_GROUP.into() }
+    BindGroupDesc {
+        entries: vec![resource_storage_entry(
+            bind_group_offset + MESH_METADATA_BINDING,
+        )],
+        label: GLOBALS_BIND_GROUP.into(),
+    }
 }
 
 // fn create_mesh_data_bind_group(world: &World, layout: &BindGroupLayout, mesh_buffer: &MeshBuffer) -> wgpu::BindGroup {
@@ -493,12 +615,19 @@ pub(crate) fn get_mesh_meta_layout(bind_group_offset: u32) -> BindGroupDesc<'sta
 //     })
 // }
 
-fn create_mesh_meta_bind_group(world: &World, layout: &BindGroupLayout, mesh_buffer: &MeshBuffer) -> wgpu::BindGroup {
+fn create_mesh_meta_bind_group(
+    world: &World,
+    layout: &BindGroupLayout,
+    mesh_buffer: &MeshBuffer,
+) -> wgpu::BindGroup {
     let gpu = world.resource(gpu()).clone();
 
     gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
         layout,
-        entries: &[wgpu::BindGroupEntry { binding: 0, resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding() }],
+        entries: &[wgpu::BindGroupEntry {
+            binding: 0,
+            resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding(),
+        }],
         label: Some("mesh_meta"),
     })
 }

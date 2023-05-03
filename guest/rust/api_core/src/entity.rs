@@ -24,16 +24,16 @@ pub fn spawn(components: &Entity) -> EntityId {
 /// Waits until `id` has the `component`. Note that this may never resolve if the entity
 /// does not complete spawning, or the id in question refers to an entity that does
 /// not exist.
-pub async fn wait_for_component<T: SupportedValue>(entity: EntityId, component: Component<T>) {
-    block_until(move || wit::component::has_component(entity.into_bindgen(), component.index()))
-        .await;
+pub async fn wait_for_component<T: SupportedValue>(entity: EntityId, component: Component<T>) -> T {
+    block_until(move || has_component(entity, component)).await;
+    get_component(entity, component).unwrap()
 }
 
 /// Despawns `entity` from the world. `entity` will not work with any other functions afterwards.
 ///
-/// Returns whether or not the entity was removed.
-pub fn despawn(entity: EntityId) -> bool {
-    wit::entity::despawn(entity.into_bindgen())
+/// Returns the data of the despawned entity, if it existed.
+pub fn despawn(entity: EntityId) -> Option<Entity> {
+    wit::entity::despawn(entity.into_bindgen()).from_bindgen()
 }
 /// Set the animation (controller) for `entity`.
 pub fn set_animation_controller(entity: EntityId, controller: AnimationController) {
