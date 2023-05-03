@@ -217,8 +217,8 @@ impl ElementComponent for EditorBuildMode {
                     .with(width(), 300.)
                     .with(docking(), Docking::Right)
                     .floating_panel()
-                    .with(margin(), Borders::even(STREET))
-                    .with(padding(), Borders::even(STREET))
+                    .with(margin(), Borders::even(STREET).into())
+                    .with(padding(), Borders::even(STREET).into())
             } else {
                 Element::new()
             },
@@ -335,10 +335,10 @@ impl ElementComponent for EditorBuildMode {
                 .floating_panel()
                 .with(docking(), Docking::Top)
                 .with(space_between_items(), STREET)
-                .with(margin(), Borders::even(STREET))
-                .with(padding(), Borders::even(STREET)),
+                .with(margin(), Borders::even(STREET).into())
+                .with(padding(), Borders::even(STREET).into()),
             GenerateTerrainButton.el()
-                .with(margin(), Borders::even(STREET)),
+                .with(margin(), Borders::even(STREET).into()),
             SelectArea.el(),
         ])
             .el()

@@ -1,10 +1,13 @@
 use std::{fmt::Debug, str::FromStr, time::Duration};
 
 use ambient_cb::{cb, Cb};
-use ambient_element::{define_el_function_for_vec_element_newtype, to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::layout::margin_right;
+use ambient_element::{
+    define_el_function_for_vec_element_newtype, to_owned, Element, ElementComponent,
+    ElementComponentExt, Hooks,
+};
+use ambient_guest_bridge::components::layout::margin;
 use convert_case::{Case, Casing};
-use glam::{Vec2, Vec3, Vec4};
+use glam::{vec4, Vec2, Vec3, Vec4};
 use itertools::Itertools;
 
 use super::{ChangeCb, Editor, EditorOpts, TextEditor};
@@ -27,10 +30,15 @@ pub struct ParseableInput<T: FromStr + Debug + std::fmt::Display + Clone + Sync 
 impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> ParseableInput<T> {
     /// Create a new `ParseableInput` with the given value and callback.
     pub fn new(value: T, on_change: impl Fn(T) + Sync + Send + 'static) -> Self {
-        Self { value, on_change: cb(on_change) }
+        Self {
+            value,
+            on_change: cb(on_change),
+        }
     }
 }
-impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> ElementComponent for ParseableInput<T> {
+impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> ElementComponent
+    for ParseableInput<T>
+{
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { value, on_change } = *self;
         let (text_id, set_text_id) = hooks.use_state(String::new());
@@ -70,7 +78,12 @@ pub struct CustomParseInput<T> {
 
 impl<T: Debug + Clone + Sync + Send + 'static> ElementComponent for CustomParseInput<T> {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let Self { value, on_change, parse, to_string } = *self;
+        let Self {
+            value,
+            on_change,
+            parse,
+            to_string,
+        } = *self;
 
         let (text_id, set_text_id) = hooks.use_state(String::new());
         let (focused, _) = use_focus_for_instance_id(hooks, text_id);
@@ -126,7 +139,11 @@ impl Editor for Duration {
 
 impl Editor for f32 {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        F32Input { value: self, on_change }.el()
+        F32Input {
+            value: self,
+            on_change,
+        }
+        .el()
     }
 
     fn view(self, _: EditorOpts) -> Element {
@@ -135,7 +152,11 @@ impl Editor for f32 {
 }
 impl Editor for i32 {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        I32Input { value: self, on_change }.el()
+        I32Input {
+            value: self,
+            on_change,
+        }
+        .el()
     }
 
     fn view(self, _: EditorOpts) -> Element {
@@ -144,7 +165,11 @@ impl Editor for i32 {
 }
 impl Editor for u32 {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        U32Input { value: self, on_change }.el()
+        U32Input {
+            value: self,
+            on_change,
+        }
+        .el()
     }
 
     fn view(self, _: EditorOpts) -> Element {
@@ -153,7 +178,11 @@ impl Editor for u32 {
 }
 impl Editor for u64 {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        U64Input { value: self, on_change }.el()
+        U64Input {
+            value: self,
+            on_change,
+        }
+        .el()
     }
 
     fn view(self, _: EditorOpts) -> Element {
@@ -162,7 +191,11 @@ impl Editor for u64 {
 }
 impl Editor for usize {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        UsizeInput { value: self, on_change }.el()
+        UsizeInput {
+            value: self,
+            on_change,
+        }
+        .el()
     }
 
     fn view(self, _: EditorOpts) -> Element {
@@ -181,21 +214,31 @@ pub struct Checkbox {
 impl Checkbox {
     /// Create a new checkbox.
     pub fn new(value: bool, on_change: impl Fn(bool) + Sync + Send + 'static) -> Self {
-        Self { value, on_change: cb(on_change) }
+        Self {
+            value,
+            on_change: cb(on_change),
+        }
     }
 }
 impl ElementComponent for Checkbox {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         let Checkbox { value, on_change } = *self;
-        Button::new(FontAwesomeIcon::el(if value { 0xf14a } else { 0xf0c8 }, false), move |_| on_change.0(!value))
-            .style(ButtonStyle::Flat)
-            .el()
+        Button::new(
+            FontAwesomeIcon::el(if value { 0xf14a } else { 0xf0c8 }, false),
+            move |_| on_change.0(!value),
+        )
+        .style(ButtonStyle::Flat)
+        .el()
     }
 }
 
 impl Editor for bool {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        Checkbox { value: self, on_change }.el()
+        Checkbox {
+            value: self,
+            on_change,
+        }
+        .el()
     }
 
     fn view(self, _: EditorOpts) -> Element {
@@ -218,13 +261,21 @@ impl EditorRow {
     /// Create a new editor row.
     pub fn el(title: impl Into<String>, editor: Element) -> Element {
         let title: String = title.into();
-        EditorRow { title: title.to_case(Case::Title), editor }.el()
+        EditorRow {
+            title: title.to_case(Case::Title),
+            editor,
+        }
+        .el()
     }
 }
 impl ElementComponent for EditorRow {
     fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         let Self { title, editor } = *self;
-        FlowRow(vec![Text::el(title).with(margin_right(), STREET), editor]).el()
+        FlowRow(vec![
+            Text::el(title).with(margin(), vec4(0., STREET, 0., 0.)),
+            editor,
+        ])
+        .el()
     }
 }
 
@@ -240,20 +291,34 @@ impl ElementComponent for EditorColumn {
 
 impl Editor for Vec2 {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        ArrayEditor { value: self.to_array(), on_change: cb(move |v| (on_change)(Self::from(v))), field_names: Some(&["X", "Y"]) }.el()
+        ArrayEditor {
+            value: self.to_array(),
+            on_change: cb(move |v| (on_change)(Self::from(v))),
+            field_names: Some(&["X", "Y"]),
+        }
+        .el()
     }
 }
 
 impl Editor for Vec3 {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        ArrayEditor { value: self.to_array(), on_change: cb(move |v| (on_change)(Self::from(v))), field_names: Some(&["X", "Y", "Z"]) }.el()
+        ArrayEditor {
+            value: self.to_array(),
+            on_change: cb(move |v| (on_change)(Self::from(v))),
+            field_names: Some(&["X", "Y", "Z"]),
+        }
+        .el()
     }
 }
 
 impl Editor for Vec4 {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        ArrayEditor { value: self.to_array(), on_change: cb(move |v| (on_change)(Self::from(v))), field_names: Some(&["X", "Y", "Z", "W"]) }
-            .el()
+        ArrayEditor {
+            value: self.to_array(),
+            on_change: cb(move |v| (on_change)(Self::from(v))),
+            field_names: Some(&["X", "Y", "Z", "W"]),
+        }
+        .el()
     }
 }
 
@@ -268,9 +333,15 @@ pub struct ArrayEditor<const C: usize, T> {
     pub on_change: Cb<dyn Fn([T; C]) + Sync + Send>,
 }
 
-impl<const C: usize, T: 'static + Clone + Debug + Editor + Send + Sync> ElementComponent for ArrayEditor<C, T> {
+impl<const C: usize, T: 'static + Clone + Debug + Editor + Send + Sync> ElementComponent
+    for ArrayEditor<C, T>
+{
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        let Self { value, on_change, field_names } = *self;
+        let Self {
+            value,
+            on_change,
+            field_names,
+        } = *self;
 
         if let Some(field_names) = field_names {
             EditorColumn(
@@ -319,6 +390,11 @@ impl<const C: usize, T: 'static + Clone + Debug + Editor + Send + Sync> ElementC
 }
 impl<const C: usize, T: 'static + Clone + Debug + Editor + Send + Sync> Editor for [T; C] {
     fn editor(self, on_change: ChangeCb<Self>, _: EditorOpts) -> Element {
-        ArrayEditor { value: self, on_change, field_names: None }.el()
+        ArrayEditor {
+            value: self,
+            on_change,
+            field_names: None,
+        }
+        .el()
     }
 }

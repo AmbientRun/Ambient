@@ -2,13 +2,10 @@
 use ambient_cb::Cb;
 use ambient_element::{to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
-    components::{
-        layout::{margin_left, margin_top},
-        rect::border_radius,
-    },
+    components::{layout::margin, rect::border_radius},
     messages,
 };
-use glam::Vec4;
+use glam::{vec4, Vec4};
 
 use crate::{
     button::{Button, ButtonStyle},
@@ -33,7 +30,12 @@ pub struct DropdownSelect {
 }
 impl ElementComponent for DropdownSelect {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let Self { content, on_select, items, inline } = *self;
+        let Self {
+            content,
+            on_select,
+            items,
+            inline,
+        } = *self;
         let (show, set_show) = hooks.use_state(false);
         hooks.use_runtime_message::<messages::WindowMouseInput>({
             to_owned![set_show];
@@ -44,11 +46,22 @@ impl ElementComponent for DropdownSelect {
             }
         });
         Dropdown {
-            content: Button::new(FlowRow(vec![content, Text::el("\u{f078}").with(margin_left(), 5.)]).el(), {
-                to_owned![set_show];
-                move |_| set_show(!show)
+            content: Button::new(
+                FlowRow(vec![
+                    content,
+                    Text::el("\u{f078}").with(margin(), vec4(0., 0., 0., 5.)),
+                ])
+                .el(),
+                {
+                    to_owned![set_show];
+                    move |_| set_show(!show)
+                },
+            )
+            .style(if inline {
+                ButtonStyle::Inline
+            } else {
+                ButtonStyle::Regular
             })
-            .style(if inline { ButtonStyle::Inline } else { ButtonStyle::Regular })
             .el(),
             dropdown: FlowColumn(
                 items
@@ -63,7 +76,7 @@ impl ElementComponent for DropdownSelect {
                         })
                         .style(ButtonStyle::Card)
                         .el()
-                        .with(margin_top(), if i != 0 { STREET } else { 0. })
+                        .with(margin(), vec4(if i != 0 { STREET } else { 0. }, 0., 0., 0.))
                     })
                     .collect(), //     vec![Bookcase(
                                 //     items
@@ -105,9 +118,19 @@ pub struct ListSelect {
 }
 impl ElementComponent for ListSelect {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        let Self { value, on_change, items, inline } = *self;
+        let Self {
+            value,
+            on_change,
+            items,
+            inline,
+        } = *self;
         DropdownSelect {
-            content: FlowRow(vec![if let Some(item) = items.get(value) { item.clone() } else { Text::el("-") }]).el(),
+            content: FlowRow(vec![if let Some(item) = items.get(value) {
+                item.clone()
+            } else {
+                Text::el("-")
+            }])
+            .el(),
             on_select: on_change,
             items,
             inline,

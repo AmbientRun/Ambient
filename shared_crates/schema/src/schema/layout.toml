@@ -147,28 +147,16 @@ name = "Layout width to children"
 description = "Width to children."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::layout::margin_bottom"]
-type = "F32"
-name = "Margin bottom"
-description = "Layout margin: bottom."
+[components."core::layout::margin"]
+type = "Vec4"
+name = "Margin"
+description = "Layout margin: [top, right, bottom, left]."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::layout::margin_left"]
-type = "F32"
-name = "Margin left"
-description = "Layout margin: left."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::layout::margin_right"]
-type = "F32"
-name = "Margin right"
-description = "Layout margin: right."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::layout::margin_top"]
-type = "F32"
-name = "Margin top"
-description = "Layout margin: top."
+[components."core::layout::padding"]
+type = "Vec4"
+name = "Padding"
+description = "Layout padding: [top, right, bottom, left]."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::layout::mesh_to_local_from_size"]
@@ -211,30 +199,6 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = "Empty"
 name = "Orientation vertical"
 description = "Layout orientation: vertical."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::layout::padding_bottom"]
-type = "F32"
-name = "Padding bottom"
-description = "Layout padding: bottom."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::layout::padding_left"]
-type = "F32"
-name = "Padding left"
-description = "Layout padding: left."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::layout::padding_right"]
-type = "F32"
-name = "Padding right"
-description = "Layout padding: right."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::layout::padding_top"]
-type = "F32"
-name = "Padding top"
-description = "Layout padding: top."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::layout::screen"]

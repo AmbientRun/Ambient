@@ -367,12 +367,12 @@ fn ComponentEditor<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync +
     .style(ButtonStyle::Flat)
     .tooltip("Delete")
     .el()
-    .with(margin(), Borders::right(STREET));
+    .with(margin(), Borders::right(STREET).into());
 
     FlowRow(vec![
         ScreenContainer(screen).el(),
         remove,
-        Text::el(&display_name).with(margin(), Borders::right(STREET)),
+        Text::el(&display_name).with(margin(), Borders::right(STREET).into()),
         FlowRow(vec![if inline {
             T::editor(
                 value,
