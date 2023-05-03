@@ -258,17 +258,11 @@ impl FbxDoc {
                 match (to_type as &str, from_type as &str) {
                     ("Geometry", "Model") => doc.models.get_mut(&from).unwrap().geometries.push(to),
                     ("Material", "Model") => doc.models.get_mut(&from).unwrap().materials.push(to),
-                    ("Texture", "Material") => match property.as_ref().map(|x| x as &str) {
-                        Some("DiffuseColor") => doc.materials.get_mut(&from).unwrap().diffuse_color_texture = Some(to),
-                        Some("TransparencyFactor") => doc.materials.get_mut(&from).unwrap().alpha_texture = Some(to),
-                        Some("TransparentColor") => doc.materials.get_mut(&from).unwrap().alpha_texture = Some(to),
-                        Some("NormalMap") => doc.materials.get_mut(&from).unwrap().normalmap = Some(to),
-                        Some("SpecularFactor") => doc.materials.get_mut(&from).unwrap().specular_factor_texture = Some(to),
-                        Some("SpecularColor") => doc.materials.get_mut(&from).unwrap().specular_color_texture = Some(to),
-                        Some("ShininessExponent") => doc.materials.get_mut(&from).unwrap().shininess_exponent_texture = Some(to),
-                        Some("ReflectionFactor") => doc.materials.get_mut(&from).unwrap().reflection_factor_texture = Some(to),
-                        _ => panic!("Unrecognized texture: {property:?}"),
-                    },
+                    ("Texture", "Material") => {
+                        if let Some(key) = property.as_ref().map(|x| x as &str) {
+                            doc.materials.get_mut(&from).unwrap().textures.insert(key.to_string(), to);
+                        }
+                    }
                     ("Video", "Texture") => doc.textures.get_mut(&from).unwrap().video = Some(to),
                     ("Model", "Model") => {
                         doc.models.get_mut(&from).unwrap().children.push(to);

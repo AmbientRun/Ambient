@@ -1,7 +1,8 @@
 [
     {
         "pipeline": {
-          "type": "Audio"
+          "type": "Audio",
+          "convert": false
         }
     }
 ]

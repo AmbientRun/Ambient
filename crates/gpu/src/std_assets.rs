@@ -1,4 +1,4 @@
-use std::{num::NonZeroU8, sync::Arc};
+use std::{sync::Arc};
 
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use glam::{uvec4, UVec4};
@@ -20,7 +20,10 @@ impl SyncAssetKey<Arc<wgpu::Sampler>> for DefaultSamplerKey {
             mag_filter: wgpu::FilterMode::Linear,
             min_filter: wgpu::FilterMode::Linear,
             mipmap_filter: wgpu::FilterMode::Linear,
-            anisotropy_clamp: NonZeroU8::new(16),
+            anisotropy_clamp: 1,
+            border_color: None,
+            compare: None,
+            label: None,
             ..Default::default()
         }))
     }
@@ -76,7 +79,7 @@ impl SyncAssetKey<Arc<wgpu::Sampler>> for DepthBufferSampler {
             lod_min_clamp: -100.0,
             lod_max_clamp: 100.0,
             label: Some("depth buffer sampler"),
-            anisotropy_clamp: None,
+            anisotropy_clamp: 1,
             border_color: None,
         }))
     }

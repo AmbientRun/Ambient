@@ -67,7 +67,7 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                             stream.mixer().stop(info.id);
                         }
                     }
-                    log::info!("Stopped all sounds with url {}", target_url);
+                    // log::info!("Stopped all sounds with url {}", target_url);
                 }
                 AudioMessage::StopById(uid) => {
                     let id = match sound_info_lib.remove(&uid) {
@@ -77,7 +77,7 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                             continue;
                         }
                     };
-                    log::info!("Stopped sound with id {}", uid);
+                    // log::info!("Stopped sound with id {}", uid);
                     stream.mixer().stop(id);
                 }
             }

@@ -3,30 +3,33 @@ name = "ambient_app"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
+description = "Ambient app implementation. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_sys = { path = "../sys" }
-ambient_std = { path = "../std" }
-ambient_core = { path = "../core" }
-ambient_gizmos = { path = "../gizmos" }
-ambient_gpu = { path = "../gpu" }
-ambient_renderer = { path = "../renderer" }
-ambient_cameras = { path = "../cameras" }
-ambient_ecs = { path = "../ecs" }
-ambient_ui_native = { path = "../ui_native" }
-ambient_input = { path = "../input" }
-ambient_model = { path = "../model" }
-ambient_animation = { path = "../animation" }
+ambient_sys = { path = "../sys" , version = "0.2.0-rc5" }
+ambient_std = { path = "../std" , version = "0.2.0-rc5" }
+ambient_core = { path = "../core" , version = "0.2.0-rc5" }
+ambient_gizmos = { path = "../gizmos" , version = "0.2.0-rc5" }
+ambient_gpu = { path = "../gpu" , version = "0.2.0-rc5" }
+ambient_renderer = { path = "../renderer" , version = "0.2.0-rc5" }
+ambient_cameras = { path = "../cameras" , version = "0.2.0-rc5" }
+ambient_ecs = { path = "../ecs" , version = "0.2.0-rc5" }
+ambient_ui_native = { path = "../ui_native" , version = "0.2.0-rc5" }
+ambient_input = { path = "../input" , version = "0.2.0-rc5" }
+ambient_model = { path = "../model" , version = "0.2.0-rc5" }
+ambient_animation = { path = "../animation" , version = "0.2.0-rc5" }
 
-ambient_element = { path = "../../shared_crates/element" }
+ambient_element = { path = "../../shared_crates/element" , version = "0.2.0-rc5" }
 
 winit = { workspace = true }
 flume = { workspace = true }
 glam = { workspace = true }
 tokio = { workspace = true }
-profiling = { workspace = true }
+ambient_profiling = { workspace = true }
 anyhow = { workspace = true }
 wgpu = { workspace = true }
 puffin = { workspace = true, optional = true }
@@ -38,7 +41,7 @@ parking_lot = { workspace = true }
 ambient_primitives = { path = "../primitives" }
 
 [features]
-profile = ["puffin", "puffin_http", "profiling/profile-with-puffin"]
+profile = ["puffin", "puffin_http", "ambient_profiling/profile-with-puffin"]
 hotload-includes = [
     "ambient_std/hotload-includes",
     'ambient_gpu/hotload-includes',

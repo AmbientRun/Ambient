@@ -1,6 +1,5 @@
 use std::{
     io::Cursor,
-    num::NonZeroU32,
     ops::Deref,
     path::Path,
     sync::{
@@ -53,8 +52,9 @@ impl Texture {
     }
 
     fn size_in_bytes_from_desc(descriptor: &wgpu::TextureDescriptor) -> u64 {
+        tracing::info!("descriptor: {:?}", descriptor);
         let mut mip_size = (descriptor.size.width as u64 * descriptor.size.height as u64 * descriptor.size.depth_or_array_layers as u64)
-            * descriptor.format.describe().block_size as u64;
+            * descriptor.format.block_size(None).unwrap() as u64;
         let mut size_in_bytes = mip_size;
         for _ in 1..descriptor.mip_level_count {
             mip_size /= 2;
@@ -125,6 +125,7 @@ impl Texture {
                 format,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::RENDER_ATTACHMENT,
                 label,
+                view_formats: &[],
             },
         );
         texture.write(image.as_raw());
@@ -147,6 +148,7 @@ impl Texture {
                 format,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 label,
+                view_formats: &[],
             },
             &img.into_vec(),
         )
@@ -177,6 +179,7 @@ impl Texture {
                 format,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::RENDER_ATTACHMENT,
                 label,
+                view_formats: &[],
             },
         );
         for (layer, img) in data.into_iter().enumerate() {
@@ -190,8 +193,8 @@ impl Texture {
                 &img.into_vec(),
                 wgpu::ImageDataLayout {
                     offset: 0,
-                    bytes_per_row: NonZeroU32::new(texture.size.width * texture.format.describe().block_size as u32),
-                    rows_per_image: NonZeroU32::new(texture.size.height),
+                    bytes_per_row: Some(texture.size.width * texture.format.block_size(None).unwrap()),
+                    rows_per_image: Some(texture.size.height),
                 },
                 wgpu::Extent3d { width: texture.size.width, height: texture.size.height, depth_or_array_layers: 1 },
             );
@@ -224,6 +227,7 @@ impl Texture {
                 format: wgpu::TextureFormat::R32Float,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 label: Some("texture"),
+                view_formats: &[],
             },
             bytemuck::cast_slice(data.as_slice().unwrap()),
         )
@@ -234,11 +238,7 @@ impl Texture {
         self.gpu.queue.write_texture(
             wgpu::ImageCopyTexture { texture: &self.handle, mip_level: 0, origin: wgpu::Origin3d::ZERO, aspect: wgpu::TextureAspect::All },
             bytemuck::cast_slice(data.as_slice().unwrap()),
-            wgpu::ImageDataLayout {
-                offset: 0,
-                bytes_per_row: NonZeroU32::new(4 * size.width),
-                rows_per_image: NonZeroU32::new(size.height),
-            },
+            wgpu::ImageDataLayout { offset: 0, bytes_per_row: Some(4 * size.width), rows_per_image: Some(size.height) },
             size,
         );
     }
@@ -252,8 +252,8 @@ impl Texture {
             data,
             wgpu::ImageDataLayout {
                 offset: 0,
-                bytes_per_row: NonZeroU32::new(self.size.width * self.format.describe().block_size as u32),
-                rows_per_image: NonZeroU32::new(self.size.height),
+                bytes_per_row: Some(self.size.width * self.format.block_size(None).unwrap()),
+                rows_per_image: Some(self.size.height),
             },
             self.size,
         );
@@ -282,6 +282,7 @@ impl Texture {
                 format: wgpu::TextureFormat::Rgba8Unorm,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 label: Some("Texture.new_single_color_texture"),
+                view_formats: &[],
             },
             bytemuck::cast_slice(&[color.x as u8, color.y as u8, color.z as u8, color.w as u8]),
         )
@@ -298,6 +299,7 @@ impl Texture {
                 format: wgpu::TextureFormat::Rgba8Unorm,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 label: Some("default_texture"),
+                view_formats: &[],
             },
             bytemuck::cast_slice(
                 &colors.into_iter().flat_map(|color| vec![color.x as u8, color.y as u8, color.z as u8, color.w as u8]).collect_vec(),
@@ -357,7 +359,7 @@ pub struct TextureReader {
 }
 impl TextureReader {
     pub fn new(gpu: Arc<Gpu>, base_size: wgpu::Extent3d, sample_count: u32, format: wgpu::TextureFormat) -> Self {
-        let block_size = format.describe().block_size as usize;
+        let block_size = format.block_size(None).unwrap() as usize;
         let size = wgpu::Extent3d {
             width: base_size.width * sample_count,
             height: base_size.height * sample_count,
@@ -391,8 +393,8 @@ impl TextureReader {
                 buffer: &self.staging_output_buffer,
                 layout: wgpu::ImageDataLayout {
                     offset: 0,
-                    bytes_per_row: Some(std::num::NonZeroU32::new(self.buffer_dimensions.padded_bytes_per_row as u32).unwrap()),
-                    rows_per_image: Some(std::num::NonZeroU32::new(self.buffer_dimensions.size.height).unwrap()),
+                    bytes_per_row: Some(self.buffer_dimensions.padded_bytes_per_row as u32),
+                    rows_per_image: Some(self.buffer_dimensions.size.height),
                 },
             },
             self.base_size,
@@ -418,7 +420,7 @@ impl TextureReader {
                 self.size.width as usize
                     * self.size.height as usize
                     * self.size.depth_or_array_layers as usize
-                    * self.format.describe().block_size as usize
+                    * self.format.block_size(None).unwrap() as usize
             ];
             for (i, chunk) in padded_buffer.chunks(self.buffer_dimensions.padded_bytes_per_row).enumerate() {
                 result[(i * self.buffer_dimensions.unpadded_bytes_per_row)..((i + 1) * self.buffer_dimensions.unpadded_bytes_per_row)]
@@ -627,6 +629,7 @@ mod tests {
                 format: wgpu::TextureFormat::Rgba8UnormSrgb,
                 usage: wgpu::TextureUsages::COPY_SRC,
                 label: None,
+                view_formats: &[],
             },
             bytemuck::cast_slice(&[255, 255, 255, 255]),
         );

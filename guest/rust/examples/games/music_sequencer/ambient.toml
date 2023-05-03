@@ -3,25 +3,45 @@ id = "music_sequencer"
 name = "Music sequencer"
 version = "0.0.1"
 
-[messages.play]
-description = "Send a message to play the sound at row index."
-fields = { index = "U32" }
-
 [messages.click]
 description = "Select or deselect a note."
-fields = { index = "U32" }
+fields = { track_id = "EntityId", index = "U32" }
 
-[components.note_selection]
-type = { type = "Vec", element_type = "Vec4" }
-name = "Note selection"
-description = "X and Y of the selected notes."
+[messages.set_bpm]
+description = "Set the BPM."
+fields = { bpm = "U32" }
+
+[components.track]
+type = "U32"
+name = "Track"
+description = "A track is a sequence of notes. The value corresponds to the index of the track."
+attributes = ["Networked", "Debuggable"]
+
+[components.track_audio_url]
+type = "String"
+name = "Track Audio URL"
+description = "The URL of the audio file to play for a given track."
+attributes = ["Networked", "Debuggable"]
+
+[components.track_note_selection]
+type = { type = "Vec", element_type = "U32" }
+name = "Track note selection"
+description = "The notes that are currently selected for a given track."
 attributes = ["Networked", "Debuggable"]
 
 [components.next_player_hue]
-type = "F32"
+type = "U32"
 name = "Next Player Hue"
 description = "Controls the hue (in degrees) to use for the next player's color."
-attributes = [
-    "Debuggable",
-    "Resource",
-]
+attributes = ["Debuggable", "Resource"]
+
+[components.player_hue]
+type = { type = "U32" }
+name = "Player Hue"
+attributes = ["Networked", "Debuggable"]
+
+[components.bpm]
+type = { type = "U32" }
+name = "BPM"
+description = "The number of beats per minute."
+attributes = ["Networked", "Debuggable"]

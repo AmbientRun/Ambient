@@ -36,8 +36,8 @@ struct Sample {
     vol: Volume,
 };
 
-let air_volume   = Volume(vec3<f32>(1e-6, 1e-6, 1e-6));
-let cloud_volume = Volume(vec3<f32>(0.1, 0.1, 0.1));
+const air_volume   = Volume(vec3<f32>(1e-6, 1e-6, 1e-6));
+const cloud_volume = Volume(vec3<f32>(0.1, 0.1, 0.1));
 
 fn smooth_min(a: Sample, b: Sample, t: f32) -> Sample {
     let h = max(t - abs(a.dist - b.dist), 0.0);
@@ -139,9 +139,8 @@ fn fs_forward_main(in: VertexOutput) -> @location(0) vec4<f32> {
 
     // let color = get_sky_color(in.uv, global_params.camera_position.xyz, dir, scene, planet);
     let depth = (1. - textureSampleLevel(solids_screen_depth, default_sampler, in.uv, 0.)) * global_params.camera_far;
-    let color = get_sky_color(depth, global_params.camera_position.xyz, dir);
-
-    let color = 1.0 - exp(-color);
+    var color = get_sky_color(depth, global_params.camera_position.xyz, dir);
+    color = 1.0 - exp(-color);
 
     return vec4<f32>(apply_fog(color, global_params.camera_position.xyz, in.world_position.xyz), 1.0);
 }

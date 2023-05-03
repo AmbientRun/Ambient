@@ -1,9 +1,11 @@
 [package]
 name = "ambient_shared_types"
-version = { workspace = true }
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Types shared between the host and the guest of the Ambient runtime."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
 bitflags = { workspace = true }

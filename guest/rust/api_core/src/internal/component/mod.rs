@@ -1,5 +1,5 @@
 use crate::internal::wit;
-use std::{collections::HashMap, marker::PhantomData};
+use std::marker::PhantomData;
 
 pub(crate) mod query;
 pub(crate) mod traits;

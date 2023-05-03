@@ -3,6 +3,9 @@ name = "ambient_rustc"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
+description = "Rust compiler driver for the Ambient runtime. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
 anyhow = { workspace = true }

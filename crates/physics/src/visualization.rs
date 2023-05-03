@@ -11,8 +11,8 @@ use ambient_core::{
     ui_scene,
 };
 use ambient_ecs::{
-    components, dont_store, ensure_has_component, ensure_has_component_with_default, query, Entity, EntityId, FnSystem, Networked,
-    SystemGroup, World,
+    components, dont_store, ensure_has_component, ensure_has_component_with_default, query, Entity,
+    EntityId, FnSystem, Networked, SystemGroup, World,
 };
 use ambient_gizmos::{gizmos, GizmoPrimitive};
 use ambient_std::line_hash;
@@ -22,7 +22,10 @@ use ambient_ui_native::{
 };
 use glam::{vec4, Vec3};
 use itertools::Itertools;
-use physxx::{PxActor, PxDebugLine, PxRenderBuffer, PxRigidActor, PxSceneRef, PxShape, PxShapeFlag, PxVisualizationParameter};
+use physxx::{
+    PxActor, PxDebugLine, PxRenderBuffer, PxRigidActor, PxSceneRef, PxShape, PxShapeFlag,
+    PxVisualizationParameter,
+};
 
 pub use ambient_ecs::generated::components::core::physics::visualizing;
 
@@ -36,11 +39,19 @@ components!("physics", {
 pub fn visualize_collider(world: &mut World, entity: EntityId, enabled: bool) -> Option<()> {
     let actor = world.get_ref(entity, rigid_actor()).ok()?;
     let scene = actor.get_scene()?;
-    for shape in world.get_ref(entity, collider_shapes()).into_iter().flatten() {
+    for shape in world
+        .get_ref(entity, collider_shapes())
+        .into_iter()
+        .flatten()
+    {
         visualize_shape(scene, shape, enabled);
     }
 
-    for shape in world.get_ref(entity, collider_shapes_convex()).into_iter().flatten() {
+    for shape in world
+        .get_ref(entity, collider_shapes_convex())
+        .into_iter()
+        .flatten()
+    {
         visualize_shape(scene, shape, enabled)
     }
 
@@ -68,33 +79,41 @@ pub fn server_systems() -> SystemGroup {
         vec![
             // This is needed as duplicating an object does not carry over the physx flags, but
             // the object is still recognized as visualizing
-            query((visualizing(), collider_shapes().changed())).to_system_with_name("visualization/ensure_visualization", |q, w, qs, _| {
-                for id in q.collect_ids(w, qs) {
-                    visualize_collider(w, id, true);
-                }
-            }),
-            query((visualizing(), collider_shapes())).spawned().to_system_with_name(
-                "visualization/ensure_visualization_spawned",
+            query((visualizing(), collider_shapes().changed())).to_system_with_name(
+                "visualization/ensure_visualization",
                 |q, w, qs, _| {
                     for id in q.collect_ids(w, qs) {
                         visualize_collider(w, id, true);
                     }
                 },
             ),
-            query(visualizing()).despawned().to_system_with_name("visualization/despawned", |q, w, qs, _| {
-                profiling::scope!("server_shape_visualize_remove");
-                let mut ids = Vec::new();
-                for (id, _) in q.iter(w, qs) {
-                    ids.push(id);
-                }
+            query((visualizing(), collider_shapes()))
+                .spawned()
+                .to_system_with_name(
+                    "visualization/ensure_visualization_spawned",
+                    |q, w, qs, _| {
+                        for id in q.collect_ids(w, qs) {
+                            visualize_collider(w, id, true);
+                        }
+                    },
+                ),
+            query(visualizing()).despawned().to_system_with_name(
+                "visualization/despawned",
+                |q, w, qs, _| {
+                    ambient_profiling::scope!("server_shape_visualize_remove");
+                    let mut ids = Vec::new();
+                    for (id, _) in q.iter(w, qs) {
+                        ids.push(id);
+                    }
 
-                for id in ids {
-                    tracing::info!("Removing visualizing from {id:?}");
-                    w.remove_component(id, shape_primitives()).ok();
-                }
-            }),
+                    for id in ids {
+                        tracing::info!("Removing visualizing from {id:?}");
+                        w.remove_component(id, shape_primitives()).ok();
+                    }
+                },
+            ),
             query(visualizing()).to_system_with_name("visualization/shapes", |q, w, qs, _| {
-                profiling::scope!("server_shape_visualize");
+                ambient_profiling::scope!("server_shape_visualize");
                 let mut primitives = Vec::new();
 
                 for (id, ()) in q.iter(w, qs) {
@@ -108,14 +127,18 @@ pub fn server_systems() -> SystemGroup {
 
                     if let Ok(shape) = w.get_ref(id, physics_shape()) {
                         let actor = shape.get_actor().unwrap();
-                        current.push(GizmoPrimitive::sphere(actor.get_global_pose().translation(), 0.1).with_color(Vec3::Y));
+                        current.push(
+                            GizmoPrimitive::sphere(actor.get_global_pose().translation(), 0.1)
+                                .with_color(Vec3::Y),
+                        );
                     }
 
                     primitives.push((id, current))
                 }
 
                 for (id, p) in primitives {
-                    w.add_component(id, shape_primitives(), p).expect("Invalid component");
+                    w.add_component(id, shape_primitives(), p)
+                        .expect("Invalid component");
                 }
             }),
             Box::new(FnSystem::new(|world, _| {
@@ -129,7 +152,11 @@ pub fn server_systems() -> SystemGroup {
                     }
                 }
 
-                let existing = query(()).incl(physx_viz_line()).iter(world, None).map(|(id, _)| id).collect_vec();
+                let existing = query(())
+                    .incl(physx_viz_line())
+                    .iter(world, None)
+                    .map(|(id, _)| id)
+                    .collect_vec();
                 for (entity, line) in existing.iter().zip(render_buffer.lines.iter()) {
                     let _ = world.set_if_changed(*entity, physx_viz_line(), line.clone());
                 }
@@ -137,7 +164,10 @@ pub fn server_systems() -> SystemGroup {
                 #[allow(clippy::comparison_chain)]
                 if render_buffer.lines.len() > existing.len() {
                     for i in existing.len()..render_buffer.lines.len() {
-                        Entity::new().with_default(dont_store()).with(physx_viz_line(), render_buffer.lines[i].clone()).spawn(world);
+                        Entity::new()
+                            .with_default(dont_store())
+                            .with(physx_viz_line(), render_buffer.lines[i].clone())
+                            .spawn(world);
                     }
                 } else if existing.len() > render_buffer.lines.len() {
                     for entity in existing.iter().skip(render_buffer.lines.len()) {
@@ -174,7 +204,7 @@ pub fn client_systems() -> SystemGroup {
                 }
             }),
             query((shape_primitives(),)).to_system(|q, world, qs, _| {
-                profiling::scope!("shape_gizmo_render");
+                ambient_profiling::scope!("shape_gizmo_render");
                 let mut scope = world.resource(gizmos()).scope(line_hash!());
                 for (_, (prim,)) in q.iter(world, qs) {
                     scope.draw(prim.iter().copied());

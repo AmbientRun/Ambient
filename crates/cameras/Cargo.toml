@@ -3,14 +3,17 @@ name = "ambient_cameras"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
+description = "Ambient cameras. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_std = { path = "../std" }
-ambient_ecs = { path = "../ecs" }
-ambient_core = { path = "../core" }
-ambient_element = { path = "../../shared_crates/element" }
+ambient_std = { path = "../std" , version = "0.2.0-rc5" }
+ambient_ecs = { path = "../ecs" , version = "0.2.0-rc5" }
+ambient_core = { path = "../core" , version = "0.2.0-rc5" }
+ambient_element = { path = "../../shared_crates/element" , version = "0.2.0-rc5" }
 winit = { workspace = true }
 derive_more = { workspace = true }
 glam = { workspace = true }

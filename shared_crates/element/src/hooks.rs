@@ -12,7 +12,9 @@ use ambient_cb::{cb, Cb};
 #[cfg(feature = "native")]
 use ambient_core::runtime;
 #[cfg(feature = "native")]
-use ambient_guest_bridge::ecs::{world_events, ComponentQuery, FrameEvent, QueryState, TypedReadQuery};
+use ambient_guest_bridge::ecs::{
+    world_events, ComponentQuery, FrameEvent, QueryState, TypedReadQuery,
+};
 use ambient_guest_bridge::ecs::{ComponentValue, World};
 use ambient_guest_bridge::RuntimeMessage;
 #[cfg(feature = "guest")]
@@ -76,7 +78,10 @@ impl<'a> Hooks<'a> {
     /// The same as [Hooks::use_state], but with a function that returns the initial value.
     ///
     /// This can be used to avoid cloning the initial value each time the [Element](crate::Element) is re-rendered.
-    pub fn use_state_with<T: Clone + Debug + Send + 'static, F: FnOnce(&mut World) -> T>(&mut self, init: F) -> (T, Setter<T>) {
+    pub fn use_state_with<T: Clone + Debug + Send + 'static, F: FnOnce(&mut World) -> T>(
+        &mut self,
+        init: F,
+    ) -> (T, Setter<T>) {
         let index = self.state_index;
         self.state_index += 1;
         let value = {
@@ -118,13 +123,19 @@ impl<'a> Hooks<'a> {
     ///
     /// **Note**: This hook does not rely on order, and is therefore safe to use inside
     /// conditionals.
-    pub fn provide_context<T: Clone + Debug + Send + Sync + 'static>(&mut self, default_value: impl FnOnce() -> T) -> Setter<T> {
+    pub fn provide_context<T: Clone + Debug + Send + Sync + 'static>(
+        &mut self,
+        default_value: impl FnOnce() -> T,
+    ) -> Setter<T> {
         let instance = self.tree.instances.get_mut(&self.instance_id).unwrap();
         let type_id = TypeId::of::<T>();
         instance
             .hooks_context_state
             .entry(type_id)
-            .or_insert_with(|| HookContext { value: Box::new(default_value()), listeners: HashSet::new() });
+            .or_insert_with(|| HookContext {
+                value: Box::new(default_value()),
+                listeners: HashSet::new(),
+            });
         let environment = self.environment.clone();
         let element = self.instance_id.clone();
         cb(move |new_value| {
@@ -140,7 +151,9 @@ impl<'a> Hooks<'a> {
     /// Consume a context of type `T` provided further up the tree.
     ///
     /// To provide context, use [Self::provide_context].
-    pub fn consume_context<T: Clone + Debug + Sync + Send + 'static>(&mut self) -> Option<(T, Setter<T>)> {
+    pub fn consume_context<T: Clone + Debug + Sync + Send + 'static>(
+        &mut self,
+    ) -> Option<(T, Setter<T>)> {
         let type_id = TypeId::of::<T>();
         if let Some(provider) = self.tree.get_context_provider(&self.instance_id, type_id) {
             let value = {
@@ -151,7 +164,9 @@ impl<'a> Hooks<'a> {
             };
             {
                 let instance = self.tree.instances.get_mut(&self.instance_id).unwrap();
-                instance.hooks_context_listening.insert((provider.clone(), type_id));
+                instance
+                    .hooks_context_listening
+                    .insert((provider.clone(), type_id));
             }
             let environment = self.environment.clone();
             Some((
@@ -174,7 +189,10 @@ impl<'a> Hooks<'a> {
     ///
     /// The function should return another function; that function will be called when the [Element](crate::Element) is unmounted.
     #[tracing::instrument(level = "debug", skip_all)]
-    pub fn use_spawn<F: FnOnce(&mut World) -> R + Sync + Send + 'static, R: FnOnce(&mut World) + Sync + Send + 'static>(
+    pub fn use_spawn<
+        F: FnOnce(&mut World) -> R + Sync + Send + 'static,
+        R: FnOnce(&mut World) + Sync + Send + 'static,
+    >(
         &mut self,
         func: F,
     ) {
@@ -187,7 +205,10 @@ impl<'a> Hooks<'a> {
     /// Register a function to be called when a [RuntimeMessage] is received.
     ///
     /// The subscription will be automatically cancelled when this [Element](crate::Element) is unmounted.
-    pub fn use_runtime_message<T: RuntimeMessage>(&mut self, func: impl Fn(&mut World, &T) + Sync + Send + 'static) {
+    pub fn use_runtime_message<T: RuntimeMessage>(
+        &mut self,
+        func: impl Fn(&mut World, &T) + Sync + Send + 'static,
+    ) {
         #[cfg(feature = "native")]
         {
             let reader = self.use_ref_with(|world| world.resource(world_events()).reader());
@@ -223,7 +244,10 @@ impl<'a> Hooks<'a> {
     ///
     /// The subscription will be automatically cancelled when this [Element](crate::Element) is unmounted.
     #[cfg(feature = "guest")]
-    pub fn use_module_message<T: ModuleMessage>(&mut self, func: impl Fn(&mut World, Source, &T) + Sync + Send + 'static) {
+    pub fn use_module_message<T: ModuleMessage>(
+        &mut self,
+        func: impl Fn(&mut World, Source, &T) + Sync + Send + 'static,
+    ) {
         let handler = self.use_ref_with(|_| None);
         *handler.lock() = Some(cb(func));
         self.use_effect((), move |_, _| {
@@ -239,12 +263,16 @@ impl<'a> Hooks<'a> {
     /// The task is aborted when this [Element](crate::Element) is removed.
     #[cfg(feature = "native")]
     #[tracing::instrument(level = "debug", skip_all)]
-    pub fn use_task<Fut: Future<Output = ()> + Send + 'static>(&mut self, task: impl FnOnce(&mut World) -> Fut + Send + Sync + 'static) {
+    pub fn use_task<Fut: Future<Output = ()> + Send + 'static>(
+        &mut self,
+        task: impl FnOnce(&mut World) -> Fut + Send + Sync + 'static,
+    ) {
         if let Some(ref mut on_spawn) = self.on_spawn {
             let spawn = Box::new(move |w: &mut World| {
                 let task = task(w);
                 let task = w.resource(runtime()).spawn(task);
-                Box::new(move |_: &mut World| task.abort()) as Box<dyn FnOnce(&mut World) + Sync + Send>
+                Box::new(move |_: &mut World| task.abort())
+                    as Box<dyn FnOnce(&mut World) + Sync + Send>
             });
 
             on_spawn.push(spawn)
@@ -257,7 +285,10 @@ impl<'a> Hooks<'a> {
     ///
     /// Automatically triggers a re-render on this [Element](crate::Element) when the future completes.
     #[cfg(feature = "native")]
-    pub fn use_async<T, U>(&mut self, future: impl FnOnce(&mut World) -> T + Send + Sync + 'static) -> Option<U>
+    pub fn use_async<T, U>(
+        &mut self,
+        future: impl FnOnce(&mut World) -> T + Send + Sync + 'static,
+    ) -> Option<U>
     where
         T: Future<Output = U> + Send + 'static,
         U: Debug + ComponentValue,
@@ -305,7 +336,11 @@ impl<'a> Hooks<'a> {
         }
 
         let (state, set_state) = self.use_state_with(|_| {
-            Arc::new(State { task: AtomicRefCell::new(None), value: Mutex::new(None), prev_deps: AtomicRefCell::new(None) })
+            Arc::new(State {
+                task: AtomicRefCell::new(None),
+                value: Mutex::new(None),
+                prev_deps: AtomicRefCell::new(None),
+            })
         });
 
         let mut prev_deps = state.prev_deps.borrow_mut();
@@ -337,11 +372,14 @@ impl<'a> Hooks<'a> {
         x
     }
 
-    #[profiling::function]
+    #[ambient_profiling::function]
     /// Executes a function each frame.
     pub fn use_frame<F: Fn(&mut World) + Sync + Send + 'static>(&mut self, on_frame: F) {
         let mut env = self.environment.lock();
-        let listeners = env.frame_listeners.entry(self.instance_id.clone()).or_insert_with(Vec::new);
+        let listeners = env
+            .frame_listeners
+            .entry(self.instance_id.clone())
+            .or_insert_with(Vec::new);
         listeners.push(FrameListener(Arc::new(on_frame)));
     }
 
@@ -352,11 +390,15 @@ impl<'a> Hooks<'a> {
     ///
     /// **Note**: Locking the mutex and modifying the value won't cause a re-render. To re-render the element,
     /// use [Self::use_rerender_signal].
-    pub fn use_ref_with<T: Send + Debug + 'static>(&mut self, init: impl FnOnce(&mut World) -> T) -> Arc<Mutex<T>> {
-        self.use_state_with(|world| Arc::new(Mutex::new(init(world)))).0
+    pub fn use_ref_with<T: Send + Debug + 'static>(
+        &mut self,
+        init: impl FnOnce(&mut World) -> T,
+    ) -> Arc<Mutex<T>> {
+        self.use_state_with(|world| Arc::new(Mutex::new(init(world))))
+            .0
     }
 
-    #[profiling::function]
+    #[ambient_profiling::function]
 
     /// A computation that runs once on spawn, and when `dependencies` change. The computation is not re-run
     /// if the `dependencies` are the same - that is, the computation is [memoized](https://en.wikipedia.org/wiki/Memoization).
@@ -388,11 +430,14 @@ impl<'a> Hooks<'a> {
         }
     }
 
-    #[profiling::function]
+    #[ambient_profiling::function]
     /// Run a function for its side effects each time a dependency changes.
     ///
     /// The function should return another function; that function will be called when the [Element](crate::Element) is unmounted.
-    pub fn use_effect<D: PartialEq + Debug + Sync + Send + 'static, R: FnOnce(&mut World) + Sync + Send + 'static>(
+    pub fn use_effect<
+        D: PartialEq + Debug + Sync + Send + 'static,
+        R: FnOnce(&mut World) + Sync + Send + 'static,
+    >(
         &mut self,
         dependencies: D,
         run: impl FnOnce(&mut World, &D) -> R + Sync + Send,
@@ -424,7 +469,7 @@ impl<'a> Hooks<'a> {
             if let Some(cleanup_prev) = std::mem::replace(&mut *cleanup_prev, None) {
                 cleanup_prev.0(self.world);
             }
-            profiling::scope!("use_effect_run");
+            ambient_profiling::scope!("use_effect_run");
             *cleanup_prev = Some(Cleanup(Box::new(run(self.world, &dependencies))));
             *prev_deps = Some(dependencies);
         }
@@ -435,7 +480,10 @@ impl<'a> Hooks<'a> {
     pub fn use_system<
         'b,
         R: ComponentQuery<'b> + Clone + 'static,
-        F: Fn(&TypedReadQuery<R>, &mut World, Option<&mut QueryState>, &FrameEvent) + Send + Sync + 'static,
+        F: Fn(&TypedReadQuery<R>, &mut World, Option<&mut QueryState>, &FrameEvent)
+            + Send
+            + Sync
+            + 'static,
     >(
         &mut self,
         query: TypedReadQuery<R>,
@@ -454,7 +502,15 @@ impl<'a> Hooks<'a> {
     /// The components to query are anything that can be passed to [query](ambient_guest_bridge::api::prelude::query).
     ///
     /// This can be used to track the state of entities in the ECS within an element.
-    pub fn use_query<Components: ambient_guest_bridge::api::ecs::ComponentsTuple + Debug + Copy + Clone + Sync + Send + 'static>(
+    pub fn use_query<
+        Components: ambient_guest_bridge::api::ecs::ComponentsTuple
+            + Debug
+            + Copy
+            + Clone
+            + Sync
+            + Send
+            + 'static,
+    >(
         &mut self,
         components: Components,
     ) -> Vec<(ambient_guest_bridge::ecs::EntityId, Components::Data)> {
@@ -620,7 +676,11 @@ pub(crate) struct HooksEnvironment {
 }
 impl HooksEnvironment {
     pub(crate) fn new() -> Self {
-        Self { set_states: Vec::new(), set_contexts: Vec::new(), frame_listeners: HashMap::new() }
+        Self {
+            set_states: Vec::new(),
+            set_contexts: Vec::new(),
+            frame_listeners: HashMap::new(),
+        }
     }
     pub fn on_element_removed(&mut self, instance_id: &str) {
         self.frame_listeners.remove(instance_id);

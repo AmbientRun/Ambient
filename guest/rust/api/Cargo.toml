@@ -4,7 +4,6 @@ documentation = "https://docs.rs/ambient_api"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 name = "ambient_api"
-readme = "../../../README.md"
 repository = "https://github.com/AmbientRun/Ambient"
 rust-version = { workspace = true }
 version = { workspace = true }

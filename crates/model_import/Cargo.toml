@@ -3,21 +3,24 @@ name = "ambient_model_import"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
+description = "Ambient model importer. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_std = { path = "../std" }
-ambient_core = { path = "../core" }
-ambient_ecs = { path = "../ecs" }
-ambient_renderer = { path = "../renderer" }
-ambient_element = { path = "../../shared_crates/element" }
-ambient_ui_native = { path = "../ui_native" }
-ambient_physics = { path = "../physics" }
-ambient_model = { path = "../model" }
-ambient_animation = { path = "../animation" }
-ambient_editor_derive = { path = "../../shared_crates/editor_derive" }
-physxx = { path = "../../libs/physxx" }
+ambient_std = { path = "../std" , version = "0.2.0-rc5" }
+ambient_core = { path = "../core" , version = "0.2.0-rc5" }
+ambient_ecs = { path = "../ecs" , version = "0.2.0-rc5" }
+ambient_renderer = { path = "../renderer" , version = "0.2.0-rc5" }
+ambient_element = { path = "../../shared_crates/element" , version = "0.2.0-rc5" }
+ambient_ui_native = { path = "../ui_native" , version = "0.2.0-rc5" }
+ambient_physics = { path = "../physics" , version = "0.2.0-rc5" }
+ambient_model = { path = "../model" , version = "0.2.0-rc5" }
+ambient_animation = { path = "../animation" , version = "0.2.0-rc5" }
+ambient_editor_derive = { path = "../../shared_crates/editor_derive" , version = "0.2.0-rc5" }
+physxx = { path = "../../libs/physxx" , version = "0.2.0-rc5" }
 glam = { workspace = true }
 env_logger = { workspace = true }
 gltf = { workspace = true }

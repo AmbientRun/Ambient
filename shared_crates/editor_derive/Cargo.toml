@@ -1,9 +1,12 @@
 
 [package]
 name = "ambient_editor_derive"
-version = { workspace = true }
-rust-version = { workspace = true }
 edition = "2021"
+description = "A procedural macro to generate Ambient UI code for a struct or enum."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [lib]
 proc-macro = true

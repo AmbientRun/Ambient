@@ -1,6 +1,8 @@
 use std::fmt::Debug;
 
-use ambient_ecs::{Archetype, ArchetypeFilter, Component, ComponentDesc, ComponentValue, EntityId, System, World};
+use ambient_ecs::{
+    Archetype, ArchetypeFilter, Component, ComponentDesc, ComponentValue, EntityId, System, World,
+};
 use ambient_std::sparse_vec::SparseVec;
 use itertools::Itertools;
 
@@ -17,13 +19,22 @@ pub struct ArchChangeDetection {
 }
 impl ArchChangeDetection {
     pub fn new() -> Self {
-        Self { arch_data_versions: SparseVec::new(), arch_layout_versions: SparseVec::new() }
+        Self {
+            arch_data_versions: SparseVec::new(),
+            arch_layout_versions: SparseVec::new(),
+        }
     }
-    pub fn changed(&mut self, arch: &Archetype, component: impl Into<ComponentDesc>, layout_version: u64) -> bool {
+    pub fn changed(
+        &mut self,
+        arch: &Archetype,
+        component: impl Into<ComponentDesc>,
+        layout_version: u64,
+    ) -> bool {
         let prev_data_version = self.arch_data_versions.get(arch.id).copied();
         let prev_layout_version = self.arch_layout_versions.get(arch.id).copied();
         let data_version = arch.get_component_data_version(component.into());
-        let changed = prev_data_version != data_version || Some(layout_version) != prev_layout_version;
+        let changed =
+            prev_data_version != data_version || Some(layout_version) != prev_layout_version;
         self.arch_data_versions.set(arch.id, data_version.unwrap());
         self.arch_layout_versions.set(arch.id, layout_version);
         changed
@@ -38,7 +49,11 @@ pub struct ComponentToGpuSystem<T: ComponentValue + bytemuck::Pod> {
     changed: ArchChangeDetection,
 }
 impl<T: ComponentValue + bytemuck::Pod> ComponentToGpuSystem<T> {
-    pub fn new(format: GpuComponentFormat, source_component: Component<T>, destination_component: GpuComponentId) -> Self {
+    pub fn new(
+        format: GpuComponentFormat,
+        source_component: Component<T>,
+        destination_component: GpuComponentId,
+    ) -> Self {
         assert_eq!(format.size(), std::mem::size_of::<T>() as u64);
         Self {
             format,
@@ -55,14 +70,20 @@ impl<T: ComponentValue + bytemuck::Pod> ComponentToGpuSystem<T> {
 }
 impl<T: ComponentValue + bytemuck::Pod> System<GpuWorldSyncEvent> for ComponentToGpuSystem<T> {
     fn run(&mut self, world: &mut World, _: &GpuWorldSyncEvent) {
-        profiling::scope!("ComponentToGpuSystem.run");
+        ambient_profiling::scope!("ComponentToGpuSystem.run");
         let gpu_world = world.resource(gpu_world()).lock();
         let gpu = world.resource(gpu()).clone();
         for arch in self.source_archetypes.iter_archetypes(world) {
-            if let Some((gpu_buff, offset, layout_version)) = gpu_world.get_buffer(self.format, self.destination_component, arch.id) {
-                if self.changed.changed(arch, self.source_component, layout_version) {
+            if let Some((gpu_buff, offset, layout_version)) =
+                gpu_world.get_buffer(self.format, self.destination_component, arch.id)
+            {
+                if self
+                    .changed
+                    .changed(arch, self.source_component, layout_version)
+                {
                     let buf = arch.get_component_buffer(self.source_component).unwrap();
-                    gpu.queue.write_buffer(gpu_buff, offset, bytemuck::cast_slice(&buf.data));
+                    gpu.queue
+                        .write_buffer(gpu_buff, offset, bytemuck::cast_slice(&buf.data));
                 }
             }
         }
@@ -89,25 +110,41 @@ impl<A: ComponentValue, B: bytemuck::Pod> MappedComponentToGpuSystem<A, B> {
         map: Box<dyn Fn(&World, EntityId, &A) -> B + Sync + Send>,
     ) -> Self {
         assert_eq!(format.size(), std::mem::size_of::<B>() as u64);
-        Self { format, source_component, destination_component, map, changed: ArchChangeDetection::new() }
+        Self {
+            format,
+            source_component,
+            destination_component,
+            map,
+            changed: ArchChangeDetection::new(),
+        }
     }
 }
-impl<A: ComponentValue, B: bytemuck::Pod> System<GpuWorldSyncEvent> for MappedComponentToGpuSystem<A, B> {
+impl<A: ComponentValue, B: bytemuck::Pod> System<GpuWorldSyncEvent>
+    for MappedComponentToGpuSystem<A, B>
+{
     fn run(&mut self, world: &mut World, _: &GpuWorldSyncEvent) {
-        profiling::scope!("MappedComponentToGpu.run");
+        ambient_profiling::scope!("MappedComponentToGpu.run");
         let gpu_world = world.resource(gpu_world()).lock();
         let gpu = world.resource(gpu());
         for arch in world.archetypes() {
-            if let Some((gpu_buff, offset, layout_version)) = gpu_world.get_buffer(self.format, self.destination_component, arch.id) {
-                if self.changed.changed(arch, self.source_component, layout_version) {
+            if let Some((gpu_buff, offset, layout_version)) =
+                gpu_world.get_buffer(self.format, self.destination_component, arch.id)
+            {
+                if self
+                    .changed
+                    .changed(arch, self.source_component, layout_version)
+                {
                     let buf = arch.get_component_buffer(self.source_component).unwrap();
                     let data = buf
                         .data
                         .iter()
                         .enumerate()
-                        .map(&|(index, value)| (self.map)(world, arch.get_entity_id_from_index(index), value))
+                        .map(&|(index, value)| {
+                            (self.map)(world, arch.get_entity_id_from_index(index), value)
+                        })
                         .collect_vec();
-                    gpu.queue.write_buffer(gpu_buff, offset, bytemuck::cast_slice(&data));
+                    gpu.queue
+                        .write_buffer(gpu_buff, offset, bytemuck::cast_slice(&data));
                 }
             }
         }
