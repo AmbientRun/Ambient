@@ -29,7 +29,10 @@ impl SyncAssetKey<Arc<GpuMesh>> for QuadMeshKey {
 pub struct UnitQuadMeshKey;
 impl SyncAssetKey<Arc<GpuMesh>> for UnitQuadMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
-        GpuMesh::from_mesh(assets, &Mesh::from(QuadMesh::from_position_size(-Vec2::ONE * 0.5, Vec2::ONE)))
+        GpuMesh::from_mesh(
+            assets,
+            &Mesh::from(QuadMesh::from_position_size(-Vec2::ONE * 0.5, Vec2::ONE)),
+        )
     }
 }
 
@@ -45,13 +48,28 @@ impl SyncAssetKey<Arc<GpuMesh>> for CubeMeshKey {
 pub struct UnitCubeMeshKey;
 impl SyncAssetKey<Arc<GpuMesh>> for UnitCubeMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
-        GpuMesh::from_mesh(assets, &Mesh::from(CubeMesh { position: -Vec3::ONE * 0.5, size: Vec3::ONE, color: vec4(1.0, 1.0, 1.0, 1.0) }))
+        GpuMesh::from_mesh(
+            assets,
+            &Mesh::from(CubeMesh {
+                position: -Vec3::ONE * 0.5,
+                size: Vec3::ONE,
+                color: vec4(1.0, 1.0, 1.0, 1.0),
+            }),
+        )
     }
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct SphereMeshKey(pub UVSphereMesh);
 impl SyncAssetKey<Arc<GpuMesh>> for SphereMeshKey {
+    fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
+        GpuMesh::from_mesh(assets, &Mesh::from(self.0))
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct CapsuleMeshKey(pub CapsuleMesh);
+impl SyncAssetKey<Arc<GpuMesh>> for CapsuleMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
         GpuMesh::from_mesh(assets, &Mesh::from(self.0))
     }
@@ -80,8 +98,16 @@ impl SyncAssetKey<Arc<GpuMesh>> for GridMeshKey {
 pub fn triangle() -> Mesh {
     Mesh {
         name: "triangle".into(),
-        positions: Some(vec![vec3(0.0, 0.5, 0.0), vec3(-0.5, -0.5, 0.0), vec3(0.5, -0.5, 0.0)]),
-        colors: Some(vec![vec4(1.0, 0.0, 0.0, 1.), vec4(0.0, 1.0, 0.0, 1.), vec4(0.0, 0.0, 1.0, 1.)]),
+        positions: Some(vec![
+            vec3(0.0, 0.5, 0.0),
+            vec3(-0.5, -0.5, 0.0),
+            vec3(0.5, -0.5, 0.0),
+        ]),
+        colors: Some(vec![
+            vec4(1.0, 0.0, 0.0, 1.),
+            vec4(0.0, 1.0, 0.0, 1.),
+            vec4(0.0, 0.0, 1.0, 1.),
+        ]),
         normals: None,
         tangents: None,
         texcoords: Vec::new(),
@@ -145,7 +171,12 @@ impl From<QuadMesh> for Mesh {
             name: "quad".into(),
             positions: Some(quad.corners.into_iter().collect()),
             colors: None,
-            normals: Some(vec![vec3(0., 0., 1.), vec3(0., 0., 1.), vec3(0., 0., 1.), vec3(0., 0., 1.)]),
+            normals: Some(vec![
+                vec3(0., 0., 1.),
+                vec3(0., 0., 1.),
+                vec3(0., 0., 1.),
+                vec3(0., 0., 1.),
+            ]),
             tangents: None,
             texcoords: if quad.flip_uvs {
                 vec![vec![vec2(0., 0.), vec2(1., 0.), vec2(0., 1.), vec2(1., 1.)]]
