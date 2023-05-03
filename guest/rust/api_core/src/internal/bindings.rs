@@ -4672,6 +4672,23 @@ pub mod component{
                       pub type EntityId = super::types::EntityId;
                       pub type Vec3 = super::types::Vec3;
                       pub type EntityData<'a,> = super::component::Entity<'a,>;
+                      /// Animation clip data
+                      #[derive(Clone)]
+                      pub struct AnimationClip {
+                        /// BinderId for the animation tracks
+                        pub binders: wit_bindgen::rt::vec::Vec::<wit_bindgen::rt::string::String>,
+                        /// Duration in seconds
+                        pub duration: f32,
+                        /// If the asset is loaded (duration will be 0 and binders empty if false)
+                        pub loaded: bool,
+                        /// Error that occured while fetching asset
+                        pub error: wit_bindgen::rt::string::String,
+                      }
+                      impl core::fmt::Debug for AnimationClip {
+                        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                          f.debug_struct("AnimationClip").field("binders", &self.binders).field("duration", &self.duration).field("loaded", &self.loaded).field("error", &self.error).finish()
+                        }
+                      }
                       /// An action in an animation.
                       #[derive(Clone)]
                       pub struct AnimationAction<'a,> {
@@ -4702,856 +4719,893 @@ pub mod component{
                         }
                       }
                       #[allow(clippy::all)]
-                      pub fn spawn(data: EntityData<'_,>,) -> EntityId{
+                      pub fn set_animation_blend(entity: EntityId,weights: &[f32],time: &[f32],absolute_time: bool,){
                         
                         #[allow(unused_imports)]
                         use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                         unsafe {
-                          let mut cleanup_list = Vec::new();
+                          let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                          let vec1 = weights;
+                          let ptr1 = vec1.as_ptr() as i32;
+                          let len1 = vec1.len() as i32;
+                          let vec2 = time;
+                          let ptr2 = vec2.as_ptr() as i32;
+                          let len2 = vec2.len() as i32;
                           
-                          #[repr(align(8))]
-                          struct RetArea([u8; 16]);
-                          let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                          let vec50 = data;
-                          let len50 = vec50.len() as i32;
-                          let layout50 = alloc::Layout::from_size_align_unchecked(vec50.len() * 96, 8);
-                          let result50 = if layout50.size() != 0
+                          #[link(wasm_import_module = "entity")]
+                          extern "C" {
+                            #[cfg_attr(target_arch = "wasm32", link_name = "set-animation-blend")]
+                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_set-animation-blend")]
+                            fn wit_import(
+                            _: i64, _: i64, _: i32, _: i32, _: i32, _: i32, _: i32, );
+                          }
+                          wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), ptr1, len1, ptr2, len2, match absolute_time { true => 1, false => 0 });
+                        }
+                      }
+                      #[allow(clippy::all)]
+                      pub fn has_animation_clip(clip_url: &str,) -> bool{
+                        
+                        #[allow(unused_imports)]
+                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                        unsafe {
+                          let vec0 = clip_url;
+                          let ptr0 = vec0.as_ptr() as i32;
+                          let len0 = vec0.len() as i32;
+                          
+                          #[link(wasm_import_module = "entity")]
+                          extern "C" {
+                            #[cfg_attr(target_arch = "wasm32", link_name = "has-animation-clip")]
+                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_has-animation-clip")]
+                            fn wit_import(
+                            _: i32, _: i32, ) -> i32;
+                          }
+                          let ret = wit_import(ptr0, len0);
                           {
-                            let ptr = alloc::alloc(layout50);
+                            #[cfg(not(debug_assertions))]
+                            { core::mem::transmute::<u8, bool>(ret as u8) }
+                            #[cfg(debug_assertions)]
+                            {
+                              match ret {
+                                0 => false,
+                                1 => true,
+                                _ => panic!("invalid bool discriminant"),
+                              }
+                            }
+                          }
+                        }
+                      }
+                      #[allow(clippy::all)]
+                      pub fn get_animation_clips(clips: &[&str],) -> wit_bindgen::rt::vec::Vec::<AnimationClip>{
+                        
+                        #[allow(unused_imports)]
+                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                        unsafe {
+                          
+                          #[repr(align(4))]
+                          struct RetArea([u8; 8]);
+                          let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                          let vec1 = clips;
+                          let len1 = vec1.len() as i32;
+                          let layout1 = alloc::Layout::from_size_align_unchecked(vec1.len() * 8, 4);
+                          let result1 = if layout1.size() != 0
+                          {
+                            let ptr = alloc::alloc(layout1);
                             if ptr.is_null()
                             {
-                              alloc::handle_alloc_error(layout50);
+                              alloc::handle_alloc_error(layout1);
                             }
                             ptr
                           }else {
                             core::ptr::null_mut()
                           };
-                          for (i, e) in vec50.into_iter().enumerate() {
-                            let base = result50 as i32 + (i as i32) * 96;
+                          for (i, e) in vec1.into_iter().enumerate() {
+                            let base = result1 as i32 + (i as i32) * 8;
                             {
-                              let (t0_0, t0_1, ) = e;
-                              *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t0_0);
-                              match t0_1 {
-                                super::component::Value::TypeEmpty(e) => {
-                                  *((base + 8) as *mut u8) = (0i32) as u8;
-                                  let () = e;
-                                  
-                                },
-                                super::component::Value::TypeBool(e) => {
-                                  *((base + 8) as *mut u8) = (1i32) as u8;
-                                  *((base + 16) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
-                                  
-                                },
-                                super::component::Value::TypeEntityId(e) => {
-                                  *((base + 8) as *mut u8) = (2i32) as u8;
-                                  let super::types::EntityId{ id0:id02, id1:id12, } = e;
-                                  *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(id02);
-                                  *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(id12);
-                                  
-                                },
-                                super::component::Value::TypeF32(e) => {
-                                  *((base + 8) as *mut u8) = (3i32) as u8;
-                                  *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(e);
-                                  
-                                },
-                                super::component::Value::TypeF64(e) => {
-                                  *((base + 8) as *mut u8) = (4i32) as u8;
-                                  *((base + 16) as *mut f64) = wit_bindgen::rt::as_f64(e);
-                                  
-                                },
-                                super::component::Value::TypeMat4(e) => {
-                                  *((base + 8) as *mut u8) = (5i32) as u8;
-                                  let super::types::Mat4{ x:x3, y:y3, z:z3, w:w3, } = e;
-                                  let super::types::Vec4{ x:x4, y:y4, z:z4, w:w4, } = x3;
-                                  *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x4);
-                                  *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y4);
-                                  *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z4);
-                                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w4);
-                                  let super::types::Vec4{ x:x5, y:y5, z:z5, w:w5, } = y3;
-                                  *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(x5);
-                                  *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(y5);
-                                  *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(z5);
-                                  *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(w5);
-                                  let super::types::Vec4{ x:x6, y:y6, z:z6, w:w6, } = z3;
-                                  *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(x6);
-                                  *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(y6);
-                                  *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(z6);
-                                  *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(w6);
-                                  let super::types::Vec4{ x:x7, y:y7, z:z7, w:w7, } = w3;
-                                  *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(x7);
-                                  *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(y7);
-                                  *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(z7);
-                                  *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(w7);
-                                  
-                                },
-                                super::component::Value::TypeI32(e) => {
-                                  *((base + 8) as *mut u8) = (6i32) as u8;
-                                  *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
-                                  
-                                },
-                                super::component::Value::TypeQuat(e) => {
-                                  *((base + 8) as *mut u8) = (7i32) as u8;
-                                  let super::types::Quat{ x:x8, y:y8, z:z8, w:w8, } = e;
-                                  *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x8);
-                                  *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y8);
-                                  *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z8);
-                                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w8);
-                                  
-                                },
-                                super::component::Value::TypeString(e) => {
-                                  *((base + 8) as *mut u8) = (8i32) as u8;
-                                  let vec9 = e;
-                                  let ptr9 = vec9.as_ptr() as i32;
-                                  let len9 = vec9.len() as i32;
-                                  *((base + 20) as *mut i32) = len9;
-                                  *((base + 16) as *mut i32) = ptr9;
-                                  
-                                },
-                                super::component::Value::TypeU8(e) => {
-                                  *((base + 8) as *mut u8) = (9i32) as u8;
-                                  *((base + 16) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
-                                  
-                                },
-                                super::component::Value::TypeU32(e) => {
-                                  *((base + 8) as *mut u8) = (10i32) as u8;
-                                  *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
-                                  
-                                },
-                                super::component::Value::TypeU64(e) => {
-                                  *((base + 8) as *mut u8) = (11i32) as u8;
-                                  *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(e);
-                                  
-                                },
-                                super::component::Value::TypeVec2(e) => {
-                                  *((base + 8) as *mut u8) = (12i32) as u8;
-                                  let super::types::Vec2{ x:x10, y:y10, } = e;
-                                  *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x10);
-                                  *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y10);
-                                  
-                                },
-                                super::component::Value::TypeVec3(e) => {
-                                  *((base + 8) as *mut u8) = (13i32) as u8;
-                                  let super::types::Vec3{ x:x11, y:y11, z:z11, } = e;
-                                  *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x11);
-                                  *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y11);
-                                  *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z11);
-                                  
-                                },
-                                super::component::Value::TypeVec4(e) => {
-                                  *((base + 8) as *mut u8) = (14i32) as u8;
-                                  let super::types::Vec4{ x:x12, y:y12, z:z12, w:w12, } = e;
-                                  *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x12);
-                                  *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y12);
-                                  *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z12);
-                                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w12);
-                                  
-                                },
-                                super::component::Value::TypeUvec2(e) => {
-                                  *((base + 8) as *mut u8) = (15i32) as u8;
-                                  let super::types::Uvec2{ x:x13, y:y13, } = e;
-                                  *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x13);
-                                  *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y13);
-                                  
-                                },
-                                super::component::Value::TypeUvec3(e) => {
-                                  *((base + 8) as *mut u8) = (16i32) as u8;
-                                  let super::types::Uvec3{ x:x14, y:y14, z:z14, } = e;
-                                  *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x14);
-                                  *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y14);
-                                  *((base + 24) as *mut i32) = wit_bindgen::rt::as_i32(z14);
-                                  
-                                },
-                                super::component::Value::TypeUvec4(e) => {
-                                  *((base + 8) as *mut u8) = (17i32) as u8;
-                                  let super::types::Uvec4{ x:x15, y:y15, z:z15, w:w15, } = e;
-                                  *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x15);
-                                  *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y15);
-                                  *((base + 24) as *mut i32) = wit_bindgen::rt::as_i32(z15);
-                                  *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(w15);
-                                  
-                                },
-                                super::component::Value::TypeVec(e) => {
-                                  *((base + 8) as *mut u8) = (18i32) as u8;
-                                  match e {
-                                    super::component::VecValue::TypeEmpty(e) => {
-                                      *((base + 16) as *mut u8) = (0i32) as u8;
-                                      let vec16 = e;
-                                      let ptr16 = vec16.as_ptr() as i32;
-                                      let len16 = vec16.len() as i32;
-                                      *((base + 24) as *mut i32) = len16;
-                                      *((base + 20) as *mut i32) = ptr16;
-                                      
-                                    },
-                                    super::component::VecValue::TypeBool(e) => {
-                                      *((base + 16) as *mut u8) = (1i32) as u8;
-                                      let vec17 = e;
-                                      let len17 = vec17.len() as i32;
-                                      let layout17 = alloc::Layout::from_size_align_unchecked(vec17.len() * 1, 1);
-                                      let result17 = if layout17.size() != 0
-                                      {
-                                        let ptr = alloc::alloc(layout17);
-                                        if ptr.is_null()
-                                        {
-                                          alloc::handle_alloc_error(layout17);
-                                        }
-                                        ptr
-                                      }else {
-                                        core::ptr::null_mut()
-                                      };
-                                      for (i, e) in vec17.into_iter().enumerate() {
-                                        let base = result17 as i32 + (i as i32) * 1;
-                                        {
-                                          *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
-                                          
-                                        }}
-                                        *((base + 24) as *mut i32) = len17;
-                                        *((base + 20) as *mut i32) = result17 as i32;
-                                        cleanup_list.extend_from_slice(&[(result17, layout17),]);
-                                        
-                                      },
-                                      super::component::VecValue::TypeEntityId(e) => {
-                                        *((base + 16) as *mut u8) = (2i32) as u8;
-                                        let vec18 = e;
-                                        let ptr18 = vec18.as_ptr() as i32;
-                                        let len18 = vec18.len() as i32;
-                                        *((base + 24) as *mut i32) = len18;
-                                        *((base + 20) as *mut i32) = ptr18;
-                                        
-                                      },
-                                      super::component::VecValue::TypeF32(e) => {
-                                        *((base + 16) as *mut u8) = (3i32) as u8;
-                                        let vec19 = e;
-                                        let ptr19 = vec19.as_ptr() as i32;
-                                        let len19 = vec19.len() as i32;
-                                        *((base + 24) as *mut i32) = len19;
-                                        *((base + 20) as *mut i32) = ptr19;
-                                        
-                                      },
-                                      super::component::VecValue::TypeF64(e) => {
-                                        *((base + 16) as *mut u8) = (4i32) as u8;
-                                        let vec20 = e;
-                                        let ptr20 = vec20.as_ptr() as i32;
-                                        let len20 = vec20.len() as i32;
-                                        *((base + 24) as *mut i32) = len20;
-                                        *((base + 20) as *mut i32) = ptr20;
-                                        
-                                      },
-                                      super::component::VecValue::TypeMat4(e) => {
-                                        *((base + 16) as *mut u8) = (5i32) as u8;
-                                        let vec21 = e;
-                                        let ptr21 = vec21.as_ptr() as i32;
-                                        let len21 = vec21.len() as i32;
-                                        *((base + 24) as *mut i32) = len21;
-                                        *((base + 20) as *mut i32) = ptr21;
-                                        
-                                      },
-                                      super::component::VecValue::TypeI32(e) => {
-                                        *((base + 16) as *mut u8) = (6i32) as u8;
-                                        let vec22 = e;
-                                        let ptr22 = vec22.as_ptr() as i32;
-                                        let len22 = vec22.len() as i32;
-                                        *((base + 24) as *mut i32) = len22;
-                                        *((base + 20) as *mut i32) = ptr22;
-                                        
-                                      },
-                                      super::component::VecValue::TypeQuat(e) => {
-                                        *((base + 16) as *mut u8) = (7i32) as u8;
-                                        let vec23 = e;
-                                        let ptr23 = vec23.as_ptr() as i32;
-                                        let len23 = vec23.len() as i32;
-                                        *((base + 24) as *mut i32) = len23;
-                                        *((base + 20) as *mut i32) = ptr23;
-                                        
-                                      },
-                                      super::component::VecValue::TypeString(e) => {
-                                        *((base + 16) as *mut u8) = (8i32) as u8;
-                                        let vec25 = e;
-                                        let len25 = vec25.len() as i32;
-                                        let layout25 = alloc::Layout::from_size_align_unchecked(vec25.len() * 8, 4);
-                                        let result25 = if layout25.size() != 0
-                                        {
-                                          let ptr = alloc::alloc(layout25);
-                                          if ptr.is_null()
-                                          {
-                                            alloc::handle_alloc_error(layout25);
-                                          }
-                                          ptr
-                                        }else {
-                                          core::ptr::null_mut()
-                                        };
-                                        for (i, e) in vec25.into_iter().enumerate() {
-                                          let base = result25 as i32 + (i as i32) * 8;
-                                          {
-                                            let vec24 = e;
-                                            let ptr24 = vec24.as_ptr() as i32;
-                                            let len24 = vec24.len() as i32;
-                                            *((base + 4) as *mut i32) = len24;
-                                            *((base + 0) as *mut i32) = ptr24;
-                                            
-                                          }}
-                                          *((base + 24) as *mut i32) = len25;
-                                          *((base + 20) as *mut i32) = result25 as i32;
-                                          cleanup_list.extend_from_slice(&[(result25, layout25),]);
-                                          
-                                        },
-                                        super::component::VecValue::TypeU8(e) => {
-                                          *((base + 16) as *mut u8) = (9i32) as u8;
-                                          let vec26 = e;
-                                          let ptr26 = vec26.as_ptr() as i32;
-                                          let len26 = vec26.len() as i32;
-                                          *((base + 24) as *mut i32) = len26;
-                                          *((base + 20) as *mut i32) = ptr26;
-                                          
-                                        },
-                                        super::component::VecValue::TypeU32(e) => {
-                                          *((base + 16) as *mut u8) = (10i32) as u8;
-                                          let vec27 = e;
-                                          let ptr27 = vec27.as_ptr() as i32;
-                                          let len27 = vec27.len() as i32;
-                                          *((base + 24) as *mut i32) = len27;
-                                          *((base + 20) as *mut i32) = ptr27;
-                                          
-                                        },
-                                        super::component::VecValue::TypeU64(e) => {
-                                          *((base + 16) as *mut u8) = (11i32) as u8;
-                                          let vec28 = e;
-                                          let ptr28 = vec28.as_ptr() as i32;
-                                          let len28 = vec28.len() as i32;
-                                          *((base + 24) as *mut i32) = len28;
-                                          *((base + 20) as *mut i32) = ptr28;
-                                          
-                                        },
-                                        super::component::VecValue::TypeVec2(e) => {
-                                          *((base + 16) as *mut u8) = (12i32) as u8;
-                                          let vec29 = e;
-                                          let ptr29 = vec29.as_ptr() as i32;
-                                          let len29 = vec29.len() as i32;
-                                          *((base + 24) as *mut i32) = len29;
-                                          *((base + 20) as *mut i32) = ptr29;
-                                          
-                                        },
-                                        super::component::VecValue::TypeVec3(e) => {
-                                          *((base + 16) as *mut u8) = (13i32) as u8;
-                                          let vec30 = e;
-                                          let ptr30 = vec30.as_ptr() as i32;
-                                          let len30 = vec30.len() as i32;
-                                          *((base + 24) as *mut i32) = len30;
-                                          *((base + 20) as *mut i32) = ptr30;
-                                          
-                                        },
-                                        super::component::VecValue::TypeVec4(e) => {
-                                          *((base + 16) as *mut u8) = (14i32) as u8;
-                                          let vec31 = e;
-                                          let ptr31 = vec31.as_ptr() as i32;
-                                          let len31 = vec31.len() as i32;
-                                          *((base + 24) as *mut i32) = len31;
-                                          *((base + 20) as *mut i32) = ptr31;
-                                          
-                                        },
-                                        super::component::VecValue::TypeUvec2(e) => {
-                                          *((base + 16) as *mut u8) = (15i32) as u8;
-                                          let vec32 = e;
-                                          let ptr32 = vec32.as_ptr() as i32;
-                                          let len32 = vec32.len() as i32;
-                                          *((base + 24) as *mut i32) = len32;
-                                          *((base + 20) as *mut i32) = ptr32;
-                                          
-                                        },
-                                        super::component::VecValue::TypeUvec3(e) => {
-                                          *((base + 16) as *mut u8) = (16i32) as u8;
-                                          let vec33 = e;
-                                          let ptr33 = vec33.as_ptr() as i32;
-                                          let len33 = vec33.len() as i32;
-                                          *((base + 24) as *mut i32) = len33;
-                                          *((base + 20) as *mut i32) = ptr33;
-                                          
-                                        },
-                                        super::component::VecValue::TypeUvec4(e) => {
-                                          *((base + 16) as *mut u8) = (17i32) as u8;
-                                          let vec34 = e;
-                                          let ptr34 = vec34.as_ptr() as i32;
-                                          let len34 = vec34.len() as i32;
-                                          *((base + 24) as *mut i32) = len34;
-                                          *((base + 20) as *mut i32) = ptr34;
-                                          
-                                        },
-                                      };
-                                      
-                                    },
-                                    super::component::Value::TypeOption(e) => {
-                                      *((base + 8) as *mut u8) = (19i32) as u8;
-                                      match e {
-                                        super::component::OptionValue::TypeEmpty(e) => {
-                                          *((base + 16) as *mut u8) = (0i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              let () = e;
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeBool(e) => {
-                                          *((base + 16) as *mut u8) = (1i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              *((base + 25) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeEntityId(e) => {
-                                          *((base + 16) as *mut u8) = (2i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              let super::types::EntityId{ id0:id036, id1:id136, } = e;
-                                              *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(id036);
-                                              *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(id136);
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeF32(e) => {
-                                          *((base + 16) as *mut u8) = (3i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(e);
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeF64(e) => {
-                                          *((base + 16) as *mut u8) = (4i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              *((base + 32) as *mut f64) = wit_bindgen::rt::as_f64(e);
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeMat4(e) => {
-                                          *((base + 16) as *mut u8) = (5i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              let super::types::Mat4{ x:x37, y:y37, z:z37, w:w37, } = e;
-                                              let super::types::Vec4{ x:x38, y:y38, z:z38, w:w38, } = x37;
-                                              *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x38);
-                                              *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y38);
-                                              *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z38);
-                                              *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w38);
-                                              let super::types::Vec4{ x:x39, y:y39, z:z39, w:w39, } = y37;
-                                              *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(x39);
-                                              *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(y39);
-                                              *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(z39);
-                                              *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(w39);
-                                              let super::types::Vec4{ x:x40, y:y40, z:z40, w:w40, } = z37;
-                                              *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(x40);
-                                              *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(y40);
-                                              *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(z40);
-                                              *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(w40);
-                                              let super::types::Vec4{ x:x41, y:y41, z:z41, w:w41, } = w37;
-                                              *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(x41);
-                                              *((base + 80) as *mut f32) = wit_bindgen::rt::as_f32(y41);
-                                              *((base + 84) as *mut f32) = wit_bindgen::rt::as_f32(z41);
-                                              *((base + 88) as *mut f32) = wit_bindgen::rt::as_f32(w41);
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeI32(e) => {
-                                          *((base + 16) as *mut u8) = (6i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(e);
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeQuat(e) => {
-                                          *((base + 16) as *mut u8) = (7i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              let super::types::Quat{ x:x42, y:y42, z:z42, w:w42, } = e;
-                                              *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x42);
-                                              *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y42);
-                                              *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z42);
-                                              *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w42);
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeString(e) => {
-                                          *((base + 16) as *mut u8) = (8i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              let vec43 = e;
-                                              let ptr43 = vec43.as_ptr() as i32;
-                                              let len43 = vec43.len() as i32;
-                                              *((base + 32) as *mut i32) = len43;
-                                              *((base + 28) as *mut i32) = ptr43;
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeU8(e) => {
-                                          *((base + 16) as *mut u8) = (9i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              *((base + 25) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeU32(e) => {
-                                          *((base + 16) as *mut u8) = (10i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(e);
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeU64(e) => {
-                                          *((base + 16) as *mut u8) = (11i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(e);
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeVec2(e) => {
-                                          *((base + 16) as *mut u8) = (12i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              let super::types::Vec2{ x:x44, y:y44, } = e;
-                                              *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x44);
-                                              *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y44);
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeVec3(e) => {
-                                          *((base + 16) as *mut u8) = (13i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              let super::types::Vec3{ x:x45, y:y45, z:z45, } = e;
-                                              *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x45);
-                                              *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y45);
-                                              *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z45);
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeVec4(e) => {
-                                          *((base + 16) as *mut u8) = (14i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              let super::types::Vec4{ x:x46, y:y46, z:z46, w:w46, } = e;
-                                              *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x46);
-                                              *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y46);
-                                              *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z46);
-                                              *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w46);
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeUvec2(e) => {
-                                          *((base + 16) as *mut u8) = (15i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              let super::types::Uvec2{ x:x47, y:y47, } = e;
-                                              *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x47);
-                                              *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y47);
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeUvec3(e) => {
-                                          *((base + 16) as *mut u8) = (16i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              let super::types::Uvec3{ x:x48, y:y48, z:z48, } = e;
-                                              *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x48);
-                                              *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y48);
-                                              *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z48);
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                        super::component::OptionValue::TypeUvec4(e) => {
-                                          *((base + 16) as *mut u8) = (17i32) as u8;
-                                          match e {
-                                            Some(e) => {
-                                              *((base + 24) as *mut u8) = (1i32) as u8;
-                                              let super::types::Uvec4{ x:x49, y:y49, z:z49, w:w49, } = e;
-                                              *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x49);
-                                              *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y49);
-                                              *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z49);
-                                              *((base + 40) as *mut i32) = wit_bindgen::rt::as_i32(w49);
-                                              
-                                            },
-                                            None => {
-                                              {
-                                                *((base + 24) as *mut u8) = (0i32) as u8;
-                                                
-                                              }
-                                            },
-                                          };
-                                        },
-                                      };
-                                      
-                                    },
-                                  };
-                                  
-                                }}
-                                let ptr51 = ret_area.as_mut_ptr() as i32;
-                                #[link(wasm_import_module = "entity")]
-                                extern "C" {
-                                  #[cfg_attr(target_arch = "wasm32", link_name = "spawn")]
-                                  #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_spawn")]
-                                  fn wit_import(
-                                  _: i32, _: i32, _: i32, );
-                                }
-                                wit_import(result50 as i32, len50, ptr51);
-                                if layout50.size() != 0 {
-                                  alloc::dealloc(result50, layout50);
-                                }
-                                for (ptr, layout) in cleanup_list {
-                                  
-                                  if layout.size() != 0 {
-                                    
-                                    alloc::dealloc(ptr, layout);
-                                    
-                                  }
-                                  
-                                }
-                                super::types::EntityId{id0:*((ptr51 + 0) as *const i64) as u64, id1:*((ptr51 + 8) as *const i64) as u64, }
-                              }
-                            }
-                            #[allow(clippy::all)]
-                            pub fn despawn(entity: EntityId,) -> bool{
+                              let vec0 = e;
+                              let ptr0 = vec0.as_ptr() as i32;
+                              let len0 = vec0.len() as i32;
+                              *((base + 4) as *mut i32) = len0;
+                              *((base + 0) as *mut i32) = ptr0;
                               
-                              #[allow(unused_imports)]
-                              use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                              unsafe {
-                                let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                                
-                                #[link(wasm_import_module = "entity")]
-                                extern "C" {
-                                  #[cfg_attr(target_arch = "wasm32", link_name = "despawn")]
-                                  #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_despawn")]
-                                  fn wit_import(
-                                  _: i64, _: i64, ) -> i32;
+                            }}
+                            let ptr2 = ret_area.as_mut_ptr() as i32;
+                            #[link(wasm_import_module = "entity")]
+                            extern "C" {
+                              #[cfg_attr(target_arch = "wasm32", link_name = "get-animation-clips")]
+                              #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_get-animation-clips")]
+                              fn wit_import(
+                              _: i32, _: i32, _: i32, );
+                            }
+                            wit_import(result1 as i32, len1, ptr2);
+                            let base6 = *((ptr2 + 0) as *const i32);
+                            let len6 = *((ptr2 + 4) as *const i32);
+                            let mut result6 = Vec::with_capacity(len6 as usize);
+                            for i in 0..len6 {
+                              let base = base6 + i *24;
+                              result6.push({
+                                let base4 = *((base + 0) as *const i32);
+                                let len4 = *((base + 4) as *const i32);
+                                let mut result4 = Vec::with_capacity(len4 as usize);
+                                for i in 0..len4 {
+                                  let base = base4 + i *8;
+                                  result4.push({
+                                    let len3 = *((base + 4) as *const i32) as usize;
+                                    
+                                    {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 0) as *const i32) as *mut _, len3, len3))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 0) as *const i32) as *mut _, len3, len3)).unwrap()}}
+                                  });
                                 }
-                                let ret = wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10));
-                                {
+                                wit_bindgen::rt::dealloc(base4, (len4 as usize) * 8, 4);
+                                let len5 = *((base + 20) as *const i32) as usize;
+                                
+                                AnimationClip{binders:result4, duration:*((base + 8) as *const f32), loaded:{
                                   #[cfg(not(debug_assertions))]
-                                  { core::mem::transmute::<u8, bool>(ret as u8) }
+                                  { core::mem::transmute::<u8, bool>(i32::from(*((base + 12) as *const u8)) as u8) }
                                   #[cfg(debug_assertions)]
                                   {
-                                    match ret {
+                                    match i32::from(*((base + 12) as *const u8)) {
                                       0 => false,
                                       1 => true,
                                       _ => panic!("invalid bool discriminant"),
                                     }
                                   }
-                                }
-                              }
+                                }, error:{#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 16) as *const i32) as *mut _, len5, len5))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 16) as *const i32) as *mut _, len5, len5)).unwrap()}}, }
+                              });
                             }
-                            #[allow(clippy::all)]
-                            pub fn set_animation_controller(entity: EntityId,animation_controller: AnimationController<'_,>,){
-                              
-                              #[allow(unused_imports)]
-                              use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                              unsafe {
-                                let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                                let AnimationController{ actions:actions1, apply_base_pose:apply_base_pose1, } = animation_controller;
-                                let vec4 = actions1;
-                                let len4 = vec4.len() as i32;
-                                let layout4 = alloc::Layout::from_size_align_unchecked(vec4.len() * 16, 4);
-                                let result4 = if layout4.size() != 0
-                                {
-                                  let ptr = alloc::alloc(layout4);
-                                  if ptr.is_null()
-                                  {
-                                    alloc::handle_alloc_error(layout4);
-                                  }
-                                  ptr
-                                }else {
-                                  core::ptr::null_mut()
-                                };
-                                for (i, e) in vec4.into_iter().enumerate() {
-                                  let base = result4 as i32 + (i as i32) * 16;
-                                  {
-                                    let AnimationAction{ clip_url:clip_url2, looping:looping2, weight:weight2, } = e;
-                                    let vec3 = clip_url2;
-                                    let ptr3 = vec3.as_ptr() as i32;
-                                    let len3 = vec3.len() as i32;
-                                    *((base + 4) as *mut i32) = len3;
-                                    *((base + 0) as *mut i32) = ptr3;
-                                    *((base + 8) as *mut u8) = (match looping2 { true => 1, false => 0 }) as u8;
-                                    *((base + 12) as *mut f32) = wit_bindgen::rt::as_f32(weight2);
+                            wit_bindgen::rt::dealloc(base6, (len6 as usize) * 24, 4);
+                            if layout1.size() != 0 {
+                              alloc::dealloc(result1, layout1);
+                            }
+                            result6
+                          }
+                        }
+                        #[allow(clippy::all)]
+                        pub fn spawn(data: EntityData<'_,>,) -> EntityId{
+                          
+                          #[allow(unused_imports)]
+                          use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                          unsafe {
+                            let mut cleanup_list = Vec::new();
+                            
+                            #[repr(align(8))]
+                            struct RetArea([u8; 16]);
+                            let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                            let vec50 = data;
+                            let len50 = vec50.len() as i32;
+                            let layout50 = alloc::Layout::from_size_align_unchecked(vec50.len() * 96, 8);
+                            let result50 = if layout50.size() != 0
+                            {
+                              let ptr = alloc::alloc(layout50);
+                              if ptr.is_null()
+                              {
+                                alloc::handle_alloc_error(layout50);
+                              }
+                              ptr
+                            }else {
+                              core::ptr::null_mut()
+                            };
+                            for (i, e) in vec50.into_iter().enumerate() {
+                              let base = result50 as i32 + (i as i32) * 96;
+                              {
+                                let (t0_0, t0_1, ) = e;
+                                *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t0_0);
+                                match t0_1 {
+                                  super::component::Value::TypeEmpty(e) => {
+                                    *((base + 8) as *mut u8) = (0i32) as u8;
+                                    let () = e;
+                                    
+                                  },
+                                  super::component::Value::TypeBool(e) => {
+                                    *((base + 8) as *mut u8) = (1i32) as u8;
+                                    *((base + 16) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
+                                    
+                                  },
+                                  super::component::Value::TypeEntityId(e) => {
+                                    *((base + 8) as *mut u8) = (2i32) as u8;
+                                    let super::types::EntityId{ id0:id02, id1:id12, } = e;
+                                    *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(id02);
+                                    *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(id12);
+                                    
+                                  },
+                                  super::component::Value::TypeF32(e) => {
+                                    *((base + 8) as *mut u8) = (3i32) as u8;
+                                    *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(e);
+                                    
+                                  },
+                                  super::component::Value::TypeF64(e) => {
+                                    *((base + 8) as *mut u8) = (4i32) as u8;
+                                    *((base + 16) as *mut f64) = wit_bindgen::rt::as_f64(e);
+                                    
+                                  },
+                                  super::component::Value::TypeMat4(e) => {
+                                    *((base + 8) as *mut u8) = (5i32) as u8;
+                                    let super::types::Mat4{ x:x3, y:y3, z:z3, w:w3, } = e;
+                                    let super::types::Vec4{ x:x4, y:y4, z:z4, w:w4, } = x3;
+                                    *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x4);
+                                    *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y4);
+                                    *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z4);
+                                    *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w4);
+                                    let super::types::Vec4{ x:x5, y:y5, z:z5, w:w5, } = y3;
+                                    *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(x5);
+                                    *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(y5);
+                                    *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(z5);
+                                    *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(w5);
+                                    let super::types::Vec4{ x:x6, y:y6, z:z6, w:w6, } = z3;
+                                    *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(x6);
+                                    *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(y6);
+                                    *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(z6);
+                                    *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(w6);
+                                    let super::types::Vec4{ x:x7, y:y7, z:z7, w:w7, } = w3;
+                                    *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(x7);
+                                    *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(y7);
+                                    *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(z7);
+                                    *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(w7);
+                                    
+                                  },
+                                  super::component::Value::TypeI32(e) => {
+                                    *((base + 8) as *mut u8) = (6i32) as u8;
+                                    *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                                    
+                                  },
+                                  super::component::Value::TypeQuat(e) => {
+                                    *((base + 8) as *mut u8) = (7i32) as u8;
+                                    let super::types::Quat{ x:x8, y:y8, z:z8, w:w8, } = e;
+                                    *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x8);
+                                    *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y8);
+                                    *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z8);
+                                    *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w8);
+                                    
+                                  },
+                                  super::component::Value::TypeString(e) => {
+                                    *((base + 8) as *mut u8) = (8i32) as u8;
+                                    let vec9 = e;
+                                    let ptr9 = vec9.as_ptr() as i32;
+                                    let len9 = vec9.len() as i32;
+                                    *((base + 20) as *mut i32) = len9;
+                                    *((base + 16) as *mut i32) = ptr9;
+                                    
+                                  },
+                                  super::component::Value::TypeU8(e) => {
+                                    *((base + 8) as *mut u8) = (9i32) as u8;
+                                    *((base + 16) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
+                                    
+                                  },
+                                  super::component::Value::TypeU32(e) => {
+                                    *((base + 8) as *mut u8) = (10i32) as u8;
+                                    *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                                    
+                                  },
+                                  super::component::Value::TypeU64(e) => {
+                                    *((base + 8) as *mut u8) = (11i32) as u8;
+                                    *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(e);
+                                    
+                                  },
+                                  super::component::Value::TypeVec2(e) => {
+                                    *((base + 8) as *mut u8) = (12i32) as u8;
+                                    let super::types::Vec2{ x:x10, y:y10, } = e;
+                                    *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x10);
+                                    *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y10);
+                                    
+                                  },
+                                  super::component::Value::TypeVec3(e) => {
+                                    *((base + 8) as *mut u8) = (13i32) as u8;
+                                    let super::types::Vec3{ x:x11, y:y11, z:z11, } = e;
+                                    *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x11);
+                                    *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y11);
+                                    *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z11);
+                                    
+                                  },
+                                  super::component::Value::TypeVec4(e) => {
+                                    *((base + 8) as *mut u8) = (14i32) as u8;
+                                    let super::types::Vec4{ x:x12, y:y12, z:z12, w:w12, } = e;
+                                    *((base + 16) as *mut f32) = wit_bindgen::rt::as_f32(x12);
+                                    *((base + 20) as *mut f32) = wit_bindgen::rt::as_f32(y12);
+                                    *((base + 24) as *mut f32) = wit_bindgen::rt::as_f32(z12);
+                                    *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(w12);
+                                    
+                                  },
+                                  super::component::Value::TypeUvec2(e) => {
+                                    *((base + 8) as *mut u8) = (15i32) as u8;
+                                    let super::types::Uvec2{ x:x13, y:y13, } = e;
+                                    *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x13);
+                                    *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y13);
+                                    
+                                  },
+                                  super::component::Value::TypeUvec3(e) => {
+                                    *((base + 8) as *mut u8) = (16i32) as u8;
+                                    let super::types::Uvec3{ x:x14, y:y14, z:z14, } = e;
+                                    *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x14);
+                                    *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y14);
+                                    *((base + 24) as *mut i32) = wit_bindgen::rt::as_i32(z14);
+                                    
+                                  },
+                                  super::component::Value::TypeUvec4(e) => {
+                                    *((base + 8) as *mut u8) = (17i32) as u8;
+                                    let super::types::Uvec4{ x:x15, y:y15, z:z15, w:w15, } = e;
+                                    *((base + 16) as *mut i32) = wit_bindgen::rt::as_i32(x15);
+                                    *((base + 20) as *mut i32) = wit_bindgen::rt::as_i32(y15);
+                                    *((base + 24) as *mut i32) = wit_bindgen::rt::as_i32(z15);
+                                    *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(w15);
+                                    
+                                  },
+                                  super::component::Value::TypeVec(e) => {
+                                    *((base + 8) as *mut u8) = (18i32) as u8;
+                                    match e {
+                                      super::component::VecValue::TypeEmpty(e) => {
+                                        *((base + 16) as *mut u8) = (0i32) as u8;
+                                        let vec16 = e;
+                                        let ptr16 = vec16.as_ptr() as i32;
+                                        let len16 = vec16.len() as i32;
+                                        *((base + 24) as *mut i32) = len16;
+                                        *((base + 20) as *mut i32) = ptr16;
+                                        
+                                      },
+                                      super::component::VecValue::TypeBool(e) => {
+                                        *((base + 16) as *mut u8) = (1i32) as u8;
+                                        let vec17 = e;
+                                        let len17 = vec17.len() as i32;
+                                        let layout17 = alloc::Layout::from_size_align_unchecked(vec17.len() * 1, 1);
+                                        let result17 = if layout17.size() != 0
+                                        {
+                                          let ptr = alloc::alloc(layout17);
+                                          if ptr.is_null()
+                                          {
+                                            alloc::handle_alloc_error(layout17);
+                                          }
+                                          ptr
+                                        }else {
+                                          core::ptr::null_mut()
+                                        };
+                                        for (i, e) in vec17.into_iter().enumerate() {
+                                          let base = result17 as i32 + (i as i32) * 1;
+                                          {
+                                            *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
+                                            
+                                          }}
+                                          *((base + 24) as *mut i32) = len17;
+                                          *((base + 20) as *mut i32) = result17 as i32;
+                                          cleanup_list.extend_from_slice(&[(result17, layout17),]);
+                                          
+                                        },
+                                        super::component::VecValue::TypeEntityId(e) => {
+                                          *((base + 16) as *mut u8) = (2i32) as u8;
+                                          let vec18 = e;
+                                          let ptr18 = vec18.as_ptr() as i32;
+                                          let len18 = vec18.len() as i32;
+                                          *((base + 24) as *mut i32) = len18;
+                                          *((base + 20) as *mut i32) = ptr18;
+                                          
+                                        },
+                                        super::component::VecValue::TypeF32(e) => {
+                                          *((base + 16) as *mut u8) = (3i32) as u8;
+                                          let vec19 = e;
+                                          let ptr19 = vec19.as_ptr() as i32;
+                                          let len19 = vec19.len() as i32;
+                                          *((base + 24) as *mut i32) = len19;
+                                          *((base + 20) as *mut i32) = ptr19;
+                                          
+                                        },
+                                        super::component::VecValue::TypeF64(e) => {
+                                          *((base + 16) as *mut u8) = (4i32) as u8;
+                                          let vec20 = e;
+                                          let ptr20 = vec20.as_ptr() as i32;
+                                          let len20 = vec20.len() as i32;
+                                          *((base + 24) as *mut i32) = len20;
+                                          *((base + 20) as *mut i32) = ptr20;
+                                          
+                                        },
+                                        super::component::VecValue::TypeMat4(e) => {
+                                          *((base + 16) as *mut u8) = (5i32) as u8;
+                                          let vec21 = e;
+                                          let ptr21 = vec21.as_ptr() as i32;
+                                          let len21 = vec21.len() as i32;
+                                          *((base + 24) as *mut i32) = len21;
+                                          *((base + 20) as *mut i32) = ptr21;
+                                          
+                                        },
+                                        super::component::VecValue::TypeI32(e) => {
+                                          *((base + 16) as *mut u8) = (6i32) as u8;
+                                          let vec22 = e;
+                                          let ptr22 = vec22.as_ptr() as i32;
+                                          let len22 = vec22.len() as i32;
+                                          *((base + 24) as *mut i32) = len22;
+                                          *((base + 20) as *mut i32) = ptr22;
+                                          
+                                        },
+                                        super::component::VecValue::TypeQuat(e) => {
+                                          *((base + 16) as *mut u8) = (7i32) as u8;
+                                          let vec23 = e;
+                                          let ptr23 = vec23.as_ptr() as i32;
+                                          let len23 = vec23.len() as i32;
+                                          *((base + 24) as *mut i32) = len23;
+                                          *((base + 20) as *mut i32) = ptr23;
+                                          
+                                        },
+                                        super::component::VecValue::TypeString(e) => {
+                                          *((base + 16) as *mut u8) = (8i32) as u8;
+                                          let vec25 = e;
+                                          let len25 = vec25.len() as i32;
+                                          let layout25 = alloc::Layout::from_size_align_unchecked(vec25.len() * 8, 4);
+                                          let result25 = if layout25.size() != 0
+                                          {
+                                            let ptr = alloc::alloc(layout25);
+                                            if ptr.is_null()
+                                            {
+                                              alloc::handle_alloc_error(layout25);
+                                            }
+                                            ptr
+                                          }else {
+                                            core::ptr::null_mut()
+                                          };
+                                          for (i, e) in vec25.into_iter().enumerate() {
+                                            let base = result25 as i32 + (i as i32) * 8;
+                                            {
+                                              let vec24 = e;
+                                              let ptr24 = vec24.as_ptr() as i32;
+                                              let len24 = vec24.len() as i32;
+                                              *((base + 4) as *mut i32) = len24;
+                                              *((base + 0) as *mut i32) = ptr24;
+                                              
+                                            }}
+                                            *((base + 24) as *mut i32) = len25;
+                                            *((base + 20) as *mut i32) = result25 as i32;
+                                            cleanup_list.extend_from_slice(&[(result25, layout25),]);
+                                            
+                                          },
+                                          super::component::VecValue::TypeU8(e) => {
+                                            *((base + 16) as *mut u8) = (9i32) as u8;
+                                            let vec26 = e;
+                                            let ptr26 = vec26.as_ptr() as i32;
+                                            let len26 = vec26.len() as i32;
+                                            *((base + 24) as *mut i32) = len26;
+                                            *((base + 20) as *mut i32) = ptr26;
+                                            
+                                          },
+                                          super::component::VecValue::TypeU32(e) => {
+                                            *((base + 16) as *mut u8) = (10i32) as u8;
+                                            let vec27 = e;
+                                            let ptr27 = vec27.as_ptr() as i32;
+                                            let len27 = vec27.len() as i32;
+                                            *((base + 24) as *mut i32) = len27;
+                                            *((base + 20) as *mut i32) = ptr27;
+                                            
+                                          },
+                                          super::component::VecValue::TypeU64(e) => {
+                                            *((base + 16) as *mut u8) = (11i32) as u8;
+                                            let vec28 = e;
+                                            let ptr28 = vec28.as_ptr() as i32;
+                                            let len28 = vec28.len() as i32;
+                                            *((base + 24) as *mut i32) = len28;
+                                            *((base + 20) as *mut i32) = ptr28;
+                                            
+                                          },
+                                          super::component::VecValue::TypeVec2(e) => {
+                                            *((base + 16) as *mut u8) = (12i32) as u8;
+                                            let vec29 = e;
+                                            let ptr29 = vec29.as_ptr() as i32;
+                                            let len29 = vec29.len() as i32;
+                                            *((base + 24) as *mut i32) = len29;
+                                            *((base + 20) as *mut i32) = ptr29;
+                                            
+                                          },
+                                          super::component::VecValue::TypeVec3(e) => {
+                                            *((base + 16) as *mut u8) = (13i32) as u8;
+                                            let vec30 = e;
+                                            let ptr30 = vec30.as_ptr() as i32;
+                                            let len30 = vec30.len() as i32;
+                                            *((base + 24) as *mut i32) = len30;
+                                            *((base + 20) as *mut i32) = ptr30;
+                                            
+                                          },
+                                          super::component::VecValue::TypeVec4(e) => {
+                                            *((base + 16) as *mut u8) = (14i32) as u8;
+                                            let vec31 = e;
+                                            let ptr31 = vec31.as_ptr() as i32;
+                                            let len31 = vec31.len() as i32;
+                                            *((base + 24) as *mut i32) = len31;
+                                            *((base + 20) as *mut i32) = ptr31;
+                                            
+                                          },
+                                          super::component::VecValue::TypeUvec2(e) => {
+                                            *((base + 16) as *mut u8) = (15i32) as u8;
+                                            let vec32 = e;
+                                            let ptr32 = vec32.as_ptr() as i32;
+                                            let len32 = vec32.len() as i32;
+                                            *((base + 24) as *mut i32) = len32;
+                                            *((base + 20) as *mut i32) = ptr32;
+                                            
+                                          },
+                                          super::component::VecValue::TypeUvec3(e) => {
+                                            *((base + 16) as *mut u8) = (16i32) as u8;
+                                            let vec33 = e;
+                                            let ptr33 = vec33.as_ptr() as i32;
+                                            let len33 = vec33.len() as i32;
+                                            *((base + 24) as *mut i32) = len33;
+                                            *((base + 20) as *mut i32) = ptr33;
+                                            
+                                          },
+                                          super::component::VecValue::TypeUvec4(e) => {
+                                            *((base + 16) as *mut u8) = (17i32) as u8;
+                                            let vec34 = e;
+                                            let ptr34 = vec34.as_ptr() as i32;
+                                            let len34 = vec34.len() as i32;
+                                            *((base + 24) as *mut i32) = len34;
+                                            *((base + 20) as *mut i32) = ptr34;
+                                            
+                                          },
+                                        };
+                                        
+                                      },
+                                      super::component::Value::TypeOption(e) => {
+                                        *((base + 8) as *mut u8) = (19i32) as u8;
+                                        match e {
+                                          super::component::OptionValue::TypeEmpty(e) => {
+                                            *((base + 16) as *mut u8) = (0i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                let () = e;
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeBool(e) => {
+                                            *((base + 16) as *mut u8) = (1i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                *((base + 25) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeEntityId(e) => {
+                                            *((base + 16) as *mut u8) = (2i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                let super::types::EntityId{ id0:id036, id1:id136, } = e;
+                                                *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(id036);
+                                                *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(id136);
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeF32(e) => {
+                                            *((base + 16) as *mut u8) = (3i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(e);
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeF64(e) => {
+                                            *((base + 16) as *mut u8) = (4i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                *((base + 32) as *mut f64) = wit_bindgen::rt::as_f64(e);
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeMat4(e) => {
+                                            *((base + 16) as *mut u8) = (5i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                let super::types::Mat4{ x:x37, y:y37, z:z37, w:w37, } = e;
+                                                let super::types::Vec4{ x:x38, y:y38, z:z38, w:w38, } = x37;
+                                                *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x38);
+                                                *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y38);
+                                                *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z38);
+                                                *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w38);
+                                                let super::types::Vec4{ x:x39, y:y39, z:z39, w:w39, } = y37;
+                                                *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(x39);
+                                                *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(y39);
+                                                *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(z39);
+                                                *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(w39);
+                                                let super::types::Vec4{ x:x40, y:y40, z:z40, w:w40, } = z37;
+                                                *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(x40);
+                                                *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(y40);
+                                                *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(z40);
+                                                *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(w40);
+                                                let super::types::Vec4{ x:x41, y:y41, z:z41, w:w41, } = w37;
+                                                *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(x41);
+                                                *((base + 80) as *mut f32) = wit_bindgen::rt::as_f32(y41);
+                                                *((base + 84) as *mut f32) = wit_bindgen::rt::as_f32(z41);
+                                                *((base + 88) as *mut f32) = wit_bindgen::rt::as_f32(w41);
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeI32(e) => {
+                                            *((base + 16) as *mut u8) = (6i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeQuat(e) => {
+                                            *((base + 16) as *mut u8) = (7i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                let super::types::Quat{ x:x42, y:y42, z:z42, w:w42, } = e;
+                                                *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x42);
+                                                *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y42);
+                                                *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z42);
+                                                *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w42);
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeString(e) => {
+                                            *((base + 16) as *mut u8) = (8i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                let vec43 = e;
+                                                let ptr43 = vec43.as_ptr() as i32;
+                                                let len43 = vec43.len() as i32;
+                                                *((base + 32) as *mut i32) = len43;
+                                                *((base + 28) as *mut i32) = ptr43;
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeU8(e) => {
+                                            *((base + 16) as *mut u8) = (9i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                *((base + 25) as *mut u8) = (wit_bindgen::rt::as_i32(e)) as u8;
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeU32(e) => {
+                                            *((base + 16) as *mut u8) = (10i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(e);
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeU64(e) => {
+                                            *((base + 16) as *mut u8) = (11i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(e);
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeVec2(e) => {
+                                            *((base + 16) as *mut u8) = (12i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                let super::types::Vec2{ x:x44, y:y44, } = e;
+                                                *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x44);
+                                                *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y44);
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeVec3(e) => {
+                                            *((base + 16) as *mut u8) = (13i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                let super::types::Vec3{ x:x45, y:y45, z:z45, } = e;
+                                                *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x45);
+                                                *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y45);
+                                                *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z45);
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeVec4(e) => {
+                                            *((base + 16) as *mut u8) = (14i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                let super::types::Vec4{ x:x46, y:y46, z:z46, w:w46, } = e;
+                                                *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x46);
+                                                *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y46);
+                                                *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z46);
+                                                *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w46);
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeUvec2(e) => {
+                                            *((base + 16) as *mut u8) = (15i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                let super::types::Uvec2{ x:x47, y:y47, } = e;
+                                                *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x47);
+                                                *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y47);
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeUvec3(e) => {
+                                            *((base + 16) as *mut u8) = (16i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                let super::types::Uvec3{ x:x48, y:y48, z:z48, } = e;
+                                                *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x48);
+                                                *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y48);
+                                                *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z48);
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                          super::component::OptionValue::TypeUvec4(e) => {
+                                            *((base + 16) as *mut u8) = (17i32) as u8;
+                                            match e {
+                                              Some(e) => {
+                                                *((base + 24) as *mut u8) = (1i32) as u8;
+                                                let super::types::Uvec4{ x:x49, y:y49, z:z49, w:w49, } = e;
+                                                *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x49);
+                                                *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y49);
+                                                *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z49);
+                                                *((base + 40) as *mut i32) = wit_bindgen::rt::as_i32(w49);
+                                                
+                                              },
+                                              None => {
+                                                {
+                                                  *((base + 24) as *mut u8) = (0i32) as u8;
+                                                  
+                                                }
+                                              },
+                                            };
+                                          },
+                                        };
+                                        
+                                      },
+                                    };
                                     
                                   }}
-                                  
+                                  let ptr51 = ret_area.as_mut_ptr() as i32;
                                   #[link(wasm_import_module = "entity")]
                                   extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "set-animation-controller")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_set-animation-controller")]
+                                    #[cfg_attr(target_arch = "wasm32", link_name = "spawn")]
+                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_spawn")]
                                     fn wit_import(
-                                    _: i64, _: i64, _: i32, _: i32, _: i32, );
+                                    _: i32, _: i32, _: i32, );
                                   }
-                                  wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), result4 as i32, len4, match apply_base_pose1 { true => 1, false => 0 });
-                                  if layout4.size() != 0 {
-                                    alloc::dealloc(result4, layout4);
+                                  wit_import(result50 as i32, len50, ptr51);
+                                  if layout50.size() != 0 {
+                                    alloc::dealloc(result50, layout50);
                                   }
+                                  for (ptr, layout) in cleanup_list {
+                                    
+                                    if layout.size() != 0 {
+                                      
+                                      alloc::dealloc(ptr, layout);
+                                      
+                                    }
+                                    
+                                  }
+                                  super::types::EntityId{id0:*((ptr51 + 0) as *const i64) as u64, id1:*((ptr51 + 8) as *const i64) as u64, }
                                 }
                               }
                               #[allow(clippy::all)]
-                              pub fn in_area(position: Vec3,radius: f32,) -> wit_bindgen::rt::vec::Vec::<EntityId>{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(4))]
-                                  struct RetArea([u8; 8]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let super::types::Vec3{ x:x0, y:y0, z:z0, } = position;
-                                  let ptr1 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "entity")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "in-area")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_in-area")]
-                                    fn wit_import(
-                                    _: f32, _: f32, _: f32, _: f32, _: i32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_f32(x0), wit_bindgen::rt::as_f32(y0), wit_bindgen::rt::as_f32(z0), wit_bindgen::rt::as_f32(radius), ptr1);
-                                  let len2 = *((ptr1 + 4) as *const i32) as usize;
-                                  Vec::from_raw_parts(*((ptr1 + 0) as *const i32) as *mut _, len2, len2)
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn exists(entity: EntityId,) -> bool{
+                              pub fn despawn(entity: EntityId,) -> bool{
                                 
                                 #[allow(unused_imports)]
                                 use wit_bindgen::rt::{alloc, vec::Vec, string::String};
@@ -5560,8 +5614,8 @@ pub mod component{
                                   
                                   #[link(wasm_import_module = "entity")]
                                   extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "exists")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_exists")]
+                                    #[cfg_attr(target_arch = "wasm32", link_name = "despawn")]
+                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_despawn")]
                                     fn wit_import(
                                     _: i64, _: i64, ) -> i32;
                                   }
@@ -5581,2662 +5635,2765 @@ pub mod component{
                                 }
                               }
                               #[allow(clippy::all)]
-                              pub fn get_all(index: u32,) -> wit_bindgen::rt::vec::Vec::<EntityId>{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(4))]
-                                  struct RetArea([u8; 8]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let ptr0 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "entity")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "get-all")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_get-all")]
-                                    fn wit_import(
-                                    _: i32, _: i32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_i32(index), ptr0);
-                                  let len1 = *((ptr0 + 4) as *const i32) as usize;
-                                  Vec::from_raw_parts(*((ptr0 + 0) as *const i32) as *mut _, len1, len1)
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn resources() -> EntityId{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(8))]
-                                  struct RetArea([u8; 16]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let ptr0 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "entity")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "resources")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_resources")]
-                                    fn wit_import(
-                                    _: i32, );
-                                  }
-                                  wit_import(ptr0);
-                                  super::types::EntityId{id0:*((ptr0 + 0) as *const i64) as u64, id1:*((ptr0 + 8) as *const i64) as u64, }
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn synchronized_resources() -> EntityId{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(8))]
-                                  struct RetArea([u8; 16]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let ptr0 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "entity")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "synchronized-resources")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_synchronized-resources")]
-                                    fn wit_import(
-                                    _: i32, );
-                                  }
-                                  wit_import(ptr0);
-                                  super::types::EntityId{id0:*((ptr0 + 0) as *const i64) as u64, id1:*((ptr0 + 8) as *const i64) as u64, }
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn persisted_resources() -> EntityId{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(8))]
-                                  struct RetArea([u8; 16]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let ptr0 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "entity")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "persisted-resources")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_persisted-resources")]
-                                    fn wit_import(
-                                    _: i32, );
-                                  }
-                                  wit_import(ptr0);
-                                  super::types::EntityId{id0:*((ptr0 + 0) as *const i64) as u64, id1:*((ptr0 + 8) as *const i64) as u64, }
-                                }
-                              }
-                              
-                            }
-                            
-                            
-                            #[allow(clippy::all)]
-                            pub mod message{
-                              #[used]
-                              #[doc(hidden)]
-                              #[cfg(target_arch = "wasm32")]
-                              static __FORCE_SECTION_REF: fn() = super::__link_section;
-                              
-                              #[allow(clippy::all)]
-                              pub fn subscribe(name: &str,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let vec0 = name;
-                                  let ptr0 = vec0.as_ptr() as i32;
-                                  let len0 = vec0.len() as i32;
-                                  
-                                  #[link(wasm_import_module = "message")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "subscribe")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "message_subscribe")]
-                                    fn wit_import(
-                                    _: i32, _: i32, );
-                                  }
-                                  wit_import(ptr0, len0);
-                                }
-                              }
-                              
-                            }
-                            
-                            
-                            #[allow(clippy::all)]
-                            pub mod player{
-                              #[used]
-                              #[doc(hidden)]
-                              #[cfg(target_arch = "wasm32")]
-                              static __FORCE_SECTION_REF: fn() = super::__link_section;
-                              
-                              pub type EntityId = super::types::EntityId;
-                              #[allow(clippy::all)]
-                              pub fn get_by_user_id(user_id: &str,) -> Option<EntityId>{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(8))]
-                                  struct RetArea([u8; 24]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let vec0 = user_id;
-                                  let ptr0 = vec0.as_ptr() as i32;
-                                  let len0 = vec0.len() as i32;
-                                  let ptr1 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "player")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "get-by-user-id")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "player_get-by-user-id")]
-                                    fn wit_import(
-                                    _: i32, _: i32, _: i32, );
-                                  }
-                                  wit_import(ptr0, len0, ptr1);
-                                  match i32::from(*((ptr1 + 0) as *const u8)) {
-                                    0 => None,
-                                    1 => Some(super::types::EntityId{id0:*((ptr1 + 8) as *const i64) as u64, id1:*((ptr1 + 16) as *const i64) as u64, }),
-                                    #[cfg(not(debug_assertions))]
-                                    _ => core::hint::unreachable_unchecked(),
-                                    #[cfg(debug_assertions)]
-                                    _ => panic!("invalid enum discriminant"),
-                                  }
-                                }
-                              }
-                              
-                            }
-                            
-                            
-                            #[allow(clippy::all)]
-                            pub mod client_audio{
-                              #[used]
-                              #[doc(hidden)]
-                              #[cfg(target_arch = "wasm32")]
-                              static __FORCE_SECTION_REF: fn() = super::__link_section;
-                              
-                              #[allow(clippy::all)]
-                              pub fn load(url: &str,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let vec0 = url;
-                                  let ptr0 = vec0.as_ptr() as i32;
-                                  let len0 = vec0.len() as i32;
-                                  
-                                  #[link(wasm_import_module = "client-audio")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "load")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-audio_load")]
-                                    fn wit_import(
-                                    _: i32, _: i32, );
-                                  }
-                                  wit_import(ptr0, len0);
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn play(name: &str,looping: bool,volume: f32,uid: u32,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let vec0 = name;
-                                  let ptr0 = vec0.as_ptr() as i32;
-                                  let len0 = vec0.len() as i32;
-                                  
-                                  #[link(wasm_import_module = "client-audio")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "play")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-audio_play")]
-                                    fn wit_import(
-                                    _: i32, _: i32, _: i32, _: f32, _: i32, );
-                                  }
-                                  wit_import(ptr0, len0, match looping { true => 1, false => 0 }, wit_bindgen::rt::as_f32(volume), wit_bindgen::rt::as_i32(uid));
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn stop(name: &str,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let vec0 = name;
-                                  let ptr0 = vec0.as_ptr() as i32;
-                                  let len0 = vec0.len() as i32;
-                                  
-                                  #[link(wasm_import_module = "client-audio")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "stop")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-audio_stop")]
-                                    fn wit_import(
-                                    _: i32, _: i32, );
-                                  }
-                                  wit_import(ptr0, len0);
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn stop_by_id(uid: u32,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[link(wasm_import_module = "client-audio")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "stop-by-id")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-audio_stop-by-id")]
-                                    fn wit_import(
-                                    _: i32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_i32(uid));
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn set_volume(name: &str,volume: f32,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let vec0 = name;
-                                  let ptr0 = vec0.as_ptr() as i32;
-                                  let len0 = vec0.len() as i32;
-                                  
-                                  #[link(wasm_import_module = "client-audio")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "set-volume")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-audio_set-volume")]
-                                    fn wit_import(
-                                    _: i32, _: i32, _: f32, );
-                                  }
-                                  wit_import(ptr0, len0, wit_bindgen::rt::as_f32(volume));
-                                }
-                              }
-                              
-                            }
-                            
-                            
-                            #[allow(clippy::all)]
-                            pub mod client_message{
-                              #[used]
-                              #[doc(hidden)]
-                              #[cfg(target_arch = "wasm32")]
-                              static __FORCE_SECTION_REF: fn() = super::__link_section;
-                              
-                              pub type EntityId = super::types::EntityId;
-                              #[derive(Clone, Copy)]
-                              pub enum Target{
-                                ServerUnreliable,
-                                ServerReliable,
-                                LocalBroadcast,
-                                Local(EntityId),
-                              }
-                              impl core::fmt::Debug for Target {
-                                fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                                  match self {
-                                    Target::ServerUnreliable => {
-                                      f.debug_tuple("Target::ServerUnreliable").finish()
-                                    }
-                                    Target::ServerReliable => {
-                                      f.debug_tuple("Target::ServerReliable").finish()
-                                    }
-                                    Target::LocalBroadcast => {
-                                      f.debug_tuple("Target::LocalBroadcast").finish()
-                                    }
-                                    Target::Local(e) => {
-                                      f.debug_tuple("Target::Local").field(e).finish()
-                                    }
-                                  }
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn send(target_id: Target,name: &str,data: &[u8],){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let (result1_0,result1_1,result1_2,) = match target_id {
-                                    Target::ServerUnreliable=> {
-                                      (0i32, 0i64, 0i64)
-                                    }
-                                    Target::ServerReliable=> {
-                                      (1i32, 0i64, 0i64)
-                                    }
-                                    Target::LocalBroadcast=> {
-                                      (2i32, 0i64, 0i64)
-                                    }
-                                    Target::Local(e) => {
-                                      let super::types::EntityId{ id0:id00, id1:id10, } = e;
-                                      
-                                      (3i32, wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10))
-                                    },
-                                  };
-                                  let vec2 = name;
-                                  let ptr2 = vec2.as_ptr() as i32;
-                                  let len2 = vec2.len() as i32;
-                                  let vec3 = data;
-                                  let ptr3 = vec3.as_ptr() as i32;
-                                  let len3 = vec3.len() as i32;
-                                  
-                                  #[link(wasm_import_module = "client-message")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "send")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-message_send")]
-                                    fn wit_import(
-                                    _: i32, _: i64, _: i64, _: i32, _: i32, _: i32, _: i32, );
-                                  }
-                                  wit_import(result1_0, result1_1, result1_2, ptr2, len2, ptr3, len3);
-                                }
-                              }
-                              
-                            }
-                            
-                            
-                            #[allow(clippy::all)]
-                            pub mod client_player{
-                              #[used]
-                              #[doc(hidden)]
-                              #[cfg(target_arch = "wasm32")]
-                              static __FORCE_SECTION_REF: fn() = super::__link_section;
-                              
-                              pub type EntityId = super::types::EntityId;
-                              #[allow(clippy::all)]
-                              pub fn get_local() -> EntityId{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(8))]
-                                  struct RetArea([u8; 16]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let ptr0 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "client-player")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "get-local")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-player_get-local")]
-                                    fn wit_import(
-                                    _: i32, );
-                                  }
-                                  wit_import(ptr0);
-                                  super::types::EntityId{id0:*((ptr0 + 0) as *const i64) as u64, id1:*((ptr0 + 8) as *const i64) as u64, }
-                                }
-                              }
-                              
-                            }
-                            
-                            
-                            #[allow(clippy::all)]
-                            pub mod client_input{
-                              #[used]
-                              #[doc(hidden)]
-                              #[cfg(target_arch = "wasm32")]
-                              static __FORCE_SECTION_REF: fn() = super::__link_section;
-                              
-                              pub type Vec2 = super::types::Vec2;
-                              #[repr(u8)]
-                              #[derive(Clone, Copy, PartialEq, Eq)]
-                              pub enum VirtualKeyCode {
-                                /// The '1' key over the letters.
-                                Key1,
-                                /// The '2' key over the letters.
-                                Key2,
-                                /// The '3' key over the letters.
-                                Key3,
-                                /// The '4' key over the letters.
-                                Key4,
-                                /// The '5' key over the letters.
-                                Key5,
-                                /// The '6' key over the letters.
-                                Key6,
-                                /// The '7' key over the letters.
-                                Key7,
-                                /// The '8' key over the letters.
-                                Key8,
-                                /// The '9' key over the letters.
-                                Key9,
-                                /// The '0' key over the 'O' and 'P' keys.
-                                Key0,
-                                A,
-                                B,
-                                C,
-                                D,
-                                E,
-                                F,
-                                G,
-                                H,
-                                I,
-                                J,
-                                K,
-                                L,
-                                M,
-                                N,
-                                O,
-                                P,
-                                Q,
-                                R,
-                                S,
-                                T,
-                                U,
-                                V,
-                                W,
-                                X,
-                                Y,
-                                Z,
-                                /// The Escape key, next to F1.
-                                Escape,
-                                F1,
-                                F2,
-                                F3,
-                                F4,
-                                F5,
-                                F6,
-                                F7,
-                                F8,
-                                F9,
-                                F10,
-                                F11,
-                                F12,
-                                F13,
-                                F14,
-                                F15,
-                                F16,
-                                F17,
-                                F18,
-                                F19,
-                                F20,
-                                F21,
-                                F22,
-                                F23,
-                                F24,
-                                /// Print Screen/SysRq.
-                                Snapshot,
-                                /// Scroll Lock.
-                                Scroll,
-                                /// Pause/Break key, next to Scroll lock.
-                                Pause,
-                                /// `Insert`, next to Backspace.
-                                Insert,
-                                Home,
-                                Delete,
-                                End,
-                                PageDown,
-                                PageUp,
-                                Left,
-                                Up,
-                                Right,
-                                Down,
-                                /// The Backspace key, right over Enter.
-                                Back,
-                                /// The Enter key.
-                                Return,
-                                /// The space bar.
-                                Space,
-                                /// The "Compose" key on Linux.
-                                Compose,
-                                Caret,
-                                Numlock,
-                                Numpad0,
-                                Numpad1,
-                                Numpad2,
-                                Numpad3,
-                                Numpad4,
-                                Numpad5,
-                                Numpad6,
-                                Numpad7,
-                                Numpad8,
-                                Numpad9,
-                                NumpadAdd,
-                                NumpadDivide,
-                                NumpadDecimal,
-                                NumpadComma,
-                                NumpadEnter,
-                                NumpadEquals,
-                                NumpadMultiply,
-                                NumpadSubtract,
-                                AbntC1,
-                                AbntC2,
-                                Apostrophe,
-                                Apps,
-                                Asterisk,
-                                At,
-                                Ax,
-                                Backslash,
-                                Calculator,
-                                Capital,
-                                Colon,
-                                Comma,
-                                Convert,
-                                Equals,
-                                Grave,
-                                Kana,
-                                Kanji,
-                                LAlt,
-                                LBracket,
-                                LControl,
-                                LShift,
-                                LWin,
-                                Mail,
-                                MediaSelect,
-                                MediaStop,
-                                Minus,
-                                Mute,
-                                MyComputer,
-                                NavigateForward,
-                                NavigateBackward,
-                                NextTrack,
-                                NoConvert,
-                                Oem102,
-                                Period,
-                                PlayPause,
-                                Plus,
-                                Power,
-                                PrevTrack,
-                                RAlt,
-                                RBracket,
-                                RControl,
-                                RShift,
-                                RWin,
-                                Semicolon,
-                                Slash,
-                                Sleep,
-                                Stop,
-                                Sysrq,
-                                Tab,
-                                Underline,
-                                Unlabeled,
-                                VolumeDown,
-                                VolumeUp,
-                                Wake,
-                                WebBack,
-                                WebFavorites,
-                                WebForward,
-                                WebHome,
-                                WebRefresh,
-                                WebSearch,
-                                WebStop,
-                                Yen,
-                                Copy,
-                                Paste,
-                                Cut,
-                              }
-                              impl core::fmt::Debug for VirtualKeyCode {
-                                fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                                  match self {
-                                    VirtualKeyCode::Key1 => {
-                                      f.debug_tuple("VirtualKeyCode::Key1").finish()
-                                    }
-                                    VirtualKeyCode::Key2 => {
-                                      f.debug_tuple("VirtualKeyCode::Key2").finish()
-                                    }
-                                    VirtualKeyCode::Key3 => {
-                                      f.debug_tuple("VirtualKeyCode::Key3").finish()
-                                    }
-                                    VirtualKeyCode::Key4 => {
-                                      f.debug_tuple("VirtualKeyCode::Key4").finish()
-                                    }
-                                    VirtualKeyCode::Key5 => {
-                                      f.debug_tuple("VirtualKeyCode::Key5").finish()
-                                    }
-                                    VirtualKeyCode::Key6 => {
-                                      f.debug_tuple("VirtualKeyCode::Key6").finish()
-                                    }
-                                    VirtualKeyCode::Key7 => {
-                                      f.debug_tuple("VirtualKeyCode::Key7").finish()
-                                    }
-                                    VirtualKeyCode::Key8 => {
-                                      f.debug_tuple("VirtualKeyCode::Key8").finish()
-                                    }
-                                    VirtualKeyCode::Key9 => {
-                                      f.debug_tuple("VirtualKeyCode::Key9").finish()
-                                    }
-                                    VirtualKeyCode::Key0 => {
-                                      f.debug_tuple("VirtualKeyCode::Key0").finish()
-                                    }
-                                    VirtualKeyCode::A => {
-                                      f.debug_tuple("VirtualKeyCode::A").finish()
-                                    }
-                                    VirtualKeyCode::B => {
-                                      f.debug_tuple("VirtualKeyCode::B").finish()
-                                    }
-                                    VirtualKeyCode::C => {
-                                      f.debug_tuple("VirtualKeyCode::C").finish()
-                                    }
-                                    VirtualKeyCode::D => {
-                                      f.debug_tuple("VirtualKeyCode::D").finish()
-                                    }
-                                    VirtualKeyCode::E => {
-                                      f.debug_tuple("VirtualKeyCode::E").finish()
-                                    }
-                                    VirtualKeyCode::F => {
-                                      f.debug_tuple("VirtualKeyCode::F").finish()
-                                    }
-                                    VirtualKeyCode::G => {
-                                      f.debug_tuple("VirtualKeyCode::G").finish()
-                                    }
-                                    VirtualKeyCode::H => {
-                                      f.debug_tuple("VirtualKeyCode::H").finish()
-                                    }
-                                    VirtualKeyCode::I => {
-                                      f.debug_tuple("VirtualKeyCode::I").finish()
-                                    }
-                                    VirtualKeyCode::J => {
-                                      f.debug_tuple("VirtualKeyCode::J").finish()
-                                    }
-                                    VirtualKeyCode::K => {
-                                      f.debug_tuple("VirtualKeyCode::K").finish()
-                                    }
-                                    VirtualKeyCode::L => {
-                                      f.debug_tuple("VirtualKeyCode::L").finish()
-                                    }
-                                    VirtualKeyCode::M => {
-                                      f.debug_tuple("VirtualKeyCode::M").finish()
-                                    }
-                                    VirtualKeyCode::N => {
-                                      f.debug_tuple("VirtualKeyCode::N").finish()
-                                    }
-                                    VirtualKeyCode::O => {
-                                      f.debug_tuple("VirtualKeyCode::O").finish()
-                                    }
-                                    VirtualKeyCode::P => {
-                                      f.debug_tuple("VirtualKeyCode::P").finish()
-                                    }
-                                    VirtualKeyCode::Q => {
-                                      f.debug_tuple("VirtualKeyCode::Q").finish()
-                                    }
-                                    VirtualKeyCode::R => {
-                                      f.debug_tuple("VirtualKeyCode::R").finish()
-                                    }
-                                    VirtualKeyCode::S => {
-                                      f.debug_tuple("VirtualKeyCode::S").finish()
-                                    }
-                                    VirtualKeyCode::T => {
-                                      f.debug_tuple("VirtualKeyCode::T").finish()
-                                    }
-                                    VirtualKeyCode::U => {
-                                      f.debug_tuple("VirtualKeyCode::U").finish()
-                                    }
-                                    VirtualKeyCode::V => {
-                                      f.debug_tuple("VirtualKeyCode::V").finish()
-                                    }
-                                    VirtualKeyCode::W => {
-                                      f.debug_tuple("VirtualKeyCode::W").finish()
-                                    }
-                                    VirtualKeyCode::X => {
-                                      f.debug_tuple("VirtualKeyCode::X").finish()
-                                    }
-                                    VirtualKeyCode::Y => {
-                                      f.debug_tuple("VirtualKeyCode::Y").finish()
-                                    }
-                                    VirtualKeyCode::Z => {
-                                      f.debug_tuple("VirtualKeyCode::Z").finish()
-                                    }
-                                    VirtualKeyCode::Escape => {
-                                      f.debug_tuple("VirtualKeyCode::Escape").finish()
-                                    }
-                                    VirtualKeyCode::F1 => {
-                                      f.debug_tuple("VirtualKeyCode::F1").finish()
-                                    }
-                                    VirtualKeyCode::F2 => {
-                                      f.debug_tuple("VirtualKeyCode::F2").finish()
-                                    }
-                                    VirtualKeyCode::F3 => {
-                                      f.debug_tuple("VirtualKeyCode::F3").finish()
-                                    }
-                                    VirtualKeyCode::F4 => {
-                                      f.debug_tuple("VirtualKeyCode::F4").finish()
-                                    }
-                                    VirtualKeyCode::F5 => {
-                                      f.debug_tuple("VirtualKeyCode::F5").finish()
-                                    }
-                                    VirtualKeyCode::F6 => {
-                                      f.debug_tuple("VirtualKeyCode::F6").finish()
-                                    }
-                                    VirtualKeyCode::F7 => {
-                                      f.debug_tuple("VirtualKeyCode::F7").finish()
-                                    }
-                                    VirtualKeyCode::F8 => {
-                                      f.debug_tuple("VirtualKeyCode::F8").finish()
-                                    }
-                                    VirtualKeyCode::F9 => {
-                                      f.debug_tuple("VirtualKeyCode::F9").finish()
-                                    }
-                                    VirtualKeyCode::F10 => {
-                                      f.debug_tuple("VirtualKeyCode::F10").finish()
-                                    }
-                                    VirtualKeyCode::F11 => {
-                                      f.debug_tuple("VirtualKeyCode::F11").finish()
-                                    }
-                                    VirtualKeyCode::F12 => {
-                                      f.debug_tuple("VirtualKeyCode::F12").finish()
-                                    }
-                                    VirtualKeyCode::F13 => {
-                                      f.debug_tuple("VirtualKeyCode::F13").finish()
-                                    }
-                                    VirtualKeyCode::F14 => {
-                                      f.debug_tuple("VirtualKeyCode::F14").finish()
-                                    }
-                                    VirtualKeyCode::F15 => {
-                                      f.debug_tuple("VirtualKeyCode::F15").finish()
-                                    }
-                                    VirtualKeyCode::F16 => {
-                                      f.debug_tuple("VirtualKeyCode::F16").finish()
-                                    }
-                                    VirtualKeyCode::F17 => {
-                                      f.debug_tuple("VirtualKeyCode::F17").finish()
-                                    }
-                                    VirtualKeyCode::F18 => {
-                                      f.debug_tuple("VirtualKeyCode::F18").finish()
-                                    }
-                                    VirtualKeyCode::F19 => {
-                                      f.debug_tuple("VirtualKeyCode::F19").finish()
-                                    }
-                                    VirtualKeyCode::F20 => {
-                                      f.debug_tuple("VirtualKeyCode::F20").finish()
-                                    }
-                                    VirtualKeyCode::F21 => {
-                                      f.debug_tuple("VirtualKeyCode::F21").finish()
-                                    }
-                                    VirtualKeyCode::F22 => {
-                                      f.debug_tuple("VirtualKeyCode::F22").finish()
-                                    }
-                                    VirtualKeyCode::F23 => {
-                                      f.debug_tuple("VirtualKeyCode::F23").finish()
-                                    }
-                                    VirtualKeyCode::F24 => {
-                                      f.debug_tuple("VirtualKeyCode::F24").finish()
-                                    }
-                                    VirtualKeyCode::Snapshot => {
-                                      f.debug_tuple("VirtualKeyCode::Snapshot").finish()
-                                    }
-                                    VirtualKeyCode::Scroll => {
-                                      f.debug_tuple("VirtualKeyCode::Scroll").finish()
-                                    }
-                                    VirtualKeyCode::Pause => {
-                                      f.debug_tuple("VirtualKeyCode::Pause").finish()
-                                    }
-                                    VirtualKeyCode::Insert => {
-                                      f.debug_tuple("VirtualKeyCode::Insert").finish()
-                                    }
-                                    VirtualKeyCode::Home => {
-                                      f.debug_tuple("VirtualKeyCode::Home").finish()
-                                    }
-                                    VirtualKeyCode::Delete => {
-                                      f.debug_tuple("VirtualKeyCode::Delete").finish()
-                                    }
-                                    VirtualKeyCode::End => {
-                                      f.debug_tuple("VirtualKeyCode::End").finish()
-                                    }
-                                    VirtualKeyCode::PageDown => {
-                                      f.debug_tuple("VirtualKeyCode::PageDown").finish()
-                                    }
-                                    VirtualKeyCode::PageUp => {
-                                      f.debug_tuple("VirtualKeyCode::PageUp").finish()
-                                    }
-                                    VirtualKeyCode::Left => {
-                                      f.debug_tuple("VirtualKeyCode::Left").finish()
-                                    }
-                                    VirtualKeyCode::Up => {
-                                      f.debug_tuple("VirtualKeyCode::Up").finish()
-                                    }
-                                    VirtualKeyCode::Right => {
-                                      f.debug_tuple("VirtualKeyCode::Right").finish()
-                                    }
-                                    VirtualKeyCode::Down => {
-                                      f.debug_tuple("VirtualKeyCode::Down").finish()
-                                    }
-                                    VirtualKeyCode::Back => {
-                                      f.debug_tuple("VirtualKeyCode::Back").finish()
-                                    }
-                                    VirtualKeyCode::Return => {
-                                      f.debug_tuple("VirtualKeyCode::Return").finish()
-                                    }
-                                    VirtualKeyCode::Space => {
-                                      f.debug_tuple("VirtualKeyCode::Space").finish()
-                                    }
-                                    VirtualKeyCode::Compose => {
-                                      f.debug_tuple("VirtualKeyCode::Compose").finish()
-                                    }
-                                    VirtualKeyCode::Caret => {
-                                      f.debug_tuple("VirtualKeyCode::Caret").finish()
-                                    }
-                                    VirtualKeyCode::Numlock => {
-                                      f.debug_tuple("VirtualKeyCode::Numlock").finish()
-                                    }
-                                    VirtualKeyCode::Numpad0 => {
-                                      f.debug_tuple("VirtualKeyCode::Numpad0").finish()
-                                    }
-                                    VirtualKeyCode::Numpad1 => {
-                                      f.debug_tuple("VirtualKeyCode::Numpad1").finish()
-                                    }
-                                    VirtualKeyCode::Numpad2 => {
-                                      f.debug_tuple("VirtualKeyCode::Numpad2").finish()
-                                    }
-                                    VirtualKeyCode::Numpad3 => {
-                                      f.debug_tuple("VirtualKeyCode::Numpad3").finish()
-                                    }
-                                    VirtualKeyCode::Numpad4 => {
-                                      f.debug_tuple("VirtualKeyCode::Numpad4").finish()
-                                    }
-                                    VirtualKeyCode::Numpad5 => {
-                                      f.debug_tuple("VirtualKeyCode::Numpad5").finish()
-                                    }
-                                    VirtualKeyCode::Numpad6 => {
-                                      f.debug_tuple("VirtualKeyCode::Numpad6").finish()
-                                    }
-                                    VirtualKeyCode::Numpad7 => {
-                                      f.debug_tuple("VirtualKeyCode::Numpad7").finish()
-                                    }
-                                    VirtualKeyCode::Numpad8 => {
-                                      f.debug_tuple("VirtualKeyCode::Numpad8").finish()
-                                    }
-                                    VirtualKeyCode::Numpad9 => {
-                                      f.debug_tuple("VirtualKeyCode::Numpad9").finish()
-                                    }
-                                    VirtualKeyCode::NumpadAdd => {
-                                      f.debug_tuple("VirtualKeyCode::NumpadAdd").finish()
-                                    }
-                                    VirtualKeyCode::NumpadDivide => {
-                                      f.debug_tuple("VirtualKeyCode::NumpadDivide").finish()
-                                    }
-                                    VirtualKeyCode::NumpadDecimal => {
-                                      f.debug_tuple("VirtualKeyCode::NumpadDecimal").finish()
-                                    }
-                                    VirtualKeyCode::NumpadComma => {
-                                      f.debug_tuple("VirtualKeyCode::NumpadComma").finish()
-                                    }
-                                    VirtualKeyCode::NumpadEnter => {
-                                      f.debug_tuple("VirtualKeyCode::NumpadEnter").finish()
-                                    }
-                                    VirtualKeyCode::NumpadEquals => {
-                                      f.debug_tuple("VirtualKeyCode::NumpadEquals").finish()
-                                    }
-                                    VirtualKeyCode::NumpadMultiply => {
-                                      f.debug_tuple("VirtualKeyCode::NumpadMultiply").finish()
-                                    }
-                                    VirtualKeyCode::NumpadSubtract => {
-                                      f.debug_tuple("VirtualKeyCode::NumpadSubtract").finish()
-                                    }
-                                    VirtualKeyCode::AbntC1 => {
-                                      f.debug_tuple("VirtualKeyCode::AbntC1").finish()
-                                    }
-                                    VirtualKeyCode::AbntC2 => {
-                                      f.debug_tuple("VirtualKeyCode::AbntC2").finish()
-                                    }
-                                    VirtualKeyCode::Apostrophe => {
-                                      f.debug_tuple("VirtualKeyCode::Apostrophe").finish()
-                                    }
-                                    VirtualKeyCode::Apps => {
-                                      f.debug_tuple("VirtualKeyCode::Apps").finish()
-                                    }
-                                    VirtualKeyCode::Asterisk => {
-                                      f.debug_tuple("VirtualKeyCode::Asterisk").finish()
-                                    }
-                                    VirtualKeyCode::At => {
-                                      f.debug_tuple("VirtualKeyCode::At").finish()
-                                    }
-                                    VirtualKeyCode::Ax => {
-                                      f.debug_tuple("VirtualKeyCode::Ax").finish()
-                                    }
-                                    VirtualKeyCode::Backslash => {
-                                      f.debug_tuple("VirtualKeyCode::Backslash").finish()
-                                    }
-                                    VirtualKeyCode::Calculator => {
-                                      f.debug_tuple("VirtualKeyCode::Calculator").finish()
-                                    }
-                                    VirtualKeyCode::Capital => {
-                                      f.debug_tuple("VirtualKeyCode::Capital").finish()
-                                    }
-                                    VirtualKeyCode::Colon => {
-                                      f.debug_tuple("VirtualKeyCode::Colon").finish()
-                                    }
-                                    VirtualKeyCode::Comma => {
-                                      f.debug_tuple("VirtualKeyCode::Comma").finish()
-                                    }
-                                    VirtualKeyCode::Convert => {
-                                      f.debug_tuple("VirtualKeyCode::Convert").finish()
-                                    }
-                                    VirtualKeyCode::Equals => {
-                                      f.debug_tuple("VirtualKeyCode::Equals").finish()
-                                    }
-                                    VirtualKeyCode::Grave => {
-                                      f.debug_tuple("VirtualKeyCode::Grave").finish()
-                                    }
-                                    VirtualKeyCode::Kana => {
-                                      f.debug_tuple("VirtualKeyCode::Kana").finish()
-                                    }
-                                    VirtualKeyCode::Kanji => {
-                                      f.debug_tuple("VirtualKeyCode::Kanji").finish()
-                                    }
-                                    VirtualKeyCode::LAlt => {
-                                      f.debug_tuple("VirtualKeyCode::LAlt").finish()
-                                    }
-                                    VirtualKeyCode::LBracket => {
-                                      f.debug_tuple("VirtualKeyCode::LBracket").finish()
-                                    }
-                                    VirtualKeyCode::LControl => {
-                                      f.debug_tuple("VirtualKeyCode::LControl").finish()
-                                    }
-                                    VirtualKeyCode::LShift => {
-                                      f.debug_tuple("VirtualKeyCode::LShift").finish()
-                                    }
-                                    VirtualKeyCode::LWin => {
-                                      f.debug_tuple("VirtualKeyCode::LWin").finish()
-                                    }
-                                    VirtualKeyCode::Mail => {
-                                      f.debug_tuple("VirtualKeyCode::Mail").finish()
-                                    }
-                                    VirtualKeyCode::MediaSelect => {
-                                      f.debug_tuple("VirtualKeyCode::MediaSelect").finish()
-                                    }
-                                    VirtualKeyCode::MediaStop => {
-                                      f.debug_tuple("VirtualKeyCode::MediaStop").finish()
-                                    }
-                                    VirtualKeyCode::Minus => {
-                                      f.debug_tuple("VirtualKeyCode::Minus").finish()
-                                    }
-                                    VirtualKeyCode::Mute => {
-                                      f.debug_tuple("VirtualKeyCode::Mute").finish()
-                                    }
-                                    VirtualKeyCode::MyComputer => {
-                                      f.debug_tuple("VirtualKeyCode::MyComputer").finish()
-                                    }
-                                    VirtualKeyCode::NavigateForward => {
-                                      f.debug_tuple("VirtualKeyCode::NavigateForward").finish()
-                                    }
-                                    VirtualKeyCode::NavigateBackward => {
-                                      f.debug_tuple("VirtualKeyCode::NavigateBackward").finish()
-                                    }
-                                    VirtualKeyCode::NextTrack => {
-                                      f.debug_tuple("VirtualKeyCode::NextTrack").finish()
-                                    }
-                                    VirtualKeyCode::NoConvert => {
-                                      f.debug_tuple("VirtualKeyCode::NoConvert").finish()
-                                    }
-                                    VirtualKeyCode::Oem102 => {
-                                      f.debug_tuple("VirtualKeyCode::Oem102").finish()
-                                    }
-                                    VirtualKeyCode::Period => {
-                                      f.debug_tuple("VirtualKeyCode::Period").finish()
-                                    }
-                                    VirtualKeyCode::PlayPause => {
-                                      f.debug_tuple("VirtualKeyCode::PlayPause").finish()
-                                    }
-                                    VirtualKeyCode::Plus => {
-                                      f.debug_tuple("VirtualKeyCode::Plus").finish()
-                                    }
-                                    VirtualKeyCode::Power => {
-                                      f.debug_tuple("VirtualKeyCode::Power").finish()
-                                    }
-                                    VirtualKeyCode::PrevTrack => {
-                                      f.debug_tuple("VirtualKeyCode::PrevTrack").finish()
-                                    }
-                                    VirtualKeyCode::RAlt => {
-                                      f.debug_tuple("VirtualKeyCode::RAlt").finish()
-                                    }
-                                    VirtualKeyCode::RBracket => {
-                                      f.debug_tuple("VirtualKeyCode::RBracket").finish()
-                                    }
-                                    VirtualKeyCode::RControl => {
-                                      f.debug_tuple("VirtualKeyCode::RControl").finish()
-                                    }
-                                    VirtualKeyCode::RShift => {
-                                      f.debug_tuple("VirtualKeyCode::RShift").finish()
-                                    }
-                                    VirtualKeyCode::RWin => {
-                                      f.debug_tuple("VirtualKeyCode::RWin").finish()
-                                    }
-                                    VirtualKeyCode::Semicolon => {
-                                      f.debug_tuple("VirtualKeyCode::Semicolon").finish()
-                                    }
-                                    VirtualKeyCode::Slash => {
-                                      f.debug_tuple("VirtualKeyCode::Slash").finish()
-                                    }
-                                    VirtualKeyCode::Sleep => {
-                                      f.debug_tuple("VirtualKeyCode::Sleep").finish()
-                                    }
-                                    VirtualKeyCode::Stop => {
-                                      f.debug_tuple("VirtualKeyCode::Stop").finish()
-                                    }
-                                    VirtualKeyCode::Sysrq => {
-                                      f.debug_tuple("VirtualKeyCode::Sysrq").finish()
-                                    }
-                                    VirtualKeyCode::Tab => {
-                                      f.debug_tuple("VirtualKeyCode::Tab").finish()
-                                    }
-                                    VirtualKeyCode::Underline => {
-                                      f.debug_tuple("VirtualKeyCode::Underline").finish()
-                                    }
-                                    VirtualKeyCode::Unlabeled => {
-                                      f.debug_tuple("VirtualKeyCode::Unlabeled").finish()
-                                    }
-                                    VirtualKeyCode::VolumeDown => {
-                                      f.debug_tuple("VirtualKeyCode::VolumeDown").finish()
-                                    }
-                                    VirtualKeyCode::VolumeUp => {
-                                      f.debug_tuple("VirtualKeyCode::VolumeUp").finish()
-                                    }
-                                    VirtualKeyCode::Wake => {
-                                      f.debug_tuple("VirtualKeyCode::Wake").finish()
-                                    }
-                                    VirtualKeyCode::WebBack => {
-                                      f.debug_tuple("VirtualKeyCode::WebBack").finish()
-                                    }
-                                    VirtualKeyCode::WebFavorites => {
-                                      f.debug_tuple("VirtualKeyCode::WebFavorites").finish()
-                                    }
-                                    VirtualKeyCode::WebForward => {
-                                      f.debug_tuple("VirtualKeyCode::WebForward").finish()
-                                    }
-                                    VirtualKeyCode::WebHome => {
-                                      f.debug_tuple("VirtualKeyCode::WebHome").finish()
-                                    }
-                                    VirtualKeyCode::WebRefresh => {
-                                      f.debug_tuple("VirtualKeyCode::WebRefresh").finish()
-                                    }
-                                    VirtualKeyCode::WebSearch => {
-                                      f.debug_tuple("VirtualKeyCode::WebSearch").finish()
-                                    }
-                                    VirtualKeyCode::WebStop => {
-                                      f.debug_tuple("VirtualKeyCode::WebStop").finish()
-                                    }
-                                    VirtualKeyCode::Yen => {
-                                      f.debug_tuple("VirtualKeyCode::Yen").finish()
-                                    }
-                                    VirtualKeyCode::Copy => {
-                                      f.debug_tuple("VirtualKeyCode::Copy").finish()
-                                    }
-                                    VirtualKeyCode::Paste => {
-                                      f.debug_tuple("VirtualKeyCode::Paste").finish()
-                                    }
-                                    VirtualKeyCode::Cut => {
-                                      f.debug_tuple("VirtualKeyCode::Cut").finish()
-                                    }
-                                  }
-                                }
-                              }
-                              #[derive(Clone, Copy)]
-                              pub enum MouseButton{
-                                Left,
-                                Right,
-                                Middle,
-                                Other(u16),
-                              }
-                              impl core::fmt::Debug for MouseButton {
-                                fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                                  match self {
-                                    MouseButton::Left => {
-                                      f.debug_tuple("MouseButton::Left").finish()
-                                    }
-                                    MouseButton::Right => {
-                                      f.debug_tuple("MouseButton::Right").finish()
-                                    }
-                                    MouseButton::Middle => {
-                                      f.debug_tuple("MouseButton::Middle").finish()
-                                    }
-                                    MouseButton::Other(e) => {
-                                      f.debug_tuple("MouseButton::Other").field(e).finish()
-                                    }
-                                  }
-                                }
-                              }
-                              #[derive(Clone)]
-                              pub struct Input {
-                                pub keys: wit_bindgen::rt::vec::Vec::<VirtualKeyCode>,
-                                pub mouse_position: Vec2,
-                                pub mouse_delta: Vec2,
-                                pub mouse_wheel: f32,
-                                pub mouse_buttons: wit_bindgen::rt::vec::Vec::<MouseButton>,
-                              }
-                              impl core::fmt::Debug for Input {
-                                fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                                  f.debug_struct("Input").field("keys", &self.keys).field("mouse-position", &self.mouse_position).field("mouse-delta", &self.mouse_delta).field("mouse-wheel", &self.mouse_wheel).field("mouse-buttons", &self.mouse_buttons).finish()
-                                }
-                              }
-                              #[derive(Clone, Copy)]
-                              pub enum CursorIcon{
-                                /// The platform-dependent default cursor.
-                                DefaultIcon,
-                                /// A simple crosshair.
-                                Crosshair,
-                                /// A hand (often used to indicate links in web browsers).
-                                Hand,
-                                /// Self explanatory.
-                                Arrow,
-                                /// Indicates something is to be moved.
-                                Move,
-                                /// Indicates text that may be selected or edited.
-                                Text,
-                                /// Program busy indicator.
-                                Wait,
-                                /// Help indicator (often rendered as a "?")
-                                Help,
-                                /// Progress indicator. Shows that processing is being done. But in contrast
-                                /// with "Wait" the user may still interact with the program. Often rendered
-                                /// as a spinning beach ball, or an arrow with a watch or hourglass.
-                                Progress,
-                                /// Cursor showing that something cannot be done.
-                                NotAllowed,
-                                ContextMenu,
-                                Cell,
-                                VerticalText,
-                                Alias,
-                                Copy,
-                                NoDrop,
-                                /// Indicates something can be grabbed.
-                                Grab,
-                                /// Indicates something is grabbed.
-                                Grabbing,
-                                AllScroll,
-                                ZoomIn,
-                                ZoomOut,
-                                /// Indicate that some edge is to be moved. For example, the 'SeResize' cursor
-                                /// is used when the movement starts from the south-east corner of the box.
-                                EResize,
-                                NResize,
-                                NeResize,
-                                NwResize,
-                                SResize,
-                                SeResize,
-                                SwResize,
-                                WResize,
-                                EwResize,
-                                NsResize,
-                                NeswResize,
-                                NwseResize,
-                                ColResize,
-                                RowResize,
-                              }
-                              impl core::fmt::Debug for CursorIcon {
-                                fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                                  match self {
-                                    CursorIcon::DefaultIcon => {
-                                      f.debug_tuple("CursorIcon::DefaultIcon").finish()
-                                    }
-                                    CursorIcon::Crosshair => {
-                                      f.debug_tuple("CursorIcon::Crosshair").finish()
-                                    }
-                                    CursorIcon::Hand => {
-                                      f.debug_tuple("CursorIcon::Hand").finish()
-                                    }
-                                    CursorIcon::Arrow => {
-                                      f.debug_tuple("CursorIcon::Arrow").finish()
-                                    }
-                                    CursorIcon::Move => {
-                                      f.debug_tuple("CursorIcon::Move").finish()
-                                    }
-                                    CursorIcon::Text => {
-                                      f.debug_tuple("CursorIcon::Text").finish()
-                                    }
-                                    CursorIcon::Wait => {
-                                      f.debug_tuple("CursorIcon::Wait").finish()
-                                    }
-                                    CursorIcon::Help => {
-                                      f.debug_tuple("CursorIcon::Help").finish()
-                                    }
-                                    CursorIcon::Progress => {
-                                      f.debug_tuple("CursorIcon::Progress").finish()
-                                    }
-                                    CursorIcon::NotAllowed => {
-                                      f.debug_tuple("CursorIcon::NotAllowed").finish()
-                                    }
-                                    CursorIcon::ContextMenu => {
-                                      f.debug_tuple("CursorIcon::ContextMenu").finish()
-                                    }
-                                    CursorIcon::Cell => {
-                                      f.debug_tuple("CursorIcon::Cell").finish()
-                                    }
-                                    CursorIcon::VerticalText => {
-                                      f.debug_tuple("CursorIcon::VerticalText").finish()
-                                    }
-                                    CursorIcon::Alias => {
-                                      f.debug_tuple("CursorIcon::Alias").finish()
-                                    }
-                                    CursorIcon::Copy => {
-                                      f.debug_tuple("CursorIcon::Copy").finish()
-                                    }
-                                    CursorIcon::NoDrop => {
-                                      f.debug_tuple("CursorIcon::NoDrop").finish()
-                                    }
-                                    CursorIcon::Grab => {
-                                      f.debug_tuple("CursorIcon::Grab").finish()
-                                    }
-                                    CursorIcon::Grabbing => {
-                                      f.debug_tuple("CursorIcon::Grabbing").finish()
-                                    }
-                                    CursorIcon::AllScroll => {
-                                      f.debug_tuple("CursorIcon::AllScroll").finish()
-                                    }
-                                    CursorIcon::ZoomIn => {
-                                      f.debug_tuple("CursorIcon::ZoomIn").finish()
-                                    }
-                                    CursorIcon::ZoomOut => {
-                                      f.debug_tuple("CursorIcon::ZoomOut").finish()
-                                    }
-                                    CursorIcon::EResize => {
-                                      f.debug_tuple("CursorIcon::EResize").finish()
-                                    }
-                                    CursorIcon::NResize => {
-                                      f.debug_tuple("CursorIcon::NResize").finish()
-                                    }
-                                    CursorIcon::NeResize => {
-                                      f.debug_tuple("CursorIcon::NeResize").finish()
-                                    }
-                                    CursorIcon::NwResize => {
-                                      f.debug_tuple("CursorIcon::NwResize").finish()
-                                    }
-                                    CursorIcon::SResize => {
-                                      f.debug_tuple("CursorIcon::SResize").finish()
-                                    }
-                                    CursorIcon::SeResize => {
-                                      f.debug_tuple("CursorIcon::SeResize").finish()
-                                    }
-                                    CursorIcon::SwResize => {
-                                      f.debug_tuple("CursorIcon::SwResize").finish()
-                                    }
-                                    CursorIcon::WResize => {
-                                      f.debug_tuple("CursorIcon::WResize").finish()
-                                    }
-                                    CursorIcon::EwResize => {
-                                      f.debug_tuple("CursorIcon::EwResize").finish()
-                                    }
-                                    CursorIcon::NsResize => {
-                                      f.debug_tuple("CursorIcon::NsResize").finish()
-                                    }
-                                    CursorIcon::NeswResize => {
-                                      f.debug_tuple("CursorIcon::NeswResize").finish()
-                                    }
-                                    CursorIcon::NwseResize => {
-                                      f.debug_tuple("CursorIcon::NwseResize").finish()
-                                    }
-                                    CursorIcon::ColResize => {
-                                      f.debug_tuple("CursorIcon::ColResize").finish()
-                                    }
-                                    CursorIcon::RowResize => {
-                                      f.debug_tuple("CursorIcon::RowResize").finish()
-                                    }
-                                  }
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn get() -> Input{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(4))]
-                                  struct RetArea([u8; 36]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let ptr0 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "client-input")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "get")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-input_get")]
-                                    fn wit_import(
-                                    _: i32, );
-                                  }
-                                  wit_import(ptr0);
-                                  let base1 = *((ptr0 + 0) as *const i32);
-                                  let len1 = *((ptr0 + 4) as *const i32);
-                                  let mut result1 = Vec::with_capacity(len1 as usize);
-                                  for i in 0..len1 {
-                                    let base = base1 + i *1;
-                                    result1.push({#[cfg(debug_assertions)]{match i32::from(*((base + 0) as *const u8)) {
-                                      0 => VirtualKeyCode::Key1,
-                                      1 => VirtualKeyCode::Key2,
-                                      2 => VirtualKeyCode::Key3,
-                                      3 => VirtualKeyCode::Key4,
-                                      4 => VirtualKeyCode::Key5,
-                                      5 => VirtualKeyCode::Key6,
-                                      6 => VirtualKeyCode::Key7,
-                                      7 => VirtualKeyCode::Key8,
-                                      8 => VirtualKeyCode::Key9,
-                                      9 => VirtualKeyCode::Key0,
-                                      10 => VirtualKeyCode::A,
-                                      11 => VirtualKeyCode::B,
-                                      12 => VirtualKeyCode::C,
-                                      13 => VirtualKeyCode::D,
-                                      14 => VirtualKeyCode::E,
-                                      15 => VirtualKeyCode::F,
-                                      16 => VirtualKeyCode::G,
-                                      17 => VirtualKeyCode::H,
-                                      18 => VirtualKeyCode::I,
-                                      19 => VirtualKeyCode::J,
-                                      20 => VirtualKeyCode::K,
-                                      21 => VirtualKeyCode::L,
-                                      22 => VirtualKeyCode::M,
-                                      23 => VirtualKeyCode::N,
-                                      24 => VirtualKeyCode::O,
-                                      25 => VirtualKeyCode::P,
-                                      26 => VirtualKeyCode::Q,
-                                      27 => VirtualKeyCode::R,
-                                      28 => VirtualKeyCode::S,
-                                      29 => VirtualKeyCode::T,
-                                      30 => VirtualKeyCode::U,
-                                      31 => VirtualKeyCode::V,
-                                      32 => VirtualKeyCode::W,
-                                      33 => VirtualKeyCode::X,
-                                      34 => VirtualKeyCode::Y,
-                                      35 => VirtualKeyCode::Z,
-                                      36 => VirtualKeyCode::Escape,
-                                      37 => VirtualKeyCode::F1,
-                                      38 => VirtualKeyCode::F2,
-                                      39 => VirtualKeyCode::F3,
-                                      40 => VirtualKeyCode::F4,
-                                      41 => VirtualKeyCode::F5,
-                                      42 => VirtualKeyCode::F6,
-                                      43 => VirtualKeyCode::F7,
-                                      44 => VirtualKeyCode::F8,
-                                      45 => VirtualKeyCode::F9,
-                                      46 => VirtualKeyCode::F10,
-                                      47 => VirtualKeyCode::F11,
-                                      48 => VirtualKeyCode::F12,
-                                      49 => VirtualKeyCode::F13,
-                                      50 => VirtualKeyCode::F14,
-                                      51 => VirtualKeyCode::F15,
-                                      52 => VirtualKeyCode::F16,
-                                      53 => VirtualKeyCode::F17,
-                                      54 => VirtualKeyCode::F18,
-                                      55 => VirtualKeyCode::F19,
-                                      56 => VirtualKeyCode::F20,
-                                      57 => VirtualKeyCode::F21,
-                                      58 => VirtualKeyCode::F22,
-                                      59 => VirtualKeyCode::F23,
-                                      60 => VirtualKeyCode::F24,
-                                      61 => VirtualKeyCode::Snapshot,
-                                      62 => VirtualKeyCode::Scroll,
-                                      63 => VirtualKeyCode::Pause,
-                                      64 => VirtualKeyCode::Insert,
-                                      65 => VirtualKeyCode::Home,
-                                      66 => VirtualKeyCode::Delete,
-                                      67 => VirtualKeyCode::End,
-                                      68 => VirtualKeyCode::PageDown,
-                                      69 => VirtualKeyCode::PageUp,
-                                      70 => VirtualKeyCode::Left,
-                                      71 => VirtualKeyCode::Up,
-                                      72 => VirtualKeyCode::Right,
-                                      73 => VirtualKeyCode::Down,
-                                      74 => VirtualKeyCode::Back,
-                                      75 => VirtualKeyCode::Return,
-                                      76 => VirtualKeyCode::Space,
-                                      77 => VirtualKeyCode::Compose,
-                                      78 => VirtualKeyCode::Caret,
-                                      79 => VirtualKeyCode::Numlock,
-                                      80 => VirtualKeyCode::Numpad0,
-                                      81 => VirtualKeyCode::Numpad1,
-                                      82 => VirtualKeyCode::Numpad2,
-                                      83 => VirtualKeyCode::Numpad3,
-                                      84 => VirtualKeyCode::Numpad4,
-                                      85 => VirtualKeyCode::Numpad5,
-                                      86 => VirtualKeyCode::Numpad6,
-                                      87 => VirtualKeyCode::Numpad7,
-                                      88 => VirtualKeyCode::Numpad8,
-                                      89 => VirtualKeyCode::Numpad9,
-                                      90 => VirtualKeyCode::NumpadAdd,
-                                      91 => VirtualKeyCode::NumpadDivide,
-                                      92 => VirtualKeyCode::NumpadDecimal,
-                                      93 => VirtualKeyCode::NumpadComma,
-                                      94 => VirtualKeyCode::NumpadEnter,
-                                      95 => VirtualKeyCode::NumpadEquals,
-                                      96 => VirtualKeyCode::NumpadMultiply,
-                                      97 => VirtualKeyCode::NumpadSubtract,
-                                      98 => VirtualKeyCode::AbntC1,
-                                      99 => VirtualKeyCode::AbntC2,
-                                      100 => VirtualKeyCode::Apostrophe,
-                                      101 => VirtualKeyCode::Apps,
-                                      102 => VirtualKeyCode::Asterisk,
-                                      103 => VirtualKeyCode::At,
-                                      104 => VirtualKeyCode::Ax,
-                                      105 => VirtualKeyCode::Backslash,
-                                      106 => VirtualKeyCode::Calculator,
-                                      107 => VirtualKeyCode::Capital,
-                                      108 => VirtualKeyCode::Colon,
-                                      109 => VirtualKeyCode::Comma,
-                                      110 => VirtualKeyCode::Convert,
-                                      111 => VirtualKeyCode::Equals,
-                                      112 => VirtualKeyCode::Grave,
-                                      113 => VirtualKeyCode::Kana,
-                                      114 => VirtualKeyCode::Kanji,
-                                      115 => VirtualKeyCode::LAlt,
-                                      116 => VirtualKeyCode::LBracket,
-                                      117 => VirtualKeyCode::LControl,
-                                      118 => VirtualKeyCode::LShift,
-                                      119 => VirtualKeyCode::LWin,
-                                      120 => VirtualKeyCode::Mail,
-                                      121 => VirtualKeyCode::MediaSelect,
-                                      122 => VirtualKeyCode::MediaStop,
-                                      123 => VirtualKeyCode::Minus,
-                                      124 => VirtualKeyCode::Mute,
-                                      125 => VirtualKeyCode::MyComputer,
-                                      126 => VirtualKeyCode::NavigateForward,
-                                      127 => VirtualKeyCode::NavigateBackward,
-                                      128 => VirtualKeyCode::NextTrack,
-                                      129 => VirtualKeyCode::NoConvert,
-                                      130 => VirtualKeyCode::Oem102,
-                                      131 => VirtualKeyCode::Period,
-                                      132 => VirtualKeyCode::PlayPause,
-                                      133 => VirtualKeyCode::Plus,
-                                      134 => VirtualKeyCode::Power,
-                                      135 => VirtualKeyCode::PrevTrack,
-                                      136 => VirtualKeyCode::RAlt,
-                                      137 => VirtualKeyCode::RBracket,
-                                      138 => VirtualKeyCode::RControl,
-                                      139 => VirtualKeyCode::RShift,
-                                      140 => VirtualKeyCode::RWin,
-                                      141 => VirtualKeyCode::Semicolon,
-                                      142 => VirtualKeyCode::Slash,
-                                      143 => VirtualKeyCode::Sleep,
-                                      144 => VirtualKeyCode::Stop,
-                                      145 => VirtualKeyCode::Sysrq,
-                                      146 => VirtualKeyCode::Tab,
-                                      147 => VirtualKeyCode::Underline,
-                                      148 => VirtualKeyCode::Unlabeled,
-                                      149 => VirtualKeyCode::VolumeDown,
-                                      150 => VirtualKeyCode::VolumeUp,
-                                      151 => VirtualKeyCode::Wake,
-                                      152 => VirtualKeyCode::WebBack,
-                                      153 => VirtualKeyCode::WebFavorites,
-                                      154 => VirtualKeyCode::WebForward,
-                                      155 => VirtualKeyCode::WebHome,
-                                      156 => VirtualKeyCode::WebRefresh,
-                                      157 => VirtualKeyCode::WebSearch,
-                                      158 => VirtualKeyCode::WebStop,
-                                      159 => VirtualKeyCode::Yen,
-                                      160 => VirtualKeyCode::Copy,
-                                      161 => VirtualKeyCode::Paste,
-                                      162 => VirtualKeyCode::Cut,
-                                      _ => panic!("invalid enum discriminant"),
-                                    }}#[cfg(not(debug_assertions))]{core::mem::transmute::<_, VirtualKeyCode>(i32::from(*((base + 0) as *const u8)) as u8)}});
-                                  }
-                                  wit_bindgen::rt::dealloc(base1, (len1 as usize) * 1, 1);
-                                  let base2 = *((ptr0 + 28) as *const i32);
-                                  let len2 = *((ptr0 + 32) as *const i32);
-                                  let mut result2 = Vec::with_capacity(len2 as usize);
-                                  for i in 0..len2 {
-                                    let base = base2 + i *4;
-                                    result2.push({{match i32::from(*((base + 0) as *const u8)) {
-                                      0 => MouseButton::Left,
-                                      1 => MouseButton::Right,
-                                      2 => MouseButton::Middle,
-                                      #[cfg(debug_assertions)]3 => MouseButton::Other(i32::from(*((base + 2) as *const u16)) as u16),
-                                      #[cfg(not(debug_assertions))]_ => MouseButton::Other(i32::from(*((base + 2) as *const u16)) as u16),
-                                      #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
-                                    }}});
-                                  }
-                                  wit_bindgen::rt::dealloc(base2, (len2 as usize) * 4, 2);
-                                  Input{keys:result1, mouse_position:super::types::Vec2{x:*((ptr0 + 8) as *const f32), y:*((ptr0 + 12) as *const f32), }, mouse_delta:super::types::Vec2{x:*((ptr0 + 16) as *const f32), y:*((ptr0 + 20) as *const f32), }, mouse_wheel:*((ptr0 + 24) as *const f32), mouse_buttons:result2, }
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn get_previous() -> Input{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(4))]
-                                  struct RetArea([u8; 36]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let ptr0 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "client-input")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "get-previous")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-input_get-previous")]
-                                    fn wit_import(
-                                    _: i32, );
-                                  }
-                                  wit_import(ptr0);
-                                  let base1 = *((ptr0 + 0) as *const i32);
-                                  let len1 = *((ptr0 + 4) as *const i32);
-                                  let mut result1 = Vec::with_capacity(len1 as usize);
-                                  for i in 0..len1 {
-                                    let base = base1 + i *1;
-                                    result1.push({#[cfg(debug_assertions)]{match i32::from(*((base + 0) as *const u8)) {
-                                      0 => VirtualKeyCode::Key1,
-                                      1 => VirtualKeyCode::Key2,
-                                      2 => VirtualKeyCode::Key3,
-                                      3 => VirtualKeyCode::Key4,
-                                      4 => VirtualKeyCode::Key5,
-                                      5 => VirtualKeyCode::Key6,
-                                      6 => VirtualKeyCode::Key7,
-                                      7 => VirtualKeyCode::Key8,
-                                      8 => VirtualKeyCode::Key9,
-                                      9 => VirtualKeyCode::Key0,
-                                      10 => VirtualKeyCode::A,
-                                      11 => VirtualKeyCode::B,
-                                      12 => VirtualKeyCode::C,
-                                      13 => VirtualKeyCode::D,
-                                      14 => VirtualKeyCode::E,
-                                      15 => VirtualKeyCode::F,
-                                      16 => VirtualKeyCode::G,
-                                      17 => VirtualKeyCode::H,
-                                      18 => VirtualKeyCode::I,
-                                      19 => VirtualKeyCode::J,
-                                      20 => VirtualKeyCode::K,
-                                      21 => VirtualKeyCode::L,
-                                      22 => VirtualKeyCode::M,
-                                      23 => VirtualKeyCode::N,
-                                      24 => VirtualKeyCode::O,
-                                      25 => VirtualKeyCode::P,
-                                      26 => VirtualKeyCode::Q,
-                                      27 => VirtualKeyCode::R,
-                                      28 => VirtualKeyCode::S,
-                                      29 => VirtualKeyCode::T,
-                                      30 => VirtualKeyCode::U,
-                                      31 => VirtualKeyCode::V,
-                                      32 => VirtualKeyCode::W,
-                                      33 => VirtualKeyCode::X,
-                                      34 => VirtualKeyCode::Y,
-                                      35 => VirtualKeyCode::Z,
-                                      36 => VirtualKeyCode::Escape,
-                                      37 => VirtualKeyCode::F1,
-                                      38 => VirtualKeyCode::F2,
-                                      39 => VirtualKeyCode::F3,
-                                      40 => VirtualKeyCode::F4,
-                                      41 => VirtualKeyCode::F5,
-                                      42 => VirtualKeyCode::F6,
-                                      43 => VirtualKeyCode::F7,
-                                      44 => VirtualKeyCode::F8,
-                                      45 => VirtualKeyCode::F9,
-                                      46 => VirtualKeyCode::F10,
-                                      47 => VirtualKeyCode::F11,
-                                      48 => VirtualKeyCode::F12,
-                                      49 => VirtualKeyCode::F13,
-                                      50 => VirtualKeyCode::F14,
-                                      51 => VirtualKeyCode::F15,
-                                      52 => VirtualKeyCode::F16,
-                                      53 => VirtualKeyCode::F17,
-                                      54 => VirtualKeyCode::F18,
-                                      55 => VirtualKeyCode::F19,
-                                      56 => VirtualKeyCode::F20,
-                                      57 => VirtualKeyCode::F21,
-                                      58 => VirtualKeyCode::F22,
-                                      59 => VirtualKeyCode::F23,
-                                      60 => VirtualKeyCode::F24,
-                                      61 => VirtualKeyCode::Snapshot,
-                                      62 => VirtualKeyCode::Scroll,
-                                      63 => VirtualKeyCode::Pause,
-                                      64 => VirtualKeyCode::Insert,
-                                      65 => VirtualKeyCode::Home,
-                                      66 => VirtualKeyCode::Delete,
-                                      67 => VirtualKeyCode::End,
-                                      68 => VirtualKeyCode::PageDown,
-                                      69 => VirtualKeyCode::PageUp,
-                                      70 => VirtualKeyCode::Left,
-                                      71 => VirtualKeyCode::Up,
-                                      72 => VirtualKeyCode::Right,
-                                      73 => VirtualKeyCode::Down,
-                                      74 => VirtualKeyCode::Back,
-                                      75 => VirtualKeyCode::Return,
-                                      76 => VirtualKeyCode::Space,
-                                      77 => VirtualKeyCode::Compose,
-                                      78 => VirtualKeyCode::Caret,
-                                      79 => VirtualKeyCode::Numlock,
-                                      80 => VirtualKeyCode::Numpad0,
-                                      81 => VirtualKeyCode::Numpad1,
-                                      82 => VirtualKeyCode::Numpad2,
-                                      83 => VirtualKeyCode::Numpad3,
-                                      84 => VirtualKeyCode::Numpad4,
-                                      85 => VirtualKeyCode::Numpad5,
-                                      86 => VirtualKeyCode::Numpad6,
-                                      87 => VirtualKeyCode::Numpad7,
-                                      88 => VirtualKeyCode::Numpad8,
-                                      89 => VirtualKeyCode::Numpad9,
-                                      90 => VirtualKeyCode::NumpadAdd,
-                                      91 => VirtualKeyCode::NumpadDivide,
-                                      92 => VirtualKeyCode::NumpadDecimal,
-                                      93 => VirtualKeyCode::NumpadComma,
-                                      94 => VirtualKeyCode::NumpadEnter,
-                                      95 => VirtualKeyCode::NumpadEquals,
-                                      96 => VirtualKeyCode::NumpadMultiply,
-                                      97 => VirtualKeyCode::NumpadSubtract,
-                                      98 => VirtualKeyCode::AbntC1,
-                                      99 => VirtualKeyCode::AbntC2,
-                                      100 => VirtualKeyCode::Apostrophe,
-                                      101 => VirtualKeyCode::Apps,
-                                      102 => VirtualKeyCode::Asterisk,
-                                      103 => VirtualKeyCode::At,
-                                      104 => VirtualKeyCode::Ax,
-                                      105 => VirtualKeyCode::Backslash,
-                                      106 => VirtualKeyCode::Calculator,
-                                      107 => VirtualKeyCode::Capital,
-                                      108 => VirtualKeyCode::Colon,
-                                      109 => VirtualKeyCode::Comma,
-                                      110 => VirtualKeyCode::Convert,
-                                      111 => VirtualKeyCode::Equals,
-                                      112 => VirtualKeyCode::Grave,
-                                      113 => VirtualKeyCode::Kana,
-                                      114 => VirtualKeyCode::Kanji,
-                                      115 => VirtualKeyCode::LAlt,
-                                      116 => VirtualKeyCode::LBracket,
-                                      117 => VirtualKeyCode::LControl,
-                                      118 => VirtualKeyCode::LShift,
-                                      119 => VirtualKeyCode::LWin,
-                                      120 => VirtualKeyCode::Mail,
-                                      121 => VirtualKeyCode::MediaSelect,
-                                      122 => VirtualKeyCode::MediaStop,
-                                      123 => VirtualKeyCode::Minus,
-                                      124 => VirtualKeyCode::Mute,
-                                      125 => VirtualKeyCode::MyComputer,
-                                      126 => VirtualKeyCode::NavigateForward,
-                                      127 => VirtualKeyCode::NavigateBackward,
-                                      128 => VirtualKeyCode::NextTrack,
-                                      129 => VirtualKeyCode::NoConvert,
-                                      130 => VirtualKeyCode::Oem102,
-                                      131 => VirtualKeyCode::Period,
-                                      132 => VirtualKeyCode::PlayPause,
-                                      133 => VirtualKeyCode::Plus,
-                                      134 => VirtualKeyCode::Power,
-                                      135 => VirtualKeyCode::PrevTrack,
-                                      136 => VirtualKeyCode::RAlt,
-                                      137 => VirtualKeyCode::RBracket,
-                                      138 => VirtualKeyCode::RControl,
-                                      139 => VirtualKeyCode::RShift,
-                                      140 => VirtualKeyCode::RWin,
-                                      141 => VirtualKeyCode::Semicolon,
-                                      142 => VirtualKeyCode::Slash,
-                                      143 => VirtualKeyCode::Sleep,
-                                      144 => VirtualKeyCode::Stop,
-                                      145 => VirtualKeyCode::Sysrq,
-                                      146 => VirtualKeyCode::Tab,
-                                      147 => VirtualKeyCode::Underline,
-                                      148 => VirtualKeyCode::Unlabeled,
-                                      149 => VirtualKeyCode::VolumeDown,
-                                      150 => VirtualKeyCode::VolumeUp,
-                                      151 => VirtualKeyCode::Wake,
-                                      152 => VirtualKeyCode::WebBack,
-                                      153 => VirtualKeyCode::WebFavorites,
-                                      154 => VirtualKeyCode::WebForward,
-                                      155 => VirtualKeyCode::WebHome,
-                                      156 => VirtualKeyCode::WebRefresh,
-                                      157 => VirtualKeyCode::WebSearch,
-                                      158 => VirtualKeyCode::WebStop,
-                                      159 => VirtualKeyCode::Yen,
-                                      160 => VirtualKeyCode::Copy,
-                                      161 => VirtualKeyCode::Paste,
-                                      162 => VirtualKeyCode::Cut,
-                                      _ => panic!("invalid enum discriminant"),
-                                    }}#[cfg(not(debug_assertions))]{core::mem::transmute::<_, VirtualKeyCode>(i32::from(*((base + 0) as *const u8)) as u8)}});
-                                  }
-                                  wit_bindgen::rt::dealloc(base1, (len1 as usize) * 1, 1);
-                                  let base2 = *((ptr0 + 28) as *const i32);
-                                  let len2 = *((ptr0 + 32) as *const i32);
-                                  let mut result2 = Vec::with_capacity(len2 as usize);
-                                  for i in 0..len2 {
-                                    let base = base2 + i *4;
-                                    result2.push({{match i32::from(*((base + 0) as *const u8)) {
-                                      0 => MouseButton::Left,
-                                      1 => MouseButton::Right,
-                                      2 => MouseButton::Middle,
-                                      #[cfg(debug_assertions)]3 => MouseButton::Other(i32::from(*((base + 2) as *const u16)) as u16),
-                                      #[cfg(not(debug_assertions))]_ => MouseButton::Other(i32::from(*((base + 2) as *const u16)) as u16),
-                                      #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
-                                    }}});
-                                  }
-                                  wit_bindgen::rt::dealloc(base2, (len2 as usize) * 4, 2);
-                                  Input{keys:result1, mouse_position:super::types::Vec2{x:*((ptr0 + 8) as *const f32), y:*((ptr0 + 12) as *const f32), }, mouse_delta:super::types::Vec2{x:*((ptr0 + 16) as *const f32), y:*((ptr0 + 20) as *const f32), }, mouse_wheel:*((ptr0 + 24) as *const f32), mouse_buttons:result2, }
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn set_cursor(icon: CursorIcon,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let result0 = match icon {
-                                    CursorIcon::DefaultIcon=> {
-                                      0i32
-                                    }
-                                    CursorIcon::Crosshair=> {
-                                      1i32
-                                    }
-                                    CursorIcon::Hand=> {
-                                      2i32
-                                    }
-                                    CursorIcon::Arrow=> {
-                                      3i32
-                                    }
-                                    CursorIcon::Move=> {
-                                      4i32
-                                    }
-                                    CursorIcon::Text=> {
-                                      5i32
-                                    }
-                                    CursorIcon::Wait=> {
-                                      6i32
-                                    }
-                                    CursorIcon::Help=> {
-                                      7i32
-                                    }
-                                    CursorIcon::Progress=> {
-                                      8i32
-                                    }
-                                    CursorIcon::NotAllowed=> {
-                                      9i32
-                                    }
-                                    CursorIcon::ContextMenu=> {
-                                      10i32
-                                    }
-                                    CursorIcon::Cell=> {
-                                      11i32
-                                    }
-                                    CursorIcon::VerticalText=> {
-                                      12i32
-                                    }
-                                    CursorIcon::Alias=> {
-                                      13i32
-                                    }
-                                    CursorIcon::Copy=> {
-                                      14i32
-                                    }
-                                    CursorIcon::NoDrop=> {
-                                      15i32
-                                    }
-                                    CursorIcon::Grab=> {
-                                      16i32
-                                    }
-                                    CursorIcon::Grabbing=> {
-                                      17i32
-                                    }
-                                    CursorIcon::AllScroll=> {
-                                      18i32
-                                    }
-                                    CursorIcon::ZoomIn=> {
-                                      19i32
-                                    }
-                                    CursorIcon::ZoomOut=> {
-                                      20i32
-                                    }
-                                    CursorIcon::EResize=> {
-                                      21i32
-                                    }
-                                    CursorIcon::NResize=> {
-                                      22i32
-                                    }
-                                    CursorIcon::NeResize=> {
-                                      23i32
-                                    }
-                                    CursorIcon::NwResize=> {
-                                      24i32
-                                    }
-                                    CursorIcon::SResize=> {
-                                      25i32
-                                    }
-                                    CursorIcon::SeResize=> {
-                                      26i32
-                                    }
-                                    CursorIcon::SwResize=> {
-                                      27i32
-                                    }
-                                    CursorIcon::WResize=> {
-                                      28i32
-                                    }
-                                    CursorIcon::EwResize=> {
-                                      29i32
-                                    }
-                                    CursorIcon::NsResize=> {
-                                      30i32
-                                    }
-                                    CursorIcon::NeswResize=> {
-                                      31i32
-                                    }
-                                    CursorIcon::NwseResize=> {
-                                      32i32
-                                    }
-                                    CursorIcon::ColResize=> {
-                                      33i32
-                                    }
-                                    CursorIcon::RowResize=> {
-                                      34i32
-                                    }
-                                  };
-                                  
-                                  #[link(wasm_import_module = "client-input")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "set-cursor")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-input_set-cursor")]
-                                    fn wit_import(
-                                    _: i32, );
-                                  }
-                                  wit_import(result0);
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn set_cursor_visible(visible: bool,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[link(wasm_import_module = "client-input")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "set-cursor-visible")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-input_set-cursor-visible")]
-                                    fn wit_import(
-                                    _: i32, );
-                                  }
-                                  wit_import(match visible { true => 1, false => 0 });
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn set_cursor_lock(locked: bool,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[link(wasm_import_module = "client-input")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "set-cursor-lock")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-input_set-cursor-lock")]
-                                    fn wit_import(
-                                    _: i32, );
-                                  }
-                                  wit_import(match locked { true => 1, false => 0 });
-                                }
-                              }
-                              
-                            }
-                            
-                            
-                            #[allow(clippy::all)]
-                            pub mod client_camera{
-                              #[used]
-                              #[doc(hidden)]
-                              #[cfg(target_arch = "wasm32")]
-                              static __FORCE_SECTION_REF: fn() = super::__link_section;
-                              
-                              pub type Vec3 = super::types::Vec3;
-                              pub type Vec2 = super::types::Vec2;
-                              pub type Ray = super::types::Ray;
-                              pub type EntityId = super::types::EntityId;
-                              #[allow(clippy::all)]
-                              pub fn clip_space_ray(camera: EntityId,clip_space_pos: Vec2,) -> Ray{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(4))]
-                                  struct RetArea([u8; 24]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let super::types::EntityId{ id0:id00, id1:id10, } = camera;
-                                  let super::types::Vec2{ x:x1, y:y1, } = clip_space_pos;
-                                  let ptr2 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "client-camera")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "clip-space-ray")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-camera_clip-space-ray")]
-                                    fn wit_import(
-                                    _: i64, _: i64, _: f32, _: f32, _: i32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), ptr2);
-                                  super::types::Ray{origin:super::types::Vec3{x:*((ptr2 + 0) as *const f32), y:*((ptr2 + 4) as *const f32), z:*((ptr2 + 8) as *const f32), }, dir:super::types::Vec3{x:*((ptr2 + 12) as *const f32), y:*((ptr2 + 16) as *const f32), z:*((ptr2 + 20) as *const f32), }, }
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn screen_to_clip_space(screen_pos: Vec2,) -> Vec2{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(4))]
-                                  struct RetArea([u8; 8]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let super::types::Vec2{ x:x0, y:y0, } = screen_pos;
-                                  let ptr1 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "client-camera")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "screen-to-clip-space")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-camera_screen-to-clip-space")]
-                                    fn wit_import(
-                                    _: f32, _: f32, _: i32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_f32(x0), wit_bindgen::rt::as_f32(y0), ptr1);
-                                  super::types::Vec2{x:*((ptr1 + 0) as *const f32), y:*((ptr1 + 4) as *const f32), }
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn screen_to_world_direction(camera: EntityId,screen_pos: Vec2,) -> Ray{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(4))]
-                                  struct RetArea([u8; 24]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let super::types::EntityId{ id0:id00, id1:id10, } = camera;
-                                  let super::types::Vec2{ x:x1, y:y1, } = screen_pos;
-                                  let ptr2 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "client-camera")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "screen-to-world-direction")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-camera_screen-to-world-direction")]
-                                    fn wit_import(
-                                    _: i64, _: i64, _: f32, _: f32, _: i32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), ptr2);
-                                  super::types::Ray{origin:super::types::Vec3{x:*((ptr2 + 0) as *const f32), y:*((ptr2 + 4) as *const f32), z:*((ptr2 + 8) as *const f32), }, dir:super::types::Vec3{x:*((ptr2 + 12) as *const f32), y:*((ptr2 + 16) as *const f32), z:*((ptr2 + 20) as *const f32), }, }
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn world_to_screen(camera: EntityId,screen_pos: Vec3,) -> Vec2{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(4))]
-                                  struct RetArea([u8; 8]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let super::types::EntityId{ id0:id00, id1:id10, } = camera;
-                                  let super::types::Vec3{ x:x1, y:y1, z:z1, } = screen_pos;
-                                  let ptr2 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "client-camera")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "world-to-screen")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-camera_world-to-screen")]
-                                    fn wit_import(
-                                    _: i64, _: i64, _: f32, _: f32, _: f32, _: i32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1), ptr2);
-                                  super::types::Vec2{x:*((ptr2 + 0) as *const f32), y:*((ptr2 + 4) as *const f32), }
-                                }
-                              }
-                              
-                            }
-                            
-                            
-                            #[allow(clippy::all)]
-                            pub mod client_window{
-                              #[used]
-                              #[doc(hidden)]
-                              #[cfg(target_arch = "wasm32")]
-                              static __FORCE_SECTION_REF: fn() = super::__link_section;
-                              
-                              #[allow(clippy::all)]
-                              pub fn set_fullscreen(fullscreen: bool,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[link(wasm_import_module = "client-window")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "set-fullscreen")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-window_set-fullscreen")]
-                                    fn wit_import(
-                                    _: i32, );
-                                  }
-                                  wit_import(match fullscreen { true => 1, false => 0 });
-                                }
-                              }
-                              
-                            }
-                            
-                            
-                            #[allow(clippy::all)]
-                            pub mod server_physics{
-                              #[used]
-                              #[doc(hidden)]
-                              #[cfg(target_arch = "wasm32")]
-                              static __FORCE_SECTION_REF: fn() = super::__link_section;
-                              
-                              pub type EntityId = super::types::EntityId;
-                              pub type Vec3 = super::types::Vec3;
-                              pub type Mat4 = super::types::Mat4;
-                              #[repr(C)]
-                              #[derive(Copy, Clone)]
-                              pub struct CharacterCollision {
-                                pub side: bool,
-                                pub up: bool,
-                                pub down: bool,
-                              }
-                              impl core::fmt::Debug for CharacterCollision {
-                                fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                                  f.debug_struct("CharacterCollision").field("side", &self.side).field("up", &self.up).field("down", &self.down).finish()
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn add_force(entity: EntityId,force: Vec3,){
+                              pub fn set_animation_controller(entity: EntityId,animation_controller: AnimationController<'_,>,){
                                 
                                 #[allow(unused_imports)]
                                 use wit_bindgen::rt::{alloc, vec::Vec, string::String};
                                 unsafe {
                                   let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                                  let super::types::Vec3{ x:x1, y:y1, z:z1, } = force;
-                                  
-                                  #[link(wasm_import_module = "server-physics")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "add-force")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_add-force")]
-                                    fn wit_import(
-                                    _: i64, _: i64, _: f32, _: f32, _: f32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1));
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn add_impulse(entity: EntityId,impulse: Vec3,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                                  let super::types::Vec3{ x:x1, y:y1, z:z1, } = impulse;
-                                  
-                                  #[link(wasm_import_module = "server-physics")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "add-impulse")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_add-impulse")]
-                                    fn wit_import(
-                                    _: i64, _: i64, _: f32, _: f32, _: f32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1));
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn add_radial_impulse(position: Vec3,impulse: f32,radius: f32,falloff_radius: Option<f32>,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let super::types::Vec3{ x:x0, y:y0, z:z0, } = position;
-                                  let (result1_0,result1_1,) = match falloff_radius {
-                                    Some(e) => (1i32, wit_bindgen::rt::as_f32(e)),
-                                    None => {
-                                      (0i32, 0.0f32)
-                                    },
-                                  };
-                                  #[link(wasm_import_module = "server-physics")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "add-radial-impulse")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_add-radial-impulse")]
-                                    fn wit_import(
-                                    _: f32, _: f32, _: f32, _: f32, _: f32, _: i32, _: f32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_f32(x0), wit_bindgen::rt::as_f32(y0), wit_bindgen::rt::as_f32(z0), wit_bindgen::rt::as_f32(impulse), wit_bindgen::rt::as_f32(radius), result1_0, result1_1);
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn add_force_at_position(entity: EntityId,force: Vec3,position: Vec3,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                                  let super::types::Vec3{ x:x1, y:y1, z:z1, } = force;
-                                  let super::types::Vec3{ x:x2, y:y2, z:z2, } = position;
-                                  
-                                  #[link(wasm_import_module = "server-physics")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "add-force-at-position")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_add-force-at-position")]
-                                    fn wit_import(
-                                    _: i64, _: i64, _: f32, _: f32, _: f32, _: f32, _: f32, _: f32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1), wit_bindgen::rt::as_f32(x2), wit_bindgen::rt::as_f32(y2), wit_bindgen::rt::as_f32(z2));
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn add_impulse_at_position(entity: EntityId,impulse: Vec3,position: Vec3,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                                  let super::types::Vec3{ x:x1, y:y1, z:z1, } = impulse;
-                                  let super::types::Vec3{ x:x2, y:y2, z:z2, } = position;
-                                  
-                                  #[link(wasm_import_module = "server-physics")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "add-impulse-at-position")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_add-impulse-at-position")]
-                                    fn wit_import(
-                                    _: i64, _: i64, _: f32, _: f32, _: f32, _: f32, _: f32, _: f32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1), wit_bindgen::rt::as_f32(x2), wit_bindgen::rt::as_f32(y2), wit_bindgen::rt::as_f32(z2));
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn get_velocity_at_position(entity: EntityId,position: Vec3,) -> Vec3{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(4))]
-                                  struct RetArea([u8; 12]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                                  let super::types::Vec3{ x:x1, y:y1, z:z1, } = position;
-                                  let ptr2 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "server-physics")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "get-velocity-at-position")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_get-velocity-at-position")]
-                                    fn wit_import(
-                                    _: i64, _: i64, _: f32, _: f32, _: f32, _: i32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1), ptr2);
-                                  super::types::Vec3{x:*((ptr2 + 0) as *const f32), y:*((ptr2 + 4) as *const f32), z:*((ptr2 + 8) as *const f32), }
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn set_gravity(gravity: Vec3,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let super::types::Vec3{ x:x0, y:y0, z:z0, } = gravity;
-                                  
-                                  #[link(wasm_import_module = "server-physics")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "set-gravity")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_set-gravity")]
-                                    fn wit_import(
-                                    _: f32, _: f32, _: f32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_f32(x0), wit_bindgen::rt::as_f32(y0), wit_bindgen::rt::as_f32(z0));
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn unfreeze(entity: EntityId,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                                  
-                                  #[link(wasm_import_module = "server-physics")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "unfreeze")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_unfreeze")]
-                                    fn wit_import(
-                                    _: i64, _: i64, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10));
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn freeze(entity: EntityId,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                                  
-                                  #[link(wasm_import_module = "server-physics")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "freeze")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_freeze")]
-                                    fn wit_import(
-                                    _: i64, _: i64, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10));
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn start_motor(entity: EntityId,velocity: f32,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                                  
-                                  #[link(wasm_import_module = "server-physics")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "start-motor")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_start-motor")]
-                                    fn wit_import(
-                                    _: i64, _: i64, _: f32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(velocity));
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn stop_motor(entity: EntityId,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                                  
-                                  #[link(wasm_import_module = "server-physics")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "stop-motor")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_stop-motor")]
-                                    fn wit_import(
-                                    _: i64, _: i64, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10));
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn create_revolute_joint(actor0: EntityId,transform0: Mat4,actor1: EntityId,transform1: Mat4,){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(8))]
-                                  struct RetArea([u8; 160]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let ptr0 = ret_area.as_mut_ptr() as i32;let super::types::EntityId{ id0:id01, id1:id11, } = actor0;
-                                  *((ptr0 + 0) as *mut i64) = wit_bindgen::rt::as_i64(id01);
-                                  *((ptr0 + 8) as *mut i64) = wit_bindgen::rt::as_i64(id11);
-                                  let super::types::Mat4{ x:x2, y:y2, z:z2, w:w2, } = transform0;
-                                  let super::types::Vec4{ x:x3, y:y3, z:z3, w:w3, } = x2;
-                                  *((ptr0 + 16) as *mut f32) = wit_bindgen::rt::as_f32(x3);
-                                  *((ptr0 + 20) as *mut f32) = wit_bindgen::rt::as_f32(y3);
-                                  *((ptr0 + 24) as *mut f32) = wit_bindgen::rt::as_f32(z3);
-                                  *((ptr0 + 28) as *mut f32) = wit_bindgen::rt::as_f32(w3);
-                                  let super::types::Vec4{ x:x4, y:y4, z:z4, w:w4, } = y2;
-                                  *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x4);
-                                  *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y4);
-                                  *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z4);
-                                  *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w4);
-                                  let super::types::Vec4{ x:x5, y:y5, z:z5, w:w5, } = z2;
-                                  *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(x5);
-                                  *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(y5);
-                                  *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(z5);
-                                  *((ptr0 + 60) as *mut f32) = wit_bindgen::rt::as_f32(w5);
-                                  let super::types::Vec4{ x:x6, y:y6, z:z6, w:w6, } = w2;
-                                  *((ptr0 + 64) as *mut f32) = wit_bindgen::rt::as_f32(x6);
-                                  *((ptr0 + 68) as *mut f32) = wit_bindgen::rt::as_f32(y6);
-                                  *((ptr0 + 72) as *mut f32) = wit_bindgen::rt::as_f32(z6);
-                                  *((ptr0 + 76) as *mut f32) = wit_bindgen::rt::as_f32(w6);
-                                  let super::types::EntityId{ id0:id07, id1:id17, } = actor1;
-                                  *((ptr0 + 80) as *mut i64) = wit_bindgen::rt::as_i64(id07);
-                                  *((ptr0 + 88) as *mut i64) = wit_bindgen::rt::as_i64(id17);
-                                  let super::types::Mat4{ x:x8, y:y8, z:z8, w:w8, } = transform1;
-                                  let super::types::Vec4{ x:x9, y:y9, z:z9, w:w9, } = x8;
-                                  *((ptr0 + 96) as *mut f32) = wit_bindgen::rt::as_f32(x9);
-                                  *((ptr0 + 100) as *mut f32) = wit_bindgen::rt::as_f32(y9);
-                                  *((ptr0 + 104) as *mut f32) = wit_bindgen::rt::as_f32(z9);
-                                  *((ptr0 + 108) as *mut f32) = wit_bindgen::rt::as_f32(w9);
-                                  let super::types::Vec4{ x:x10, y:y10, z:z10, w:w10, } = y8;
-                                  *((ptr0 + 112) as *mut f32) = wit_bindgen::rt::as_f32(x10);
-                                  *((ptr0 + 116) as *mut f32) = wit_bindgen::rt::as_f32(y10);
-                                  *((ptr0 + 120) as *mut f32) = wit_bindgen::rt::as_f32(z10);
-                                  *((ptr0 + 124) as *mut f32) = wit_bindgen::rt::as_f32(w10);
-                                  let super::types::Vec4{ x:x11, y:y11, z:z11, w:w11, } = z8;
-                                  *((ptr0 + 128) as *mut f32) = wit_bindgen::rt::as_f32(x11);
-                                  *((ptr0 + 132) as *mut f32) = wit_bindgen::rt::as_f32(y11);
-                                  *((ptr0 + 136) as *mut f32) = wit_bindgen::rt::as_f32(z11);
-                                  *((ptr0 + 140) as *mut f32) = wit_bindgen::rt::as_f32(w11);
-                                  let super::types::Vec4{ x:x12, y:y12, z:z12, w:w12, } = w8;
-                                  *((ptr0 + 144) as *mut f32) = wit_bindgen::rt::as_f32(x12);
-                                  *((ptr0 + 148) as *mut f32) = wit_bindgen::rt::as_f32(y12);
-                                  *((ptr0 + 152) as *mut f32) = wit_bindgen::rt::as_f32(z12);
-                                  *((ptr0 + 156) as *mut f32) = wit_bindgen::rt::as_f32(w12);
-                                  
-                                  #[link(wasm_import_module = "server-physics")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "create-revolute-joint")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_create-revolute-joint")]
-                                    fn wit_import(
-                                    _: i32, );
-                                  }
-                                  wit_import(ptr0);
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn raycast_first(origin: Vec3,direction: Vec3,) -> Option<(EntityId,f32,)>{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(8))]
-                                  struct RetArea([u8; 32]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let super::types::Vec3{ x:x0, y:y0, z:z0, } = origin;
-                                  let super::types::Vec3{ x:x1, y:y1, z:z1, } = direction;
-                                  let ptr2 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "server-physics")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "raycast-first")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_raycast-first")]
-                                    fn wit_import(
-                                    _: f32, _: f32, _: f32, _: f32, _: f32, _: f32, _: i32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_f32(x0), wit_bindgen::rt::as_f32(y0), wit_bindgen::rt::as_f32(z0), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1), ptr2);
-                                  match i32::from(*((ptr2 + 0) as *const u8)) {
-                                    0 => None,
-                                    1 => Some((super::types::EntityId{id0:*((ptr2 + 8) as *const i64) as u64, id1:*((ptr2 + 16) as *const i64) as u64, }, *((ptr2 + 24) as *const f32))),
-                                    #[cfg(not(debug_assertions))]
-                                    _ => core::hint::unreachable_unchecked(),
-                                    #[cfg(debug_assertions)]
-                                    _ => panic!("invalid enum discriminant"),
-                                  }
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn raycast(origin: Vec3,direction: Vec3,) -> wit_bindgen::rt::vec::Vec::<(EntityId,f32,)>{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(4))]
-                                  struct RetArea([u8; 8]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let super::types::Vec3{ x:x0, y:y0, z:z0, } = origin;
-                                  let super::types::Vec3{ x:x1, y:y1, z:z1, } = direction;
-                                  let ptr2 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "server-physics")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "raycast")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_raycast")]
-                                    fn wit_import(
-                                    _: f32, _: f32, _: f32, _: f32, _: f32, _: f32, _: i32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_f32(x0), wit_bindgen::rt::as_f32(y0), wit_bindgen::rt::as_f32(z0), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1), ptr2);
-                                  let len3 = *((ptr2 + 4) as *const i32) as usize;
-                                  Vec::from_raw_parts(*((ptr2 + 0) as *const i32) as *mut _, len3, len3)
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn move_character(entity: EntityId,displacement: Vec3,min_dist: f32,elapsed_time: f32,) -> CharacterCollision{
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  
-                                  #[repr(align(1))]
-                                  struct RetArea([u8; 3]);
-                                  let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                                  let super::types::Vec3{ x:x1, y:y1, z:z1, } = displacement;
-                                  let ptr2 = ret_area.as_mut_ptr() as i32;
-                                  #[link(wasm_import_module = "server-physics")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "move-character")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_move-character")]
-                                    fn wit_import(
-                                    _: i64, _: i64, _: f32, _: f32, _: f32, _: f32, _: f32, _: i32, );
-                                  }
-                                  wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1), wit_bindgen::rt::as_f32(min_dist), wit_bindgen::rt::as_f32(elapsed_time), ptr2);
-                                  CharacterCollision{side:{
-                                    #[cfg(not(debug_assertions))]
-                                    { core::mem::transmute::<u8, bool>(i32::from(*((ptr2 + 0) as *const u8)) as u8) }
-                                    #[cfg(debug_assertions)]
-                                    {
-                                      match i32::from(*((ptr2 + 0) as *const u8)) {
-                                        0 => false,
-                                        1 => true,
-                                        _ => panic!("invalid bool discriminant"),
-                                      }
-                                    }
-                                  }, up:{
-                                    #[cfg(not(debug_assertions))]
-                                    { core::mem::transmute::<u8, bool>(i32::from(*((ptr2 + 1) as *const u8)) as u8) }
-                                    #[cfg(debug_assertions)]
-                                    {
-                                      match i32::from(*((ptr2 + 1) as *const u8)) {
-                                        0 => false,
-                                        1 => true,
-                                        _ => panic!("invalid bool discriminant"),
-                                      }
-                                    }
-                                  }, down:{
-                                    #[cfg(not(debug_assertions))]
-                                    { core::mem::transmute::<u8, bool>(i32::from(*((ptr2 + 2) as *const u8)) as u8) }
-                                    #[cfg(debug_assertions)]
-                                    {
-                                      match i32::from(*((ptr2 + 2) as *const u8)) {
-                                        0 => false,
-                                        1 => true,
-                                        _ => panic!("invalid bool discriminant"),
-                                      }
-                                    }
-                                  }, }
-                                }
-                              }
-                              
-                            }
-                            
-                            
-                            #[allow(clippy::all)]
-                            pub mod server_message{
-                              #[used]
-                              #[doc(hidden)]
-                              #[cfg(target_arch = "wasm32")]
-                              static __FORCE_SECTION_REF: fn() = super::__link_section;
-                              
-                              pub type EntityId = super::types::EntityId;
-                              #[derive(Clone)]
-                              pub enum Target<'a,>{
-                                ClientBroadcastUnreliable,
-                                ClientBroadcastReliable,
-                                ClientTargetedUnreliable(&'a str),
-                                ClientTargetedReliable(&'a str),
-                                LocalBroadcast,
-                                Local(EntityId),
-                              }
-                              impl<'a,> core::fmt::Debug for Target<'a,> {
-                                fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                                  match self {
-                                    Target::ClientBroadcastUnreliable => {
-                                      f.debug_tuple("Target::ClientBroadcastUnreliable").finish()
-                                    }
-                                    Target::ClientBroadcastReliable => {
-                                      f.debug_tuple("Target::ClientBroadcastReliable").finish()
-                                    }
-                                    Target::ClientTargetedUnreliable(e) => {
-                                      f.debug_tuple("Target::ClientTargetedUnreliable").field(e).finish()
-                                    }
-                                    Target::ClientTargetedReliable(e) => {
-                                      f.debug_tuple("Target::ClientTargetedReliable").field(e).finish()
-                                    }
-                                    Target::LocalBroadcast => {
-                                      f.debug_tuple("Target::LocalBroadcast").finish()
-                                    }
-                                    Target::Local(e) => {
-                                      f.debug_tuple("Target::Local").field(e).finish()
-                                    }
-                                  }
-                                }
-                              }
-                              #[allow(clippy::all)]
-                              pub fn send(target_id: Target<'_,>,name: &str,data: &[u8],){
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                unsafe {
-                                  let (result3_0,result3_1,result3_2,) = match target_id {
-                                    Target::ClientBroadcastUnreliable=> {
-                                      (0i32, 0i64, 0i64)
-                                    }
-                                    Target::ClientBroadcastReliable=> {
-                                      (1i32, 0i64, 0i64)
-                                    }
-                                    Target::ClientTargetedUnreliable(e) => {
-                                      let vec0 = e;
-                                      let ptr0 = vec0.as_ptr() as i32;
-                                      let len0 = vec0.len() as i32;
-                                      
-                                      (2i32, i64::from(ptr0), i64::from(len0))
-                                    },
-                                    Target::ClientTargetedReliable(e) => {
-                                      let vec1 = e;
-                                      let ptr1 = vec1.as_ptr() as i32;
-                                      let len1 = vec1.len() as i32;
-                                      
-                                      (3i32, i64::from(ptr1), i64::from(len1))
-                                    },
-                                    Target::LocalBroadcast=> {
-                                      (4i32, 0i64, 0i64)
-                                    }
-                                    Target::Local(e) => {
-                                      let super::types::EntityId{ id0:id02, id1:id12, } = e;
-                                      
-                                      (5i32, wit_bindgen::rt::as_i64(id02), wit_bindgen::rt::as_i64(id12))
-                                    },
-                                  };
-                                  let vec4 = name;
-                                  let ptr4 = vec4.as_ptr() as i32;
+                                  let AnimationController{ actions:actions1, apply_base_pose:apply_base_pose1, } = animation_controller;
+                                  let vec4 = actions1;
                                   let len4 = vec4.len() as i32;
-                                  let vec5 = data;
-                                  let ptr5 = vec5.as_ptr() as i32;
-                                  let len5 = vec5.len() as i32;
+                                  let layout4 = alloc::Layout::from_size_align_unchecked(vec4.len() * 16, 4);
+                                  let result4 = if layout4.size() != 0
+                                  {
+                                    let ptr = alloc::alloc(layout4);
+                                    if ptr.is_null()
+                                    {
+                                      alloc::handle_alloc_error(layout4);
+                                    }
+                                    ptr
+                                  }else {
+                                    core::ptr::null_mut()
+                                  };
+                                  for (i, e) in vec4.into_iter().enumerate() {
+                                    let base = result4 as i32 + (i as i32) * 16;
+                                    {
+                                      let AnimationAction{ clip_url:clip_url2, looping:looping2, weight:weight2, } = e;
+                                      let vec3 = clip_url2;
+                                      let ptr3 = vec3.as_ptr() as i32;
+                                      let len3 = vec3.len() as i32;
+                                      *((base + 4) as *mut i32) = len3;
+                                      *((base + 0) as *mut i32) = ptr3;
+                                      *((base + 8) as *mut u8) = (match looping2 { true => 1, false => 0 }) as u8;
+                                      *((base + 12) as *mut f32) = wit_bindgen::rt::as_f32(weight2);
+                                      
+                                    }}
+                                    
+                                    #[link(wasm_import_module = "entity")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "set-animation-controller")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_set-animation-controller")]
+                                      fn wit_import(
+                                      _: i64, _: i64, _: i32, _: i32, _: i32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), result4 as i32, len4, match apply_base_pose1 { true => 1, false => 0 });
+                                    if layout4.size() != 0 {
+                                      alloc::dealloc(result4, layout4);
+                                    }
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn in_area(position: Vec3,radius: f32,) -> wit_bindgen::rt::vec::Vec::<EntityId>{
                                   
-                                  #[link(wasm_import_module = "server-message")]
-                                  extern "C" {
-                                    #[cfg_attr(target_arch = "wasm32", link_name = "send")]
-                                    #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-message_send")]
-                                    fn wit_import(
-                                    _: i32, _: i64, _: i64, _: i32, _: i32, _: i32, _: i32, );
-                                  }
-                                  wit_import(result3_0, result3_1, result3_2, ptr4, len4, ptr5, len5);
-                                }
-                              }
-                              
-                            }
-                            
-                            
-                            #[allow(clippy::all)]
-                            pub mod guest{
-                              #[used]
-                              #[doc(hidden)]
-                              #[cfg(target_arch = "wasm32")]
-                              static __FORCE_SECTION_REF: fn() = super::__link_section;
-                              
-                              pub type EntityId = super::types::EntityId;
-                              #[derive(Clone)]
-                              pub enum Source{
-                                Runtime,
-                                Local(EntityId),
-                                Server,
-                                Client(wit_bindgen::rt::string::String),
-                              }
-                              impl core::fmt::Debug for Source {
-                                fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                                  match self {
-                                    Source::Runtime => {
-                                      f.debug_tuple("Source::Runtime").finish()
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(4))]
+                                    struct RetArea([u8; 8]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let super::types::Vec3{ x:x0, y:y0, z:z0, } = position;
+                                    let ptr1 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "entity")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "in-area")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_in-area")]
+                                      fn wit_import(
+                                      _: f32, _: f32, _: f32, _: f32, _: i32, );
                                     }
-                                    Source::Local(e) => {
-                                      f.debug_tuple("Source::Local").field(e).finish()
-                                    }
-                                    Source::Server => {
-                                      f.debug_tuple("Source::Server").finish()
-                                    }
-                                    Source::Client(e) => {
-                                      f.debug_tuple("Source::Client").field(e).finish()
-                                    }
+                                    wit_import(wit_bindgen::rt::as_f32(x0), wit_bindgen::rt::as_f32(y0), wit_bindgen::rt::as_f32(z0), wit_bindgen::rt::as_f32(radius), ptr1);
+                                    let len2 = *((ptr1 + 4) as *const i32) as usize;
+                                    Vec::from_raw_parts(*((ptr1 + 0) as *const i32) as *mut _, len2, len2)
                                   }
                                 }
-                              }
-                              pub trait Guest {
-                                fn init();
-                                fn exec(time: f32,message_source: Source,message_name: wit_bindgen::rt::string::String,message_data: wit_bindgen::rt::vec::Vec::<u8>,);
-                              }
-                              
-                              #[doc(hidden)]
-                              pub unsafe fn call_init<T: Guest>() {
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                
-                                // Before executing any other code, use this function to run all static
-                                // constructors, if they have not yet been run. This is a hack required
-                                // to work around wasi-libc ctors calling import functions to initialize
-                                // the environment.
-                                //
-                                // This functionality will be removed once rust 1.69.0 is stable, at which
-                                // point wasi-libc will no longer have this behavior.
-                                //
-                                // See
-                                // https://github.com/bytecodealliance/preview2-prototyping/issues/99
-                                // for more details.
-                                #[cfg(target_arch="wasm32")]
-                                wit_bindgen::rt::run_ctors_once();
-                                
-                                T::init();
-                              }
-                              
-                              #[doc(hidden)]
-                              pub unsafe fn call_exec<T: Guest>(arg0: f32,arg1: i32,arg2: i64,arg3: i64,arg4: i32,arg5: i32,arg6: i32,arg7: i32,) {
-                                
-                                #[allow(unused_imports)]
-                                use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                
-                                // Before executing any other code, use this function to run all static
-                                // constructors, if they have not yet been run. This is a hack required
-                                // to work around wasi-libc ctors calling import functions to initialize
-                                // the environment.
-                                //
-                                // This functionality will be removed once rust 1.69.0 is stable, at which
-                                // point wasi-libc will no longer have this behavior.
-                                //
-                                // See
-                                // https://github.com/bytecodealliance/preview2-prototyping/issues/99
-                                // for more details.
-                                #[cfg(target_arch="wasm32")]
-                                wit_bindgen::rt::run_ctors_once();
-                                
-                                let len1 = arg5 as usize;
-                                let len2 = arg7 as usize;
-                                T::exec(arg0, {{match arg1 {
-                                  0 => Source::Runtime,
-                                  1 => Source::Local(super::types::EntityId{id0:arg2 as u64, id1:arg3 as u64, }),
-                                  2 => Source::Server,
-                                  #[cfg(debug_assertions)]3 => Source::Client({
-                                    let len0 = arg3 as i32 as usize;
+                                #[allow(clippy::all)]
+                                pub fn exists(entity: EntityId,) -> bool{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let super::types::EntityId{ id0:id00, id1:id10, } = entity;
                                     
-                                    {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(arg2 as i32 as *mut _, len0, len0))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(arg2 as i32 as *mut _, len0, len0)).unwrap()}}
-                                  }),
-                                  #[cfg(not(debug_assertions))]_ => Source::Client({
-                                    let len0 = arg3 as i32 as usize;
+                                    #[link(wasm_import_module = "entity")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "exists")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_exists")]
+                                      fn wit_import(
+                                      _: i64, _: i64, ) -> i32;
+                                    }
+                                    let ret = wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10));
+                                    {
+                                      #[cfg(not(debug_assertions))]
+                                      { core::mem::transmute::<u8, bool>(ret as u8) }
+                                      #[cfg(debug_assertions)]
+                                      {
+                                        match ret {
+                                          0 => false,
+                                          1 => true,
+                                          _ => panic!("invalid bool discriminant"),
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn get_all(index: u32,) -> wit_bindgen::rt::vec::Vec::<EntityId>{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
                                     
-                                    {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(arg2 as i32 as *mut _, len0, len0))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(arg2 as i32 as *mut _, len0, len0)).unwrap()}}
-                                  }),
-                                  #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
-                                }}}, {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(arg4 as *mut _, len1, len1))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(arg4 as *mut _, len1, len1)).unwrap()}}, Vec::from_raw_parts(arg6 as *mut _, len2, len2));
+                                    #[repr(align(4))]
+                                    struct RetArea([u8; 8]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let ptr0 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "entity")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "get-all")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_get-all")]
+                                      fn wit_import(
+                                      _: i32, _: i32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i32(index), ptr0);
+                                    let len1 = *((ptr0 + 4) as *const i32) as usize;
+                                    Vec::from_raw_parts(*((ptr0 + 0) as *const i32) as *mut _, len1, len1)
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn resources() -> EntityId{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(8))]
+                                    struct RetArea([u8; 16]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let ptr0 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "entity")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "resources")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_resources")]
+                                      fn wit_import(
+                                      _: i32, );
+                                    }
+                                    wit_import(ptr0);
+                                    super::types::EntityId{id0:*((ptr0 + 0) as *const i64) as u64, id1:*((ptr0 + 8) as *const i64) as u64, }
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn synchronized_resources() -> EntityId{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(8))]
+                                    struct RetArea([u8; 16]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let ptr0 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "entity")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "synchronized-resources")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_synchronized-resources")]
+                                      fn wit_import(
+                                      _: i32, );
+                                    }
+                                    wit_import(ptr0);
+                                    super::types::EntityId{id0:*((ptr0 + 0) as *const i64) as u64, id1:*((ptr0 + 8) as *const i64) as u64, }
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn persisted_resources() -> EntityId{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(8))]
+                                    struct RetArea([u8; 16]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let ptr0 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "entity")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "persisted-resources")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "entity_persisted-resources")]
+                                      fn wit_import(
+                                      _: i32, );
+                                    }
+                                    wit_import(ptr0);
+                                    super::types::EntityId{id0:*((ptr0 + 0) as *const i64) as u64, id1:*((ptr0 + 8) as *const i64) as u64, }
+                                  }
+                                }
+                                
                               }
                               
-                            }
-                            
-                            
-                            /// Declares the export of the component's world for the
-                            /// given type.
-                            
-                            macro_rules! export_bindings(($t:ident) => {
-                              const _: () = {
-                                
+                              
+                              #[allow(clippy::all)]
+                              pub mod message{
+                                #[used]
                                 #[doc(hidden)]
-                                #[export_name = "guest#init"]
-                                #[allow(non_snake_case)]
-                                unsafe extern "C" fn __export_guest_init() {
-                                  guest::call_init::<$t>()
+                                #[cfg(target_arch = "wasm32")]
+                                static __FORCE_SECTION_REF: fn() = super::__link_section;
+                                
+                                #[allow(clippy::all)]
+                                pub fn subscribe(name: &str,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let vec0 = name;
+                                    let ptr0 = vec0.as_ptr() as i32;
+                                    let len0 = vec0.len() as i32;
+                                    
+                                    #[link(wasm_import_module = "message")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "subscribe")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "message_subscribe")]
+                                      fn wit_import(
+                                      _: i32, _: i32, );
+                                    }
+                                    wit_import(ptr0, len0);
+                                  }
+                                }
+                                
+                              }
+                              
+                              
+                              #[allow(clippy::all)]
+                              pub mod player{
+                                #[used]
+                                #[doc(hidden)]
+                                #[cfg(target_arch = "wasm32")]
+                                static __FORCE_SECTION_REF: fn() = super::__link_section;
+                                
+                                pub type EntityId = super::types::EntityId;
+                                #[allow(clippy::all)]
+                                pub fn get_by_user_id(user_id: &str,) -> Option<EntityId>{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(8))]
+                                    struct RetArea([u8; 24]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let vec0 = user_id;
+                                    let ptr0 = vec0.as_ptr() as i32;
+                                    let len0 = vec0.len() as i32;
+                                    let ptr1 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "player")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "get-by-user-id")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "player_get-by-user-id")]
+                                      fn wit_import(
+                                      _: i32, _: i32, _: i32, );
+                                    }
+                                    wit_import(ptr0, len0, ptr1);
+                                    match i32::from(*((ptr1 + 0) as *const u8)) {
+                                      0 => None,
+                                      1 => Some(super::types::EntityId{id0:*((ptr1 + 8) as *const i64) as u64, id1:*((ptr1 + 16) as *const i64) as u64, }),
+                                      #[cfg(not(debug_assertions))]
+                                      _ => core::hint::unreachable_unchecked(),
+                                      #[cfg(debug_assertions)]
+                                      _ => panic!("invalid enum discriminant"),
+                                    }
+                                  }
+                                }
+                                
+                              }
+                              
+                              
+                              #[allow(clippy::all)]
+                              pub mod client_audio{
+                                #[used]
+                                #[doc(hidden)]
+                                #[cfg(target_arch = "wasm32")]
+                                static __FORCE_SECTION_REF: fn() = super::__link_section;
+                                
+                                #[allow(clippy::all)]
+                                pub fn load(url: &str,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let vec0 = url;
+                                    let ptr0 = vec0.as_ptr() as i32;
+                                    let len0 = vec0.len() as i32;
+                                    
+                                    #[link(wasm_import_module = "client-audio")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "load")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-audio_load")]
+                                      fn wit_import(
+                                      _: i32, _: i32, );
+                                    }
+                                    wit_import(ptr0, len0);
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn play(name: &str,looping: bool,volume: f32,uid: u32,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let vec0 = name;
+                                    let ptr0 = vec0.as_ptr() as i32;
+                                    let len0 = vec0.len() as i32;
+                                    
+                                    #[link(wasm_import_module = "client-audio")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "play")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-audio_play")]
+                                      fn wit_import(
+                                      _: i32, _: i32, _: i32, _: f32, _: i32, );
+                                    }
+                                    wit_import(ptr0, len0, match looping { true => 1, false => 0 }, wit_bindgen::rt::as_f32(volume), wit_bindgen::rt::as_i32(uid));
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn stop(name: &str,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let vec0 = name;
+                                    let ptr0 = vec0.as_ptr() as i32;
+                                    let len0 = vec0.len() as i32;
+                                    
+                                    #[link(wasm_import_module = "client-audio")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "stop")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-audio_stop")]
+                                      fn wit_import(
+                                      _: i32, _: i32, );
+                                    }
+                                    wit_import(ptr0, len0);
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn stop_by_id(uid: u32,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[link(wasm_import_module = "client-audio")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "stop-by-id")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-audio_stop-by-id")]
+                                      fn wit_import(
+                                      _: i32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i32(uid));
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn set_volume(name: &str,volume: f32,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let vec0 = name;
+                                    let ptr0 = vec0.as_ptr() as i32;
+                                    let len0 = vec0.len() as i32;
+                                    
+                                    #[link(wasm_import_module = "client-audio")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "set-volume")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-audio_set-volume")]
+                                      fn wit_import(
+                                      _: i32, _: i32, _: f32, );
+                                    }
+                                    wit_import(ptr0, len0, wit_bindgen::rt::as_f32(volume));
+                                  }
+                                }
+                                
+                              }
+                              
+                              
+                              #[allow(clippy::all)]
+                              pub mod client_message{
+                                #[used]
+                                #[doc(hidden)]
+                                #[cfg(target_arch = "wasm32")]
+                                static __FORCE_SECTION_REF: fn() = super::__link_section;
+                                
+                                pub type EntityId = super::types::EntityId;
+                                #[derive(Clone, Copy)]
+                                pub enum Target{
+                                  ServerUnreliable,
+                                  ServerReliable,
+                                  LocalBroadcast,
+                                  Local(EntityId),
+                                }
+                                impl core::fmt::Debug for Target {
+                                  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                                    match self {
+                                      Target::ServerUnreliable => {
+                                        f.debug_tuple("Target::ServerUnreliable").finish()
+                                      }
+                                      Target::ServerReliable => {
+                                        f.debug_tuple("Target::ServerReliable").finish()
+                                      }
+                                      Target::LocalBroadcast => {
+                                        f.debug_tuple("Target::LocalBroadcast").finish()
+                                      }
+                                      Target::Local(e) => {
+                                        f.debug_tuple("Target::Local").field(e).finish()
+                                      }
+                                    }
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn send(target_id: Target,name: &str,data: &[u8],){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let (result1_0,result1_1,result1_2,) = match target_id {
+                                      Target::ServerUnreliable=> {
+                                        (0i32, 0i64, 0i64)
+                                      }
+                                      Target::ServerReliable=> {
+                                        (1i32, 0i64, 0i64)
+                                      }
+                                      Target::LocalBroadcast=> {
+                                        (2i32, 0i64, 0i64)
+                                      }
+                                      Target::Local(e) => {
+                                        let super::types::EntityId{ id0:id00, id1:id10, } = e;
+                                        
+                                        (3i32, wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10))
+                                      },
+                                    };
+                                    let vec2 = name;
+                                    let ptr2 = vec2.as_ptr() as i32;
+                                    let len2 = vec2.len() as i32;
+                                    let vec3 = data;
+                                    let ptr3 = vec3.as_ptr() as i32;
+                                    let len3 = vec3.len() as i32;
+                                    
+                                    #[link(wasm_import_module = "client-message")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "send")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-message_send")]
+                                      fn wit_import(
+                                      _: i32, _: i64, _: i64, _: i32, _: i32, _: i32, _: i32, );
+                                    }
+                                    wit_import(result1_0, result1_1, result1_2, ptr2, len2, ptr3, len3);
+                                  }
+                                }
+                                
+                              }
+                              
+                              
+                              #[allow(clippy::all)]
+                              pub mod client_player{
+                                #[used]
+                                #[doc(hidden)]
+                                #[cfg(target_arch = "wasm32")]
+                                static __FORCE_SECTION_REF: fn() = super::__link_section;
+                                
+                                pub type EntityId = super::types::EntityId;
+                                #[allow(clippy::all)]
+                                pub fn get_local() -> EntityId{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(8))]
+                                    struct RetArea([u8; 16]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let ptr0 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "client-player")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "get-local")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-player_get-local")]
+                                      fn wit_import(
+                                      _: i32, );
+                                    }
+                                    wit_import(ptr0);
+                                    super::types::EntityId{id0:*((ptr0 + 0) as *const i64) as u64, id1:*((ptr0 + 8) as *const i64) as u64, }
+                                  }
+                                }
+                                
+                              }
+                              
+                              
+                              #[allow(clippy::all)]
+                              pub mod client_input{
+                                #[used]
+                                #[doc(hidden)]
+                                #[cfg(target_arch = "wasm32")]
+                                static __FORCE_SECTION_REF: fn() = super::__link_section;
+                                
+                                pub type Vec2 = super::types::Vec2;
+                                #[repr(u8)]
+                                #[derive(Clone, Copy, PartialEq, Eq)]
+                                pub enum VirtualKeyCode {
+                                  /// The '1' key over the letters.
+                                  Key1,
+                                  /// The '2' key over the letters.
+                                  Key2,
+                                  /// The '3' key over the letters.
+                                  Key3,
+                                  /// The '4' key over the letters.
+                                  Key4,
+                                  /// The '5' key over the letters.
+                                  Key5,
+                                  /// The '6' key over the letters.
+                                  Key6,
+                                  /// The '7' key over the letters.
+                                  Key7,
+                                  /// The '8' key over the letters.
+                                  Key8,
+                                  /// The '9' key over the letters.
+                                  Key9,
+                                  /// The '0' key over the 'O' and 'P' keys.
+                                  Key0,
+                                  A,
+                                  B,
+                                  C,
+                                  D,
+                                  E,
+                                  F,
+                                  G,
+                                  H,
+                                  I,
+                                  J,
+                                  K,
+                                  L,
+                                  M,
+                                  N,
+                                  O,
+                                  P,
+                                  Q,
+                                  R,
+                                  S,
+                                  T,
+                                  U,
+                                  V,
+                                  W,
+                                  X,
+                                  Y,
+                                  Z,
+                                  /// The Escape key, next to F1.
+                                  Escape,
+                                  F1,
+                                  F2,
+                                  F3,
+                                  F4,
+                                  F5,
+                                  F6,
+                                  F7,
+                                  F8,
+                                  F9,
+                                  F10,
+                                  F11,
+                                  F12,
+                                  F13,
+                                  F14,
+                                  F15,
+                                  F16,
+                                  F17,
+                                  F18,
+                                  F19,
+                                  F20,
+                                  F21,
+                                  F22,
+                                  F23,
+                                  F24,
+                                  /// Print Screen/SysRq.
+                                  Snapshot,
+                                  /// Scroll Lock.
+                                  Scroll,
+                                  /// Pause/Break key, next to Scroll lock.
+                                  Pause,
+                                  /// `Insert`, next to Backspace.
+                                  Insert,
+                                  Home,
+                                  Delete,
+                                  End,
+                                  PageDown,
+                                  PageUp,
+                                  Left,
+                                  Up,
+                                  Right,
+                                  Down,
+                                  /// The Backspace key, right over Enter.
+                                  Back,
+                                  /// The Enter key.
+                                  Return,
+                                  /// The space bar.
+                                  Space,
+                                  /// The "Compose" key on Linux.
+                                  Compose,
+                                  Caret,
+                                  Numlock,
+                                  Numpad0,
+                                  Numpad1,
+                                  Numpad2,
+                                  Numpad3,
+                                  Numpad4,
+                                  Numpad5,
+                                  Numpad6,
+                                  Numpad7,
+                                  Numpad8,
+                                  Numpad9,
+                                  NumpadAdd,
+                                  NumpadDivide,
+                                  NumpadDecimal,
+                                  NumpadComma,
+                                  NumpadEnter,
+                                  NumpadEquals,
+                                  NumpadMultiply,
+                                  NumpadSubtract,
+                                  AbntC1,
+                                  AbntC2,
+                                  Apostrophe,
+                                  Apps,
+                                  Asterisk,
+                                  At,
+                                  Ax,
+                                  Backslash,
+                                  Calculator,
+                                  Capital,
+                                  Colon,
+                                  Comma,
+                                  Convert,
+                                  Equals,
+                                  Grave,
+                                  Kana,
+                                  Kanji,
+                                  LAlt,
+                                  LBracket,
+                                  LControl,
+                                  LShift,
+                                  LWin,
+                                  Mail,
+                                  MediaSelect,
+                                  MediaStop,
+                                  Minus,
+                                  Mute,
+                                  MyComputer,
+                                  NavigateForward,
+                                  NavigateBackward,
+                                  NextTrack,
+                                  NoConvert,
+                                  Oem102,
+                                  Period,
+                                  PlayPause,
+                                  Plus,
+                                  Power,
+                                  PrevTrack,
+                                  RAlt,
+                                  RBracket,
+                                  RControl,
+                                  RShift,
+                                  RWin,
+                                  Semicolon,
+                                  Slash,
+                                  Sleep,
+                                  Stop,
+                                  Sysrq,
+                                  Tab,
+                                  Underline,
+                                  Unlabeled,
+                                  VolumeDown,
+                                  VolumeUp,
+                                  Wake,
+                                  WebBack,
+                                  WebFavorites,
+                                  WebForward,
+                                  WebHome,
+                                  WebRefresh,
+                                  WebSearch,
+                                  WebStop,
+                                  Yen,
+                                  Copy,
+                                  Paste,
+                                  Cut,
+                                }
+                                impl core::fmt::Debug for VirtualKeyCode {
+                                  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                                    match self {
+                                      VirtualKeyCode::Key1 => {
+                                        f.debug_tuple("VirtualKeyCode::Key1").finish()
+                                      }
+                                      VirtualKeyCode::Key2 => {
+                                        f.debug_tuple("VirtualKeyCode::Key2").finish()
+                                      }
+                                      VirtualKeyCode::Key3 => {
+                                        f.debug_tuple("VirtualKeyCode::Key3").finish()
+                                      }
+                                      VirtualKeyCode::Key4 => {
+                                        f.debug_tuple("VirtualKeyCode::Key4").finish()
+                                      }
+                                      VirtualKeyCode::Key5 => {
+                                        f.debug_tuple("VirtualKeyCode::Key5").finish()
+                                      }
+                                      VirtualKeyCode::Key6 => {
+                                        f.debug_tuple("VirtualKeyCode::Key6").finish()
+                                      }
+                                      VirtualKeyCode::Key7 => {
+                                        f.debug_tuple("VirtualKeyCode::Key7").finish()
+                                      }
+                                      VirtualKeyCode::Key8 => {
+                                        f.debug_tuple("VirtualKeyCode::Key8").finish()
+                                      }
+                                      VirtualKeyCode::Key9 => {
+                                        f.debug_tuple("VirtualKeyCode::Key9").finish()
+                                      }
+                                      VirtualKeyCode::Key0 => {
+                                        f.debug_tuple("VirtualKeyCode::Key0").finish()
+                                      }
+                                      VirtualKeyCode::A => {
+                                        f.debug_tuple("VirtualKeyCode::A").finish()
+                                      }
+                                      VirtualKeyCode::B => {
+                                        f.debug_tuple("VirtualKeyCode::B").finish()
+                                      }
+                                      VirtualKeyCode::C => {
+                                        f.debug_tuple("VirtualKeyCode::C").finish()
+                                      }
+                                      VirtualKeyCode::D => {
+                                        f.debug_tuple("VirtualKeyCode::D").finish()
+                                      }
+                                      VirtualKeyCode::E => {
+                                        f.debug_tuple("VirtualKeyCode::E").finish()
+                                      }
+                                      VirtualKeyCode::F => {
+                                        f.debug_tuple("VirtualKeyCode::F").finish()
+                                      }
+                                      VirtualKeyCode::G => {
+                                        f.debug_tuple("VirtualKeyCode::G").finish()
+                                      }
+                                      VirtualKeyCode::H => {
+                                        f.debug_tuple("VirtualKeyCode::H").finish()
+                                      }
+                                      VirtualKeyCode::I => {
+                                        f.debug_tuple("VirtualKeyCode::I").finish()
+                                      }
+                                      VirtualKeyCode::J => {
+                                        f.debug_tuple("VirtualKeyCode::J").finish()
+                                      }
+                                      VirtualKeyCode::K => {
+                                        f.debug_tuple("VirtualKeyCode::K").finish()
+                                      }
+                                      VirtualKeyCode::L => {
+                                        f.debug_tuple("VirtualKeyCode::L").finish()
+                                      }
+                                      VirtualKeyCode::M => {
+                                        f.debug_tuple("VirtualKeyCode::M").finish()
+                                      }
+                                      VirtualKeyCode::N => {
+                                        f.debug_tuple("VirtualKeyCode::N").finish()
+                                      }
+                                      VirtualKeyCode::O => {
+                                        f.debug_tuple("VirtualKeyCode::O").finish()
+                                      }
+                                      VirtualKeyCode::P => {
+                                        f.debug_tuple("VirtualKeyCode::P").finish()
+                                      }
+                                      VirtualKeyCode::Q => {
+                                        f.debug_tuple("VirtualKeyCode::Q").finish()
+                                      }
+                                      VirtualKeyCode::R => {
+                                        f.debug_tuple("VirtualKeyCode::R").finish()
+                                      }
+                                      VirtualKeyCode::S => {
+                                        f.debug_tuple("VirtualKeyCode::S").finish()
+                                      }
+                                      VirtualKeyCode::T => {
+                                        f.debug_tuple("VirtualKeyCode::T").finish()
+                                      }
+                                      VirtualKeyCode::U => {
+                                        f.debug_tuple("VirtualKeyCode::U").finish()
+                                      }
+                                      VirtualKeyCode::V => {
+                                        f.debug_tuple("VirtualKeyCode::V").finish()
+                                      }
+                                      VirtualKeyCode::W => {
+                                        f.debug_tuple("VirtualKeyCode::W").finish()
+                                      }
+                                      VirtualKeyCode::X => {
+                                        f.debug_tuple("VirtualKeyCode::X").finish()
+                                      }
+                                      VirtualKeyCode::Y => {
+                                        f.debug_tuple("VirtualKeyCode::Y").finish()
+                                      }
+                                      VirtualKeyCode::Z => {
+                                        f.debug_tuple("VirtualKeyCode::Z").finish()
+                                      }
+                                      VirtualKeyCode::Escape => {
+                                        f.debug_tuple("VirtualKeyCode::Escape").finish()
+                                      }
+                                      VirtualKeyCode::F1 => {
+                                        f.debug_tuple("VirtualKeyCode::F1").finish()
+                                      }
+                                      VirtualKeyCode::F2 => {
+                                        f.debug_tuple("VirtualKeyCode::F2").finish()
+                                      }
+                                      VirtualKeyCode::F3 => {
+                                        f.debug_tuple("VirtualKeyCode::F3").finish()
+                                      }
+                                      VirtualKeyCode::F4 => {
+                                        f.debug_tuple("VirtualKeyCode::F4").finish()
+                                      }
+                                      VirtualKeyCode::F5 => {
+                                        f.debug_tuple("VirtualKeyCode::F5").finish()
+                                      }
+                                      VirtualKeyCode::F6 => {
+                                        f.debug_tuple("VirtualKeyCode::F6").finish()
+                                      }
+                                      VirtualKeyCode::F7 => {
+                                        f.debug_tuple("VirtualKeyCode::F7").finish()
+                                      }
+                                      VirtualKeyCode::F8 => {
+                                        f.debug_tuple("VirtualKeyCode::F8").finish()
+                                      }
+                                      VirtualKeyCode::F9 => {
+                                        f.debug_tuple("VirtualKeyCode::F9").finish()
+                                      }
+                                      VirtualKeyCode::F10 => {
+                                        f.debug_tuple("VirtualKeyCode::F10").finish()
+                                      }
+                                      VirtualKeyCode::F11 => {
+                                        f.debug_tuple("VirtualKeyCode::F11").finish()
+                                      }
+                                      VirtualKeyCode::F12 => {
+                                        f.debug_tuple("VirtualKeyCode::F12").finish()
+                                      }
+                                      VirtualKeyCode::F13 => {
+                                        f.debug_tuple("VirtualKeyCode::F13").finish()
+                                      }
+                                      VirtualKeyCode::F14 => {
+                                        f.debug_tuple("VirtualKeyCode::F14").finish()
+                                      }
+                                      VirtualKeyCode::F15 => {
+                                        f.debug_tuple("VirtualKeyCode::F15").finish()
+                                      }
+                                      VirtualKeyCode::F16 => {
+                                        f.debug_tuple("VirtualKeyCode::F16").finish()
+                                      }
+                                      VirtualKeyCode::F17 => {
+                                        f.debug_tuple("VirtualKeyCode::F17").finish()
+                                      }
+                                      VirtualKeyCode::F18 => {
+                                        f.debug_tuple("VirtualKeyCode::F18").finish()
+                                      }
+                                      VirtualKeyCode::F19 => {
+                                        f.debug_tuple("VirtualKeyCode::F19").finish()
+                                      }
+                                      VirtualKeyCode::F20 => {
+                                        f.debug_tuple("VirtualKeyCode::F20").finish()
+                                      }
+                                      VirtualKeyCode::F21 => {
+                                        f.debug_tuple("VirtualKeyCode::F21").finish()
+                                      }
+                                      VirtualKeyCode::F22 => {
+                                        f.debug_tuple("VirtualKeyCode::F22").finish()
+                                      }
+                                      VirtualKeyCode::F23 => {
+                                        f.debug_tuple("VirtualKeyCode::F23").finish()
+                                      }
+                                      VirtualKeyCode::F24 => {
+                                        f.debug_tuple("VirtualKeyCode::F24").finish()
+                                      }
+                                      VirtualKeyCode::Snapshot => {
+                                        f.debug_tuple("VirtualKeyCode::Snapshot").finish()
+                                      }
+                                      VirtualKeyCode::Scroll => {
+                                        f.debug_tuple("VirtualKeyCode::Scroll").finish()
+                                      }
+                                      VirtualKeyCode::Pause => {
+                                        f.debug_tuple("VirtualKeyCode::Pause").finish()
+                                      }
+                                      VirtualKeyCode::Insert => {
+                                        f.debug_tuple("VirtualKeyCode::Insert").finish()
+                                      }
+                                      VirtualKeyCode::Home => {
+                                        f.debug_tuple("VirtualKeyCode::Home").finish()
+                                      }
+                                      VirtualKeyCode::Delete => {
+                                        f.debug_tuple("VirtualKeyCode::Delete").finish()
+                                      }
+                                      VirtualKeyCode::End => {
+                                        f.debug_tuple("VirtualKeyCode::End").finish()
+                                      }
+                                      VirtualKeyCode::PageDown => {
+                                        f.debug_tuple("VirtualKeyCode::PageDown").finish()
+                                      }
+                                      VirtualKeyCode::PageUp => {
+                                        f.debug_tuple("VirtualKeyCode::PageUp").finish()
+                                      }
+                                      VirtualKeyCode::Left => {
+                                        f.debug_tuple("VirtualKeyCode::Left").finish()
+                                      }
+                                      VirtualKeyCode::Up => {
+                                        f.debug_tuple("VirtualKeyCode::Up").finish()
+                                      }
+                                      VirtualKeyCode::Right => {
+                                        f.debug_tuple("VirtualKeyCode::Right").finish()
+                                      }
+                                      VirtualKeyCode::Down => {
+                                        f.debug_tuple("VirtualKeyCode::Down").finish()
+                                      }
+                                      VirtualKeyCode::Back => {
+                                        f.debug_tuple("VirtualKeyCode::Back").finish()
+                                      }
+                                      VirtualKeyCode::Return => {
+                                        f.debug_tuple("VirtualKeyCode::Return").finish()
+                                      }
+                                      VirtualKeyCode::Space => {
+                                        f.debug_tuple("VirtualKeyCode::Space").finish()
+                                      }
+                                      VirtualKeyCode::Compose => {
+                                        f.debug_tuple("VirtualKeyCode::Compose").finish()
+                                      }
+                                      VirtualKeyCode::Caret => {
+                                        f.debug_tuple("VirtualKeyCode::Caret").finish()
+                                      }
+                                      VirtualKeyCode::Numlock => {
+                                        f.debug_tuple("VirtualKeyCode::Numlock").finish()
+                                      }
+                                      VirtualKeyCode::Numpad0 => {
+                                        f.debug_tuple("VirtualKeyCode::Numpad0").finish()
+                                      }
+                                      VirtualKeyCode::Numpad1 => {
+                                        f.debug_tuple("VirtualKeyCode::Numpad1").finish()
+                                      }
+                                      VirtualKeyCode::Numpad2 => {
+                                        f.debug_tuple("VirtualKeyCode::Numpad2").finish()
+                                      }
+                                      VirtualKeyCode::Numpad3 => {
+                                        f.debug_tuple("VirtualKeyCode::Numpad3").finish()
+                                      }
+                                      VirtualKeyCode::Numpad4 => {
+                                        f.debug_tuple("VirtualKeyCode::Numpad4").finish()
+                                      }
+                                      VirtualKeyCode::Numpad5 => {
+                                        f.debug_tuple("VirtualKeyCode::Numpad5").finish()
+                                      }
+                                      VirtualKeyCode::Numpad6 => {
+                                        f.debug_tuple("VirtualKeyCode::Numpad6").finish()
+                                      }
+                                      VirtualKeyCode::Numpad7 => {
+                                        f.debug_tuple("VirtualKeyCode::Numpad7").finish()
+                                      }
+                                      VirtualKeyCode::Numpad8 => {
+                                        f.debug_tuple("VirtualKeyCode::Numpad8").finish()
+                                      }
+                                      VirtualKeyCode::Numpad9 => {
+                                        f.debug_tuple("VirtualKeyCode::Numpad9").finish()
+                                      }
+                                      VirtualKeyCode::NumpadAdd => {
+                                        f.debug_tuple("VirtualKeyCode::NumpadAdd").finish()
+                                      }
+                                      VirtualKeyCode::NumpadDivide => {
+                                        f.debug_tuple("VirtualKeyCode::NumpadDivide").finish()
+                                      }
+                                      VirtualKeyCode::NumpadDecimal => {
+                                        f.debug_tuple("VirtualKeyCode::NumpadDecimal").finish()
+                                      }
+                                      VirtualKeyCode::NumpadComma => {
+                                        f.debug_tuple("VirtualKeyCode::NumpadComma").finish()
+                                      }
+                                      VirtualKeyCode::NumpadEnter => {
+                                        f.debug_tuple("VirtualKeyCode::NumpadEnter").finish()
+                                      }
+                                      VirtualKeyCode::NumpadEquals => {
+                                        f.debug_tuple("VirtualKeyCode::NumpadEquals").finish()
+                                      }
+                                      VirtualKeyCode::NumpadMultiply => {
+                                        f.debug_tuple("VirtualKeyCode::NumpadMultiply").finish()
+                                      }
+                                      VirtualKeyCode::NumpadSubtract => {
+                                        f.debug_tuple("VirtualKeyCode::NumpadSubtract").finish()
+                                      }
+                                      VirtualKeyCode::AbntC1 => {
+                                        f.debug_tuple("VirtualKeyCode::AbntC1").finish()
+                                      }
+                                      VirtualKeyCode::AbntC2 => {
+                                        f.debug_tuple("VirtualKeyCode::AbntC2").finish()
+                                      }
+                                      VirtualKeyCode::Apostrophe => {
+                                        f.debug_tuple("VirtualKeyCode::Apostrophe").finish()
+                                      }
+                                      VirtualKeyCode::Apps => {
+                                        f.debug_tuple("VirtualKeyCode::Apps").finish()
+                                      }
+                                      VirtualKeyCode::Asterisk => {
+                                        f.debug_tuple("VirtualKeyCode::Asterisk").finish()
+                                      }
+                                      VirtualKeyCode::At => {
+                                        f.debug_tuple("VirtualKeyCode::At").finish()
+                                      }
+                                      VirtualKeyCode::Ax => {
+                                        f.debug_tuple("VirtualKeyCode::Ax").finish()
+                                      }
+                                      VirtualKeyCode::Backslash => {
+                                        f.debug_tuple("VirtualKeyCode::Backslash").finish()
+                                      }
+                                      VirtualKeyCode::Calculator => {
+                                        f.debug_tuple("VirtualKeyCode::Calculator").finish()
+                                      }
+                                      VirtualKeyCode::Capital => {
+                                        f.debug_tuple("VirtualKeyCode::Capital").finish()
+                                      }
+                                      VirtualKeyCode::Colon => {
+                                        f.debug_tuple("VirtualKeyCode::Colon").finish()
+                                      }
+                                      VirtualKeyCode::Comma => {
+                                        f.debug_tuple("VirtualKeyCode::Comma").finish()
+                                      }
+                                      VirtualKeyCode::Convert => {
+                                        f.debug_tuple("VirtualKeyCode::Convert").finish()
+                                      }
+                                      VirtualKeyCode::Equals => {
+                                        f.debug_tuple("VirtualKeyCode::Equals").finish()
+                                      }
+                                      VirtualKeyCode::Grave => {
+                                        f.debug_tuple("VirtualKeyCode::Grave").finish()
+                                      }
+                                      VirtualKeyCode::Kana => {
+                                        f.debug_tuple("VirtualKeyCode::Kana").finish()
+                                      }
+                                      VirtualKeyCode::Kanji => {
+                                        f.debug_tuple("VirtualKeyCode::Kanji").finish()
+                                      }
+                                      VirtualKeyCode::LAlt => {
+                                        f.debug_tuple("VirtualKeyCode::LAlt").finish()
+                                      }
+                                      VirtualKeyCode::LBracket => {
+                                        f.debug_tuple("VirtualKeyCode::LBracket").finish()
+                                      }
+                                      VirtualKeyCode::LControl => {
+                                        f.debug_tuple("VirtualKeyCode::LControl").finish()
+                                      }
+                                      VirtualKeyCode::LShift => {
+                                        f.debug_tuple("VirtualKeyCode::LShift").finish()
+                                      }
+                                      VirtualKeyCode::LWin => {
+                                        f.debug_tuple("VirtualKeyCode::LWin").finish()
+                                      }
+                                      VirtualKeyCode::Mail => {
+                                        f.debug_tuple("VirtualKeyCode::Mail").finish()
+                                      }
+                                      VirtualKeyCode::MediaSelect => {
+                                        f.debug_tuple("VirtualKeyCode::MediaSelect").finish()
+                                      }
+                                      VirtualKeyCode::MediaStop => {
+                                        f.debug_tuple("VirtualKeyCode::MediaStop").finish()
+                                      }
+                                      VirtualKeyCode::Minus => {
+                                        f.debug_tuple("VirtualKeyCode::Minus").finish()
+                                      }
+                                      VirtualKeyCode::Mute => {
+                                        f.debug_tuple("VirtualKeyCode::Mute").finish()
+                                      }
+                                      VirtualKeyCode::MyComputer => {
+                                        f.debug_tuple("VirtualKeyCode::MyComputer").finish()
+                                      }
+                                      VirtualKeyCode::NavigateForward => {
+                                        f.debug_tuple("VirtualKeyCode::NavigateForward").finish()
+                                      }
+                                      VirtualKeyCode::NavigateBackward => {
+                                        f.debug_tuple("VirtualKeyCode::NavigateBackward").finish()
+                                      }
+                                      VirtualKeyCode::NextTrack => {
+                                        f.debug_tuple("VirtualKeyCode::NextTrack").finish()
+                                      }
+                                      VirtualKeyCode::NoConvert => {
+                                        f.debug_tuple("VirtualKeyCode::NoConvert").finish()
+                                      }
+                                      VirtualKeyCode::Oem102 => {
+                                        f.debug_tuple("VirtualKeyCode::Oem102").finish()
+                                      }
+                                      VirtualKeyCode::Period => {
+                                        f.debug_tuple("VirtualKeyCode::Period").finish()
+                                      }
+                                      VirtualKeyCode::PlayPause => {
+                                        f.debug_tuple("VirtualKeyCode::PlayPause").finish()
+                                      }
+                                      VirtualKeyCode::Plus => {
+                                        f.debug_tuple("VirtualKeyCode::Plus").finish()
+                                      }
+                                      VirtualKeyCode::Power => {
+                                        f.debug_tuple("VirtualKeyCode::Power").finish()
+                                      }
+                                      VirtualKeyCode::PrevTrack => {
+                                        f.debug_tuple("VirtualKeyCode::PrevTrack").finish()
+                                      }
+                                      VirtualKeyCode::RAlt => {
+                                        f.debug_tuple("VirtualKeyCode::RAlt").finish()
+                                      }
+                                      VirtualKeyCode::RBracket => {
+                                        f.debug_tuple("VirtualKeyCode::RBracket").finish()
+                                      }
+                                      VirtualKeyCode::RControl => {
+                                        f.debug_tuple("VirtualKeyCode::RControl").finish()
+                                      }
+                                      VirtualKeyCode::RShift => {
+                                        f.debug_tuple("VirtualKeyCode::RShift").finish()
+                                      }
+                                      VirtualKeyCode::RWin => {
+                                        f.debug_tuple("VirtualKeyCode::RWin").finish()
+                                      }
+                                      VirtualKeyCode::Semicolon => {
+                                        f.debug_tuple("VirtualKeyCode::Semicolon").finish()
+                                      }
+                                      VirtualKeyCode::Slash => {
+                                        f.debug_tuple("VirtualKeyCode::Slash").finish()
+                                      }
+                                      VirtualKeyCode::Sleep => {
+                                        f.debug_tuple("VirtualKeyCode::Sleep").finish()
+                                      }
+                                      VirtualKeyCode::Stop => {
+                                        f.debug_tuple("VirtualKeyCode::Stop").finish()
+                                      }
+                                      VirtualKeyCode::Sysrq => {
+                                        f.debug_tuple("VirtualKeyCode::Sysrq").finish()
+                                      }
+                                      VirtualKeyCode::Tab => {
+                                        f.debug_tuple("VirtualKeyCode::Tab").finish()
+                                      }
+                                      VirtualKeyCode::Underline => {
+                                        f.debug_tuple("VirtualKeyCode::Underline").finish()
+                                      }
+                                      VirtualKeyCode::Unlabeled => {
+                                        f.debug_tuple("VirtualKeyCode::Unlabeled").finish()
+                                      }
+                                      VirtualKeyCode::VolumeDown => {
+                                        f.debug_tuple("VirtualKeyCode::VolumeDown").finish()
+                                      }
+                                      VirtualKeyCode::VolumeUp => {
+                                        f.debug_tuple("VirtualKeyCode::VolumeUp").finish()
+                                      }
+                                      VirtualKeyCode::Wake => {
+                                        f.debug_tuple("VirtualKeyCode::Wake").finish()
+                                      }
+                                      VirtualKeyCode::WebBack => {
+                                        f.debug_tuple("VirtualKeyCode::WebBack").finish()
+                                      }
+                                      VirtualKeyCode::WebFavorites => {
+                                        f.debug_tuple("VirtualKeyCode::WebFavorites").finish()
+                                      }
+                                      VirtualKeyCode::WebForward => {
+                                        f.debug_tuple("VirtualKeyCode::WebForward").finish()
+                                      }
+                                      VirtualKeyCode::WebHome => {
+                                        f.debug_tuple("VirtualKeyCode::WebHome").finish()
+                                      }
+                                      VirtualKeyCode::WebRefresh => {
+                                        f.debug_tuple("VirtualKeyCode::WebRefresh").finish()
+                                      }
+                                      VirtualKeyCode::WebSearch => {
+                                        f.debug_tuple("VirtualKeyCode::WebSearch").finish()
+                                      }
+                                      VirtualKeyCode::WebStop => {
+                                        f.debug_tuple("VirtualKeyCode::WebStop").finish()
+                                      }
+                                      VirtualKeyCode::Yen => {
+                                        f.debug_tuple("VirtualKeyCode::Yen").finish()
+                                      }
+                                      VirtualKeyCode::Copy => {
+                                        f.debug_tuple("VirtualKeyCode::Copy").finish()
+                                      }
+                                      VirtualKeyCode::Paste => {
+                                        f.debug_tuple("VirtualKeyCode::Paste").finish()
+                                      }
+                                      VirtualKeyCode::Cut => {
+                                        f.debug_tuple("VirtualKeyCode::Cut").finish()
+                                      }
+                                    }
+                                  }
+                                }
+                                #[derive(Clone, Copy)]
+                                pub enum MouseButton{
+                                  Left,
+                                  Right,
+                                  Middle,
+                                  Other(u16),
+                                }
+                                impl core::fmt::Debug for MouseButton {
+                                  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                                    match self {
+                                      MouseButton::Left => {
+                                        f.debug_tuple("MouseButton::Left").finish()
+                                      }
+                                      MouseButton::Right => {
+                                        f.debug_tuple("MouseButton::Right").finish()
+                                      }
+                                      MouseButton::Middle => {
+                                        f.debug_tuple("MouseButton::Middle").finish()
+                                      }
+                                      MouseButton::Other(e) => {
+                                        f.debug_tuple("MouseButton::Other").field(e).finish()
+                                      }
+                                    }
+                                  }
+                                }
+                                #[derive(Clone)]
+                                pub struct Input {
+                                  pub keys: wit_bindgen::rt::vec::Vec::<VirtualKeyCode>,
+                                  pub mouse_position: Vec2,
+                                  pub mouse_delta: Vec2,
+                                  pub mouse_wheel: f32,
+                                  pub mouse_buttons: wit_bindgen::rt::vec::Vec::<MouseButton>,
+                                }
+                                impl core::fmt::Debug for Input {
+                                  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                                    f.debug_struct("Input").field("keys", &self.keys).field("mouse-position", &self.mouse_position).field("mouse-delta", &self.mouse_delta).field("mouse-wheel", &self.mouse_wheel).field("mouse-buttons", &self.mouse_buttons).finish()
+                                  }
+                                }
+                                #[derive(Clone, Copy)]
+                                pub enum CursorIcon{
+                                  /// The platform-dependent default cursor.
+                                  DefaultIcon,
+                                  /// A simple crosshair.
+                                  Crosshair,
+                                  /// A hand (often used to indicate links in web browsers).
+                                  Hand,
+                                  /// Self explanatory.
+                                  Arrow,
+                                  /// Indicates something is to be moved.
+                                  Move,
+                                  /// Indicates text that may be selected or edited.
+                                  Text,
+                                  /// Program busy indicator.
+                                  Wait,
+                                  /// Help indicator (often rendered as a "?")
+                                  Help,
+                                  /// Progress indicator. Shows that processing is being done. But in contrast
+                                  /// with "Wait" the user may still interact with the program. Often rendered
+                                  /// as a spinning beach ball, or an arrow with a watch or hourglass.
+                                  Progress,
+                                  /// Cursor showing that something cannot be done.
+                                  NotAllowed,
+                                  ContextMenu,
+                                  Cell,
+                                  VerticalText,
+                                  Alias,
+                                  Copy,
+                                  NoDrop,
+                                  /// Indicates something can be grabbed.
+                                  Grab,
+                                  /// Indicates something is grabbed.
+                                  Grabbing,
+                                  AllScroll,
+                                  ZoomIn,
+                                  ZoomOut,
+                                  /// Indicate that some edge is to be moved. For example, the 'SeResize' cursor
+                                  /// is used when the movement starts from the south-east corner of the box.
+                                  EResize,
+                                  NResize,
+                                  NeResize,
+                                  NwResize,
+                                  SResize,
+                                  SeResize,
+                                  SwResize,
+                                  WResize,
+                                  EwResize,
+                                  NsResize,
+                                  NeswResize,
+                                  NwseResize,
+                                  ColResize,
+                                  RowResize,
+                                }
+                                impl core::fmt::Debug for CursorIcon {
+                                  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                                    match self {
+                                      CursorIcon::DefaultIcon => {
+                                        f.debug_tuple("CursorIcon::DefaultIcon").finish()
+                                      }
+                                      CursorIcon::Crosshair => {
+                                        f.debug_tuple("CursorIcon::Crosshair").finish()
+                                      }
+                                      CursorIcon::Hand => {
+                                        f.debug_tuple("CursorIcon::Hand").finish()
+                                      }
+                                      CursorIcon::Arrow => {
+                                        f.debug_tuple("CursorIcon::Arrow").finish()
+                                      }
+                                      CursorIcon::Move => {
+                                        f.debug_tuple("CursorIcon::Move").finish()
+                                      }
+                                      CursorIcon::Text => {
+                                        f.debug_tuple("CursorIcon::Text").finish()
+                                      }
+                                      CursorIcon::Wait => {
+                                        f.debug_tuple("CursorIcon::Wait").finish()
+                                      }
+                                      CursorIcon::Help => {
+                                        f.debug_tuple("CursorIcon::Help").finish()
+                                      }
+                                      CursorIcon::Progress => {
+                                        f.debug_tuple("CursorIcon::Progress").finish()
+                                      }
+                                      CursorIcon::NotAllowed => {
+                                        f.debug_tuple("CursorIcon::NotAllowed").finish()
+                                      }
+                                      CursorIcon::ContextMenu => {
+                                        f.debug_tuple("CursorIcon::ContextMenu").finish()
+                                      }
+                                      CursorIcon::Cell => {
+                                        f.debug_tuple("CursorIcon::Cell").finish()
+                                      }
+                                      CursorIcon::VerticalText => {
+                                        f.debug_tuple("CursorIcon::VerticalText").finish()
+                                      }
+                                      CursorIcon::Alias => {
+                                        f.debug_tuple("CursorIcon::Alias").finish()
+                                      }
+                                      CursorIcon::Copy => {
+                                        f.debug_tuple("CursorIcon::Copy").finish()
+                                      }
+                                      CursorIcon::NoDrop => {
+                                        f.debug_tuple("CursorIcon::NoDrop").finish()
+                                      }
+                                      CursorIcon::Grab => {
+                                        f.debug_tuple("CursorIcon::Grab").finish()
+                                      }
+                                      CursorIcon::Grabbing => {
+                                        f.debug_tuple("CursorIcon::Grabbing").finish()
+                                      }
+                                      CursorIcon::AllScroll => {
+                                        f.debug_tuple("CursorIcon::AllScroll").finish()
+                                      }
+                                      CursorIcon::ZoomIn => {
+                                        f.debug_tuple("CursorIcon::ZoomIn").finish()
+                                      }
+                                      CursorIcon::ZoomOut => {
+                                        f.debug_tuple("CursorIcon::ZoomOut").finish()
+                                      }
+                                      CursorIcon::EResize => {
+                                        f.debug_tuple("CursorIcon::EResize").finish()
+                                      }
+                                      CursorIcon::NResize => {
+                                        f.debug_tuple("CursorIcon::NResize").finish()
+                                      }
+                                      CursorIcon::NeResize => {
+                                        f.debug_tuple("CursorIcon::NeResize").finish()
+                                      }
+                                      CursorIcon::NwResize => {
+                                        f.debug_tuple("CursorIcon::NwResize").finish()
+                                      }
+                                      CursorIcon::SResize => {
+                                        f.debug_tuple("CursorIcon::SResize").finish()
+                                      }
+                                      CursorIcon::SeResize => {
+                                        f.debug_tuple("CursorIcon::SeResize").finish()
+                                      }
+                                      CursorIcon::SwResize => {
+                                        f.debug_tuple("CursorIcon::SwResize").finish()
+                                      }
+                                      CursorIcon::WResize => {
+                                        f.debug_tuple("CursorIcon::WResize").finish()
+                                      }
+                                      CursorIcon::EwResize => {
+                                        f.debug_tuple("CursorIcon::EwResize").finish()
+                                      }
+                                      CursorIcon::NsResize => {
+                                        f.debug_tuple("CursorIcon::NsResize").finish()
+                                      }
+                                      CursorIcon::NeswResize => {
+                                        f.debug_tuple("CursorIcon::NeswResize").finish()
+                                      }
+                                      CursorIcon::NwseResize => {
+                                        f.debug_tuple("CursorIcon::NwseResize").finish()
+                                      }
+                                      CursorIcon::ColResize => {
+                                        f.debug_tuple("CursorIcon::ColResize").finish()
+                                      }
+                                      CursorIcon::RowResize => {
+                                        f.debug_tuple("CursorIcon::RowResize").finish()
+                                      }
+                                    }
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn get() -> Input{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(4))]
+                                    struct RetArea([u8; 36]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let ptr0 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "client-input")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "get")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-input_get")]
+                                      fn wit_import(
+                                      _: i32, );
+                                    }
+                                    wit_import(ptr0);
+                                    let base1 = *((ptr0 + 0) as *const i32);
+                                    let len1 = *((ptr0 + 4) as *const i32);
+                                    let mut result1 = Vec::with_capacity(len1 as usize);
+                                    for i in 0..len1 {
+                                      let base = base1 + i *1;
+                                      result1.push({#[cfg(debug_assertions)]{match i32::from(*((base + 0) as *const u8)) {
+                                        0 => VirtualKeyCode::Key1,
+                                        1 => VirtualKeyCode::Key2,
+                                        2 => VirtualKeyCode::Key3,
+                                        3 => VirtualKeyCode::Key4,
+                                        4 => VirtualKeyCode::Key5,
+                                        5 => VirtualKeyCode::Key6,
+                                        6 => VirtualKeyCode::Key7,
+                                        7 => VirtualKeyCode::Key8,
+                                        8 => VirtualKeyCode::Key9,
+                                        9 => VirtualKeyCode::Key0,
+                                        10 => VirtualKeyCode::A,
+                                        11 => VirtualKeyCode::B,
+                                        12 => VirtualKeyCode::C,
+                                        13 => VirtualKeyCode::D,
+                                        14 => VirtualKeyCode::E,
+                                        15 => VirtualKeyCode::F,
+                                        16 => VirtualKeyCode::G,
+                                        17 => VirtualKeyCode::H,
+                                        18 => VirtualKeyCode::I,
+                                        19 => VirtualKeyCode::J,
+                                        20 => VirtualKeyCode::K,
+                                        21 => VirtualKeyCode::L,
+                                        22 => VirtualKeyCode::M,
+                                        23 => VirtualKeyCode::N,
+                                        24 => VirtualKeyCode::O,
+                                        25 => VirtualKeyCode::P,
+                                        26 => VirtualKeyCode::Q,
+                                        27 => VirtualKeyCode::R,
+                                        28 => VirtualKeyCode::S,
+                                        29 => VirtualKeyCode::T,
+                                        30 => VirtualKeyCode::U,
+                                        31 => VirtualKeyCode::V,
+                                        32 => VirtualKeyCode::W,
+                                        33 => VirtualKeyCode::X,
+                                        34 => VirtualKeyCode::Y,
+                                        35 => VirtualKeyCode::Z,
+                                        36 => VirtualKeyCode::Escape,
+                                        37 => VirtualKeyCode::F1,
+                                        38 => VirtualKeyCode::F2,
+                                        39 => VirtualKeyCode::F3,
+                                        40 => VirtualKeyCode::F4,
+                                        41 => VirtualKeyCode::F5,
+                                        42 => VirtualKeyCode::F6,
+                                        43 => VirtualKeyCode::F7,
+                                        44 => VirtualKeyCode::F8,
+                                        45 => VirtualKeyCode::F9,
+                                        46 => VirtualKeyCode::F10,
+                                        47 => VirtualKeyCode::F11,
+                                        48 => VirtualKeyCode::F12,
+                                        49 => VirtualKeyCode::F13,
+                                        50 => VirtualKeyCode::F14,
+                                        51 => VirtualKeyCode::F15,
+                                        52 => VirtualKeyCode::F16,
+                                        53 => VirtualKeyCode::F17,
+                                        54 => VirtualKeyCode::F18,
+                                        55 => VirtualKeyCode::F19,
+                                        56 => VirtualKeyCode::F20,
+                                        57 => VirtualKeyCode::F21,
+                                        58 => VirtualKeyCode::F22,
+                                        59 => VirtualKeyCode::F23,
+                                        60 => VirtualKeyCode::F24,
+                                        61 => VirtualKeyCode::Snapshot,
+                                        62 => VirtualKeyCode::Scroll,
+                                        63 => VirtualKeyCode::Pause,
+                                        64 => VirtualKeyCode::Insert,
+                                        65 => VirtualKeyCode::Home,
+                                        66 => VirtualKeyCode::Delete,
+                                        67 => VirtualKeyCode::End,
+                                        68 => VirtualKeyCode::PageDown,
+                                        69 => VirtualKeyCode::PageUp,
+                                        70 => VirtualKeyCode::Left,
+                                        71 => VirtualKeyCode::Up,
+                                        72 => VirtualKeyCode::Right,
+                                        73 => VirtualKeyCode::Down,
+                                        74 => VirtualKeyCode::Back,
+                                        75 => VirtualKeyCode::Return,
+                                        76 => VirtualKeyCode::Space,
+                                        77 => VirtualKeyCode::Compose,
+                                        78 => VirtualKeyCode::Caret,
+                                        79 => VirtualKeyCode::Numlock,
+                                        80 => VirtualKeyCode::Numpad0,
+                                        81 => VirtualKeyCode::Numpad1,
+                                        82 => VirtualKeyCode::Numpad2,
+                                        83 => VirtualKeyCode::Numpad3,
+                                        84 => VirtualKeyCode::Numpad4,
+                                        85 => VirtualKeyCode::Numpad5,
+                                        86 => VirtualKeyCode::Numpad6,
+                                        87 => VirtualKeyCode::Numpad7,
+                                        88 => VirtualKeyCode::Numpad8,
+                                        89 => VirtualKeyCode::Numpad9,
+                                        90 => VirtualKeyCode::NumpadAdd,
+                                        91 => VirtualKeyCode::NumpadDivide,
+                                        92 => VirtualKeyCode::NumpadDecimal,
+                                        93 => VirtualKeyCode::NumpadComma,
+                                        94 => VirtualKeyCode::NumpadEnter,
+                                        95 => VirtualKeyCode::NumpadEquals,
+                                        96 => VirtualKeyCode::NumpadMultiply,
+                                        97 => VirtualKeyCode::NumpadSubtract,
+                                        98 => VirtualKeyCode::AbntC1,
+                                        99 => VirtualKeyCode::AbntC2,
+                                        100 => VirtualKeyCode::Apostrophe,
+                                        101 => VirtualKeyCode::Apps,
+                                        102 => VirtualKeyCode::Asterisk,
+                                        103 => VirtualKeyCode::At,
+                                        104 => VirtualKeyCode::Ax,
+                                        105 => VirtualKeyCode::Backslash,
+                                        106 => VirtualKeyCode::Calculator,
+                                        107 => VirtualKeyCode::Capital,
+                                        108 => VirtualKeyCode::Colon,
+                                        109 => VirtualKeyCode::Comma,
+                                        110 => VirtualKeyCode::Convert,
+                                        111 => VirtualKeyCode::Equals,
+                                        112 => VirtualKeyCode::Grave,
+                                        113 => VirtualKeyCode::Kana,
+                                        114 => VirtualKeyCode::Kanji,
+                                        115 => VirtualKeyCode::LAlt,
+                                        116 => VirtualKeyCode::LBracket,
+                                        117 => VirtualKeyCode::LControl,
+                                        118 => VirtualKeyCode::LShift,
+                                        119 => VirtualKeyCode::LWin,
+                                        120 => VirtualKeyCode::Mail,
+                                        121 => VirtualKeyCode::MediaSelect,
+                                        122 => VirtualKeyCode::MediaStop,
+                                        123 => VirtualKeyCode::Minus,
+                                        124 => VirtualKeyCode::Mute,
+                                        125 => VirtualKeyCode::MyComputer,
+                                        126 => VirtualKeyCode::NavigateForward,
+                                        127 => VirtualKeyCode::NavigateBackward,
+                                        128 => VirtualKeyCode::NextTrack,
+                                        129 => VirtualKeyCode::NoConvert,
+                                        130 => VirtualKeyCode::Oem102,
+                                        131 => VirtualKeyCode::Period,
+                                        132 => VirtualKeyCode::PlayPause,
+                                        133 => VirtualKeyCode::Plus,
+                                        134 => VirtualKeyCode::Power,
+                                        135 => VirtualKeyCode::PrevTrack,
+                                        136 => VirtualKeyCode::RAlt,
+                                        137 => VirtualKeyCode::RBracket,
+                                        138 => VirtualKeyCode::RControl,
+                                        139 => VirtualKeyCode::RShift,
+                                        140 => VirtualKeyCode::RWin,
+                                        141 => VirtualKeyCode::Semicolon,
+                                        142 => VirtualKeyCode::Slash,
+                                        143 => VirtualKeyCode::Sleep,
+                                        144 => VirtualKeyCode::Stop,
+                                        145 => VirtualKeyCode::Sysrq,
+                                        146 => VirtualKeyCode::Tab,
+                                        147 => VirtualKeyCode::Underline,
+                                        148 => VirtualKeyCode::Unlabeled,
+                                        149 => VirtualKeyCode::VolumeDown,
+                                        150 => VirtualKeyCode::VolumeUp,
+                                        151 => VirtualKeyCode::Wake,
+                                        152 => VirtualKeyCode::WebBack,
+                                        153 => VirtualKeyCode::WebFavorites,
+                                        154 => VirtualKeyCode::WebForward,
+                                        155 => VirtualKeyCode::WebHome,
+                                        156 => VirtualKeyCode::WebRefresh,
+                                        157 => VirtualKeyCode::WebSearch,
+                                        158 => VirtualKeyCode::WebStop,
+                                        159 => VirtualKeyCode::Yen,
+                                        160 => VirtualKeyCode::Copy,
+                                        161 => VirtualKeyCode::Paste,
+                                        162 => VirtualKeyCode::Cut,
+                                        _ => panic!("invalid enum discriminant"),
+                                      }}#[cfg(not(debug_assertions))]{core::mem::transmute::<_, VirtualKeyCode>(i32::from(*((base + 0) as *const u8)) as u8)}});
+                                    }
+                                    wit_bindgen::rt::dealloc(base1, (len1 as usize) * 1, 1);
+                                    let base2 = *((ptr0 + 28) as *const i32);
+                                    let len2 = *((ptr0 + 32) as *const i32);
+                                    let mut result2 = Vec::with_capacity(len2 as usize);
+                                    for i in 0..len2 {
+                                      let base = base2 + i *4;
+                                      result2.push({{match i32::from(*((base + 0) as *const u8)) {
+                                        0 => MouseButton::Left,
+                                        1 => MouseButton::Right,
+                                        2 => MouseButton::Middle,
+                                        #[cfg(debug_assertions)]3 => MouseButton::Other(i32::from(*((base + 2) as *const u16)) as u16),
+                                        #[cfg(not(debug_assertions))]_ => MouseButton::Other(i32::from(*((base + 2) as *const u16)) as u16),
+                                        #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
+                                      }}});
+                                    }
+                                    wit_bindgen::rt::dealloc(base2, (len2 as usize) * 4, 2);
+                                    Input{keys:result1, mouse_position:super::types::Vec2{x:*((ptr0 + 8) as *const f32), y:*((ptr0 + 12) as *const f32), }, mouse_delta:super::types::Vec2{x:*((ptr0 + 16) as *const f32), y:*((ptr0 + 20) as *const f32), }, mouse_wheel:*((ptr0 + 24) as *const f32), mouse_buttons:result2, }
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn get_previous() -> Input{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(4))]
+                                    struct RetArea([u8; 36]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let ptr0 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "client-input")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "get-previous")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-input_get-previous")]
+                                      fn wit_import(
+                                      _: i32, );
+                                    }
+                                    wit_import(ptr0);
+                                    let base1 = *((ptr0 + 0) as *const i32);
+                                    let len1 = *((ptr0 + 4) as *const i32);
+                                    let mut result1 = Vec::with_capacity(len1 as usize);
+                                    for i in 0..len1 {
+                                      let base = base1 + i *1;
+                                      result1.push({#[cfg(debug_assertions)]{match i32::from(*((base + 0) as *const u8)) {
+                                        0 => VirtualKeyCode::Key1,
+                                        1 => VirtualKeyCode::Key2,
+                                        2 => VirtualKeyCode::Key3,
+                                        3 => VirtualKeyCode::Key4,
+                                        4 => VirtualKeyCode::Key5,
+                                        5 => VirtualKeyCode::Key6,
+                                        6 => VirtualKeyCode::Key7,
+                                        7 => VirtualKeyCode::Key8,
+                                        8 => VirtualKeyCode::Key9,
+                                        9 => VirtualKeyCode::Key0,
+                                        10 => VirtualKeyCode::A,
+                                        11 => VirtualKeyCode::B,
+                                        12 => VirtualKeyCode::C,
+                                        13 => VirtualKeyCode::D,
+                                        14 => VirtualKeyCode::E,
+                                        15 => VirtualKeyCode::F,
+                                        16 => VirtualKeyCode::G,
+                                        17 => VirtualKeyCode::H,
+                                        18 => VirtualKeyCode::I,
+                                        19 => VirtualKeyCode::J,
+                                        20 => VirtualKeyCode::K,
+                                        21 => VirtualKeyCode::L,
+                                        22 => VirtualKeyCode::M,
+                                        23 => VirtualKeyCode::N,
+                                        24 => VirtualKeyCode::O,
+                                        25 => VirtualKeyCode::P,
+                                        26 => VirtualKeyCode::Q,
+                                        27 => VirtualKeyCode::R,
+                                        28 => VirtualKeyCode::S,
+                                        29 => VirtualKeyCode::T,
+                                        30 => VirtualKeyCode::U,
+                                        31 => VirtualKeyCode::V,
+                                        32 => VirtualKeyCode::W,
+                                        33 => VirtualKeyCode::X,
+                                        34 => VirtualKeyCode::Y,
+                                        35 => VirtualKeyCode::Z,
+                                        36 => VirtualKeyCode::Escape,
+                                        37 => VirtualKeyCode::F1,
+                                        38 => VirtualKeyCode::F2,
+                                        39 => VirtualKeyCode::F3,
+                                        40 => VirtualKeyCode::F4,
+                                        41 => VirtualKeyCode::F5,
+                                        42 => VirtualKeyCode::F6,
+                                        43 => VirtualKeyCode::F7,
+                                        44 => VirtualKeyCode::F8,
+                                        45 => VirtualKeyCode::F9,
+                                        46 => VirtualKeyCode::F10,
+                                        47 => VirtualKeyCode::F11,
+                                        48 => VirtualKeyCode::F12,
+                                        49 => VirtualKeyCode::F13,
+                                        50 => VirtualKeyCode::F14,
+                                        51 => VirtualKeyCode::F15,
+                                        52 => VirtualKeyCode::F16,
+                                        53 => VirtualKeyCode::F17,
+                                        54 => VirtualKeyCode::F18,
+                                        55 => VirtualKeyCode::F19,
+                                        56 => VirtualKeyCode::F20,
+                                        57 => VirtualKeyCode::F21,
+                                        58 => VirtualKeyCode::F22,
+                                        59 => VirtualKeyCode::F23,
+                                        60 => VirtualKeyCode::F24,
+                                        61 => VirtualKeyCode::Snapshot,
+                                        62 => VirtualKeyCode::Scroll,
+                                        63 => VirtualKeyCode::Pause,
+                                        64 => VirtualKeyCode::Insert,
+                                        65 => VirtualKeyCode::Home,
+                                        66 => VirtualKeyCode::Delete,
+                                        67 => VirtualKeyCode::End,
+                                        68 => VirtualKeyCode::PageDown,
+                                        69 => VirtualKeyCode::PageUp,
+                                        70 => VirtualKeyCode::Left,
+                                        71 => VirtualKeyCode::Up,
+                                        72 => VirtualKeyCode::Right,
+                                        73 => VirtualKeyCode::Down,
+                                        74 => VirtualKeyCode::Back,
+                                        75 => VirtualKeyCode::Return,
+                                        76 => VirtualKeyCode::Space,
+                                        77 => VirtualKeyCode::Compose,
+                                        78 => VirtualKeyCode::Caret,
+                                        79 => VirtualKeyCode::Numlock,
+                                        80 => VirtualKeyCode::Numpad0,
+                                        81 => VirtualKeyCode::Numpad1,
+                                        82 => VirtualKeyCode::Numpad2,
+                                        83 => VirtualKeyCode::Numpad3,
+                                        84 => VirtualKeyCode::Numpad4,
+                                        85 => VirtualKeyCode::Numpad5,
+                                        86 => VirtualKeyCode::Numpad6,
+                                        87 => VirtualKeyCode::Numpad7,
+                                        88 => VirtualKeyCode::Numpad8,
+                                        89 => VirtualKeyCode::Numpad9,
+                                        90 => VirtualKeyCode::NumpadAdd,
+                                        91 => VirtualKeyCode::NumpadDivide,
+                                        92 => VirtualKeyCode::NumpadDecimal,
+                                        93 => VirtualKeyCode::NumpadComma,
+                                        94 => VirtualKeyCode::NumpadEnter,
+                                        95 => VirtualKeyCode::NumpadEquals,
+                                        96 => VirtualKeyCode::NumpadMultiply,
+                                        97 => VirtualKeyCode::NumpadSubtract,
+                                        98 => VirtualKeyCode::AbntC1,
+                                        99 => VirtualKeyCode::AbntC2,
+                                        100 => VirtualKeyCode::Apostrophe,
+                                        101 => VirtualKeyCode::Apps,
+                                        102 => VirtualKeyCode::Asterisk,
+                                        103 => VirtualKeyCode::At,
+                                        104 => VirtualKeyCode::Ax,
+                                        105 => VirtualKeyCode::Backslash,
+                                        106 => VirtualKeyCode::Calculator,
+                                        107 => VirtualKeyCode::Capital,
+                                        108 => VirtualKeyCode::Colon,
+                                        109 => VirtualKeyCode::Comma,
+                                        110 => VirtualKeyCode::Convert,
+                                        111 => VirtualKeyCode::Equals,
+                                        112 => VirtualKeyCode::Grave,
+                                        113 => VirtualKeyCode::Kana,
+                                        114 => VirtualKeyCode::Kanji,
+                                        115 => VirtualKeyCode::LAlt,
+                                        116 => VirtualKeyCode::LBracket,
+                                        117 => VirtualKeyCode::LControl,
+                                        118 => VirtualKeyCode::LShift,
+                                        119 => VirtualKeyCode::LWin,
+                                        120 => VirtualKeyCode::Mail,
+                                        121 => VirtualKeyCode::MediaSelect,
+                                        122 => VirtualKeyCode::MediaStop,
+                                        123 => VirtualKeyCode::Minus,
+                                        124 => VirtualKeyCode::Mute,
+                                        125 => VirtualKeyCode::MyComputer,
+                                        126 => VirtualKeyCode::NavigateForward,
+                                        127 => VirtualKeyCode::NavigateBackward,
+                                        128 => VirtualKeyCode::NextTrack,
+                                        129 => VirtualKeyCode::NoConvert,
+                                        130 => VirtualKeyCode::Oem102,
+                                        131 => VirtualKeyCode::Period,
+                                        132 => VirtualKeyCode::PlayPause,
+                                        133 => VirtualKeyCode::Plus,
+                                        134 => VirtualKeyCode::Power,
+                                        135 => VirtualKeyCode::PrevTrack,
+                                        136 => VirtualKeyCode::RAlt,
+                                        137 => VirtualKeyCode::RBracket,
+                                        138 => VirtualKeyCode::RControl,
+                                        139 => VirtualKeyCode::RShift,
+                                        140 => VirtualKeyCode::RWin,
+                                        141 => VirtualKeyCode::Semicolon,
+                                        142 => VirtualKeyCode::Slash,
+                                        143 => VirtualKeyCode::Sleep,
+                                        144 => VirtualKeyCode::Stop,
+                                        145 => VirtualKeyCode::Sysrq,
+                                        146 => VirtualKeyCode::Tab,
+                                        147 => VirtualKeyCode::Underline,
+                                        148 => VirtualKeyCode::Unlabeled,
+                                        149 => VirtualKeyCode::VolumeDown,
+                                        150 => VirtualKeyCode::VolumeUp,
+                                        151 => VirtualKeyCode::Wake,
+                                        152 => VirtualKeyCode::WebBack,
+                                        153 => VirtualKeyCode::WebFavorites,
+                                        154 => VirtualKeyCode::WebForward,
+                                        155 => VirtualKeyCode::WebHome,
+                                        156 => VirtualKeyCode::WebRefresh,
+                                        157 => VirtualKeyCode::WebSearch,
+                                        158 => VirtualKeyCode::WebStop,
+                                        159 => VirtualKeyCode::Yen,
+                                        160 => VirtualKeyCode::Copy,
+                                        161 => VirtualKeyCode::Paste,
+                                        162 => VirtualKeyCode::Cut,
+                                        _ => panic!("invalid enum discriminant"),
+                                      }}#[cfg(not(debug_assertions))]{core::mem::transmute::<_, VirtualKeyCode>(i32::from(*((base + 0) as *const u8)) as u8)}});
+                                    }
+                                    wit_bindgen::rt::dealloc(base1, (len1 as usize) * 1, 1);
+                                    let base2 = *((ptr0 + 28) as *const i32);
+                                    let len2 = *((ptr0 + 32) as *const i32);
+                                    let mut result2 = Vec::with_capacity(len2 as usize);
+                                    for i in 0..len2 {
+                                      let base = base2 + i *4;
+                                      result2.push({{match i32::from(*((base + 0) as *const u8)) {
+                                        0 => MouseButton::Left,
+                                        1 => MouseButton::Right,
+                                        2 => MouseButton::Middle,
+                                        #[cfg(debug_assertions)]3 => MouseButton::Other(i32::from(*((base + 2) as *const u16)) as u16),
+                                        #[cfg(not(debug_assertions))]_ => MouseButton::Other(i32::from(*((base + 2) as *const u16)) as u16),
+                                        #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
+                                      }}});
+                                    }
+                                    wit_bindgen::rt::dealloc(base2, (len2 as usize) * 4, 2);
+                                    Input{keys:result1, mouse_position:super::types::Vec2{x:*((ptr0 + 8) as *const f32), y:*((ptr0 + 12) as *const f32), }, mouse_delta:super::types::Vec2{x:*((ptr0 + 16) as *const f32), y:*((ptr0 + 20) as *const f32), }, mouse_wheel:*((ptr0 + 24) as *const f32), mouse_buttons:result2, }
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn set_cursor(icon: CursorIcon,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let result0 = match icon {
+                                      CursorIcon::DefaultIcon=> {
+                                        0i32
+                                      }
+                                      CursorIcon::Crosshair=> {
+                                        1i32
+                                      }
+                                      CursorIcon::Hand=> {
+                                        2i32
+                                      }
+                                      CursorIcon::Arrow=> {
+                                        3i32
+                                      }
+                                      CursorIcon::Move=> {
+                                        4i32
+                                      }
+                                      CursorIcon::Text=> {
+                                        5i32
+                                      }
+                                      CursorIcon::Wait=> {
+                                        6i32
+                                      }
+                                      CursorIcon::Help=> {
+                                        7i32
+                                      }
+                                      CursorIcon::Progress=> {
+                                        8i32
+                                      }
+                                      CursorIcon::NotAllowed=> {
+                                        9i32
+                                      }
+                                      CursorIcon::ContextMenu=> {
+                                        10i32
+                                      }
+                                      CursorIcon::Cell=> {
+                                        11i32
+                                      }
+                                      CursorIcon::VerticalText=> {
+                                        12i32
+                                      }
+                                      CursorIcon::Alias=> {
+                                        13i32
+                                      }
+                                      CursorIcon::Copy=> {
+                                        14i32
+                                      }
+                                      CursorIcon::NoDrop=> {
+                                        15i32
+                                      }
+                                      CursorIcon::Grab=> {
+                                        16i32
+                                      }
+                                      CursorIcon::Grabbing=> {
+                                        17i32
+                                      }
+                                      CursorIcon::AllScroll=> {
+                                        18i32
+                                      }
+                                      CursorIcon::ZoomIn=> {
+                                        19i32
+                                      }
+                                      CursorIcon::ZoomOut=> {
+                                        20i32
+                                      }
+                                      CursorIcon::EResize=> {
+                                        21i32
+                                      }
+                                      CursorIcon::NResize=> {
+                                        22i32
+                                      }
+                                      CursorIcon::NeResize=> {
+                                        23i32
+                                      }
+                                      CursorIcon::NwResize=> {
+                                        24i32
+                                      }
+                                      CursorIcon::SResize=> {
+                                        25i32
+                                      }
+                                      CursorIcon::SeResize=> {
+                                        26i32
+                                      }
+                                      CursorIcon::SwResize=> {
+                                        27i32
+                                      }
+                                      CursorIcon::WResize=> {
+                                        28i32
+                                      }
+                                      CursorIcon::EwResize=> {
+                                        29i32
+                                      }
+                                      CursorIcon::NsResize=> {
+                                        30i32
+                                      }
+                                      CursorIcon::NeswResize=> {
+                                        31i32
+                                      }
+                                      CursorIcon::NwseResize=> {
+                                        32i32
+                                      }
+                                      CursorIcon::ColResize=> {
+                                        33i32
+                                      }
+                                      CursorIcon::RowResize=> {
+                                        34i32
+                                      }
+                                    };
+                                    
+                                    #[link(wasm_import_module = "client-input")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "set-cursor")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-input_set-cursor")]
+                                      fn wit_import(
+                                      _: i32, );
+                                    }
+                                    wit_import(result0);
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn set_cursor_visible(visible: bool,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[link(wasm_import_module = "client-input")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "set-cursor-visible")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-input_set-cursor-visible")]
+                                      fn wit_import(
+                                      _: i32, );
+                                    }
+                                    wit_import(match visible { true => 1, false => 0 });
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn set_cursor_lock(locked: bool,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[link(wasm_import_module = "client-input")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "set-cursor-lock")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-input_set-cursor-lock")]
+                                      fn wit_import(
+                                      _: i32, );
+                                    }
+                                    wit_import(match locked { true => 1, false => 0 });
+                                  }
+                                }
+                                
+                              }
+                              
+                              
+                              #[allow(clippy::all)]
+                              pub mod client_camera{
+                                #[used]
+                                #[doc(hidden)]
+                                #[cfg(target_arch = "wasm32")]
+                                static __FORCE_SECTION_REF: fn() = super::__link_section;
+                                
+                                pub type Vec3 = super::types::Vec3;
+                                pub type Vec2 = super::types::Vec2;
+                                pub type Ray = super::types::Ray;
+                                pub type EntityId = super::types::EntityId;
+                                #[allow(clippy::all)]
+                                pub fn clip_space_ray(camera: EntityId,clip_space_pos: Vec2,) -> Ray{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(4))]
+                                    struct RetArea([u8; 24]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let super::types::EntityId{ id0:id00, id1:id10, } = camera;
+                                    let super::types::Vec2{ x:x1, y:y1, } = clip_space_pos;
+                                    let ptr2 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "client-camera")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "clip-space-ray")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-camera_clip-space-ray")]
+                                      fn wit_import(
+                                      _: i64, _: i64, _: f32, _: f32, _: i32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), ptr2);
+                                    super::types::Ray{origin:super::types::Vec3{x:*((ptr2 + 0) as *const f32), y:*((ptr2 + 4) as *const f32), z:*((ptr2 + 8) as *const f32), }, dir:super::types::Vec3{x:*((ptr2 + 12) as *const f32), y:*((ptr2 + 16) as *const f32), z:*((ptr2 + 20) as *const f32), }, }
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn screen_to_clip_space(screen_pos: Vec2,) -> Vec2{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(4))]
+                                    struct RetArea([u8; 8]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let super::types::Vec2{ x:x0, y:y0, } = screen_pos;
+                                    let ptr1 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "client-camera")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "screen-to-clip-space")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-camera_screen-to-clip-space")]
+                                      fn wit_import(
+                                      _: f32, _: f32, _: i32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_f32(x0), wit_bindgen::rt::as_f32(y0), ptr1);
+                                    super::types::Vec2{x:*((ptr1 + 0) as *const f32), y:*((ptr1 + 4) as *const f32), }
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn screen_to_world_direction(camera: EntityId,screen_pos: Vec2,) -> Ray{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(4))]
+                                    struct RetArea([u8; 24]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let super::types::EntityId{ id0:id00, id1:id10, } = camera;
+                                    let super::types::Vec2{ x:x1, y:y1, } = screen_pos;
+                                    let ptr2 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "client-camera")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "screen-to-world-direction")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-camera_screen-to-world-direction")]
+                                      fn wit_import(
+                                      _: i64, _: i64, _: f32, _: f32, _: i32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), ptr2);
+                                    super::types::Ray{origin:super::types::Vec3{x:*((ptr2 + 0) as *const f32), y:*((ptr2 + 4) as *const f32), z:*((ptr2 + 8) as *const f32), }, dir:super::types::Vec3{x:*((ptr2 + 12) as *const f32), y:*((ptr2 + 16) as *const f32), z:*((ptr2 + 20) as *const f32), }, }
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn world_to_screen(camera: EntityId,screen_pos: Vec3,) -> Vec2{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(4))]
+                                    struct RetArea([u8; 8]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let super::types::EntityId{ id0:id00, id1:id10, } = camera;
+                                    let super::types::Vec3{ x:x1, y:y1, z:z1, } = screen_pos;
+                                    let ptr2 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "client-camera")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "world-to-screen")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-camera_world-to-screen")]
+                                      fn wit_import(
+                                      _: i64, _: i64, _: f32, _: f32, _: f32, _: i32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1), ptr2);
+                                    super::types::Vec2{x:*((ptr2 + 0) as *const f32), y:*((ptr2 + 4) as *const f32), }
+                                  }
+                                }
+                                
+                              }
+                              
+                              
+                              #[allow(clippy::all)]
+                              pub mod client_window{
+                                #[used]
+                                #[doc(hidden)]
+                                #[cfg(target_arch = "wasm32")]
+                                static __FORCE_SECTION_REF: fn() = super::__link_section;
+                                
+                                #[allow(clippy::all)]
+                                pub fn set_fullscreen(fullscreen: bool,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[link(wasm_import_module = "client-window")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "set-fullscreen")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-window_set-fullscreen")]
+                                      fn wit_import(
+                                      _: i32, );
+                                    }
+                                    wit_import(match fullscreen { true => 1, false => 0 });
+                                  }
+                                }
+                                
+                              }
+                              
+                              
+                              #[allow(clippy::all)]
+                              pub mod server_physics{
+                                #[used]
+                                #[doc(hidden)]
+                                #[cfg(target_arch = "wasm32")]
+                                static __FORCE_SECTION_REF: fn() = super::__link_section;
+                                
+                                pub type EntityId = super::types::EntityId;
+                                pub type Vec3 = super::types::Vec3;
+                                pub type Mat4 = super::types::Mat4;
+                                #[repr(C)]
+                                #[derive(Copy, Clone)]
+                                pub struct CharacterCollision {
+                                  pub side: bool,
+                                  pub up: bool,
+                                  pub down: bool,
+                                }
+                                impl core::fmt::Debug for CharacterCollision {
+                                  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                                    f.debug_struct("CharacterCollision").field("side", &self.side).field("up", &self.up).field("down", &self.down).finish()
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn add_force(entity: EntityId,force: Vec3,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                                    let super::types::Vec3{ x:x1, y:y1, z:z1, } = force;
+                                    
+                                    #[link(wasm_import_module = "server-physics")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "add-force")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_add-force")]
+                                      fn wit_import(
+                                      _: i64, _: i64, _: f32, _: f32, _: f32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1));
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn add_impulse(entity: EntityId,impulse: Vec3,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                                    let super::types::Vec3{ x:x1, y:y1, z:z1, } = impulse;
+                                    
+                                    #[link(wasm_import_module = "server-physics")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "add-impulse")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_add-impulse")]
+                                      fn wit_import(
+                                      _: i64, _: i64, _: f32, _: f32, _: f32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1));
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn add_radial_impulse(position: Vec3,impulse: f32,radius: f32,falloff_radius: Option<f32>,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let super::types::Vec3{ x:x0, y:y0, z:z0, } = position;
+                                    let (result1_0,result1_1,) = match falloff_radius {
+                                      Some(e) => (1i32, wit_bindgen::rt::as_f32(e)),
+                                      None => {
+                                        (0i32, 0.0f32)
+                                      },
+                                    };
+                                    #[link(wasm_import_module = "server-physics")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "add-radial-impulse")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_add-radial-impulse")]
+                                      fn wit_import(
+                                      _: f32, _: f32, _: f32, _: f32, _: f32, _: i32, _: f32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_f32(x0), wit_bindgen::rt::as_f32(y0), wit_bindgen::rt::as_f32(z0), wit_bindgen::rt::as_f32(impulse), wit_bindgen::rt::as_f32(radius), result1_0, result1_1);
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn add_force_at_position(entity: EntityId,force: Vec3,position: Vec3,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                                    let super::types::Vec3{ x:x1, y:y1, z:z1, } = force;
+                                    let super::types::Vec3{ x:x2, y:y2, z:z2, } = position;
+                                    
+                                    #[link(wasm_import_module = "server-physics")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "add-force-at-position")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_add-force-at-position")]
+                                      fn wit_import(
+                                      _: i64, _: i64, _: f32, _: f32, _: f32, _: f32, _: f32, _: f32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1), wit_bindgen::rt::as_f32(x2), wit_bindgen::rt::as_f32(y2), wit_bindgen::rt::as_f32(z2));
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn add_impulse_at_position(entity: EntityId,impulse: Vec3,position: Vec3,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                                    let super::types::Vec3{ x:x1, y:y1, z:z1, } = impulse;
+                                    let super::types::Vec3{ x:x2, y:y2, z:z2, } = position;
+                                    
+                                    #[link(wasm_import_module = "server-physics")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "add-impulse-at-position")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_add-impulse-at-position")]
+                                      fn wit_import(
+                                      _: i64, _: i64, _: f32, _: f32, _: f32, _: f32, _: f32, _: f32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1), wit_bindgen::rt::as_f32(x2), wit_bindgen::rt::as_f32(y2), wit_bindgen::rt::as_f32(z2));
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn get_velocity_at_position(entity: EntityId,position: Vec3,) -> Vec3{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(4))]
+                                    struct RetArea([u8; 12]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                                    let super::types::Vec3{ x:x1, y:y1, z:z1, } = position;
+                                    let ptr2 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "server-physics")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "get-velocity-at-position")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_get-velocity-at-position")]
+                                      fn wit_import(
+                                      _: i64, _: i64, _: f32, _: f32, _: f32, _: i32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1), ptr2);
+                                    super::types::Vec3{x:*((ptr2 + 0) as *const f32), y:*((ptr2 + 4) as *const f32), z:*((ptr2 + 8) as *const f32), }
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn set_gravity(gravity: Vec3,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let super::types::Vec3{ x:x0, y:y0, z:z0, } = gravity;
+                                    
+                                    #[link(wasm_import_module = "server-physics")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "set-gravity")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_set-gravity")]
+                                      fn wit_import(
+                                      _: f32, _: f32, _: f32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_f32(x0), wit_bindgen::rt::as_f32(y0), wit_bindgen::rt::as_f32(z0));
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn unfreeze(entity: EntityId,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                                    
+                                    #[link(wasm_import_module = "server-physics")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "unfreeze")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_unfreeze")]
+                                      fn wit_import(
+                                      _: i64, _: i64, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10));
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn freeze(entity: EntityId,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                                    
+                                    #[link(wasm_import_module = "server-physics")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "freeze")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_freeze")]
+                                      fn wit_import(
+                                      _: i64, _: i64, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10));
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn start_motor(entity: EntityId,velocity: f32,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                                    
+                                    #[link(wasm_import_module = "server-physics")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "start-motor")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_start-motor")]
+                                      fn wit_import(
+                                      _: i64, _: i64, _: f32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(velocity));
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn stop_motor(entity: EntityId,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                                    
+                                    #[link(wasm_import_module = "server-physics")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "stop-motor")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_stop-motor")]
+                                      fn wit_import(
+                                      _: i64, _: i64, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10));
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn create_revolute_joint(actor0: EntityId,transform0: Mat4,actor1: EntityId,transform1: Mat4,){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(8))]
+                                    struct RetArea([u8; 160]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let ptr0 = ret_area.as_mut_ptr() as i32;let super::types::EntityId{ id0:id01, id1:id11, } = actor0;
+                                    *((ptr0 + 0) as *mut i64) = wit_bindgen::rt::as_i64(id01);
+                                    *((ptr0 + 8) as *mut i64) = wit_bindgen::rt::as_i64(id11);
+                                    let super::types::Mat4{ x:x2, y:y2, z:z2, w:w2, } = transform0;
+                                    let super::types::Vec4{ x:x3, y:y3, z:z3, w:w3, } = x2;
+                                    *((ptr0 + 16) as *mut f32) = wit_bindgen::rt::as_f32(x3);
+                                    *((ptr0 + 20) as *mut f32) = wit_bindgen::rt::as_f32(y3);
+                                    *((ptr0 + 24) as *mut f32) = wit_bindgen::rt::as_f32(z3);
+                                    *((ptr0 + 28) as *mut f32) = wit_bindgen::rt::as_f32(w3);
+                                    let super::types::Vec4{ x:x4, y:y4, z:z4, w:w4, } = y2;
+                                    *((ptr0 + 32) as *mut f32) = wit_bindgen::rt::as_f32(x4);
+                                    *((ptr0 + 36) as *mut f32) = wit_bindgen::rt::as_f32(y4);
+                                    *((ptr0 + 40) as *mut f32) = wit_bindgen::rt::as_f32(z4);
+                                    *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(w4);
+                                    let super::types::Vec4{ x:x5, y:y5, z:z5, w:w5, } = z2;
+                                    *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(x5);
+                                    *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(y5);
+                                    *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(z5);
+                                    *((ptr0 + 60) as *mut f32) = wit_bindgen::rt::as_f32(w5);
+                                    let super::types::Vec4{ x:x6, y:y6, z:z6, w:w6, } = w2;
+                                    *((ptr0 + 64) as *mut f32) = wit_bindgen::rt::as_f32(x6);
+                                    *((ptr0 + 68) as *mut f32) = wit_bindgen::rt::as_f32(y6);
+                                    *((ptr0 + 72) as *mut f32) = wit_bindgen::rt::as_f32(z6);
+                                    *((ptr0 + 76) as *mut f32) = wit_bindgen::rt::as_f32(w6);
+                                    let super::types::EntityId{ id0:id07, id1:id17, } = actor1;
+                                    *((ptr0 + 80) as *mut i64) = wit_bindgen::rt::as_i64(id07);
+                                    *((ptr0 + 88) as *mut i64) = wit_bindgen::rt::as_i64(id17);
+                                    let super::types::Mat4{ x:x8, y:y8, z:z8, w:w8, } = transform1;
+                                    let super::types::Vec4{ x:x9, y:y9, z:z9, w:w9, } = x8;
+                                    *((ptr0 + 96) as *mut f32) = wit_bindgen::rt::as_f32(x9);
+                                    *((ptr0 + 100) as *mut f32) = wit_bindgen::rt::as_f32(y9);
+                                    *((ptr0 + 104) as *mut f32) = wit_bindgen::rt::as_f32(z9);
+                                    *((ptr0 + 108) as *mut f32) = wit_bindgen::rt::as_f32(w9);
+                                    let super::types::Vec4{ x:x10, y:y10, z:z10, w:w10, } = y8;
+                                    *((ptr0 + 112) as *mut f32) = wit_bindgen::rt::as_f32(x10);
+                                    *((ptr0 + 116) as *mut f32) = wit_bindgen::rt::as_f32(y10);
+                                    *((ptr0 + 120) as *mut f32) = wit_bindgen::rt::as_f32(z10);
+                                    *((ptr0 + 124) as *mut f32) = wit_bindgen::rt::as_f32(w10);
+                                    let super::types::Vec4{ x:x11, y:y11, z:z11, w:w11, } = z8;
+                                    *((ptr0 + 128) as *mut f32) = wit_bindgen::rt::as_f32(x11);
+                                    *((ptr0 + 132) as *mut f32) = wit_bindgen::rt::as_f32(y11);
+                                    *((ptr0 + 136) as *mut f32) = wit_bindgen::rt::as_f32(z11);
+                                    *((ptr0 + 140) as *mut f32) = wit_bindgen::rt::as_f32(w11);
+                                    let super::types::Vec4{ x:x12, y:y12, z:z12, w:w12, } = w8;
+                                    *((ptr0 + 144) as *mut f32) = wit_bindgen::rt::as_f32(x12);
+                                    *((ptr0 + 148) as *mut f32) = wit_bindgen::rt::as_f32(y12);
+                                    *((ptr0 + 152) as *mut f32) = wit_bindgen::rt::as_f32(z12);
+                                    *((ptr0 + 156) as *mut f32) = wit_bindgen::rt::as_f32(w12);
+                                    
+                                    #[link(wasm_import_module = "server-physics")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "create-revolute-joint")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_create-revolute-joint")]
+                                      fn wit_import(
+                                      _: i32, );
+                                    }
+                                    wit_import(ptr0);
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn raycast_first(origin: Vec3,direction: Vec3,) -> Option<(EntityId,f32,)>{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(8))]
+                                    struct RetArea([u8; 32]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let super::types::Vec3{ x:x0, y:y0, z:z0, } = origin;
+                                    let super::types::Vec3{ x:x1, y:y1, z:z1, } = direction;
+                                    let ptr2 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "server-physics")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "raycast-first")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_raycast-first")]
+                                      fn wit_import(
+                                      _: f32, _: f32, _: f32, _: f32, _: f32, _: f32, _: i32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_f32(x0), wit_bindgen::rt::as_f32(y0), wit_bindgen::rt::as_f32(z0), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1), ptr2);
+                                    match i32::from(*((ptr2 + 0) as *const u8)) {
+                                      0 => None,
+                                      1 => Some((super::types::EntityId{id0:*((ptr2 + 8) as *const i64) as u64, id1:*((ptr2 + 16) as *const i64) as u64, }, *((ptr2 + 24) as *const f32))),
+                                      #[cfg(not(debug_assertions))]
+                                      _ => core::hint::unreachable_unchecked(),
+                                      #[cfg(debug_assertions)]
+                                      _ => panic!("invalid enum discriminant"),
+                                    }
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn raycast(origin: Vec3,direction: Vec3,) -> wit_bindgen::rt::vec::Vec::<(EntityId,f32,)>{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(4))]
+                                    struct RetArea([u8; 8]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let super::types::Vec3{ x:x0, y:y0, z:z0, } = origin;
+                                    let super::types::Vec3{ x:x1, y:y1, z:z1, } = direction;
+                                    let ptr2 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "server-physics")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "raycast")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_raycast")]
+                                      fn wit_import(
+                                      _: f32, _: f32, _: f32, _: f32, _: f32, _: f32, _: i32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_f32(x0), wit_bindgen::rt::as_f32(y0), wit_bindgen::rt::as_f32(z0), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1), ptr2);
+                                    let len3 = *((ptr2 + 4) as *const i32) as usize;
+                                    Vec::from_raw_parts(*((ptr2 + 0) as *const i32) as *mut _, len3, len3)
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn move_character(entity: EntityId,displacement: Vec3,min_dist: f32,elapsed_time: f32,) -> CharacterCollision{
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    
+                                    #[repr(align(1))]
+                                    struct RetArea([u8; 3]);
+                                    let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                    let super::types::EntityId{ id0:id00, id1:id10, } = entity;
+                                    let super::types::Vec3{ x:x1, y:y1, z:z1, } = displacement;
+                                    let ptr2 = ret_area.as_mut_ptr() as i32;
+                                    #[link(wasm_import_module = "server-physics")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "move-character")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-physics_move-character")]
+                                      fn wit_import(
+                                      _: i64, _: i64, _: f32, _: f32, _: f32, _: f32, _: f32, _: i32, );
+                                    }
+                                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), wit_bindgen::rt::as_f32(x1), wit_bindgen::rt::as_f32(y1), wit_bindgen::rt::as_f32(z1), wit_bindgen::rt::as_f32(min_dist), wit_bindgen::rt::as_f32(elapsed_time), ptr2);
+                                    CharacterCollision{side:{
+                                      #[cfg(not(debug_assertions))]
+                                      { core::mem::transmute::<u8, bool>(i32::from(*((ptr2 + 0) as *const u8)) as u8) }
+                                      #[cfg(debug_assertions)]
+                                      {
+                                        match i32::from(*((ptr2 + 0) as *const u8)) {
+                                          0 => false,
+                                          1 => true,
+                                          _ => panic!("invalid bool discriminant"),
+                                        }
+                                      }
+                                    }, up:{
+                                      #[cfg(not(debug_assertions))]
+                                      { core::mem::transmute::<u8, bool>(i32::from(*((ptr2 + 1) as *const u8)) as u8) }
+                                      #[cfg(debug_assertions)]
+                                      {
+                                        match i32::from(*((ptr2 + 1) as *const u8)) {
+                                          0 => false,
+                                          1 => true,
+                                          _ => panic!("invalid bool discriminant"),
+                                        }
+                                      }
+                                    }, down:{
+                                      #[cfg(not(debug_assertions))]
+                                      { core::mem::transmute::<u8, bool>(i32::from(*((ptr2 + 2) as *const u8)) as u8) }
+                                      #[cfg(debug_assertions)]
+                                      {
+                                        match i32::from(*((ptr2 + 2) as *const u8)) {
+                                          0 => false,
+                                          1 => true,
+                                          _ => panic!("invalid bool discriminant"),
+                                        }
+                                      }
+                                    }, }
+                                  }
+                                }
+                                
+                              }
+                              
+                              
+                              #[allow(clippy::all)]
+                              pub mod server_message{
+                                #[used]
+                                #[doc(hidden)]
+                                #[cfg(target_arch = "wasm32")]
+                                static __FORCE_SECTION_REF: fn() = super::__link_section;
+                                
+                                pub type EntityId = super::types::EntityId;
+                                #[derive(Clone)]
+                                pub enum Target<'a,>{
+                                  ClientBroadcastUnreliable,
+                                  ClientBroadcastReliable,
+                                  ClientTargetedUnreliable(&'a str),
+                                  ClientTargetedReliable(&'a str),
+                                  LocalBroadcast,
+                                  Local(EntityId),
+                                }
+                                impl<'a,> core::fmt::Debug for Target<'a,> {
+                                  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                                    match self {
+                                      Target::ClientBroadcastUnreliable => {
+                                        f.debug_tuple("Target::ClientBroadcastUnreliable").finish()
+                                      }
+                                      Target::ClientBroadcastReliable => {
+                                        f.debug_tuple("Target::ClientBroadcastReliable").finish()
+                                      }
+                                      Target::ClientTargetedUnreliable(e) => {
+                                        f.debug_tuple("Target::ClientTargetedUnreliable").field(e).finish()
+                                      }
+                                      Target::ClientTargetedReliable(e) => {
+                                        f.debug_tuple("Target::ClientTargetedReliable").field(e).finish()
+                                      }
+                                      Target::LocalBroadcast => {
+                                        f.debug_tuple("Target::LocalBroadcast").finish()
+                                      }
+                                      Target::Local(e) => {
+                                        f.debug_tuple("Target::Local").field(e).finish()
+                                      }
+                                    }
+                                  }
+                                }
+                                #[allow(clippy::all)]
+                                pub fn send(target_id: Target<'_,>,name: &str,data: &[u8],){
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  unsafe {
+                                    let (result3_0,result3_1,result3_2,) = match target_id {
+                                      Target::ClientBroadcastUnreliable=> {
+                                        (0i32, 0i64, 0i64)
+                                      }
+                                      Target::ClientBroadcastReliable=> {
+                                        (1i32, 0i64, 0i64)
+                                      }
+                                      Target::ClientTargetedUnreliable(e) => {
+                                        let vec0 = e;
+                                        let ptr0 = vec0.as_ptr() as i32;
+                                        let len0 = vec0.len() as i32;
+                                        
+                                        (2i32, i64::from(ptr0), i64::from(len0))
+                                      },
+                                      Target::ClientTargetedReliable(e) => {
+                                        let vec1 = e;
+                                        let ptr1 = vec1.as_ptr() as i32;
+                                        let len1 = vec1.len() as i32;
+                                        
+                                        (3i32, i64::from(ptr1), i64::from(len1))
+                                      },
+                                      Target::LocalBroadcast=> {
+                                        (4i32, 0i64, 0i64)
+                                      }
+                                      Target::Local(e) => {
+                                        let super::types::EntityId{ id0:id02, id1:id12, } = e;
+                                        
+                                        (5i32, wit_bindgen::rt::as_i64(id02), wit_bindgen::rt::as_i64(id12))
+                                      },
+                                    };
+                                    let vec4 = name;
+                                    let ptr4 = vec4.as_ptr() as i32;
+                                    let len4 = vec4.len() as i32;
+                                    let vec5 = data;
+                                    let ptr5 = vec5.as_ptr() as i32;
+                                    let len5 = vec5.len() as i32;
+                                    
+                                    #[link(wasm_import_module = "server-message")]
+                                    extern "C" {
+                                      #[cfg_attr(target_arch = "wasm32", link_name = "send")]
+                                      #[cfg_attr(not(target_arch = "wasm32"), link_name = "server-message_send")]
+                                      fn wit_import(
+                                      _: i32, _: i64, _: i64, _: i32, _: i32, _: i32, _: i32, );
+                                    }
+                                    wit_import(result3_0, result3_1, result3_2, ptr4, len4, ptr5, len5);
+                                  }
+                                }
+                                
+                              }
+                              
+                              
+                              #[allow(clippy::all)]
+                              pub mod guest{
+                                #[used]
+                                #[doc(hidden)]
+                                #[cfg(target_arch = "wasm32")]
+                                static __FORCE_SECTION_REF: fn() = super::__link_section;
+                                
+                                pub type EntityId = super::types::EntityId;
+                                #[derive(Clone)]
+                                pub enum Source{
+                                  Runtime,
+                                  Local(EntityId),
+                                  Server,
+                                  Client(wit_bindgen::rt::string::String),
+                                }
+                                impl core::fmt::Debug for Source {
+                                  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                                    match self {
+                                      Source::Runtime => {
+                                        f.debug_tuple("Source::Runtime").finish()
+                                      }
+                                      Source::Local(e) => {
+                                        f.debug_tuple("Source::Local").field(e).finish()
+                                      }
+                                      Source::Server => {
+                                        f.debug_tuple("Source::Server").finish()
+                                      }
+                                      Source::Client(e) => {
+                                        f.debug_tuple("Source::Client").field(e).finish()
+                                      }
+                                    }
+                                  }
+                                }
+                                pub trait Guest {
+                                  fn init();
+                                  fn exec(time: f32,message_source: Source,message_name: wit_bindgen::rt::string::String,message_data: wit_bindgen::rt::vec::Vec::<u8>,);
                                 }
                                 
                                 #[doc(hidden)]
-                                #[export_name = "guest#exec"]
-                                #[allow(non_snake_case)]
-                                unsafe extern "C" fn __export_guest_exec(arg0: f32,arg1: i32,arg2: i64,arg3: i64,arg4: i32,arg5: i32,arg6: i32,arg7: i32,) {
-                                  guest::call_exec::<$t>(arg0,arg1,arg2,arg3,arg4,arg5,arg6,arg7,)
+                                pub unsafe fn call_init<T: Guest>() {
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  
+                                  // Before executing any other code, use this function to run all static
+                                  // constructors, if they have not yet been run. This is a hack required
+                                  // to work around wasi-libc ctors calling import functions to initialize
+                                  // the environment.
+                                  //
+                                  // This functionality will be removed once rust 1.69.0 is stable, at which
+                                  // point wasi-libc will no longer have this behavior.
+                                  //
+                                  // See
+                                  // https://github.com/bytecodealliance/preview2-prototyping/issues/99
+                                  // for more details.
+                                  #[cfg(target_arch="wasm32")]
+                                  wit_bindgen::rt::run_ctors_once();
+                                  
+                                  T::init();
                                 }
                                 
-                              };
+                                #[doc(hidden)]
+                                pub unsafe fn call_exec<T: Guest>(arg0: f32,arg1: i32,arg2: i64,arg3: i64,arg4: i32,arg5: i32,arg6: i32,arg7: i32,) {
+                                  
+                                  #[allow(unused_imports)]
+                                  use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                  
+                                  // Before executing any other code, use this function to run all static
+                                  // constructors, if they have not yet been run. This is a hack required
+                                  // to work around wasi-libc ctors calling import functions to initialize
+                                  // the environment.
+                                  //
+                                  // This functionality will be removed once rust 1.69.0 is stable, at which
+                                  // point wasi-libc will no longer have this behavior.
+                                  //
+                                  // See
+                                  // https://github.com/bytecodealliance/preview2-prototyping/issues/99
+                                  // for more details.
+                                  #[cfg(target_arch="wasm32")]
+                                  wit_bindgen::rt::run_ctors_once();
+                                  
+                                  let len1 = arg5 as usize;
+                                  let len2 = arg7 as usize;
+                                  T::exec(arg0, {{match arg1 {
+                                    0 => Source::Runtime,
+                                    1 => Source::Local(super::types::EntityId{id0:arg2 as u64, id1:arg3 as u64, }),
+                                    2 => Source::Server,
+                                    #[cfg(debug_assertions)]3 => Source::Client({
+                                      let len0 = arg3 as i32 as usize;
+                                      
+                                      {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(arg2 as i32 as *mut _, len0, len0))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(arg2 as i32 as *mut _, len0, len0)).unwrap()}}
+                                    }),
+                                    #[cfg(not(debug_assertions))]_ => Source::Client({
+                                      let len0 = arg3 as i32 as usize;
+                                      
+                                      {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(arg2 as i32 as *mut _, len0, len0))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(arg2 as i32 as *mut _, len0, len0)).unwrap()}}
+                                    }),
+                                    #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
+                                  }}}, {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(arg4 as *mut _, len1, len1))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(arg4 as *mut _, len1, len1)).unwrap()}}, Vec::from_raw_parts(arg6 as *mut _, len2, len2));
+                                }
+                                
+                              }
                               
-                              #[used]
+                              
+                              /// Declares the export of the component's world for the
+                              /// given type.
+                              
+                              macro_rules! export_bindings(($t:ident) => {
+                                const _: () = {
+                                  
+                                  #[doc(hidden)]
+                                  #[export_name = "guest#init"]
+                                  #[allow(non_snake_case)]
+                                  unsafe extern "C" fn __export_guest_init() {
+                                    guest::call_init::<$t>()
+                                  }
+                                  
+                                  #[doc(hidden)]
+                                  #[export_name = "guest#exec"]
+                                  #[allow(non_snake_case)]
+                                  unsafe extern "C" fn __export_guest_exec(arg0: f32,arg1: i32,arg2: i64,arg3: i64,arg4: i32,arg5: i32,arg6: i32,arg7: i32,) {
+                                    guest::call_exec::<$t>(arg0,arg1,arg2,arg3,arg4,arg5,arg6,arg7,)
+                                  }
+                                  
+                                };
+                                
+                                #[used]
+                                #[doc(hidden)]
+                                #[cfg(target_arch = "wasm32")]
+                                static __FORCE_SECTION_REF: fn() = __link_section;
+                              });
+                              
+                              #[cfg(target_arch = "wasm32")]
+                              #[link_section = "component-type:bindings"]
+                              #[doc(hidden)]pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 20251] = [2, 0, 3, 119, 105, 116, 4, 109, 97, 105, 110, 8, 98, 105, 110, 100, 105, 110, 103, 115, 0, 97, 115, 109, 12, 0, 1, 0, 7, 142, 2, 1, 65, 2, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 4, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 11, 21, 1, 5, 116, 121, 112, 101, 115, 10, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 3, 0, 0, 7, 221, 8, 1, 65, 7, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 109, 97, 116, 52, 1, 66, 40, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 4, 1, 114, 3, 4, 115, 105, 100, 101, 127, 2, 117, 112, 127, 4, 100, 111, 119, 110, 127, 4, 19, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 99, 111, 108, 108, 105, 115, 105, 111, 110, 0, 3, 0, 6, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 1, 0, 4, 9, 97, 100, 100, 45, 102, 111, 114, 99, 101, 0, 1, 8, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 1, 0, 4, 11, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 9, 1, 107, 118, 1, 64, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 7, 105, 109, 112, 117, 108, 115, 101, 118, 6, 114, 97, 100, 105, 117, 115, 118, 14, 102, 97, 108, 108, 111, 102, 102, 45, 114, 97, 100, 105, 117, 115, 10, 1, 0, 4, 18, 97, 100, 100, 45, 114, 97, 100, 105, 97, 108, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 11, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 21, 97, 100, 100, 45, 102, 111, 114, 99, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 12, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 23, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 13, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 0, 3, 4, 24, 103, 101, 116, 45, 118, 101, 108, 111, 99, 105, 116, 121, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 14, 1, 64, 1, 7, 103, 114, 97, 118, 105, 116, 121, 3, 1, 0, 4, 11, 115, 101, 116, 45, 103, 114, 97, 118, 105, 116, 121, 0, 1, 15, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 8, 117, 110, 102, 114, 101, 101, 122, 101, 0, 1, 16, 4, 6, 102, 114, 101, 101, 122, 101, 0, 1, 16, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 118, 101, 108, 111, 99, 105, 116, 121, 118, 1, 0, 4, 11, 115, 116, 97, 114, 116, 45, 109, 111, 116, 111, 114, 0, 1, 17, 4, 10, 115, 116, 111, 112, 45, 109, 111, 116, 111, 114, 0, 1, 16, 1, 64, 4, 6, 97, 99, 116, 111, 114, 48, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 48, 5, 6, 97, 99, 116, 111, 114, 49, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 49, 5, 1, 0, 4, 21, 99, 114, 101, 97, 116, 101, 45, 114, 101, 118, 111, 108, 117, 116, 101, 45, 106, 111, 105, 110, 116, 0, 1, 18, 1, 111, 2, 1, 118, 1, 107, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 20, 4, 13, 114, 97, 121, 99, 97, 115, 116, 45, 102, 105, 114, 115, 116, 0, 1, 21, 1, 112, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 22, 4, 7, 114, 97, 121, 99, 97, 115, 116, 0, 1, 23, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 12, 100, 105, 115, 112, 108, 97, 99, 101, 109, 101, 110, 116, 3, 8, 109, 105, 110, 45, 100, 105, 115, 116, 118, 12, 101, 108, 97, 112, 115, 101, 100, 45, 116, 105, 109, 101, 118, 0, 7, 4, 14, 109, 111, 118, 101, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 0, 1, 24, 4, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 5, 4, 11, 39, 1, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 19, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 3, 2, 0, 7, 174, 4, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 7, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 6, 27, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 25, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 26, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 24, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 4, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 5, 2, 11, 39, 1, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 19, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 3, 4, 0, 7, 75, 1, 65, 2, 1, 66, 3, 1, 107, 115, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 0, 4, 3, 117, 114, 108, 0, 1, 1, 4, 12, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 30, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 5, 0, 11, 35, 1, 12, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 17, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 3, 6, 0, 7, 244, 2, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 5, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 107, 1, 1, 64, 1, 7, 117, 115, 101, 114, 45, 105, 100, 115, 0, 2, 4, 14, 103, 101, 116, 45, 98, 121, 45, 117, 115, 101, 114, 45, 105, 100, 0, 1, 3, 4, 6, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 47, 112, 108, 97, 121, 101, 114, 5, 2, 11, 23, 1, 6, 112, 108, 97, 121, 101, 114, 11, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 3, 8, 0, 7, 211, 3, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 9, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 7, 114, 117, 110, 116, 105, 109, 101, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 6, 115, 101, 114, 118, 101, 114, 0, 0, 6, 99, 108, 105, 101, 110, 116, 1, 115, 0, 4, 6, 115, 111, 117, 114, 99, 101, 0, 3, 0, 2, 1, 64, 0, 1, 0, 4, 4, 105, 110, 105, 116, 0, 1, 4, 1, 112, 125, 1, 64, 4, 4, 116, 105, 109, 101, 118, 14, 109, 101, 115, 115, 97, 103, 101, 45, 115, 111, 117, 114, 99, 101, 3, 12, 109, 101, 115, 115, 97, 103, 101, 45, 110, 97, 109, 101, 115, 12, 109, 101, 115, 115, 97, 103, 101, 45, 100, 97, 116, 97, 5, 1, 0, 4, 4, 101, 120, 101, 99, 0, 1, 6, 4, 5, 103, 117, 101, 115, 116, 16, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 47, 103, 117, 101, 115, 116, 5, 2, 11, 21, 1, 5, 103, 117, 101, 115, 116, 10, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 3, 10, 0, 7, 188, 15, 1, 65, 13, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 94, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 7, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 1, 64, 1, 2, 105, 100, 115, 0, 53, 4, 9, 103, 101, 116, 45, 105, 110, 100, 101, 120, 0, 1, 68, 1, 107, 192, 0, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 197, 0, 4, 13, 103, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 70, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 5, 118, 97, 108, 117, 101, 192, 0, 1, 0, 4, 13, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 100, 97, 116, 97, 195, 0, 1, 0, 4, 14, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 4, 13, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 4, 14, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 127, 4, 13, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 73, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 0, 127, 4, 14, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 74, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 1, 0, 4, 16, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 75, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 1, 0, 4, 17, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 76, 1, 64, 2, 1, 113, 22, 1, 116, 19, 0, 119, 4, 5, 113, 117, 101, 114, 121, 0, 1, 77, 1, 112, 192, 0, 1, 111, 2, 1, 206, 0, 1, 112, 207, 0, 1, 64, 1, 1, 113, 119, 0, 208, 0, 4, 10, 113, 117, 101, 114, 121, 45, 101, 118, 97, 108, 0, 1, 81, 4, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 10, 11, 29, 1, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 14, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 3, 12, 0, 7, 245, 12, 1, 65, 16, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 68, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 7, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 10, 2, 3, 0, 1, 6, 101, 110, 116, 105, 116, 121, 1, 66, 4, 2, 3, 2, 1, 11, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 0, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 9, 115, 117, 98, 115, 99, 114, 105, 98, 101, 0, 1, 2, 4, 5, 101, 118, 101, 110, 116, 18, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 47, 101, 118, 101, 110, 116, 5, 12, 11, 25, 1, 7, 109, 101, 115, 115, 97, 103, 101, 12, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 3, 14, 0, 7, 206, 17, 1, 65, 16, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 68, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 7, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 10, 2, 3, 0, 1, 6, 101, 110, 116, 105, 116, 121, 1, 66, 40, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 11, 4, 11, 101, 110, 116, 105, 116, 121, 45, 100, 97, 116, 97, 0, 3, 0, 6, 1, 112, 115, 1, 114, 4, 7, 98, 105, 110, 100, 101, 114, 115, 8, 8, 100, 117, 114, 97, 116, 105, 111, 110, 118, 6, 108, 111, 97, 100, 101, 100, 127, 5, 101, 114, 114, 111, 114, 115, 4, 14, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 108, 105, 112, 0, 3, 0, 9, 1, 114, 3, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 119, 101, 105, 103, 104, 116, 118, 4, 16, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 0, 3, 0, 11, 1, 112, 12, 1, 114, 2, 7, 97, 99, 116, 105, 111, 110, 115, 13, 15, 97, 112, 112, 108, 121, 45, 98, 97, 115, 101, 45, 112, 111, 115, 101, 127, 4, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 3, 0, 14, 1, 112, 118, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 7, 119, 101, 105, 103, 104, 116, 115, 16, 4, 116, 105, 109, 101, 16, 13, 97, 98, 115, 111, 108, 117, 116, 101, 45, 116, 105, 109, 101, 127, 1, 0, 4, 19, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 108, 101, 110, 100, 0, 1, 17, 1, 64, 1, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 0, 127, 4, 18, 104, 97, 115, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 108, 105, 112, 0, 1, 18, 1, 112, 10, 1, 64, 1, 5, 99, 108, 105, 112, 115, 8, 0, 19, 4, 19, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 108, 105, 112, 115, 0, 1, 20, 1, 64, 1, 4, 100, 97, 116, 97, 7, 0, 1, 4, 5, 115, 112, 97, 119, 110, 0, 1, 21, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 127, 4, 7, 100, 101, 115, 112, 97, 119, 110, 0, 1, 22, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 15, 1, 0, 4, 24, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 1, 23, 1, 112, 1, 1, 64, 2, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 114, 97, 100, 105, 117, 115, 118, 0, 24, 4, 7, 105, 110, 45, 97, 114, 101, 97, 0, 1, 25, 4, 6, 101, 120, 105, 115, 116, 115, 0, 1, 22, 1, 64, 1, 5, 105, 110, 100, 101, 120, 121, 0, 24, 4, 7, 103, 101, 116, 45, 97, 108, 108, 0, 1, 26, 1, 64, 0, 0, 1, 4, 9, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 27, 4, 22, 115, 121, 110, 99, 104, 114, 111, 110, 105, 122, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 27, 4, 19, 112, 101, 114, 115, 105, 115, 116, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 27, 4, 6, 101, 110, 116, 105, 116, 121, 18, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 47, 101, 110, 116, 105, 116, 121, 5, 12, 11, 23, 1, 6, 101, 110, 116, 105, 116, 121, 11, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 3, 16, 0, 7, 92, 1, 65, 2, 1, 66, 2, 1, 64, 1, 10, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 127, 1, 0, 4, 14, 115, 101, 116, 45, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 0, 1, 0, 4, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 5, 0, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 3, 18, 0, 7, 248, 2, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 4, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 64, 0, 0, 1, 4, 9, 103, 101, 116, 45, 108, 111, 99, 97, 108, 0, 1, 2, 4, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 5, 2, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 3, 20, 0, 7, 224, 3, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 7, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 17, 115, 101, 114, 118, 101, 114, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 115, 101, 114, 118, 101, 114, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 4, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 5, 2, 11, 39, 1, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 19, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 3, 22, 0, 7, 192, 16, 1, 65, 6, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 23, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 2, 1, 109, 163, 1, 4, 107, 101, 121, 49, 4, 107, 101, 121, 50, 4, 107, 101, 121, 51, 4, 107, 101, 121, 52, 4, 107, 101, 121, 53, 4, 107, 101, 121, 54, 4, 107, 101, 121, 55, 4, 107, 101, 121, 56, 4, 107, 101, 121, 57, 4, 107, 101, 121, 48, 1, 97, 1, 98, 1, 99, 1, 100, 1, 101, 1, 102, 1, 103, 1, 104, 1, 105, 1, 106, 1, 107, 1, 108, 1, 109, 1, 110, 1, 111, 1, 112, 1, 113, 1, 114, 1, 115, 1, 116, 1, 117, 1, 118, 1, 119, 1, 120, 1, 121, 1, 122, 6, 101, 115, 99, 97, 112, 101, 2, 102, 49, 2, 102, 50, 2, 102, 51, 2, 102, 52, 2, 102, 53, 2, 102, 54, 2, 102, 55, 2, 102, 56, 2, 102, 57, 3, 102, 49, 48, 3, 102, 49, 49, 3, 102, 49, 50, 3, 102, 49, 51, 3, 102, 49, 52, 3, 102, 49, 53, 3, 102, 49, 54, 3, 102, 49, 55, 3, 102, 49, 56, 3, 102, 49, 57, 3, 102, 50, 48, 3, 102, 50, 49, 3, 102, 50, 50, 3, 102, 50, 51, 3, 102, 50, 52, 8, 115, 110, 97, 112, 115, 104, 111, 116, 6, 115, 99, 114, 111, 108, 108, 5, 112, 97, 117, 115, 101, 6, 105, 110, 115, 101, 114, 116, 4, 104, 111, 109, 101, 6, 100, 101, 108, 101, 116, 101, 3, 101, 110, 100, 9, 112, 97, 103, 101, 45, 100, 111, 119, 110, 7, 112, 97, 103, 101, 45, 117, 112, 4, 108, 101, 102, 116, 2, 117, 112, 5, 114, 105, 103, 104, 116, 4, 100, 111, 119, 110, 4, 98, 97, 99, 107, 6, 114, 101, 116, 117, 114, 110, 5, 115, 112, 97, 99, 101, 7, 99, 111, 109, 112, 111, 115, 101, 5, 99, 97, 114, 101, 116, 7, 110, 117, 109, 108, 111, 99, 107, 7, 110, 117, 109, 112, 97, 100, 48, 7, 110, 117, 109, 112, 97, 100, 49, 7, 110, 117, 109, 112, 97, 100, 50, 7, 110, 117, 109, 112, 97, 100, 51, 7, 110, 117, 109, 112, 97, 100, 52, 7, 110, 117, 109, 112, 97, 100, 53, 7, 110, 117, 109, 112, 97, 100, 54, 7, 110, 117, 109, 112, 97, 100, 55, 7, 110, 117, 109, 112, 97, 100, 56, 7, 110, 117, 109, 112, 97, 100, 57, 10, 110, 117, 109, 112, 97, 100, 45, 97, 100, 100, 13, 110, 117, 109, 112, 97, 100, 45, 100, 105, 118, 105, 100, 101, 14, 110, 117, 109, 112, 97, 100, 45, 100, 101, 99, 105, 109, 97, 108, 12, 110, 117, 109, 112, 97, 100, 45, 99, 111, 109, 109, 97, 12, 110, 117, 109, 112, 97, 100, 45, 101, 110, 116, 101, 114, 13, 110, 117, 109, 112, 97, 100, 45, 101, 113, 117, 97, 108, 115, 15, 110, 117, 109, 112, 97, 100, 45, 109, 117, 108, 116, 105, 112, 108, 121, 15, 110, 117, 109, 112, 97, 100, 45, 115, 117, 98, 116, 114, 97, 99, 116, 7, 97, 98, 110, 116, 45, 99, 49, 7, 97, 98, 110, 116, 45, 99, 50, 10, 97, 112, 111, 115, 116, 114, 111, 112, 104, 101, 4, 97, 112, 112, 115, 8, 97, 115, 116, 101, 114, 105, 115, 107, 2, 97, 116, 2, 97, 120, 9, 98, 97, 99, 107, 115, 108, 97, 115, 104, 10, 99, 97, 108, 99, 117, 108, 97, 116, 111, 114, 7, 99, 97, 112, 105, 116, 97, 108, 5, 99, 111, 108, 111, 110, 5, 99, 111, 109, 109, 97, 7, 99, 111, 110, 118, 101, 114, 116, 6, 101, 113, 117, 97, 108, 115, 5, 103, 114, 97, 118, 101, 4, 107, 97, 110, 97, 5, 107, 97, 110, 106, 105, 5, 108, 45, 97, 108, 116, 9, 108, 45, 98, 114, 97, 99, 107, 101, 116, 9, 108, 45, 99, 111, 110, 116, 114, 111, 108, 7, 108, 45, 115, 104, 105, 102, 116, 5, 108, 45, 119, 105, 110, 4, 109, 97, 105, 108, 12, 109, 101, 100, 105, 97, 45, 115, 101, 108, 101, 99, 116, 10, 109, 101, 100, 105, 97, 45, 115, 116, 111, 112, 5, 109, 105, 110, 117, 115, 4, 109, 117, 116, 101, 11, 109, 121, 45, 99, 111, 109, 112, 117, 116, 101, 114, 16, 110, 97, 118, 105, 103, 97, 116, 101, 45, 102, 111, 114, 119, 97, 114, 100, 17, 110, 97, 118, 105, 103, 97, 116, 101, 45, 98, 97, 99, 107, 119, 97, 114, 100, 10, 110, 101, 120, 116, 45, 116, 114, 97, 99, 107, 10, 110, 111, 45, 99, 111, 110, 118, 101, 114, 116, 6, 111, 101, 109, 49, 48, 50, 6, 112, 101, 114, 105, 111, 100, 10, 112, 108, 97, 121, 45, 112, 97, 117, 115, 101, 4, 112, 108, 117, 115, 5, 112, 111, 119, 101, 114, 10, 112, 114, 101, 118, 45, 116, 114, 97, 99, 107, 5, 114, 45, 97, 108, 116, 9, 114, 45, 98, 114, 97, 99, 107, 101, 116, 9, 114, 45, 99, 111, 110, 116, 114, 111, 108, 7, 114, 45, 115, 104, 105, 102, 116, 5, 114, 45, 119, 105, 110, 9, 115, 101, 109, 105, 99, 111, 108, 111, 110, 5, 115, 108, 97, 115, 104, 5, 115, 108, 101, 101, 112, 4, 115, 116, 111, 112, 5, 115, 121, 115, 114, 113, 3, 116, 97, 98, 9, 117, 110, 100, 101, 114, 108, 105, 110, 101, 9, 117, 110, 108, 97, 98, 101, 108, 101, 100, 11, 118, 111, 108, 117, 109, 101, 45, 100, 111, 119, 110, 9, 118, 111, 108, 117, 109, 101, 45, 117, 112, 4, 119, 97, 107, 101, 8, 119, 101, 98, 45, 98, 97, 99, 107, 13, 119, 101, 98, 45, 102, 97, 118, 111, 114, 105, 116, 101, 115, 11, 119, 101, 98, 45, 102, 111, 114, 119, 97, 114, 100, 8, 119, 101, 98, 45, 104, 111, 109, 101, 11, 119, 101, 98, 45, 114, 101, 102, 114, 101, 115, 104, 10, 119, 101, 98, 45, 115, 101, 97, 114, 99, 104, 8, 119, 101, 98, 45, 115, 116, 111, 112, 3, 121, 101, 110, 4, 99, 111, 112, 121, 5, 112, 97, 115, 116, 101, 3, 99, 117, 116, 4, 16, 118, 105, 114, 116, 117, 97, 108, 45, 107, 101, 121, 45, 99, 111, 100, 101, 0, 3, 0, 4, 1, 113, 4, 4, 108, 101, 102, 116, 0, 0, 5, 114, 105, 103, 104, 116, 0, 0, 6, 109, 105, 100, 100, 108, 101, 0, 0, 5, 111, 116, 104, 101, 114, 1, 123, 0, 4, 12, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 0, 3, 0, 6, 1, 112, 5, 1, 112, 7, 1, 114, 5, 4, 107, 101, 121, 115, 8, 14, 109, 111, 117, 115, 101, 45, 112, 111, 115, 105, 116, 105, 111, 110, 1, 11, 109, 111, 117, 115, 101, 45, 100, 101, 108, 116, 97, 1, 11, 109, 111, 117, 115, 101, 45, 119, 104, 101, 101, 108, 118, 13, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 115, 9, 4, 5, 105, 110, 112, 117, 116, 0, 3, 0, 10, 1, 113, 35, 12, 100, 101, 102, 97, 117, 108, 116, 45, 105, 99, 111, 110, 0, 0, 9, 99, 114, 111, 115, 115, 104, 97, 105, 114, 0, 0, 4, 104, 97, 110, 100, 0, 0, 5, 97, 114, 114, 111, 119, 0, 0, 4, 109, 111, 118, 101, 0, 0, 4, 116, 101, 120, 116, 0, 0, 4, 119, 97, 105, 116, 0, 0, 4, 104, 101, 108, 112, 0, 0, 8, 112, 114, 111, 103, 114, 101, 115, 115, 0, 0, 11, 110, 111, 116, 45, 97, 108, 108, 111, 119, 101, 100, 0, 0, 12, 99, 111, 110, 116, 101, 120, 116, 45, 109, 101, 110, 117, 0, 0, 4, 99, 101, 108, 108, 0, 0, 13, 118, 101, 114, 116, 105, 99, 97, 108, 45, 116, 101, 120, 116, 0, 0, 5, 97, 108, 105, 97, 115, 0, 0, 4, 99, 111, 112, 121, 0, 0, 7, 110, 111, 45, 100, 114, 111, 112, 0, 0, 4, 103, 114, 97, 98, 0, 0, 8, 103, 114, 97, 98, 98, 105, 110, 103, 0, 0, 10, 97, 108, 108, 45, 115, 99, 114, 111, 108, 108, 0, 0, 7, 122, 111, 111, 109, 45, 105, 110, 0, 0, 8, 122, 111, 111, 109, 45, 111, 117, 116, 0, 0, 8, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 110, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 101, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 101, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 119, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 99, 111, 108, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 114, 111, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 4, 11, 99, 117, 114, 115, 111, 114, 45, 105, 99, 111, 110, 0, 3, 0, 12, 1, 64, 0, 0, 11, 4, 3, 103, 101, 116, 0, 1, 14, 4, 12, 103, 101, 116, 45, 112, 114, 101, 118, 105, 111, 117, 115, 0, 1, 14, 1, 64, 1, 4, 105, 99, 111, 110, 13, 1, 0, 4, 10, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 0, 1, 15, 1, 64, 1, 7, 118, 105, 115, 105, 98, 108, 101, 127, 1, 0, 4, 18, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 118, 105, 115, 105, 98, 108, 101, 0, 1, 16, 1, 64, 1, 6, 108, 111, 99, 107, 101, 100, 127, 1, 0, 4, 15, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 108, 111, 99, 107, 0, 1, 17, 4, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 5, 3, 11, 35, 1, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 17, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 3, 24, 0, 7, 233, 4, 1, 65, 8, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 3, 114, 97, 121, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 16, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 51, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 50, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 3, 114, 97, 121, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 6, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 112, 111, 115, 3, 0, 5, 4, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 114, 97, 121, 0, 1, 8, 1, 64, 1, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 3, 4, 20, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 0, 1, 9, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 5, 4, 25, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 119, 111, 114, 108, 100, 45, 100, 105, 114, 101, 99, 116, 105, 111, 110, 0, 1, 10, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 1, 0, 3, 4, 15, 119, 111, 114, 108, 100, 45, 116, 111, 45, 115, 99, 114, 101, 101, 110, 0, 1, 11, 4, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 5, 5, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 3, 26, 0, 7, 193, 1, 1, 65, 2, 1, 66, 10, 1, 64, 1, 3, 117, 114, 108, 115, 1, 0, 4, 4, 108, 111, 97, 100, 0, 1, 0, 1, 64, 4, 4, 110, 97, 109, 101, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 118, 111, 108, 117, 109, 101, 118, 3, 117, 105, 100, 121, 1, 0, 4, 4, 112, 108, 97, 121, 0, 1, 1, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 4, 115, 116, 111, 112, 0, 1, 2, 1, 64, 1, 3, 117, 105, 100, 121, 1, 0, 4, 10, 115, 116, 111, 112, 45, 98, 121, 45, 105, 100, 0, 1, 3, 1, 64, 2, 4, 110, 97, 109, 101, 115, 6, 118, 111, 108, 117, 109, 101, 118, 1, 0, 4, 10, 115, 101, 116, 45, 118, 111, 108, 117, 109, 101, 0, 1, 4, 4, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 5, 0, 11, 35, 1, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 17, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 3, 28, 0, 7, 54, 1, 65, 2, 1, 66, 3, 1, 107, 115, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 0, 4, 3, 117, 114, 108, 0, 1, 1, 4, 5, 97, 115, 115, 101, 116, 16, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 47, 97, 115, 115, 101, 116, 5, 0, 11, 21, 1, 5, 97, 115, 115, 101, 116, 10, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 3, 30, 0, 7, 230, 53, 1, 65, 2, 1, 65, 41, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 1, 66, 3, 1, 107, 115, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 0, 4, 3, 117, 114, 108, 0, 1, 1, 3, 5, 97, 115, 115, 101, 116, 16, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 47, 97, 115, 115, 101, 116, 5, 1, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 94, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 4, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 7, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 10, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 1, 64, 1, 2, 105, 100, 115, 0, 53, 4, 9, 103, 101, 116, 45, 105, 110, 100, 101, 120, 0, 1, 68, 1, 107, 192, 0, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 197, 0, 4, 13, 103, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 70, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 5, 118, 97, 108, 117, 101, 192, 0, 1, 0, 4, 13, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 100, 97, 116, 97, 195, 0, 1, 0, 4, 14, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 4, 13, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 4, 14, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 127, 4, 13, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 73, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 0, 127, 4, 14, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 74, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 1, 0, 4, 16, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 75, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 1, 0, 4, 17, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 76, 1, 64, 2, 1, 113, 22, 1, 116, 19, 0, 119, 4, 5, 113, 117, 101, 114, 121, 0, 1, 77, 1, 112, 192, 0, 1, 111, 2, 1, 206, 0, 1, 112, 207, 0, 1, 64, 1, 1, 113, 119, 0, 208, 0, 4, 10, 113, 117, 101, 114, 121, 45, 101, 118, 97, 108, 0, 1, 81, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 11, 2, 3, 0, 2, 6, 101, 110, 116, 105, 116, 121, 1, 66, 40, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 4, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 12, 4, 11, 101, 110, 116, 105, 116, 121, 45, 100, 97, 116, 97, 0, 3, 0, 6, 1, 112, 115, 1, 114, 4, 7, 98, 105, 110, 100, 101, 114, 115, 8, 8, 100, 117, 114, 97, 116, 105, 111, 110, 118, 6, 108, 111, 97, 100, 101, 100, 127, 5, 101, 114, 114, 111, 114, 115, 4, 14, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 108, 105, 112, 0, 3, 0, 9, 1, 114, 3, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 119, 101, 105, 103, 104, 116, 118, 4, 16, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 0, 3, 0, 11, 1, 112, 12, 1, 114, 2, 7, 97, 99, 116, 105, 111, 110, 115, 13, 15, 97, 112, 112, 108, 121, 45, 98, 97, 115, 101, 45, 112, 111, 115, 101, 127, 4, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 3, 0, 14, 1, 112, 118, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 7, 119, 101, 105, 103, 104, 116, 115, 16, 4, 116, 105, 109, 101, 16, 13, 97, 98, 115, 111, 108, 117, 116, 101, 45, 116, 105, 109, 101, 127, 1, 0, 4, 19, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 108, 101, 110, 100, 0, 1, 17, 1, 64, 1, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 0, 127, 4, 18, 104, 97, 115, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 108, 105, 112, 0, 1, 18, 1, 112, 10, 1, 64, 1, 5, 99, 108, 105, 112, 115, 8, 0, 19, 4, 19, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 108, 105, 112, 115, 0, 1, 20, 1, 64, 1, 4, 100, 97, 116, 97, 7, 0, 1, 4, 5, 115, 112, 97, 119, 110, 0, 1, 21, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 127, 4, 7, 100, 101, 115, 112, 97, 119, 110, 0, 1, 22, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 15, 1, 0, 4, 24, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 1, 23, 1, 112, 1, 1, 64, 2, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 114, 97, 100, 105, 117, 115, 118, 0, 24, 4, 7, 105, 110, 45, 97, 114, 101, 97, 0, 1, 25, 4, 6, 101, 120, 105, 115, 116, 115, 0, 1, 22, 1, 64, 1, 5, 105, 110, 100, 101, 120, 121, 0, 24, 4, 7, 103, 101, 116, 45, 97, 108, 108, 0, 1, 26, 1, 64, 0, 0, 1, 4, 9, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 27, 4, 22, 115, 121, 110, 99, 104, 114, 111, 110, 105, 122, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 27, 4, 19, 112, 101, 114, 115, 105, 115, 116, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 27, 3, 6, 101, 110, 116, 105, 116, 121, 18, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 47, 101, 110, 116, 105, 116, 121, 5, 13, 1, 66, 4, 2, 3, 2, 1, 12, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 0, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 9, 115, 117, 98, 115, 99, 114, 105, 98, 101, 0, 1, 2, 3, 7, 109, 101, 115, 115, 97, 103, 101, 18, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 47, 101, 118, 101, 110, 116, 5, 14, 1, 66, 5, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 107, 1, 1, 64, 1, 7, 117, 115, 101, 114, 45, 105, 100, 115, 0, 2, 4, 14, 103, 101, 116, 45, 98, 121, 45, 117, 115, 101, 114, 45, 105, 100, 0, 1, 3, 3, 6, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 47, 112, 108, 97, 121, 101, 114, 5, 15, 1, 66, 10, 1, 64, 1, 3, 117, 114, 108, 115, 1, 0, 4, 4, 108, 111, 97, 100, 0, 1, 0, 1, 64, 4, 4, 110, 97, 109, 101, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 118, 111, 108, 117, 109, 101, 118, 3, 117, 105, 100, 121, 1, 0, 4, 4, 112, 108, 97, 121, 0, 1, 1, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 4, 115, 116, 111, 112, 0, 1, 2, 1, 64, 1, 3, 117, 105, 100, 121, 1, 0, 4, 10, 115, 116, 111, 112, 45, 98, 121, 45, 105, 100, 0, 1, 3, 1, 64, 2, 4, 110, 97, 109, 101, 115, 6, 118, 111, 108, 117, 109, 101, 118, 1, 0, 4, 10, 115, 101, 116, 45, 118, 111, 108, 117, 109, 101, 0, 1, 4, 3, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 5, 16, 1, 66, 7, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 17, 115, 101, 114, 118, 101, 114, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 115, 101, 114, 118, 101, 114, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 3, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 5, 17, 1, 66, 4, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 64, 0, 0, 1, 4, 9, 103, 101, 116, 45, 108, 111, 99, 97, 108, 0, 1, 2, 3, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 5, 18, 1, 66, 23, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 2, 1, 109, 163, 1, 4, 107, 101, 121, 49, 4, 107, 101, 121, 50, 4, 107, 101, 121, 51, 4, 107, 101, 121, 52, 4, 107, 101, 121, 53, 4, 107, 101, 121, 54, 4, 107, 101, 121, 55, 4, 107, 101, 121, 56, 4, 107, 101, 121, 57, 4, 107, 101, 121, 48, 1, 97, 1, 98, 1, 99, 1, 100, 1, 101, 1, 102, 1, 103, 1, 104, 1, 105, 1, 106, 1, 107, 1, 108, 1, 109, 1, 110, 1, 111, 1, 112, 1, 113, 1, 114, 1, 115, 1, 116, 1, 117, 1, 118, 1, 119, 1, 120, 1, 121, 1, 122, 6, 101, 115, 99, 97, 112, 101, 2, 102, 49, 2, 102, 50, 2, 102, 51, 2, 102, 52, 2, 102, 53, 2, 102, 54, 2, 102, 55, 2, 102, 56, 2, 102, 57, 3, 102, 49, 48, 3, 102, 49, 49, 3, 102, 49, 50, 3, 102, 49, 51, 3, 102, 49, 52, 3, 102, 49, 53, 3, 102, 49, 54, 3, 102, 49, 55, 3, 102, 49, 56, 3, 102, 49, 57, 3, 102, 50, 48, 3, 102, 50, 49, 3, 102, 50, 50, 3, 102, 50, 51, 3, 102, 50, 52, 8, 115, 110, 97, 112, 115, 104, 111, 116, 6, 115, 99, 114, 111, 108, 108, 5, 112, 97, 117, 115, 101, 6, 105, 110, 115, 101, 114, 116, 4, 104, 111, 109, 101, 6, 100, 101, 108, 101, 116, 101, 3, 101, 110, 100, 9, 112, 97, 103, 101, 45, 100, 111, 119, 110, 7, 112, 97, 103, 101, 45, 117, 112, 4, 108, 101, 102, 116, 2, 117, 112, 5, 114, 105, 103, 104, 116, 4, 100, 111, 119, 110, 4, 98, 97, 99, 107, 6, 114, 101, 116, 117, 114, 110, 5, 115, 112, 97, 99, 101, 7, 99, 111, 109, 112, 111, 115, 101, 5, 99, 97, 114, 101, 116, 7, 110, 117, 109, 108, 111, 99, 107, 7, 110, 117, 109, 112, 97, 100, 48, 7, 110, 117, 109, 112, 97, 100, 49, 7, 110, 117, 109, 112, 97, 100, 50, 7, 110, 117, 109, 112, 97, 100, 51, 7, 110, 117, 109, 112, 97, 100, 52, 7, 110, 117, 109, 112, 97, 100, 53, 7, 110, 117, 109, 112, 97, 100, 54, 7, 110, 117, 109, 112, 97, 100, 55, 7, 110, 117, 109, 112, 97, 100, 56, 7, 110, 117, 109, 112, 97, 100, 57, 10, 110, 117, 109, 112, 97, 100, 45, 97, 100, 100, 13, 110, 117, 109, 112, 97, 100, 45, 100, 105, 118, 105, 100, 101, 14, 110, 117, 109, 112, 97, 100, 45, 100, 101, 99, 105, 109, 97, 108, 12, 110, 117, 109, 112, 97, 100, 45, 99, 111, 109, 109, 97, 12, 110, 117, 109, 112, 97, 100, 45, 101, 110, 116, 101, 114, 13, 110, 117, 109, 112, 97, 100, 45, 101, 113, 117, 97, 108, 115, 15, 110, 117, 109, 112, 97, 100, 45, 109, 117, 108, 116, 105, 112, 108, 121, 15, 110, 117, 109, 112, 97, 100, 45, 115, 117, 98, 116, 114, 97, 99, 116, 7, 97, 98, 110, 116, 45, 99, 49, 7, 97, 98, 110, 116, 45, 99, 50, 10, 97, 112, 111, 115, 116, 114, 111, 112, 104, 101, 4, 97, 112, 112, 115, 8, 97, 115, 116, 101, 114, 105, 115, 107, 2, 97, 116, 2, 97, 120, 9, 98, 97, 99, 107, 115, 108, 97, 115, 104, 10, 99, 97, 108, 99, 117, 108, 97, 116, 111, 114, 7, 99, 97, 112, 105, 116, 97, 108, 5, 99, 111, 108, 111, 110, 5, 99, 111, 109, 109, 97, 7, 99, 111, 110, 118, 101, 114, 116, 6, 101, 113, 117, 97, 108, 115, 5, 103, 114, 97, 118, 101, 4, 107, 97, 110, 97, 5, 107, 97, 110, 106, 105, 5, 108, 45, 97, 108, 116, 9, 108, 45, 98, 114, 97, 99, 107, 101, 116, 9, 108, 45, 99, 111, 110, 116, 114, 111, 108, 7, 108, 45, 115, 104, 105, 102, 116, 5, 108, 45, 119, 105, 110, 4, 109, 97, 105, 108, 12, 109, 101, 100, 105, 97, 45, 115, 101, 108, 101, 99, 116, 10, 109, 101, 100, 105, 97, 45, 115, 116, 111, 112, 5, 109, 105, 110, 117, 115, 4, 109, 117, 116, 101, 11, 109, 121, 45, 99, 111, 109, 112, 117, 116, 101, 114, 16, 110, 97, 118, 105, 103, 97, 116, 101, 45, 102, 111, 114, 119, 97, 114, 100, 17, 110, 97, 118, 105, 103, 97, 116, 101, 45, 98, 97, 99, 107, 119, 97, 114, 100, 10, 110, 101, 120, 116, 45, 116, 114, 97, 99, 107, 10, 110, 111, 45, 99, 111, 110, 118, 101, 114, 116, 6, 111, 101, 109, 49, 48, 50, 6, 112, 101, 114, 105, 111, 100, 10, 112, 108, 97, 121, 45, 112, 97, 117, 115, 101, 4, 112, 108, 117, 115, 5, 112, 111, 119, 101, 114, 10, 112, 114, 101, 118, 45, 116, 114, 97, 99, 107, 5, 114, 45, 97, 108, 116, 9, 114, 45, 98, 114, 97, 99, 107, 101, 116, 9, 114, 45, 99, 111, 110, 116, 114, 111, 108, 7, 114, 45, 115, 104, 105, 102, 116, 5, 114, 45, 119, 105, 110, 9, 115, 101, 109, 105, 99, 111, 108, 111, 110, 5, 115, 108, 97, 115, 104, 5, 115, 108, 101, 101, 112, 4, 115, 116, 111, 112, 5, 115, 121, 115, 114, 113, 3, 116, 97, 98, 9, 117, 110, 100, 101, 114, 108, 105, 110, 101, 9, 117, 110, 108, 97, 98, 101, 108, 101, 100, 11, 118, 111, 108, 117, 109, 101, 45, 100, 111, 119, 110, 9, 118, 111, 108, 117, 109, 101, 45, 117, 112, 4, 119, 97, 107, 101, 8, 119, 101, 98, 45, 98, 97, 99, 107, 13, 119, 101, 98, 45, 102, 97, 118, 111, 114, 105, 116, 101, 115, 11, 119, 101, 98, 45, 102, 111, 114, 119, 97, 114, 100, 8, 119, 101, 98, 45, 104, 111, 109, 101, 11, 119, 101, 98, 45, 114, 101, 102, 114, 101, 115, 104, 10, 119, 101, 98, 45, 115, 101, 97, 114, 99, 104, 8, 119, 101, 98, 45, 115, 116, 111, 112, 3, 121, 101, 110, 4, 99, 111, 112, 121, 5, 112, 97, 115, 116, 101, 3, 99, 117, 116, 4, 16, 118, 105, 114, 116, 117, 97, 108, 45, 107, 101, 121, 45, 99, 111, 100, 101, 0, 3, 0, 4, 1, 113, 4, 4, 108, 101, 102, 116, 0, 0, 5, 114, 105, 103, 104, 116, 0, 0, 6, 109, 105, 100, 100, 108, 101, 0, 0, 5, 111, 116, 104, 101, 114, 1, 123, 0, 4, 12, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 0, 3, 0, 6, 1, 112, 5, 1, 112, 7, 1, 114, 5, 4, 107, 101, 121, 115, 8, 14, 109, 111, 117, 115, 101, 45, 112, 111, 115, 105, 116, 105, 111, 110, 1, 11, 109, 111, 117, 115, 101, 45, 100, 101, 108, 116, 97, 1, 11, 109, 111, 117, 115, 101, 45, 119, 104, 101, 101, 108, 118, 13, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 115, 9, 4, 5, 105, 110, 112, 117, 116, 0, 3, 0, 10, 1, 113, 35, 12, 100, 101, 102, 97, 117, 108, 116, 45, 105, 99, 111, 110, 0, 0, 9, 99, 114, 111, 115, 115, 104, 97, 105, 114, 0, 0, 4, 104, 97, 110, 100, 0, 0, 5, 97, 114, 114, 111, 119, 0, 0, 4, 109, 111, 118, 101, 0, 0, 4, 116, 101, 120, 116, 0, 0, 4, 119, 97, 105, 116, 0, 0, 4, 104, 101, 108, 112, 0, 0, 8, 112, 114, 111, 103, 114, 101, 115, 115, 0, 0, 11, 110, 111, 116, 45, 97, 108, 108, 111, 119, 101, 100, 0, 0, 12, 99, 111, 110, 116, 101, 120, 116, 45, 109, 101, 110, 117, 0, 0, 4, 99, 101, 108, 108, 0, 0, 13, 118, 101, 114, 116, 105, 99, 97, 108, 45, 116, 101, 120, 116, 0, 0, 5, 97, 108, 105, 97, 115, 0, 0, 4, 99, 111, 112, 121, 0, 0, 7, 110, 111, 45, 100, 114, 111, 112, 0, 0, 4, 103, 114, 97, 98, 0, 0, 8, 103, 114, 97, 98, 98, 105, 110, 103, 0, 0, 10, 97, 108, 108, 45, 115, 99, 114, 111, 108, 108, 0, 0, 7, 122, 111, 111, 109, 45, 105, 110, 0, 0, 8, 122, 111, 111, 109, 45, 111, 117, 116, 0, 0, 8, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 110, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 101, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 101, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 119, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 99, 111, 108, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 114, 111, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 4, 11, 99, 117, 114, 115, 111, 114, 45, 105, 99, 111, 110, 0, 3, 0, 12, 1, 64, 0, 0, 11, 4, 3, 103, 101, 116, 0, 1, 14, 4, 12, 103, 101, 116, 45, 112, 114, 101, 118, 105, 111, 117, 115, 0, 1, 14, 1, 64, 1, 4, 105, 99, 111, 110, 13, 1, 0, 4, 10, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 0, 1, 15, 1, 64, 1, 7, 118, 105, 115, 105, 98, 108, 101, 127, 1, 0, 4, 18, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 118, 105, 115, 105, 98, 108, 101, 0, 1, 16, 1, 64, 1, 6, 108, 111, 99, 107, 101, 100, 127, 1, 0, 4, 15, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 108, 111, 99, 107, 0, 1, 17, 3, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 5, 19, 2, 3, 0, 0, 3, 114, 97, 121, 1, 66, 16, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 0, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 2, 2, 3, 2, 1, 20, 4, 3, 114, 97, 121, 0, 3, 0, 4, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 6, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 112, 111, 115, 3, 0, 5, 4, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 114, 97, 121, 0, 1, 8, 1, 64, 1, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 3, 4, 20, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 0, 1, 9, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 5, 4, 25, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 119, 111, 114, 108, 100, 45, 100, 105, 114, 101, 99, 116, 105, 111, 110, 0, 1, 10, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 1, 0, 3, 4, 15, 119, 111, 114, 108, 100, 45, 116, 111, 45, 115, 99, 114, 101, 101, 110, 0, 1, 11, 3, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 5, 21, 1, 66, 2, 1, 64, 1, 10, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 127, 1, 0, 4, 14, 115, 101, 116, 45, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 0, 1, 0, 3, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 5, 22, 1, 66, 40, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 4, 1, 114, 3, 4, 115, 105, 100, 101, 127, 2, 117, 112, 127, 4, 100, 111, 119, 110, 127, 4, 19, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 99, 111, 108, 108, 105, 115, 105, 111, 110, 0, 3, 0, 6, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 1, 0, 4, 9, 97, 100, 100, 45, 102, 111, 114, 99, 101, 0, 1, 8, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 1, 0, 4, 11, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 9, 1, 107, 118, 1, 64, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 7, 105, 109, 112, 117, 108, 115, 101, 118, 6, 114, 97, 100, 105, 117, 115, 118, 14, 102, 97, 108, 108, 111, 102, 102, 45, 114, 97, 100, 105, 117, 115, 10, 1, 0, 4, 18, 97, 100, 100, 45, 114, 97, 100, 105, 97, 108, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 11, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 21, 97, 100, 100, 45, 102, 111, 114, 99, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 12, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 23, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 13, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 0, 3, 4, 24, 103, 101, 116, 45, 118, 101, 108, 111, 99, 105, 116, 121, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 14, 1, 64, 1, 7, 103, 114, 97, 118, 105, 116, 121, 3, 1, 0, 4, 11, 115, 101, 116, 45, 103, 114, 97, 118, 105, 116, 121, 0, 1, 15, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 8, 117, 110, 102, 114, 101, 101, 122, 101, 0, 1, 16, 4, 6, 102, 114, 101, 101, 122, 101, 0, 1, 16, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 118, 101, 108, 111, 99, 105, 116, 121, 118, 1, 0, 4, 11, 115, 116, 97, 114, 116, 45, 109, 111, 116, 111, 114, 0, 1, 17, 4, 10, 115, 116, 111, 112, 45, 109, 111, 116, 111, 114, 0, 1, 16, 1, 64, 4, 6, 97, 99, 116, 111, 114, 48, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 48, 5, 6, 97, 99, 116, 111, 114, 49, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 49, 5, 1, 0, 4, 21, 99, 114, 101, 97, 116, 101, 45, 114, 101, 118, 111, 108, 117, 116, 101, 45, 106, 111, 105, 110, 116, 0, 1, 18, 1, 111, 2, 1, 118, 1, 107, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 20, 4, 13, 114, 97, 121, 99, 97, 115, 116, 45, 102, 105, 114, 115, 116, 0, 1, 21, 1, 112, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 22, 4, 7, 114, 97, 121, 99, 97, 115, 116, 0, 1, 23, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 12, 100, 105, 115, 112, 108, 97, 99, 101, 109, 101, 110, 116, 3, 8, 109, 105, 110, 45, 100, 105, 115, 116, 118, 12, 101, 108, 97, 112, 115, 101, 100, 45, 116, 105, 109, 101, 118, 0, 7, 4, 14, 109, 111, 118, 101, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 0, 1, 24, 3, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 5, 23, 1, 66, 7, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 6, 27, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 25, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 26, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 24, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 3, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 5, 24, 1, 66, 9, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 7, 114, 117, 110, 116, 105, 109, 101, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 6, 115, 101, 114, 118, 101, 114, 0, 0, 6, 99, 108, 105, 101, 110, 116, 1, 115, 0, 4, 6, 115, 111, 117, 114, 99, 101, 0, 3, 0, 2, 1, 64, 0, 1, 0, 4, 4, 105, 110, 105, 116, 0, 1, 4, 1, 112, 125, 1, 64, 4, 4, 116, 105, 109, 101, 118, 14, 109, 101, 115, 115, 97, 103, 101, 45, 115, 111, 117, 114, 99, 101, 3, 12, 109, 101, 115, 115, 97, 103, 101, 45, 110, 97, 109, 101, 115, 12, 109, 101, 115, 115, 97, 103, 101, 45, 100, 97, 116, 97, 5, 1, 0, 4, 4, 101, 120, 101, 99, 0, 1, 6, 4, 5, 103, 117, 101, 115, 116, 16, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 47, 103, 117, 101, 115, 116, 5, 25, 4, 8, 98, 105, 110, 100, 105, 110, 103, 115, 18, 112, 107, 103, 58, 47, 109, 97, 105, 110, 47, 98, 105, 110, 100, 105, 110, 103, 115, 4, 0, 0, 68, 9, 112, 114, 111, 100, 117, 99, 101, 114, 115, 1, 12, 112, 114, 111, 99, 101, 115, 115, 101, 100, 45, 98, 121, 2, 13, 119, 105, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 48, 46, 55, 46, 52, 16, 119, 105, 116, 45, 98, 105, 110, 100, 103, 101, 110, 45, 114, 117, 115, 116, 5, 48, 46, 52, 46, 48, 11, 19, 1, 4, 109, 97, 105, 110, 9, 112, 107, 103, 58, 47, 109, 97, 105, 110, 3, 32, 0];
+                              
+                              #[inline(never)]
                               #[doc(hidden)]
                               #[cfg(target_arch = "wasm32")]
-                              static __FORCE_SECTION_REF: fn() = __link_section;
-                            });
-                            
-                            #[cfg(target_arch = "wasm32")]
-                            #[link_section = "component-type:bindings"]
-                            #[doc(hidden)]pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 19837] = [2, 0, 3, 119, 105, 116, 4, 109, 97, 105, 110, 8, 98, 105, 110, 100, 105, 110, 103, 115, 0, 97, 115, 109, 12, 0, 1, 0, 7, 142, 2, 1, 65, 2, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 4, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 11, 21, 1, 5, 116, 121, 112, 101, 115, 10, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 3, 0, 0, 7, 221, 8, 1, 65, 7, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 109, 97, 116, 52, 1, 66, 40, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 4, 1, 114, 3, 4, 115, 105, 100, 101, 127, 2, 117, 112, 127, 4, 100, 111, 119, 110, 127, 4, 19, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 99, 111, 108, 108, 105, 115, 105, 111, 110, 0, 3, 0, 6, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 1, 0, 4, 9, 97, 100, 100, 45, 102, 111, 114, 99, 101, 0, 1, 8, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 1, 0, 4, 11, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 9, 1, 107, 118, 1, 64, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 7, 105, 109, 112, 117, 108, 115, 101, 118, 6, 114, 97, 100, 105, 117, 115, 118, 14, 102, 97, 108, 108, 111, 102, 102, 45, 114, 97, 100, 105, 117, 115, 10, 1, 0, 4, 18, 97, 100, 100, 45, 114, 97, 100, 105, 97, 108, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 11, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 21, 97, 100, 100, 45, 102, 111, 114, 99, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 12, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 23, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 13, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 0, 3, 4, 24, 103, 101, 116, 45, 118, 101, 108, 111, 99, 105, 116, 121, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 14, 1, 64, 1, 7, 103, 114, 97, 118, 105, 116, 121, 3, 1, 0, 4, 11, 115, 101, 116, 45, 103, 114, 97, 118, 105, 116, 121, 0, 1, 15, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 8, 117, 110, 102, 114, 101, 101, 122, 101, 0, 1, 16, 4, 6, 102, 114, 101, 101, 122, 101, 0, 1, 16, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 118, 101, 108, 111, 99, 105, 116, 121, 118, 1, 0, 4, 11, 115, 116, 97, 114, 116, 45, 109, 111, 116, 111, 114, 0, 1, 17, 4, 10, 115, 116, 111, 112, 45, 109, 111, 116, 111, 114, 0, 1, 16, 1, 64, 4, 6, 97, 99, 116, 111, 114, 48, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 48, 5, 6, 97, 99, 116, 111, 114, 49, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 49, 5, 1, 0, 4, 21, 99, 114, 101, 97, 116, 101, 45, 114, 101, 118, 111, 108, 117, 116, 101, 45, 106, 111, 105, 110, 116, 0, 1, 18, 1, 111, 2, 1, 118, 1, 107, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 20, 4, 13, 114, 97, 121, 99, 97, 115, 116, 45, 102, 105, 114, 115, 116, 0, 1, 21, 1, 112, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 22, 4, 7, 114, 97, 121, 99, 97, 115, 116, 0, 1, 23, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 12, 100, 105, 115, 112, 108, 97, 99, 101, 109, 101, 110, 116, 3, 8, 109, 105, 110, 45, 100, 105, 115, 116, 118, 12, 101, 108, 97, 112, 115, 101, 100, 45, 116, 105, 109, 101, 118, 0, 7, 4, 14, 109, 111, 118, 101, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 0, 1, 24, 4, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 5, 4, 11, 39, 1, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 19, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 3, 2, 0, 7, 174, 4, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 7, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 6, 27, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 25, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 26, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 24, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 4, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 5, 2, 11, 39, 1, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 19, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 3, 4, 0, 7, 75, 1, 65, 2, 1, 66, 3, 1, 107, 115, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 0, 4, 3, 117, 114, 108, 0, 1, 1, 4, 12, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 30, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 5, 0, 11, 35, 1, 12, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 17, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 3, 6, 0, 7, 244, 2, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 5, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 107, 1, 1, 64, 1, 7, 117, 115, 101, 114, 45, 105, 100, 115, 0, 2, 4, 14, 103, 101, 116, 45, 98, 121, 45, 117, 115, 101, 114, 45, 105, 100, 0, 1, 3, 4, 6, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 47, 112, 108, 97, 121, 101, 114, 5, 2, 11, 23, 1, 6, 112, 108, 97, 121, 101, 114, 11, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 3, 8, 0, 7, 211, 3, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 9, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 7, 114, 117, 110, 116, 105, 109, 101, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 6, 115, 101, 114, 118, 101, 114, 0, 0, 6, 99, 108, 105, 101, 110, 116, 1, 115, 0, 4, 6, 115, 111, 117, 114, 99, 101, 0, 3, 0, 2, 1, 64, 0, 1, 0, 4, 4, 105, 110, 105, 116, 0, 1, 4, 1, 112, 125, 1, 64, 4, 4, 116, 105, 109, 101, 118, 14, 109, 101, 115, 115, 97, 103, 101, 45, 115, 111, 117, 114, 99, 101, 3, 12, 109, 101, 115, 115, 97, 103, 101, 45, 110, 97, 109, 101, 115, 12, 109, 101, 115, 115, 97, 103, 101, 45, 100, 97, 116, 97, 5, 1, 0, 4, 4, 101, 120, 101, 99, 0, 1, 6, 4, 5, 103, 117, 101, 115, 116, 16, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 47, 103, 117, 101, 115, 116, 5, 2, 11, 21, 1, 5, 103, 117, 101, 115, 116, 10, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 3, 10, 0, 7, 188, 15, 1, 65, 13, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 94, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 7, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 1, 64, 1, 2, 105, 100, 115, 0, 53, 4, 9, 103, 101, 116, 45, 105, 110, 100, 101, 120, 0, 1, 68, 1, 107, 192, 0, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 197, 0, 4, 13, 103, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 70, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 5, 118, 97, 108, 117, 101, 192, 0, 1, 0, 4, 13, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 100, 97, 116, 97, 195, 0, 1, 0, 4, 14, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 4, 13, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 4, 14, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 127, 4, 13, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 73, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 0, 127, 4, 14, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 74, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 1, 0, 4, 16, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 75, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 1, 0, 4, 17, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 76, 1, 64, 2, 1, 113, 22, 1, 116, 19, 0, 119, 4, 5, 113, 117, 101, 114, 121, 0, 1, 77, 1, 112, 192, 0, 1, 111, 2, 1, 206, 0, 1, 112, 207, 0, 1, 64, 1, 1, 113, 119, 0, 208, 0, 4, 10, 113, 117, 101, 114, 121, 45, 101, 118, 97, 108, 0, 1, 81, 4, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 10, 11, 29, 1, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 14, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 3, 12, 0, 7, 245, 12, 1, 65, 16, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 68, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 7, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 10, 2, 3, 0, 1, 6, 101, 110, 116, 105, 116, 121, 1, 66, 4, 2, 3, 2, 1, 11, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 0, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 9, 115, 117, 98, 115, 99, 114, 105, 98, 101, 0, 1, 2, 4, 5, 101, 118, 101, 110, 116, 18, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 47, 101, 118, 101, 110, 116, 5, 12, 11, 25, 1, 7, 109, 101, 115, 115, 97, 103, 101, 12, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 3, 14, 0, 7, 255, 15, 1, 65, 16, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 68, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 7, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 10, 2, 3, 0, 1, 6, 101, 110, 116, 105, 116, 121, 1, 66, 29, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 11, 4, 11, 101, 110, 116, 105, 116, 121, 45, 100, 97, 116, 97, 0, 3, 0, 6, 1, 114, 3, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 119, 101, 105, 103, 104, 116, 118, 4, 16, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 0, 3, 0, 8, 1, 112, 9, 1, 114, 2, 7, 97, 99, 116, 105, 111, 110, 115, 10, 15, 97, 112, 112, 108, 121, 45, 98, 97, 115, 101, 45, 112, 111, 115, 101, 127, 4, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 3, 0, 11, 1, 64, 1, 4, 100, 97, 116, 97, 7, 0, 1, 4, 5, 115, 112, 97, 119, 110, 0, 1, 13, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 127, 4, 7, 100, 101, 115, 112, 97, 119, 110, 0, 1, 14, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 12, 1, 0, 4, 24, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 1, 15, 1, 112, 1, 1, 64, 2, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 114, 97, 100, 105, 117, 115, 118, 0, 16, 4, 7, 105, 110, 45, 97, 114, 101, 97, 0, 1, 17, 4, 6, 101, 120, 105, 115, 116, 115, 0, 1, 14, 1, 64, 1, 5, 105, 110, 100, 101, 120, 121, 0, 16, 4, 7, 103, 101, 116, 45, 97, 108, 108, 0, 1, 18, 1, 64, 0, 0, 1, 4, 9, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 19, 4, 22, 115, 121, 110, 99, 104, 114, 111, 110, 105, 122, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 19, 4, 19, 112, 101, 114, 115, 105, 115, 116, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 19, 4, 6, 101, 110, 116, 105, 116, 121, 18, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 47, 101, 110, 116, 105, 116, 121, 5, 12, 11, 23, 1, 6, 101, 110, 116, 105, 116, 121, 11, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 3, 16, 0, 7, 92, 1, 65, 2, 1, 66, 2, 1, 64, 1, 10, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 127, 1, 0, 4, 14, 115, 101, 116, 45, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 0, 1, 0, 4, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 5, 0, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 3, 18, 0, 7, 248, 2, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 4, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 64, 0, 0, 1, 4, 9, 103, 101, 116, 45, 108, 111, 99, 97, 108, 0, 1, 2, 4, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 5, 2, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 3, 20, 0, 7, 224, 3, 1, 65, 5, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 7, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 17, 115, 101, 114, 118, 101, 114, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 115, 101, 114, 118, 101, 114, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 4, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 5, 2, 11, 39, 1, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 19, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 3, 22, 0, 7, 192, 16, 1, 65, 6, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 23, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 2, 1, 109, 163, 1, 4, 107, 101, 121, 49, 4, 107, 101, 121, 50, 4, 107, 101, 121, 51, 4, 107, 101, 121, 52, 4, 107, 101, 121, 53, 4, 107, 101, 121, 54, 4, 107, 101, 121, 55, 4, 107, 101, 121, 56, 4, 107, 101, 121, 57, 4, 107, 101, 121, 48, 1, 97, 1, 98, 1, 99, 1, 100, 1, 101, 1, 102, 1, 103, 1, 104, 1, 105, 1, 106, 1, 107, 1, 108, 1, 109, 1, 110, 1, 111, 1, 112, 1, 113, 1, 114, 1, 115, 1, 116, 1, 117, 1, 118, 1, 119, 1, 120, 1, 121, 1, 122, 6, 101, 115, 99, 97, 112, 101, 2, 102, 49, 2, 102, 50, 2, 102, 51, 2, 102, 52, 2, 102, 53, 2, 102, 54, 2, 102, 55, 2, 102, 56, 2, 102, 57, 3, 102, 49, 48, 3, 102, 49, 49, 3, 102, 49, 50, 3, 102, 49, 51, 3, 102, 49, 52, 3, 102, 49, 53, 3, 102, 49, 54, 3, 102, 49, 55, 3, 102, 49, 56, 3, 102, 49, 57, 3, 102, 50, 48, 3, 102, 50, 49, 3, 102, 50, 50, 3, 102, 50, 51, 3, 102, 50, 52, 8, 115, 110, 97, 112, 115, 104, 111, 116, 6, 115, 99, 114, 111, 108, 108, 5, 112, 97, 117, 115, 101, 6, 105, 110, 115, 101, 114, 116, 4, 104, 111, 109, 101, 6, 100, 101, 108, 101, 116, 101, 3, 101, 110, 100, 9, 112, 97, 103, 101, 45, 100, 111, 119, 110, 7, 112, 97, 103, 101, 45, 117, 112, 4, 108, 101, 102, 116, 2, 117, 112, 5, 114, 105, 103, 104, 116, 4, 100, 111, 119, 110, 4, 98, 97, 99, 107, 6, 114, 101, 116, 117, 114, 110, 5, 115, 112, 97, 99, 101, 7, 99, 111, 109, 112, 111, 115, 101, 5, 99, 97, 114, 101, 116, 7, 110, 117, 109, 108, 111, 99, 107, 7, 110, 117, 109, 112, 97, 100, 48, 7, 110, 117, 109, 112, 97, 100, 49, 7, 110, 117, 109, 112, 97, 100, 50, 7, 110, 117, 109, 112, 97, 100, 51, 7, 110, 117, 109, 112, 97, 100, 52, 7, 110, 117, 109, 112, 97, 100, 53, 7, 110, 117, 109, 112, 97, 100, 54, 7, 110, 117, 109, 112, 97, 100, 55, 7, 110, 117, 109, 112, 97, 100, 56, 7, 110, 117, 109, 112, 97, 100, 57, 10, 110, 117, 109, 112, 97, 100, 45, 97, 100, 100, 13, 110, 117, 109, 112, 97, 100, 45, 100, 105, 118, 105, 100, 101, 14, 110, 117, 109, 112, 97, 100, 45, 100, 101, 99, 105, 109, 97, 108, 12, 110, 117, 109, 112, 97, 100, 45, 99, 111, 109, 109, 97, 12, 110, 117, 109, 112, 97, 100, 45, 101, 110, 116, 101, 114, 13, 110, 117, 109, 112, 97, 100, 45, 101, 113, 117, 97, 108, 115, 15, 110, 117, 109, 112, 97, 100, 45, 109, 117, 108, 116, 105, 112, 108, 121, 15, 110, 117, 109, 112, 97, 100, 45, 115, 117, 98, 116, 114, 97, 99, 116, 7, 97, 98, 110, 116, 45, 99, 49, 7, 97, 98, 110, 116, 45, 99, 50, 10, 97, 112, 111, 115, 116, 114, 111, 112, 104, 101, 4, 97, 112, 112, 115, 8, 97, 115, 116, 101, 114, 105, 115, 107, 2, 97, 116, 2, 97, 120, 9, 98, 97, 99, 107, 115, 108, 97, 115, 104, 10, 99, 97, 108, 99, 117, 108, 97, 116, 111, 114, 7, 99, 97, 112, 105, 116, 97, 108, 5, 99, 111, 108, 111, 110, 5, 99, 111, 109, 109, 97, 7, 99, 111, 110, 118, 101, 114, 116, 6, 101, 113, 117, 97, 108, 115, 5, 103, 114, 97, 118, 101, 4, 107, 97, 110, 97, 5, 107, 97, 110, 106, 105, 5, 108, 45, 97, 108, 116, 9, 108, 45, 98, 114, 97, 99, 107, 101, 116, 9, 108, 45, 99, 111, 110, 116, 114, 111, 108, 7, 108, 45, 115, 104, 105, 102, 116, 5, 108, 45, 119, 105, 110, 4, 109, 97, 105, 108, 12, 109, 101, 100, 105, 97, 45, 115, 101, 108, 101, 99, 116, 10, 109, 101, 100, 105, 97, 45, 115, 116, 111, 112, 5, 109, 105, 110, 117, 115, 4, 109, 117, 116, 101, 11, 109, 121, 45, 99, 111, 109, 112, 117, 116, 101, 114, 16, 110, 97, 118, 105, 103, 97, 116, 101, 45, 102, 111, 114, 119, 97, 114, 100, 17, 110, 97, 118, 105, 103, 97, 116, 101, 45, 98, 97, 99, 107, 119, 97, 114, 100, 10, 110, 101, 120, 116, 45, 116, 114, 97, 99, 107, 10, 110, 111, 45, 99, 111, 110, 118, 101, 114, 116, 6, 111, 101, 109, 49, 48, 50, 6, 112, 101, 114, 105, 111, 100, 10, 112, 108, 97, 121, 45, 112, 97, 117, 115, 101, 4, 112, 108, 117, 115, 5, 112, 111, 119, 101, 114, 10, 112, 114, 101, 118, 45, 116, 114, 97, 99, 107, 5, 114, 45, 97, 108, 116, 9, 114, 45, 98, 114, 97, 99, 107, 101, 116, 9, 114, 45, 99, 111, 110, 116, 114, 111, 108, 7, 114, 45, 115, 104, 105, 102, 116, 5, 114, 45, 119, 105, 110, 9, 115, 101, 109, 105, 99, 111, 108, 111, 110, 5, 115, 108, 97, 115, 104, 5, 115, 108, 101, 101, 112, 4, 115, 116, 111, 112, 5, 115, 121, 115, 114, 113, 3, 116, 97, 98, 9, 117, 110, 100, 101, 114, 108, 105, 110, 101, 9, 117, 110, 108, 97, 98, 101, 108, 101, 100, 11, 118, 111, 108, 117, 109, 101, 45, 100, 111, 119, 110, 9, 118, 111, 108, 117, 109, 101, 45, 117, 112, 4, 119, 97, 107, 101, 8, 119, 101, 98, 45, 98, 97, 99, 107, 13, 119, 101, 98, 45, 102, 97, 118, 111, 114, 105, 116, 101, 115, 11, 119, 101, 98, 45, 102, 111, 114, 119, 97, 114, 100, 8, 119, 101, 98, 45, 104, 111, 109, 101, 11, 119, 101, 98, 45, 114, 101, 102, 114, 101, 115, 104, 10, 119, 101, 98, 45, 115, 101, 97, 114, 99, 104, 8, 119, 101, 98, 45, 115, 116, 111, 112, 3, 121, 101, 110, 4, 99, 111, 112, 121, 5, 112, 97, 115, 116, 101, 3, 99, 117, 116, 4, 16, 118, 105, 114, 116, 117, 97, 108, 45, 107, 101, 121, 45, 99, 111, 100, 101, 0, 3, 0, 4, 1, 113, 4, 4, 108, 101, 102, 116, 0, 0, 5, 114, 105, 103, 104, 116, 0, 0, 6, 109, 105, 100, 100, 108, 101, 0, 0, 5, 111, 116, 104, 101, 114, 1, 123, 0, 4, 12, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 0, 3, 0, 6, 1, 112, 5, 1, 112, 7, 1, 114, 5, 4, 107, 101, 121, 115, 8, 14, 109, 111, 117, 115, 101, 45, 112, 111, 115, 105, 116, 105, 111, 110, 1, 11, 109, 111, 117, 115, 101, 45, 100, 101, 108, 116, 97, 1, 11, 109, 111, 117, 115, 101, 45, 119, 104, 101, 101, 108, 118, 13, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 115, 9, 4, 5, 105, 110, 112, 117, 116, 0, 3, 0, 10, 1, 113, 35, 12, 100, 101, 102, 97, 117, 108, 116, 45, 105, 99, 111, 110, 0, 0, 9, 99, 114, 111, 115, 115, 104, 97, 105, 114, 0, 0, 4, 104, 97, 110, 100, 0, 0, 5, 97, 114, 114, 111, 119, 0, 0, 4, 109, 111, 118, 101, 0, 0, 4, 116, 101, 120, 116, 0, 0, 4, 119, 97, 105, 116, 0, 0, 4, 104, 101, 108, 112, 0, 0, 8, 112, 114, 111, 103, 114, 101, 115, 115, 0, 0, 11, 110, 111, 116, 45, 97, 108, 108, 111, 119, 101, 100, 0, 0, 12, 99, 111, 110, 116, 101, 120, 116, 45, 109, 101, 110, 117, 0, 0, 4, 99, 101, 108, 108, 0, 0, 13, 118, 101, 114, 116, 105, 99, 97, 108, 45, 116, 101, 120, 116, 0, 0, 5, 97, 108, 105, 97, 115, 0, 0, 4, 99, 111, 112, 121, 0, 0, 7, 110, 111, 45, 100, 114, 111, 112, 0, 0, 4, 103, 114, 97, 98, 0, 0, 8, 103, 114, 97, 98, 98, 105, 110, 103, 0, 0, 10, 97, 108, 108, 45, 115, 99, 114, 111, 108, 108, 0, 0, 7, 122, 111, 111, 109, 45, 105, 110, 0, 0, 8, 122, 111, 111, 109, 45, 111, 117, 116, 0, 0, 8, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 110, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 101, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 101, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 119, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 99, 111, 108, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 114, 111, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 4, 11, 99, 117, 114, 115, 111, 114, 45, 105, 99, 111, 110, 0, 3, 0, 12, 1, 64, 0, 0, 11, 4, 3, 103, 101, 116, 0, 1, 14, 4, 12, 103, 101, 116, 45, 112, 114, 101, 118, 105, 111, 117, 115, 0, 1, 14, 1, 64, 1, 4, 105, 99, 111, 110, 13, 1, 0, 4, 10, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 0, 1, 15, 1, 64, 1, 7, 118, 105, 115, 105, 98, 108, 101, 127, 1, 0, 4, 18, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 118, 105, 115, 105, 98, 108, 101, 0, 1, 16, 1, 64, 1, 6, 108, 111, 99, 107, 101, 100, 127, 1, 0, 4, 15, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 108, 111, 99, 107, 0, 1, 17, 4, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 5, 3, 11, 35, 1, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 17, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 3, 24, 0, 7, 233, 4, 1, 65, 8, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 3, 114, 97, 121, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 16, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 51, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 50, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 3, 114, 97, 121, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 6, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 112, 111, 115, 3, 0, 5, 4, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 114, 97, 121, 0, 1, 8, 1, 64, 1, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 3, 4, 20, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 0, 1, 9, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 5, 4, 25, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 119, 111, 114, 108, 100, 45, 100, 105, 114, 101, 99, 116, 105, 111, 110, 0, 1, 10, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 1, 0, 3, 4, 15, 119, 111, 114, 108, 100, 45, 116, 111, 45, 115, 99, 114, 101, 101, 110, 0, 1, 11, 4, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 5, 5, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 3, 26, 0, 7, 193, 1, 1, 65, 2, 1, 66, 10, 1, 64, 1, 3, 117, 114, 108, 115, 1, 0, 4, 4, 108, 111, 97, 100, 0, 1, 0, 1, 64, 4, 4, 110, 97, 109, 101, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 118, 111, 108, 117, 109, 101, 118, 3, 117, 105, 100, 121, 1, 0, 4, 4, 112, 108, 97, 121, 0, 1, 1, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 4, 115, 116, 111, 112, 0, 1, 2, 1, 64, 1, 3, 117, 105, 100, 121, 1, 0, 4, 10, 115, 116, 111, 112, 45, 98, 121, 45, 105, 100, 0, 1, 3, 1, 64, 2, 4, 110, 97, 109, 101, 115, 6, 118, 111, 108, 117, 109, 101, 118, 1, 0, 4, 10, 115, 101, 116, 45, 118, 111, 108, 117, 109, 101, 0, 1, 4, 4, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 5, 0, 11, 35, 1, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 17, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 3, 28, 0, 7, 54, 1, 65, 2, 1, 66, 3, 1, 107, 115, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 0, 4, 3, 117, 114, 108, 0, 1, 1, 4, 5, 97, 115, 115, 101, 116, 16, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 47, 97, 115, 115, 101, 116, 5, 0, 11, 21, 1, 5, 97, 115, 115, 101, 116, 10, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 3, 30, 0, 7, 151, 52, 1, 65, 2, 1, 65, 41, 1, 66, 20, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 12, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 14, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 16, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 18, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 1, 66, 3, 1, 107, 115, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 0, 4, 3, 117, 114, 108, 0, 1, 1, 3, 5, 97, 115, 115, 101, 116, 16, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 47, 97, 115, 115, 101, 116, 5, 1, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 94, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 4, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 7, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 10, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 1, 64, 1, 2, 105, 100, 115, 0, 53, 4, 9, 103, 101, 116, 45, 105, 110, 100, 101, 120, 0, 1, 68, 1, 107, 192, 0, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 197, 0, 4, 13, 103, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 70, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 5, 118, 97, 108, 117, 101, 192, 0, 1, 0, 4, 13, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 100, 97, 116, 97, 195, 0, 1, 0, 4, 14, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 4, 13, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 4, 14, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 127, 4, 13, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 73, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 0, 127, 4, 14, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 74, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 1, 0, 4, 16, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 75, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 1, 0, 4, 17, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 76, 1, 64, 2, 1, 113, 22, 1, 116, 19, 0, 119, 4, 5, 113, 117, 101, 114, 121, 0, 1, 77, 1, 112, 192, 0, 1, 111, 2, 1, 206, 0, 1, 112, 207, 0, 1, 64, 1, 1, 113, 119, 0, 208, 0, 4, 10, 113, 117, 101, 114, 121, 45, 101, 118, 97, 108, 0, 1, 81, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 11, 2, 3, 0, 2, 6, 101, 110, 116, 105, 116, 121, 1, 66, 29, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 4, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 12, 4, 11, 101, 110, 116, 105, 116, 121, 45, 100, 97, 116, 97, 0, 3, 0, 6, 1, 114, 3, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 119, 101, 105, 103, 104, 116, 118, 4, 16, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 0, 3, 0, 8, 1, 112, 9, 1, 114, 2, 7, 97, 99, 116, 105, 111, 110, 115, 10, 15, 97, 112, 112, 108, 121, 45, 98, 97, 115, 101, 45, 112, 111, 115, 101, 127, 4, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 3, 0, 11, 1, 64, 1, 4, 100, 97, 116, 97, 7, 0, 1, 4, 5, 115, 112, 97, 119, 110, 0, 1, 13, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 127, 4, 7, 100, 101, 115, 112, 97, 119, 110, 0, 1, 14, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 12, 1, 0, 4, 24, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 1, 15, 1, 112, 1, 1, 64, 2, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 114, 97, 100, 105, 117, 115, 118, 0, 16, 4, 7, 105, 110, 45, 97, 114, 101, 97, 0, 1, 17, 4, 6, 101, 120, 105, 115, 116, 115, 0, 1, 14, 1, 64, 1, 5, 105, 110, 100, 101, 120, 121, 0, 16, 4, 7, 103, 101, 116, 45, 97, 108, 108, 0, 1, 18, 1, 64, 0, 0, 1, 4, 9, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 19, 4, 22, 115, 121, 110, 99, 104, 114, 111, 110, 105, 122, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 19, 4, 19, 112, 101, 114, 115, 105, 115, 116, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 19, 3, 6, 101, 110, 116, 105, 116, 121, 18, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 47, 101, 110, 116, 105, 116, 121, 5, 13, 1, 66, 4, 2, 3, 2, 1, 12, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 0, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 9, 115, 117, 98, 115, 99, 114, 105, 98, 101, 0, 1, 2, 3, 7, 109, 101, 115, 115, 97, 103, 101, 18, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 47, 101, 118, 101, 110, 116, 5, 14, 1, 66, 5, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 107, 1, 1, 64, 1, 7, 117, 115, 101, 114, 45, 105, 100, 115, 0, 2, 4, 14, 103, 101, 116, 45, 98, 121, 45, 117, 115, 101, 114, 45, 105, 100, 0, 1, 3, 3, 6, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 47, 112, 108, 97, 121, 101, 114, 5, 15, 1, 66, 10, 1, 64, 1, 3, 117, 114, 108, 115, 1, 0, 4, 4, 108, 111, 97, 100, 0, 1, 0, 1, 64, 4, 4, 110, 97, 109, 101, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 118, 111, 108, 117, 109, 101, 118, 3, 117, 105, 100, 121, 1, 0, 4, 4, 112, 108, 97, 121, 0, 1, 1, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 4, 115, 116, 111, 112, 0, 1, 2, 1, 64, 1, 3, 117, 105, 100, 121, 1, 0, 4, 10, 115, 116, 111, 112, 45, 98, 121, 45, 105, 100, 0, 1, 3, 1, 64, 2, 4, 110, 97, 109, 101, 115, 6, 118, 111, 108, 117, 109, 101, 118, 1, 0, 4, 10, 115, 101, 116, 45, 118, 111, 108, 117, 109, 101, 0, 1, 4, 3, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 5, 16, 1, 66, 7, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 17, 115, 101, 114, 118, 101, 114, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 115, 101, 114, 118, 101, 114, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 3, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 5, 17, 1, 66, 4, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 64, 0, 0, 1, 4, 9, 103, 101, 116, 45, 108, 111, 99, 97, 108, 0, 1, 2, 3, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 5, 18, 1, 66, 23, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 2, 1, 109, 163, 1, 4, 107, 101, 121, 49, 4, 107, 101, 121, 50, 4, 107, 101, 121, 51, 4, 107, 101, 121, 52, 4, 107, 101, 121, 53, 4, 107, 101, 121, 54, 4, 107, 101, 121, 55, 4, 107, 101, 121, 56, 4, 107, 101, 121, 57, 4, 107, 101, 121, 48, 1, 97, 1, 98, 1, 99, 1, 100, 1, 101, 1, 102, 1, 103, 1, 104, 1, 105, 1, 106, 1, 107, 1, 108, 1, 109, 1, 110, 1, 111, 1, 112, 1, 113, 1, 114, 1, 115, 1, 116, 1, 117, 1, 118, 1, 119, 1, 120, 1, 121, 1, 122, 6, 101, 115, 99, 97, 112, 101, 2, 102, 49, 2, 102, 50, 2, 102, 51, 2, 102, 52, 2, 102, 53, 2, 102, 54, 2, 102, 55, 2, 102, 56, 2, 102, 57, 3, 102, 49, 48, 3, 102, 49, 49, 3, 102, 49, 50, 3, 102, 49, 51, 3, 102, 49, 52, 3, 102, 49, 53, 3, 102, 49, 54, 3, 102, 49, 55, 3, 102, 49, 56, 3, 102, 49, 57, 3, 102, 50, 48, 3, 102, 50, 49, 3, 102, 50, 50, 3, 102, 50, 51, 3, 102, 50, 52, 8, 115, 110, 97, 112, 115, 104, 111, 116, 6, 115, 99, 114, 111, 108, 108, 5, 112, 97, 117, 115, 101, 6, 105, 110, 115, 101, 114, 116, 4, 104, 111, 109, 101, 6, 100, 101, 108, 101, 116, 101, 3, 101, 110, 100, 9, 112, 97, 103, 101, 45, 100, 111, 119, 110, 7, 112, 97, 103, 101, 45, 117, 112, 4, 108, 101, 102, 116, 2, 117, 112, 5, 114, 105, 103, 104, 116, 4, 100, 111, 119, 110, 4, 98, 97, 99, 107, 6, 114, 101, 116, 117, 114, 110, 5, 115, 112, 97, 99, 101, 7, 99, 111, 109, 112, 111, 115, 101, 5, 99, 97, 114, 101, 116, 7, 110, 117, 109, 108, 111, 99, 107, 7, 110, 117, 109, 112, 97, 100, 48, 7, 110, 117, 109, 112, 97, 100, 49, 7, 110, 117, 109, 112, 97, 100, 50, 7, 110, 117, 109, 112, 97, 100, 51, 7, 110, 117, 109, 112, 97, 100, 52, 7, 110, 117, 109, 112, 97, 100, 53, 7, 110, 117, 109, 112, 97, 100, 54, 7, 110, 117, 109, 112, 97, 100, 55, 7, 110, 117, 109, 112, 97, 100, 56, 7, 110, 117, 109, 112, 97, 100, 57, 10, 110, 117, 109, 112, 97, 100, 45, 97, 100, 100, 13, 110, 117, 109, 112, 97, 100, 45, 100, 105, 118, 105, 100, 101, 14, 110, 117, 109, 112, 97, 100, 45, 100, 101, 99, 105, 109, 97, 108, 12, 110, 117, 109, 112, 97, 100, 45, 99, 111, 109, 109, 97, 12, 110, 117, 109, 112, 97, 100, 45, 101, 110, 116, 101, 114, 13, 110, 117, 109, 112, 97, 100, 45, 101, 113, 117, 97, 108, 115, 15, 110, 117, 109, 112, 97, 100, 45, 109, 117, 108, 116, 105, 112, 108, 121, 15, 110, 117, 109, 112, 97, 100, 45, 115, 117, 98, 116, 114, 97, 99, 116, 7, 97, 98, 110, 116, 45, 99, 49, 7, 97, 98, 110, 116, 45, 99, 50, 10, 97, 112, 111, 115, 116, 114, 111, 112, 104, 101, 4, 97, 112, 112, 115, 8, 97, 115, 116, 101, 114, 105, 115, 107, 2, 97, 116, 2, 97, 120, 9, 98, 97, 99, 107, 115, 108, 97, 115, 104, 10, 99, 97, 108, 99, 117, 108, 97, 116, 111, 114, 7, 99, 97, 112, 105, 116, 97, 108, 5, 99, 111, 108, 111, 110, 5, 99, 111, 109, 109, 97, 7, 99, 111, 110, 118, 101, 114, 116, 6, 101, 113, 117, 97, 108, 115, 5, 103, 114, 97, 118, 101, 4, 107, 97, 110, 97, 5, 107, 97, 110, 106, 105, 5, 108, 45, 97, 108, 116, 9, 108, 45, 98, 114, 97, 99, 107, 101, 116, 9, 108, 45, 99, 111, 110, 116, 114, 111, 108, 7, 108, 45, 115, 104, 105, 102, 116, 5, 108, 45, 119, 105, 110, 4, 109, 97, 105, 108, 12, 109, 101, 100, 105, 97, 45, 115, 101, 108, 101, 99, 116, 10, 109, 101, 100, 105, 97, 45, 115, 116, 111, 112, 5, 109, 105, 110, 117, 115, 4, 109, 117, 116, 101, 11, 109, 121, 45, 99, 111, 109, 112, 117, 116, 101, 114, 16, 110, 97, 118, 105, 103, 97, 116, 101, 45, 102, 111, 114, 119, 97, 114, 100, 17, 110, 97, 118, 105, 103, 97, 116, 101, 45, 98, 97, 99, 107, 119, 97, 114, 100, 10, 110, 101, 120, 116, 45, 116, 114, 97, 99, 107, 10, 110, 111, 45, 99, 111, 110, 118, 101, 114, 116, 6, 111, 101, 109, 49, 48, 50, 6, 112, 101, 114, 105, 111, 100, 10, 112, 108, 97, 121, 45, 112, 97, 117, 115, 101, 4, 112, 108, 117, 115, 5, 112, 111, 119, 101, 114, 10, 112, 114, 101, 118, 45, 116, 114, 97, 99, 107, 5, 114, 45, 97, 108, 116, 9, 114, 45, 98, 114, 97, 99, 107, 101, 116, 9, 114, 45, 99, 111, 110, 116, 114, 111, 108, 7, 114, 45, 115, 104, 105, 102, 116, 5, 114, 45, 119, 105, 110, 9, 115, 101, 109, 105, 99, 111, 108, 111, 110, 5, 115, 108, 97, 115, 104, 5, 115, 108, 101, 101, 112, 4, 115, 116, 111, 112, 5, 115, 121, 115, 114, 113, 3, 116, 97, 98, 9, 117, 110, 100, 101, 114, 108, 105, 110, 101, 9, 117, 110, 108, 97, 98, 101, 108, 101, 100, 11, 118, 111, 108, 117, 109, 101, 45, 100, 111, 119, 110, 9, 118, 111, 108, 117, 109, 101, 45, 117, 112, 4, 119, 97, 107, 101, 8, 119, 101, 98, 45, 98, 97, 99, 107, 13, 119, 101, 98, 45, 102, 97, 118, 111, 114, 105, 116, 101, 115, 11, 119, 101, 98, 45, 102, 111, 114, 119, 97, 114, 100, 8, 119, 101, 98, 45, 104, 111, 109, 101, 11, 119, 101, 98, 45, 114, 101, 102, 114, 101, 115, 104, 10, 119, 101, 98, 45, 115, 101, 97, 114, 99, 104, 8, 119, 101, 98, 45, 115, 116, 111, 112, 3, 121, 101, 110, 4, 99, 111, 112, 121, 5, 112, 97, 115, 116, 101, 3, 99, 117, 116, 4, 16, 118, 105, 114, 116, 117, 97, 108, 45, 107, 101, 121, 45, 99, 111, 100, 101, 0, 3, 0, 4, 1, 113, 4, 4, 108, 101, 102, 116, 0, 0, 5, 114, 105, 103, 104, 116, 0, 0, 6, 109, 105, 100, 100, 108, 101, 0, 0, 5, 111, 116, 104, 101, 114, 1, 123, 0, 4, 12, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 0, 3, 0, 6, 1, 112, 5, 1, 112, 7, 1, 114, 5, 4, 107, 101, 121, 115, 8, 14, 109, 111, 117, 115, 101, 45, 112, 111, 115, 105, 116, 105, 111, 110, 1, 11, 109, 111, 117, 115, 101, 45, 100, 101, 108, 116, 97, 1, 11, 109, 111, 117, 115, 101, 45, 119, 104, 101, 101, 108, 118, 13, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 115, 9, 4, 5, 105, 110, 112, 117, 116, 0, 3, 0, 10, 1, 113, 35, 12, 100, 101, 102, 97, 117, 108, 116, 45, 105, 99, 111, 110, 0, 0, 9, 99, 114, 111, 115, 115, 104, 97, 105, 114, 0, 0, 4, 104, 97, 110, 100, 0, 0, 5, 97, 114, 114, 111, 119, 0, 0, 4, 109, 111, 118, 101, 0, 0, 4, 116, 101, 120, 116, 0, 0, 4, 119, 97, 105, 116, 0, 0, 4, 104, 101, 108, 112, 0, 0, 8, 112, 114, 111, 103, 114, 101, 115, 115, 0, 0, 11, 110, 111, 116, 45, 97, 108, 108, 111, 119, 101, 100, 0, 0, 12, 99, 111, 110, 116, 101, 120, 116, 45, 109, 101, 110, 117, 0, 0, 4, 99, 101, 108, 108, 0, 0, 13, 118, 101, 114, 116, 105, 99, 97, 108, 45, 116, 101, 120, 116, 0, 0, 5, 97, 108, 105, 97, 115, 0, 0, 4, 99, 111, 112, 121, 0, 0, 7, 110, 111, 45, 100, 114, 111, 112, 0, 0, 4, 103, 114, 97, 98, 0, 0, 8, 103, 114, 97, 98, 98, 105, 110, 103, 0, 0, 10, 97, 108, 108, 45, 115, 99, 114, 111, 108, 108, 0, 0, 7, 122, 111, 111, 109, 45, 105, 110, 0, 0, 8, 122, 111, 111, 109, 45, 111, 117, 116, 0, 0, 8, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 110, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 101, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 101, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 119, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 99, 111, 108, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 114, 111, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 4, 11, 99, 117, 114, 115, 111, 114, 45, 105, 99, 111, 110, 0, 3, 0, 12, 1, 64, 0, 0, 11, 4, 3, 103, 101, 116, 0, 1, 14, 4, 12, 103, 101, 116, 45, 112, 114, 101, 118, 105, 111, 117, 115, 0, 1, 14, 1, 64, 1, 4, 105, 99, 111, 110, 13, 1, 0, 4, 10, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 0, 1, 15, 1, 64, 1, 7, 118, 105, 115, 105, 98, 108, 101, 127, 1, 0, 4, 18, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 118, 105, 115, 105, 98, 108, 101, 0, 1, 16, 1, 64, 1, 6, 108, 111, 99, 107, 101, 100, 127, 1, 0, 4, 15, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 108, 111, 99, 107, 0, 1, 17, 3, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 5, 19, 2, 3, 0, 0, 3, 114, 97, 121, 1, 66, 16, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 0, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 2, 2, 3, 2, 1, 20, 4, 3, 114, 97, 121, 0, 3, 0, 4, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 6, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 112, 111, 115, 3, 0, 5, 4, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 114, 97, 121, 0, 1, 8, 1, 64, 1, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 3, 4, 20, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 0, 1, 9, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 5, 4, 25, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 119, 111, 114, 108, 100, 45, 100, 105, 114, 101, 99, 116, 105, 111, 110, 0, 1, 10, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 1, 0, 3, 4, 15, 119, 111, 114, 108, 100, 45, 116, 111, 45, 115, 99, 114, 101, 101, 110, 0, 1, 11, 3, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 5, 21, 1, 66, 2, 1, 64, 1, 10, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 127, 1, 0, 4, 14, 115, 101, 116, 45, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 0, 1, 0, 3, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 5, 22, 1, 66, 40, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 4, 1, 114, 3, 4, 115, 105, 100, 101, 127, 2, 117, 112, 127, 4, 100, 111, 119, 110, 127, 4, 19, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 99, 111, 108, 108, 105, 115, 105, 111, 110, 0, 3, 0, 6, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 1, 0, 4, 9, 97, 100, 100, 45, 102, 111, 114, 99, 101, 0, 1, 8, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 1, 0, 4, 11, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 9, 1, 107, 118, 1, 64, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 7, 105, 109, 112, 117, 108, 115, 101, 118, 6, 114, 97, 100, 105, 117, 115, 118, 14, 102, 97, 108, 108, 111, 102, 102, 45, 114, 97, 100, 105, 117, 115, 10, 1, 0, 4, 18, 97, 100, 100, 45, 114, 97, 100, 105, 97, 108, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 11, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 21, 97, 100, 100, 45, 102, 111, 114, 99, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 12, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 23, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 13, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 0, 3, 4, 24, 103, 101, 116, 45, 118, 101, 108, 111, 99, 105, 116, 121, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 14, 1, 64, 1, 7, 103, 114, 97, 118, 105, 116, 121, 3, 1, 0, 4, 11, 115, 101, 116, 45, 103, 114, 97, 118, 105, 116, 121, 0, 1, 15, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 8, 117, 110, 102, 114, 101, 101, 122, 101, 0, 1, 16, 4, 6, 102, 114, 101, 101, 122, 101, 0, 1, 16, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 118, 101, 108, 111, 99, 105, 116, 121, 118, 1, 0, 4, 11, 115, 116, 97, 114, 116, 45, 109, 111, 116, 111, 114, 0, 1, 17, 4, 10, 115, 116, 111, 112, 45, 109, 111, 116, 111, 114, 0, 1, 16, 1, 64, 4, 6, 97, 99, 116, 111, 114, 48, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 48, 5, 6, 97, 99, 116, 111, 114, 49, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 49, 5, 1, 0, 4, 21, 99, 114, 101, 97, 116, 101, 45, 114, 101, 118, 111, 108, 117, 116, 101, 45, 106, 111, 105, 110, 116, 0, 1, 18, 1, 111, 2, 1, 118, 1, 107, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 20, 4, 13, 114, 97, 121, 99, 97, 115, 116, 45, 102, 105, 114, 115, 116, 0, 1, 21, 1, 112, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 22, 4, 7, 114, 97, 121, 99, 97, 115, 116, 0, 1, 23, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 12, 100, 105, 115, 112, 108, 97, 99, 101, 109, 101, 110, 116, 3, 8, 109, 105, 110, 45, 100, 105, 115, 116, 118, 12, 101, 108, 97, 112, 115, 101, 100, 45, 116, 105, 109, 101, 118, 0, 7, 4, 14, 109, 111, 118, 101, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 0, 1, 24, 3, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 5, 23, 1, 66, 7, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 6, 27, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 25, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 26, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 24, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 3, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 5, 24, 1, 66, 9, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 7, 114, 117, 110, 116, 105, 109, 101, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 6, 115, 101, 114, 118, 101, 114, 0, 0, 6, 99, 108, 105, 101, 110, 116, 1, 115, 0, 4, 6, 115, 111, 117, 114, 99, 101, 0, 3, 0, 2, 1, 64, 0, 1, 0, 4, 4, 105, 110, 105, 116, 0, 1, 4, 1, 112, 125, 1, 64, 4, 4, 116, 105, 109, 101, 118, 14, 109, 101, 115, 115, 97, 103, 101, 45, 115, 111, 117, 114, 99, 101, 3, 12, 109, 101, 115, 115, 97, 103, 101, 45, 110, 97, 109, 101, 115, 12, 109, 101, 115, 115, 97, 103, 101, 45, 100, 97, 116, 97, 5, 1, 0, 4, 4, 101, 120, 101, 99, 0, 1, 6, 4, 5, 103, 117, 101, 115, 116, 16, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 47, 103, 117, 101, 115, 116, 5, 25, 4, 8, 98, 105, 110, 100, 105, 110, 103, 115, 18, 112, 107, 103, 58, 47, 109, 97, 105, 110, 47, 98, 105, 110, 100, 105, 110, 103, 115, 4, 0, 0, 68, 9, 112, 114, 111, 100, 117, 99, 101, 114, 115, 1, 12, 112, 114, 111, 99, 101, 115, 115, 101, 100, 45, 98, 121, 2, 13, 119, 105, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 48, 46, 55, 46, 52, 16, 119, 105, 116, 45, 98, 105, 110, 100, 103, 101, 110, 45, 114, 117, 115, 116, 5, 48, 46, 52, 46, 48, 11, 19, 1, 4, 109, 97, 105, 110, 9, 112, 107, 103, 58, 47, 109, 97, 105, 110, 3, 32, 0];
-                            
-                            #[inline(never)]
-                            #[doc(hidden)]
-                            #[cfg(target_arch = "wasm32")]
-                            pub fn __link_section() {}
-                            
+                              pub fn __link_section() {}
+                              

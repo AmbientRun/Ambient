@@ -24,6 +24,22 @@ default interface entity {
         apply-base-pose: bool,
     }
 
+    /// Animation clip data
+    record animation-clip {
+        /// BinderId for the animation tracks
+        binders: list<string>,
+        /// Duration in seconds
+        duration: float32,
+        /// If the asset is loaded (duration will be 0 and binders empty if false)
+        loaded: bool,
+        /// Error that occured while fetching asset
+        error: string,
+    }
+
+    set-animation-blend: func(entity: entity-id, weights: list<float32>, time: list<float32>, absolute-time: bool)
+    has-animation-clip: func(clip-url: string) -> bool
+    get-animation-clips: func(clips: list<string>) -> list<animation-clip>
+
     spawn: func(data: entity-data) -> entity-id
     despawn: func(entity: entity-id) -> bool
     set-animation-controller: func(entity: entity-id, animation-controller: animation-controller)

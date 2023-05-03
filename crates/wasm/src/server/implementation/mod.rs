@@ -41,6 +41,34 @@ impl wit::entity::Host for Bindings {
         )
     }
 
+
+    fn set_animation_blend(
+        &mut self,
+        entity: wit::types::EntityId,
+        weights: Vec<f32>,
+        times: Vec<f32>,
+        absolute_time: bool,
+    ) -> anyhow::Result<()> {
+        shared::implementation::entity::set_animation_blend(
+            self.world_mut(),
+            entity,
+            &weights,
+            &times,
+            absolute_time,
+        )
+    }
+
+    fn has_animation_clip(&mut self, clip_url: String) -> anyhow::Result<bool> {
+        shared::implementation::entity::has_animation_clip(self.world_mut(), &clip_url)
+    }
+
+    fn get_animation_clips(
+        &mut self,
+        clip_urls: Vec<String>,
+    ) -> anyhow::Result<Vec<wit::entity::AnimationClip>> {
+        shared::implementation::entity::get_animation_clips(self.world_mut(), &clip_urls)
+    }
+
     fn exists(&mut self, entity: wit::types::EntityId) -> anyhow::Result<bool> {
         shared::implementation::entity::exists(self.world(), entity)
     }

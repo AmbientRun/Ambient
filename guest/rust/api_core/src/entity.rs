@@ -8,7 +8,7 @@ use crate::{
     prelude::block_until,
 };
 
-pub use wit::entity::{AnimationAction, AnimationController};
+pub use wit::entity::{AnimationAction, AnimationController, AnimationClip};
 
 /// Spawns an entity containing the `components`.
 ///
@@ -38,6 +38,21 @@ pub fn despawn(entity: EntityId) -> bool {
 /// Set the animation (controller) for `entity`.
 pub fn set_animation_controller(entity: EntityId, controller: AnimationController) {
     wit::entity::set_animation_controller(entity.into_bindgen(), controller)
+}
+
+/// Set the animation (controller) weights (optional) and times (optional) for `entity`.
+pub fn set_animation_blend(entity: EntityId, weights: &[f32], times: &[f32], absolute_time: bool) {
+    wit::entity::set_animation_blend(entity.into_bindgen(), weights, times, absolute_time)
+}
+
+/// Peeks the asset cache for a existing of a animation clip
+pub fn has_animation_clip(clip_url: &str) -> bool {
+    wit::entity::has_animation_clip(clip_url)
+}
+
+/// Fetches information about animation clips if loaded
+pub fn get_animation_clips(clip_urls: &[&str]) -> Vec<AnimationClip> {
+    wit::entity::get_animation_clips(clip_urls)
 }
 
 /// Checks if the `entity` exists.

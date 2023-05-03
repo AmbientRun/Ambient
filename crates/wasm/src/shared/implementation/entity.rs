@@ -1,9 +1,16 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 
-use ambient_animation::animation_controller;
-use ambient_core::transform::translation;
+use ambient_animation::{
+    animation_controller, AnimationActionTime, AnimationClip, AnimationClipFromUrl,
+};
+use ambient_core::{asset_cache, transform::translation};
 use ambient_ecs::{query as ecs_query, with_component_registry, EntityId, World};
+use ambient_model::ModelFromUrl;
 use ambient_network::ServerWorldExt;
+use ambient_std::{
+    asset_cache::{AssetCache, AsyncAssetKeyExt},
+    asset_url::{AnimationAssetType, TypedAssetUrl},
+};
 use anyhow::Context;
 
 use super::{
@@ -45,6 +52,108 @@ pub fn set_animation_controller(
         controller.from_bindgen(),
     )?)
 }
+
+
+pub fn set_animation_blend(
+    world: &mut World,
+    entity: wit::types::EntityId,
+    weights: &[f32],
+    times: &[f32],
+    absolute_time: bool,
+) -> anyhow::Result<()> {
+    let controller = world.get_mut(entity.from_bindgen(), animation_controller())?;
+    for (action, weight) in controller.actions.iter_mut().zip(weights.iter()) {
+        action.weight = *weight;
+    }
+
+    if absolute_time {
+        for (action, time) in controller.actions.iter_mut().zip(times.iter()) {
+            action.time = AnimationActionTime::Absolute { time: *time };
+        }
+    } else {
+        for (action, time) in controller.actions.iter_mut().zip(times.iter()) {
+            action.time = AnimationActionTime::Percentage { percentage: *time }
+        }
+    }
+    Ok(())
+}
+
+fn peek_loaded_clip(
+    assets: &AssetCache,
+    clip_url: &str,
+) -> anyhow::Result<Option<Arc<AnimationClip>>> {
+    let asset_url: TypedAssetUrl<AnimationAssetType> =
+        TypedAssetUrl::parse(clip_url).context("Invalid clip url")?;
+    let clip_asset_url: TypedAssetUrl<AnimationAssetType> = asset_url
+        .abs()
+        .context(format!("Expected absolute url, got: {}", clip_url))?
+        .into();
+
+    if let Some(asset) = ModelFromUrl(
+        clip_asset_url
+            .model_crate()
+            .context("Invalid clip url")?
+            .model(),
+    )
+    .peek(&assets)
+    {
+        let _model = asset.context("No such model")?;
+    } else {
+        return Ok(None);
+    }
+
+    if let Some(clip) = AnimationClipFromUrl::new(asset_url.unwrap_abs(), true).peek(assets) {
+        Ok(Some(clip.context("No such clip")?))
+    } else {
+        Ok(None)
+    }
+}
+
+pub fn has_animation_clip(world: &mut World, clip_url: &str) -> anyhow::Result<bool> {
+    let assets = world.resource(asset_cache());
+    if let Ok(clip) = peek_loaded_clip(assets, clip_url) {
+        return Ok(clip.is_some());
+    }
+
+    Ok(true)
+}
+
+pub fn get_animation_clips(
+    world: &mut World,
+    clip_urls: &[String],
+) -> anyhow::Result<Vec<wit::entity::AnimationClip>> {
+    let assets = world.resource(asset_cache());
+
+    let mut result: Vec<wit::entity::AnimationClip> = Vec::with_capacity(clip_urls.len());
+    for clip_url in clip_urls {
+        let (binders, duration, loaded, error) = match peek_loaded_clip(assets, clip_url) {
+            Ok(Some(clip)) => {
+                let binders: Vec<String> = clip
+                    .tracks
+                    .iter()
+                    .map(|x| match &x.target {
+                        ambient_animation::AnimationTarget::BinderId(binder) => binder.clone(),
+                        ambient_animation::AnimationTarget::Entity(_entity) => String::default(),
+                    })
+                    .collect();
+
+                let duration = clip.duration();
+                (binders, duration, true, String::default())
+            }
+            Ok(None) => (Vec::default(), 0.0, false, String::default()),
+            Err(err) => (Vec::default(), 0.0, false, format!("{:?}", err)),
+        };
+        result.push(wit::entity::AnimationClip {
+            binders,
+            duration,
+            loaded,
+            error
+        });
+    }
+
+    Ok(result)
+}
+
 
 pub fn exists(world: &World, entity: wit::types::EntityId) -> anyhow::Result<bool> {
     Ok(world.exists(entity.from_bindgen()))
