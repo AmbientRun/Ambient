@@ -1,6 +1,7 @@
 use ambient_ecs::{
     query, Component, ComponentValue, EntityId, Networked, Serializable, Store, World,
 };
+use client::ClientConnection;
 use std::{
     io::ErrorKind,
     net::{IpAddr, Ipv4Addr, SocketAddr},
@@ -128,34 +129,6 @@ fn assert_persisted(desc: ambient_ecs::ComponentDesc) {
     if !desc.has_attribute::<Store>() {
         panic!("Attempt to access persisted resource {desc:?} which is not `Store`");
     }
-}
-
-pub async fn rpc_request<
-    Args: Send + 'static,
-    Req: Serialize + DeserializeOwned + Send + 'static,
-    Resp: Serialize + DeserializeOwned + Send,
-    F: Fn(Args, Req) -> L + Send + Sync + Copy + 'static,
-    L: Future<Output = Resp> + Send,
->(
-    conn: &quinn::Connection,
-    reg: Arc<RpcRegistry<Args>>,
-    func: F,
-    req: Req,
-    size_limit: usize,
-) -> Result<Resp, NetworkError> {
-    let stream = conn.open_bi();
-    let (mut send, recv) = stream.await.map_err(NetworkError::ConnectionError)?;
-    send.write_u32(RPC_BISTREAM_ID).await?;
-    let req = reg.serialize_req(func, req);
-    send.write_all(&req).await.map_err(NetworkError::from)?;
-    send.finish().await.map_err(NetworkError::from)?;
-    drop(send);
-    let resp = recv
-        .read_to_end(size_limit)
-        .await
-        .map_err(NetworkError::from)?;
-    let resp = reg.deserialize_resp(func, &resp)?;
-    Ok(resp)
 }
 
 #[derive(Debug, Error)]
@@ -336,18 +309,14 @@ pub async fn next_bincode_bi_stream<C: Connection>(
     Ok((send, recv))
 }
 
-pub async fn send_datagram<C: Connection>(
-    conn: &C,
-    id: u32,
-    mut payload: Vec<u8>,
-) -> Result<(), NetworkError> {
-    let mut bytes = Vec::new();
-    byteorder::WriteBytesExt::write_u32::<byteorder::BigEndian>(&mut bytes, id)?;
-    bytes.append(&mut payload);
-    conn.send_datagram(Bytes::from(bytes))?;
+// pub async fn send_datagram<C: Connection>(conn: &C, id: u32, mut payload: Vec<u8>) -> Result<(), NetworkError> {
+//     let mut bytes = Vec::new();
+//     byteorder::WriteBytesExt::write_u32::<byteorder::BigEndian>(&mut bytes, id)?;
+//     bytes.append(&mut payload);
+//     conn.send_datagram(Bytes::from(bytes)).await?;
 
-    Ok(())
-}
+//     Ok(())
+// }
 
 pub fn create_client_endpoint_random_port() -> Option<Endpoint> {
     for _ in 0..10 {

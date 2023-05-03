@@ -3,6 +3,7 @@ use std::{
     fmt::{Debug, Display},
     future::Future,
     net::SocketAddr,
+    ops::Deref,
     pin::Pin,
     sync::Arc,
     time::Duration,
@@ -11,7 +12,8 @@ use std::{
 use ambient_app::window_title;
 use ambient_core::{asset_cache, gpu, runtime, window::window_scale_factor};
 use ambient_ecs::{
-    components, generated::messages, world_events, Entity, Resource, SystemGroup, World, WorldDiff,
+    components, generated::messages, world_events, ComponentValueBase, Entity, Resource,
+    SystemGroup, World, WorldDiff,
 };
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
@@ -27,24 +29,29 @@ use ambient_ui_native::{
     Button, Centered, FlowColumn, FlowRow, Image, MeasureSize, Text, Throbber,
 };
 use anyhow::Context;
-use bytes::Bytes;
+use bytes::{BufMut, Bytes, BytesMut};
+use futures::{future::BoxFuture, SinkExt, StreamExt};
 use glam::{uvec2, UVec2};
-use parking_lot::Mutex;
-use quinn::{Connection, RecvStream, SendStream};
+use parking_lot::{const_rwlock, Mutex};
+use quinn::Connection;
 use serde::{de::DeserializeOwned, Serialize};
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio_util::codec::{FramedRead, FramedWrite};
 use tracing::{debug_span, Instrument};
 
 use crate::{
+    client_connection::ConnectionInner,
     client_game_state::ClientGameState,
     codec::FramedCodec,
     create_client_endpoint_random_port, log_network_result,
-    proto::{ClientControl, ServerControl},
+    proto::{
+        client::{ClientState, SharedClientState},
+        ClientControl, ServerControl,
+    },
     protocol::{ClientInfo, ClientProtocol, ServerInfo},
-    rpc_request,
     server::{self, FramedRecvStream, FramedSendStream},
-    NetworkError,
+    stream::{self},
+    NetworkError, RPC_BISTREAM_ID,
 };
 
 components!("network::client", {
@@ -69,19 +76,81 @@ pub type BiStreamHandlers = HashMap<u32, BiStreamHandler>;
 pub type UniStreamHandlers = HashMap<u32, UniStreamHandler>;
 pub type DatagramHandlers = HashMap<u32, DatagramHandler>;
 
-#[derive(Debug, Clone)]
+/// A subset of the client state which allows for making transport agnostic RPCs and messages
+/// without the hassles of associated types and non-object safety.
+pub trait ClientConnection: 'static + Send + Sync {
+    /// Performs a bidirectional request and waits for a response.
+    fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>>;
+    /// Performs a unidirectional request without waiting for a response.
+    fn request_uni(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>>;
+    fn send_datagram(&self, id: u32, data: Bytes) -> Result<(), NetworkError>;
+}
+
+const MAX_RESPONSE_SIZE: usize = 1024 * 1024 * 1024;
+
+impl ClientConnection for quinn::Connection {
+    fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>> {
+        Box::pin(async move {
+            let (mut send, recv) = self.open_bi().await?;
+
+            send.write_u32(id).await?;
+            send.write_all(&data).await?;
+
+            drop(send);
+
+            let buf = recv.read_to_end(MAX_RESPONSE_SIZE).await?.into();
+
+            Ok(buf)
+        })
+    }
+
+    fn request_uni(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>> {
+        Box::pin(async move {
+            let mut send = self.open_uni().await?;
+
+            send.write_u32(id).await?;
+            send.write_all(&data).await?;
+
+            Ok(())
+        })
+    }
+
+    fn send_datagram(&self, id: u32, data: Bytes) -> Result<(), NetworkError> {
+        let mut bytes = BytesMut::with_capacity(4 + data.len());
+        bytes.put_u32(id);
+        bytes.put(data);
+
+        self.send_datagram(bytes.freeze())?;
+
+        Ok(())
+    }
+}
+
+#[derive(Clone)]
 /// Manages the client side connection to the server.
 pub struct GameClient {
-    pub connection: Connection,
+    pub connection: Arc<dyn ClientConnection>,
     pub rpc_registry: Arc<RpcRegistry<server::RpcArgs>>,
     pub user_id: String,
     pub game_state: Arc<Mutex<ClientGameState>>,
     pub uid: String,
 }
 
+impl Debug for GameClient {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("GameClient")
+            .field("connection", &self.connection.type_name())
+            .field("rpc_registry", &self.rpc_registry)
+            .field("user_id", &self.user_id)
+            .field("game_state", &self.game_state)
+            .field("uid", &self.uid)
+            .finish()
+    }
+}
+
 impl GameClient {
     pub fn new(
-        connection: Connection,
+        connection: Arc<dyn ClientConnection>,
         rpc_registry: Arc<RpcRegistry<server::RpcArgs>>,
         game_state: Arc<Mutex<ClientGameState>>,
         user_id: String,
@@ -108,7 +177,7 @@ impl GameClient {
         req: Req,
     ) -> Result<Resp, NetworkError> {
         rpc_request(
-            &self.connection,
+            &*self.connection,
             self.rpc_registry.clone(),
             func,
             req,
@@ -133,7 +202,7 @@ impl GameClient {
             let (connection, rpc_registry) = (connection.clone(), rpc_registry.clone());
             runtime.spawn(async move {
                 log_network_result!(
-                    rpc_request(&connection, rpc_registry, func, req, Self::SIZE_LIMIT).await
+                    rpc_request(&*connection, rpc_registry, func, req, Self::SIZE_LIMIT).await
                 );
             });
         })
@@ -142,6 +211,27 @@ impl GameClient {
     pub fn with_physics_world<R>(&self, f: impl Fn(&mut World) -> R) -> R {
         f(&mut self.game_state.lock().world)
     }
+}
+
+async fn rpc_request<
+    Args: Send + 'static,
+    Req: Serialize + DeserializeOwned + Send + 'static,
+    Resp: Serialize + DeserializeOwned + Send,
+    F: Fn(Args, Req) -> L + Send + Sync + Copy + 'static,
+    L: Future<Output = Resp> + Send,
+>(
+    conn: &dyn ClientConnection,
+    reg: Arc<RpcRegistry<Args>>,
+    func: F,
+    req: Req,
+    size_limit: usize,
+) -> Result<Resp, NetworkError> {
+    let req = reg.serialize_req(func, req);
+
+    let resp = conn.request_bi(RPC_BISTREAM_ID, req.into()).await?;
+
+    let resp = reg.deserialize_resp(func, &resp)?;
+    Ok(resp)
 }
 
 #[derive(Debug, Clone)]
@@ -263,9 +353,8 @@ impl ElementComponent for GameClientView {
             let game_client = game_client.clone();
             move |_, _| {
                 if let Some(game_client) = game_client.as_ref() {
-                    game_client
-                        .connection
-                        .close(0u32.into(), b"User window was closed");
+                    todo!()
+                    // game_client.connection.close(0u32.into(), b"User window was closed");
                 }
             }
         });
@@ -305,129 +394,168 @@ impl ElementComponent for GameClientView {
 
         let (error, set_error) = hooks.use_state(None);
 
-        let task = {
-            let runtime = hooks.world.resource(runtime()).clone();
+        hooks.use_task(move |_| {
+            let open_and_run = async move {
+                let conn = open_connection(server_addr)
+                    .await
+                    .with_context(|| format!("Failed to connect to endpoint: {server_addr:?}"))?;
+                tracing::info!("Connected to the server");
+                let user_id = friendly_id();
 
-            hooks.use_memo_with((), move |_, ()| {
-                let task = runtime.spawn(async move {
-                    let mut on_init = {
-                        let game_state = game_state.clone();
-                        move |conn, client_info: ClientInfo, server_info: ServerInfo| {
-                            let game_client = GameClient::new(
-                                conn,
-                                Arc::new(create_rpc_registry()),
-                                game_state.clone(),
-                                client_info.user_id,
-                            );
+                // Create a handle for the game client
+                let game_client = GameClient::new(
+                    Arc::new(conn.clone()),
+                    Arc::new(create_rpc_registry()),
+                    game_state.clone(),
+                    user_id.clone(),
+                );
+                {
+                    // Updates the game client context in the Ui tree
+                    set_game_client(Some(game_client.clone()));
+                    // Update the resources on the client side world to reflect the new connection
+                    // state
+                    let world = &mut game_state.lock().world;
+                    world.add_resource(self::game_client(), Some(game_client.clone()));
+                }
 
-                            let world = &mut game_state.lock().world;
-                            world.add_resource(self::game_client(), Some(game_client.clone()));
+                handle_connection(
+                    conn,
+                    user_id,
+                    ClientCallbacks {
+                        on_stats: on_server_stats,
+                    },
+                    game_state,
+                )
+                .await?;
 
-                            let assets = world.resource(asset_cache());
-                            ContentBaseUrlKey.insert(assets, server_info.content_base_url);
+                tracing::info!("Finished handling connection");
 
-                            // Update parent client
-                            set_game_client(Some(game_client.clone()));
-                            // Update the window title
-                            set_window_title(server_info.project_name);
-                            on_loaded(game_state.clone(), game_client)
-                                .context("Failed to initialize game client view")
-                        }
-                    };
+                Ok(()) as anyhow::Result<()>
+                // let mut on_init = {
+                //     let game_state = game_state.clone();
+                //     move |conn, client_info: ClientInfo, server_info: ServerInfo| {
+                //         let game_client =
+                //             GameClient::new(conn, Arc::new(create_rpc_registry()), game_state.clone(), client_info.user_id);
 
-                    let mut on_diff = |diff| {
-                        // if let Some(on_in_entities) = &on_in_entities {
-                        //     on_in_entities(&diff);
-                        // }
-                        // let mut gs = game_state.lock();
-                        // diff.apply(&mut gs.world, Entity::new().with(is_remote_entity(), ()), false);
-                    };
+                //         let world = &mut game_state.lock().world;
+                //         world.add_resource(self::game_client(), Some(game_client.clone()));
 
-                    // let on_bi_stream = |handler_id, tx, rx| {
-                    // let _span = debug_span!("on_bi_stream").entered();
-                    // let mut gs = game_state.lock();
-                    // let handler = gs.world.resource(bi_stream_handlers()).get(&handler_id).cloned();
-                    // if let Some(handler) = handler {
-                    //     handler(&mut gs.world, assets.clone(), tx, rx);
-                    // } else {
-                    //     log::error!("Unrecognized stream handler id: {}", handler_id);
-                    // }
-                    // };
+                //         let assets = world.resource(asset_cache());
+                //         ContentBaseUrlKey.insert(assets, server_info.content_base_url);
 
-                    // let on_uni_stream = |handler_id, rx| {
-                    // let _span = debug_span!("on_uni_stream").entered();
-                    // let mut gs = game_state.lock();
-                    // let handler = gs.world.resource(uni_stream_handlers()).get(&handler_id).cloned();
-                    // if let Some(handler) = handler {
-                    //     handler(&mut gs.world, assets.clone(), rx);
-                    // } else {
-                    //     log::error!("Unrecognized stream handler id: {}", handler_id);
-                    // }
-                    // };
+                //         // Update parent client
+                //         set_game_client(Some(game_client.clone()));
+                //         // Update the window title
+                //         set_window_title(server_info.project_name);
+                //         on_loaded(game_state.clone(), game_client).context("Failed to initialize game client view")
+                //     }
+                // };
 
-                    // let on_datagram = |handler_id: u32, bytes: Bytes| {
-                    // let mut gs = game_state.lock();
-                    // let handler = gs.world.resource(datagram_handlers()).get(&handler_id).cloned();
-                    // match handler {
-                    //     Some(handler) => {
-                    //         handler(&mut gs.world, assets.clone(), bytes);
-                    //     }
-                    //     None => {
-                    //         log::error!("No such datagram handler: {:?}", handler_id);
-                    //     }
-                    // }
-                    // };
+                // let mut on_diff = |diff| {
+                // if let Some(on_in_entities) = &on_in_entities {
+                //     on_in_entities(&diff);
+                // }
+                // let mut gs = game_state.lock();
+                // diff.apply(&mut gs.world, Entity::new().with(is_remote_entity(), ()), false);
+                // };
 
-                    let mut on_server_stats = |stats| {
-                        on_server_stats(stats);
-                    };
+                // let on_bi_stream = |handler_id, tx, rx| {
+                // let _span = debug_span!("on_bi_stream").entered();
+                // let mut gs = game_state.lock();
+                // let handler = gs.world.resource(bi_stream_handlers()).get(&handler_id).cloned();
+                // if let Some(handler) = handler {
+                //     handler(&mut gs.world, assets.clone(), tx, rx);
+                // } else {
+                //     log::error!("Unrecognized stream handler id: {}", handler_id);
+                // }
+                // };
 
-                    let mut on_network_stats = |stats| {
-                        on_network_stats(stats);
-                    };
+                // let on_uni_stream = |handler_id, rx| {
+                // let _span = debug_span!("on_uni_stream").entered();
+                // let mut gs = game_state.lock();
+                // let handler = gs.world.resource(uni_stream_handlers()).get(&handler_id).cloned();
+                // if let Some(handler) = handler {
+                //     handler(&mut gs.world, assets.clone(), rx);
+                // } else {
+                //     log::error!("Unrecognized stream handler id: {}", handler_id);
+                // }
+                // };
 
-                    let client_loop = ClientInstance {
-                        set_connection_status,
-                        server_addr,
-                        user_id,
-                        on_init: &mut on_init,
-                        on_diff: &mut on_diff,
-                        on_bi_stream: todo!(),
-                        on_uni_stream: todo!(),
-                        on_datagram: todo!(),
-                        on_server_stats: &mut on_server_stats,
-                        on_client_stats: &mut on_network_stats,
-                        on_disconnect,
-                        init_destructor: None,
-                    };
+                // let on_datagram = |handler_id: u32, bytes: Bytes| {
+                // let mut gs = game_state.lock();
+                // let handler = gs.world.resource(datagram_handlers()).get(&handler_id).cloned();
+                // match handler {
+                //     Some(handler) => {
+                //         handler(&mut gs.world, assets.clone(), bytes);
+                //     }
+                //     None => {
+                //         log::error!("No such datagram handler: {:?}", handler_id);
+                //     }
+                // }
+                // };
 
-                    match client_loop.run().await {
-                        Err(err) => {
-                            if let Some(err) = err.downcast_ref::<NetworkError>() {
-                                if let NetworkError::ConnectionClosed = err {
-                                    log::info!("Connection closed by peer");
-                                } else {
-                                    log::error!("Network error: {:?}", err);
-                                }
+                // let mut on_server_stats = |stats| {
+                //     on_server_stats(stats);
+                // };
+
+                // let mut on_network_stats = |stats| {
+                //     on_network_stats(stats);
+                // };
+
+                // let client_loop = ClientInstance {
+                //     set_connection_status,
+                //     server_addr,
+                //     user_id,
+                //     on_init: &mut on_init,
+                //     on_diff: &mut on_diff,
+                //     on_bi_stream: todo!(),
+                //     on_uni_stream: todo!(),
+                //     on_datagram: todo!(),
+                //     on_server_stats: &mut on_server_stats,
+                //     on_client_stats: &mut on_network_stats,
+                //     on_disconnect,
+                //     init_destructor: None,
+                // };
+
+                // match client_loop.run().await {
+                //     Err(err) => {
+                //         if let Some(err) = err.downcast_ref::<NetworkError>() {
+                //             if let NetworkError::ConnectionClosed = err {
+                //                 log::info!("Connection closed by peer");
+                //             } else {
+                //                 log::error!("Network error: {:?}", err);
+                //             }
+                //         } else {
+                //             log::error!("Game failed: {:?}", err);
+                //         }
+                //         set_error(Some(format!("{err:?}")));
+                //     }
+                //     Ok(()) => {
+                //         log::info!("Client disconnected");
+                //     }
+                // };
+            };
+
+            async move {
+                match open_and_run.await {
+                    Ok(()) => {
+                        tracing::info!("Client disconnected");
+                    }
+                    Err(err) => {
+                        if let Some(err) = err.downcast_ref::<NetworkError>() {
+                            if let NetworkError::ConnectionClosed = err {
+                                tracing::info!("Connection closed by peer");
                             } else {
-                                log::error!("Game failed: {:?}", err);
+                                tracing::error!("Network error: {:?}", err);
                             }
-                            set_error(Some(format!("{err:?}")));
+                        } else {
+                            tracing::error!("Game failed: {:?}", err);
                         }
-                        Ok(()) => {
-                            log::info!("Client disconnected");
-                        }
-                    };
-                });
-                Arc::new(task)
-            })
-        };
-
-        // When the GameClientView is despawned, stop the task.
-        {
-            let task = task.clone();
-            hooks.use_spawn(move |_| move |_| task.abort());
-        }
+                        set_error(Some(format!("{err:?}")));
+                    }
+                }
+            }
+        });
 
         if let Some(err) = error {
             return error_view(err);
@@ -442,21 +570,93 @@ impl ElementComponent for GameClientView {
 
             inner
         } else {
-            Centered(vec![FlowColumn::el([
-                FlowRow::el([Text::el(connection_status), Throbber.el()]),
-                Button::new("Cancel", move |_| task.abort()).el(),
-            ])])
+            Centered(vec![FlowColumn::el([FlowRow::el([
+                Text::el(connection_status),
+                Throbber.el(),
+            ])])])
             .el()
         }
     }
 }
 
-async fn handle_connection(conn: Connection) -> anyhow::Result<()> {
-    let mut control_send: FramedSendStream<ServerControl> =
-        FramedWrite::new(conn.open_uni().await?, FramedCodec::new());
+#[derive(Debug)]
+struct ClientCallbacks {
+    on_stats: Cb<dyn Fn(GameClientServerStats) + Send + Sync>,
+}
 
-    let mut control_recv: FramedRecvStream<ClientControl> =
-        FramedRead::new(conn.accept_uni().await?, FramedCodec::new());
+#[tracing::instrument(level = "info")]
+async fn handle_connection(
+    conn: quinn::Connection,
+    user_id: String,
+    callbacks: ClientCallbacks,
+    state: SharedClientState,
+) -> anyhow::Result<()> {
+    let mut control_send = stream::SendStream::new(conn.open_uni().await?);
+
+    let mut control_recv = stream::RecvStream::new(conn.accept_uni().await?);
+
+    // Accept the diff and stat stream
+    // Nothing is read from them until the connection has been accepted
+    let mut diff_recv = stream::RecvStream::new(conn.accept_uni().await?);
+    let mut stat_recv = stream::RecvStream::new(conn.accept_uni().await?);
+
+    // Send a connection request
+    tracing::info!("Attempting to connect using {user_id:?}");
+
+    control_send
+        .send(ServerControl::Connect(user_id.clone()))
+        .await?;
+
+    let mut client = ClientState::Connecting(user_id);
+
+    loop {
+        match &mut client {
+            ClientState::Connecting(_) => {
+                if let Some(frame) = control_recv.next().await {
+                    client.process_control(&state, frame?)?;
+                }
+            }
+            ClientState::Connected(connected) => {
+                tokio::select! {
+                    Some(diff) = diff_recv.next() => {
+                        connected.process_diff(&state, diff?)?;
+                    }
+                    // _ = stats_timer.tick() => {
+                    //     let stats = protocol.connection().stats();
+
+                    //     (self.on_client_stats)(GameClientNetworkStats {
+                    //         latency_ms: protocol.connection().rtt().as_millis() as u64,
+                    //         bytes_sent: (stats.udp_tx.bytes - prev_stats.udp_tx.bytes) / stats_interval,
+                    //         bytes_received: (stats.udp_rx.bytes - prev_stats.udp_rx.bytes) / stats_interval,
+                    //     });
+
+                    //     prev_stats = stats;
+                    // }
+                    Some(stats) = stat_recv.next() => {
+                        (callbacks.on_stats)(GameClientServerStats(stats?));
+                    }
+
+                    Ok(datagram) = conn.read_datagram() => {
+                        todo!()
+                        // let _span = tracing::debug_span!("datagram").entered();
+                        // let data = datagram.split_off(4);
+                        // let handler_id = u32::from_be_bytes(datagram[0..4].try_into().unwrap());
+                        // tokio::task::block_in_place(|| (self.on_datagram)(handler_id, data))
+                    }
+                    Ok((send, recv)) = conn.accept_bi() => {
+                        connected.process_bi(&state, send, recv).await?;
+                    }
+                    Ok(rx) = conn.accept_uni() => {
+                        todo!()
+                    }
+                }
+            }
+            ClientState::Disconnected => {
+                tracing::info!("Client entered disconnected state");
+                break;
+            }
+        }
+    }
 
     Ok(())
 }
@@ -502,8 +702,8 @@ struct ClientInstance<'a> {
                  + Sync),
     on_diff: &'a mut (dyn FnMut(WorldDiff) + Send + Sync),
     on_datagram: &'a (dyn Fn(u32, Bytes) + Send + Sync),
-    on_bi_stream: &'a (dyn Fn(u32, SendStream, RecvStream) + Send + Sync),
-    on_uni_stream: &'a (dyn Fn(u32, RecvStream) + Send + Sync),
+    on_bi_stream: &'a (dyn Fn(u32, quinn::SendStream, quinn::RecvStream) + Send + Sync),
+    on_uni_stream: &'a (dyn Fn(u32, quinn::RecvStream) + Send + Sync),
 
     on_server_stats: &'a mut (dyn FnMut(GameClientServerStats) + Send + Sync),
     on_client_stats: &'a mut (dyn FnMut(GameClientNetworkStats) + Send + Sync),
