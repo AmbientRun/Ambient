@@ -245,14 +245,33 @@ fn publish(execute: bool) -> anyhow::Result<()> {
 
     #[derive(Debug)]
     enum Task {
-        Publish(PathBuf),
+        Publish(PathBuf, Vec<String>),
         Wait(usize),
     }
 
     let tasks = crates
         .into_iter()
-        .map(|p| p.0.parent().unwrap().canonicalize().unwrap())
-        .map(Task::Publish)
+        .map(|p| {
+            let crate_path = p.0.parent().unwrap().canonicalize().unwrap();
+            let crates_path = crate_path
+                .parent()
+                .unwrap()
+                .file_name()
+                .unwrap()
+                .to_string_lossy();
+
+            let features = if crates_path == "shared_crates" {
+                if !p.1.features.contains_key("default") && p.1.features.contains_key("native") {
+                    vec!["native".to_string()]
+                } else {
+                    vec![]
+                }
+            } else {
+                vec![]
+            };
+
+            Task::Publish(crate_path, features)
+        })
         .chunks(5)
         .into_iter()
         .flat_map(|c| c.chain(std::iter::once(Task::Wait(30))))
@@ -264,12 +283,14 @@ fn publish(execute: bool) -> anyhow::Result<()> {
         true => {
             for task in tasks {
                 match task {
-                    Task::Publish(path) => {
-                        let status = Command::new("cargo")
-                            .arg("publish")
-                            .current_dir(path)
-                            .spawn()?
-                            .wait()?;
+                    Task::Publish(path, features) => {
+                        let mut command = Command::new("cargo");
+                        command.arg("publish");
+                        if !features.is_empty() {
+                            command.arg("-F").arg(features.join(","));
+                        }
+
+                        let status = command.current_dir(path).spawn()?.wait()?;
                         if !status.success() {
                             anyhow::bail!("failed to upload {}", path.display());
                         }
@@ -283,8 +304,17 @@ fn publish(execute: bool) -> anyhow::Result<()> {
         false => {
             for task in tasks {
                 match task {
-                    Task::Publish(path) => {
-                        println!("cd {} && cargo publish && cd -", path.display())
+                    Task::Publish(path, features) => {
+                        let features = features.join(",");
+                        println!(
+                            "cd {} && cargo publish {}&& cd -",
+                            path.display(),
+                            if features.is_empty() {
+                                "".to_string()
+                            } else {
+                                format!("-F {} ", features)
+                            }
+                        )
                     }
                     Task::Wait(seconds) => println!("sleep {}", seconds),
                 }
