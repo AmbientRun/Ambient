@@ -21,7 +21,7 @@ ambient_network = { path = "../network" , version = "0.2.0-rc5" }
 ambient_gizmos = { path = "../gizmos" , version = "0.2.0-rc5" }
 ambient_model = { path = "../model" , version = "0.2.0-rc5" }
 ambient_primitives = { path = "../primitives" , version = "0.2.0-rc5" }
-physxx = { path = "../../libs/physxx" }
+physxx = { path = "../../libs/physxx" , version = "0.2.0-rc5" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 glam = { workspace = true }
