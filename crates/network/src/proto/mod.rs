@@ -1,6 +1,6 @@
 use crate::protocol::ServerInfo;
 
-mod client;
+pub mod client;
 pub mod server;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]

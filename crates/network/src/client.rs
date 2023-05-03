@@ -452,9 +452,11 @@ impl ElementComponent for GameClientView {
 }
 
 async fn handle_connection(conn: Connection) -> anyhow::Result<()> {
-    let mut control_send: FramedSendStream<ServerControl> = FramedWrite::new(conn.open_uni().await?, FramedCodec::new());
+    let mut control_send: FramedSendStream<ServerControl> =
+        FramedWrite::new(conn.open_uni().await?, FramedCodec::new());
 
-    let mut control_recv: FramedRecvStream<ClientControl> = FramedRead::new(conn.accept_uni().await?, FramedCodec::new());
+    let mut control_recv: FramedRecvStream<ClientControl> =
+        FramedRead::new(conn.accept_uni().await?, FramedCodec::new());
 
     Ok(())
 }

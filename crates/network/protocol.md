@@ -26,6 +26,10 @@ Once the client wishes to connect and initiate a physical presence in the server
 
 The server receives this requests creates an entity in the `MAIN_INSTANCE_ID` world.
 
+The server responds by sending a `ServerInfo` on the control
+stream which contains information about the current ambient
+project, version, etc.
+
 If the server for any reason chooses to reject the connection, the underlying transport is closed. In any other case, the _client_ assumes it is connected as soon as the request has been sent.
 
 It is considered an _error_ if multiple connect requests are sent or received.

@@ -97,6 +97,7 @@ pub struct ServerInfo {
 
     /// The version of the server. Used by the client to determine whether or not to keep connecting.
     /// Defaults to the version of the crate.
+    /// TODO: use semver
     pub version: String,
 }
 

@@ -31,7 +31,7 @@ components!("rendering", {
 });
 
 #[derive(Debug)]
-/// Holds the physical world
+/// Holds the material world of the client.
 pub struct ClientGameState {
     pub world: World,
     systems: SystemGroup,
@@ -39,7 +39,7 @@ pub struct ClientGameState {
     gpu_world_sync_systems: SystemGroup<GpuWorldSyncEvent>,
     pub renderer: Renderer,
     pub ui_renderer: Renderer,
-    assets: AssetCache,
+    pub(crate) assets: AssetCache,
     user_id: String,
 }
 struct TempSystem(Box<dyn FnMut(&mut World) -> bool + Sync + Send>);

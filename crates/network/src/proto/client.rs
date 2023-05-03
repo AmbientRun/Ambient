@@ -1,82 +1,104 @@
 use std::sync::Arc;
 
 use ambient_ecs::{generated::components::core::network::is_remote_entity, Entity, WorldDiff};
-use ambient_std::asset_cache::AssetCache;
+use ambient_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    asset_url::ContentBaseUrlKey,
+    fps_counter::FpsSample,
+    Cb,
+};
 use anyhow::Context;
 use parking_lot::Mutex;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
 use tracing::info_span;
 
-use crate::{client::bi_stream_handlers, client_game_state::ClientGameState, proto::*, protocol::ServerInfo};
+use crate::{
+    client::{bi_stream_handlers, GameClientServerStats},
+    client_game_state::ClientGameState,
+    proto::*,
+    protocol::ServerInfo,
+};
 
-/// The client side of the protocol
-pub struct Client {
+/// The client logic handler in a connected state
+///
+/// Entered after the client has sent a connect request and received a `ServerInfo` message from the server, in no particular order.
+#[derive(Debug)]
+pub(crate) struct ConnectedClient {
     user_id: String,
-    server_info: Option<ServerInfo>,
-    connected: bool,
-    game_state: Arc<Mutex<ClientGameState>>,
-    on_in_entities: Option<Arc<dyn Fn(&WorldDiff) + Send + Sync>>,
-    assets: AssetCache,
+    server_info: ServerInfo,
+    on_in_entities: Option<Cb<dyn Fn(&WorldDiff) + Send + Sync>>,
 }
 
-impl std::fmt::Debug for Client {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Client").field("server_info", &self.server_info).field("connected", &self.connected).finish_non_exhaustive()
-    }
+#[derive(Debug)]
+pub(crate) enum ClientState {
+    Connecting(String),
+    Connected(ConnectedClient),
+    Disconnected,
 }
 
-impl Client {
-    /// Attempt to connect to the server.
-    ///
-    /// The client assumes a connection is established, if otherwise, the transport is closed.
-    pub fn connect(&mut self) -> ServerControl {
-        assert!(!self.connected);
-        tracing::info!(user_id = self.user_id, "Sending connect request");
+pub type SharedClientState = Arc<Mutex<ClientGameState>>;
 
-        self.connected = true;
-        ServerControl::Connect(self.user_id.clone())
+impl ClientState {
+    pub fn process_disconnect(&mut self) {
+        tracing::info!("Disconnecting client: {self:#?}");
     }
 
     /// Processes an incoming control frame from the server.
-    pub fn process_control(&mut self, frame: ClientControl) -> anyhow::Result<()> {
-        match frame {
-            ClientControl::ServerInfo(info) => {
-                tracing::info!("Received server info");
-                self.server_info = Some(info);
+    #[tracing::instrument(level = "info")]
+    pub fn process_control(&mut self, state: &SharedClientState, frame: ClientControl) -> anyhow::Result<()> {
+        match (frame, &self) {
+            (ClientControl::ServerInfo(server_info), Self::Connecting(user_id)) => {
+                tracing::info!("Received server info: {server_info:?}");
+
+                let state = state.lock();
+                ContentBaseUrlKey.insert(&state.assets, server_info.content_base_url.clone());
+
+                *self = Self::Connected(ConnectedClient { user_id: user_id.clone(), server_info, on_in_entities: None });
+
                 Ok(())
             }
-            ClientControl::Disconnect => {
+            (ClientControl::ServerInfo(_), _) => {
+                tracing::warn!("Received server info while already connected");
+                Ok(())
+            }
+            (ClientControl::Disconnect, _) => {
                 tracing::info!("Server disconnected");
+                *self = Self::Disconnected;
                 Ok(())
             }
         }
     }
+}
 
+impl ConnectedClient {
     #[tracing::instrument(level = "info")]
-    pub fn process_diff(&mut self, diff: WorldDiff) -> anyhow::Result<()> {
-        if let Some(on_in_entities) = &self.on_in_entities {
-            on_in_entities(&diff);
-        }
-        let mut gs = self.game_state.lock();
+    pub fn process_diff(&mut self, state: &SharedClientState, diff: WorldDiff) -> anyhow::Result<()> {
+        // if let Some(on_in_entities) = &self.on_in_entities {
+        //     on_in_entities(&diff);
+        // }
+        let mut gs = state.lock();
         diff.apply(&mut gs.world, Entity::new().with(is_remote_entity(), ()), false);
         Ok(())
     }
 
     /// Processes a server initiated bidirectional stream
     #[tracing::instrument(level = "info", skip(send, recv))]
-    pub async fn process_bi_stream<R, S>(&mut self, send: S, mut recv: R) -> anyhow::Result<()>
+    pub async fn process_bi<R, S>(&mut self, state: &SharedClientState, send: S, mut recv: R) -> anyhow::Result<()>
     where
         R: 'static + Send + Sync + Unpin + AsyncRead,
         S: 'static + Send + Sync + Unpin + AsyncWrite,
     {
         let id = recv.read_u32().await?;
-        let mut gs = self.game_state.lock();
+
+        let mut gs = state.lock();
+        let gs = &mut *gs;
         let world = &mut gs.world;
+        let assets = gs.assets.clone();
 
         let handler = world.resource(bi_stream_handlers()).get(&id).with_context(|| format!("No handler for stream {id}"))?.clone();
 
-        let _span = info_span!("process_bi_stream", id).entered();
-        handler(world, self.assets.clone(), Box::pin(send), Box::pin(recv));
+        let _span = info_span!("handle_bi", id).entered();
+        handler(world, assets, Box::pin(send), Box::pin(recv));
 
         Ok(())
     }
