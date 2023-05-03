@@ -325,12 +325,12 @@ fn publish(execute: bool) -> anyhow::Result<()> {
                     Task::Publish(path, features) => {
                         let features = features.join(",");
                         println!(
-                            "cd {} && cargo publish {}&& cd -",
+                            "cd {} && cargo publish{}; cd -",
                             path.display(),
                             if features.is_empty() {
                                 "".to_string()
                             } else {
-                                format!("-F {} ", features)
+                                format!(" -F {}", features)
                             }
                         )
                     }

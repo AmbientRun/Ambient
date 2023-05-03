@@ -1522,6 +1522,7 @@ dependencies = [
  "ambient_meshes",
  "ambient_primitives",
  "ambient_renderer",
+ "ambient_sky",
  "ambient_std",
  "glam 0.22.0",
  "wgpu 0.16.0",
