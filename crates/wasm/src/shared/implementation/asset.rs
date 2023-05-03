@@ -25,7 +25,7 @@ pub(crate) fn url(
                 .to_download_url(&assets)
                 .map_err(parse_error_to_url_error)?
         } else {
-            asset_url.0
+            asset_url
         };
         Ok(asset_url.to_string())
     })
