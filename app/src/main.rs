@@ -236,13 +236,16 @@ fn main() -> anyhow::Result<()> {
         let Some(auth_token) = token else {
             anyhow::bail!("-t/--token is required for deploy");
         };
+        let Some(project_fs_path) = &project_path.fs_path else {
+            anyhow::bail!("Can only deploy a local project");
+        };
         let manifest = manifest.as_ref().expect("no manifest");
         let response = runtime.block_on(ambient_deploy::deploy(
             &runtime,
             // FIXME: switch to https once we have a cert
             api_server.clone().unwrap_or("http://api.ambient.run".to_string()),
             auth_token,
-            project_path,
+            project_fs_path,
             manifest,
         ))?;
         log::info!("Version {} deployed successfully", response.id);
