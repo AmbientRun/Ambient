@@ -64,7 +64,7 @@ pub fn initialize(world: &mut World, project_path: PathBuf, manifest: &ambient_p
             if target == "client" {
                 let relative_path = path.strip_prefix(&build_dir)?;
                 let asset_key = path_to_unix_string(relative_path);
-                let bytecode_url = AbsAssetUrl::from_asset_key(asset_key).to_string();
+                let bytecode_url = AbsAssetUrl::from_asset_key(asset_key)?.to_string();
                 world.add_component(id, client_bytecode_from_url(), bytecode_url)?;
             } else {
                 let bytecode = std::fs::read(path)?;

@@ -190,8 +190,7 @@ impl wit::client_audio::Host for Bindings {
         let abs_url = AbsAssetUrl::parse(url).context("Failed to parse audio url")?;
         let download_url = abs_url
             .to_download_url(&assets)
-            .map(|url| Some(url.to_string()))
-            .unwrap()
+            .map(|url| Some(url.to_string()))?
             .unwrap_or(abs_url.to_string());
         let audio_url = AudioFromUrl {
             url: AbsAssetUrl::parse(download_url.clone()).context("Failed to get audio url")?,

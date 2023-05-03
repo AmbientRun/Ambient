@@ -1,3 +1,7 @@
 default interface asset {
-    url: func(path: string) -> option<string>
+    variant url-error {
+        invalid-url(string),
+    }
+
+    url: func(path: string) -> result<string, url-error>
 }
