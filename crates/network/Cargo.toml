@@ -10,17 +10,17 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_ecs = { path = "../ecs" , version = "0.2.0-rc6" }
-ambient_sys = { path = "../sys" , version = "0.2.0-rc6" }
-ambient_rpc = { path = "../rpc" , version = "0.2.0-rc6" }
-ambient_std = { path = "../std" , version = "0.2.0-rc6" }
-ambient_core = { path = "../core" , version = "0.2.0-rc6" }
-ambient_gizmos = { path = "../gizmos" , version = "0.2.0-rc6" }
-ambient_gpu = { path = "../gpu" , version = "0.2.0-rc6" }
-ambient_ui_native = { path = "../ui_native" , version = "0.2.0-rc6" }
-ambient_renderer = { path = "../renderer" , version = "0.2.0-rc6" }
-ambient_element = { path = "../../shared_crates/element" , version = "0.2.0-rc6" }
-ambient_app = { path = "../app" , version = "0.2.0-rc6" }
+ambient_ecs = { path = "../ecs" , version = "0.2.0-rc7" }
+ambient_sys = { path = "../sys" , version = "0.2.0-rc7" }
+ambient_rpc = { path = "../rpc" , version = "0.2.0-rc7" }
+ambient_std = { path = "../std" , version = "0.2.0-rc7" }
+ambient_core = { path = "../core" , version = "0.2.0-rc7" }
+ambient_gizmos = { path = "../gizmos" , version = "0.2.0-rc7" }
+ambient_gpu = { path = "../gpu" , version = "0.2.0-rc7" }
+ambient_ui_native = { path = "../ui_native" , version = "0.2.0-rc7" }
+ambient_renderer = { path = "../renderer" , version = "0.2.0-rc7" }
+ambient_element = { path = "../../shared_crates/element" , version = "0.2.0-rc7" }
+ambient_app = { path = "../app" , version = "0.2.0-rc7" }
 ambient_proxy = "0.2.6"
 
 itertools = { workspace = true }

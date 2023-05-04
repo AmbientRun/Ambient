@@ -19,7 +19,7 @@ checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
 
 [[package]]
 name = "ambient_api"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api_core",
  "ambient_cb",
@@ -35,7 +35,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_api_core"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api_macros",
  "ambient_project_rt",
@@ -54,7 +54,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_api_macros"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_project",
  "ambient_project_macro_common",
@@ -68,11 +68,11 @@ dependencies = [
 
 [[package]]
 name = "ambient_cb"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 
 [[package]]
 name = "ambient_color"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "glam",
  "hex",
@@ -82,7 +82,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_editor_derive"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "convert_case",
  "itertools",
@@ -95,7 +95,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_element"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_cb",
  "ambient_element_component",
@@ -114,7 +114,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_element_component"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "itertools",
  "proc-macro-crate",
@@ -125,14 +125,14 @@ dependencies = [
 
 [[package]]
 name = "ambient_friendly_id"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "rand",
 ]
 
 [[package]]
 name = "ambient_guest_bridge"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api_core",
  "ambient_shared_types",
@@ -140,7 +140,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_math"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "glam",
  "rand",
@@ -169,7 +169,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_project"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "anyhow",
  "proc-macro2",
@@ -182,7 +182,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_project_macro_common"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_project",
  "anyhow",
@@ -196,7 +196,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_project_rt"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "byteorder",
  "glam",
@@ -205,11 +205,11 @@ dependencies = [
 
 [[package]]
 name = "ambient_schema"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 
 [[package]]
 name = "ambient_shared_types"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "bitflags 1.3.2",
  "serde",
@@ -218,7 +218,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_time"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "itertools",
  "thiserror",
@@ -226,7 +226,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ui"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_cb",
  "ambient_color",
@@ -272,14 +272,14 @@ checksum = "088ccb346677e658e7ccd9627c62576fba881f4db7fab71fa9e21bf31c0aa4cb"
 
 [[package]]
 name = "asset_loading"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "async"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -292,7 +292,7 @@ checksum = "857253367827bd9d0fd973f0ef15506a96e79e41b0ad7aa691203a4e3214f6c8"
 
 [[package]]
 name = "auto_editor"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -332,7 +332,7 @@ checksum = "24a6904aef64d73cf10ab17ebace7befb918b82164785cb89907993be7f83813"
 
 [[package]]
 name = "button"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -363,7 +363,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "clientside"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -379,7 +379,7 @@ dependencies = [
 
 [[package]]
 name = "counter"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -402,7 +402,7 @@ checksum = "23d8666cb01533c39dde32bcbab8e227b4ed6679b2c925eba05feabea39508fb"
 
 [[package]]
 name = "decals"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -426,7 +426,7 @@ checksum = "56254986775e3233ffa9c4d7d3faaf6d36a2c09d30b20687e9f88bc8bafc16c8"
 
 [[package]]
 name = "dock_layout"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -460,7 +460,7 @@ checksum = "68b0cf012f1230e43cd00ebb729c6bb58707ecfa8ad08b52ef3a4ccd2697fc30"
 
 [[package]]
 name = "editors"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
  "indexmap",
@@ -483,21 +483,21 @@ dependencies = [
 
 [[package]]
 name = "first_person_camera"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "flow_layout"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "fog"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -667,7 +667,7 @@ dependencies = [
 
 [[package]]
 name = "image_quad"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -691,7 +691,7 @@ checksum = "9f2cb48b81b1dc9f39676bf99f5499babfec7cd8fe14307f7b3d747208fb5690"
 
 [[package]]
 name = "input"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -760,14 +760,14 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "messaging"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "minigolf"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -783,7 +783,7 @@ dependencies = [
 
 [[package]]
 name = "multiplayer"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
  "rand",
@@ -791,7 +791,7 @@ dependencies = [
 
 [[package]]
 name = "music_sequencer"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -932,7 +932,7 @@ dependencies = [
 
 [[package]]
 name = "physics"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -951,7 +951,7 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
 name = "pong"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -976,7 +976,7 @@ dependencies = [
 
 [[package]]
 name = "primitives"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -1063,14 +1063,14 @@ dependencies = [
 
 [[package]]
 name = "raw_text"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "rect"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -1110,14 +1110,14 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "screen_ray"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "screens"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
  "ambient_friendly_id",
@@ -1171,7 +1171,7 @@ checksum = "7bd3e3206899af3f8b12af284fafc038cc1dc2b41d1b89dd17297221c5d225de"
 
 [[package]]
 name = "skinmesh"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -1187,7 +1187,7 @@ dependencies = [
 
 [[package]]
 name = "slider"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -1222,7 +1222,7 @@ dependencies = [
 
 [[package]]
 name = "sun"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -1251,14 +1251,14 @@ dependencies = [
 
 [[package]]
 name = "text"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "third_person_camera"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -1285,7 +1285,7 @@ dependencies = [
 
 [[package]]
 name = "tictactoe"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
  "palette",
@@ -1308,7 +1308,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "todo"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
@@ -1390,7 +1390,7 @@ dependencies = [
 
 [[package]]
 name = "transparency"
-version = "0.2.0-rc6"
+version = "0.2.0-rc7"
 dependencies = [
  "ambient_api",
 ]
