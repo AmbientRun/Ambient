@@ -7,13 +7,14 @@ use ambient_std::{
     fps_counter::FpsSample,
     Cb,
 };
-use anyhow::Context;
+use anyhow::{bail, Context};
+use bytes::{Buf, Bytes};
 use parking_lot::Mutex;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
 use tracing::info_span;
 
 use crate::{
-    client::{bi_stream_handlers, GameClientServerStats},
+    client::{bi_stream_handlers, datagram_handlers, uni_stream_handlers, GameClientServerStats},
     client_game_state::ClientGameState,
     proto::*,
     protocol::ServerInfo,
@@ -41,6 +42,8 @@ pub type SharedClientState = Arc<Mutex<ClientGameState>>;
 impl ClientState {
     pub fn process_disconnect(&mut self) {
         tracing::info!("Disconnecting client: {self:#?}");
+
+        *self = Self::Disconnected;
     }
 
     /// Processes an incoming control frame from the server.
@@ -62,8 +65,7 @@ impl ClientState {
                 Ok(())
             }
             (ClientControl::Disconnect, _) => {
-                tracing::info!("Server disconnected");
-                *self = Self::Disconnected;
+                self.process_disconnect();
                 Ok(())
             }
         }
@@ -99,6 +101,49 @@ impl ConnectedClient {
 
         let _span = info_span!("handle_bi", id).entered();
         handler(world, assets, Box::pin(send), Box::pin(recv));
+
+        Ok(())
+    }
+
+    /// Processes a server initiated unidirectional stream
+    #[tracing::instrument(level = "info", skip(recv))]
+    pub async fn process_uni<R>(&mut self, state: &SharedClientState, mut recv: R) -> anyhow::Result<()>
+    where
+        R: 'static + Send + Sync + Unpin + AsyncRead,
+    {
+        let id = recv.read_u32().await?;
+
+        let mut gs = state.lock();
+        let gs = &mut *gs;
+        let world = &mut gs.world;
+        let assets = gs.assets.clone();
+
+        let handler = world.resource(uni_stream_handlers()).get(&id).with_context(|| format!("No handler for stream {id}"))?.clone();
+
+        let _span = info_span!("handle_uni", id).entered();
+        handler(world, assets, Box::pin(recv));
+
+        Ok(())
+    }
+
+    /// Processes an incoming datagram
+    #[tracing::instrument(level = "info")]
+    pub fn process_datagram(&mut self, state: &SharedClientState, mut data: Bytes) -> anyhow::Result<()> {
+        if data.len() < 4 {
+            bail!("Received malformed datagram");
+        }
+
+        let id = data.get_u32();
+
+        let mut gs = state.lock();
+        let gs = &mut *gs;
+        let world = &mut gs.world;
+        let assets = gs.assets.clone();
+
+        let handler = world.resource(datagram_handlers()).get(&id).with_context(|| format!("No handler for stream {id}"))?.clone();
+
+        let _span = info_span!("handle_uni", id).entered();
+        handler(world, assets, data);
 
         Ok(())
     }

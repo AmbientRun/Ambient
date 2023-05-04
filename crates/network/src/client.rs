@@ -164,8 +164,6 @@ impl GameClient {
         }
     }
 
-    const SIZE_LIMIT: usize = 100_000_000;
-
     pub async fn rpc<
         Req: Serialize + DeserializeOwned + Send + 'static,
         Resp: Serialize + DeserializeOwned + Send,
@@ -176,14 +174,7 @@ impl GameClient {
         func: F,
         req: Req,
     ) -> Result<Resp, NetworkError> {
-        rpc_request(
-            &*self.connection,
-            self.rpc_registry.clone(),
-            func,
-            req,
-            Self::SIZE_LIMIT,
-        )
-        .await
+        rpc_request(&*self.connection, self.rpc_registry.clone(), func, req).await
     }
 
     pub fn make_standalone_rpc_wrapper<
@@ -201,9 +192,7 @@ impl GameClient {
         cb(move |req| {
             let (connection, rpc_registry) = (connection.clone(), rpc_registry.clone());
             runtime.spawn(async move {
-                log_network_result!(
-                    rpc_request(&*connection, rpc_registry, func, req, Self::SIZE_LIMIT).await
-                );
+                log_network_result!(rpc_request(&*connection, rpc_registry, func, req).await);
             });
         })
     }
@@ -224,7 +213,6 @@ async fn rpc_request<
     reg: Arc<RpcRegistry<Args>>,
     func: F,
     req: Req,
-    size_limit: usize,
 ) -> Result<Resp, NetworkError> {
     let req = reg.serialize_req(func, req);
 
@@ -389,7 +377,7 @@ impl ElementComponent for GameClientView {
         }
 
         // Set the window title to the project name
-        let (window_title_state, set_window_title) = hooks.use_state("Ambient".to_string());
+        let (window_title_state, _set_window_title) = hooks.use_state("Ambient".to_string());
         *hooks.world.resource_mut(window_title()) = window_title_state;
 
         let (error, set_error) = hooks.use_state(None);
@@ -431,109 +419,6 @@ impl ElementComponent for GameClientView {
                 tracing::info!("Finished handling connection");
 
                 Ok(()) as anyhow::Result<()>
-                // let mut on_init = {
-                //     let game_state = game_state.clone();
-                //     move |conn, client_info: ClientInfo, server_info: ServerInfo| {
-                //         let game_client =
-                //             GameClient::new(conn, Arc::new(create_rpc_registry()), game_state.clone(), client_info.user_id);
-
-                //         let world = &mut game_state.lock().world;
-                //         world.add_resource(self::game_client(), Some(game_client.clone()));
-
-                //         let assets = world.resource(asset_cache());
-                //         ContentBaseUrlKey.insert(assets, server_info.content_base_url);
-
-                //         // Update parent client
-                //         set_game_client(Some(game_client.clone()));
-                //         // Update the window title
-                //         set_window_title(server_info.project_name);
-                //         on_loaded(game_state.clone(), game_client).context("Failed to initialize game client view")
-                //     }
-                // };
-
-                // let mut on_diff = |diff| {
-                // if let Some(on_in_entities) = &on_in_entities {
-                //     on_in_entities(&diff);
-                // }
-                // let mut gs = game_state.lock();
-                // diff.apply(&mut gs.world, Entity::new().with(is_remote_entity(), ()), false);
-                // };
-
-                // let on_bi_stream = |handler_id, tx, rx| {
-                // let _span = debug_span!("on_bi_stream").entered();
-                // let mut gs = game_state.lock();
-                // let handler = gs.world.resource(bi_stream_handlers()).get(&handler_id).cloned();
-                // if let Some(handler) = handler {
-                //     handler(&mut gs.world, assets.clone(), tx, rx);
-                // } else {
-                //     log::error!("Unrecognized stream handler id: {}", handler_id);
-                // }
-                // };
-
-                // let on_uni_stream = |handler_id, rx| {
-                // let _span = debug_span!("on_uni_stream").entered();
-                // let mut gs = game_state.lock();
-                // let handler = gs.world.resource(uni_stream_handlers()).get(&handler_id).cloned();
-                // if let Some(handler) = handler {
-                //     handler(&mut gs.world, assets.clone(), rx);
-                // } else {
-                //     log::error!("Unrecognized stream handler id: {}", handler_id);
-                // }
-                // };
-
-                // let on_datagram = |handler_id: u32, bytes: Bytes| {
-                // let mut gs = game_state.lock();
-                // let handler = gs.world.resource(datagram_handlers()).get(&handler_id).cloned();
-                // match handler {
-                //     Some(handler) => {
-                //         handler(&mut gs.world, assets.clone(), bytes);
-                //     }
-                //     None => {
-                //         log::error!("No such datagram handler: {:?}", handler_id);
-                //     }
-                // }
-                // };
-
-                // let mut on_server_stats = |stats| {
-                //     on_server_stats(stats);
-                // };
-
-                // let mut on_network_stats = |stats| {
-                //     on_network_stats(stats);
-                // };
-
-                // let client_loop = ClientInstance {
-                //     set_connection_status,
-                //     server_addr,
-                //     user_id,
-                //     on_init: &mut on_init,
-                //     on_diff: &mut on_diff,
-                //     on_bi_stream: todo!(),
-                //     on_uni_stream: todo!(),
-                //     on_datagram: todo!(),
-                //     on_server_stats: &mut on_server_stats,
-                //     on_client_stats: &mut on_network_stats,
-                //     on_disconnect,
-                //     init_destructor: None,
-                // };
-
-                // match client_loop.run().await {
-                //     Err(err) => {
-                //         if let Some(err) = err.downcast_ref::<NetworkError>() {
-                //             if let NetworkError::ConnectionClosed = err {
-                //                 log::info!("Connection closed by peer");
-                //             } else {
-                //                 log::error!("Network error: {:?}", err);
-                //             }
-                //         } else {
-                //             log::error!("Game failed: {:?}", err);
-                //         }
-                //         set_error(Some(format!("{err:?}")));
-                //     }
-                //     Ok(()) => {
-                //         log::info!("Client disconnected");
-                //     }
-                // };
             };
 
             async move {
@@ -637,17 +522,17 @@ async fn handle_connection(
                     }
 
                     Ok(datagram) = conn.read_datagram() => {
-                        todo!()
                         // let _span = tracing::debug_span!("datagram").entered();
                         // let data = datagram.split_off(4);
                         // let handler_id = u32::from_be_bytes(datagram[0..4].try_into().unwrap());
                         // tokio::task::block_in_place(|| (self.on_datagram)(handler_id, data))
+                        connected.process_datagram(&state, datagram)?;
                     }
                     Ok((send, recv)) = conn.accept_bi() => {
                         connected.process_bi(&state, send, recv).await?;
                     }
-                    Ok(rx) = conn.accept_uni() => {
-                        todo!()
+                    Ok(recv) = conn.accept_uni() => {
+                        connected.process_uni(&state, recv).await?;
                     }
                 }
             }

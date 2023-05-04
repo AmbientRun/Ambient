@@ -1,4 +1,4 @@
-use anyhow::Context;
+use anyhow::{bail, Context};
 use bytes::{Buf, Bytes};
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
 use tracing::info_span;
@@ -32,7 +32,7 @@ pub struct ConnectedClient {
 
 impl ServerState {
     /// Processes a client request
-    pub async fn process_control(&mut self, frame: ServerControl) -> anyhow::Result<()> {
+    pub async fn process_control(&mut self, state: &SharedServerState, frame: ServerControl) -> anyhow::Result<()> {
         match (frame, &self) {
             (_, Self::Disconnected) => {
                 tracing::info!("Client is disconnected, ignoring control frame");
@@ -49,14 +49,61 @@ impl ServerState {
                 Ok(())
             }
             (ServerControl::Disconnect, _) => {
-                tracing::info!("Client wants to disconnect");
-                *self = Self::Disconnected;
+                self.process_disconnect(state);
                 Ok(())
             }
         }
     }
 
+    fn process_connect(&mut self, user_id: String) {
+        log::debug!("[{}] Locking world", user_id);
+        let mut state = state.lock();
+        // If there's an old player send a graceful disconnect
+        let reconnecting = if let Some(player) = state.players.get_mut(user_id) {
+            player.control.send(ClientControl::Disconnect).ok();
+
+            player.control = control_tx;
+            player.connection_id = connection_id.clone();
+            log::debug!("[{}] Player reconnecting", user_id);
+            true
+        } else {
+            state.players.insert(
+                user_id.clone(),
+                Player { instance: MAIN_INSTANCE_ID.to_string(), control: control_tx, connection_id: connection_id.clone() },
+            );
+            false
+        };
+
+        let instance = state.instances.get_mut(MAIN_INSTANCE_ID).unwrap();
+
+        // Bring world stream up to the current time
+        log::debug!("[{}] Broadcasting diffs", user_id);
+        instance.broadcast_diffs();
+        log::debug!("[{}] Creating init diff", user_id);
+
+        let diff = world_stream_filter.initial_diff(&instance.world);
+        let diff = bincode::serialize(&diff).unwrap();
+
+        log_result!(diffs_tx.send(diff));
+        log::debug!("[{}] Init diff sent", user_id);
+
+        if !reconnecting {
+            instance.spawn_player(
+                create_player_entity_data(user_id, diffs_tx.clone(), stats_tx.clone())
+                    .with(player_connection(), new_player_connection.clone()),
+            );
+            log::info!("[{}] Player spawned", user_id);
+        } else {
+            let entity = get_by_user_id(&instance.world, user_id).unwrap();
+            instance.world.set(entity, player_entity_stream(), diffs_tx.clone()).unwrap();
+            instance.world.set(entity, player_stats_stream(), stats_tx.clone()).unwrap();
+            instance.world.set(entity, player_connection(), new_player_connection.clone()).unwrap();
+            log::info!("[{}] Player reconnected", user_id);
+        }
+    }
+
     pub fn process_disconnect(&mut self, state: &SharedServerState) {
+        tracing::info!("Client wants to disconnect");
         if let Self::Connected(ConnectedClient { user_id }) = self {
             tracing::info!(?user_id, "User disconnected");
             let mut state = state.lock();
@@ -76,8 +123,12 @@ impl ServerState {
 impl ConnectedClient {
     /// Processes an incoming datagram
     #[tracing::instrument(level = "info", skip(state))]
-    pub async fn process_datagram(&mut self, state: &SharedServerState, mut datagram: Bytes) -> anyhow::Result<()> {
-        let id = datagram.get_u32();
+    pub async fn process_datagram(&mut self, state: &SharedServerState, mut data: Bytes) -> anyhow::Result<()> {
+        if data.len() < 4 {
+            bail!("Received malformed datagram");
+        }
+
+        let id = data.get_u32();
 
         tracing::info!(?id, "Received datagram");
 
@@ -92,7 +143,7 @@ impl ConnectedClient {
 
         {
             let _span = info_span!("handle_datagram", id).entered();
-            handler(state.clone(), assets, &self.user_id, datagram);
+            handler(state.clone(), assets, &self.user_id, data);
         }
 
         Ok(())

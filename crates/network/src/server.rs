@@ -63,7 +63,8 @@ components!("network::server", {
     player_connection: ConnectionInner,
 });
 
-pub type BiStreamHandler = Arc<dyn Fn(SharedServerState, AssetCache, &str, DynSend, DynRecv) + Sync + Send>;
+pub type BiStreamHandler =
+    Arc<dyn Fn(SharedServerState, AssetCache, &str, DynSend, DynRecv) + Sync + Send>;
 pub type UniStreamHandler = Arc<dyn Fn(SharedServerState, AssetCache, &str, DynRecv) + Sync + Send>;
 pub type DatagramHandler = Arc<dyn Fn(SharedServerState, AssetCache, &str, Bytes) + Sync + Send>;
 
@@ -125,7 +126,10 @@ pub fn register_rpc_bi_stream_handler(
                 let try_block = || async {
                     let mut buf = Vec::new();
                     recv.take(1024 * 1024 * 1024).read_to_end(&mut buf).await?;
-                    let args = RpcArgs { state, user_id: user_id.to_string() };
+                    let args = RpcArgs {
+                        state,
+                        user_id: user_id.to_string(),
+                    };
                     let resp = rpc_registry.run_req(args, &buf).await?;
                     send.write_all(&resp).await?;
                     // send.finish().await?;
@@ -181,8 +185,16 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(instance: String, control: flume::Sender<ClientControl>, connection_id: String) -> Self {
-        Self { instance, control, connection_id }
+    pub fn new(
+        instance: String,
+        control: flume::Sender<ClientControl>,
+        connection_id: String,
+    ) -> Self {
+        Self {
+            instance,
+            control,
+            connection_id,
+        }
     }
 
     pub fn new_local(instance: String) -> Self {
@@ -204,6 +216,7 @@ pub struct ServerState {
     pub create_on_forking_systems: Arc<dyn Fn() -> SystemGroup<ForkingEvent> + Sync + Send>,
     pub create_shutdown_systems: Arc<dyn Fn() -> SystemGroup<ShutdownEvent> + Sync + Send>,
 }
+
 impl ServerState {
     pub fn new_local(assets: AssetCache) -> Self {
         let world_stream_filter =
@@ -408,7 +421,8 @@ impl GameServer {
 
 
                     log::debug!("Accepted connection");
-                    handle_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone(), ServerBaseUrlKey.get(&assets));
+                    let fut = handle_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone(), ServerBaseUrlKey.get(&assets));
+                    tokio::spawn(async move {  log_result!(fut.await) });
                 }
                 _ = sim_interval.tick() => {
                     fps_counter.frame_start();
@@ -504,13 +518,15 @@ async fn start_proxy_connection(
         Arc::new(
             move |_player_id, conn: ambient_proxy::client::ProxiedConnection| {
                 log::debug!("Accepted connection via proxy");
-                handle_connection(
+                let task = handle_connection(
                     conn.into(),
                     state.clone(),
                     world_stream_filter.clone(),
                     assets.clone(),
                     content_base_url.read().clone(),
                 );
+
+                tokio::spawn(async move { log_result!(task.await) });
             },
         )
     };
@@ -597,7 +613,11 @@ async fn handle_connection(
         } else {
             state.players.insert(
                 user_id.clone(),
-                Player { instance: MAIN_INSTANCE_ID.to_string(), control: control_tx, connection_id: connection_id.clone() },
+                Player {
+                    instance: MAIN_INSTANCE_ID.to_string(),
+                    control: control_tx,
+                    connection_id: connection_id.clone(),
+                },
             );
             false
         };
@@ -764,7 +784,9 @@ async fn handle_connection(
     use futures::SinkExt;
 
     // Send who we are
-    control_send.send(ClientControl::ServerInfo(server_info)).await?;
+    control_send
+        .send(ClientControl::ServerInfo(server_info))
+        .await?;
 
     loop {
         match &mut server {
