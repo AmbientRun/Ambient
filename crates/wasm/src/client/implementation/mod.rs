@@ -42,6 +42,22 @@ impl wit::entity::Host for Bindings {
         )
     }
 
+    fn set_animation_blend(
+        &mut self,
+        entity: wit::types::EntityId,
+        weights: Vec<f32>,
+        times: Vec<f32>,
+        absolute_time: bool,
+    ) -> anyhow::Result<()> {
+        shared::implementation::entity::set_animation_blend(
+            self.world_mut(),
+            entity,
+            &weights,
+            &times,
+            absolute_time,
+        )
+    }
+
     fn exists(&mut self, entity: wit::types::EntityId) -> anyhow::Result<bool> {
         shared::implementation::entity::exists(self.world(), entity)
     }
@@ -174,5 +190,19 @@ impl wit::player::Host for Bindings {
 impl wit::asset::Host for Bindings {
     fn url(&mut self, path: String) -> anyhow::Result<Result<String, wit::asset::UrlError>> {
         shared::implementation::asset::url(self.world(), path, true)
+    }
+
+    fn get_animation_asset_status(
+        &mut self,
+        clip_url: String,
+    ) -> anyhow::Result<wit::asset::AssetCacheStatus> {
+        shared::implementation::asset::get_animation_asset_status(self.world_mut(), &clip_url)
+    }
+
+    fn get_animation_asset_metadata(
+        &mut self,
+        clip_urls: Vec<String>,
+    ) -> anyhow::Result<Vec<wit::asset::AnimationAssetMetadata>> {
+        shared::implementation::asset::get_animation_asset_metadata(self.world_mut(), &clip_urls)
     }
 }

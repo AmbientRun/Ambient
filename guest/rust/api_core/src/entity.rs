@@ -40,6 +40,11 @@ pub fn set_animation_controller(entity: EntityId, controller: AnimationControlle
     wit::entity::set_animation_controller(entity.into_bindgen(), controller)
 }
 
+/// Set the animation (controller) weights (optional) and times (optional) for `entity`.
+pub fn set_animation_blend(entity: EntityId, weights: &[f32], times: &[f32], absolute_time: bool) {
+    wit::entity::set_animation_blend(entity.into_bindgen(), weights, times, absolute_time)
+}
+
 /// Checks if the `entity` exists.
 pub fn exists(entity: EntityId) -> bool {
     wit::entity::exists(entity.into_bindgen())

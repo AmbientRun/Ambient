@@ -1464,6 +1464,7 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_input",
+ "ambient_model",
  "ambient_network",
  "ambient_physics",
  "ambient_prefab",
