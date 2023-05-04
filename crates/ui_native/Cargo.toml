@@ -10,22 +10,22 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_sys = { path = "../sys" , version = "0.2.0-rc7" }
-ambient_std = { path = "../std" , version = "0.2.0-rc7" }
-ambient_ecs = { path = "../ecs" , version = "0.2.0-rc7" }
-ambient_gpu = { path = "../gpu" , version = "0.2.0-rc7" }
-ambient_core = { path = "../core" , version = "0.2.0-rc7" }
-ambient_meshes = { path = "../meshes" , version = "0.2.0-rc7" }
-ambient_input = { path = "../input" , version = "0.2.0-rc7" }
-ambient_renderer = { path = "../renderer" , version = "0.2.0-rc7" }
-ambient_layout = { path = "../layout" , version = "0.2.0-rc7" }
-ambient_text = { path = "../text" , version = "0.2.0-rc7" }
-ambient_rect = { path = "../rect" , version = "0.2.0-rc7" }
-ambient_cb = { path = "../../libs/cb" , version = "0.2.0-rc7" }
-ambient_element = { path = "../../shared_crates/element" , version = "0.2.0-rc7" }
-ambient_ui = { path = "../../shared_crates/ui", default-features = false, features = ["native"] , version = "0.2.0-rc7" }
-ambient_editor_derive = { path = "../../shared_crates/editor_derive" , version = "0.2.0-rc7" }
-ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] , version = "0.2.0-rc7" }
+ambient_sys = { path = "../sys" , version = "0.2.0-rc8" }
+ambient_std = { path = "../std" , version = "0.2.0-rc8" }
+ambient_ecs = { path = "../ecs" , version = "0.2.0-rc8" }
+ambient_gpu = { path = "../gpu" , version = "0.2.0-rc8" }
+ambient_core = { path = "../core" , version = "0.2.0-rc8" }
+ambient_meshes = { path = "../meshes" , version = "0.2.0-rc8" }
+ambient_input = { path = "../input" , version = "0.2.0-rc8" }
+ambient_renderer = { path = "../renderer" , version = "0.2.0-rc8" }
+ambient_layout = { path = "../layout" , version = "0.2.0-rc8" }
+ambient_text = { path = "../text" , version = "0.2.0-rc8" }
+ambient_rect = { path = "../rect" , version = "0.2.0-rc8" }
+ambient_cb = { path = "../../libs/cb" , version = "0.2.0-rc8" }
+ambient_element = { path = "../../shared_crates/element" , version = "0.2.0-rc8" }
+ambient_ui = { path = "../../shared_crates/ui", default-features = false, features = ["native"] , version = "0.2.0-rc8" }
+ambient_editor_derive = { path = "../../shared_crates/editor_derive" , version = "0.2.0-rc8" }
+ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] , version = "0.2.0-rc8" }
 glam = { workspace = true }
 winit = { workspace = true }
 itertools = { workspace = true }

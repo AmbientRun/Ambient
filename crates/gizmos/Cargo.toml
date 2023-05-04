@@ -10,12 +10,12 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_std = { path = "../std" , version = "0.2.0-rc7" }
-ambient_ecs = { path = "../ecs" , version = "0.2.0-rc7" }
-ambient_gpu = { path = "../gpu" , version = "0.2.0-rc7" }
-ambient_core = { path = "../core" , version = "0.2.0-rc7" }
-ambient_meshes = { path = "../meshes" , version = "0.2.0-rc7" }
-ambient_renderer = { path = "../renderer" , version = "0.2.0-rc7" }
+ambient_std = { path = "../std" , version = "0.2.0-rc8" }
+ambient_ecs = { path = "../ecs" , version = "0.2.0-rc8" }
+ambient_gpu = { path = "../gpu" , version = "0.2.0-rc8" }
+ambient_core = { path = "../core" , version = "0.2.0-rc8" }
+ambient_meshes = { path = "../meshes" , version = "0.2.0-rc8" }
+ambient_renderer = { path = "../renderer" , version = "0.2.0-rc8" }
 dashmap = { workspace = true }
 glam = { workspace = true }
 bytemuck = { workspace = true }
