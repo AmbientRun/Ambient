@@ -5,7 +5,12 @@ pub mod deploy_proto {
 use std::path::Path;
 
 use ambient_project::Manifest;
-use tonic::{metadata::MetadataValue, transport::Channel, Request};
+use tonic::{
+    codegen::{CompressionEncoding, InterceptedService},
+    metadata::MetadataValue,
+    transport::Channel,
+    Request,
+};
 use walkdir::WalkDir;
 
 use deploy_proto::{deployer_client::DeployerClient, DeployAssetRequest, DeployAssetsResponse};
@@ -46,10 +51,15 @@ pub async fn deploy(
 
     let token: MetadataValue<_> = format!("Bearer {}", auth_token).parse()?;
 
-    let mut client = DeployerClient::with_interceptor(channel, move |mut req: Request<()>| {
-        req.metadata_mut().insert("authorization", token.clone());
-        Ok(req)
-    });
+    let mut client = DeployerClient::new(InterceptedService::new(
+        channel,
+        move |mut req: Request<()>| {
+            req.metadata_mut().insert("authorization", token.clone());
+            Ok(req)
+        },
+    ))
+    .send_compressed(CompressionEncoding::Gzip)
+    .accept_compressed(CompressionEncoding::Gzip);
 
     // iterate over all files to deploy (everything in the build directory)
     let file_paths = WalkDir::new(path.as_ref().join("build"))
