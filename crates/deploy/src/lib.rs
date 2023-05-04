@@ -75,7 +75,7 @@ pub async fn deploy(
         for file_path in file_paths {
             let asset = asset_from_file_path(&base_path, file_path).await?;
             log::debug!("Deploying asset {} {}b", asset.path, asset.content.len());
-            tx.send(asset).unwrap();
+            tx.send(asset)?;
         }
         Ok(()) as anyhow::Result<()>
     });
