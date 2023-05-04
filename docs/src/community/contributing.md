@@ -140,10 +140,9 @@ The `screenshots.zip` will show what image the CI produced.
 1. Run `cargo campfire doc runtime` to update the documentation from the codebase.
 2. Run `cargo campfire release update-version new_version_here` to update the Ambient version across the crates and documentation.
 3. If a new system dependency was added, ensure it is added to `docs/src/installing.md` and `Dockerfile`.
-4. Use `cargo msrv` to check the Rust version for the runtime (the API cannot be checked [at present](https://github.com/foresterre/cargo-msrv/issues/587)). If it's changed, use `cargo campfire release update-msrv`.
-5. Run `cargo campfire example check-all` and ensure all guest projects build without errors.
-6. Run `cargo campfire example run-all` and visually verify that they work as expected.
+4. Run `cargo campfire example check-all` and ensure all guest projects build without errors.
+5. Run `cargo campfire example run-all` and visually verify that they work as expected.
+6. Use `cargo campfire release check` to check that the release is ready.
 7. Update the `CHANGELOG.md` at the root of the repository. Copy the unreleased block, set the version and date on the copy, and then empty out the unreleased block for the next release.
-8. Ensure that `README.md` and `docs/src/introduction.md` match.
-9. Make a commit with the above changes, and create a tag `v0.X.Y`.
-10. Push to origin.
+8. Make a commit with the above changes, and create a tag `v0.X.Y`.
+9. Push to origin.
