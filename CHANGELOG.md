@@ -66,6 +66,9 @@ These PRs are not directly user-facing, but improve the development experience. 
 - The `messaging` example shows how to message the server from the client and vice versa, and how to message another module with both broadcasts and directed messages.
 - The `pong` example implements a basic version of Pong to demonstrate a basic multiplayer game.
 - The `fog` example shows how to configure fog in the renderer for more atmospheric scenes.
+- The `first_person_camera` example shows how to implement a first-person camera.
+- The `music_sequencer` example shows how to use the audio and UI API to build a basic music sequencer.
+- The `decals` example shows how to use decals to add detail to a scene. Thanks to [@kevzettler](https://github.com/kevzettler) for implementing this in [#347](https://github.com/AmbientRun/Ambient/pull/347).
 
 ### Changed
 
@@ -91,6 +94,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **API**: Concepts now include the components they use in their doc comments.
 - **API**: `#[main]`-attributed functions no longer have to be `async` or return a `Result`.
 - **API**: `#[main]`-attributed functions, `on`, `once`, `Query::bind` and `run_async` can now return a `Result` or nothing.
+- **Project**: Project manifests can now be split into multiple files using `includes`.
 
 ### Fixed
 
@@ -103,6 +107,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Examples**: The examples no longer occasionally use non-one alpha colours, which led to them rendering black objects.
 - **Server**: The server no longer shuts down automatically after a period of inactivity.
 - **ECS**: A bug with ECS component versioning that led to certain components not updating has been fixed. Fixes [#113](https://github.com/AmbientRun/Ambient/issues/113).
+- **Networking**: Various optimizations have been made to networking and the ECS to reduce unnecessary network traffic.
 
 ### Community PRs to internals
 
@@ -114,6 +119,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Ambient**: The presentation of the license in the repository was improved. Thanks to [@C-BJ](https://github.com/C-BJ) for [#201](https://github.com/AmbientRun/Ambient/pull/201) and [#203](https://github.com/AmbientRun/Ambient/pull/203).
 - **Ambient**: The book and build CI workflows now only run when relevant files are updated. Thanks to [@C-BJ](https://github.com/C-BJ) for implementing this in [#202](https://github.com/AmbientRun/Ambient/pull/202).
 - **Audio**: The audio asset pipeline now uses Rust libraries for re-encoding files, instead of shelling out to ffmpeg. Thanks to [@marceline-cramer](https://github.com/marceline-cramer) for implementing this in [#317](https://github.com/AmbientRun/Ambient/pull/317).
+- **Rendering**: Ambient now runs on wgpu 0.16, improving compatibility and providing access to new features. Thanks to [@kevzettler](https://github.com/kevzettler) for implementing this in [#308](https://github.com/AmbientRun/Ambient/pull/308).
 
 ### Removed
 

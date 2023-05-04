@@ -4,15 +4,17 @@
 
 use ambient_std::mesh::Mesh;
 use glam::*;
+use serde::{Deserialize, Serialize};
 
 /// A cylinder with hemispheres at the top and bottom
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct CapsuleMesh {
-    /// Radius on the xz plane.
+    /// Radius on the xy plane.
     pub radius: f32,
+    /// Half-height of the middle cylinder on the z axis, excluding the hemispheres.
+    pub half_height: f32,
     /// Number of sections in cylinder between hemispheres.
     pub rings: usize,
-    /// Height of the middle cylinder on the y axis, excluding the hemispheres.
-    pub depth: f32,
     /// Number of latitudes, distributed by inclination. Must be even.
     pub latitudes: usize,
     /// Number of longitudes, or meridians, distributed by azimuth.
@@ -22,11 +24,18 @@ pub struct CapsuleMesh {
 }
 impl Default for CapsuleMesh {
     fn default() -> Self {
-        CapsuleMesh { radius: 0.5, rings: 0, depth: 1.0, latitudes: 16, longitudes: 32, uv_profile: CapsuleUvProfile::Aspect }
+        CapsuleMesh {
+            radius: 0.5,
+            half_height: 0.5,
+            rings: 0,
+            latitudes: 16,
+            longitudes: 32,
+            uv_profile: CapsuleUvProfile::Aspect,
+        }
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 /// Manner in which UV coordinates are distributed vertically.
 #[derive(Default)]
 pub enum CapsuleUvProfile {
@@ -44,7 +53,14 @@ impl From<CapsuleMesh> for Mesh {
     fn from(capsule: CapsuleMesh) -> Self {
         // code adapted from https://behreajj.medium.com/making-a-capsule-mesh-via-script-in-five-3d-environments-c2214abf02db
 
-        let CapsuleMesh { radius, rings, depth, latitudes, longitudes, uv_profile } = capsule;
+        let CapsuleMesh {
+            radius,
+            half_height,
+            rings,
+            latitudes,
+            longitudes,
+            uv_profile,
+        } = capsule;
 
         let calc_middle = rings > 0;
         let half_lats = latitudes / 2;
@@ -52,14 +68,18 @@ impl From<CapsuleMesh> for Mesh {
         let half_latsn2 = half_lats - 2;
         let ringsp1 = rings + 1;
         let lonsp1 = longitudes + 1;
-        let half_depth = depth * 0.5;
-        let summit = half_depth + radius;
+        let height = 2.0 * half_height;
+        let summit = half_height + radius;
 
         // Vertex index offsets.
         let vert_offset_north_hemi = longitudes;
         let vert_offset_north_equator = vert_offset_north_hemi + lonsp1 * half_latsn1;
         let vert_offset_cylinder = vert_offset_north_equator + lonsp1;
-        let vert_offset_south_equator = if calc_middle { vert_offset_cylinder + lonsp1 * rings } else { vert_offset_cylinder };
+        let vert_offset_south_equator = if calc_middle {
+            vert_offset_cylinder + lonsp1 * rings
+        } else {
+            vert_offset_cylinder
+        };
         let vert_offset_south_hemi = vert_offset_south_equator + lonsp1;
         let vert_offset_south_polar = vert_offset_south_hemi + lonsp1 * half_latsn2;
         let vert_offset_south_cap = vert_offset_south_polar + lonsp1;
@@ -77,7 +97,7 @@ impl From<CapsuleMesh> for Mesh {
         let to_tex_vertical = 1.0 / half_lats as f32;
 
         let vt_aspect_ratio = match uv_profile {
-            CapsuleUvProfile::Aspect => radius / (depth + radius + radius),
+            CapsuleUvProfile::Aspect => radius / (height + radius + radius),
             CapsuleUvProfile::Uniform => half_lats as f32 / (ringsp1 + latitudes) as f32,
             CapsuleUvProfile::Fixed => 1.0 / 3.0,
         };
@@ -100,15 +120,15 @@ impl From<CapsuleMesh> for Mesh {
             rho_theta_cartesian[j] = Vec2::new(radius * cos_theta, radius * sin_theta);
 
             // North.
-            vs[j] = Vec3::new(0.0, summit, 0.0);
+            vs[j] = Vec3::new(0.0, 0.0, summit);
             vts[j] = Vec2::new(s_texture_polar, 1.0);
-            vns[j] = Vec3::new(0.0, 1.0, 0.0);
+            vns[j] = Vec3::new(0.0, 0.0, 1.0);
 
             // South.
             let idx = vert_offset_south_cap + j;
-            vs[idx] = Vec3::new(0.0, -summit, 0.0);
+            vs[idx] = Vec3::new(0.0, 0.0, -summit);
             vts[idx] = Vec2::new(s_texture_polar, 0.0);
-            vns[idx] = Vec3::new(0.0, -1.0, 0.0);
+            vns[idx] = Vec3::new(0.0, 0.0, -1.0);
         }
 
         // Equatorial vertices.
@@ -123,15 +143,15 @@ impl From<CapsuleMesh> for Mesh {
 
             // North equator.
             let idxn = vert_offset_north_equator + j;
-            vs[idxn] = Vec3::new(rtc.x, half_depth, -rtc.y);
+            vs[idxn] = Vec3::new(rtc.x, -rtc.y, half_height);
             vts[idxn] = Vec2::new(s_texture, vt_aspect_north);
-            vns[idxn] = Vec3::new(tc.x, 0.0, -tc.y);
+            vns[idxn] = Vec3::new(tc.x, -tc.y, 0.0);
 
             // South equator.
             let idxs = vert_offset_south_equator + j;
-            vs[idxs] = Vec3::new(rtc.x, -half_depth, -rtc.y);
+            vs[idxs] = Vec3::new(rtc.x, -rtc.y, -half_height);
             vts[idxs] = Vec2::new(s_texture, vt_aspect_south);
-            vns[idxs] = Vec3::new(tc.x, 0.0, -tc.y);
+            vns[idxs] = Vec3::new(tc.x, -tc.y, 0.0);
         }
 
         // Hemisphere vertices.
@@ -150,11 +170,11 @@ impl From<CapsuleMesh> for Mesh {
 
             let rho_cos_phi_north = radius * cos_phi_north;
             let rho_sin_phi_north = radius * sin_phi_north;
-            let z_offset_north = half_depth - rho_sin_phi_north;
+            let z_offset_north = half_height - rho_sin_phi_north;
 
             let rho_cos_phi_south = radius * cos_phi_south;
             let rho_sin_phi_south = radius * sin_phi_south;
-            let z_offset_sout = -half_depth - rho_sin_phi_south;
+            let z_offset_sout = -half_height - rho_sin_phi_south;
 
             // For texture coordinates.
             let t_tex_fac = ip1f * to_tex_vertical;
@@ -174,15 +194,23 @@ impl From<CapsuleMesh> for Mesh {
 
                 // North hemisphere.
                 let idxn = vert_curr_lat_north + j;
-                vs[idxn] = Vec3::new(rho_cos_phi_north * tc.x, z_offset_north, -rho_cos_phi_north * tc.y);
+                vs[idxn] = Vec3::new(
+                    rho_cos_phi_north * tc.x,
+                    -rho_cos_phi_north * tc.y,
+                    z_offset_north,
+                );
                 vts[idxn] = Vec2::new(s_texture, t_tex_north);
-                vns[idxn] = Vec3::new(cos_phi_north * tc.x, -sin_phi_north, -cos_phi_north * tc.y);
+                vns[idxn] = Vec3::new(cos_phi_north * tc.x, -cos_phi_north * tc.y, -sin_phi_north);
 
                 // South hemisphere.
                 let idxs = vert_curr_lat_south + j;
-                vs[idxs] = Vec3::new(rho_cos_phi_south * tc.x, z_offset_sout, -rho_cos_phi_south * tc.y);
+                vs[idxs] = Vec3::new(
+                    rho_cos_phi_south * tc.x,
+                    -rho_cos_phi_south * tc.y,
+                    z_offset_sout,
+                );
                 vts[idxs] = Vec2::new(s_texture, t_tex_south);
-                vns[idxs] = Vec3::new(cos_phi_south * tc.x, -sin_phi_south, -cos_phi_south * tc.y);
+                vns[idxs] = Vec3::new(cos_phi_south * tc.x, -cos_phi_south * tc.y, -sin_phi_south);
             }
         }
 
@@ -197,7 +225,7 @@ impl From<CapsuleMesh> for Mesh {
                 let fac = h as f32 * to_fac;
                 let cmpl_fac = 1.0 - fac;
                 let t_texture = cmpl_fac * vt_aspect_north + fac * vt_aspect_south;
-                let z = half_depth - depth * fac;
+                let z = half_height - height * fac;
 
                 for j in 0..lonsp1 {
                     let j_mod = j % longitudes;
@@ -205,9 +233,9 @@ impl From<CapsuleMesh> for Mesh {
                     let rtc = rho_theta_cartesian[j_mod];
                     let s_texture = s_texture_cache[j];
 
-                    vs[idx_cyl_lat] = Vec3::new(rtc.x, z, -rtc.y);
+                    vs[idx_cyl_lat] = Vec3::new(rtc.x, -rtc.y, z);
                     vts[idx_cyl_lat] = Vec2::new(s_texture, t_texture);
-                    vns[idx_cyl_lat] = Vec3::new(tc.x, 0.0, -tc.y);
+                    vns[idx_cyl_lat] = Vec3::new(tc.x, -tc.y, 0.0);
 
                     idx_cyl_lat += 1;
                 }
@@ -237,13 +265,13 @@ impl From<CapsuleMesh> for Mesh {
         while i < longitudes {
             // North.
             tris[k] = i as u32;
-            tris[k + 1] = (vert_offset_north_hemi + i) as u32;
-            tris[k + 2] = (vert_offset_north_hemi + i + 1) as u32;
+            tris[k + 1] = (vert_offset_north_hemi + i + 1) as u32;
+            tris[k + 2] = (vert_offset_north_hemi + i) as u32;
 
             // South.
             tris[m] = (vert_offset_south_cap + i) as u32;
-            tris[m + 1] = (vert_offset_south_polar + i + 1) as u32;
-            tris[m + 2] = (vert_offset_south_polar + i) as u32;
+            tris[m + 1] = (vert_offset_south_polar + i) as u32;
+            tris[m + 2] = (vert_offset_south_polar + i + 1) as u32;
 
             i += 1;
             k += 3;
@@ -274,12 +302,12 @@ impl From<CapsuleMesh> for Mesh {
                 let north10 = vert_curr_lat_north + j + 1;
 
                 tris[k] = north00 as u32;
-                tris[k + 1] = north11 as u32;
-                tris[k + 2] = north10 as u32;
+                tris[k + 1] = north10 as u32;
+                tris[k + 2] = north11 as u32;
 
                 tris[k + 3] = north00 as u32;
-                tris[k + 4] = north01 as u32;
-                tris[k + 5] = north11 as u32;
+                tris[k + 4] = north11 as u32;
+                tris[k + 5] = north01 as u32;
 
                 // South.
                 let south00 = vert_curr_lat_south + j;
@@ -288,12 +316,12 @@ impl From<CapsuleMesh> for Mesh {
                 let south10 = vert_curr_lat_south + j + 1;
 
                 tris[m] = south00 as u32;
-                tris[m + 1] = south11 as u32;
-                tris[m + 2] = south10 as u32;
+                tris[m + 1] = south10 as u32;
+                tris[m + 2] = south11 as u32;
 
                 tris[m + 3] = south00 as u32;
-                tris[m + 4] = south01 as u32;
-                tris[m + 5] = south11 as u32;
+                tris[m + 4] = south11 as u32;
+                tris[m + 5] = south01 as u32;
 
                 j += 1;
                 k += 6;
@@ -319,12 +347,12 @@ impl From<CapsuleMesh> for Mesh {
                 let cy10 = vert_curr_lat + j + 1;
 
                 tris[k] = cy00 as u32;
-                tris[k + 1] = cy11 as u32;
-                tris[k + 2] = cy10 as u32;
+                tris[k + 1] = cy10 as u32;
+                tris[k + 2] = cy11 as u32;
 
                 tris[k + 3] = cy00 as u32;
-                tris[k + 4] = cy01 as u32;
-                tris[k + 5] = cy11 as u32;
+                tris[k + 4] = cy11 as u32;
+                tris[k + 5] = cy01 as u32;
 
                 j += 1;
                 k += 6;

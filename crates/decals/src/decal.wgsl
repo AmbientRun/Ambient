@@ -68,15 +68,15 @@ fn get_decal(in: VertexOutput) -> Decal {
         in.inv_local_to_world_3,
     );
     let local_pos = project_point(inv_local_to_world, world_position);
-    if local_pos.x < -1. || local_pos.x > 1. || local_pos.y < -1. || local_pos.y > 1. {
+    if local_pos.x < -0.5 || local_pos.x > 0.5 || local_pos.y < -0.5 || local_pos.y > 0.5 {
         discard;
     }
 
     var material_in: MaterialInput;
     material_in.position = in.position;
     // Note: Decals assume we're using a unit cube
-    material_in.texcoord.y = (1. - local_pos.x) / 2.;
-    material_in.texcoord.x = (local_pos.y - 1.) / 2.;
+    material_in.texcoord.y = (0.5 - local_pos.x);
+    material_in.texcoord.x = (local_pos.y - 0.5);
     material_in.world_position = world_position;
     let screen_normal_mat = mat3_from_quat(get_solids_screen_normal_quat(screen_ndc));
     material_in.normal = screen_normal_mat * vec3<f32>(0., 0., 1.);

@@ -9,8 +9,8 @@ use ambient_std::{
     pretty_duration, to_byte_unit,
 };
 use ambient_ui_native::{
-    docking, fit_horizontal, height, margin, width, Borders, Button, ButtonStyle, Dock, Docking, Editor, Fit, FlowColumn, FlowRow,
-    Rectangle, StylesExt, Text, Tooltip, UIBase, UIExt, STREET,
+    docking, fit_horizontal, height, margin, width, Borders, Button, ButtonStyle, Dock, Docking,
+    Editor, Fit, FlowColumn, FlowRow, Rectangle, StylesExt, Text, Tooltip, UIBase, UIExt, STREET,
 };
 use glam::{vec3, vec4, Vec4};
 use itertools::Itertools;
@@ -64,7 +64,12 @@ impl ElementComponent for AssetTimelineVisualizer {
             })
             .sorted_by(|x, y| match sorting {
                 Sorting::CpuSize => {
-                    let res = x.1 .0.cpu_size.unwrap_or(0).cmp(&y.1 .0.cpu_size.unwrap_or(0)).reverse();
+                    let res =
+                        x.1 .0
+                            .cpu_size
+                            .unwrap_or(0)
+                            .cmp(&y.1 .0.cpu_size.unwrap_or(0))
+                            .reverse();
                     if res.is_eq() {
                         x.0.cmp(&y.0)
                     } else {
@@ -83,7 +88,14 @@ impl ElementComponent for AssetTimelineVisualizer {
             })
             .take(limit.unwrap_or(total_count))
             .map(|(key, (value, total_gpu_size))| {
-                AssetTimelineRow { key, value, timeline: timeline.clone(), padding: 0., total_gpu_size: Some(total_gpu_size) }.el()
+                AssetTimelineRow {
+                    key,
+                    value,
+                    timeline: timeline.clone(),
+                    padding: 0.,
+                    total_gpu_size: Some(total_gpu_size),
+                }
+                .el()
             })
             .collect_vec();
         children.insert(
@@ -127,10 +139,13 @@ impl ElementComponent for AssetTimelineVisualizer {
                     .toggled(sorting == Sorting::CpuSize)
                     .style(ButtonStyle::Flat)
                     .el(),
-                    Button::new(format!("Gpu size ({})", to_byte_unit(total_roots_gpu_size)), {
-                        let set_sorting = set_sorting.clone();
-                        move |_| set_sorting(Sorting::GpuSize)
-                    })
+                    Button::new(
+                        format!("Gpu size ({})", to_byte_unit(total_roots_gpu_size)),
+                        {
+                            let set_sorting = set_sorting.clone();
+                            move |_| set_sorting(Sorting::GpuSize)
+                        },
+                    )
                     .toggled(sorting == Sorting::GpuSize)
                     .style(ButtonStyle::Flat)
                     .el(),
@@ -142,7 +157,10 @@ impl ElementComponent for AssetTimelineVisualizer {
                     .style(ButtonStyle::Flat)
                     .el(),
                 ]),
-                FlowRow::el([Text::el("Limit:"), Option::<usize>::editor(limit, set_limit, Default::default())]),
+                FlowRow::el([
+                    Text::el("Limit:"),
+                    Option::<usize>::editor(limit, set_limit, Default::default()),
+                ]),
             ])
             .keyboard(),
         );
@@ -160,10 +178,22 @@ struct AssetTimelineRow {
 }
 impl ElementComponent for AssetTimelineRow {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let Self { key, value, timeline, padding, total_gpu_size } = *self;
+        let Self {
+            key,
+            value,
+            timeline,
+            padding,
+            total_gpu_size,
+        } = *self;
         let (expanded, set_expanded) = hooks.use_state(false);
-        let key_text = Text::el(if key.len() > 30 { &key[0..30] } else { &key })
-            .with(color(), if value.is_alive { Vec4::ONE } else { vec4(0.5, 0.5, 0.5, 1.) });
+        let key_text = Text::el(if key.len() > 30 { &key[0..30] } else { &key }).with(
+            color(),
+            if value.is_alive {
+                Vec4::ONE
+            } else {
+                vec4(0.5, 0.5, 0.5, 1.)
+            },
+        );
         FlowColumn::el([
             Dock(vec![
                 Button::new(FlowRow::el([key_text]), move |_| set_expanded(!expanded))
@@ -179,18 +209,29 @@ impl ElementComponent for AssetTimelineRow {
                     ))
                     .el()
                     .with(width(), 200. - padding)
-                    .with(margin(), Borders::left(padding))
+                    .with(margin(), Borders::left(padding).into())
                     .with(fit_horizontal(), Fit::None)
                     .with(docking(), Docking::Left),
-                if let Some(cpu_size) = value.cpu_size { Text::el(to_byte_unit(cpu_size)) } else { UIBase.el() }
-                    .with(width(), 100.)
-                    .with(docking(), Docking::Left)
-                    .with(margin(), Borders::left(STREET)),
-                if let Some(gpu_size) = total_gpu_size.or(value.gpu_size) { Text::el(to_byte_unit(gpu_size)) } else { UIBase.el() }
-                    .with(width(), 100.)
-                    .with(docking(), Docking::Left)
-                    .with(margin(), Borders::left(STREET)),
-                AssetLifetimeViz { lifetimes: value.lifetimes }.el(),
+                if let Some(cpu_size) = value.cpu_size {
+                    Text::el(to_byte_unit(cpu_size))
+                } else {
+                    UIBase.el()
+                }
+                .with(width(), 100.)
+                .with(docking(), Docking::Left)
+                .with(margin(), Borders::left(STREET).into()),
+                if let Some(gpu_size) = total_gpu_size.or(value.gpu_size) {
+                    Text::el(to_byte_unit(gpu_size))
+                } else {
+                    UIBase.el()
+                }
+                .with(width(), 100.)
+                .with(docking(), Docking::Left)
+                .with(margin(), Borders::left(STREET).into()),
+                AssetLifetimeViz {
+                    lifetimes: value.lifetimes,
+                }
+                .el(),
             ])
             .el()
             .with(height(), 20.)
@@ -232,8 +273,10 @@ impl ElementComponent for AssetLifetimeViz {
         let Self { lifetimes } = *self;
         let current_time = chrono::Utc::now();
         let time_scale = 0.001;
-        let duration_to_width = |duration: chrono::Duration| duration.num_milliseconds() as f32 * time_scale;
-        let time_to_x = |time: chrono::DateTime<chrono::Utc>| duration_to_width(current_time - time);
+        let duration_to_width =
+            |duration: chrono::Duration| duration.num_milliseconds() as f32 * time_scale;
+        let time_to_x =
+            |time: chrono::DateTime<chrono::Utc>| duration_to_width(current_time - time);
         UIBase.el().children(
             lifetimes
                 .into_iter()
@@ -248,8 +291,11 @@ impl ElementComponent for AssetLifetimeViz {
                         let abort_time = aborted_time - lifetime.start_load;
                         let abort_width = duration_to_width(abort_time);
                         tooltip.push(
-                            Text::el(format!("Aborted after: {}", pretty_duration(abort_time.to_std().unwrap())))
-                                .with(color(), vec4(1., 0.5, 0.5, 1.)),
+                            Text::el(format!(
+                                "Aborted after: {}",
+                                pretty_duration(abort_time.to_std().unwrap())
+                            ))
+                            .with(color(), vec4(1., 0.5, 0.5, 1.)),
                         );
                         if abort_width >= 0.5 {
                             children.push(
@@ -261,11 +307,18 @@ impl ElementComponent for AssetLifetimeViz {
                             );
                         }
                     } else {
-                        let end_load = if let Some(end_load) = lifetime.end_load { end_load } else { current_time };
+                        let end_load = if let Some(end_load) = lifetime.end_load {
+                            end_load
+                        } else {
+                            current_time
+                        };
                         let load_time = end_load - lifetime.start_load;
                         tooltip.push(
-                            Text::el(format!("Load time: {}", pretty_duration(load_time.to_std().unwrap_or_default())))
-                                .with(color(), vec4(0., 1., 0., 1.)),
+                            Text::el(format!(
+                                "Load time: {}",
+                                pretty_duration(load_time.to_std().unwrap_or_default())
+                            ))
+                            .with(color(), vec4(0., 1., 0., 1.)),
                         );
                         let load_width = duration_to_width(load_time);
                         if load_width >= 0.5 {
@@ -277,9 +330,11 @@ impl ElementComponent for AssetLifetimeViz {
                                     .with(height(), bar_height),
                             );
                         }
-                        if let (Some(end_load), Some(k_start), k_end) =
-                            (lifetime.end_load, lifetime.keepalive_start, lifetime.keepalive_end)
-                        {
+                        if let (Some(end_load), Some(k_start), k_end) = (
+                            lifetime.end_load,
+                            lifetime.keepalive_start,
+                            lifetime.keepalive_end,
+                        ) {
                             let k_end = k_end.unwrap_or(current_time);
                             // let keepalive_end = if !lifetime.keepalive {
                             //     end_load
@@ -293,8 +348,11 @@ impl ElementComponent for AssetLifetimeViz {
                             let keepalive_width = duration_to_width(keepalive_dur);
 
                             tooltip.push(
-                                Text::el(format!("Keepalive time: {}", pretty_duration(keepalive_dur.to_std().unwrap())))
-                                    .with(color(), vec4(0.5, 0.5, 1., 1.)),
+                                Text::el(format!(
+                                    "Keepalive time: {}",
+                                    pretty_duration(keepalive_dur.to_std().unwrap())
+                                ))
+                                .with(color(), vec4(0.5, 0.5, 1., 1.)),
                             );
 
                             if keepalive_width >= 0.5 {
@@ -307,13 +365,20 @@ impl ElementComponent for AssetLifetimeViz {
                                 );
                             }
 
-                            let lifetime_end = if let Some(dropped) = lifetime.dropped { dropped } else { current_time };
+                            let lifetime_end = if let Some(dropped) = lifetime.dropped {
+                                dropped
+                            } else {
+                                current_time
+                            };
                             let alive_time = lifetime_end - k_end;
                             let total_alive_time = lifetime_end - end_load;
                             let alive_width = duration_to_width(alive_time);
                             tooltip.push(
-                                Text::el(format!("Alive time: {}", pretty_duration(total_alive_time.to_std().unwrap())))
-                                    .with(color(), vec4(1., 1., 1., 1.)),
+                                Text::el(format!(
+                                    "Alive time: {}",
+                                    pretty_duration(total_alive_time.to_std().unwrap())
+                                ))
+                                .with(color(), vec4(1., 1., 1., 1.)),
                             );
                             if alive_width >= 0.5 {
                                 children.push(
@@ -326,13 +391,20 @@ impl ElementComponent for AssetLifetimeViz {
                             }
                         } else if let Some(end_load) = lifetime.end_load {
                             // No keepalive started
-                            let lifetime_end = if let Some(dropped) = lifetime.dropped { dropped } else { current_time };
+                            let lifetime_end = if let Some(dropped) = lifetime.dropped {
+                                dropped
+                            } else {
+                                current_time
+                            };
                             let alive_time = lifetime_end - end_load;
                             let total_alive_time = lifetime_end - end_load;
                             let alive_width = duration_to_width(alive_time);
                             tooltip.push(
-                                Text::el(format!("Alive time: {}", pretty_duration(total_alive_time.to_std().unwrap())))
-                                    .with(color(), vec4(1., 1., 1., 1.)),
+                                Text::el(format!(
+                                    "Alive time: {}",
+                                    pretty_duration(total_alive_time.to_std().unwrap())
+                                ))
+                                .with(color(), vec4(1., 1., 1., 1.)),
                             );
                             if alive_width >= 0.5 {
                                 children.push(
@@ -347,9 +419,12 @@ impl ElementComponent for AssetLifetimeViz {
                     }
                     children.reverse();
                     Some(
-                        Tooltip { inner: FlowRow::el(children), tooltip: FlowColumn::el(tooltip) }
-                            .el()
-                            .with(translation(), vec3(time_to_x(lifetime.end_time()), 0., 0.)),
+                        Tooltip {
+                            inner: FlowRow::el(children),
+                            tooltip: FlowColumn::el(tooltip),
+                        }
+                        .el()
+                        .with(translation(), vec3(time_to_x(lifetime.end_time()), 0., 0.)),
                     )
                 })
                 .collect_vec(),

@@ -41,6 +41,19 @@
             "cwd": "${workspaceFolder}/examples/basics/clientside"
         },
         {
+            "name": "basics/decals",
+            "type": "lldb",
+            "request": "launch",
+            "program": "ambient",
+            "args": [
+                "run"
+            ],
+            "initCommands": [
+                "settings set plugin.jit-loader.gdb.enable on"
+            ],
+            "cwd": "${workspaceFolder}/examples/basics/decals"
+        },
+        {
             "name": "basics/first_person_camera",
             "type": "lldb",
             "request": "launch",
@@ -234,6 +247,19 @@
                 "settings set plugin.jit-loader.gdb.enable on"
             ],
             "cwd": "${workspaceFolder}/examples/games/minigolf"
+        },
+        {
+            "name": "games/music_sequencer",
+            "type": "lldb",
+            "request": "launch",
+            "program": "ambient",
+            "args": [
+                "run"
+            ],
+            "initCommands": [
+                "settings set plugin.jit-loader.gdb.enable on"
+            ],
+            "cwd": "${workspaceFolder}/examples/games/music_sequencer"
         },
         {
             "name": "games/pong",

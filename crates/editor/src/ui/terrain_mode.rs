@@ -19,19 +19,24 @@ use ambient_physics::{
     ColliderScene,
 };
 use ambient_primitives::Cube;
-use ambient_renderer::{color, material, renderer_shader, Material, MaterialShader, SharedMaterial, MATERIAL_BIND_GROUP};
+use ambient_renderer::{
+    color, material, renderer_shader, Material, MaterialShader, SharedMaterial, MATERIAL_BIND_GROUP,
+};
 use ambient_shared_types::{MouseButton, VirtualKeyCode};
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     cb, friendly_id,
 };
 use ambient_terrain::{
-    brushes::{Brush, BrushShape, BrushSize, BrushSmoothness, BrushStrength, HydraulicErosionConfig, TerrainBrushStroke},
+    brushes::{
+        Brush, BrushShape, BrushSize, BrushSmoothness, BrushStrength, HydraulicErosionConfig,
+        TerrainBrushStroke,
+    },
     intent_terrain_stroke, terrain_world_cell,
 };
 use ambient_ui_native::{
-    margin, space_between_items, Borders, Button, FlowColumn, FlowRow, FontAwesomeIcon, Separator, Slider, StylesExt, Text, UIBase, UIExt,
-    WindowSized, STREET,
+    margin, space_between_items, Borders, Button, FlowColumn, FlowRow, FontAwesomeIcon, Separator,
+    Slider, StylesExt, Text, UIBase, UIExt, WindowSized, STREET,
 };
 use glam::{vec3, Vec3, Vec3Swizzles, Vec4};
 use wgpu::{util::DeviceExt, BindGroup};
@@ -53,7 +58,16 @@ impl ElementComponent for TerrainRaycastPicker {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> Element {
         let action_button = ambient_shared_types::MouseButton::Left;
 
-        let Self { filter, layer, brush, brush_size, brush_strength, brush_smoothness, brush_shape, erosion_config } = *self;
+        let Self {
+            filter,
+            layer,
+            brush,
+            brush_size,
+            brush_strength,
+            brush_smoothness,
+            brush_shape,
+            erosion_config,
+        } = *self;
         let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
         let (target_position, set_target_position) = hooks.use_state(None);
         let (mouseover, set_mouseover) = hooks.use_state(false);
@@ -80,7 +94,10 @@ impl ElementComponent for TerrainRaycastPicker {
                         .get(assets)
                     }),
                 )
-                .with(material(), SharedMaterial::new(BrushCursorMaterial::new(assets)))
+                .with(
+                    material(),
+                    SharedMaterial::new(BrushCursorMaterial::new(assets)),
+                )
                 .spawn_static(&mut game_state.lock().world);
 
             set_vis_brush_id(Some(new_vis_brush_id));
@@ -118,12 +135,24 @@ impl ElementComponent for TerrainRaycastPicker {
             if let Some(target_position) = target_position {
                 if let Some(vis_brush_id) = vis_brush_id {
                     let brush_size = brush_size.0;
-                    state.world.set(vis_brush_id, translation(), target_position).unwrap();
-                    state.world.set(vis_brush_id, scale(), Vec3::ONE * brush_size).unwrap();
+                    state
+                        .world
+                        .set(vis_brush_id, translation(), target_position)
+                        .unwrap();
+                    state
+                        .world
+                        .set(vis_brush_id, scale(), Vec3::ONE * brush_size)
+                        .unwrap();
                     if brush_size != 0.0 {
                         if let Ok(material) = state.world.get_ref(vis_brush_id, material()) {
                             let picker_material: &BrushCursorMaterial = material.borrow_downcast();
-                            picker_material.upload_params(brush, target_position, brush_size, brush_strength.0, brush_shape);
+                            picker_material.upload_params(
+                                brush,
+                                target_position,
+                                brush_size,
+                                brush_strength.0,
+                                brush_shape,
+                            );
                         }
                     }
                 }
@@ -200,7 +229,11 @@ fn get_brush_cursor_layout() -> BindGroupDesc<'static> {
         entries: vec![wgpu::BindGroupLayoutEntry {
             binding: 0,
             visibility: wgpu::ShaderStages::FRAGMENT,
-            ty: wgpu::BindingType::Buffer { ty: wgpu::BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
             count: None,
         }],
         label: MATERIAL_BIND_GROUP.into(),
@@ -214,7 +247,8 @@ impl SyncAssetKey<Arc<MaterialShader>> for BrushCursorShaderMaterialKey {
         Arc::new(MaterialShader {
             id: "BrushCursorShaderMaterial".to_string(),
             shader: Arc::new(
-                ShaderModule::new("BrushCursor", [include_str!("brush_cursor.wgsl")].concat()).with_binding_desc(get_brush_cursor_layout()),
+                ShaderModule::new("BrushCursor", [include_str!("brush_cursor.wgsl")].concat())
+                    .with_binding_desc(get_brush_cursor_layout()),
             ),
         })
     }
@@ -232,19 +266,36 @@ impl BrushCursorMaterial {
         let gpu = GpuKey.get(assets);
         let layout = get_brush_cursor_layout().get(assets);
 
-        let buffer = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("BrushCursorMaterial.buffer"),
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-            contents: bytemuck::bytes_of(&BrushCursorMaterialParams::default()),
-        });
+        let buffer = gpu
+            .device
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("BrushCursorMaterial.buffer"),
+                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+                contents: bytemuck::bytes_of(&BrushCursorMaterialParams::default()),
+            });
         let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &layout,
-            entries: &[wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::Buffer(buffer.as_entire_buffer_binding()) }],
+            entries: &[wgpu::BindGroupEntry {
+                binding: 0,
+                resource: wgpu::BindingResource::Buffer(buffer.as_entire_buffer_binding()),
+            }],
             label: Some("BrushCursorMaterial.bind_group"),
         });
-        Self { gpu, buffer, id: friendly_id(), bind_group }
+        Self {
+            gpu,
+            buffer,
+            id: friendly_id(),
+            bind_group,
+        }
     }
-    pub fn upload_params(&self, brush: Brush, brush_position: Vec3, brush_radius: f32, brush_strength: f32, shape: BrushShape) {
+    pub fn upload_params(
+        &self,
+        brush: Brush,
+        brush_position: Vec3,
+        brush_radius: f32,
+        brush_strength: f32,
+        shape: BrushShape,
+    ) {
         // This code assumes that the range is from 0.1 to 10.
         let brush_strength = ((brush_strength.log10() + 1.0) / 2.0).clamp(0.0, 1.0);
         self.gpu.queue.write_buffer(
@@ -282,39 +333,69 @@ impl ElementComponent for EditorTerrainMode {
         let (brush, set_brush) = hooks.consume_context::<Brush>().unwrap();
         let (layer, set_layer) = hooks.consume_context::<u32>().unwrap();
         let (brush_size, set_brush_size) = hooks.consume_context::<BrushSize>().unwrap();
-        let (brush_strength, set_brush_strength) = hooks.consume_context::<BrushStrength>().unwrap();
+        let (brush_strength, set_brush_strength) =
+            hooks.consume_context::<BrushStrength>().unwrap();
         let (brush_shape, set_brush_shape) = hooks.consume_context::<BrushShape>().unwrap();
-        let (brush_smoothness, set_brush_smoothness) = hooks.consume_context::<BrushSmoothness>().unwrap();
-        let (erosion_config, _set_erosion_config) = hooks.consume_context::<HydraulicErosionConfig>().unwrap();
+        let (brush_smoothness, set_brush_smoothness) =
+            hooks.consume_context::<BrushSmoothness>().unwrap();
+        let (erosion_config, _set_erosion_config) =
+            hooks.consume_context::<HydraulicErosionConfig>().unwrap();
 
         let mut items = vec![
             EditorPlayerInputHandler.el(),
-            Button::new_value(FontAwesomeIcon::el(0xf35b, true), brush, set_brush.clone(), Brush::Raise)
-                .hotkey(VirtualKeyCode::Key1)
-                .tooltip("Raise")
-                .el(),
-            Button::new_value(FontAwesomeIcon::el(0xf358, true), brush, set_brush.clone(), Brush::Lower)
-                .hotkey(VirtualKeyCode::Key2)
-                .tooltip("Lower")
-                .el(),
-            Button::new_value(FontAwesomeIcon::el(0xf056, true), brush, set_brush.clone(), Brush::Flatten)
-                .hotkey(VirtualKeyCode::Key3)
-                .tooltip("Flatten")
-                .el(),
-            Button::new_value(FontAwesomeIcon::el(0xf043, true), brush, set_brush.clone(), Brush::Erode)
-                .hotkey(VirtualKeyCode::Key4)
-                .tooltip("Hydraulic Erosion")
-                .el(),
-            Button::new_value(FontAwesomeIcon::el(0xf185, true), brush, set_brush.clone(), Brush::Thermal)
-                .hotkey(VirtualKeyCode::Key5)
-                .tooltip("Thermal Erosion")
-                .el(),
+            Button::new_value(
+                FontAwesomeIcon::el(0xf35b, true),
+                brush,
+                set_brush.clone(),
+                Brush::Raise,
+            )
+            .hotkey(VirtualKeyCode::Key1)
+            .tooltip("Raise")
+            .el(),
+            Button::new_value(
+                FontAwesomeIcon::el(0xf358, true),
+                brush,
+                set_brush.clone(),
+                Brush::Lower,
+            )
+            .hotkey(VirtualKeyCode::Key2)
+            .tooltip("Lower")
+            .el(),
+            Button::new_value(
+                FontAwesomeIcon::el(0xf056, true),
+                brush,
+                set_brush.clone(),
+                Brush::Flatten,
+            )
+            .hotkey(VirtualKeyCode::Key3)
+            .tooltip("Flatten")
+            .el(),
+            Button::new_value(
+                FontAwesomeIcon::el(0xf043, true),
+                brush,
+                set_brush.clone(),
+                Brush::Erode,
+            )
+            .hotkey(VirtualKeyCode::Key4)
+            .tooltip("Hydraulic Erosion")
+            .el(),
+            Button::new_value(
+                FontAwesomeIcon::el(0xf185, true),
+                brush,
+                set_brush.clone(),
+                Brush::Thermal,
+            )
+            .hotkey(VirtualKeyCode::Key5)
+            .tooltip("Thermal Erosion")
+            .el(),
             Separator { vertical: true }.el(),
             FlowRow(vec![
                 Text::el("Size"),
                 Slider {
                     value: brush_size.0,
-                    on_change: Some(cb(closure!(clone set_brush_size, |value| set_brush_size(BrushSize(value))))),
+                    on_change: Some(cb(
+                        closure!(clone set_brush_size, |value| set_brush_size(BrushSize(value))),
+                    )),
                     min: 1.0,
                     max: 500.0,
                     width: 200.0,
@@ -366,36 +447,60 @@ impl ElementComponent for EditorTerrainMode {
             );
             items.push(Separator { vertical: true }.el());
             items.push(
-                Button::new_value(FontAwesomeIcon::el(0xf111, true), brush_shape, set_brush_shape.clone(), BrushShape::Circle)
-                    .hotkey(VirtualKeyCode::Z)
-                    .tooltip("Circle Shape")
-                    .el(),
+                Button::new_value(
+                    FontAwesomeIcon::el(0xf111, true),
+                    brush_shape,
+                    set_brush_shape.clone(),
+                    BrushShape::Circle,
+                )
+                .hotkey(VirtualKeyCode::Z)
+                .tooltip("Circle Shape")
+                .el(),
             );
             items.push(
-                Button::new_value(FontAwesomeIcon::el(0xf0c8, true), brush_shape, set_brush_shape.clone(), BrushShape::Square)
-                    .hotkey(VirtualKeyCode::X)
-                    .tooltip("Square Shape")
-                    .el(),
+                Button::new_value(
+                    FontAwesomeIcon::el(0xf0c8, true),
+                    brush_shape,
+                    set_brush_shape.clone(),
+                    BrushShape::Square,
+                )
+                .hotkey(VirtualKeyCode::X)
+                .tooltip("Square Shape")
+                .el(),
             );
             if let Brush::Raise | Brush::Lower = brush {
                 items.push(Separator { vertical: true }.el());
                 items.push(
-                    Button::new_value(FontAwesomeIcon::el(0xf6fc, true), layer, set_layer.clone(), 0)
-                        .hotkey(VirtualKeyCode::C)
-                        .tooltip("Rock")
-                        .el(),
+                    Button::new_value(
+                        FontAwesomeIcon::el(0xf6fc, true),
+                        layer,
+                        set_layer.clone(),
+                        0,
+                    )
+                    .hotkey(VirtualKeyCode::C)
+                    .tooltip("Rock")
+                    .el(),
                 );
                 items.push(
-                    Button::new_value(FontAwesomeIcon::el(0xe43b, true), layer, set_layer.clone(), 1)
-                        .hotkey(VirtualKeyCode::V)
-                        .tooltip("Soil")
-                        .el(),
+                    Button::new_value(
+                        FontAwesomeIcon::el(0xe43b, true),
+                        layer,
+                        set_layer.clone(),
+                        1,
+                    )
+                    .hotkey(VirtualKeyCode::V)
+                    .tooltip("Soil")
+                    .el(),
                 );
             }
         }
 
         WindowSized(vec![
-            FlowColumn::el([FlowRow(items).el().floating_panel().keyboard().with(margin(), Borders::even(STREET))]),
+            FlowColumn::el([FlowRow(items)
+                .el()
+                .floating_panel()
+                .keyboard()
+                .with(margin(), Borders::even(STREET).into())]),
             Group(vec![WindowSized(
                 TerrainRaycastPicker {
                     filter: RaycastFilter {
@@ -431,7 +536,10 @@ impl ElementComponent for GenerateTerrainButton {
             let game_client = game_client.clone();
             move || {
                 let state = game_client.game_state.lock();
-                let has_terrain = query((terrain_world_cell(),)).iter(&state.world, None).count() != 0;
+                let has_terrain = query((terrain_world_cell(),))
+                    .iter(&state.world, None)
+                    .count()
+                    != 0;
                 set_has_terrain(has_terrain);
             }
         });

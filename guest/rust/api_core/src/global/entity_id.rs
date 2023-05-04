@@ -1,4 +1,7 @@
-use crate::internal::{conversion::FromBindgen, wit};
+use crate::internal::{
+    conversion::{FromBindgen, IntoBindgen},
+    wit,
+};
 
 /// An identifier for an entity in the world.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
@@ -59,5 +62,23 @@ impl std::fmt::Display for EntityId {
 impl std::fmt::Debug for EntityId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self, f)
+    }
+}
+impl IntoBindgen for EntityId {
+    type Item = wit::types::EntityId;
+    fn into_bindgen(self) -> Self::Item {
+        wit::types::EntityId {
+            id0: self.id0,
+            id1: self.id1,
+        }
+    }
+}
+impl FromBindgen for wit::types::EntityId {
+    type Item = EntityId;
+    fn from_bindgen(self) -> Self::Item {
+        EntityId {
+            id0: self.id0,
+            id1: self.id1,
+        }
     }
 }

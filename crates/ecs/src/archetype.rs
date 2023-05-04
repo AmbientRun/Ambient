@@ -12,7 +12,9 @@ use crate::{
 pub(super) struct ArchComponentData(UnsafeCell<Box<dyn IComponentBuffer>>);
 impl Clone for ArchComponentData {
     fn clone(&self) -> Self {
-        Self(UnsafeCell::new({ unsafe { &**self.0.get() } }.clone_boxed()))
+        Self(UnsafeCell::new(
+            { unsafe { &**self.0.get() } }.clone_boxed(),
+        ))
     }
 }
 
@@ -80,12 +82,16 @@ pub struct EntityMoveData {
 }
 impl EntityMoveData {
     fn new(active_components: ComponentSet) -> Self {
-        Self { content: SparseVec::new(), active_components }
+        Self {
+            content: SparseVec::new(),
+            active_components,
+        }
     }
     pub(super) fn from_entity_data(entity_data: Entity, version: u64) -> Self {
         let mut s = Self::new(entity_data.active_components.clone());
         for data in entity_data {
-            s.content.set(data.desc().index() as _, MoveComponent { data, version });
+            s.content
+                .set(data.desc().index() as _, MoveComponent { data, version });
         }
         s
     }
@@ -97,7 +103,13 @@ impl EntityMoveData {
     pub fn set(&mut self, entry: ComponentEntry, version: u64) {
         let desc = entry.desc();
         let index = entry.desc().index();
-        self.content.set(index as _, MoveComponent { data: entry, version });
+        self.content.set(
+            index as _,
+            MoveComponent {
+                data: entry,
+                version,
+            },
+        );
         self.active_components.insert(desc);
     }
 
@@ -141,7 +153,10 @@ impl Archetype {
         let mut arch_components = SparseVec::new();
         let mut active_components = ComponentSet::new();
         for &component in &components {
-            arch_components.set(component.index() as usize, ArchComponent::new(component.create_buffer()));
+            arch_components.set(
+                component.index() as usize,
+                ArchComponent::new(component.create_buffer()),
+            );
             active_components.insert(component);
         }
         Self {
@@ -165,7 +180,10 @@ impl Archetype {
     }
     pub fn write(&self, id: EntityId, index: usize, entity: Entity, version: u64) {
         for comp in entity {
-            let arch_comp = self.components.get(comp.index() as _).expect("Entity does not fit archetype");
+            let arch_comp = self
+                .components
+                .get(comp.index() as _)
+                .expect("Entity does not fit archetype");
 
             (unsafe { &mut **arch_comp.data.0.get() }).set(index, comp);
             arch_comp.on_write(id, index, version);
@@ -175,13 +193,24 @@ impl Archetype {
     pub fn movein(&mut self, ids: Vec<EntityId>, entity: EntityMoveData) {
         let index = self.entity_indices_to_ids.len();
         self.entity_indices_to_ids.extend(ids.iter().cloned());
-        self.query_markers.borrow_mut().resize(self.entity_indices_to_ids.len(), 0);
+        self.query_markers
+            .borrow_mut()
+            .resize(self.entity_indices_to_ids.len(), 0);
         for comp in entity.content.into_iter() {
-            let arch_comp = self.components.get_mut(comp.data.index() as _).expect("Entity does not fit archetype");
+            let arch_comp = self
+                .components
+                .get_mut(comp.data.index() as _)
+                .expect("Entity does not fit archetype");
             (unsafe { &mut **arch_comp.data.0.get() }).append_cloned(comp.data, ids.len());
-            arch_comp.max_content_version.0.fetch_max(comp.version, Ordering::Relaxed);
+            arch_comp
+                .max_content_version
+                .0
+                .fetch_max(comp.version, Ordering::Relaxed);
             arch_comp.set_content_version(index, comp.version, ids.len());
-            arch_comp.changes.borrow_mut().add_events(ids.iter().cloned());
+            arch_comp
+                .changes
+                .borrow_mut()
+                .add_events(ids.iter().cloned());
             arch_comp.data_version.0.fetch_add(1, Ordering::Relaxed);
         }
         self.movein_events.add_events(ids.iter().cloned());
@@ -195,8 +224,17 @@ impl Archetype {
         for arch_comp in self.components.iter_mut() {
             let value = (unsafe { &mut **arch_comp.data.0.get() }).swap_remove_index(index);
             let content_version = arch_comp.content_versions.borrow_mut().swap_remove(index);
-            entity_data.content.set(value.index() as _, MoveComponent { data: value, version: content_version });
-            arch_comp.max_content_version.0.store(version, Ordering::Relaxed);
+            entity_data.content.set(
+                value.index() as _,
+                MoveComponent {
+                    data: value,
+                    version: content_version,
+                },
+            );
+            arch_comp
+                .max_content_version
+                .0
+                .store(version, Ordering::Relaxed);
             arch_comp.data_version.0.fetch_add(1, Ordering::Relaxed);
         }
 
@@ -205,15 +243,27 @@ impl Archetype {
 
     pub fn moveout(&mut self, index: usize, entity: EntityId, version: u64) -> EntityMoveData {
         let entity_data = self.swap_remove_quiet(index, version);
-        self.moveout_events.add_event((entity, entity_data.clone().into()));
+        self.moveout_events
+            .add_event((entity, entity_data.clone().into()));
         entity_data
     }
 
-    pub fn get_component_buffer<T: ComponentValue>(&self, component: Component<T>) -> Option<&ComponentBuffer<T>> {
-        Some(self.get_component_buffer_untyped(component.desc())?.as_any().downcast_ref().unwrap())
+    pub fn get_component_buffer<T: ComponentValue>(
+        &self,
+        component: Component<T>,
+    ) -> Option<&ComponentBuffer<T>> {
+        Some(
+            self.get_component_buffer_untyped(component.desc())?
+                .as_any()
+                .downcast_ref()
+                .unwrap(),
+        )
     }
 
-    pub fn get_component_buffer_untyped(&self, component: ComponentDesc) -> Option<&dyn IComponentBuffer> {
+    pub fn get_component_buffer_untyped(
+        &self,
+        component: ComponentDesc,
+    ) -> Option<&dyn IComponentBuffer> {
         if let Some(component) = self.components.get(component.index() as _) {
             Some(unsafe { &**component.data.0.get() })
         } else {
@@ -233,7 +283,10 @@ impl Archetype {
                 d.on_write(id, index, version);
                 Ok(d.data.0.get_mut().set(index, entry))
             }
-            None => Err(ECSError::EntityDoesntHaveComponent { component_index: entry.desc().index() as usize, name: entry.path() }),
+            None => Err(ECSError::EntityDoesntHaveComponent {
+                component_index: entry.desc().index() as usize,
+                name: entry.path(),
+            }),
         }
     }
 
@@ -245,8 +298,13 @@ impl Archetype {
         }
     }
 
-    pub fn get_component<T: ComponentValue>(&self, entity_ix: usize, component: Component<T>) -> Option<&T> {
-        self.get_component_buffer(component).map(|buf| &buf.data[entity_ix])
+    pub fn get_component<T: ComponentValue>(
+        &self,
+        entity_ix: usize,
+        component: Component<T>,
+    ) -> Option<&T> {
+        self.get_component_buffer(component)
+            .map(|buf| &buf.data[entity_ix])
     }
 
     pub fn get_component_mut<T: ComponentValue>(
@@ -259,14 +317,22 @@ impl Archetype {
         if let Some(arch_comp) = &self.components.get(component.index() as _) {
             arch_comp.on_write(entity_id, entity_ix, version);
             let x = unsafe { &mut **arch_comp.data.0.get() };
-            x.as_mut_any().downcast_mut::<ComponentBuffer<T>>().map(|x| &mut x.data[entity_ix])
+            x.as_mut_any()
+                .downcast_mut::<ComponentBuffer<T>>()
+                .map(|x| &mut x.data[entity_ix])
         } else {
             None
         }
     }
 
     #[allow(clippy::borrowed_box)]
-    pub fn set_component_raw(&self, entity_ix: usize, entity_id: EntityId, entry: ComponentEntry, version: u64) -> bool {
+    pub fn set_component_raw(
+        &self,
+        entity_ix: usize,
+        entity_id: EntityId,
+        entry: ComponentEntry,
+        version: u64,
+    ) -> bool {
         if let Some(arch_comp) = &self.components.get(entry.index() as usize) {
             arch_comp.on_write(entity_id, entity_ix, version);
             let buffer = unsafe { &mut **arch_comp.data.0.get() };
@@ -277,7 +343,7 @@ impl Archetype {
         }
     }
 
-    #[profiling::function]
+    #[ambient_profiling::function]
     pub fn next_frame(&mut self) {
         self.movein_events.next_frame();
         self.moveout_events.next_frame();
@@ -286,15 +352,21 @@ impl Archetype {
         }
     }
     pub fn get_component_content_version(&self, loc: EntityLocation, index: u32) -> Option<u64> {
-        self.components.get(index as _).map(|arch_comp| arch_comp.get_content_version(loc.index))
+        self.components
+            .get(index as _)
+            .map(|arch_comp| arch_comp.get_content_version(loc.index))
     }
     /// Content version doesn't change when an entity is moved
     pub fn get_component_max_content_version(&self, component: ComponentDesc) -> Option<u64> {
-        self.components.get(component.index() as _).map(|arch_comp| arch_comp.max_content_version.0.load(Ordering::Acquire))
+        self.components
+            .get(component.index() as _)
+            .map(|arch_comp| arch_comp.max_content_version.0.load(Ordering::Acquire))
     }
     /// Data version is like get_component_content_version except it always updates
     pub fn get_component_data_version(&self, component: ComponentDesc) -> Option<u64> {
-        self.components.get(component.index() as _).map(|arch_comp| arch_comp.data_version.0.load(Ordering::Acquire))
+        self.components
+            .get(component.index() as _)
+            .map(|arch_comp| arch_comp.data_version.0.load(Ordering::Acquire))
     }
 
     /// This returns true if the value hasn't been set for this entity before. I.e.:
@@ -325,10 +397,22 @@ impl Archetype {
     }
 
     pub fn dump(&self, f: &mut dyn std::io::Write) {
-        writeln!(f, "Archetype id: {} ({} entities)", self.id, self.entity_count()).unwrap();
+        writeln!(
+            f,
+            "Archetype id: {} ({} entities)",
+            self.id,
+            self.entity_count()
+        )
+        .unwrap();
         for component in self.components.iter() {
             let desc = component.component;
-            writeln!(f, "  Component {}: {} changes", desc.path(), component.changes.borrow().n_events()).unwrap();
+            writeln!(
+                f,
+                "  Component {}: {} changes",
+                desc.path(),
+                component.changes.borrow().n_events()
+            )
+            .unwrap();
         }
         for i in 0..self.entity_count() {
             self.dump_entity(i, 2, f);
@@ -337,7 +421,12 @@ impl Archetype {
     pub fn dump_entity(&self, entity_ix: usize, indent: usize, f: &mut dyn std::io::Write) {
         let id = self.entity_indices_to_ids[entity_ix];
         let indent = format!("{:indent$}", "", indent = indent);
-        writeln!(f, "{}Entity id={} loc={}:{}", indent, id, self.id, entity_ix).unwrap();
+        writeln!(
+            f,
+            "{}Entity id={} loc={}:{}",
+            indent, id, self.id, entity_ix
+        )
+        .unwrap();
         for component in self.components.iter() {
             let comp = unsafe { &mut **component.data.0.get() };
             let value = comp.dump_index(entity_ix);
@@ -347,7 +436,12 @@ impl Archetype {
             let name = desc.path();
 
             if value.len() == 1 {
-                writeln!(f, "{}  {}(v{}): {}", indent, name, content_version, value[0]).unwrap();
+                writeln!(
+                    f,
+                    "{}  {}(v{}): {}",
+                    indent, name, content_version, value[0]
+                )
+                .unwrap();
             } else {
                 writeln!(f, "{indent}  {name}(v{content_version}):").unwrap();
                 for row in &value {
@@ -366,7 +460,10 @@ impl Archetype {
             let comp = unsafe { &mut **component.data.0.get() };
             let value = comp.dump_index(entity_ix);
             let path = comp.desc().path();
-            res.insert(yaml_rust::yaml::Yaml::String(path), yaml_rust::yaml::Yaml::String(value));
+            res.insert(
+                yaml_rust::yaml::Yaml::String(path),
+                yaml_rust::yaml::Yaml::String(value),
+            );
         }
         (format!("id={} loc={}:{}", id, self.id, entity_ix), res)
     }

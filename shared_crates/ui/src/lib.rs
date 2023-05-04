@@ -30,17 +30,17 @@
 
 use ambient_cb::{cb, Cb};
 use ambient_element::{
-    define_el_function_for_vec_element_newtype, element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks,
+    define_el_function_for_vec_element_newtype, element_component, to_owned, Element,
+    ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_guest_bridge::{
     components::{
         app::{ui_scene, window_logical_size, window_physical_size},
-        layout::{
-            gpu_ui_size, height, margin_bottom, margin_left, margin_right, margin_top, mesh_to_local_from_size, padding_bottom,
-            padding_left, padding_right, padding_top, width,
-        },
+        layout::{gpu_ui_size, height, margin, mesh_to_local_from_size, padding, width},
         rect::{background_color, rect},
-        transform::{local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation},
+        transform::{
+            local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation,
+        },
     },
     messages,
 };
@@ -114,7 +114,10 @@ pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
 /// to control its appearance.
 #[element_component]
 pub fn Rectangle(_hooks: &mut Hooks) -> Element {
-    with_rect(UIBase.el()).with(width(), 100.).with(height(), 100.).with(background_color(), Vec4::ONE)
+    with_rect(UIBase.el())
+        .with(width(), 100.)
+        .with(height(), 100.)
+        .with(background_color(), Vec4::ONE)
 }
 
 /// Converts the given element into a rect.
@@ -149,13 +152,26 @@ pub fn use_focus(hooks: &mut Hooks) -> (bool, Cb<dyn Fn(bool) + Sync + Send>) {
     use_focus_for_instance_id(hooks, hooks.instance_id().to_owned())
 }
 /// A hook that returns the current focus state for this element, given a specific `instance_id`, and a callback to set the focus state.
-pub fn use_focus_for_instance_id(hooks: &mut Hooks, instance_id: String) -> (bool, Cb<dyn Fn(bool) + Sync + Send>) {
-    let (focus, set_focus) = hooks.consume_context::<Focus>().expect("No FocusRoot available");
-    let focused = if let Focus(Some((focused, _))) = &focus { focused == &instance_id } else { false };
+pub fn use_focus_for_instance_id(
+    hooks: &mut Hooks,
+    instance_id: String,
+) -> (bool, Cb<dyn Fn(bool) + Sync + Send>) {
+    let (focus, set_focus) = hooks
+        .consume_context::<Focus>()
+        .expect("No FocusRoot available");
+    let focused = if let Focus(Some((focused, _))) = &focus {
+        focused == &instance_id
+    } else {
+        false
+    };
     (
         focused,
         cb(move |new_focus| {
-            set_focus(Focus::new(if new_focus { Some(instance_id.clone()) } else { None }));
+            set_focus(Focus::new(if new_focus {
+                Some(instance_id.clone())
+            } else {
+                None
+            }));
         }),
     )
 }
@@ -207,10 +223,10 @@ impl UIExt for Element {
     fn with_background(self, background: Vec4) -> Self {
         with_rect(self).with(background_color(), background)
     }
-    fn with_padding_even(self, padding: f32) -> Self {
-        self.with(padding_left(), padding).with(padding_right(), padding).with(padding_top(), padding).with(padding_bottom(), padding)
+    fn with_padding_even(self, value: f32) -> Self {
+        self.with(padding(), Vec4::ONE * value)
     }
-    fn with_margin_even(self, margin: f32) -> Self {
-        self.with(margin_left(), margin).with(margin_right(), margin).with(margin_top(), margin).with(margin_bottom(), margin)
+    fn with_margin_even(self, value: f32) -> Self {
+        self.with(margin(), Vec4::ONE * value)
     }
 }

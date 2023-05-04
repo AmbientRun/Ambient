@@ -1,6 +1,7 @@
 use ambient_std::asset_url::AssetType;
 use ambient_world_audio::AudioNode;
 use anyhow::Context;
+use serde::{Deserialize, Serialize};
 use tracing::{info_span, Instrument};
 
 use super::{
@@ -10,10 +11,17 @@ use super::{
 
 pub const SOUND_GRAPH_EXTENSION: &str = "sgr";
 
-pub async fn pipeline(ctx: &PipelineCtx) -> Vec<OutAsset> {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AudioPipeline {
+    /// Whether or not the audio should be converted to Ogg Vorbis.
+    #[serde(default)]
+    pub convert: bool,
+}
+
+pub async fn pipeline(ctx: &PipelineCtx, config: AudioPipeline) -> Vec<OutAsset> {
     ctx.process_files(
         |file| matches!(file.extension().as_deref(), Some("ogg") | Some("wav") | Some("mp3")),
-        |ctx, file| async move {
+        move |ctx, file| async move {
             let contents = file.download_bytes(ctx.assets()).await?;
 
             let filename = file.path().file_name().unwrap().to_string();
@@ -21,9 +29,18 @@ pub async fn pipeline(ctx: &PipelineCtx) -> Vec<OutAsset> {
             let rel_path = ctx.in_root().relative_path(file.path());
 
             let content_url = match file.extension().as_deref() {
+                Some("wav") => {
+                    if config.convert {
+                        tracing::info!("Processing wav file");
+                        let contents = symphonia_convert("wav", contents).await?;
+                        ctx.write_file(rel_path.with_extension("ogg"), contents).await
+                    } else {
+                        ctx.write_file(&rel_path, contents).await
+                    }
+                }
                 Some("ogg") => ctx.write_file(&rel_path, contents).await,
-                Some(ext @ "wav") | Some(ext @ "mp3") => {
-                    tracing::info!("Processing {ext:?} file");
+                Some(ext @ "mp3") => {
+                    tracing::info!("Processing mp3 file");
                     // Make sure to take the contents, to avoid having both the input and output in
                     // memory at once
                     let contents = symphonia_convert(ext, contents).await?;

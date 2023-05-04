@@ -1,11 +1,13 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, fs, path::Path};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{Component, Concept, Identifier, IdentifierPathBuf, Message, Version};
+use anyhow::Context;
 
-#[derive(Deserialize, Clone, Debug, PartialEq)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Manifest {
+    #[serde(default)]
     pub project: Project,
     #[serde(default)]
     pub build: Build,
@@ -20,6 +22,14 @@ impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, toml::de::Error> {
         toml::from_str(manifest)
     }
+    pub fn from_file(path: impl AsRef<Path>) -> anyhow::Result<Self> {
+        let mut res = Self::parse(
+            &fs::read_to_string(path.as_ref())
+                .context(format!("Failed to read file: {:?}", path.as_ref()))?,
+        )?;
+        res.resolve_imports(path.as_ref().parent().context("No parent directory")?)?;
+        Ok(res)
+    }
 
     pub fn project_path(&self) -> IdentifierPathBuf {
         self.project
@@ -29,9 +39,22 @@ impl Manifest {
             .cloned()
             .collect()
     }
+
+    fn resolve_imports(&mut self, directory: impl AsRef<Path>) -> anyhow::Result<()> {
+        let mut new_includes = vec![];
+        for include in &self.project.includes {
+            let manifest = Manifest::from_file(directory.as_ref().join(include))?;
+            new_includes.extend(manifest.project.includes);
+            self.components.extend(manifest.components);
+            self.concepts.extend(manifest.concepts);
+            self.messages.extend(manifest.messages);
+        }
+        self.project.includes.extend(new_includes);
+        Ok(())
+    }
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
 pub struct Project {
     pub id: Identifier,
     pub name: Option<String>,
@@ -40,15 +63,17 @@ pub struct Project {
     #[serde(default)]
     pub authors: Vec<String>,
     pub organization: Option<Identifier>,
+    #[serde(default)]
+    pub includes: Vec<String>,
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Default)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
 pub struct Build {
     #[serde(default)]
     pub rust: BuildRust,
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct BuildRust {
     #[serde(rename = "feature-multibuild")]
     pub feature_multibuild: Vec<String>,
@@ -61,13 +86,13 @@ impl Default for BuildRust {
     }
 }
 
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Serialize)]
 pub struct Namespace {
     pub name: Option<String>,
     pub description: Option<String>,
 }
 
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Serialize)]
 #[serde(untagged)]
 pub enum NamespaceOr<T> {
     Other(T),
@@ -141,7 +166,8 @@ mod tests {
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
                     description: None,
                     authors: vec![],
-                    organization: None
+                    organization: None,
+                    includes: Default::default(),
                 },
                 build: Build {
                     rust: BuildRust {
@@ -198,7 +224,8 @@ mod tests {
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
                     description: None,
                     authors: vec![],
-                    organization: None
+                    organization: None,
+                    includes: Default::default(),
                 },
                 build: Build {
                     rust: BuildRust {
@@ -236,7 +263,8 @@ mod tests {
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
                     description: None,
                     authors: vec![],
-                    organization: None
+                    organization: None,
+                    includes: Default::default(),
                 },
                 build: Build {
                     rust: BuildRust {
@@ -308,7 +336,8 @@ mod tests {
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
                     description: None,
                     authors: vec![],
-                    organization: None
+                    organization: None,
+                    includes: Default::default(),
                 },
                 build: Build {
                     rust: BuildRust {

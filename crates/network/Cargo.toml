@@ -3,22 +3,25 @@ name = "ambient_network"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
+description = "Ambient networking functionality. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_ecs = { path = "../ecs" }
-ambient_sys = { path = "../sys" }
-ambient_rpc = { path = "../rpc" }
-ambient_std = { path = "../std" }
-ambient_core = { path = "../core" }
-ambient_gizmos = { path = "../gizmos" }
-ambient_gpu = { path = "../gpu" }
-ambient_ui_native = { path = "../ui_native" }
-ambient_renderer = { path = "../renderer" }
-ambient_element = { path = "../../shared_crates/element" }
-ambient_app = { path = "../app" }
-ambient_proxy = "0.2"
+ambient_ecs = { path = "../ecs" , version = "0.2.0-rc5" }
+ambient_sys = { path = "../sys" , version = "0.2.0-rc5" }
+ambient_rpc = { path = "../rpc" , version = "0.2.0-rc5" }
+ambient_std = { path = "../std" , version = "0.2.0-rc5" }
+ambient_core = { path = "../core" , version = "0.2.0-rc5" }
+ambient_gizmos = { path = "../gizmos" , version = "0.2.0-rc5" }
+ambient_gpu = { path = "../gpu" , version = "0.2.0-rc5" }
+ambient_ui_native = { path = "../ui_native" , version = "0.2.0-rc5" }
+ambient_renderer = { path = "../renderer" , version = "0.2.0-rc5" }
+ambient_element = { path = "../../shared_crates/element" , version = "0.2.0-rc5" }
+ambient_app = { path = "../app" , version = "0.2.0-rc5" }
+ambient_proxy = "0.2.6"
 
 itertools = { workspace = true }
 dashmap = { workspace = true }
@@ -29,7 +32,7 @@ thiserror = { workspace = true }
 bincode = { workspace = true }
 glam = { workspace = true }
 winit = { workspace = true }
-profiling = { workspace = true }
+ambient_profiling = { workspace = true }
 log = { workspace = true }
 bytes = { workspace = true }
 parking_lot = { workspace = true }

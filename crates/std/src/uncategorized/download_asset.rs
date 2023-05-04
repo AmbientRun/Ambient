@@ -9,7 +9,9 @@ use thiserror::Error;
 use tokio::sync::Semaphore;
 
 use crate::{
-    asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
+    asset_cache::{
+        AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt,
+    },
     asset_url::AbsAssetUrl,
     mesh::Mesh,
 };
@@ -81,7 +83,11 @@ pub(crate) async fn download<T: 'static + Send, F: Future<Output = anyhow::Resul
     // reqwest::Client is not Send on wasm
     wasm_nonsend(move || async move {
         let client = ReqwestClientKey.get(&assets);
-        let url_short = if url_str.len() > 200 { format!("{}...", &url_str[..200]) } else { url_str.to_string() };
+        let url_short = if url_str.len() > 200 {
+            format!("{}...", &url_str[..200])
+        } else {
+            url_str.to_string()
+        };
 
         let max_retries = 12;
         for i in 0..max_retries {
@@ -89,10 +95,17 @@ pub(crate) async fn download<T: 'static + Send, F: Future<Output = anyhow::Resul
             log::info!("download [pending ] {}", url_short);
             let _permit = semaphore.acquire().await.unwrap();
             log::info!("download [download] {}", url_short);
-            let resp = client.get(url.clone()).send().await.with_context(|| format!("Failed to download {url_str}"))?;
+            let resp = client
+                .get(url.clone())
+                .send()
+                .await
+                .with_context(|| format!("Failed to download {url_str}"))?;
             if !resp.status().is_success() {
                 log::warn!("Request for {} failed: {:?}", url_str, resp.status());
-                return Err(anyhow!("Downloading {url_str} failed, bad status code: {:?}", resp.status()));
+                return Err(anyhow!(
+                    "Downloading {url_str} failed, bad status code: {:?}",
+                    resp.status()
+                ));
             }
             match map(resp).await {
                 Ok(res) => {
@@ -100,7 +113,10 @@ pub(crate) async fn download<T: 'static + Send, F: Future<Output = anyhow::Resul
                     return Ok(res);
                 }
                 Err(err) => {
-                    log::warn!("Failed to read body of {url_str}, retrying ({i}/{max_retries}): {:?}", err);
+                    log::warn!(
+                        "Failed to read body of {url_str}, retrying ({i}/{max_retries}): {:?}",
+                        err
+                    );
                     ambient_sys::time::sleep(Duration::from_millis(2u64.pow(i))).await;
                 }
             }
@@ -122,7 +138,10 @@ impl BytesFromUrl {
         Self { url, cache_on_disk }
     }
     pub fn parse_url(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
-        Ok(Self { url: AbsAssetUrl::parse(url)?, cache_on_disk })
+        Ok(Self {
+            url: AbsAssetUrl::parse(url)?,
+            cache_on_disk,
+        })
     }
 }
 
@@ -130,17 +149,38 @@ impl BytesFromUrl {
 impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<Vec<u8>>> {
         if self.cache_on_disk && AssetsCacheOnDisk.get(&assets) {
-            let path = BytesFromUrlCachedPath { url: self.url.clone() }.get(&assets).await?;
+            let path = BytesFromUrlCachedPath {
+                url: self.url.clone(),
+            }
+            .get(&assets)
+            .await?;
             let semaphore = FileReadSemaphore.get(&assets);
             let _permit = semaphore.acquire().await;
-            return Ok(Arc::new(ambient_sys::fs::read(&*path).await.context(format!("Failed to read file: {path:?}"))?));
+            return Ok(Arc::new(
+                ambient_sys::fs::read(&*path)
+                    .await
+                    .context(format!("Failed to read file: {path:?}"))?,
+            ));
         }
 
         if let Some(path) = self.url.to_file_path()? {
-            return Ok(Arc::new(ambient_sys::fs::read(path).await.context(format!("Failed to read file at: {:}", self.url.0))?));
+            return Ok(Arc::new(
+                ambient_sys::fs::read(path)
+                    .await
+                    .context(format!("Failed to read file at: {:}", self.url.0))?,
+            ));
         }
 
-        let body = download(&assets, self.url.to_download_url(&assets)?, |resp| async { Ok(resp.bytes().await?) }).await?.to_vec();
+        let body = download(
+            &assets,
+            self.url
+                .to_download_url(&assets)
+                .map_err(anyhow::Error::new)?
+                .0,
+            |resp| async { Ok(resp.bytes().await?) },
+        )
+        .await?
+        .to_vec();
         assert!(!body.is_empty());
         Ok(Arc::new(body))
     }
@@ -158,7 +198,9 @@ pub struct BytesFromUrlCachedPath {
 }
 impl BytesFromUrlCachedPath {
     pub fn parse_url(url: impl AsRef<str>) -> anyhow::Result<Self> {
-        Ok(Self { url: AbsAssetUrl::parse(url)? })
+        Ok(Self {
+            url: AbsAssetUrl::parse(url)?,
+        })
     }
 }
 
@@ -190,25 +232,41 @@ impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
             use tokio::io::AsyncWriteExt;
             let mut dir = path.clone();
             dir.pop();
-            std::fs::create_dir_all(&dir).context(format!("Failed to create asset dir: {dir:?}"))?;
+            std::fs::create_dir_all(&dir)
+                .context(format!("Failed to create asset dir: {dir:?}"))?;
             let tmp_path = path.with_extension(".downloading");
-            download(&assets, self.url.to_download_url(&assets)?, {
-                let tmp_path = tmp_path.clone();
-                move |mut resp| {
+            download(
+                &assets,
+                self.url
+                    .to_download_url(&assets)
+                    .map_err(anyhow::Error::new)?
+                    .0,
+                {
                     let tmp_path = tmp_path.clone();
-                    async move {
-                        let mut file = tokio::fs::File::create(&tmp_path).await.context(format!("Failed to create file: {tmp_path:?}"))?;
-                        use std::borrow::BorrowMut;
-                        while let Some(mut item) = resp.chunk().await.context("Failed to download chunk")? {
-                            file.write_all_buf(item.borrow_mut()).await.context("Failed to write to tmp file")?;
+                    move |mut resp| {
+                        let tmp_path = tmp_path.clone();
+                        async move {
+                            let mut file = tokio::fs::File::create(&tmp_path)
+                                .await
+                                .context(format!("Failed to create file: {tmp_path:?}"))?;
+                            use std::borrow::BorrowMut;
+                            while let Some(mut item) =
+                                resp.chunk().await.context("Failed to download chunk")?
+                            {
+                                file.write_all_buf(item.borrow_mut())
+                                    .await
+                                    .context("Failed to write to tmp file")?;
+                            }
+                            file.flush().await.context("Failed to flush tmp file")?;
+                            Ok(())
                         }
-                        file.flush().await.context("Failed to flush tmp file")?;
-                        Ok(())
                     }
-                }
-            })
+                },
+            )
             .await?;
-            std::fs::rename(&tmp_path, &path).context(format!("Failed to rename tmp file, from: {tmp_path:?}, to: {path:?}"))?;
+            std::fs::rename(&tmp_path, &path).context(format!(
+                "Failed to rename tmp file, from: {tmp_path:?}, to: {path:?}"
+            ))?;
             log::info!("Cached asset at {:?}", path);
         }
 
@@ -242,27 +300,49 @@ pub struct JsonFromUrl<T> {
 
 impl<T> Clone for JsonFromUrl<T> {
     fn clone(&self) -> Self {
-        Self { url: self.url.clone(), cache_on_disk: self.cache_on_disk, _type: self._type }
+        Self {
+            url: self.url.clone(),
+            cache_on_disk: self.cache_on_disk,
+            _type: self._type,
+        }
     }
 }
 
 impl<T> JsonFromUrl<T> {
     pub fn new(url: AbsAssetUrl, cache_on_disk: bool) -> Self {
-        Self { url, cache_on_disk, _type: PhantomData }
+        Self {
+            url,
+            cache_on_disk,
+            _type: PhantomData,
+        }
     }
     pub fn parse_url(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
-        Ok(Self { url: AbsAssetUrl::parse(url)?, cache_on_disk, _type: PhantomData })
+        Ok(Self {
+            url: AbsAssetUrl::parse(url)?,
+            cache_on_disk,
+            _type: PhantomData,
+        })
     }
 }
 impl<T> std::fmt::Debug for JsonFromUrl<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("DownloadJsonKey").field("url", &self.url).field("_type", &self._type).finish()
+        f.debug_struct("DownloadJsonKey")
+            .field("url", &self.url)
+            .field("_type", &self._type)
+            .finish()
     }
 }
 #[async_trait]
-impl<T: DeserializeOwned + Sync + Send + 'static> AsyncAssetKey<AssetResult<Arc<T>>> for JsonFromUrl<T> {
+impl<T: DeserializeOwned + Sync + Send + 'static> AsyncAssetKey<AssetResult<Arc<T>>>
+    for JsonFromUrl<T>
+{
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<T>> {
-        let data = BytesFromUrl { url: self.url.clone(), cache_on_disk: self.cache_on_disk }.get(&assets).await?;
+        let data = BytesFromUrl {
+            url: self.url.clone(),
+            cache_on_disk: self.cache_on_disk,
+        }
+        .get(&assets)
+        .await?;
         Ok(serde_json::from_slice(&data).context("Json failed to parse")?)
     }
 }
@@ -276,22 +356,43 @@ pub struct BincodeFromUrl<T> {
 
 impl<T> Clone for BincodeFromUrl<T> {
     fn clone(&self) -> Self {
-        Self { url: self.url.clone(), cache_on_disk: self.cache_on_disk, type_: self.type_ }
+        Self {
+            url: self.url.clone(),
+            cache_on_disk: self.cache_on_disk,
+            type_: self.type_,
+        }
     }
 }
 impl<T> BincodeFromUrl<T> {
     pub fn new(url: AbsAssetUrl, cache_on_disk: bool) -> Self {
-        Self { url, cache_on_disk, type_: PhantomData }
+        Self {
+            url,
+            cache_on_disk,
+            type_: PhantomData,
+        }
     }
     pub fn parse_url(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
-        Ok(Self { url: AbsAssetUrl::parse(url)?, cache_on_disk, type_: PhantomData })
+        Ok(Self {
+            url: AbsAssetUrl::parse(url)?,
+            cache_on_disk,
+            type_: PhantomData,
+        })
     }
 }
 #[async_trait]
-impl<T: DeserializeOwned + std::fmt::Debug + Sync + Send + 'static> AsyncAssetKey<AssetResult<Arc<T>>> for BincodeFromUrl<T> {
+impl<T: DeserializeOwned + std::fmt::Debug + Sync + Send + 'static>
+    AsyncAssetKey<AssetResult<Arc<T>>> for BincodeFromUrl<T>
+{
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<T>> {
-        let data = BytesFromUrl { url: self.url.clone(), cache_on_disk: self.cache_on_disk }.get(&assets).await?;
-        Ok(Arc::new(bincode::deserialize(&data).context("Failed to deserialize")?))
+        let data = BytesFromUrl {
+            url: self.url.clone(),
+            cache_on_disk: self.cache_on_disk,
+        }
+        .get(&assets)
+        .await?;
+        Ok(Arc::new(
+            bincode::deserialize(&data).context("Failed to deserialize")?,
+        ))
     }
 }
 

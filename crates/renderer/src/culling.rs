@@ -52,7 +52,11 @@ impl From<Camera> for CullCamera {
             position: camera.position().extend(1.),
             frustum_right: frustum.right,
             frustum_top: frustum.top,
-            orthographic_size: camera.projection.orthographic_size().unwrap_or(Vec3::ZERO).xy(),
+            orthographic_size: camera
+                .projection
+                .orthographic_size()
+                .unwrap_or(Vec3::ZERO)
+                .xy(),
             frustum_near: camera.projection.near(),
             frustum_far: camera.projection.far().unwrap_or(INFINITY),
             cot_fov_2: 1. / (camera.projection.fovy().unwrap_or(1.) / 2.).tan(),
@@ -85,7 +89,11 @@ fn get_culling_layout() -> BindGroupDesc<'static> {
         entries: vec![BindGroupLayoutEntry {
             binding: 0,
             visibility: ShaderStages::COMPUTE,
-            ty: BindingType::Buffer { ty: BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+            ty: BindingType::Buffer {
+                ty: BufferBindingType::Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
             count: None,
         }],
     }
@@ -95,15 +103,23 @@ impl Culling {
     pub fn new(assets: &AssetCache, config: RendererConfig) -> Self {
         log::debug!("Setting up culling");
         let module = ShaderModule::new("CullingParams", include_file!("culling.wgsl"))
-            .with_ident(ShaderIdent::constant("SHADOW_CASCADES", config.shadow_cascades))
-            .with_ident(ShaderIdent::constant("MAX_SHADOW_CASCADES", MAX_SHADOW_CASCADES))
+            .with_ident(ShaderIdent::constant(
+                "SHADOW_CASCADES",
+                config.shadow_cascades,
+            ))
+            .with_ident(ShaderIdent::constant(
+                "MAX_SHADOW_CASCADES",
+                MAX_SHADOW_CASCADES,
+            ))
             .with_binding_desc(get_culling_layout());
 
         Self {
             updater: GpuWorldUpdater::new(
                 assets.clone(),
                 "Culling".to_string(),
-                ArchetypeFilter::new().incl(world_bounding_sphere()).incl(config.scene),
+                ArchetypeFilter::new()
+                    .incl(world_bounding_sphere())
+                    .incl(config.scene),
                 vec![Arc::new(module)],
                 &[CULLING_BIND_GROUP],
                 "update(entity_loc);",
@@ -113,24 +129,33 @@ impl Culling {
                 "Culling.params",
                 1,
                 1,
-                wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::UNIFORM,
+                wgpu::BufferUsages::COPY_DST
+                    | wgpu::BufferUsages::COPY_SRC
+                    | wgpu::BufferUsages::UNIFORM,
             ),
             config,
             layout: get_culling_layout().get(assets),
         }
     }
 
-    #[profiling::function]
+    #[ambient_profiling::function]
     pub fn run<'a>(&mut self, encoder: &'a mut wgpu::CommandEncoder, world: &World) {
-        let main_camera = if let Some(camera) = Camera::get_active(world, self.config.scene, world.resource_opt(local_user_id())) {
+        let main_camera = if let Some(camera) = Camera::get_active(
+            world,
+            self.config.scene,
+            world.resource_opt(local_user_id()),
+        ) {
             camera
         } else {
             // log::warn!("No valid camera");
             return;
         };
 
-        let mut params =
-            CullingParams { lod_cutoff_scaling: self.config.lod_cutoff_scaling, main_camera: main_camera.into(), ..Default::default() };
+        let mut params = CullingParams {
+            lod_cutoff_scaling: self.config.lod_cutoff_scaling,
+            main_camera: main_camera.into(),
+            ..Default::default()
+        };
         if self.config.shadow_cascades > 0 {
             let shadow_cameras = shadow_cameras_from_world(
                 world,
@@ -148,12 +173,20 @@ impl Culling {
 
         self.params.fill(&[params], |_| {});
 
-        let bind_group = self.updater.gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
-            label: None,
-            layout: &self.layout,
-            entries: &[wgpu::BindGroupEntry { binding: 0, resource: self.params.buffer().as_entire_binding() }],
-        });
+        let bind_group = self
+            .updater
+            .gpu
+            .device
+            .create_bind_group(&wgpu::BindGroupDescriptor {
+                label: None,
+                layout: &self.layout,
+                entries: &[wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: self.params.buffer().as_entire_binding(),
+                }],
+            });
 
-        self.updater.run_with_encoder(encoder, world, &[&bind_group]);
+        self.updater
+            .run_with_encoder(encoder, world, &[&bind_group]);
     }
 }

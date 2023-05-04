@@ -236,8 +236,10 @@ export type Pipeline = {
     output_decals?: boolean,
   } | {
     /// The audio asset pipeline.
-    /// Will import supported audio file formats and produce Ogg Vorbis files to be used by the runtime.
+    /// Will import supported audio file formats and produce Ogg Vorbis or WAV files to be used by the runtime.
     type: "Audio",
+    /// Whether or not the audio should be converted to Ogg Vorbis.
+    convert?: boolean,
   },
   /// Filter the sources used to feed this pipeline.
   /// This is a list of glob patterns for accepted files.

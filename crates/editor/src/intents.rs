@@ -5,7 +5,9 @@ use ambient_core::{
 };
 use ambient_ecs::{components, Entity, EntityId, World};
 use ambient_intent::{use_old_state, IntentContext, IntentRegistry};
-use ambient_physics::{collider::collider_shapes_convex, main_physics_scene, physx::rigid_actor, PxShapeUserData};
+use ambient_physics::{
+    collider::collider_shapes_convex, main_physics_scene, physx::rigid_actor, PxShapeUserData,
+};
 use anyhow::Context;
 use glam::{Mat4, Vec3, Vec3Swizzles};
 use itertools::{izip, process_results, Itertools};
@@ -26,15 +28,22 @@ pub struct IntentTransformRevert {
     snap_to_ground: Option<f32>,
 }
 
-fn undo_transform(ctx: IntentContext, undo_state: Vec<IntentTransformRevert>) -> anyhow::Result<()> {
+fn undo_transform(
+    ctx: IntentContext,
+    undo_state: Vec<IntentTransformRevert>,
+) -> anyhow::Result<()> {
     let world = ctx.world;
     for state in undo_state {
         let id = state.uid;
 
         if let Some(old_snap_to_ground) = state.snap_to_ground {
-            world.add_component(id, snap_to_ground(), old_snap_to_ground).expect("Invalid entity");
+            world
+                .add_component(id, snap_to_ground(), old_snap_to_ground)
+                .expect("Invalid entity");
         } else {
-            world.remove_component(id, snap_to_ground()).expect("Invalid entity")
+            world
+                .remove_component(id, snap_to_ground())
+                .expect("Invalid entity")
         }
 
         let (scl, rot, pos) = state.transform.to_scale_rotation_translation();
@@ -126,7 +135,10 @@ impl Snapping {
                 assert!(bitangent.is_normalized());
                 let point = point - self.origin;
 
-                assert!(tangent.dot(bitangent).abs() < 0.001, "Surface tangent and bitangent are not orthogonal {tangent} x {bitangent}",);
+                assert!(
+                    tangent.dot(bitangent).abs() < 0.001,
+                    "Surface tangent and bitangent are not orthogonal {tangent} x {bitangent}",
+                );
 
                 let l = (point.dot(tangent) / self.size).round() * self.size;
                 let r = (point.dot(bitangent) / self.size).round() * self.size;
@@ -178,20 +190,38 @@ fn axis_aligned_plane(normal: Vec3) -> (Vec3, Vec3) {
     }
 }
 
-#[profiling::function]
-fn resolve_clipping(world: &mut World, entities: &[EntityId], ids: &[EntityId], source: Vec3, target: Intersection) -> Option<Vec3> {
+#[ambient_profiling::function]
+fn resolve_clipping(
+    world: &mut World,
+    entities: &[EntityId],
+    ids: &[EntityId],
+    source: Vec3,
+    target: Intersection,
+) -> Option<Vec3> {
     let scene = world.resource(main_physics_scene());
 
-    let total_bounds: AABB = ids.iter().flat_map(|&id| Some(world.get(id, rigid_actor()).ok()?.get_world_bounds(1.0).into())).collect();
+    let total_bounds: AABB = ids
+        .iter()
+        .flat_map(|&id| {
+            Some(
+                world
+                    .get(id, rigid_actor())
+                    .ok()?
+                    .get_world_bounds(1.0)
+                    .into(),
+            )
+        })
+        .collect();
 
     let dir = -target.normal;
-    let initial_offset = (total_bounds.support(dir) - total_bounds.center()).project_onto(dir) * 2.1;
+    let initial_offset =
+        (total_bounds.support(dir) - total_bounds.center()).project_onto(dir) * 2.1;
 
     entities
         .iter()
         .zip_eq(ids)
         .flat_map(|(_, &id)| -> Option<_> {
-            profiling::scope!("query_intersection");
+            ambient_profiling::scope!("query_intersection");
             // let id = *world.resource(uid_lookup()).get(&entity.id)?;
 
             let transform = get_world_transform(world, id).ok()?;
@@ -217,7 +247,13 @@ fn resolve_clipping(world: &mut World, entities: &[EntityId], ids: &[EntityId], 
                     .touches()
                     .into_iter()
                     .filter(|v| {
-                        let id = v.shape.as_ref().unwrap().get_user_data::<PxShapeUserData>().unwrap().entity;
+                        let id = v
+                            .shape
+                            .as_ref()
+                            .unwrap()
+                            .get_user_data::<PxShapeUserData>()
+                            .unwrap()
+                            .entity;
                         !ids.contains(&id)
                     })
                     .min_by_key(|v| OrderedFloat(v.distance))?;
@@ -243,9 +279,10 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         intent_place_ray(),
         intent_place_ray_undo(),
         |ctx, IntentPlaceRay { targets, ray, snap }| {
-            profiling::scope!("handle_intent_move");
+            ambient_profiling::scope!("handle_intent_move");
             let world = ctx.world;
 
+            #[allow(dead_code)]
             enum SurfaceOffset {
                 Keep { _normal: Vec3 },
                 Update,
@@ -253,7 +290,8 @@ pub fn register_intents(reg: &mut IntentRegistry) {
 
             let (ids, transforms): (Vec<_>, Vec<_>) = process_results(
                 targets.iter().map(|id| -> anyhow::Result<_> {
-                    let transform = get_world_transform(world, *id).with_context(|| format!("Failed to get world transform for {id:?}"))?;
+                    let transform = get_world_transform(world, *id)
+                        .with_context(|| format!("Failed to get world transform for {id:?}"))?;
 
                     Ok((id, transform))
                 }),
@@ -269,7 +307,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                 .fold(Vec3::ZERO, |acc, x| acc + x)
                 / transforms.len().max(1) as f32;
 
-            profiling::scope!("intent_move");
+            ambient_profiling::scope!("intent_move");
             // tracing::info!("Bounding box: {bounds:?}");
 
             let intersect = find_world_intersection_without_entities(world, ray, &ids, 500.);
@@ -282,7 +320,8 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                     intersect.normal = Vec3::Z
                 }
 
-                let subject_transform = get_world_transform(world, intersect.id).expect("Missing position for entity");
+                let subject_transform =
+                    get_world_transform(world, intersect.id).expect("Missing position for entity");
                 let (_, _, subject_pos) = subject_transform.to_scale_rotation_translation();
 
                 // log::info!("Snap: {snap:?}");
@@ -293,7 +332,8 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                         let (tangent, bitangent) = axis_aligned_plane(intersect.normal);
                         Snapping {
                             size: snap,
-                            origin: subject_pos + (intersect.point - subject_pos).project_onto(intersect.normal),
+                            origin: subject_pos
+                                + (intersect.point - subject_pos).project_onto(intersect.normal),
                             mode: SnappingShape::Surface { tangent, bitangent },
                         }
                         .snap(intersect.point)
@@ -303,7 +343,8 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                 // Once the snapped intersection point has been
                 // established, move out to clip to the side of
                 // the manipulated objects
-                let clip = resolve_clipping(world, &targets, &ids, midpoint, intersect).unwrap_or_default();
+                let clip = resolve_clipping(world, &targets, &ids, midpoint, intersect)
+                    .unwrap_or_default();
 
                 target + clip
             } else {
@@ -327,7 +368,11 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                         world.set_if_changed(id, rotation(), rot).unwrap();
                         world.set_if_changed(id, scale(), scl).unwrap();
 
-                        Ok(IntentTransformRevert { snap_to_ground: old_snap_to_ground, transform, uid })
+                        Ok(IntentTransformRevert {
+                            snap_to_ground: old_snap_to_ground,
+                            transform,
+                            uid,
+                        })
                     }
                 })
                 .collect()
@@ -340,9 +385,10 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         intent_translate(),
         intent_translate_undo(),
         |ctx, IntentTranslate { targets, position }| {
-            profiling::scope!("handle_intent_move");
+            ambient_profiling::scope!("handle_intent_move");
             let world = ctx.world;
 
+            #[allow(dead_code)]
             enum SurfaceOffset {
                 Keep { _normal: Vec3 },
                 Update,
@@ -350,7 +396,8 @@ pub fn register_intents(reg: &mut IntentRegistry) {
 
             let (ids, transforms): (Vec<_>, Vec<_>) = process_results(
                 targets.iter().map(|id| -> anyhow::Result<_> {
-                    let transform = get_world_transform(world, *id).with_context(|| format!("Failed to get world transform for {id:?}"))?;
+                    let transform = get_world_transform(world, *id)
+                        .with_context(|| format!("Failed to get world transform for {id:?}"))?;
 
                     Ok((id, transform))
                 }),
@@ -382,7 +429,11 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                     world.set_if_changed(id, rotation(), rot).unwrap();
                     world.set_if_changed(id, scale(), scl).unwrap();
 
-                    Ok(IntentTransformRevert { snap_to_ground: old_snap_to_ground, transform, uid })
+                    Ok(IntentTransformRevert {
+                        snap_to_ground: old_snap_to_ground,
+                        transform,
+                        uid,
+                    })
                 })
                 .collect()
         },
@@ -412,7 +463,11 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                     world.set_if_changed(id, rotation(), rot).unwrap();
                     world.set_if_changed(id, scale(), scl).unwrap();
 
-                    Ok(IntentTransformRevert { transform: old_transform, snap_to_ground: old_snap_to_ground, uid: id })
+                    Ok(IntentTransformRevert {
+                        transform: old_transform,
+                        snap_to_ground: old_snap_to_ground,
+                        uid: id,
+                    })
                 })
                 .collect::<Result<Vec<_>, _>>()
         },
@@ -421,9 +476,13 @@ pub fn register_intents(reg: &mut IntentRegistry) {
             for old_state in transforms {
                 let id = old_state.uid;
                 if let Some(old_snap_to_ground) = old_state.snap_to_ground {
-                    world.add_component(id, snap_to_ground(), old_snap_to_ground).expect("Invalid entity");
+                    world
+                        .add_component(id, snap_to_ground(), old_snap_to_ground)
+                        .expect("Invalid entity");
                 } else {
-                    world.remove_component(id, snap_to_ground()).expect("Invalid entity")
+                    world
+                        .remove_component(id, snap_to_ground())
+                        .expect("Invalid entity")
                 }
 
                 let (scl, rot, pos) = old_state.transform.to_scale_rotation_translation();
@@ -463,9 +522,13 @@ pub fn register_intents(reg: &mut IntentRegistry) {
             let world = ctx.world;
             for (id, old_offset) in old_offset {
                 if let Some(old_offset) = old_offset {
-                    world.add_component(id, snap_to_ground(), old_offset).expect("Invalid entity");
+                    world
+                        .add_component(id, snap_to_ground(), old_offset)
+                        .expect("Invalid entity");
                 } else {
-                    world.remove_component(id, snap_to_ground()).expect("Invalid entity")
+                    world
+                        .remove_component(id, snap_to_ground())
+                        .expect("Invalid entity")
                 }
             }
             Ok(())
@@ -478,8 +541,11 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         intent_select_undo(),
         |ctx, (new_selection, select)| {
             let world = ctx.world;
-            let player_entity = get_by_user_id(world, ctx.user_id).context("No player with that user_id found")?;
-            let selection = world.get_mut(player_entity, selection()).context("Selection missing")?;
+            let player_entity =
+                get_by_user_id(world, ctx.user_id).context("No player with that user_id found")?;
+            let selection = world
+                .get_mut(player_entity, selection())
+                .context("Selection missing")?;
 
             let old_selection = selection.clone();
             match select {
@@ -513,22 +579,36 @@ pub fn register_intents(reg: &mut IntentRegistry) {
     reg.register(
         intent_spawn_object(),
         intent_spawn_object_undo(),
-        |ctx, IntentSpawnObject { object_url, entity_id, position, select }| {
+        |ctx,
+         IntentSpawnObject {
+             object_url,
+             entity_id,
+             position,
+             select,
+         }| {
             let user_id = ctx.user_id;
             let world = ctx.world;
 
             tokio::task::block_in_place(|| {
-                let data = Entity::new().with(translation(), position).with_default(selectable()).with(prefab_from_url(), object_url);
+                let data = Entity::new()
+                    .with(translation(), position)
+                    .with_default(selectable())
+                    .with(prefab_from_url(), object_url);
                 world.spawn_with_id(entity_id, data);
             });
 
             let player_entity = get_by_user_id(world, user_id).context("Player not found")?;
-            let old_selection = world.get_ref(player_entity, selection()).cloned().context("Failed to get selection")?;
+            let old_selection = world
+                .get_ref(player_entity, selection())
+                .cloned()
+                .context("Failed to get selection")?;
 
             // Set the player selection to the spawned object
             if select {
                 tracing::debug!("Setting player selection to: {entity_id:?}");
-                world.set(player_entity, selection(), Selection::new(vec![entity_id])).context("Failed to set selection")?;
+                world
+                    .set(player_entity, selection(), Selection::new(vec![entity_id]))
+                    .context("Failed to set selection")?;
             }
             Ok((entity_id, select, old_selection))
         },
@@ -548,7 +628,12 @@ pub fn register_intents(reg: &mut IntentRegistry) {
     reg.register(
         intent_duplicate(),
         intent_duplicate_undo(),
-        |ctx, IntentDuplicate { entities, new_uids, select }| {
+        |ctx,
+         IntentDuplicate {
+             entities,
+             new_uids,
+             select,
+         }| {
             let world = ctx.world;
             let player_entity = get_by_user_id(world, ctx.user_id).context("Player not found")?;
 
@@ -559,7 +644,9 @@ pub fn register_intents(reg: &mut IntentRegistry) {
 
             // Set the selection to the new objects
             if select {
-                world.set(player_entity, selection(), Selection::new(new_uids.clone())).ok();
+                world
+                    .set(player_entity, selection(), Selection::new(new_uids.clone()))
+                    .ok();
             }
 
             Ok(new_uids)
@@ -634,7 +721,12 @@ pub struct Intersection {
 }
 
 /// Perform a ray intersect while excluding some entities
-fn find_world_intersection_without_entities(world: &mut World, ray: Ray, entities: &[EntityId], max_dist: f32) -> Option<Intersection> {
+fn find_world_intersection_without_entities(
+    world: &mut World,
+    ray: Ray,
+    entities: &[EntityId],
+    max_dist: f32,
+) -> Option<Intersection> {
     let mut hit = PxRaycastCallback::new(100);
     let scene = world.resource(main_physics_scene());
     let filter_data = PxQueryFilterData::new();
@@ -646,7 +738,12 @@ fn find_world_intersection_without_entities(world: &mut World, ray: Ray, entitie
                 if let Some(shape) = hit.shape {
                     let ud = shape.get_user_data::<PxShapeUserData>().unwrap();
                     if !entities.contains(&ud.entity) {
-                        return Some((OrderedFloat(hit.distance), hit.normal, hit.position, ud.entity));
+                        return Some((
+                            OrderedFloat(hit.distance),
+                            hit.normal,
+                            hit.position,
+                            ud.entity,
+                        ));
                     }
                 }
                 None
@@ -654,7 +751,12 @@ fn find_world_intersection_without_entities(world: &mut World, ray: Ray, entitie
             .min_by_key(|v| v.0);
         if let Some((dist, normal, point, id)) = min_dist {
             if dist.0 < max_dist {
-                return Some(Intersection { dist: *dist, point, normal, id });
+                return Some(Intersection {
+                    dist: *dist,
+                    point,
+                    normal,
+                    id,
+                });
             }
         }
     }
@@ -681,5 +783,7 @@ fn update_snap_to_ground(world: &mut World, id: EntityId, pos: Vec3) {
 }
 fn set_snap_to_ground(world: &mut World, id: EntityId, height: f32) {
     // Modify the transformed z value
-    world.add_component(id, snap_to_ground(), height).expect("Invalid entity");
+    world
+        .add_component(id, snap_to_ground(), height)
+        .expect("Invalid entity");
 }

@@ -24,10 +24,7 @@ use crate::shared::{
     wit,
 };
 
-use ambient_core::camera::{
-    clip_space_ray,
-    world_to_clip_space,
-};
+use ambient_core::camera::{clip_space_ray, world_to_clip_space};
 
 impl wit::client_message::Host for Bindings {
     fn send(
@@ -157,7 +154,8 @@ impl wit::client_camera::Host for Bindings {
         camera: wit::types::EntityId,
         screen_pos: wit::types::Vec2,
     ) -> anyhow::Result<wit::types::Ray> {
-        let clip_space = ambient_core::window::screen_to_clip_space(self.world(), screen_pos.from_bindgen());
+        let clip_space =
+            ambient_core::window::screen_to_clip_space(self.world(), screen_pos.from_bindgen());
         let mut ray = clip_space_ray(self.world(), camera.from_bindgen(), clip_space)?;
         ray.dir *= -1.;
         Ok(ray.into_bindgen())
@@ -171,49 +169,36 @@ impl wit::client_camera::Host for Bindings {
         let clip_pos = world_to_clip_space(
             self.world(),
             camera.from_bindgen(),
-            world_pos.from_bindgen()
+            world_pos.from_bindgen(),
         )?;
-        Ok(
-            ambient_core::window::clip_to_screen_space(self.world(), clip_pos)
-                .into_bindgen()
-        )
+        Ok(ambient_core::window::clip_to_screen_space(self.world(), clip_pos).into_bindgen())
     }
 }
 impl wit::client_audio::Host for Bindings {
     fn load(&mut self, url: String) -> anyhow::Result<()> {
         let world = self.world();
-        let assets = world.resource(asset_cache()).clone();
-        let asset_url = AbsAssetUrl::from_asset_key(url).to_string();
+        let assets = world.resource(asset_cache());
         let audio_url = AudioFromUrl {
-            url: AbsAssetUrl::parse(asset_url).context("Failed to parse audio url")?,
+            url: AbsAssetUrl::parse(url)?,
         };
-        let _track = audio_url.peek(&assets);
+        let _track = audio_url.peek(assets);
         Ok(())
     }
 
     fn play(&mut self, url: String, looping: bool, volume: f32, uid: u32) -> anyhow::Result<()> {
         let world = self.world();
         let assets = world.resource(asset_cache()).clone();
-        let asset_url = AbsAssetUrl::from_asset_key(url).to_string();
-        let audio_url = AudioFromUrl {
-            url: AbsAssetUrl::parse(asset_url.clone()).context("Failed to parse audio url")?,
-        };
         let runtime = world.resource(runtime()).clone();
         let async_run = world.resource(async_run()).clone();
+        let url = AbsAssetUrl::parse(url)?.to_download_url(&assets)?;
         runtime.spawn(async move {
-            let track = audio_url.get(&assets).await;
+            let track = AudioFromUrl { url: url.clone() }.get(&assets).await;
             async_run.run(move |world| {
                 match track {
                     Ok(track) => {
                         let sender = world.resource(audio_sender());
                         sender
-                            .send(AudioMessage::Track(
-                                track,
-                                looping,
-                                volume,
-                                asset_url.replace("ambient-assets:/", ""),
-                                uid,
-                            ))
+                            .send(AudioMessage::Track(track, looping, volume, url, uid))
                             .unwrap();
                     }
                     Err(e) => log::error!("{e:?}"),
@@ -227,6 +212,8 @@ impl wit::client_audio::Host for Bindings {
         let world = self.world();
         let runtime = world.resource(runtime()).clone();
         let async_run = world.resource(async_run()).clone();
+        let assets = world.resource(asset_cache());
+        let url = AbsAssetUrl::parse(url)?.to_download_url(&assets)?;
         runtime.spawn(async move {
             async_run.run(move |world| {
                 let sender = world.resource(audio_sender());
@@ -240,6 +227,8 @@ impl wit::client_audio::Host for Bindings {
         let world = self.world();
         let runtime = world.resource(runtime()).clone();
         let async_run = world.resource(async_run()).clone();
+        let assets = world.resource(asset_cache());
+        let url = AbsAssetUrl::parse(url)?.to_download_url(&assets)?;
         runtime.spawn(async move {
             async_run.run(move |world| {
                 let sender = world.resource(audio_sender());

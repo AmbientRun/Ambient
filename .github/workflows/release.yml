@@ -101,9 +101,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - run: cd guest/rust/api_core/api_macros && cargo publish
-      - run: cd guest/rust/api_core && cargo publish
-      - run: cd guest/rust/api && cargo publish
+
+      - name: Release all packages required for API
+        run: cargo run -p campfire release publish --execute
 
   publish-release:
     needs: [create-release, build-app, publish-api]

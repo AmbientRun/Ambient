@@ -9,8 +9,13 @@ use ambient_std::asset_cache::{AssetCache, AsyncAssetKey, SyncAssetKeyExt};
 use glam::{ivec2, IVec2, UVec2, Vec2, Vec3, Vec3Swizzles};
 use serde::{Deserialize, Serialize};
 
-use super::{gather_terrain_cells, spread_terrain_cells, TerrainSize, TerrainStateCpu, TERRAIN_LAYERS};
-use crate::{get_terrain_cell, spawn_terrain, terrain_cell_needs_cpu_download, terrain_cell_version, terrain_state};
+use super::{
+    gather_terrain_cells, spread_terrain_cells, TerrainSize, TerrainStateCpu, TERRAIN_LAYERS,
+};
+use crate::{
+    get_terrain_cell, spawn_terrain, terrain_cell_needs_cpu_download, terrain_cell_version,
+    terrain_state,
+};
 
 mod flatten;
 mod hydraulic_erosion;
@@ -91,7 +96,14 @@ pub struct BrushWGSL {
 }
 impl Default for BrushWGSL {
     fn default() -> Self {
-        Self { center: Vec2::ZERO, radius: 1., shape: BrushShape::Circle, smoothness: 1., amplitude: 0., _padding: Default::default() }
+        Self {
+            center: Vec2::ZERO,
+            radius: 1.,
+            shape: BrushShape::Circle,
+            smoothness: 1.,
+            amplitude: 0.,
+            _padding: Default::default(),
+        }
     }
 }
 
@@ -111,8 +123,12 @@ impl TerrainBrushStroke {
     fn get_brush_cells(&self) -> (IVec2, IVec2) {
         let terrain = TerrainSize::new();
         let radius = self.brush_size.radius() * 1.2;
-        let top_left_cell = ((self.center - radius) / terrain.size_in_meters()).floor().as_ivec2();
-        let bottom_right_cell = ((self.center + radius) / terrain.size_in_meters()).ceil().as_ivec2();
+        let top_left_cell = ((self.center - radius) / terrain.size_in_meters())
+            .floor()
+            .as_ivec2();
+        let bottom_right_cell = ((self.center + radius) / terrain.size_in_meters())
+            .ceil()
+            .as_ivec2();
         (top_left_cell, bottom_right_cell)
     }
     pub fn ensure_cells_exist(&self, world: &mut World) {
@@ -185,7 +201,11 @@ impl TerrainBrush {
                 gpu.clone(),
                 &wgpu::TextureDescriptor {
                     label: Some("Terrain brush heightmap"),
-                    size: wgpu::Extent3d { width: max_brush_size, height: max_brush_size, depth_or_array_layers: TERRAIN_LAYERS },
+                    size: wgpu::Extent3d {
+                        width: max_brush_size,
+                        height: max_brush_size,
+                        depth_or_array_layers: TERRAIN_LAYERS,
+                    },
                     mip_level_count: 1,
                     sample_count: 1,
                     dimension: wgpu::TextureDimension::D2,
@@ -194,13 +214,18 @@ impl TerrainBrush {
                         | wgpu::TextureUsages::COPY_DST
                         | wgpu::TextureUsages::COPY_SRC
                         | wgpu::TextureUsages::STORAGE_BINDING,
+                    view_formats: &[]
                 },
             )),
             intermediate_normalmap: Arc::new(Texture::new(
                 gpu.clone(),
                 &wgpu::TextureDescriptor {
                     label: Some("Terrain brush normalmap"),
-                    size: wgpu::Extent3d { width: max_brush_size, height: max_brush_size, depth_or_array_layers: 1 },
+                    size: wgpu::Extent3d {
+                        width: max_brush_size,
+                        height: max_brush_size,
+                        depth_or_array_layers: 1,
+                    },
                     mip_level_count: 1,
                     sample_count: 1,
                     dimension: wgpu::TextureDimension::D2,
@@ -209,20 +234,32 @@ impl TerrainBrush {
                         | wgpu::TextureUsages::COPY_DST
                         | wgpu::TextureUsages::COPY_SRC
                         | wgpu::TextureUsages::STORAGE_BINDING,
+                    view_formats: &[]
                 },
             )),
         }
     }
-    #[profiling::function]
+    #[ambient_profiling::function]
     pub fn apply(&self, world: &mut World, stroke: TerrainBrushStroke) -> Vec<EntityId> {
         let map_globals = world.persisted_resource_entity().unwrap();
         let seed = world.get(map_globals, map_seed()).unwrap();
 
         let (top_left_cell, bottom_right_cell) = stroke.get_brush_cells();
-        let TerrainBrushStroke { center, layer, brush, brush_size, brush_strength, brush_smoothness, brush_shape, start_position, erosion } =
-            stroke;
+        let TerrainBrushStroke {
+            center,
+            layer,
+            brush,
+            brush_size,
+            brush_strength,
+            brush_smoothness,
+            brush_shape,
+            start_position,
+            erosion,
+        } = stroke;
         let gpu = world.resource(gpu()).clone();
-        let mut encoder = gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+        let mut encoder = gpu
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         let terrain = TerrainSize::new();
         let mut cells_size = bottom_right_cell - top_left_cell;
         cells_size.x = cells_size.x.max(1);
@@ -231,7 +268,13 @@ impl TerrainBrush {
         let texture_size = cells_size * (terrain.texture_size() - 1) as u32 + 1;
         let heightmap_world_size = cells_size.as_vec2() * terrain.size_in_meters();
         let heightmap_world_texel_size = heightmap_world_size.x / (texture_size.x as f32 - 1.);
-        gather_terrain_cells(world, &mut encoder, &self.intermediate_heightmap, top_left_cell, cells_size);
+        gather_terrain_cells(
+            world,
+            &mut encoder,
+            &self.intermediate_heightmap,
+            top_left_cell,
+            cells_size,
+        );
         match brush {
             Brush::Raise | Brush::Lower => {
                 let amount = brush_strength.strength();
@@ -242,7 +285,11 @@ impl TerrainBrush {
                         center,
                         radius: brush_size.radius(),
                         shape: brush_shape,
-                        amplitude: if brush == Brush::Raise { amount } else { -amount },
+                        amplitude: if brush == Brush::Raise {
+                            amount
+                        } else {
+                            -amount
+                        },
                         smoothness: brush_smoothness.0,
                         _padding: Default::default(),
                     },
@@ -259,11 +306,14 @@ impl TerrainBrush {
             }
             Brush::Flatten => {
                 let brush = FlattenBrush::new(&gpu);
-                let mut start_heightmap = PixelTextureViewKey::white().get(world.resource(asset_cache()));
-                let (start_cell, start_texel) = TerrainSize::new().cell_and_texel_from_position(start_position.xy());
+                let mut start_heightmap =
+                    PixelTextureViewKey::white().get(world.resource(asset_cache()));
+                let (start_cell, start_texel) =
+                    TerrainSize::new().cell_and_texel_from_position(start_position.xy());
                 if let Some(id) = get_terrain_cell(world, start_cell) {
                     if let Ok(state) = world.get_ref(id, terrain_state()) {
-                        start_heightmap = Arc::new(state.heightmap.create_view(&Default::default()));
+                        start_heightmap =
+                            Arc::new(state.heightmap.create_view(&Default::default()));
                     }
                 }
                 let params = FlattenBrushParams {
@@ -300,7 +350,13 @@ impl TerrainBrush {
                 config.brush_radius = brush_size.radius();
                 config.brush_position = center - top_left_cell.as_vec2() * terrain.size_in_meters();
                 let brush = HydraulicErosionCompute::new(&gpu);
-                brush.run(&gpu, &mut encoder, &self.intermediate_heightmap.create_view(&Default::default()), texture_size, &config);
+                brush.run(
+                    &gpu,
+                    &mut encoder,
+                    &self.intermediate_heightmap.create_view(&Default::default()),
+                    texture_size,
+                    &config,
+                );
 
                 // for i in 0..4 {
                 //     let brush = ThermalErosionCompute::new(&gpu);
@@ -321,13 +377,20 @@ impl TerrainBrush {
                 let brush = WaterSimCompute::new(&gpu);
                 let mut config = WaterSimConfig::default();
                 config.params.frame = *world.resource(frame_index()) as i32;
-                brush.run(&gpu, &mut encoder, &self.intermediate_heightmap.create_view(&Default::default()), texture_size, &config);
+                brush.run(
+                    &gpu,
+                    &mut encoder,
+                    &self.intermediate_heightmap.create_view(&Default::default()),
+                    texture_size,
+                    &config,
+                );
             }
             Brush::Thermal => {
                 let brush = ThermalErosionCompute::new(&gpu);
                 let config = ThermalErosionConfig {
                     params: ThermalErosionParams {
-                        heightmap_world_position: top_left_cell.as_vec2() * terrain.size_in_meters(),
+                        heightmap_world_position: top_left_cell.as_vec2()
+                            * terrain.size_in_meters(),
                         heightmap_world_size: cells_size.as_vec2() * terrain.size_in_meters(),
                         heightmap_texture_size: texture_size.as_ivec2(),
                         brush_position: center,
@@ -336,7 +399,13 @@ impl TerrainBrush {
                         _padding: Default::default(),
                     },
                 };
-                brush.run(&gpu, &mut encoder, &self.intermediate_heightmap.create_view(&Default::default()), texture_size, &config);
+                brush.run(
+                    &gpu,
+                    &mut encoder,
+                    &self.intermediate_heightmap.create_view(&Default::default()),
+                    texture_size,
+                    &config,
+                );
             }
         }
         self.normals.run(
@@ -357,7 +426,9 @@ impl TerrainBrush {
 
         gpu.queue.submit(Some(encoder.finish()));
         for id in &changed_cells {
-            world.add_component(*id, terrain_cell_needs_cpu_download(), true).ok();
+            world
+                .add_component(*id, terrain_cell_needs_cpu_download(), true)
+                .ok();
             *world.get_mut(*id, terrain_cell_version()).unwrap() += 1;
         }
 

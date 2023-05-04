@@ -1,6 +1,8 @@
 use std::{str::FromStr, sync::Arc, time::Duration};
 
-use ambient_core::{asset_cache, async_ecs::async_run, runtime, window::get_mouse_clip_space_position};
+use ambient_core::{
+    asset_cache, async_ecs::async_run, runtime, window::get_mouse_clip_space_position,
+};
 use ambient_ecs::{generated::messages, Component, ComponentValue, EntityId};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_intent::{client_push_intent, rpc_undo_head_exact};
@@ -19,14 +21,17 @@ use ambient_std::{
 use ambient_ui_native::{
     command_modifier,
     layout::{docking, width, Docking},
-    margin, padding, space_between_items, Borders, Button, ButtonStyle, Dock, FlowRow, Hotkey, ScreenContainer, Separator, StylesExt,
-    STREET,
+    margin, padding, space_between_items, Borders, Button, ButtonStyle, Dock, FlowRow, Hotkey,
+    ScreenContainer, Separator, StylesExt, STREET,
 };
 use tokio::time::sleep;
 
 use super::{terrain_mode::GenerateTerrainButton, EditorPlayerInputHandler, EditorPrefs};
 use crate::{
-    intents::{intent_delete, intent_duplicate, intent_spawn_object, IntentDuplicate, IntentSpawnObject, SelectMode},
+    intents::{
+        intent_delete, intent_duplicate, intent_spawn_object, IntentDuplicate, IntentSpawnObject,
+        SelectMode,
+    },
     ui::use_player_selection,
     Selection, GRID_SIZE,
 };
@@ -62,12 +67,20 @@ pub struct EditorAction<T: ComponentValue> {
 
 impl<T: ComponentValue> std::fmt::Debug for EditorAction<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("EditorAction").field("id", &self.id).field("intent", &self.intent).finish()
+        f.debug_struct("EditorAction")
+            .field("id", &self.id)
+            .field("intent", &self.intent)
+            .finish()
     }
 }
 
 impl<T: ComponentValue> EditorAction<T> {
-    pub fn new(runtime: RuntimeHandle, client: GameClient, intent: Component<T>, throttle: Duration) -> Self {
+    pub fn new(
+        runtime: RuntimeHandle,
+        client: GameClient,
+        intent: Component<T>,
+        throttle: Duration,
+    ) -> Self {
         let (tx, rx) = futures_signals::signal::channel(None);
 
         {
@@ -84,7 +97,13 @@ impl<T: ComponentValue> EditorAction<T> {
             });
         }
 
-        Self { client, id: None, runtime, intent, tx }
+        Self {
+            client,
+            id: None,
+            runtime,
+            intent,
+            tx,
+        }
     }
 
     #[tracing::instrument(skip_all, level = "info")]
@@ -139,10 +158,13 @@ impl ElementComponent for EditorBuildMode {
             let mut prev = None;
 
             let update_targets = move |selection: &Selection| {
-                profiling::scope!("update_targets");
+                ambient_profiling::scope!("update_targets");
                 let state = game_state.lock();
 
-                let res = selection.iter().filter(|id| state.world.exists(*id)).collect_vec();
+                let res = selection
+                    .iter()
+                    .filter(|id| state.world.exists(*id))
+                    .collect_vec();
 
                 if Some(&res) != prev.as_ref() {
                     tracing::info!("Resolving targets: {selection:?} => {res:?}");
@@ -152,7 +174,12 @@ impl ElementComponent for EditorBuildMode {
                 }
             };
 
-            hooks.use_interval_deps(Duration::from_millis(2000), true, selection.clone(), update_targets);
+            hooks.use_interval_deps(
+                Duration::from_millis(2000),
+                true,
+                selection.clone(),
+                update_targets,
+            );
         }
         hooks.use_runtime_message::<messages::WindowKeyboardInput>(move |_world, event| {
             let pressed = event.pressed;
@@ -190,8 +217,8 @@ impl ElementComponent for EditorBuildMode {
                     .with(width(), 300.)
                     .with(docking(), Docking::Right)
                     .floating_panel()
-                    .with(margin(), Borders::even(STREET))
-                    .with(padding(), Borders::even(STREET))
+                    .with(margin(), Borders::even(STREET).into())
+                    .with(padding(), Borders::even(STREET).into())
             } else {
                 Element::new()
             },
@@ -308,10 +335,10 @@ impl ElementComponent for EditorBuildMode {
                 .floating_panel()
                 .with(docking(), Docking::Top)
                 .with(space_between_items(), STREET)
-                .with(margin(), Borders::even(STREET))
-                .with(padding(), Borders::even(STREET)),
+                .with(margin(), Borders::even(STREET).into())
+                .with(padding(), Borders::even(STREET).into()),
             GenerateTerrainButton.el()
-                .with(margin(), Borders::even(STREET)),
+                .with(margin(), Borders::even(STREET).into()),
             SelectArea.el(),
         ])
             .el()
@@ -343,7 +370,12 @@ impl ElementComponent for TransformControls {
         let (prefs, set_prefs) = hooks.consume_context::<EditorPrefs>().unwrap();
         let set = set_prefs.clone();
         let set_snap_mode = move |snap| (set)(EditorPrefs { snap, ..prefs });
-        let set_global_coordinates = move |use_global| (set_prefs)(EditorPrefs { use_global_coordinates: use_global, ..prefs });
+        let set_global_coordinates = move |use_global| {
+            (set_prefs)(EditorPrefs {
+                use_global_coordinates: use_global,
+                ..prefs
+            })
+        };
 
         let mode_button = |mode, icon, hotkey| {
             Button::new(
@@ -397,10 +429,18 @@ impl ElementComponent for TransformControls {
         if srt_mode.is_some() {
             items.extend(vec![
                 match (targets.is_empty(), srt_mode) {
-                    (false, Some(TransformMode::Translate)) => TranslationController { targets, on_click }.el(),
-                    (false, Some(TransformMode::Scale)) => ScaleController { targets, on_click }.el(),
-                    (false, Some(TransformMode::Rotate)) => RotateController { targets, on_click }.el(),
-                    (false, Some(TransformMode::Place)) => PlaceController { targets, on_click }.el(),
+                    (false, Some(TransformMode::Translate)) => {
+                        TranslationController { targets, on_click }.el()
+                    }
+                    (false, Some(TransformMode::Scale)) => {
+                        ScaleController { targets, on_click }.el()
+                    }
+                    (false, Some(TransformMode::Rotate)) => {
+                        RotateController { targets, on_click }.el()
+                    }
+                    (false, Some(TransformMode::Place)) => {
+                        PlaceController { targets, on_click }.el()
+                    }
                     _ => Element::new(),
                 },
                 Hotkey::new(

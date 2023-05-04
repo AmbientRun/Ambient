@@ -5,6 +5,7 @@ version = "0.0.1"
 
 [components]
 player_movement_direction = { type = "F32", name = "Player Movement Direction", description = "Direction of player movement" }
+track_audio_url = { type = "String", name = "Track Audio URL", description = "URL of the track audio", attributes = ["Networked", "Debuggable"]}
 
 [messages.input]
 description = "Describes the input state of the player."

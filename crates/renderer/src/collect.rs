@@ -14,7 +14,10 @@ use ambient_std::{
 };
 use glam::{uvec2, UVec2, UVec3};
 use parking_lot::Mutex;
-use wgpu::{BindGroupEntry, BindGroupLayout, BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages};
+use wgpu::{
+    BindGroupEntry, BindGroupLayout, BindGroupLayoutEntry, BindingType, BufferBindingType,
+    ShaderStages,
+};
 
 use crate::{get_mesh_meta_module, GLOBALS_BIND_GROUP};
 
@@ -29,9 +32,18 @@ pub struct CollectPrimitive {
 }
 
 impl CollectPrimitive {
-    pub fn from_primitive(world: &World, id: EntityId, primitive_index: PrimitiveIndex, material_index: u32) -> Self {
+    pub fn from_primitive(
+        world: &World,
+        id: EntityId,
+        primitive_index: PrimitiveIndex,
+        material_index: u32,
+    ) -> Self {
         let loc = world.entity_loc(id).unwrap();
-        Self { entity_loc: uvec2(loc.archetype as u32, loc.index as u32), primitive_index: primitive_index as u32, material_index }
+        Self {
+            entity_loc: uvec2(loc.archetype as u32, loc.index as u32),
+            primitive_index: primitive_index as u32,
+            material_index,
+        }
     }
 }
 
@@ -60,14 +72,20 @@ impl RendererCollectState {
                 "RendererCollectState.commands",
                 1,
                 1,
-                wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::INDIRECT,
+                wgpu::BufferUsages::STORAGE
+                    | wgpu::BufferUsages::COPY_DST
+                    | wgpu::BufferUsages::COPY_SRC
+                    | wgpu::BufferUsages::INDIRECT,
             ),
             counts: TypedBuffer::new(
                 gpu.clone(),
                 "RendererCollectState.counts",
                 1,
                 1,
-                wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::INDIRECT,
+                wgpu::BufferUsages::STORAGE
+                    | wgpu::BufferUsages::COPY_DST
+                    | wgpu::BufferUsages::COPY_SRC
+                    | wgpu::BufferUsages::INDIRECT,
             ),
             #[cfg(target_os = "macos")]
             counts_cpu: Arc::new(Mutex::new(Vec::new())),
@@ -76,12 +94,18 @@ impl RendererCollectState {
                 "RendererCollectState.materials",
                 1,
                 1,
-                wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::INDIRECT,
+                wgpu::BufferUsages::STORAGE
+                    | wgpu::BufferUsages::COPY_DST
+                    | wgpu::BufferUsages::COPY_SRC
+                    | wgpu::BufferUsages::INDIRECT,
             ),
         }
     }
     pub fn set_camera(&self, camera: u32) {
-        let collect_params = RendererCollectParams { camera, _padding: Default::default() };
+        let collect_params = RendererCollectParams {
+            camera,
+            _padding: Default::default(),
+        };
         self.params.write(0, &[collect_params]);
     }
 }
@@ -115,7 +139,11 @@ impl RendererCollect {
                 BindGroupLayoutEntry {
                     binding: 0,
                     visibility: ShaderStages::COMPUTE,
-                    ty: BindingType::Buffer { ty: BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
                     count: None,
                 },
                 BindGroupLayoutEntry {
@@ -165,10 +193,20 @@ impl RendererCollect {
         let shader = Shader::new(
             assets,
             "collect",
-            &[GLOBALS_BIND_GROUP, ENTITIES_BIND_GROUP, "RendererCollect.layout"],
+            &[
+                GLOBALS_BIND_GROUP,
+                ENTITIES_BIND_GROUP,
+                "RendererCollect.layout",
+            ],
             &ShaderModule::new("RendererCollect", include_file!("collect.wgsl"))
-                .with_ident(ShaderIdent::constant("COLLECT_WORKGROUP_SIZE", COLLECT_WORKGROUP_SIZE))
-                .with_ident(ShaderIdent::constant("COLLECT_CHUNK_SIZE", COLLECT_CHUNK_SIZE))
+                .with_ident(ShaderIdent::constant(
+                    "COLLECT_WORKGROUP_SIZE",
+                    COLLECT_WORKGROUP_SIZE,
+                ))
+                .with_ident(ShaderIdent::constant(
+                    "COLLECT_CHUNK_SIZE",
+                    COLLECT_CHUNK_SIZE,
+                ))
                 .with_binding_desc(layout_desc)
                 .with_dependency(get_defs_module())
                 .with_dependency(get_mesh_meta_module(0))
@@ -178,12 +216,17 @@ impl RendererCollect {
 
         let pipeline = shader.to_compute_pipeline(&gpu, "main");
 
-        Self { gpu, pipeline, layout, assets: assets.clone() }
+        Self {
+            gpu,
+            pipeline,
+            layout,
+            assets: assets.clone(),
+        }
     }
 
     #[allow(clippy::too_many_arguments)]
     #[allow(clippy::ptr_arg)]
-    #[profiling::function]
+    #[ambient_profiling::function]
     pub fn run(
         &self,
         encoder: &mut wgpu::CommandEncoder,
@@ -204,28 +247,55 @@ impl RendererCollect {
         output.counts.fill(&counts, |_| {});
         output.material_layouts.fill(&material_layouts, |_| {});
 
-        let bind_group = self.gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
-            label: None,
-            layout: &self.layout,
-            entries: &[
-                BindGroupEntry { binding: 0, resource: output.params.buffer().as_entire_binding() },
-                BindGroupEntry { binding: 1, resource: input_primitives.buffer().as_entire_binding() },
-                BindGroupEntry { binding: 2, resource: output.commands.buffer().as_entire_binding() },
-                BindGroupEntry { binding: 3, resource: output.counts.buffer().as_entire_binding() },
-                BindGroupEntry { binding: 4, resource: output.material_layouts.buffer().as_entire_binding() },
-            ],
-        });
+        let bind_group = self
+            .gpu
+            .device
+            .create_bind_group(&wgpu::BindGroupDescriptor {
+                label: None,
+                layout: &self.layout,
+                entries: &[
+                    BindGroupEntry {
+                        binding: 0,
+                        resource: output.params.buffer().as_entire_binding(),
+                    },
+                    BindGroupEntry {
+                        binding: 1,
+                        resource: input_primitives.buffer().as_entire_binding(),
+                    },
+                    BindGroupEntry {
+                        binding: 2,
+                        resource: output.commands.buffer().as_entire_binding(),
+                    },
+                    BindGroupEntry {
+                        binding: 3,
+                        resource: output.counts.buffer().as_entire_binding(),
+                    },
+                    BindGroupEntry {
+                        binding: 4,
+                        resource: output.material_layouts.buffer().as_entire_binding(),
+                    },
+                ],
+            });
 
         {
-            let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: Some("Collect") });
+            let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
+                label: Some("Collect"),
+            });
             cpass.set_pipeline(self.pipeline.pipeline());
 
-            for (i, bind_group) in [mesh_meta_bind_group, entities_bind_group, &bind_group].iter().enumerate() {
+            for (i, bind_group) in [mesh_meta_bind_group, entities_bind_group, &bind_group]
+                .iter()
+                .enumerate()
+            {
                 cpass.set_bind_group(i as _, bind_group, &[]);
             }
 
             let count = (primitives_count as f32 / COLLECT_WORKGROUP_SIZE as f32).ceil() as u32;
-            let width = if count < COLLECT_CHUNK_SIZE { count } else { COLLECT_CHUNK_SIZE };
+            let width = if count < COLLECT_CHUNK_SIZE {
+                count
+            } else {
+                COLLECT_CHUNK_SIZE
+            };
             let height = (count as f32 / COLLECT_CHUNK_SIZE as f32).ceil() as u32;
             cpass.dispatch_workgroups(width, height, 1);
         }
@@ -236,7 +306,13 @@ impl RendererCollect {
 
             let buffs = CollectCountStagingBuffersKey.get(&self.assets);
             let staging = buffs.take_buffer(output.counts.len());
-            encoder.copy_buffer_to_buffer(output.counts.buffer(), 0, staging.buffer(), 0, output.counts.byte_size());
+            encoder.copy_buffer_to_buffer(
+                output.counts.buffer(),
+                0,
+                staging.buffer(),
+                0,
+                output.counts.byte_size(),
+            );
             let counts_res = output.counts_cpu.clone();
             let runtime = RuntimeKey.get(&self.assets);
             _post_submit.push(Box::new(move || {
@@ -267,7 +343,10 @@ struct CollectCountStagingBuffers {
 }
 impl CollectCountStagingBuffers {
     fn new(gpu: Arc<Gpu>) -> Self {
-        Self { gpu, buffers: Arc::new(Mutex::new(Vec::new())) }
+        Self {
+            gpu,
+            buffers: Arc::new(Mutex::new(Vec::new())),
+        }
     }
 
     #[cfg(target_os = "macos")]

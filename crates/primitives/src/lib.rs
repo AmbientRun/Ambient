@@ -6,9 +6,10 @@ use ambient_core::{
 };
 use ambient_ecs::{components, query, Entity, EntityId, Networked, Store, SystemGroup, World};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_gpu::mesh_buffer::GpuMesh;
 pub use ambient_meshes::UVSphereMesh;
-use ambient_meshes::{UnitCubeMeshKey, UnitQuadMeshKey};
+use ambient_meshes::{
+    CapsuleMesh, CapsuleMeshKey, SphereMeshKey, UnitCubeMeshKey, UnitQuadMeshKey,
+};
 use ambient_renderer::{
     color, gpu_primitives_lod, gpu_primitives_mesh, material,
     materials::flat_material::{get_flat_shader, FlatMaterialKey},
@@ -17,12 +18,14 @@ use ambient_renderer::{
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     cb,
-    mesh::Mesh,
     shapes::{Sphere, AABB},
 };
 use glam::{vec3, Mat4, Quat, Vec3, Vec4};
 
-pub use ambient_ecs::generated::components::core::primitives::{cube, quad, sphere, sphere_radius, sphere_sectors, sphere_stacks};
+pub use ambient_ecs::generated::components::core::primitives::{
+    capsule, capsule_half_height, capsule_latitudes, capsule_longitudes, capsule_radius,
+    capsule_rings, cube, quad, sphere, sphere_radius, sphere_sectors, sphere_stacks,
+};
 
 components!("primitives", {
     @[Networked, Store]
@@ -30,7 +33,10 @@ components!("primitives", {
 });
 
 pub fn cube_data(assets: &AssetCache) -> Entity {
-    let aabb = AABB { min: -Vec3::ONE * 0.5, max: Vec3::ONE * 0.5 };
+    let aabb = AABB {
+        min: -Vec3::ONE * 0.5,
+        max: Vec3::ONE * 0.5,
+    };
     Entity::new()
         .with(mesh(), UnitCubeMeshKey.get(assets))
         .with_default(local_to_world())
@@ -49,7 +55,10 @@ pub fn cube_data(assets: &AssetCache) -> Entity {
 }
 
 pub fn quad_data(assets: &AssetCache) -> Entity {
-    let aabb = AABB { min: vec3(-0.5, -0.5, 0.), max: vec3(0.5, 0.5, 0.) };
+    let aabb = AABB {
+        min: vec3(-0.5, -0.5, 0.),
+        max: vec3(0.5, 0.5, 0.),
+    };
     Entity::new()
         .with(mesh(), UnitQuadMeshKey.get(assets))
         .with_default(local_to_world())
@@ -70,7 +79,7 @@ pub fn quad_data(assets: &AssetCache) -> Entity {
 pub fn sphere_data(assets: &AssetCache, sphere: &UVSphereMesh) -> Entity {
     let bound_sphere = Sphere::new(Vec3::ZERO, sphere.radius);
     Entity::new()
-        .with(mesh(), GpuMesh::from_mesh(assets.clone(), &Mesh::from(*sphere)))
+        .with(mesh(), SphereMeshKey(*sphere).get(assets))
         .with_default(local_to_world())
         .with_default(mesh_to_world())
         .with_default(translation())
@@ -84,6 +93,28 @@ pub fn sphere_data(assets: &AssetCache, sphere: &UVSphereMesh) -> Entity {
         .with(local_bounding_aabb(), bound_sphere.to_aabb())
         .with(world_bounding_aabb(), bound_sphere.to_aabb())
         .with(world_bounding_sphere(), bound_sphere)
+}
+
+pub fn capsule_data(assets: &AssetCache, capsule: &CapsuleMesh) -> Entity {
+    let aabb = AABB {
+        min: vec3(-capsule.radius, -capsule.radius, -capsule.half_height),
+        max: vec3(capsule.radius, capsule.radius, capsule.half_height),
+    };
+    Entity::new()
+        .with(mesh(), CapsuleMeshKey(*capsule).get(assets))
+        .with_default(local_to_world())
+        .with_default(mesh_to_world())
+        .with_default(translation())
+        .with(renderer_shader(), cb(get_flat_shader))
+        .with(material(), FlatMaterialKey::white().get(assets))
+        .with(primitives(), vec![])
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
+        .with(color(), Vec4::ONE)
+        .with(main_scene(), ())
+        .with(local_bounding_aabb(), aabb)
+        .with(world_bounding_aabb(), aabb)
+        .with(world_bounding_sphere(), aabb.to_sphere())
 }
 
 fn extend(world: &mut World, id: EntityId, data: Entity) {
@@ -110,17 +141,51 @@ pub fn systems() -> SystemGroup {
                     extend(world, id, data);
                 }
             }),
-            query((sphere_radius().changed(), sphere_sectors().changed(), sphere_stacks().changed())).incl(sphere()).spawned().to_system(
-                |q, world, qs, _| {
-                    for (id, (radius, sectors, stacks)) in q.collect_cloned(world, qs) {
-                        let mesh = UVSphereMesh { radius, sectors: sectors.try_into().unwrap(), stacks: stacks.try_into().unwrap() };
-                        world.add_component(id, uv_sphere(), mesh).unwrap();
-                    }
-                },
-            ),
+            query((
+                sphere_radius().changed(),
+                sphere_sectors().changed(),
+                sphere_stacks().changed(),
+            ))
+            .incl(sphere())
+            .spawned()
+            .to_system(|q, world, qs, _| {
+                for (id, (radius, sectors, stacks)) in q.collect_cloned(world, qs) {
+                    let mesh = UVSphereMesh {
+                        radius,
+                        sectors: sectors.try_into().unwrap(),
+                        stacks: stacks.try_into().unwrap(),
+                    };
+                    world.add_component(id, uv_sphere(), mesh).unwrap();
+                }
+            }),
             query(uv_sphere()).spawned().to_system(|q, world, qs, _| {
                 for (id, sphere) in q.collect_cloned(world, qs) {
                     let data = sphere_data(world.resource(asset_cache()), &sphere);
+                    extend(world, id, data);
+                }
+            }),
+            query((
+                capsule_radius().changed(),
+                capsule_half_height().changed(),
+                capsule_rings().changed(),
+                capsule_latitudes().changed(),
+                capsule_longitudes().changed(),
+            ))
+            .incl(capsule())
+            .spawned()
+            .to_system(|q, world, qs, _| {
+                for (id, (radius, half_height, rings, latitudes, longitudes)) in
+                    q.collect_cloned(world, qs)
+                {
+                    let mesh = CapsuleMesh {
+                        radius,
+                        half_height,
+                        rings: rings.try_into().unwrap(),
+                        latitudes: latitudes.try_into().unwrap(),
+                        longitudes: longitudes.try_into().unwrap(),
+                        ..Default::default()
+                    };
+                    let data = capsule_data(world.resource(asset_cache()), &mesh);
                     extend(world, id, data);
                 }
             }),
@@ -168,6 +233,13 @@ impl ElementComponent for BoxLine {
             .with(translation(), self.from)
             .with(rotation(), Quat::from_rotation_arc(Vec3::X, d.normalize()))
             .with(scale(), vec3(d.length(), self.thickness, self.thickness))
-            .init(mesh_to_local(), Mat4::from_scale_rotation_translation(Vec3::ONE * 0.5, Quat::IDENTITY, vec3(0.5, 0., 0.)))
+            .init(
+                mesh_to_local(),
+                Mat4::from_scale_rotation_translation(
+                    Vec3::ONE * 0.5,
+                    Quat::IDENTITY,
+                    vec3(0.5, 0., 0.),
+                ),
+            )
     }
 }

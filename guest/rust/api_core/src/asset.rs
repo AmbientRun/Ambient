@@ -1,12 +1,28 @@
+use thiserror::Error;
+
 use crate::internal::wit;
 
-pub use wit::asset::{AssetCacheStatus, AnimationAssetMetadata};
+pub use wit::asset::{AnimationAssetMetadata, AssetCacheStatus};
 
-/// Resolves a asset path for an Ambient asset in this project to an absolute URL.
-pub fn url(path: impl AsRef<str>) -> Option<String> {
-    wit::asset::url(path.as_ref())
+#[derive(Error, Debug)]
+/// Errors that can occur when resolving an asset URL.
+pub enum UrlError {
+    #[error("Invalid URL: {0}")]
+    /// The URL is invalid.
+    InvalidUrl(String),
+}
+impl From<wit::asset::UrlError> for UrlError {
+    fn from(value: wit::asset::UrlError) -> Self {
+        match value {
+            wit::asset::UrlError::InvalidUrl(err) => UrlError::InvalidUrl(err),
+        }
+    }
 }
 
+/// Resolves a asset path for an Ambient asset in this project to an absolute URL.
+pub fn url(path: impl AsRef<str>) -> Result<String, UrlError> {
+    Ok(wit::asset::url(path.as_ref())?)
+}
 
 /// Peeks the asset cache to prefetch the animation and retrieve its status
 pub fn get_animation_asset_status(clip_url: &str) -> AssetCacheStatus {
@@ -18,7 +34,6 @@ pub fn get_animation_asset_metadata(clip_urls: &[&str]) -> Vec<AnimationAssetMet
     wit::asset::get_animation_asset_metadata(clip_urls)
 }
 
-
 /// Prefetches all animations into the asset cache
 pub async fn block_until_animations_are_loaded(clip_urls: &[&str]) {
     crate::prelude::block_until(move || {
@@ -29,5 +44,6 @@ pub async fn block_until_animations_are_loaded(clip_urls: &[&str]) {
             }
         }
         result
-    }).await;
+    })
+    .await;
 }

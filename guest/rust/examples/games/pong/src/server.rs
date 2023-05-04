@@ -11,7 +11,7 @@ use ambient_api::{
     concepts::{make_sphere, make_transformable},
     prelude::*,
 };
-use components::player_movement_direction;
+use components::{player_movement_direction, track_audio_url};
 
 mod constants;
 use constants::*;
@@ -38,6 +38,9 @@ fn gen_ball_velocity() -> Vec3 {
 
 #[main]
 pub fn main() {
+    let bgm_url = asset::url("assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg").unwrap();
+
+    entity::add_component(entity::synchronized_resources(), track_audio_url(), bgm_url);
     // Spawn field, paddles and ball
     make_transformable()
         .with_default(cube())
