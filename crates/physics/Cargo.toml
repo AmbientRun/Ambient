@@ -11,15 +11,15 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_ecs = { path = "../ecs" , version = "0.2.0-rc8" }
-ambient_std = { path = "../std" , version = "0.2.0-rc8" }
-ambient_core = { path = "../core" , version = "0.2.0-rc8" }
-ambient_meshes = { path = "../meshes" , version = "0.2.0-rc8" }
-ambient_network = { path = "../network" , version = "0.2.0-rc8" }
-ambient_gizmos = { path = "../gizmos" , version = "0.2.0-rc8" }
-ambient_model = { path = "../model" , version = "0.2.0-rc8" }
-ambient_primitives = { path = "../primitives" , version = "0.2.0-rc8" }
-physxx = { path = "../../libs/physxx" , version = "0.2.0-rc8" }
+ambient_ecs = { path = "../ecs" , version = "0.2.0" }
+ambient_std = { path = "../std" , version = "0.2.0" }
+ambient_core = { path = "../core" , version = "0.2.0" }
+ambient_meshes = { path = "../meshes" , version = "0.2.0" }
+ambient_network = { path = "../network" , version = "0.2.0" }
+ambient_gizmos = { path = "../gizmos" , version = "0.2.0" }
+ambient_model = { path = "../model" , version = "0.2.0" }
+ambient_primitives = { path = "../primitives" , version = "0.2.0" }
+physxx = { path = "../../libs/physxx" , version = "0.2.0" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 glam = { workspace = true }
