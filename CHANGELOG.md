@@ -33,7 +33,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 ### Removed
 -->
 
-## Version 0.2.0 (2023-05-04)
+## Version 0.2.0 (2023-05-05)
 
 ### Added
 
