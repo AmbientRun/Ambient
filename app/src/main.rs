@@ -242,8 +242,7 @@ fn main() -> anyhow::Result<()> {
         let manifest = manifest.as_ref().expect("no manifest");
         let response = runtime.block_on(ambient_deploy::deploy(
             &runtime,
-            // FIXME: switch to https once we have a cert
-            api_server.clone().unwrap_or("http://api.ambient.run".to_string()),
+            api_server.clone().unwrap_or("https://api.ambient.run".to_string()),
             auth_token,
             project_fs_path,
             manifest,
