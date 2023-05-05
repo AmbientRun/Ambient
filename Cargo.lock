@@ -499,7 +499,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_deploy"
-version = "0.2.0-rc5"
+version = "0.2.0"
 dependencies = [
  "ambient_project",
  "ambient_sys",

@@ -106,7 +106,7 @@ pub async fn deploy(
     let handle = runtime.spawn(async move {
         for file_path in file_paths {
             let asset = asset_from_file_path(&base_path, file_path).await?;
-            log::debug!("Deploying asset {} {}b", asset.path, asset.content.len());
+            log::debug!("Deploying asset {} {}B", asset.path, asset.content.len());
             tx.send(asset)?;
         }
         anyhow::Ok(())
