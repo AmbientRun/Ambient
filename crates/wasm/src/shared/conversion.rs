@@ -312,3 +312,38 @@ impl FromBindgen for wit::entity::AnimationController {
         }
     }
 }
+
+
+impl FromBindgen for wit::entity::AnimationActionStack {
+    type Item = animation::AnimationActionStack;
+    fn from_bindgen(self) -> Self::Item {
+        match self {
+            wit::entity::AnimationActionStack::Interpolate(weight) => {
+                animation::AnimationActionStack::Interpolate { weight }
+            }
+            wit::entity::AnimationActionStack::Blend(blend) => {
+                animation::AnimationActionStack::Blend {
+                    weight: blend.weight,
+                    mask: blend.mask,
+                }
+            }
+            wit::entity::AnimationActionStack::Sample(action_index) => {
+                animation::AnimationActionStack::Sample {
+                    action_index
+                }
+            }
+            wit::entity::AnimationActionStack::SampleAbsolute(sample) => {
+                animation::AnimationActionStack::SampleAbsolute {
+                    action_index: sample.action_index,
+                    time_absolute: sample.time_absolute,
+                }
+            }
+            wit::entity::AnimationActionStack::SamplePercentage(sample) => {
+                animation::AnimationActionStack::SamplePercentage {
+                    action_index: sample.action_index,
+                    time_percentage: sample.time_percentage,
+                }
+            }
+        }
+    }
+}

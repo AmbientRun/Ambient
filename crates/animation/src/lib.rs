@@ -37,6 +37,13 @@ components!("animation", {
     /// This is a shorthand for working directly with the animation_controller
     @[MakeDefault,  Debuggable, Networked, Store]
     loop_animation: TypedAssetUrl<AnimationAssetType>,
+
+    @[Debuggable, Networked, Store]
+    animation_stack: Vec<AnimationActionStack>,
+    @[Debuggable, Networked, Store]
+    animation_binder_mask: Vec<String>,
+    @[Debuggable, Networked, Store]
+    animation_binder_weights: Vec<Vec<f32>>,
 });
 
 // Running
@@ -76,7 +83,7 @@ impl AnimationClipRef {
     // }
     pub fn get_clip(
         &self,
-        assets: AssetCache,
+        assets: &AssetCache,
         retarget: AnimationRetargeting,
         model: Option<TypedAssetUrl<ModelAssetType>>,
     ) -> Option<Result<Arc<AnimationClip>, String>> {
@@ -105,23 +112,69 @@ pub struct AnimationAction {
     pub looping: bool,
     pub weight: f32,
 }
-impl AnimationAction {
-    fn time(&self, time: Duration, clip: &AnimationClip) -> f32 {
-        let anim_time = match self.time {
-            AnimationActionTime::Offset { start_time, speed } => {
-                if time < start_time {
-                    -(start_time - time).as_secs_f32() * speed
-                } else {
-                    (time - start_time).as_secs_f32() * speed
-                }
+
+fn anim_time(
+    time: &Duration,
+    action_time: &AnimationActionTime,
+    clip: &AnimationClip,
+    looping: bool,
+) -> f32 {
+    let anim_time = match *action_time {
+        AnimationActionTime::Offset { start_time, speed } => {
+            if *time < start_time {
+                -(start_time - *time).as_secs_f32() * speed
+            } else {
+                (*time - start_time).as_secs_f32() * speed
             }
-            AnimationActionTime::Percentage { percentage } => percentage * clip.duration(),
-            AnimationActionTime::Absolute { time } => time,
-        };
-        if self.looping {
-            return anim_time % clip.duration();
         }
-        anim_time + clip.start
+        AnimationActionTime::Percentage { percentage } => percentage * clip.duration(),
+        AnimationActionTime::Absolute { time } => time,
+    };
+    if looping {
+        return anim_time % clip.duration();
+    }
+    anim_time + clip.start
+}
+
+impl AnimationAction {
+    fn time(&self, time: &Duration, clip: &AnimationClip) -> f32 {
+        anim_time(time, &self.time, clip, self.looping)
+    }
+
+    fn sample_tracks(
+        &self,
+        time: &Duration,
+        action_time: &AnimationActionTime,
+        assets: &AssetCache,
+        retarget: AnimationRetargeting,
+        model: Option<TypedAssetUrl<ModelAssetType>>,
+        binder: &HashMap<String, EntityId>,
+        outputs: &mut HashMap<(EntityId, u32, Option<Vec3Field>), AnimationOutput>,
+    ) -> Result<(), String> {
+        let clip = match self.clip.get_clip(assets, retarget, model.clone()) {
+            Some(Err(err)) => return Err(err),
+            Some(Ok(clip)) => clip,
+            None => return Ok(()),
+        };
+
+        let anim_time = anim_time(time, action_time, &clip, self.looping);
+
+        for track in clip.tracks.iter() {
+            let entity = match &track.target {
+                AnimationTarget::BinderId(index) => match binder.get(index) {
+                    Some(entity) => *entity,
+                    None => {
+                        continue;
+                    }
+                },
+                AnimationTarget::Entity(entity) => *entity,
+            };
+            let component = track.outputs.component().index();
+            let field = track.outputs.field();
+            let value = AnimationTrackInterpolator::new().value(track, anim_time);
+            outputs.insert((entity, component, field), value);
+        }
+        Ok(())
     }
 }
 
@@ -162,6 +215,28 @@ struct AnimationBlendOutput {
     target: EntityId,
     value: AnimationOutput,
     weight: f32,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum AnimationActionStack {
+    Sample {
+        action_index: u32,
+    },
+    SampleAbsolute {
+        action_index: u32,
+        time_absolute: f32,
+    },
+    SamplePercentage {
+        action_index: u32,
+        time_percentage: f32,
+    },
+    Interpolate {
+        weight: f32,
+    },
+    Blend {
+        weight: f32,
+        mask: u32,
+    },
 }
 
 pub fn animation_systems() -> SystemGroup {
@@ -226,13 +301,14 @@ pub fn animation_systems() -> SystemGroup {
             }),
             query((animation_controller(), animation_binder()))
                 .excl(animation_errors())
+                .excl(animation_stack())
                 .to_system(|q, world, qs, _| {
                     let assets = world.resource(asset_cache()).clone();
                     let time = *world.resource(time());
                     let mut outputs: HashMap<String, AnimationBlendOutput> = HashMap::new();
                     let mut in_error = Vec::new();
                     for (id, (controller, binder)) in q.iter(world, qs) {
-                        let retaget = world
+                        let retarget = world
                             .get(id, animation_retargeting())
                             .unwrap_or(AnimationRetargeting::None);
                         let model = world
@@ -241,13 +317,13 @@ pub fn animation_systems() -> SystemGroup {
                             .and_then(|def| TypedAssetUrl::parse(def).ok());
                         // Calc
                         for action in controller.actions.iter() {
-                            match action.clip.get_clip(assets.clone(), retaget, model.clone()) {
+                            match action.clip.get_clip(&assets, retarget, model.clone()) {
                                 Some(Err(err)) => {
                                     in_error.push((id, err));
                                     break;
                                 }
                                 Some(Ok(clip)) => {
-                                    let anim_time = action.time(time, &clip);
+                                    let anim_time = action.time(&time, &clip);
                                     for track in clip.tracks.iter() {
                                         let value = AnimationTrackInterpolator::new()
                                             .value(track, anim_time);
@@ -320,6 +396,221 @@ pub fn animation_systems() -> SystemGroup {
                         world.add_component(id, animation_errors(), err).unwrap();
                     }
                 }),
+            query((
+                animation_controller(),
+                animation_stack(),
+                animation_binder(),
+                animation_binder_mask(),
+                animation_binder_weights(),
+            ))
+            .excl(animation_errors())
+            .to_system(|q, world, qs, _| {
+                let assets = world.resource(asset_cache()).clone();
+                let time = *world.resource(time());
+                let mut in_error = Vec::new();
+
+                let mut buffers = Vec::new();
+                let mut samples = Vec::new();
+                let mut entity_weight_index: HashMap<EntityId, usize> = HashMap::new();
+                let mut results = Vec::new();
+                for (id, (controller, stack, binder, binder_mask, binder_weights)) in
+                    q.iter(world, qs)
+                {
+                    let retarget = world
+                        .get(id, animation_retargeting())
+                        .unwrap_or(AnimationRetargeting::None);
+                    let model = world
+                        .get_ref(id, model_from_url())
+                        .ok()
+                        .and_then(|def| TypedAssetUrl::parse(def).ok());
+                    entity_weight_index.clear();
+                    samples.clear();
+                    for operation in stack.iter() {
+                        match operation {
+                            &AnimationActionStack::Sample {
+                                action_index,
+                            } => {
+                                let mut tracks =
+                                    buffers.pop().unwrap_or_else(|| HashMap::with_capacity(128));
+                                tracks.clear();
+                                if let Some(action) = controller.actions.get(action_index as usize)
+                                {
+                                    if let Err(err) = action.sample_tracks(
+                                        &time,
+                                        &action.time,
+                                        &assets,
+                                        retarget,
+                                        model.clone(),
+                                        binder,
+                                        &mut tracks,
+                                    ) {
+                                        in_error.push((id, err));
+                                        break;
+                                    }
+                                } else {
+                                    in_error.push((id, "Missing Blend Action".to_owned()));
+                                    break;
+                                }
+                                samples.push(tracks);
+                            }
+                            &AnimationActionStack::SampleAbsolute {
+                                action_index,
+                                time_absolute,
+                            } => {
+                                let mut tracks =
+                                    buffers.pop().unwrap_or_else(|| HashMap::with_capacity(128));
+                                tracks.clear();
+                                if let Some(action) = controller.actions.get(action_index as usize)
+                                {
+                                    if let Err(err) = action.sample_tracks(
+                                        &time,
+                                        &AnimationActionTime::Absolute {
+                                            time: time_absolute,
+                                        },
+                                        &assets,
+                                        retarget,
+                                        model.clone(),
+                                        binder,
+                                        &mut tracks,
+                                    ) {
+                                        in_error.push((id, err));
+                                        break;
+                                    }
+                                } else {
+                                    in_error.push((id, "Missing Blend Action".to_owned()));
+                                    break;
+                                }
+                                samples.push(tracks);
+                            }
+                            &AnimationActionStack::SamplePercentage {
+                                action_index,
+                                time_percentage,
+                            } => {
+                                let mut tracks =
+                                    buffers.pop().unwrap_or_else(|| HashMap::with_capacity(128));
+                                tracks.clear();
+                                if let Some(action) = controller.actions.get(action_index as usize)
+                                {
+                                    if let Err(err) = action.sample_tracks(
+                                        &time,
+                                        &AnimationActionTime::Percentage {
+                                            percentage: time_percentage,
+                                        },
+                                        &assets,
+                                        retarget,
+                                        model.clone(),
+                                        binder,
+                                        &mut tracks,
+                                    ) {
+                                        in_error.push((id, err));
+                                        break;
+                                    }
+                                } else {
+                                    in_error.push((id, "Missing Blend Action".to_owned()));
+                                    break;
+                                }
+                                samples.push(tracks);
+                            }
+                            &AnimationActionStack::Interpolate { weight } => {
+                                let rhs = samples.pop();
+                                let lhs = samples.pop();
+
+                                match (lhs, rhs) {
+                                    (Some(mut lhs), Some(mut rhs)) => {
+                                        for (key, target) in rhs.drain() {
+                                            if let Some(source) = lhs.get_mut(&key) {
+                                                *source = source.mix(target, weight);
+                                            } else {
+                                                lhs.insert(key, target);
+                                            }
+                                        }
+                                        buffers.push(rhs);
+                                        samples.push(lhs);
+                                    }
+                                    _ => {
+                                        in_error.push((id, "Invalid blend stack".to_owned()));
+                                        break;
+                                    }
+                                }
+                            }
+                            &AnimationActionStack::Blend { weight, mask } => {
+                                if entity_weight_index.is_empty() {
+                                    for (index, key) in binder_mask.iter().enumerate() {
+                                        if let Some(entity) = binder.get(key) {
+                                            entity_weight_index.insert(*entity, index);
+                                        }
+                                    }
+                                }
+                                let rhs = samples.pop();
+                                let lhs = samples.pop();
+
+                                match (lhs, rhs) {
+                                    (Some(mut lhs), Some(mut rhs)) => {
+                                        if let Some(mask) = binder_weights.get(mask as usize) {
+                                            for (key, target) in rhs.drain() {
+                                                if let Some(&mask_weight) = entity_weight_index
+                                                    .get(&key.0)
+                                                    .and_then(|&x| mask.get(x))
+                                                {
+                                                    if mask_weight == 0.0 {
+                                                        continue;
+                                                    }
+                                                    if let Some(source) = lhs.get_mut(&key) {
+                                                        *source = source
+                                                            .mix(target, mask_weight * weight);
+                                                    } else {
+                                                        lhs.insert(key, target);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        buffers.push(rhs);
+                                        samples.push(lhs);
+                                    }
+                                    _ => {
+                                        in_error.push((id, "Invalid blend stack".to_owned()));
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if let Some(result) = samples.pop() {
+                        results.push(result);
+                    } else {
+                        in_error.push((id, "Invalid blend stack".to_owned()));
+                    }
+
+                    buffers.append(&mut samples);
+                }
+
+                for result in results.into_iter() {
+                    for ((target, ..), value) in result.into_iter() {
+                        match value {
+                            AnimationOutput::Vec3 { component, value } => {
+                                world.set(target, component, value).ok();
+                            }
+                            AnimationOutput::Quat { component, value } => {
+                                world.set(target, component, value).ok();
+                            }
+                            AnimationOutput::Vec3Field { component, field, value } => {
+                                if let Ok(d) = world.get_mut(target, component) {
+                                    match field {
+                                        Vec3Field::X => d.x = value,
+                                        Vec3Field::Y => d.y = value,
+                                        Vec3Field::Z => d.z = value,
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for (id, err) in in_error {
+                    world.add_component(id, animation_errors(), err).unwrap();
+                }
+            }),
         ],
     )
 }

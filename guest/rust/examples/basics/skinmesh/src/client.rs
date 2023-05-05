@@ -7,11 +7,11 @@ use ambient_api::{
     prelude::*,
 };
 
-const START: (&str, &str) = (
+const END: (&str, &str) = (
     "Robot Hip Hop Dance",
     "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
 );
-const END: (&str, &str) = ("Capoeira", "assets/Capoeira.fbx/animations/mixamo.com.anim");
+const START: (&str, &str) = ("Capoeira", "assets/Capoeira.fbx/animations/mixamo.com.anim");
 
 #[main]
 pub async fn main() {
@@ -59,6 +59,10 @@ pub async fn main() {
         },
     );
 
+    entity::set_animation_action_stack(unit_id, &[entity::AnimationActionStack::Sample(0)]);
+    // Required for animation blend stack
+    entity::set_animation_binder_mask(unit_id, &SKELETON);
+    entity::set_animation_binder_weights(unit_id, LOWER_BODY_MASK_INDEX, &LOWER_BODY_MASK);
 
     let start_url = asset::url(START.1).unwrap();
     let end_url = asset::url(END.1).unwrap();
@@ -70,44 +74,48 @@ pub async fn main() {
     App::el(unit_id, [clips[0].duration, clips[1].duration]).spawn_interactive()
 }
 
+
+
 #[element_component]
 fn App(hooks: &mut Hooks, unit: EntityId, durations: [f32; 2]) -> Element {
+    let (blend, set_blend) = hooks.use_state(0.0f32);
     let (weight, set_weight) = hooks.use_state(0.0f32);
-    hooks.use_effect(weight, move |_, t| {
-        entity::set_animation_blend(unit, &[1. - *t, *t], &[], false);
-        |_| {}
-    });
-
-
     let (time, set_time) = hooks.use_state(0.0f32);
-    hooks.use_effect(time, move |_, t| {
-        if *t != 0.0 {
-            let absolute_time = [durations[0] * t, durations[1] * t];
-            entity::set_animation_blend(unit, &[], &absolute_time, true);
-            // Alternatively: entity::set_animation_blend(unit, &[], &[*t, *t], false);
-        } else {
-            // Reset on 0
-            entity::set_animation_controller(
-                unit,
-                AnimationController {
-                    actions: &[
-                        AnimationAction {
-                            clip_url: &asset::url(START.1).unwrap(),
-                            looping: true,
-                            weight: 1.,
-                        },
-                        AnimationAction {
-                            clip_url: &asset::url(END.1).unwrap(),
-                            looping: true,
-                            weight: 0.,
-                        },
-                    ],
-                    apply_base_pose: false,
-                },
-            );
-        }
+
+    hooks.use_effect((blend, weight, time), move |_, &(w, i, t)| {
+            use entity::AnimationActionStack::*;
+
+            let s0 = if t == 0.0 {
+                Sample(0)
+            } else {
+                let time_absolute = durations[0] * t;
+                SampleAbsolute(entity::AnimationSampleAbsolute {
+                    action_index: 0,
+                    time_absolute,
+                })
+            };
+
+            // Alternatively SamplePercentage
+            let s1 = if t == 0.0 {
+                Sample(1)
+            } else {
+                SamplePercentage(entity::AnimationSamplePercentage {
+                    action_index: 1,
+                    time_percentage: t,
+                })
+            };
+
+            if w != 0.0 {
+                entity::set_animation_action_stack(unit, &[s0, s1, Blend(entity::AnimationStackBlend {
+                    weight: w,
+                    mask: LOWER_BODY_MASK_INDEX,
+                })]);
+            } else {
+                entity::set_animation_action_stack(unit, &[s0, s1, Interpolate(i)]);
+            }
         |_| {}
     });
+
 
     FocusRoot::el([
         FlowColumn::el([
@@ -127,6 +135,28 @@ fn App(hooks: &mut Hooks, unit: EntityId, durations: [f32; 2]) -> Element {
                 }
                 .el(),
                 Text::el(END.0),
+                Text::el(" (interpolate)"),
+            ])
+            .with(space_between_items(), 4.0)
+            .with_background(vec4(0., 0., 0., 0.9))
+            .with_padding_even(10.),
+            FlowRow::el([
+                Text::el(START.0),
+                Slider {
+                    value: blend,
+                    on_change: Some(cb(move |blend| {
+                        set_blend(blend);
+                    })),
+                    min: 0.,
+                    max: 1.,
+                    width: 100.,
+                    logarithmic: false,
+                    round: Some(2),
+                    suffix: None,
+                }
+                .el(),
+                Text::el(END.0),
+                Text::el(" (blend lower body)"),
             ])
             .with(space_between_items(), 4.0)
             .with_background(vec4(0., 0., 0., 0.9))
@@ -153,3 +183,63 @@ fn App(hooks: &mut Hooks, unit: EntityId, durations: [f32; 2]) -> Element {
         ])
     ])
 }
+
+const LOWER_BODY_MASK_INDEX: u32 = 0;
+const LOWER_BODY_MASK: [f32; 9] = [1.0; 9];
+const SKELETON: [&str; 52] = [
+    // Lower body for convenience
+    "Hips",
+    "LeftFoot",
+    "LeftLeg",
+    "LeftToeBase",
+    "LeftUpLeg",
+    "RightFoot",
+    "RightLeg",
+    "RightToeBase",
+    "RightUpLeg",
+
+    // Upper
+    "Head",
+    "LeftArm",
+    "LeftForeArm",
+    "LeftHand",
+    "LeftHandIndex1",
+    "LeftHandIndex2",
+    "LeftHandIndex3",
+    "LeftHandMiddle1",
+    "LeftHandMiddle2",
+    "LeftHandMiddle3",
+    "LeftHandPinky1",
+    "LeftHandPinky2",
+    "LeftHandPinky3",
+    "LeftHandRing1",
+    "LeftHandRing2",
+    "LeftHandRing3",
+    "LeftHandThumb1",
+    "LeftHandThumb2",
+    "LeftHandThumb3",
+    "LeftShoulder",
+    "Neck",
+    "RightArm",
+    "RightForeArm",
+    "RightHand",
+    "RightHandIndex1",
+    "RightHandIndex2",
+    "RightHandIndex3",
+    "RightHandMiddle1",
+    "RightHandMiddle2",
+    "RightHandMiddle3",
+    "RightHandPinky1",
+    "RightHandPinky2",
+    "RightHandPinky3",
+    "RightHandRing1",
+    "RightHandRing2",
+    "RightHandRing3",
+    "RightHandThumb1",
+    "RightHandThumb2",
+    "RightHandThumb3",
+    "RightShoulder",
+    "Spine",
+    "Spine1",
+    "Spine2",
+];
