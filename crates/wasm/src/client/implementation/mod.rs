@@ -58,6 +58,36 @@ impl wit::entity::Host for Bindings {
         )
     }
 
+    fn set_animation_action_stack(
+        &mut self,
+        entity: wit::types::EntityId,
+        stack: Vec<wit::entity::AnimationActionStack>,
+    ) -> anyhow::Result<()> {
+        shared::implementation::entity::set_animation_action_stack(self.world_mut(), entity, stack)
+    }
+
+    fn set_animation_binder_mask(
+        &mut self,
+        entity: wit::types::EntityId,
+        mask: Vec<String>,
+    ) -> anyhow::Result<()> {
+        shared::implementation::entity::set_animation_binder_mask(self.world_mut(), entity, mask)
+    }
+
+    fn set_animation_binder_weights(
+        &mut self,
+        entity: wit::types::EntityId,
+        index: u32,
+        mask: Vec<f32>,
+    ) -> anyhow::Result<()> {
+        shared::implementation::entity::set_animation_binder_weights(
+            self.world_mut(),
+            entity,
+            index,
+            mask,
+        )
+    }
+
     fn exists(&mut self, entity: wit::types::EntityId) -> anyhow::Result<bool> {
         shared::implementation::entity::exists(self.world(), entity)
     }
