@@ -11,10 +11,10 @@ repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
 tracing = { workspace = true }
-ambient_std = { path = "../std" , version = "0.2.0-rc9" }
-ambient_ecs = { path = "../ecs" , version = "0.2.0-rc9" }
-ambient_core = { path = "../core" , version = "0.2.0-rc9" }
-ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] , version = "0.2.0-rc9" }
+ambient_std = { path = "../std" , version = "0.2.0" }
+ambient_ecs = { path = "../ecs" , version = "0.2.0" }
+ambient_core = { path = "../core" , version = "0.2.0" }
+ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] , version = "0.2.0" }
 winit = { workspace = true }
 glam = { workspace = true }
 serde = { workspace = true }

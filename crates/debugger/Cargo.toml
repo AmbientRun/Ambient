@@ -8,19 +8,19 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
-ambient_ui_native = { path = "../ui_native" , version = "0.2.0-rc9" }
-ambient_ecs = { path = "../ecs" , version = "0.2.0-rc9" }
-ambient_std = { path = "../std" , version = "0.2.0-rc9" }
-ambient_renderer = { path = "../renderer" , version = "0.2.0-rc9" }
-ambient_gpu = { path = "../gpu" , version = "0.2.0-rc9" }
-ambient_core = { path = "../core" , version = "0.2.0-rc9" }
-ambient_gizmos = { path = "../gizmos" , version = "0.2.0-rc9" }
-ambient_rpc = { path = "../rpc" , version = "0.2.0-rc9" }
-ambient_network = { path = "../network" , version = "0.2.0-rc9" }
+ambient_ui_native = { path = "../ui_native" , version = "0.2.0" }
+ambient_ecs = { path = "../ecs" , version = "0.2.0" }
+ambient_std = { path = "../std" , version = "0.2.0" }
+ambient_renderer = { path = "../renderer" , version = "0.2.0" }
+ambient_gpu = { path = "../gpu" , version = "0.2.0" }
+ambient_core = { path = "../core" , version = "0.2.0" }
+ambient_gizmos = { path = "../gizmos" , version = "0.2.0" }
+ambient_rpc = { path = "../rpc" , version = "0.2.0" }
+ambient_network = { path = "../network" , version = "0.2.0" }
 
-ambient_element = { path = "../../shared_crates/element" , version = "0.2.0-rc9" }
-ambient_element_component = { path = "../../shared_crates/element_component" , version = "0.2.0-rc9" }
-ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] , version = "0.2.0-rc9" }
+ambient_element = { path = "../../shared_crates/element" , version = "0.2.0" }
+ambient_element_component = { path = "../../shared_crates/element_component" , version = "0.2.0" }
+ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] , version = "0.2.0" }
 
 winit = { workspace = true }
 glam = { workspace = true }
