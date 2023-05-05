@@ -70,6 +70,14 @@ impl ClientState {
             }
         }
     }
+
+    /// Returns `true` if the client state is [`Connecting`].
+    ///
+    /// [`Connecting`]: ClientState::Connecting
+    #[must_use]
+    pub(crate) fn is_connecting(&self) -> bool {
+        matches!(self, Self::Connecting(..))
+    }
 }
 
 impl ConnectedClient {
@@ -79,6 +87,7 @@ impl ConnectedClient {
         //     on_in_entities(&diff);
         // }
         let mut gs = state.lock();
+        tracing::info!(?diff, "Applying diff");
         diff.apply(&mut gs.world, Entity::new().with(is_remote_entity(), ()), false);
         Ok(())
     }

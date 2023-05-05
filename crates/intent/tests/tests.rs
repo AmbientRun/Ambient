@@ -6,7 +6,10 @@ use ambient_intent::{
     logic::{create_intent, push_intent, redo_intent, undo_head},
     use_old_state, IntentRegistry,
 };
-use ambient_network::server::{Player, ServerState, SharedServerState, MAIN_INSTANCE_ID};
+use ambient_network::{
+    proto::server::Player,
+    server::{ServerState, SharedServerState, MAIN_INSTANCE_ID},
+};
 use ambient_std::friendly_id;
 use anyhow::bail;
 use itertools::Itertools;

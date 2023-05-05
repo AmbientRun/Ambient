@@ -38,13 +38,15 @@ pub mod rpc;
 pub mod server;
 pub mod stream;
 
-pub const RPC_BISTREAM_ID: u32 = 1;
-pub const WASM_BISTREAM_ID: u32 = 2;
+pub const DIFF_STREAM_ID: u32 = 1;
+pub const RPC_BISTREAM_ID: u32 = 2;
 
-pub const WASM_UNISTREAM_ID: u32 = 1;
+pub const WASM_BISTREAM_ID: u32 = 10;
 
-pub const PLAYER_INPUT_DATAGRAM_ID: u32 = 5;
-pub const WASM_DATAGRAM_ID: u32 = 6;
+pub const WASM_UNISTREAM_ID: u32 = 11;
+
+pub const PLAYER_INPUT_DATAGRAM_ID: u32 = 12;
+pub const WASM_DATAGRAM_ID: u32 = 13;
 
 pub fn init_all_components() {
     client::init_components();

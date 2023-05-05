@@ -1,6 +1,6 @@
 use std::str::RSplitTerminator;
 
-use futures::{Sink, Stream};
+use futures::{Future, Sink, Stream};
 use pin_project::pin_project;
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_util::codec::{FramedRead, FramedWrite};

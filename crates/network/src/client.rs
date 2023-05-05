@@ -30,7 +30,7 @@ use ambient_ui_native::{
 };
 use anyhow::Context;
 use bytes::{BufMut, Bytes, BytesMut};
-use futures::{future::BoxFuture, SinkExt, StreamExt};
+use futures::{future::BoxFuture, FutureExt, SinkExt, StreamExt, TryFutureExt};
 use glam::{uvec2, UVec2};
 use parking_lot::{const_rwlock, Mutex};
 use quinn::Connection;
@@ -49,8 +49,8 @@ use crate::{
         ClientControl, ServerControl,
     },
     protocol::{ClientInfo, ClientProtocol, ServerInfo},
-    server::{self, FramedRecvStream, FramedSendStream},
-    stream::{self},
+    server::{self, FramedRecvStream, FramedSendStream, SharedServerState},
+    stream::{self, RecvStream},
     NetworkError, RPC_BISTREAM_ID,
 };
 
@@ -469,80 +469,76 @@ struct ClientCallbacks {
     on_stats: Cb<dyn Fn(GameClientServerStats) + Send + Sync>,
 }
 
-#[tracing::instrument(level = "info")]
+#[tracing::instrument(name = "client", level = "info", skip(conn))]
 async fn handle_connection(
     conn: quinn::Connection,
     user_id: String,
     callbacks: ClientCallbacks,
     state: SharedClientState,
 ) -> anyhow::Result<()> {
+    tracing::info!("Handling client connection");
+    tracing::info!("Opening control stream");
     let mut control_send = stream::SendStream::new(conn.open_uni().await?);
-
-    let mut control_recv = stream::RecvStream::new(conn.accept_uni().await?);
+    tracing::info!("Opened control stream");
 
     // Accept the diff and stat stream
     // Nothing is read from them until the connection has been accepted
-    let mut diff_recv = stream::RecvStream::new(conn.accept_uni().await?);
-    let mut stat_recv = stream::RecvStream::new(conn.accept_uni().await?);
 
     // Send a connection request
     tracing::info!("Attempting to connect using {user_id:?}");
 
-    control_send
-        .send(ServerControl::Connect(user_id.clone()))
-        .await?;
-
+    control_send.send(ServerControl::Connect(user_id.clone())).await?;
     let mut client = ClientState::Connecting(user_id);
 
-    loop {
-        match &mut client {
-            ClientState::Connecting(_) => {
-                if let Some(frame) = control_recv.next().await {
-                    client.process_control(&state, frame?)?;
-                }
+    tracing::info!("Accepting control stream from server");
+    let mut control_recv = stream::RecvStream::new(conn.accept_uni().await?);
+
+    tracing::info!("Entering client loop");
+    while client.is_connecting() {
+        tracing::info!("Waiting for server to accept connection and send server info");
+        if let Some(frame) = control_recv.next().await {
+            client.process_control(&state, frame?)?;
+        }
+    }
+
+    tracing::info!("Accepting diff stream");
+    let mut diff_stream = RecvStream::new(conn.accept_uni().await?);
+
+    while let ClientState::Connected(connected) = &mut client {
+        tracing::info!("Handlieng connected state");
+        tokio::select! {
+            Some(frame) = control_recv.next() => {
+                client.process_control(&state, frame?)?;
             }
-            ClientState::Connected(connected) => {
-                tokio::select! {
-                    Some(diff) = diff_recv.next() => {
-                        connected.process_diff(&state, diff?)?;
-                    }
-                    // _ = stats_timer.tick() => {
-                    //     let stats = protocol.connection().stats();
+            // _ = stats_timer.tick() => {
+            //     let stats = protocol.connection().stats();
 
-                    //     (self.on_client_stats)(GameClientNetworkStats {
-                    //         latency_ms: protocol.connection().rtt().as_millis() as u64,
-                    //         bytes_sent: (stats.udp_tx.bytes - prev_stats.udp_tx.bytes) / stats_interval,
-                    //         bytes_received: (stats.udp_rx.bytes - prev_stats.udp_rx.bytes) / stats_interval,
-                    //     });
+            //     (self.on_client_stats)(GameClientNetworkStats {
+            //         latency_ms: protocol.connection().rtt().as_millis() as u64,
+            //         bytes_sent: (stats.udp_tx.bytes - prev_stats.udp_tx.bytes) / stats_interval,
+            //         bytes_received: (stats.udp_rx.bytes - prev_stats.udp_rx.bytes) / stats_interval,
+            //     });
 
-                    //     prev_stats = stats;
-                    // }
-                    Some(stats) = stat_recv.next() => {
-                        (callbacks.on_stats)(GameClientServerStats(stats?));
-                    }
+            //     prev_stats = stats;
+            // }
 
-                    Ok(datagram) = conn.read_datagram() => {
-                        // let _span = tracing::debug_span!("datagram").entered();
-                        // let data = datagram.split_off(4);
-                        // let handler_id = u32::from_be_bytes(datagram[0..4].try_into().unwrap());
-                        // tokio::task::block_in_place(|| (self.on_datagram)(handler_id, data))
-                        connected.process_datagram(&state, datagram)?;
-                    }
-                    Ok((send, recv)) = conn.accept_bi() => {
-                        connected.process_bi(&state, send, recv).await?;
-                    }
-                    Ok(recv) = conn.accept_uni() => {
-                        connected.process_uni(&state, recv).await?;
-                    }
-                }
+            Ok(datagram) = conn.read_datagram() => {
+                connected.process_datagram(&state, datagram)?;
             }
-            ClientState::Disconnected => {
-                tracing::info!("Client entered disconnected state");
-                break;
+            Ok((send, recv)) = conn.accept_bi() => {
+                connected.process_bi(&state, send, recv).await?;
+            }
+            Ok(recv) = conn.accept_uni() => {
+                connected.process_uni(&state, recv).await?;
+            }
+            Some(diff) = diff_stream.next() => {
+                tracing::info!(?diff, "Received diff stream");
+                connected.process_diff(&state, diff?)?;
             }
         }
     }
 
+    tracing::info!("Client entered disconnected state");
     Ok(())
 }
 
