@@ -383,7 +383,7 @@ fn enum_to_tokens(
             let field_editors = #field_editors;
             if opts.enum_can_change_type {
                 if let Some(on_change) = on_change {
-                    #ui_crate::DropdownSelect {
+                    DropdownSelect {
                         content: field_editors,
                         on_select: #on_change_cb,
                         items: vec![

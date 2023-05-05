@@ -7,8 +7,14 @@ use ambient_api::{
     prelude::*,
 };
 
+const START: (&str, &str) = (
+    "Robot Hip Hop Dance",
+    "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+);
+const END: (&str, &str) = ("Capoeira", "assets/Capoeira.fbx/animations/mixamo.com.anim");
+
 #[main]
-pub fn main() {
+pub async fn main() {
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
@@ -34,59 +40,116 @@ pub fn main() {
         .with(name(), "Peasant".to_string())
         .spawn();
 
-    App::el(unit_id).spawn_interactive()
+    entity::set_animation_controller(
+        unit_id,
+        AnimationController {
+            actions: &[
+                AnimationAction {
+                    clip_url: &asset::url(START.1).unwrap(),
+                    looping: true,
+                    weight: 1.,
+                },
+                AnimationAction {
+                    clip_url: &asset::url(END.1).unwrap(),
+                    looping: true,
+                    weight: 0.,
+                },
+            ],
+            apply_base_pose: false,
+        },
+    );
+
+
+    let start_url = asset::url(START.1).unwrap();
+    let end_url = asset::url(END.1).unwrap();
+    let assets: &[&str] = &[&start_url, &end_url];
+
+    asset::block_until_animations_are_loaded(assets).await;
+    let clips = asset::get_animation_asset_metadata(assets);
+
+    App::el(unit_id, [clips[0].duration, clips[1].duration]).spawn_interactive()
 }
 
 #[element_component]
-fn App(hooks: &mut Hooks, unit: EntityId) -> Element {
-    const START: (&str, &str) = (
-        "Robot Hip Hop Dance",
-        "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
-    );
-    const END: (&str, &str) = ("Capoeira", "assets/Capoeira.fbx/animations/mixamo.com.anim");
-
+fn App(hooks: &mut Hooks, unit: EntityId, durations: [f32; 2]) -> Element {
     let (weight, set_weight) = hooks.use_state(0.0f32);
-    hooks.use_effect(weight, move |_, weight| {
-        entity::set_animation_controller(
-            unit,
-            AnimationController {
-                actions: &[
-                    AnimationAction {
-                        clip_url: &asset::url(START.1).unwrap(),
-                        looping: true,
-                        weight: 1. - *weight,
-                    },
-                    AnimationAction {
-                        clip_url: &asset::url(END.1).unwrap(),
-                        looping: true,
-                        weight: *weight,
-                    },
-                ],
-                apply_base_pose: false,
-            },
-        );
-
+    hooks.use_effect(weight, move |_, t| {
+        entity::set_animation_blend(unit, &[1. - *t, *t], &[], false);
         |_| {}
     });
 
-    FocusRoot::el([FlowRow::el([
-        Text::el(START.0),
-        Slider {
-            value: weight,
-            on_change: Some(cb(move |weight| {
-                set_weight(weight);
-            })),
-            min: 0.,
-            max: 1.,
-            width: 100.,
-            logarithmic: false,
-            round: Some(2),
-            suffix: None,
+
+    let (time, set_time) = hooks.use_state(0.0f32);
+    hooks.use_effect(time, move |_, t| {
+        if *t != 0.0 {
+            let absolute_time = [durations[0] * t, durations[1] * t];
+            entity::set_animation_blend(unit, &[], &absolute_time, true);
+            // Alternatively: entity::set_animation_blend(unit, &[], &[*t, *t], false);
+        } else {
+            // Reset on 0
+            entity::set_animation_controller(
+                unit,
+                AnimationController {
+                    actions: &[
+                        AnimationAction {
+                            clip_url: &asset::url(START.1).unwrap(),
+                            looping: true,
+                            weight: 1.,
+                        },
+                        AnimationAction {
+                            clip_url: &asset::url(END.1).unwrap(),
+                            looping: true,
+                            weight: 0.,
+                        },
+                    ],
+                    apply_base_pose: false,
+                },
+            );
         }
-        .el(),
-        Text::el(END.0),
+        |_| {}
+    });
+
+    FocusRoot::el([
+        FlowColumn::el([
+            FlowRow::el([
+                Text::el(START.0),
+                Slider {
+                    value: weight,
+                    on_change: Some(cb(move |weight| {
+                        set_weight(weight);
+                    })),
+                    min: 0.,
+                    max: 1.,
+                    width: 100.,
+                    logarithmic: false,
+                    round: Some(2),
+                    suffix: None,
+                }
+                .el(),
+                Text::el(END.0),
+            ])
+            .with(space_between_items(), 4.0)
+            .with_background(vec4(0., 0., 0., 0.9))
+            .with_padding_even(10.),
+            FlowRow::el([
+                Text::el("Time"),
+                Slider {
+                    value: time,
+                    on_change: Some(cb(move |time| {
+                        set_time(time);
+                    })),
+                    min: 0.,
+                    max: 1.,
+                    width: 100.,
+                    logarithmic: false,
+                    round: Some(2),
+                    suffix: None,
+                }
+                .el(),
+            ])
+            .with(space_between_items(), 4.0)
+            .with_background(vec4(0., 0., 0., 0.9))
+            .with_padding_even(10.),
+        ])
     ])
-    .with(space_between_items(), 4.0)
-    .with_background(vec4(0., 0., 0., 0.9))
-    .with_padding_even(10.)])
 }

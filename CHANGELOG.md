@@ -6,12 +6,13 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 
 <!-- If you are updating this file, make sure you copy the unreleased section and change the version and date. Do not remove it. -->
 
+<!--
 ## Unreleased (YYYY-MM-DD)
 
-<!--
 ### Added
 
 #### Headline features
+- **Client**: The client can now **run on the web**.
 
 #### Other
 
@@ -32,7 +33,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 ### Removed
 -->
 
-## Version 0.2.0 (unreleased, YYYY-MM-DD)
+## Version 0.2.0 (2023-05-05)
 
 ### Added
 
@@ -42,7 +43,6 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **API**: Guest code can now **run on the client**. See [the `clientside` example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/clientside).
 - **API**: Clientside guest code can now play **basic audio**. See [the `pong` example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/pong).
 - **Server**: By default, a proxy URL is generated for the server on startup. This can be used to access a running server from anywhere on the internet, making it easy to share your work with others. To turn this off, specify `--no-proxy` on the server command line.
-<!-- - **Client**: The client can now **run on the web**. -->
 
 #### Other
 
@@ -54,6 +54,8 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **API**: A new `input` API has been added for retrieving input and manipulating the cursor (including changing its icon, visibility and lock state).
 - **API**: `physics::{add_impulse, add_force_at_position, add_impulse_at_position, get_velocity_at_position}` have been added.
 - **API**: Added `create_revolute_joint` to the `physics` API.
+- **API**: Added a capsule concept with corresponding components.
+- **API**: Several animation manipulation functions have been added to `entity` and `asset`. Thanks to [@devjobe](https://github.com/devjobe) for implementing this in [#362](https://github.com/AmbientRun/Ambient/pull/362).
 - **Physics**: A `collider_loaded` component will now be automatically attached to an entity once its collider has finished loading.
 - **Client**: The client's window title is now automatically changed to the name of the project running on the server. Thanks to [@MavethGH](https://github.com/MavethGH) for implementing this in [#178](https://github.com/AmbientRun/Ambient/pull/178).
 - **Client**: Added a basic headless mode to enable automatic CI testing of projects.
@@ -120,6 +122,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Ambient**: The book and build CI workflows now only run when relevant files are updated. Thanks to [@C-BJ](https://github.com/C-BJ) for implementing this in [#202](https://github.com/AmbientRun/Ambient/pull/202).
 - **Audio**: The audio asset pipeline now uses Rust libraries for re-encoding files, instead of shelling out to ffmpeg. Thanks to [@marceline-cramer](https://github.com/marceline-cramer) for implementing this in [#317](https://github.com/AmbientRun/Ambient/pull/317).
 - **Rendering**: Ambient now runs on wgpu 0.16, improving compatibility and providing access to new features. Thanks to [@kevzettler](https://github.com/kevzettler) for implementing this in [#308](https://github.com/AmbientRun/Ambient/pull/308).
+- **Campfire**: The internal development tool Campfire can now automatically check release-readiness. Thanks to [@kevzettler](https://github.com/kevzettler) for implementing this in [#356](https://github.com/AmbientRun/Ambient/pull/356).
 
 ### Removed
 

@@ -304,6 +304,7 @@ fn publish(execute: bool) -> anyhow::Result<()> {
                     Task::Publish(path, features) => {
                         let mut command = Command::new("cargo");
                         command.arg("publish");
+                        command.arg("--no-verify");
                         if !features.is_empty() {
                             command.arg("-F").arg(features.join(","));
                         }
@@ -325,7 +326,7 @@ fn publish(execute: bool) -> anyhow::Result<()> {
                     Task::Publish(path, features) => {
                         let features = features.join(",");
                         println!(
-                            "cd {} && cargo publish{}; cd -",
+                            "cd {} && cargo publish --no-verify{}; cd -",
                             path.display(),
                             if features.is_empty() {
                                 "".to_string()

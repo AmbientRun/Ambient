@@ -24,6 +24,8 @@ default interface entity {
         apply-base-pose: bool,
     }
 
+    set-animation-blend: func(entity: entity-id, weights: list<float32>, time: list<float32>, absolute-time: bool)
+
     spawn: func(data: entity-data) -> entity-id
     despawn: func(entity: entity-id) -> option<entity-data>
     set-animation-controller: func(entity: entity-id, animation-controller: animation-controller)

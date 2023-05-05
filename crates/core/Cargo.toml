@@ -10,10 +10,10 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_ecs = { path = "../ecs" , version = "0.2.0-rc5" }
-ambient_sys = { path = "../sys" , version = "0.2.0-rc5" }
-ambient_std = { path = "../std" , version = "0.2.0-rc5" }
-ambient_gpu = { path = "../gpu" , version = "0.2.0-rc5" }
+ambient_ecs = { path = "../ecs" , version = "0.2.0" }
+ambient_sys = { path = "../sys" , version = "0.2.0" }
+ambient_std = { path = "../std" , version = "0.2.0" }
+ambient_gpu = { path = "../gpu" , version = "0.2.0" }
 
 itertools = { workspace = true }
 yaml-rust = { workspace = true }

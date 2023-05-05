@@ -101,7 +101,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-
+      - run: rustup target add --toolchain stable wasm32-wasi
       - name: Release all packages required for API
         run: cargo run -p campfire release publish --execute
 

@@ -10,9 +10,9 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_ecs = { path = "../ecs" , version = "0.2.0-rc5" }
-ambient_core = { path = "../core" , version = "0.2.0-rc5" }
-ambient_input = { path = "../input" , version = "0.2.0-rc5" }
+ambient_ecs = { path = "../ecs" , version = "0.2.0" }
+ambient_core = { path = "../core" , version = "0.2.0" }
+ambient_input = { path = "../input" , version = "0.2.0" }
 glam = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
