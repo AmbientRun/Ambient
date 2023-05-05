@@ -3,28 +3,28 @@ members = ["api", "api_core", "api_core/api_macros", "examples/*/*"]
 
 [workspace.package]
 rust-version = "1.67.0"
-version = "0.2.0-rc8"
+version = "0.2.0-rc9"
 
 [workspace.dependencies]
-ambient_api = { path = "api", version = "0.2.0-rc8" }
-ambient_api_core = { path = "api_core", version = "0.2.0-rc8" }
-ambient_api_macros = { path = "api_core/api_macros", version = "0.2.0-rc8" }
+ambient_api = { path = "api", version = "0.2.0-rc9" }
+ambient_api_core = { path = "api_core", version = "0.2.0-rc9" }
+ambient_api_macros = { path = "api_core/api_macros", version = "0.2.0-rc9" }
 
-ambient_project = { path = "../../shared_crates/project", version = "0.2.0-rc8" }
-ambient_project_macro_common = { path = "../../shared_crates/project_macro_common", version = "0.2.0-rc8" }
-ambient_project_rt = { path = "../../shared_crates/project_rt", version = "0.2.0-rc8" }
-ambient_shared_types = { path = "../../shared_crates/shared_types", version = "0.2.0-rc8" }
-ambient_ui = { path = "../../shared_crates/ui", version = "0.2.0-rc8", features = [
+ambient_project = { path = "../../shared_crates/project", version = "0.2.0-rc9" }
+ambient_project_macro_common = { path = "../../shared_crates/project_macro_common", version = "0.2.0-rc9" }
+ambient_project_rt = { path = "../../shared_crates/project_rt", version = "0.2.0-rc9" }
+ambient_shared_types = { path = "../../shared_crates/shared_types", version = "0.2.0-rc9" }
+ambient_ui = { path = "../../shared_crates/ui", version = "0.2.0-rc9", features = [
     "guest",
 ] }
-ambient_element = { path = "../../shared_crates/element", version = "0.2.0-rc8", default-features = false, features = [
+ambient_element = { path = "../../shared_crates/element", version = "0.2.0-rc9", default-features = false, features = [
     "guest",
 ] }
-ambient_editor_derive = { path = "../../shared_crates/editor_derive", version = "0.2.0-rc8" }
-ambient_schema = { path = "../../shared_crates/schema", version = "0.2.0-rc8" }
+ambient_editor_derive = { path = "../../shared_crates/editor_derive", version = "0.2.0-rc9" }
+ambient_schema = { path = "../../shared_crates/schema", version = "0.2.0-rc9" }
 
-ambient_friendly_id = { path = "../../libs/friendly_id", version = "0.2.0-rc8" }
-ambient_cb = { path = "../../libs/cb", version = "0.2.0-rc8" }
+ambient_friendly_id = { path = "../../libs/friendly_id", version = "0.2.0-rc9" }
+ambient_cb = { path = "../../libs/cb", version = "0.2.0-rc9" }
 
 anyhow = "1.0"
 byteorder = "1.4"
