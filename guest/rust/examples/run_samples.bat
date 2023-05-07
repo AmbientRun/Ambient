@@ -17,9 +17,8 @@ for /F "delims=" %%B in ('dir /a:d /b *') do (
 for /L %%A in (1,1,!count!) do echo [%%A]. !options[%%A]!
 ::prompts user input
 echo " --- "
-set /p filechoice="Which ambient example do you want to build and run ?"
+set /p filechoice="Which ambient example do you want to build an
 
-:: Location of python.exe and location of python script explicitly stated
 echo Running ambient.exe !options[%filechoice%]!...
 "ambient.exe" run "!options[%filechoice%]!"
 
