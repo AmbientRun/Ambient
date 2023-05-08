@@ -21,7 +21,7 @@ use crate::{
         ClientControl, ServerControl,
     },
     protocol::{ClientInfo, ServerInfo},
-    stream, NetworkError, OutgoingStream, DIFF_STREAM_ID, RPC_BISTREAM_ID,
+    stream, NetworkError, OutgoingStream, RPC_BISTREAM_ID,
 };
 use ambient_core::{
     asset_cache, name, no_sync,
@@ -595,9 +595,7 @@ async fn handle_connection(
     use futures::SinkExt;
 
     // Send who we are
-    control_send
-        .send(ClientControl::ServerInfo(server_info))
-        .await?;
+    control_send.send(&ClientControl::ServerInfo(server_info)).await?;
 
     // Feed the channel senders to the connection data
     //
@@ -634,7 +632,7 @@ async fn handle_connection(
             }
             Some(msg) = connected.control_rx.next() => {
                 let span = tracing::debug_span!("internal control");
-                control_send.send(msg).instrument(span).await?;
+                control_send.send(&msg).instrument(span).await?;
             }
         }
     }
@@ -644,12 +642,12 @@ async fn handle_connection(
     Ok(())
 }
 
-async fn handle_diffs<S>(mut open_uni: stream::SendStream<WorldDiff, S>, mut diffs_rx: flume::r#async::RecvStream<'_, WorldDiff>)
+async fn handle_diffs<S>(mut open_uni: stream::SendStream<WorldDiff, S>, mut diffs_rx: flume::r#async::RecvStream<'_, Bytes>)
 where
     S: Unpin + AsyncWrite,
 {
     while let Some(msg) = diffs_rx.next().await {
         let span = tracing::debug_span!("send_world_diff", ?msg);
-        open_uni.send(msg).instrument(span).await.unwrap();
+        open_uni.send_bytes(msg).instrument(span).await.unwrap();
     }
 }

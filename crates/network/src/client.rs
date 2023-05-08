@@ -51,7 +51,7 @@ use crate::{
     protocol::{ClientInfo, ClientProtocol, ServerInfo},
     server::{self, FramedRecvStream, FramedSendStream, SharedServerState},
     stream::{self, RecvStream},
-    NetworkError, RPC_BISTREAM_ID,
+    NetworkError, MAX_FRAME_SIZE, RPC_BISTREAM_ID,
 };
 
 components!("network::client", {
@@ -86,8 +86,6 @@ pub trait ClientConnection: 'static + Send + Sync {
     fn send_datagram(&self, id: u32, data: Bytes) -> Result<(), NetworkError>;
 }
 
-const MAX_RESPONSE_SIZE: usize = 1024 * 1024 * 1024;
-
 impl ClientConnection for quinn::Connection {
     fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>> {
         Box::pin(async move {
@@ -98,7 +96,7 @@ impl ClientConnection for quinn::Connection {
 
             drop(send);
 
-            let buf = recv.read_to_end(MAX_RESPONSE_SIZE).await?.into();
+            let buf = recv.read_to_end(MAX_FRAME_SIZE).await?.into();
 
             Ok(buf)
         })
@@ -487,7 +485,7 @@ async fn handle_connection(
     // Send a connection request
     tracing::info!("Attempting to connect using {user_id:?}");
 
-    control_send.send(ServerControl::Connect(user_id.clone())).await?;
+    control_send.send(&ServerControl::Connect(user_id.clone())).await?;
     let mut client = ClientState::Connecting(user_id);
 
     tracing::info!("Accepting control stream from server");

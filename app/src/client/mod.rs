@@ -14,9 +14,8 @@ use ambient_core::{
 use ambient_debugger::Debugger;
 use ambient_ecs::{Entity, EntityId, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_network::{
-    client::{GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, GameClientWorld, UseOnce},
-    DIFF_STREAM_ID, RPC_BISTREAM_ID,
+use ambient_network::client::{
+    GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, GameClientWorld, UseOnce,
 };
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_ui_native::{
