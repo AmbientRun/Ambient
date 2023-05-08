@@ -14,5 +14,5 @@ RUN apt-get update && \
     libasound2
 WORKDIR /app
 COPY --from=builder /build/target/release/ambient ./
-ADD guest/rust/examples /app/
-CMD [ "./ambient", "serve", "examples/games/minigolf" ]
+ADD guest/rust/examples /app/examples
+CMD [ "./ambient", "serve", "--no-build", "examples/games/minigolf" ]
