@@ -29,6 +29,18 @@ pub enum Cli {
         #[command(flatten)]
         project_args: ProjectCli,
     },
+    /// Deploys the project
+    #[cfg(feature = "deploy")]
+    Deploy {
+        #[command(flatten)]
+        project_args: ProjectCli,
+        /// API server endpoint, defaults to https://api.ambient.run
+        #[arg(long)]
+        api_server: Option<String>,
+        /// Authentication token
+        #[arg(short, long)]
+        token: Option<String>,
+    },
     /// Builds and runs the project in server-only mode
     Serve {
         #[command(flatten)]
@@ -118,6 +130,8 @@ impl Cli {
             Cli::New { .. } => None,
             Cli::Run { run_args, .. } => Some(run_args),
             Cli::Build { .. } => None,
+            #[cfg(feature = "deploy")]
+            Cli::Deploy { .. } => None,
             Cli::Serve { .. } => None,
             Cli::View { .. } => None,
             Cli::Join { run_args, .. } => Some(run_args),
@@ -129,6 +143,8 @@ impl Cli {
             Cli::New { project_args, .. } => Some(project_args),
             Cli::Run { project_args, .. } => Some(project_args),
             Cli::Build { project_args, .. } => Some(project_args),
+            #[cfg(feature = "deploy")]
+            Cli::Deploy { project_args, .. } => Some(project_args),
             Cli::Serve { project_args, .. } => Some(project_args),
             Cli::View { project_args, .. } => Some(project_args),
             Cli::Join { .. } => None,
@@ -140,6 +156,8 @@ impl Cli {
             Cli::New { .. } => None,
             Cli::Run { host_args, .. } => Some(host_args),
             Cli::Build { .. } => None,
+            #[cfg(feature = "deploy")]
+            Cli::Deploy { .. } => None,
             Cli::Serve { host_args, .. } => Some(host_args),
             Cli::View { .. } => None,
             Cli::Join { .. } => None,

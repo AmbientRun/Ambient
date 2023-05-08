@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package ambient.run.deploy;
+
+message DeployAssetRequest {
+  string path = 1;
+  bytes content = 2;
+}
+
+message DeployAssetsResponse {
+  string id = 1;
+}
+
+service Deployer {
+  rpc DeployAssets(stream DeployAssetRequest) returns (DeployAssetsResponse) {}
+}
