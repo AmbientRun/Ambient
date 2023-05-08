@@ -6,24 +6,26 @@ use ambient_network::{
 use ambient_std::asset_cache::AssetCache;
 
 use bytes::Bytes;
-use quinn::{RecvStream, SendStream};
 
 use std::sync::Arc;
 
 use crate::shared::implementation::message;
 
 pub fn initialize(world: &mut World) {
-    world
-        .resource_mut(datagram_handlers())
-        .insert(WASM_DATAGRAM_ID, Arc::new(on_datagram));
+    world.resource_mut(datagram_handlers()).insert(
+        WASM_DATAGRAM_ID,
+        ("client_wasm_datagram", Arc::new(on_datagram)),
+    );
 
-    world
-        .resource_mut(bi_stream_handlers())
-        .insert(WASM_BISTREAM_ID, Arc::new(on_bistream));
+    world.resource_mut(bi_stream_handlers()).insert(
+        WASM_BISTREAM_ID,
+        ("client_wasm_bi_stream", Arc::new(on_bistream)),
+    );
 
-    world
-        .resource_mut(uni_stream_handlers())
-        .insert(WASM_UNISTREAM_ID, Arc::new(on_unistream));
+    world.resource_mut(uni_stream_handlers()).insert(
+        WASM_UNISTREAM_ID,
+        ("client_wasm_uni_stream", Arc::new(on_unistream)),
+    );
 }
 
 fn on_datagram(world: &mut World, _asset_cache: AssetCache, bytes: Bytes) {

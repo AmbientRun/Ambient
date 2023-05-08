@@ -72,9 +72,9 @@ type BiStreamHandler = Arc<dyn Fn(&mut World, AssetCache, DynSend, DynRecv) + Sy
 type UniStreamHandler = Arc<dyn Fn(&mut World, AssetCache, DynRecv) + Sync + Send>;
 type DatagramHandler = Arc<dyn Fn(&mut World, AssetCache, Bytes) + Sync + Send>;
 
-pub type BiStreamHandlers = HashMap<u32, BiStreamHandler>;
-pub type UniStreamHandlers = HashMap<u32, UniStreamHandler>;
-pub type DatagramHandlers = HashMap<u32, DatagramHandler>;
+pub type BiStreamHandlers = HashMap<u32, (&'static str, BiStreamHandler)>;
+pub type UniStreamHandlers = HashMap<u32, (&'static str, UniStreamHandler)>;
+pub type DatagramHandlers = HashMap<u32, (&'static str, DatagramHandler)>;
 
 /// A subset of the client state which allows for making transport agnostic RPCs and messages
 /// without the hassles of associated types and non-object safety.
@@ -485,7 +485,9 @@ async fn handle_connection(
     // Send a connection request
     tracing::info!("Attempting to connect using {user_id:?}");
 
-    control_send.send(&ServerControl::Connect(user_id.clone())).await?;
+    control_send
+        .send(&ServerControl::Connect(user_id.clone()))
+        .await?;
     let mut client = ClientState::Connecting(user_id);
 
     tracing::info!("Accepting control stream from server");

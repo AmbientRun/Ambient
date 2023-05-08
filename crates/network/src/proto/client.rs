@@ -48,7 +48,11 @@ impl ClientState {
 
     /// Processes an incoming control frame from the server.
     #[tracing::instrument(level = "info")]
-    pub fn process_control(&mut self, state: &SharedClientState, frame: ClientControl) -> anyhow::Result<()> {
+    pub fn process_control(
+        &mut self,
+        state: &SharedClientState,
+        frame: ClientControl,
+    ) -> anyhow::Result<()> {
         match (frame, &self) {
             (ClientControl::ServerInfo(server_info), Self::Connecting(user_id)) => {
                 tracing::info!("Received server info: {server_info:?}");
@@ -56,7 +60,11 @@ impl ClientState {
                 let state = state.lock();
                 ContentBaseUrlKey.insert(&state.assets, server_info.content_base_url.clone());
 
-                *self = Self::Connected(ConnectedClient { user_id: user_id.clone(), server_info, on_in_entities: None });
+                *self = Self::Connected(ConnectedClient {
+                    user_id: user_id.clone(),
+                    server_info,
+                    on_in_entities: None,
+                });
 
                 Ok(())
             }
@@ -82,19 +90,32 @@ impl ClientState {
 
 impl ConnectedClient {
     #[tracing::instrument(level = "info")]
-    pub fn process_diff(&mut self, state: &SharedClientState, diff: WorldDiff) -> anyhow::Result<()> {
+    pub fn process_diff(
+        &mut self,
+        state: &SharedClientState,
+        diff: WorldDiff,
+    ) -> anyhow::Result<()> {
         // if let Some(on_in_entities) = &self.on_in_entities {
         //     on_in_entities(&diff);
         // }
         let mut gs = state.lock();
         tracing::info!(?diff, "Applying diff");
-        diff.apply(&mut gs.world, Entity::new().with(is_remote_entity(), ()), false);
+        diff.apply(
+            &mut gs.world,
+            Entity::new().with(is_remote_entity(), ()),
+            false,
+        );
         Ok(())
     }
 
     /// Processes a server initiated bidirectional stream
     #[tracing::instrument(level = "info", skip(send, recv))]
-    pub async fn process_bi<R, S>(&mut self, state: &SharedClientState, send: S, mut recv: R) -> anyhow::Result<()>
+    pub async fn process_bi<R, S>(
+        &mut self,
+        state: &SharedClientState,
+        send: S,
+        mut recv: R,
+    ) -> anyhow::Result<()>
     where
         R: 'static + Send + Sync + Unpin + AsyncRead,
         S: 'static + Send + Sync + Unpin + AsyncWrite,
@@ -106,9 +127,13 @@ impl ConnectedClient {
         let world = &mut gs.world;
         let assets = gs.assets.clone();
 
-        let handler = world.resource(bi_stream_handlers()).get(&id).with_context(|| format!("No handler for stream {id}"))?.clone();
+        let (name, handler) = world
+            .resource(bi_stream_handlers())
+            .get(&id)
+            .with_context(|| format!("No handler for stream {id}"))?
+            .clone();
 
-        let _span = info_span!("handle_bi", id).entered();
+        let _span = info_span!("handle_bi", name, id).entered();
         handler(world, assets, Box::pin(send), Box::pin(recv));
 
         Ok(())
@@ -116,7 +141,11 @@ impl ConnectedClient {
 
     /// Processes a server initiated unidirectional stream
     #[tracing::instrument(level = "info", skip(recv))]
-    pub async fn process_uni<R>(&mut self, state: &SharedClientState, mut recv: R) -> anyhow::Result<()>
+    pub async fn process_uni<R>(
+        &mut self,
+        state: &SharedClientState,
+        mut recv: R,
+    ) -> anyhow::Result<()>
     where
         R: 'static + Send + Sync + Unpin + AsyncRead,
     {
@@ -127,9 +156,13 @@ impl ConnectedClient {
         let world = &mut gs.world;
         let assets = gs.assets.clone();
 
-        let handler = world.resource(uni_stream_handlers()).get(&id).with_context(|| format!("No handler for stream {id}"))?.clone();
+        let (name, handler) = world
+            .resource(uni_stream_handlers())
+            .get(&id)
+            .with_context(|| format!("No handler for stream {id}"))?
+            .clone();
 
-        let _span = info_span!("handle_uni", id).entered();
+        let _span = info_span!("handle_uni", name, id).entered();
         handler(world, assets, Box::pin(recv));
 
         Ok(())
@@ -137,7 +170,11 @@ impl ConnectedClient {
 
     /// Processes an incoming datagram
     #[tracing::instrument(level = "info")]
-    pub fn process_datagram(&mut self, state: &SharedClientState, mut data: Bytes) -> anyhow::Result<()> {
+    pub fn process_datagram(
+        &mut self,
+        state: &SharedClientState,
+        mut data: Bytes,
+    ) -> anyhow::Result<()> {
         if data.len() < 4 {
             bail!("Received malformed datagram");
         }
@@ -149,9 +186,13 @@ impl ConnectedClient {
         let world = &mut gs.world;
         let assets = gs.assets.clone();
 
-        let handler = world.resource(datagram_handlers()).get(&id).with_context(|| format!("No handler for stream {id}"))?.clone();
+        let (name, handler) = world
+            .resource(datagram_handlers())
+            .get(&id)
+            .with_context(|| format!("No handler for stream {id}"))?
+            .clone();
 
-        let _span = info_span!("handle_uni", id).entered();
+        let _span = info_span!("handle_uni", name, id).entered();
         handler(world, assets, data);
 
         Ok(())

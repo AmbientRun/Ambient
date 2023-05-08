@@ -12,7 +12,9 @@ use uuid::Uuid;
 
 use crate::{
     proto::ClientControl,
-    server::{bi_stream_handlers, create_player_entity_data, datagram_handlers, uni_stream_handlers},
+    server::{
+        bi_stream_handlers, create_player_entity_data, datagram_handlers, uni_stream_handlers,
+    },
     server::{SharedServerState, MAIN_INSTANCE_ID},
 };
 
@@ -44,7 +46,9 @@ pub struct ConnectedClient {
 
 impl std::fmt::Debug for ConnectedClient {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ConnectedClient").field("user_id", &self.user_id).finish()
+        f.debug_struct("ConnectedClient")
+            .field("user_id", &self.user_id)
+            .finish()
     }
 }
 
@@ -81,7 +85,11 @@ impl Player {
     pub fn new_local(instance: impl Into<String>) -> Self {
         let (control_tx, _) = flume::unbounded();
 
-        Self { instance: instance.into(), control_tx, connection_id: Uuid::new_v4() }
+        Self {
+            instance: instance.into(),
+            control_tx,
+            connection_id: Uuid::new_v4(),
+        }
     }
 
     /// Notifies the existing connection handler to shut down
@@ -92,7 +100,11 @@ impl Player {
 
 impl ServerState {
     /// Processes a client request
-    pub fn process_control(&mut self, data: &ConnectionData, frame: ServerControl) -> anyhow::Result<()> {
+    pub fn process_control(
+        &mut self,
+        data: &ConnectionData,
+        frame: ServerControl,
+    ) -> anyhow::Result<()> {
         match (frame, &self) {
             (_, Self::Disconnected) => {
                 tracing::info!("Client is disconnected, ignoring control frame");
@@ -122,9 +134,14 @@ impl ServerState {
 
         let (control_tx, control_rx) = flume::unbounded();
 
-        let old_player = state
-            .players
-            .insert(user_id.clone(), Player { instance: MAIN_INSTANCE_ID.to_string(), control_tx, connection_id: data.connection_id });
+        let old_player = state.players.insert(
+            user_id.clone(),
+            Player {
+                instance: MAIN_INSTANCE_ID.to_string(),
+                control_tx,
+                connection_id: data.connection_id,
+            },
+        );
 
         let instance = state.instances.get_mut(MAIN_INSTANCE_ID).unwrap();
 
@@ -139,7 +156,12 @@ impl ServerState {
         log_result!(data.diff_tx.send(diff));
         tracing::debug!("[{}] Init diff sent", user_id);
 
-        let entity_data = create_player_entity_data(user_id.clone(), data.diff_tx.clone(), data.stat_tx.clone(), data.connection_id);
+        let entity_data = create_player_entity_data(
+            user_id.clone(),
+            data.diff_tx.clone(),
+            data.stat_tx.clone(),
+            data.connection_id,
+        );
 
         if let Some(old_player) = old_player {
             old_player.control_tx.send(ClientControl::Disconnect).ok();
@@ -154,7 +176,10 @@ impl ServerState {
             tracing::info!(?id, user_id, "Player spawned");
         }
 
-        *self = Self::Connected(ConnectedClient { user_id, control_rx: control_rx.into_stream() });
+        *self = Self::Connected(ConnectedClient {
+            user_id,
+            control_rx: control_rx.into_stream(),
+        });
     }
 
     pub fn process_disconnect(&mut self, data: &ConnectionData) {
@@ -175,7 +200,11 @@ impl ServerState {
 
             let player = state.players.remove(user_id).unwrap();
             tracing::debug!("Despawning the player from world: {:?}", player.instance);
-            state.instances.get_mut(&player.instance).unwrap().despawn_player(user_id);
+            state
+                .instances
+                .get_mut(&player.instance)
+                .unwrap()
+                .despawn_player(user_id);
         } else {
             tracing::warn!("Tried to disconnect a client that was not connected");
         }
@@ -203,7 +232,11 @@ impl ServerState {
 impl ConnectedClient {
     /// Processes an incoming datagram
     #[tracing::instrument(level = "info", skip(data))]
-    pub async fn process_datagram(&mut self, data: &ConnectionData, mut payload: Bytes) -> anyhow::Result<()> {
+    pub async fn process_datagram(
+        &mut self,
+        data: &ConnectionData,
+        mut payload: Bytes,
+    ) -> anyhow::Result<()> {
         if payload.len() < 4 {
             bail!("Received malformed datagram");
         }
@@ -212,62 +245,95 @@ impl ConnectedClient {
 
         tracing::info!(?id, "Received datagram");
 
-        let (handler, assets) = {
+        let ((name, handler), assets) = {
             let mut state = data.state.lock();
-            let world = state.get_player_world_mut(&self.user_id).context("Failed to get player world")?;
+            let world = state
+                .get_player_world_mut(&self.user_id)
+                .context("Failed to get player world")?;
             (
-                world.resource(datagram_handlers()).get(&id).with_context(|| format!("No handler for datagram: {id}"))?.clone(),
+                world
+                    .resource(datagram_handlers())
+                    .get(&id)
+                    .with_context(|| format!("No handler for datagram: {id}"))?
+                    .clone(),
                 state.assets.clone(),
             )
         };
 
-        let _span = info_span!("handle_datagram", id).entered();
+        let _span = info_span!("handle_datagram", name, id).entered();
         handler(data.state.clone(), assets, &self.user_id, payload);
 
         Ok(())
     }
 
     #[tracing::instrument(level = "info", skip(data, stream))]
-    pub async fn process_uni<R>(&mut self, data: &ConnectionData, mut stream: R) -> anyhow::Result<()>
+    pub async fn process_uni<R>(
+        &mut self,
+        data: &ConnectionData,
+        mut stream: R,
+    ) -> anyhow::Result<()>
     where
         R: 'static + Send + Sync + AsyncRead + Unpin,
     {
         let id = stream.read_u32().await?;
 
-        let (handler, assets) = {
+        let ((name, handler), assets) = {
             let mut state = data.state.lock();
-            let world = state.get_player_world_mut(&self.user_id).context("Failed to get player world")?;
+            let world = state
+                .get_player_world_mut(&self.user_id)
+                .context("Failed to get player world")?;
             (
-                world.resource(uni_stream_handlers()).get(&id).with_context(|| format!("No handler for uni stream: {id}"))?.clone(),
+                world
+                    .resource(uni_stream_handlers())
+                    .get(&id)
+                    .with_context(|| format!("No handler for uni stream: {id}"))?
+                    .clone(),
                 state.assets.clone(),
             )
         };
 
-        let _span = info_span!("handle_uni", id).entered();
+        let _span = info_span!("handle_uni", name, id).entered();
         handler(data.state.clone(), assets, &self.user_id, Box::pin(stream));
 
         Ok(())
     }
 
     #[tracing::instrument(level = "info", skip(data, send, recv))]
-    pub async fn process_bi<S, R>(&mut self, data: &ConnectionData, send: S, mut recv: R) -> anyhow::Result<()>
+    pub async fn process_bi<S, R>(
+        &mut self,
+        data: &ConnectionData,
+        send: S,
+        mut recv: R,
+    ) -> anyhow::Result<()>
     where
         R: 'static + Send + Sync + Unpin + AsyncRead,
         S: 'static + Send + Sync + Unpin + AsyncWrite,
     {
         let id = recv.read_u32().await?;
 
-        let (handler, assets) = {
+        let ((name, handler), assets) = {
             let mut state = data.state.lock();
-            let world = state.get_player_world_mut(&self.user_id).context("Failed to get player world")?;
+            let world = state
+                .get_player_world_mut(&self.user_id)
+                .context("Failed to get player world")?;
             (
-                world.resource(bi_stream_handlers()).get(&id).with_context(|| format!("No handler for bi stream: {id}"))?.clone(),
+                world
+                    .resource(bi_stream_handlers())
+                    .get(&id)
+                    .with_context(|| format!("No handler for bi stream: {id}"))?
+                    .clone(),
                 state.assets.clone(),
             )
         };
 
-        let _span = info_span!("handle_bi", id).entered();
-        handler(data.state.clone(), assets, &self.user_id, Box::pin(send), Box::pin(recv));
+        let _span = info_span!("handle_bi", name, id).entered();
+        handler(
+            data.state.clone(),
+            assets,
+            &self.user_id,
+            Box::pin(send),
+            Box::pin(recv),
+        );
 
         Ok(())
     }

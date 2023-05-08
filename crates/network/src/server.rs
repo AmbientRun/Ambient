@@ -29,8 +29,9 @@ use ambient_core::{
     project_name,
 };
 use ambient_ecs::{
-    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent, Resource, System, SystemGroup, World,
-    WorldDiff, WorldStream, WorldStreamCompEvent, WorldStreamFilter,
+    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent,
+    Resource, System, SystemGroup, World, WorldDiff, WorldStream, WorldStreamCompEvent,
+    WorldStreamFilter,
 };
 use ambient_proxy::client::AllocatedEndpoint;
 use ambient_rpc::RpcRegistry;
@@ -74,9 +75,9 @@ pub type BiStreamHandler =
 pub type UniStreamHandler = Arc<dyn Fn(SharedServerState, AssetCache, &str, DynRecv) + Sync + Send>;
 pub type DatagramHandler = Arc<dyn Fn(SharedServerState, AssetCache, &str, Bytes) + Sync + Send>;
 
-pub type BiStreamHandlers = HashMap<u32, BiStreamHandler>;
-pub type UniStreamHandlers = HashMap<u32, UniStreamHandler>;
-pub type DatagramHandlers = HashMap<u32, DatagramHandler>;
+pub type BiStreamHandlers = HashMap<u32, (&'static str, BiStreamHandler)>;
+pub type UniStreamHandlers = HashMap<u32, (&'static str, UniStreamHandler)>;
+pub type DatagramHandlers = HashMap<u32, (&'static str, DatagramHandler)>;
 
 #[derive(Debug, Clone, Copy)]
 pub struct ForkingEvent;
@@ -104,7 +105,12 @@ impl RpcArgs {
     }
 }
 
-pub fn create_player_entity_data(user_id: String, entities_tx: Sender<Bytes>, stats_tx: Sender<FpsSample>, connection_id: Uuid) -> Entity {
+pub fn create_player_entity_data(
+    user_id: String,
+    entities_tx: Sender<Bytes>,
+    stats_tx: Sender<FpsSample>,
+    connection_id: Uuid,
+) -> Entity {
     Entity::new()
         .with(name(), format!("Player {}", user_id))
         .with(ambient_core::player::player(), ())
@@ -121,26 +127,29 @@ pub fn register_rpc_bi_stream_handler(
 ) {
     handlers.insert(
         RPC_BISTREAM_ID,
-        Arc::new(move |state, _assets, user_id, mut send, recv| {
-            let state = state;
-            let user_id = user_id.to_string();
-            let rpc_registry = rpc_registry.clone();
-            tokio::spawn(async move {
-                let try_block = || async {
-                    let mut buf = Vec::new();
-                    recv.take(1024 * 1024 * 1024).read_to_end(&mut buf).await?;
-                    let args = RpcArgs {
-                        state,
-                        user_id: user_id.to_string(),
+        (
+            "player_rpc",
+            Arc::new(move |state, _assets, user_id, mut send, recv| {
+                let state = state;
+                let user_id = user_id.to_string();
+                let rpc_registry = rpc_registry.clone();
+                tokio::spawn(async move {
+                    let try_block = || async {
+                        let mut buf = Vec::new();
+                        recv.take(1024 * 1024 * 1024).read_to_end(&mut buf).await?;
+                        let args = RpcArgs {
+                            state,
+                            user_id: user_id.to_string(),
+                        };
+                        let resp = rpc_registry.run_req(args, &buf).await?;
+                        send.write_all(&resp).await?;
+                        // send.finish().await?;
+                        Ok(()) as Result<(), NetworkError>
                     };
-                    let resp = rpc_registry.run_req(args, &buf).await?;
-                    send.write_all(&resp).await?;
-                    // send.finish().await?;
-                    Ok(()) as Result<(), NetworkError>
-                };
-                log_result!(try_block().await);
-            });
-        }),
+                    log_result!(try_block().await);
+                });
+            }),
+        ),
     );
 }
 
@@ -363,7 +372,6 @@ impl GameServer {
         let mut last_active = ambient_sys::time::Instant::now();
 
         if let Some(proxy_settings) = proxy_settings {
-            panic!("");
             let endpoint = endpoint.clone();
             let state = state.clone();
             let world_stream_filter = world_stream_filter.clone();
@@ -554,7 +562,11 @@ pub type FramedRecvStream<T> = FramedRead<RecvStream, FramedCodec<T>>;
 pub type FramedSendStream<T> = FramedWrite<SendStream, FramedCodec<T>>;
 
 /// Setup the protocol and enter the update loop for a new connected client
-#[tracing::instrument(name = "server", level = "info", skip(conn, state, world_stream_filter, assets, content_base_url))]
+#[tracing::instrument(
+    name = "server",
+    level = "info",
+    skip(conn, state, world_stream_filter, assets, content_base_url)
+)]
 async fn handle_connection(
     conn: ConnectionInner,
     state: SharedServerState,
@@ -595,12 +607,20 @@ async fn handle_connection(
     use futures::SinkExt;
 
     // Send who we are
-    control_send.send(&ClientControl::ServerInfo(server_info)).await?;
+    control_send
+        .send(&ClientControl::ServerInfo(server_info))
+        .await?;
 
     // Feed the channel senders to the connection data
     //
     // Once connected they will be added to the player entity
-    let data = ConnectionData { state, diff_tx: diffs_tx, stat_tx: stats_tx, connection_id: Uuid::new_v4(), world_stream_filter };
+    let data = ConnectionData {
+        state,
+        diff_tx: diffs_tx,
+        stat_tx: stats_tx,
+        connection_id: Uuid::new_v4(),
+        world_stream_filter,
+    };
 
     while server.is_pending_connection() {
         tracing::info!("Waiting for connect request");
@@ -611,7 +631,10 @@ async fn handle_connection(
 
     tracing::debug!("Performing additional on connect logic after the fact");
 
-    tokio::spawn(handle_diffs(stream::SendStream::new(conn.open_uni().await?), diffs_rx));
+    tokio::spawn(handle_diffs(
+        stream::SendStream::new(conn.open_uni().await?),
+        diffs_rx,
+    ));
 
     // Before a connection has been established, only process the control stream
     while let proto::server::ServerState::Connected(connected) = &mut server {
@@ -642,8 +665,10 @@ async fn handle_connection(
     Ok(())
 }
 
-async fn handle_diffs<S>(mut open_uni: stream::SendStream<WorldDiff, S>, mut diffs_rx: flume::r#async::RecvStream<'_, Bytes>)
-where
+async fn handle_diffs<S>(
+    mut open_uni: stream::SendStream<WorldDiff, S>,
+    mut diffs_rx: flume::r#async::RecvStream<'_, Bytes>,
+) where
     S: Unpin + AsyncWrite,
 {
     while let Some(msg) = diffs_rx.next().await {
