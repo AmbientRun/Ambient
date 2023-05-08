@@ -130,7 +130,7 @@ pub struct GameClient {
     pub connection: Arc<dyn ClientConnection>,
     pub rpc_registry: Arc<RpcRegistry<server::RpcArgs>>,
     pub user_id: String,
-    pub game_state: Arc<Mutex<ClientGameState>>,
+    pub game_state: SharedClientState,
     pub uid: String,
 }
 
@@ -240,7 +240,8 @@ impl<T> UseOnce<T> {
     }
 }
 
-pub type InitCallback = Box<dyn FnOnce(&mut World, Arc<RenderTarget>) + Send + Sync>;
+pub type CleanupFunc = Box<dyn FnOnce() + Send + Sync>;
+pub type LoadedFunc = Cb<dyn Fn(GameClient) -> anyhow::Result<Box<CleanupFunc>>>;
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug)]
@@ -248,16 +249,8 @@ pub struct GameClientView {
     pub server_addr: SocketAddr,
     pub user_id: String,
     pub systems_and_resources: Cb<dyn Fn() -> (SystemGroup, Entity) + Sync + Send>,
-    pub init_world: Cb<UseOnce<InitCallback>>,
     pub error_view: Cb<dyn Fn(String) -> Element + Sync + Send>,
-    pub on_loaded: Cb<
-        dyn Fn(
-                Arc<Mutex<ClientGameState>>,
-                GameClient,
-            ) -> anyhow::Result<Box<dyn FnOnce() + Sync + Send>>
-            + Sync
-            + Send,
-    >,
+    pub on_loaded: LoadedFunc,
     pub on_in_entities: Option<Cb<dyn Fn(&WorldDiff) + Sync + Send>>,
     pub on_disconnect: Cb<dyn Fn() + Sync + Send + 'static>,
     pub create_rpc_registry: Cb<dyn Fn() -> RpcRegistry<server::RpcArgs> + Sync + Send>,
@@ -290,7 +283,6 @@ impl ElementComponent for GameClientView {
         let Self {
             server_addr,
             user_id,
-            init_world,
             error_view,
             systems_and_resources,
             create_rpc_registry,
@@ -321,11 +313,6 @@ impl ElementComponent for GameClientView {
                 render_target.0.clone(),
                 systems,
                 resources,
-            );
-
-            (init_world.take().expect("Init called twice"))(
-                &mut state.world,
-                render_target.0.clone(),
             );
 
             state
@@ -409,6 +396,7 @@ impl ElementComponent for GameClientView {
                     user_id,
                     ClientCallbacks {
                         on_stats: on_server_stats,
+                        on_loaded,
                     },
                     game_state,
                 )
@@ -464,6 +452,7 @@ impl ElementComponent for GameClientView {
 
 #[derive(Debug)]
 struct ClientCallbacks {
+    on_loaded: Cb<dyn Fn(SharedClientState, GameClient) + Send + Sync>,
     on_stats: Cb<dyn Fn(GameClientServerStats) + Send + Sync>,
 }
 

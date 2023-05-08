@@ -37,6 +37,7 @@ pub(crate) enum ClientState {
     Disconnected,
 }
 
+/// Holds the material world of the client.
 pub type SharedClientState = Arc<Mutex<ClientGameState>>;
 
 impl ClientState {
