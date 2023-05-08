@@ -1,6 +1,6 @@
 use std::{sync::Arc, time::Duration};
 
-use ambient_animation::{animation_errors, animation_retargeting};
+use ambient_animation::animation_errors;
 use ambient_core::{
     name, runtime, snap_to_ground, tags,
     transform::{scale, translation},
@@ -12,9 +12,7 @@ use ambient_ecs::{
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_intent::client_push_intent;
 use ambient_network::{client::GameClient, hooks::use_remote_component};
-use ambient_physics::collider::{
-    character_controller_height, character_controller_radius, collider_type, mass,
-};
+use ambient_physics::collider::{character_controller_height, character_controller_radius, mass};
 use ambient_std::{cb, Cb};
 use ambient_ui_native::{
     align_horizontal, align_vertical,
@@ -216,11 +214,11 @@ fn EntityComponentsEditor(
             character_controller_height()
         ),
         // reg_default_component!("Collider", false, collider()),
-        reg_default_component!("Collider type", true, collider_type()),
+        // reg_default_component!("Collider type", true, collider_type()),
         reg_default_component!("Mass", true, mass()),
         reg_default_component!("Audio Emitter", false, ambient_world_audio::audio_emitter()),
         // reg_default_component!("Loop animation", true, loop_animation()),
-        reg_default_component!("Animation retargeting", true, animation_retargeting()),
+        // reg_default_component!("Animation retargeting", true, animation_retargeting()),
         reg_default_component!("Snap to ground", true, snap_to_ground()),
     ]
     .into_iter()
@@ -367,12 +365,12 @@ fn ComponentEditor<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync +
     .style(ButtonStyle::Flat)
     .tooltip("Delete")
     .el()
-    .with(margin(), Borders::right(STREET));
+    .with(margin(), Borders::right(STREET).into());
 
     FlowRow(vec![
         ScreenContainer(screen).el(),
         remove,
-        Text::el(&display_name).with(margin(), Borders::right(STREET)),
+        Text::el(&display_name).with(margin(), Borders::right(STREET).into()),
         FlowRow(vec![if inline {
             T::editor(
                 value,

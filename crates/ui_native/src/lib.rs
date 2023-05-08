@@ -6,6 +6,7 @@ use std::{
     },
 };
 
+pub use ambient_cb as cb;
 use ambient_core::{transform::*, window::window_ctl, window::WindowCtl};
 use ambient_ecs::generated::messages;
 pub use ambient_ecs::{EntityId, SystemGroup, World};
@@ -14,6 +15,7 @@ pub use ambient_element as element;
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_shared_types::ModifiersState;
 pub use ambient_std::{cb, Cb};
+pub use ambient_ui as ui;
 use glam::*;
 use parking_lot::Mutex;
 use winit::window::CursorGrabMode;
@@ -57,12 +59,23 @@ pub fn init_all_components() {
 }
 
 pub fn systems() -> SystemGroup {
-    SystemGroup::new("ui", vec![Box::new(rect::systems()), Box::new(text::systems(true)), Box::new(layout::layout_systems())])
+    SystemGroup::new(
+        "ui",
+        vec![
+            Box::new(rect::systems()),
+            Box::new(text::systems(true)),
+            Box::new(layout::layout_systems()),
+        ],
+    )
 }
 
 impl Default for HighjackMouse {
     fn default() -> Self {
-        Self { on_mouse_move: cb(|_, _, _| {}), on_click: cb(|_| {}), hide_mouse: false }
+        Self {
+            on_mouse_move: cb(|_, _, _| {}),
+            on_click: cb(|_| {}),
+            hide_mouse: false,
+        }
     }
 }
 
@@ -114,12 +127,22 @@ pub fn HighjackMouse(
         ctl.send(WindowCtl::ShowCursor(!f)).ok();
         // window.set_cursor_visible(!f);
         // Fails on android/IOS
-        ctl.send(WindowCtl::GrabCursor(if f { winit::window::CursorGrabMode::Locked } else { winit::window::CursorGrabMode::None })).ok();
+        ctl.send(WindowCtl::GrabCursor(if f {
+            winit::window::CursorGrabMode::Locked
+        } else {
+            winit::window::CursorGrabMode::None
+        }))
+        .ok();
 
         focused.store(f, Ordering::Relaxed);
     });
 
-    WindowSized(vec![]).el().with_clickarea().on_mouse_down(move |_, _, button| on_click(button)).el().with(translation(), -Vec3::Z * 0.99)
+    WindowSized(vec![])
+        .el()
+        .with_clickarea()
+        .on_mouse_down(move |_, _, button| on_click(button))
+        .el()
+        .with(translation(), -Vec3::Z * 0.99)
 }
 
 /// Ctrl on windows, Command on osx

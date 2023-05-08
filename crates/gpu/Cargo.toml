@@ -4,12 +4,15 @@ name = "ambient_gpu"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
+description = "Ambient GPU functionality. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_sys = { path = "../sys" }
-ambient_std = { path = "../std" }
+ambient_sys = { path = "../sys" , version = "0.2.1" }
+ambient_std = { path = "../std" , version = "0.2.1" }
 
 aho-corasick = { workspace = true }
 bytemuck = { workspace = true }

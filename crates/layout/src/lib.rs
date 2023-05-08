@@ -9,22 +9,20 @@ use ambient_ecs::{
     Store, SystemGroup, World,
 };
 use ambient_input::picking::mouse_pickable;
-use glam::{vec2, vec3, vec4, Mat4, Vec2};
+use glam::{vec2, vec3, vec4, Mat4, Vec2, Vec4};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 pub mod guest_api;
 
 pub use ambient_ecs::generated::components::core::layout::{
-    gpu_ui_size, height, is_book_file, max_height, max_width, mesh_to_local_from_size, min_height,
-    min_width, screen, space_between_items, width,
+    fit_horizontal_parent, gpu_ui_size, height, is_book_file, margin, max_height, max_width,
+    mesh_to_local_from_size, min_height, min_width, padding, screen, space_between_items, width,
 };
 
 components!("layout", {
     @[Debuggable, Networked, Store, Name["Layout"], Description["The layout to apply to this entity's children."]]
     layout: Layout,
-    margin: Borders,
-    padding: Borders,
     fit_vertical: Fit,
     fit_horizontal: Fit,
     docking: Docking,
@@ -144,6 +142,21 @@ impl Borders {
     }
     pub fn border_size(&self) -> Vec2 {
         vec2(self.get_horizontal(), self.get_vertical())
+    }
+}
+impl From<Borders> for Vec4 {
+    fn from(value: Borders) -> Self {
+        vec4(value.top, value.right, value.bottom, value.left)
+    }
+}
+impl From<Vec4> for Borders {
+    fn from(value: Vec4) -> Self {
+        Self {
+            top: value.x,
+            right: value.y,
+            bottom: value.z,
+            left: value.w,
+        }
     }
 }
 
@@ -274,7 +287,10 @@ const Z_DELTA: f32 = -0.00001;
 
 #[ambient_profiling::function]
 fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
-    let padding = world.get(id, padding()).unwrap_or(Borders::ZERO);
+    let padding: Borders = world
+        .get(id, padding())
+        .unwrap_or(Borders::ZERO.into())
+        .into();
     let orientation = world
         .get(id, orientation())
         .unwrap_or(Orientation::Vertical);
@@ -297,7 +313,10 @@ fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
             });
         let child_fit_horizontal = world.get(c, fit_horizontal()).unwrap_or(Fit::Parent);
         let child_fit_vertical = world.get(c, fit_vertical()).unwrap_or(Fit::Parent);
-        let child_margin = world.get(c, margin()).unwrap_or(Borders::ZERO);
+        let child_margin: Borders = world
+            .get(c, margin())
+            .unwrap_or(Borders::ZERO.into())
+            .into();
         match dock {
             Docking::Top => {
                 world
@@ -418,7 +437,10 @@ fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
         .get(id, orientation())
         .unwrap_or(Orientation::Horizontal);
     let space_between_items = world.get(id, space_between_items()).unwrap_or(0.);
-    let self_padding = world.get(id, padding()).unwrap_or(Borders::ZERO);
+    let self_padding: Borders = world
+        .get(id, padding())
+        .unwrap_or(Borders::ZERO.into())
+        .into();
     let self_size = vec2(
         world.get(id, width()).unwrap_or(0.),
         world.get(id, height()).unwrap_or(0.),
@@ -450,7 +472,10 @@ fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     let items = children
         .iter()
         .map(|&c| {
-            let child_margin = world.get(c, margin()).unwrap_or(Borders::ZERO);
+            let child_margin: Borders = world
+                .get(c, margin())
+                .unwrap_or(Borders::ZERO.into())
+                .into();
 
             let child_fit_horizontal = world.get(c, fit_horizontal()).unwrap_or(Fit::None);
             let child_fit_vertical = world.get(c, fit_vertical()).unwrap_or(Fit::None);
@@ -531,7 +556,10 @@ fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     };
 
     for (&c, pos) in children.iter().zip(items.into_iter()) {
-        let child_margin = world.get(c, margin()).unwrap_or(Borders::ZERO);
+        let child_margin: Borders = world
+            .get(c, margin())
+            .unwrap_or(Borders::ZERO.into())
+            .into();
         let child_base_position = vec3(align_left, align_top, 0.) + pos;
         let child_fit_horizontal = world.get(c, fit_horizontal()).unwrap_or(Fit::None);
         let child_fit_vertical = world.get(c, fit_vertical()).unwrap_or(Fit::None);

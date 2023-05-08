@@ -1,3 +1,30 @@
 default interface asset {
-    url: func(path: string) -> option<string>
+    /// Cache status of an asset
+    variant asset-cache-status {
+        /// Ready to be used
+        ready,
+        /// Not yet loaded
+        not-loaded,
+        /// Asset has an error
+        failed-loading(string)
+    }
+
+    /// Animation asset metdata
+    record animation-asset-metadata {
+        /// BinderId for the animation tracks
+        binders: list<string>,
+        /// Duration in seconds
+        duration: float32,
+        /// Cache status of an animation asset
+        status: asset-cache-status,
+    }
+
+    variant url-error {
+        invalid-url(string),
+    }
+
+    get-animation-asset-status: func(clip-url: string) -> asset-cache-status
+    get-animation-asset-metadata: func(clips: list<string>) -> list<animation-asset-metadata>
+
+    url: func(path: string) -> result<string, url-error>
 }

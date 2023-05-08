@@ -1,7 +1,9 @@
 //! Implements a dropdown element.
 
 use ambient_element::{element_component, to_owned, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::{layout::margin_top, rect::border_radius, transform::translation};
+use ambient_guest_bridge::components::{
+    layout::margin, rect::border_radius, transform::translation,
+};
 use glam::{vec3, Vec4};
 
 use crate::{
@@ -24,7 +26,9 @@ pub fn Dropdown(
     FlowColumn::el([
         content,
         if show {
-            UIBase.el().children(vec![FlowColumn(vec![dropdown]).el().with(translation(), vec3(0., 0., -0.05))])
+            UIBase.el().children(vec![FlowColumn(vec![dropdown])
+                .el()
+                .with(translation(), vec3(0., 0., -0.05))])
         } else {
             Element::new()
         },
@@ -48,7 +52,7 @@ pub fn Tooltip(
             .with_padding_even(STREET)
             .with_background(tooltip_background_color().into())
             .with(border_radius(), Vec4::ONE * SMALL_ROUNDING)
-            .with(margin_top(), STREET),
+            .with(margin(), Vec4::X * STREET),
         show: hover,
     }
     .el()

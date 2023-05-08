@@ -1,0 +1,24 @@
+[package]
+name = "ambient_deploy"
+version = { workspace = true }
+rust-version = { workspace = true }
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ambient_project = { path = "../../shared_crates/project" }
+ambient_sys = { path = "../sys" }
+
+anyhow = { workspace = true }
+flume = { workspace = true }
+log = { workspace = true }
+tokio = { workspace = true }
+walkdir = { workspace = true }
+
+prost = "0.11"
+tokio-stream = "0.1"
+tonic = { version = "0.9", features = ["gzip", "tls", "tls-roots"] }
+
+[build-dependencies]
+tonic-build = "0.9"

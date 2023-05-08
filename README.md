@@ -5,6 +5,8 @@
 [![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](https://github.com/AmbientRun/Ambient#license)
 [![Discord](https://img.shields.io/discord/894505972289134632)](https://discord.gg/PhmPn6m8Tw)
 
+https://user-images.githubusercontent.com/707827/236472178-ed520f95-0e0a-434e-96f6-c66a6a96a8be.mp4
+
 Ambient is a runtime for building high-performance multiplayer games and 3D applications, powered by WebAssembly, Rust and WebGPU.
 
 See our [announcement blog post](https://www.ambient.run/post/introducing-ambient) for more details.
@@ -47,7 +49,7 @@ For alternative installation options, go to the [documentation on installing](ht
 | Decals                  | ✅     |                                                                                                                                                                                                                                    |
 | GPU culling and LoD     | ✅     |                                                                                                                                                                                                                                    |
 | Multi-platform          | ✅     | Windows, Mac, and Linux so far. x86-64 and ARM64 are actively supported; other platforms may also work, but require testing.                                                                                                       |
-| Audio                   | ✅     | Load sound, playback, looping, scale amp are supported. More featues on the way. |
+| Audio                   | ✅     | Load sound, playback, looping, scale amp are supported. More featues on the way.                                                                                                                                                   |
 | Run on Web              | 🚧     | See [this issue](https://github.com/AmbientRun/Ambient/issues/151).                                                                                                                                                                |
 | Multithreading API      | 🚧     | Multithreading is already used internally, but we want to expose multithreading functionality within the WASM API. This may be explicit (i.e. task- or thread-spawning) or implicit (WASM modules being scheduled across threads). |
 | Custom shaders          | 🚧     | Custom shaders are supported by the renderer, but are not yet exposed in the API. See [this issue](https://github.com/AmbientRun/Ambient/issues/98).                                                                               |
@@ -58,17 +60,21 @@ For alternative installation options, go to the [documentation on installing](ht
 
 Each example in the [examples](./guest/rust/examples/) directory can be run with Ambient as both client and server:
 
-- `cd guest/rust/examples/tictactoe`
-- `ambient run`
+```
+ambient run guest/rust/examples/games/tictactoe
+```
 
 Every example can also be run server-only. To do so:
 
-- `cd guest/rust/examples/tictactoe`
-- `ambient serve`
+```
+ambient serve guest/rust/examples/games/tictactoe
+```
 
-This will start a server that other people, including yourself, can join (assuming that ports 8999 and 9000 are forwarded):
+This will start a server that other people, including yourself, can join. By default, the server will use the Ambient proxy to allow clients to join from outside your local network, and give you a URL to share with others:
 
-- `ambient join [IP_OF_SERVER]`
+```
+ambient join proxy-eu.ambient.run:9176
+```
 
 Note that content is always streamed, so the only thing the joining user requires is Ambient itself to join the session.
 

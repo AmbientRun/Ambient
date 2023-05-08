@@ -177,36 +177,28 @@ impl wit::client_camera::Host for Bindings {
 impl wit::client_audio::Host for Bindings {
     fn load(&mut self, url: String) -> anyhow::Result<()> {
         let world = self.world();
-        let assets = world.resource(asset_cache()).clone();
-        let parsed_url = AbsAssetUrl::parse(url).context("Failed to parse asset url")?;
-        let audio_url = AudioFromUrl { url: parsed_url };
-        let _track = audio_url.peek(&assets);
+        let assets = world.resource(asset_cache());
+        let audio_url = AudioFromUrl {
+            url: AbsAssetUrl::parse(url)?,
+        };
+        let _track = audio_url.peek(assets);
         Ok(())
     }
 
     fn play(&mut self, url: String, looping: bool, volume: f32, uid: u32) -> anyhow::Result<()> {
         let world = self.world();
         let assets = world.resource(asset_cache()).clone();
-        let asset_url = AbsAssetUrl::from_asset_key(url).to_string();
-        let audio_url = AudioFromUrl {
-            url: AbsAssetUrl::parse(asset_url.clone()).context("Failed to parse audio url")?,
-        };
         let runtime = world.resource(runtime()).clone();
         let async_run = world.resource(async_run()).clone();
+        let url = AbsAssetUrl::parse(url)?.to_download_url(&assets)?;
         runtime.spawn(async move {
-            let track = audio_url.get(&assets).await;
+            let track = AudioFromUrl { url: url.clone() }.get(&assets).await;
             async_run.run(move |world| {
                 match track {
                     Ok(track) => {
                         let sender = world.resource(audio_sender());
                         sender
-                            .send(AudioMessage::Track(
-                                track,
-                                looping,
-                                volume,
-                                asset_url.replace("ambient-assets:/", ""),
-                                uid,
-                            ))
+                            .send(AudioMessage::Track(track, looping, volume, url, uid))
                             .unwrap();
                     }
                     Err(e) => log::error!("{e:?}"),
@@ -220,6 +212,8 @@ impl wit::client_audio::Host for Bindings {
         let world = self.world();
         let runtime = world.resource(runtime()).clone();
         let async_run = world.resource(async_run()).clone();
+        let assets = world.resource(asset_cache());
+        let url = AbsAssetUrl::parse(url)?.to_download_url(&assets)?;
         runtime.spawn(async move {
             async_run.run(move |world| {
                 let sender = world.resource(audio_sender());
@@ -233,6 +227,8 @@ impl wit::client_audio::Host for Bindings {
         let world = self.world();
         let runtime = world.resource(runtime()).clone();
         let async_run = world.resource(async_run()).clone();
+        let assets = world.resource(asset_cache());
+        let url = AbsAssetUrl::parse(url)?.to_download_url(&assets)?;
         runtime.spawn(async move {
             async_run.run(move |world| {
                 let sender = world.resource(audio_sender());

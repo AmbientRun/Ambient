@@ -13,10 +13,14 @@ pub use ambient_api_core::client::*;
 pub use ambient_api_core::server::*;
 pub use ambient_api_core::*;
 
-pub use ambient_ui;
+pub use ambient_cb as cb;
+pub use ambient_editor_derive as editor_derive;
+pub use ambient_element as element;
+pub use ambient_ui as ui;
 
 pub mod prelude {
     pub use ambient_api_core::prelude::*;
+    pub use ambient_editor_derive::ElementEditor;
     pub use ambient_ui::prelude::*;
 }
 

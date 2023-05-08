@@ -2,11 +2,13 @@ use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, str::FromStr
 
 use ambient_cb::{cb, Cb};
 use ambient_color::Color;
-use ambient_element::{element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{
+    element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks,
+};
 use ambient_guest_bridge::{
     components::layout::{
-        fit_horizontal_none, fit_horizontal_parent, fit_vertical_parent, height, margin_right, margin_top, min_width, padding_bottom,
-        padding_top, space_between_items, width,
+        fit_horizontal_none, fit_horizontal_parent, fit_vertical_parent, height, margin, min_width,
+        padding, space_between_items, width,
     },
     messages,
 };
@@ -17,11 +19,15 @@ use itertools::Itertools;
 use super::{Editor, EditorOpts};
 use crate::{
     button::{Button, ButtonStyle},
-    default_theme::{StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON, STREET},
+    default_theme::{
+        StylesExt, COLLECTION_ADD_ICON, COLLECTION_DELETE_ICON, MOVE_DOWN_ICON, MOVE_UP_ICON,
+        STREET,
+    },
     dropdown::Dropdown,
     layout::{FlowColumn, FlowRow},
     use_focus, UIBase, UIExt,
 };
+use glam::{vec4, Vec4};
 
 #[element_component]
 /// An editor for a list of items that implement [Editor]; each item can be edited, moved up or down, or deleted.
@@ -118,16 +124,25 @@ pub fn ListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 
 
 impl<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> Editor for Vec<T> {
     fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, _: EditorOpts) -> Element {
-        ListEditor { value: self, on_change: Some(on_change) }.el()
+        ListEditor {
+            value: self,
+            on_change: Some(on_change),
+        }
+        .el()
     }
     fn view(self, _: EditorOpts) -> Element {
-        ListEditor { value: self, on_change: None }.el()
+        ListEditor {
+            value: self,
+            on_change: None,
+        }
+        .el()
     }
 }
 
 #[derive(Debug, Clone)]
 /// A [MinimalListEditorWithItemEditor] that uses the default editor for the items.
-pub struct MinimalListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> {
+pub struct MinimalListEditor<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static>
+{
     /// The list of items to edit.
     pub value: Vec<T>,
     /// A callback that is called when the list of items is changed.
@@ -139,7 +154,9 @@ pub struct MinimalListEditor<T: Editor + std::fmt::Debug + Clone + Default + Syn
     /// The title for the add button.
     pub add_title: String,
 }
-impl<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent for MinimalListEditor<T> {
+impl<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent
+    for MinimalListEditor<T>
+{
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         MinimalListEditorWithItemEditor {
             value: self.value,
@@ -156,7 +173,9 @@ impl<T: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static> Elem
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Clone)]
 /// A configurable list editor that allows you to specify the editor for the items, and to provide other preset options.
-pub struct MinimalListEditorWithItemEditor<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> {
+pub struct MinimalListEditorWithItemEditor<
+    T: std::fmt::Debug + Clone + Default + Sync + Send + 'static,
+> {
     /// The list of items to edit.
     pub value: Vec<T>,
     /// A callback that is called when the list of items is changed.
@@ -168,11 +187,21 @@ pub struct MinimalListEditorWithItemEditor<T: std::fmt::Debug + Clone + Default 
     /// The title of the add button.
     pub add_title: String,
     /// The editor for the items.
-    pub item_editor: Cb<dyn Fn(T, Option<Cb<dyn Fn(T) + Sync + Send>>, EditorOpts) -> Element + Sync + Send>,
+    pub item_editor:
+        Cb<dyn Fn(T, Option<Cb<dyn Fn(T) + Sync + Send>>, EditorOpts) -> Element + Sync + Send>,
 }
-impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent for MinimalListEditorWithItemEditor<T> {
+impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent
+    for MinimalListEditorWithItemEditor<T>
+{
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let Self { value, on_change, item_opts, add_presets, add_title, item_editor } = *self;
+        let Self {
+            value,
+            on_change,
+            item_opts,
+            add_presets,
+            add_title,
+            item_editor,
+        } = *self;
         let (add_action, set_add_action) = hooks.use_state(false);
         let has_on_change = on_change.is_some();
         hooks.use_runtime_message::<messages::WindowMouseInput>({
@@ -192,26 +221,30 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                     .map(|(i, item)| {
                         MinimalListEditorItem {
                             value: item.clone(),
-                            on_change: on_change.clone().map(|on_change| -> Cb<dyn Fn(T) + Sync + Send> {
-                                cb({
-                                    to_owned![value, on_change];
-                                    move |item| {
-                                        let mut value = value.clone();
-                                        value[i] = item;
-                                        on_change.0(value);
-                                    }
-                                })
-                            }),
-                            on_delete: on_change.clone().map(|on_change| -> Cb<dyn Fn() + Sync + Send> {
-                                cb({
-                                    to_owned![value, on_change];
-                                    move || {
-                                        let mut value = value.clone();
-                                        value.remove(i);
-                                        on_change.0(value);
-                                    }
-                                })
-                            }),
+                            on_change: on_change.clone().map(
+                                |on_change| -> Cb<dyn Fn(T) + Sync + Send> {
+                                    cb({
+                                        to_owned![value, on_change];
+                                        move |item| {
+                                            let mut value = value.clone();
+                                            value[i] = item;
+                                            on_change.0(value);
+                                        }
+                                    })
+                                },
+                            ),
+                            on_delete: on_change.clone().map(
+                                |on_change| -> Cb<dyn Fn() + Sync + Send> {
+                                    cb({
+                                        to_owned![value, on_change];
+                                        move || {
+                                            let mut value = value.clone();
+                                            value.remove(i);
+                                            on_change.0(value);
+                                        }
+                                    })
+                                },
+                            ),
                             item_opts: item_opts.clone(),
                             item_editor: item_editor.clone(),
                         }
@@ -258,7 +291,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                         show: add_action,
                     }
                     .el()
-                    .with(margin_top(), STREET)
+                    .with(margin(), Vec4::X * STREET)
                 } else {
                     Button::new(add_title, {
                         to_owned![value, on_change];
@@ -291,11 +324,20 @@ pub struct MinimalListEditorItem<T: std::fmt::Debug + Clone + Default + Sync + S
     /// Options for the item editor.
     pub item_opts: EditorOpts,
     /// The editor for the item.
-    pub item_editor: Cb<dyn Fn(T, Option<Cb<dyn Fn(T) + Sync + Send>>, EditorOpts) -> Element + Sync + Send>,
+    pub item_editor:
+        Cb<dyn Fn(T, Option<Cb<dyn Fn(T) + Sync + Send>>, EditorOpts) -> Element + Sync + Send>,
 }
-impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent for MinimalListEditorItem<T> {
+impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementComponent
+    for MinimalListEditorItem<T>
+{
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let Self { value, on_change, on_delete, item_opts, item_editor } = *self;
+        let Self {
+            value,
+            on_change,
+            on_delete,
+            item_opts,
+            item_editor,
+        } = *self;
         let (focused, set_focused) = use_focus(hooks);
         hooks.use_runtime_message::<messages::WindowKeyboardInput>(move |_world, event| {
             let pressed = event.pressed;
@@ -316,8 +358,15 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
                 .el()
                 .with(width(), 5.)
                 .with_default(fit_vertical_parent())
-                .with_background(if focused { Color::rgba(0.0, 1., 0., 1.) } else { Color::rgba(0.5, 0.5, 0.5, 1.) }.into())
-                .with(margin_right(), 5.),
+                .with_background(
+                    if focused {
+                        Color::rgba(0.0, 1., 0., 1.)
+                    } else {
+                        Color::rgba(0.5, 0.5, 0.5, 1.)
+                    }
+                    .into(),
+                )
+                .with(margin(), vec4(0., 5., 0., 0.)),
             item_editor.0(value, on_change, item_opts).with_default(fit_horizontal_parent()),
         ])
         .el()
@@ -326,8 +375,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
             set_focused(true);
         })
         .el()
-        .with(padding_top(), STREET)
-        .with(padding_bottom(), STREET)
+        .with(padding(), vec4(STREET, 0., STREET, 0.))
         .with_default(fit_horizontal_parent())
     }
 }
@@ -338,7 +386,18 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
 ///
 /// The pairs are sorted by key.
 pub struct KeyValueEditor<
-    K: Editor + std::fmt::Debug + Clone + Default + Hash + PartialEq + Eq + PartialOrd + Ord + Sync + Send + 'static,
+    K: Editor
+        + std::fmt::Debug
+        + Clone
+        + Default
+        + Hash
+        + PartialEq
+        + Eq
+        + PartialOrd
+        + Ord
+        + Sync
+        + Send
+        + 'static,
     V: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static,
 > {
     /// The value to edit.
@@ -347,7 +406,18 @@ pub struct KeyValueEditor<
     pub on_change: Option<Cb<dyn Fn(HashMap<K, V>) + Sync + Send>>,
 }
 impl<
-        K: Editor + std::fmt::Debug + Clone + Default + Hash + PartialEq + Eq + PartialOrd + Ord + Sync + Send + 'static,
+        K: Editor
+            + std::fmt::Debug
+            + Clone
+            + Default
+            + Hash
+            + PartialEq
+            + Eq
+            + PartialOrd
+            + Ord
+            + Sync
+            + Send
+            + 'static,
         V: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static,
     > ElementComponent for KeyValueEditor<K, V>
 {
@@ -365,31 +435,35 @@ impl<
                             FlowRow(vec![
                                 K::edit_or_view(
                                     key.clone(),
-                                    on_change.clone().map(|on_change| -> Cb<dyn Fn(K) + Sync + Send> {
-                                        cb({
-                                            to_owned![key, on_change, value];
-                                            move |new_key| {
-                                                let mut value = value.clone();
-                                                let item = value.remove(&key).unwrap();
-                                                value.insert(new_key, item);
-                                                on_change.0(value);
-                                            }
-                                        })
-                                    }),
+                                    on_change.clone().map(
+                                        |on_change| -> Cb<dyn Fn(K) + Sync + Send> {
+                                            cb({
+                                                to_owned![key, on_change, value];
+                                                move |new_key| {
+                                                    let mut value = value.clone();
+                                                    let item = value.remove(&key).unwrap();
+                                                    value.insert(new_key, item);
+                                                    on_change.0(value);
+                                                }
+                                            })
+                                        },
+                                    ),
                                     Default::default(),
                                 ),
                                 V::edit_or_view(
                                     item,
-                                    on_change.clone().map(|on_change| -> Cb<dyn Fn(V) + Sync + Send> {
-                                        cb({
-                                            to_owned![value, on_change];
-                                            move |item| {
-                                                let mut value = value.clone();
-                                                value.insert(key.clone(), item);
-                                                on_change.0(value);
-                                            }
-                                        })
-                                    }),
+                                    on_change.clone().map(
+                                        |on_change| -> Cb<dyn Fn(V) + Sync + Send> {
+                                            cb({
+                                                to_owned![value, on_change];
+                                                move |item| {
+                                                    let mut value = value.clone();
+                                                    value.insert(key.clone(), item);
+                                                    on_change.0(value);
+                                                }
+                                            })
+                                        },
+                                    ),
                                     Default::default(),
                                 ),
                             ])
@@ -413,16 +487,35 @@ impl<
     }
 }
 impl<
-        K: Editor + std::fmt::Debug + Clone + Default + Hash + PartialEq + Eq + PartialOrd + Ord + Sync + Send + 'static,
+        K: Editor
+            + std::fmt::Debug
+            + Clone
+            + Default
+            + Hash
+            + PartialEq
+            + Eq
+            + PartialOrd
+            + Ord
+            + Sync
+            + Send
+            + 'static,
         V: Editor + std::fmt::Debug + Clone + Default + Sync + Send + 'static,
     > Editor for HashMap<K, V>
 {
     fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, _: EditorOpts) -> Element {
-        KeyValueEditor { value: self, on_change: Some(on_change) }.el()
+        KeyValueEditor {
+            value: self,
+            on_change: Some(on_change),
+        }
+        .el()
     }
 
     fn view(self, _: EditorOpts) -> Element {
-        KeyValueEditor { value: self, on_change: None }.el()
+        KeyValueEditor {
+            value: self,
+            on_change: None,
+        }
+        .el()
     }
 }
 
@@ -439,8 +532,16 @@ pub struct IndexMapEditor<K, V> {
 
 impl<K, V> IndexMapEditor<K, V> {
     /// Create a new [IndexMapEditor] with the given value and callback.
-    pub fn new(value: IndexMap<K, V>, on_change: Cb<dyn Fn(IndexMap<K, V>) + Send + Sync>, use_row_instead_of_column: bool) -> Self {
-        Self { value: Arc::new(value), on_change, use_row_instead_of_column }
+    pub fn new(
+        value: IndexMap<K, V>,
+        on_change: Cb<dyn Fn(IndexMap<K, V>) + Send + Sync>,
+        use_row_instead_of_column: bool,
+    ) -> Self {
+        Self {
+            value: Arc::new(value),
+            on_change,
+            use_row_instead_of_column,
+        }
     }
 }
 impl<K, V> ElementComponent for IndexMapEditor<K, V>
@@ -450,7 +551,13 @@ where
 {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         let fields = self.value.iter().map(|(key, value)| {
-            IndexMapEntryPart { key: key.clone(), value: value.clone(), parent: self.value.clone(), on_change: self.on_change.clone() }.el()
+            IndexMapEntryPart {
+                key: key.clone(),
+                value: value.clone(),
+                parent: self.value.clone(),
+                on_change: self.on_change.clone(),
+            }
+            .el()
         });
 
         let map = self.value.clone();
@@ -467,7 +574,12 @@ where
         .el();
 
         let fields = fields.chain([add]).collect_vec();
-        if self.use_row_instead_of_column { FlowRow(fields).el() } else { FlowColumn(fields).el() }.with(space_between_items(), STREET)
+        if self.use_row_instead_of_column {
+            FlowRow(fields).el()
+        } else {
+            FlowColumn(fields).el()
+        }
+        .with(space_between_items(), STREET)
     }
 }
 
@@ -481,7 +593,10 @@ where
     }
 
     fn view(self, opts: EditorOpts) -> Element {
-        let fields = self.into_iter().map(|(k, v)| FlowColumn(vec![K::view(k, opts.clone()), V::view(v, opts.clone())]).el()).collect_vec();
+        let fields = self
+            .into_iter()
+            .map(|(k, v)| FlowColumn(vec![K::view(k, opts.clone()), V::view(v, opts.clone())]).el())
+            .collect_vec();
         FlowColumn(fields).el().with(space_between_items(), STREET)
     }
 }
@@ -500,7 +615,12 @@ where
     V: Clone + Debug + Editor + Send + Sync + 'static,
 {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        let Self { key, value, on_change, parent } = *self;
+        let Self {
+            key,
+            value,
+            on_change,
+            parent,
+        } = *self;
 
         let key_editor = {
             let parent = parent.clone();
@@ -538,17 +658,23 @@ where
             let map = parent;
             Button::new(COLLECTION_DELETE_ICON, move |_| {
                 let mut map = map.deref().clone();
-                map.remove(&key).expect("Can not remove non existent element");
+                map.remove(&key)
+                    .expect("Can not remove non existent element");
                 on_change(map)
             })
             .style(ButtonStyle::Flat)
             .el()
         };
 
-        FlowColumn(vec![FlowRow(vec![discard, key_editor]).el().with(space_between_items(), STREET), value_editor])
-            .el()
-            .panel()
-            .with(space_between_items(), STREET)
-            .with_padding_even(STREET)
+        FlowColumn(vec![
+            FlowRow(vec![discard, key_editor])
+                .el()
+                .with(space_between_items(), STREET),
+            value_editor,
+        ])
+        .el()
+        .panel()
+        .with(space_between_items(), STREET)
+        .with_padding_even(STREET)
     }
 }

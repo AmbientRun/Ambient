@@ -93,7 +93,7 @@ impl ExamplesRender {
 
         tracing::debug!("Creating self");
 
-        let is_srgb = gpu.swapchain_format().describe().srgb;
+        let is_srgb = gpu.swapchain_format().is_srgb();
         let gamma_correction = if !is_srgb {
             tracing::info!(
                 "Output format is not in srgb colorspace. Applying manual gamma correction"
@@ -322,6 +322,7 @@ impl UIRender {
                 format: wgpu::TextureFormat::Rgba8Snorm,
                 usage: wgpu::TextureUsages::RENDER_ATTACHMENT
                     | wgpu::TextureUsages::TEXTURE_BINDING,
+                view_formats: &[],
             },
         ));
 
@@ -361,6 +362,7 @@ impl UIRender {
                 usage: wgpu::TextureUsages::RENDER_ATTACHMENT
                     | wgpu::TextureUsages::TEXTURE_BINDING
                     | wgpu::TextureUsages::COPY_SRC,
+                view_formats: &[],
             },
         )
     }

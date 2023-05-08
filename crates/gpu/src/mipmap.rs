@@ -1,5 +1,3 @@
-use std::num::NonZeroU32;
-
 use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 
 use super::blit::BlitterKey;
@@ -24,9 +22,9 @@ pub fn generate_mipmaps(
                 dimension: Some(wgpu::TextureViewDimension::D2),
                 aspect: wgpu::TextureAspect::All,
                 base_mip_level: mip,
-                mip_level_count: NonZeroU32::new(1),
+                mip_level_count: Some(1),
                 base_array_layer: layer,
-                array_layer_count: NonZeroU32::new(1),
+                array_layer_count: Some(1)
             })
         })
         .collect::<Vec<_>>();

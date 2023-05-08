@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use ambient_core::transform::{rotation, translation};
-use ambient_editor_derive::ElementEditor;
 use ambient_model::{Model, ModelFromUrl};
 use ambient_std::{
     asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt},
@@ -14,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{AnimationClip, AnimationClipFromUrl, AnimationOutputs, AnimationTrack};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ElementEditor)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AnimationRetargeting {
     /// Bone Translation comes from the animation data, unchanged.
     None,
@@ -49,27 +48,45 @@ impl AsyncAssetKey<Result<Arc<AnimationClip>, AssetError>> for AnimationClipReta
         AssetKeepalive::Forever
     }
     async fn load(self, assets: AssetCache) -> Result<Arc<AnimationClip>, AssetError> {
-        let clip_url: TypedAssetUrl<AnimationAssetType> =
-            self.clip.abs().context(format!("Expected absolute url, got: {}", self.clip))?.into();
-        let anim_model =
-            ModelFromUrl(clip_url.model_crate().context("Invalid clip url")?.model()).get(&assets).await.context("Failed to load model")?;
-        let clip = AnimationClipFromUrl::new(clip_url.unwrap_abs(), true).get(&assets).await.context("No such clip")?;
+        let clip_url: TypedAssetUrl<AnimationAssetType> = self
+            .clip
+            .abs()
+            .context(format!("Expected absolute url, got: {}", self.clip))?
+            .into();
+        let anim_model = ModelFromUrl(clip_url.model_crate().context("Invalid clip url")?.model())
+            .get(&assets)
+            .await
+            .context("Failed to load model")?;
+        let clip = AnimationClipFromUrl::new(clip_url.unwrap_abs(), true)
+            .get(&assets)
+            .await
+            .context("No such clip")?;
         match self.translation_retargeting {
             AnimationRetargeting::None => Ok(clip),
             AnimationRetargeting::Skeleton => {
                 let mut clip = (*clip).clone();
-                clip.tracks.retain(|track| track.outputs.component() != translation());
+                clip.tracks
+                    .retain(|track| track.outputs.component() != translation());
                 Ok(Arc::new(clip))
             }
             AnimationRetargeting::AnimationScaled { normalize_hip } => {
-                let retarget_model_url =
-                    self.retarget_model.context("No retarget_model specified")?.abs().context("Failed to resolve retarget url")?;
-                let retarget_model = ModelFromUrl(retarget_model_url.into()).get(&assets).await.context("Failed to load retarget model")?;
+                let retarget_model_url = self
+                    .retarget_model
+                    .context("No retarget_model specified")?
+                    .abs()
+                    .context("Failed to resolve retarget url")?;
+                let retarget_model = ModelFromUrl(retarget_model_url.into())
+                    .get(&assets)
+                    .await
+                    .context("Failed to load retarget model")?;
                 let mut clip = (*clip).clone();
                 let anim_root = anim_model.roots()[0];
                 let _retarget_root = retarget_model.roots()[0];
                 let anim_root_rot = anim_model.0.get(anim_root, rotation()).unwrap_or_default();
-                let retarget_root_rot = retarget_model.0.get(anim_root, rotation()).unwrap_or_default();
+                let retarget_root_rot = retarget_model
+                    .0
+                    .get(anim_root, rotation())
+                    .unwrap_or_default();
                 clip.tracks.retain_mut(|track| {
                     if normalize_hip && track.target.bind_id() == Some("Hips") {
                         let zup = retarget_root_rot.inverse() * anim_root_rot;
@@ -99,7 +116,11 @@ impl AsyncAssetKey<Result<Arc<AnimationClip>, AssetError>> for AnimationClipReta
         }
     }
 }
-fn retarget_track(track: &mut AnimationTrack, anim_model: &Model, retarget_model: &Model) -> Option<()> {
+fn retarget_track(
+    track: &mut AnimationTrack,
+    anim_model: &Model,
+    retarget_model: &Model,
+) -> Option<()> {
     let bind_id = track.target.bind_id().unwrap();
     let original = anim_model.get_entity_id_by_bind_id(bind_id).unwrap();
     let target = retarget_model.get_entity_id_by_bind_id(bind_id)?;

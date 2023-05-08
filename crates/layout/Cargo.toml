@@ -1,14 +1,18 @@
 [package]
 name = "ambient_layout"
 version = { workspace = true }
+rust-version = { workspace = true }
 edition = "2021"
+description = "Ambient UI layouting functionality. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_ecs = { path = "../ecs" }
-ambient_core = { path = "../core" }
-ambient_input = { path = "../input" }
+ambient_ecs = { path = "../ecs" , version = "0.2.1" }
+ambient_core = { path = "../core" , version = "0.2.1" }
+ambient_input = { path = "../input" , version = "0.2.1" }
 glam = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }

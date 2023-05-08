@@ -4,14 +4,17 @@ name = "ambient_ecs"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
+description = "Ambient ECS. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_std = { path = "../std" }
-ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] }
-ambient_project_rt = { path = "../../shared_crates/project_rt" }
-ambient_project_macro = { path = "../project_macro" }
+ambient_std = { path = "../std" , version = "0.2.1" }
+ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] , version = "0.2.1" }
+ambient_project_rt = { path = "../../shared_crates/project_rt" , version = "0.2.1" }
+ambient_project_macro = { path = "../project_macro" , version = "0.2.1" }
 
 itertools = { workspace = true }
 serde = { workspace = true }

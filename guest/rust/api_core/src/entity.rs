@@ -8,7 +8,7 @@ use crate::{
     prelude::block_until,
 };
 
-pub use wit::entity::{AnimationAction, AnimationController};
+pub use wit::entity::{AnimationAction, AnimationController, AnimationActionStack, AnimationSampleAbsolute, AnimationSamplePercentage, AnimationStackBlend};
 
 /// Spawns an entity containing the `components`.
 ///
@@ -24,20 +24,40 @@ pub fn spawn(components: &Entity) -> EntityId {
 /// Waits until `id` has the `component`. Note that this may never resolve if the entity
 /// does not complete spawning, or the id in question refers to an entity that does
 /// not exist.
-pub async fn wait_for_component<T: SupportedValue>(entity: EntityId, component: Component<T>) {
-    block_until(move || wit::component::has_component(entity.into_bindgen(), component.index()))
-        .await;
+pub async fn wait_for_component<T: SupportedValue>(entity: EntityId, component: Component<T>) -> T {
+    block_until(move || has_component(entity, component)).await;
+    get_component(entity, component).unwrap()
 }
 
 /// Despawns `entity` from the world. `entity` will not work with any other functions afterwards.
 ///
-/// Returns whether or not the entity was removed.
-pub fn despawn(entity: EntityId) -> bool {
-    wit::entity::despawn(entity.into_bindgen())
+/// Returns the data of the despawned entity, if it existed.
+pub fn despawn(entity: EntityId) -> Option<Entity> {
+    wit::entity::despawn(entity.into_bindgen()).from_bindgen()
 }
 /// Set the animation (controller) for `entity`.
 pub fn set_animation_controller(entity: EntityId, controller: AnimationController) {
     wit::entity::set_animation_controller(entity.into_bindgen(), controller)
+}
+
+/// Set the animation (controller) weights (optional) and times (optional) for `entity`.
+pub fn set_animation_blend(entity: EntityId, weights: &[f32], times: &[f32], absolute_time: bool) {
+    wit::entity::set_animation_blend(entity.into_bindgen(), weights, times, absolute_time)
+}
+
+/// Set the animation blend stack for `entity`. Requires `set_animation_binder_mask` and `set_animation_binder_weights` to be set as well even if empty to add the components to the entity.
+pub fn set_animation_action_stack(entity: EntityId, stack: &[AnimationActionStack]) {
+    wit::entity::set_animation_action_stack(entity.into_bindgen(), stack)
+}
+
+/// Set the animation blend stack binder mask for blending weight masks. See `set_animation_binder_weights`.
+pub fn set_animation_binder_mask(entity: EntityId, mask: &[&str]) {
+    wit::entity::set_animation_binder_mask(entity.into_bindgen(), mask)
+}
+
+/// Set the animation blend stack binder weights. The backing vector will resize to fit the mask.
+pub fn set_animation_binder_weights(entity: EntityId, index: u32, mask: &[f32]) {
+    wit::entity::set_animation_binder_weights(entity.into_bindgen(), index, mask)
 }
 
 /// Checks if the `entity` exists.

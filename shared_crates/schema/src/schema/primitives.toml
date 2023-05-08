@@ -48,6 +48,51 @@ description = "Set the latitudinal stacks of a `sphere` entity."
 default = 18
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::primitives::capsule"]
+type = "Empty"
+name = "Capsule"
+description = """
+If attached to an entity alongside the other `capsule_*` components, the entity will be converted to a capsule primitive.
+To easily instantiate a default `capsule`, consider using the `capsule` concept (e.g. `make_capsule`)."""
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::primitives::capsule_radius"]
+type = "F32"
+name = "Capsule radius"
+description = "Set the radius of a `capsule` entity, spanning XY-plane."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::primitives::capsule_half_height"]
+type = "F32"
+name = "Capsule half-height"
+description = "Set the half-height of the `capsule` entity, spanning Z-axis, excluding the caps."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::primitives::capsule_rings"]
+type = "U32"
+name = "Capsule rings"
+description = "Set the number of sections between the caps."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::primitives::capsule_latitudes"]
+type = "U32"
+name = "Capsule latitudes"
+description = "Set the number of latitudinal sections. Should be even."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::primitives::capsule_longitudes"]
+type = "U32"
+name = "Capsule longitudes"
+description = "Set the number of longitudinal sections."
+attributes = ["Debuggable", "Networked", "Store"]
+
+# TODO: enums are not supported, see https://github.com/AmbientRun/Ambient/issues/221.
+# [components."core::primitives::capsule_uv_profile"]
+# type = "???"
+# name = "Capsule UV profile"
+# description = "Specifies vertical UV distribution."
+# attributes = ["Debuggable", "Networked", "Store"]
+
 # Concepts
 
 [concepts.sphere]
@@ -59,3 +104,15 @@ description = "A primitive sphere."
 "core::primitives::sphere_radius" = 0.5
 "core::primitives::sphere_sectors" = 36
 "core::primitives::sphere_stacks" = 18
+
+[concepts.capsule]
+name = "Capsule"
+description = "A primitive capsule. Defined as a cylinder capped by hemispheres."
+
+[concepts.capsule.components]
+"core::primitives::capsule" = {}
+"core::primitives::capsule_radius" = 0.5
+"core::primitives::capsule_half_height" = 0.5
+"core::primitives::capsule_rings" = 0
+"core::primitives::capsule_latitudes" = 16
+"core::primitives::capsule_longitudes" = 32

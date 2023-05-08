@@ -105,7 +105,7 @@ async fn init(app: &mut App) {
 
     Group(vec![
         UICamera.el().with(active_camera(), 0.),
-        FocusRoot(vec![View::el().with(padding(), Borders::even(10.))]).el(),
+        FocusRoot(vec![View::el().with(padding(), Borders::even(10.).into())]).el(),
     ])
     .el()
     .spawn_interactive(world);

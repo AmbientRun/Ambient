@@ -264,7 +264,13 @@ impl ElementComponent for GameClientView {
             let game_state = game_state.clone();
             let render_target = render_target.clone();
             let world_event_reader = Mutex::new(hooks.world.resource(world_events()).reader());
+
+            let game_client_exists = game_client.is_some();
             hooks.use_frame(move |app_world| {
+                if !game_client_exists {
+                    return;
+                }
+
                 let mut game_state = game_state.lock();
 
                 // Pipe events from app world to game world

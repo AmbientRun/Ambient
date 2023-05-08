@@ -1,10 +1,6 @@
 //! Used to implement all the *shared* host functions on the client.
 //!
 //! If implementing a trait that is only available on the client, it should go in [specific].
-
-use ambient_core::asset_cache;
-use ambient_std::asset_url::AbsAssetUrl;
-
 use crate::shared::{self, wit};
 
 use super::Bindings;
@@ -23,7 +19,10 @@ impl wit::entity::Host for Bindings {
         )
     }
 
-    fn despawn(&mut self, entity: wit::types::EntityId) -> anyhow::Result<bool> {
+    fn despawn(
+        &mut self,
+        entity: wit::types::EntityId,
+    ) -> anyhow::Result<Option<wit::entity::EntityData>> {
         shared::implementation::entity::despawn(
             unsafe { self.world_ref.world_mut() },
             &mut self.base.spawned_entities,
@@ -40,6 +39,52 @@ impl wit::entity::Host for Bindings {
             self.world_mut(),
             entity,
             animation_controller,
+        )
+    }
+
+    fn set_animation_blend(
+        &mut self,
+        entity: wit::types::EntityId,
+        weights: Vec<f32>,
+        times: Vec<f32>,
+        absolute_time: bool,
+    ) -> anyhow::Result<()> {
+        shared::implementation::entity::set_animation_blend(
+            self.world_mut(),
+            entity,
+            &weights,
+            &times,
+            absolute_time,
+        )
+    }
+
+    fn set_animation_action_stack(
+        &mut self,
+        entity: wit::types::EntityId,
+        stack: Vec<wit::entity::AnimationActionStack>,
+    ) -> anyhow::Result<()> {
+        shared::implementation::entity::set_animation_action_stack(self.world_mut(), entity, stack)
+    }
+
+    fn set_animation_binder_mask(
+        &mut self,
+        entity: wit::types::EntityId,
+        mask: Vec<String>,
+    ) -> anyhow::Result<()> {
+        shared::implementation::entity::set_animation_binder_mask(self.world_mut(), entity, mask)
+    }
+
+    fn set_animation_binder_weights(
+        &mut self,
+        entity: wit::types::EntityId,
+        index: u32,
+        mask: Vec<f32>,
+    ) -> anyhow::Result<()> {
+        shared::implementation::entity::set_animation_binder_weights(
+            self.world_mut(),
+            entity,
+            index,
+            mask,
         )
     }
 
@@ -173,11 +218,21 @@ impl wit::player::Host for Bindings {
     }
 }
 impl wit::asset::Host for Bindings {
-    fn url(&mut self, path: String) -> anyhow::Result<Option<String>> {
-        let assets = self.world().resource(asset_cache()).clone();
-        let asset_url = AbsAssetUrl::from_asset_key(path);
-        asset_url
-            .to_download_url(&assets)
-            .map(|url| Some(url.to_string()))
+    fn url(&mut self, path: String) -> anyhow::Result<Result<String, wit::asset::UrlError>> {
+        shared::implementation::asset::url(self.world(), path, true)
+    }
+
+    fn get_animation_asset_status(
+        &mut self,
+        clip_url: String,
+    ) -> anyhow::Result<wit::asset::AssetCacheStatus> {
+        shared::implementation::asset::get_animation_asset_status(self.world_mut(), &clip_url)
+    }
+
+    fn get_animation_asset_metadata(
+        &mut self,
+        clip_urls: Vec<String>,
+    ) -> anyhow::Result<Vec<wit::asset::AnimationAssetMetadata>> {
+        shared::implementation::asset::get_animation_asset_metadata(self.world_mut(), &clip_urls)
     }
 }

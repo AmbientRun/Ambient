@@ -13,6 +13,7 @@ version = { workspace = true }
 # https://stackoverflow.com/a/61417700
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+targets = ["wasm32-wasi"]
 
 [dependencies]
 ambient_api_macros = { workspace = true }

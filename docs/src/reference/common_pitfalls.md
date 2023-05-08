@@ -1,5 +1,13 @@
 # Common pitfalls
 
+## Logic
+
+### My clientside WASM module crashes when accessing a component from the server and unwrapping it
+
+Your clientside WASM can run before the server has finished running its WASM, so the component you're trying to access may not have been created yet.
+
+To fix this, consider using `entity::wait_for_component`, which is an async helper that will stall execution until the component is available.
+
 ## Rendering
 
 ### My object with a random color is black sometimes
@@ -19,15 +27,17 @@ let color = rand::random::<Vec3>().extend(1.0);
 
 ### Fails to start on Linux (Error in Surface::configure: parent device is lost)
 
-If you're running Wayland, you may have to start ambient with: `WAYLAND_DISPLAY=wayland-1 ambient run`. See [this issue](https://github.com/gfx-rs/wgpu/issues/2519) for details.
-
+If you're running Wayland, you may have to start ambient with: `WAYLAND_DISPLAY=wayland-1 ambient run`.
+See [this issue](https://github.com/gfx-rs/wgpu/issues/2519) for details.
 
 ### Runtime error: import `...` has the wrong type
 
-This can occur when you have `.wasm` files in your `build` folder that are using an old version of the Ambient API. Delete the `build` folder and try again - this should force them to be regenerated.
+This can occur when you have `.wasm` files in your `build` folder that are using an old version of the Ambient API.
+Delete the `build` folder and try again - this should force them to be regenerated.
 
+### Failed to download file / error trying to connect: tcp connect error: _etc_ (OS error 10060)
 
-
-### Failed to download "file address, starting with an ip address":error trying to connect: tcp connect error: *etc* (os error 10060)
-
-This can happen if your anti-virus is blocking the connection to the ip address: try deactivating it, then run the ambient project again with 'ambient run'.
+This can happen if your anti-virus or firewall is blocking the connection to the Ambient runtime.
+Try deactivating it, then run the Ambient project again with 'ambient run'.
+If this fixes it, you'll need to add an exception to your anti-virus/firewall to allow Ambient to connect.
+We do not recommend leaving your anti-virus/firewall disabled.

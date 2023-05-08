@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate closure;
-use std::{f32::consts::PI, num::NonZeroU32, sync::Arc};
+use std::{f32::consts::PI, sync::Arc};
 
 use ambient_core::{
     asset_cache,
@@ -610,6 +610,7 @@ impl TerrainState {
                     | wgpu::TextureUsages::COPY_SRC
                     | wgpu::TextureUsages::STORAGE_BINDING,
                 label: Some("heightmap"),
+                view_formats: &[]
             },
         ));
 
@@ -627,6 +628,7 @@ impl TerrainState {
                     | wgpu::TextureUsages::STORAGE_BINDING
                     | wgpu::TextureUsages::RENDER_ATTACHMENT,
                 label: Some("normalmap"),
+                view_formats: &[]
             },
         ));
         FillerKey {
@@ -636,7 +638,7 @@ impl TerrainState {
         .run(
             &normalmap.create_view(&wgpu::TextureViewDescriptor {
                 base_mip_level: 0,
-                mip_level_count: NonZeroU32::new(1),
+                mip_level_count: Some(1),
                 ..Default::default()
             }),
             normalmap.size,

@@ -1,11 +1,11 @@
 use std::{collections::BTreeMap, fs, path::Path};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{Component, Concept, Identifier, IdentifierPathBuf, Message, Version};
 use anyhow::Context;
 
-#[derive(Deserialize, Clone, Debug, PartialEq)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Manifest {
     #[serde(default)]
     pub project: Project,
@@ -54,7 +54,7 @@ impl Manifest {
     }
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Default)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
 pub struct Project {
     pub id: Identifier,
     pub name: Option<String>,
@@ -67,13 +67,13 @@ pub struct Project {
     pub includes: Vec<String>,
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Default)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
 pub struct Build {
     #[serde(default)]
     pub rust: BuildRust,
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct BuildRust {
     #[serde(rename = "feature-multibuild")]
     pub feature_multibuild: Vec<String>,
@@ -86,13 +86,13 @@ impl Default for BuildRust {
     }
 }
 
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Serialize)]
 pub struct Namespace {
     pub name: Option<String>,
     pub description: Option<String>,
 }
 
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Serialize)]
 #[serde(untagged)]
 pub enum NamespaceOr<T> {
     Other(T),

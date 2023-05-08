@@ -21,6 +21,8 @@ use crate::{
     Cb,
 };
 
+pub use url::ParseError;
+
 pub const ASSETS_PROTOCOL_SCHEME: &str = "ambient-assets";
 
 #[derive(Debug, Clone)]
@@ -61,9 +63,11 @@ impl AbsAssetUrl {
     pub fn parse(url: impl AsRef<str>) -> anyhow::Result<Self> {
         match Url::parse(url.as_ref()) {
             Ok(url) => Ok(Self(url)),
-            Err(url::ParseError::RelativeUrlWithoutBase) => {
-                Ok(Self(Url::parse(&format!("file://{}/{}", std::env::current_dir().unwrap().to_str().unwrap(), url.as_ref()))?))
-            }
+            Err(ParseError::RelativeUrlWithoutBase) => Ok(Self(Url::parse(&format!(
+                "file://{}/{}",
+                std::env::current_dir().unwrap().to_str().unwrap(),
+                url.as_ref()
+            ))?)),
             Err(err) => Err(err.into()),
         }
     }
@@ -98,8 +102,12 @@ impl AbsAssetUrl {
         }
     }
 
-    pub fn from_asset_key(key: impl AsRef<str>) -> Self {
-        Self(Url::parse(&format!("{}:/{}", ASSETS_PROTOCOL_SCHEME, key.as_ref().trim_start_matches('/'))).unwrap())
+    pub fn from_asset_key(key: impl AsRef<str>) -> Result<Self, ParseError> {
+        Ok(Self(Url::parse(&format!(
+            "{}:/{}",
+            ASSETS_PROTOCOL_SCHEME,
+            key.as_ref().trim_start_matches('/')
+        ))?))
     }
 
     pub fn relative_cache_path(&self) -> String {
@@ -110,7 +118,10 @@ impl AbsAssetUrl {
     }
     /// This is always lowercase
     pub fn extension(&self) -> Option<String> {
-        self.0.path().rsplit_once('.').map(|(_, ext)| ext.to_string().to_lowercase())
+        self.0
+            .path()
+            .rsplit_once('.')
+            .map(|(_, ext)| ext.to_string().to_lowercase())
     }
     /// This is always lowercase
     pub fn extension_is(&self, extension: impl AsRef<str>) -> bool {
@@ -121,6 +132,15 @@ impl AbsAssetUrl {
         let mut url = self.0.clone();
         url.set_path(&format!("{}.{}", url.path(), extension));
         Self(url)
+    }
+
+    pub fn file_stem(&self) -> Option<&str> {
+        let last = self.0.path().rsplit('/').next().expect("There should be at least one element");
+        if last.is_empty() {
+            None
+        } else {
+            Some(last.rsplit_once('.').map(|(stem, _)| stem).unwrap_or(last))
+        }
     }
 
     #[cfg(target_os = "unknown")]
@@ -139,15 +159,15 @@ impl AbsAssetUrl {
             Ok(None)
         }
     }
-    pub fn resolve(&self, url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
+    pub fn resolve(&self, url_or_relative_path: impl AsRef<str>) -> Result<Self, ParseError> {
         AssetUrl::parse(url_or_relative_path)?.resolve(self)
     }
     /// This appends [path] to the current path, with a `/` joining them
-    pub fn push(&self, path: impl AsRef<str>) -> Result<Self, url::ParseError> {
+    pub fn push(&self, path: impl AsRef<str>) -> Result<Self, ParseError> {
         Ok(AbsAssetUrl(self.as_directory().0.join(path.as_ref())?))
     }
     /// This joins the current url with a relative path. See https://docs.rs/url/latest/url/struct.Url.html#method.join for details how it works
-    pub fn join(&self, path: impl AsRef<str>) -> Result<Self, url::ParseError> {
+    pub fn join(&self, path: impl AsRef<str>) -> Result<Self, ParseError> {
         Ok(AbsAssetUrl(self.0.join(path.as_ref())?))
     }
     /// Returns the decoded path
@@ -185,39 +205,70 @@ impl AbsAssetUrl {
         segs.next()?; // discard
         segs.next()
     }
-    fn to_download_url_with_base(&self, base: &Self) -> anyhow::Result<Url> {
+    fn to_download_url_with_base(&self, base: &Self) -> Result<Url, url::ParseError> {
         if self.0.scheme() == ASSETS_PROTOCOL_SCHEME {
             Ok(base.join(self.0.path().trim_start_matches('/'))?.0)
         } else {
             Ok(self.0.clone())
         }
     }
-    pub fn to_download_url(&self, assets: &AssetCache) -> anyhow::Result<Url> {
+    pub fn to_download_url(&self, assets: &AssetCache) -> Result<Self, url::ParseError> {
+        Ok(Self(self.to_download_raw_url(assets)?))
+    }
+    fn to_download_raw_url(&self, assets: &AssetCache) -> Result<Url, url::ParseError> {
         self.to_download_url_with_base(&ContentBaseUrlKey.get(assets))
     }
     pub async fn download_bytes(&self, assets: &AssetCache) -> anyhow::Result<Vec<u8>> {
         if let Some(path) = self.to_file_path()? {
-            Ok(ambient_sys::fs::read(path).await.context(format!("Failed to read file at: {:}", self.0))?)
+            Ok(ambient_sys::fs::read(path)
+                .await
+                .context(format!("Failed to read file at: {:}", self.0))?)
         } else {
-            Ok(download(assets, self.to_download_url(assets)?, |resp| async { Ok(resp.bytes().await?) }).await?.to_vec())
+            Ok(
+                download(assets, self.to_download_raw_url(assets)?, |resp| async {
+                    Ok(resp.bytes().await?)
+                })
+                .await?
+                .to_vec(),
+            )
         }
     }
     pub async fn download_string(&self, assets: &AssetCache) -> anyhow::Result<String> {
         if let Some(path) = self.to_file_path()? {
-            Ok(ambient_sys::fs::read_to_string(path).await.context(format!("Failed to read file at: {:}", self.0))?)
+            Ok(ambient_sys::fs::read_to_string(path)
+                .await
+                .context(format!("Failed to read file at: {:}", self.0))?)
         } else {
-            Ok(download(assets, self.to_download_url(assets)?, |resp| async { Ok(resp.text().await?) }).await?)
+            Ok(
+                download(assets, self.to_download_raw_url(assets)?, |resp| async {
+                    Ok(resp.text().await?)
+                })
+                .await?,
+            )
         }
     }
-    pub async fn download_json<T: 'static + Send + DeserializeOwned>(&self, assets: &AssetCache) -> anyhow::Result<T> {
+    pub async fn download_json<T: 'static + Send + DeserializeOwned>(
+        &self,
+        assets: &AssetCache,
+    ) -> anyhow::Result<T> {
         if let Some(path) = self.to_file_path()? {
-            let content: Vec<u8> = ambient_sys::fs::read(path).await.context(format!("Failed to read file at: {:}", self.0))?;
+            let content: Vec<u8> = ambient_sys::fs::read(path)
+                .await
+                .context(format!("Failed to read file at: {:}", self.0))?;
             Ok(serde_json::from_slice(&content)?)
         } else {
-            Ok(download(assets, self.to_download_url(assets)?, |resp| async { Ok(resp.json::<T>().await?) }).await?)
+            Ok(
+                download(assets, self.to_download_raw_url(assets)?, |resp| async {
+                    Ok(resp.json::<T>().await?)
+                })
+                .await?,
+            )
         }
     }
-    pub async fn download_toml<T: DeserializeOwned>(&self, assets: &AssetCache) -> anyhow::Result<T> {
+    pub async fn download_toml<T: DeserializeOwned>(
+        &self,
+        assets: &AssetCache,
+    ) -> anyhow::Result<T> {
         let content = self.download_bytes(assets).await?;
         Ok(toml::from_str(std::str::from_utf8(&content)?)?)
     }
@@ -226,7 +277,11 @@ impl AbsAssetUrl {
 #[cfg(not(target_os = "unknown"))]
 impl From<PathBuf> for AbsAssetUrl {
     fn from(value: PathBuf) -> Self {
-        let value = if value.is_absolute() { value } else { std::env::current_dir().unwrap().join(value) };
+        let value = if value.is_absolute() {
+            value
+        } else {
+            std::env::current_dir().unwrap().join(value)
+        };
         Self(Url::from_file_path(value).unwrap())
     }
 }
@@ -239,24 +294,80 @@ impl From<AbsAssetUrl> for String {
 
 #[test]
 fn test_abs_asset_url() {
-    assert_eq!(AbsAssetUrl::parse("http://t.c/hello").unwrap().as_directory().to_string(), "http://t.c/hello/");
-    assert_eq!(AbsAssetUrl::parse("http://t.c/hello/").unwrap().as_directory().to_string(), "http://t.c/hello/");
-    assert_eq!(AbsAssetUrl::parse("http://t.c/hello").unwrap().as_file().to_string(), "http://t.c/hello");
-    assert_eq!(AbsAssetUrl::parse("http://t.c/hello/").unwrap().as_file().to_string(), "http://t.c/hello");
+    assert_eq!(
+        AbsAssetUrl::parse("http://t.c/hello")
+            .unwrap()
+            .as_directory()
+            .to_string(),
+        "http://t.c/hello/"
+    );
+    assert_eq!(
+        AbsAssetUrl::parse("http://t.c/hello/")
+            .unwrap()
+            .as_directory()
+            .to_string(),
+        "http://t.c/hello/"
+    );
+    assert_eq!(
+        AbsAssetUrl::parse("http://t.c/hello")
+            .unwrap()
+            .as_file()
+            .to_string(),
+        "http://t.c/hello"
+    );
+    assert_eq!(
+        AbsAssetUrl::parse("http://t.c/hello/")
+            .unwrap()
+            .as_file()
+            .to_string(),
+        "http://t.c/hello"
+    );
 
     assert_eq!(AbsAssetUrl::parse("http://t.c/a/b/c.png").unwrap().last_dir_name(), Some("b"));
+    assert_eq!(
+        AbsAssetUrl::parse("http://t.c/a/b/c.png")
+            .unwrap()
+            .last_dir_name(),
+        Some("b")
+    );
+
+    assert_eq!(AbsAssetUrl::parse("http://t.c/a/").unwrap().file_stem(), None);
+    assert_eq!(AbsAssetUrl::parse("http://t.c/a/b").unwrap().file_stem().as_deref(), Some("b"));
+    assert_eq!(AbsAssetUrl::parse("http://t.c/a/b/c.png").unwrap().file_stem().as_deref(), Some("c"));
 }
 
 #[test]
 fn test_abs_asset_url_join() {
-    assert_eq!(AbsAssetUrl::parse("http://t.c/a/b/c.png").unwrap().join("d.png").unwrap().to_string(), "http://t.c/a/b/d.png");
-    assert_eq!(AbsAssetUrl::parse("http://t.c/a/b/c.png/").unwrap().join("d.png").unwrap().to_string(), "http://t.c/a/b/c.png/d.png");
     assert_eq!(
-        AbsAssetUrl::parse(format!("{}:/a/b/c.png", ASSETS_PROTOCOL_SCHEME)).unwrap().join("d.png").unwrap().to_string(),
+        AbsAssetUrl::parse("http://t.c/a/b/c.png")
+            .unwrap()
+            .join("d.png")
+            .unwrap()
+            .to_string(),
+        "http://t.c/a/b/d.png"
+    );
+    assert_eq!(
+        AbsAssetUrl::parse("http://t.c/a/b/c.png/")
+            .unwrap()
+            .join("d.png")
+            .unwrap()
+            .to_string(),
+        "http://t.c/a/b/c.png/d.png"
+    );
+    assert_eq!(
+        AbsAssetUrl::parse(format!("{}:/a/b/c.png", ASSETS_PROTOCOL_SCHEME))
+            .unwrap()
+            .join("d.png")
+            .unwrap()
+            .to_string(),
         format!("{}:/a/b/d.png", ASSETS_PROTOCOL_SCHEME)
     );
     assert_eq!(
-        AbsAssetUrl::parse(format!("{}:/a/b/c.png/", ASSETS_PROTOCOL_SCHEME)).unwrap().join("d.png").unwrap().to_string(),
+        AbsAssetUrl::parse(format!("{}:/a/b/c.png/", ASSETS_PROTOCOL_SCHEME))
+            .unwrap()
+            .join("d.png")
+            .unwrap()
+            .to_string(),
         format!("{}:/a/b/c.png/d.png", ASSETS_PROTOCOL_SCHEME)
     );
 }
@@ -273,7 +384,11 @@ fn test_abs_asset_url_to_download_url() {
         "http://t.c/content/a/b/c.png"
     );
     assert_eq!(
-        AbsAssetUrl::parse("http://t.c/content/a/b/c.png").unwrap().to_download_url_with_base(&base_url).unwrap().to_string(),
+        AbsAssetUrl::parse("http://t.c/content/a/b/c.png")
+            .unwrap()
+            .to_download_url_with_base(&base_url)
+            .unwrap()
+            .to_string(),
         "http://t.c/content/a/b/c.png"
     );
 }
@@ -291,7 +406,9 @@ impl AssetUrl {
     pub fn parse(url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
         match Url::parse(url_or_relative_path.as_ref()) {
             Ok(url) => Ok(Self::Absolute(AbsAssetUrl(url))),
-            Err(url::ParseError::RelativeUrlWithoutBase) => Ok(Self::Relative(url_or_relative_path.as_ref().into())),
+            Err(url::ParseError::RelativeUrlWithoutBase) => {
+                Ok(Self::Relative(url_or_relative_path.as_ref().into()))
+            }
             Err(err) => Err(err),
         }
     }
@@ -319,7 +436,11 @@ impl AssetUrl {
             AssetUrl::Absolute(url) => Ok(Self::Absolute(url.join(path)?)),
             AssetUrl::Relative(p) => Ok(Self::Relative(
                 // The Url::join method has some intricacies so we want these to behave the same
-                Url::parse(&format!("http://localhost/{}", p.as_str())).unwrap().join(path.as_ref())?.path()[1..].into(),
+                Url::parse(&format!("http://localhost/{}", p.as_str()))
+                    .unwrap()
+                    .join(path.as_ref())?
+                    .path()[1..]
+                    .into(),
             )),
         }
     }
@@ -410,7 +531,8 @@ impl<'de> Deserialize<'de> for AssetUrl {
             where
                 E: serde::de::Error,
             {
-                AssetUrl::parse(v).map_err(|err| E::custom(format!("Bad asset url format: {err:?}")))
+                AssetUrl::parse(v)
+                    .map_err(|err| E::custom(format!("Bad asset url format: {err:?}")))
             }
         }
 
@@ -441,7 +563,10 @@ impl<T: GetAssetType> TypedAssetUrl<T> {
     pub fn resolve(&self, base_url: &AbsAssetUrl) -> Result<AbsAssetUrl, url::ParseError> {
         self.0.resolve(base_url)
     }
-    pub fn join<Y: GetAssetType>(&self, path: impl AsRef<str>) -> Result<TypedAssetUrl<Y>, url::ParseError> {
+    pub fn join<Y: GetAssetType>(
+        &self,
+        path: impl AsRef<str>,
+    ) -> Result<TypedAssetUrl<Y>, url::ParseError> {
         Ok(TypedAssetUrl::<Y>(self.0.join(path)?, PhantomData))
     }
     pub fn parent<Y: GetAssetType>(&self) -> Option<TypedAssetUrl<Y>> {
@@ -657,14 +782,25 @@ fn test_join() {
     let model = crat.model();
     assert_eq!(model.to_string(), "https://playdims.com/api/v1/assetdb/crates/RxH7k2ox5Ug6DNcqJhta/1.7.0/quixel_groundcover_wcwmchzja_2k_3dplant_ms_wcwmchzja_json0/models/main.json");
 
-    let anim = TypedAssetUrl::<AnimationAssetType>::parse("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap();
-    assert_eq!(anim.model_crate().unwrap().model().to_string(), "assets/Capoeira.fbx/models/main.json".to_string());
+    let anim = TypedAssetUrl::<AnimationAssetType>::parse(
+        "assets/Capoeira.fbx/animations/mixamo.com.anim",
+    )
+    .unwrap();
+    assert_eq!(
+        anim.model_crate().unwrap().model().to_string(),
+        "assets/Capoeira.fbx/models/main.json".to_string()
+    );
 }
 
 /// Invoking this method will show a UI for selecting an asset from the asset db, and will then return the result of that
 #[derive(Clone, Debug)]
 pub struct SelectAssetCbKey;
-impl SyncAssetKey<Cb<dyn Fn(AssetType, Box<dyn FnOnce(SelectedAsset<String>) + Sync + Send>) + Sync + Send>> for SelectAssetCbKey {}
+impl
+    SyncAssetKey<
+        Cb<dyn Fn(AssetType, Box<dyn FnOnce(SelectedAsset<String>) + Sync + Send>) + Sync + Send>,
+    > for SelectAssetCbKey
+{
+}
 
 #[derive(Debug)]
 pub enum SelectedAsset<T> {
@@ -676,10 +812,14 @@ impl<T> SelectedAsset<T> {
     pub fn map<X>(self, map: impl Fn(T) -> X) -> SelectedAsset<X> {
         match self {
             SelectedAsset::None => SelectedAsset::None,
-            SelectedAsset::Asset { content, name } => SelectedAsset::Asset { content: map(content), name },
-            SelectedAsset::Collection { content, name } => {
-                SelectedAsset::Collection { content: content.into_iter().map(map).collect(), name }
-            }
+            SelectedAsset::Asset { content, name } => SelectedAsset::Asset {
+                content: map(content),
+                name,
+            },
+            SelectedAsset::Collection { content, name } => SelectedAsset::Collection {
+                content: content.into_iter().map(map).collect(),
+                name,
+            },
         }
     }
     pub fn name(&self) -> Option<&str> {
@@ -701,7 +841,11 @@ impl<T> SelectedAsset<T> {
     }
 }
 
-pub fn select_asset(assets: &AssetCache, asset_type: AssetType, cb: impl FnOnce(SelectedAsset<String>) + Sync + Send + 'static) {
+pub fn select_asset(
+    assets: &AssetCache,
+    asset_type: AssetType,
+    cb: impl FnOnce(SelectedAsset<String>) + Sync + Send + 'static,
+) {
     let func = SelectAssetCbKey.get(assets);
     (func)(asset_type, Box::new(cb));
 }
@@ -712,5 +856,8 @@ pub fn select_asset_json<T: DeserializeOwned + Send + Sync + 'static>(
     cb: impl FnOnce(SelectedAsset<T>) + Sync + Send + 'static,
 ) {
     let func = SelectAssetCbKey.get(assets);
-    (func)(asset_type, Box::new(move |content| cb(content.map(|content| serde_json::from_str(&content).unwrap()))));
+    (func)(
+        asset_type,
+        Box::new(move |content| cb(content.map(|content| serde_json::from_str(&content).unwrap()))),
+    );
 }

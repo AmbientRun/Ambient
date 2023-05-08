@@ -1,9 +1,11 @@
 use std::collections::HashSet;
 
-use ambient_animation::animation_controller;
+use ambient_animation::{animation_controller, AnimationActionTime, animation_stack, animation_binder_mask, animation_binder_weights};
 use ambient_core::transform::translation;
 use ambient_ecs::{query as ecs_query, with_component_registry, EntityId, World};
+
 use ambient_network::ServerWorldExt;
+
 use anyhow::Context;
 
 use super::{
@@ -11,7 +13,7 @@ use super::{
         conversion::{FromBindgen, IntoBindgen},
         wit,
     },
-    component::convert_components_to_entity_data,
+    component::{convert_components_to_entity_data, convert_entity_data_to_components},
 };
 
 pub fn spawn(
@@ -28,10 +30,12 @@ pub fn despawn(
     world: &mut World,
     spawned_entities: &mut HashSet<EntityId>,
     id: wit::types::EntityId,
-) -> anyhow::Result<bool> {
+) -> anyhow::Result<Option<wit::entity::EntityData>> {
     let id = id.from_bindgen();
     spawned_entities.remove(&id);
-    Ok(world.despawn(id).is_some())
+    Ok(world
+        .despawn(id)
+        .map(|e| convert_entity_data_to_components(&e)))
 }
 
 pub fn set_animation_controller(
@@ -44,6 +48,69 @@ pub fn set_animation_controller(
         animation_controller(),
         controller.from_bindgen(),
     )?)
+}
+
+pub fn set_animation_blend(
+    world: &mut World,
+    entity: wit::types::EntityId,
+    weights: &[f32],
+    times: &[f32],
+    absolute_time: bool,
+) -> anyhow::Result<()> {
+    let controller = world.get_mut(entity.from_bindgen(), animation_controller())?;
+    for (action, weight) in controller.actions.iter_mut().zip(weights.iter()) {
+        action.weight = *weight;
+    }
+
+    if absolute_time {
+        for (action, time) in controller.actions.iter_mut().zip(times.iter()) {
+            action.time = AnimationActionTime::Absolute { time: *time };
+        }
+    } else {
+        for (action, time) in controller.actions.iter_mut().zip(times.iter()) {
+            action.time = AnimationActionTime::Percentage { percentage: *time }
+        }
+    }
+    Ok(())
+}
+
+
+pub fn set_animation_action_stack(
+    world: &mut World,
+    entity: wit::types::EntityId,
+    stack: Vec<wit::entity::AnimationActionStack>,
+) -> anyhow::Result<()> {
+    Ok(world.add_component(entity.from_bindgen(), animation_stack(), stack.into_iter().map(|x| x.from_bindgen()).collect())?)
+}
+
+pub fn set_animation_binder_mask(
+    world: &mut World,
+    entity: wit::types::EntityId,
+    mask: Vec<String>,
+) -> anyhow::Result<()> {
+    Ok(world.add_component(entity.from_bindgen(), animation_binder_mask(), mask)?)
+}
+
+pub fn set_animation_binder_weights(
+    world: &mut World,
+    entity: wit::types::EntityId,
+    index: u32,
+    mask: Vec<f32>,
+) -> anyhow::Result<()> {
+    let entity_id = entity.from_bindgen();
+    let index = index as usize;
+
+    if let Ok(weights) = world.get_mut(entity_id, animation_binder_weights()) {
+        if weights.len() <= index {
+            weights.resize(index + 1, Vec::default());
+        }
+        weights[index] = mask;
+        Ok(())
+    } else {
+        let mut weights = vec![Vec::default(); index + 1];
+        weights[index] = mask;
+        Ok(world.add_component(entity.from_bindgen(), animation_binder_weights(), weights)?)
+    }
 }
 
 pub fn exists(world: &World, entity: wit::types::EntityId) -> anyhow::Result<bool> {

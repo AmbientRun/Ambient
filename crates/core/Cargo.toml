@@ -3,14 +3,17 @@ name = "ambient_core"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
+description = "Ambient core functionality. Host-only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_ecs = { path = "../ecs" }
-ambient_sys = { path = "../sys" }
-ambient_std = { path = "../std" }
-ambient_gpu = { path = "../gpu" }
+ambient_ecs = { path = "../ecs" , version = "0.2.1" }
+ambient_sys = { path = "../sys" , version = "0.2.1" }
+ambient_std = { path = "../std" , version = "0.2.1" }
+ambient_gpu = { path = "../gpu" , version = "0.2.1" }
 
 itertools = { workspace = true }
 yaml-rust = { workspace = true }

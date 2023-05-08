@@ -5,8 +5,8 @@ members = ["crates/*", "libs/*", "shared_crates/*", "app", "campfire"]
 resolver = "2"
 
 [workspace.package]
-version = "0.2.0-rc3"
-rust-version = "1.67"
+version = "0.2.1"
+rust-version = "1.67.0"
 
 [workspace.dependencies]
 aho-corasick = "0.7.20"
@@ -17,7 +17,7 @@ tracing = "0.1.35"
 tracing-tree = { git = "https://github.com/TmLev/tracing-tree" }
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 tracing-log = { version = "0.1" }
-wgpu = "0.14.2"
+wgpu = "0.16.0"
 winit = { version = "0.28.1", features = ["serde"] }
 futures = { version = "0.3", default-features = false, features = ["std"] }
 tokio = { version = "1.20", features = ["parking_lot"] }
@@ -145,11 +145,11 @@ colored = "2.0.0"
 # WASM dependencies. Should be able to move off these once this all begins to stabilise a little.
 #
 
-wasmtime = { version = "7.0.0", features = ["component-model"] }
+wasmtime = { version = "8.0.1", features = ["component-model"] }
 # Use published versions of these crates when available, or pull them in ourselves
 wasmtime-wasi = { package = "host", git = "https://github.com/AmbientRun/preview2-prototyping.git", branch = "sync" }
 wasi-cap-std-sync = { git = "https://github.com/AmbientRun/preview2-prototyping.git", branch = "sync" }
 wasi-common = { git = "https://github.com/AmbientRun/preview2-prototyping.git", branch = "sync" }
-wit-bindgen-core = "0.5.0"
-wit-bindgen-rust = "0.5.0"
+wit-bindgen-core = "0.6.0"
+wit-bindgen-rust = "0.6.0"
 wit-component = "0.8.1"

@@ -4,7 +4,9 @@ use ambient_app::{App, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_ecs::generated::messages;
 use ambient_element::{ElementComponent, ElementComponentExt};
-use ambient_ui_native::{padding, space_between_items, Borders, Button, Cb, FlowColumn, FlowRow, Text, STREET};
+use ambient_ui_native::{
+    padding, space_between_items, Borders, Button, Cb, FlowColumn, FlowRow, Text, STREET,
+};
 use tracing_subscriber::EnvFilter;
 
 #[derive(Debug, Clone)]
@@ -17,7 +19,7 @@ impl ElementComponent for A {
     fn render(self: Box<Self>, _: &mut ambient_element::Hooks) -> ambient_element::Element {
         let Self { value, set_value } = *self;
         FlowRow::el([
-            Text::el(value.to_string()).with(padding(), Borders::even(STREET)),
+            Text::el(value.to_string()).with(padding(), Borders::even(STREET).into()),
             Button::new("+1", {
                 let set_value = set_value.clone();
                 move |_| set_value(value + 1.0)
@@ -34,14 +36,22 @@ struct Shared(Arc<String>);
 
 impl Clone for Shared {
     fn clone(&self) -> Self {
-        tracing::info!("Cloning {}. Strong: {}", &self.0, Arc::strong_count(&self.0));
+        tracing::info!(
+            "Cloning {}. Strong: {}",
+            &self.0,
+            Arc::strong_count(&self.0)
+        );
         Self(self.0.clone())
     }
 }
 
 impl Drop for Shared {
     fn drop(&mut self) {
-        tracing::info!("Dropping {}. Strong: {}", &self.0, Arc::strong_count(&self.0));
+        tracing::info!(
+            "Dropping {}. Strong: {}",
+            &self.0,
+            Arc::strong_count(&self.0)
+        );
     }
 }
 
@@ -87,7 +97,11 @@ impl ElementComponent for Main {
 
         let (show_b, set_show_b) = hooks.use_state(true);
         if show_b {
-            FlowColumn::el([A { value, set_value }.el(), Button::new("Hide", move |_| set_show_b(false)).el(), B { shared }.el()])
+            FlowColumn::el([
+                A { value, set_value }.el(),
+                Button::new("Hide", move |_| set_show_b(false)).el(),
+                B { shared }.el(),
+            ])
         } else {
             FlowColumn::el([
                 A { value, set_value }.el(),
@@ -106,7 +120,9 @@ async fn init(app: &mut App) {
 }
 
 fn main() {
-    tracing_subscriber::fmt().with_env_filter(EnvFilter::from_default_env()).init();
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        .init();
 
     AppBuilder::simple_ui().block_on(init)
 }
