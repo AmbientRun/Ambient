@@ -68,7 +68,6 @@ impl ShadowsRenderer {
         ));
 
         let shadow_view = shadow_texture.create_view(&wgpu::TextureViewDescriptor {
-            aspect: wgpu::TextureAspect::DepthOnly,
             ..Default::default()
         });
 
@@ -196,10 +195,7 @@ impl ShadowsRenderer {
                         load: wgpu::LoadOp::Clear(0.0),
                         store: true,
                     }),
-                    stencil_ops: Some(wgpu::Operations {
-                        load: wgpu::LoadOp::Load,
-                        store: true,
-                    }),
+                    stencil_ops: None,
                 }),
             });
 
