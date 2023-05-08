@@ -33,6 +33,12 @@ These PRs are not directly user-facing, but improve the development experience. 
 ### Removed
 -->
 
+## Version 0.2.1 (2023-05-06)
+
+### Fixed
+
+- **API**: The API documentation is now built only for the `wasm` target on `docs.rs`.
+
 ## Version 0.2.0 (2023-05-05)
 
 ### Added

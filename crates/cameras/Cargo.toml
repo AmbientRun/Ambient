@@ -10,10 +10,10 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_std = { path = "../std" , version = "0.2.0" }
-ambient_ecs = { path = "../ecs" , version = "0.2.0" }
-ambient_core = { path = "../core" , version = "0.2.0" }
-ambient_element = { path = "../../shared_crates/element" , version = "0.2.0" }
+ambient_std = { path = "../std" , version = "0.2.1" }
+ambient_ecs = { path = "../ecs" , version = "0.2.1" }
+ambient_core = { path = "../core" , version = "0.2.1" }
+ambient_element = { path = "../../shared_crates/element" , version = "0.2.1" }
 winit = { workspace = true }
 derive_more = { workspace = true }
 glam = { workspace = true }
