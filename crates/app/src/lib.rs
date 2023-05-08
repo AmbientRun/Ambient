@@ -311,8 +311,26 @@ impl AppBuilder {
                 document.body().unwrap()
             });
 
+            // Get the screen's available width and height
+            let window = web_sys::window().unwrap();
+            let screen = window.screen().unwrap();
+            let max_width = screen.avail_width().unwrap();
+            let max_height = screen.avail_height().unwrap();
+
+            // Get device pixel ratio
+            let device_pixel_ratio = window.device_pixel_ratio();
+
+            // Calculate the real dimensions of the canvas considering the device pixel ratio
+            let real_width = (max_width as f64 * device_pixel_ratio) as u32;
+            let real_height = (max_height as f64 * device_pixel_ratio) as u32;
+
+            // Set the canvas dimensions using the real dimensions
+            canvas.set_width(real_width);
+            canvas.set_height(real_height);
+
             // Set a background color for the canvas to make it easier to tell where the canvas is for debugging purposes.
-            canvas.style().set_css_text("background-color: crimson;");
+            // Use the maximum available width and height as the canvas dimensions.
+            canvas.style().set_css_text(&format!("background-color: crimson; width: {}px; height: {}px;", max_width, max_height));
             target.append_child(&canvas).unwrap();
         }
 
