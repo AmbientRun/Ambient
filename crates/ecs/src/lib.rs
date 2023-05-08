@@ -592,7 +592,10 @@ impl World {
         self.get_mut(self.resource_entity(), component).ok()
     }
     pub fn resource_mut<T: ComponentValue>(&mut self, component: Component<T>) -> &mut T {
-        self.resource_mut_opt(component).unwrap()
+        match self.resource_mut_opt(component) {
+            Some(val) => val,
+            None => panic!("Resource {} does not exist", component.path()),
+        }
     }
     fn warn_on_non_resource_component<T: ComponentValue>(component: Component<T>) {
         if !component.has_attribute::<Resource>() && !component.has_attribute::<MaybeResource>() {

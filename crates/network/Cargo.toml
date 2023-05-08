@@ -48,6 +48,7 @@ colored = { workspace = true }
 enum_dispatch = { workspace = true }
 pin-project = "1.0"
 uuid = { workspace = true }
+scopeguard = { workspace = true }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 async-trait = { workspace = true }

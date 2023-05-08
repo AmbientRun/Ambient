@@ -35,7 +35,10 @@ use glam::{uvec2, UVec2};
 use parking_lot::{const_rwlock, Mutex};
 use quinn::Connection;
 use serde::{de::DeserializeOwned, Serialize};
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
+use tokio::{
+    io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt},
+    time::sleep,
+};
 use tokio_util::codec::{FramedRead, FramedWrite};
 use tracing::{debug_span, Instrument};
 
@@ -241,10 +244,10 @@ impl<T> UseOnce<T> {
 }
 
 pub type CleanupFunc = Box<dyn FnOnce() + Send + Sync>;
-pub type LoadedFunc = Cb<dyn Fn(GameClient) -> anyhow::Result<Box<CleanupFunc>>>;
+pub type LoadedFunc = Cb<dyn Fn(GameClient) -> anyhow::Result<CleanupFunc> + Send + Sync>;
 
 #[allow(clippy::type_complexity)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GameClientView {
     pub server_addr: SocketAddr,
     pub user_id: String,
@@ -252,30 +255,10 @@ pub struct GameClientView {
     pub error_view: Cb<dyn Fn(String) -> Element + Sync + Send>,
     pub on_loaded: LoadedFunc,
     pub on_in_entities: Option<Cb<dyn Fn(&WorldDiff) + Sync + Send>>,
-    pub on_disconnect: Cb<dyn Fn() + Sync + Send + 'static>,
     pub create_rpc_registry: Cb<dyn Fn() -> RpcRegistry<server::RpcArgs> + Sync + Send>,
     pub on_network_stats: Cb<dyn Fn(GameClientNetworkStats) + Sync + Send>,
     pub on_server_stats: Cb<dyn Fn(GameClientServerStats) + Sync + Send>,
     pub inner: Element,
-}
-
-impl Clone for GameClientView {
-    fn clone(&self) -> Self {
-        Self {
-            server_addr: self.server_addr,
-            user_id: self.user_id.clone(),
-            systems_and_resources: self.systems_and_resources.clone(),
-            init_world: self.init_world.clone(),
-            error_view: self.error_view.clone(),
-            on_loaded: self.on_loaded.clone(),
-            on_in_entities: self.on_in_entities.clone(),
-            on_disconnect: self.on_disconnect.clone(),
-            create_rpc_registry: self.create_rpc_registry.clone(),
-            on_network_stats: self.on_network_stats.clone(),
-            on_server_stats: self.on_server_stats.clone(),
-            inner: self.inner.clone(),
-        }
-    }
 }
 
 impl ElementComponent for GameClientView {
@@ -289,7 +272,6 @@ impl ElementComponent for GameClientView {
             on_loaded,
             on_in_entities,
             inner,
-            on_disconnect,
             on_network_stats,
             on_server_stats,
         } = *self;
@@ -306,16 +288,15 @@ impl ElementComponent for GameClientView {
         let assets = hooks.world.resource(asset_cache()).clone();
         let game_state = hooks.use_ref_with(|world| {
             let (systems, resources) = systems_and_resources();
-            let mut state = ClientGameState::new(
+
+            ClientGameState::new(
                 world,
                 assets.clone(),
                 user_id.clone(),
                 render_target.0.clone(),
                 systems,
                 resources,
-            );
-
-            state
+            )
         });
 
         // The game client will be set once a connection establishes
@@ -325,6 +306,7 @@ impl ElementComponent for GameClientView {
         hooks.use_runtime_message::<messages::WindowClose>({
             let game_client = game_client.clone();
             move |_, _| {
+                tracing::info!("User closed the window");
                 if let Some(game_client) = game_client.as_ref() {
                     todo!()
                     // game_client.connection.close(0u32.into(), b"User window was closed");
@@ -357,6 +339,7 @@ impl ElementComponent for GameClientView {
                         .add_event(event.clone());
                 }
 
+                tracing::info!("Drawing game state");
                 game_state.on_frame(&render_target.0);
             });
         }
@@ -372,7 +355,9 @@ impl ElementComponent for GameClientView {
                 let conn = open_connection(server_addr)
                     .await
                     .with_context(|| format!("Failed to connect to endpoint: {server_addr:?}"))?;
+
                 tracing::info!("Connected to the server");
+
                 let user_id = friendly_id();
 
                 // Create a handle for the game client
@@ -382,21 +367,25 @@ impl ElementComponent for GameClientView {
                     game_state.clone(),
                     user_id.clone(),
                 );
-                {
-                    // Updates the game client context in the Ui tree
-                    set_game_client(Some(game_client.clone()));
-                    // Update the resources on the client side world to reflect the new connection
-                    // state
-                    let world = &mut game_state.lock().world;
-                    world.add_resource(self::game_client(), Some(game_client.clone()));
-                }
 
                 handle_connection(
+                    game_client,
                     conn,
                     user_id,
                     ClientCallbacks {
                         on_stats: on_server_stats,
-                        on_loaded,
+                        on_loaded: cb(move |game_client| {
+                            let game_state = &game_client.game_state;
+                            {
+                                // Updates the game client context in the Ui tree
+                                set_game_client(Some(game_client.clone()));
+                                // Update the resources on the client side world to reflect the new connection
+                                // state
+                                let world = &mut game_state.lock().world;
+                                world.add_resource(self::game_client(), Some(game_client.clone()));
+                            }
+                            (on_loaded)(game_client)
+                        }),
                     },
                     game_state,
                 )
@@ -439,6 +428,7 @@ impl ElementComponent for GameClientView {
                 .world
                 .add_resource(self::game_client(), Some(game_client.clone()));
 
+            tracing::info!("Drawing inner");
             inner
         } else {
             Centered(vec![FlowColumn::el([FlowRow::el([
@@ -452,12 +442,13 @@ impl ElementComponent for GameClientView {
 
 #[derive(Debug)]
 struct ClientCallbacks {
-    on_loaded: Cb<dyn Fn(SharedClientState, GameClient) + Send + Sync>,
+    on_loaded: LoadedFunc,
     on_stats: Cb<dyn Fn(GameClientServerStats) + Send + Sync>,
 }
 
 #[tracing::instrument(name = "client", level = "info", skip(conn))]
 async fn handle_connection(
+    game_client: GameClient,
     conn: quinn::Connection,
     user_id: String,
     callbacks: ClientCallbacks,
@@ -465,7 +456,9 @@ async fn handle_connection(
 ) -> anyhow::Result<()> {
     tracing::info!("Handling client connection");
     tracing::info!("Opening control stream");
+
     let mut control_send = stream::SendStream::new(conn.open_uni().await?);
+
     tracing::info!("Opened control stream");
 
     // Accept the diff and stat stream
@@ -479,6 +472,7 @@ async fn handle_connection(
         .await?;
     let mut client = ClientState::Connecting(user_id);
 
+    sleep(Duration::from_secs(2)).await;
     tracing::info!("Accepting control stream from server");
     let mut control_recv = stream::RecvStream::new(conn.accept_uni().await?);
 
@@ -492,6 +486,8 @@ async fn handle_connection(
 
     tracing::info!("Accepting diff stream");
     let mut diff_stream = RecvStream::new(conn.accept_uni().await?);
+    let on_disconnect = (callbacks.on_loaded)(game_client)?;
+    scopeguard::defer!(on_disconnect());
 
     while let ClientState::Connected(connected) = &mut client {
         tracing::info!("Handlieng connected state");

@@ -15,7 +15,8 @@ use ambient_debugger::Debugger;
 use ambient_ecs::{Entity, EntityId, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::client::{
-    GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats, GameClientView, GameClientWorld, UseOnce,
+    GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats,
+    GameClientView, GameClientWorld,
 };
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_ui_native::{
@@ -116,15 +117,18 @@ fn MainApp(
         WindowSized::el([GameClientView {
             server_addr,
             user_id,
-            on_disconnect: cb(move || {}),
-            init_world: cb(UseOnce::new(Box::new(move |world, _render_target| {
+            on_loaded: cb(move |client| {
+                let mut game_state = client.game_state.lock();
+                let world = &mut game_state.world;
+
                 wasm::initialize(world).unwrap();
 
                 UICamera.el().spawn_static(world);
-            }))),
-            on_loaded: cb(move |_game_state, _game_client| {
                 set_loaded(true);
-                Ok(Box::new(|| {}))
+
+                Ok(Box::new(|| {
+                    log::info!("Disconnecting client");
+                }))
             }),
             error_view: cb(move |error| {
                 Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el()
@@ -171,7 +175,7 @@ fn MainApp(
                 } else {
                     Element::new()
                 },
-                GameView { show_debug }.el(),
+                Text::el("Insert game here"), // GameView { show_debug }.el(),
             ]),
         }
         .el()]),
@@ -179,7 +183,11 @@ fn MainApp(
 }
 
 #[element_component]
-fn GoldenImageTest(hooks: &mut Hooks, golden_image_output_dir: Option<PathBuf>, seconds: f32) -> Element {
+fn GoldenImageTest(
+    hooks: &mut Hooks,
+    golden_image_output_dir: Option<PathBuf>,
+    seconds: f32,
+) -> Element {
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
     let render_target_ref = hooks.use_ref_with(|_| render_target.clone());
     *render_target_ref.lock() = render_target.clone();
