@@ -110,6 +110,12 @@ impl ClientGameState {
     }
     #[ambient_profiling::function]
     pub fn on_frame(&mut self, target: &RenderTarget) {
+        let mut s = Vec::new();
+        self.world.dump(&mut s);
+        let s = String::from_utf8(s).unwrap();
+
+        eprintln!("{}", s);
+
         self.world.next_frame();
         self.systems.run(&mut self.world, &FrameEvent);
         self.temporary_systems
@@ -129,7 +135,7 @@ impl ClientGameState {
             &mut encoder,
             &mut post_submit,
             RendererTarget::Target(target),
-            Some(Color::rgba(0., 0., 0., 1.)),
+            Some(Color::rgba(0., 0., 1., 1.)),
         );
         self.ui_renderer.render(
             &mut self.world,

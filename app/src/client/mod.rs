@@ -175,7 +175,8 @@ fn MainApp(
                 } else {
                     Element::new()
                 },
-                Text::el("Insert game here"), // GameView { show_debug }.el(),
+                // Text::el("Insert game here"),
+                GameView { show_debug }.el(),
             ]),
         }
         .el()]),

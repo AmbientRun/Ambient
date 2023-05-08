@@ -14,6 +14,7 @@ use ambient_gpu::{
     texture::{Texture, TextureView},
 };
 use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_sys::task::wasm_nonsend;
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
 use wgpu::{BindGroup, BindGroupLayout, Buffer, Sampler};
 
@@ -321,7 +322,10 @@ impl ForwardGlobals {
             p.camera_far = world.get(id, far()).unwrap_or(1e3);
             p.fog = world.has_component(id, fog()) as i32;
             p.forward_camera_position = p.camera_position;
+        } else {
+            tracing::warn!("No active camera");
         }
+        log::info!("{p:#?}");
         if let Some(sun) = get_active_sun(world, self.scene) {
             fn update<T, U>(out: &mut T, input: Result<U, ECSError>, mapper: impl Fn(U) -> T) {
                 if let Ok(value) = input {

@@ -11,7 +11,7 @@ use anyhow::{bail, Context};
 use bytes::{Buf, Bytes};
 use parking_lot::Mutex;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
-use tracing::info_span;
+use tracing::debug_span;
 
 use crate::{
     client::{bi_stream_handlers, datagram_handlers, uni_stream_handlers, GameClientServerStats},
@@ -48,7 +48,7 @@ impl ClientState {
     }
 
     /// Processes an incoming control frame from the server.
-    #[tracing::instrument(level = "info")]
+    #[tracing::instrument(level = "debug")]
     pub fn process_control(
         &mut self,
         state: &SharedClientState,
@@ -90,7 +90,7 @@ impl ClientState {
 }
 
 impl ConnectedClient {
-    #[tracing::instrument(level = "info")]
+    #[tracing::instrument(level = "debug")]
     pub fn process_diff(
         &mut self,
         state: &SharedClientState,
@@ -110,7 +110,7 @@ impl ConnectedClient {
     }
 
     /// Processes a server initiated bidirectional stream
-    #[tracing::instrument(level = "info", skip(send, recv))]
+    #[tracing::instrument(level = "debug", skip(send, recv))]
     pub async fn process_bi<R, S>(
         &mut self,
         state: &SharedClientState,
@@ -134,14 +134,14 @@ impl ConnectedClient {
             .with_context(|| format!("No handler for stream {id}"))?
             .clone();
 
-        let _span = info_span!("handle_bi", name, id).entered();
+        let _span = debug_span!("handle_bi", name, id).entered();
         handler(world, assets, Box::pin(send), Box::pin(recv));
 
         Ok(())
     }
 
     /// Processes a server initiated unidirectional stream
-    #[tracing::instrument(level = "info", skip(recv))]
+    #[tracing::instrument(level = "debug", skip(recv))]
     pub async fn process_uni<R>(
         &mut self,
         state: &SharedClientState,
@@ -163,14 +163,14 @@ impl ConnectedClient {
             .with_context(|| format!("No handler for stream {id}"))?
             .clone();
 
-        let _span = info_span!("handle_uni", name, id).entered();
+        let _span = debug_span!("handle_uni", name, id).entered();
         handler(world, assets, Box::pin(recv));
 
         Ok(())
     }
 
     /// Processes an incoming datagram
-    #[tracing::instrument(level = "info")]
+    #[tracing::instrument(level = "debug")]
     pub fn process_datagram(
         &mut self,
         state: &SharedClientState,
@@ -193,7 +193,7 @@ impl ConnectedClient {
             .with_context(|| format!("No handler for stream {id}"))?
             .clone();
 
-        let _span = info_span!("handle_uni", name, id).entered();
+        let _span = debug_span!("handle_uni", name, id).entered();
         handler(world, assets, data);
 
         Ok(())

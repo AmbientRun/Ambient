@@ -7,7 +7,7 @@ use tokio::{
     io::{AsyncRead, AsyncReadExt, AsyncWrite},
     sync::OwnedRwLockMappedWriteGuard,
 };
-use tracing::info_span;
+use tracing::debug_span;
 use uuid::Uuid;
 
 use crate::{
@@ -127,7 +127,7 @@ impl ServerState {
         }
     }
 
-    #[tracing::instrument(level = "info")]
+    #[tracing::instrument(level = "debug")]
     fn process_connect(&mut self, data: &ConnectionData, user_id: String) {
         tracing::debug!("[{}] Locking world", user_id);
         let mut state = data.state.lock();
@@ -231,7 +231,7 @@ impl ServerState {
 
 impl ConnectedClient {
     /// Processes an incoming datagram
-    #[tracing::instrument(level = "info", skip(data))]
+    #[tracing::instrument(level = "debug", skip(data))]
     pub async fn process_datagram(
         &mut self,
         data: &ConnectionData,
@@ -260,13 +260,13 @@ impl ConnectedClient {
             )
         };
 
-        let _span = info_span!("handle_datagram", name, id).entered();
+        let _span = debug_span!("handle_datagram", name, id).entered();
         handler(data.state.clone(), assets, &self.user_id, payload);
 
         Ok(())
     }
 
-    #[tracing::instrument(level = "info", skip(data, stream))]
+    #[tracing::instrument(level = "debug", skip(data, stream))]
     pub async fn process_uni<R>(
         &mut self,
         data: &ConnectionData,
@@ -292,13 +292,13 @@ impl ConnectedClient {
             )
         };
 
-        let _span = info_span!("handle_uni", name, id).entered();
+        let _span = debug_span!("handle_uni", name, id).entered();
         handler(data.state.clone(), assets, &self.user_id, Box::pin(stream));
 
         Ok(())
     }
 
-    #[tracing::instrument(level = "info", skip(data, send, recv))]
+    #[tracing::instrument(level = "debug", skip(data, send, recv))]
     pub async fn process_bi<S, R>(
         &mut self,
         data: &ConnectionData,
@@ -326,7 +326,7 @@ impl ConnectedClient {
             )
         };
 
-        let _span = info_span!("handle_bi", name, id).entered();
+        let _span = debug_span!("handle_bi", name, id).entered();
         handler(
             data.state.clone(),
             assets,
