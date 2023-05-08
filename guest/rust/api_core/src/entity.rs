@@ -8,7 +8,7 @@ use crate::{
     prelude::block_until,
 };
 
-pub use wit::entity::{AnimationAction, AnimationController};
+pub use wit::entity::{AnimationAction, AnimationController, AnimationActionStack, AnimationSampleAbsolute, AnimationSamplePercentage, AnimationStackBlend};
 
 /// Spawns an entity containing the `components`.
 ///
@@ -43,6 +43,21 @@ pub fn set_animation_controller(entity: EntityId, controller: AnimationControlle
 /// Set the animation (controller) weights (optional) and times (optional) for `entity`.
 pub fn set_animation_blend(entity: EntityId, weights: &[f32], times: &[f32], absolute_time: bool) {
     wit::entity::set_animation_blend(entity.into_bindgen(), weights, times, absolute_time)
+}
+
+/// Set the animation blend stack for `entity`. Requires `set_animation_binder_mask` and `set_animation_binder_weights` to be set as well even if empty to add the components to the entity.
+pub fn set_animation_action_stack(entity: EntityId, stack: &[AnimationActionStack]) {
+    wit::entity::set_animation_action_stack(entity.into_bindgen(), stack)
+}
+
+/// Set the animation blend stack binder mask for blending weight masks. See `set_animation_binder_weights`.
+pub fn set_animation_binder_mask(entity: EntityId, mask: &[&str]) {
+    wit::entity::set_animation_binder_mask(entity.into_bindgen(), mask)
+}
+
+/// Set the animation blend stack binder weights. The backing vector will resize to fit the mask.
+pub fn set_animation_binder_weights(entity: EntityId, index: u32, mask: &[f32]) {
+    wit::entity::set_animation_binder_weights(entity.into_bindgen(), index, mask)
 }
 
 /// Checks if the `entity` exists.

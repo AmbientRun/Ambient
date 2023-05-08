@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use ambient_animation::{animation_controller, AnimationActionTime};
+use ambient_animation::{animation_controller, AnimationActionTime, animation_stack, animation_binder_mask, animation_binder_weights};
 use ambient_core::transform::translation;
 use ambient_ecs::{query as ecs_query, with_component_registry, EntityId, World};
 
@@ -72,6 +72,45 @@ pub fn set_animation_blend(
         }
     }
     Ok(())
+}
+
+
+pub fn set_animation_action_stack(
+    world: &mut World,
+    entity: wit::types::EntityId,
+    stack: Vec<wit::entity::AnimationActionStack>,
+) -> anyhow::Result<()> {
+    Ok(world.add_component(entity.from_bindgen(), animation_stack(), stack.into_iter().map(|x| x.from_bindgen()).collect())?)
+}
+
+pub fn set_animation_binder_mask(
+    world: &mut World,
+    entity: wit::types::EntityId,
+    mask: Vec<String>,
+) -> anyhow::Result<()> {
+    Ok(world.add_component(entity.from_bindgen(), animation_binder_mask(), mask)?)
+}
+
+pub fn set_animation_binder_weights(
+    world: &mut World,
+    entity: wit::types::EntityId,
+    index: u32,
+    mask: Vec<f32>,
+) -> anyhow::Result<()> {
+    let entity_id = entity.from_bindgen();
+    let index = index as usize;
+
+    if let Ok(weights) = world.get_mut(entity_id, animation_binder_weights()) {
+        if weights.len() <= index {
+            weights.resize(index + 1, Vec::default());
+        }
+        weights[index] = mask;
+        Ok(())
+    } else {
+        let mut weights = vec![Vec::default(); index + 1];
+        weights[index] = mask;
+        Ok(world.add_component(entity.from_bindgen(), animation_binder_weights(), weights)?)
+    }
 }
 
 pub fn exists(world: &World, entity: wit::types::EntityId) -> anyhow::Result<bool> {

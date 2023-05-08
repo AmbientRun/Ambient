@@ -24,6 +24,50 @@ default interface entity {
         apply-base-pose: bool,
     }
 
+    /// Variant of animation action stack that samples to specific action index
+    record animation-sample-percentage {
+        /// Index into animation controller actions
+        action-index: u32,
+        /// Time [0, 1]
+        time-percentage: float32,
+    }
+
+
+    /// Variant of animation action stack that samples to specific action index
+    record animation-sample-absolute {
+        /// Index into animation controller actions
+        action-index: u32,
+        /// Time in seconds
+        time-absolute: float32,
+    }
+
+    /// Variant of animation action stack to blend two samples using a mask
+    record animation-stack-blend {
+        /// Blend weight [0, 1]
+        weight: float32,
+        /// Index into animation binder mask weights
+        mask: u32,
+    }
+
+    /// Animation blend stack
+    variant animation-action-stack {
+        /// Sample action at current time
+        sample(u32),
+        /// Sample action at time percentage
+        sample-percentage(animation-sample-percentage),
+        /// Sample action at an absolute time point
+        sample-absolute(animation-sample-absolute),
+        /// Interpolate the two samples on top of the stack
+        interpolate(float32),
+        /// Blend the two samples on top of the stack with the binder mask weights index
+        blend(animation-stack-blend),
+    }
+
+
+    set-animation-action-stack: func(entity: entity-id, stack: list<animation-action-stack>)
+    set-animation-binder-mask: func(entity: entity-id, mask: list<string>)
+    set-animation-binder-weights: func(entity: entity-id, index: u32, mask: list<float32>)
+
     set-animation-blend: func(entity: entity-id, weights: list<float32>, time: list<float32>, absolute-time: bool)
 
     spawn: func(data: entity-data) -> entity-id
