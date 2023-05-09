@@ -170,8 +170,8 @@ pub fn TextEditor(
             }
         }
     });
-    let (a, b) = value.split_at(*cursor_position.lock());
-    let [a, b]: [Element; 2] = [a, b]
+    let (cursor_left, cursor_right) = value.split_at(*cursor_position.lock());
+    let [a, b]: [Element; 2] = [cursor_left, cursor_right]
         .iter()
         .map(|value| {
             Text.el()
@@ -183,7 +183,11 @@ pub fn TextEditor(
         .unwrap();
 
     if focused {
-        FlowRow::el([a, Cursor.el(), b])
+        if cursor_left.len() > 0 {
+            FlowRow::el([a, Cursor.el(), b])
+        } else {
+            FlowRow::el([Cursor.el(), b])
+        }
     } else if value.is_empty() && !focused && placeholder.is_some() {
         Text.el().with(text(), placeholder.unwrap()).with(color(), vec4(1., 1., 1., 0.2))
     } else {
