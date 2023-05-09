@@ -74,9 +74,8 @@ fn main() {
         if input.keys.contains(&KeyCode::D) {
             displace.y += 1.0;
         }
-        eprintln!("input:\ndelta: {delta:#?}\n input: {input:#?}");
 
-        messages::Input::new(displace, delta.mouse_position.x, delta.mouse_wheel)
+        messages::Input::new(displace, delta.mouse_position.x, input.mouse_wheel)
             .send_server_reliable();
     });
 }

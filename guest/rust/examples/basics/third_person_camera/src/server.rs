@@ -13,9 +13,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use components::{
-    camera_follow_distance, player_mouse_delta_x, player_movement_direction, player_scroll_delta,
-};
+use components::*;
 
 #[main]
 pub fn main() {
@@ -77,18 +75,18 @@ pub fn main() {
 
         entity::add_component(player_id, player_movement_direction(), msg.direction);
         entity::add_component(player_id, player_mouse_delta_x(), msg.mouse_delta_x);
-        entity::add_component(player_id, player_scroll_delta(), msg.scroll_delta);
+        entity::add_component(player_id, player_scroll(), msg.scroll);
     });
 
     query((
         player(),
         player_movement_direction(),
         player_mouse_delta_x(),
-        player_scroll_delta(),
+        player_scroll(),
         rotation(),
     ))
     .each_frame(move |players| {
-        for (player_id, (_, direction, mouse_delta_x, scroll_delta, rot)) in players {
+        for (player_id, (_, direction, mouse_delta_x, scroll, rot)) in players {
             let speed = 0.1;
 
             let displace = rot * (direction.normalize_or_zero() * speed).extend(-0.1);
@@ -99,8 +97,10 @@ pub fn main() {
             })
             .unwrap_or_default();
 
-            entity::mutate_component(player_id, camera_follow_distance(), |v| *v += scroll_delta)
-                .unwrap();
+            entity::add_component(player_id, camera_follow_distance(), {
+                let dist = ((scroll * 0.005) + 5.0).max(1.0);
+                dist
+            });
         }
     });
 }
