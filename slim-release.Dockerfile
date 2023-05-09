@@ -1,7 +1,7 @@
-# Instructions:
+# Instructions (replace "guest/rust/examples/games/minigolf" with your project):
 # 1. Build the image: docker build -f slim-release.Dockerfile -t ambient .
 # 2. Run the image: docker run -p 8999:8999/tcp -p 9000:9000/udp -v `pwd`/guest/rust/examples/games/minigolf:/app/project ambient
-#    Note: the project has to already be built
+#    Note: the project has to be built (`ambient build guest/rust/examples/games/minigolf`)
 # 3. Run `ambient join` locally to connect to the server
 
 FROM rust:1.67-bullseye AS builder
