@@ -21,7 +21,7 @@
         "cmd": "cargo run -- run ./guest/rust/examples/basics/skinmesh"
     },
     "debug-third-person-camera": {
-        "cmd": "cargo build -p ambient",
+        "cmd": "cargo build -p ambient --features tracing",
         "components": {
             "dap": {
                 "program": "./target/debug/ambient",

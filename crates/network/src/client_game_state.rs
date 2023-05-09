@@ -25,6 +25,7 @@ use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
 use ambient_world_audio::systems::{spatial_audio_systems, setup_audio};
 
 use ambient_core::player::{player, user_id};
+use tracing::info_span;
 
 components!("rendering", {
     game_screen_render_target: Arc<RenderTarget>,
@@ -110,11 +111,12 @@ impl ClientGameState {
     }
     #[ambient_profiling::function]
     pub fn on_frame(&mut self, target: &RenderTarget) {
+        let _span = info_span!("ClientGameState.on_frame").entered();
         let mut s = Vec::new();
         self.world.dump(&mut s);
         let s = String::from_utf8(s).unwrap();
 
-        eprintln!("{}", s);
+        // tracing::debug!("{s}");
 
         self.world.next_frame();
         self.systems.run(&mut self.world, &FrameEvent);
@@ -130,6 +132,7 @@ impl ClientGameState {
                 label: Some("GameState.render"),
             });
         let mut post_submit = Vec::new();
+        tracing::info!("Drawing world");
         self.renderer.render(
             &mut self.world,
             &mut encoder,
@@ -137,6 +140,7 @@ impl ClientGameState {
             RendererTarget::Target(target),
             Some(Color::rgba(0., 0., 1., 1.)),
         );
+        tracing::info!("Drawing ui");
         self.ui_renderer.render(
             &mut self.world,
             &mut encoder,

@@ -701,6 +701,13 @@ impl World {
         self.dump(&mut f);
         log::info!("Wrote ecs to tmp/ecs.txt");
     }
+
+    pub fn dump_entity_to_string(&self, id: EntityId) -> String {
+        let mut s = Vec::new();
+        self.dump_entity(id, 0, &mut s);
+        String::from_utf8_lossy(&s).into_owned()
+    }
+
     pub fn dump_entity(&self, entity_id: EntityId, indent: usize, f: &mut dyn std::io::Write) {
         if let Some(loc) = self.locs.get(&entity_id) {
             let arch = self
