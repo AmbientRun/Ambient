@@ -358,8 +358,6 @@ impl ElementComponent for GameClientView {
 
                 tracing::info!("Connected to the server");
 
-                let user_id = friendly_id();
-
                 // Create a handle for the game client
                 let game_client = GameClient::new(
                     Arc::new(conn.clone()),
@@ -472,7 +470,6 @@ async fn handle_connection(
         .await?;
     let mut client = ClientState::Connecting(user_id);
 
-    sleep(Duration::from_secs(2)).await;
     tracing::info!("Accepting control stream from server");
     let mut control_recv = stream::RecvStream::new(conn.accept_uni().await?);
 
@@ -490,7 +487,6 @@ async fn handle_connection(
     scopeguard::defer!(on_disconnect());
 
     while let ClientState::Connected(connected) = &mut client {
-        tracing::info!("Handlieng connected state");
         tokio::select! {
             Some(frame) = control_recv.next() => {
                 client.process_control(&state, frame?)?;
@@ -517,7 +513,6 @@ async fn handle_connection(
                 connected.process_uni(&state, recv).await?;
             }
             Some(diff) = diff_stream.next() => {
-                tracing::info!(?diff, "Received diff stream");
                 connected.process_diff(&state, diff?)?;
             }
         }

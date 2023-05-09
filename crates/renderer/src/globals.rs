@@ -329,8 +329,6 @@ impl ForwardGlobals {
                 p.projection_view,
                 p.camera_position
             );
-        } else {
-            tracing::warn!("No active camera for world: {:?}", world.name());
         }
 
         if let Some(sun) = get_active_sun(world, self.scene) {

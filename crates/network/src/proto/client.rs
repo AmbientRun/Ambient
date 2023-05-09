@@ -100,7 +100,7 @@ impl ConnectedClient {
         //     on_in_entities(&diff);
         // }
         let mut gs = state.lock();
-        tracing::info!(?diff, "Applying diff");
+        tracing::debug!(?diff, "Applying diff");
         diff.apply(
             &mut gs.world,
             Entity::new().with(is_remote_entity(), ()),
