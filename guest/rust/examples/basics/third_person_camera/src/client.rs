@@ -10,6 +10,8 @@ use ambient_api::{
 };
 use components::player_camera_ref;
 
+use crate::components::camera_follow_distance;
+
 #[main]
 fn main() {
     eprintln!("Client started");
@@ -36,11 +38,19 @@ fn main() {
     });
     // Since we're only attaching player_camera_ref to the local player, this system will only
     // run for the local player
-    query((player(), player_camera_ref(), translation(), rotation())).each_frame(move |players| {
-        for (_, (_, camera_id, pos, rot)) in players {
+    query((
+        player(),
+        player_camera_ref(),
+        translation(),
+        rotation(),
+        camera_follow_distance(),
+    ))
+    .each_frame(move |players| {
+        for (_, (_, camera_id, pos, rot, dist)) in players {
             let forward = rot * Vec3::X;
             entity::set_component(camera_id, lookat_target(), pos);
-            entity::set_component(camera_id, translation(), pos - forward * 4. + Vec3::Z * 2.);
+            let offset = rot * vec3(-1.0, 0.0, 0.2).normalize() * dist;
+            entity::set_component(camera_id, translation(), pos + offset);
         }
     });
 
@@ -64,7 +74,9 @@ fn main() {
         if input.keys.contains(&KeyCode::D) {
             displace.y += 1.0;
         }
+        eprintln!("input:\ndelta: {delta:#?}\n input: {input:#?}");
 
-        messages::Input::new(displace, delta.mouse_position.x).send_server_reliable();
+        messages::Input::new(displace, delta.mouse_position.x, delta.mouse_wheel)
+            .send_server_reliable();
     });
 }
