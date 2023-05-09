@@ -1,3 +1,4 @@
+pub mod torus;
 pub mod capsule;
 pub mod cube;
 pub mod cuboid;
@@ -11,6 +12,7 @@ use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey},
     mesh::Mesh,
 };
+pub use torus::*;
 pub use capsule::*;
 pub use cube::*;
 use glam::*;
@@ -62,6 +64,14 @@ impl SyncAssetKey<Arc<GpuMesh>> for UnitCubeMeshKey {
 #[derive(Debug, Clone, Default)]
 pub struct SphereMeshKey(pub UVSphereMesh);
 impl SyncAssetKey<Arc<GpuMesh>> for SphereMeshKey {
+    fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
+        GpuMesh::from_mesh(assets, &Mesh::from(self.0))
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct TorusMeshKey(pub TorusMesh);
+impl SyncAssetKey<Arc<GpuMesh>> for TorusMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
         GpuMesh::from_mesh(assets, &Mesh::from(self.0))
     }
