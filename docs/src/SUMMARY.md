@@ -16,6 +16,7 @@
 
 - [Runtime](reference/runtime.md)
 - [Project](reference/project.md)
+- [ECS](reference/ecs.md)
 - [Asset pipeline](reference/asset_pipeline.md)
 - [Networking](reference/networking.md)
 - [Animations](reference/animations.md)

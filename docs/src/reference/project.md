@@ -68,24 +68,24 @@ A `ComponentType` is either:
 
 - a string that can be one of the following primitive types:
 
-  - `Bool`
-  - `Empty`
-  - `EntityId`
-  - `F32`
-  - `F64`
-  - `I32`
-  - `Mat4`
-  - `Quat`
-  - `String`
-  - `U32`
-  - `U64`
-  - `U8`
-  - `Uvec2`
-  - `Uvec3`
-  - `Uvec4`
-  - `Vec2`
-  - `Vec3`
-  - `Vec4`
+  - `Bool`: a boolean value, true or false
+  - `Empty`: a component that has no value; most often used for tagging an entity
+  - `EntityId`: an entity ID
+  - `F32`: a 32-bit floating point value
+  - `F64`: a 64-bit floating point value
+  - `I32`: a 32-bit signed integer value
+  - `Mat4`: a 4x4 32-bit floating point matrix
+  - `Quat`: a 32-bit floating point quaternion
+  - `String`: a UTF-8 string
+  - `U32`: a 32-bit unsigned integer value
+  - `U64`: a 64-bit unsigned integer value
+  - `U8`: an 8-bit unsigned integer value
+  - `Uvec2`: a 2-element 32-bit unsigned integer vector
+  - `Uvec3`: a 3-element 32-bit unsigned integer vector
+  - `Uvec4`: a 4-element 32-bit unsigned integer vector
+  - `Vec2`: a 2-element 32-bit floating point vector
+  - `Vec3`: a 3-element 32-bit floating point vector
+  - `Vec4`: a 4-element 32-bit floating point vector
 
 - a contained type of the form `{ type = "Vec", element_type = ComponentType }` or `{ type = "Option", element_type = ComponentType }`
   - Note that `Vec` and `Option` are the only supported container types, and `element_type` must be a primitive `ComponentType` (that is, you cannot have nested contained types).

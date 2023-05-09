@@ -126,6 +126,7 @@ To do so, you will need to update the following files:
 
 - `CHANGELOG.md`: Document the addition of the new supported type.
 - `docs/src/reference/ambient.sample.toml`: Document the new type in the sample TOML file.
+- `docs/src/reference/project.md`: Document the new type in the components section.
 
 ## Golden image tests
 
