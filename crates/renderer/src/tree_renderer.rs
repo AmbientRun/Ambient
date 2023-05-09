@@ -98,10 +98,6 @@ impl TreeRenderer {
             .filter(&self.config.filter)
             .iter(world, Some(&mut spawn_qs))
         {
-            if world.name() == "client_game_world" {
-                let s = world.dump_entity_to_string(id);
-                tracing::info!("Found entity with primitive: \n{s}");
-            }
             if let Some(primitive_count) = self.entity_primitive_count.get(&id) {
                 for primitive_index in 0..*primitive_count {
                     if let Some(update) = self.remove_primitive(id, primitive_index) {

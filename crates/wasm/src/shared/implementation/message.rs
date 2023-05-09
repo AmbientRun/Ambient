@@ -5,13 +5,11 @@ use ambient_core::{
 use ambient_ecs::{EntityId, World};
 use ambient_network::{
     client::{ClientConnection, DynRecv},
-    connection::Connection,
     log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
 };
 
 use anyhow::Context;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
-use quinn::RecvStream;
 
 use std::{
     collections::HashSet,

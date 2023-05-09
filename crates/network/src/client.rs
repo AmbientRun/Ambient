@@ -426,7 +426,6 @@ impl ElementComponent for GameClientView {
                 .world
                 .add_resource(self::game_client(), Some(game_client.clone()));
 
-            tracing::info!("Drawing inner");
             inner
         } else {
             Centered(vec![FlowColumn::el([FlowRow::el([
