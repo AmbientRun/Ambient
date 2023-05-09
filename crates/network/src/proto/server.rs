@@ -173,7 +173,6 @@ impl ServerState {
             tracing::info!("[{}] Player reconnected", user_id);
         } else {
             let id = instance.spawn_player(entity_data);
-            tracing::info!(?id, user_id, "Player spawned");
         }
 
         *self = Self::Connected(ConnectedClient {

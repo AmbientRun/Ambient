@@ -88,7 +88,7 @@ impl TreeRenderer {
     }
     #[ambient_profiling::function]
     pub fn update(&mut self, world: &mut World) {
-        tracing::info!("Updating TreeRenderer");
+        tracing::debug!("Updating TreeRenderer");
         let mut to_update = HashSet::new();
         let mut spawn_qs = std::mem::replace(&mut self.spawn_qs, QueryState::new());
         let mut despawn_qs = std::mem::replace(&mut self.despawn_qs, QueryState::new());
@@ -222,7 +222,7 @@ impl TreeRenderer {
         entities_bind_group: &wgpu::BindGroup,
         collect_state: &mut RendererCollectState,
     ) {
-        tracing::info!(
+        tracing::debug!(
             "Collecting tree renderer {:?} {:?}",
             self.primitives.total_len(),
             self.tree.keys().collect_vec()
@@ -354,7 +354,7 @@ impl TreeRenderer {
         let mut is_bound = false;
 
         for node in self.tree.values() {
-            tracing::info!(?node, "Drawing node");
+            tracing::debug!(?node, "Drawing node");
             render_pass.set_pipeline(node.pipeline.pipeline());
             // Bind on first invocation
             let bind_groups = [

@@ -24,7 +24,7 @@ use ambient_std::{
 };
 use glam::uvec2;
 use std::sync::Arc;
-use tracing::info_span;
+use tracing::{debug_span, info_span};
 use wgpu::{BindGroupLayout, BindGroupLayoutEntry, TextureView};
 
 pub const GLOBALS_BIND_GROUP: &str = "GLOBALS_BIND_GROUP";
@@ -281,7 +281,7 @@ impl Renderer {
         target: RendererTarget,
         clear: Option<Color>,
     ) {
-        let _span = info_span!("Renderer.render");
+        let _span = debug_span!("Renderer.render");
         ambient_profiling::scope!("Renderer.render");
 
         if let RendererTarget::Target(target) = &target {
@@ -345,7 +345,7 @@ impl Renderer {
         }
 
         self.forward_globals.params.debug_params = self.shader_debug_params;
-        tracing::info!("Updating forward globals");
+        tracing::debug!("Updating forward globals");
         self.forward_globals.update(
             world,
             &self

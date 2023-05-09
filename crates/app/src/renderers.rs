@@ -14,7 +14,7 @@ use ambient_std::{asset_cache::SyncAssetKeyExt, color::Color};
 use ambient_ui_native::app_background_color;
 use glam::{uvec2, UVec2};
 use parking_lot::Mutex;
-use tracing::info_span;
+use tracing::{debug_span, info_span};
 use wgpu::FilterMode;
 use winit::{
     dpi::PhysicalSize,

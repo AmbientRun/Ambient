@@ -638,7 +638,6 @@ async fn handle_connection(
 
     // Before a connection has been established, only process the control stream
     while let proto::server::ServerState::Connected(connected) = &mut server {
-        tracing::info!("Handling connected state");
         tokio::select! {
             Some(frame) = control_recv.next() => {
                 server.process_control(&data, frame?)?;

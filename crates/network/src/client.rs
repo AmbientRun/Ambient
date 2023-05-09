@@ -339,7 +339,7 @@ impl ElementComponent for GameClientView {
                         .add_event(event.clone());
                 }
 
-                tracing::info!("Drawing game state");
+                // tracing::info!("Drawing game state");
                 game_state.on_frame(&render_target.0);
             });
         }
