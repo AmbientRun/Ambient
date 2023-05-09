@@ -52,3 +52,7 @@ Open chrome (or another browser which supports webgpu)
   Occurs on Mac M1 and M2 as the `wasm-pack` installer attempts to download `wasm-bindgen`.
 
   This is fixed by doing `cargo install -f wasm-bindgen` manually
+
+- openssl issue :
+
+  try: `export NODE_OPTIONS=--openssl-legacy-provider` on unix or `set NODE_OPTIONS=--openssl-legacy-provider` on windows
