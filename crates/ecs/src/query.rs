@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::borrow::Cow;
 
 use itertools::Itertools;
 
@@ -1066,57 +1066,32 @@ impl<E> std::fmt::Debug for FnSystem<E> {
     }
 }
 
-enum Label {
-    Static(&'static str),
-    Dynamic(String),
-}
-impl Display for Label {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(match self {
-            Label::Static(s) => s,
-            Label::Dynamic(s) => s,
-        })
-    }
-}
-
 pub type DynSystem<E = FrameEvent> = Box<dyn System<E> + Send + Sync>;
-pub struct SystemGroup<E = FrameEvent>(Label, Vec<DynSystem<E>>);
+pub struct SystemGroup<E = FrameEvent>(Cow<'static, str>, Vec<DynSystem<E>>);
 
 impl<E> SystemGroup<E> {
     pub fn new(label: &'static str, systems: Vec<DynSystem<E>>) -> Self {
-        Self(Label::Static(label), systems)
+        Self(Cow::Borrowed(label), systems)
     }
     pub fn new_with_dynamic_label(label: String, systems: Vec<DynSystem<E>>) -> Self {
-        Self(Label::Dynamic(label), systems)
+        Self(Cow::Owned(label), systems)
     }
     pub fn add(&mut self, system: DynSystem<E>) -> &mut Self {
         self.1.push(system);
         self
     }
 }
+
 impl<E> System<E> for SystemGroup<E> {
     fn run(&mut self, world: &mut World, event: &E) {
-        let mut execute = || {
-            for system in self.1.iter_mut() {
-                // ambient_profiling::scope!("sub", format!("iteration {}", i).as_str());
-                system.run(world, event);
-            }
-        };
-        match &self.0 {
-            Label::Static(s) => {
-                ambient_profiling::scope!(s);
-                let _span = tracing::debug_span!("SystemGroup::run", label = s).entered();
-                execute();
-            }
-            Label::Dynamic(s) => {
-                ambient_profiling::scope!("Dynamic", &s);
-                let _span = tracing::debug_span!("SystemGroup::run", label = s).entered();
-
-                execute();
-            }
+        ambient_profiling::scope!("SystemGroup::run", &self.0);
+        let _span = tracing::debug_span!("SystemGroup::run", "{}", &self.0).entered();
+        for system in self.1.iter_mut() {
+            system.run(world, event);
         }
     }
 }
+
 impl<E> std::fmt::Debug for SystemGroup<E> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "SystemGroup({}, _)", self.0)
