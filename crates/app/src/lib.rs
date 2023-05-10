@@ -27,6 +27,7 @@ use ambient_gizmos::{gizmos, Gizmos};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     mesh_buffer::MeshBufferKey,
+    settings::Settings,
 };
 use ambient_renderer::lod::lod_system;
 use ambient_std::{
@@ -186,7 +187,6 @@ pub fn get_time_since_app_start(world: &World) -> Duration {
 
 pub struct AppBuilder {
     pub event_loop: Option<EventLoop<()>>,
-    pub window_builder: Option<WindowBuilder>,
     pub asset_cache: Option<AssetCache>,
     pub ui_renderer: bool,
     pub main_renderer: bool,
@@ -218,7 +218,6 @@ impl AppBuilder {
     pub fn new() -> Self {
         Self {
             event_loop: None,
-            window_builder: None,
             asset_cache: None,
             ui_renderer: false,
             main_renderer: true,
@@ -243,11 +242,6 @@ impl AppBuilder {
     }
     pub fn with_event_loop(mut self, event_loop: EventLoop<()>) -> Self {
         self.event_loop = Some(event_loop);
-        self
-    }
-
-    pub fn with_window_builder(mut self, window_builder: WindowBuilder) -> Self {
-        self.window_builder = Some(window_builder);
         self
     }
 
@@ -289,11 +283,27 @@ impl AppBuilder {
 
     pub async fn build(self) -> anyhow::Result<App> {
         crate::init_all_components();
+
+        #[cfg(target_os = "unknown")]
+        let settings = Settings::default();
+
+        #[cfg(not(target_os = "unknown"))]
+        let settings = match Settings::load_from_config() {
+            Ok(settings) => settings,
+            Err(error) => {
+                tracing::warn!("Failed to load settings with error {error}. Fallback to defaults.");
+                Settings::default()
+            }
+        };
+
         let (window, event_loop) = if self.headless.is_some() {
             (None, None)
         } else {
             let event_loop = self.event_loop.unwrap_or_else(EventLoop::new);
-            let window = self.window_builder.unwrap_or_default();
+            let window = WindowBuilder::new().with_inner_size(winit::dpi::LogicalSize {
+                width: settings.resolution().0,
+                height: settings.resolution().1,
+            });
             let window = Arc::new(window.build(&event_loop).unwrap());
             (Some(window), Some(event_loop))
         };
@@ -369,7 +379,7 @@ impl AppBuilder {
             .unwrap_or_else(|| AssetCache::new(runtime.clone()));
 
         let mut world = World::new("main_app");
-        let gpu = Arc::new(Gpu::with_config(window.as_deref(), true).await);
+        let gpu = Arc::new(Gpu::with_config(window.as_deref(), true, &settings).await);
 
         tracing::debug!("Inserting runtime");
         RuntimeKey.insert(&assets, runtime.clone());

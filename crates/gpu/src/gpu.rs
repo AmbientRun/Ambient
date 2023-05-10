@@ -6,6 +6,8 @@ use glam::{uvec2, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 use wgpu::{InstanceDescriptor, PresentMode, TextureFormat};
 use winit::window::Window;
 
+use crate::settings::Settings;
+
 // #[cfg(debug_assertions)]
 pub const DEFAULT_SAMPLE_COUNT: u32 = 1;
 // #[cfg(not(debug_assertions))]
@@ -28,10 +30,14 @@ pub struct Gpu {
 }
 impl Gpu {
     pub async fn new(window: Option<&Window>) -> Self {
-        Self::with_config(window, false).await
+        Self::with_config(window, false, &Settings::default()).await
     }
     #[tracing::instrument(level = "info")]
-    pub async fn with_config(window: Option<&Window>, will_be_polled: bool) -> Self {
+    pub async fn with_config(
+        window: Option<&Window>,
+        will_be_polled: bool,
+        settings: &Settings,
+    ) -> Self {
         // From: https://github.com/KhronosGroup/Vulkan-Loader/issues/552
         #[cfg(not(target_os = "unknown"))]
         {
@@ -110,20 +116,19 @@ impl Gpu {
             .as_ref()
             .map(|surface| surface.get_capabilities(&adapter).formats[0]);
         tracing::debug!("Swapchain format: {swapchain_format:?}");
-        let swapchain_mode = surface
-            .as_ref()
-            .map(|surface| surface.get_capabilities(&adapter).present_modes)
-            .as_ref()
-            .map(|modes| {
-                [
-                    PresentMode::Immediate,
-                    PresentMode::Fifo,
-                    PresentMode::Mailbox,
-                ]
-                .into_iter()
-                .find(|pm| modes.contains(pm))
-                .expect("unable to find compatible swapchain mode")
-            });
+        let swapchain_mode = if surface.is_some() {
+            if settings.vsync() {
+                // From wgpu docs:
+                // "Chooses FifoRelaxed -> Fifo based on availability."
+                Some(PresentMode::AutoVsync)
+            } else {
+                // From wgpu docs:
+                // "Chooses Immediate -> Mailbox -> Fifo (on web) based on availability."
+                Some(PresentMode::AutoNoVsync)
+            }
+        } else {
+            None
+        };
         tracing::debug!("Swapchain present mode: {swapchain_mode:?}");
 
         if let (Some(window), Some(surface), Some(mode), Some(format)) =
