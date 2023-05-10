@@ -16,10 +16,9 @@ use ambient_ecs::{Entity, EntityId, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Group, Hooks};
 use ambient_network::{
     client::{
-        client_network_stats, GameClient, GameClientRenderTarget, GameClientServerStats,
-        GameClientView, GameClientWorld, NetworkStats,
+        client_network_stats, GameClient, GameClientRenderTarget, GameClientView, GameClientWorld,
     },
-    hooks::{use_remote_resource, use_remote_synced_resource},
+    hooks::use_remote_resource,
 };
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_ui_native::{

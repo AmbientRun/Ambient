@@ -3,56 +3,39 @@ use std::{
     fmt::{Debug, Display},
     future::Future,
     net::SocketAddr,
-    ops::Deref,
     pin::Pin,
     sync::Arc,
     time::Duration,
 };
 
 use ambient_app::window_title;
-use ambient_core::{asset_cache, gpu, runtime, window::window_scale_factor};
+use ambient_core::{asset_cache, gpu, window::window_scale_factor};
 use ambient_ecs::{
     components, generated::messages, world_events, ComponentValueBase, Entity, Resource,
-    SystemGroup, World, WorldDiff,
+    SystemGroup, World,
 };
 use ambient_element::{element_component, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt},
-    asset_url::ContentBaseUrlKey,
-    cb,
-    fps_counter::FpsSample,
-    friendly_id, to_byte_unit, CallbackFn, Cb,
-};
-use ambient_ui_native::{
-    Button, Centered, FlowColumn, FlowRow, Image, MeasureSize, Text, Throbber,
-};
+use ambient_std::{asset_cache::AssetCache, cb, friendly_id, to_byte_unit, Cb};
+use ambient_ui_native::{Centered, FlowColumn, FlowRow, Image, MeasureSize, Text, Throbber};
 use anyhow::Context;
 use bytes::{BufMut, Bytes, BytesMut};
-use futures::{future::BoxFuture, FutureExt, SinkExt, StreamExt, TryFutureExt};
+use futures::{future::BoxFuture, SinkExt, StreamExt};
 use glam::{uvec2, UVec2};
-use parking_lot::{const_rwlock, Mutex};
+use parking_lot::Mutex;
 use quinn::Connection;
 use serde::{de::DeserializeOwned, Serialize};
-use tokio::{
-    io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt},
-    time::sleep,
-};
-use tokio_util::codec::{FramedRead, FramedWrite};
-use tracing::{debug_span, Instrument};
+use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
 
 use crate::{
-    client_connection::ConnectionInner,
     client_game_state::ClientGameState,
-    codec::FramedCodec,
     create_client_endpoint_random_port, log_network_result,
     proto::{
         client::{ClientState, SharedClientState},
-        ClientControl, ServerControl,
+        ServerControl,
     },
-    protocol::{ClientInfo, ClientProtocol, ServerInfo},
-    server::{self, FramedRecvStream, FramedSendStream, SharedServerState},
+    server,
     stream::{self, RecvStream},
     NetworkError, MAX_FRAME_SIZE, RPC_BISTREAM_ID,
 };
@@ -280,8 +263,6 @@ impl ElementComponent for GameClientView {
         });
         let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
 
-        let (connection_status, set_connection_status) = hooks.use_state("Connecting".to_string());
-
         let assets = hooks.world.resource(asset_cache()).clone();
         let game_state = hooks.use_ref_with(|world| {
             let (systems, resources) = systems_and_resources();
@@ -425,7 +406,7 @@ impl ElementComponent for GameClientView {
             inner
         } else {
             Centered(vec![FlowColumn::el([FlowRow::el([
-                Text::el(connection_status),
+                Text::el("Connecting"),
                 Throbber.el(),
             ])])])
             .el()
@@ -548,117 +529,6 @@ pub fn GameClientWorld(hooks: &mut Hooks) -> Element {
     )
 }
 
-struct ClientInstance<'a> {
-    set_connection_status: CallbackFn<String>,
-    server_addr: SocketAddr,
-    user_id: String,
-
-    /// Called when the client connected and received the world.
-    on_init: &'a mut (dyn FnMut(
-        Connection,
-        ClientInfo,
-        ServerInfo,
-    ) -> anyhow::Result<Box<dyn FnOnce() + Sync + Send>>
-                 + Send
-                 + Sync),
-    on_diff: &'a mut (dyn FnMut(WorldDiff) + Send + Sync),
-    on_datagram: &'a (dyn Fn(u32, Bytes) + Send + Sync),
-    on_bi_stream: &'a (dyn Fn(u32, quinn::SendStream, quinn::RecvStream) + Send + Sync),
-    on_uni_stream: &'a (dyn Fn(u32, quinn::RecvStream) + Send + Sync),
-
-    on_server_stats: &'a mut (dyn FnMut(GameClientServerStats) + Send + Sync),
-    on_client_stats: &'a mut (dyn FnMut(NetworkStats) + Send + Sync),
-    on_disconnect: Cb<dyn Fn() + Sync + Send + 'static>,
-    init_destructor: Option<Box<dyn FnOnce() + Sync + Send>>,
-}
-
-impl<'a> Drop for ClientInstance<'a> {
-    fn drop(&mut self) {
-        (self.on_disconnect)();
-        if let Some(on_disconnect) = self.init_destructor.take() {
-            (on_disconnect)();
-        }
-    }
-}
-
-impl<'a> ClientInstance<'a> {
-    #[tracing::instrument(skip(self))]
-    async fn run(mut self) -> anyhow::Result<()> {
-        log::info!("Connecting to server at {}", self.server_addr);
-        (self.set_connection_status)(format!("Connecting to {}", self.server_addr));
-        let conn = open_connection(self.server_addr).await?;
-
-        (self.set_connection_status)("Waiting for server to respond".to_string());
-
-        // Set up the protocol.
-        let mut protocol = ClientProtocol::new(conn, self.user_id.clone()).await?;
-
-        let stats_interval = 5;
-        let mut stats_timer = tokio::time::interval(Duration::from_secs_f32(stats_interval as f32));
-        let mut prev_stats = protocol.connection().stats();
-
-        // The first WorldDiff initializes the world, so wait for that until we say things are "ready"
-        (self.set_connection_status)("Receiving world".to_string());
-
-        let msg = protocol.diff_stream.next().await?;
-        (self.on_diff)(msg);
-        self.init_destructor = Some(
-            (self.on_init)(
-                protocol.connection(),
-                protocol.client_info().clone(),
-                protocol.server_info.clone(),
-            )
-            .context("Client initialization failed")?,
-        );
-
-        // The server
-        loop {
-            tokio::select! {
-                msg = protocol.diff_stream.next() => {
-                    ambient_profiling::scope!("game_in_entities");
-                    let msg: WorldDiff  = msg?;
-                    (self.on_diff)(msg);
-                }
-                _ = stats_timer.tick() => {
-                    let stats = protocol.connection().stats();
-
-                    (self.on_client_stats)(NetworkStats {
-                        latency_ms: protocol.connection().rtt().as_millis() as u64,
-                        bytes_sent: (stats.udp_tx.bytes - prev_stats.udp_tx.bytes) / stats_interval,
-                        bytes_received: (stats.udp_rx.bytes - prev_stats.udp_rx.bytes) / stats_interval,
-                    });
-
-                    prev_stats = stats;
-                }
-                Ok(stats) = protocol.stat_stream.next() => {
-                    (self.on_server_stats)(GameClientServerStats(stats));
-                }
-
-                Ok(mut datagram) = protocol.conn.read_datagram() => {
-                    let _span = tracing::debug_span!("datagram").entered();
-                    let data = datagram.split_off(4);
-                    let handler_id = u32::from_be_bytes(datagram[0..4].try_into().unwrap());
-                    tokio::task::block_in_place(|| (self.on_datagram)(handler_id, data))
-                }
-                Ok((tx, mut rx)) = protocol.conn.accept_bi() => {
-                    let span = tracing::debug_span!("bistream");
-                    let stream_id = rx.read_u32().instrument(span).await;
-                    if let Ok(stream_id) = stream_id {
-                        tokio::task::block_in_place(|| { (self.on_bi_stream)(stream_id, tx, rx); })
-                    }
-                }
-                Ok(mut rx) = protocol.conn.accept_uni() => {
-                    let span = tracing::debug_span!("unistream");
-                    let stream_id = rx.read_u32().instrument(span).await;
-                    if let Ok(stream_id) = stream_id {
-                        tokio::task::block_in_place(|| { (self.on_uni_stream)(stream_id, rx); })
-                    }
-                }
-            }
-        }
-    }
-}
-
 /// Set up and manage a connection to the server
 #[derive(Debug, Clone, Default)]
 pub struct NetworkStats {
@@ -679,13 +549,10 @@ impl Display for NetworkStats {
     }
 }
 
-#[derive(Debug, Clone, Default)]
-pub struct GameClientServerStats(pub FpsSample);
-
 /// Connnect to the server endpoint.
 /// Does not handle a protocol.
 #[tracing::instrument(level = "debug")]
-pub async fn open_connection(server_addr: SocketAddr) -> anyhow::Result<Connection> {
+async fn open_connection(server_addr: SocketAddr) -> anyhow::Result<Connection> {
     log::debug!("Connecting to world instance: {server_addr:?}");
 
     let endpoint =

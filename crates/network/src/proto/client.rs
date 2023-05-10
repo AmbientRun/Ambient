@@ -1,12 +1,7 @@
 use std::sync::Arc;
 
 use ambient_ecs::{generated::components::core::network::is_remote_entity, Entity, WorldDiff};
-use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt},
-    asset_url::ContentBaseUrlKey,
-    fps_counter::FpsSample,
-    Cb,
-};
+use ambient_std::{asset_cache::SyncAssetKeyExt, asset_url::ContentBaseUrlKey};
 use anyhow::{bail, Context};
 use bytes::{Buf, Bytes};
 use parking_lot::Mutex;
@@ -16,7 +11,7 @@ use tracing::debug_span;
 use crate::{
     client::{
         bi_stream_handlers, client_network_stats, datagram_handlers, uni_stream_handlers,
-        GameClientServerStats, NetworkStats,
+        NetworkStats,
     },
     client_game_state::ClientGameState,
     proto::*,
@@ -27,11 +22,7 @@ use crate::{
 ///
 /// Entered after the client has sent a connect request and received a `ServerInfo` message from the server, in no particular order.
 #[derive(Debug)]
-pub(crate) struct ConnectedClient {
-    user_id: String,
-    server_info: ServerInfo,
-    on_in_entities: Option<Cb<dyn Fn(&WorldDiff) + Send + Sync>>,
-}
+pub(crate) struct ConnectedClient {}
 
 #[derive(Debug)]
 pub(crate) enum ClientState {
@@ -64,11 +55,7 @@ impl ClientState {
                 let state = state.lock();
                 ContentBaseUrlKey.insert(&state.assets, server_info.content_base_url.clone());
 
-                *self = Self::Connected(ConnectedClient {
-                    user_id: user_id.clone(),
-                    server_info,
-                    on_in_entities: None,
-                });
+                *self = Self::Connected(ConnectedClient {});
 
                 Ok(())
             }
