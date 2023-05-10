@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
-use ambient_ecs::{generated::components::core::network::is_remote_entity, Entity, WorldDiff};
+use ambient_ecs::{
+    generated::components::core::network::is_remote_entity, ComponentRegistry, Entity, WorldDiff,
+};
 use ambient_std::{asset_cache::SyncAssetKeyExt, asset_url::ContentBaseUrlKey};
 use anyhow::{bail, Context};
 use bytes::{Buf, Bytes};
@@ -54,6 +56,7 @@ impl ClientState {
 
                 let state = state.lock();
                 ContentBaseUrlKey.insert(&state.assets, server_info.content_base_url.clone());
+                ComponentRegistry::get_mut().add_external(server_info.external_components.clone());
 
                 *self = Self::Connected(ConnectedClient {});
 

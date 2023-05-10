@@ -14,7 +14,6 @@ use ambient_gpu::{
     texture::{Texture, TextureView},
 };
 use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
-use ambient_sys::task::wasm_nonsend;
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
 use wgpu::{BindGroup, BindGroupLayout, Buffer, Sampler};
 

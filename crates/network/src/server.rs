@@ -20,7 +20,7 @@ use crate::{
         server::{handle_diffs, handle_stats, ConnectionData, Player},
         ClientControl, ServerControl,
     },
-    protocol::{ClientInfo, ServerInfo},
+    protocol::{ClientInfo, ServerInfo, VERSION},
     stream, NetworkError, OutgoingStream, ServerWorldExt, RPC_BISTREAM_ID,
 };
 use ambient_core::{
@@ -29,9 +29,9 @@ use ambient_core::{
     project_name,
 };
 use ambient_ecs::{
-    components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent,
-    Networked, Resource, System, SystemGroup, World, WorldDiff, WorldStream, WorldStreamCompEvent,
-    WorldStreamFilter,
+    components, dont_store, query, ArchetypeFilter, ComponentDesc, ComponentRegistry, Entity,
+    EntityId, FrameEvent, Networked, Resource, System, SystemGroup, World, WorldDiff, WorldStream,
+    WorldStreamCompEvent, WorldStreamFilter,
 };
 use ambient_proxy::client::AllocatedEndpoint;
 use ambient_rpc::RpcRegistry;
@@ -584,10 +584,16 @@ async fn handle_connection(
         let state = state.lock();
         let instance = state.instances.get(MAIN_INSTANCE_ID).unwrap();
         let world = &instance.world;
+        let external_components = ComponentRegistry::get()
+            .all_external()
+            .map(|x| x.0)
+            .collect();
+
         ServerInfo {
             project_name: world.resource(project_name()).clone(),
             content_base_url,
-            ..Default::default()
+            version: VERSION.into(),
+            external_components,
         }
     };
 

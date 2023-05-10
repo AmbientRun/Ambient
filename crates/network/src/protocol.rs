@@ -7,11 +7,11 @@ use quinn::{Connection, RecvStream, SendStream};
 use tokio_util::codec::{FramedRead, FramedWrite};
 
 use crate::{
-    client_connection::ConnectionInner, codec::FramedCodec, open_bincode_bi_stream, proto::ServerControl, IncomingStream, NetworkError,
-    OutgoingStream,
+    client_connection::ConnectionInner, codec::FramedCodec, open_bincode_bi_stream,
+    proto::ServerControl, IncomingStream, NetworkError, OutgoingStream,
 };
 
-const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub(crate) const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug)]
 pub struct ClientProtocol {
@@ -37,7 +37,11 @@ impl ClientProtocol {
 
         let server_info: ServerInfo = rx.next().await?;
         if server_info.version != VERSION {
-            anyhow::bail!("Server version mismatch: expected {}, got {}", VERSION, server_info.version);
+            anyhow::bail!(
+                "Server version mismatch: expected {}, got {}",
+                VERSION,
+                server_info.version
+            );
         }
 
         // Great, the server knows who we are.
@@ -50,15 +54,29 @@ impl ClientProtocol {
 
         log::debug!("Setup client side protocol");
 
-        Ok(Self { conn, diff_stream, stat_stream, client_info, server_info })
+        Ok(Self {
+            conn,
+            diff_stream,
+            stat_stream,
+            client_info,
+            server_info,
+        })
     }
 
     pub async fn next_diff(&mut self) -> anyhow::Result<WorldDiff> {
-        self.diff_stream.next::<WorldDiff>().await.context("Failed to read world diff")
+        self.diff_stream
+            .next::<WorldDiff>()
+            .await
+            .context("Failed to read world diff")
     }
 
     pub async fn next_event(&mut self) -> anyhow::Result<BufReader<RecvStream>> {
-        let stream = self.conn.accept_uni().await.map_err(NetworkError::from).context("Event stream closed")?;
+        let stream = self
+            .conn
+            .accept_uni()
+            .await
+            .map_err(NetworkError::from)
+            .context("Event stream closed")?;
 
         let stream = BufReader::new(stream);
         Ok(stream)
@@ -82,7 +100,9 @@ pub struct ClientInfo {
 
 impl std::fmt::Debug for ClientInfo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ClientInfo").field("user_id", &self.user_id).finish_non_exhaustive()
+        f.debug_struct("ClientInfo")
+            .field("user_id", &self.user_id)
+            .finish_non_exhaustive()
     }
 }
 
@@ -99,14 +119,16 @@ pub struct ServerInfo {
     /// Defaults to the version of the crate.
     /// TODO: use semver
     pub version: String,
+    pub external_components: Vec<ExternalComponentDesc>,
 }
 
-impl Default for ServerInfo {
-    fn default() -> Self {
+impl ServerInfo {
+    fn new(external_components: Vec<ExternalComponentDesc>) -> Self {
         Self {
             project_name: "Ambient".into(),
-            content_base_url: AbsAssetUrl::parse("http://localhost:8999/content/").unwrap(),
+            content_base_url: AbsAssetUrl::parse("http://localhost:9000/content/").unwrap(),
             version: VERSION.into(),
+            external_components,
         }
     }
 }

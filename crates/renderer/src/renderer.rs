@@ -24,7 +24,7 @@ use ambient_std::{
 };
 use glam::uvec2;
 use std::sync::Arc;
-use tracing::{debug_span, info_span};
+use tracing::debug_span;
 use wgpu::{BindGroupLayout, BindGroupLayoutEntry, TextureView};
 
 pub const GLOBALS_BIND_GROUP: &str = "GLOBALS_BIND_GROUP";
