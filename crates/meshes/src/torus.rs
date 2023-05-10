@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 pub struct TorusMesh {
     pub inner_radius: f32,
     pub outer_radius: f32,
-    pub slices: usize,
-    pub loops: usize,
+    pub slices: u32,
+    pub loops: u32,
 }
 
 impl Default for TorusMesh {
@@ -30,7 +30,7 @@ impl From<TorusMesh> for Mesh {
             loops,
         } = torus;
 
-        let vertex_count = (slices + 1) * (loops + 1);
+        let vertex_count = ((slices + 1) * (loops + 1)) as usize;
         let mut vertices = Vec::with_capacity(vertex_count);
         let mut normals = Vec::with_capacity(vertex_count);
         let mut texcoords = Vec::with_capacity(vertex_count);
@@ -51,7 +51,7 @@ impl From<TorusMesh> for Mesh {
                 let r = outer_radius + inner_radius * cos_v;
                 let x = r * cos_u;
                 let y = r * sin_u;
-                let z = inner_radius * sin_v;
+                let z = outer_radius * sin_v / 2.0;
 
                 vertices.push(Vec3::new(x, y, z));
 
@@ -62,7 +62,7 @@ impl From<TorusMesh> for Mesh {
             }
         }
 
-        let index_count = slices * loops * 6;
+        let index_count = (slices * loops * 6) as usize;
         let mut indices = Vec::with_capacity(index_count);
 
         for i in 0..loops {
