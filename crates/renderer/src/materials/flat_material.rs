@@ -19,7 +19,11 @@ fn get_material_layout() -> BindGroupDesc<'static> {
         entries: vec![wgpu::BindGroupLayoutEntry {
             binding: 0,
             visibility: wgpu::ShaderStages::FRAGMENT,
-            ty: wgpu::BindingType::Buffer { ty: wgpu::BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
             count: None,
         }],
         label: MATERIAL_BIND_GROUP.into(),
@@ -32,7 +36,8 @@ impl SyncAssetKey<Arc<MaterialShader>> for FlatMaterialShaderKey {
     fn load(&self, _assets: AssetCache) -> Arc<MaterialShader> {
         Arc::new(MaterialShader {
             shader: Arc::new(
-                ShaderModule::new("FlatMaterial", include_file!("flat_material.wgsl")).with_binding_desc(get_material_layout()),
+                ShaderModule::new("FlatMaterial", include_file!("flat_material.wgsl"))
+                    .with_binding_desc(get_material_layout()),
             ),
             id: "flat_material_shader".to_string(),
         })
@@ -47,18 +52,31 @@ pub struct FlatShaderKey {
 
 impl SyncAssetKey<Arc<RendererShader>> for FlatShaderKey {
     fn load(&self, assets: AssetCache) -> Arc<RendererShader> {
-        StandardShaderKey { material_shader: FlatMaterialShaderKey.get(&assets), lit: self.lit, shadow_cascades: self.shadow_cascades }
-            .get(&assets)
+        StandardShaderKey {
+            material_shader: FlatMaterialShaderKey.get(&assets),
+            lit: self.lit,
+            shadow_cascades: self.shadow_cascades,
+        }
+        .get(&assets)
     }
 }
 
 pub fn get_flat_shader(assets: &AssetCache, config: &RendererConfig) -> Arc<RendererShader> {
-    StandardShaderKey { material_shader: FlatMaterialShaderKey.get(assets), lit: true, shadow_cascades: config.shadow_cascades }.get(assets)
+    StandardShaderKey {
+        material_shader: FlatMaterialShaderKey.get(assets),
+        lit: true,
+        shadow_cascades: config.shadow_cascades,
+    }
+    .get(assets)
 }
 
 pub fn get_flat_shader_unlit(assets: &AssetCache, config: &RendererConfig) -> Arc<RendererShader> {
-    StandardShaderKey { material_shader: FlatMaterialShaderKey.get(assets), lit: false, shadow_cascades: config.shadow_cascades }
-        .get(assets)
+    StandardShaderKey {
+        material_shader: FlatMaterialShaderKey.get(assets),
+        lit: false,
+        shadow_cascades: config.shadow_cascades,
+    }
+    .get(assets)
 }
 
 #[derive(Debug)]
@@ -72,10 +90,16 @@ impl FlatMaterialKey {
     }
 
     pub fn white() -> Self {
-        Self { color: Vec4::ONE, transparent: Some(false) }
+        Self {
+            color: Vec4::ONE,
+            transparent: Some(false),
+        }
     }
     pub fn transparent() -> Self {
-        Self { color: Vec4::ONE, transparent: Some(true) }
+        Self {
+            color: Vec4::ONE,
+            transparent: Some(true),
+        }
     }
 }
 impl SyncAssetKey<SharedMaterial> for FlatMaterialKey {
@@ -97,17 +121,22 @@ impl FlatMaterial {
         let gpu = GpuKey.get(&assets);
         let layout = get_material_layout().get(&assets);
 
-        let buffer = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("FlatMaterial.buffer"),
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-            contents: bytemuck::cast_slice(&[color]),
-        });
+        let buffer = gpu
+            .device
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("FlatMaterial.buffer"),
+                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+                contents: bytemuck::cast_slice(&[color]),
+            });
 
         Self {
             id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
                 layout: &layout,
-                entries: &[wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::Buffer(buffer.as_entire_buffer_binding()) }],
+                entries: &[wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::Buffer(buffer.as_entire_buffer_binding()),
+                }],
                 label: Some("FlatMaterial.bind_group"),
             }),
             buffer,
@@ -118,13 +147,17 @@ impl FlatMaterial {
     }
 
     pub fn update_color(&self, color: Vec4) {
-        self.gpu.queue.write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[color]));
+        self.gpu
+            .queue
+            .write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[color]));
     }
 }
 
 impl std::fmt::Debug for FlatMaterial {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("FlatMaterial").field("id", &self.id).finish()
+        f.debug_struct("FlatMaterial")
+            .field("id", &self.id)
+            .finish()
     }
 }
 
