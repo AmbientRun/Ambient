@@ -1,21 +1,21 @@
 use ambient_core::player::get_by_user_id;
-use ambient_ecs::WorldStreamFilter;
+use ambient_ecs::{WorldDiff, WorldStreamFilter};
 use ambient_std::{fps_counter::FpsSample, log_result};
 use anyhow::{bail, Context};
 use bytes::{Buf, Bytes};
-use tokio::{
-    io::{AsyncRead, AsyncReadExt, AsyncWrite},
-    sync::OwnedRwLockMappedWriteGuard,
-};
-use tracing::debug_span;
+use futures::{Stream, StreamExt};
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
+use tracing::{debug_span, Instrument};
 use uuid::Uuid;
 
 use crate::{
+    log_network_result,
     proto::ClientControl,
     server::{
         bi_stream_handlers, create_player_entity_data, datagram_handlers, uni_stream_handlers,
     },
     server::{SharedServerState, MAIN_INSTANCE_ID},
+    stream,
 };
 
 use super::ServerControl;
@@ -56,7 +56,6 @@ impl std::fmt::Debug for ConnectedClient {
 pub struct ConnectionData {
     pub(crate) state: SharedServerState,
     pub(crate) diff_tx: flume::Sender<Bytes>,
-    pub(crate) stat_tx: flume::Sender<FpsSample>,
     /// Unique identifier for this session
     /// Used to declare ownership of the player entity when multiple simultaneous connections are made or reconnected
     pub(crate) connection_id: Uuid,
@@ -68,7 +67,6 @@ impl std::fmt::Debug for ConnectionData {
         f.debug_struct("ConnectionData")
             .field("diff_tx", &self.diff_tx)
             .field("diff_tx", &self.diff_tx)
-            .field("stat_tx", &self.stat_tx)
             .field("connection_id", &self.connection_id)
             .finish_non_exhaustive()
     }
@@ -156,12 +154,8 @@ impl ServerState {
         log_result!(data.diff_tx.send(diff));
         tracing::debug!("[{}] Init diff sent", user_id);
 
-        let entity_data = create_player_entity_data(
-            user_id.clone(),
-            data.diff_tx.clone(),
-            data.stat_tx.clone(),
-            data.connection_id,
-        );
+        let entity_data =
+            create_player_entity_data(user_id.clone(), data.diff_tx.clone(), data.connection_id);
 
         if let Some(old_player) = old_player {
             old_player.control_tx.send(ClientControl::Disconnect).ok();
@@ -335,5 +329,28 @@ impl ConnectedClient {
         );
 
         Ok(())
+    }
+}
+
+/// Send the server stats over the network
+pub async fn handle_stats<S>(
+    stream: stream::SendStream<FpsSample, S>,
+    stats: impl Stream<Item = FpsSample>,
+) where
+    S: Unpin + AsyncWrite,
+{
+    log_network_result!(stats.map(Ok).forward(stream).await);
+}
+
+/// Sends the world diffs over the network
+pub async fn handle_diffs<S>(
+    mut stream: stream::SendStream<WorldDiff, S>,
+    mut diffs_rx: impl Unpin + Stream<Item = Bytes>,
+) where
+    S: Unpin + AsyncWrite,
+{
+    while let Some(msg) = diffs_rx.next().await {
+        let span = tracing::debug_span!("send_world_diff", ?msg);
+        stream.send_bytes(msg).instrument(span).await.unwrap();
     }
 }

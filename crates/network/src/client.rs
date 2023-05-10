@@ -66,6 +66,9 @@ components!("network::client", {
     uni_stream_handlers: UniStreamHandlers,
     @[Resource]
     datagram_handlers: DatagramHandlers,
+    /// The most recent server performance statistics
+    @[Resource]
+    client_network_stats: NetworkStats,
 });
 
 pub type DynSend = Pin<Box<dyn AsyncWrite + Send + Sync>>;
@@ -254,10 +257,7 @@ pub struct GameClientView {
     pub systems_and_resources: Cb<dyn Fn() -> (SystemGroup, Entity) + Sync + Send>,
     pub error_view: Cb<dyn Fn(String) -> Element + Sync + Send>,
     pub on_loaded: LoadedFunc,
-    pub on_in_entities: Option<Cb<dyn Fn(&WorldDiff) + Sync + Send>>,
     pub create_rpc_registry: Cb<dyn Fn() -> RpcRegistry<server::RpcArgs> + Sync + Send>,
-    pub on_network_stats: Cb<dyn Fn(GameClientNetworkStats) + Sync + Send>,
-    pub on_server_stats: Cb<dyn Fn(GameClientServerStats) + Sync + Send>,
     pub inner: Element,
 }
 
@@ -270,10 +270,7 @@ impl ElementComponent for GameClientView {
             systems_and_resources,
             create_rpc_registry,
             on_loaded,
-            on_in_entities,
             inner,
-            on_network_stats,
-            on_server_stats,
         } = *self;
 
         let gpu = hooks.world.resource(gpu()).clone();
@@ -371,7 +368,6 @@ impl ElementComponent for GameClientView {
                     conn,
                     user_id,
                     ClientCallbacks {
-                        on_stats: on_server_stats,
                         on_loaded: cb(move |game_client| {
                             let game_state = &game_client.game_state;
                             {
@@ -440,7 +436,6 @@ impl ElementComponent for GameClientView {
 #[derive(Debug)]
 struct ClientCallbacks {
     on_loaded: LoadedFunc,
-    on_stats: Cb<dyn Fn(GameClientServerStats) + Send + Sync>,
 }
 
 #[tracing::instrument(name = "client", level = "info", skip(conn))]
@@ -465,7 +460,7 @@ async fn handle_connection(
     tracing::info!("Attempting to connect using {user_id:?}");
 
     control_send
-        .send(&ServerControl::Connect(user_id.clone()))
+        .send(ServerControl::Connect(user_id.clone()))
         .await?;
     let mut client = ClientState::Connecting(user_id);
 
@@ -482,25 +477,31 @@ async fn handle_connection(
 
     tracing::info!("Accepting diff stream");
     let mut diff_stream = RecvStream::new(conn.accept_uni().await?);
+
     let on_disconnect = (callbacks.on_loaded)(game_client)?;
+
     scopeguard::defer!(on_disconnect());
+
+    let stats_interval = 5;
+    let mut stats_timer = tokio::time::interval(Duration::from_secs_f32(stats_interval as f32));
+    let mut prev_stats = conn.stats();
 
     while let ClientState::Connected(connected) = &mut client {
         tokio::select! {
             Some(frame) = control_recv.next() => {
                 client.process_control(&state, frame?)?;
             }
-            // _ = stats_timer.tick() => {
-            //     let stats = protocol.connection().stats();
+            _ = stats_timer.tick() => {
+                let stats = conn.stats();
 
-            //     (self.on_client_stats)(GameClientNetworkStats {
-            //         latency_ms: protocol.connection().rtt().as_millis() as u64,
-            //         bytes_sent: (stats.udp_tx.bytes - prev_stats.udp_tx.bytes) / stats_interval,
-            //         bytes_received: (stats.udp_rx.bytes - prev_stats.udp_rx.bytes) / stats_interval,
-            //     });
+                client.process_client_stats(&state,NetworkStats {
+                    latency_ms: conn.rtt().as_millis() as u64,
+                    bytes_sent: (stats.udp_tx.bytes - prev_stats.udp_tx.bytes) / stats_interval,
+                    bytes_received: (stats.udp_rx.bytes - prev_stats.udp_rx.bytes) / stats_interval,
+                });
 
-            //     prev_stats = stats;
-            // }
+                prev_stats = stats;
+            }
 
             Ok(datagram) = conn.read_datagram() => {
                 connected.process_datagram(&state, datagram)?;
@@ -566,7 +567,7 @@ struct ClientInstance<'a> {
     on_uni_stream: &'a (dyn Fn(u32, quinn::RecvStream) + Send + Sync),
 
     on_server_stats: &'a mut (dyn FnMut(GameClientServerStats) + Send + Sync),
-    on_client_stats: &'a mut (dyn FnMut(GameClientNetworkStats) + Send + Sync),
+    on_client_stats: &'a mut (dyn FnMut(NetworkStats) + Send + Sync),
     on_disconnect: Cb<dyn Fn() + Sync + Send + 'static>,
     init_destructor: Option<Box<dyn FnOnce() + Sync + Send>>,
 }
@@ -621,7 +622,7 @@ impl<'a> ClientInstance<'a> {
                 _ = stats_timer.tick() => {
                     let stats = protocol.connection().stats();
 
-                    (self.on_client_stats)(GameClientNetworkStats {
+                    (self.on_client_stats)(NetworkStats {
                         latency_ms: protocol.connection().rtt().as_millis() as u64,
                         bytes_sent: (stats.udp_tx.bytes - prev_stats.udp_tx.bytes) / stats_interval,
                         bytes_received: (stats.udp_rx.bytes - prev_stats.udp_rx.bytes) / stats_interval,
@@ -660,13 +661,13 @@ impl<'a> ClientInstance<'a> {
 
 /// Set up and manage a connection to the server
 #[derive(Debug, Clone, Default)]
-pub struct GameClientNetworkStats {
+pub struct NetworkStats {
     pub latency_ms: u64,
     pub bytes_sent: u64,
     pub bytes_received: u64,
 }
 
-impl Display for GameClientNetworkStats {
+impl Display for NetworkStats {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,

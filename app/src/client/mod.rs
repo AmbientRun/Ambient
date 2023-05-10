@@ -13,10 +13,13 @@ use ambient_core::{
 };
 use ambient_debugger::Debugger;
 use ambient_ecs::{Entity, EntityId, SystemGroup};
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_network::client::{
-    GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats,
-    GameClientView, GameClientWorld,
+use ambient_element::{element_component, Element, ElementComponentExt, Group, Hooks};
+use ambient_network::{
+    client::{
+        client_network_stats, GameClient, GameClientRenderTarget, GameClientServerStats,
+        GameClientView, GameClientWorld, NetworkStats,
+    },
+    hooks::{use_remote_resource, use_remote_synced_resource},
 };
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_ui_native::{
@@ -105,14 +108,11 @@ fn MainApp(
     show_debug: bool,
     golden_image_test: Option<f32>,
 ) -> Element {
-    let update_network_stats = hooks.provide_context(GameClientNetworkStats::default);
-    let update_server_stats = hooks.provide_context(GameClientServerStats::default);
     let (loaded, set_loaded) = hooks.use_state(false);
 
     FocusRoot::el([
         UICamera.el(),
         player::PlayerRawInputHandler.el(),
-        TitleUpdater.el(),
         WindowSized::el([GameClientView {
             server_addr,
             user_id,
@@ -132,8 +132,6 @@ fn MainApp(
             error_view: cb(move |error| {
                 Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el()
             }),
-            on_network_stats: cb(move |stats| update_network_stats(stats)),
-            on_server_stats: cb(move |stats| update_server_stats(stats)),
             systems_and_resources: cb(|| {
                 let mut resources = Entity::new();
 
@@ -155,20 +153,8 @@ fn MainApp(
                 (systems(), resources)
             }),
             create_rpc_registry: cb(shared::create_server_rpc_registry),
-            on_in_entities: if std::env::var("AMBIENT_DEBUG_ENTITY_STREAM")
-                == Ok("FULL".to_string())
-            {
-                Some(cb(move |diff| {
-                    log::info!("Entity stream: {:?}", diff);
-                }))
-            } else if std::env::var("AMBIENT_DEBUG_ENTITY_STREAM").is_ok() {
-                Some(cb(move |diff| {
-                    log::info!("Entity stream: {}", diff);
-                }))
-            } else {
-                None
-            },
             inner: Dock::el(vec![
+                TitleUpdater.el(),
                 if let Some(seconds) = golden_image_test.filter(|_| loaded) {
                     GoldenImageTest::el(golden_image_output_dir, seconds)
                 } else {

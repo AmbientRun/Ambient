@@ -17,11 +17,11 @@ use crate::{
     create_server, log_network_error, log_network_result,
     proto::{
         self,
-        server::{ConnectionData, Player},
+        server::{handle_diffs, handle_stats, ConnectionData, Player},
         ClientControl, ServerControl,
     },
     protocol::{ClientInfo, ServerInfo},
-    stream, NetworkError, OutgoingStream, RPC_BISTREAM_ID,
+    stream, NetworkError, OutgoingStream, ServerWorldExt, RPC_BISTREAM_ID,
 };
 use ambient_core::{
     asset_cache, name, no_sync,
@@ -30,7 +30,7 @@ use ambient_core::{
 };
 use ambient_ecs::{
     components, dont_store, query, ArchetypeFilter, ComponentDesc, Entity, EntityId, FrameEvent,
-    Resource, System, SystemGroup, World, WorldDiff, WorldStream, WorldStreamCompEvent,
+    Networked, Resource, System, SystemGroup, World, WorldDiff, WorldStream, WorldStreamCompEvent,
     WorldStreamFilter,
 };
 use ambient_proxy::client::AllocatedEndpoint;
@@ -46,7 +46,7 @@ use anyhow::bail;
 use bytes::Bytes;
 use colored::Colorize;
 use flume::Sender;
-use futures::{Sink, SinkExt, StreamExt};
+use futures::{Sink, SinkExt, Stream, StreamExt};
 use parking_lot::{Mutex, RwLock};
 use quinn::{Endpoint, RecvStream, SendStream};
 use tokio::{
@@ -66,8 +66,9 @@ components!("network::server", {
     datagram_handlers: DatagramHandlers,
 
     player_entity_stream: Sender<Bytes>,
-    player_stats_stream: Sender<FpsSample>,
     player_connection_id: Uuid,
+    @[Resource, Networked]
+    server_stats: FpsSample,
 });
 
 pub type BiStreamHandler =
@@ -108,7 +109,6 @@ impl RpcArgs {
 pub fn create_player_entity_data(
     user_id: String,
     entities_tx: Sender<Bytes>,
-    stats_tx: Sender<FpsSample>,
     connection_id: Uuid,
 ) -> Entity {
     Entity::new()
@@ -116,7 +116,6 @@ pub fn create_player_entity_data(
         .with(ambient_core::player::player(), ())
         .with(ambient_core::player::user_id(), user_id)
         .with(player_entity_stream(), entities_tx)
-        .with(player_stats_stream(), stats_tx)
         .with(player_connection_id(), connection_id)
         .with_default(dont_store())
 }
@@ -416,10 +415,9 @@ impl GameServer {
                         state.step();
                         state.broadcast_diffs();
                         if let Some(sample) = fps_counter.frame_end() {
-                            for instance in state.instances.values() {
-                                for (_, (stream,)) in query((player_stats_stream(),)).iter(&instance.world, None) {
-                                    stream.send(sample.clone()).ok();
-                                }
+                            for instance in state.instances.values_mut() {
+                                let id = instance.world.synced_resource_entity().unwrap();
+                                instance.world.add_component(id,server_stats(), sample.clone());
                             }
                         }
                     });
@@ -581,7 +579,6 @@ async fn handle_connection(
     //         let handle = handle.clone();
     //         tokio::spawn(async move {
     let (diffs_tx, diffs_rx) = flume::unbounded();
-    let (stats_tx, stats_rx) = flume::unbounded();
 
     let server_info = {
         let state = state.lock();
@@ -602,13 +599,12 @@ async fn handle_connection(
     let mut control_send = stream::SendStream::new(conn.open_uni().await?);
 
     let diffs_rx = diffs_rx.into_stream();
-    let stats_rx = stats_rx.into_stream();
 
     use futures::SinkExt;
 
     // Send who we are
     control_send
-        .send(&ClientControl::ServerInfo(server_info))
+        .send(ClientControl::ServerInfo(server_info))
         .await?;
 
     // Feed the channel senders to the connection data
@@ -617,7 +613,6 @@ async fn handle_connection(
     let data = ConnectionData {
         state,
         diff_tx: diffs_tx,
-        stat_tx: stats_tx,
         connection_id: Uuid::new_v4(),
         world_stream_filter,
     };
@@ -662,16 +657,4 @@ async fn handle_connection(
     tracing::info!("Client disconnected");
 
     Ok(())
-}
-
-async fn handle_diffs<S>(
-    mut open_uni: stream::SendStream<WorldDiff, S>,
-    mut diffs_rx: flume::r#async::RecvStream<'_, Bytes>,
-) where
-    S: Unpin + AsyncWrite,
-{
-    while let Some(msg) = diffs_rx.next().await {
-        let span = tracing::debug_span!("send_world_diff", ?msg);
-        open_uni.send_bytes(msg).instrument(span).await.unwrap();
-    }
 }

@@ -14,7 +14,10 @@ use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
 use tracing::debug_span;
 
 use crate::{
-    client::{bi_stream_handlers, datagram_handlers, uni_stream_handlers, GameClientServerStats},
+    client::{
+        bi_stream_handlers, client_network_stats, datagram_handlers, uni_stream_handlers,
+        GameClientServerStats, NetworkStats,
+    },
     client_game_state::ClientGameState,
     proto::*,
     protocol::ServerInfo,
@@ -80,6 +83,12 @@ impl ClientState {
         }
     }
 
+    pub fn process_client_stats(&mut self, state: &SharedClientState, stats: NetworkStats) {
+        let mut gs = state.lock();
+        tracing::debug!(?stats, "Client network stats");
+        gs.world.add_resource(client_network_stats(), stats);
+    }
+
     /// Returns `true` if the client state is [`Connecting`].
     ///
     /// [`Connecting`]: ClientState::Connecting
@@ -96,9 +105,6 @@ impl ConnectedClient {
         state: &SharedClientState,
         diff: WorldDiff,
     ) -> anyhow::Result<()> {
-        // if let Some(on_in_entities) = &self.on_in_entities {
-        //     on_in_entities(&diff);
-        // }
         let mut gs = state.lock();
         tracing::debug!(?diff, "Applying diff");
         diff.apply(

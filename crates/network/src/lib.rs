@@ -2,15 +2,20 @@ use ambient_ecs::{
     query, Component, ComponentValue, EntityId, Networked, Serializable, Store, World,
 };
 use client::ClientConnection;
+use serde::de::DeserializeOwned;
 use std::{
     io::ErrorKind,
     net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::Arc,
     time::Duration,
 };
+use stream::FrameError;
 
 use ambient_rpc::{RpcError, RpcRegistry};
 use ambient_std::log_error;
+use bytes::Bytes;
+use connection::Connection;
+use futures::{Future, SinkExt, StreamExt};
 use quinn::{
     ClientConfig, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, ServerConfig,
     TransportConfig,
@@ -156,6 +161,8 @@ pub enum NetworkError {
     RpcError(#[from] RpcError),
     #[error(transparent)]
     ProxyError(#[from] ambient_proxy::Error),
+    #[error("Bad frame")]
+    FrameError(#[from] FrameError),
 }
 
 impl NetworkError {
@@ -262,7 +269,7 @@ impl<S: Unpin + AsyncWrite> OutgoingStream<S> {
         Ok(())
     }
 
-    pub async fn send<T: Serialize>(&mut self, value: &T) -> Result<(), NetworkError> {
+    pub async fn send<T: serde::Serialize>(&mut self, value: &T) -> Result<(), NetworkError> {
         let bytes = bincode::serialize(value)?;
         self.send_bytes(bytes).await
     }
