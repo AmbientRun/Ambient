@@ -12,7 +12,12 @@ pub fn generate_mipmaps(
     mip_count: u32,
     layer: u32,
 ) {
-    let blitter = BlitterKey { format: format.into(), min_filter: wgpu::FilterMode::Linear, gamma_correction: None }.get(&assets);
+    let blitter = BlitterKey {
+        format: format.into(),
+        min_filter: wgpu::FilterMode::Linear,
+        gamma_correction: None,
+    }
+    .get(&assets);
 
     let views = (0..mip_count)
         .map(|mip| {
@@ -24,7 +29,7 @@ pub fn generate_mipmaps(
                 base_mip_level: mip,
                 mip_level_count: Some(1),
                 base_array_layer: layer,
-                array_layer_count: Some(1)
+                array_layer_count: Some(1),
             })
         })
         .collect::<Vec<_>>();

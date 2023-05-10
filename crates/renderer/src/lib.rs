@@ -1,11 +1,22 @@
 use std::{f32::consts::PI, fmt::Debug, sync::Arc};
 
 use ambient_core::{
-    asset_cache, async_ecs::async_run, gpu_components, gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent}, mesh, runtime, transform::get_world_rotation
+    asset_cache,
+    async_ecs::async_run,
+    gpu_components,
+    gpu_ecs::{
+        ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent,
+    },
+    mesh, runtime,
+    transform::get_world_rotation,
 };
-use ambient_ecs::{components, query_mut, Debuggable, Entity, EntityId, Resource, SystemGroup, World};
+use ambient_ecs::{
+    components, query_mut, Debuggable, Entity, EntityId, Resource, SystemGroup, World,
+};
 use ambient_gpu::{
-    mesh_buffer::GpuMesh, shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule}, wgsl_utils::wgsl_interpolate
+    mesh_buffer::GpuMesh,
+    shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule},
+    wgsl_utils::wgsl_interpolate,
 };
 use ambient_std::{asset_cache::*, asset_url::AbsAssetUrl, cb, include_file, Cb};
 use derive_more::*;
@@ -46,7 +57,8 @@ pub use tree_renderer::*;
 pub const MAX_PRIMITIVE_COUNT: usize = 16;
 
 pub use ambient_ecs::generated::components::core::rendering::{
-    cast_shadows, color, double_sided, fog_color, fog_density, fog_height_falloff, light_ambient, light_diffuse, overlay, pbr_material_from_url, sun, transparency_group
+    cast_shadows, color, double_sided, fog_color, fog_density, fog_height_falloff, light_ambient,
+    light_diffuse, overlay, pbr_material_from_url, sun, transparency_group,
 };
 
 components!("rendering", {
@@ -104,7 +116,10 @@ pub fn systems() -> SystemGroup {
                                         .add_components(
                                             id,
                                             Entity::new()
-                                                .with(renderer_shader(), cb(pbr_material::get_pbr_shader))
+                                                .with(
+                                                    renderer_shader(),
+                                                    cb(pbr_material::get_pbr_shader),
+                                                )
                                                 .with(material(), mat.into()),
                                         )
                                         .ok();
@@ -114,18 +129,35 @@ pub fn systems() -> SystemGroup {
                     });
                 }
             }),
-            query_mut((primitives(),), (renderer_shader().changed(), material().changed(), mesh().changed())).to_system(
-                |q, world, qs, _| {
-                    for (_, (primitives,), (shader, material, mesh)) in q.iter(world, qs) {
-                        *primitives =
-                            vec![RenderPrimitive { shader: shader.clone(), material: material.clone(), mesh: mesh.clone(), lod: 0 }];
-                    }
-                },
-            ),
-            query_mut((gpu_primitives_mesh(), gpu_primitives_lod()), (primitives().changed(),)).to_system(|q, world, qs, _| {
+            query_mut(
+                (primitives(),),
+                (
+                    renderer_shader().changed(),
+                    material().changed(),
+                    mesh().changed(),
+                ),
+            )
+            .to_system(|q, world, qs, _| {
+                for (_, (primitives,), (shader, material, mesh)) in q.iter(world, qs) {
+                    *primitives = vec![RenderPrimitive {
+                        shader: shader.clone(),
+                        material: material.clone(),
+                        mesh: mesh.clone(),
+                        lod: 0,
+                    }];
+                }
+            }),
+            query_mut(
+                (gpu_primitives_mesh(), gpu_primitives_lod()),
+                (primitives().changed(),),
+            )
+            .to_system(|q, world, qs, _| {
                 for (id, (p_mesh, p_lod), (primitives,)) in q.iter(world, qs) {
                     if primitives.len() > MAX_PRIMITIVE_COUNT {
-                        log::warn!("Entity {} has more than {MAX_PRIMITIVE_COUNT} primitives", id);
+                        log::warn!(
+                            "Entity {} has more than {MAX_PRIMITIVE_COUNT} primitives",
+                            id
+                        );
                     }
                     for (i, p) in primitives.iter().enumerate().take(MAX_PRIMITIVE_COUNT) {
                         p_mesh[i] = p.mesh.index() as u32;
@@ -143,9 +175,21 @@ pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
         "renderer/gpu_world_update",
         vec![
             Box::new(outlines::gpu_world_systems()),
-            Box::new(ComponentToGpuSystem::new(GpuComponentFormat::Vec4, color(), gpu_components::color())),
-            Box::new(ComponentToGpuSystem::new(GpuComponentFormat::Mat4, gpu_primitives_mesh(), gpu_components::gpu_primitives_mesh())),
-            Box::new(ComponentToGpuSystem::new(GpuComponentFormat::Mat4, gpu_primitives_lod(), gpu_components::gpu_primitives_lod())),
+            Box::new(ComponentToGpuSystem::new(
+                GpuComponentFormat::Vec4,
+                color(),
+                gpu_components::color(),
+            )),
+            Box::new(ComponentToGpuSystem::new(
+                GpuComponentFormat::Mat4,
+                gpu_primitives_mesh(),
+                gpu_components::gpu_primitives_mesh(),
+            )),
+            Box::new(ComponentToGpuSystem::new(
+                GpuComponentFormat::Mat4,
+                gpu_primitives_lod(),
+                gpu_components::gpu_primitives_lod(),
+            )),
             Box::new(lod::gpu_world_system()),
             Box::new(skinning::gpu_world_systems()),
         ],
@@ -153,7 +197,10 @@ pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
 }
 
 pub fn get_active_sun(world: &World, scene: Component<()>) -> Option<EntityId> {
-    query((scene, sun())).iter(world, None).max_by_key(|(_, (_, x))| OrderedFloat(**x)).map(|(id, _)| id)
+    query((scene, sun()))
+        .iter(world, None)
+        .max_by_key(|(_, (_, x))| OrderedFloat(**x))
+        .map(|(id, _)| id)
 }
 pub fn get_sun_light_direction(world: &World, scene: Component<()>) -> Vec3 {
     get_active_sun(world, scene)
@@ -170,9 +217,19 @@ pub struct RenderPrimitive {
     pub lod: usize,
 }
 pub type PrimitiveIndex = usize;
-pub fn get_gpu_primitive_id(world: &World, id: EntityId, primitive_index: PrimitiveIndex, material_index: u32) -> UVec4 {
+pub fn get_gpu_primitive_id(
+    world: &World,
+    id: EntityId,
+    primitive_index: PrimitiveIndex,
+    material_index: u32,
+) -> UVec4 {
     let loc = world.entity_loc(id).unwrap();
-    uvec4(loc.archetype as u32, loc.index as u32, primitive_index as u32, material_index)
+    uvec4(
+        loc.archetype as u32,
+        loc.index as u32,
+        primitive_index as u32,
+        material_index,
+    )
 }
 
 #[repr(C)]
@@ -223,7 +280,9 @@ pub fn get_defs_module() -> Arc<ShaderModule> {
     #[cfg(target_os = "unknown")]
     let iter = iter.map(|(k, v)| format!("const {k}: f32 = {v};\n"));
 
-    let iter = iter.chain([wgsl_interpolate(), include_file!("polyfill.wgsl")]).collect::<String>();
+    let iter = iter
+        .chain([wgsl_interpolate(), include_file!("polyfill.wgsl")])
+        .collect::<String>();
 
     Arc::new(ShaderModule::new("defs", iter))
 }
@@ -231,7 +290,10 @@ pub fn get_defs_module() -> Arc<ShaderModule> {
 pub fn get_mesh_meta_module(bind_group_offset: u32) -> Arc<ShaderModule> {
     Arc::new(
         ShaderModule::new("mesh_meta", include_file!("mesh_meta.wgsl"))
-            .with_ident(ShaderIdent::constant("MESH_METADATA_BINDING", bind_group_offset + MESH_METADATA_BINDING))
+            .with_ident(ShaderIdent::constant(
+                "MESH_METADATA_BINDING",
+                bind_group_offset + MESH_METADATA_BINDING,
+            ))
             .with_binding_desc(get_mesh_meta_layout(bind_group_offset)),
     )
 }
@@ -239,9 +301,18 @@ pub fn get_mesh_meta_module(bind_group_offset: u32) -> Arc<ShaderModule> {
 pub fn get_mesh_data_module(bind_group_offset: u32) -> Arc<ShaderModule> {
     Arc::new(
         ShaderModule::new("mesh_data", include_file!("mesh_data.wgsl"))
-            .with_ident(ShaderIdent::constant("MESH_BASE_BINDING", bind_group_offset + MESH_BASE_BINDING))
-            .with_ident(ShaderIdent::constant("MESH_SKIN_BINDING", bind_group_offset + MESH_SKIN_BINDING))
-            .with_ident(ShaderIdent::constant("SKINS_BINDING", bind_group_offset + SKINS_BINDING))
+            .with_ident(ShaderIdent::constant(
+                "MESH_BASE_BINDING",
+                bind_group_offset + MESH_BASE_BINDING,
+            ))
+            .with_ident(ShaderIdent::constant(
+                "MESH_SKIN_BINDING",
+                bind_group_offset + MESH_SKIN_BINDING,
+            ))
+            .with_ident(ShaderIdent::constant(
+                "SKINS_BINDING",
+                bind_group_offset + SKINS_BINDING,
+            ))
             .with_binding_desc(get_mesh_data_layout(bind_group_offset))
             .with_dependency(get_mesh_meta_module(bind_group_offset)),
     )
@@ -308,7 +379,11 @@ pub fn get_forward_modules(assets: &AssetCache, shadow_cascades: u32) -> Vec<Arc
 }
 
 pub fn get_overlay_modules(assets: &AssetCache, shadow_cascades: u32) -> Vec<Arc<ShaderModule>> {
-    vec![get_defs_module(), get_globals_module(assets, shadow_cascades), get_mesh_data_module(GLOBALS_BIND_GROUP_SIZE)]
+    vec![
+        get_defs_module(),
+        get_globals_module(assets, shadow_cascades),
+        get_mesh_data_module(GLOBALS_BIND_GROUP_SIZE),
+    ]
 }
 
 pub struct MaterialShader {
@@ -389,11 +464,14 @@ impl RendererShader {
 }
 impl Debug for RendererShader {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RendererShader").field("id", &self.id).finish()
+        f.debug_struct("RendererShader")
+            .field("id", &self.id)
+            .finish()
     }
 }
 
-pub type RendererShaderProducer = Cb<dyn Fn(&AssetCache, &RendererConfig) -> Arc<RendererShader> + Sync + Send>;
+pub type RendererShaderProducer =
+    Cb<dyn Fn(&AssetCache, &RendererConfig) -> Arc<RendererShader> + Sync + Send>;
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
@@ -405,6 +483,12 @@ pub struct DrawIndexedIndirect {
     pub base_instance: u32,
 }
 
-fn is_transparent(world: &World, id: EntityId, material: &SharedMaterial, shader: &RendererShader) -> bool {
-    world.get(id, transparency_group()).is_ok() || material.transparent().unwrap_or(shader.transparent)
+fn is_transparent(
+    world: &World,
+    id: EntityId,
+    material: &SharedMaterial,
+    shader: &RendererShader,
+) -> bool {
+    world.get(id, transparency_group()).is_ok()
+        || material.transparent().unwrap_or(shader.transparent)
 }

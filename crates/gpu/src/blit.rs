@@ -1,7 +1,10 @@
 use std::sync::Arc;
 
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
-use wgpu::{BindGroupLayoutDescriptor, BindGroupLayoutEntry, FilterMode, PipelineLayoutDescriptor, ShaderStages, TextureSampleType};
+use wgpu::{
+    BindGroupLayoutDescriptor, BindGroupLayoutEntry, FilterMode, PipelineLayoutDescriptor,
+    ShaderStages, TextureSampleType,
+};
 
 use crate::shader_module::{Shader, ShaderIdent, ShaderModule};
 
@@ -41,49 +44,67 @@ impl Blitter {
             assets,
             "blitter",
             &[],
-            &ShaderModule::new("blitter", include_str!("blit.wgsl")).with_ident(ShaderIdent::raw("COLORSPACE_EXPR", colorspace)),
+            &ShaderModule::new("blitter", include_str!("blit.wgsl"))
+                .with_ident(ShaderIdent::raw("COLORSPACE_EXPR", colorspace)),
         )
         .unwrap();
 
-        let bind_group_layout = gpu.device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            label: Some("blitter.bind_group_layout"),
-            entries: &[
-                BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Texture {
-                        sample_type: TextureSampleType::Float { filterable: true },
-                        view_dimension: wgpu::TextureViewDimension::D2,
-                        multisampled: false,
+        let bind_group_layout = gpu
+            .device
+            .create_bind_group_layout(&BindGroupLayoutDescriptor {
+                label: Some("blitter.bind_group_layout"),
+                entries: &[
+                    BindGroupLayoutEntry {
+                        binding: 0,
+                        visibility: ShaderStages::FRAGMENT,
+                        ty: wgpu::BindingType::Texture {
+                            sample_type: TextureSampleType::Float { filterable: true },
+                            view_dimension: wgpu::TextureViewDimension::D2,
+                            multisampled: false,
+                        },
+                        count: None,
                     },
-                    count: None,
-                },
-                BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-                    count: None,
-                },
-            ],
-        });
+                    BindGroupLayoutEntry {
+                        binding: 1,
+                        visibility: ShaderStages::FRAGMENT,
+                        ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                        count: None,
+                    },
+                ],
+            });
 
-        let layout = gpu.device.create_pipeline_layout(&PipelineLayoutDescriptor {
-            label: Some("blitter.layout"),
-            bind_group_layouts: &[&bind_group_layout],
-            push_constant_ranges: &[],
-        });
+        let layout = gpu
+            .device
+            .create_pipeline_layout(&PipelineLayoutDescriptor {
+                label: Some("blitter.layout"),
+                bind_group_layouts: &[&bind_group_layout],
+                push_constant_ranges: &[],
+            });
 
         log::debug!("Setting up blitter");
-        let pipeline = gpu.device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some("Blitter.pipeline"),
-            layout: Some(&layout),
-            vertex: wgpu::VertexState { module: &shader, entry_point: "vs_main", buffers: &[] },
-            fragment: Some(wgpu::FragmentState { module: &shader, entry_point: "fs_main", targets: &[Some(conf.format.clone())] }),
-            primitive: wgpu::PrimitiveState { topology: wgpu::PrimitiveTopology::TriangleStrip, ..Default::default() },
-            depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
-            multiview: None,
-        });
+        let pipeline = gpu
+            .device
+            .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+                label: Some("Blitter.pipeline"),
+                layout: Some(&layout),
+                vertex: wgpu::VertexState {
+                    module: &shader,
+                    entry_point: "vs_main",
+                    buffers: &[],
+                },
+                fragment: Some(wgpu::FragmentState {
+                    module: &shader,
+                    entry_point: "fs_main",
+                    targets: &[Some(conf.format.clone())],
+                }),
+                primitive: wgpu::PrimitiveState {
+                    topology: wgpu::PrimitiveTopology::TriangleStrip,
+                    ..Default::default()
+                },
+                depth_stencil: None,
+                multisample: wgpu::MultisampleState::default(),
+                multiview: None,
+            });
 
         let sampler = gpu.device.create_sampler(&wgpu::SamplerDescriptor {
             label: Some("Blitter.sampler"),
@@ -96,27 +117,48 @@ impl Blitter {
             ..Default::default()
         });
 
-        Self { pipeline, sampler, gpu }
+        Self {
+            pipeline,
+            sampler,
+            gpu,
+        }
     }
 
-    pub fn run(&self, encoder: &mut wgpu::CommandEncoder, source: &wgpu::TextureView, target: &wgpu::TextureView) {
+    pub fn run(
+        &self,
+        encoder: &mut wgpu::CommandEncoder,
+        source: &wgpu::TextureView,
+        target: &wgpu::TextureView,
+    ) {
         let bind_group_layout = self.pipeline.get_bind_group_layout(0);
 
-        let bind_group = self.gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &bind_group_layout,
-            entries: &[
-                wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(source) },
-                wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&self.sampler) },
-            ],
-            label: None,
-        });
+        let bind_group = self
+            .gpu
+            .device
+            .create_bind_group(&wgpu::BindGroupDescriptor {
+                layout: &bind_group_layout,
+                entries: &[
+                    wgpu::BindGroupEntry {
+                        binding: 0,
+                        resource: wgpu::BindingResource::TextureView(source),
+                    },
+                    wgpu::BindGroupEntry {
+                        binding: 1,
+                        resource: wgpu::BindingResource::Sampler(&self.sampler),
+                    },
+                ],
+                label: None,
+            });
 
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: None,
             color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                 view: target,
                 resolve_target: None,
-                ops: wgpu::Operations { load: wgpu::LoadOp::Clear(wgpu::Color::WHITE), store: true },
+                ops: wgpu::Operations {
+                    load: wgpu::LoadOp::Clear(wgpu::Color::WHITE),
+                    store: true,
+                },
             })],
             depth_stencil_attachment: None,
         });

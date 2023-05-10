@@ -50,7 +50,12 @@ pub struct GpuRun {
 
 impl GpuRun {
     pub fn new(label: impl Into<CowStr>, body: impl Into<CowStr>) -> Self {
-        Self { body: body.into(), modules: Default::default(), bind_groups: Default::default(), label: label.into() }
+        Self {
+            body: body.into(),
+            modules: Default::default(),
+            bind_groups: Default::default(),
+            label: label.into(),
+        }
     }
 
     pub fn add_module(mut self, module: Arc<ShaderModule>) -> Self {
@@ -84,7 +89,10 @@ impl GpuRun {
         Shader::new(
             assets,
             format!("GpuRun.{}", self.label),
-            &["GPURUN_BIND_GROUP"].into_iter().chain(self.bind_groups.iter().map(|v| &*v.0)).collect_vec(),
+            &["GPURUN_BIND_GROUP"]
+                .into_iter()
+                .chain(self.bind_groups.iter().map(|v| &*v.0))
+                .collect_vec(),
             &module,
         )
         .unwrap()
@@ -95,9 +103,18 @@ impl GpuRun {
 
         let gpu = GpuKey.get(assets);
 
-        let in_buffer = TypedBuffer::new_init(gpu.clone(), "GpuRun.in", BufferUsages::COPY_DST | BufferUsages::STORAGE, &[input]);
-        let out_buffer =
-            TypedBuffer::new_init(gpu.clone(), "GpuRun.out", BufferUsages::STORAGE | BufferUsages::COPY_SRC, &[Out::zeroed(); 1]);
+        let in_buffer = TypedBuffer::new_init(
+            gpu.clone(),
+            "GpuRun.in",
+            BufferUsages::COPY_DST | BufferUsages::STORAGE,
+            &[input],
+        );
+        let out_buffer = TypedBuffer::new_init(
+            gpu.clone(),
+            "GpuRun.out",
+            BufferUsages::STORAGE | BufferUsages::COPY_SRC,
+            &[Out::zeroed(); 1],
+        );
 
         let pipeline = shader.to_compute_pipeline(&GpuKey.get(assets), "main");
 
@@ -105,17 +122,29 @@ impl GpuRun {
             label: Some("GpuRun"),
             layout: &get_gpu_run_layout().get(assets),
             entries: &[
-                wgpu::BindGroupEntry { binding: 0, resource: in_buffer.buffer().as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 1, resource: out_buffer.buffer().as_entire_binding() },
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: in_buffer.buffer().as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: out_buffer.buffer().as_entire_binding(),
+                },
             ],
         });
 
-        let mut encoder = gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+        let mut encoder = gpu
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         {
             let mut pass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
             pass.set_pipeline(pipeline.pipeline());
 
-            for (i, v) in [&bind_group].into_iter().chain(self.bind_groups.iter().map(|v| &v.1)).enumerate() {
+            for (i, v) in [&bind_group]
+                .into_iter()
+                .chain(self.bind_groups.iter().map(|v| &v.1))
+                .enumerate()
+            {
                 pass.set_bind_group(i as _, v, &[]);
             }
 
@@ -126,7 +155,10 @@ impl GpuRun {
 
         // Only one
 
-        out_buffer.read(.., true).await.expect("Failed to map buffer")[0]
+        out_buffer
+            .read(.., true)
+            .await
+            .expect("Failed to map buffer")[0]
     }
 }
 
@@ -146,7 +178,9 @@ mod test {
         let assets = AssetCache::new(tokio::runtime::Handle::current());
         GpuKey.insert(&assets, gpu);
         let input = Vec4::ONE;
-        let res: Vec2 = GpuRun::new("TestGpuRun", "return (input * 3.).xy;").run(&assets, input).await;
+        let res: Vec2 = GpuRun::new("TestGpuRun", "return (input * 3.).xy;")
+            .run(&assets, input)
+            .await;
         assert_eq!(res, (input * 3.).xy());
     }
 }

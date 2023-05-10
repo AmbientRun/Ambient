@@ -3,7 +3,8 @@ use std::{borrow::Cow, sync::Arc};
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use glam::Vec4;
 use wgpu::{
-    util::DeviceExt, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages, TextureViewDimension,
+    util::DeviceExt, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType,
+    BufferBindingType, ShaderStages, TextureViewDimension,
 };
 
 use super::{
@@ -50,49 +51,72 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {{
         ",
             texture_format_to_wgsl_storage_format(format)
         );
-        let shader = gpu.device.create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: Some("Filler.shader"),
-            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(&shader)),
-        });
+        let shader = gpu
+            .device
+            .create_shader_module(wgpu::ShaderModuleDescriptor {
+                label: Some("Filler.shader"),
+                source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(&shader)),
+            });
 
-        let pipeline = gpu.device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
-            label: Some("Filler"),
-            layout: Some(&gpu.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: Some("Filler"),
-                bind_group_layouts: &[&gpu.device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+        let pipeline =
+            gpu.device
+                .create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
                     label: Some("Filler"),
-                    entries: &[
-                        BindGroupLayoutEntry {
-                            binding: 0,
-                            visibility: ShaderStages::COMPUTE,
-                            ty: BindingType::StorageTexture {
-                                access: wgpu::StorageTextureAccess::WriteOnly,
-                                format,
-                                view_dimension: TextureViewDimension::D2,
-                            },
-                            count: None,
+                    layout: Some(&gpu.device.create_pipeline_layout(
+                        &wgpu::PipelineLayoutDescriptor {
+                            label: Some("Filler"),
+                            bind_group_layouts: &[&gpu.device.create_bind_group_layout(
+                                &BindGroupLayoutDescriptor {
+                                    label: Some("Filler"),
+                                    entries: &[
+                                        BindGroupLayoutEntry {
+                                            binding: 0,
+                                            visibility: ShaderStages::COMPUTE,
+                                            ty: BindingType::StorageTexture {
+                                                access: wgpu::StorageTextureAccess::WriteOnly,
+                                                format,
+                                                view_dimension: TextureViewDimension::D2,
+                                            },
+                                            count: None,
+                                        },
+                                        BindGroupLayoutEntry {
+                                            binding: 1,
+                                            visibility: ShaderStages::COMPUTE,
+                                            ty: BindingType::Buffer {
+                                                ty: BufferBindingType::Uniform,
+                                                has_dynamic_offset: false,
+                                                min_binding_size: None,
+                                            },
+                                            count: None,
+                                        },
+                                    ],
+                                },
+                            )],
+                            push_constant_ranges: &[],
                         },
-                        BindGroupLayoutEntry {
-                            binding: 1,
-                            visibility: ShaderStages::COMPUTE,
-                            ty: BindingType::Buffer { ty: BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
-                            count: None,
-                        },
-                    ],
-                })],
-                push_constant_ranges: &[],
-            })),
-            module: &shader,
-            entry_point: "main",
-        });
+                    )),
+                    module: &shader,
+                    entry_point: "main",
+                });
         Self { gpu, pipeline }
     }
     pub fn run(&self, target: &wgpu::TextureView, size: wgpu::Extent3d, color: Vec4) {
-        let mut encoder = self.gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("Filler.run") });
+        let mut encoder = self
+            .gpu
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: Some("Filler.run"),
+            });
         self.run_with_encoder(&mut encoder, target, size, color);
         self.gpu.queue.submit(Some(encoder.finish()));
     }
-    pub fn run_with_encoder(&self, encoder: &mut wgpu::CommandEncoder, target: &wgpu::TextureView, size: wgpu::Extent3d, color: Vec4) {
+    pub fn run_with_encoder(
+        &self,
+        encoder: &mut wgpu::CommandEncoder,
+        target: &wgpu::TextureView,
+        size: wgpu::Extent3d,
+        color: Vec4,
+    ) {
         #[repr(C)]
         #[derive(Clone, Copy, Debug, bytemuck::Pod, bytemuck::Zeroable)]
         struct FillParams {
@@ -100,23 +124,37 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {{
         }
 
         let params = FillParams { color };
-        let param_buffer = self.gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Filler params"),
-            contents: bytemuck::cast_slice(&[params]),
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-        });
+        let param_buffer = self
+            .gpu
+            .device
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("Filler params"),
+                contents: bytemuck::cast_slice(&[params]),
+                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            });
 
         let bind_group_layout = self.pipeline.get_bind_group_layout(0);
-        let bind_group = self.gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
-            label: Some("Filler"),
-            layout: &bind_group_layout,
-            entries: &[
-                wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(target) },
-                wgpu::BindGroupEntry { binding: 1, resource: param_buffer.as_entire_binding() },
-            ],
-        });
+        let bind_group = self
+            .gpu
+            .device
+            .create_bind_group(&wgpu::BindGroupDescriptor {
+                label: Some("Filler"),
+                layout: &bind_group_layout,
+                entries: &[
+                    wgpu::BindGroupEntry {
+                        binding: 0,
+                        resource: wgpu::BindingResource::TextureView(target),
+                    },
+                    wgpu::BindGroupEntry {
+                        binding: 1,
+                        resource: param_buffer.as_entire_binding(),
+                    },
+                ],
+            });
 
-        let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: Some("Filler") });
+        let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
+            label: Some("Filler"),
+        });
         cpass.set_pipeline(&self.pipeline);
         cpass.set_bind_group(0, &bind_group, &[]);
         cpass.dispatch_workgroups(size.width, size.height, size.depth_or_array_layers);

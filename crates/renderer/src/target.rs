@@ -36,52 +36,71 @@ pub struct RenderTarget {
 }
 impl RenderTarget {
     pub fn new(gpu: Arc<Gpu>, size: UVec2, usage: Option<wgpu::TextureUsages>) -> Self {
-        let usage =
-            usage.unwrap_or(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_SRC);
+        let usage = usage.unwrap_or(
+            wgpu::TextureUsages::RENDER_ATTACHMENT
+                | wgpu::TextureUsages::TEXTURE_BINDING
+                | wgpu::TextureUsages::COPY_SRC,
+        );
         let sc_desc = gpu.sc_desc(size);
         let depth_buffer = Arc::new(Texture::new(
             gpu.clone(),
             &wgpu::TextureDescriptor {
                 label: Some("RenderTarget.depth_buffer"),
-                size: wgpu::Extent3d { width: sc_desc.width, height: sc_desc.height, depth_or_array_layers: 1 },
+                size: wgpu::Extent3d {
+                    width: sc_desc.width,
+                    height: sc_desc.height,
+                    depth_or_array_layers: 1,
+                },
                 mip_level_count: 1,
                 sample_count: DEFAULT_SAMPLE_COUNT,
                 dimension: wgpu::TextureDimension::D2,
                 format: DEPTH_FORMAT,
                 usage,
-                view_formats: &[]
+                view_formats: &[],
             },
         ));
         let color_buffer = Arc::new(Texture::new(
             gpu.clone(),
             &wgpu::TextureDescriptor {
                 label: Some("RenderTarget.color_buffer"),
-                size: wgpu::Extent3d { width: sc_desc.width, height: sc_desc.height, depth_or_array_layers: 1 },
+                size: wgpu::Extent3d {
+                    width: sc_desc.width,
+                    height: sc_desc.height,
+                    depth_or_array_layers: 1,
+                },
                 mip_level_count: 1,
                 sample_count: 1,
                 dimension: wgpu::TextureDimension::D2,
                 format: sc_desc.format,
                 usage,
-                view_formats: &[]
+                view_formats: &[],
             },
         ));
         let normals_buffer = Arc::new(Texture::new(
             gpu,
             &wgpu::TextureDescriptor {
                 label: Some("RenderTarget.normals_quat_buffer"),
-                size: wgpu::Extent3d { width: sc_desc.width, height: sc_desc.height, depth_or_array_layers: 1 },
+                size: wgpu::Extent3d {
+                    width: sc_desc.width,
+                    height: sc_desc.height,
+                    depth_or_array_layers: 1,
+                },
                 mip_level_count: 1,
                 sample_count: 1,
                 dimension: wgpu::TextureDimension::D2,
                 format: to_linear_format(sc_desc.format),
                 usage,
-                view_formats: &[]
+                view_formats: &[],
             },
         ));
         Self {
-            depth_buffer_view: depth_buffer
-                .create_view(&TextureViewDescriptor { aspect: wgpu::TextureAspect::DepthOnly, ..Default::default() }),
-            depth_stencil_view: depth_buffer.create_view(&TextureViewDescriptor { ..Default::default() }),
+            depth_buffer_view: depth_buffer.create_view(&TextureViewDescriptor {
+                aspect: wgpu::TextureAspect::DepthOnly,
+                ..Default::default()
+            }),
+            depth_stencil_view: depth_buffer.create_view(&TextureViewDescriptor {
+                ..Default::default()
+            }),
             depth_buffer,
             color_buffer_view: color_buffer.create_view(&Default::default()),
             color_buffer,
