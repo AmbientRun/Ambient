@@ -1,9 +1,9 @@
 use ambient_ecs::{
     query, Component, ComponentValue, EntityId, Networked, Serializable, Store, World,
 };
-use client::ClientConnection;
 use serde::de::DeserializeOwned;
 use std::{
+   
     io::ErrorKind,
     net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::Arc,
@@ -11,11 +11,10 @@ use std::{
 };
 use stream::FrameError;
 
-use ambient_rpc::{RpcError, RpcRegistry};
+use ambient_rpc::RpcError;
 use ambient_std::log_error;
-use bytes::Bytes;
 use connection::Connection;
-use futures::{Future, SinkExt, StreamExt};
+use futures::{SinkExt, StreamExt};
 use quinn::{
     ClientConfig, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, ServerConfig,
     TransportConfig,
@@ -38,7 +37,6 @@ pub mod codec;
 pub mod connection;
 pub mod hooks;
 pub mod proto;
-pub mod protocol;
 pub mod rpc;
 pub mod server;
 pub mod stream;

@@ -164,9 +164,10 @@ impl ServerState {
 
             instance.world.add_components(id, entity_data).unwrap();
 
-            tracing::info!("[{}] Player reconnected", user_id);
+            tracing::info!(user_id, ?id, "Player reconnected");
         } else {
             let id = instance.spawn_player(entity_data);
+            tracing::info!(user_id, ?id, "Player connected");
         }
 
         *self = Self::Connected(ConnectedClient {

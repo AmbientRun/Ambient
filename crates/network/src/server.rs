@@ -3,8 +3,6 @@ use std::{
     fmt::Debug,
     net::{IpAddr, Ipv4Addr, SocketAddr},
     ops::Range,
-    path::PathBuf,
-    pin::Pin,
     sync::Arc,
     time::Duration,
 };
@@ -13,15 +11,14 @@ use crate::{
     client::{DynRecv, DynSend},
     client_connection::ConnectionInner,
     codec::FramedCodec,
-    connection::Connection,
-    create_server, log_network_error, log_network_result,
+    create_server,
     proto::{
         self,
-        server::{handle_diffs, handle_stats, ConnectionData, Player},
-        ClientControl, ServerControl,
+        server::{handle_diffs, ConnectionData, Player},
+        ClientControl,
     },
-    protocol::{ClientInfo, ServerInfo, VERSION},
-    stream, NetworkError, OutgoingStream, ServerWorldExt, RPC_BISTREAM_ID,
+    proto::{ServerInfo, VERSION},
+    stream, NetworkError, ServerWorldExt, RPC_BISTREAM_ID,
 };
 use ambient_core::{
     asset_cache, name, no_sync,
@@ -30,7 +27,7 @@ use ambient_core::{
 };
 use ambient_ecs::{
     components, dont_store, query, ArchetypeFilter, ComponentDesc, ComponentRegistry, Entity,
-    EntityId, FrameEvent, Networked, Resource, System, SystemGroup, World, WorldDiff, WorldStream,
+    EntityId, FrameEvent, Networked, Resource, System, SystemGroup, World, WorldStream,
     WorldStreamCompEvent, WorldStreamFilter,
 };
 use ambient_proxy::client::AllocatedEndpoint;
@@ -39,22 +36,22 @@ use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ServerBaseUrlKey},
     fps_counter::{FpsCounter, FpsSample},
-    friendly_id, log_result,
+    log_result,
 };
 use ambient_sys::time::{Instant, SystemTime};
 use anyhow::bail;
 use bytes::Bytes;
 use colored::Colorize;
 use flume::Sender;
-use futures::{Sink, SinkExt, Stream, StreamExt};
+use futures::StreamExt;
 use parking_lot::{Mutex, RwLock};
 use quinn::{Endpoint, RecvStream, SendStream};
 use tokio::{
-    io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt},
+    io::{AsyncReadExt, AsyncWriteExt},
     time::{interval, MissedTickBehavior},
 };
 use tokio_util::codec::{FramedRead, FramedWrite};
-use tracing::{debug_span, Instrument};
+use tracing::Instrument;
 use uuid::Uuid;
 
 components!("network::server", {
@@ -403,7 +400,7 @@ impl GameServer {
 
 
                     log::debug!("Accepted connection");
-                    let fut = handle_connection(conn.into(), state.clone(), world_stream_filter.clone(), assets.clone(), ServerBaseUrlKey.get(&assets));
+                    let fut = handle_connection(conn.into(), state.clone(), world_stream_filter.clone(), ServerBaseUrlKey.get(&assets));
                     tokio::spawn(async move {  log_result!(fut.await) });
                 }
                 _ = sim_interval.tick() => {
@@ -417,7 +414,7 @@ impl GameServer {
                         if let Some(sample) = fps_counter.frame_end() {
                             for instance in state.instances.values_mut() {
                                 let id = instance.world.synced_resource_entity().unwrap();
-                                instance.world.add_component(id,server_stats(), sample.clone());
+                                instance.world.add_component(id,server_stats(), sample.clone()).unwrap();
                             }
                         }
                     });
@@ -494,16 +491,14 @@ async fn start_proxy_connection(
     };
 
     let on_player_connected = {
-        let assets = assets.clone();
         let content_base_url = content_base_url.clone();
         Arc::new(
             move |_player_id, conn: ambient_proxy::client::ProxiedConnection| {
-                log::debug!("Accepted connection via proxy");
+                tracing::debug!("Accepted connection via proxy");
                 let task = handle_connection(
                     conn.into(),
                     state.clone(),
                     world_stream_filter.clone(),
-                    assets.clone(),
                     content_base_url.read().clone(),
                 );
 
@@ -560,24 +555,14 @@ pub type FramedRecvStream<T> = FramedRead<RecvStream, FramedCodec<T>>;
 pub type FramedSendStream<T> = FramedWrite<SendStream, FramedCodec<T>>;
 
 /// Setup the protocol and enter the update loop for a new connected client
-#[tracing::instrument(
-    name = "server",
-    level = "info",
-    skip(conn, state, world_stream_filter, assets, content_base_url)
-)]
+#[tracing::instrument(name = "server", level = "info", skip_all, fields(content_base_url))]
 async fn handle_connection(
     conn: ConnectionInner,
     state: SharedServerState,
     world_stream_filter: WorldStreamFilter,
-    assets: AssetCache,
     content_base_url: AbsAssetUrl,
 ) -> anyhow::Result<()> {
     tracing::info!("Handling server connection");
-    // let handle = Arc::new(OnceCell::new());
-    // handle
-    //     .set({
-    //         let handle = handle.clone();
-    //         tokio::spawn(async move {
     let (diffs_tx, diffs_rx) = flume::unbounded();
 
     let server_info = {

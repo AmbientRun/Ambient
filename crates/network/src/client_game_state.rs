@@ -25,7 +25,7 @@ use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
 use ambient_world_audio::systems::{spatial_audio_systems, setup_audio};
 
 use ambient_core::player::{player, user_id};
-use tracing::{debug_span, info_span};
+use tracing::debug_span;
 
 components!("rendering", {
     game_screen_render_target: Arc<RenderTarget>,

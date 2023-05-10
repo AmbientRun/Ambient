@@ -1,5 +1,4 @@
 use ambient_proxy::client::ProxiedConnection;
-use async_trait::async_trait;
 use bytes::Bytes;
 use quinn::{Connection, RecvStream, SendStream};
 

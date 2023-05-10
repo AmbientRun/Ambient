@@ -1,9 +1,7 @@
 use std::marker::PhantomData;
 
-use bincode::{DefaultOptions, Options};
 use bytes::{Buf, BufMut};
 use serde::Serialize;
-use tokio::io::AsyncRead;
 use tokio_util::codec::Encoder;
 
 pub enum ControlFrame {}
@@ -15,7 +13,10 @@ pub struct FramedCodec<T> {
 
 impl<T> FramedCodec<T> {
     pub fn new() -> Self {
-        Self { len: None, _marker: PhantomData }
+        Self {
+            len: None,
+            _marker: PhantomData,
+        }
     }
 }
 

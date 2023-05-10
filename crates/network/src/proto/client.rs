@@ -17,7 +17,6 @@ use crate::{
     },
     client_game_state::ClientGameState,
     proto::*,
-    protocol::ServerInfo,
 };
 
 /// The client logic handler in a connected state
@@ -51,12 +50,13 @@ impl ClientState {
         frame: ClientControl,
     ) -> anyhow::Result<()> {
         match (frame, &self) {
-            (ClientControl::ServerInfo(server_info), Self::Connecting(user_id)) => {
+            (ClientControl::ServerInfo(server_info), Self::Connecting(_user_id)) => {
                 tracing::info!("Received server info: {server_info:?}");
 
                 let state = state.lock();
                 ContentBaseUrlKey.insert(&state.assets, server_info.content_base_url.clone());
-                ComponentRegistry::get_mut().add_external(server_info.external_components.clone());
+                tracing::debug!(?server_info.external_components, "Adding external components");
+                ComponentRegistry::get_mut().add_external(server_info.external_components);
 
                 *self = Self::Connected(ConnectedClient {});
 

@@ -1,4 +1,5 @@
-use crate::protocol::ServerInfo;
+use ambient_ecs::ExternalComponentDesc;
+use ambient_std::asset_url::AbsAssetUrl;
 
 pub mod client;
 pub mod server;
@@ -18,4 +19,22 @@ pub enum ClientControl {
     ServerInfo(ServerInfo),
     /// Graceful disconnect
     Disconnect,
+}
+
+pub(crate) const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// Miscellaneous information about the server that needs to be sent to the client during the handshake.
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+pub struct ServerInfo {
+    /// The name of the project. Used by the client to figure out what to title its window. Defaults to "Ambient".
+    pub project_name: String,
+
+    // Base url of the content server.
+    pub content_base_url: AbsAssetUrl,
+
+    /// The version of the server. Used by the client to determine whether or not to keep connecting.
+    /// Defaults to the version of the crate.
+    /// TODO: use semver
+    pub version: String,
+    pub external_components: Vec<ExternalComponentDesc>,
 }
