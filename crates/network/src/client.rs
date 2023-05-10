@@ -218,7 +218,7 @@ impl ElementComponent for GameClientView {
         let gpu = hooks.world.resource(gpu()).clone();
 
         hooks.provide_context(|| {
-            GameClientRenderTarget(Arc::new(RenderTarget::new(gpu.clone(), uvec2(1, 1))))
+            GameClientRenderTarget(Arc::new(RenderTarget::new(gpu.clone(), uvec2(1, 1), None)))
         });
         let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
 
@@ -475,6 +475,7 @@ pub fn GameClientWorld(hooks: &mut Hooks) -> Element {
             set_render_target(GameClientRenderTarget(Arc::new(RenderTarget::new(
                 gpu.clone(),
                 (size * scale_factor as f32).as_uvec2().max(UVec2::ONE),
+                None,
             ))))
         }),
     )

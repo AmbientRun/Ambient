@@ -35,10 +35,12 @@ pub struct RenderTarget {
     pub normals_quat_buffer_view: TextureView,
 }
 impl RenderTarget {
-    pub fn new(gpu: Arc<Gpu>, size: UVec2) -> Self {
-        let usage = wgpu::TextureUsages::RENDER_ATTACHMENT
-            | wgpu::TextureUsages::TEXTURE_BINDING
-            | wgpu::TextureUsages::COPY_SRC;
+    pub fn new(gpu: Arc<Gpu>, size: UVec2, usage: Option<wgpu::TextureUsages>) -> Self {
+        let usage = usage.unwrap_or(
+            wgpu::TextureUsages::RENDER_ATTACHMENT
+                | wgpu::TextureUsages::TEXTURE_BINDING
+                | wgpu::TextureUsages::COPY_SRC,
+        );
         let sc_desc = gpu.sc_desc(size);
         let depth_buffer = Arc::new(Texture::new(
             gpu.clone(),

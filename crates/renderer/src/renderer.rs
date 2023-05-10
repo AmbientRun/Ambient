@@ -246,7 +246,15 @@ impl Renderer {
                 fs_main: FSMain::Forward,
                 render_opaque: false,
             }),
-            solids_frame: RenderTarget::new(gpu.clone(), uvec2(1, 1)),
+            solids_frame: RenderTarget::new(
+                gpu.clone(),
+                uvec2(1, 1),
+                Some(
+                    wgpu::TextureUsages::RENDER_ATTACHMENT
+                        | wgpu::TextureUsages::TEXTURE_BINDING
+                        | wgpu::TextureUsages::COPY_DST,
+                ),
+            ),
             outlines: Outlines::new(
                 &assets,
                 OutlinesConfig {
@@ -281,6 +289,11 @@ impl Renderer {
                     uvec2(
                         target.color_buffer.size.width,
                         target.color_buffer.size.height,
+                    ),
+                    Some(
+                        wgpu::TextureUsages::RENDER_ATTACHMENT
+                            | wgpu::TextureUsages::TEXTURE_BINDING
+                            | wgpu::TextureUsages::COPY_DST,
                     ),
                 );
             }
