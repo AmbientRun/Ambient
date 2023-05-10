@@ -73,9 +73,8 @@ pub async fn run(
 
 #[element_component]
 fn TitleUpdater(hooks: &mut Hooks) -> Element {
-    let net = hooks
-        .consume_context::<GameClientNetworkStats>()
-        .map(|stats| stats.0);
+    let (net, _) = use_remote_resource(hooks, client_network_stats()).expect("No game client");
+
     let world = &hooks.world;
     let title = world.resource(window_title());
     let fps = world
