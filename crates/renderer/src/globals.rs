@@ -424,7 +424,7 @@ impl ShadowAndUIGlobals {
         });
 
         let shadow_texture = create_dummy_shadow_texture(gpu.clone());
-        let dummy_prev_frame = RenderTarget::new(gpu.clone(), UVec2::ONE, None);
+        let dummy_prev_frame = RenderTarget::new(gpu.clone(), UVec2::ONE);
         let shadow_view = shadow_texture.create_view(&wgpu::TextureViewDescriptor {
             aspect: wgpu::TextureAspect::DepthOnly,
             ..Default::default()

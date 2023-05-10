@@ -86,10 +86,10 @@ impl ExamplesRender {
         world
             .add_component(world.resource_entity(), renderer_stats(), "".to_string())
             .unwrap();
-        let wind_size = *world.resource(ambient_core::window::window_physical_size());
+        let window_size = *world.resource(ambient_core::window::window_physical_size());
 
         tracing::debug!("Creating render target");
-        let render_target = RenderTarget::new(gpu.clone(), wind_size, None);
+        let render_target = RenderTarget::new(gpu.clone(), window_size);
 
         tracing::debug!("Creating self");
 
@@ -143,7 +143,7 @@ impl ExamplesRender {
             .get(&world.resource(asset_cache()).clone()),
             render_target,
             gpu,
-            size: wind_size,
+            size: window_size,
         }
     }
     fn resize(&mut self, size: &PhysicalSize<u32>) {
@@ -151,7 +151,7 @@ impl ExamplesRender {
 
         if size.width > 0 && size.height > 0 {
             self.render_target =
-                RenderTarget::new(self.gpu.clone(), uvec2(size.width, size.height), None);
+                RenderTarget::new(self.gpu.clone(), uvec2(size.width, size.height));
         }
     }
 
