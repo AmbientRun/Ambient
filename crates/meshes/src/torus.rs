@@ -82,17 +82,13 @@ impl From<TorusMesh> for Mesh {
 
         let mut mesh = Mesh {
             name: "torus".into(),
-            positions: Some(vertices),
-            colors: None,
+            positions: vertices,
             normals: Some(normals),
-            tangents: None,
             texcoords: vec![texcoords],
-            joint_indices: None,
-            joint_weights: None,
-            indices: Some(indices),
+            indices,
+            ..Default::default()
         };
         mesh.create_tangents();
         mesh
-
     }
 }

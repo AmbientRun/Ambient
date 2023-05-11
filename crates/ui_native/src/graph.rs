@@ -207,7 +207,7 @@ impl ElementComponent for Graph {
         let indices =
             (0..point_count.saturating_sub(1) as u32).map(|i| i * 2).flat_map(|i| [i, 1 + i, 2 + i, 1 + i, 3 + i, 2 + i]).collect_vec();
 
-        let mesh = Mesh { name: "Graph Mesh".to_string(), positions: Some(points), indices: Some(indices), ..Default::default() };
+        let mesh = Mesh { name: "Graph Mesh".to_string(), positions: points, indices, ..Default::default() };
 
         let mesh = mesh_buffer.insert(&mesh);
 

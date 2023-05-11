@@ -7,24 +7,21 @@ use crate::shapes::AABB;
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Mesh {
     pub name: String,
-    pub positions: Option<Vec<Vec3>>,
+    pub positions: Vec<Vec3>,
     pub colors: Option<Vec<Vec4>>,
     pub normals: Option<Vec<Vec3>>,
     pub tangents: Option<Vec<Vec3>>,
     pub texcoords: Vec<Vec<Vec2>>,
     pub joint_indices: Option<Vec<UVec4>>,
     pub joint_weights: Option<Vec<Vec4>>,
-    pub indices: Option<Vec<u32>>,
+    pub indices: Vec<u32>,
 }
 
 impl std::fmt::Debug for Mesh {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Mesh")
             .field("name", &self.name)
-            .field(
-                "positions",
-                &self.positions.as_ref().map(|v| v.len()).unwrap_or_default(),
-            )
+            .field("positions", &self.positions.len())
             .field(
                 "colors",
                 &self.colors.as_ref().map(|v| v.len()).unwrap_or_default(),
@@ -57,10 +54,7 @@ impl std::fmt::Debug for Mesh {
                     .map(|v| v.len())
                     .unwrap_or_default(),
             )
-            .field(
-                "indices",
-                &self.indices.as_ref().map(|v| v.len()).unwrap_or_default(),
-            )
+            .field("indices", &self.indices.len())
             .finish()
     }
 }
@@ -69,41 +63,35 @@ impl Default for Mesh {
     fn default() -> Self {
         Self {
             name: "Unnamed".to_string(),
-            positions: None,
+            positions: Vec::new(),
             colors: None,
             normals: None,
             tangents: None,
             texcoords: Vec::new(),
             joint_indices: None,
             joint_weights: None,
-            indices: None,
+            indices: Vec::new(),
         }
     }
 }
 impl Mesh {
     pub fn aabb(&self) -> Option<AABB> {
-        if let Some(positions) = &self.positions {
-            if positions.is_empty() {
-                return None;
-            }
-            let mut aabb = AABB {
-                min: positions[0],
-                max: positions[0],
-            };
-            for &pos in positions.iter().skip(1) {
-                aabb.min = aabb.min.min(pos);
-                aabb.max = aabb.max.max(pos);
-            }
-            Some(aabb)
-        } else {
-            None
+        if self.positions.is_empty() {
+            return None;
         }
+        let mut aabb = AABB {
+            min: self.positions[0],
+            max: self.positions[0],
+        };
+        for &pos in &self.positions[1..] {
+            aabb.min = aabb.min.min(pos);
+            aabb.max = aabb.max.max(pos);
+        }
+        Some(aabb)
     }
     pub fn transform(&mut self, transform: Mat4) {
-        if let Some(positions) = &mut self.positions {
-            for p in positions {
-                *p = transform.project_point3(vec3(p[0], p[1], p[2]));
-            }
+        for p in &mut self.positions {
+            *p = transform.project_point3(vec3(p[0], p[1], p[2]));
         }
         if let Some(normals) = &mut self.normals {
             for p in normals {
@@ -113,22 +101,18 @@ impl Mesh {
             }
         }
     }
-    /// Flips indicies so that what was front facing will become back facing and vice versa
-    pub fn invert_indicies(&mut self) {
-        if let Some(indicies) = &mut self.indices {
-            for chunk in indicies.chunks_exact_mut(3) {
-                chunk.swap(1, 2);
-            }
+    pub fn flip_winding(&mut self) {
+        for chunk in self.indices.chunks_exact_mut(3) {
+            chunk.swap(1, 2);
         }
     }
     pub fn apply_skin(&mut self, joint_matrices: &[Mat4]) {
-        if let (Some(positions), Some(weights), Some(indices)) = (
-            &mut self.positions,
-            &self.joint_weights,
-            &self.joint_indices,
-        ) {
-            for ((position, weight), index) in
-                positions.iter_mut().zip(weights.iter()).zip(indices.iter())
+        if let (Some(weights), Some(indices)) = (&self.joint_weights, &self.joint_indices) {
+            for ((position, weight), index) in self
+                .positions
+                .iter_mut()
+                .zip(weights.iter())
+                .zip(indices.iter())
             {
                 let mat = joint_matrices[index.x as usize] * weight.x
                     + joint_matrices[index.y as usize] * weight.y
@@ -141,10 +125,8 @@ impl Mesh {
 
     #[ambient_profiling::function]
     pub fn append(&mut self, mut mesh: Mesh) {
-        let indices_offset = self.positions.as_ref().unwrap().len() as u32;
-        if let Some(x) = &mut self.positions {
-            x.extend(mesh.positions.unwrap());
-        }
+        let indices_offset = self.positions.len() as u32;
+        self.positions.extend(mesh.positions);
         if let Some(x) = &mut self.colors {
             x.extend(mesh.colors.unwrap());
         }
@@ -160,25 +142,19 @@ impl Mesh {
         if let Some(x) = &mut self.joint_weights {
             x.extend(mesh.joint_weights.unwrap());
         }
-        if let Some(x) = &mut self.indices {
-            x.extend(
-                mesh.indices
-                    .unwrap()
-                    .into_iter()
-                    .map(|i| i + indices_offset),
-            );
-        }
+        self.indices
+            .extend(mesh.indices.into_iter().map(|i| i + indices_offset));
     }
 
     #[ambient_profiling::function]
     pub fn remove_unused_vertices(&mut self) {
         let mut used = Vec::new();
         let mut new_indices = Vec::new();
-        let n_vertices = self.positions.as_ref().unwrap().len();
+        let n_vertices = self.positions.len();
         used.resize(n_vertices, false);
         new_indices.resize(n_vertices, 0);
-        for i in self.indices.as_ref().unwrap().iter() {
-            used[*i as usize] = true;
+        for &i in &self.indices {
+            used[i as usize] = true;
         }
         let mut p = 0;
         for i in 0..n_vertices {
@@ -187,16 +163,15 @@ impl Mesh {
                 p += 1;
             }
         }
-        for index in self.indices.as_mut().unwrap().iter_mut() {
+        for index in &mut self.indices {
             *index = new_indices[*index as usize];
         }
-        self.positions = self.positions.as_mut().map(|positions| {
-            positions
-                .drain(..)
-                .enumerate()
-                .filter_map(|(i, v)| if used[i] { Some(v) } else { None })
-                .collect()
-        });
+        self.positions = self
+            .positions
+            .drain(..)
+            .enumerate()
+            .filter_map(|(i, v)| if used[i] { Some(v) } else { None })
+            .collect();
         self.colors = self.colors.as_mut().map(|colors| {
             colors
                 .drain(..)
@@ -238,7 +213,7 @@ impl Mesh {
             .collect();
     }
     pub fn try_ensure_tangents(&mut self) {
-        if self.tangents.is_some() || self.positions.is_none() || self.texcoords.is_empty() {
+        if self.tangents.is_some() || self.positions.is_empty() || self.texcoords.is_empty() {
             log::debug!("Tangents loaded from mesh");
             return;
         }
@@ -247,15 +222,12 @@ impl Mesh {
 
     #[ambient_profiling::function]
     pub fn create_tangents(&mut self) {
-        let mut tangents = vec![Vec3::ZERO; self.positions.as_ref().unwrap().len()];
-        let mut tangent_counts = vec![0.; self.positions.as_ref().unwrap().len()];
-        let positions = self
-            .positions
-            .as_ref()
-            .expect("Can not create tangents without position data");
+        let mut tangents = vec![Vec3::ZERO; self.positions.len()];
+        let mut tangent_counts = vec![0.0; self.positions.len()];
+        let positions = &self.positions;
         let texcoords = &self.texcoords[0];
 
-        for triangle in self.indices.as_ref().unwrap().chunks(3) {
+        for triangle in self.indices.chunks(3) {
             let (a, b, c) = (triangle[0], triangle[1], triangle[2]);
 
             let pos0 = positions[a as usize];
@@ -288,44 +260,28 @@ impl Mesh {
         self.tangents = Some(tangents);
     }
     pub fn size_in_bytes(&self) -> usize {
-        self.positions
-            .as_ref()
-            .map(|x| std::mem::size_of_val(&**x))
-            .unwrap_or(0)
-            + self
-                .colors
-                .as_ref()
-                .map(|x| std::mem::size_of_val(&**x))
-                .unwrap_or(0)
-            + self
-                .normals
-                .as_ref()
-                .map(|x| std::mem::size_of_val(&**x))
-                .unwrap_or(0)
-            + self
-                .tangents
-                .as_ref()
-                .map(|x| std::mem::size_of_val(&**x))
-                .unwrap_or(0)
-            + self
-                .joint_indices
-                .as_ref()
-                .map(|x| std::mem::size_of_val(&**x))
-                .unwrap_or(0)
-            + self
-                .joint_weights
-                .as_ref()
-                .map(|x| std::mem::size_of_val(&**x))
-                .unwrap_or(0)
-            + self
-                .indices
-                .as_ref()
-                .map(|x| std::mem::size_of_val(&**x))
-                .unwrap_or(0)
-            + self
-                .texcoords
-                .iter()
-                .map(|x| std::mem::size_of_val(&**x))
-                .sum::<usize>()
+        macro_rules! maybe_size {
+            ($v:expr) => {
+                $v.as_ref()
+                    .map(|x| std::mem::size_of_val(x.as_slice()))
+                    .unwrap_or(0)
+            };
+        }
+
+        let mut byte_size = 0;
+        byte_size += std::mem::size_of_val(self.positions.as_slice());
+        byte_size += maybe_size!(self.colors);
+        byte_size += maybe_size!(self.normals);
+        byte_size += maybe_size!(self.tangents);
+        byte_size += maybe_size!(self.joint_indices);
+        byte_size += maybe_size!(self.joint_weights);
+        byte_size += std::mem::size_of_val(self.indices.as_slice());
+        byte_size += self
+            .texcoords
+            .iter()
+            .map(|x| std::mem::size_of_val(x.as_slice()))
+            .sum::<usize>();
+
+        byte_size
     }
 }
