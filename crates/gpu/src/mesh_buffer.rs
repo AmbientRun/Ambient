@@ -38,8 +38,8 @@ pub struct GpuMesh {
 }
 
 impl GpuMesh {
-    pub fn from_mesh(assets: AssetCache, mesh: &Mesh) -> Arc<GpuMesh> {
-        MeshBufferKey.get(&assets).lock().insert(mesh)
+    pub fn from_mesh(assets: &AssetCache, mesh: &Mesh) -> Arc<GpuMesh> {
+        MeshBufferKey.get(assets).lock().insert(mesh)
     }
     pub fn name(&self) -> &str {
         &self.name
@@ -89,7 +89,7 @@ impl AsyncAssetKey<AssetResult<Arc<GpuMesh>>> for GpuMeshFromUrl {
         let mesh = MeshFromUrl::new(self.url, self.cache_on_disk)
             .get(&assets)
             .await?;
-        Ok(GpuMesh::from_mesh(assets, &mesh))
+        Ok(GpuMesh::from_mesh(&assets, &mesh))
     }
 }
 
