@@ -13,7 +13,25 @@ use ambient_ui_native::{
 use glam::vec4;
 use tracing_subscriber::{filter::LevelFilter, fmt::time::UtcTime, prelude::*, registry};
 use tracing_web::MakeConsoleWriter;
-use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::prelude::*;
+
+use ambient_audio::*;
+use std::cell::RefCell;
+use std::rc::Rc;
+
+use wasm_bindgen::JsCast;
+use wasm_bindgen::JsValue;
+use js_sys::{Float32Array, Function};
+
+fn window() -> web_sys::Window {
+    web_sys::window().expect("no global `window` exists")
+}
+
+fn request_animation_frame(f: &Closure<dyn FnMut()>) {
+    window()
+        .request_animation_frame(f.as_ref().unchecked_ref())
+        .expect("should register `requestAnimationFrame` OK");
+}
 
 #[wasm_bindgen]
 pub fn init_ambient(logging: bool, panic: bool) {
@@ -89,12 +107,70 @@ pub fn View(hooks: &mut Hooks) -> Element {
         .el()
         .with_background(vec4(0.0, 0.5, 0.5, 1.0)),
         TextEditor::new(text, set_text)
-            .placeholder(Some("Go ahead, type something clever"))
-            .el(),
-        Separator { vertical: false }.el(),
-        Text::el("Custom size").with(font_size(), 20.),
-        Text::el("Custom color").with(color(), vec4(1., 0., 0., 1.)),
-        Text::el("Multi\n\nLine"),
+        .placeholder(Some("Go ahead, type something clever"))
+        .el(),
+    Separator { vertical: false }.el(),
+    Text::el("Custom size").with(font_size(), 20.),
+    Text::el("Custom color").with(color(), vec4(1., 0., 0., 1.)),
+    Text::el("Multi\n\nLine"),
+
+        Button::new(
+            "Play audio",
+            move |_| {
+                let mut sine = SineWave::new(440.0);
+                // let mut phase = 0.0;
+                let window = web_sys::window().expect("no global `window` exists");
+                let this = JsValue::null();
+                let start = window.get("audioStart").unwrap().dyn_into::<Function>().unwrap();
+                start.call0(&this).unwrap();
+
+                let sab = window.get("dataSAB").unwrap().dyn_into::<js_sys::SharedArrayBuffer>().unwrap();
+                let buf = Float32Array::new(&sab);
+                let write_ptr = JsValue::from(window.get("writePtr").unwrap().dyn_into::<js_sys::Uint32Array>().unwrap()); //.dyn_into::<js_sys::Uint32Array>().unwrap();
+                let read_ptr = JsValue::from(window.get("readPtr").unwrap().dyn_into::<js_sys::Uint32Array>().unwrap()); //.dyn_into::<js_sys::Uint32Array>().unwrap();
+
+                let f = Rc::new(RefCell::new(None));
+                let g = f.clone();
+                *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
+                    loop {
+                        let wr = js_sys::Atomics::load(&write_ptr, 0).unwrap();
+                        let rd = js_sys::Atomics::load(&read_ptr, 0).unwrap();
+                        let available_read = (wr + 2048 - rd) % 2048;
+                        let available_write = 2048 - available_read;
+                        if available_write <= 128 {
+                            break;
+                        }
+                        for _ in 0..128 {
+                            let wr = js_sys::Atomics::load(&write_ptr, 0).unwrap();
+                            // let val = (phase * 2.0 * std::f32::consts::PI).sin();
+                            let val = sine.next_sample().unwrap()[0];
+                            buf.set_index(wr as u32, val);
+                            js_sys::Atomics::store(&write_ptr, 0, (wr + 1) % (2048)).unwrap();
+                            // phase += 440.0 / 44100.0;
+                            // if phase > 1.0 {
+                            //     phase -= 1.0;
+                            // }
+                        }
+                    }
+                    request_animation_frame(f.borrow().as_ref().unwrap());
+                }) as Box<dyn FnMut()>));
+
+                request_animation_frame(g.borrow().as_ref().unwrap());
+            },
+        )
+        .el()
+        .with_background(vec4(1.0, 0.5, 0.5, 1.0)),
+        Button::new(
+            "Stop audio",
+            move |_| {
+                let window = web_sys::window().expect("no global `window` exists");
+                let this = JsValue::null();
+                let stop = window.get("audioStop").unwrap().dyn_into::<Function>().unwrap();
+                stop.call0(&this).unwrap();
+            },
+        )
+        .el()
+        .with_background(vec4(0.0, 0.5, 0.9, 1.0)),
     ])
     .el()
     .with(space_between_items(), 10.)
