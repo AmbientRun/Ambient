@@ -65,10 +65,10 @@ impl ConnectionInner {
     }
 
     #[inline]
-    pub async fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError> {
+    pub fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError> {
         match self {
-            ClientConnection::Direct(conn) => Ok(conn.send_datagram(data)?),
-            ClientConnection::Proxied(conn) => Ok(conn.send_datagram(data)?),
+            ConnectionInner::Direct(conn) => Ok(conn.send_datagram(data)?),
+            ConnectionInner::Proxied(conn) => Ok(conn.send_datagram(data)?),
         }
     }
 }

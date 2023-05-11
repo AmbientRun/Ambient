@@ -8,7 +8,7 @@ use std::{
 };
 
 use crate::{
-    client::{DynRecv, DynSend},
+    client::{ClientConnection, DynRecv, DynSend},
     client_connection::ConnectionInner,
     codec::FramedCodec,
     create_server,
@@ -64,7 +64,9 @@ components!("network::server", {
 
     player_entity_stream: Sender<Bytes>,
     player_connection_id: Uuid,
-    @[Resource, Networked]
+    player_connection: Arc<dyn ClientConnection>,
+    // synced resource
+    @[Networked]
     server_stats: FpsSample,
 });
 
@@ -104,6 +106,7 @@ impl RpcArgs {
 }
 
 pub fn create_player_entity_data(
+    conn: Arc<dyn ClientConnection>,
     user_id: String,
     entities_tx: Sender<Bytes>,
     connection_id: Uuid,
@@ -112,6 +115,7 @@ pub fn create_player_entity_data(
         .with(name(), format!("Player {}", user_id))
         .with(ambient_core::player::player(), ())
         .with(ambient_core::player::user_id(), user_id)
+        .with(player_connection(), conn)
         .with(player_entity_stream(), entities_tx)
         .with(player_connection_id(), connection_id)
         .with_default(dont_store())
@@ -414,7 +418,7 @@ impl GameServer {
                         if let Some(sample) = fps_counter.frame_end() {
                             for instance in state.instances.values_mut() {
                                 let id = instance.world.synced_resource_entity().unwrap();
-                                instance.world.add_component(id,server_stats(), sample.clone()).unwrap();
+                                instance.world.add_component(id, server_stats(), sample.clone()).unwrap();
                             }
                         }
                     });
@@ -602,6 +606,7 @@ async fn handle_connection(
     //
     // Once connected they will be added to the player entity
     let data = ConnectionData {
+        conn: Arc::new(conn.clone()),
         state,
         diff_tx: diffs_tx,
         connection_id: Uuid::new_v4(),

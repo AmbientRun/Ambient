@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use ambient_core::player::get_by_user_id;
 use ambient_ecs::{WorldDiff, WorldStreamFilter};
 use ambient_std::{fps_counter::FpsSample, log_result};
@@ -9,6 +11,7 @@ use tracing::{debug_span, Instrument};
 use uuid::Uuid;
 
 use crate::{
+    client::ClientConnection,
     log_network_result,
     proto::ClientControl,
     server::{
@@ -59,6 +62,7 @@ pub struct ConnectionData {
     /// Unique identifier for this session
     /// Used to declare ownership of the player entity when multiple simultaneous connections are made or reconnected
     pub(crate) connection_id: Uuid,
+    pub(crate) conn: Arc<dyn ClientConnection>,
     pub(crate) world_stream_filter: WorldStreamFilter,
 }
 
@@ -76,17 +80,19 @@ impl std::fmt::Debug for ConnectionData {
 pub struct Player {
     pub instance: String,
     control_tx: flume::Sender<ClientControl>,
+    conn: Arc<dyn ClientConnection>,
     connection_id: Uuid,
 }
 
 impl Player {
-    pub fn new_local(instance: impl Into<String>) -> Self {
+    pub fn new_local(instance: impl Into<String>, conn: Arc<dyn ClientConnection>) -> Self {
         let (control_tx, _) = flume::unbounded();
 
         Self {
             instance: instance.into(),
             control_tx,
             connection_id: Uuid::new_v4(),
+            conn,
         }
     }
 
@@ -135,6 +141,7 @@ impl ServerState {
         let old_player = state.players.insert(
             user_id.clone(),
             Player {
+                conn: data.conn.clone(),
                 instance: MAIN_INSTANCE_ID.to_string(),
                 control_tx,
                 connection_id: data.connection_id,
@@ -154,8 +161,12 @@ impl ServerState {
         log_result!(data.diff_tx.send(diff));
         tracing::debug!("[{}] Init diff sent", user_id);
 
-        let entity_data =
-            create_player_entity_data(user_id.clone(), data.diff_tx.clone(), data.connection_id);
+        let entity_data = create_player_entity_data(
+            data.conn.clone(),
+            user_id.clone(),
+            data.diff_tx.clone(),
+            data.connection_id,
+        );
 
         if let Some(old_player) = old_player {
             old_player.control_tx.send(ClientControl::Disconnect).ok();
@@ -236,8 +247,6 @@ impl ConnectedClient {
         }
 
         let id = payload.get_u32();
-
-        tracing::info!(?id, "Received datagram");
 
         let ((name, handler), assets) = {
             let mut state = data.state.lock();

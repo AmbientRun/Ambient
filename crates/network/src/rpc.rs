@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     server::{
-        create_player_entity_data, player_connection_id, player_entity_stream, ForkingEvent,
-        RpcArgs as ServerRpcArgs, WorldInstance, MAIN_INSTANCE_ID,
+        create_player_entity_data, player_connection, player_connection_id, player_entity_stream,
+        ForkingEvent, RpcArgs as ServerRpcArgs, WorldInstance, MAIN_INSTANCE_ID,
     },
     ServerWorldExt,
 };
@@ -120,6 +120,7 @@ pub async fn rpc_join_instance(args: ServerRpcArgs, new_instance_id: String) {
     // Borrow the old world mutably to remove the player and their streams.
     let entities_tx;
     let connection_id;
+    let conn;
 
     {
         let mut ed = instances
@@ -130,6 +131,7 @@ pub async fn rpc_join_instance(args: ServerRpcArgs, new_instance_id: String) {
         entities_tx = ed.remove_self(player_entity_stream()).unwrap();
 
         connection_id = ed.remove_self(player_connection_id()).unwrap();
+        conn = ed.remove_self(player_connection()).unwrap();
     };
 
     // Borrow the new world mutably to spawn the player in with their old streams.
@@ -137,6 +139,7 @@ pub async fn rpc_join_instance(args: ServerRpcArgs, new_instance_id: String) {
         .get_mut(&new_instance_id)
         .unwrap()
         .spawn_player(create_player_entity_data(
+            conn,
             args.user_id.clone(),
             entities_tx.clone(),
             connection_id,

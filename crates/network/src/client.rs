@@ -29,6 +29,7 @@ use serde::{de::DeserializeOwned, Serialize};
 use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
 
 use crate::{
+    client_connection::ConnectionInner,
     client_game_state::ClientGameState,
     create_client_endpoint_random_port, log_network_result,
     proto::{
@@ -65,8 +66,9 @@ pub type BiStreamHandlers = HashMap<u32, (&'static str, BiStreamHandler)>;
 pub type UniStreamHandlers = HashMap<u32, (&'static str, UniStreamHandler)>;
 pub type DatagramHandlers = HashMap<u32, (&'static str, DatagramHandler)>;
 
-/// A subset of the client state which allows for making transport agnostic RPCs and messages
-/// without the hassles of associated types and non-object safety.
+/// Represents either side of a high level connection to a game client of some sort.
+///
+/// Allows making requests and RPC, etc
 pub trait ClientConnection: 'static + Send + Sync {
     /// Performs a bidirectional request and waits for a response.
     fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>>;
@@ -113,6 +115,43 @@ impl ClientConnection for quinn::Connection {
     }
 }
 
+impl ClientConnection for ConnectionInner {
+    fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>> {
+        Box::pin(async move {
+            let (mut send, recv) = self.open_bi().await?;
+
+            send.write_u32(id).await?;
+            send.write_all(&data).await?;
+
+            drop(send);
+
+            let buf = recv.read_to_end(MAX_FRAME_SIZE).await?.into();
+
+            Ok(buf)
+        })
+    }
+
+    fn request_uni(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>> {
+        Box::pin(async move {
+            let mut send = self.open_uni().await?;
+
+            send.write_u32(id).await?;
+            send.write_all(&data).await?;
+
+            Ok(())
+        })
+    }
+
+    fn send_datagram(&self, id: u32, data: Bytes) -> Result<(), NetworkError> {
+        let mut bytes = BytesMut::with_capacity(4 + data.len());
+        bytes.put_u32(id);
+        bytes.put(data);
+
+        self.send_datagram(bytes.freeze())?;
+
+        Ok(())
+    }
+}
 #[derive(Clone)]
 /// Manages the client side connection to the server.
 pub struct GameClient {

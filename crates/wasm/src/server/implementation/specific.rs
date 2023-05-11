@@ -4,7 +4,7 @@
 
 use ambient_core::player::{player, user_id};
 use ambient_ecs::{query, EntityId, World};
-use ambient_network::server::player_connection_id;
+use ambient_network::server::player_connection;
 use ambient_physics::physx::character_controller;
 use ambient_std::shapes::Ray;
 use anyhow::Context;
@@ -277,20 +277,20 @@ fn send_networked(
     data: Vec<u8>,
     reliable: bool,
 ) -> anyhow::Result<()> {
-    let connections: Vec<_> = query((user_id(), player_connection_id()))
+    let connections: Vec<_> = query((user_id(), player_connection()))
         .incl(player())
         .iter(world, None)
         .filter(|(_, (uid, _))| {
             target_user_id
                 .as_ref()
-                .map(|tuid| tuid == *uid)
+                .map(|target_uid| target_uid == *uid)
                 .unwrap_or(true)
         })
         .map(|(_, (_, connection))| connection.clone())
         .collect();
 
-    for connection in connections {
-        message::send_networked(world, todo!(), module_id, &name, &data, reliable)?;
+    for conn in connections {
+        message::send_networked(world, conn, module_id, &name, &data, reliable)?;
     }
 
     Ok(())
