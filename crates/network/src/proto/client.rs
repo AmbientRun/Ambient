@@ -51,7 +51,7 @@ impl ClientState {
     ) -> anyhow::Result<()> {
         match (frame, &self) {
             (ClientControl::ServerInfo(server_info), Self::Connecting(_user_id)) => {
-                tracing::info!("Received server info: {server_info:?}");
+                tracing::info!(?server_info, "Received server info");
 
                 let state = state.lock();
                 ContentBaseUrlKey.insert(&state.assets, server_info.content_base_url.clone());

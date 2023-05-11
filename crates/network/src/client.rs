@@ -316,18 +316,16 @@ impl ElementComponent for GameClientView {
             )
         });
 
+        let ((control_tx, control_rx), _) = hooks.use_state_with(|_| flume::unbounded());
+
         // The game client will be set once a connection establishes
         let (game_client, set_game_client) = hooks.use_state(None as Option<GameClient>);
 
         // Subscribe to window close events
         hooks.use_runtime_message::<messages::WindowClose>({
-            let game_client = game_client.clone();
             move |_, _| {
                 tracing::info!("User closed the window");
-                if let Some(game_client) = game_client.as_ref() {
-                    todo!()
-                    // game_client.connection.close(0u32.into(), b"User window was closed");
-                }
+                control_tx.send(Control::Disconnect).unwrap();
             }
         });
 
@@ -368,7 +366,7 @@ impl ElementComponent for GameClientView {
         let (error, set_error) = hooks.use_state(None);
 
         hooks.use_task(move |_| {
-            let open_and_run = async move {
+            let task = async move {
                 let conn = open_connection(server_addr)
                     .await
                     .with_context(|| format!("Failed to connect to endpoint: {server_addr:?}"))?;
@@ -402,6 +400,7 @@ impl ElementComponent for GameClientView {
                         }),
                     },
                     game_state,
+                    control_rx,
                 )
                 .await?;
 
@@ -411,7 +410,7 @@ impl ElementComponent for GameClientView {
             };
 
             async move {
-                match open_and_run.await {
+                match task.await {
                     Ok(()) => {
                         tracing::info!("Client disconnected");
                     }
@@ -458,6 +457,10 @@ struct ClientCallbacks {
     on_loaded: LoadedFunc,
 }
 
+pub enum Control {
+    Disconnect,
+}
+
 #[tracing::instrument(name = "client", level = "info", skip(conn))]
 async fn handle_connection(
     game_client: GameClient,
@@ -465,6 +468,7 @@ async fn handle_connection(
     user_id: String,
     callbacks: ClientCallbacks,
     state: SharedClientState,
+    control_rx: flume::Receiver<Control>,
 ) -> anyhow::Result<()> {
     tracing::info!("Handling client connection");
     tracing::info!("Opening control stream");
@@ -498,13 +502,21 @@ async fn handle_connection(
     tracing::info!("Accepting diff stream");
     let mut diff_stream = RecvStream::new(conn.accept_uni().await?);
 
-    let on_disconnect = (callbacks.on_loaded)(game_client)?;
+    let cleanup = (callbacks.on_loaded)(game_client)?;
+    let on_disconnect = move || {
+        tracing::info!("Running connection cleanup");
+        cleanup()
+    };
 
     scopeguard::defer!(on_disconnect());
 
     let stats_interval = 5;
     let mut stats_timer = tokio::time::interval(Duration::from_secs_f32(stats_interval as f32));
     let mut prev_stats = conn.stats();
+
+    let mut control_rx = control_rx.into_stream();
+
+    tracing::info!("Client connected");
 
     while let ClientState::Connected(connected) = &mut client {
         tokio::select! {
@@ -521,6 +533,16 @@ async fn handle_connection(
                 });
 
                 prev_stats = stats;
+            }
+
+           Some(control) = control_rx.next() => {
+                match control {
+                    Control::Disconnect => {
+                        tracing::info!("Disconnecting manually");
+                        // Tell the server that we want to gracefully disconnect
+                        control_send.send(ServerControl::Disconnect).await?;
+                    }
+                }
             }
 
             Ok(datagram) = conn.read_datagram() => {
@@ -589,7 +611,6 @@ impl Display for NetworkStats {
 }
 
 /// Connnect to the server endpoint.
-/// Does not handle a protocol.
 #[tracing::instrument(level = "debug")]
 async fn open_connection(server_addr: SocketAddr) -> anyhow::Result<Connection> {
     log::debug!("Connecting to world instance: {server_addr:?}");

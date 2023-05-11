@@ -17,7 +17,7 @@ use crate::{
         server::{handle_diffs, ConnectionData, Player},
         ClientControl,
     },
-    proto::{ServerInfo, VERSION},
+    proto::{ServerControl, ServerInfo, VERSION},
     stream, NetworkError, ServerWorldExt, RPC_BISTREAM_ID,
 };
 use ambient_core::{
