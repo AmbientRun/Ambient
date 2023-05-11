@@ -146,7 +146,7 @@ pub fn View(hooks: &mut Hooks) -> Element {
                             let val = sine.next_sample().unwrap()[0];
                             buf.set_index(wr as u32, val);
                             js_sys::Atomics::store(&write_ptr, 0, (wr + 1) % (2048)).unwrap();
-                            // phase += 440.0 / 48000.0;
+                            // phase += 440.0 / 44100.0;
                             // if phase > 1.0 {
                             //     phase -= 1.0;
                             // }
