@@ -15,6 +15,7 @@ use glam::{uvec4, Mat4, Quat, UVec4, Vec2, Vec3, Vec4, Vec4Swizzles};
 use gltf::animation::util::ReadOutputs;
 use itertools::Itertools;
 use relative_path::RelativePathBuf;
+use anyhow::Context;
 
 use self::gltf_import::GltfImport;
 use crate::{dotdot_path, model_crate::ModelCrate};
@@ -39,11 +40,9 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
             while let Some(tc) = reader.read_tex_coords(texcoords.len() as u32) {
                 texcoords.push(tc.into_f32().map(|x| x.into()).collect::<Vec<Vec2>>());
             }
-
-            let flip_indices = true;
             let mut cpu_mesh = Mesh {
                 name: format!("{}:{}:{}", import.name, mesh.index(), primitive.index()),
-                positions: reader.read_positions().map(|v| v.map(|x| x.into()).collect::<Vec<Vec3>>()),
+                positions: reader.read_positions().context("GLTF mesh must contain vertex positions")?.map(|a| Vec3::from(a)).collect::<Vec<Vec3>>(),
                 normals: reader.read_normals().map(|v| v.map(|x| x.into()).collect::<Vec<Vec3>>()),
                 tangents: reader.read_tangents().map(|v| v.map(|x| Vec4::from(x).xyz()).collect::<Vec<Vec3>>()),
                 texcoords,
@@ -52,22 +51,9 @@ pub async fn import(import: &GltfImport, asset_crate: &mut ModelCrate) -> anyhow
                     .read_joints(0)
                     .map(|v| v.into_u16().map(|v| uvec4(v[0] as u32, v[1] as u32, v[2] as u32, v[3] as u32)).collect::<Vec<UVec4>>()),
                 joint_weights: reader.read_weights(0).map(|v| v.into_f32().map(|x| x.into()).collect::<Vec<Vec4>>()),
-                indices: reader.read_indices().map(|v| {
-                    if flip_indices {
-                        v.into_u32()
-                            .chunks(3)
-                            .into_iter()
-                            .flat_map(|chunk| {
-                                let mut chunk = chunk.collect_vec();
-                                chunk.swap(1, 2);
-                                chunk
-                            })
-                            .collect::<Vec<u32>>()
-                    } else {
-                        v.into_u32().collect::<Vec<u32>>()
-                    }
-                }),
+                indices: reader.read_indices().context("GLTF mesh must contain an index buffer")?.into_u32().collect_vec(),
             };
+            cpu_mesh.flip_winding();
             cpu_mesh.try_ensure_tangents();
             let path = asset_crate.meshes.insert(&format!("{}{}_{}", name_(mesh.name()), mesh.index(), primitive.index()), cpu_mesh).path;
             meshes[mesh_i][prim_i] = path;

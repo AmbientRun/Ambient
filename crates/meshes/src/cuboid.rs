@@ -129,7 +129,9 @@ impl<'a> From<&'a CuboidMesh> for Mesh {
             None
         };
 
-        let colors = cuboid.color.map(|color| std::iter::repeat(vec4(color.x, color.y, color.z, color.w)).take(24).collect());
+        let colors = cuboid
+            .color
+            .map(|color| std::iter::repeat(color).take(24).collect());
 
         let mut indices = Vec::new();
 
@@ -145,14 +147,12 @@ impl<'a> From<&'a CuboidMesh> for Mesh {
 
         let mut mesh = Mesh {
             name: "cuboid".into(),
-            positions: Some(positions),
+            positions,
             colors,
             normals,
-            tangents: None,
             texcoords,
-            joint_indices: None,
-            joint_weights: None,
-            indices: Some(indices),
+            indices,
+            ..Default::default()
         };
         if cuboid.tangents {
             mesh.create_tangents();

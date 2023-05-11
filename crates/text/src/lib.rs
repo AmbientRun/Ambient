@@ -516,10 +516,10 @@ fn mesh_from_glyph_vertices(vertices: Vec<GlyphVertex>) -> Mesh {
     }
     Mesh {
         name: "GlyphMesh".to_string(),
-        positions: Some(positions),
+        positions,
         texcoords: vec![texcoords],
         normals: Some(normals),
-        indices: Some(indices),
+        indices,
         ..Default::default()
     }
 }
