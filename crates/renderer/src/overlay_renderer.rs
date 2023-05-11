@@ -11,11 +11,14 @@ use ambient_meshes::QuadMeshKey;
 use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use ordered_float::OrderedFloat;
 use wgpu::{
-    ColorTargetState, CommandEncoder, IndexFormat, RenderPassColorAttachment, RenderPassDepthStencilAttachment, RenderPassDescriptor,
-    RenderPipeline,
+    ColorTargetState, CommandEncoder, IndexFormat, RenderPassColorAttachment,
+    RenderPassDepthStencilAttachment, RenderPassDescriptor, RenderPipeline,
 };
 
-use super::{material, overlay, renderer_shader, FSMain, RendererResources, RendererShader, RendererTarget, SharedMaterial};
+use super::{
+    material, overlay, renderer_shader, FSMain, RendererResources, RendererShader, RendererTarget,
+    SharedMaterial,
+};
 use crate::{bind_groups::BindGroups, RendererConfig};
 
 struct OverlayEntity {
@@ -62,15 +65,25 @@ impl OverlayRenderer {
     pub fn update(&mut self, world: &mut World) {
         let mut spawn_qs = std::mem::replace(&mut self.spawn_qs, QueryState::new());
         let mut despawn_qs = std::mem::replace(&mut self.despawn_qs, QueryState::new());
-        for (id, ((), shader, material, pos)) in
-            query((overlay(), renderer_shader().changed(), material().changed(), translation())).iter(world, Some(&mut spawn_qs))
+        for (id, ((), shader, material, pos)) in query((
+            overlay(),
+            renderer_shader().changed(),
+            material().changed(),
+            translation(),
+        ))
+        .iter(world, Some(&mut spawn_qs))
         {
             self.remove(id);
 
             let shader = self.shader(&shader(&self.assets, &self.renderer_config)).0;
 
             // Insert again
-            self.entities.push(OverlayEntity { shader, id, depth: OrderedFloat(pos.z), material: material.clone() })
+            self.entities.push(OverlayEntity {
+                shader,
+                id,
+                depth: OrderedFloat(pos.z),
+                material: material.clone(),
+            })
         }
 
         let removed = query((overlay(),))
@@ -125,22 +138,37 @@ impl OverlayRenderer {
         }
     }
 
-    pub fn render(&self, cmds: &mut CommandEncoder, target: &RendererTarget, bind_groups: &BindGroups, mesh_buffer: &MeshBuffer) {
+    pub fn render(
+        &self,
+        cmds: &mut CommandEncoder,
+        target: &RendererTarget,
+        bind_groups: &BindGroups,
+        mesh_buffer: &MeshBuffer,
+    ) {
         let mut renderpass = cmds.begin_render_pass(&RenderPassDescriptor {
             label: Some("Overlay"),
             color_attachments: &[Some(RenderPassColorAttachment {
                 view: target.color(),
                 resolve_target: None,
-                ops: wgpu::Operations { load: wgpu::LoadOp::Load, store: true },
+                ops: wgpu::Operations {
+                    load: wgpu::LoadOp::Load,
+                    store: true,
+                },
             })],
             depth_stencil_attachment: Some(RenderPassDepthStencilAttachment {
                 view: target.depth_stencil(),
-                depth_ops: Some(wgpu::Operations { load: wgpu::LoadOp::Load, store: true }),
+                depth_ops: Some(wgpu::Operations {
+                    load: wgpu::LoadOp::Load,
+                    store: true,
+                }),
                 stencil_ops: None,
             }),
         });
 
-        renderpass.set_index_buffer(mesh_buffer.index_buffer.buffer().slice(..), IndexFormat::Uint32);
+        renderpass.set_index_buffer(
+            mesh_buffer.index_buffer.buffer().slice(..),
+            IndexFormat::Uint32,
+        );
 
         let mut is_bound = false;
 

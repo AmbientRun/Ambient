@@ -25,7 +25,14 @@ pub struct UntypedBuffer {
 }
 
 impl UntypedBuffer {
-    pub fn new(gpu: Arc<Gpu>, label: &str, capacity: u64, length: u64, usage: wgpu::BufferUsages, item_size: u64) -> Self {
+    pub fn new(
+        gpu: Arc<Gpu>,
+        label: &str,
+        capacity: u64,
+        length: u64,
+        usage: wgpu::BufferUsages,
+        item_size: u64,
+    ) -> Self {
         UNTYPED_BUFFERS_TOTAL_SIZE.fetch_add((capacity * item_size) as usize, Ordering::SeqCst);
         Self {
             buffer: gpu.device.create_buffer(&wgpu::BufferDescriptor {
@@ -43,10 +50,22 @@ impl UntypedBuffer {
         }
     }
 
-    pub fn new_init(gpu: Arc<Gpu>, label: &str, usage: wgpu::BufferUsages, data: &[u8], item_size: u64) -> Self {
+    pub fn new_init(
+        gpu: Arc<Gpu>,
+        label: &str,
+        usage: wgpu::BufferUsages,
+        data: &[u8],
+        item_size: u64,
+    ) -> Self {
         UNTYPED_BUFFERS_TOTAL_SIZE.fetch_add(data.len(), Ordering::SeqCst);
         Self {
-            buffer: gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor { label: Some(label), usage, contents: data }),
+            buffer: gpu
+                .device
+                .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                    label: Some(label),
+                    usage,
+                    contents: data,
+                }),
             label: label.to_string(),
             usage,
             capacity: data.len() as u64 / item_size,
@@ -91,14 +110,22 @@ impl UntypedBuffer {
     }
 
     pub fn write(&self, index: u64, data: &[u8]) {
-        self.gpu.queue.write_buffer(&self.buffer, index * self.item_size, data);
+        self.gpu
+            .queue
+            .write_buffer(&self.buffer, index * self.item_size, data);
     }
 
     fn change_capacity(&mut self, new_capacity: u64, retain_content: bool) {
         if new_capacity > self.capacity {
-            UNTYPED_BUFFERS_TOTAL_SIZE.fetch_add(((new_capacity - self.capacity) * self.item_size) as usize, Ordering::SeqCst);
+            UNTYPED_BUFFERS_TOTAL_SIZE.fetch_add(
+                ((new_capacity - self.capacity) * self.item_size) as usize,
+                Ordering::SeqCst,
+            );
         } else {
-            UNTYPED_BUFFERS_TOTAL_SIZE.fetch_sub(((self.capacity - new_capacity) * self.item_size) as usize, Ordering::SeqCst);
+            UNTYPED_BUFFERS_TOTAL_SIZE.fetch_sub(
+                ((self.capacity - new_capacity) * self.item_size) as usize,
+                Ordering::SeqCst,
+            );
         }
         let new_buffer = self.gpu.device.create_buffer(&wgpu::BufferDescriptor {
             label: Some(&self.label),
@@ -107,8 +134,17 @@ impl UntypedBuffer {
             mapped_at_creation: false,
         });
         if retain_content {
-            let mut encoder = self.gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-            encoder.copy_buffer_to_buffer(&self.buffer, 0, &new_buffer, 0, self.capacity * self.item_size);
+            let mut encoder = self
+                .gpu
+                .device
+                .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+            encoder.copy_buffer_to_buffer(
+                &self.buffer,
+                0,
+                &new_buffer,
+                0,
+                self.capacity * self.item_size,
+            );
             self.gpu.queue.submit(Some(encoder.finish()));
         }
         self.buffer = new_buffer;
@@ -116,7 +152,11 @@ impl UntypedBuffer {
     }
 
     /// If use_staging is true it will create a temporary staging buffer internally, copy the data over, and then read from that
-    pub async fn read(&self, bounds: impl RangeBounds<BufferAddress>, use_staging: bool) -> Result<Vec<u8>, BufferAsyncError> {
+    pub async fn read(
+        &self,
+        bounds: impl RangeBounds<BufferAddress>,
+        use_staging: bool,
+    ) -> Result<Vec<u8>, BufferAsyncError> {
         if use_staging {
             let start = match bounds.start_bound() {
                 std::ops::Bound::Included(v) => *v,
@@ -133,7 +173,10 @@ impl UntypedBuffer {
                 return Ok(Vec::new());
             }
 
-            let mut encoder = self.gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+            let mut encoder = self
+                .gpu
+                .device
+                .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
             let staging_buffer = self.gpu.device.create_buffer(&wgpu::BufferDescriptor {
                 label: None,
                 size,
@@ -148,7 +191,11 @@ impl UntypedBuffer {
             Self::read_buf(&self.gpu, &self.buffer, bounds).await
         }
     }
-    async fn read_buf(gpu: &Gpu, buf: &wgpu::Buffer, range: impl RangeBounds<BufferAddress>) -> Result<Vec<u8>, BufferAsyncError> {
+    async fn read_buf(
+        gpu: &Gpu,
+        buf: &wgpu::Buffer,
+        range: impl RangeBounds<BufferAddress>,
+    ) -> Result<Vec<u8>, BufferAsyncError> {
         let slice = buf.slice(range);
         let (tx, value) = tokio::sync::oneshot::channel();
         slice.map_async(wgpu::MapMode::Read, |v| {
@@ -178,13 +225,35 @@ pub struct TypedBuffer<T: bytemuck::Pod> {
 }
 
 impl<T: bytemuck::Pod> TypedBuffer<T> {
-    pub fn new(gpu: Arc<Gpu>, label: &str, capacity: u64, length: u64, usage: wgpu::BufferUsages) -> Self {
-        Self { buffer: UntypedBuffer::new(gpu, label, capacity, length, usage, std::mem::size_of::<T>() as u64), _type: PhantomData }
+    pub fn new(
+        gpu: Arc<Gpu>,
+        label: &str,
+        capacity: u64,
+        length: u64,
+        usage: wgpu::BufferUsages,
+    ) -> Self {
+        Self {
+            buffer: UntypedBuffer::new(
+                gpu,
+                label,
+                capacity,
+                length,
+                usage,
+                std::mem::size_of::<T>() as u64,
+            ),
+            _type: PhantomData,
+        }
     }
 
     pub fn new_init(gpu: Arc<Gpu>, label: &str, usage: wgpu::BufferUsages, data: &[T]) -> Self {
         Self {
-            buffer: UntypedBuffer::new_init(gpu, label, usage, bytemuck::cast_slice(data), std::mem::size_of::<T>() as u64),
+            buffer: UntypedBuffer::new_init(
+                gpu,
+                label,
+                usage,
+                bytemuck::cast_slice(data),
+                std::mem::size_of::<T>() as u64,
+            ),
             _type: PhantomData,
         }
     }
@@ -217,7 +286,11 @@ impl<T: bytemuck::Pod> TypedBuffer<T> {
     }
 
     /// Reads a range from the buffer. The range is defined in items; i.e. 1..3 means read item 1 through 3 (not bytes).
-    pub async fn read(&self, bounds: impl RangeBounds<u64>, use_staging: bool) -> Result<Vec<T>, BufferAsyncError> {
+    pub async fn read(
+        &self,
+        bounds: impl RangeBounds<u64>,
+        use_staging: bool,
+    ) -> Result<Vec<T>, BufferAsyncError> {
         let start = match bounds.start_bound() {
             std::ops::Bound::Included(v) => v * self.item_size,
             std::ops::Bound::Excluded(v) => (v + 1) * self.item_size,

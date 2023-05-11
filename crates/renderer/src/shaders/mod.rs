@@ -19,7 +19,10 @@ pub struct StandardShaderKey {
 
 impl std::fmt::Debug for StandardShaderKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("StandardShaderKey").field("material_shader", &self.material_shader.id).field("lit", &self.lit).finish()
+        f.debug_struct("StandardShaderKey")
+            .field("material_shader", &self.material_shader.id)
+            .field("lit", &self.lit)
+            .finish()
     }
 }
 
@@ -29,7 +32,12 @@ impl SyncAssetKey<Arc<RendererShader>> for StandardShaderKey {
         let shader = Shader::new(
             &assets,
             id.clone(),
-            &[GLOBALS_BIND_GROUP, ENTITIES_BIND_GROUP, PRIMITIVES_BIND_GROUP, MATERIAL_BIND_GROUP],
+            &[
+                GLOBALS_BIND_GROUP,
+                ENTITIES_BIND_GROUP,
+                PRIMITIVES_BIND_GROUP,
+                MATERIAL_BIND_GROUP,
+            ],
             &ShaderModule::new("standard_material", include_file!("standard.wgsl"))
                 .with_dependencies(get_forward_modules(&assets, self.shadow_cascades))
                 .with_dependency(self.material_shader.shader.clone()),
@@ -41,7 +49,11 @@ impl SyncAssetKey<Arc<RendererShader>> for StandardShaderKey {
             id,
             vs_main: "vs_main".to_string(),
             fs_shadow_main: "fs_shadow_main".to_string(),
-            fs_forward_main: if self.lit { "fs_forward_lit_main".to_string() } else { "fs_forward_unlit_main".to_string() },
+            fs_forward_main: if self.lit {
+                "fs_forward_lit_main".to_string()
+            } else {
+                "fs_forward_unlit_main".to_string()
+            },
             fs_outline_main: "fs_outlines_main".to_string(),
             transparent: false,
             double_sided: false,

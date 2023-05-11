@@ -21,7 +21,11 @@ pub struct UVSphereMesh {
 
 impl Default for UVSphereMesh {
     fn default() -> Self {
-        Self { radius: 1.0, sectors: 36, stacks: 18 }
+        Self {
+            radius: 1.0,
+            sectors: 36,
+            stacks: 18,
+        }
     }
 }
 impl From<UVSphereMesh> for Mesh {
@@ -79,10 +83,10 @@ impl From<UVSphereMesh> for Mesh {
 
         let mut mesh = Mesh {
             name: format!("{sphere:?}"),
-            positions: Some(vertices),
+            positions: vertices,
             texcoords: vec![uvs],
             normals: Some(normals),
-            indices: Some(indices),
+            indices,
             ..Default::default()
         };
         mesh.create_tangents();

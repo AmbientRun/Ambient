@@ -470,7 +470,7 @@ async fn primitives_from_unity_mesh_renderer(
     let mesh_meta = download_unity_yaml(ctx.ctx.assets(), mesh_meta_url).await.unwrap();
     if mesh_url.extension_is("asset") {
         let asset = download_unity_yaml(ctx.ctx.assets(), &mesh_url).await.unwrap();
-        let mut mesh = unity_parser::asset::Asset::from_yaml(asset[0].clone()).mesh;
+        let mut mesh = unity_parser::asset::Asset::from_yaml(asset[0].clone())?.mesh;
         let mat_ref = mesh_renderer.materials[0].clone();
         let mut mat = ctx.materials_lookup.lock().await.get_by_guid(ctx.config, ctx.guid_lookup, &mat_ref).await.unwrap();
         mat = mat.relative_path_from(&out_model_url.abs().unwrap().push("materials").unwrap());
@@ -502,7 +502,7 @@ async fn primitives_from_unity_mesh_renderer(
             // so that we don't need to transform the actual mesh here, but instead just put the transform on the primitive
             // below
             mesh.transform(go_transform.inverse() * file_scale * transform);
-            mesh.invert_indicies();
+            mesh.flip_winding();
             let mut model_crate = model_crate.lock();
             res.push(PbrRenderPrimitiveFromUrl {
                 mesh: dotdot_path(model_crate.meshes.insert(format!("{}_{}", mesh_guid, prim.mesh.path()), mesh).path).into(),

@@ -62,13 +62,13 @@ impl<T: AsPxActor + 'static> PxActor for T {
     }
     fn get_name(&self) -> String {
         unsafe {
-            let p = physx_sys::PxActor_getName(self.as_actor().0);
+            let p = physx_sys::PxActor_getName(self.as_actor().0) as *const std::ffi::c_char;
             CStr::from_ptr(p).to_str().unwrap().to_string()
         }
     }
     /// Note; physx doesn't copy the string, so the string needs to be kept alive somewhere else
     fn set_name(&self, name: &CString) {
-        unsafe { physx_sys::PxActor_setName_mut(self.as_actor().0, name.as_ptr()) }
+        unsafe { physx_sys::PxActor_setName_mut(self.as_actor().0, name.as_ptr() as *const i8) }
     }
 }
 

@@ -66,7 +66,9 @@ impl SkinsBuffer {
                 "SkinsBuffer.buffer",
                 1,
                 1,
-                wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::COPY_DST,
+                wgpu::BufferUsages::STORAGE
+                    | wgpu::BufferUsages::COPY_SRC
+                    | wgpu::BufferUsages::COPY_DST,
             ),
         }
     }
@@ -83,18 +85,28 @@ impl SkinsBuffer {
 pub fn skinning_systems() -> SystemGroup {
     SystemGroup::new(
         "skinning_systems",
-        vec![query((inv_local_to_world(), inverse_bind_matrices(), joints(), skin())).to_system(|q, world, qs, _| {
+        vec![query((
+            inv_local_to_world(),
+            inverse_bind_matrices(),
+            joints(),
+            skin(),
+        ))
+        .to_system(|q, world, qs, _| {
             let skins_h = SkinsBufferKey.get(world.resource(asset_cache()));
             let skins = skins_h.lock();
             let mut commands = Commands::new();
-            for (id, (&inv_local_to_world, inverse_bind_matrices, joints, skin)) in q.iter(world, qs) {
+            for (id, (&inv_local_to_world, inverse_bind_matrices, joints, skin)) in
+                q.iter(world, qs)
+            {
                 let joint_matrices = joints
                     .iter()
                     .enumerate()
                     .map(|(i, joint)| {
                         inv_local_to_world
                             * world.get(*joint, local_to_world()).unwrap()
-                            * *inverse_bind_matrices.get(i).unwrap_or(&glam::Mat4::IDENTITY)
+                            * *inverse_bind_matrices
+                                .get(i)
+                                .unwrap_or(&glam::Mat4::IDENTITY)
                     })
                     .collect_vec();
                 skins.update(skin, &joint_matrices);

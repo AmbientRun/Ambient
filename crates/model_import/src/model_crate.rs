@@ -494,8 +494,8 @@ impl ModelCrate {
 
             let desc = PxConvexMeshDesc {
                 // Apply the correct mirroring according to the base scale
-                points: mesh.positions.as_ref().unwrap().iter().map(|&p| p * scale_signum).collect_vec(),
-                indices: mesh.indices.clone(),
+                points: mesh.positions.iter().map(|&p| p * scale_signum).collect_vec(),
+                indices: Some(mesh.indices.clone()),
                 vertex_limit: None,
                 flags: Some(PxConvexFlag::COMPUTE_CONVEX),
             };
@@ -580,8 +580,8 @@ impl<'a> ModelNodeRef<'a> {
 
 pub fn physx_triangle_mesh_desc_from_mesh(mesh: &Mesh, flip_normals: bool, reverse_indices: bool) -> Option<PxTriangleMeshDesc> {
     let mut desc = PxTriangleMeshDesc {
-        points: mesh.positions.clone()?,
-        indices: mesh.indices.clone()?,
+        points: mesh.positions.clone(),
+        indices: mesh.indices.clone(),
         flags: if flip_normals { Some(PxMeshFlag::FLIPNORMALS) } else { None },
     };
     if desc.points.is_empty() || desc.indices.is_empty() {
