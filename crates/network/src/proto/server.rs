@@ -80,19 +80,17 @@ impl std::fmt::Debug for ConnectionData {
 pub struct Player {
     pub instance: String,
     control_tx: flume::Sender<ClientControl>,
-    conn: Arc<dyn ClientConnection>,
     connection_id: Uuid,
 }
 
 impl Player {
-    pub fn new_local(instance: impl Into<String>, conn: Arc<dyn ClientConnection>) -> Self {
+    pub fn new_local(instance: impl Into<String>) -> Self {
         let (control_tx, _) = flume::unbounded();
 
         Self {
             instance: instance.into(),
             control_tx,
             connection_id: Uuid::new_v4(),
-            conn,
         }
     }
 
@@ -141,7 +139,6 @@ impl ServerState {
         let old_player = state.players.insert(
             user_id.clone(),
             Player {
-                conn: data.conn.clone(),
                 instance: MAIN_INSTANCE_ID.to_string(),
                 control_tx,
                 connection_id: data.connection_id,

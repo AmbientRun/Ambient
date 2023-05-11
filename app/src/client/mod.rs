@@ -13,7 +13,7 @@ use ambient_core::{
 };
 use ambient_debugger::Debugger;
 use ambient_ecs::{Entity, EntityId, SystemGroup};
-use ambient_element::{element_component, Element, ElementComponentExt, Group, Hooks};
+use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::{
     client::{
         client_network_stats, GameClient, GameClientRenderTarget, GameClientView, GameClientWorld,

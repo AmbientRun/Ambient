@@ -36,6 +36,7 @@ pub mod client_game_state;
 pub mod codec;
 pub mod connection;
 pub mod hooks;
+pub mod native;
 pub mod proto;
 pub mod rpc;
 pub mod server;

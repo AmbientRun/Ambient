@@ -160,7 +160,7 @@ pub fn send_networked(
 }
 
 fn send_datagram(
-    world: &World,
+    _world: &World,
     connection: &dyn ClientConnection,
     module_id: EntityId,
     name: &str,

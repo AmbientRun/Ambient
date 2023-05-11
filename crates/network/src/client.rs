@@ -29,7 +29,7 @@ use serde::{de::DeserializeOwned, Serialize};
 use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
 
 use crate::{
-    client_connection::ConnectionInner,
+    client_connection::ConnectionKind,
     client_game_state::ClientGameState,
     create_client_endpoint_random_port, log_network_result,
     proto::{
@@ -115,7 +115,7 @@ impl ClientConnection for quinn::Connection {
     }
 }
 
-impl ClientConnection for ConnectionInner {
+impl ClientConnection for ConnectionKind {
     fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>> {
         Box::pin(async move {
             let (mut send, recv) = self.open_bi().await?;
@@ -325,7 +325,7 @@ impl ElementComponent for GameClientView {
         hooks.use_runtime_message::<messages::WindowClose>({
             move |_, _| {
                 tracing::info!("User closed the window");
-                control_tx.send(Control::Disconnect).unwrap();
+                control_tx.send(Control::Disconnect).ok();
             }
         });
 
