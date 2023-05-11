@@ -9,7 +9,7 @@ module.exports = {
   },
   mode: "development",
   plugins: [
-    new CopyWebpackPlugin(['index.html'])
+    new CopyWebpackPlugin(['index.html', "_headers", "processor.js"])
   ],
   devServer: {
     contentBase: path.join(__dirname, 'dist'),
