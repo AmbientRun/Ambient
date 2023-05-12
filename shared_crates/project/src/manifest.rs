@@ -2,7 +2,9 @@ use std::{collections::BTreeMap, fs, path::Path};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{Component, Concept, Identifier, IdentifierPathBuf, Message, Version};
+use crate::{
+    CamelCaseIdentifier, Component, Concept, Enum, Identifier, IdentifierPathBuf, Message, Version,
+};
 use anyhow::Context;
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
@@ -17,6 +19,8 @@ pub struct Manifest {
     pub concepts: BTreeMap<IdentifierPathBuf, NamespaceOr<Concept>>,
     #[serde(default)]
     pub messages: BTreeMap<IdentifierPathBuf, NamespaceOr<Message>>,
+    #[serde(default)]
+    pub enums: BTreeMap<CamelCaseIdentifier, NamespaceOr<Enum>>,
 }
 impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, toml::de::Error> {
@@ -129,14 +133,19 @@ impl From<Concept> for NamespaceOr<Concept> {
         Self::Other(value)
     }
 }
+impl From<Enum> for NamespaceOr<Enum> {
+    fn from(value: Enum) -> Self {
+        Self::Other(value)
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use std::collections::BTreeMap;
 
     use crate::{
-        Build, BuildRust, Component, ComponentType, Concept, Identifier, IdentifierPathBuf,
-        Manifest, Namespace, Project, Version, VersionSuffix,
+        Build, BuildRust, CamelCaseIdentifier, Component, ComponentType, Concept, Enum, Identifier,
+        IdentifierPathBuf, Manifest, Namespace, Project, Version, VersionSuffix,
     };
 
     #[test]
@@ -199,6 +208,7 @@ mod tests {
                     .into()
                 )]),
                 messages: BTreeMap::new(),
+                enums: BTreeMap::new(),
             })
         )
     }
@@ -235,6 +245,7 @@ mod tests {
                 components: BTreeMap::new(),
                 concepts: BTreeMap::new(),
                 messages: BTreeMap::new(),
+                enums: BTreeMap::new(),
             })
         )
     }
@@ -302,6 +313,7 @@ mod tests {
                 ]),
                 concepts: BTreeMap::new(),
                 messages: BTreeMap::new(),
+                enums: BTreeMap::new(),
             })
         )
     }
@@ -437,6 +449,43 @@ mod tests {
                     )
                 ]),
                 messages: BTreeMap::new(),
+                enums: BTreeMap::new(),
+            })
+        )
+    }
+
+    #[test]
+    fn can_parse_enums() {
+        const TOML: &str = r#"
+        [project]
+        id = "tictactoe"
+        name = "Tic Tac Toe"
+        version = "0.0.1"
+
+        [enums]
+        CellState = ["Free", "Taken"]
+        "#;
+
+        assert_eq!(
+            Manifest::parse(TOML),
+            Ok(Manifest {
+                project: Project {
+                    id: Identifier::new("tictactoe").unwrap(),
+                    name: Some("Tic Tac Toe".to_string()),
+                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    description: None,
+                    authors: vec![],
+                    organization: None,
+                    includes: Default::default(),
+                },
+                build: Build::default(),
+                components: BTreeMap::new(),
+                concepts: BTreeMap::new(),
+                messages: BTreeMap::new(),
+                enums: BTreeMap::from_iter([(
+                    CamelCaseIdentifier::new("CellState").unwrap(),
+                    Enum(vec!["Free".to_owned(), "Taken".to_owned()]).into()
+                )]),
             })
         )
     }

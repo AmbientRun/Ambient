@@ -10,3 +10,5 @@ mod version;
 pub use version::*;
 mod message;
 pub use message::*;
+mod enum_;
+pub use enum_::*;

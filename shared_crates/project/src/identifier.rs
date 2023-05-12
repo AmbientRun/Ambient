@@ -79,14 +79,18 @@ impl<'de> Deserialize<'de> for IdentifierPathBuf {
 impl Serialize for IdentifierPathBuf {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer {
-        self.0.iter().fold(String::new(), |mut acc, ident| {
-            if !acc.is_empty() {
-                acc.push_str("::");
-            }
-            acc.push_str(&ident.0);
-            acc
-        }).serialize(serializer)
+        S: serde::Serializer,
+    {
+        self.0
+            .iter()
+            .fold(String::new(), |mut acc, ident| {
+                if !acc.is_empty() {
+                    acc.push_str("::");
+                }
+                acc.push_str(&ident.0);
+                acc
+            })
+            .serialize(serializer)
     }
 }
 impl Deref for IdentifierPathBuf {
@@ -173,12 +177,76 @@ impl ToTokens for Identifier {
     }
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+pub struct CamelCaseIdentifier(pub(super) String);
+impl CamelCaseIdentifier {
+    pub fn new(id: impl Into<String>) -> Result<Self, &'static str> {
+        Self::new_impl(id.into())
+    }
+
+    fn new_impl(id: String) -> Result<Self, &'static str> {
+        Self::validate(&id)?;
+        Ok(Self(id))
+    }
+
+    pub fn validate(id: &str) -> Result<&str, &'static str> {
+        if id.is_empty() {
+            return Err("identifier must not be empty");
+        }
+
+        if !id.starts_with(|c: char| c.is_ascii_uppercase()) {
+            return Err("identifier must start with a uppercase ASCII character");
+        }
+
+        if !id.chars().all(|c| c.is_ascii_alphanumeric()) {
+            return Err("identifier must be camel-case ASCII");
+        }
+
+        Ok(id)
+    }
+}
+impl Serialize for CamelCaseIdentifier {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        String::serialize(&self.0, serializer)
+    }
+}
+impl<'de> Deserialize<'de> for CamelCaseIdentifier {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        CamelCaseIdentifier::new_impl(String::deserialize(deserializer)?)
+            .map_err(serde::de::Error::custom)
+    }
+}
+impl AsRef<str> for CamelCaseIdentifier {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+impl Display for CamelCaseIdentifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+impl ToTokens for CamelCaseIdentifier {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(syn::Ident::new(
+            self.as_ref(),
+            proc_macro2::Span::call_site(),
+        ))
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{Identifier, IdentifierPathBuf};
+    use crate::{CamelCaseIdentifier, Identifier, IdentifierPathBuf};
 
     #[test]
-    fn can_validate_identifiers() {
+    fn can_validate_snake_case_identifiers() {
         use Identifier as I;
 
         assert_eq!(I::new(""), Err("identifier must not be empty"));
@@ -188,6 +256,10 @@ mod tests {
         );
         assert_eq!(
             I::new("_asd"),
+            Err("identifier must start with a lowercase ASCII character")
+        );
+        assert_eq!(
+            I::new("CoolComponent"),
             Err("identifier must start with a lowercase ASCII character")
         );
         assert_eq!(
@@ -210,6 +282,46 @@ mod tests {
         assert_eq!(
             I::new("cool_component_00"),
             Ok(I("cool_component_00".to_string()))
+        );
+    }
+
+    #[test]
+    fn can_validate_camel_case_identifiers() {
+        use CamelCaseIdentifier as CI;
+
+        assert_eq!(CI::new(""), Err("identifier must not be empty"));
+        assert_eq!(
+            CI::new("5asd"),
+            Err("identifier must start with a uppercase ASCII character")
+        );
+        assert_eq!(
+            CI::new("_asd"),
+            Err("identifier must start with a uppercase ASCII character")
+        );
+        assert_eq!(
+            CI::new("cool_component"),
+            Err("identifier must start with a uppercase ASCII character")
+        );
+        assert_eq!(
+            CI::new("mY_COOL_COMPONENT"),
+            Err("identifier must start with a uppercase ASCII character")
+        );
+        assert_eq!(
+            CI::new("CoolComponent!"),
+            Err("identifier must be camel-case ASCII")
+        );
+        assert_eq!(
+            CI::new("Cool-Component"),
+            Err("identifier must be camel-case ASCII")
+        );
+
+        assert_eq!(
+            CI::new("CoolComponent"),
+            Ok(CI("CoolComponent".to_string()))
+        );
+        assert_eq!(
+            CI::new("CoolComponent00"),
+            Ok(CI("CoolComponent00".to_string()))
         );
     }
 
