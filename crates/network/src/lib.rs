@@ -3,7 +3,6 @@ use ambient_ecs::{
 };
 use serde::de::DeserializeOwned;
 use std::{
-   
     io::ErrorKind,
     net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::Arc,
@@ -13,8 +12,6 @@ use stream::FrameError;
 
 use ambient_rpc::RpcError;
 use ambient_std::log_error;
-use connection::Connection;
-use futures::{SinkExt, StreamExt};
 use quinn::{
     ClientConfig, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, ServerConfig,
     TransportConfig,
@@ -22,8 +19,6 @@ use quinn::{
 use rand::Rng;
 use rustls::{Certificate, PrivateKey, RootCertStore};
 use thiserror::Error;
-use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
-use tokio_util::codec::{FramedRead, FramedWrite, LengthDelimitedCodec};
 
 pub use ambient_ecs::generated::components::core::network::{
     is_remote_entity, persistent_resources, synced_resources,
@@ -34,7 +29,6 @@ pub mod client;
 pub mod client_connection;
 pub mod client_game_state;
 pub mod codec;
-pub mod connection;
 pub mod hooks;
 pub mod native;
 pub mod proto;
@@ -192,140 +186,6 @@ impl NetworkError {
         matches!(self, Self::EndOfStream)
     }
 }
-
-/// Abstracts the serialization for a fixed size stream.
-#[derive(Debug)]
-/// Length delimited framed stream of [`Bytes`]
-pub struct IncomingStream<S> {
-    pub stream: FramedRead<S, LengthDelimitedCodec>,
-}
-
-impl IncomingStream<quinn::RecvStream> {
-    /// Accept a new uni-directional peer stream. Waits for the server to open a
-    /// stream.
-    pub async fn accept_incoming(conn: &quinn::Connection) -> Result<Self, NetworkError> {
-        let stream = conn.accept_uni().await.map_err(NetworkError::from)?;
-        Ok(Self::new(stream))
-    }
-}
-
-impl<S: Unpin + AsyncRead> IncomingStream<S> {
-    pub fn new(stream: S) -> Self {
-        let mut codec = LengthDelimitedCodec::new();
-        codec.set_max_frame_length(1_024 * 1_024 * 1_024);
-        Self {
-            stream: FramedRead::new(stream, codec),
-        }
-    }
-
-    /// Reads the next frame from the incoming stream
-    pub async fn next<T: DeserializeOwned + std::fmt::Debug>(&mut self) -> Result<T, NetworkError> {
-        let buf = self
-            .stream
-            .next()
-            .await
-            // There is nothing more to read from the stream since it was
-            // closed by peer
-            .ok_or(NetworkError::EndOfStream)?
-            // Reading was not possible as the connection was closed
-            .map_err(|_| NetworkError::ConnectionClosed)?;
-
-        bincode::deserialize(&buf).map_err(Into::into)
-    }
-}
-
-#[derive(Debug)]
-/// Length delimited framed stream of [`Bytes`]
-pub struct OutgoingStream<S> {
-    pub stream: FramedWrite<S, LengthDelimitedCodec>,
-}
-
-impl OutgoingStream<quinn::SendStream> {
-    /// Are you sure you don't want [open_uni_with_id] instead?
-    pub async fn open_uni<C: Connection>(conn: &C) -> Result<Self, NetworkError> {
-        Ok(OutgoingStream::new(conn.open_uni().await?))
-    }
-    pub async fn open_uni_with_id<C: Connection>(conn: &C, id: u32) -> Result<Self, NetworkError> {
-        let mut stream = Self::open_uni(conn).await?;
-        stream.stream.get_mut().write_u32(id).await?;
-        Ok(stream)
-    }
-}
-
-impl<S: Unpin + AsyncWrite> OutgoingStream<S> {
-    pub fn new(stream: S) -> Self {
-        let mut codec = LengthDelimitedCodec::new();
-        codec.set_max_frame_length(1_024 * 1_024 * 1_024);
-        Self {
-            stream: FramedWrite::new(stream, codec),
-        }
-    }
-
-    /// Sends raw bytes over the network
-    pub async fn send_bytes(&mut self, bytes: Vec<u8>) -> Result<(), NetworkError> {
-        self.stream.send(bytes.into()).await?;
-
-        Ok(())
-    }
-
-    pub async fn send<T: serde::Serialize>(&mut self, value: &T) -> Result<(), NetworkError> {
-        let bytes = bincode::serialize(value)?;
-        self.send_bytes(bytes).await
-    }
-}
-
-/// Are you sure you don't want [open_bincode_bi_stream_with_id] instead?
-pub async fn open_bincode_bi_stream<C: Connection>(
-    conn: &C,
-) -> Result<
-    (
-        OutgoingStream<quinn::SendStream>,
-        IncomingStream<quinn::RecvStream>,
-    ),
-    NetworkError,
-> {
-    let (send, recv) = conn.open_bi().await?;
-    Ok((OutgoingStream::new(send), IncomingStream::new(recv)))
-}
-
-pub async fn open_bincode_bi_stream_with_id<C: Connection>(
-    conn: &C,
-    id: u32,
-) -> Result<
-    (
-        OutgoingStream<quinn::SendStream>,
-        IncomingStream<quinn::RecvStream>,
-    ),
-    NetworkError,
-> {
-    let (mut send, recv) = conn.open_bi().await?;
-    send.write_u32(id).await?;
-    Ok((OutgoingStream::new(send), IncomingStream::new(recv)))
-}
-
-pub async fn next_bincode_bi_stream<C: Connection>(
-    conn: &C,
-) -> Result<
-    (
-        OutgoingStream<quinn::SendStream>,
-        IncomingStream<quinn::RecvStream>,
-    ),
-    NetworkError,
-> {
-    let (send, recv) = conn.accept_bi().await?;
-    let send = OutgoingStream::new(send);
-    let recv = IncomingStream::new(recv);
-    Ok((send, recv))
-}
-
-// pub async fn send_datagram<C: Connection>(conn: &C, id: u32, mut payload: Vec<u8>) -> Result<(), NetworkError> {
-//     let mut bytes = Vec::new();
-//     byteorder::WriteBytesExt::write_u32::<byteorder::BigEndian>(&mut bytes, id)?;
-//     bytes.append(&mut payload);
-//     conn.send_datagram(Bytes::from(bytes)).await?;
-
-//     Ok(())
-// }
 
 pub fn create_client_endpoint_random_port() -> Option<Endpoint> {
     for _ in 0..10 {
