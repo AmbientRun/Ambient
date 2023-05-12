@@ -257,7 +257,7 @@ fn main() -> anyhow::Result<()> {
 
     // If this is just a deploy then deploy and exit
     #[cfg(feature = "deploy")]
-    if let Cli::Deploy {
+    if let Commands::Deploy {
         token, api_server, ..
     } = &cli.command
     {
