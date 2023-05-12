@@ -6,7 +6,3 @@ version = "0.0.1"
 [messages.bonk]
 description = "Collision between two objects."
 fields = { emitter = "EntityId", listener = "EntityId"  }
-
-[messages.init]
-description = "Init world and let client know ids."
-fields = { camera = "EntityId", emitter = "EntityId", listener = "EntityId" }

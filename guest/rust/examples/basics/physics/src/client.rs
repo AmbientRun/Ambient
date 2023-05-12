@@ -1,4 +1,4 @@
-use ambient_api::{components::core::physics::linear_velocity, prelude::*};
+use ambient_api::prelude::*;
 
 #[main]
 pub fn main() {
