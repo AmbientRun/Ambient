@@ -165,21 +165,16 @@ pub fn type_to_token_stream(
             type_,
             element_type,
         } => {
-            if let Some(element_type) = element_type {
-                let container_ty = convert_container_type_to_rust_type(type_)
-                    .ok_or(TypeTokenStreamError::InvalidContainerType)?;
+            let container_ty = convert_container_type_to_rust_type(type_)
+                .ok_or(TypeTokenStreamError::InvalidContainerType)?;
 
-                let element_ty = convert_primitive_type_to_rust_type(element_type, context)
-                    .ok_or(TypeTokenStreamError::InvalidElementType)?;
+            let element_ty = convert_primitive_type_to_rust_type(element_type, context)
+                .ok_or(TypeTokenStreamError::InvalidElementType)?;
 
-                if with_turbofish {
-                    Ok(quote! { #container_ty :: < #element_ty > })
-                } else {
-                    Ok(quote! { #container_ty < #element_ty > })
-                }
+            if with_turbofish {
+                Ok(quote! { #container_ty :: < #element_ty > })
             } else {
-                Ok(convert_primitive_type_to_rust_type(type_, context)
-                    .ok_or(TypeTokenStreamError::InvalidPrimitiveType)?)
+                Ok(quote! { #container_ty < #element_ty > })
             }
         }
     }

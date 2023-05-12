@@ -270,33 +270,28 @@ fn toml_value_to_tokens(
             type_,
             element_type,
         } => {
-            if let Some(element_type) = element_type {
-                let values = value.as_array().with_context(|| {
-                    format!("expected an array initializer for component `{path}`")
-                })?;
+            let values = value
+                .as_array()
+                .with_context(|| format!("expected an array initializer for component `{path}`"))?;
 
-                match type_.as_str() {
-                    "Vec" => {
-                        let values = values
-                            .iter()
-                            .map(|v| toml_value_to_tokens_primitive(path, element_type, v))
-                            .collect::<anyhow::Result<Vec<_>>>()?;
+            match type_.as_str() {
+                "Vec" => {
+                    let values = values
+                        .iter()
+                        .map(|v| toml_value_to_tokens_primitive(path, element_type, v))
+                        .collect::<anyhow::Result<Vec<_>>>()?;
 
-                        Ok(quote! { vec![ #(#values),* ] })
-                    }
-                    "Option" => {
-                        if values.is_empty() {
-                            Ok(quote! { None })
-                        } else {
-                            let value =
-                                toml_value_to_tokens_primitive(path, element_type, &values[0])?;
-                            Ok(quote! { Some(#value) })
-                        }
-                    }
-                    _ => anyhow::bail!("unsupported container `{type_}` for component `{path}`"),
+                    Ok(quote! { vec![ #(#values),* ] })
                 }
-            } else {
-                toml_value_to_tokens_primitive(path, type_, value)
+                "Option" => {
+                    if values.is_empty() {
+                        Ok(quote! { None })
+                    } else {
+                        let value = toml_value_to_tokens_primitive(path, element_type, &values[0])?;
+                        Ok(quote! { Some(#value) })
+                    }
+                }
+                _ => anyhow::bail!("unsupported container `{type_}` for component `{path}`"),
             }
         }
     }

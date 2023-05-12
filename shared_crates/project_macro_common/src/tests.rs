@@ -189,50 +189,6 @@ fn can_generate_components_from_manifest() {
 }
 
 #[test]
-fn can_generate_component_with_contained_type() {
-    let manifest = indoc::indoc! {r#"
-        [project]
-        id = "my_project"
-        name = "My Project"
-        version = "0.0.1"
-
-        [components]
-        a_cool_component = { name = "Cool Component", description = "", type = { type = "Empty" } }
-        "#};
-
-    let expected_output = quote::quote! {
-        #[doc = r" Auto-generated component definitions. These come from `ambient.toml` in the root of the project."]
-        pub mod components {
-            use ambient_api2::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-            static A_COOL_COMPONENT: Lazy< Component<()> > = Lazy::new(|| __internal_get_component("my_project::a_cool_component"));
-            #[doc = "**Cool Component**"]
-            pub fn a_cool_component() -> Component<()> {
-                *A_COOL_COMPONENT
-            }
-        }
-        #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
-        #[doc = r""]
-        #[doc = r" They do not have any runtime representation outside of the components that compose them."]
-        pub mod concepts {
-        }
-        #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
-        #[doc = r" and with other modules."]
-        pub mod messages {
-        }
-    };
-
-    let result = generate_code(
-        ManifestSource::String(manifest.to_string()),
-        guest_context(),
-        false,
-        true,
-    )
-    .unwrap();
-
-    assert_eq!(result.to_string(), expected_output.to_string());
-}
-
-#[test]
 fn can_generate_components_from_manifest_with_org() {
     let manifest = indoc::indoc! {r#"
         [project]

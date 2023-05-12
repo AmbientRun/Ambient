@@ -51,21 +51,15 @@ fn component_type_to_primitive(ty: &ComponentType) -> Result<PrimitiveComponentT
             type_,
             element_type,
         } => {
-            let element_ty = element_type
-                .as_deref()
-                .map(PrimitiveComponentType::try_from)
-                .transpose()?;
-            match element_ty {
-                Some(element_ty) => match type_.as_str() {
-                    "Vec" => element_ty
-                        .to_vec_type()
-                        .ok_or("invalid element type for Vec"),
-                    "Option" => element_ty
-                        .to_option_type()
-                        .ok_or("invalid element type for Option"),
-                    _ => Err("invalid container type"),
-                },
-                None => PrimitiveComponentType::try_from(type_.as_str()),
+            let element_ty = PrimitiveComponentType::try_from(element_type.as_str())?;
+            match type_.as_str() {
+                "Vec" => element_ty
+                    .to_vec_type()
+                    .ok_or("invalid element type for Vec"),
+                "Option" => element_ty
+                    .to_option_type()
+                    .ok_or("invalid element type for Option"),
+                _ => Err("invalid container type"),
             }
         }
     }
@@ -86,23 +80,14 @@ mod tests {
             fn str_ty(ty: &str) -> CT {
                 CT::String(ty.to_string())
             }
-
-            fn ct_str_ty(ty: &str) -> CT {
-                CT::ContainerType {
-                    type_: ty.to_string(),
-                    element_type: None,
-                }
-            }
-
             fn ct_ty(ct: &str, ty: &str) -> CT {
                 CT::ContainerType {
                     type_: ct.to_string(),
-                    element_type: Some(ty.to_string()),
+                    element_type: ty.to_string(),
                 }
             }
 
             assert_eq!(component_type_to_primitive(&str_ty(ty)), Ok(pct_raw));
-            assert_eq!(component_type_to_primitive(&ct_str_ty(ty)), Ok(pct_raw));
             assert_eq!(component_type_to_primitive(&ct_ty("Vec", ty)), Ok(pct_vec));
             assert_eq!(
                 component_type_to_primitive(&ct_ty("Option", ty)),

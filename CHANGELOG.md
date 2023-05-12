@@ -33,6 +33,34 @@ These PRs are not directly user-facing, but improve the development experience. 
 ### Removed
 -->
 
+## Unreleased (YYYY-MM-DD)
+
+### Added
+
+#### Headline features
+
+<!-- - **Client**: The client can now **run on the web**. -->
+
+#### Other
+
+#### Examples
+
+### Changed
+
+#### Breaking
+
+- `type = { type = "Vec3" }` is no longer valid syntax in `ambient.toml`. Only `type = "Vec3"` and `type = { type = "Vec", element_type = "Vec3" }` are valid.
+
+#### Non-breaking
+
+### Fixed
+
+### Community PRs to internals
+
+These PRs are not directly user-facing, but improve the development experience. They're just as appreciated!
+
+### Removed
+
 ## Version 0.2.1 (2023-05-06)
 
 ### Fixed

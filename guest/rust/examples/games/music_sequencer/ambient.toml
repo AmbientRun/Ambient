@@ -36,12 +36,12 @@ description = "Controls the hue (in degrees) to use for the next player's color.
 attributes = ["Debuggable", "Resource"]
 
 [components.player_hue]
-type = { type = "U32" }
+type = "U32"
 name = "Player Hue"
 attributes = ["Networked", "Debuggable"]
 
 [components.bpm]
-type = { type = "U32" }
+type = "U32"
 name = "BPM"
 description = "The number of beats per minute."
 attributes = ["Networked", "Debuggable"]
