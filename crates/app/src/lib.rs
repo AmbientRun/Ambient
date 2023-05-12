@@ -37,14 +37,12 @@ use ambient_std::{
 use ambient_sys::{task::RuntimeHandle, time::SystemTime};
 use glam::{uvec2, vec2, UVec2, Vec2};
 use parking_lot::Mutex;
-use renderers::{examples_renderer, ui_renderer, UIRender};
+use renderers::{main_renderer, ui_renderer, UiRenderer, MainRenderer};
 use winit::{
     event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
     window::{Fullscreen, Window, WindowBuilder},
 };
-
-use crate::renderers::ExamplesRender;
 
 mod renderers;
 
@@ -414,15 +412,15 @@ impl AppBuilder {
             // let _span = info_span!("setup_renderers").entered();
             if !self.main_renderer {
                 tracing::debug!("Setting up UI renderer");
-                let renderer = Arc::new(Mutex::new(UIRender::new(&mut world)));
+                let renderer = Arc::new(Mutex::new(UiRenderer::new(&mut world)));
                 world.add_resource(ui_renderer(), renderer);
             } else {
-                tracing::debug!("Setting up ExamplesRenderer");
+                tracing::debug!("Setting up Main renderer");
                 let renderer =
-                    ExamplesRender::new(&mut world, self.ui_renderer, self.main_renderer);
-                tracing::debug!("Created examples renderer");
+                    MainRenderer::new(&mut world, self.ui_renderer, self.main_renderer);
+                tracing::debug!("Created main renderer");
                 let renderer = Arc::new(Mutex::new(renderer));
-                world.add_resource(examples_renderer(), renderer);
+                world.add_resource(main_renderer(), renderer);
             }
         }
 
@@ -795,7 +793,7 @@ impl System<Event<'static, ()>> for ExamplesSystem {
                 VirtualKeyCode::F1 => dump_world_hierarchy_to_tmp_file(world),
                 VirtualKeyCode::F2 => world.dump_to_tmp_file(),
                 VirtualKeyCode::F3 => world
-                    .resource(examples_renderer())
+                    .resource(main_renderer())
                     .lock()
                     .dump_to_tmp_file(),
                 _ => {}
