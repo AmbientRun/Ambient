@@ -44,13 +44,13 @@ impl ClientState {
 
     /// Processes an incoming control frame from the server.
     #[tracing::instrument(level = "debug")]
-    pub fn process_control(
+    pub fn process_push(
         &mut self,
         state: &SharedClientState,
-        frame: ClientControl,
+        frame: ServerPush,
     ) -> anyhow::Result<()> {
         match (frame, &self) {
-            (ClientControl::ServerInfo(server_info), Self::Connecting(_user_id)) => {
+            (ServerPush::ServerInfo(server_info), Self::Connecting(_user_id)) => {
                 tracing::info!(?server_info, "Received server info");
 
                 let state = state.lock();
@@ -62,11 +62,11 @@ impl ClientState {
 
                 Ok(())
             }
-            (ClientControl::ServerInfo(_), _) => {
+            (ServerPush::ServerInfo(_), _) => {
                 tracing::warn!("Received server info while already connected");
                 Ok(())
             }
-            (ClientControl::Disconnect, _) => {
+            (ServerPush::Disconnect, _) => {
                 self.process_disconnect();
                 Ok(())
             }

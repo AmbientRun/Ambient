@@ -31,7 +31,7 @@ use crate::{
     proto::{
         self,
         server::{handle_diffs, ConnectionData},
-        ClientControl, ServerInfo, VERSION,
+        ServerInfo, ServerPush, VERSION,
     },
     server::{
         server_stats, ForkingEvent, ProxySettings, ServerState, SharedServerState, ShutdownEvent,
@@ -236,19 +236,17 @@ async fn handle_quinn_connection(
 
     let mut server = proto::server::ServerState::default();
 
-    tracing::info!("Accepting control stream from client");
-    let mut control_recv = stream::RecvStream::new(conn.accept_uni().await?);
+    tracing::info!("Accepting request stream from client");
+    let mut request_recv = stream::RecvStream::new(conn.accept_uni().await?);
     tracing::info!("Opening control stream");
-    let mut control_send = stream::SendStream::new(conn.open_uni().await?);
+    let mut push_send = stream::SendStream::new(conn.open_uni().await?);
 
     let diffs_rx = diffs_rx.into_stream();
 
     use futures::SinkExt;
 
     // Send who we are
-    control_send
-        .send(ClientControl::ServerInfo(server_info))
-        .await?;
+    push_send.send(ServerPush::ServerInfo(server_info)).await?;
 
     // Feed the channel senders to the connection data
     //
@@ -263,7 +261,7 @@ async fn handle_quinn_connection(
 
     while server.is_pending_connection() {
         tracing::info!("Waiting for connect request");
-        if let Some(frame) = control_recv.next().await {
+        if let Some(frame) = request_recv.next().await {
             server.process_control(&data, frame?)?;
         }
     }
@@ -278,7 +276,7 @@ async fn handle_quinn_connection(
     // Before a connection has been established, only process the control stream
     while let proto::server::ServerState::Connected(connected) = &mut server {
         tokio::select! {
-            Some(frame) = control_recv.next() => {
+            Some(frame) = request_recv.next() => {
                 server.process_control(&data, frame?)?;
             }
             stream = conn.accept_uni() => {
@@ -292,7 +290,7 @@ async fn handle_quinn_connection(
                 connected.process_datagram(&data, datagram?).await?;
             }
             Some(msg) = connected.control_rx.next() => {
-                control_send.send(&msg).await?;
+                push_send.send(&msg).await?;
             }
         }
     }

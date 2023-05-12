@@ -34,7 +34,7 @@ use crate::{
     create_client_endpoint_random_port, log_network_result,
     proto::{
         client::{ClientState, SharedClientState},
-        ServerControl,
+        ClientRequest,
     },
     server,
     stream::{self, RecvStream},
@@ -152,6 +152,7 @@ impl ClientConnection for ConnectionKind {
         Ok(())
     }
 }
+
 #[derive(Clone)]
 /// Manages the client side connection to the server.
 pub struct GameClient {
@@ -473,7 +474,7 @@ async fn handle_connection(
     tracing::info!("Handling client connection");
     tracing::info!("Opening control stream");
 
-    let mut control_send = stream::SendStream::new(conn.open_uni().await?);
+    let mut request_send = stream::SendStream::new(conn.open_uni().await?);
 
     tracing::info!("Opened control stream");
 
@@ -483,19 +484,19 @@ async fn handle_connection(
     // Send a connection request
     tracing::info!("Attempting to connect using {user_id:?}");
 
-    control_send
-        .send(ServerControl::Connect(user_id.clone()))
+    request_send
+        .send(ClientRequest::Connect(user_id.clone()))
         .await?;
     let mut client = ClientState::Connecting(user_id);
 
     tracing::info!("Accepting control stream from server");
-    let mut control_recv = stream::RecvStream::new(conn.accept_uni().await?);
+    let mut push_recv = stream::RecvStream::new(conn.accept_uni().await?);
 
     tracing::info!("Entering client loop");
     while client.is_connecting() {
         tracing::info!("Waiting for server to accept connection and send server info");
-        if let Some(frame) = control_recv.next().await {
-            client.process_control(&state, frame?)?;
+        if let Some(frame) = push_recv.next().await {
+            client.process_push(&state, frame?)?;
         }
     }
 
@@ -520,8 +521,8 @@ async fn handle_connection(
 
     while let ClientState::Connected(connected) = &mut client {
         tokio::select! {
-            Some(frame) = control_recv.next() => {
-                client.process_control(&state, frame?)?;
+            Some(frame) = push_recv.next() => {
+                client.process_push(&state, frame?)?;
             }
             _ = stats_timer.tick() => {
                 let stats = conn.stats();
@@ -540,7 +541,7 @@ async fn handle_connection(
                     Control::Disconnect => {
                         tracing::info!("Disconnecting manually");
                         // Tell the server that we want to gracefully disconnect
-                        control_send.send(ServerControl::Disconnect).await?;
+                        request_send.send(ClientRequest::Disconnect).await?;
                     }
                 }
             }

@@ -5,8 +5,8 @@ pub mod client;
 pub mod server;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-/// Frame used by the client to send requests to the server
-pub enum ServerControl {
+/// Request sent by the client to the server
+pub enum ClientRequest {
     /// Connect to the server with the specified user id
     Connect(String),
     /// Client wants to disconnect
@@ -14,8 +14,8 @@ pub enum ServerControl {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-/// Frame used by the server to send control information to the client
-pub enum ClientControl {
+/// Frame used by the server to send information to the client
+pub enum ServerPush {
     ServerInfo(ServerInfo),
     /// Graceful disconnect
     Disconnect,

@@ -4,31 +4,40 @@ Defines the _quinn_/_webtransport_ agnostic protocol which allows the client to 
 
 This is to allows clients and servers of slightly different versions to still work together.
 
+## Index
+
+- `ClientRequest`: sent by the client to the server.
+- `ServerPush`: sent by the server to give the client
+  further information.
+- `WorldDiff`: reliable changes to the ECS world.
+- `ServerInfo`: structure containing information such as
+  server version and project name.
+
 ## Initiation
 
 Accept connection.
 
-The client opens a unidirectional stream of type `ServerControlFrame`.
+The client opens a unidirectional stream of type `ClientRequest`.
 
-The server accepts the `ServerControlFrame`, control stream.
+The server accepts the `ClientRequest`, control stream.
 
-Once the unidirectional client control stream has been accepted, the server initiates `3` unidirectional streams of the following types.
-
-- control: `ClientControlFrame`,
-- diff: `WorldDiff`
-- stats: `ServerStats`
-
-Client accepts the streams in order.
+Once the unidirectional client control stream has been accepted, the server initiates a unidirectional streams for sending `ServerPush` frames to the client.
 
 ## Connect
 
-Once the client wishes to connect and initiate a physical presence in the server ECS world it sends a `Connect` request on the `ServerControl` stream with the chosen `user_id`
+Once the client wishes to connect and initiate a physical presence in the server ECS world it sends a `Connect` request on the `ClientRequest` stream with the chosen `user_id`
 
 The server receives this requests creates an entity in the `MAIN_INSTANCE_ID` world.
 
-The server responds by sending a `ServerInfo` on the control
+The server responds by sending a `ServerInfo` on the push
 stream which contains information about the current ambient
 project, version, etc.
+
+After a successful connection, the server initiates a
+unidirectional stream for sending `WorldDiffs`.
+
+**Note**: in `quinn` streams are not visible until data is
+sent on them.
 
 If the server for any reason chooses to reject the connection, the underlying transport is closed. In any other case, the _client_ assumes it is connected as soon as the request has been sent.
 
@@ -86,7 +95,7 @@ are. This allow someone else to connect with the _same_ `user_id` and kick the
 
 ## World data
 
-The server periodically sends a _diff_ of the world to the each connected client
+The server periodically sends a `WorldDiff` of the world to the each connected client
 on the `diff` stream.
 
 ## Reliability
