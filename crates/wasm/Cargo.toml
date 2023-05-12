@@ -7,6 +7,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ambient_primitives = { path = "../primitives" }
 ambient_world_audio = { path = "../world_audio" }
 ambient_audio = { path = "../audio" }
 ambient_sys = { path = "../sys" }

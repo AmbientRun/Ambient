@@ -219,7 +219,7 @@ impl wit::player::Host for Bindings {
 
 impl wit::script::Host for Bindings {
     fn watch(&mut self, path: String) -> anyhow::Result<()> {
-        shared::implementation::script::watch(self.world(), path)
+        shared::implementation::script::watch(std::sync::Arc::new(parking_lot::Mutex::new(self.world())), path)
     }
 }
 

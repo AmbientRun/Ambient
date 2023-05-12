@@ -9,7 +9,7 @@ version = "0.2.1"
 rust-version = "1.67.0"
 
 [workspace.dependencies]
-rhai = {version = "1.14.0", features = ["sync"]}
+rhai = {version = "1.14.0", features = ["sync", "f32_float"]}
 aho-corasick = "0.7.20"
 ambient_profiling = { version = "1.0.9", features = ["profile-with-puffin"] }
 tracing = "0.1.35"

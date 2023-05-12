@@ -1491,6 +1491,7 @@ dependencies = [
  "ambient_network",
  "ambient_physics",
  "ambient_prefab",
+ "ambient_primitives",
  "ambient_profiling",
  "ambient_project",
  "ambient_shared_types",
