@@ -1,6 +1,7 @@
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
-    download_asset::AssetsCacheOnDisk, asset_url::{AbsAssetUrl, ContentBaseUrlKey},
+    asset_url::{AbsAssetUrl, ContentBaseUrlKey},
+    download_asset::AssetsCacheOnDisk,
 };
 use clap::Parser;
 
@@ -11,7 +12,7 @@ mod shared;
 
 use ambient_physics::physx::PhysicsKey;
 use anyhow::Context;
-use cli::Cli;
+use cli::{Cli, Commands};
 use log::LevelFilter;
 use server::QUIC_INTERFACE_PORT;
 
@@ -67,7 +68,8 @@ fn setup_logging() -> anyhow::Result<()> {
         use tracing_subscriber::prelude::*;
         use tracing_subscriber::{registry, EnvFilter};
 
-        let mut filter = tracing_subscriber::filter::Targets::new().with_default(tracing::metadata::LevelFilter::DEBUG);
+        let mut filter = tracing_subscriber::filter::Targets::new()
+            .with_default(tracing::metadata::LevelFilter::DEBUG);
         for (level, modules) in MODULES {
             for &module in *modules {
                 filter = filter.with_target(module, level.as_trace());
@@ -87,7 +89,9 @@ fn setup_logging() -> anyhow::Result<()> {
         // let mut filter = std::env::var("RUST_LOG").unwrap_or_default().parse::<tracing_subscriber::filter::Targets>().unwrap_or_default();
         // filter.extend(MODULES.iter().flat_map(|&(level, modules)| modules.iter().map(move |&v| (v, level.as_trace()))));
 
-        let env_filter = EnvFilter::builder().with_default_directive(Level::INFO.into()).from_env_lossy();
+        let env_filter = EnvFilter::builder()
+            .with_default_directive(Level::INFO.into())
+            .from_env_lossy();
 
         registry()
             .with(filter)
@@ -133,14 +137,20 @@ impl TryFrom<Option<String>> for ProjectPath {
 
     fn try_from(project_path: Option<String>) -> anyhow::Result<Self> {
         match project_path {
-            Some(project_path) if project_path.starts_with("http://") || project_path.starts_with("https://") => {
+            Some(project_path)
+                if project_path.starts_with("http://") || project_path.starts_with("https://") =>
+            {
                 let url = AbsAssetUrl::parse(project_path)?;
                 Ok(Self { url, fs_path: None })
             }
             Some(project_path) => {
                 let project_path = std::path::PathBuf::from(project_path);
                 let current_dir = std::env::current_dir()?;
-                let project_path = if project_path.is_absolute() { project_path } else { ambient_std::path::normalize(&current_dir.join(project_path)) };
+                let project_path = if project_path.is_absolute() {
+                    project_path
+                } else {
+                    ambient_std::path::normalize(&current_dir.join(project_path))
+                };
 
                 if project_path.exists() && !project_path.is_dir() {
                     anyhow::bail!("Project path {project_path:?} exists and is not a directory.");
@@ -162,7 +172,9 @@ fn main() -> anyhow::Result<()> {
     setup_logging()?;
 
     shared::components::init()?;
-    let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build()?;
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?;
     let assets = AssetCache::new(runtime.handle().clone());
     PhysicsKey.get(&assets); // Load physics
     AssetsCacheOnDisk.insert(&assets, false); // Disable disk caching for now; see https://github.com/AmbientRun/Ambient/issues/81
@@ -176,7 +188,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     // If new: create project, immediately exit
-    if let Cli::New { name, .. } = &cli {
+    if let Commands::New { name, .. } = &cli.command {
         if let Some(path) = &project_path.fs_path {
             if let Err(err) = cli::new_project::new_project(path, name.as_deref()) {
                 eprintln!("Failed to create project: {err:?}");
@@ -193,12 +205,20 @@ fn main() -> anyhow::Result<()> {
         .map(|_| {
             if let Some(path) = &project_path.fs_path {
                 // load manifest from file
-                anyhow::Ok(ambient_project::Manifest::from_file(path.join("ambient.toml")).context("Failed to read ambient.toml.")?)
+                anyhow::Ok(
+                    ambient_project::Manifest::from_file(path.join("ambient.toml"))
+                        .context("Failed to read ambient.toml.")?,
+                )
             } else {
                 // project_path is a URL, so download the pre-build manifest (with resolved imports)
                 let manifest_url = project_path.url.push("build/ambient.toml").unwrap();
-                let manifest_data = runtime.block_on(manifest_url.download_string(&assets)).context("Failed to download ambient.toml.")?;
-                anyhow::Ok(ambient_project::Manifest::parse(&manifest_data).context("Failed to parse downloaded ambient.toml.")?)
+                let manifest_data = runtime
+                    .block_on(manifest_url.download_string(&assets))
+                    .context("Failed to download ambient.toml.")?;
+                anyhow::Ok(
+                    ambient_project::Manifest::parse(&manifest_data)
+                        .context("Failed to parse downloaded ambient.toml.")?,
+                )
             }
         })
         .transpose()?;
@@ -210,7 +230,10 @@ fn main() -> anyhow::Result<()> {
             let metadata = runtime.block_on(ambient_build::build(
                 PhysicsKey.get(&assets),
                 &assets,
-                project_path.fs_path.clone().expect("should be present as it's already checked above"),
+                project_path
+                    .fs_path
+                    .clone()
+                    .expect("should be present as it's already checked above"),
                 manifest,
                 cli.project().map(|p| p.release).unwrap_or(false),
             ));
@@ -218,7 +241,9 @@ fn main() -> anyhow::Result<()> {
             Some(metadata)
         } else {
             let metadata_url = project_path.push("build/metadata.toml");
-            let metadata_data = runtime.block_on(metadata_url.download_string(&assets)).context("Failed to load build/metadata.toml.")?;
+            let metadata_data = runtime
+                .block_on(metadata_url.download_string(&assets))
+                .context("Failed to load build/metadata.toml.")?;
             Some(ambient_build::Metadata::parse(&metadata_data)?)
         }
     } else {
@@ -226,13 +251,16 @@ fn main() -> anyhow::Result<()> {
     };
 
     // If this is just a build, exit now
-    if matches!(&cli, Cli::Build { .. }) {
+    if matches!(&cli.command, Commands::Build { .. }) {
         return Ok(());
     }
 
     // If this is just a deploy then deploy and exit
     #[cfg(feature = "deploy")]
-    if let Cli::Deploy { token, api_server, .. } = &cli {
+    if let Cli::Deploy {
+        token, api_server, ..
+    } = &cli.command
+    {
         let Some(auth_token) = token else {
             anyhow::bail!("-t/--token is required for deploy");
         };
@@ -242,7 +270,9 @@ fn main() -> anyhow::Result<()> {
         let manifest = manifest.as_ref().expect("no manifest");
         let response = runtime.block_on(ambient_deploy::deploy(
             &runtime,
-            api_server.clone().unwrap_or("https://api.ambient.run".to_string()),
+            api_server
+                .clone()
+                .unwrap_or("https://api.ambient.run".to_string()),
             auth_token,
             project_fs_path,
             manifest,
@@ -252,17 +282,27 @@ fn main() -> anyhow::Result<()> {
     }
 
     // Otherwise, either connect to a server or host one
-    let server_addr = if let Cli::Join { host, .. } = &cli {
+    let server_addr = if let Commands::Join { host, .. } = &cli.command {
         if let Some(mut host) = host.clone() {
             if !host.contains(':') {
                 host = format!("{host}:{QUIC_INTERFACE_PORT}");
             }
-            runtime.block_on(tokio::net::lookup_host(&host))?.next().ok_or_else(|| anyhow::anyhow!("No address found for host {host}"))?
+            runtime
+                .block_on(tokio::net::lookup_host(&host))?
+                .next()
+                .ok_or_else(|| anyhow::anyhow!("No address found for host {host}"))?
         } else {
             format!("127.0.0.1:{QUIC_INTERFACE_PORT}").parse()?
         }
     } else {
-        let port = server::start(&runtime, assets.clone(), cli.clone(), project_path.url, manifest.as_ref().expect("no manifest"), metadata.as_ref().expect("no build metadata"));
+        let port = server::start(
+            &runtime,
+            assets.clone(),
+            cli.clone(),
+            project_path.url,
+            manifest.as_ref().expect("no manifest"),
+            metadata.as_ref().expect("no build metadata"),
+        );
         format!("127.0.0.1:{port}").parse()?
     };
 
