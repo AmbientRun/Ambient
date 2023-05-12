@@ -77,5 +77,8 @@
         "components": {
             "cargo-dap": {}
         }
+    },
+    "launch-chrome": {
+        "cmd": "./scripts/launch_chrome.sh"
     }
 }

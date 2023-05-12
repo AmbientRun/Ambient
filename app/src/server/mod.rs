@@ -6,7 +6,7 @@ use ambient_ecs::{
     World, WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_network::{
-    native::server::GameServer,
+    native::server::{Crypto, GameServer},
     persistent_resources,
     server::{ForkingEvent, ProxySettings, ShutdownEvent},
     synced_resources,
@@ -40,6 +40,7 @@ pub fn start(
     project_path: AbsAssetUrl,
     manifest: &ambient_project::Manifest,
     metadata: &ambient_build::Metadata,
+    crypto: Crypto,
 ) -> u16 {
     log::info!("Creating server");
     let host_cli = cli.host().unwrap();
@@ -58,7 +59,7 @@ pub fn start(
     });
     let server = runtime.block_on(async move {
         if let Some(port) = quic_interface_port {
-            GameServer::new_with_port(port, false, proxy_settings)
+            GameServer::new_with_port(port, false, proxy_settings, &crypto)
                 .await
                 .context("failed to create game server with port")
                 .unwrap()
@@ -67,6 +68,7 @@ pub fn start(
                 QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10),
                 false,
                 proxy_settings,
+                &crypto,
             )
             .await
             .context("failed to create game server with port in range")

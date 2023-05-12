@@ -129,6 +129,13 @@ pub struct HostCli {
     /// Pre-cache assets on the proxy
     #[arg(long)]
     pub proxy_pre_cache_assets: bool,
+
+    /// Certificate for TLS
+    #[arg(long, requires("key"), default_value("localhost.crt"))]
+    pub cert: PathBuf,
+    /// Private key for the certificate
+    #[arg(long, default_value("localhost.key"))]
+    pub key: PathBuf,
 }
 
 impl Cli {

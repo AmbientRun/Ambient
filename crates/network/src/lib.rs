@@ -13,11 +13,10 @@ use stream::FrameError;
 use ambient_rpc::RpcError;
 use ambient_std::log_error;
 use quinn::{
-    ClientConfig, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, ServerConfig,
-    TransportConfig,
+    ClientConfig, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, TransportConfig,
 };
 use rand::Rng;
-use rustls::{Certificate, PrivateKey, RootCertStore};
+use rustls::RootCertStore;
 use thiserror::Error;
 
 pub use ambient_ecs::generated::components::core::network::{
@@ -187,6 +186,28 @@ impl NetworkError {
     }
 }
 
+#[tracing::instrument(level = "info")]
+fn load_native_roots() -> RootCertStore {
+    tracing::info!("Loading native roots");
+    let mut roots = rustls::RootCertStore::empty();
+    match rustls_native_certs::load_native_certs() {
+        Ok(certs) => {
+            for cert in certs {
+                let cert = rustls::Certificate(cert.0);
+                if let Err(e) = roots.add(&cert) {
+                    tracing::error!(?cert, "Failed to parse trust anchor: {}", e);
+                }
+            }
+        }
+
+        Err(e) => {
+            tracing::error!("Failed load any default trust roots: {}", e);
+        }
+    };
+
+    roots
+}
+
 pub fn create_client_endpoint_random_port() -> Option<Endpoint> {
     for _ in 0..10 {
         let client_port = {
@@ -196,21 +217,26 @@ pub fn create_client_endpoint_random_port() -> Option<Endpoint> {
         let client_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), client_port);
 
         if let Ok(mut endpoint) = Endpoint::client(client_addr) {
-            let cert = Certificate(CERT.to_vec());
-            let mut roots = RootCertStore::empty();
-            roots.add(&cert).unwrap();
-            let crypto = rustls::ClientConfig::builder()
-                .with_safe_defaults()
-                .with_root_certificates(roots)
+            let mut tls_config = rustls::ClientConfig::builder()
+                .with_safe_default_cipher_suites()
+                .with_safe_default_kx_groups()
+                .with_protocol_versions(&[&rustls::version::TLS13])
+                .unwrap()
+                .with_root_certificates(load_native_roots())
                 .with_no_client_auth();
+
+            // tls_config.enable_early_data = true;
+            tls_config.alpn_protocols = vec!["ambient-02".into()];
+
             let mut transport = TransportConfig::default();
             transport.keep_alive_interval(Some(Duration::from_secs_f32(1.)));
+
             if std::env::var("AMBIENT_DISABLE_TIMEOUT").is_ok() {
                 transport.max_idle_timeout(None);
             } else {
                 transport.max_idle_timeout(Some(Duration::from_secs_f32(60.).try_into().unwrap()));
             }
-            let mut client_config = ClientConfig::new(Arc::new(crypto));
+            let mut client_config = ClientConfig::new(Arc::new(tls_config));
             client_config.transport_config(Arc::new(transport));
 
             endpoint.set_default_client_config(client_config);
@@ -219,39 +245,6 @@ pub fn create_client_endpoint_random_port() -> Option<Endpoint> {
     }
     None
 }
-
-fn create_server(server_addr: SocketAddr) -> anyhow::Result<Endpoint> {
-    let cert = Certificate(CERT.to_vec());
-    let cert_key = PrivateKey(CERT_KEY.to_vec());
-    let mut server_conf = ServerConfig::with_single_cert(vec![cert.clone()], cert_key)?;
-    let mut transport = TransportConfig::default();
-    if std::env::var("AMBIENT_DISABLE_TIMEOUT").is_ok() {
-        transport.max_idle_timeout(None);
-    } else {
-        transport.max_idle_timeout(Some(Duration::from_secs_f32(60.).try_into()?));
-    }
-    transport.keep_alive_interval(Some(Duration::from_secs_f32(1.)));
-    let transport = Arc::new(transport);
-    server_conf.transport = transport.clone();
-
-    let mut endpoint = Endpoint::server(server_conf, server_addr)?;
-
-    // Create client config for the server endpoint for proxying and hole punching
-    let mut roots = RootCertStore::empty();
-    roots.add(&cert).unwrap();
-    let crypto = rustls::ClientConfig::builder()
-        .with_safe_defaults()
-        .with_root_certificates(roots)
-        .with_no_client_auth();
-    let mut client_config = ClientConfig::new(Arc::new(crypto));
-    client_config.transport_config(transport);
-    endpoint.set_default_client_config(client_config);
-
-    Ok(endpoint)
-}
-
-pub const CERT: &[u8] = include_bytes!("./cert.der");
-pub const CERT_KEY: &[u8] = include_bytes!("./cert.key.der");
 
 #[macro_export]
 macro_rules! log_network_result {

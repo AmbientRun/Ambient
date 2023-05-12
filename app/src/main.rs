@@ -289,7 +289,7 @@ fn main() -> anyhow::Result<()> {
         } else {
             format!("127.0.0.1:{QUIC_INTERFACE_PORT}").parse()?
         }
-    } else {
+    } else if let Some(host) = &cli.host() {
         let port = server::start(
             &runtime,
             assets.clone(),
@@ -297,8 +297,14 @@ fn main() -> anyhow::Result<()> {
             project_path.url,
             manifest.as_ref().expect("no manifest"),
             metadata.as_ref().expect("no build metadata"),
+            ambient_network::native::server::Crypto {
+                cert_file: host.cert.clone(),
+                key_file: host.key.clone(),
+            },
         );
         format!("127.0.0.1:{port}").parse()?
+    } else {
+        unreachable!()
     };
 
     // Time to join!

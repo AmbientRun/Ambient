@@ -1,6 +1,7 @@
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     ops::Range,
+    path::PathBuf,
     sync::Arc,
     time::Duration,
 };
@@ -21,13 +22,13 @@ use ambient_sys::time::Instant;
 use colored::Colorize;
 use futures::StreamExt;
 use parking_lot::{Mutex, RwLock};
-use quinn::Endpoint;
+use quinn::{ClientConfig, Endpoint, ServerConfig, TransportConfig};
+use rustls::{Certificate, PrivateKey, RootCertStore};
 use tokio::time::{interval, MissedTickBehavior};
 use uuid::Uuid;
 
 use crate::{
     client_connection::ConnectionKind,
-    create_server,
     proto::{
         self,
         server::{handle_diffs, ConnectionData},
@@ -39,6 +40,12 @@ use crate::{
     },
     stream, ServerWorldExt,
 };
+
+#[derive(Debug, Clone)]
+pub struct Crypto {
+    pub cert_file: PathBuf,
+    pub key_file: PathBuf,
+}
 
 /// Quinn and Webtransport game server
 pub struct GameServer {
@@ -53,10 +60,11 @@ impl GameServer {
         port: u16,
         use_inactivity_shutdown: bool,
         proxy_settings: Option<ProxySettings>,
+        crypto: &Crypto,
     ) -> anyhow::Result<Self> {
         let server_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
 
-        let endpoint = create_server(server_addr)?;
+        let endpoint = create_server(server_addr, crypto)?;
 
         log::debug!("GameServer listening on port {}", port);
         Ok(Self {
@@ -70,9 +78,17 @@ impl GameServer {
         port_range: Range<u16>,
         use_inactivity_shutdown: bool,
         proxy_settings: Option<ProxySettings>,
+        crypto: &Crypto,
     ) -> anyhow::Result<Self> {
         for port in port_range {
-            match Self::new_with_port(port, use_inactivity_shutdown, proxy_settings.clone()).await {
+            match Self::new_with_port(
+                port,
+                use_inactivity_shutdown,
+                proxy_settings.clone(),
+                crypto,
+            )
+            .await
+            {
                 Ok(server) => {
                     return Ok(server);
                 }
@@ -400,4 +416,61 @@ async fn start_proxy_connection(
             }
         }
     }
+}
+
+fn create_server(server_addr: SocketAddr, crypto: &Crypto) -> anyhow::Result<Endpoint> {
+    let cert = Certificate(std::fs::read(&crypto.cert_file)?);
+    let key = PrivateKey(std::fs::read(&crypto.key_file)?);
+
+    let mut tls_config = rustls::ServerConfig::builder()
+        .with_safe_default_cipher_suites()
+        .with_safe_default_kx_groups()
+        .with_protocol_versions(&[&rustls::version::TLS13])
+        .unwrap()
+        .with_no_client_auth()
+        .with_single_cert(vec![cert.clone()], key)?;
+
+    tls_config.max_early_data_size = u32::MAX;
+    let alpn: Vec<Vec<u8>> = vec![
+        b"h3".to_vec(),
+        b"h3-32".to_vec(),
+        b"h3-31".to_vec(),
+        b"h3-30".to_vec(),
+        b"h3-29".to_vec(),
+        b"ambient-02".to_vec(),
+    ];
+
+    tls_config.alpn_protocols = alpn;
+
+    let mut server_conf = ServerConfig::with_crypto(Arc::new(tls_config));
+    let mut transport = TransportConfig::default();
+
+    transport.keep_alive_interval(Some(Duration::from_secs(2)));
+
+    if std::env::var("AMBIENT_DISABLE_TIMEOUT").is_ok() {
+        transport.max_idle_timeout(None);
+    } else {
+        transport.max_idle_timeout(Some(Duration::from_secs_f32(60.).try_into()?));
+    }
+
+    let transport = Arc::new(transport);
+    server_conf.transport = transport.clone();
+
+    tracing::info!(?server_addr, ?server_conf, "Creating server endpoint");
+
+    let mut endpoint = Endpoint::server(server_conf, server_addr)?;
+
+    // Create client config for the server endpoint for proxying and hole punching
+    let mut roots = RootCertStore::empty();
+    roots.add(&cert).unwrap();
+    let crypto = rustls::ClientConfig::builder()
+        .with_safe_defaults()
+        .with_root_certificates(roots)
+        .with_no_client_auth();
+
+    let mut client_config = ClientConfig::new(Arc::new(crypto));
+    client_config.transport_config(transport);
+    endpoint.set_default_client_config(client_config);
+
+    Ok(endpoint)
 }

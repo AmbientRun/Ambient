@@ -49,6 +49,7 @@ enum_dispatch = { workspace = true }
 pin-project = "1.0"
 uuid = { workspace = true }
 scopeguard = { workspace = true }
+rustls-native-certs = { workspace = true }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 async-trait = { workspace = true }

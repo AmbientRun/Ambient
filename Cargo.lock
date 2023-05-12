@@ -959,6 +959,7 @@ dependencies = [
  "quinn",
  "rand 0.8.5",
  "rustls 0.20.8",
+ "rustls-native-certs",
  "scopeguard",
  "serde",
  "thiserror",
