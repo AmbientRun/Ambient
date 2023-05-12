@@ -1,25 +1,32 @@
+use ambient_ecs::{
+    query, Component, ComponentValue, EntityId, Networked, Serializable, Store, World,
+};
+use bytes::Bytes;
+use connection::Connection;
+use futures::{Future, SinkExt, StreamExt};
+use serde::{de::DeserializeOwned, Serialize};
 use std::{
     io::ErrorKind,
     net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::Arc,
     time::Duration,
 };
-use ambient_ecs::{query, Component, ComponentValue, EntityId, Networked, Serializable, Store, World};
 
 use ambient_rpc::{RpcError, RpcRegistry};
 use ambient_std::log_error;
-use bytes::Bytes;
-use connection::Connection;
-use futures::{Future, SinkExt, StreamExt};
-use quinn::{ClientConfig, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, ServerConfig, TransportConfig};
+use quinn::{
+    ClientConfig, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, ServerConfig,
+    TransportConfig,
+};
 use rand::Rng;
 use rustls::{Certificate, PrivateKey, RootCertStore};
-use serde::{de::DeserializeOwned, Serialize};
 use thiserror::Error;
 use tokio::io::AsyncWriteExt;
 use tokio_util::codec::{FramedRead, FramedWrite, LengthDelimitedCodec};
 
-pub use ambient_ecs::generated::components::core::network::{is_remote_entity, persistent_resources, synced_resources};
+pub use ambient_ecs::generated::components::core::network::{
+    is_remote_entity, persistent_resources, synced_resources,
+};
 
 pub type AsyncMutex<T> = tokio::sync::Mutex<T>;
 pub mod client;
@@ -48,43 +55,71 @@ pub fn init_all_components() {
 pub trait ServerWorldExt {
     fn persisted_resource_entity(&self) -> Option<EntityId>;
     fn persisted_resource<T: ComponentValue>(&self, component: Component<T>) -> Option<&T>;
-    fn persisted_resource_mut<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T>;
+    fn persisted_resource_mut<T: ComponentValue>(
+        &mut self,
+        component: Component<T>,
+    ) -> Option<&mut T>;
     fn synced_resource_entity(&self) -> Option<EntityId>;
     fn synced_resource<T: ComponentValue>(&self, component: Component<T>) -> Option<&T>;
-    fn synced_resource_mut<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T>;
+    fn synced_resource_mut<T: ComponentValue>(&mut self, component: Component<T>)
+        -> Option<&mut T>;
 }
 impl ServerWorldExt for World {
     fn persisted_resource_entity(&self) -> Option<EntityId> {
-        query(()).incl(persistent_resources()).iter(self, None).map(|(id, _)| id).next()
+        query(())
+            .incl(persistent_resources())
+            .iter(self, None)
+            .map(|(id, _)| id)
+            .next()
     }
     fn persisted_resource<T: ComponentValue>(&self, component: Component<T>) -> Option<&T> {
         assert_persisted(*component);
-        self.persisted_resource_entity().and_then(|id| self.get_ref(id, component).ok())
+        self.persisted_resource_entity()
+            .and_then(|id| self.get_ref(id, component).ok())
     }
-    fn persisted_resource_mut<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T> {
+    fn persisted_resource_mut<T: ComponentValue>(
+        &mut self,
+        component: Component<T>,
+    ) -> Option<&mut T> {
         assert_persisted(*component);
-        self.persisted_resource_entity().and_then(|id| self.get_mut(id, component).ok())
+        self.persisted_resource_entity()
+            .and_then(|id| self.get_mut(id, component).ok())
     }
 
     fn synced_resource_entity(&self) -> Option<EntityId> {
-        query(()).incl(synced_resources()).iter(self, None).map(|(id, _)| id).next()
+        query(())
+            .incl(synced_resources())
+            .iter(self, None)
+            .map(|(id, _)| id)
+            .next()
     }
     fn synced_resource<T: ComponentValue>(&self, component: Component<T>) -> Option<&T> {
         assert_networked(*component);
-        self.synced_resource_entity().and_then(|id| self.get_ref(id, component).ok())
+        self.synced_resource_entity()
+            .and_then(|id| self.get_ref(id, component).ok())
     }
-    fn synced_resource_mut<T: ComponentValue>(&mut self, component: Component<T>) -> Option<&mut T> {
-        self.synced_resource_entity().and_then(|id| self.get_mut(id, component).ok())
+    fn synced_resource_mut<T: ComponentValue>(
+        &mut self,
+        component: Component<T>,
+    ) -> Option<&mut T> {
+        self.synced_resource_entity()
+            .and_then(|id| self.get_mut(id, component).ok())
     }
 }
 
 pub fn assert_networked(desc: ambient_ecs::ComponentDesc) {
     if !desc.has_attribute::<Networked>() {
-        panic!("Attempt to access sync {desc:#?} which is not marked as `Networked`. Attributes: {:?}", desc.attributes());
+        panic!(
+            "Attempt to access sync {desc:#?} which is not marked as `Networked`. Attributes: {:?}",
+            desc.attributes()
+        );
     }
 
     if !desc.has_attribute::<Serializable>() {
-        panic!("Sync component {desc:#?} is not serializable. Attributes: {:?}", desc.attributes());
+        panic!(
+            "Sync component {desc:#?} is not serializable. Attributes: {:?}",
+            desc.attributes()
+        );
     }
 }
 
@@ -116,7 +151,10 @@ pub async fn rpc_request<
     send.write_all(&req).await.map_err(NetworkError::from)?;
     send.finish().await.map_err(NetworkError::from)?;
     drop(send);
-    let resp = recv.read_to_end(size_limit).await.map_err(NetworkError::from)?;
+    let resp = recv
+        .read_to_end(size_limit)
+        .await
+        .map_err(NetworkError::from)?;
     let resp = reg.deserialize_resp(func, &resp)?;
     Ok(resp)
 }
@@ -155,7 +193,11 @@ impl NetworkError {
             Self::ConnectionClosed => true,
             // The connection was closed automatically,
             // for example by dropping the [`quinn::Connection`]
-            Self::ConnectionError(ConnectionClosed(ConnectionClose { error_code, .. })) if u64::from(*error_code) == 0 => true,
+            Self::ConnectionError(ConnectionClosed(ConnectionClose { error_code, .. }))
+                if u64::from(*error_code) == 0 =>
+            {
+                true
+            }
             Self::IOError(err) if matches!(err.kind(), ErrorKind::ConnectionReset) => true,
             _ => false,
         }
@@ -186,7 +228,9 @@ impl IncomingStream {
     pub fn new(stream: quinn::RecvStream) -> Self {
         let mut codec = LengthDelimitedCodec::new();
         codec.set_max_frame_length(1_024 * 1_024 * 1_024);
-        Self { stream: FramedRead::new(stream, codec) }
+        Self {
+            stream: FramedRead::new(stream, codec),
+        }
     }
 
     /// Reads the next frame from the incoming stream
@@ -223,7 +267,9 @@ impl OutgoingStream {
     pub fn new(stream: quinn::SendStream) -> Self {
         let mut codec = LengthDelimitedCodec::new();
         codec.set_max_frame_length(1_024 * 1_024 * 1_024);
-        Self { stream: FramedWrite::new(stream, codec) }
+        Self {
+            stream: FramedWrite::new(stream, codec),
+        }
     }
 
     /// Sends raw bytes over the network
@@ -240,25 +286,36 @@ impl OutgoingStream {
 }
 
 /// Are you sure you don't want [open_bincode_bi_stream_with_id] instead?
-pub async fn open_bincode_bi_stream<C: Connection>(conn: &C) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
+pub async fn open_bincode_bi_stream<C: Connection>(
+    conn: &C,
+) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
     let (send, recv) = conn.open_bi().await?;
     Ok((OutgoingStream::new(send), IncomingStream::new(recv)))
 }
 
-pub async fn open_bincode_bi_stream_with_id<C: Connection>(conn: &C, id: u32) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
+pub async fn open_bincode_bi_stream_with_id<C: Connection>(
+    conn: &C,
+    id: u32,
+) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
     let (mut send, recv) = conn.open_bi().await?;
     send.write_u32(id).await?;
     Ok((OutgoingStream::new(send), IncomingStream::new(recv)))
 }
 
-pub async fn next_bincode_bi_stream<C: Connection>(conn: &C) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
+pub async fn next_bincode_bi_stream<C: Connection>(
+    conn: &C,
+) -> Result<(OutgoingStream, IncomingStream), NetworkError> {
     let (send, recv) = conn.accept_bi().await?;
     let send = OutgoingStream::new(send);
     let recv = IncomingStream::new(recv);
     Ok((send, recv))
 }
 
-pub async fn send_datagram<C: Connection>(conn: &C, id: u32, mut payload: Vec<u8>) -> Result<(), NetworkError> {
+pub async fn send_datagram<C: Connection>(
+    conn: &C,
+    id: u32,
+    mut payload: Vec<u8>,
+) -> Result<(), NetworkError> {
     let mut bytes = Vec::new();
     byteorder::WriteBytesExt::write_u32::<byteorder::BigEndian>(&mut bytes, id)?;
     bytes.append(&mut payload);
@@ -279,7 +336,10 @@ pub fn create_client_endpoint_random_port() -> Option<Endpoint> {
             let cert = Certificate(CERT.to_vec());
             let mut roots = RootCertStore::empty();
             roots.add(&cert).unwrap();
-            let crypto = rustls::ClientConfig::builder().with_safe_defaults().with_root_certificates(roots).with_no_client_auth();
+            let crypto = rustls::ClientConfig::builder()
+                .with_safe_defaults()
+                .with_root_certificates(roots)
+                .with_no_client_auth();
             let mut transport = TransportConfig::default();
             transport.keep_alive_interval(Some(Duration::from_secs_f32(1.)));
             if std::env::var("AMBIENT_DISABLE_TIMEOUT").is_ok() {
@@ -316,7 +376,10 @@ fn create_server(server_addr: SocketAddr) -> anyhow::Result<Endpoint> {
     // Create client config for the server endpoint for proxying and hole punching
     let mut roots = RootCertStore::empty();
     roots.add(&cert).unwrap();
-    let crypto = rustls::ClientConfig::builder().with_safe_defaults().with_root_certificates(roots).with_no_client_auth();
+    let crypto = rustls::ClientConfig::builder()
+        .with_safe_defaults()
+        .with_root_certificates(roots)
+        .with_no_client_auth();
     let mut client_config = ClientConfig::new(Arc::new(crypto));
     client_config.transport_config(transport);
     endpoint.set_default_client_config(client_config);
