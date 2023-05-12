@@ -22,6 +22,7 @@ pub trait BindingsBound:
     + wit::entity::Host
     + wit::message::Host
     + wit::player::Host
+    + wit::script::Host
     // Client
     + wit::client_audio::Host
     + wit::client_message::Host

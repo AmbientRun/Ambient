@@ -216,6 +216,13 @@ impl wit::player::Host for Bindings {
         shared::implementation::player::get_by_user_id(self.world(), user_id)
     }
 }
+
+impl wit::script::Host for Bindings {
+    fn watch(&mut self, path: String) -> anyhow::Result<()> {
+        shared::implementation::script::watch(self.world(), path)
+    }
+}
+
 impl wit::asset::Host for Bindings {
     fn url(&mut self, path: String) -> anyhow::Result<Result<String, wit::asset::UrlError>> {
         shared::implementation::asset::url(self.world(), path, false)

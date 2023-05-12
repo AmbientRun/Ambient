@@ -236,3 +236,9 @@ impl wit::asset::Host for Bindings {
         shared::implementation::asset::get_animation_asset_metadata(self.world_mut(), &clip_urls)
     }
 }
+
+impl wit::script::Host for Bindings {
+    fn watch(&mut self, path: String) -> anyhow::Result<()> {
+        shared::implementation::script::watch(self.world(), path)
+    }
+}

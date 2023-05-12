@@ -28,6 +28,10 @@ pub mod message;
 /// Player-specific functionality.
 pub mod player;
 
+/// scripting
+/// Scripting-related functionality.
+pub mod script;
+
 /// Helpful imports that almost all Ambient projects will use.
 pub mod prelude;
 

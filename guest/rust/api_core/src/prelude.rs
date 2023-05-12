@@ -6,6 +6,7 @@ pub use crate::{
     main, message,
     message::{Message, ModuleMessage, RuntimeMessage},
     player,
+    script
 };
 pub use anyhow::{anyhow, Context as AnyhowContext};
 pub use glam;

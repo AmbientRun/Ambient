@@ -1124,6 +1124,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "script"
+version = "0.2.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "serde"
 version = "1.0.152"
 source = "registry+https://github.com/rust-lang/crates.io-index"

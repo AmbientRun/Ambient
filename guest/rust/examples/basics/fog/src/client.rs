@@ -72,6 +72,14 @@ fn App(hooks: &mut Hooks, sun: EntityId) -> Element {
             Text::el("Fog height falloff: "),
             Slider::new_for_entity_component(hooks, sun, fog_height_falloff()).el(),
         ]),
+        Button::new(
+            "Stop audio",
+            move |_| {
+                println!("you clicked the button!")
+            },
+        )
+        .el()
+        .with_background(vec4(0.0, 0.5, 0.9, 1.0)),
     ])
     .with_background(vec4(0., 0., 0., 0.9))
     .with_padding_even(10.)])
