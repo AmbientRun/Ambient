@@ -145,7 +145,7 @@ mod tests {
 
     use crate::{
         Build, BuildRust, CamelCaseIdentifier, Component, ComponentType, Concept, Enum, Identifier,
-        IdentifierPathBuf, Manifest, Namespace, Project, Version, VersionSuffix,
+        IdentifierPathBuf, Manifest, Namespace, Project, TypeRef, Version, VersionSuffix,
     };
 
     #[test]
@@ -188,7 +188,7 @@ mod tests {
                     Component {
                         name: Some("Cell".to_string()),
                         description: Some("The ID of the cell this player is in".to_string()),
-                        type_: ComponentType::String("I32".to_string()),
+                        type_: ComponentType::String(TypeRef::new("I32")),
                         attributes: vec!["Store".to_string()],
                         default: None,
                     }
@@ -304,7 +304,7 @@ mod tests {
                         Component {
                             name: Some("Main Scene".to_string()),
                             description: None,
-                            type_: ComponentType::String("Empty".to_string()),
+                            type_: ComponentType::String(TypeRef::new("Empty")),
                             attributes: vec![],
                             default: None,
                         }
@@ -362,7 +362,7 @@ mod tests {
                         Component {
                             name: Some("Rotation".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::String("Quat".to_string()),
+                            type_: ComponentType::String(TypeRef::new("Quat")),
                             attributes: vec![],
                             default: None,
                         }
@@ -373,7 +373,7 @@ mod tests {
                         Component {
                             name: Some("Scale".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::String("Vec3".to_string()),
+                            type_: ComponentType::String(TypeRef::new("Vec3")),
                             attributes: vec![],
                             default: None,
                         }
@@ -384,7 +384,7 @@ mod tests {
                         Component {
                             name: Some("Spherical billboard".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::String("Empty".to_string()),
+                            type_: ComponentType::String(TypeRef::new("Empty")),
                             attributes: vec![],
                             default: None,
                         }
@@ -395,7 +395,7 @@ mod tests {
                         Component {
                             name: Some("Translation".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::String("Vec3".to_string()),
+                            type_: ComponentType::String(TypeRef::new("Vec3")),
                             attributes: vec![],
                             default: None,
                         }

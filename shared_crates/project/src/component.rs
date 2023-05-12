@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::TypeRef;
+
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Component {
     pub name: Option<String>,
@@ -15,11 +17,11 @@ pub struct Component {
 #[derive(Deserialize, Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(untagged)]
 pub enum ComponentType {
-    String(String),
+    String(TypeRef),
     ContainerType {
         #[serde(rename = "type")]
         #[serde(alias = "container_type")]
         type_: String,
-        element_type: String,
+        element_type: TypeRef,
     },
 }
