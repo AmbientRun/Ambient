@@ -74,7 +74,7 @@ async fn main() {
 
     AppBuilder::simple()
         .run(|app, _| {
-            setup_audio(&mut app.world, stream.mixer().clone()).unwrap();
+            setup_audio(&mut app.world, Some(stream.mixer().clone())).unwrap();
             init(app)
         })
         .await;

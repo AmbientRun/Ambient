@@ -22,6 +22,7 @@ use ambient_std::{
     shapes::Ray,
 };
 use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
+use ambient_world_audio::systems::{spatial_audio_systems, setup_audio};
 
 use ambient_core::player::{player, user_id};
 
@@ -58,6 +59,7 @@ impl ClientGameState {
         client_resources: Entity,
     ) -> Self {
         let mut game_world = World::new("client_game_world");
+        setup_audio(&mut game_world, None).unwrap();
         let local_resources = world_instance_resources(AppResources::from_world(world))
             .with(ambient_core::player::local_user_id(), player_id.clone())
             .with(game_screen_render_target(), render_target)
@@ -71,6 +73,7 @@ impl ClientGameState {
             vec![
                 Box::new(client_systems),
                 Box::new(world_instance_systems(true)),
+                Box::new(spatial_audio_systems()),
             ],
         );
         let mut renderer = Renderer::new(

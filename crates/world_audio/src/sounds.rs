@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
 use ambient_audio::{
-    hrtf::HrtfLib, Attenuation, AudioEmitter, AudioListener, AudioMixer, Sound, SoundId, Source,
+    hrtf::HrtfLib, track::TrackDecodeStream,
+    Attenuation, AudioEmitter, AudioListener, AudioMixer, Sound, SoundId, Source, Spatial
 };
 use ambient_ecs::{components, query, EntityId, Resource, World};
 use ambient_element::ElementComponentExt;
@@ -15,6 +16,8 @@ use derive_more::{Deref, DerefMut, From, Into};
 use glam::{vec2, vec4};
 use itertools::Itertools;
 use parking_lot::Mutex;
+use parking_lot::RawMutex;
+
 use serde::{Deserialize, Serialize};
 
 components!("audio", {
@@ -35,6 +38,9 @@ pub enum AudioMessage {
         f32,
         AbsAssetUrl,
         u32,
+    ),
+    Spatial(
+        Spatial<TrackDecodeStream, Arc<parking_lot::lock_api::Mutex<RawMutex, AudioListener>>, Arc<parking_lot::lock_api::Mutex<RawMutex, AudioEmitter>>>
     ),
     UpdateVolume(AbsAssetUrl, f32),
     Stop(AbsAssetUrl),
@@ -90,7 +96,7 @@ impl Editor for AttenuationEditorVisual {
     }
 }
 
-fn get_audio_listener(world: &World) -> anyhow::Result<&Arc<Mutex<AudioListener>>> {
+pub fn get_audio_listener(world: &World) -> anyhow::Result<&Arc<Mutex<AudioListener>>> {
     let (_, listener) = query(audio_listener())
         .iter(world, None)
         .exactly_one()

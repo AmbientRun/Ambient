@@ -236,3 +236,24 @@ impl wit::asset::Host for Bindings {
         shared::implementation::asset::get_animation_asset_metadata(self.world_mut(), &clip_urls)
     }
 }
+
+
+impl wit::world_audio::Host for Bindings {
+    fn set_listener(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
+        shared::implementation::world_audio::set_listener(self.world_mut(), entity)
+    }
+
+    fn set_emitter(
+        &mut self,
+        entity: wit::types::EntityId,
+    ) -> anyhow::Result<()> {
+        shared::implementation::world_audio::set_emitter(self.world_mut(), entity)
+    }
+    fn play_sound_on_entity(
+        &mut self,
+        sound: String,
+        emitter: wit::types::EntityId,
+    ) -> anyhow::Result<()> {
+        shared::implementation::world_audio::play_sound_on_entity(self.world_mut(),sound, emitter)
+    }
+}

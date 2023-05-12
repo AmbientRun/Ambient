@@ -31,6 +31,10 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
         let mut sound_info_lib = std::collections::HashMap::new();
         while let Ok(message) = rx.recv() {
             match message {
+                AudioMessage::Spatial(source) => {
+                    let sound = stream.mixer().play(source);
+                    sound.wait();
+                },
                 AudioMessage::Track(t, looping, amp, url, uid) => {
                     let gain = Arc::new(Mutex::new(amp));
                     let gain_clone = gain.clone();
@@ -83,6 +87,7 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
             }
         }
     });
+
     world.add_resource(audio_sender(), Arc::new(tx));
 
     ambient_wasm::client::initialize(world, messenger)?;

@@ -17,7 +17,7 @@ use ambient_api::{
 
 #[main]
 pub async fn main() {
-    Entity::new()
+    let camera = Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with_default(main_scene())
@@ -48,7 +48,7 @@ pub async fn main() {
 
     ambient_api::messages::Collision::subscribe(move |msg| {
         println!("Bonk! {:?} collided", msg.ids);
-        messages::Bonk::new(cube).send_client_broadcast_reliable();
+        messages::Bonk::new(cube, camera).send_client_broadcast_reliable();
     });
 
     ambient_api::messages::Frame::subscribe(move |_| {
