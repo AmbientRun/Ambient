@@ -1494,6 +1494,7 @@ dependencies = [
  "ambient_primitives",
  "ambient_profiling",
  "ambient_project",
+ "ambient_renderer",
  "ambient_shared_types",
  "ambient_std",
  "ambient_sys",
