@@ -8,8 +8,8 @@ use ambient_ecs::{components, query, Entity, EntityId, Networked, Store, SystemG
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 pub use ambient_meshes::UVSphereMesh;
 use ambient_meshes::{
-    CapsuleMesh, CapsuleMeshKey, SphereMeshKey, TorusMesh, TorusMeshKey, UnitCubeMeshKey,
-    UnitQuadMeshKey,
+    CapsuleMesh, CapsuleMeshKey, SphereMeshKey, TorusMesh, TorusMeshKey,
+    TreeMesh, TreeMeshKey, UnitCubeMeshKey, UnitQuadMeshKey,
 };
 use ambient_renderer::{
     color, gpu_primitives_lod, gpu_primitives_mesh, material,
@@ -26,7 +26,9 @@ use glam::{vec3, Mat4, Quat, Vec3, Vec4};
 pub use ambient_ecs::generated::components::core::primitives::{
     capsule, capsule_half_height, capsule_latitudes, capsule_longitudes, capsule_radius,
     capsule_rings, cube, quad, sphere, sphere_radius, sphere_sectors, sphere_stacks, torus,
-    torus_inner_radius, torus_loops, torus_outer_radius, torus_slices,
+    torus_inner_radius, torus_loops, torus_outer_radius, torus_slices, tree, tree_trunk_radius,
+    tree_trunk_height, tree_branch_length, tree_branch_angle, tree_foliage_radius,
+    tree_foliage_density, tree_trunk_segments, tree_branch_segments, tree_foliage_segments
 };
 
 components!("primitives", {
@@ -95,6 +97,37 @@ pub fn sphere_data(assets: &AssetCache, sphere: &UVSphereMesh) -> Entity {
         .with(local_bounding_aabb(), bound_sphere.to_aabb())
         .with(world_bounding_aabb(), bound_sphere.to_aabb())
         .with(world_bounding_sphere(), bound_sphere)
+}
+
+
+pub fn tree_data(assets: &AssetCache, tree: &TreeMesh) -> Entity {
+    let aabb = AABB {
+        min: vec3(
+            -tree.trunk_radius,
+            -tree.trunk_radius,
+            -tree.trunk_height * 0.5,
+        ),
+        max: vec3(
+            tree.trunk_radius,
+            tree.trunk_radius,
+            tree.trunk_height * 0.5,
+        ),
+    };
+    Entity::new()
+        .with(mesh(), TreeMeshKey(*tree).get(assets))
+        .with_default(local_to_world())
+        .with_default(mesh_to_world())
+        .with_default(translation())
+        .with(renderer_shader(), cb(get_flat_shader))
+        .with(material(), FlatMaterialKey::white().get(assets))
+        .with(primitives(), vec![])
+        .with_default(gpu_primitives_mesh())
+        .with_default(gpu_primitives_lod())
+        .with(color(), Vec4::ONE)
+        .with(main_scene(), ())
+        .with(local_bounding_aabb(), aabb)
+        .with(world_bounding_aabb(), aabb)
+        .with(world_bounding_sphere(), aabb.to_sphere())
 }
 
 pub fn torus_data(assets: &AssetCache, torus: &TorusMesh) -> Entity {
@@ -239,6 +272,48 @@ pub fn systems() -> SystemGroup {
                         ..Default::default()
                     };
                     let data = torus_data(world.resource(asset_cache()), &mesh);
+                    extend(world, id, data);
+                }
+            }),
+            query((
+                tree_trunk_radius().changed(),
+                tree_trunk_height().changed(),
+                tree_branch_length().changed(),
+                tree_branch_angle().changed(),
+                tree_foliage_radius().changed(),
+                tree_foliage_density().changed(),
+                tree_trunk_segments().changed(),
+                tree_branch_segments().changed(),
+                tree_foliage_segments().changed(),
+            ))
+            .incl(tree())
+            .spawned()
+            .to_system(|q, world, qs, _| {
+                for (id, (
+                    trunk_radius,
+                    trunk_height,
+                    branch_length,
+                    branch_angle,
+                    foliage_radius,
+                    foliage_density,
+                    trunk_segments,
+                    branch_segments,
+                    foliage_segments
+
+            )) in q.collect_cloned(world, qs) {
+                    let mesh = TreeMesh {
+                        trunk_radius,
+                        trunk_height,
+                        branch_length,
+                        branch_angle,
+                        foliage_radius,
+                        foliage_density,
+                        trunk_segments,
+                        branch_segments,
+                        foliage_segments,
+                        ..Default::default()
+                    };
+                    let data = tree_data(world.resource(asset_cache()), &mesh);
                     extend(world, id, data);
                 }
             }),

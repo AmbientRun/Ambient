@@ -4,6 +4,7 @@ pub mod cuboid;
 pub mod grid;
 pub mod pyramid;
 pub mod torus;
+pub mod tree;
 pub mod uvsphere;
 use std::sync::Arc;
 
@@ -17,6 +18,7 @@ pub use cube::*;
 use glam::*;
 pub use grid::*;
 pub use torus::*;
+pub use tree::*;
 pub use uvsphere::*;
 
 #[derive(Debug, Clone)]
@@ -72,6 +74,14 @@ impl SyncAssetKey<Arc<GpuMesh>> for SphereMeshKey {
 #[derive(Debug, Clone, Default)]
 pub struct TorusMeshKey(pub TorusMesh);
 impl SyncAssetKey<Arc<GpuMesh>> for TorusMeshKey {
+    fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
+        GpuMesh::from_mesh(assets, &Mesh::from(self.0))
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct TreeMeshKey(pub TreeMesh);
+impl SyncAssetKey<Arc<GpuMesh>> for TreeMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
         GpuMesh::from_mesh(assets, &Mesh::from(self.0))
     }

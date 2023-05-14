@@ -15,3 +15,4 @@ ambient_std = { path = "../std" , version = "0.2.1" }
 ambient_gpu = { path = "../gpu" , version = "0.2.1" }
 glam = { workspace = true }
 serde = { workspace = true }
+rand = "0.8"
