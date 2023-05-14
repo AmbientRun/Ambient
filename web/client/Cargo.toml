@@ -13,6 +13,7 @@ crate-type = ["cdylib", "rlib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
 ambient_sys = { workspace = true }
 ambient_core = { workspace = true }
 ambient_std = { workspace = true }
@@ -22,6 +23,7 @@ ambient_ui_native = { workspace = true }
 ambient_cameras = { workspace = true }
 ambient_renderer = { workspace = true }
 ambient_element = { workspace = true }
+ambient_audio = { workspace = true }
 
 anyhow = { workspace = true }
 glam = { workspace = true }
@@ -39,3 +41,4 @@ web-sys = { workspace = true }
 
 futures = { workspace = true }
 tracing = { workspace = true }
+js-sys = { workspace = true }
