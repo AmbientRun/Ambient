@@ -83,7 +83,7 @@ impl SyncAssetKey<Arc<GpuMesh>> for TorusMeshKey {
 pub struct TreeMeshKey(pub TreeMesh);
 impl SyncAssetKey<Arc<GpuMesh>> for TreeMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
-        GpuMesh::from_mesh(assets, &Mesh::from(self.0))
+        GpuMesh::from_mesh(&assets, &Mesh::from(self.0))
     }
 }
 
