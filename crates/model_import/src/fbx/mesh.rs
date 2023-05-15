@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use ambient_std::mesh::Mesh;
+use ambient_std::mesh::{generate_tangents, Mesh, MeshBuilder};
 use fbxcel::tree::v7400::NodeHandle;
 use glam::{uvec4, vec2, vec3, vec4, Mat4, Vec2, Vec3};
 use indexmap::IndexMap;
@@ -124,7 +124,6 @@ struct TrianglePoint {
 #[derive(Debug)]
 pub struct FbxGeometry {
     pub id: i64,
-    name: String,
     vertices: Vec<Vec3>,
     polygon_vertex_indices: Vec<i32>,
     polygons: Vec<Vec<TrianglePoint>>,
@@ -137,12 +136,6 @@ pub struct FbxGeometry {
 impl FbxGeometry {
     pub fn from_node(node: NodeHandle, _: &FbxGlobalSettings) -> Self {
         let id = node.attributes()[0].get_i64().unwrap();
-        let name = node.attributes()[1]
-            .get_string()
-            .unwrap()
-            .split('\u{0}')
-            .next()
-            .unwrap();
 
         let vertices_node = node
             .children()
@@ -187,7 +180,6 @@ impl FbxGeometry {
 
         Self {
             id,
-            name: name.to_string(),
             vertices,
             polygon_vertex_indices: polygon_vertex_indices.to_vec(),
             polygons,
@@ -315,13 +307,9 @@ impl FbxGeometry {
         };
         polygon_materials
             .into_iter()
-            .map(|polygons| {
+            .filter_map(|polygons| {
                 if polygons.is_empty() {
-                    return Mesh {
-                        name: self.name.clone(),
-                        texcoords: (0..self.uvs.len()).map(|_i| Vec::new()).collect(),
-                        ..Default::default()
-                    };
+                    return None;
                 }
                 let mut vertices = Vec::<Vec<(IntermediateVertex, u32)>>::new();
                 vertices.resize(self.vertices.len(), Vec::new());
@@ -352,61 +340,74 @@ impl FbxGeometry {
                         indices.push(index);
                     }
                 }
-                let mut mesh = Mesh {
-                    name: self.name.clone(),
-                    positions: final_vertices.iter().map(|v| v.position).collect(),
-                    colors: None,
-                    normals: if final_vertices[0].normal.is_some() {
-                        Some(final_vertices.iter().map(|v| v.normal.unwrap()).collect())
-                    } else {
-                        None
-                    },
-                    tangents: if final_vertices[0].tangent.is_some() {
-                        Some(final_vertices.iter().map(|v| v.tangent.unwrap()).collect())
-                    } else {
-                        None
-                    },
-                    texcoords: (0..self.uvs.len())
-                        .map(|i| final_vertices.iter().map(|v| v.uvs[i]).collect())
-                        .collect(),
-                    joint_indices: if self.skin.is_some() {
-                        Some(
-                            final_vertices
-                                .iter()
-                                .map(|v| {
-                                    uvec4(
-                                        v.joint_indices.first().copied().unwrap_or(0),
-                                        v.joint_indices.get(1).copied().unwrap_or(0),
-                                        v.joint_indices.get(2).copied().unwrap_or(0),
-                                        v.joint_indices.get(3).copied().unwrap_or(0),
-                                    )
-                                })
-                                .collect(),
-                        )
-                    } else {
-                        None
-                    },
-                    joint_weights: if self.skin.is_some() {
-                        Some(
-                            final_vertices
-                                .iter()
-                                .map(|v| {
-                                    vec4(
-                                        v.joint_weights.first().copied().unwrap_or(0.),
-                                        v.joint_weights.get(1).copied().unwrap_or(0.),
-                                        v.joint_weights.get(2).copied().unwrap_or(0.),
-                                        v.joint_weights.get(3).copied().unwrap_or(0.),
-                                    )
-                                })
-                                .collect(),
-                        )
-                    } else {
-                        None
-                    },
-                    indices,
+
+                let positions = final_vertices.iter().map(|v| v.position).collect_vec();
+                let normals = if final_vertices[0].normal.is_some() {
+                    final_vertices
+                        .iter()
+                        .map(|v| v.normal.unwrap())
+                        .collect_vec()
+                } else {
+                    Vec::new()
                 };
-                mesh.try_ensure_tangents();
-                mesh
+                let mut tangents = if final_vertices[0].tangent.is_some() {
+                    final_vertices
+                        .iter()
+                        .map(|v| v.tangent.unwrap())
+                        .collect_vec()
+                } else {
+                    Vec::new()
+                };
+                let texcoords = (0..self.uvs.len())
+                    .map(|i| final_vertices.iter().map(|v| v.uvs[i]).collect_vec())
+                    .collect_vec();
+
+                let (joint_indices, joint_weights) = if self.skin.is_some() {
+                    let joint_indices = final_vertices
+                        .iter()
+                        .map(|v| {
+                            uvec4(
+                                v.joint_indices.first().copied().unwrap_or(0),
+                                v.joint_indices.get(1).copied().unwrap_or(0),
+                                v.joint_indices.get(2).copied().unwrap_or(0),
+                                v.joint_indices.get(3).copied().unwrap_or(0),
+                            )
+                        })
+                        .collect_vec();
+                    let joint_weights = final_vertices
+                        .iter()
+                        .map(|v| {
+                            vec4(
+                                v.joint_weights.first().copied().unwrap_or(0.),
+                                v.joint_weights.get(1).copied().unwrap_or(0.),
+                                v.joint_weights.get(2).copied().unwrap_or(0.),
+                                v.joint_weights.get(3).copied().unwrap_or(0.),
+                            )
+                        })
+                        .collect_vec();
+                    (joint_indices, joint_weights)
+                } else {
+                    (Vec::new(), Vec::new())
+                };
+
+                if tangents.is_empty() && !texcoords.is_empty() && !texcoords[0].is_empty() {
+                    tangents = generate_tangents(&positions, &texcoords[0], &indices);
+                }
+
+                Some(
+                    MeshBuilder {
+                        positions,
+                        normals,
+                        tangents,
+                        texcoords,
+                        joint_indices,
+                        joint_weights,
+                        indices,
+                        ..MeshBuilder::default()
+                    }
+                    .build()
+                    .expect("Invalid fbx mesh"),
+                )
             })
             .collect_vec()
     }

@@ -1,4 +1,4 @@
-use ambient_std::mesh::Mesh;
+use ambient_std::mesh::{generate_tangents, Mesh, MeshBuilder};
 use glam::*;
 
 #[derive(Debug, Clone)]
@@ -64,15 +64,16 @@ impl From<&GridMesh> for Mesh {
                 }
             }
         }
-        let mut mesh = Mesh {
-            name: format!("Grid {}x{}", grid.n_vertices_height, grid.n_vertices_height),
+        let tangents = generate_tangents(&positions, &texcoords, &indices);
+
+        let mesh_builder = MeshBuilder {
             positions,
             texcoords: vec![texcoords],
-            normals: Some(normals),
+            normals,
+            tangents,
             indices,
-            ..Default::default()
+            ..MeshBuilder::default()
         };
-        mesh.create_tangents();
-        mesh
+        mesh_builder.build().expect("Invalid grid mesh")
     }
 }

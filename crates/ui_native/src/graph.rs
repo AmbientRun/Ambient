@@ -11,7 +11,7 @@ use ambient_renderer::{
     color, flat_material::get_flat_shader_unlit, gpu_primitives_lod, gpu_primitives_mesh, material, materials::flat_material::FlatMaterial,
     primitives, renderer_shader, SharedMaterial,
 };
-use ambient_std::{asset_cache::SyncAssetKeyExt, cb, mesh::Mesh};
+use ambient_std::{asset_cache::SyncAssetKeyExt, cb, mesh::{MeshBuilder}};
 use glam::{vec2, vec3, Quat, Vec2, Vec3, Vec4};
 use itertools::Itertools;
 
@@ -207,7 +207,7 @@ impl ElementComponent for Graph {
         let indices =
             (0..point_count.saturating_sub(1) as u32).map(|i| i * 2).flat_map(|i| [i, 1 + i, 2 + i, 1 + i, 3 + i, 2 + i]).collect_vec();
 
-        let mesh = Mesh { name: "Graph Mesh".to_string(), positions: points, indices, ..Default::default() };
+        let mesh = MeshBuilder { positions: points, indices, ..MeshBuilder::default() }.build().expect("Invalid graph mesh");
 
         let mesh = mesh_buffer.insert(&mesh);
 
