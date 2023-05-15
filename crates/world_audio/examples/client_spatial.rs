@@ -1,4 +1,7 @@
-use std::{f32::consts::TAU, sync::Arc};
+use std::{
+    f32::consts::{PI, TAU},
+    sync::Arc,
+};
 
 use ambient_app::{App, AppBuilder};
 use ambient_audio::{track::Track, Attenuation, AudioEmitter, AudioListener, AudioStream, Source};
@@ -27,15 +30,16 @@ fn spawn_emitters(world: &mut World) {
     )
     .unwrap();
 
-    let count = 1;
-    for i in 0..count {
-        let theta = (i as f32) / count as f32 * TAU;
-        let pos = vec3(theta.cos() * 16.0, theta.sin() * 16.0, 2.0);
+    const COUNT: i32 = 1;
+    const RADIUS: f32 = 8.0;
+    for i in 0..COUNT {
+        let theta = (i as f32) / COUNT as f32 * TAU;
+        let pos = vec3(theta.cos() * RADIUS, theta.sin() * RADIUS, 2.0);
 
         let emitter = Arc::new(Mutex::new(AudioEmitter {
-            amplitude: 5.0,
+            amplitude: 50.0,
             attenuation: Attenuation::InversePoly {
-                quad: 0.1,
+                quad: 1.0,
                 lin: 0.0,
                 constant: 1.0,
             },
@@ -64,15 +68,15 @@ fn init(app: &mut App) {
     let _assets = world.resource(asset_cache()).clone();
 
     // Floor
-    let size = 128.0;
+    let size = 16.0;
     Cube.el()
         .with(scale(), vec3(size, size, 1.))
         .with_default(cast_shadows())
         .spawn_static(world);
 
     ambient_cameras::spherical::new(
-        vec3(0., 0., 0.),
-        SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.),
+        vec3(0., 0., 1.),
+        SphericalCoords::new(1.5, 2.0 * PI * 4.0 / 8.0, 5.0),
     )
     .with(active_camera(), 0.)
     .with(
