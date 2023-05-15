@@ -1,5 +1,5 @@
 use ambient_std::mesh::Mesh;
-use glam::{vec2, vec3, vec4, Vec3, Vec4};
+use glam::{vec2, vec3, Vec3, Vec4};
 
 pub struct CuboidMesh {
     /// Order: Bottom [ Left (Back, Front), Right (Back, Front) ] - Top [ Left (Back, Front), Right (Back, Front) ]
