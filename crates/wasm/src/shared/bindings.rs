@@ -30,6 +30,9 @@ pub trait BindingsBound:
     + wit::client_input::Host
     + wit::client_camera::Host
     + wit::client_window::Host
+    + wit::client_mesh::Host
+    + wit::client_material::Host
+    + wit::client_texture::Host
     // Server
     + wit::server_message::Host
     + wit::server_physics::Host

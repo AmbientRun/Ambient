@@ -1,0 +1,8 @@
+default interface client-material {
+    record descriptor {
+        base-color-map: string,
+        normal-map: string,
+        metallic-roughness-map: string,
+    }
+    create: func(desc: descriptor) -> string
+}

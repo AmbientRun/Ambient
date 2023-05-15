@@ -1,0 +1,6 @@
+default interface client-texture {
+    variant format {
+        rgba8-unorm
+    }
+    create2d: func(width: u32, height: u32, format: format, data: list<u8>) -> string
+}

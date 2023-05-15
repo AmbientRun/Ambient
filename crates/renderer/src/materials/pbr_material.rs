@@ -123,8 +123,8 @@ impl Default for PbrMaterialParams {
             base_color_factor: Vec4::ONE,
             emissive_factor: Vec4::ZERO,
             alpha_cutoff: 0.5,
-            metallic: 1.,
-            roughness: 1.,
+            metallic: 1.0,
+            roughness: 1.0,
             _padding: Default::default(),
         }
     }
@@ -136,12 +136,12 @@ pub struct PbrMaterialConfig {
     pub params: PbrMaterialParams,
     pub base_color: Arc<TextureView>,
     pub normalmap: Arc<TextureView>,
-    /// r: Metallic
-    /// g: Roughness
+    /// r: Metallic, g: Roughness
     pub metallic_roughness: Arc<TextureView>,
-    pub transparent: Option<bool>,
-    pub double_sided: Option<bool>,
-    pub depth_write_enabled: Option<bool>,
+    pub sampler: Arc<wgpu::Sampler>,
+    pub transparent: bool,
+    pub double_sided: bool,
+    pub depth_write_enabled: bool,
 }
 
 pub struct PbrMaterial {
@@ -165,8 +165,6 @@ impl PbrMaterial {
                 contents: bytemuck::cast_slice(&[config.params]),
             });
 
-        let sampler = DefaultSamplerKey.get(assets);
-
         Self {
             id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
@@ -178,7 +176,7 @@ impl PbrMaterial {
                     },
                     wgpu::BindGroupEntry {
                         binding: 1,
-                        resource: wgpu::BindingResource::Sampler(&sampler),
+                        resource: wgpu::BindingResource::Sampler(&config.sampler),
                     },
                     wgpu::BindGroupEntry {
                         binding: 2,
@@ -220,9 +218,10 @@ impl PbrMaterial {
                 base_color: texture,
                 normalmap: DefaultNormalMapViewKey.get(assets),
                 metallic_roughness: PixelTextureViewKey::white().get(assets),
-                transparent: None,
-                double_sided: None,
-                depth_write_enabled: None,
+                sampler: DefaultSamplerKey.get(assets),
+                transparent: false,
+                double_sided: false,
+                depth_write_enabled: false,
             },
         )
     }
@@ -258,13 +257,13 @@ impl Material for PbrMaterial {
         &self.config.name
     }
     fn transparent(&self) -> Option<bool> {
-        self.config.transparent
+        Some(self.config.transparent)
     }
     fn double_sided(&self) -> Option<bool> {
-        self.config.double_sided
+        Some(self.config.double_sided)
     }
     fn depth_write_enabled(&self) -> Option<bool> {
-        self.config.depth_write_enabled
+        Some(self.config.depth_write_enabled)
     }
 }
 
@@ -441,6 +440,8 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialDesc {
             PixelTextureViewKey::white().get(&assets)
         };
 
+        let sampler = DefaultSamplerKey.get(&assets);
+
         let params = PbrMaterialParams {
             base_color_factor: self.base_color_factor.unwrap_or(Vec4::ONE),
             emissive_factor: self.emissive_factor.unwrap_or(Vec4::ZERO),
@@ -463,10 +464,40 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialDesc {
                 base_color: color_view.clone(),
                 normalmap,
                 metallic_roughness,
-                transparent: self.transparent,
-                double_sided: self.double_sided,
-                depth_write_enabled: None,
+                sampler,
+                transparent: self.transparent.unwrap_or_default(),
+                double_sided: self.double_sided.unwrap_or_default(),
+                depth_write_enabled: false,
             },
         )))
+    }
+}
+
+#[derive(Debug)]
+pub struct PbrMaterialConfigKey(ulid::Ulid);
+
+impl PbrMaterialConfigKey {
+    pub fn new() -> Self {
+        Self(ulid::Ulid::new())
+    }
+}
+
+impl std::str::FromStr for PbrMaterialConfigKey {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self(ulid::Ulid::from_str(s)?))
+    }
+}
+
+impl std::fmt::Display for PbrMaterialConfigKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl SyncAssetKey<PbrMaterialConfig> for PbrMaterialConfigKey {
+    fn load(&self, assets: AssetCache) -> PbrMaterialConfig {
+        self.get(&assets)
     }
 }

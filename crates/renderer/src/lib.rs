@@ -3,22 +3,28 @@ use std::{f32::consts::PI, fmt::Debug, sync::Arc};
 use ambient_core::{
     asset_cache,
     async_ecs::async_run,
+    bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
     gpu_components,
     gpu_ecs::{
         ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent,
     },
-    mesh, runtime,
-    transform::get_world_rotation,
+    main_scene, mesh, runtime,
+    transform::{get_world_rotation, local_to_world, mesh_to_world},
 };
 use ambient_ecs::{
-    components, query_mut, Debuggable, Entity, EntityId, Resource, SystemGroup, World,
+    components,
+    generated::{
+        components::core::rendering::{material_from_url, mesh_from_url},
+        concepts::make_transformable,
+    },
+    query_mut, Debuggable, Entity, EntityId, Resource, SystemGroup, World,
 };
 use ambient_gpu::{
     mesh_buffer::GpuMesh,
     shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule},
     wgsl_utils::wgsl_interpolate,
 };
-use ambient_std::{asset_cache::*, asset_url::AbsAssetUrl, cb, include_file, Cb};
+use ambient_std::{asset_cache::*, asset_url::AbsAssetUrl, cb, include_file, mesh::MeshKey, Cb};
 use derive_more::*;
 use downcast_rs::{impl_downcast, DowncastSync};
 use glam::{uvec4, UVec2, UVec4, Vec3};
@@ -43,7 +49,7 @@ use ambient_ecs::{query, Component};
 pub use collect::*;
 pub use culling::*;
 pub use globals::*;
-use materials::pbr_material::PbrMaterialFromUrl;
+use materials::pbr_material::{PbrMaterialConfigKey, PbrMaterialFromUrl};
 pub use materials::*;
 use ordered_float::OrderedFloat;
 pub use outlines::*;
@@ -60,6 +66,8 @@ pub use ambient_ecs::generated::components::core::rendering::{
     cast_shadows, color, double_sided, fog_color, fog_density, fog_height_falloff, light_ambient,
     light_diffuse, overlay, pbr_material_from_url, sun, transparency_group,
 };
+
+use crate::pbr_material::{get_pbr_shader, PbrMaterial};
 
 components!("rendering", {
     @[Debuggable]
@@ -166,6 +174,72 @@ pub fn systems() -> SystemGroup {
                 }
             }),
             Box::new(outlines::systems()),
+            query(mesh_from_url().changed()).to_system(|q, world, qs, _| {
+                // todo: tidy all this up, move material to guest side, ensure_has_component
+                let assets = world.resource(asset_cache()).clone();
+                for (id, mesh_url) in q.collect_cloned(world, qs) {
+                    use std::str::FromStr;
+                    let Some(mesh_url) = mesh_url.strip_prefix("ambient-asset-transient:/") else {
+                        tracing::warn!("Invalid mesh url, must start with ambient-asset-transient:/");
+                        return;
+                    };
+                    let Ok(mesh_key) = MeshKey::from_str(&mesh_url) else {
+                        tracing::warn!("Invalid mesh url, must be a valid ULID");
+                        return;
+                    };
+                    let Some(mesh) = mesh_key.try_get(&assets) else {
+                        tracing::warn!("Could not find mesh from {mesh_key}");
+                        return;
+                    };
+
+                    world
+                        .add_components(
+                            id,
+                            Entity::new()
+                                .with(ambient_core::mesh(), GpuMesh::from_mesh(&assets, &mesh))
+                                .with_default(main_scene())
+                                .with_default(gpu_primitives_mesh())
+                                .with_default(gpu_primitives_lod())
+                                .with_default(primitives())
+                                .with_default(local_to_world())
+                                .with_default(mesh_to_world())
+                                .with_merge(make_transformable())
+                                .with(local_bounding_aabb(), mesh.aabb())
+                                .with(world_bounding_aabb(), mesh.aabb())
+                                .with(world_bounding_sphere(), mesh.aabb().to_sphere()),
+                        )
+                        .unwrap();
+                }
+            }),
+            query(material_from_url().changed()).to_system(|q, world, qs, _| {
+                let assets = world.resource(asset_cache()).clone();
+                for (id, material_url) in q.collect_cloned(world, qs) {
+                    use std::str::FromStr;
+                    let Some(material_url) = material_url.strip_prefix("ambient-asset-transient:/") else {
+                        tracing::warn!("Invalid material url, must start with ambient-asset-transient:/");
+                        return;
+                    };
+                    let Ok(material_key) = PbrMaterialConfigKey::from_str(&material_url) else {
+                        tracing::warn!("Invalid material url, must be a valid ULID");
+                        return;
+                    };
+                    let Some(material) = material_key.try_get(&assets) else {
+                        tracing::warn!("Could not find material from {material_key}");
+                        return;
+                    };
+                    let material = PbrMaterial::new(&assets, material);
+                    let material = SharedMaterial::new(material);
+                    world
+                        .add_components(
+                            id,
+                            Entity::new()
+                                .with(crate::material(), material)
+                                .with(renderer_shader(), cb(get_pbr_shader)),
+                        )
+                        .unwrap();
+                }
+
+            })
         ],
     )
 }

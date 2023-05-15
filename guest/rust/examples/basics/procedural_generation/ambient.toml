@@ -1,0 +1,4 @@
+[project]
+id = "procedural_generation"
+name = "Procedural generation"
+version = "0.0.1"

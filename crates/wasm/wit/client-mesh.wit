@@ -1,0 +1,12 @@
+default interface client-mesh {
+    use pkg.types.{vec2, vec3}
+
+    record vertex {
+        position: vec3,
+        normal: vec3,
+        tangent: vec3,
+        texcoord0: vec2,
+    }
+
+    create: func(vertices: list<vertex>, indices: list<u32>) -> string
+}

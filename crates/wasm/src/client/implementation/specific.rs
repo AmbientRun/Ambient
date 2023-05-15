@@ -2,6 +2,8 @@
 //!
 //! If implementing a trait that is also available on the server, it should go in [super].
 
+use std::{str::FromStr, sync::Arc};
+
 use ambient_audio::AudioFromUrl;
 use ambient_core::{
     asset_cache,
@@ -10,11 +12,23 @@ use ambient_core::{
     runtime,
     window::{window_ctl, WindowCtl},
 };
+use ambient_gpu::{
+    gpu::GpuKey,
+    std_assets::DefaultSamplerKey,
+    texture::{Texture, TextureView, TextureViewKey},
+};
 use ambient_input::{player_prev_raw_input, player_raw_input};
 use ambient_network::client::game_client;
-use ambient_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl};
+use ambient_renderer::pbr_material::{PbrMaterialConfig, PbrMaterialConfigKey, PbrMaterialParams};
+use ambient_std::{
+    asset_cache::{AsyncAssetKeyExt, SyncAssetKeyExt},
+    asset_url::AbsAssetUrl,
+    mesh::{MeshBuilder, MeshKey},
+};
 use ambient_world_audio::{audio_sender, AudioMessage};
 use anyhow::Context;
+use glam::Vec4;
+use wgpu::TextureViewDescriptor;
 use winit::window::CursorGrabMode;
 
 use super::Bindings;
@@ -259,5 +273,132 @@ impl wit::client_window::Host for Bindings {
             .resource(window_ctl())
             .send(WindowCtl::SetFullscreen(fullscreen))?;
         Ok(())
+    }
+}
+impl wit::client_mesh::Host for Bindings {
+    fn create(
+        &mut self,
+        vertices: Vec<wit::client_mesh::Vertex>,
+        indices: Vec<u32>,
+    ) -> anyhow::Result<String> {
+        let mut positions = Vec::with_capacity(vertices.len());
+        let mut normals = Vec::with_capacity(vertices.len());
+        let mut tangents = Vec::with_capacity(vertices.len());
+        let mut texcoords = Vec::with_capacity(vertices.len());
+        for v in &vertices {
+            positions.push(v.position.from_bindgen());
+            normals.push(v.normal.from_bindgen());
+            tangents.push(v.tangent.from_bindgen());
+            texcoords.push(v.texcoord0.from_bindgen());
+        }
+        let mesh = MeshBuilder {
+            positions,
+            normals,
+            tangents,
+            texcoords: vec![texcoords],
+            indices,
+            ..MeshBuilder::default()
+        }
+        .build()?;
+
+        let world = self.world();
+        let assets = world.resource(asset_cache());
+        let mesh_key = MeshKey::new();
+        mesh_key.insert(assets, mesh);
+        // Todo: make "ambient-asset-transient:" a const.
+        let mesh_url = format!("ambient-asset-transient:/{mesh_key}");
+        Ok(mesh_url)
+    }
+}
+impl wit::client_material::Host for Bindings {
+    fn create(&mut self, desc: wit::client_material::Descriptor) -> anyhow::Result<String> {
+        let world = self.world();
+        let assets = world.resource(asset_cache());
+
+        let texture_from_url = |url: &str| -> anyhow::Result<Arc<TextureView>> {
+            let Some(url) = url.strip_prefix("ambient-asset-transient:/") else {
+                anyhow::bail!("Invalid texture url, must start with ambient-asset-transient:/");
+            };
+            let Ok(key) = TextureViewKey::from_str(&url) else {
+                anyhow::bail!("Invalid texture url, must be a valid ULID");
+            };
+            let Some(texture) = key.try_get(assets) else {
+                anyhow::bail!("Could not find texture from {key}");
+            };
+            Ok(texture)
+        };
+
+        let base_color_map =
+            texture_from_url(&desc.base_color_map).context("Loading texture: `base_color_map`")?;
+        let normal_map =
+            texture_from_url(&desc.normal_map).context("Loading texture: `normal_map`")?;
+        let metallic_roughness_map = texture_from_url(&desc.metallic_roughness_map)
+            .context("Loading texture: `metallic_roughness_map`")?;
+
+        let material = PbrMaterialConfig {
+            source: "Procedural Material".to_string(),
+            name: "Procedural Material".to_string(),
+            params: PbrMaterialParams {
+                base_color_factor: Vec4::ONE,
+                emissive_factor: Vec4::ZERO,
+                alpha_cutoff: 0.5,
+                metallic: 1.0,
+                roughness: 1.0,
+                ..PbrMaterialParams::default()
+            },
+            base_color: base_color_map,
+            normalmap: normal_map,
+            metallic_roughness: metallic_roughness_map,
+            sampler: DefaultSamplerKey.get(&assets),
+            transparent: false,
+            double_sided: false,
+            depth_write_enabled: true,
+        };
+        let material_key = PbrMaterialConfigKey::new();
+        material_key.insert(assets, material);
+        // Todo: make "ambient-asset-transient:" a const.
+        let material_url = format!("ambient-asset-transient:/{material_key}");
+        Ok(material_url)
+    }
+}
+impl wit::client_texture::Host for Bindings {
+    fn create2d(
+        &mut self,
+        width: u32,
+        height: u32,
+        format: wit::client_texture::Format,
+        data: Vec<u8>,
+    ) -> anyhow::Result<String> {
+        let world = self.world();
+        let assets = world.resource(asset_cache());
+        let gpu = GpuKey.get(&assets);
+        let format = match format {
+            wit::client_texture::Format::Rgba8Unorm => wgpu::TextureFormat::Rgba8Unorm,
+        };
+        let texture = Texture::new_with_data(
+            gpu,
+            &wgpu::TextureDescriptor {
+                label: None,
+                size: wgpu::Extent3d {
+                    width,
+                    height,
+                    depth_or_array_layers: 1,
+                },
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: wgpu::TextureDimension::D2,
+                format,
+                usage: wgpu::TextureUsages::TEXTURE_BINDING,
+                view_formats: &[],
+            },
+            &data,
+        );
+        let texture = Arc::new(texture);
+        let texture_view = Arc::new(texture.create_view(&TextureViewDescriptor::default()));
+        let texture_view_key = TextureViewKey::new();
+        texture_view_key.insert(assets, texture_view);
+        // Todo: make "ambient-asset-transient:" a const.
+        let texture_url = format!("ambient-asset-transient:/{texture_view_key}");
+        Ok(texture_url)
     }
 }

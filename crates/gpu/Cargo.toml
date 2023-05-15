@@ -35,6 +35,7 @@ tracing = { workspace = true }
 directories = { workspace = true }
 toml = { workspace = true }
 serde = { workspace = true }
+ulid = { workspace = true }
 
 [features]
 hotload-includes = ['ambient_std/hotload-includes']

@@ -8684,6 +8684,171 @@ pub mod asset{
                                     
                                     
                                     #[allow(clippy::all)]
+                                    pub mod client_mesh{
+                                      #[used]
+                                      #[doc(hidden)]
+                                      #[cfg(target_arch = "wasm32")]
+                                      static __FORCE_SECTION_REF: fn() = super::__link_section;
+                                      
+                                      pub type Vec2 = super::types::Vec2;
+                                      pub type Vec3 = super::types::Vec3;
+                                      #[repr(C)]
+                                      #[derive(Copy, Clone)]
+                                      pub struct Vertex {
+                                        pub position: Vec3,
+                                        pub normal: Vec3,
+                                        pub tangent: Vec3,
+                                        pub texcoord0: Vec2,
+                                      }
+                                      impl core::fmt::Debug for Vertex {
+                                        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                                          f.debug_struct("Vertex").field("position", &self.position).field("normal", &self.normal).field("tangent", &self.tangent).field("texcoord0", &self.texcoord0).finish()
+                                        }
+                                      }
+                                      #[allow(clippy::all)]
+                                      pub fn create(vertices: &[Vertex],indices: &[u32],) -> wit_bindgen::rt::string::String{
+                                        
+                                        #[allow(unused_imports)]
+                                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                        unsafe {
+                                          
+                                          #[repr(align(4))]
+                                          struct RetArea([u8; 8]);
+                                          let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                          let vec0 = vertices;
+                                          let ptr0 = vec0.as_ptr() as i32;
+                                          let len0 = vec0.len() as i32;
+                                          let vec1 = indices;
+                                          let ptr1 = vec1.as_ptr() as i32;
+                                          let len1 = vec1.len() as i32;
+                                          let ptr2 = ret_area.as_mut_ptr() as i32;
+                                          #[link(wasm_import_module = "client-mesh")]
+                                          extern "C" {
+                                            #[cfg_attr(target_arch = "wasm32", link_name = "create")]
+                                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-mesh_create")]
+                                            fn wit_import(
+                                            _: i32, _: i32, _: i32, _: i32, _: i32, );
+                                          }
+                                          wit_import(ptr0, len0, ptr1, len1, ptr2);
+                                          let len3 = *((ptr2 + 4) as *const i32) as usize;
+                                          {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr2 + 0) as *const i32) as *mut _, len3, len3))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr2 + 0) as *const i32) as *mut _, len3, len3)).unwrap()}}
+                                        }
+                                      }
+                                      
+                                    }
+                                    
+                                    
+                                    #[allow(clippy::all)]
+                                    pub mod client_material{
+                                      #[used]
+                                      #[doc(hidden)]
+                                      #[cfg(target_arch = "wasm32")]
+                                      static __FORCE_SECTION_REF: fn() = super::__link_section;
+                                      
+                                      #[derive(Clone)]
+                                      pub struct Descriptor<'a,> {
+                                        pub base_color_map: &'a str,
+                                        pub normal_map: &'a str,
+                                        pub metallic_roughness_map: &'a str,
+                                      }
+                                      impl<'a,> core::fmt::Debug for Descriptor<'a,> {
+                                        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                                          f.debug_struct("Descriptor").field("base-color-map", &self.base_color_map).field("normal-map", &self.normal_map).field("metallic-roughness-map", &self.metallic_roughness_map).finish()
+                                        }
+                                      }
+                                      #[allow(clippy::all)]
+                                      pub fn create(desc: Descriptor<'_,>,) -> wit_bindgen::rt::string::String{
+                                        
+                                        #[allow(unused_imports)]
+                                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                        unsafe {
+                                          
+                                          #[repr(align(4))]
+                                          struct RetArea([u8; 8]);
+                                          let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                          let Descriptor{ base_color_map:base_color_map0, normal_map:normal_map0, metallic_roughness_map:metallic_roughness_map0, } = desc;
+                                          let vec1 = base_color_map0;
+                                          let ptr1 = vec1.as_ptr() as i32;
+                                          let len1 = vec1.len() as i32;
+                                          let vec2 = normal_map0;
+                                          let ptr2 = vec2.as_ptr() as i32;
+                                          let len2 = vec2.len() as i32;
+                                          let vec3 = metallic_roughness_map0;
+                                          let ptr3 = vec3.as_ptr() as i32;
+                                          let len3 = vec3.len() as i32;
+                                          let ptr4 = ret_area.as_mut_ptr() as i32;
+                                          #[link(wasm_import_module = "client-material")]
+                                          extern "C" {
+                                            #[cfg_attr(target_arch = "wasm32", link_name = "create")]
+                                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-material_create")]
+                                            fn wit_import(
+                                            _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, );
+                                          }
+                                          wit_import(ptr1, len1, ptr2, len2, ptr3, len3, ptr4);
+                                          let len5 = *((ptr4 + 4) as *const i32) as usize;
+                                          {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr4 + 0) as *const i32) as *mut _, len5, len5))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr4 + 0) as *const i32) as *mut _, len5, len5)).unwrap()}}
+                                        }
+                                      }
+                                      
+                                    }
+                                    
+                                    
+                                    #[allow(clippy::all)]
+                                    pub mod client_texture{
+                                      #[used]
+                                      #[doc(hidden)]
+                                      #[cfg(target_arch = "wasm32")]
+                                      static __FORCE_SECTION_REF: fn() = super::__link_section;
+                                      
+                                      #[derive(Clone, Copy)]
+                                      pub enum Format{
+                                        Rgba8Unorm,
+                                      }
+                                      impl core::fmt::Debug for Format {
+                                        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                                          match self {
+                                            Format::Rgba8Unorm => {
+                                              f.debug_tuple("Format::Rgba8Unorm").finish()
+                                            }
+                                          }
+                                        }
+                                      }
+                                      #[allow(clippy::all)]
+                                      pub fn create2d(width: u32,height: u32,format: Format,data: &[u8],) -> wit_bindgen::rt::string::String{
+                                        
+                                        #[allow(unused_imports)]
+                                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+                                        unsafe {
+                                          
+                                          #[repr(align(4))]
+                                          struct RetArea([u8; 8]);
+                                          let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+                                          let result0 = match format {
+                                            Format::Rgba8Unorm=> {
+                                              0i32
+                                            }
+                                          };
+                                          let vec1 = data;
+                                          let ptr1 = vec1.as_ptr() as i32;
+                                          let len1 = vec1.len() as i32;
+                                          let ptr2 = ret_area.as_mut_ptr() as i32;
+                                          #[link(wasm_import_module = "client-texture")]
+                                          extern "C" {
+                                            #[cfg_attr(target_arch = "wasm32", link_name = "create2d")]
+                                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-texture_create2d")]
+                                            fn wit_import(
+                                            _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, );
+                                          }
+                                          wit_import(wit_bindgen::rt::as_i32(width), wit_bindgen::rt::as_i32(height), result0, ptr1, len1, ptr2);
+                                          let len3 = *((ptr2 + 4) as *const i32) as usize;
+                                          {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr2 + 0) as *const i32) as *mut _, len3, len3))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr2 + 0) as *const i32) as *mut _, len3, len3)).unwrap()}}
+                                        }
+                                      }
+                                      
+                                    }
+                                    
+                                    
+                                    #[allow(clippy::all)]
                                     pub mod server_physics{
                                       #[used]
                                       #[doc(hidden)]
