@@ -13,7 +13,11 @@ pub struct CubeMesh {
 }
 impl CubeMesh {
     pub fn from_size(size: Vec3) -> Self {
-        Self { size, position: -size / 2., color: vec4(1., 1., 1., 1.) }
+        Self {
+            size,
+            position: -size / 2.,
+            color: vec4(1., 1., 1., 1.),
+        }
     }
 }
 impl PartialEq for CubeMesh {
@@ -32,7 +36,11 @@ impl Hash for CubeMesh {
 }
 impl Default for CubeMesh {
     fn default() -> Self {
-        Self { position: vec3(-1., -1., -1.), size: vec3(2.0, 2.0, 2.0), color: vec4(1.0, 1.0, 1.0, 1.0) }
+        Self {
+            position: vec3(-1., -1., -1.),
+            size: vec3(2.0, 2.0, 2.0),
+            color: vec4(1.0, 1.0, 1.0, 1.0),
+        }
     }
 }
 
@@ -45,7 +53,7 @@ impl From<&CubeMesh> for Mesh {
     fn from(cube: &CubeMesh) -> Mesh {
         let min = cube.position;
         let max = cube.position + cube.size;
-        let mut mesh = Mesh::from(&CuboidMesh {
+        Mesh::from(&CuboidMesh {
             // Order: Bottom [ Left (Back, Front), Right (Back, Front) ] - Top [ Left (Back, Front), Right (Back, Front) ]
             positions: [
                 vec3(min.x, min.y, min.z),
@@ -61,8 +69,6 @@ impl From<&CubeMesh> for Mesh {
             texcoords: true,
             normals: true,
             tangents: true,
-        });
-        mesh.name = "cube".to_string();
-        mesh
+        })
     }
 }

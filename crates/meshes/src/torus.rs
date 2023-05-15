@@ -1,4 +1,4 @@
-use ambient_std::mesh::Mesh;
+use ambient_std::mesh::{generate_tangents, Mesh, MeshBuilder};
 use glam::*;
 use serde::{Deserialize, Serialize};
 
@@ -70,25 +70,26 @@ impl From<TorusMesh> for Mesh {
                 let a = i * (slices + 1) + j;
                 let b = a + slices + 1;
 
-                indices.push(a as u32);
-                indices.push(b as u32);
-                indices.push((a + 1) as u32);
+                indices.push(a);
+                indices.push(b);
+                indices.push(a + 1);
 
-                indices.push(b as u32);
-                indices.push((b + 1) as u32);
-                indices.push((a + 1) as u32);
+                indices.push(b);
+                indices.push(b + 1);
+                indices.push(a + 1);
             }
         }
 
-        let mut mesh = Mesh {
-            name: "torus".into(),
+        let tangents = generate_tangents(&vertices, &texcoords, &indices);
+        MeshBuilder {
             positions: vertices,
-            normals: Some(normals),
+            normals,
+            tangents,
             texcoords: vec![texcoords],
             indices,
-            ..Default::default()
-        };
-        mesh.create_tangents();
-        mesh
+            ..MeshBuilder::default()
+        }
+        .build()
+        .expect("Invalid torus mesh")
     }
 }

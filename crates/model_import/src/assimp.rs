@@ -143,6 +143,7 @@ fn import_sync(
     use ambient_core::transform::{local_to_parent, local_to_world, rotation, scale, translation};
     use ambient_ecs::{Entity, EntityId, World};
     use ambient_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
+    use ambient_std::mesh::MeshBuilder;
     use glam::*;
     use itertools::Itertools;
     use std::{cell::RefCell, rc::Rc};
@@ -161,30 +162,46 @@ fn import_sync(
         extension,
     )?;
     for (i, mesh) in scene.meshes.iter().enumerate() {
-        let out_mesh = ambient_std::mesh::Mesh {
-            name: mesh.name.clone(),
-            positions: mesh.vertices.iter().map(|v| vec3(v.x, v.y, v.z)).collect(),
-            colors: if let Some(Some(colors)) = mesh.colors.get(0) {
-                Some(colors.iter().map(|c| vec4(c.r, c.g, c.b, c.a)).collect())
-            } else {
-                None
-            },
-            normals: Some(mesh.normals.iter().map(|v| vec3(v.x, v.y, v.z)).collect()),
-            tangents: Some(mesh.tangents.iter().map(|v| vec3(v.x, v.y, v.z)).collect()),
-            texcoords: mesh
-                .texture_coords
-                .iter()
-                .map(|tc| {
-                    tc.as_ref()
-                        .map(|tc| tc.iter().map(|v| vec2(v.x, v.y)).collect())
-                        .unwrap_or_default()
-                })
-                .collect(),
-            // TODO(fred): Bones
-            joint_indices: None,
-            joint_weights: None,
-            indices: mesh.faces.iter().flat_map(|f| f.0.clone()).collect(),
+        let positions = mesh
+            .vertices
+            .iter()
+            .map(|v| vec3(v.x, v.y, v.z))
+            .collect_vec();
+        let colors = if let Some(Some(colors)) = mesh.colors.get(0) {
+            colors.iter().map(|c| vec4(c.r, c.g, c.b, c.a)).collect()
+        } else {
+            Vec::new()
         };
+        let normals = mesh
+            .normals
+            .iter()
+            .map(|v| vec3(v.x, v.y, v.z))
+            .collect_vec();
+        let tangents = mesh
+            .tangents
+            .iter()
+            .map(|v| vec3(v.x, v.y, v.z))
+            .collect_vec();
+        let texcoords = mesh
+            .texture_coords
+            .iter()
+            .map(|tc| {
+                tc.as_ref()
+                    .map(|tc| tc.iter().map(|v| vec2(v.x, v.y)).collect_vec())
+                    .unwrap_or_default()
+            })
+            .collect_vec();
+        let indices = mesh.faces.iter().flat_map(|f| f.0.clone()).collect_vec();
+        let out_mesh = MeshBuilder {
+            positions,
+            colors,
+            normals,
+            tangents,
+            texcoords,
+            indices,
+            ..MeshBuilder::default()
+        }
+        .build()?;
         model_crate.meshes.insert(i.to_string(), out_mesh);
     }
 

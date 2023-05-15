@@ -453,7 +453,6 @@ impl ModelCrate {
                             if let Some(joint_matrices) =
                                 joint_matrices.as_ref().unwrap().get(skin_id)
                             {
-                                let mut mesh = mesh.clone();
                                 let joint_matrices = joint_matrices
                                     .iter()
                                     .map(|mat| {
@@ -463,11 +462,24 @@ impl ModelCrate {
                                             * *mat
                                     })
                                     .collect_vec();
-                                mesh.apply_skin(&joint_matrices);
-                                return mesh.aabb();
+                                let mut aabb = AABB::new_invalid();
+                                for (position, (weight, index)) in mesh
+                                    .positions()
+                                    .iter()
+                                    .zip(mesh.joint_weights().iter().zip(mesh.joint_indices()))
+                                {
+                                    let mat = joint_matrices[index.x as usize] * weight.x
+                                        + joint_matrices[index.y as usize] * weight.y
+                                        + joint_matrices[index.z as usize] * weight.z
+                                        + joint_matrices[index.w as usize] * weight.w;
+                                    let position = mat.transform_point3(*position);
+                                    aabb.min = aabb.min.min(position);
+                                    aabb.max = aabb.max.max(position);
+                                }
+                                return Some(aabb);
                             }
                         } else {
-                            return mesh.aabb();
+                            return Some(mesh.aabb());
                         }
                     }
                     None
@@ -648,11 +660,11 @@ impl ModelCrate {
             let desc = PxConvexMeshDesc {
                 // Apply the correct mirroring according to the base scale
                 points: mesh
-                    .positions
+                    .positions()
                     .iter()
                     .map(|&p| p * scale_signum)
                     .collect_vec(),
-                indices: Some(mesh.indices.clone()),
+                indices: Some(mesh.indices().to_vec()),
                 vertex_limit: None,
                 flags: Some(PxConvexFlag::COMPUTE_CONVEX),
             };
@@ -774,8 +786,8 @@ pub fn physx_triangle_mesh_desc_from_mesh(
     reverse_indices: bool,
 ) -> Option<PxTriangleMeshDesc> {
     let mut desc = PxTriangleMeshDesc {
-        points: mesh.positions.clone(),
-        indices: mesh.indices.clone(),
+        points: mesh.positions().to_vec(),
+        indices: mesh.indices().to_vec(),
         flags: if flip_normals {
             Some(PxMeshFlag::FLIPNORMALS)
         } else {
