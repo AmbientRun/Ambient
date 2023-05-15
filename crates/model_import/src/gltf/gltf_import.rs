@@ -2,7 +2,8 @@ use std::path::Path;
 
 use gltf::{buffer, image::Format, Document, Gltf};
 use image::{
-    DynamicImage, ImageFormat::{Jpeg, Png}
+    DynamicImage,
+    ImageFormat::{Jpeg, Png},
 };
 
 pub struct GltfImport {
@@ -12,17 +13,34 @@ pub struct GltfImport {
     pub images: Vec<gltf::image::Data>,
 }
 impl GltfImport {
-    pub fn from_slice<S: AsRef<[u8]>>(name: String, import_images: bool, slice: S) -> gltf::Result<Self> {
+    pub fn from_slice<S: AsRef<[u8]>>(
+        name: String,
+        import_images: bool,
+        slice: S,
+    ) -> gltf::Result<Self> {
         let Gltf { document, blob } = Gltf::from_slice(slice.as_ref())?;
         let buffers = import_buffer_data(&document, None, blob)?;
-        let images = if import_images { import_image_data(&document, None, &buffers)? } else { Vec::new() };
-        Ok(Self { name, document, buffers, images })
+        let images = if import_images {
+            import_image_data(&document, None, &buffers)?
+        } else {
+            Vec::new()
+        };
+        Ok(Self {
+            name,
+            document,
+            buffers,
+            images,
+        })
     }
 }
 
 // All of the below is basically just copied from the gltf crate, except it doesn't panic on bad resource references
 
-fn import_buffer_data(document: &Document, base: Option<&Path>, mut blob: Option<Vec<u8>>) -> gltf::Result<Vec<buffer::Data>> {
+fn import_buffer_data(
+    document: &Document,
+    base: Option<&Path>,
+    mut blob: Option<Vec<u8>>,
+) -> gltf::Result<Vec<buffer::Data>> {
     let mut buffers = Vec::new();
     for buffer in document.buffers() {
         let mut data = match buffer.source() {
@@ -47,7 +65,11 @@ fn import_buffer_data(document: &Document, base: Option<&Path>, mut blob: Option
     Ok(buffers)
 }
 
-fn import_image_data(document: &Document, base: Option<&Path>, buffer_data: &[buffer::Data]) -> gltf::Result<Vec<gltf::image::Data>> {
+fn import_image_data(
+    document: &Document,
+    base: Option<&Path>,
+    buffer_data: &[buffer::Data],
+) -> gltf::Result<Vec<gltf::image::Data>> {
     let mut images = Vec::new();
     #[cfg(feature = "guess_mime_type")]
     let guess_format = |encoded_image: &[u8]| match image_crate::guess_format(encoded_image) {
@@ -71,7 +93,8 @@ fn import_image_data(document: &Document, base: Option<&Path>, buffer_data: &[bu
                                 None => return Err(gltf::Error::UnsupportedImageEncoding),
                             },
                         };
-                        let decoded_image = image::load_from_memory_with_format(&encoded_image, encoded_format)?;
+                        let decoded_image =
+                            image::load_from_memory_with_format(&encoded_image, encoded_format)?;
                         images.push(new_image_data(decoded_image));
                         continue;
                     }
@@ -95,7 +118,8 @@ fn import_image_data(document: &Document, base: Option<&Path>, buffer_data: &[bu
                         },
                     },
                 };
-                let decoded_image = image::load_from_memory_with_format(&encoded_image, encoded_format)?;
+                let decoded_image =
+                    image::load_from_memory_with_format(&encoded_image, encoded_format)?;
                 images.push(new_image_data(decoded_image));
             }
             gltf::image::Source::View { view, mime_type } => {
@@ -111,11 +135,17 @@ fn import_image_data(document: &Document, base: Option<&Path>, buffer_data: &[bu
                         None => return Err(gltf::Error::UnsupportedImageEncoding),
                     },
                 };
-                let decoded_image = image::load_from_memory_with_format(encoded_image, encoded_format)?;
+                let decoded_image =
+                    image::load_from_memory_with_format(encoded_image, encoded_format)?;
                 images.push(new_image_data(decoded_image));
             }
             _ => {
-                images.push(gltf::image::Data { format: Format::R8G8B8A8, width: 1, height: 1, pixels: vec![255, 255, 255, 255] });
+                images.push(gltf::image::Data {
+                    format: Format::R8G8B8A8,
+                    width: 1,
+                    height: 1,
+                    pixels: vec![255, 255, 255, 255],
+                });
             }
         }
     }
@@ -140,7 +170,12 @@ fn new_image_data(image: DynamicImage) -> gltf::image::Data {
     };
     let (width, height) = image.dimensions();
     let pixels = image.into_bytes();
-    gltf::image::Data { format, width, height, pixels }
+    gltf::image::Data {
+        format,
+        width,
+        height,
+        pixels,
+    }
 }
 
 /// Represents the set of URI schemes the importer supports.

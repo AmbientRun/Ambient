@@ -8,7 +8,10 @@ use ambient_core::{
     main_scene, runtime,
     transform::{get_world_position, inv_local_to_world, local_to_world, mesh_to_world},
 };
-use ambient_ecs::{components, query, ComponentDesc, Debuggable, Entity, EntityId, MaybeResource, Networked, Store, SystemGroup, World};
+use ambient_ecs::{
+    components, query, ComponentDesc, Debuggable, Entity, EntityId, MaybeResource, Networked,
+    Store, SystemGroup, World,
+};
 use ambient_gpu::mesh_buffer::GpuMeshFromUrl;
 use ambient_renderer::{
     color, gpu_primitives_lod, gpu_primitives_mesh,
@@ -43,7 +46,9 @@ use anyhow::Context;
 
 pub mod loading_material;
 
-pub use ambient_ecs::generated::components::core::model::{model_animatable, model_from_url, model_loaded};
+pub use ambient_ecs::generated::components::core::model::{
+    model_animatable, model_from_url, model_loaded,
+};
 
 components!("model", {
     @[Networked, Store]
@@ -73,15 +78,23 @@ async fn internal_spawn_models_from_defs(
     // Meanwhile, spawn a spinning cube onto the entity.
     let cube = CubeMeshKey.get(assets);
 
-    let mat = LoadingMaterialKey { speed: 2.0, scale: 6.0 }.get(assets);
+    let mat = LoadingMaterialKey {
+        speed: 2.0,
+        scale: 6.0,
+    }
+    .get(assets);
 
     let cube = Entity::new()
         .with(
             primitives(),
             vec![RenderPrimitive {
                 shader: cb(move |assets, config| {
-                    StandardShaderKey { material_shader: LoadingShaderKey.get(assets), lit: false, shadow_cascades: config.shadow_cascades }
-                        .get(assets)
+                    StandardShaderKey {
+                        material_shader: LoadingShaderKey.get(assets),
+                        lit: false,
+                        shadow_cascades: config.shadow_cascades,
+                    }
+                    .get(assets)
                 }),
                 material: mat,
                 mesh: cube,
@@ -97,7 +110,11 @@ async fn internal_spawn_models_from_defs(
         .with_default(local_to_world())
         .with_default(inv_local_to_world());
 
-    let mut ids = entities_with_models.values().flatten().copied().collect_vec();
+    let mut ids = entities_with_models
+        .values()
+        .flatten()
+        .copied()
+        .collect_vec();
 
     let cube_fail = Arc::new(cube.clone().with(color(), vec4(1.0, 0.0, 0.0, 1.0)));
 
@@ -110,23 +127,34 @@ async fn internal_spawn_models_from_defs(
         }
     });
 
-    let iter = entities_with_models.into_iter().map(|(url, ids)| async move {
-        tracing::debug!("Loading model: {url:#?}");
-        let mut url = match TypedAssetUrl::parse(url).context("Failed to parse url") {
-            Ok(url) => url,
-            Err(e) => return (ids, Err(e)),
-        };
-        if !url.0.path().contains("/models/") {
-            url = match url.0.as_directory().join("models/main.json").context("Failed to join url") {
-                Ok(url) => url.into(),
+    let iter = entities_with_models
+        .into_iter()
+        .map(|(url, ids)| async move {
+            tracing::debug!("Loading model: {url:#?}");
+            let mut url = match TypedAssetUrl::parse(url).context("Failed to parse url") {
+                Ok(url) => url,
                 Err(e) => return (ids, Err(e)),
             };
-        };
-        match ModelFromUrl(url).get(assets).await.context("Failed to load model") {
-            Ok(v) => (ids, Ok(v)),
-            Err(e) => (ids, Err(e)),
-        }
-    });
+            if !url.0.path().contains("/models/") {
+                url = match url
+                    .0
+                    .as_directory()
+                    .join("models/main.json")
+                    .context("Failed to join url")
+                {
+                    Ok(url) => url.into(),
+                    Err(e) => return (ids, Err(e)),
+                };
+            };
+            match ModelFromUrl(url)
+                .get(assets)
+                .await
+                .context("Failed to load model")
+            {
+                Ok(v) => (ids, Ok(v)),
+                Err(e) => (ids, Err(e)),
+            }
+        });
 
     let mut iter = futures::stream::iter(iter).buffer_unordered(4);
     while let Some((mut ids, model)) = iter.next().await {
@@ -172,20 +200,26 @@ pub fn model_systems() -> SystemGroup {
     SystemGroup::new(
         "model_systems",
         vec![
-            query((children(),)).incl(model_from_url()).despawned().to_system(|q, world, qs, _| {
-                for (_, (children,)) in q.collect_cloned(world, qs) {
-                    for c in children {
-                        if world.has_component(c, is_model_node()) {
-                            despawn_recursive(world, c);
+            query((children(),))
+                .incl(model_from_url())
+                .despawned()
+                .to_system(|q, world, qs, _| {
+                    for (_, (children,)) in q.collect_cloned(world, qs) {
+                        for c in children {
+                            if world.has_component(c, is_model_node()) {
+                                despawn_recursive(world, c);
+                            }
                         }
                     }
-                }
-            }),
-            query(()).incl(model_from_url()).despawned().to_system(|q, world, qs, _| {
-                for (id, _) in q.collect_cloned(world, qs) {
-                    remove_model(world, id);
-                }
-            }),
+                }),
+            query(())
+                .incl(model_from_url())
+                .despawned()
+                .to_system(|q, world, qs, _| {
+                    for (id, _) in q.collect_cloned(world, qs) {
+                        remove_model(world, id);
+                    }
+                }),
             query((model_from_url().changed(),)).to_system(|q, world, qs, _| {
                 let mut new_models = HashMap::<String, Vec<EntityId>>::new();
                 for (id, (model_from_url,)) in q.iter(world, qs) {
@@ -199,7 +233,9 @@ pub fn model_systems() -> SystemGroup {
                 let runtime = world.resource(runtime()).clone();
                 let async_run = world.resource(async_run()).clone();
 
-                runtime.spawn(async move { internal_spawn_models_from_defs(&assets, async_run, new_models).await });
+                runtime.spawn(async move {
+                    internal_spawn_models_from_defs(&assets, async_run, new_models).await
+                });
             }),
         ],
     )
@@ -242,7 +278,11 @@ impl ModelFromUrl {
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<Model>, AssetError>> for ModelFromUrl {
     async fn load(self, assets: AssetCache) -> Result<Arc<Model>, AssetError> {
-        let url = self.0.clone().abs().context(format!("ModelFromUrl got relative url: {}", self.0))?;
+        let url = self
+            .0
+            .clone()
+            .abs()
+            .context(format!("ModelFromUrl got relative url: {}", self.0))?;
         let data = BytesFromUrl::new(url.clone(), true).get(&assets).await?;
         let semaphore = ModelLoadSemaphore.get(&assets);
         let _permit = semaphore.acquire().await;
@@ -268,10 +308,17 @@ pub struct PbrRenderPrimitiveFromUrl {
     pub lod: usize,
 }
 impl PbrRenderPrimitiveFromUrl {
-    pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<PbrRenderPrimitiveFromResolvedUrl> {
+    pub fn resolve(
+        &self,
+        base_url: &AbsAssetUrl,
+    ) -> anyhow::Result<PbrRenderPrimitiveFromResolvedUrl> {
         Ok(PbrRenderPrimitiveFromResolvedUrl {
             mesh: self.mesh.resolve(base_url)?,
-            material: if let Some(x) = &self.material { Some(x.resolve(base_url)?) } else { None },
+            material: if let Some(x) = &self.material {
+                Some(x.resolve(base_url)?)
+            } else {
+                None
+            },
             lod: self.lod,
         })
     }
@@ -285,10 +332,20 @@ pub struct PbrRenderPrimitiveFromResolvedUrl {
 #[async_trait]
 impl AsyncAssetKey<Result<Arc<RenderPrimitive>, AssetError>> for PbrRenderPrimitiveFromResolvedUrl {
     async fn load(self, assets: AssetCache) -> Result<Arc<RenderPrimitive>, AssetError> {
-        let mesh = GpuMeshFromUrl { url: self.mesh, cache_on_disk: true }.get(&assets).await?;
+        let mesh = GpuMeshFromUrl {
+            url: self.mesh,
+            cache_on_disk: true,
+        }
+        .get(&assets)
+        .await?;
         if let Some(mat_url) = self.material {
             let mat = PbrMaterialFromUrl(mat_url).get(&assets).await?;
-            Ok(Arc::new(RenderPrimitive { material: mat.into(), shader: cb(get_pbr_shader), mesh, lod: self.lod }))
+            Ok(Arc::new(RenderPrimitive {
+                material: mat.into(),
+                shader: cb(get_pbr_shader),
+                mesh,
+                lod: self.lod,
+            }))
         } else {
             Ok(Arc::new(RenderPrimitive {
                 material: FlatMaterialKey::white().get(&assets),
