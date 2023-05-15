@@ -7,7 +7,13 @@ pub mod new_project;
 #[derive(Parser, Clone)]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
-pub enum Cli {
+pub struct Cli {
+    #[command(subcommand)]
+    pub command: Commands,
+}
+
+#[derive(Parser, Clone, Debug)]
+pub enum Commands {
     /// Create a new Ambient project
     New {
         #[command(flatten)]
@@ -63,7 +69,8 @@ pub enum Cli {
         host: Option<String>,
     },
 }
-#[derive(Args, Clone)]
+
+#[derive(Args, Clone, Debug)]
 pub struct RunCli {
     /// If set, show a debugger that can be used to investigate the state of the project. Can also be accessed through the `AMBIENT_DEBUGGER` environment variable
     #[arg(short, long)]
@@ -81,7 +88,8 @@ pub struct RunCli {
     #[clap(short, long)]
     pub user_id: Option<String>,
 }
-#[derive(Args, Clone)]
+
+#[derive(Args, Clone, Debug)]
 pub struct ProjectCli {
     /// The path or URL of the project to run; if not specified, this will default to the current directory
     pub path: Option<String>,
@@ -94,7 +102,7 @@ pub struct ProjectCli {
     #[arg(long)]
     pub no_build: bool,
 }
-#[derive(Args, Clone)]
+#[derive(Args, Clone, Debug)]
 pub struct HostCli {
     /// Provide a public address or IP to the instance, which will allow users to connect to this instance over the internet
     ///
@@ -126,41 +134,41 @@ pub struct HostCli {
 impl Cli {
     /// Extract run-relevant state only
     pub fn run(&self) -> Option<&RunCli> {
-        match self {
-            Cli::New { .. } => None,
-            Cli::Run { run_args, .. } => Some(run_args),
-            Cli::Build { .. } => None,
+        match &self.command {
+            Commands::New { .. } => None,
+            Commands::Run { run_args, .. } => Some(run_args),
+            Commands::Build { .. } => None,
             #[cfg(feature = "deploy")]
-            Cli::Deploy { .. } => None,
-            Cli::Serve { .. } => None,
-            Cli::View { .. } => None,
-            Cli::Join { run_args, .. } => Some(run_args),
+            Commands::Deploy { .. } => None,
+            Commands::Serve { .. } => None,
+            Commands::View { .. } => None,
+            Commands::Join { run_args, .. } => Some(run_args),
         }
     }
     /// Extract project-relevant state only
     pub fn project(&self) -> Option<&ProjectCli> {
-        match self {
-            Cli::New { project_args, .. } => Some(project_args),
-            Cli::Run { project_args, .. } => Some(project_args),
-            Cli::Build { project_args, .. } => Some(project_args),
+        match &self.command {
+            Commands::New { project_args, .. } => Some(project_args),
+            Commands::Run { project_args, .. } => Some(project_args),
+            Commands::Build { project_args, .. } => Some(project_args),
             #[cfg(feature = "deploy")]
-            Cli::Deploy { project_args, .. } => Some(project_args),
-            Cli::Serve { project_args, .. } => Some(project_args),
-            Cli::View { project_args, .. } => Some(project_args),
-            Cli::Join { .. } => None,
+            Commands::Deploy { project_args, .. } => Some(project_args),
+            Commands::Serve { project_args, .. } => Some(project_args),
+            Commands::View { project_args, .. } => Some(project_args),
+            Commands::Join { .. } => None,
         }
     }
     /// Extract host-relevant state only
     pub fn host(&self) -> Option<&HostCli> {
-        match self {
-            Cli::New { .. } => None,
-            Cli::Run { host_args, .. } => Some(host_args),
-            Cli::Build { .. } => None,
+        match &self.command {
+            Commands::New { .. } => None,
+            Commands::Run { host_args, .. } => Some(host_args),
+            Commands::Build { .. } => None,
             #[cfg(feature = "deploy")]
-            Cli::Deploy { .. } => None,
-            Cli::Serve { host_args, .. } => Some(host_args),
-            Cli::View { .. } => None,
-            Cli::Join { .. } => None,
+            Commands::Deploy { .. } => None,
+            Commands::Serve { host_args, .. } => Some(host_args),
+            Commands::View { .. } => None,
+            Commands::Join { .. } => None,
         }
     }
 }

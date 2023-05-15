@@ -137,7 +137,11 @@ toml_edit = "0.19.3"
 arboard = "3.2.0"
 noise = { version = "0.7.0", default-features = false }
 russimp = { version = "1.0.6", features = ['prebuilt'] }
-symphonia = { version = "0.5", default-features = false, features = ["mp3", "pcm", "wav"] }
+symphonia = { version = "0.5", default-features = false, features = [
+    "mp3",
+    "pcm",
+    "wav",
+] }
 vorbis_rs = "0.3.0"
 colored = "2.0.0"
 directories = "5.0.1"

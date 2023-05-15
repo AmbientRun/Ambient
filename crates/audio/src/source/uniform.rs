@@ -69,10 +69,11 @@ impl<S: Source> Source for Uniform<S> {
 #[cfg(test)]
 mod test {
 
+    use glam::vec2;
     use itertools::Itertools;
 
     use super::*;
-    use crate::{BufferedSource, SampleIter};
+    use crate::{streaming_source::StreamingSource, BufferedSource, SampleIter};
 
     #[test]
     fn mono_to_stereo2() {
@@ -89,5 +90,15 @@ mod test {
                 Frame::new(2.0, 2.0)
             ]
         )
+    }
+
+    #[test]
+    fn sample_count() {
+        let s = Uniform::new(StreamingSource::new([vec2(0.0, 0.0); 509], 44100), 48000);
+
+        assert_eq!(
+            s.sample_count(),
+            Some(s.samples_iter().collect_vec().len() as _)
+        );
     }
 }

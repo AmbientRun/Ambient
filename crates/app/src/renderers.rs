@@ -21,8 +21,8 @@ use winit::{
 };
 
 components!("app_renderers", {
-    ui_renderer: Arc<Mutex<UIRender>>,
-    examples_renderer: Arc<Mutex<ExamplesRender>>,
+    ui_renderer: Arc<Mutex<UiRenderer >>,
+    main_renderer: Arc<Mutex<MainRenderer >>,
 });
 
 pub fn systems() -> SystemGroup<Event<'static, ()>> {
@@ -51,16 +51,16 @@ pub fn systems() -> SystemGroup<Event<'static, ()>> {
                     }
                 }
             }),
-            query(examples_renderer()).to_system(|q, world, qs, event| {
-                for (_, examples_render) in q.collect_cloned(world, qs) {
-                    let mut examples_render = examples_render.lock();
+            query(main_renderer()).to_system(|q, world, qs, event| {
+                for (_, main_renderer) in q.collect_cloned(world, qs) {
+                    let mut main_renderer = main_renderer.lock();
                     match event {
                         Event::WindowEvent {
                             event: WindowEvent::Resized(size),
                             ..
-                        } => examples_render.resize(size),
+                        } => main_renderer.resize(size),
                         Event::MainEventsCleared => {
-                            examples_render.run(world, &FrameEvent);
+                            main_renderer.run(world, &FrameEvent);
                         }
                         _ => {}
                     }
@@ -70,7 +70,7 @@ pub fn systems() -> SystemGroup<Event<'static, ()>> {
     )
 }
 
-pub struct ExamplesRender {
+pub struct MainRenderer {
     gpu: Arc<Gpu>,
     main: Option<Renderer>,
     ui: Option<Renderer>,
@@ -79,7 +79,7 @@ pub struct ExamplesRender {
     size: UVec2,
 }
 
-impl ExamplesRender {
+impl MainRenderer {
     pub fn new(world: &mut World, ui: bool, main: bool) -> Self {
         let gpu = world.resource(gpu()).clone();
         let assets = world.resource(asset_cache()).clone();
@@ -185,15 +185,15 @@ impl ExamplesRender {
     }
 }
 
-impl std::fmt::Debug for ExamplesRender {
+impl std::fmt::Debug for MainRenderer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Renderer").finish()
     }
 }
 
-impl System for ExamplesRender {
+impl System for MainRenderer {
     fn run(&mut self, world: &mut World, _: &FrameEvent) {
-        // tracing::info!("ExamplesRenderer");
+        // tracing::info!("MainRenderer");
         ambient_profiling::scope!("Renderers.run");
         let mut encoder = self
             .gpu
@@ -290,14 +290,14 @@ impl System for ExamplesRender {
     }
 }
 
-pub struct UIRender {
+pub struct UiRenderer {
     gpu: Arc<Gpu>,
     ui_renderer: Renderer,
     depth_buffer_view: Arc<TextureView>,
     normals_view: Arc<TextureView>,
 }
 
-impl UIRender {
+impl UiRenderer {
     pub fn new(world: &mut World) -> Self {
         let gpu = world.resource(gpu()).clone();
         let size = *world.resource(window_physical_size());
