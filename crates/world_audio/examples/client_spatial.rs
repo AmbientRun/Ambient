@@ -13,12 +13,21 @@ use ambient_primitives::Cube;
 use ambient_renderer::{cast_shadows, color};
 use ambient_std::math::SphericalCoords;
 use ambient_ui_native::World;
-use ambient_world_audio::{audio_emitter, audio_listener, play_sound_on_entity, systems::setup_audio};
+use ambient_world_audio::{
+    audio_emitter, audio_listener, play_sound_on_entity, systems::setup_audio,
+};
 use glam::{vec3, vec4, Mat4, Vec3};
 use parking_lot::Mutex;
 
 fn spawn_emitters(world: &mut World) {
-    let track = Track::from_wav(std::fs::read("../../../elements/example_assets/ambience.wav").unwrap().to_vec()).unwrap();
+    let track = Track::from_vorbis(
+        std::fs::read(
+            "guest/rust/examples/games/pong/assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg",
+        )
+        .expect("Failed to read audio file")
+        .to_vec(),
+    )
+    .unwrap();
 
     let count = 1;
     for i in 0..count {
@@ -27,7 +36,11 @@ fn spawn_emitters(world: &mut World) {
 
         let emitter = Arc::new(Mutex::new(AudioEmitter {
             amplitude: 5.0,
-            attenuation: Attenuation::InversePoly { quad: 0.1, lin: 0.0, constant: 1.0 },
+            attenuation: Attenuation::InversePoly {
+                quad: 0.1,
+                lin: 0.0,
+                constant: 1.0,
+            },
             pos,
         }));
 
@@ -45,22 +58,36 @@ fn spawn_emitters(world: &mut World) {
 }
 
 fn init(app: &mut App) {
-    app.systems.add(Box::new(ambient_world_audio::systems::spatial_audio_systems()));
+    app.systems.add(Box::new(
+        ambient_world_audio::systems::spatial_audio_systems(),
+    ));
 
     let world = &mut app.world;
     let _assets = world.resource(asset_cache()).clone();
 
     // Floor
     let size = 128.0;
-    Cube.el().with(scale(), vec3(size, size, 1.)).with_default(cast_shadows()).spawn_static(world);
+    Cube.el()
+        .with(scale(), vec3(size, size, 1.))
+        .with_default(cast_shadows())
+        .spawn_static(world);
 
-    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .with(active_camera(), 0.)
-        .with(audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::IDENTITY, Vec3::X * 0.3))))
-        .with(main_scene(), ())
-        .with(near(), 1.)
-        .with(far(), 8000.)
-        .spawn(world);
+    ambient_cameras::spherical::new(
+        vec3(0., 0., 0.),
+        SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.),
+    )
+    .with(active_camera(), 0.)
+    .with(
+        audio_listener(),
+        Arc::new(Mutex::new(AudioListener::new(
+            Mat4::IDENTITY,
+            Vec3::X * 0.3,
+        ))),
+    )
+    .with(main_scene(), ())
+    .with(near(), 1.)
+    .with(far(), 8000.)
+    .spawn(world);
 
     spawn_emitters(world);
 }
