@@ -38,8 +38,8 @@ pub struct GpuMesh {
 }
 
 impl GpuMesh {
-    pub fn from_mesh(assets: AssetCache, mesh: &Mesh) -> Arc<GpuMesh> {
-        MeshBufferKey.get(&assets).lock().insert(mesh)
+    pub fn from_mesh(assets: &AssetCache, mesh: &Mesh) -> Arc<GpuMesh> {
+        MeshBufferKey.get(assets).lock().insert(mesh)
     }
     pub fn name(&self) -> &str {
         &self.name
@@ -89,7 +89,7 @@ impl AsyncAssetKey<AssetResult<Arc<GpuMesh>>> for GpuMeshFromUrl {
         let mesh = MeshFromUrl::new(self.url, self.cache_on_disk)
             .get(&assets)
             .await?;
-        Ok(GpuMesh::from_mesh(assets, &mesh))
+        Ok(GpuMesh::from_mesh(&assets, &mesh))
     }
 }
 
@@ -182,7 +182,7 @@ impl MeshBuffer {
             base_offset: self.base_buffer.front.len() as u32,
             skinned_offset: self.skinned_buffer.front.len() as u32,
             index_offset: self.index_buffer.front.len() as u32,
-            index_count: mesh.indices.as_ref().map(|x| x.len()).unwrap_or_default() as u32,
+            index_count: mesh.indices.len() as u32,
         };
 
         let mut internal_mesh = InternalMesh {
@@ -190,17 +190,12 @@ impl MeshBuffer {
             ..Default::default()
         };
 
-        match (
-            &mesh.positions,
-            &mesh.normals,
-            &mesh.tangents,
-            mesh.texcoords.first(),
-        ) {
-            (None, None, None, None) => {
+        match (&mesh.normals, &mesh.tangents, mesh.texcoords.first()) {
+            (None, None, None) => {
                 tracing::warn!("No positions, normals, tangents, or texture coordinates on mesh");
             }
-            (pos, norm, tan, uv) => {
-                let pos = pos.as_deref().unwrap_or_default();
+            (norm, tan, uv) => {
+                let pos = mesh.positions.as_slice();
                 let norm = norm.as_deref().unwrap_or_default();
                 let tan = tan.as_deref().unwrap_or_default();
                 let uv = uv.map(|v| &**v).unwrap_or_default();
@@ -257,15 +252,14 @@ impl MeshBuffer {
                 .write(metadata.skinned_offset as u64, &data);
         }
 
-        if let Some(indices) = &mesh.indices {
-            self.index_buffer
-                .front
-                .resize(self.index_buffer.front.len() + indices.len() as u64, true);
-            self.index_buffer
-                .front
-                .write(metadata.index_offset as u64, indices);
-            internal_mesh.index_count = indices.len() as u64;
-        }
+        self.index_buffer.front.resize(
+            self.index_buffer.front.len() + mesh.indices.len() as u64,
+            true,
+        );
+        self.index_buffer
+            .front
+            .write(metadata.index_offset as u64, &mesh.indices);
+        internal_mesh.index_count = mesh.indices.len() as u64;
 
         let metadata_offset = if let Some(offset) = self.free_indices.pop() {
             self.meshes[offset as usize] = Some(internal_mesh);

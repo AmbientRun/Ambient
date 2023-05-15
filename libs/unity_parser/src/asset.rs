@@ -2,6 +2,7 @@ use ambient_std::mesh::Mesh;
 use glam::{vec2, vec3};
 use itertools::Itertools;
 use yaml_rust::Yaml;
+use anyhow::bail;
 
 use crate::parse_unity_yaml;
 
@@ -11,9 +12,9 @@ pub struct Asset {
 }
 impl Asset {
     pub fn from_string(data: &str) -> anyhow::Result<Self> {
-        Ok(Self::from_yaml(parse_unity_yaml(data)?.pop().unwrap()))
+        Ok(Self::from_yaml(parse_unity_yaml(data)?.pop().unwrap())?)
     }
-    pub fn from_yaml(asset: Yaml) -> Self {
+    pub fn from_yaml(asset: Yaml) -> anyhow::Result<Self> {
         // From: https://docs.unity3d.com/ScriptReference/Rendering.VertexAttribute.html
         #[repr(usize)]
         #[allow(dead_code)]
@@ -33,8 +34,12 @@ impl Asset {
             BlendWeight,
             BlendIndices,
         }
-        let vertex_count = asset["Mesh"]["m_VertexData"]["m_VertexCount"].as_i64().unwrap() as usize;
-        let vertex_data_size = asset["Mesh"]["m_VertexData"]["m_DataSize"].as_i64().unwrap() as usize;
+        let vertex_count = asset["Mesh"]["m_VertexData"]["m_VertexCount"]
+            .as_i64()
+            .unwrap() as usize;
+        let vertex_data_size = asset["Mesh"]["m_VertexData"]["m_DataSize"]
+            .as_i64()
+            .unwrap() as usize;
         let vertex_size = vertex_data_size / vertex_count;
         struct Channel {
             offset: usize,
@@ -49,29 +54,41 @@ impl Asset {
                 dimension: channel["dimension"].as_i64().unwrap() as usize,
             })
             .collect_vec();
-        let vertex_data = asset["Mesh"]["m_VertexData"]["_typelessdata"].as_str().unwrap();
+        let vertex_data = asset["Mesh"]["m_VertexData"]["_typelessdata"]
+            .as_str()
+            .unwrap();
         let vertex_data = parse_unity_typeless_data(vertex_data);
 
         #[allow(clippy::identity_op)]
         let positions = if channels[UnityVertexAttribs::Position as usize].dimension > 0 {
-            Some(
-                (0..vertex_count)
-                    .map(|i| {
-                        let offset = (i * vertex_size + channels[UnityVertexAttribs::Position as usize].offset) / 4;
-                        vec3(vertex_data[offset + 0], vertex_data[offset + 1], vertex_data[offset + 2])
-                    })
-                    .collect_vec(),
-            )
+            (0..vertex_count)
+                .map(|i| {
+                    let offset = (i * vertex_size
+                        + channels[UnityVertexAttribs::Position as usize].offset)
+                        / 4;
+                    vec3(
+                        vertex_data[offset + 0],
+                        vertex_data[offset + 1],
+                        vertex_data[offset + 2],
+                    )
+                })
+                .collect_vec()
         } else {
-            None
+            bail!("Unity mesh contains no vertex positions");
         };
         #[allow(clippy::identity_op)]
         let normals = if channels[UnityVertexAttribs::Normal as usize].dimension > 0 {
             Some(
                 (0..vertex_count)
                     .map(|i| {
-                        let offset = (i * vertex_size + channels[UnityVertexAttribs::Normal as usize].offset) / 4;
-                        vec3(vertex_data[offset + 0], vertex_data[offset + 1], vertex_data[offset + 2])
+                        let offset = (i * vertex_size
+                            + channels[UnityVertexAttribs::Normal as usize].offset)
+                            / 4;
+                        vec3(
+                            vertex_data[offset + 0],
+                            vertex_data[offset + 1],
+                            vertex_data[offset + 2],
+                        )
                     })
                     .collect_vec(),
             )
@@ -83,8 +100,14 @@ impl Asset {
             Some(
                 (0..vertex_count)
                     .map(|i| {
-                        let offset = (i * vertex_size + channels[UnityVertexAttribs::Tangent as usize].offset) / 4;
-                        vec3(vertex_data[offset + 0], vertex_data[offset + 1], vertex_data[offset + 2])
+                        let offset = (i * vertex_size
+                            + channels[UnityVertexAttribs::Tangent as usize].offset)
+                            / 4;
+                        vec3(
+                            vertex_data[offset + 0],
+                            vertex_data[offset + 1],
+                            vertex_data[offset + 2],
+                        )
                     })
                     .collect_vec(),
             )
@@ -98,7 +121,10 @@ impl Asset {
                     Some(
                         (0..vertex_count)
                             .map(|i| {
-                                let offset = (i * vertex_size + channels[UnityVertexAttribs::TexCoord0 as usize + texcoord].offset) / 4;
+                                let offset = (i * vertex_size
+                                    + channels[UnityVertexAttribs::TexCoord0 as usize + texcoord]
+                                        .offset)
+                                    / 4;
                                 vec2(vertex_data[offset + 0], 1. - vertex_data[offset + 1])
                             })
                             .collect_vec(),
@@ -117,7 +143,7 @@ impl Asset {
         //     indices[i * 3 + 2] = x;
         // }
 
-        Asset {
+        Ok(Asset {
             mesh: Mesh {
                 name: "unity_mesh".to_string(),
                 positions,
@@ -127,9 +153,9 @@ impl Asset {
                 texcoords,
                 joint_indices: None,
                 joint_weights: None,
-                indices: Some(indices),
+                indices,
             },
-        }
+        })
     }
 }
 
@@ -142,7 +168,10 @@ fn parse_unity_typeless_data(input: &str) -> Vec<f32> {
         sign * mantissa * (2f32).powi(exponent)
     }
     fn swap32(val: i64) -> i32 {
-        (((val << 24) & 0xff000000) | ((val << 8) & 0xff0000) | ((val >> 8) & 0xff00) | ((val >> 24) & 0xff)) as i32
+        (((val << 24) & 0xff000000)
+            | ((val << 8) & 0xff0000)
+            | ((val >> 8) & 0xff00)
+            | ((val >> 24) & 0xff)) as i32
     }
     (0..(input.len() / 8))
         .map(|i| {
@@ -157,8 +186,8 @@ fn test_parse_unity_typeless_data() {
 
     let res = parse_unity_typeless_data(input);
     let start_expected = vec![
-        -1.676, 2.5738, -0.0933, 0., 0., 1., -1., 0., 0., -1., 0.4506, 0.4698, 0.4506, 0.4698, -1.9162, 1.38, -0.0408, 0., 0., 1., -1.,
-        -0., 0., -1., 0.4614, 0.2544, 0.4614, 0.2544,
+        -1.676, 2.5738, -0.0933, 0., 0., 1., -1., 0., 0., -1., 0.4506, 0.4698, 0.4506, 0.4698,
+        -1.9162, 1.38, -0.0408, 0., 0., 1., -1., -0., 0., -1., 0.4614, 0.2544, 0.4614, 0.2544,
     ];
     for i in 0..start_expected.len() {
         assert!((start_expected[i] - res[i]).abs() < 0.01);
@@ -180,9 +209,9 @@ fn test_parse_unity_index_data() {
     let input = "000001000200000003000400030000000200030005000400050006000400070003000200080009000a000b000c000a0008000a000c000b000d000c000b000e000d0008000c000f00100011001200100013001400150010001200150013001000130016001400170015001200180019001a001b001c001a0018001a001d001a001c001d001b001e001c0018001d001f00";
     let res = parse_unity_index_data(input);
     let expected = vec![
-        0, 1, 2, 0, 3, 4, 3, 0, 2, 3, 5, 4, 5, 6, 4, 7, 3, 2, 8, 9, 10, 11, 12, 10, 8, 10, 12, 11, 13, 12, 11, 14, 13, 8, 12, 15, 16, 17,
-        18, 16, 19, 20, 21, 16, 18, 21, 19, 16, 19, 22, 20, 23, 21, 18, 24, 25, 26, 27, 28, 26, 24, 26, 29, 26, 28, 29, 27, 30, 28, 24, 29,
-        31,
+        0, 1, 2, 0, 3, 4, 3, 0, 2, 3, 5, 4, 5, 6, 4, 7, 3, 2, 8, 9, 10, 11, 12, 10, 8, 10, 12, 11,
+        13, 12, 11, 14, 13, 8, 12, 15, 16, 17, 18, 16, 19, 20, 21, 16, 18, 21, 19, 16, 19, 22, 20,
+        23, 21, 18, 24, 25, 26, 27, 28, 26, 24, 26, 29, 26, 28, 29, 27, 30, 28, 24, 29, 31,
     ];
     assert_eq!(res, expected);
 }

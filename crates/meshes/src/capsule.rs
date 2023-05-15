@@ -366,14 +366,11 @@ impl From<CapsuleMesh> for Mesh {
 
         let mut mesh = Mesh {
             name: "capsule".into(),
-            positions: Some(vs),
-            colors: None,
+            positions: vs,
             normals: Some(vns),
-            tangents: None,
             texcoords: vec![vts],
-            joint_indices: None,
-            joint_weights: None,
-            indices: Some(tris),
+            indices: tris,
+            ..Default::default()
         };
         mesh.create_tangents();
         mesh

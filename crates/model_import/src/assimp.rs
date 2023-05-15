@@ -140,7 +140,7 @@ fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> 
     for (i, mesh) in scene.meshes.iter().enumerate() {
         let out_mesh = ambient_std::mesh::Mesh {
             name: mesh.name.clone(),
-            positions: Some(mesh.vertices.iter().map(|v| vec3(v.x, v.y, v.z)).collect()),
+            positions: mesh.vertices.iter().map(|v| vec3(v.x, v.y, v.z)).collect(),
             colors: if let Some(Some(colors)) = mesh.colors.get(0) {
                 Some(colors.iter().map(|c| vec4(c.r, c.g, c.b, c.a)).collect())
             } else {
@@ -156,7 +156,7 @@ fn import_sync(buffer: &[u8], model_crate: &mut ModelCrate, extension: &str) -> 
             // TODO(fred): Bones
             joint_indices: None,
             joint_weights: None,
-            indices: Some(mesh.faces.iter().flat_map(|f| f.0.clone()).collect()),
+            indices: mesh.faces.iter().flat_map(|f| f.0.clone()).collect(),
         };
         model_crate.meshes.insert(i.to_string(), out_mesh);
     }

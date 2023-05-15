@@ -30,7 +30,10 @@ use axum::{
 };
 use tower_http::{cors::CorsLayer, services::ServeDir};
 
-use crate::{cli::Cli, shared};
+use crate::{
+    cli::{Cli, Commands},
+    shared,
+};
 
 pub mod wasm;
 
@@ -110,7 +113,7 @@ pub fn start(
 
         wasm::initialize(&mut server_world, assets.clone(), project_path.clone(), &manifest, &metadata).await.unwrap();
 
-        if let Cli::View { asset_path, .. } = cli.clone() {
+        if let Commands::View { asset_path, .. } = cli.command.clone() {
             let asset_path = project_path
                 .push("build").expect("pushing 'build' shouldn't fail")
                 .push(asset_path.to_string_lossy()).expect("FIXME")

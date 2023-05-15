@@ -268,7 +268,7 @@ impl FbxGeometry {
                 }
                 let mut mesh = Mesh {
                     name: self.name.clone(),
-                    positions: Some(final_vertices.iter().map(|v| v.position).collect()),
+                    positions: final_vertices.iter().map(|v| v.position).collect(),
                     colors: None,
                     normals: if final_vertices[0].normal.is_some() {
                         Some(final_vertices.iter().map(|v| v.normal.unwrap()).collect())
@@ -315,7 +315,7 @@ impl FbxGeometry {
                     } else {
                         None
                     },
-                    indices: Some(indices),
+                    indices,
                 };
                 mesh.try_ensure_tangents();
                 mesh

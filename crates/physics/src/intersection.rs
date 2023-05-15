@@ -87,8 +87,8 @@ pub fn intersect_frustum(world: &World, frustum_corners: &[Vec3; 8]) -> Vec<Enti
     let mesh = Mesh::from(&CuboidMesh { positions: *frustum_corners, color: None, texcoords: false, normals: false, tangents: false });
     let physics = PhysicsKey.get(world.resource(asset_cache()));
     let desc = PxConvexMeshDesc {
-        points: mesh.positions.unwrap(),
-        indices: mesh.indices,
+        points: mesh.positions,
+        indices: Some(mesh.indices),
         vertex_limit: None,
         flags: Some(PxConvexFlag::COMPUTE_CONVEX),
     };

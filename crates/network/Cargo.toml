@@ -10,18 +10,19 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_ecs = { path = "../ecs" , version = "0.2.1" }
-ambient_sys = { path = "../sys" , version = "0.2.1" }
-ambient_rpc = { path = "../rpc" , version = "0.2.1" }
-ambient_std = { path = "../std" , version = "0.2.1" }
-ambient_core = { path = "../core" , version = "0.2.1" }
-ambient_gizmos = { path = "../gizmos" , version = "0.2.1" }
-ambient_gpu = { path = "../gpu" , version = "0.2.1" }
-ambient_ui_native = { path = "../ui_native" , version = "0.2.1" }
-ambient_renderer = { path = "../renderer" , version = "0.2.1" }
-ambient_element = { path = "../../shared_crates/element" , version = "0.2.1" }
-ambient_app = { path = "../app" , version = "0.2.1" }
+ambient_ecs = { path = "../ecs", version = "0.2.1" }
+ambient_sys = { path = "../sys", version = "0.2.1" }
+ambient_rpc = { path = "../rpc", version = "0.2.1" }
+ambient_std = { path = "../std", version = "0.2.1" }
+ambient_core = { path = "../core", version = "0.2.1" }
+ambient_gizmos = { path = "../gizmos", version = "0.2.1" }
+ambient_gpu = { path = "../gpu", version = "0.2.1" }
+ambient_ui_native = { path = "../ui_native", version = "0.2.1" }
+ambient_renderer = { path = "../renderer", version = "0.2.1" }
+ambient_element = { path = "../../shared_crates/element", version = "0.2.1" }
+ambient_app = { path = "../app", version = "0.2.1" }
 ambient_proxy = "0.2.6"
+ambient_world_audio = { path = "../world_audio" , version = "0.2.1" }
 
 itertools = { workspace = true }
 dashmap = { workspace = true }

@@ -11,7 +11,11 @@ pub struct PyramidMesh {
 }
 impl PyramidMesh {
     pub fn from_size(size: Vec3) -> Self {
-        Self { size, position: -size / 2., color: vec4(1., 1., 1., 1.) }
+        Self {
+            size,
+            position: -size / 2.,
+            color: vec4(1., 1., 1., 1.),
+        }
     }
 }
 impl PartialEq for PyramidMesh {
@@ -30,7 +34,11 @@ impl Hash for PyramidMesh {
 }
 impl Default for PyramidMesh {
     fn default() -> Self {
-        Self { position: vec3(-1., -1., -1.), size: vec3(2.0, 2.0, 2.0), color: vec4(1.0, 1.0, 1.0, 1.0) }
+        Self {
+            position: vec3(-1., -1., -1.),
+            size: vec3(2.0, 2.0, 2.0),
+            color: vec4(1.0, 1.0, 1.0, 1.0),
+        }
     }
 }
 
@@ -116,7 +124,10 @@ impl From<&PyramidMesh> for Mesh {
             vec3(0.0, 1.0, 0.0),
         ];
 
-        let colors = std::iter::repeat(vec4(box3.color.x, box3.color.y, box3.color.z, box3.color.w)).take(24).collect();
+        let colors =
+            std::iter::repeat(vec4(box3.color.x, box3.color.y, box3.color.z, box3.color.w))
+                .take(24)
+                .collect();
 
         let mut indices = vec![
             //-Z
@@ -133,14 +144,12 @@ impl From<&PyramidMesh> for Mesh {
 
         let mut mesh = Mesh {
             name: "pyramid".into(),
-            positions: Some(positions),
+            positions,
             colors: Some(colors),
             normals: Some(normals),
-            tangents: None,
             texcoords: vec![texcoords],
-            joint_indices: None,
-            joint_weights: None,
-            indices: Some(indices),
+            indices,
+            ..Default::default()
         };
         mesh.create_tangents();
         mesh

@@ -411,7 +411,7 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                                 let cpu_mesh = mesh_from_glyph_vertices(vertices);
                                 let mut data = Entity::new();
                                 if use_gpu {
-                                    data.set(mesh(), GpuMesh::from_mesh(assets.clone(), &cpu_mesh));
+                                    data.set(mesh(), GpuMesh::from_mesh(&assets, &cpu_mesh));
                                 }
                                 world.add_components(id, data).unwrap();
                                 break;
@@ -516,10 +516,10 @@ fn mesh_from_glyph_vertices(vertices: Vec<GlyphVertex>) -> Mesh {
     }
     Mesh {
         name: "GlyphMesh".to_string(),
-        positions: Some(positions),
+        positions,
         texcoords: vec![texcoords],
         normals: Some(normals),
-        indices: Some(indices),
+        indices,
         ..Default::default()
     }
 }
