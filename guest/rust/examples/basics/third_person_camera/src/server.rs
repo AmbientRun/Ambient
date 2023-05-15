@@ -46,7 +46,7 @@ pub fn main() {
 
     query((sun(), rotation())).each_frame(|sun| {
         let elapsed = time();
-        for (id, (_, rot)) in sun {
+        for (id, _) in sun {
             entity::mutate_component(id, rotation(), |x| {
                 *x = Quat::from_axis_angle(vec3(0.0, 1.0, 0.2).normalize(), elapsed * 0.1)
             })
@@ -98,8 +98,7 @@ pub fn main() {
             .unwrap_or_default();
 
             entity::add_component(player_id, camera_follow_distance(), {
-                let dist = ((scroll * 0.005) + 5.0).max(1.0);
-                dist
+                ((scroll * 0.005) + 5.0).max(1.0)
             });
         }
     });
