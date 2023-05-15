@@ -47,7 +47,6 @@ fn main() {
     ))
     .each_frame(move |players| {
         for (_, (_, camera_id, pos, rot, dist)) in players {
-            let forward = rot * Vec3::X;
             entity::set_component(camera_id, lookat_target(), pos);
             let offset = rot * vec3(-1.0, 0.0, 0.2).normalize() * dist;
             entity::set_component(camera_id, translation(), pos + offset);
