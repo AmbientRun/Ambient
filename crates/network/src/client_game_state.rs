@@ -59,7 +59,7 @@ impl ClientGameState {
         client_resources: Entity,
     ) -> Self {
         let mut game_world = World::new("client_game_world");
-        setup_audio(&mut game_world, None).unwrap();
+        setup_audio(&mut game_world).unwrap();
         let local_resources = world_instance_resources(AppResources::from_world(world))
             .with(ambient_core::player::local_user_id(), player_id.clone())
             .with(game_screen_render_target(), render_target)

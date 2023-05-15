@@ -13,7 +13,7 @@ use ambient_primitives::Cube;
 use ambient_renderer::{cast_shadows, color};
 use ambient_std::math::SphericalCoords;
 use ambient_ui_native::World;
-use ambient_world_audio::{audio_emitter, audio_listener, play_sound_on_entity, systems::setup_audio};
+use ambient_world_audio::{audio_emitter, audio_listener, audio_mixer, play_sound_on_entity, systems::setup_audio};
 use glam::{vec3, vec4, Mat4, Vec3};
 use parking_lot::Mutex;
 
@@ -74,7 +74,8 @@ async fn main() {
 
     AppBuilder::simple()
         .run(|app, _| {
-            setup_audio(&mut app.world, Some(stream.mixer().clone())).unwrap();
+            setup_audio(&mut app.world).unwrap();
+            app.world.add_resource(audio_mixer(), stream.mixer().clone());
             init(app)
         })
         .await;

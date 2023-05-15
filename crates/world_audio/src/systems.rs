@@ -1,22 +1,18 @@
 use std::{io::Cursor, sync::Arc};
 
-use ambient_audio::{hrtf::HrtfLib, AudioMixer};
+use ambient_audio::{hrtf::HrtfLib};
 use ambient_core::transform::local_to_world;
 use ambient_ecs::{query, SystemGroup, World};
 use glam::{vec4, Mat4};
 
-use crate::{audio_emitter, audio_listener, audio_mixer, hrtf_lib};
+use crate::{audio_emitter, audio_listener, hrtf_lib};
 
 /// Initializes the HRTF sphere and adds the appropriate resources
 ///
 /// TODO: customizer IR sphere selection
-pub fn setup_audio(world: &mut World, mixer: Option<AudioMixer>) -> anyhow::Result<()> {
+pub fn setup_audio(world: &mut World) -> anyhow::Result<()> {
     let hrtf = Arc::new(HrtfLib::load(Cursor::new(include_bytes!("../IRC_1002_C.bin")))?);
     world.add_resource(hrtf_lib(), hrtf);
-    match mixer {
-        Some(mixer) => world.add_resource(audio_mixer(), mixer),
-        None => {}
-    };
     Ok(())
 }
 
