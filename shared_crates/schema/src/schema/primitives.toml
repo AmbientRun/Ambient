@@ -1,9 +1,9 @@
-
-[components."core::primitives"]
+[project]
+id = "primitives"
 name = "Primitives"
 description = "Components that create primitive (in the geometric sense) objects from their attached entities."
 
-[components."core::primitives::cube"]
+[components.cube]
 type = "Empty"
 name = "Cube"
 description = """
@@ -11,7 +11,7 @@ If attached to an entity, the entity will be converted to a cube primitive.
 The cube is unit-sized (i.e. 0.5 metres out to each side)."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::quad"]
+[components.quad]
 type = "Empty"
 name = "Quad"
 description = """
@@ -19,7 +19,7 @@ If attached to an entity, the entity will be converted to a quad primitive.
 The quad is unit-sized on the XY axes, and flat on the Z axis (i.e. 0.5 metres out to the XY axes)."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::sphere"]
+[components.sphere]
 type = "Empty"
 name = "Sphere"
 description = """
@@ -27,28 +27,28 @@ If attached to an entity alongside the other `sphere_*` components, the entity w
 To easily instantiate a unit-diameter `sphere`, consider using the `sphere` concept (e.g. `make_sphere`)."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::sphere_radius"]
+[components.sphere_radius]
 type = "F32"
 name = "Sphere radius"
 description = "Set the radius of a `sphere` entity."
 default = 0.5
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::sphere_sectors"]
+[components.sphere_sectors]
 type = "U32"
 name = "Sphere sectors"
 description = "Set the longitudinal sectors of a `sphere` entity."
 default = 36
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::sphere_stacks"]
+[components.sphere_stacks]
 type = "U32"
 name = "Sphere stacks"
 description = "Set the latitudinal stacks of a `sphere` entity."
 default = 18
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::torus"]
+[components.torus]
 type = "Empty"
 name = "Torus"
 description = """
@@ -56,31 +56,31 @@ If attached to an entity alongside the other `torus_*` components, the entity wi
 To easily instantiate a default `torus`, consider using the `torus` concept (e.g. `make_torus`)."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::torus_inner_radius"]
+[components.torus_inner_radius]
 type = "F32"
 name = "Torus inner radius"
 description = "Set the inner radius of a `torus` entity, spanning XY-plane."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::torus_outer_radius"]
+[components.torus_outer_radius]
 type = "F32"
 name = "Torus outer radius"
 description = "Set the outer radius of a `torus` entity, spanning XY-plane."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::torus_loops"]
+[components.torus_loops]
 type = "U32"
 name = "Torus loops"
 description = "Set the loops of a `torus` entity, spanning XY-plane."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::torus_slices"]
+[components.torus_slices]
 type = "U32"
 name = "Torus slices"
 description = "Set the slices of a `torus` entity, spanning XY-plane."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::capsule"]
+[components.capsule]
 type = "Empty"
 name = "Capsule"
 description = """
@@ -88,38 +88,38 @@ If attached to an entity alongside the other `capsule_*` components, the entity 
 To easily instantiate a default `capsule`, consider using the `capsule` concept (e.g. `make_capsule`)."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::capsule_radius"]
+[components.capsule_radius]
 type = "F32"
 name = "Capsule radius"
 description = "Set the radius of a `capsule` entity, spanning XY-plane."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::capsule_half_height"]
+[components.capsule_half_height]
 type = "F32"
 name = "Capsule half-height"
 description = "Set the half-height of the `capsule` entity, spanning Z-axis, excluding the caps."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::capsule_rings"]
+[components.capsule_rings]
 type = "U32"
 name = "Capsule rings"
 description = "Set the number of sections between the caps."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::capsule_latitudes"]
+[components.capsule_latitudes]
 type = "U32"
 name = "Capsule latitudes"
 description = "Set the number of latitudinal sections. Should be even."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::primitives::capsule_longitudes"]
+[components.capsule_longitudes]
 type = "U32"
 name = "Capsule longitudes"
 description = "Set the number of longitudinal sections."
 attributes = ["Debuggable", "Networked", "Store"]
 
 # TODO: enums are not supported, see https://github.com/AmbientRun/Ambient/issues/221.
-# [components."core::primitives::capsule_uv_profile"]
+# [components.capsule_uv_profile]
 # type = "???"
 # name = "Capsule UV profile"
 # description = "Specifies vertical UV distribution."
@@ -132,30 +132,30 @@ name = "Sphere"
 description = "A primitive sphere."
 
 [concepts.sphere.components]
-"core::primitives::sphere" = {}
-"core::primitives::sphere_radius" = 0.5
-"core::primitives::sphere_sectors" = 36
-"core::primitives::sphere_stacks" = 18
+sphere = {}
+sphere_radius = 0.5
+sphere_sectors = 36
+sphere_stacks = 18
 
 [concepts.capsule]
 name = "Capsule"
 description = "A primitive capsule. Defined as a cylinder capped by hemispheres."
 
 [concepts.capsule.components]
-"core::primitives::capsule" = {}
-"core::primitives::capsule_radius" = 0.5
-"core::primitives::capsule_half_height" = 0.5
-"core::primitives::capsule_rings" = 0
-"core::primitives::capsule_latitudes" = 16
-"core::primitives::capsule_longitudes" = 32
+capsule = {}
+capsule_radius = 0.5
+capsule_half_height = 0.5
+capsule_rings = 0
+capsule_latitudes = 16
+capsule_longitudes = 32
 
 [concepts.torus]
 name = "Torus"
 description = "A primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution."
 
 [concepts.torus.components]
-"core::primitives::torus" = {}
-"core::primitives::torus_inner_radius" = 0.25
-"core::primitives::torus_outer_radius" = 0.35
-"core::primitives::torus_slices" = 32
-"core::primitives::torus_loops" = 16
+torus = {}
+torus_inner_radius = 0.25
+torus_outer_radius = 0.35
+torus_slices = 32
+torus_loops = 16

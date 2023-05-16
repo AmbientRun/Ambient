@@ -1,9 +1,10 @@
 [project]
-id = "runtime_components"
-name = "Runtime Components"
+id = "core"
+description = "Contains all core components for the Ambient runtime."
+name = "Core Components"
 version = "0.2.1"
-
-includes = ["schema/app_.toml",
+includes = [
+    "schema/app_.toml",
     "schema/camera.toml",
     "schema/ecs.toml",
     "schema/input.toml",
@@ -19,21 +20,6 @@ includes = ["schema/app_.toml",
     "schema/text.toml",
     "schema/transform.toml"
 ]
-
-# Components
-
-[components.core]
-name = "Core"
-description = "Contains all core components for the Ambient runtime."
-
-[components."core::game_objects"]
-name = "Game Objects"
-description = "Pre-defined game objects that implement specific behaviours."
-
-[components."core::wasm"]
-name = "WASM"
-description = "Internal implementation details of WASM integration."
-
 
 # Messages
 [messages.frame]

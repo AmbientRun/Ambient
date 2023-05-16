@@ -1,10 +1,13 @@
-use std::{fmt::Display, ops::Deref};
+use std::{
+    fmt::{Debug, Display},
+    ops::Deref,
+};
 
 use proc_macro2::TokenStream;
 use quote::{ToTokens, TokenStreamExt};
 use serde::{Deserialize, Serialize};
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct IdentifierPath<'a>(pub &'a [Identifier]);
 impl<'a> IdentifierPath<'a> {}
 impl<'a> Display for IdentifierPath<'a> {
@@ -22,6 +25,11 @@ impl<'a> Display for IdentifierPath<'a> {
         Ok(())
     }
 }
+impl<'a> Debug for IdentifierPath<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(self, f)
+    }
+}
 impl<'a> Deref for IdentifierPath<'a> {
     type Target = [Identifier];
 
@@ -35,7 +43,7 @@ impl<'a> ToTokens for IdentifierPath<'a> {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct IdentifierPathBuf(pub(super) Vec<Identifier>);
 impl IdentifierPathBuf {
     pub fn empty() -> Self {
@@ -65,6 +73,11 @@ impl IdentifierPathBuf {
 impl Display for IdentifierPathBuf {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.as_path(), f)
+    }
+}
+impl Debug for IdentifierPathBuf {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(&self.as_path(), f)
     }
 }
 impl<'de> Deserialize<'de> for IdentifierPathBuf {
@@ -111,7 +124,7 @@ impl ToTokens for IdentifierPathBuf {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct Identifier(pub(super) String);
 impl Identifier {
     pub fn new(id: impl Into<String>) -> Result<Self, &'static str> {
@@ -140,6 +153,11 @@ impl Identifier {
         }
 
         Ok(id)
+    }
+}
+impl Debug for Identifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(&self.0, f)
     }
 }
 impl Serialize for Identifier {

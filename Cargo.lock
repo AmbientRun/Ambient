@@ -1119,6 +1119,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_project_semantic"
+version = "0.2.1"
+dependencies = [
+ "ambient_project",
+ "ambient_shared_types",
+ "anyhow",
+ "glam 0.22.0",
+ "toml 0.7.3",
+ "ulid",
+]
+
+[[package]]
 name = "ambient_proxy"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

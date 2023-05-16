@@ -1,9 +1,9 @@
-
-[components."core::transform"]
+[project]
+id = "transform"
 name = "Transform"
 description = "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity."
 
-[components."core::transform::cylindrical_billboard_z"]
+[components.cylindrical_billboard_z]
 type = "Empty"
 name = "Cylindrical billboard Z"
 description = """
@@ -11,13 +11,13 @@ If attached, this ensures this entity is always aligned with the camera, except 
 This is useful for decorations that the player will be looking at from roughly the same altitude."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::transform::euler_rotation"]
+[components.euler_rotation]
 type = "Vec3"
 name = "Euler rotation"
 description = "The Euler rotation of this entity in ZYX order."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::transform::inv_local_to_world"]
+[components.inv_local_to_world]
 type = "Mat4"
 name = "Inverse Local to World"
 description = """
@@ -25,37 +25,37 @@ Converts a world position to a local position.
 This is automatically updated."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::transform::local_to_parent"]
+[components.local_to_parent]
 type = "Mat4"
 name = "Local to Parent"
 description = "Transformation from the entity's local space to the parent's space."
 attributes = ["Debuggable", "Networked", "Store", "MaybeResource"]
 
-[components."core::transform::local_to_world"]
+[components.local_to_world]
 type = "Mat4"
 name = "Local to World"
 description = "Transformation from the entity's local space to worldspace."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::transform::lookat_target"]
+[components.lookat_target]
 type = "Vec3"
 name = "Look-at target"
 description = "The position that this entity should be looking at."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::transform::lookat_up"]
+[components.lookat_up]
 type = "Vec3"
 name = "Look-at up"
 description = "When combined with `lookat_target`, the up vector for this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::transform::mesh_to_local"]
+[components.mesh_to_local]
 type = "Mat4"
 name = "Mesh to Local"
 description = "Transformation from mesh-space to the entity's local space."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::transform::mesh_to_world"]
+[components.mesh_to_world]
 type = "Mat4"
 name = "Mesh to World"
 description = """
@@ -63,31 +63,31 @@ Transformation from mesh-space to world space.
 This is automatically updated when `mesh_to_local` and `local_to_world` change."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::transform::reset_scale"]
+[components.reset_scale]
 type = "Empty"
 name = "Reset scale"
 description = "If attached to a transform hierarchy, the scale will be reset at that point, with only rotation/translation considered."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::transform::rotation"]
+[components.rotation]
 type = "Quat"
 name = "Rotation"
 description = "The rotation of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::transform::scale"]
+[components.scale]
 type = "Vec3"
 name = "Scale"
 description = "The scale of this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::transform::spherical_billboard"]
+[components.spherical_billboard]
 type = "Empty"
 name = "Spherical billboard"
 description = "If attached, this ensures that this entity is always aligned with the camera."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::transform::translation"]
+[components.translation]
 type = "Vec3"
 name = "Translation"
 description = "The translation/position of this entity."
@@ -100,6 +100,6 @@ name = "Transformable"
 description = "Can be translated, rotated and scaled."
 
 [concepts.transformable.components]
-"core::transform::translation" = [0.0, 0.0, 0.0]
-"core::transform::scale" = [1.0, 1.0, 1.0]
-"core::transform::rotation" = [0.0, 0.0, 0.0, 1.0]
+translation = [0.0, 0.0, 0.0]
+scale = [1.0, 1.0, 1.0]
+rotation = [0.0, 0.0, 0.0, 1.0]

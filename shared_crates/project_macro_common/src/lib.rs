@@ -1,6 +1,6 @@
 extern crate proc_macro;
 
-use ambient_project::{IdentifierPathBuf, Manifest};
+use ambient_project::{Component, Concept, IdentifierPath, IdentifierPathBuf, Manifest, Message};
 use quote::quote;
 
 use proc_macro2::Ident;
@@ -51,6 +51,17 @@ impl ManifestSource {
             }
             Self::String(string) => Ok((Manifest::parse(string)?, quote! {})),
         }
+    }
+}
+
+pub struct TypeRegistry {
+    pub components: Tree<Component>,
+    pub concepts: Tree<Concept>,
+    pub messages: Tree<Message>,
+}
+impl TypeRegistry {
+    pub fn get_component(&self, path: IdentifierPath) -> Option<&Component> {
+        self.components.get(path)
     }
 }
 

@@ -62,7 +62,7 @@ impl Manifest {
 pub struct Project {
     pub id: Identifier,
     pub name: Option<String>,
-    pub version: Version,
+    pub version: Option<Version>,
     pub description: Option<String>,
     #[serde(default)]
     pub authors: Vec<String>,
@@ -172,7 +172,7 @@ mod tests {
                 project: Project {
                     id: Identifier::new("tictactoe").unwrap(),
                     name: Some("Tic Tac Toe".to_string()),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     description: None,
                     authors: vec![],
                     organization: None,
@@ -231,7 +231,7 @@ mod tests {
                 project: Project {
                     id: Identifier::new("tictactoe").unwrap(),
                     name: Some("Tic Tac Toe".to_string()),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     description: None,
                     authors: vec![],
                     organization: None,
@@ -271,7 +271,7 @@ mod tests {
                 project: Project {
                     id: Identifier::new("tictactoe").unwrap(),
                     name: Some("Tic Tac Toe".to_string()),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     description: None,
                     authors: vec![],
                     organization: None,
@@ -345,7 +345,7 @@ mod tests {
                 project: Project {
                     id: Identifier::new("my_project").unwrap(),
                     name: Some("My Project".to_string()),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     description: None,
                     authors: vec![],
                     organization: None,
@@ -472,7 +472,7 @@ mod tests {
                 project: Project {
                     id: Identifier::new("tictactoe").unwrap(),
                     name: Some("Tic Tac Toe".to_string()),
-                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     description: None,
                     authors: vec![],
                     organization: None,

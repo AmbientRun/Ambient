@@ -1,45 +1,45 @@
-
-[components."core::rendering"]
+[project]
+id = "rendering"
 name = "Rendering"
 description = "Rendering-related state, including global rendering parameters and per-entity state."
 
-[components."core::rendering::cast_shadows"]
+[components.cast_shadows]
 type = "Empty"
 name = "Cast shadows"
 description = "If attached, this entity will cast shadows."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::color"]
+[components.color]
 type = "Vec4"
 name = "Color"
 description = "This entity will be tinted with the specified color if the color is not black."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::double_sided"]
+[components.double_sided]
 type = "Bool"
 name = "Double-sided"
 description = "If this is set, the entity will be rendered with double-sided rendering."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::fog_color"]
+[components.fog_color]
 type = "Vec3"
 name = "Fog color"
 description = "The color of the fog for this `sun`."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::fog_density"]
+[components.fog_density]
 type = "F32"
 name = "Fog density"
 description = "The density of the fog for this `sun`."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::fog_height_falloff"]
+[components.fog_height_falloff]
 type = "F32"
 name = "Fog height fall-off"
 description = "The height at which the fog will fall off (i.e. stop being visible) for this `sun`."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::joint_matrices"]
+[components.joint_matrices]
 type = { type = "Vec", element_type = "Mat4" }
 name = "Joint Matrices"
 description = """
@@ -47,31 +47,31 @@ Contains the matrices for each joint of this skinned mesh.
 This should be used in combination with `joints`."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::joints"]
+[components.joints]
 type = { type = "Vec", element_type = "EntityId" }
 name = "Joints"
 description = "Contains the joints that comprise this skinned mesh."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::light_ambient"]
+[components.light_ambient]
 type = "Vec3"
 name = "Light ambient"
 description = "The ambient light color of the `sun`."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::light_diffuse"]
+[components.light_diffuse]
 type = "Vec3"
 name = "Light diffuse"
 description = "The diffuse light color of the `sun`."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::outline"]
+[components.outline]
 type = "Vec4"
 name = "Outline"
 description = "If attached, this entity will be rendered with an outline with the color specified."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::outline_recursive"]
+[components.outline_recursive]
 type = "Vec4"
 name = "Outline (recursive)"
 description = """
@@ -79,25 +79,25 @@ If attached, this entity and all of its children will be rendered with an outlin
 You do not need to attach `outline` if you have attached `outline_recursive`."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::overlay"]
+[components.overlay]
 type = "Empty"
 name = "Overlay"
 description = "If attached, this entity will be rendered with an overlay."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::pbr_material_from_url"]
+[components.pbr_material_from_url]
 type = "String"
 name = "PBR material from URL"
 description = "Load a PBR material from the URL and attach it to this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::sky"]
+[components.sky]
 type = "Empty"
 name = "Sky"
 description = "Add a realistic skybox to the scene."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::sun"]
+[components.sun]
 type = "F32"
 name = "Sun"
 description = """
@@ -105,19 +105,19 @@ Marks this entity as a sun (i.e. its rotation will be used to control the global
 The entity with the highest `sun` value takes precedence."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::transparency_group"]
+[components.transparency_group]
 type = "I32"
 name = "Transparency group"
 description = "Controls when this transparent object will be rendered. Transparent objects are sorted by `(transparency_group, z-depth)`."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::water"]
+[components.water]
 type = "Empty"
 name = "Water"
 description = "Add a realistic water plane to this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::rendering::decal_from_url"]
+[components.decal_from_url]
 type = "String"
 name = "Decal material from URL"
 description = "Load a Decal material from the URL and attach it to this entity."

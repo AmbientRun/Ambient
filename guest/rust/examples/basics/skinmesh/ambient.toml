@@ -1,6 +1,6 @@
 [project]
 id = "skinmesh"
-sname = "Skinmesh"
+name = "Skinmesh"
 version = "0.0.1"
 
 [messages]

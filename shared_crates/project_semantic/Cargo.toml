@@ -1,0 +1,17 @@
+[package]
+name = "ambient_project_semantic"
+edition = "2021"
+description = "Semantic analysis for the Ambient project manifests"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+rust-version = { workspace = true }
+version = { workspace = true }
+
+[dependencies]
+ambient_project = { path = "../project" , version = "0.2.1" }
+ambient_shared_types = { path = "../shared_types" , version = "0.2.1" }
+
+anyhow = { workspace = true }
+ulid = { workspace = true }
+glam = { workspace = true }
+toml = { workspace = true }
