@@ -145,6 +145,7 @@ symphonia = { version = "0.5", default-features = false, features = [
 vorbis_rs = "0.3.0"
 colored = "2.0.0"
 directories = "5.0.1"
+ulid = { version = "1.0.0", features=["serde"] }
 
 #
 # WASM dependencies. Should be able to move off these once this all begins to stabilise a little.

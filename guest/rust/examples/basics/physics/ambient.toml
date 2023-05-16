@@ -5,4 +5,4 @@ version = "0.0.1"
 
 [messages.bonk]
 description = "Collision between two objects."
-fields = { cube = "EntityId" }
+fields = { emitter = "EntityId", listener = "EntityId"  }

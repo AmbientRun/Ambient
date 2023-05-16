@@ -73,16 +73,26 @@ pub async fn import_from_fbx_reader(
             }
 
             let images = if load_images {
-                join_all(doc.videos.iter().map(|(id, video)| async { (*id, video.to_image(texture_resolver.clone()).await) }))
-                    .await
-                    .into_iter()
-                    .filter_map(|(id, image)| image.map(|img| (id, asset_crate.images.insert(id.to_string(), img))))
-                    .collect::<HashMap<_, _>>()
+                join_all(doc.videos.iter().map(|(id, video)| async {
+                    (*id, video.to_image(texture_resolver.clone()).await)
+                }))
+                .await
+                .into_iter()
+                .filter_map(|(id, image)| {
+                    image.map(|img| (id, asset_crate.images.insert(id.to_string(), img)))
+                })
+                .collect::<HashMap<_, _>>()
             } else {
                 Default::default()
             };
             for material in doc.materials.values() {
-                let mat = material.to_model_material(name.to_string(), &doc.textures, &doc.videos, &images, asset_crate);
+                let mat = material.to_model_material(
+                    name.to_string(),
+                    &doc.textures,
+                    &doc.videos,
+                    &images,
+                    asset_crate,
+                );
                 asset_crate.materials.insert(material.id.to_string(), mat);
             }
 
@@ -93,14 +103,35 @@ pub async fn import_from_fbx_reader(
             }
             for model in doc.models.values() {
                 let id = *entities.get(&model.id).unwrap();
-                world.set(id, children(), model.children.iter().map(|i| *entities.get(i).unwrap()).collect()).unwrap();
+                world
+                    .set(
+                        id,
+                        children(),
+                        model
+                            .children
+                            .iter()
+                            .map(|i| *entities.get(i).unwrap())
+                            .collect(),
+                    )
+                    .unwrap();
                 if let Some(pi) = model.parent {
-                    world.add_component(id, parent(), *entities.get(&pi).unwrap()).unwrap();
+                    world
+                        .add_component(id, parent(), *entities.get(&pi).unwrap())
+                        .unwrap();
                 }
                 if let Ok(joints) = world.get_ref(id, skinning::joints_by_fbx_id()).cloned() {
-                    world.remove_component(id, skinning::joints_by_fbx_id()).unwrap();
                     world
-                        .add_component(id, skinning::joints(), joints.into_iter().map(|id| *entities.get(&id).unwrap()).collect())
+                        .remove_component(id, skinning::joints_by_fbx_id())
+                        .unwrap();
+                    world
+                        .add_component(
+                            id,
+                            skinning::joints(),
+                            joints
+                                .into_iter()
+                                .map(|id| *entities.get(&id).unwrap())
+                                .collect(),
+                        )
                         .unwrap();
                 }
             }
@@ -108,19 +139,36 @@ pub async fn import_from_fbx_reader(
             for skin in doc.skins.values() {
                 skins.push(ModelSkin {
                     inverse_bind_matrices: Arc::new(skin.inverse_bind_matrices(&doc.clusters)),
-                    joints: skin.joints(&doc.clusters).into_iter().map(|id| *entities.get(&id).unwrap()).collect(),
+                    joints: skin
+                        .joints(&doc.clusters)
+                        .into_iter()
+                        .map(|id| *entities.get(&id).unwrap())
+                        .collect(),
                 });
             }
             world.add_resource(model_skins(), skins);
             world.add_resource(ambient_core::name(), name);
 
-            let roots = doc.models.values_mut().filter_map(|model| if model.is_root { Some(model.id) } else { None }).collect_vec();
+            let roots = doc
+                .models
+                .values_mut()
+                .filter_map(|model| if model.is_root { Some(model.id) } else { None })
+                .collect_vec();
 
-            world.add_resource(children(), roots.iter().map(|id| *entities.get(id).unwrap()).collect());
+            world.add_resource(
+                children(),
+                roots.iter().map(|id| *entities.get(id).unwrap()).collect(),
+            );
 
-            world.add_resource(local_to_parent(), Mat4::from_scale(Vec3::ONE * doc.global_settings.unit_scale_factor));
+            world.add_resource(
+                local_to_parent(),
+                Mat4::from_scale(Vec3::ONE * doc.global_settings.unit_scale_factor),
+            );
 
-            Ok(asset_crate.models.insert(ModelCrate::MAIN, Model(world)).path)
+            Ok(asset_crate
+                .models
+                .insert(ModelCrate::MAIN, Model(world))
+                .path)
         }
         _ => Err(anyhow::anyhow!("Got FBX tree of unsupported version")),
     }
@@ -175,9 +223,20 @@ impl FbxDoc {
 
             poses: HashMap::new(),
         };
-        let objects = tree.root().children().find(|node| node.name() == "Objects").unwrap();
-        let connections_node = tree.root().children().find(|node| node.name() == "Connections").unwrap();
-        let connections = connections_node.children().map(FbxConnection::from_node).collect_vec();
+        let objects = tree
+            .root()
+            .children()
+            .find(|node| node.name() == "Objects")
+            .unwrap();
+        let connections_node = tree
+            .root()
+            .children()
+            .find(|node| node.name() == "Connections")
+            .unwrap();
+        let connections = connections_node
+            .children()
+            .map(FbxConnection::from_node)
+            .collect_vec();
 
         for node in objects.children() {
             match node.name() {
@@ -211,7 +270,10 @@ impl FbxDoc {
                         let cluster = FbxCluster::from_node(node);
                         doc.clusters.insert(cluster.id, cluster);
                     }
-                    _ => panic!("Unrecognized type: {}", node.attributes()[2].get_string().unwrap()),
+                    _ => panic!(
+                        "Unrecognized type: {}",
+                        node.attributes()[2].get_string().unwrap()
+                    ),
                 },
 
                 "AnimationStack" => {
@@ -220,7 +282,12 @@ impl FbxDoc {
                 }
                 "AnimationLayer" => {
                     let id = node.attributes()[0].get_i64().unwrap();
-                    doc.animation_layers.insert(id, FbxAnimationLayer { curve_nodes: Vec::new() });
+                    doc.animation_layers.insert(
+                        id,
+                        FbxAnimationLayer {
+                            curve_nodes: Vec::new(),
+                        },
+                    );
                 }
                 "AnimationCurveNode" => {
                     let curve_node = FbxAnimationCurveNode::from_node(node);
@@ -253,14 +320,23 @@ impl FbxDoc {
             })
             .collect();
 
-        for FbxConnection { to, from, property, .. } in connections {
-            if let (Some(to_type), Some(from_type)) = (object_types.get(&to), object_types.get(&from)) {
+        for FbxConnection {
+            to, from, property, ..
+        } in connections
+        {
+            if let (Some(to_type), Some(from_type)) =
+                (object_types.get(&to), object_types.get(&from))
+            {
                 match (to_type as &str, from_type as &str) {
                     ("Geometry", "Model") => doc.models.get_mut(&from).unwrap().geometries.push(to),
                     ("Material", "Model") => doc.models.get_mut(&from).unwrap().materials.push(to),
                     ("Texture", "Material") => {
                         if let Some(key) = property.as_ref().map(|x| x as &str) {
-                            doc.materials.get_mut(&from).unwrap().textures.insert(key.to_string(), to);
+                            doc.materials
+                                .get_mut(&from)
+                                .unwrap()
+                                .textures
+                                .insert(key.to_string(), to);
                         }
                     }
                     ("Video", "Texture") => doc.textures.get_mut(&from).unwrap().video = Some(to),
@@ -275,13 +351,28 @@ impl FbxDoc {
                     ("Skin", "Geometry") => doc.geometries.get_mut(&from).unwrap().skin = Some(to),
                     ("Model", "Cluster") => doc.clusters.get_mut(&from).unwrap().bone_id = Some(to),
 
-                    ("AnimationLayer", "AnimationStack") => doc.animation_stacks.get_mut(&from).unwrap().layers.push(to),
-                    ("AnimationCurveNode", "AnimationLayer") => doc.animation_layers.get_mut(&from).unwrap().curve_nodes.push(to),
+                    ("AnimationLayer", "AnimationStack") => {
+                        doc.animation_stacks.get_mut(&from).unwrap().layers.push(to)
+                    }
+                    ("AnimationCurveNode", "AnimationLayer") => doc
+                        .animation_layers
+                        .get_mut(&from)
+                        .unwrap()
+                        .curve_nodes
+                        .push(to),
                     ("AnimationCurve", "AnimationCurveNode") => {
-                        doc.animation_curve_nodes.get_mut(&from).unwrap().curves.insert(property.as_ref().unwrap().to_string(), to);
+                        doc.animation_curve_nodes
+                            .get_mut(&from)
+                            .unwrap()
+                            .curves
+                            .insert(property.as_ref().unwrap().to_string(), to);
                     }
                     ("AnimationCurveNode", "Model") => {
-                        doc.animation_curve_nodes.get_mut(&to).unwrap().outputs.push((from, property.as_ref().unwrap().to_string()));
+                        doc.animation_curve_nodes
+                            .get_mut(&to)
+                            .unwrap()
+                            .outputs
+                            .push((from, property.as_ref().unwrap().to_string()));
                     }
                     _ => {}
                 }
@@ -315,7 +406,9 @@ impl FbxConnection {
             from,
             to,
             property: match t {
-                FbxConnectionType::ObjectProperty => Some(node.attributes()[3].get_string().unwrap().to_string()),
+                FbxConnectionType::ObjectProperty => {
+                    Some(node.attributes()[3].get_string().unwrap().to_string())
+                }
                 _ => None,
             },
             connection_type: t,
@@ -335,24 +428,50 @@ pub struct FbxGlobalSettings {
 }
 impl Default for FbxGlobalSettings {
     fn default() -> Self {
-        Self { up_axis: 1, up_axis_sign: 1., front_axis: 2, front_axis_sign: 1., coord_axis: 0, coord_axis_sign: 1., unit_scale_factor: 1. }
+        Self {
+            up_axis: 1,
+            up_axis_sign: 1.,
+            front_axis: 2,
+            front_axis_sign: 1.,
+            coord_axis: 0,
+            coord_axis_sign: 1.,
+            unit_scale_factor: 1.,
+        }
     }
 }
 impl FbxGlobalSettings {
     fn new(root: NodeHandle) -> Self {
-        let global_settings = root.children().find(|node| node.name() == "GlobalSettings").unwrap();
-        let properties = global_settings.children().find(|node| node.name() == "Properties70").unwrap();
+        let global_settings = root
+            .children()
+            .find(|node| node.name() == "GlobalSettings")
+            .unwrap();
+        let properties = global_settings
+            .children()
+            .find(|node| node.name() == "Properties70")
+            .unwrap();
         let mut settings = Self::default();
         for prop in properties.children() {
             let name = prop.attributes()[0].get_string().unwrap();
             match name {
                 "UpAxis" => settings.up_axis = prop.attributes()[4].get_i32().unwrap() as usize,
-                "UpAxisSign" => settings.up_axis_sign = prop.attributes()[4].get_i32().unwrap() as f32,
-                "FrontAxis" => settings.front_axis = prop.attributes()[4].get_i32().unwrap() as usize,
-                "FrontAxisSign" => settings.front_axis_sign = prop.attributes()[4].get_i32().unwrap() as f32,
-                "CoordAxis" => settings.coord_axis = prop.attributes()[4].get_i32().unwrap() as usize,
-                "CoordAxisSign" => settings.coord_axis_sign = prop.attributes()[4].get_i32().unwrap() as f32,
-                "UnitScaleFactor" => settings.unit_scale_factor = prop.attributes()[4].get_f64().unwrap() as f32,
+                "UpAxisSign" => {
+                    settings.up_axis_sign = prop.attributes()[4].get_i32().unwrap() as f32
+                }
+                "FrontAxis" => {
+                    settings.front_axis = prop.attributes()[4].get_i32().unwrap() as usize
+                }
+                "FrontAxisSign" => {
+                    settings.front_axis_sign = prop.attributes()[4].get_i32().unwrap() as f32
+                }
+                "CoordAxis" => {
+                    settings.coord_axis = prop.attributes()[4].get_i32().unwrap() as usize
+                }
+                "CoordAxisSign" => {
+                    settings.coord_axis_sign = prop.attributes()[4].get_i32().unwrap() as f32
+                }
+                "UnitScaleFactor" => {
+                    settings.unit_scale_factor = prop.attributes()[4].get_f64().unwrap() as f32
+                }
                 _ => {}
             }
         }
@@ -375,7 +494,10 @@ impl FbxPose {
                 .filter_map(|child| {
                     if child.name() == "PoseNode" {
                         let n = child.children().find(|node| node.name() == "Node").unwrap();
-                        let matrix = child.children().find(|node| node.name() == "Matrix").unwrap();
+                        let matrix = child
+                            .children()
+                            .find(|node| node.name() == "Matrix")
+                            .unwrap();
                         Some((n.attributes()[0].get_i64().unwrap(), read_matrix(matrix)))
                     } else {
                         None
@@ -387,6 +509,11 @@ impl FbxPose {
 }
 
 pub fn read_matrix(node: NodeHandle) -> Mat4 {
-    let mat = node.attributes()[0].get_arr_f64().unwrap().iter().map(|v| *v as f32).collect_vec();
+    let mat = node.attributes()[0]
+        .get_arr_f64()
+        .unwrap()
+        .iter()
+        .map(|v| *v as f32)
+        .collect_vec();
     Mat4::from_cols_slice(&mat)
 }

@@ -939,6 +939,7 @@ dependencies = [
  "ambient_std",
  "ambient_sys",
  "ambient_ui_native",
+ "ambient_world_audio",
  "anyhow",
  "async-trait",
  "bincode",
@@ -1119,9 +1120,9 @@ dependencies = [
 
 [[package]]
 name = "ambient_proxy"
-version = "0.2.6"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f43080a0ce782731d0c7643ce8085acebd8111ede2fad51c513f310db542b83"
+checksum = "a6f701d66054909fc249f412eb6866483a6566a219267caaf8a56f36bffdcfb8"
 dependencies = [
  "anyhow",
  "bincode",
@@ -1292,6 +1293,7 @@ dependencies = [
  "tokio",
  "toml 0.7.3",
  "tracing",
+ "ulid",
  "url",
  "wgpu 0.16.0",
  "yaml-rust-davvid",
@@ -1557,7 +1559,6 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_element",
- "ambient_network",
  "ambient_primitives",
  "ambient_profiling",
  "ambient_renderer",
@@ -7606,6 +7607,16 @@ name = "typenum"
 version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "497961ef93d974e23eb6f433eb5fe1b7930b659f06d12dec6fc44a8f554c0bba"
+
+[[package]]
+name = "ulid"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "13a3aaa69b04e5b66cc27309710a569ea23593612387d67daaf102e73aa974fd"
+dependencies = [
+ "rand 0.8.5",
+ "serde",
+]
 
 [[package]]
 name = "unicase"

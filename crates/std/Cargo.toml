@@ -18,6 +18,7 @@ ambient_friendly_id = { path = "../../libs/friendly_id" , version = "0.2.1" }
 ambient_math = { path = "../../libs/math" , version = "0.2.1" }
 anyhow = { workspace = true }
 tracing = { workspace = true }
+ulid = { workspace = true }
 
 wgpu = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }

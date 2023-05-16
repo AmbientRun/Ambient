@@ -37,18 +37,24 @@ impl Cuboid {
         Self { min, max }
     }
 
-    pub fn from_points(points: &[Vec3]) -> Self {
-        let mut min = points[0];
-        let mut max = points[0];
-        for point in points.iter().skip(1) {
-            min.x = min.x.min(point.x);
-            min.y = min.y.min(point.y);
-            min.z = min.z.min(point.z);
-            max.x = max.x.max(point.x);
-            max.y = max.y.max(point.y);
-            max.z = max.z.max(point.z);
+    pub fn new_invalid() -> Self {
+        Self {
+            min: Vec3::splat(f32::MAX),
+            max: Vec3::splat(-f32::MAX),
         }
-        Self { min, max }
+    }
+
+    pub fn take_point(&mut self, point: Vec3) {
+        self.min = self.min.min(point);
+        self.max = self.max.max(point);
+    }
+
+    pub fn from_points(points: &[Vec3]) -> Self {
+        let mut aabb = Self::new_invalid();
+        for &point in points {
+            aabb.take_point(point);
+        }
+        aabb
     }
 
     fn radius(&self) -> f32 {

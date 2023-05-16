@@ -4,8 +4,9 @@ use ambient_core::{
     hierarchy::children,
     name,
     transform::{
-        fbx_complex_transform, fbx_post_rotation, fbx_pre_rotation, fbx_rotation_offset, fbx_rotation_pivot, fbx_scaling_offset,
-        fbx_scaling_pivot, local_to_parent, local_to_world, mesh_to_local, rotation, scale, translation,
+        fbx_complex_transform, fbx_post_rotation, fbx_pre_rotation, fbx_rotation_offset,
+        fbx_rotation_pivot, fbx_scaling_offset, fbx_scaling_pivot, local_to_parent, local_to_world,
+        mesh_to_local, rotation, scale, translation,
     },
 };
 use ambient_ecs::{Entity, EntityId, World};
@@ -51,11 +52,23 @@ pub struct FbxModel {
 impl FbxModel {
     pub fn from_node(node: NodeHandle) -> Self {
         let id = node.attributes()[0].get_i64().unwrap();
-        let node_name = node.attributes()[1].get_string().unwrap().split('\u{0}').next().unwrap().to_string();
+        let node_name = node.attributes()[1]
+            .get_string()
+            .unwrap()
+            .split('\u{0}')
+            .next()
+            .unwrap()
+            .to_string();
 
         let double_sided = node
             .children()
-            .find_map(|node| if node.name() == "Culling" { Some(node.attributes()[0].get_string().unwrap() == "CullingOff") } else { None })
+            .find_map(|node| {
+                if node.name() == "Culling" {
+                    Some(node.attributes()[0].get_string().unwrap() == "CullingOff")
+                } else {
+                    None
+                }
+            })
             .unwrap_or(false);
 
         let mut model = Self {
@@ -87,7 +100,10 @@ impl FbxModel {
             local_to_model: Mat4::IDENTITY,
             geometry_to_model: Mat4::IDENTITY,
         };
-        let props = node.children().find(|node| node.name() == "Properties70").unwrap();
+        let props = node
+            .children()
+            .find(|node| node.name() == "Properties70")
+            .unwrap();
         for prop in props.children() {
             let prop_type = prop.attributes()[0].get_string().unwrap();
             match prop_type {
@@ -124,7 +140,9 @@ impl FbxModel {
         asset_crate: &ModelCrate,
         n_meshes: &HashMap<i64, usize>,
     ) {
-        let mut out_node = Entity::new().with(name(), self.node_name.to_string()).with_default(children());
+        let mut out_node = Entity::new()
+            .with(name(), self.node_name.to_string())
+            .with_default(children());
         if self.double_sided {
             out_node.set(double_sided(), true);
         }
@@ -135,10 +153,16 @@ impl FbxModel {
         if let Some(value) = self.rotation_pivot {
             out_node.set(fbx_rotation_pivot(), value);
         }
-        if let Some(value) = self.pre_rotation.map(|r| Quat::from_euler(EulerRot::ZYX, r.z, r.y, r.x)) {
+        if let Some(value) = self
+            .pre_rotation
+            .map(|r| Quat::from_euler(EulerRot::ZYX, r.z, r.y, r.x))
+        {
             out_node.set(fbx_pre_rotation(), value);
         }
-        if let Some(value) = self.post_rotation.map(|r| Quat::from_euler(EulerRot::ZYX, r.z, r.y, r.x)) {
+        if let Some(value) = self
+            .post_rotation
+            .map(|r| Quat::from_euler(EulerRot::ZYX, r.z, r.y, r.x))
+        {
             out_node.set(fbx_post_rotation(), value);
         }
         if let Some(value) = self.scaling_offset {
@@ -153,7 +177,13 @@ impl FbxModel {
 
         // Need to give these values since they might be animated
         out_node.set(translation(), self.translation.unwrap_or(Vec3::ZERO));
-        out_node.set(rotation(), self.rotation.or(Some(Vec3::ZERO)).map(|r| Quat::from_euler(EulerRot::ZYX, r.z, r.y, r.x)).unwrap());
+        out_node.set(
+            rotation(),
+            self.rotation
+                .or(Some(Vec3::ZERO))
+                .map(|r| Quat::from_euler(EulerRot::ZYX, r.z, r.y, r.x))
+                .unwrap(),
+        );
         out_node.set(scale(), self.scaling.unwrap_or(Vec3::ONE));
         out_node.set(local_to_world(), Default::default());
         if self.parent.is_some() {
@@ -161,27 +191,44 @@ impl FbxModel {
         }
 
         if !self.geometries.is_empty() {
-            assert_eq!(self.geometries.len(), 1, "FbxNodes are currently expected to only have one FbxGeometry");
+            assert_eq!(
+                self.geometries.len(),
+                1,
+                "FbxNodes are currently expected to only have one FbxGeometry"
+            );
             let geo = self.geometries[0];
             if let Some(n_meshes) = n_meshes.get(&geo) {
                 let prims = (0..*n_meshes)
                     .map(|mi| PbrRenderPrimitiveFromUrl {
-                        mesh: dotdot_path(asset_crate.meshes.loc.path(format!("{geo}_{mi}"))).into(),
-                        material: self.materials.get(mi).map(|x| dotdot_path(asset_crate.materials.loc.path(x.to_string())).into()),
+                        mesh: dotdot_path(asset_crate.meshes.loc.path(format!("{geo}_{mi}")))
+                            .into(),
+                        material: self.materials.get(mi).map(|x| {
+                            dotdot_path(asset_crate.materials.loc.path(x.to_string())).into()
+                        }),
                         lod: 0,
                     })
                     .collect_vec();
                 out_node.set(pbr_renderer_primitives_from_url(), prims);
             }
-            if let Some(skin) = doc.geometries.get(&geo).and_then(|geo| geo.skin).and_then(|id| doc.skins.get_index_of(&id)) {
+            if let Some(skin) = doc
+                .geometries
+                .get(&geo)
+                .and_then(|geo| geo.skin)
+                .and_then(|id| doc.skins.get_index_of(&id))
+            {
                 out_node.set(model_skin_ix(), skin);
             }
-            if self.geometric_translation.is_some() || self.geometric_rotation.is_some() || self.geometric_scale.is_some() {
+            if self.geometric_translation.is_some()
+                || self.geometric_rotation.is_some()
+                || self.geometric_scale.is_some()
+            {
                 out_node.set(
                     mesh_to_local(),
                     Mat4::from_scale_rotation_translation(
                         self.geometric_scale.unwrap_or(Vec3::ONE),
-                        self.geometric_rotation.map(|rot| Quat::from_euler(EulerRot::XYZ, rot.x, rot.y, rot.z)).unwrap_or(Quat::IDENTITY),
+                        self.geometric_rotation
+                            .map(|rot| Quat::from_euler(EulerRot::XYZ, rot.x, rot.y, rot.z))
+                            .unwrap_or(Quat::IDENTITY),
                         self.geometric_translation.unwrap_or(Vec3::ZERO),
                     ),
                 );

@@ -408,9 +408,9 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                         };
                         match process_result {
                             Ok(BrushAction::Draw(vertices)) => {
-                                let cpu_mesh = mesh_from_glyph_vertices(vertices);
                                 let mut data = Entity::new();
-                                if use_gpu {
+                                if use_gpu && !vertices.is_empty() {
+                                    let cpu_mesh = mesh_from_glyph_vertices(vertices);
                                     data.set(mesh(), GpuMesh::from_mesh(&assets, &cpu_mesh));
                                 }
                                 world.add_components(id, data).unwrap();
@@ -485,6 +485,7 @@ pub struct GlyphVertex {
 }
 
 fn mesh_from_glyph_vertices(vertices: Vec<GlyphVertex>) -> Mesh {
+    assert!(vertices.len() > 0);
     let mut positions = Vec::new();
     let mut texcoords = Vec::new();
     let mut normals = Vec::new();
@@ -514,14 +515,15 @@ fn mesh_from_glyph_vertices(vertices: Vec<GlyphVertex>) -> Mesh {
         indices.push(offset + 3);
         indices.push(offset + 2);
     }
-    Mesh {
-        name: "GlyphMesh".to_string(),
+    MeshBuilder {
         positions,
         texcoords: vec![texcoords],
-        normals: Some(normals),
+        normals,
         indices,
-        ..Default::default()
+        ..MeshBuilder::default()
     }
+    .build()
+    .expect("Invalid glyph mesh")
 }
 
 #[derive(Debug, Clone)]

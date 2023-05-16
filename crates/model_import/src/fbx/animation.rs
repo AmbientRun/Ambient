@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use ambient_animation::{animation_bind_id_from_name, AnimationClip, AnimationOutputs, AnimationTarget, AnimationTrack, Vec3Field};
+use ambient_animation::{
+    animation_bind_id_from_name, AnimationClip, AnimationOutputs, AnimationTarget, AnimationTrack,
+    Vec3Field,
+};
 use ambient_core::transform::{euler_rotation, scale, translation};
 use fbxcel::tree::v7400::NodeHandle;
 use itertools::Itertools;
@@ -32,14 +35,22 @@ pub fn get_animations(doc: &FbxDoc) -> HashMap<String, AnimationClip> {
                                         let curve = doc.animation_curves.get(curve_id).unwrap();
                                         let node = doc.models.get(output_id).unwrap();
                                         let track = AnimationTrack {
-                                            target: AnimationTarget::BinderId(animation_bind_id_from_name(&node.node_name)),
-                                            inputs: curve.key_time.iter().map(|time| *time as f32 / FBX_TIME).collect(), // TODO
+                                            target: AnimationTarget::BinderId(
+                                                animation_bind_id_from_name(&node.node_name),
+                                            ),
+                                            inputs: curve
+                                                .key_time
+                                                .iter()
+                                                .map(|time| *time as f32 / FBX_TIME)
+                                                .collect(), // TODO
                                             outputs: AnimationOutputs::Vec3Field {
                                                 component: match property as &str {
                                                     "Lcl Translation" => translation(),
                                                     "Lcl Scaling" => scale(),
                                                     "Lcl Rotation" => euler_rotation(),
-                                                    _ => panic!("Unsupported target property: {property}"),
+                                                    _ => panic!(
+                                                        "Unsupported target property: {property}"
+                                                    ),
                                                 },
                                                 field: match field as &str {
                                                     "d|X" => Vec3Field::X,
@@ -48,7 +59,11 @@ pub fn get_animations(doc: &FbxDoc) -> HashMap<String, AnimationClip> {
                                                     _ => panic!("Unsupported field: {field}"),
                                                 },
                                                 data: match property as &str {
-                                                    "Lcl Rotation" => curve.key_value_float.iter().map(|v| v.to_radians()).collect(),
+                                                    "Lcl Rotation" => curve
+                                                        .key_value_float
+                                                        .iter()
+                                                        .map(|v| v.to_radians())
+                                                        .collect(),
                                                     _ => curve.key_value_float.clone(),
                                                 },
                                             },
@@ -78,13 +93,18 @@ pub fn get_animations(doc: &FbxDoc) -> HashMap<String, AnimationClip> {
                                     .curve_nodes
                                     .iter()
                                     .flat_map(|curve_node_id| {
-                                        let curve_node = doc.animation_curve_nodes.get(curve_node_id).unwrap();
+                                        let curve_node =
+                                            doc.animation_curve_nodes.get(curve_node_id).unwrap();
                                         curve_node
                                             .curves
                                             .iter()
                                             .flat_map(|(_field, curve_id)| {
-                                                let curve = doc.animation_curves.get(curve_id).unwrap();
-                                                curve.key_time.last().map(|x| OrderedFloat(*x as f32 / FBX_TIME))
+                                                let curve =
+                                                    doc.animation_curves.get(curve_id).unwrap();
+                                                curve
+                                                    .key_time
+                                                    .last()
+                                                    .map(|x| OrderedFloat(*x as f32 / FBX_TIME))
                                             })
                                             .max()
                                     })
@@ -114,20 +134,41 @@ pub struct FbxAnimationStack {
 impl FbxAnimationStack {
     pub fn from_node(node: NodeHandle) -> Self {
         let id = node.attributes()[0].get_i64().unwrap();
-        let name = node.attributes()[1].get_string().unwrap().split('\u{0}').next().unwrap();
-        let name = if name.contains('|') { name.split('|').nth(1).unwrap().to_string() } else { name.to_string() };
+        let name = node.attributes()[1]
+            .get_string()
+            .unwrap()
+            .split('\u{0}')
+            .next()
+            .unwrap();
+        let name = if name.contains('|') {
+            name.split('|').nth(1).unwrap().to_string()
+        } else {
+            name.to_string()
+        };
         let props = node.children().find(|node| node.name() == "Properties70");
         let mut local_stop = None;
         let mut local_start = None;
         if let Some(props) = props {
-            if let Some(local_stop_node) = props.children().find(|node| node.attributes()[0].get_string().unwrap() == "LocalStop") {
+            if let Some(local_stop_node) = props
+                .children()
+                .find(|node| node.attributes()[0].get_string().unwrap() == "LocalStop")
+            {
                 local_stop = Some(local_stop_node.attributes()[4].get_i64().unwrap());
             }
-            if let Some(local_start_node) = props.children().find(|node| node.attributes()[0].get_string().unwrap() == "LocalStart") {
+            if let Some(local_start_node) = props
+                .children()
+                .find(|node| node.attributes()[0].get_string().unwrap() == "LocalStart")
+            {
                 local_start = Some(local_start_node.attributes()[4].get_i64().unwrap());
             }
         }
-        Self { id, name, local_stop, local_start, layers: Vec::new() }
+        Self {
+            id,
+            name,
+            local_stop,
+            local_start,
+            layers: Vec::new(),
+        }
     }
 }
 #[derive(Debug)]
@@ -143,7 +184,11 @@ pub struct FbxAnimationCurveNode {
 impl FbxAnimationCurveNode {
     pub fn from_node(node: NodeHandle) -> Self {
         let id = node.attributes()[0].get_i64().unwrap();
-        Self { id, curves: HashMap::new(), outputs: Vec::new() }
+        Self {
+            id,
+            curves: HashMap::new(),
+            outputs: Vec::new(),
+        }
     }
 }
 #[derive(Debug)]
@@ -155,12 +200,21 @@ pub struct FbxAnimationCurve {
 impl FbxAnimationCurve {
     pub fn from_node(node: NodeHandle) -> Self {
         let id = node.attributes()[0].get_i64().unwrap();
-        let key_time = node.children().find(|node| node.name() == "KeyTime").unwrap();
-        let key_value_float = node.children().find(|node| node.name() == "KeyValueFloat").unwrap();
+        let key_time = node
+            .children()
+            .find(|node| node.name() == "KeyTime")
+            .unwrap();
+        let key_value_float = node
+            .children()
+            .find(|node| node.name() == "KeyValueFloat")
+            .unwrap();
         Self {
             id,
             key_time: key_time.attributes()[0].get_arr_i64().unwrap().to_vec(),
-            key_value_float: key_value_float.attributes()[0].get_arr_f32().unwrap().to_vec(),
+            key_value_float: key_value_float.attributes()[0]
+                .get_arr_f32()
+                .unwrap()
+                .to_vec(),
         }
     }
 }

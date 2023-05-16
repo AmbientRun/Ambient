@@ -60,5 +60,20 @@
     },
     "test": {
         "cmd": "cargo nextest run --workspace"
+    },
+    "client-spatial": {
+        "cmd": [
+            "cargo",
+            "build",
+            "--message-format=json",
+            "--package",
+            "ambient_world_audio",
+            "--example",
+            "client_spatial",
+            "--"
+        ],
+        "components": {
+            "cargo-dap": {}
+        }
     }
 }

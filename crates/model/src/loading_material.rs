@@ -4,7 +4,9 @@ use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
 };
-use ambient_renderer::{Material, MaterialShader, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP};
+use ambient_renderer::{
+    Material, MaterialShader, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP,
+};
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     friendly_id, include_file,
@@ -16,7 +18,11 @@ fn get_loading_layout() -> BindGroupDesc<'static> {
         entries: vec![wgpu::BindGroupLayoutEntry {
             binding: 0,
             visibility: wgpu::ShaderStages::FRAGMENT,
-            ty: wgpu::BindingType::Buffer { ty: wgpu::BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
             count: None,
         }],
         label: MATERIAL_BIND_GROUP.into(),
@@ -31,7 +37,8 @@ impl SyncAssetKey<Arc<MaterialShader>> for LoadingShaderKey {
         Arc::new(MaterialShader {
             id: "loading_material_shader".to_string(),
             shader: Arc::new(
-                ShaderModule::new("LoadingMaterial", include_file!("loading_material.wgsl")).with_binding_desc(get_loading_layout()),
+                ShaderModule::new("LoadingMaterial", include_file!("loading_material.wgsl"))
+                    .with_binding_desc(get_loading_layout()),
             ),
         })
     }
@@ -65,17 +72,22 @@ impl LoadingMaterial {
         let gpu = GpuKey.get(&assets);
         let layout = get_loading_layout().get(&assets);
 
-        let buffer = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("FlatMaterial.buffer"),
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-            contents: bytemuck::cast_slice(&[params]),
-        });
+        let buffer = gpu
+            .device
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("FlatMaterial.buffer"),
+                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+                contents: bytemuck::cast_slice(&[params]),
+            });
 
         Self {
             id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
                 layout: &layout,
-                entries: &[wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::Buffer(buffer.as_entire_buffer_binding()) }],
+                entries: &[wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::Buffer(buffer.as_entire_buffer_binding()),
+                }],
                 label: Some("LoadingMaterial.bind_group"),
             }),
             buffer,

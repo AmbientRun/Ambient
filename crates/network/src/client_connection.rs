@@ -61,10 +61,10 @@ impl crate::connection::Connection for ClientConnection {
         }
     }
 
-    async fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError> {
+    fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError> {
         match self {
             ClientConnection::Direct(conn) => Ok(conn.send_datagram(data)?),
-            ClientConnection::Proxied(conn) => Ok(conn.send_datagram(data).await?),
+            ClientConnection::Proxied(conn) => Ok(conn.send_datagram(data)?),
         }
     }
 }

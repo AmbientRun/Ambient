@@ -11,7 +11,7 @@ pub trait Connection: Clone + Send + Sync {
     async fn accept_uni(&self) -> Result<RecvStream, NetworkError>;
     async fn accept_bi(&self) -> Result<(SendStream, RecvStream), NetworkError>;
     async fn read_datagram(&self) -> Result<Bytes, NetworkError>;
-    async fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError>;
+    fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError>;
 }
 
 #[async_trait]
@@ -36,7 +36,7 @@ impl Connection for quinn::Connection {
         Ok(self.read_datagram().await?)
     }
 
-    async fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError> {
+    fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError> {
         Ok(self.send_datagram(data)?)
     }
 }

@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-use ambient_std::mesh::Mesh;
+use ambient_std::mesh::{generate_tangents, Mesh, MeshBuilder};
 use glam::*;
 
 #[derive(Debug, Clone)]
@@ -141,17 +141,17 @@ impl From<&PyramidMesh> for Mesh {
             indices.push(6 + i * 3 + 2);
             indices.push(6 + i * 3 + 1);
         }
-
-        let mut mesh = Mesh {
-            name: "pyramid".into(),
+        let tangents = generate_tangents(&positions, &texcoords, &indices);
+        MeshBuilder {
             positions,
-            colors: Some(colors),
-            normals: Some(normals),
+            colors,
+            normals,
             texcoords: vec![texcoords],
+            tangents,
             indices,
-            ..Default::default()
-        };
-        mesh.create_tangents();
-        mesh
+            ..MeshBuilder::default()
+        }
+        .build()
+        .expect("Invalid pyramid mesh")
     }
 }
