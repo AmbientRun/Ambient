@@ -67,8 +67,8 @@ impl ConnectionKind {
     #[inline]
     pub fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError> {
         match self {
-            ConnectionInner::Direct(conn) => Ok(conn.send_datagram(data)?),
-            ConnectionInner::Proxied(conn) => Ok(conn.send_datagram(data)?),
+            ConnectionKind::Direct(conn) => Ok(conn.send_datagram(data)?),
+            ConnectionKind::Proxied(conn) => Ok(conn.send_datagram(data)?),
         }
     }
 }

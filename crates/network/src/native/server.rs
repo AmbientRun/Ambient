@@ -66,7 +66,7 @@ impl GameServer {
 
         let endpoint = create_server(server_addr, crypto)?;
 
-        log::debug!("GameServer listening on port {}", port);
+        tracing::debug!("GameServer listening on port {}", port);
         Ok(Self {
             endpoint,
             port,
@@ -93,7 +93,7 @@ impl GameServer {
                     return Ok(server);
                 }
                 Err(_err) => {
-                    log::warn!("Failed to create server on port {}", port);
+                    tracing::warn!("Failed to create server on port {}", port);
                 }
             }
         }
@@ -161,18 +161,18 @@ impl GameServer {
             tracing::trace_span!("Listening for incoming connections");
             tokio::select! {
                 Some(conn) = endpoint.accept() => {
-                    log::debug!("Received connection");
+                    tracing::debug!("Received connection");
 
                     let conn = match conn.await {
                         Ok(v) => v,
                         Err(e) => {
-                            log::error!("Failed to accept incoming connection. {e}");
+                            tracing::error!("Failed to accept incoming connection. {e}");
                             continue;
                         }
                     };
 
 
-                    log::debug!("Accepted connection");
+                    tracing::debug!("Accepted connection");
                     let fut = handle_quinn_connection(conn.into(), state.clone(), world_stream_filter.clone(), ServerBaseUrlKey.get(&assets));
                     tokio::spawn(async move {  log_result!(fut.await) });
                 }
@@ -195,7 +195,7 @@ impl GameServer {
                 _ = inactivity_interval.tick(), if self.use_inactivity_shutdown => {
                     if state.lock().player_count() == 0 {
                         if Instant::now().duration_since(last_active).as_secs_f32() > 2. * 60. {
-                            log::info!("[{}] Shutting down due to inactivity", self.port);
+                            tracing::info!("[{}] Shutting down due to inactivity", self.port);
                             break;
                         }
                     } else {
@@ -203,12 +203,12 @@ impl GameServer {
                     }
                 }
                 else => {
-                    log::info!("No more connections. Shutting down.");
+                    tracing::info!("No more connections. Shutting down.");
                     break
                 }
             }
         }
-        log::debug!("[{}] GameServer shutting down", self.port);
+        tracing::debug!("[{}] GameServer shutting down", self.port);
         {
             let mut state = state.lock();
             let create_shutdown_systems = state.create_shutdown_systems.clone();
@@ -217,7 +217,7 @@ impl GameServer {
                 sys.run(&mut instance.world, &ShutdownEvent);
             }
         }
-        log::debug!("[{}] GameServer finished shutting down", self.port);
+        tracing::debug!("[{}] GameServer finished shutting down", self.port);
         state
     }
 }
@@ -282,7 +282,7 @@ async fn handle_quinn_connection(
         }
     }
 
-    tracing::debug!("Performing additional on connect logic after the fact");
+    tracing::debug!("Performing additional on connect tracingic after the fact");
 
     tokio::spawn(handle_diffs(
         stream::SendStream::new(conn.open_uni().await?),
@@ -336,9 +336,9 @@ async fn start_proxy_connection(
                       assets_root,
                       ..
                   }: AllocatedEndpoint| {
-                log::debug!("Allocated proxy endpoint. Allocation id: {}", id);
-                log::info!("Proxy sees this server as {}", external_endpoint);
-                log::info!(
+                tracing::debug!("Allocated proxy endpoint. Allocation id: {}", id);
+                tracing::info!("Proxy sees this server as {}", external_endpoint);
+                tracing::info!(
                     "Proxy allocated an endpoint, use `{}` to join",
                     format!("ambient join {}", allocated_endpoint).bright_green()
                 );
@@ -346,11 +346,11 @@ async fn start_proxy_connection(
                 // set the content base url to point to proxy provided value
                 match AbsAssetUrl::parse(&assets_root) {
                     Ok(url) => {
-                        log::debug!("Got content base root from proxy: {}", url);
+                        tracing::debug!("Got content base root from proxy: {}", url);
                         *content_base_url.write() = url;
                     }
                     Err(err) => {
-                        log::warn!("Failed to parse assets root url ({}): {}", assets_root, err)
+                        tracing::warn!("Failed to parse assets root url ({}): {}", assets_root, err)
                     }
                 }
             },
@@ -392,27 +392,27 @@ async fn start_proxy_connection(
         builder.assets_root_override(content_base_url.read().to_string())
     };
 
-    log::info!("Connecting to proxy server");
+    tracing::info!("Connecting to proxy server");
     let proxy = match builder.build().await {
         Ok(proxy_client) => proxy_client,
         Err(err) => {
-            log::warn!("Failed to connect to proxy: {}", err);
+            tracing::warn!("Failed to connect to proxy: {}", err);
             return;
         }
     };
 
     // start and allocate endpoint
     let mut controller = proxy.start(on_endpoint_allocated, on_player_connected);
-    log::info!("Allocating proxy endpoint");
+    tracing::info!("Allocating proxy endpoint");
     if let Err(err) = controller.allocate_endpoint().await {
-        log::warn!("Failed to allocate proxy endpoint: {}", err);
+        tracing::warn!("Failed to allocate proxy endpoint: {}", err);
     }
 
     // pre-cache "assets" subdirectory
     if settings.pre_cache_assets {
         for subdir in ["assets", "client"] {
             if let Err(err) = controller.pre_cache_assets(subdir) {
-                log::warn!("Failed to pre-cache assets: {}", err);
+                tracing::warn!("Failed to pre-cache assets: {}", err);
             }
         }
     }
