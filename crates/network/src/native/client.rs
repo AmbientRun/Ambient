@@ -370,7 +370,7 @@ pub fn create_client_endpoint_random_port(cert_file: Option<PathBuf>) -> anyhow:
                 .with_safe_default_kx_groups()
                 .with_protocol_versions(&[&rustls::version::TLS13])
                 .unwrap()
-                .with_root_certificates(load_native_roots())
+                .with_root_certificates(roots)
                 .with_no_client_auth();
 
             // tls_config.enable_early_data = true;
