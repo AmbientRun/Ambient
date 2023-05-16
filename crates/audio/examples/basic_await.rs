@@ -1,7 +1,7 @@
 use ambient_audio::{AudioStream, SineWave, Source};
 use ambient_sys::time::Instant;
 use std::time::Duration;
-use tokio::{join, time::sleep};
+use tokio::join;
 
 #[tokio::main]
 async fn main() {

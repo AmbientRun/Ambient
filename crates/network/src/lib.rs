@@ -1,22 +1,11 @@
 use ambient_ecs::{
     query, Component, ComponentValue, EntityId, Networked, Serializable, Store, World,
 };
-use serde::de::DeserializeOwned;
-use std::{
-    io::ErrorKind,
-    net::{IpAddr, Ipv4Addr, SocketAddr},
-    sync::Arc,
-    time::Duration,
-};
+use std::io::ErrorKind;
 use stream::FrameError;
 
 use ambient_rpc::RpcError;
 use ambient_std::log_error;
-use quinn::{
-    ClientConfig, ConnectionClose, ConnectionError::ConnectionClosed, Endpoint, TransportConfig,
-};
-use rand::Rng;
-use rustls::RootCertStore;
 use thiserror::Error;
 
 pub use ambient_ecs::generated::components::core::network::{
@@ -167,11 +156,9 @@ impl NetworkError {
             Self::ConnectionClosed => true,
             // The connection was closed automatically,
             // for example by dropping the [`quinn::Connection`]
-            Self::ConnectionError(ConnectionClosed(ConnectionClose { error_code, .. }))
-                if u64::from(*error_code) == 0 =>
-            {
-                true
-            }
+            Self::ConnectionError(quinn::ConnectionError::ConnectionClosed(
+                quinn::ConnectionClose { error_code, .. },
+            )) if u64::from(*error_code) == 0 => true,
             Self::IOError(err) if matches!(err.kind(), ErrorKind::ConnectionReset) => true,
             _ => false,
         }
@@ -184,66 +171,6 @@ impl NetworkError {
     pub fn is_end_of_stream(&self) -> bool {
         matches!(self, Self::EndOfStream)
     }
-}
-
-#[tracing::instrument(level = "info")]
-fn load_native_roots() -> RootCertStore {
-    tracing::info!("Loading native roots");
-    let mut roots = rustls::RootCertStore::empty();
-    match rustls_native_certs::load_native_certs() {
-        Ok(certs) => {
-            for cert in certs {
-                let cert = rustls::Certificate(cert.0);
-                if let Err(e) = roots.add(&cert) {
-                    tracing::error!(?cert, "Failed to parse trust anchor: {}", e);
-                }
-            }
-        }
-
-        Err(e) => {
-            tracing::error!("Failed load any default trust roots: {}", e);
-        }
-    };
-
-    roots
-}
-
-pub fn create_client_endpoint_random_port() -> Option<Endpoint> {
-    for _ in 0..10 {
-        let client_port = {
-            let mut rng = rand::thread_rng();
-            rng.gen_range(15000..25000)
-        };
-        let client_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), client_port);
-
-        if let Ok(mut endpoint) = Endpoint::client(client_addr) {
-            let mut tls_config = rustls::ClientConfig::builder()
-                .with_safe_default_cipher_suites()
-                .with_safe_default_kx_groups()
-                .with_protocol_versions(&[&rustls::version::TLS13])
-                .unwrap()
-                .with_root_certificates(load_native_roots())
-                .with_no_client_auth();
-
-            // tls_config.enable_early_data = true;
-            tls_config.alpn_protocols = vec!["ambient-02".into()];
-
-            let mut transport = TransportConfig::default();
-            transport.keep_alive_interval(Some(Duration::from_secs_f32(1.)));
-
-            if std::env::var("AMBIENT_DISABLE_TIMEOUT").is_ok() {
-                transport.max_idle_timeout(None);
-            } else {
-                transport.max_idle_timeout(Some(Duration::from_secs_f32(60.).try_into().unwrap()));
-            }
-            let mut client_config = ClientConfig::new(Arc::new(tls_config));
-            client_config.transport_config(Arc::new(transport));
-
-            endpoint.set_default_client_config(client_config);
-            return Some(endpoint);
-        }
-    }
-    None
 }
 
 #[macro_export]

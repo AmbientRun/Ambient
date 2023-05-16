@@ -48,7 +48,7 @@ pub fn main() {
         let elapsed = time();
         for (id, _) in sun {
             entity::mutate_component(id, rotation(), |x| {
-                *x = Quat::from_axis_angle(vec3(0.0, 1.0, 0.2).normalize(), elapsed * 0.1)
+                *x = Quat::from_axis_angle(vec3(0.0, 1.0, 0.5).normalize(), elapsed * 0.1)
             })
             .unwrap();
         }
