@@ -87,6 +87,10 @@ pub struct RunCli {
     /// The user ID to join this server with
     #[clap(short, long)]
     pub user_id: Option<String>,
+
+    /// Specify a trusted certificate authority
+    #[arg(long, default_value = "./localhost.crt")]
+    pub ca: Option<PathBuf>,
 }
 
 #[derive(Args, Clone, Debug)]

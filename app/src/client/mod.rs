@@ -65,6 +65,7 @@ pub async fn run(
                 show_debug: is_debug,
                 golden_image_test: run.golden_image_test,
                 golden_image_output_dir,
+                ca_file: run.ca.clone(),
             }
             .el()
             .spawn_interactive(&mut app.world);
@@ -105,6 +106,7 @@ fn MainApp(
     user_id: String,
     show_debug: bool,
     golden_image_test: Option<f32>,
+    ca_file: Option<PathBuf>,
 ) -> Element {
     let (loaded, set_loaded) = hooks.use_state(false);
 
@@ -150,6 +152,7 @@ fn MainApp(
 
                 (systems(), resources)
             }),
+            ca_file,
             create_rpc_registry: cb(shared::create_server_rpc_registry),
             inner: Dock::el(vec![
                 TitleUpdater.el(),
