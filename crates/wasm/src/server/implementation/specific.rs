@@ -235,6 +235,30 @@ impl wit::server_physics::Host for Bindings {
             }),
         }
     }
+
+    fn set_character_position(
+        &mut self,
+        entity: wit::types::EntityId,
+        position: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        self
+            .world()
+            .get(entity.from_bindgen(), character_controller())?.set_position(position.from_bindgen().as_dvec3());
+        Ok(())
+    }
+
+
+    fn set_character_foot_position(
+        &mut self,
+        entity: wit::types::EntityId,
+        position: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        self
+            .world()
+            .get(entity.from_bindgen(), character_controller())?.set_foot_position(position.from_bindgen().as_dvec3());
+        Ok(())
+    }
+
 }
 
 impl wit::server_message::Host for Bindings {
