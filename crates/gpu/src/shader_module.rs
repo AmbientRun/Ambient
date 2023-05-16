@@ -1,6 +1,7 @@
 use std::{
     borrow::Cow,
     collections::{btree_map, BTreeMap},
+    ops::Deref,
     sync::Arc,
 };
 
@@ -443,6 +444,7 @@ impl Shader {
 
         GraphicsPipeline {
             pipeline,
+            name: self.label.deref().into(),
             shader: self.clone(),
         }
     }
@@ -468,6 +470,7 @@ impl Shader {
         ComputePipeline {
             pipeline,
             shader: self.clone(),
+            name: self.label.deref().into(),
         }
     }
 }
@@ -503,6 +506,7 @@ pub type ComputePipeline = Pipeline<wgpu::ComputePipeline>;
 pub struct Pipeline<P> {
     pipeline: P,
     shader: Arc<Shader>,
+    name: String,
 }
 
 impl<P> Pipeline<P> {
@@ -515,6 +519,10 @@ impl<P> Pipeline<P> {
     #[must_use]
     pub fn shader(&self) -> &Shader {
         self.shader.as_ref()
+    }
+
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
     }
 }
 

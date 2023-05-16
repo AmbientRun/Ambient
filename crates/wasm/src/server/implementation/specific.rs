@@ -307,14 +307,14 @@ fn send_networked(
         .filter(|(_, (uid, _))| {
             target_user_id
                 .as_ref()
-                .map(|tuid| tuid == *uid)
+                .map(|target_uid| target_uid == *uid)
                 .unwrap_or(true)
         })
         .map(|(_, (_, connection))| connection.clone())
         .collect();
 
-    for connection in connections {
-        message::send_networked(world, connection, module_id, &name, &data, reliable)?;
+    for conn in connections {
+        message::send_networked(world, conn, module_id, &name, &data, reliable)?;
     }
 
     Ok(())

@@ -43,7 +43,6 @@ once_cell = { workspace = true }
 parking_lot = { workspace = true }
 paste = { workspace = true }
 ambient_profiling = { workspace = true }
-quinn = { workspace = true }
 reqwest = { workspace = true }
 serde_bytes = { workspace = true }
 serde_json = { workspace = true }

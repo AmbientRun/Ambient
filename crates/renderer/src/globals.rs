@@ -307,6 +307,7 @@ impl ForwardGlobals {
             })
     }
 
+    #[tracing::instrument(level = "debug", skip_all, fields(scene = ?self.scene, user = ?world.resource_opt(local_user_id())))]
     pub fn update(&mut self, world: &World, shadow_cameras: &[ShadowCameraData]) {
         let mut p = &mut self.params;
         if let Some(id) = get_active_camera(world, self.scene, world.resource_opt(local_user_id()))
@@ -321,7 +322,14 @@ impl ForwardGlobals {
             p.camera_far = world.get(id, far()).unwrap_or(1e3);
             p.fog = world.has_component(id, fog()) as i32;
             p.forward_camera_position = p.camera_position;
+            tracing::debug!(
+                "Found active camera for {} {} {}",
+                world.name(),
+                p.projection_view,
+                p.camera_position
+            );
         }
+
         if let Some(sun) = get_active_sun(world, self.scene) {
             fn update<T, U>(out: &mut T, input: Result<U, ECSError>, mapper: impl Fn(U) -> T) {
                 if let Ok(value) = input {

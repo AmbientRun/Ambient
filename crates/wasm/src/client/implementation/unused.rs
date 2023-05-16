@@ -138,6 +138,6 @@ impl wit::server_message::Host for Bindings {
         _: String,
         _: Vec<u8>,
     ) -> anyhow::Result<()> {
-        todo!()
+        unimplemented!()
     }
 }

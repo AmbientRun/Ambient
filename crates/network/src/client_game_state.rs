@@ -25,13 +25,14 @@ use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
 use ambient_world_audio::systems::{spatial_audio_systems, setup_audio};
 
 use ambient_core::player::{player, user_id};
+use tracing::debug_span;
 
 components!("rendering", {
     game_screen_render_target: Arc<RenderTarget>,
 });
 
 #[derive(Debug)]
-/// Holds the physical world
+/// Holds the material world of the client.
 pub struct ClientGameState {
     pub world: World,
     systems: SystemGroup,
@@ -39,7 +40,7 @@ pub struct ClientGameState {
     gpu_world_sync_systems: SystemGroup<GpuWorldSyncEvent>,
     pub renderer: Renderer,
     pub ui_renderer: Renderer,
-    assets: AssetCache,
+    pub(crate) assets: AssetCache,
     user_id: String,
 }
 struct TempSystem(Box<dyn FnMut(&mut World) -> bool + Sync + Send>);
@@ -110,6 +111,13 @@ impl ClientGameState {
     }
     #[ambient_profiling::function]
     pub fn on_frame(&mut self, target: &RenderTarget) {
+        let _span = debug_span!("ClientGameState.on_frame").entered();
+        let mut s = Vec::new();
+        self.world.dump(&mut s);
+        let s = String::from_utf8(s).unwrap();
+
+        tracing::trace!("{s}");
+
         self.world.next_frame();
         self.systems.run(&mut self.world, &FrameEvent);
         self.temporary_systems
@@ -124,6 +132,7 @@ impl ClientGameState {
                 label: Some("GameState.render"),
             });
         let mut post_submit = Vec::new();
+        tracing::debug!("Drawing world");
         self.renderer.render(
             &mut self.world,
             &mut encoder,
@@ -131,6 +140,7 @@ impl ClientGameState {
             RendererTarget::Target(target),
             Some(Color::rgba(0., 0., 0., 1.)),
         );
+        tracing::debug!("Drawing ui");
         self.ui_renderer.render(
             &mut self.world,
             &mut encoder,
