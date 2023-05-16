@@ -45,9 +45,9 @@ pub struct CustomMaterial {
     bind_group: wgpu::BindGroup,
 }
 impl CustomMaterial {
-    pub fn new(assets: AssetCache) -> Self {
-        let gpu = GpuKey.get(&assets);
-        let layout = get_custom_material_layout().get(&assets);
+    pub fn new(assets: &AssetCache) -> Self {
+        let gpu = GpuKey.get(assets);
+        let layout = get_custom_material_layout().get(assets);
 
         Self {
             id: friendly_id(),
@@ -88,11 +88,11 @@ async fn init(app: &mut App) {
                 .get(assets)
         }),
     );
-    set_component_recursive(world, entity, material(), SharedMaterial::new(CustomMaterial::new(assets.clone())));
+    set_component_recursive(world, entity, material(), SharedMaterial::new(CustomMaterial::new(&assets)));
     // world.add_component(entity, rotation(), glam::Quat::from_rotation_x(std::f32::consts::PI / 2.)).unwrap();
     // world.set(entity, animation_controller(), AnimationController::looping("Walk")).unwrap();
 
-    let grey = FlatMaterial::new(assets.clone(), vec4(0.5, 0.5, 0.5, 1.), Some(false));
+    let grey = FlatMaterial::new(&assets, vec4(0.5, 0.5, 0.5, 1.), Some(false));
 
     Entity::new()
         .with(mesh(), QuadMeshKey.get(&assets))

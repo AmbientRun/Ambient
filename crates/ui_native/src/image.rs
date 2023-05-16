@@ -10,7 +10,9 @@ use ambient_gpu::{
 use ambient_meshes::UIRectMeshKey;
 use ambient_renderer::{
     color, gpu_primitives_lod, gpu_primitives_mesh, material,
-    materials::pbr_material::{get_pbr_shader_unlit, PbrMaterial, PbrMaterialConfig, PbrMaterialParams},
+    materials::pbr_material::{
+        get_pbr_shader_unlit, PbrMaterial, PbrMaterialConfig, PbrMaterialParams,
+    },
     primitives, renderer_shader, SharedMaterial,
 };
 use ambient_std::{
@@ -35,7 +37,7 @@ impl ElementComponent for Image {
         let mat = hooks.use_memo_with(texture_id, move |_, _| {
             texture.map(|texture| {
                 SharedMaterial::new(PbrMaterial::new(
-                    assets.clone(),
+                    &assets,
                     PbrMaterialConfig {
                         source: "Image".to_string(),
                         name: "Image".to_string(),
@@ -50,12 +52,12 @@ impl ElementComponent for Image {
                 ))
             })
         });
-        let assets = hooks.world.resource(asset_cache()).clone();
+        let assets = hooks.world.resource(asset_cache());
         let el = UIBase
             .el()
             .init(width(), 100.)
             .init(height(), 100.)
-            .init(mesh(), UIRectMeshKey.get(&assets))
+            .init(mesh(), UIRectMeshKey.get(assets))
             .init_default(mesh_to_local())
             .init_default(mesh_to_local_from_size())
             .init(renderer_shader(), cb(get_pbr_shader_unlit))
@@ -83,15 +85,17 @@ impl ElementComponent for ImageFromBytes {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { bytes, label } = *self;
 
-        let texture =
-            hooks
-                .use_async(|w| {
-                    let assets = w.resource(asset_cache()).clone();
-                    async move {
-                        TextureFromBytes::new(bytes, Some(label)).get(&assets).await.map(|x| Arc::new(x.create_view(&Default::default())))
-                    }
-                })
-                .and_then(Result::ok);
+        let texture = hooks
+            .use_async(|w| {
+                let assets = w.resource(asset_cache()).clone();
+                async move {
+                    TextureFromBytes::new(bytes, Some(label))
+                        .get(&assets)
+                        .await
+                        .map(|x| Arc::new(x.create_view(&Default::default())))
+                }
+            })
+            .and_then(Result::ok);
 
         Image { texture }.el()
     }
@@ -110,10 +114,13 @@ impl ElementComponent for ImageFromUrl {
             .use_async(|w| {
                 let assets = w.resource(asset_cache()).clone();
                 async move {
-                    TextureFromUrl { url: AbsAssetUrl::parse(url)?, format: wgpu::TextureFormat::Rgba8UnormSrgb }
-                        .get(&assets)
-                        .await
-                        .map(|x| Arc::new(x.create_view(&Default::default())))
+                    TextureFromUrl {
+                        url: AbsAssetUrl::parse(url)?,
+                        format: wgpu::TextureFormat::Rgba8UnormSrgb,
+                    }
+                    .get(&assets)
+                    .await
+                    .map(|x| Arc::new(x.create_view(&Default::default())))
                 }
             })
             .and_then(Result::ok);

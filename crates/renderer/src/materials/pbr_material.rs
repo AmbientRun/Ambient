@@ -153,9 +153,9 @@ pub struct PbrMaterial {
 }
 
 impl PbrMaterial {
-    pub fn new(assets: AssetCache, config: PbrMaterialConfig) -> Self {
-        let gpu = GpuKey.get(&assets);
-        let layout = get_material_layout().get(&assets);
+    pub fn new(assets: &AssetCache, config: PbrMaterialConfig) -> Self {
+        let gpu = GpuKey.get(assets);
+        let layout = get_material_layout().get(assets);
 
         let buffer = gpu
             .device
@@ -165,7 +165,7 @@ impl PbrMaterial {
                 contents: bytemuck::cast_slice(&[config.params]),
             });
 
-        let sampler = DefaultSamplerKey.get(&assets);
+        let sampler = DefaultSamplerKey.get(assets);
 
         Self {
             id: friendly_id(),
@@ -212,7 +212,7 @@ impl PbrMaterial {
             .create_view(&wgpu::TextureViewDescriptor::default()),
         );
         PbrMaterial::new(
-            assets.clone(),
+            assets,
             PbrMaterialConfig {
                 source: url.to_string(),
                 name: url.to_string(),
@@ -455,7 +455,7 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialDesc {
             .or(self.base_color.map(|x| x.to_string()))
             .unwrap_or_default();
         Ok(Arc::new(PbrMaterial::new(
-            assets.clone(),
+            &assets,
             PbrMaterialConfig {
                 source: self.source.unwrap_or_default(),
                 name,

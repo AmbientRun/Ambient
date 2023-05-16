@@ -115,7 +115,7 @@ impl Texture {
         )
     }
     pub fn from_image_mipmapped(
-        assets: AssetCache,
+        assets: &AssetCache,
         image: DynamicImage,
         format: wgpu::TextureFormat,
         label: wgpu::Label,
@@ -123,12 +123,12 @@ impl Texture {
         Self::from_rgba8_image_mipmapped(assets, &image.to_rgba8(), format, label)
     }
     pub fn from_rgba8_image_mipmapped(
-        assets: AssetCache,
+        assets: &AssetCache,
         image: &image::RgbaImage,
         format: wgpu::TextureFormat,
         label: wgpu::Label,
     ) -> Self {
-        let gpu = GpuKey.get(&assets);
+        let gpu = GpuKey.get(assets);
 
         let size_max = image.width().max(image.height());
         let mip_levels = size_max.ilog2().max(1);
@@ -198,12 +198,12 @@ impl Texture {
     }
     /// This will automatically resize the images to the largest size if they're not the same size
     pub fn array_rgba8_mipmapped(
-        assets: AssetCache,
+        assets: &AssetCache,
         label: Option<&str>,
         mut data: Vec<RgbaImage>,
         format: wgpu::TextureFormat,
     ) -> Self {
-        let gpu = GpuKey.get(&assets);
+        let gpu = GpuKey.get(assets);
         let layers = data.len();
 
         let min_size = data
@@ -284,7 +284,7 @@ impl Texture {
             });
         for layer in 0..layers {
             generate_mipmaps(
-                assets.clone(),
+                assets,
                 &mut encoder,
                 &texture.handle,
                 texture.format,
@@ -297,7 +297,7 @@ impl Texture {
     }
 
     pub fn array_from_files<P: AsRef<Path> + std::fmt::Debug>(
-        assets: AssetCache,
+        assets: &AssetCache,
         paths: Vec<P>,
         format: wgpu::TextureFormat,
     ) -> Self {
@@ -445,7 +445,7 @@ impl Texture {
             ),
         )
     }
-    pub fn generate_mipmaps(&self, assets: AssetCache) {
+    pub fn generate_mipmaps(&self, assets: &AssetCache) {
         let mut encoder = self
             .gpu
             .device
@@ -458,12 +458,12 @@ impl Texture {
 
     pub fn generate_mipmaps_with_encoder(
         &self,
-        assets: AssetCache,
+        assets: &AssetCache,
         encoder: &mut wgpu::CommandEncoder,
     ) {
         for l in 0..self.size.depth_or_array_layers {
             generate_mipmaps(
-                assets.clone(),
+                assets,
                 encoder,
                 &self.handle,
                 self.format,
@@ -472,11 +472,11 @@ impl Texture {
             );
         }
     }
-    pub fn fill(&self, assets: AssetCache, color: Vec4) {
+    pub fn fill(&self, assets: &AssetCache, color: Vec4) {
         FillerKey {
             format: self.format,
         }
-        .get(&assets)
+        .get(assets)
         .run(
             &self.handle.create_view(&Default::default()),
             self.size,

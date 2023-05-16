@@ -104,7 +104,7 @@ impl FlatMaterialKey {
 }
 impl SyncAssetKey<SharedMaterial> for FlatMaterialKey {
     fn load(&self, assets: AssetCache) -> SharedMaterial {
-        SharedMaterial::new(FlatMaterial::new(assets, self.color, self.transparent))
+        SharedMaterial::new(FlatMaterial::new(&assets, self.color, self.transparent))
     }
 }
 
@@ -117,9 +117,9 @@ pub struct FlatMaterial {
     transparent: Option<bool>,
 }
 impl FlatMaterial {
-    pub fn new(assets: AssetCache, color: Vec4, transparent: Option<bool>) -> Self {
-        let gpu = GpuKey.get(&assets);
-        let layout = get_material_layout().get(&assets);
+    pub fn new(assets: &AssetCache, color: Vec4, transparent: Option<bool>) -> Self {
+        let gpu = GpuKey.get(assets);
+        let layout = get_material_layout().get(assets);
 
         let buffer = gpu
             .device

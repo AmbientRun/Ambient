@@ -143,14 +143,14 @@ impl Default for Graph {
 
 impl ElementComponent for Graph {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
-        let assets = hooks.world.resource(asset_cache()).clone();
+        let assets = hooks.world.resource(asset_cache());
         let Self { points, guide_style, style, width, height, max_value, x_scale, y_scale, x_bounds, y_bounds } = *self;
 
         let points = points.into_iter().filter(|v| v.x.is_normal() && v.y.is_normal() && v.x.abs() < max_value && v.y.abs() < max_value);
 
         let point_count = points.clone().count();
 
-        let mesh_buffer = MeshBufferKey.get(&assets);
+        let mesh_buffer = MeshBufferKey.get(assets);
         let mut mesh_buffer = mesh_buffer.lock();
 
         // points.clone().minmax_by_key(|v| v.x)
