@@ -17,6 +17,12 @@ use ambient_world_audio::{audio_sender, AudioMessage};
 use anyhow::Context;
 use winit::window::CursorGrabMode;
 
+use ambient_ecs::{World, Entity, EntityId};
+use ambient_primitives::{cube, quad};
+use ambient_core::transform::{translation, scale};
+use ambient_renderer::color;
+use glam::{Vec3, Vec4};
+
 use super::Bindings;
 use crate::shared::{
     conversion::{FromBindgen, IntoBindgen},
@@ -25,6 +31,10 @@ use crate::shared::{
 };
 
 use ambient_core::camera::{clip_space_ray, world_to_clip_space};
+
+use std::sync::Arc;
+use parking_lot::Mutex;
+use rhai::{NativeCallContext, Scope, FnPtr, Dynamic, Map};
 
 impl wit::client_message::Host for Bindings {
     fn send(
@@ -258,6 +268,132 @@ impl wit::client_window::Host for Bindings {
         self.world_mut()
             .resource(window_ctl())
             .send(WindowCtl::SetFullscreen(fullscreen))?;
+        Ok(())
+    }
+}
+
+
+impl wit::script::Host for Bindings {
+    fn watch(&mut self, path: String) -> anyhow::Result<()> {
+        let world = Arc::new(Mutex::new(self.world()));
+
+        let world_runtime = world.lock().resource(runtime()).clone();
+        let world_async_run = world.lock().resource(async_run()).clone();
+        let world_arc_clone = Arc::clone(&world);
+        // UNSAFE: we are using `std::mem::transmute` to change the lifetime of `world_arc_clone`.
+        // This is safe as long as the `World` instance is valid during the execution of the Rhai script.
+        let world_arc_clone: Arc<Mutex<&'static mut World>> = unsafe { std::mem::transmute(world_arc_clone) };
+        world_runtime.spawn(async move {
+            let mut last_content = String::new();
+            let created_entities = Arc::new(Mutex::new(Vec::<EntityId>::new()));
+            loop {
+                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                let content = reqwest::get(path.clone()).await.unwrap().text().await.unwrap();
+                if content != last_content {
+                    last_content = content.clone();
+                    let world_arc_clone = Arc::clone(&world_arc_clone);
+                    for entity_id in created_entities.lock().iter() {
+                        let mut world = world_arc_clone.lock();
+                        world.despawn(*entity_id);
+                    }
+                    created_entities.lock().clear();
+                    let created_entities_clone = Arc::clone(&created_entities);
+                    world_async_run.run(move |_world| {
+                        let mut engine: rhai::Engine = unsafe { std::mem::transmute( rhai::Engine::new() ) };
+
+                        // let mut engine = Arc::new(Mutex::new(rhai::Engine::new()));
+                        // let engine_clone = Arc::clone(&engine);
+                        let world_arc_1 = Arc::clone(&world_arc_clone);
+                        let world_arc_2 = Arc::clone(&world_arc_clone);
+
+                        engine.register_fn("bindkey", move |key: &str, entityid: String, component: &str, action: rhai::Dynamic | {
+                            let world = Arc::clone(&world_arc_2);
+                            let world_runtime = world.lock().resource(runtime()).clone();
+                            println!("bindkey: {:?} {:?} {:?}", key, entityid, component);
+                            let action_fn: FnPtr = action.clone().try_cast::<FnPtr>().unwrap();
+                            // let context: NativeCallContext<'static> = unsafe { std::mem::transmute(context) };
+                            // let engine = unsafe { std::mem::transmute(engine) };
+                            world_runtime.spawn(async move {
+                                loop {
+                                    tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+                                    if world.lock().resource(player_raw_input()).keys.contains(&ambient_shared_types::VirtualKeyCode::W) {
+                                        let id = EntityId::from_base64(&entityid).unwrap();
+                                        let pos = world.lock().get(id, translation()).unwrap();
+                                        // let pos_array = pos.to_array().iter().map(|x| Dynamic::from(*x)).collect::<Vec<Dynamic>>();
+                                        // let _new_pos = action_fn.call_raw(&context, Some(&mut action), vec![Dynamic::from_array(pos_array)]).unwrap().into_array().unwrap();
+                                        // let new_pos = Vec3::from_slice(&_new_pos.iter().map(|x| x.as_float().unwrap()).collect::<Vec<f32>>());
+                                        // world.lock().set(id, translation(), new_pos).unwrap();
+                                        // let res = action_fn.call_within_context::<rhai::Array>(&mut context, ());
+                                        println!("pos: {:?}", pos);
+                                    }
+                                }
+                            });
+                        });
+
+                        engine.register_fn("get_component", move |entityId: String, component: &str| -> Dynamic {
+                            todo!()
+                            // let id = EntityId::from_base64(&entityId).unwrap();
+                            // Dynamic::from(world.lock().get(entityId, translation()).unwrap())
+
+                        });
+                        engine.register_fn("set_component", move |entityId: String, component: &str, value: Dynamic| {
+                            todo!()
+                            // let id = EntityId::from_base64(&entityId).unwrap();
+                            // let value = value.into::<Vec3>();
+                            // world.lock().set(id, translation(), value).unwrap();
+                        });
+
+                        engine.register_fn("new_entity", move |info: rhai::Map| -> String {
+                            println!("entity: {:?}", info);
+                            let mut entity = Entity::new();
+                            let world = Arc::clone(&world_arc_1);
+                            if let Some(shape) = info.get("shape") {
+                                println!("shape: {:?}", shape);
+                                let shape_str = shape.clone().into_string().unwrap();
+                                match shape_str.as_str() {
+                                    "cube" => {
+                                        entity = entity.with_default(cube());
+                                    },
+                                    "quad" => {
+                                        entity = entity.with_default(quad());
+                                    },
+                                    // "ball" => {
+                                    //     entity = entity.with_default(ball());
+                                    // },
+                                    _ => {}
+                                }
+                            }
+                            if let Some(_translation) = info.get("translation") {
+                                println!("translation: {:?}", _translation);
+                                let pos = _translation.clone().into_typed_array::<f32>().unwrap();
+                                entity = entity.with(translation(), Vec3::from_slice(&pos));
+                            }
+                            if let Some(_scale) = info.get("scale") {
+                                println!("scale: {:?}", _scale);
+                                let s = _scale.clone().into_typed_array::<f32>().unwrap();
+                                entity = entity.with(scale(), Vec3::from_slice(&s));
+                            }
+                            if let Some(_color) = info.get("color") {
+                                println!("color: {:?}", _color);
+                                let c = _color.clone().into_typed_array::<f32>().unwrap();
+                                entity = entity.with(color(), Vec4::from_slice(&c));
+                            }
+                            let mut world = world.lock();
+                            let id = entity.spawn(&mut *world);
+                            created_entities_clone.lock().push(id);
+                            return id.to_base64()
+                        });
+
+                        match engine.run(&content) {
+                            Ok(_) => {}
+                            Err(e) => {
+                                println!("error: {:?}", e);
+                            }
+                        }
+                    });
+                }
+            }
+        });
         Ok(())
     }
 }

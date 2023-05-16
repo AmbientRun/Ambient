@@ -2,7 +2,6 @@
 //!
 //! If implementing a trait that is only available on the client, it should go in [specific].
 use crate::shared::{self, wit};
-
 use super::Bindings;
 
 mod conversion;
@@ -234,12 +233,5 @@ impl wit::asset::Host for Bindings {
         clip_urls: Vec<String>,
     ) -> anyhow::Result<Vec<wit::asset::AnimationAssetMetadata>> {
         shared::implementation::asset::get_animation_asset_metadata(self.world_mut(), &clip_urls)
-    }
-}
-
-impl wit::script::Host for Bindings {
-    fn watch(&mut self, path: String) -> anyhow::Result<()> {
-        shared::implementation::script::watch(std::sync::Arc::new(parking_lot::Mutex::new(self.world())), path)
-
     }
 }
