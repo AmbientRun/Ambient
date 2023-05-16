@@ -319,7 +319,7 @@ pub async fn send_datagram<C: Connection>(
     let mut bytes = Vec::new();
     byteorder::WriteBytesExt::write_u32::<byteorder::BigEndian>(&mut bytes, id)?;
     bytes.append(&mut payload);
-    conn.send_datagram(Bytes::from(bytes)).await?;
+    conn.send_datagram(Bytes::from(bytes))?;
 
     Ok(())
 }
