@@ -10,9 +10,9 @@ async fn init(app: &mut App) {
     let world = &mut app.world;
     let assets = world.resource(asset_cache()).clone();
 
-    let red = FlatMaterial::new(assets.clone(), vec4(1., 0., 0., 1.), Some(false));
-    let grey = FlatMaterial::new(assets.clone(), vec4(0.5, 0.5, 0.5, 1.), Some(false));
-    let transparent = SharedMaterial::new(FlatMaterial::new(assets, vec4(0., 1., 0., 0.5), Some(true)));
+    let red = FlatMaterial::new(&assets, vec4(1., 0., 0., 1.), Some(false));
+    let grey = FlatMaterial::new(&assets, vec4(0.5, 0.5, 0.5, 1.), Some(false));
+    let transparent = SharedMaterial::new(FlatMaterial::new(&assets, vec4(0., 1., 0., 0.5), Some(true)));
 
     Cube.el().with(material(), SharedMaterial::new(grey)).spawn_static(world);
     Quad.el().with(material(), SharedMaterial::new(red)).with(scale(), vec3(2., 2., 1.)).spawn_static(world);

@@ -110,7 +110,7 @@ fn peek_loaded_clip(
             .context("Invalid clip url")?
             .model(),
     )
-    .peek(&assets)
+    .peek(assets)
     {
         let _model = asset.context("No such model")?;
     } else {

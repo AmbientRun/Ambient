@@ -5,7 +5,7 @@ use super::blit::BlitterKey;
 // From: https://github.com/gfx-rs/wgpu/blob/master/wgpu/examples/mipmap/main.rs
 
 pub fn generate_mipmaps(
-    assets: AssetCache,
+    assets: &AssetCache,
     encoder: &mut wgpu::CommandEncoder,
     texture: &wgpu::Texture,
     format: wgpu::TextureFormat,
@@ -17,7 +17,7 @@ pub fn generate_mipmaps(
         min_filter: wgpu::FilterMode::Linear,
         gamma_correction: None,
     }
-    .get(&assets);
+    .get(assets);
 
     let views = (0..mip_count)
         .map(|mip| {

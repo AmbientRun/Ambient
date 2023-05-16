@@ -94,7 +94,7 @@ impl AnimationClipRef {
                 translation_retargeting: retarget,
                 retarget_model: model,
             }
-            .peek(&assets)
+            .peek(assets)
             .map(|x| x.map_err(|err| format!("{err:#}"))),
         }
     }

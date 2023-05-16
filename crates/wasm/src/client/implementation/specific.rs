@@ -213,7 +213,7 @@ impl wit::client_audio::Host for Bindings {
         let runtime = world.resource(runtime()).clone();
         let async_run = world.resource(async_run()).clone();
         let assets = world.resource(asset_cache());
-        let url = AbsAssetUrl::parse(url)?.to_download_url(&assets)?;
+        let url = AbsAssetUrl::parse(url)?.to_download_url(assets)?;
         runtime.spawn(async move {
             async_run.run(move |world| {
                 let sender = world.resource(audio_sender());
@@ -228,7 +228,7 @@ impl wit::client_audio::Host for Bindings {
         let runtime = world.resource(runtime()).clone();
         let async_run = world.resource(async_run()).clone();
         let assets = world.resource(asset_cache());
-        let url = AbsAssetUrl::parse(url)?.to_download_url(&assets)?;
+        let url = AbsAssetUrl::parse(url)?.to_download_url(assets)?;
         runtime.spawn(async move {
             async_run.run(move |world| {
                 let sender = world.resource(audio_sender());
