@@ -1,5 +1,5 @@
 default interface entity {
-    use pkg.types.{entity-id, vec3, quat}
+    use pkg.types.{entity-id, vec3, quat, mat4}
     use pkg.component.{entity as entity-data}
 
     /// An action in an animation.
@@ -66,9 +66,13 @@ default interface entity {
 
     set-animation-action-stack: func(entity: entity-id, stack: list<animation-action-stack>)
     set-animation-binder-mask: func(entity: entity-id, mask: list<string>)
+    get-animation-binder-mask: func(entity: entity-id) -> list<string>
     set-animation-binder-weights: func(entity: entity-id, index: u32, mask: list<float32>)
+    get-animation-binder-mask-entities: func(entity: entity-id) -> list<entity-id>
 
     set-animation-blend: func(entity: entity-id, weights: list<float32>, time: list<float32>, absolute-time: bool)
+
+    get-transforms-relative-to: func(entities: list<entity-id>, origin: entity-id) -> list<mat4>
 
     spawn: func(data: entity-data) -> entity-id
     despawn: func(entity: entity-id) -> option<entity-data>

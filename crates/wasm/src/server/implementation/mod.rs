@@ -87,6 +87,28 @@ impl wit::entity::Host for Bindings {
         )
     }
 
+    fn get_animation_binder_mask_entities(
+        &mut self,
+        entity: wit::types::EntityId,
+    ) -> anyhow::Result<Vec<wit::types::EntityId>> {
+        shared::implementation::entity::get_animation_binder_mask_entities(self.world_mut(), entity)
+    }
+
+    fn get_animation_binder_mask(
+        &mut self,
+        entity: wit::types::EntityId,
+    ) -> anyhow::Result<Vec<String>> {
+        shared::implementation::entity::get_animation_binder_mask(self.world_mut(), entity)
+    }
+
+    fn get_transforms_relative_to(
+        &mut self,
+        list: Vec<wit::types::EntityId>,
+        origin: wit::types::EntityId,
+    ) -> anyhow::Result<Vec<wit::types::Mat4>> {
+        shared::implementation::entity::get_transforms_relative_to(self.world(), list, origin)
+    }
+
     fn exists(&mut self, entity: wit::types::EntityId) -> anyhow::Result<bool> {
         shared::implementation::entity::exists(self.world(), entity)
     }
