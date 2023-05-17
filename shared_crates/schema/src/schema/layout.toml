@@ -124,8 +124,30 @@ description = "Upload the width and height of this UI element to the GPU."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [enums]
-Align = ["Begin", "Center", "End"]
-Fit = ["None", "Parent", "Children"]
-Orientation = ["Horizontal", "Vertical"]
-Docking = ["Left", "Right", "Top", "Bottom", "Fill"]
-Layout = ["Flow", "Dock", "Book", "WidthToChildren"]
+Align = [
+    {name = "Begin", description = "Begin"},
+    {name = "Center", description = "Center"},
+    {name = "End", description = "End"}
+]
+Fit = [
+    {name = "None", description = "None"},
+    {name = "Parent", description = "Parent"},
+    {name = "Children", description = "Children"}
+]
+Orientation = [
+    {name = "Horizontal", description = "Horizontal"},
+    {name = "Vertical", description = "Vertical"}
+]
+Docking = [
+    {name = "Left", description = "Left"},
+    {name = "Right", description = "Right"},
+    {name = "Top", description = "Top"},
+    {name = "Bottom", description = "Bottom"},
+    {name = "Fill", description = "Fill"}
+]
+Layout = [
+    {name = "Flow", description = "Bottom-up flow layout."},
+    {name = "Dock", description = "Top-down dock layout."},
+    {name = "Bookcase", description = "Min-max bookcase layout."},
+    {name = "WidthToChildren", description = "Width to children."}
+]

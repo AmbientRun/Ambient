@@ -305,11 +305,34 @@ impl IsItemType for PrimitiveType {
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]
+pub struct Enum(Vec<EnumMember>);
+
+#[derive(Clone, PartialEq, Eq)]
+pub struct EnumMember {
+    pub name: CamelCaseIdentifier,
+    pub description: Option<String>,
+}
+
+impl Debug for EnumMember {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}: {:?}", self.name, self.description)
+    }
+}
+impl From<&ambient_project::EnumMember> for EnumMember {
+    fn from(value: &ambient_project::EnumMember) -> Self {
+        Self {
+            name: value.name.clone(),
+            description: value.description.clone(),
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub enum Type {
     Primitive(PrimitiveType),
     Vec(PrimitiveType),
     Option(PrimitiveType),
-    Enum(Vec<CamelCaseIdentifier>),
+    Enum(Enum),
 }
 impl IsItemType for Type {
     const TYPE: ItemType = ItemType::Type;
@@ -317,7 +340,7 @@ impl IsItemType for Type {
 }
 impl From<&ambient_project::Enum> for Type {
     fn from(value: &ambient_project::Enum) -> Self {
-        Self::Enum(value.0.clone())
+        Self::Enum(Enum(value.0.iter().map(|v| v.into()).collect()))
     }
 }
 

@@ -95,8 +95,8 @@ mod tests {
     use std::collections::BTreeMap;
 
     use crate::{
-        Build, BuildRust, CamelCaseIdentifier, Component, ComponentType, Concept, Enum, Identifier,
-        IdentifierPathBuf, Manifest, Project, Version, VersionSuffix,
+        Build, BuildRust, CamelCaseIdentifier, Component, ComponentType, Concept, Enum, EnumMember,
+        Identifier, IdentifierPathBuf, Manifest, Project, Version, VersionSuffix,
     };
 
     fn cci(s: &str) -> CamelCaseIdentifier {
@@ -339,7 +339,10 @@ mod tests {
         version = "0.0.1"
 
         [enums]
-        CellState = ["Free", "Taken"]
+        CellState = [
+            { name = "Free", description = "The cell is free" },
+            { name = "Taken", description = "The cell is taken" }
+        ]
         "#;
 
         assert_eq!(
@@ -360,7 +363,17 @@ mod tests {
                 messages: BTreeMap::new(),
                 enums: BTreeMap::from_iter([(
                     CamelCaseIdentifier::new("CellState").unwrap(),
-                    Enum(vec![cci("Free"), cci("Taken")]).into()
+                    Enum(vec![
+                        EnumMember {
+                            name: cci("Free"),
+                            description: Some("The cell is free".to_string()),
+                        },
+                        EnumMember {
+                            name: cci("Taken"),
+                            description: Some("The cell is taken".to_string()),
+                        }
+                    ])
+                    .into()
                 )]),
             })
         )
