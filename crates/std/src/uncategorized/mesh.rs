@@ -207,6 +207,10 @@ impl MeshKey {
     pub fn new() -> Self {
         Self(ulid::Ulid::new())
     }
+
+    pub fn into_inner(self) -> ulid::Ulid {
+        self.0
+    }
 }
 
 impl std::str::FromStr for MeshKey {

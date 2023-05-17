@@ -99,7 +99,7 @@ impl wit::client_mesh::Host for Bindings {
         &mut self,
         _vertices: Vec<wit::client_mesh::Vertex>,
         _indices: Vec<u32>,
-    ) -> anyhow::Result<String> {
+    ) -> anyhow::Result<wit::types::Ulid> {
         unsupported()
     }
 }

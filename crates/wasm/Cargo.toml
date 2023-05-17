@@ -54,6 +54,7 @@ slotmap = { workspace = true }
 tokio = { workspace = true }
 winit = { workspace = true }
 wgpu = { workspace = true }
+ulid = { workspace = true }
 
 wasmtime = { workspace = true }
 wasmtime-wasi = { workspace = true }

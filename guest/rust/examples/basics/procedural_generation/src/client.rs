@@ -111,7 +111,7 @@ pub async fn main() {
     let material_url = material::create(&material_desc);
 
     Entity::new()
-        .with(mesh_from_url(), mesh_url)
+        .with(mesh_from_url(), mesh_url.to_string()) // Todo: mesh_from_ulid()
         .with(material_from_url(), material_url)
         .with(color(), vec4(1.0, 1.0, 1.0, 1.0))
         .spawn();

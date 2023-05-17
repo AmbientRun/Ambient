@@ -280,7 +280,7 @@ impl wit::client_mesh::Host for Bindings {
         &mut self,
         vertices: Vec<wit::client_mesh::Vertex>,
         indices: Vec<u32>,
-    ) -> anyhow::Result<String> {
+    ) -> anyhow::Result<wit::types::Ulid> {
         let mut positions = Vec::with_capacity(vertices.len());
         let mut normals = Vec::with_capacity(vertices.len());
         let mut tangents = Vec::with_capacity(vertices.len());
@@ -305,9 +305,8 @@ impl wit::client_mesh::Host for Bindings {
         let assets = world.resource(asset_cache());
         let mesh_key = MeshKey::new();
         mesh_key.insert(assets, mesh);
-        // Todo: make "ambient-asset-transient:" a const.
-        let mesh_url = format!("ambient-asset-transient:/{mesh_key}");
-        Ok(mesh_url)
+        let mesh_ulid = mesh_key.into_inner();
+        Ok(mesh_ulid.into_bindgen())
     }
 }
 impl wit::client_material::Host for Bindings {

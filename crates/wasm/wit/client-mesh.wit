@@ -1,5 +1,5 @@
 default interface client-mesh {
-    use pkg.types.{vec2, vec3}
+    use pkg.types.{vec2, vec3, ulid}
 
     record vertex {
         position: vec3,
@@ -8,5 +8,5 @@ default interface client-mesh {
         texcoord0: vec2,
     }
 
-    create: func(vertices: list<vertex>, indices: list<u32>) -> string
+    create: func(vertices: list<vertex>, indices: list<u32>) -> ulid
 }

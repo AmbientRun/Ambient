@@ -179,10 +179,6 @@ pub fn systems() -> SystemGroup {
                 let assets = world.resource(asset_cache()).clone();
                 for (id, mesh_url) in q.collect_cloned(world, qs) {
                     use std::str::FromStr;
-                    let Some(mesh_url) = mesh_url.strip_prefix("ambient-asset-transient:/") else {
-                        tracing::warn!("Invalid mesh url, must start with ambient-asset-transient:/");
-                        return;
-                    };
                     let Ok(mesh_key) = MeshKey::from_str(&mesh_url) else {
                         tracing::warn!("Invalid mesh url, must be a valid ULID");
                         return;

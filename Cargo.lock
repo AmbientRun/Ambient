@@ -211,6 +211,7 @@ dependencies = [
  "paste",
  "rand 0.8.5",
  "thiserror",
+ "ulid",
  "wit-bindgen",
 ]
 
@@ -1538,6 +1539,7 @@ dependencies = [
  "serde_json",
  "slotmap",
  "tokio",
+ "ulid",
  "wasi-cap-std-sync",
  "wasi-common",
  "wasmtime",

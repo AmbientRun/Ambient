@@ -3,6 +3,7 @@ use crate::{
     internal::wit,
 };
 use glam::{UVec2, UVec3, UVec4};
+use ulid::Ulid;
 
 /// Converts from a Rust representation to a wit-bindgen representation.
 pub trait IntoBindgen {
@@ -223,5 +224,22 @@ where
     type Item = Vec<T::Item>;
     fn from_bindgen(self) -> Self::Item {
         self.into_iter().map(|i| i.from_bindgen()).collect()
+    }
+}
+
+impl FromBindgen for wit::types::Ulid {
+    type Item = Ulid;
+
+    fn from_bindgen(self) -> Self::Item {
+        Ulid::from((self.msb, self.lsb))
+    }
+}
+
+impl IntoBindgen for Ulid {
+    type Item = wit::types::Ulid;
+
+    fn into_bindgen(self) -> Self::Item {
+        let (msb, lsb): (u64, u64) = self.into();
+        wit::types::Ulid { msb, lsb }
     }
 }

@@ -5,6 +5,7 @@ use ambient_ecs::EntityId;
 use ambient_std::asset_url::TypedAssetUrl;
 use ambient_std::shapes::Ray;
 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+use ulid::Ulid;
 
 use super::wit;
 
@@ -313,7 +314,6 @@ impl FromBindgen for wit::entity::AnimationController {
     }
 }
 
-
 impl FromBindgen for wit::entity::AnimationActionStack {
     type Item = animation::AnimationActionStack;
     fn from_bindgen(self) -> Self::Item {
@@ -328,9 +328,7 @@ impl FromBindgen for wit::entity::AnimationActionStack {
                 }
             }
             wit::entity::AnimationActionStack::Sample(action_index) => {
-                animation::AnimationActionStack::Sample {
-                    action_index
-                }
+                animation::AnimationActionStack::Sample { action_index }
             }
             wit::entity::AnimationActionStack::SampleAbsolute(sample) => {
                 animation::AnimationActionStack::SampleAbsolute {
@@ -345,5 +343,22 @@ impl FromBindgen for wit::entity::AnimationActionStack {
                 }
             }
         }
+    }
+}
+
+impl FromBindgen for wit::types::Ulid {
+    type Item = Ulid;
+
+    fn from_bindgen(self) -> Self::Item {
+        Ulid::from((self.msb, self.lsb))
+    }
+}
+
+impl IntoBindgen for Ulid {
+    type Item = wit::types::Ulid;
+
+    fn into_bindgen(self) -> Self::Item {
+        let (msb, lsb): (u64, u64) = self.into();
+        wit::types::Ulid { msb, lsb }
     }
 }

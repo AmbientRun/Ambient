@@ -58,4 +58,9 @@ default interface types {
         origin: vec3,
         dir: vec3,
     }
+
+    record ulid {
+        msb: u64,
+        lsb: u64,
+    }
 }
