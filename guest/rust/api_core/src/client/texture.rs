@@ -1,5 +1,6 @@
 use crate::internal::wit;
 
+#[derive(Clone, Copy)]
 pub enum Format {
     Rgba8Unorm,
 }

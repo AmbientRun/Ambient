@@ -16,6 +16,7 @@ world bindings {
     import client-window: pkg.client-window
     import client-mesh: pkg.client-mesh
     import client-material: pkg.client-material
+    import client-sampler: pkg.client-sampler
     import client-texture: pkg.client-texture
 
     import server-physics: pkg.server-physics

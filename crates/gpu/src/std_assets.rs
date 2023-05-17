@@ -85,6 +85,35 @@ impl SyncAssetKey<Arc<wgpu::Sampler>> for DepthBufferSampler {
     }
 }
 
+#[derive(Debug)]
+pub struct SamplerKey(ulid::Ulid);
+
+impl SamplerKey {
+    pub fn new() -> Self {
+        Self(ulid::Ulid::new())
+    }
+}
+
+impl std::str::FromStr for SamplerKey {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self(ulid::Ulid::from_str(s)?))
+    }
+}
+
+impl std::fmt::Display for SamplerKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl SyncAssetKey<Arc<wgpu::Sampler>> for SamplerKey {
+    fn load(&self, assets: AssetCache) -> Arc<wgpu::Sampler> {
+        self.get(&assets)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct PixelTextureKey {
     pub colors: Vec<UVec4>,

@@ -3,6 +3,7 @@ default interface client-material {
         base-color-map: string,
         normal-map: string,
         metallic-roughness-map: string,
+        sampler: string,
     }
     create: func(desc: descriptor) -> string
 }

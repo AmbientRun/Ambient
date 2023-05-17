@@ -108,6 +108,11 @@ impl wit::client_material::Host for Bindings {
         unsupported()
     }
 }
+impl wit::client_sampler::Host for Bindings {
+    fn create(&mut self, _desc: wit::client_sampler::Descriptor) -> anyhow::Result<String> {
+        unsupported()
+    }
+}
 impl wit::client_texture::Host for Bindings {
     fn create2d(
         &mut self,

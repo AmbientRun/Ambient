@@ -16,5 +16,8 @@ pub mod material;
 /// **\[Client-only\]** Procedural mesh generation.
 pub mod mesh;
 
+/// **\[Client-only\]** Procedural sampler generation.
+pub mod sampler;
+
 /// **\[Client-only\]** Procedural texture generation.
 pub mod texture;

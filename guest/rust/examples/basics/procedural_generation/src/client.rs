@@ -1,4 +1,4 @@
-use ambient_api::client::{material, mesh, texture};
+use ambient_api::client::{material, mesh, sampler, texture};
 use ambient_api::components::core::camera::aspect_ratio_from_window;
 use ambient_api::components::core::primitives::cube;
 use ambient_api::concepts::{make_perspective_infinite_reverse_camera, make_transformable};
@@ -64,8 +64,8 @@ pub async fn main() {
     }
     let mesh_url = mesh::create(&vertices, &indices);
 
-    let texture_width = 64;
-    let texture_height = 64;
+    let texture_width = 16;
+    let texture_height = 16;
     let mut texture_data = Vec::with_capacity((4 * texture_width * texture_height) as usize);
     {
         use noise::{utils::*, Fbm, Perlin};
@@ -93,11 +93,20 @@ pub async fn main() {
     let normal_map_url = texture::create_2d(1, 1, texture::Format::Rgba8Unorm, &[128, 128, 255, 0]);
     let metallic_roughness_map_url =
         texture::create_2d(1, 1, texture::Format::Rgba8Unorm, &[255, 255, 255, 255]);
+    let sampler_url = sampler::create(&sampler::Descriptor {
+        address_mode_u: sampler::AddressMode::ClampToEdge,
+        address_mode_v: sampler::AddressMode::ClampToEdge,
+        address_mode_w: sampler::AddressMode::ClampToEdge,
+        mag_filter: sampler::FilterMode::Nearest,
+        min_filter: sampler::FilterMode::Nearest,
+        mipmap_filter: sampler::FilterMode::Nearest,
+    });
 
     let material_desc = material::Descriptor {
         base_color_map: &base_color_map_url,
         normal_map: &normal_map_url,
         metallic_roughness_map: &metallic_roughness_map_url,
+        sampler: &sampler_url,
     };
     let material_url = material::create(&material_desc);
 

@@ -14,7 +14,7 @@ use ambient_core::{
 };
 use ambient_gpu::{
     gpu::GpuKey,
-    std_assets::DefaultSamplerKey,
+    std_assets::SamplerKey,
     texture::{Texture, TextureView, TextureViewKey},
 };
 use ambient_input::{player_prev_raw_input, player_raw_input};
@@ -327,6 +327,18 @@ impl wit::client_material::Host for Bindings {
             };
             Ok(texture)
         };
+        let sampler_from_url = |url: &str| -> anyhow::Result<Arc<wgpu::Sampler>> {
+            let Some(url) = url.strip_prefix("ambient-asset-transient:/") else {
+                anyhow::bail!("Invalid sampler url, must start with ambient-asset-transient:/");
+            };
+            let Ok(key) = SamplerKey::from_str(&url) else {
+                anyhow::bail!("Invalid sampler url, must be a valid ULID");
+            };
+            let Some(sampler) = key.try_get(assets) else {
+                anyhow::bail!("Could not find sampler from {key}");
+            };
+            Ok(sampler)
+        };
 
         let base_color_map =
             texture_from_url(&desc.base_color_map).context("Loading texture: `base_color_map`")?;
@@ -334,6 +346,7 @@ impl wit::client_material::Host for Bindings {
             texture_from_url(&desc.normal_map).context("Loading texture: `normal_map`")?;
         let metallic_roughness_map = texture_from_url(&desc.metallic_roughness_map)
             .context("Loading texture: `metallic_roughness_map`")?;
+        let sampler = sampler_from_url(&desc.sampler).context("Loading sampler")?;
 
         let material = PbrMaterialConfig {
             source: "Procedural Material".to_string(),
@@ -349,7 +362,7 @@ impl wit::client_material::Host for Bindings {
             base_color: base_color_map,
             normalmap: normal_map,
             metallic_roughness: metallic_roughness_map,
-            sampler: DefaultSamplerKey.get(&assets),
+            sampler,
             transparent: false,
             double_sided: false,
             depth_write_enabled: true,
@@ -359,6 +372,40 @@ impl wit::client_material::Host for Bindings {
         // Todo: make "ambient-asset-transient:" a const.
         let material_url = format!("ambient-asset-transient:/{material_key}");
         Ok(material_url)
+    }
+}
+impl wit::client_sampler::Host for Bindings {
+    fn create(&mut self, desc: wit::client_sampler::Descriptor) -> wasmtime::Result<String> {
+        let address_mode_from_wit = |wit: wit::client_sampler::AddressMode| -> wgpu::AddressMode {
+            match wit {
+                wit::client_sampler::AddressMode::ClampToEdge => wgpu::AddressMode::ClampToEdge,
+                wit::client_sampler::AddressMode::Repeat => wgpu::AddressMode::Repeat,
+                wit::client_sampler::AddressMode::MirrorRepeat => wgpu::AddressMode::MirrorRepeat,
+            }
+        };
+        let filter_mode_from_wit = |wit: wit::client_sampler::FilterMode| match wit {
+            wit::client_sampler::FilterMode::Nearest => wgpu::FilterMode::Nearest,
+            wit::client_sampler::FilterMode::Linear => wgpu::FilterMode::Linear,
+        };
+
+        let world = self.world();
+        let assets = world.resource(asset_cache());
+        let gpu = GpuKey.get(&assets);
+        let sampler = gpu.device.create_sampler(&wgpu::SamplerDescriptor {
+            address_mode_u: address_mode_from_wit(desc.address_mode_u),
+            address_mode_v: address_mode_from_wit(desc.address_mode_v),
+            address_mode_w: address_mode_from_wit(desc.address_mode_w),
+            mag_filter: filter_mode_from_wit(desc.mag_filter),
+            min_filter: filter_mode_from_wit(desc.min_filter),
+            mipmap_filter: filter_mode_from_wit(desc.mipmap_filter),
+            ..wgpu::SamplerDescriptor::default()
+        });
+        let sampler = Arc::new(sampler);
+        let sampler_key = SamplerKey::new();
+        sampler_key.insert(assets, sampler);
+        // Todo: make "ambient-asset-transient:" a const.
+        let sampler_url = format!("ambient-asset-transient:/{sampler_key}");
+        Ok(sampler_url)
     }
 }
 impl wit::client_texture::Host for Bindings {
