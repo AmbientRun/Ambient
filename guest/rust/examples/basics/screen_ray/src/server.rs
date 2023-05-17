@@ -1,6 +1,6 @@
 use ambient_api::{
     components::core::{
-        physics::plane_collider,
+        physics::quad_collider,
         primitives::{cube, quad},
         transform::translation,
     },
@@ -13,7 +13,7 @@ pub fn main() {
     Entity::new()
         .with_merge(make_transformable())
         .with_default(quad())
-        .with_default(plane_collider())
+        .with_default(quad_collider())
         .spawn();
 
     let cube_id = Entity::new()

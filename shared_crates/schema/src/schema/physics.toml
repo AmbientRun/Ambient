@@ -11,12 +11,12 @@ Angular velocity (radians/second) of this entity in the physics scene.
 Updating this component will update the entity's angular velocity in the physics scene."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::physics::box_collider"]
+[components."core::physics::cube_collider"]
 type = "Vec3"
-name = "Box collider"
+name = "Cube collider"
 description = """
-If attached, this entity will have a box physics collider.
-`x, y, z` is the size of the box."""
+If attached, this entity will have a cube physics collider.
+`x, y, z` is the size of the cube."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::character_controller_height"]
@@ -114,10 +114,10 @@ If attached, this entity will be controlled by physics.
 Note that this requires the entity to have a collider."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components."core::physics::plane_collider"]
+[components."core::physics::quad_collider"]
 type = "Empty"
-name = "Plane collider"
-description = "If attached, this entity will have a plane physics collider."
+name = "Quad collider"
+description = "If attached, this entity will have a quad physics collider."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::rest_offset"]
