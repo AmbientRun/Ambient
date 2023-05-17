@@ -354,7 +354,7 @@ impl wit::client_material::Host for Bindings {
             params: PbrMaterialParams {
                 base_color_factor: Vec4::ONE,
                 emissive_factor: Vec4::ZERO,
-                alpha_cutoff: 0.5,
+                alpha_cutoff: 0.0,
                 metallic: 1.0,
                 roughness: 1.0,
                 ..PbrMaterialParams::default()
