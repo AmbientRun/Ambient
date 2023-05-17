@@ -17,5 +17,11 @@ pub fn main() {
         .add_file("ambient.toml", &DiskFileProvider)
         .unwrap();
 
-    dbg!(semantic);
+    println!("------ Pre-resolve:");
+    println!("{semantic:#?}");
+
+    semantic.resolve().unwrap();
+
+    println!("------ Post-resolve:");
+    println!("{semantic:#?}");
 }

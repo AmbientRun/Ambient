@@ -17,7 +17,7 @@ use ulid::Ulid;
 #[derive(Clone, PartialEq, Debug)]
 pub struct Semantic {
     root_scope: Scope,
-    scopes: HashMap<Identifier, Scope>,
+    scopes: BTreeMap<Identifier, Scope>,
 }
 impl Semantic {
     pub fn new() -> Self {
@@ -40,14 +40,16 @@ impl Semantic {
             root_scope: Scope {
                 id: Identifier::default(),
                 manifest: None,
-                scopes: HashMap::new(),
-                components: HashMap::new(),
-                concepts: HashMap::new(),
-                messages: HashMap::new(),
-                types: HashMap::from_iter(primitive_component_definitions!(define_primitive_types)),
-                attributes: HashMap::new(),
+                scopes: BTreeMap::new(),
+                components: BTreeMap::new(),
+                concepts: BTreeMap::new(),
+                messages: BTreeMap::new(),
+                types: BTreeMap::from_iter(primitive_component_definitions!(
+                    define_primitive_types
+                )),
+                attributes: BTreeMap::new(),
             },
-            scopes: HashMap::new(),
+            scopes: BTreeMap::new(),
         }
     }
 
@@ -58,6 +60,10 @@ impl Semantic {
     ) -> anyhow::Result<&mut Scope> {
         let scope = Scope::from_file(filename, file_provider)?;
         Ok(self.scopes.entry(scope.id.clone()).or_insert(scope))
+    }
+
+    pub fn resolve(&mut self) -> anyhow::Result<()> {
+        Ok(())
     }
 }
 
@@ -70,12 +76,12 @@ pub struct Scope {
     id: Identifier,
     manifest: Option<Manifest>,
 
-    scopes: HashMap<Identifier, Scope>,
-    components: HashMap<Identifier, Component>,
-    concepts: HashMap<Identifier, Concept>,
-    messages: HashMap<Identifier, Message>,
-    types: HashMap<CamelCaseIdentifier, Type>,
-    attributes: HashMap<Identifier, Attribute>,
+    scopes: BTreeMap<Identifier, Scope>,
+    components: BTreeMap<Identifier, Component>,
+    concepts: BTreeMap<Identifier, Concept>,
+    messages: BTreeMap<Identifier, Message>,
+    types: BTreeMap<CamelCaseIdentifier, Type>,
+    attributes: BTreeMap<Identifier, Attribute>,
 }
 impl Debug for Scope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -109,7 +115,7 @@ impl Scope {
         let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename}"))?;
 
-        let mut scopes = HashMap::new();
+        let mut scopes = BTreeMap::new();
         for include in &manifest.project.includes {
             let scope = Scope::from_file(include, file_provider)?;
             scopes.insert(scope.id.clone(), scope);
@@ -120,11 +126,11 @@ impl Scope {
             manifest: None,
             scopes,
 
-            components: HashMap::new(),
-            concepts: HashMap::new(),
-            messages: HashMap::new(),
-            types: HashMap::new(),
-            attributes: HashMap::new(),
+            components: BTreeMap::new(),
+            concepts: BTreeMap::new(),
+            messages: BTreeMap::new(),
+            types: BTreeMap::new(),
+            attributes: BTreeMap::new(),
         };
 
         for (path, component) in manifest.components.iter() {
