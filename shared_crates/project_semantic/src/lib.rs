@@ -16,11 +16,37 @@ use ulid::Ulid;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Semantic {
+    root_scope: Scope,
     scopes: HashMap<Identifier, Scope>,
 }
 impl Semantic {
     pub fn new() -> Self {
+        macro_rules! define_primitive_types {
+            ($(($value:ident, $type:ty)),*) => {
+                [
+                    $(
+                        (
+                            CamelCaseIdentifier::new(stringify!($value)).unwrap(),
+                            Type::Primitive(PrimitiveType {
+                                rust_type: stringify!($type).to_string(),
+                            }),
+                        )
+                    ),*
+                ]
+            };
+        }
+
         Self {
+            root_scope: Scope {
+                id: Identifier::default(),
+                manifest: None,
+                scopes: HashMap::new(),
+                components: HashMap::new(),
+                concepts: HashMap::new(),
+                messages: HashMap::new(),
+                types: HashMap::from_iter(primitive_component_definitions!(define_primitive_types)),
+                attributes: HashMap::new(),
+            },
             scopes: HashMap::new(),
         }
     }
@@ -53,15 +79,29 @@ pub struct Scope {
 }
 impl Debug for Scope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Scope")
-            .field("id", &self.id)
-            .field("components", &self.components)
-            .field("concepts", &self.concepts)
-            .field("messages", &self.messages)
-            .field("types", &self.types)
-            .field("attributes", &self.attributes)
-            .field("scopes", &self.scopes)
-            .finish()
+        let mut ds = f.debug_struct("Scope");
+        ds.field("id", &self.id);
+
+        if !self.components.is_empty() {
+            ds.field("components", &self.components);
+        }
+        if !self.concepts.is_empty() {
+            ds.field("concepts", &self.concepts);
+        }
+        if !self.messages.is_empty() {
+            ds.field("messages", &self.messages);
+        }
+        if !self.types.is_empty() {
+            ds.field("types", &self.types);
+        }
+        if !self.attributes.is_empty() {
+            ds.field("attributes", &self.attributes);
+        }
+        if !self.scopes.is_empty() {
+            ds.field("scopes", &self.scopes);
+        }
+
+        ds.finish()
     }
 }
 impl Scope {
@@ -295,9 +335,14 @@ impl IsItemType for Attribute {
     type Unresolved = CamelCaseIdentifier;
 }
 
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct PrimitiveType {
     pub rust_type: String,
+}
+impl Debug for PrimitiveType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "PrimitiveType({:?})", self.rust_type)
+    }
 }
 impl IsItemType for PrimitiveType {
     const TYPE: ItemType = ItemType::Type;
@@ -366,6 +411,7 @@ pub type EntityId = u128;
 
 primitive_component_definitions!(define_primitive_value);
 
+#[allow(dead_code)]
 #[derive(Error, Debug)]
 enum ParseError {
     #[error("failed to parse toml value {0:?}")]
