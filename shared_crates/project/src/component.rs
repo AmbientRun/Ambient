@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::TypeRef;
+use crate::CamelCaseIdentifier;
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Component {
@@ -9,7 +9,7 @@ pub struct Component {
     #[serde(rename = "type")]
     pub type_: ComponentType,
     #[serde(default)]
-    pub attributes: Vec<String>,
+    pub attributes: Vec<CamelCaseIdentifier>,
     #[serde(default)]
     pub default: Option<toml::Value>,
 }
@@ -17,11 +17,11 @@ pub struct Component {
 #[derive(Deserialize, Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(untagged)]
 pub enum ComponentType {
-    String(TypeRef),
+    Identifier(CamelCaseIdentifier),
     ContainerType {
         #[serde(rename = "type")]
         #[serde(alias = "container_type")]
-        type_: String,
-        element_type: TypeRef,
+        type_: CamelCaseIdentifier,
+        element_type: CamelCaseIdentifier,
     },
 }

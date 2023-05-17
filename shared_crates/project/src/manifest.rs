@@ -14,13 +14,13 @@ pub struct Manifest {
     #[serde(default)]
     pub build: Build,
     #[serde(default)]
-    pub components: BTreeMap<IdentifierPathBuf, NamespaceOr<Component>>,
+    pub components: BTreeMap<IdentifierPathBuf, Component>,
     #[serde(default)]
-    pub concepts: BTreeMap<IdentifierPathBuf, NamespaceOr<Concept>>,
+    pub concepts: BTreeMap<IdentifierPathBuf, Concept>,
     #[serde(default)]
-    pub messages: BTreeMap<IdentifierPathBuf, NamespaceOr<Message>>,
+    pub messages: BTreeMap<IdentifierPathBuf, Message>,
     #[serde(default)]
-    pub enums: BTreeMap<CamelCaseIdentifier, NamespaceOr<Enum>>,
+    pub enums: BTreeMap<CamelCaseIdentifier, Enum>,
 }
 impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, toml::de::Error> {
@@ -90,63 +90,18 @@ impl Default for BuildRust {
     }
 }
 
-#[derive(Deserialize, Debug, Clone, PartialEq, Serialize)]
-pub struct Namespace {
-    pub name: Option<String>,
-    pub description: Option<String>,
-}
-
-#[derive(Deserialize, Debug, Clone, PartialEq, Serialize)]
-#[serde(untagged)]
-pub enum NamespaceOr<T> {
-    Other(T),
-    Namespace(Namespace),
-}
-impl<T> NamespaceOr<T> {
-    pub fn other(&self) -> Option<&T> {
-        match self {
-            NamespaceOr::Other(o) => Some(o),
-            NamespaceOr::Namespace(_) => None,
-        }
-    }
-
-    pub fn namespace(&self) -> Option<&Namespace> {
-        match self {
-            NamespaceOr::Other(_) => None,
-            NamespaceOr::Namespace(n) => Some(n),
-        }
-    }
-}
-
-impl<T> From<Namespace> for NamespaceOr<T> {
-    fn from(value: Namespace) -> Self {
-        Self::Namespace(value)
-    }
-}
-impl From<Component> for NamespaceOr<Component> {
-    fn from(value: Component) -> Self {
-        Self::Other(value)
-    }
-}
-impl From<Concept> for NamespaceOr<Concept> {
-    fn from(value: Concept) -> Self {
-        Self::Other(value)
-    }
-}
-impl From<Enum> for NamespaceOr<Enum> {
-    fn from(value: Enum) -> Self {
-        Self::Other(value)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use std::collections::BTreeMap;
 
     use crate::{
         Build, BuildRust, CamelCaseIdentifier, Component, ComponentType, Concept, Enum, Identifier,
-        IdentifierPathBuf, Manifest, Namespace, Project, TypeRef, Version, VersionSuffix,
+        IdentifierPathBuf, Manifest, Project, Version, VersionSuffix,
     };
+
+    fn cci(s: &str) -> CamelCaseIdentifier {
+        CamelCaseIdentifier::new(s).unwrap()
+    }
 
     #[test]
     fn can_parse_tictactoe_toml() {
@@ -188,8 +143,8 @@ mod tests {
                     Component {
                         name: Some("Cell".to_string()),
                         description: Some("The ID of the cell this player is in".to_string()),
-                        type_: ComponentType::String(TypeRef::new("I32")),
-                        attributes: vec!["Store".to_string()],
+                        type_: ComponentType::Identifier(cci("I32")),
+                        attributes: vec![cci("Store")],
                         default: None,
                     }
                     .into()
@@ -251,74 +206,6 @@ mod tests {
     }
 
     #[test]
-    fn can_parse_manifest_with_namespaces() {
-        const TOML: &str = r#"
-        [project]
-        id = "tictactoe"
-        name = "Tic Tac Toe"
-        version = "0.0.1"
-
-        [components]
-        "core" = { name = "Core" }
-        "core::app" = { name = "App" }
-
-        "core::app::main_scene" = { name = "Main Scene", type = "Empty" }
-        "#;
-
-        assert_eq!(
-            Manifest::parse(TOML),
-            Ok(Manifest {
-                project: Project {
-                    id: Identifier::new("tictactoe").unwrap(),
-                    name: Some("Tic Tac Toe".to_string()),
-                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
-                    description: None,
-                    authors: vec![],
-                    organization: None,
-                    includes: Default::default(),
-                },
-                build: Build {
-                    rust: BuildRust {
-                        feature_multibuild: vec!["client".to_string(), "server".to_string()]
-                    }
-                },
-                components: BTreeMap::from_iter([
-                    (
-                        IdentifierPathBuf::new("core").unwrap(),
-                        Namespace {
-                            name: Some("Core".to_string()),
-                            description: None
-                        }
-                        .into()
-                    ),
-                    (
-                        IdentifierPathBuf::new("core::app").unwrap(),
-                        Namespace {
-                            name: Some("App".to_string()),
-                            description: None
-                        }
-                        .into()
-                    ),
-                    (
-                        IdentifierPathBuf::new("core::app::main_scene").unwrap(),
-                        Component {
-                            name: Some("Main Scene".to_string()),
-                            description: None,
-                            type_: ComponentType::String(TypeRef::new("Empty")),
-                            attributes: vec![],
-                            default: None,
-                        }
-                        .into()
-                    )
-                ]),
-                concepts: BTreeMap::new(),
-                messages: BTreeMap::new(),
-                enums: BTreeMap::new(),
-            })
-        )
-    }
-
-    #[test]
     fn can_parse_concepts_with_documented_namespace_from_manifest() {
         use toml::Value;
 
@@ -335,7 +222,6 @@ mod tests {
         "core::transform::translation" = { type = "Vec3", name = "Translation", description = "" }
 
         [concepts]
-        "ns" = { name = "Namespace", description = "A Test Namespace" }
         "ns::transformable" = { name = "Transformable", description = "Can be translated, rotated and scaled.", components = {"core::transform::translation" = [0, 0, 0], "core::transform::rotation" = [0, 0, 0, 1], "core::transform::scale" = [1, 1, 1]} }
         "#;
 
@@ -362,7 +248,7 @@ mod tests {
                         Component {
                             name: Some("Rotation".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::String(TypeRef::new("Quat")),
+                            type_: ComponentType::Identifier(cci("Quat")),
                             attributes: vec![],
                             default: None,
                         }
@@ -373,7 +259,7 @@ mod tests {
                         Component {
                             name: Some("Scale".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::String(TypeRef::new("Vec3")),
+                            type_: ComponentType::Identifier(cci("Vec3")),
                             attributes: vec![],
                             default: None,
                         }
@@ -384,7 +270,7 @@ mod tests {
                         Component {
                             name: Some("Spherical billboard".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::String(TypeRef::new("Empty")),
+                            type_: ComponentType::Identifier(cci("Empty")),
                             attributes: vec![],
                             default: None,
                         }
@@ -395,59 +281,49 @@ mod tests {
                         Component {
                             name: Some("Translation".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::String(TypeRef::new("Vec3")),
+                            type_: ComponentType::Identifier(cci("Vec3")),
                             attributes: vec![],
                             default: None,
                         }
                         .into()
                     ),
                 ]),
-                concepts: BTreeMap::from_iter([
-                    (
-                        IdentifierPathBuf::new("ns").unwrap(),
-                        Namespace {
-                            name: Some("Namespace".to_string()),
-                            description: Some("A Test Namespace".to_string())
-                        }
-                        .into()
-                    ),
-                    (
-                        IdentifierPathBuf::new("ns::transformable").unwrap(),
-                        Concept {
-                            name: Some("Transformable".to_string()),
-                            description: Some("Can be translated, rotated and scaled.".to_string()),
-                            extends: vec![],
-                            components: BTreeMap::from_iter([
-                                (
-                                    IdentifierPathBuf::new("core::transform::translation").unwrap(),
-                                    Value::Array(vec![
-                                        Value::Integer(0),
-                                        Value::Integer(0),
-                                        Value::Integer(0)
-                                    ])
-                                ),
-                                (
-                                    IdentifierPathBuf::new("core::transform::rotation").unwrap(),
-                                    Value::Array(vec![
-                                        Value::Integer(0),
-                                        Value::Integer(0),
-                                        Value::Integer(0),
-                                        Value::Integer(1)
-                                    ])
-                                ),
-                                (
-                                    IdentifierPathBuf::new("core::transform::scale").unwrap(),
-                                    Value::Array(vec![
-                                        Value::Integer(1),
-                                        Value::Integer(1),
-                                        Value::Integer(1)
-                                    ])
-                                )
-                            ])
-                        }
-                        .into()
-                    )
-                ]),
+                concepts: BTreeMap::from_iter([(
+                    IdentifierPathBuf::new("ns::transformable").unwrap(),
+                    Concept {
+                        name: Some("Transformable".to_string()),
+                        description: Some("Can be translated, rotated and scaled.".to_string()),
+                        extends: vec![],
+                        components: BTreeMap::from_iter([
+                            (
+                                IdentifierPathBuf::new("core::transform::translation").unwrap(),
+                                Value::Array(vec![
+                                    Value::Integer(0),
+                                    Value::Integer(0),
+                                    Value::Integer(0)
+                                ])
+                            ),
+                            (
+                                IdentifierPathBuf::new("core::transform::rotation").unwrap(),
+                                Value::Array(vec![
+                                    Value::Integer(0),
+                                    Value::Integer(0),
+                                    Value::Integer(0),
+                                    Value::Integer(1)
+                                ])
+                            ),
+                            (
+                                IdentifierPathBuf::new("core::transform::scale").unwrap(),
+                                Value::Array(vec![
+                                    Value::Integer(1),
+                                    Value::Integer(1),
+                                    Value::Integer(1)
+                                ])
+                            )
+                        ])
+                    }
+                    .into()
+                )]),
                 messages: BTreeMap::new(),
                 enums: BTreeMap::new(),
             })
@@ -484,7 +360,7 @@ mod tests {
                 messages: BTreeMap::new(),
                 enums: BTreeMap::from_iter([(
                     CamelCaseIdentifier::new("CellState").unwrap(),
-                    Enum(vec!["Free".to_owned(), "Taken".to_owned()]).into()
+                    Enum(vec![cci("Free"), cci("Taken")]).into()
                 )]),
             })
         )

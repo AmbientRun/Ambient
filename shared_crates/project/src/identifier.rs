@@ -7,9 +7,33 @@ use proc_macro2::TokenStream;
 use quote::{ToTokens, TokenStreamExt};
 use serde::{Deserialize, Serialize};
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct IdentifierPath<'a>(pub &'a [Identifier]);
-impl<'a> IdentifierPath<'a> {}
+impl<'a> IdentifierPath<'a> {
+    pub fn first(&self) -> &Identifier {
+        &self.0[0]
+    }
+
+    pub fn last(&self) -> &Identifier {
+        &self.0[self.0.len() - 1]
+    }
+
+    pub fn parent(&self) -> Option<IdentifierPath> {
+        if self.0.len() == 1 {
+            None
+        } else {
+            Some(IdentifierPath(&self.0[..self.0.len() - 1]))
+        }
+    }
+
+    pub fn parent_and_last(&self) -> (IdentifierPath, &Identifier) {
+        if self.0.len() == 1 {
+            (Self::default(), self.first())
+        } else {
+            (IdentifierPath(&self.0[..self.0.len() - 1]), self.last())
+        }
+    }
+}
 impl<'a> Display for IdentifierPath<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut first = true;
@@ -195,7 +219,7 @@ impl ToTokens for Identifier {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct CamelCaseIdentifier(pub(super) String);
 impl CamelCaseIdentifier {
     pub fn new(id: impl Into<String>) -> Result<Self, &'static str> {
@@ -221,6 +245,11 @@ impl CamelCaseIdentifier {
         }
 
         Ok(id)
+    }
+}
+impl Debug for CamelCaseIdentifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(&self.0, f)
     }
 }
 impl Serialize for CamelCaseIdentifier {

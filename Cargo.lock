@@ -1126,6 +1126,7 @@ dependencies = [
  "ambient_shared_types",
  "anyhow",
  "glam 0.22.0",
+ "thiserror",
  "toml 0.7.3",
  "ulid",
 ]

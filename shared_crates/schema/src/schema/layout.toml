@@ -3,148 +3,52 @@ id = "layout"
 name = "Layout"
 description = "Layout components such as flow, margins etc."
 
-[components.align_horizontal_begin]
-type = "Empty"
-name = "Align horizontal begin"
-description = "Layout alignment: horizontal begin."
+[components.align_horizontal]
+type = "Align"
+name = "Align horizontal"
+description = "Layout alignment: horizontal."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components.align_horizontal_center]
-type = "Empty"
-name = "Align horizontal center"
-description = "Layout alignment: horizontal center."
+[components.align_vertical]
+type = "Align"
+name = "Align vertical"
+description = "Layout alignment: vertical."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components.align_horizontal_end]
-type = "Empty"
-name = "Align horizontal end"
-description = "Layout alignment: horizontal end."
+[components.docking]
+type = "Docking"
+name = "Docking"
+description = "Layout docking."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components.align_vertical_begin]
-type = "Empty"
-name = "Align vertical begin"
-description = "Layout alignment: vertical begin."
+[components.fit_horizontal]
+type = "Fit"
+name = "Fit horizontal"
+description = "Layout fit: horizontal."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components.align_vertical_center]
-type = "Empty"
-name = "Align vertical center"
-description = "Layout alignment: vertical center."
+[components.fit_vertical]
+type = "Fit"
+name = "Fit vertical"
+description = "Layout fit: vertical."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components.align_vertical_end]
-type = "Empty"
-name = "Align vertical end"
-description = "Layout alignment: vertical end."
+[components.layout]
+type = "Layout"
+name = "Layout"
+description = "Layout."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components.docking_bottom]
-type = "Empty"
-name = "Docking bottom"
-description = "Layout docking: bottom."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.docking_fill]
-type = "Empty"
-name = "Docking fill"
-description = "Layout docking: fill."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.docking_left]
-type = "Empty"
-name = "Docking left"
-description = "Layout docking: left."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.docking_right]
-type = "Empty"
-name = "Docking right"
-description = "Layout docking: right."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.docking_top]
-type = "Empty"
-name = "Docking top"
-description = "Layout docking: top."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.fit_horizontal_children]
-type = "Empty"
-name = "Fit horizontal children"
-description = "Layout fit: horizontal children."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.fit_horizontal_none]
-type = "Empty"
-name = "Fit horizontal none"
-description = "Layout fit: horizontal none."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.fit_horizontal_parent]
-type = "Empty"
-name = "Fit horizontal parent"
-description = "Layout fit: horizontal parent."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.fit_vertical_children]
-type = "Empty"
-name = "Fit vertical children"
-description = "Layout fit: vertical children."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.fit_vertical_none]
-type = "Empty"
-name = "Fit vertical none"
-description = "Layout fit: vertical none."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.fit_vertical_parent]
-type = "Empty"
-name = "Fit vertical parent"
-description = "Layout fit: vertical parent."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.gpu_ui_size]
-type = "Vec4"
-name = "GPU UI size"
-description = "Upload the width and height of this UI element to the GPU."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.height]
-type = "F32"
-name = "Height"
-description = "The height of a UI element."
+[components.orientation]
+type = "Orientation"
+name = "Orientation"
+description = "Layout orientation."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components.is_book_file]
 type = "Empty"
 name = "Is book file"
 description = "This is a file in a `layout_bookcase`."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.layout_bookcase]
-type = "Empty"
-name = "Bookcase layout"
-description = "Min-max bookcase layout."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.layout_dock]
-type = "Empty"
-name = "Dock layout"
-description = "Top-down dock layout."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.layout_flow]
-type = "Empty"
-name = "Flow layout"
-description = "Bottom-up flow layout."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.layout_width_to_children]
-type = "Empty"
-name = "Layout width to children"
-description = "Width to children."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components.margin]
@@ -189,18 +93,6 @@ name = "Maximum width"
 description = "The maximum width of a UI element."
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components.orientation_horizontal]
-type = "Empty"
-name = "Orientation horizontal"
-description = "Layout orientation: horizontal."
-attributes = ["Debuggable", "Networked", "Store"]
-
-[components.orientation_vertical]
-type = "Empty"
-name = "Orientation vertical"
-description = "Layout orientation: vertical."
-attributes = ["Debuggable", "Networked", "Store"]
-
 [components.screen]
 type = "Empty"
 name = "Screen"
@@ -218,3 +110,22 @@ type = "F32"
 name = "Width"
 description = "The width of a UI element."
 attributes = ["Debuggable", "Networked", "Store"]
+
+[components.height]
+type = "F32"
+name = "Height"
+description = "The height of a UI element."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components.gpu_ui_size]
+type = "Vec4"
+name = "GPU UI size"
+description = "Upload the width and height of this UI element to the GPU."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[enums]
+Align = ["Begin", "Center", "End"]
+Fit = ["None", "Parent", "Children"]
+Orientation = ["Horizontal", "Vertical"]
+Docking = ["Left", "Right", "Top", "Bottom", "Fill"]
+Layout = ["Flow", "Dock", "Book", "WidthToChildren"]

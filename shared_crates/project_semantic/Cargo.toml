@@ -15,3 +15,4 @@ anyhow = { workspace = true }
 ulid = { workspace = true }
 glam = { workspace = true }
 toml = { workspace = true }
+thiserror = { workspace = true }
