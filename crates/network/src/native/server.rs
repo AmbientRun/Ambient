@@ -23,12 +23,13 @@ use colored::Colorize;
 use futures::StreamExt;
 use parking_lot::{Mutex, RwLock};
 use quinn::{ClientConfig, Endpoint, ServerConfig, TransportConfig};
-use rustls::{Certificate, PrivateKey, RootCertStore};
+use rustls::{Certificate, PrivateKey};
 use tokio::time::{interval, MissedTickBehavior};
 use uuid::Uuid;
 
 use crate::{
     client_connection::ConnectionKind,
+    native::load_native_roots,
     proto::{
         self,
         server::{handle_diffs, ConnectionData},
@@ -461,12 +462,22 @@ fn create_server(server_addr: SocketAddr, crypto: &Crypto) -> anyhow::Result<End
     let mut endpoint = Endpoint::server(server_conf, server_addr)?;
 
     // Create client config for the server endpoint for proxying and hole punching
-    let mut roots = RootCertStore::empty();
+    let mut roots = load_native_roots();
     roots.add(&cert).unwrap();
-    let crypto = rustls::ClientConfig::builder()
+
+    // add proxy test cert if provided
+    if let Ok(test_ca_cert_path) = std::env::var("AMBIENT_PROXY_TEST_CA_CERT") {
+        let cert = Certificate(std::fs::read(test_ca_cert_path)?);
+        roots.add(&cert).unwrap();
+    }
+
+    let mut crypto = rustls::ClientConfig::builder()
         .with_safe_defaults()
         .with_root_certificates(roots)
         .with_no_client_auth();
+    crypto.alpn_protocols = vec![
+        b"ambient-proxy-03".to_vec(),
+    ];
 
     let mut client_config = ClientConfig::new(Arc::new(crypto));
     client_config.transport_config(transport);
