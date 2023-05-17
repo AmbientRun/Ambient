@@ -27,6 +27,8 @@ ambient_project = { path = "../../shared_crates/project" }
 ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] }
 
 physxx = { path = "../../libs/physxx" }
+
+lazy_static = { workspace = true }
 rhai = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }

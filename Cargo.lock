@@ -1513,6 +1513,7 @@ dependencies = [
  "indexmap",
  "indoc",
  "itertools",
+ "lazy_static",
  "log",
  "once_cell",
  "parking_lot",

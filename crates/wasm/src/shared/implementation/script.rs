@@ -21,9 +21,10 @@ struct RhaiEntityInfo {
 }
 
 pub(crate) fn watch(
-    world: Arc<Mutex<&World>>,
-    url: String,
+    _world: Arc<Mutex<&World>>,
+    _url: String,
 ) -> anyhow::Result<()> {
-    println!("server only now");
+    // moved to specific
+    unimplemented!();
     Ok(())
 }

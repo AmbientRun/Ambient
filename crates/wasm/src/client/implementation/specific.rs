@@ -32,9 +32,17 @@ use crate::shared::{
 
 use ambient_core::camera::{clip_space_ray, world_to_clip_space};
 
-use std::sync::Arc;
+use std::{sync::Arc};
 use parking_lot::Mutex;
-use rhai::{NativeCallContext, Scope, FnPtr, Dynamic, Map};
+use rhai::{NativeCallContext, FnPtr, Dynamic};
+
+use slotmap::SlotMap;
+use lazy_static::lazy_static;
+
+lazy_static! {
+    static ref CONTEXT_MAP: Mutex<SlotMap<slotmap::DefaultKey, rhai::NativeCallContextStore>> = Mutex::new(SlotMap::new());
+}
+
 
 impl wit::client_message::Host for Bindings {
     fn send(
@@ -287,7 +295,7 @@ impl wit::script::Host for Bindings {
             let mut last_content = String::new();
             let created_entities = Arc::new(Mutex::new(Vec::<EntityId>::new()));
             loop {
-                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                tokio::time::sleep(std::time::Duration::from_millis(100)).await;
                 let content = reqwest::get(path.clone()).await.unwrap().text().await.unwrap();
                 if content != last_content {
                     last_content = content.clone();
@@ -299,51 +307,65 @@ impl wit::script::Host for Bindings {
                     created_entities.lock().clear();
                     let created_entities_clone = Arc::clone(&created_entities);
                     world_async_run.run(move |_world| {
-                        let mut engine: rhai::Engine = unsafe { std::mem::transmute( rhai::Engine::new() ) };
-
-                        // let mut engine = Arc::new(Mutex::new(rhai::Engine::new()));
-                        // let engine_clone = Arc::clone(&engine);
+                        let engine = Arc::new(Mutex::new(rhai::Engine::new()));
+                        let keybinds = Arc::new(Mutex::new(std::collections::HashMap::<(String, String, String), FnPtr>::new() ));
+                        let keybinds_arc = Arc::clone(&keybinds);
                         let world_arc_1 = Arc::clone(&world_arc_clone);
                         let world_arc_2 = Arc::clone(&world_arc_clone);
+                        // let world_arc_3 = Arc::clone(&world_arc_clone);
 
-                        engine.register_fn("bindkey", move |key: &str, entityid: String, component: &str, action: rhai::Dynamic | {
+                        let engine_arc1 = Arc::clone(&engine);
+                        let engine_arc2 = Arc::clone(&engine);
+
+                        engine.lock().register_fn("bindkey", move |context: NativeCallContext, key: String, entityid: String, component: String, action: rhai::Dynamic | {
+
                             let world = Arc::clone(&world_arc_2);
+                            let world2 = world.clone();
                             let world_runtime = world.lock().resource(runtime()).clone();
-                            println!("bindkey: {:?} {:?} {:?}", key, entityid, component);
                             let action_fn: FnPtr = action.clone().try_cast::<FnPtr>().unwrap();
-                            // let context: NativeCallContext<'static> = unsafe { std::mem::transmute(context) };
-                            // let engine = unsafe { std::mem::transmute(engine) };
+
+                            let engine_arc = Arc::clone(&engine_arc1);
+                            let keybinds = Arc::clone(&keybinds_arc);
+                            keybinds_arc.lock().insert((key.to_string(), entityid.clone(), component.clone()), action_fn);
+
+                            // Store the context data in the CONTEXT_MAP
+                            let context_data = context.store_data();
+                            let context_key = CONTEXT_MAP.lock().insert(context_data);
+
+                            let (tx, rx) = flume::unbounded::<&str>();
+
+                            world_runtime.spawn(async move {
+                                while let Ok(key) = rx.recv_async().await {
+                                    println!("key: {}", key);
+                                    let id = EntityId::from_base64(&entityid).unwrap();
+                                    let pos = world2.lock().get(id, translation()).unwrap();
+                                    let pos_array = pos.to_array().iter().map(|x| Dynamic::from(*x)).collect::<Vec<Dynamic>>();
+                                    let context_map = CONTEXT_MAP.lock();
+                                    let context_data = context_map.get(context_key).unwrap();
+                                    let new_pos_rhai = keybinds.lock().get_mut(&(key.to_string(), entityid.clone(), component.clone())).unwrap().call_within_context::<rhai::Array>(&context_data.create_context(&*engine_arc.lock()), (pos_array,)).unwrap();
+                                    let new_pos = Vec3::from_slice(&new_pos_rhai.iter().map(|x| x.as_float().unwrap()).collect::<Vec<f32>>());
+                                    world2.lock().set(id, translation(), new_pos).unwrap();
+                                }
+                            });
+
                             world_runtime.spawn(async move {
                                 loop {
                                     tokio::time::sleep(std::time::Duration::from_millis(20)).await;
                                     if world.lock().resource(player_raw_input()).keys.contains(&ambient_shared_types::VirtualKeyCode::W) {
-                                        let id = EntityId::from_base64(&entityid).unwrap();
-                                        let pos = world.lock().get(id, translation()).unwrap();
-                                        // let pos_array = pos.to_array().iter().map(|x| Dynamic::from(*x)).collect::<Vec<Dynamic>>();
-                                        // let _new_pos = action_fn.call_raw(&context, Some(&mut action), vec![Dynamic::from_array(pos_array)]).unwrap().into_array().unwrap();
-                                        // let new_pos = Vec3::from_slice(&_new_pos.iter().map(|x| x.as_float().unwrap()).collect::<Vec<f32>>());
-                                        // world.lock().set(id, translation(), new_pos).unwrap();
-                                        // let res = action_fn.call_within_context::<rhai::Array>(&mut context, ());
-                                        println!("pos: {:?}", pos);
+                                        if &key == "W" {
+                                            tx.send_async("W").await.unwrap();
+                                        }
+                                    }
+                                    if world.lock().resource(player_raw_input()).keys.contains(&ambient_shared_types::VirtualKeyCode::S) {
+                                        if &key == "S" {
+                                            tx.send_async("S").await.unwrap();
+                                        }
                                     }
                                 }
                             });
                         });
 
-                        engine.register_fn("get_component", move |entityId: String, component: &str| -> Dynamic {
-                            todo!()
-                            // let id = EntityId::from_base64(&entityId).unwrap();
-                            // Dynamic::from(world.lock().get(entityId, translation()).unwrap())
-
-                        });
-                        engine.register_fn("set_component", move |entityId: String, component: &str, value: Dynamic| {
-                            todo!()
-                            // let id = EntityId::from_base64(&entityId).unwrap();
-                            // let value = value.into::<Vec3>();
-                            // world.lock().set(id, translation(), value).unwrap();
-                        });
-
-                        engine.register_fn("new_entity", move |info: rhai::Map| -> String {
+                        engine.lock().register_fn("new_entity", move |info: rhai::Map| -> String {
                             println!("entity: {:?}", info);
                             let mut entity = Entity::new();
                             let world = Arc::clone(&world_arc_1);
@@ -384,12 +406,12 @@ impl wit::script::Host for Bindings {
                             return id.to_base64()
                         });
 
-                        match engine.run(&content) {
+                        match engine_arc2.lock().run(&content) {
                             Ok(_) => {}
                             Err(e) => {
                                 println!("error: {:?}", e);
                             }
-                        }
+                        };
                     });
                 }
             }

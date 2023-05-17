@@ -1,12 +1,9 @@
 use ambient_api::{
     components::core::{
         app::main_scene,
-        camera::{aspect_ratio_from_window, fog},
+        camera::{aspect_ratio_from_window},
         primitives::{cube, quad},
-        rendering::{
-            cast_shadows, color, fog_color, fog_density, fog_height_falloff, light_diffuse, sky,
-            sun,
-        },
+        rendering::color,
         transform::{lookat_target, rotation, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
@@ -15,6 +12,7 @@ use ambient_api::{
 
 #[main]
 fn main() {
+
     script::watch(asset::url("client.rhai").unwrap());
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
