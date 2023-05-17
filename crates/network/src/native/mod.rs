@@ -3,6 +3,7 @@
 //! This included quinn server+client and webtransport server using `h3`
 pub mod client;
 pub mod server;
+mod webtransport;
 
 #[cfg(feature = "tls-native-roots")]
 fn add_native_roots(roots: &mut rustls::RootCertStore) {

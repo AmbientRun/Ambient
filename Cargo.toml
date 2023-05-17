@@ -82,9 +82,6 @@ env_logger = "0.10.0"
 async-recursion = "1.0.0"
 anyhow = { version = "1.0", features = ["backtrace"] }
 bitflags = "1.3"
-quinn = { version = "0.10", features = ["futures-io"] }
-rustls = { version = "0.21", features = ["dangerous_configuration", "quic"] }
-rustls-pemfile = "1.0"
 parking_lot = { version = "0.12.0", features = ["serde"] }
 clap = { version = "4.0", features = ["derive"] }
 sentry = { version = "0.27.0", default-features = false, features = [
@@ -155,11 +152,24 @@ ulid = { version = "1.0.0", features = ["serde"] }
 enum_dispatch = "0.3"
 uuid = "1.3"
 scopeguard = "1.0"
+
+# Networking
+
+time = { version = "0.3", features = ["macros"] }
+quinn = { version = "0.10" }
 rustls-native-certs = "0.6.2"
 webpki-roots = "0.23.0"
 mikktspace = { git = "https://github.com/gltf-rs/mikktspace" }
-time = { version = "0.3", features = ["macros"] }
+rustls = { version = "0.21.1", features = ["dangerous_configuration", "quic"] }
 
+rustls-pemfile = "1.0"
+# See: https://github.com/hyperium/h3/pull/183
+
+
+h3 = { git = "https://github.com/security-union/h3", branch = "add-webtransport" }
+h3-webtransport = { git = "https://github.com/security-union/h3", branch = "add-webtransport" }
+h3-quinn = { git = "https://github.com/security-union/h3", branch = "add-webtransport" }
+http = { version = "0.2.9" }
 #
 # WASM dependencies. Should be able to move off these once this all begins to stabilise a little.
 #

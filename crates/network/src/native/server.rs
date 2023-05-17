@@ -18,17 +18,19 @@ use ambient_std::{
     log_result,
 };
 use ambient_sys::time::Instant;
+use anyhow::Context;
 use colored::Colorize;
-use futures::StreamExt;
+use futures::{SinkExt, StreamExt};
 use parking_lot::{Mutex, RwLock};
-use quinn::{ClientConfig, Endpoint, ServerConfig, TransportConfig};
 use rustls::{Certificate, PrivateKey};
+use quinn::{ClientConfig, Connecting, Endpoint, ServerConfig, TransportConfig};
 use tokio::time::{interval, MissedTickBehavior};
 use uuid::Uuid;
 
 use crate::{
     client_connection::ConnectionKind,
     native::load_root_certs,
+    native::webtransport::handle_h3_connection,
     proto::{
         self,
         server::{handle_diffs, ConnectionData},
@@ -161,19 +163,7 @@ impl GameServer {
             tracing::trace_span!("Listening for incoming connections");
             tokio::select! {
                 Some(conn) = endpoint.accept() => {
-                    tracing::debug!("Received connection");
-
-                    let conn = match conn.await {
-                        Ok(v) => v,
-                        Err(e) => {
-                            tracing::error!("Failed to accept incoming connection. {e}");
-                            continue;
-                        }
-                    };
-
-
-                    tracing::debug!("Accepted connection");
-                    let fut = handle_quinn_connection(conn.into(), state.clone(), world_stream_filter.clone(), ServerBaseUrlKey.get(&assets));
+                    let fut = resolve_connection(conn, state.clone(), world_stream_filter.clone(), ServerBaseUrlKey.get(&assets));
                     tokio::spawn(async move {  log_result!(fut.await) });
                 }
                 _ = sim_interval.tick() => {
@@ -222,6 +212,70 @@ impl GameServer {
     }
 }
 
+async fn resolve_connection(
+    mut conn: Connecting,
+    state: SharedServerState,
+    world_stream_filter: WorldStreamFilter,
+    content_base_url: AbsAssetUrl,
+) -> anyhow::Result<()> {
+    tracing::debug!("Received connection");
+
+    let handshake_data = conn
+        .handshake_data()
+        .await
+        .context("Failed to acquire handshake data")?
+        .downcast::<quinn::crypto::rustls::HandshakeData>()
+        .ok()
+        .context("Failed to downcast handshake data")?;
+
+    let protocol = handshake_data.protocol.context("Missing protocol")?;
+    let protocol_str = std::str::from_utf8(&protocol);
+    let server_name = handshake_data.server_name;
+
+    tracing::info!(
+        ?protocol,
+        ?protocol_str,
+        ?server_name,
+        "Received handshake data"
+    );
+
+    let conn = match conn.await {
+        Ok(v) => v,
+        Err(e) => {
+            tracing::error!("Failed to accept incoming connection. {e}");
+            return Ok(());
+        }
+    };
+
+    tracing::debug!("Accepted connection");
+    if protocol == b"ambient-02" {
+        handle_quinn_connection(
+            conn.into(),
+            state.clone(),
+            world_stream_filter.clone(),
+            content_base_url,
+        )
+        .await
+    } else if protocol == b"h3" {
+        handle_h3_connection(
+            conn.into(),
+            state.clone(),
+            world_stream_filter,
+            content_base_url,
+        )
+        .await
+    } else {
+        tracing::error!(
+            local_ip=?conn.local_ip(),
+            "Client connected using unsupported protocol: {:?}",
+            protocol
+        );
+
+        conn.close(0u32.into(), b"Unsupported protocol");
+        Ok(())
+    }
+}
+
 /// Setup the protocol and enter the update loop for a new connected client
 #[tracing::instrument(name = "server", level = "info", skip_all, fields(content_base_url))]
 async fn handle_quinn_connection(
@@ -258,8 +312,6 @@ async fn handle_quinn_connection(
     let mut push_send = stream::SendStream::new(conn.open_uni().await?);
 
     let diffs_rx = diffs_rx.into_stream();
-
-    use futures::SinkExt;
 
     // Send who we are
     push_send.send(ServerPush::ServerInfo(server_info)).await?;
