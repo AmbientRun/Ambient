@@ -1043,6 +1043,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_procedurals"
+version = "0.2.1"
+dependencies = [
+ "ambient_gpu",
+ "ambient_renderer",
+]
+
+[[package]]
 name = "ambient_profiling"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1497,6 +1505,7 @@ dependencies = [
  "ambient_network",
  "ambient_physics",
  "ambient_prefab",
+ "ambient_procedurals",
  "ambient_profiling",
  "ambient_project",
  "ambient_renderer",

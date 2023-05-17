@@ -1,0 +1,12 @@
+[package]
+name = "ambient_procedurals"
+version = { workspace = true }
+rust-version = { workspace = true }
+edition = "2021"
+description = "Ambient procedural generation functionality."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+
+[dependencies]
+ambient_gpu = { path = "../gpu" , version = "0.2.1" }
+ambient_renderer = { path = "../renderer" , version = "0.2.1" }
