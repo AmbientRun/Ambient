@@ -16,6 +16,7 @@ use ulid::Ulid;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Semantic {
+    items: HashMap<Ulid, ItemValue>,
     root_scope: Scope,
     scopes: BTreeMap<Identifier, Scope>,
 }
@@ -36,7 +37,8 @@ impl Semantic {
             };
         }
 
-        Self {
+        let mut sem = Self {
+            items: HashMap::new(),
             root_scope: Scope {
                 id: Identifier::default(),
                 manifest: None,
@@ -44,13 +46,18 @@ impl Semantic {
                 components: BTreeMap::new(),
                 concepts: BTreeMap::new(),
                 messages: BTreeMap::new(),
-                types: BTreeMap::from_iter(primitive_component_definitions!(
-                    define_primitive_types
-                )),
+                types: BTreeMap::new(),
                 attributes: BTreeMap::new(),
             },
             scopes: BTreeMap::new(),
+        };
+
+        for (id, ty) in primitive_component_definitions!(define_primitive_types) {
+            let item_id = sem.add(ty);
+            sem.root_scope.types.insert(id, item_id);
         }
+
+        sem
     }
 
     pub fn add_file(
@@ -58,12 +65,18 @@ impl Semantic {
         filename: &str,
         file_provider: &dyn FileProvider,
     ) -> anyhow::Result<&mut Scope> {
-        let scope = Scope::from_file(filename, file_provider)?;
+        let scope = Scope::from_file(self, filename, file_provider)?;
         Ok(self.scopes.entry(scope.id.clone()).or_insert(scope))
     }
 
     pub fn resolve(&mut self) -> anyhow::Result<()> {
         Ok(())
+    }
+
+    pub fn add<T: Item>(&mut self, item: T) -> ItemId<T> {
+        let ulid = ulid::Ulid::new();
+        self.items.insert(ulid, item.into_item_value());
+        ItemId(ulid, PhantomData)
     }
 }
 
@@ -77,11 +90,11 @@ pub struct Scope {
     manifest: Option<Manifest>,
 
     scopes: BTreeMap<Identifier, Scope>,
-    components: BTreeMap<Identifier, Component>,
-    concepts: BTreeMap<Identifier, Concept>,
-    messages: BTreeMap<Identifier, Message>,
-    types: BTreeMap<CamelCaseIdentifier, Type>,
-    attributes: BTreeMap<Identifier, Attribute>,
+    components: BTreeMap<Identifier, ItemId<Component>>,
+    concepts: BTreeMap<Identifier, ItemId<Concept>>,
+    messages: BTreeMap<Identifier, ItemId<Message>>,
+    types: BTreeMap<CamelCaseIdentifier, ItemId<Type>>,
+    attributes: BTreeMap<Identifier, ItemId<Attribute>>,
 }
 impl Debug for Scope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -111,13 +124,17 @@ impl Debug for Scope {
     }
 }
 impl Scope {
-    pub fn from_file(filename: &str, file_provider: &dyn FileProvider) -> anyhow::Result<Self> {
+    pub fn from_file(
+        semantic: &mut Semantic,
+        filename: &str,
+        file_provider: &dyn FileProvider,
+    ) -> anyhow::Result<Self> {
         let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename}"))?;
 
         let mut scopes = BTreeMap::new();
         for include in &manifest.project.includes {
-            let scope = Scope::from_file(include, file_provider)?;
+            let scope = Scope::from_file(semantic, include, file_provider)?;
             scopes.insert(scope.id.clone(), scope);
         }
 
@@ -139,7 +156,7 @@ impl Scope {
             scope
                 .get_scope_mut(parent)
                 .components
-                .insert(last.clone(), component.into());
+                .insert(last.clone(), semantic.add(component.into()));
         }
 
         for (path, concept) in manifest.concepts.iter() {
@@ -148,7 +165,7 @@ impl Scope {
             scope
                 .get_scope_mut(parent)
                 .concepts
-                .insert(last.clone(), concept.into());
+                .insert(last.clone(), semantic.add(concept.into()));
         }
 
         for (path, message) in manifest.messages.iter() {
@@ -157,11 +174,11 @@ impl Scope {
             scope
                 .get_scope_mut(parent)
                 .messages
-                .insert(last.clone(), message.into());
+                .insert(last.clone(), semantic.add(message.into()));
         }
 
         for (segment, ty) in manifest.enums.iter() {
-            scope.types.insert(segment.clone(), ty.into());
+            scope.types.insert(segment.clone(), semantic.add(ty.into()));
         }
 
         scope.manifest = Some(manifest);
@@ -190,6 +207,7 @@ impl Scope {
     }
 }
 
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub enum ItemType {
     Component,
     Concept,
@@ -197,26 +215,50 @@ pub enum ItemType {
     Type,
     Attribute,
 }
-pub trait IsItemType {
-    const TYPE: ItemType;
-    type Unresolved: Eq + Debug;
+
+#[derive(Clone, PartialEq, Debug)]
+pub enum ItemValue {
+    Component(Component),
+    Concept(Concept),
+    Message(Message),
+    Type(Type),
+    Attribute(Attribute),
 }
 
-#[derive(Clone, Debug, Hash)]
-pub struct ItemId<T: IsItemType>(Ulid, PhantomData<T>);
-impl<T: IsItemType> PartialEq for ItemId<T> {
+pub trait Item {
+    const TYPE: ItemType;
+    type Unresolved: Eq + Debug;
+
+    fn from_item_value(value: &ItemValue) -> Option<&Self>;
+    fn into_item_value(self) -> ItemValue;
+}
+
+#[derive(Clone, Hash)]
+pub struct ItemId<T: Item>(Ulid, PhantomData<T>);
+
+impl<T: Item + Debug> Debug for ItemId<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("ItemId").field(&self.0 .0).finish()
+    }
+}
+impl<T: Item> PartialEq for ItemId<T> {
     fn eq(&self, other: &Self) -> bool {
         self.0 == other.0
     }
 }
-impl<T: IsItemType> Eq for ItemId<T> {}
+impl<T: Item> Eq for ItemId<T> {}
+impl<T: Item> ItemId<T> {
+    pub fn get<'a>(&'a self, semantic: &'a Semantic) -> Option<&'a T> {
+        T::from_item_value(semantic.items.get(&self.0)?)
+    }
+}
 
 #[derive(Clone)]
-pub enum ItemRef<T: IsItemType> {
+pub enum ItemRef<T: Item> {
     Unresolved(T::Unresolved),
     Resolved(ItemId<T>),
 }
-impl<T: IsItemType + Debug> Debug for ItemRef<T> {
+impl<T: Item + Debug> Debug for ItemRef<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Unresolved(arg0) => write!(f, "Unresolved({arg0:?})"),
@@ -224,7 +266,7 @@ impl<T: IsItemType + Debug> Debug for ItemRef<T> {
         }
     }
 }
-impl<T: IsItemType> PartialEq for ItemRef<T> {
+impl<T: Item> PartialEq for ItemRef<T> {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (Self::Unresolved(l0), Self::Unresolved(r0)) => l0 == r0,
@@ -233,8 +275,8 @@ impl<T: IsItemType> PartialEq for ItemRef<T> {
         }
     }
 }
-impl<T: IsItemType> Eq for ItemRef<T> {}
-impl<T: IsItemType> std::hash::Hash for ItemRef<T> {
+impl<T: Item> Eq for ItemRef<T> {}
+impl<T: Item> std::hash::Hash for ItemRef<T> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         core::mem::discriminant(self).hash(state);
     }
@@ -254,9 +296,20 @@ pub struct Component {
     pub attributes: Vec<ItemRef<Attribute>>,
     pub default: Option<MaybePrimitiveValue>,
 }
-impl IsItemType for Component {
+impl Item for Component {
     const TYPE: ItemType = ItemType::Component;
     type Unresolved = IdentifierPathBuf;
+
+    fn from_item_value(value: &ItemValue) -> Option<&Self> {
+        match value {
+            ItemValue::Component(value) => Some(value),
+            _ => None,
+        }
+    }
+
+    fn into_item_value(self) -> ItemValue {
+        ItemValue::Component(self)
+    }
 }
 impl From<&ambient_project::Component> for Component {
     fn from(value: &ambient_project::Component) -> Self {
@@ -284,9 +337,20 @@ pub struct Concept {
     pub extends: Vec<ItemRef<Concept>>,
     pub components: HashMap<ItemRef<Component>, MaybePrimitiveValue>,
 }
-impl IsItemType for Concept {
+impl Item for Concept {
     const TYPE: ItemType = ItemType::Concept;
     type Unresolved = IdentifierPathBuf;
+
+    fn from_item_value(value: &ItemValue) -> Option<&Self> {
+        match value {
+            ItemValue::Concept(value) => Some(value),
+            _ => None,
+        }
+    }
+
+    fn into_item_value(self) -> ItemValue {
+        ItemValue::Concept(self)
+    }
 }
 impl From<&ambient_project::Concept> for Concept {
     fn from(value: &ambient_project::Concept) -> Self {
@@ -317,9 +381,20 @@ pub struct Message {
     pub description: Option<String>,
     pub fields: BTreeMap<Identifier, ItemRef<Type>>,
 }
-impl IsItemType for Message {
+impl Item for Message {
     const TYPE: ItemType = ItemType::Message;
     type Unresolved = IdentifierPathBuf;
+
+    fn from_item_value(value: &ItemValue) -> Option<&Self> {
+        match value {
+            ItemValue::Message(value) => Some(value),
+            _ => None,
+        }
+    }
+
+    fn into_item_value(self) -> ItemValue {
+        ItemValue::Message(self)
+    }
 }
 impl From<&ambient_project::Message> for Message {
     fn from(value: &ambient_project::Message) -> Self {
@@ -336,9 +411,20 @@ impl From<&ambient_project::Message> for Message {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Attribute {}
-impl IsItemType for Attribute {
+impl Item for Attribute {
     const TYPE: ItemType = ItemType::Attribute;
     type Unresolved = CamelCaseIdentifier;
+
+    fn from_item_value(value: &ItemValue) -> Option<&Self> {
+        match value {
+            ItemValue::Attribute(value) => Some(value),
+            _ => None,
+        }
+    }
+
+    fn into_item_value(self) -> ItemValue {
+        ItemValue::Attribute(self)
+    }
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -349,10 +435,6 @@ impl Debug for PrimitiveType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "PrimitiveType({:?})", self.rust_type)
     }
-}
-impl IsItemType for PrimitiveType {
-    const TYPE: ItemType = ItemType::Type;
-    type Unresolved = CamelCaseIdentifier;
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -385,9 +467,20 @@ pub enum Type {
     Option(PrimitiveType),
     Enum(Enum),
 }
-impl IsItemType for Type {
+impl Item for Type {
     const TYPE: ItemType = ItemType::Type;
     type Unresolved = ComponentType;
+
+    fn from_item_value(value: &ItemValue) -> Option<&Self> {
+        match value {
+            ItemValue::Type(value) => Some(value),
+            _ => None,
+        }
+    }
+
+    fn into_item_value(self) -> ItemValue {
+        ItemValue::Type(self)
+    }
 }
 impl From<&ambient_project::Enum> for Type {
     fn from(value: &ambient_project::Enum) -> Self {
