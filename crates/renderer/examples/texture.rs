@@ -22,11 +22,15 @@ async fn init(app: &mut App) {
     let assets = world.resource(asset_cache()).clone();
 
     let texture = Arc::new(
-        Arc::new(Texture::from_file(gpu, "assets/checkerboard.png", wgpu::TextureFormat::Rgba8UnormSrgb))
-            .create_view(&wgpu::TextureViewDescriptor::default()),
+        Arc::new(Texture::from_file(
+            gpu,
+            "assets/checkerboard.png",
+            wgpu::TextureFormat::Rgba8UnormSrgb,
+        ))
+        .create_view(&wgpu::TextureViewDescriptor::default()),
     );
     let mat = SharedMaterial::new(PbrMaterial::new(
-        assets.clone(),
+        &assets,
         PbrMaterialConfig {
             source: "".to_string(),
             name: "".to_string(),
@@ -41,7 +45,15 @@ async fn init(app: &mut App) {
     ));
 
     Entity::new()
-        .with(primitives(), vec![RenderPrimitive { shader: cb(get_pbr_shader), material: mat, mesh: CubeMeshKey.get(&assets), lod: 0 }])
+        .with(
+            primitives(),
+            vec![RenderPrimitive {
+                shader: cb(get_pbr_shader),
+                material: mat,
+                mesh: CubeMeshKey.get(&assets),
+                lod: 0,
+            }],
+        )
         .with_default(gpu_primitives_mesh())
         .with_default(gpu_primitives_lod())
         .with(main_scene(), ())
@@ -49,10 +61,13 @@ async fn init(app: &mut App) {
         .with_default(mesh_to_world())
         .spawn(world);
 
-    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .with(active_camera(), 0.)
-        .with(main_scene(), ())
-        .spawn(world);
+    ambient_cameras::spherical::new(
+        vec3(0., 0., 0.),
+        SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.),
+    )
+    .with(active_camera(), 0.)
+    .with(main_scene(), ())
+    .spawn(world);
 }
 
 fn main() {

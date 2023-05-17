@@ -22,5 +22,7 @@ default interface server-physics {
     raycast-first: func(origin: vec3, direction: vec3) -> option<tuple<entity-id, float32>>
     raycast: func(origin: vec3, direction: vec3) -> list<tuple<entity-id, float32>>
     move-character: func(entity: entity-id, displacement: vec3, min-dist: float32, elapsed-time: float32) -> character-collision
+    set-character-position: func(entity: entity-id, position: vec3)
+    set-character-foot-position: func(entity: entity-id, position: vec3)
 }
 

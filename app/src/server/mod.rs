@@ -1,18 +1,14 @@
-use std::{
-    collections::HashMap,
-    net::SocketAddr,
-    path::Path,
-    sync::Arc,
-};
+use std::{collections::HashMap, net::SocketAddr, path::Path, sync::Arc};
 
 use ambient_core::{app_start_time, asset_cache, dtime, name, no_sync, project_name, time};
 use ambient_ecs::{
-    dont_store, world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup, World, WorldEventsSystem,
-    WorldStreamCompEvent,
+    dont_store, world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup,
+    World, WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_network::{
+    native::server::{Crypto, GameServer},
     persistent_resources,
-    server::{ForkingEvent, GameServer, ProxySettings, ShutdownEvent},
+    server::{ForkingEvent, ProxySettings, ShutdownEvent},
     synced_resources,
 };
 use ambient_prefab::PrefabFromUrl;
@@ -44,6 +40,7 @@ pub fn start(
     project_path: AbsAssetUrl,
     manifest: &ambient_project::Manifest,
     metadata: &ambient_build::Metadata,
+    crypto: Crypto,
 ) -> u16 {
     log::info!("Creating server");
     let host_cli = cli.host().unwrap();
@@ -51,7 +48,10 @@ pub fn start(
     let proxy_settings = (!host_cli.no_proxy).then(|| {
         ProxySettings {
             // default to getting a proxy from the dims-web Google App Engine app
-            endpoint: host_cli.proxy.clone().unwrap_or("http://proxy.ambient.run/proxy".to_string()),
+            endpoint: host_cli
+                .proxy
+                .clone()
+                .unwrap_or("http://proxy.ambient.run/proxy".to_string()),
             project_path: project_path.clone(),
             pre_cache_assets: host_cli.proxy_pre_cache_assets,
             project_id: manifest.project.id.to_string(),
@@ -59,12 +59,20 @@ pub fn start(
     });
     let server = runtime.block_on(async move {
         if let Some(port) = quic_interface_port {
-            GameServer::new_with_port(port, false, proxy_settings).await.context("failed to create game server with port").unwrap()
-        } else {
-            GameServer::new_with_port_in_range(QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10), false, proxy_settings)
+            GameServer::new_with_port(port, false, proxy_settings, &crypto)
                 .await
-                .context("failed to create game server with port in range")
+                .context("failed to create game server with port")
                 .unwrap()
+        } else {
+            GameServer::new_with_port_in_range(
+                QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10),
+                false,
+                proxy_settings,
+                &crypto,
+            )
+            .await
+            .context("failed to create game server with port in range")
+            .unwrap()
         }
     });
     let port = server.port;
@@ -75,7 +83,11 @@ pub fn start(
         .or_else(|| local_ip_address::local_ip().ok().map(|x| x.to_string()))
         .unwrap_or("localhost".to_string());
     log::info!("Created server, running at {public_host}:{port}");
-    let http_interface_port = cli.host().unwrap().http_interface_port.unwrap_or(HTTP_INTERFACE_PORT);
+    let http_interface_port = cli
+        .host()
+        .unwrap()
+        .http_interface_port
+        .unwrap_or(HTTP_INTERFACE_PORT);
 
     // here the key is inserted into the asset cache
     if let Ok(Some(project_path_fs)) = project_path.to_file_path() {
@@ -86,7 +98,8 @@ pub fn start(
         ServerBaseUrlKey.insert(&assets, project_path.push("build/").unwrap());
     }
 
-    ComponentRegistry::get_mut().add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
+    ComponentRegistry::get_mut()
+        .add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
 
     let manifest = manifest.clone();
     let metadata = metadata.clone();
@@ -94,11 +107,25 @@ pub fn start(
         let mut server_world = World::new_with_config("server", true);
         server_world.init_shape_change_tracking();
 
-        server_world.add_components(server_world.resource_entity(), create_resources(assets.clone())).unwrap();
+        server_world
+            .add_components(
+                server_world.resource_entity(),
+                create_resources(assets.clone()),
+            )
+            .unwrap();
 
         // Keep track of the project name
-        let name = manifest.project.name.clone().unwrap_or_else(|| "Ambient".into());
-        server_world.add_components(server_world.resource_entity(), Entity::new().with(project_name(), name)).unwrap();
+        let name = manifest
+            .project
+            .name
+            .clone()
+            .unwrap_or_else(|| "Ambient".into());
+        server_world
+            .add_components(
+                server_world.resource_entity(),
+                Entity::new().with(project_name(), name),
+            )
+            .unwrap();
 
         Entity::new()
             .with(ambient_core::name(), "Synced resources".to_string())
@@ -111,20 +138,37 @@ pub fn start(
             .with(persistent_resources(), ())
             .spawn(&mut server_world);
 
-        wasm::initialize(&mut server_world, assets.clone(), project_path.clone(), &manifest, &metadata).await.unwrap();
+        wasm::initialize(
+            &mut server_world,
+            assets.clone(),
+            project_path.clone(),
+            &manifest,
+            &metadata,
+        )
+        .await
+        .unwrap();
 
         if let Commands::View { asset_path, .. } = cli.command.clone() {
             let asset_path = project_path
-                .push("build").expect("pushing 'build' shouldn't fail")
-                .push(asset_path.to_string_lossy()).expect("FIXME")
-                .push("prefabs/main.json").expect("pushing 'prefabs/main.json' shouldn't fail");
+                .push("build")
+                .expect("pushing 'build' shouldn't fail")
+                .push(asset_path.to_string_lossy())
+                .expect("FIXME")
+                .push("prefabs/main.json")
+                .expect("pushing 'prefabs/main.json' shouldn't fail");
             log::info!("Spawning asset from {:?}", asset_path);
             let obj = PrefabFromUrl(asset_path.into()).get(&assets).await.unwrap();
             obj.spawn_into_world(&mut server_world, None);
         }
         log::info!("Starting server");
         server
-            .run(server_world, Arc::new(systems), Arc::new(on_forking_systems), Arc::new(on_shutdown_systems), Arc::new(is_sync_component))
+            .run(
+                server_world,
+                Arc::new(systems),
+                Arc::new(on_forking_systems),
+                Arc::new(on_shutdown_systems),
+                Arc::new(is_sync_component),
+            )
             .await;
     });
     port
@@ -151,10 +195,22 @@ fn systems(_world: &mut World) -> SystemGroup {
     )
 }
 fn on_forking_systems() -> SystemGroup<ForkingEvent> {
-    SystemGroup::new("on_forking_systems", vec![Box::new(ambient_physics::on_forking_systems()), Box::new(wasm::on_forking_systems())])
+    SystemGroup::new(
+        "on_forking_systems",
+        vec![
+            Box::new(ambient_physics::on_forking_systems()),
+            Box::new(wasm::on_forking_systems()),
+        ],
+    )
 }
 fn on_shutdown_systems() -> SystemGroup<ShutdownEvent> {
-    SystemGroup::new("on_shutdown_systems", vec![Box::new(ambient_physics::on_shutdown_systems()), Box::new(wasm::on_shutdown_systems())])
+    SystemGroup::new(
+        "on_shutdown_systems",
+        vec![
+            Box::new(ambient_physics::on_shutdown_systems()),
+            Box::new(wasm::on_shutdown_systems()),
+        ],
+    )
 }
 
 fn is_sync_component(component: ComponentDesc, _: WorldStreamCompEvent) -> bool {
@@ -171,17 +227,28 @@ fn create_resources(assets: AssetCache) -> Entity {
     server_resources.merge(ambient_core::async_ecs::async_ecs_resources());
     server_resources.set(ambient_core::runtime(), RuntimeHandle::current());
 
-    let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
+    let now = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap();
     server_resources.set(time(), now);
     server_resources.set(app_start_time(), now);
     server_resources.set(dtime(), 1. / 60.);
 
     let mut bistream_handlers = HashMap::new();
-    ambient_network::server::register_rpc_bi_stream_handler(&mut bistream_handlers, shared::create_server_rpc_registry());
-    server_resources.set(ambient_network::server::bi_stream_handlers(), bistream_handlers);
+    ambient_network::server::register_rpc_bi_stream_handler(
+        &mut bistream_handlers,
+        shared::create_server_rpc_registry(),
+    );
+    server_resources.set(
+        ambient_network::server::bi_stream_handlers(),
+        bistream_handlers,
+    );
 
     let unistream_handlers = HashMap::new();
-    server_resources.set(ambient_network::server::uni_stream_handlers(), unistream_handlers);
+    server_resources.set(
+        ambient_network::server::uni_stream_handlers(),
+        unistream_handlers,
+    );
 
     let dgram_handlers = HashMap::new();
     server_resources.set(ambient_network::server::datagram_handlers(), dgram_handlers);
@@ -191,14 +258,28 @@ fn create_resources(assets: AssetCache) -> Entity {
 
 pub const HTTP_INTERFACE_PORT: u16 = 8999;
 pub const QUIC_INTERFACE_PORT: u16 = 9000;
-fn start_http_interface(runtime: &tokio::runtime::Runtime, project_path: &Path, http_interface_port: u16) {
+fn start_http_interface(
+    runtime: &tokio::runtime::Runtime,
+    project_path: &Path,
+    http_interface_port: u16,
+) {
     let router = Router::new()
         .route("/ping", get(|| async move { "ok" }))
-        .nest_service("/content", get_service(ServeDir::new(project_path.join("build"))).handle_error(handle_error))
-        .layer(CorsLayer::new().allow_origin(tower_http::cors::Any).allow_methods(vec![Method::GET]).allow_headers(tower_http::cors::Any));
+        .nest_service(
+            "/content",
+            get_service(ServeDir::new(project_path.join("build"))).handle_error(handle_error),
+        )
+        .layer(
+            CorsLayer::new()
+                .allow_origin(tower_http::cors::Any)
+                .allow_methods(vec![Method::GET])
+                .allow_headers(tower_http::cors::Any),
+        );
 
     let serve = |addr| async move {
-        axum::Server::try_bind(&addr)?.serve(router.into_make_service()).await?;
+        axum::Server::try_bind(&addr)?
+            .serve(router.into_make_service())
+            .await?;
 
         Ok::<_, anyhow::Error>(())
     };

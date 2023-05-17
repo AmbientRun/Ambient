@@ -14,6 +14,7 @@ use ambient_std::{asset_cache::SyncAssetKeyExt, color::Color};
 use ambient_ui_native::app_background_color;
 use glam::{uvec2, UVec2};
 use parking_lot::Mutex;
+use tracing::info_span;
 use wgpu::FilterMode;
 use winit::{
     dpi::PhysicalSize,
@@ -373,6 +374,7 @@ impl UiRenderer {
     }
 
     fn render(&mut self, world: &mut World) {
+        let _span = info_span!("UIRender.render").entered();
         let gpu = world.resource(gpu()).clone();
         let mut encoder = gpu
             .device

@@ -14,8 +14,19 @@ player_mouse_delta_x = { type = "F32", name = "Player mouse delta X", descriptio
     "Debuggable",
 ] }
 
+camera_follow_distance = { type = "F32", name = "Camera follow distance", description = "The distance the camera follows the player.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+player_scroll = { type = "F32", name = "Player mouse scroll", description = "The player's mouse scroll.", attributes = [
+    "Debuggable",
+] }
+
 [messages.input]
 description = "Describes the input state of the player."
+
 [messages.input.fields]
 direction = { type = "Vec2", name = "Direction", description = "The movement direction of the player." }
 mouse_delta_x = { type = "F32", name = "Mouse delta X", description = "The mouse delta X." }
+scroll = { type = "F32", name = "Scroll", description = "The vertical scroll." }

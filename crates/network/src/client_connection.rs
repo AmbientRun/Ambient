@@ -1,70 +1,74 @@
 use ambient_proxy::client::ProxiedConnection;
-use async_trait::async_trait;
 use bytes::Bytes;
 use quinn::{Connection, RecvStream, SendStream};
 
 use crate::NetworkError;
 
-/// Incoming connection from the client that can be either direct or proxied
+/// Incoming quinn connection from the client that can be either direct or proxied
 #[derive(Debug, Clone)]
-pub enum ClientConnection {
+pub enum ConnectionKind {
     Direct(Connection),
     Proxied(ProxiedConnection),
 }
 
-impl From<Connection> for ClientConnection {
+impl From<Connection> for ConnectionKind {
     fn from(value: Connection) -> Self {
         Self::Direct(value)
     }
 }
 
-impl From<ProxiedConnection> for ClientConnection {
+impl From<ProxiedConnection> for ConnectionKind {
     fn from(value: ProxiedConnection) -> Self {
         Self::Proxied(value)
     }
 }
 
-#[async_trait]
-impl crate::connection::Connection for ClientConnection {
-    async fn open_uni(&self) -> Result<SendStream, NetworkError> {
+impl ConnectionKind {
+    #[inline]
+    pub async fn open_uni(&self) -> Result<SendStream, NetworkError> {
         match self {
-            ClientConnection::Direct(conn) => Ok(conn.open_uni().await?),
-            ClientConnection::Proxied(conn) => Ok(conn.open_uni().await?),
+            ConnectionKind::Direct(conn) => Ok(conn.open_uni().await?),
+            ConnectionKind::Proxied(conn) => Ok(conn.open_uni().await?),
         }
     }
 
-    async fn open_bi(&self) -> Result<(SendStream, RecvStream), NetworkError> {
+    #[inline]
+    pub async fn open_bi(&self) -> Result<(SendStream, RecvStream), NetworkError> {
         match self {
-            ClientConnection::Direct(conn) => Ok(conn.open_bi().await?),
-            ClientConnection::Proxied(conn) => Ok(conn.open_bi().await?),
+            ConnectionKind::Direct(conn) => Ok(conn.open_bi().await?),
+            ConnectionKind::Proxied(conn) => Ok(conn.open_bi().await?),
         }
     }
 
-    async fn accept_uni(&self) -> Result<RecvStream, NetworkError> {
+    #[inline]
+    pub async fn accept_uni(&self) -> Result<RecvStream, NetworkError> {
         match self {
-            ClientConnection::Direct(conn) => Ok(conn.accept_uni().await?),
-            ClientConnection::Proxied(conn) => Ok(conn.accept_uni().await),
+            ConnectionKind::Direct(conn) => Ok(conn.accept_uni().await?),
+            ConnectionKind::Proxied(conn) => Ok(conn.accept_uni().await),
         }
     }
 
-    async fn accept_bi(&self) -> Result<(SendStream, RecvStream), NetworkError> {
+    #[inline]
+    pub async fn accept_bi(&self) -> Result<(SendStream, RecvStream), NetworkError> {
         match self {
-            ClientConnection::Direct(conn) => Ok(conn.accept_bi().await?),
-            ClientConnection::Proxied(conn) => Ok(conn.accept_bi().await),
+            ConnectionKind::Direct(conn) => Ok(conn.accept_bi().await?),
+            ConnectionKind::Proxied(conn) => Ok(conn.accept_bi().await),
         }
     }
 
-    async fn read_datagram(&self) -> Result<Bytes, NetworkError> {
+    #[inline]
+    pub async fn read_datagram(&self) -> Result<Bytes, NetworkError> {
         match self {
-            ClientConnection::Direct(conn) => Ok(conn.read_datagram().await?),
-            ClientConnection::Proxied(conn) => Ok(conn.read_datagram().await),
+            ConnectionKind::Direct(conn) => Ok(conn.read_datagram().await?),
+            ConnectionKind::Proxied(conn) => Ok(conn.read_datagram().await),
         }
     }
 
-    fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError> {
+    #[inline]
+    pub fn send_datagram(&self, data: Bytes) -> Result<(), NetworkError> {
         match self {
-            ClientConnection::Direct(conn) => Ok(conn.send_datagram(data)?),
-            ClientConnection::Proxied(conn) => Ok(conn.send_datagram(data)?),
+            ConnectionKind::Direct(conn) => Ok(conn.send_datagram(data)?),
+            ConnectionKind::Proxied(conn) => Ok(conn.send_datagram(data)?),
         }
     }
 }

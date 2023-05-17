@@ -620,7 +620,6 @@ dependencies = [
  "ordered-float",
  "parking_lot",
  "physxx",
- "quinn",
  "serde",
  "serde_json",
  "tokio",
@@ -947,6 +946,7 @@ dependencies = [
  "bytes",
  "colored",
  "dashmap",
+ "enum_dispatch",
  "flume",
  "futures",
  "glam 0.22.0",
@@ -955,14 +955,18 @@ dependencies = [
  "manual_future",
  "once_cell",
  "parking_lot",
+ "pin-project",
  "quinn",
  "rand 0.8.5",
  "rustls 0.20.8",
+ "rustls-native-certs",
+ "scopeguard",
  "serde",
  "thiserror",
  "tokio",
  "tokio-util",
  "tracing",
+ "uuid 1.3.1",
  "wgpu 0.16.0",
  "winit",
 ]
@@ -1369,7 +1373,6 @@ dependencies = [
  "ndarray",
  "parking_lot",
  "physxx",
- "quinn",
  "rand 0.8.5",
  "rand_pcg 0.3.1",
  "serde",
@@ -1529,7 +1532,6 @@ dependencies = [
  "parking_lot",
  "paste",
  "physxx",
- "quinn",
  "reqwest",
  "serde",
  "serde_bytes",
@@ -2088,6 +2090,9 @@ name = "bytes"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "89b2fd2a0dcf38d7971e2194b6b6eebab45ae01067456a7fd93d5547a61b70be"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "calloop"
@@ -3043,6 +3048,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "071a31f4ee85403370b58aca746f01041ede6f0da2730960ad001edc2b71b394"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "enum_dispatch"
+version = "0.3.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11f36e95862220b211a6e2aa5eca09b4fa391b13cd52ceb8035a24bf65a79de2"
+dependencies = [
+ "once_cell",
+ "proc-macro2 1.0.56",
+ "quote 1.0.26",
+ "syn 1.0.109",
 ]
 
 [[package]]

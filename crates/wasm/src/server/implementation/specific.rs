@@ -235,6 +235,30 @@ impl wit::server_physics::Host for Bindings {
             }),
         }
     }
+
+    fn set_character_position(
+        &mut self,
+        entity: wit::types::EntityId,
+        position: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        self
+            .world()
+            .get(entity.from_bindgen(), character_controller())?.set_position(position.from_bindgen().as_dvec3());
+        Ok(())
+    }
+
+
+    fn set_character_foot_position(
+        &mut self,
+        entity: wit::types::EntityId,
+        position: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        self
+            .world()
+            .get(entity.from_bindgen(), character_controller())?.set_foot_position(position.from_bindgen().as_dvec3());
+        Ok(())
+    }
+
 }
 
 impl wit::server_message::Host for Bindings {
@@ -283,14 +307,14 @@ fn send_networked(
         .filter(|(_, (uid, _))| {
             target_user_id
                 .as_ref()
-                .map(|tuid| tuid == *uid)
+                .map(|target_uid| target_uid == *uid)
                 .unwrap_or(true)
         })
         .map(|(_, (_, connection))| connection.clone())
         .collect();
 
-    for connection in connections {
-        message::send_networked(world, connection, module_id, &name, &data, reliable)?;
+    for conn in connections {
+        message::send_networked(world, conn, module_id, &name, &data, reliable)?;
     }
 
     Ok(())

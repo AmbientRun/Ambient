@@ -592,7 +592,10 @@ impl World {
         self.get_mut(self.resource_entity(), component).ok()
     }
     pub fn resource_mut<T: ComponentValue>(&mut self, component: Component<T>) -> &mut T {
-        self.resource_mut_opt(component).unwrap()
+        match self.resource_mut_opt(component) {
+            Some(val) => val,
+            None => panic!("Resource {} does not exist", component.path()),
+        }
     }
     fn warn_on_non_resource_component<T: ComponentValue>(component: Component<T>) {
         if !component.has_attribute::<Resource>() && !component.has_attribute::<MaybeResource>() {
@@ -698,6 +701,13 @@ impl World {
         self.dump(&mut f);
         log::info!("Wrote ecs to tmp/ecs.txt");
     }
+
+    pub fn dump_entity_to_string(&self, id: EntityId) -> String {
+        let mut s = Vec::new();
+        self.dump_entity(id, 0, &mut s);
+        String::from_utf8_lossy(&s).into_owned()
+    }
+
     pub fn dump_entity(&self, entity_id: EntityId, indent: usize, f: &mut dyn std::io::Write) {
         if let Some(loc) = self.locs.get(&entity_id) {
             let arch = self

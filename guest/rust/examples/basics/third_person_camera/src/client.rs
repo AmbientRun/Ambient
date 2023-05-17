@@ -10,12 +10,19 @@ use ambient_api::{
 };
 use components::player_camera_ref;
 
+use crate::components::camera_follow_distance;
+
 #[main]
 fn main() {
+    eprintln!("Client started");
     spawn_query((player(), user_id())).bind(move |players| {
         for (id, (_, user)) in players {
+            let local_user_id =
+                entity::get_component(entity::resources(), local_user_id()).unwrap();
+            eprintln!("Player joined {user}\nlocal_user_id: {local_user_id:?}");
             // First, we check if this player is the "local" player, and only then do we attach a camera
-            if user == entity::get_component(entity::resources(), local_user_id()).unwrap() {
+            if user == local_user_id {
+                eprintln!("Attaching camera to player {}", user);
                 let camera = Entity::new()
                     .with_merge(make_perspective_infinite_reverse_camera())
                     .with(aspect_ratio_from_window(), EntityId::resources())
@@ -31,11 +38,18 @@ fn main() {
     });
     // Since we're only attaching player_camera_ref to the local player, this system will only
     // run for the local player
-    query((player(), player_camera_ref(), translation(), rotation())).each_frame(move |players| {
-        for (_, (_, camera_id, pos, rot)) in players {
-            let forward = rot * Vec3::X;
+    query((
+        player(),
+        player_camera_ref(),
+        translation(),
+        rotation(),
+        camera_follow_distance(),
+    ))
+    .each_frame(move |players| {
+        for (_, (_, camera_id, pos, rot, dist)) in players {
             entity::set_component(camera_id, lookat_target(), pos);
-            entity::set_component(camera_id, translation(), pos - forward * 4. + Vec3::Z * 2.);
+            let offset = rot * vec3(-1.0, 0.0, 0.2).normalize() * dist;
+            entity::set_component(camera_id, translation(), pos + offset);
         }
     });
 
@@ -60,6 +74,7 @@ fn main() {
             displace.y += 1.0;
         }
 
-        messages::Input::new(displace, delta.mouse_position.x).send_server_reliable();
+        messages::Input::new(displace, delta.mouse_position.x, input.mouse_wheel)
+            .send_server_reliable();
     });
 }

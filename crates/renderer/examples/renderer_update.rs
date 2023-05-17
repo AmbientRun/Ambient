@@ -15,8 +15,8 @@ fn init(world: &mut World) -> (EntityId, EntityId, SharedMaterial, SharedMateria
     let _gpu = world.resource(gpu()).clone();
     let assets = world.resource(asset_cache()).clone();
 
-    let red = SharedMaterial::new(FlatMaterial::new(assets.clone(), vec4(1., 0., 0., 1.), Some(false)));
-    let green = SharedMaterial::new(FlatMaterial::new(assets.clone(), vec4(0., 1., 0., 1.), Some(false)));
+    let red = SharedMaterial::new(FlatMaterial::new(&assets, vec4(1., 0., 0., 1.), Some(false)));
+    let green = SharedMaterial::new(FlatMaterial::new(&assets, vec4(0., 1., 0., 1.), Some(false)));
 
     let entity1 = Entity::new()
         .with(

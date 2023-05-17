@@ -1,12 +1,17 @@
 use std::collections::HashSet;
 
-use ambient_animation::{animation_controller, AnimationActionTime, animation_stack, animation_binder_mask, animation_binder_weights};
-use ambient_core::transform::translation;
+use ambient_animation::{
+    animation_binder_mask, animation_binder_weights, animation_controller, animation_stack,
+    AnimationActionTime,
+};
+use ambient_core::transform::{local_to_world, translation};
 use ambient_ecs::{query as ecs_query, with_component_registry, EntityId, World};
 
+use ambient_model::animation_binder;
 use ambient_network::ServerWorldExt;
 
 use anyhow::Context;
+use glam::Mat4;
 
 use super::{
     super::{
@@ -74,13 +79,16 @@ pub fn set_animation_blend(
     Ok(())
 }
 
-
 pub fn set_animation_action_stack(
     world: &mut World,
     entity: wit::types::EntityId,
     stack: Vec<wit::entity::AnimationActionStack>,
 ) -> anyhow::Result<()> {
-    Ok(world.add_component(entity.from_bindgen(), animation_stack(), stack.into_iter().map(|x| x.from_bindgen()).collect())?)
+    Ok(world.add_component(
+        entity.from_bindgen(),
+        animation_stack(),
+        stack.into_iter().map(|x| x.from_bindgen()).collect(),
+    )?)
 }
 
 pub fn set_animation_binder_mask(
@@ -111,6 +119,77 @@ pub fn set_animation_binder_weights(
         weights[index] = mask;
         Ok(world.add_component(entity.from_bindgen(), animation_binder_weights(), weights)?)
     }
+}
+
+pub fn get_animation_binder_mask_entities(
+    world: &mut World,
+    entity: wit::types::EntityId,
+) -> anyhow::Result<Vec<wit::types::EntityId>> {
+    let entity_id = entity.from_bindgen();
+
+    let binder: &std::collections::HashMap<String, EntityId> = world
+        .get_ref(entity_id, animation_binder())
+        .context("missing animation_binder")?;
+
+    if let Ok(mask) = world.get_ref(entity_id, animation_binder_mask()) {
+        Ok(mask
+            .iter()
+            .map(|x| binder.get(x).unwrap_or(&EntityId::null()).into_bindgen())
+            .collect())
+    } else {
+        let mut mask: Vec<String> = binder.keys().cloned().collect();
+        mask.sort();
+        let result = mask
+            .iter()
+            .map(|x| binder.get(x).unwrap_or(&EntityId::null()).into_bindgen())
+            .collect();
+        world.add_component(entity_id, animation_binder_mask(), mask)?;
+        Ok(result)
+    }
+}
+
+pub fn get_animation_binder_mask(
+    world: &mut World,
+    entity: wit::types::EntityId,
+) -> anyhow::Result<Vec<String>> {
+    let entity_id = entity.from_bindgen();
+    if let Ok(mask) = world.get_ref(entity_id, animation_binder_mask()) {
+        return Ok(mask.clone());
+    }
+
+    if let Ok(binder) = world.get_ref(entity_id, animation_binder()) {
+        let mut mask: Vec<String> = binder.keys().cloned().collect();
+        mask.sort();
+        world.add_component(entity_id, animation_binder_mask(), mask.clone())?;
+        return Ok(mask);
+    }
+    Ok(Vec::new())
+}
+
+pub fn get_transforms_relative_to(
+    world: &World,
+    list: Vec<wit::types::EntityId>,
+    origin: wit::types::EntityId,
+) -> anyhow::Result<Vec<wit::types::Mat4>> {
+    let origin_id = origin.from_bindgen();
+
+    let transform = world
+        .get(origin_id, local_to_world())
+        .unwrap_or_else(|_| Mat4::IDENTITY)
+        .inverse();
+
+    let mut result = Vec::with_capacity(list.len());
+
+    for entity in list {
+        let entity_id = entity.from_bindgen();
+        let relative = transform
+            * world
+                .get(entity_id, local_to_world())
+                .unwrap_or_else(|_| Mat4::IDENTITY);
+        result.push(relative.into_bindgen());
+    }
+
+    Ok(result)
 }
 
 pub fn exists(world: &World, entity: wit::types::EntityId) -> anyhow::Result<bool> {

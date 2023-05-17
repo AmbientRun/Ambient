@@ -14,9 +14,10 @@ use ambient_core::{
 use ambient_debugger::Debugger;
 use ambient_ecs::{Entity, EntityId, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_network::client::{
-    GameClient, GameClientNetworkStats, GameClientRenderTarget, GameClientServerStats,
-    GameClientView, GameClientWorld, UseOnce,
+use ambient_network::{
+    client::{client_network_stats, GameClient, GameClientRenderTarget, GameClientWorld},
+    hooks::use_remote_resource,
+    native::client::GameClientView,
 };
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_ui_native::{
@@ -64,6 +65,7 @@ pub async fn run(
                 show_debug: is_debug,
                 golden_image_test: run.golden_image_test,
                 golden_image_output_dir,
+                ca_file: run.ca.clone(),
             }
             .el()
             .spawn_interactive(&mut app.world);
@@ -73,9 +75,8 @@ pub async fn run(
 
 #[element_component]
 fn TitleUpdater(hooks: &mut Hooks) -> Element {
-    let net = hooks
-        .consume_context::<GameClientNetworkStats>()
-        .map(|stats| stats.0);
+    let (net, _) = use_remote_resource(hooks, client_network_stats()).expect("No game client");
+
     let world = &hooks.world;
     let title = world.resource(window_title());
     let fps = world
@@ -105,33 +106,32 @@ fn MainApp(
     user_id: String,
     show_debug: bool,
     golden_image_test: Option<f32>,
+    ca_file: Option<PathBuf>,
 ) -> Element {
-    let update_network_stats = hooks.provide_context(GameClientNetworkStats::default);
-    let update_server_stats = hooks.provide_context(GameClientServerStats::default);
     let (loaded, set_loaded) = hooks.use_state(false);
 
     FocusRoot::el([
         UICamera.el(),
         player::PlayerRawInputHandler.el(),
-        TitleUpdater.el(),
         WindowSized::el([GameClientView {
             server_addr,
             user_id,
-            on_disconnect: cb(move || {}),
-            init_world: cb(UseOnce::new(Box::new(move |world, _render_target| {
+            on_loaded: cb(move |client| {
+                let mut game_state = client.game_state.lock();
+                let world = &mut game_state.world;
+
                 wasm::initialize(world).unwrap();
 
                 UICamera.el().spawn_static(world);
-            }))),
-            on_loaded: cb(move |_game_state, _game_client| {
                 set_loaded(true);
-                Ok(Box::new(|| {}))
+
+                Ok(Box::new(|| {
+                    log::info!("Disconnecting client");
+                }))
             }),
             error_view: cb(move |error| {
                 Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el()
             }),
-            on_network_stats: cb(move |stats| update_network_stats(stats)),
-            on_server_stats: cb(move |stats| update_server_stats(stats)),
             systems_and_resources: cb(|| {
                 let mut resources = Entity::new();
 
@@ -152,26 +152,16 @@ fn MainApp(
 
                 (systems(), resources)
             }),
+            ca_file,
             create_rpc_registry: cb(shared::create_server_rpc_registry),
-            on_in_entities: if std::env::var("AMBIENT_DEBUG_ENTITY_STREAM")
-                == Ok("FULL".to_string())
-            {
-                Some(cb(move |diff| {
-                    log::info!("Entity stream: {:?}", diff);
-                }))
-            } else if std::env::var("AMBIENT_DEBUG_ENTITY_STREAM").is_ok() {
-                Some(cb(move |diff| {
-                    log::info!("Entity stream: {}", diff);
-                }))
-            } else {
-                None
-            },
             inner: Dock::el(vec![
+                TitleUpdater.el(),
                 if let Some(seconds) = golden_image_test.filter(|_| loaded) {
                     GoldenImageTest::el(golden_image_output_dir, seconds)
                 } else {
                     Element::new()
                 },
+                // Text::el("Insert game here"),
                 GameView { show_debug }.el(),
             ]),
         }
@@ -180,7 +170,11 @@ fn MainApp(
 }
 
 #[element_component]
-fn GoldenImageTest(hooks: &mut Hooks, golden_image_output_dir: Option<PathBuf>, seconds: f32) -> Element {
+fn GoldenImageTest(
+    hooks: &mut Hooks,
+    golden_image_output_dir: Option<PathBuf>,
+    seconds: f32,
+) -> Element {
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
     let render_target_ref = hooks.use_ref_with(|_| render_target.clone());
     *render_target_ref.lock() = render_target.clone();

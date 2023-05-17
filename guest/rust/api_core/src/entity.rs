@@ -55,10 +55,49 @@ pub fn set_animation_binder_mask(entity: EntityId, mask: &[&str]) {
     wit::entity::set_animation_binder_mask(entity.into_bindgen(), mask)
 }
 
+/// Get the animation blend stack binder mask for blending weight masks. See `set_animation_binder_weights`.
+/// Also sets and retrieves the full the binder mask all if animation_binder_mask is not set.
+pub fn get_animation_binder_mask(entity: EntityId) -> Vec<String> {
+    wit::entity::get_animation_binder_mask(entity.into_bindgen())
+}
+
 /// Set the animation blend stack binder weights. The backing vector will resize to fit the mask.
 pub fn set_animation_binder_weights(entity: EntityId, index: u32, mask: &[f32]) {
     wit::entity::set_animation_binder_weights(entity.into_bindgen(), index, mask)
 }
+
+/// Gets the associated entities of the binder mask
+pub fn get_animation_binder_mask_entities(entity: EntityId) -> Vec<EntityId> {
+    wit::entity::get_animation_binder_mask_entities(entity.into_bindgen()).from_bindgen()
+}
+
+/// Unconverted bindgen transforms
+pub struct RawTransforms {
+    transforms: Vec<wit::types::Mat4>,
+}
+
+impl RawTransforms {
+
+    /// Convert transforms into a list of Mat4
+    pub fn into_mat4(self) -> Vec<glam::Mat4> {
+        self.transforms.from_bindgen()
+    }
+
+    /// Convert transforms into mat4 as an iterator
+    pub fn iter_mat4(&self) -> impl ExactSizeIterator<Item = glam::Mat4> + '_ {
+        self.transforms.iter().map(|&x| x.from_bindgen())
+    }
+}
+
+/// Gets a list of world transforms relative to origin entity
+/// Origin can be null entity for a list of world transforms
+pub fn get_transforms_relative_to(list: &[EntityId], origin: EntityId) -> RawTransforms {
+    let entities: Vec<wit::types::EntityId> = list.iter().map(|x| x.into_bindgen()).collect();
+    RawTransforms {
+        transforms: wit::entity::get_transforms_relative_to(&entities, origin.into_bindgen())
+    }
+}
+
 
 /// Checks if the `entity` exists.
 pub fn exists(entity: EntityId) -> bool {

@@ -151,7 +151,7 @@ pub fn terrain_gpu_to_cpu_system() -> SystemGroup {
                 .excl(terrain_state())
                 .to_system(|q, world, qs, _| {
                     for (id, (state,)) in q.collect_cloned(world, qs) {
-                        let state = state.to_gpu(world.resource(asset_cache()).clone());
+                        let state = state.to_gpu(world.resource(asset_cache()));
                         world.add_component(id, terrain_state(), state.clone()).ok();
                     }
                 }),
@@ -594,8 +594,8 @@ pub struct TerrainState {
     pub normalmap: Arc<Texture>,
 }
 impl TerrainState {
-    pub fn new_empty(assets: AssetCache, size: TerrainSize) -> Self {
-        let gpu = GpuKey.get(&assets);
+    pub fn new_empty(assets: &AssetCache, size: TerrainSize) -> Self {
+        let gpu = GpuKey.get(assets);
 
         let heightmap = Arc::new(Texture::new(
             gpu.clone(),
@@ -634,7 +634,7 @@ impl TerrainState {
         FillerKey {
             format: normalmap.format,
         }
-        .get(&assets)
+        .get(assets)
         .run(
             &normalmap.create_view(&wgpu::TextureViewDescriptor {
                 base_mip_level: 0,
@@ -704,7 +704,7 @@ impl TerrainStateCpu {
         self.heightmap.shape()
     }
 
-    pub fn to_gpu(&self, assets: AssetCache) -> TerrainState {
+    pub fn to_gpu(&self, assets: &AssetCache) -> TerrainState {
         let state = TerrainState::new_empty(assets, self.size.clone());
         state.heightmap.write_array(&self.heightmap);
         state.normalmap.write_array(&self.normalmap);
