@@ -48,3 +48,7 @@ pub fn create(desc: &Descriptor) -> ProceduralSamplerHandle {
     })
     .from_bindgen()
 }
+
+pub fn destroy(handle: ProceduralSamplerHandle) {
+    wit::client_sampler::destroy(handle.into_bindgen());
+}

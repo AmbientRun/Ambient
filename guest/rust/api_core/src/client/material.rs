@@ -19,3 +19,7 @@ pub fn create(desc: &Descriptor) -> ProceduralMaterialHandle {
     })
     .from_bindgen()
 }
+
+pub fn destroy(handle: ProceduralMaterialHandle) {
+    wit::client_material::destroy(handle.into_bindgen());
+}

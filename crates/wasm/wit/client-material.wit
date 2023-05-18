@@ -15,4 +15,5 @@ default interface client-material {
     }
 
     create: func(desc: descriptor) -> handle
+    destroy: func(handle: handle)
 }

@@ -17,4 +17,5 @@ default interface client-texture {
     }
 
     create2d: func(desc: descriptor2d) -> handle
+    destroy: func(handle: handle)
 }

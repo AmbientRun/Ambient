@@ -26,4 +26,5 @@ default interface client-sampler {
     }
 
     create: func(desc: descriptor) -> handle
+    destroy: func(handle: handle)
 }

@@ -29,3 +29,7 @@ pub fn create_2d(desc: &Descriptor2d) -> ProceduralTextureHandle {
     })
     .from_bindgen()
 }
+
+pub fn destroy(handle: ProceduralTextureHandle) {
+    wit::client_texture::destroy(handle.into_bindgen());
+}

@@ -303,6 +303,12 @@ impl wit::client_mesh::Host for Bindings {
         let mesh_handle = storage.insert_mesh(mesh);
         Ok(mesh_handle.into_bindgen())
     }
+    fn destroy(&mut self, handle: wit::client_mesh::Handle) -> anyhow::Result<()> {
+        let world = self.world_mut();
+        let storage = world.resource_mut(procedural_storage());
+        storage.remove_mesh(handle.from_bindgen());
+        Ok(())
+    }
 }
 impl wit::client_material::Host for Bindings {
     fn create(
@@ -334,6 +340,12 @@ impl wit::client_material::Host for Bindings {
         };
         let material_handle = storage.insert_material(material);
         Ok(material_handle.into_bindgen())
+    }
+    fn destroy(&mut self, handle: wit::client_material::Handle) -> anyhow::Result<()> {
+        let world = self.world_mut();
+        let storage = world.resource_mut(procedural_storage());
+        storage.remove_material(handle.from_bindgen());
+        Ok(())
     }
 }
 impl wit::client_sampler::Host for Bindings {
@@ -370,6 +382,12 @@ impl wit::client_sampler::Host for Bindings {
         let sampler_handle = storage.insert_sampler(sampler);
         Ok(sampler_handle.into_bindgen())
     }
+    fn destroy(&mut self, handle: wit::client_sampler::Handle) -> anyhow::Result<()> {
+        let world = self.world_mut();
+        let storage = world.resource_mut(procedural_storage());
+        storage.remove_sampler(handle.from_bindgen());
+        Ok(())
+    }
 }
 impl wit::client_texture::Host for Bindings {
     fn create2d(
@@ -405,5 +423,11 @@ impl wit::client_texture::Host for Bindings {
         let storage = world.resource_mut(procedural_storage());
         let texture_handle = storage.insert_texture(texture_view);
         Ok(texture_handle.into_bindgen())
+    }
+    fn destroy(&mut self, handle: wit::client_texture::Handle) -> anyhow::Result<()> {
+        let world = self.world_mut();
+        let storage = world.resource_mut(procedural_storage());
+        storage.remove_texture(handle.from_bindgen());
+        Ok(())
     }
 }

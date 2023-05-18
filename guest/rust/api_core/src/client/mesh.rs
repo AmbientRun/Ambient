@@ -30,3 +30,7 @@ pub fn create(desc: &Descriptor) -> ProceduralMeshHandle {
     })
     .from_bindgen()
 }
+
+pub fn destroy(handle: ProceduralMeshHandle) {
+    wit::client_mesh::destroy(handle.into_bindgen());
+}

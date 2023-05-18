@@ -132,6 +132,22 @@ impl ProceduralStorage {
         handle
     }
 
+    pub fn remove_mesh(&mut self, handle: ProceduralMeshHandle) -> ProceduralMesh {
+        self.meshes.remove(&handle).unwrap_or_else(|| panic!("Procedural mesh {handle} must exist"))
+    }
+
+    pub fn remove_texture(&mut self, handle: ProceduralTextureHandle) -> ProceduralTexture {
+        self.textures.remove(&handle).unwrap_or_else(|| panic!("Procedural texture {handle} must exist"))
+    }
+
+    pub fn remove_sampler(&mut self, handle: ProceduralSamplerHandle) -> ProceduralSampler {
+        self.samplers.remove(&handle).unwrap_or_else(|| panic!("Procedural sampler {handle} must exist"))
+    }
+
+    pub fn remove_material(&mut self, handle: ProceduralMaterialHandle) -> ProceduralMaterial {
+        self.materials.remove(&handle).unwrap_or_else(|| panic!("Procedural material {handle} must exist"))
+    }
+
     pub fn get_mesh(&self, handle: ProceduralMeshHandle) -> &ProceduralMesh {
         &self
             .meshes
