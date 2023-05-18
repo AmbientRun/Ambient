@@ -11,6 +11,7 @@ ambient_api = { workspace = true }
 rand = "0.8.5"
 rand_pcg = "0.3.1"
 noise = { version = "0.8.2", features = ["images"] }
+palette = "0.7.1"
 
 [[bin]]
 name = "procedural_generation_client"
