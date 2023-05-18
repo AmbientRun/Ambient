@@ -3,11 +3,11 @@ use ulid::Ulid;
 macro_rules! procedural_storage_handle {
     ($name:ident) => {
         #[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Hash)]
-        /// todo
+        /// Procedural storage handle type
         pub struct $name(Ulid);
 
         impl $name {
-            /// todo
+            /// Creates a handle
             pub fn new() -> Self {
                 Self(Ulid::new())
             }
