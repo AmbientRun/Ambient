@@ -39,7 +39,7 @@ pub fn systems() -> SystemGroup {
                         let storage = world.resource(procedural_storage());
                         let mesh = storage.get_mesh(mesh_handle);
                         let mesh_aabb = mesh.aabb();
-                        let gpu_mesh = GpuMesh::from_mesh(&assets, &mesh);
+                        let gpu_mesh = GpuMesh::from_mesh(&assets, mesh);
                         (gpu_mesh, mesh_aabb)
                     };
                     world
@@ -153,29 +153,25 @@ impl ProceduralStorage {
     }
 
     pub fn get_mesh(&self, handle: ProceduralMeshHandle) -> &ProceduralMesh {
-        &self
-            .meshes
+        self.meshes
             .get(&handle)
             .unwrap_or_else(|| panic!("Procedural mesh {handle} must exist"))
     }
 
     pub fn get_texture(&self, handle: ProceduralTextureHandle) -> &ProceduralTexture {
-        &self
-            .textures
+        self.textures
             .get(&handle)
             .unwrap_or_else(|| panic!("Procedural texture {handle} must exist"))
     }
 
     pub fn get_sampler(&self, handle: ProceduralSamplerHandle) -> &ProceduralSampler {
-        &self
-            .samplers
+        self.samplers
             .get(&handle)
             .unwrap_or_else(|| panic!("Procedural sampler {handle} must exist"))
     }
 
     pub fn get_material(&self, handle: ProceduralMaterialHandle) -> &ProceduralMaterial {
-        &self
-            .materials
+        self.materials
             .get(&handle)
             .unwrap_or_else(|| panic!("Procedural material {handle} must exist"))
     }
