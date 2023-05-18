@@ -310,41 +310,45 @@ impl wit::client_mesh::Host for Bindings {
         Ok(())
     }
 }
-impl wit::client_material::Host for Bindings {
-    fn create(
+impl wit::client_texture::Host for Bindings {
+    fn create2d(
         &mut self,
-        desc: wit::client_material::Descriptor,
-    ) -> anyhow::Result<wit::client_material::Handle> {
+        desc: wit::client_texture::Descriptor2d,
+    ) -> anyhow::Result<wit::client_texture::Handle> {
         let world = self.world_mut();
-        let storage = world.resource_mut(procedural_storage());
-        let material = PbrMaterialConfig {
-            source: "Procedural Material".to_string(),
-            name: "Procedural Material".to_string(),
-            params: PbrMaterialParams {
-                base_color_factor: Vec4::ONE,
-                emissive_factor: Vec4::ZERO,
-                alpha_cutoff: 0.0,
-                metallic: 1.0,
-                roughness: 1.0,
-                ..PbrMaterialParams::default()
-            },
-            base_color: Arc::clone(storage.get_texture(desc.base_color_map.from_bindgen())),
-            normalmap: Arc::clone(storage.get_texture(desc.normal_map.from_bindgen())),
-            metallic_roughness: Arc::clone(
-                storage.get_texture(desc.metallic_roughness_map.from_bindgen()),
-            ),
-            sampler: Arc::clone(storage.get_sampler(desc.sampler.from_bindgen())),
-            transparent: false,
-            double_sided: false,
-            depth_write_enabled: true,
+        let assets = world.resource(asset_cache());
+        let gpu = GpuKey.get(assets);
+        let format = match desc.format {
+            wit::client_texture::Format::Rgba8Unorm => wgpu::TextureFormat::Rgba8Unorm,
         };
-        let material_handle = storage.insert_material(material);
-        Ok(material_handle.into_bindgen())
+        let texture = Texture::new_with_data(
+            gpu,
+            &wgpu::TextureDescriptor {
+                label: None,
+                size: wgpu::Extent3d {
+                    width: desc.width,
+                    height: desc.height,
+                    depth_or_array_layers: 1,
+                },
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: wgpu::TextureDimension::D2,
+                format,
+                usage: wgpu::TextureUsages::TEXTURE_BINDING,
+                view_formats: &[],
+            },
+            &desc.data,
+        );
+        let texture = Arc::new(texture);
+        let texture_view = Arc::new(texture.create_view(&TextureViewDescriptor::default()));
+        let storage = world.resource_mut(procedural_storage());
+        let texture_handle = storage.insert_texture(texture_view);
+        Ok(texture_handle.into_bindgen())
     }
-    fn destroy(&mut self, handle: wit::client_material::Handle) -> anyhow::Result<()> {
+    fn destroy(&mut self, handle: wit::client_texture::Handle) -> anyhow::Result<()> {
         let world = self.world_mut();
         let storage = world.resource_mut(procedural_storage());
-        storage.remove_material(handle.from_bindgen());
+        storage.remove_texture(handle.from_bindgen());
         Ok(())
     }
 }
@@ -389,45 +393,41 @@ impl wit::client_sampler::Host for Bindings {
         Ok(())
     }
 }
-impl wit::client_texture::Host for Bindings {
-    fn create2d(
+impl wit::client_material::Host for Bindings {
+    fn create(
         &mut self,
-        desc: wit::client_texture::Descriptor2d,
-    ) -> anyhow::Result<wit::client_texture::Handle> {
+        desc: wit::client_material::Descriptor,
+    ) -> anyhow::Result<wit::client_material::Handle> {
         let world = self.world_mut();
-        let assets = world.resource(asset_cache());
-        let gpu = GpuKey.get(assets);
-        let format = match desc.format {
-            wit::client_texture::Format::Rgba8Unorm => wgpu::TextureFormat::Rgba8Unorm,
-        };
-        let texture = Texture::new_with_data(
-            gpu,
-            &wgpu::TextureDescriptor {
-                label: None,
-                size: wgpu::Extent3d {
-                    width: desc.width,
-                    height: desc.height,
-                    depth_or_array_layers: 1,
-                },
-                mip_level_count: 1,
-                sample_count: 1,
-                dimension: wgpu::TextureDimension::D2,
-                format,
-                usage: wgpu::TextureUsages::TEXTURE_BINDING,
-                view_formats: &[],
+        let storage = world.resource_mut(procedural_storage());
+        let material = PbrMaterialConfig {
+            source: "Procedural Material".to_string(),
+            name: "Procedural Material".to_string(),
+            params: PbrMaterialParams {
+                base_color_factor: Vec4::ONE,
+                emissive_factor: Vec4::ZERO,
+                alpha_cutoff: 0.0,
+                metallic: 1.0,
+                roughness: 1.0,
+                ..PbrMaterialParams::default()
             },
-            &desc.data,
-        );
-        let texture = Arc::new(texture);
-        let texture_view = Arc::new(texture.create_view(&TextureViewDescriptor::default()));
-        let storage = world.resource_mut(procedural_storage());
-        let texture_handle = storage.insert_texture(texture_view);
-        Ok(texture_handle.into_bindgen())
+            base_color: Arc::clone(storage.get_texture(desc.base_color_map.from_bindgen())),
+            normalmap: Arc::clone(storage.get_texture(desc.normal_map.from_bindgen())),
+            metallic_roughness: Arc::clone(
+                storage.get_texture(desc.metallic_roughness_map.from_bindgen()),
+            ),
+            sampler: Arc::clone(storage.get_sampler(desc.sampler.from_bindgen())),
+            transparent: false,
+            double_sided: false,
+            depth_write_enabled: true,
+        };
+        let material_handle = storage.insert_material(material);
+        Ok(material_handle.into_bindgen())
     }
-    fn destroy(&mut self, handle: wit::client_texture::Handle) -> anyhow::Result<()> {
+    fn destroy(&mut self, handle: wit::client_material::Handle) -> anyhow::Result<()> {
         let world = self.world_mut();
         let storage = world.resource_mut(procedural_storage());
-        storage.remove_texture(handle.from_bindgen());
+        storage.remove_material(handle.from_bindgen());
         Ok(())
     }
 }

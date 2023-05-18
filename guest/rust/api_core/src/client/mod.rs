@@ -10,14 +10,14 @@ pub mod camera;
 /// **\[Client-only\]** Window-specific functionality.
 pub mod window;
 
-/// **\[Client-only\]** Procedural material generation.
-pub mod material;
-
 /// **\[Client-only\]** Procedural mesh generation.
 pub mod mesh;
+
+/// **\[Client-only\]** Procedural texture generation.
+pub mod texture;
 
 /// **\[Client-only\]** Procedural sampler generation.
 pub mod sampler;
 
-/// **\[Client-only\]** Procedural texture generation.
-pub mod texture;
+/// **\[Client-only\]** Procedural material generation.
+pub mod material;
