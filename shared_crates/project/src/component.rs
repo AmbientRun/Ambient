@@ -15,13 +15,19 @@ pub struct Component {
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Eq, Serialize)]
+pub enum ContainerType {
+    Vec,
+    Option,
+}
+
+#[derive(Deserialize, Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(untagged)]
 pub enum ComponentType {
     Identifier(CamelCaseIdentifier),
     ContainerType {
         #[serde(rename = "type")]
         #[serde(alias = "container_type")]
-        type_: CamelCaseIdentifier,
+        type_: ContainerType,
         element_type: CamelCaseIdentifier,
     },
 }

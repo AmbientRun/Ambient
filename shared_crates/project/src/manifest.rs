@@ -95,8 +95,8 @@ mod tests {
     use std::collections::BTreeMap;
 
     use crate::{
-        Build, BuildRust, CamelCaseIdentifier, Component, ComponentType, Concept, Enum, EnumMember,
-        Identifier, IdentifierPathBuf, Manifest, Project, Version, VersionSuffix,
+        Build, BuildRust, CamelCaseIdentifier, Component, ComponentType, Concept, ContainerType,
+        Enum, EnumMember, Identifier, IdentifierPathBuf, Manifest, Project, Version, VersionSuffix,
     };
 
     fn cci(s: &str) -> CamelCaseIdentifier {
@@ -375,6 +375,86 @@ mod tests {
                     ])
                     .into()
                 )]),
+            })
+        )
+    }
+
+    #[test]
+    fn can_parse_container_types() {
+        const TOML: &str = r#"
+        [project]
+        id = "test"
+        name = "Test"
+        version = "0.0.1"
+
+        [components]
+        test = { type = "I32", name = "Test", description = "Test" }
+        vec_test = { type = { container_type = "Vec", element_type = "I32" }, name = "Test", description = "Test" }
+        option_test = { type = { container_type = "Option", element_type = "I32" }, name = "Test", description = "Test" }
+
+        "#;
+
+        assert_eq!(
+            Manifest::parse(TOML),
+            Ok(Manifest {
+                project: Project {
+                    id: Identifier::new("test").unwrap(),
+                    name: Some("Test".to_string()),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
+                    description: None,
+                    authors: vec![],
+                    organization: None,
+                    includes: Default::default(),
+                },
+                build: Build {
+                    rust: BuildRust {
+                        feature_multibuild: vec!["client".to_string(), "server".to_string()]
+                    }
+                },
+                components: BTreeMap::from_iter([
+                    (
+                        IdentifierPathBuf::new("test").unwrap(),
+                        Component {
+                            name: Some("Test".to_string()),
+                            description: Some("Test".to_string()),
+                            type_: ComponentType::Identifier(cci("I32")),
+                            attributes: vec![],
+                            default: None,
+                        }
+                        .into()
+                    ),
+                    (
+                        IdentifierPathBuf::new("vec_test").unwrap(),
+                        Component {
+                            name: Some("Test".to_string()),
+                            description: Some("Test".to_string()),
+                            type_: ComponentType::ContainerType {
+                                type_: ContainerType::Vec,
+                                element_type: cci("I32")
+                            },
+                            attributes: vec![],
+                            default: None,
+                        }
+                        .into()
+                    ),
+                    (
+                        IdentifierPathBuf::new("option_test").unwrap(),
+                        Component {
+                            name: Some("Test".to_string()),
+                            description: Some("Test".to_string()),
+                            type_: ComponentType::ContainerType {
+                                type_: ContainerType::Option,
+                                element_type: cci("I32")
+                            },
+                            attributes: vec![],
+                            default: None,
+                        }
+                        .into()
+                    )
+                ]),
+                concepts: BTreeMap::new(),
+                messages: BTreeMap::new(),
+                enums: BTreeMap::new(),
             })
         )
     }

@@ -14,9 +14,57 @@ use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 use thiserror::Error;
 use ulid::Ulid;
 
+#[derive(Clone, PartialEq, Debug, Default)]
+pub struct ItemMap {
+    items: HashMap<Ulid, ItemValue>,
+    vec_items: HashMap<ItemId<Type>, ItemId<Type>>,
+    option_items: HashMap<ItemId<Type>, ItemId<Type>>,
+}
+impl ItemMap {
+    pub fn add<T: Item>(&mut self, item: T) -> ItemId<T> {
+        let ulid = ulid::Ulid::new();
+        self.items.insert(ulid, item.into_item_value());
+        ItemId(ulid, PhantomData)
+    }
+
+    pub fn get<T: Item>(&self, id: ItemId<T>) -> Option<&T> {
+        T::from_item_value(self.items.get(&id.0)?)
+    }
+
+    pub fn get_mut<T: Item>(&mut self, id: ItemId<T>) -> Option<&mut T> {
+        T::from_item_value_mut(self.items.get_mut(&id.0)?)
+    }
+
+    pub fn insert<T: Item>(&mut self, id: ItemId<T>, item: T) {
+        self.items.insert(id.0, item.into_item_value());
+    }
+
+    pub fn get_vec_id(&mut self, id: ItemId<Type>) -> ItemId<Type> {
+        if let Some(id) = self.vec_items.get(&id).cloned() {
+            return id;
+        }
+
+        let vec_id = self.add(Type::Vec(id));
+        self.vec_items.insert(id, vec_id);
+
+        vec_id
+    }
+
+    pub fn get_option_id(&mut self, id: ItemId<Type>) -> ItemId<Type> {
+        if let Some(id) = self.option_items.get(&id).cloned() {
+            return id;
+        }
+
+        let option_id = self.add(Type::Option(id));
+        self.option_items.insert(id, option_id);
+
+        option_id
+    }
+}
+
 #[derive(Clone, PartialEq, Debug)]
 pub struct Semantic {
-    items: HashMap<Ulid, ItemValue>,
+    items: ItemMap,
     root_scope: Scope,
     scopes: BTreeMap<Identifier, Scope>,
 }
@@ -38,7 +86,7 @@ impl Semantic {
         }
 
         let mut sem = Self {
-            items: HashMap::new(),
+            items: ItemMap::default(),
             root_scope: Scope {
                 id: Identifier::default(),
                 manifest: None,
@@ -53,8 +101,21 @@ impl Semantic {
         };
 
         for (id, ty) in primitive_component_definitions!(define_primitive_types) {
-            let item_id = sem.add(ty);
+            let item_id = sem.items.add(ty);
             sem.root_scope.types.insert(id, item_id);
+        }
+
+        for name in [
+            "Debuggable",
+            "Networked",
+            "Resource",
+            "MaybeResource",
+            "Store",
+        ] {
+            let item_id = sem.items.add(Attribute {});
+            sem.root_scope
+                .attributes
+                .insert(CamelCaseIdentifier::new(name).unwrap(), item_id);
         }
 
         sem
@@ -70,13 +131,10 @@ impl Semantic {
     }
 
     pub fn resolve(&mut self) -> anyhow::Result<()> {
+        for scope in self.scopes.values_mut() {
+            scope.resolve(&mut self.items, Scopes(vec![&self.root_scope]));
+        }
         Ok(())
-    }
-
-    pub fn add<T: Item>(&mut self, item: T) -> ItemId<T> {
-        let ulid = ulid::Ulid::new();
-        self.items.insert(ulid, item.into_item_value());
-        ItemId(ulid, PhantomData)
     }
 }
 
@@ -84,17 +142,66 @@ pub trait FileProvider {
     fn get(&self, filename: &str) -> std::io::Result<String>;
 }
 
+#[derive(Clone, PartialEq, Debug)]
+pub struct Scopes<'a>(Vec<&'a Scope>);
+impl<'a> Scopes<'a> {
+    fn push(&mut self, scope: &'a Scope) {
+        self.0.push(scope);
+    }
+
+    fn get_type_id(
+        &self,
+        items: &mut ItemMap,
+        component_type: &ComponentType,
+    ) -> Option<ItemId<Type>> {
+        for scope in self.0.iter().rev() {
+            match component_type {
+                ComponentType::Identifier(id) => {
+                    if let Some(id) = scope.get_type_id(id) {
+                        return Some(id);
+                    }
+                }
+                ComponentType::ContainerType {
+                    type_,
+                    element_type,
+                } => {
+                    if let Some(id) = scope.get_type_id(element_type) {
+                        return Some(match type_ {
+                            ambient_project::ContainerType::Vec => items.get_vec_id(id),
+                            ambient_project::ContainerType::Option => items.get_option_id(id),
+                        });
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    fn get_attribute_id(
+        &self,
+        items: &mut ItemMap,
+        path: &CamelCaseIdentifier,
+    ) -> Option<ItemId<Attribute>> {
+        for scope in self.0.iter().rev() {
+            if let Some(id) = scope.get_attribute_id(path) {
+                return Some(id);
+            }
+        }
+        None
+    }
+}
+
 #[derive(Clone, PartialEq)]
 pub struct Scope {
     id: Identifier,
     manifest: Option<Manifest>,
-
     scopes: BTreeMap<Identifier, Scope>,
+
     components: BTreeMap<Identifier, ItemId<Component>>,
     concepts: BTreeMap<Identifier, ItemId<Concept>>,
     messages: BTreeMap<Identifier, ItemId<Message>>,
     types: BTreeMap<CamelCaseIdentifier, ItemId<Type>>,
-    attributes: BTreeMap<Identifier, ItemId<Attribute>>,
+    attributes: BTreeMap<CamelCaseIdentifier, ItemId<Attribute>>,
 }
 impl Debug for Scope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -156,7 +263,7 @@ impl Scope {
             scope
                 .get_scope_mut(parent)
                 .components
-                .insert(last.clone(), semantic.add(component.into()));
+                .insert(last.clone(), semantic.items.add(component.into()));
         }
 
         for (path, concept) in manifest.concepts.iter() {
@@ -165,7 +272,7 @@ impl Scope {
             scope
                 .get_scope_mut(parent)
                 .concepts
-                .insert(last.clone(), semantic.add(concept.into()));
+                .insert(last.clone(), semantic.items.add(concept.into()));
         }
 
         for (path, message) in manifest.messages.iter() {
@@ -174,11 +281,13 @@ impl Scope {
             scope
                 .get_scope_mut(parent)
                 .messages
-                .insert(last.clone(), semantic.add(message.into()));
+                .insert(last.clone(), semantic.items.add(message.into()));
         }
 
         for (segment, ty) in manifest.enums.iter() {
-            scope.types.insert(segment.clone(), semantic.add(ty.into()));
+            scope
+                .types
+                .insert(segment.clone(), semantic.items.add(ty.into()));
         }
 
         scope.manifest = Some(manifest);
@@ -205,6 +314,39 @@ impl Scope {
         }
         scope
     }
+
+    fn resolve<'a>(&'a self, items: &mut ItemMap, mut scopes: Scopes<'a>) {
+        fn resolve<T: Item, U>(
+            item_ids: &BTreeMap<U, ItemId<T>>,
+            items: &mut ItemMap,
+            scopes: &Scopes,
+        ) {
+            for id in item_ids.values().copied() {
+                let item = items.get(id).cloned().unwrap().resolve(items, scopes);
+                items.insert(id, item);
+            }
+        }
+
+        scopes.push(self);
+
+        resolve(&self.components, items, &scopes);
+        resolve(&self.concepts, items, &scopes);
+        resolve(&self.messages, items, &scopes);
+        resolve(&self.types, items, &scopes);
+        resolve(&self.attributes, items, &scopes);
+
+        for scope in self.scopes.values() {
+            scope.resolve(items, scopes.clone());
+        }
+    }
+
+    fn get_type_id(&self, id: &CamelCaseIdentifier) -> Option<ItemId<Type>> {
+        self.types.get(id).copied()
+    }
+
+    fn get_attribute_id(&self, path: &CamelCaseIdentifier) -> Option<ItemId<Attribute>> {
+        self.attributes.get(path).copied()
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -225,17 +367,29 @@ pub enum ItemValue {
     Attribute(Attribute),
 }
 
-pub trait Item {
+pub trait Item: Clone {
     const TYPE: ItemType;
     type Unresolved: Eq + Debug;
 
     fn from_item_value(value: &ItemValue) -> Option<&Self>;
+    fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self>;
     fn into_item_value(self) -> ItemValue;
+    fn resolve(&mut self, items: &mut ItemMap, scopes: &Scopes) -> Self;
 }
 
-#[derive(Clone, Hash)]
 pub struct ItemId<T: Item>(Ulid, PhantomData<T>);
-
+impl<T: Item> std::hash::Hash for ItemId<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.hash(state);
+        self.1.hash(state);
+    }
+}
+impl<T: Item> Copy for ItemId<T> {}
+impl<T: Item> Clone for ItemId<T> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone(), self.1.clone())
+    }
+}
 impl<T: Item + Debug> Debug for ItemId<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("ItemId").field(&self.0 .0).finish()
@@ -247,11 +401,6 @@ impl<T: Item> PartialEq for ItemId<T> {
     }
 }
 impl<T: Item> Eq for ItemId<T> {}
-impl<T: Item> ItemId<T> {
-    pub fn get<'a>(&'a self, semantic: &'a Semantic) -> Option<&'a T> {
-        T::from_item_value(semantic.items.get(&self.0)?)
-    }
-}
 
 #[derive(Clone)]
 pub enum ItemRef<T: Item> {
@@ -307,8 +456,41 @@ impl Item for Component {
         }
     }
 
+    fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self> {
+        match value {
+            ItemValue::Component(value) => Some(value),
+            _ => None,
+        }
+    }
+
     fn into_item_value(self) -> ItemValue {
         ItemValue::Component(self)
+    }
+
+    fn resolve(&mut self, items: &mut ItemMap, scopes: &Scopes) -> Self {
+        let mut new = self.clone();
+
+        new.type_ = match new.type_ {
+            ItemRef::Unresolved(path) => {
+                let id = scopes.get_type_id(items, &path).unwrap();
+                ItemRef::Resolved(id)
+            }
+            t => t,
+        };
+
+        let mut attributes = vec![];
+        for attribute in &new.attributes {
+            attributes.push(match attribute {
+                ItemRef::Unresolved(path) => {
+                    let id = scopes.get_attribute_id(items, &path).unwrap();
+                    ItemRef::Resolved(id)
+                }
+                t => t.clone(),
+            });
+        }
+        new.attributes = attributes;
+
+        new
     }
 }
 impl From<&ambient_project::Component> for Component {
@@ -348,8 +530,19 @@ impl Item for Concept {
         }
     }
 
+    fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self> {
+        match value {
+            ItemValue::Concept(value) => Some(value),
+            _ => None,
+        }
+    }
+
     fn into_item_value(self) -> ItemValue {
         ItemValue::Concept(self)
+    }
+
+    fn resolve(&mut self, items: &mut ItemMap, scopes: &Scopes) -> Self {
+        self.clone()
     }
 }
 impl From<&ambient_project::Concept> for Concept {
@@ -392,8 +585,19 @@ impl Item for Message {
         }
     }
 
+    fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self> {
+        match value {
+            ItemValue::Message(value) => Some(value),
+            _ => None,
+        }
+    }
+
     fn into_item_value(self) -> ItemValue {
         ItemValue::Message(self)
+    }
+
+    fn resolve(&mut self, items: &mut ItemMap, scopes: &Scopes) -> Self {
+        self.clone()
     }
 }
 impl From<&ambient_project::Message> for Message {
@@ -422,8 +626,19 @@ impl Item for Attribute {
         }
     }
 
+    fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self> {
+        match value {
+            ItemValue::Attribute(value) => Some(value),
+            _ => None,
+        }
+    }
+
     fn into_item_value(self) -> ItemValue {
         ItemValue::Attribute(self)
+    }
+
+    fn resolve(&mut self, items: &mut ItemMap, scopes: &Scopes) -> Self {
+        self.clone()
     }
 }
 
@@ -463,8 +678,8 @@ impl From<&ambient_project::EnumMember> for EnumMember {
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum Type {
     Primitive(PrimitiveType),
-    Vec(PrimitiveType),
-    Option(PrimitiveType),
+    Vec(ItemId<Type>),
+    Option(ItemId<Type>),
     Enum(Enum),
 }
 impl Item for Type {
@@ -478,8 +693,19 @@ impl Item for Type {
         }
     }
 
+    fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self> {
+        match value {
+            ItemValue::Type(value) => Some(value),
+            _ => None,
+        }
+    }
+
     fn into_item_value(self) -> ItemValue {
         ItemValue::Type(self)
+    }
+
+    fn resolve(&mut self, items: &mut ItemMap, scopes: &Scopes) -> Self {
+        self.clone()
     }
 }
 impl From<&ambient_project::Enum> for Type {
