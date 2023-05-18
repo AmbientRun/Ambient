@@ -391,3 +391,77 @@ procedural_storage_handle!(ProceduralMeshHandle, client_mesh);
 procedural_storage_handle!(ProceduralTextureHandle, client_texture);
 procedural_storage_handle!(ProceduralSamplerHandle, client_sampler);
 procedural_storage_handle!(ProceduralMaterialHandle, client_material);
+
+impl FromBindgen for wit::client_texture::Format {
+    type Item = wgpu::TextureFormat;
+
+    fn from_bindgen(self) -> Self::Item {
+        match self {
+            Self::R8Unorm => Self::Item::R8Unorm,
+            Self::R8Snorm => Self::Item::R8Snorm,
+            Self::R8Uint => Self::Item::R8Uint,
+            Self::R8Sint => Self::Item::R8Sint,
+            Self::R16Uint => Self::Item::R16Uint,
+            Self::R16Sint => Self::Item::R16Sint,
+            Self::R16Unorm => Self::Item::R16Unorm,
+            Self::R16Snorm => Self::Item::R16Snorm,
+            Self::R16Float => Self::Item::R16Float,
+            Self::Rg8Unorm => Self::Item::Rg8Unorm,
+            Self::Rg8Snorm => Self::Item::Rg8Snorm,
+            Self::Rg8Uint => Self::Item::Rg8Uint,
+            Self::Rg8Sint => Self::Item::Rg8Sint,
+            Self::R32Uint => Self::Item::R32Uint,
+            Self::R32Sint => Self::Item::R32Sint,
+            Self::R32Float => Self::Item::R32Float,
+            Self::Rg16Uint => Self::Item::Rg16Uint,
+            Self::Rg16Sint => Self::Item::Rg16Sint,
+            Self::Rg16Unorm => Self::Item::Rg16Unorm,
+            Self::Rg16Snorm => Self::Item::Rg16Snorm,
+            Self::Rg16Float => Self::Item::Rg16Float,
+            Self::Rgba8Unorm => Self::Item::Rgba8Unorm,
+            Self::Rgba8UnormSrgb => Self::Item::Rgba8UnormSrgb,
+            Self::Rgba8Snorm => Self::Item::Rgba8Snorm,
+            Self::Rgba8Uint => Self::Item::Rgba8Uint,
+            Self::Rgba8Sint => Self::Item::Rgba8Sint,
+            Self::Bgra8Unorm => Self::Item::Bgra8Unorm,
+            Self::Bgra8UnormSrgb => Self::Item::Bgra8UnormSrgb,
+            Self::Rgb9e5Ufloat => Self::Item::Rgb9e5Ufloat,
+            Self::Rgb10a2Unorm => Self::Item::Rgb10a2Unorm,
+            Self::Rg11b10Float => Self::Item::Rg11b10Float,
+            Self::Rg32Uint => Self::Item::Rg32Uint,
+            Self::Rg32Sint => Self::Item::Rg32Sint,
+            Self::Rg32Float => Self::Item::Rg32Float,
+            Self::Rgba16Uint => Self::Item::Rgba16Uint,
+            Self::Rgba16Sint => Self::Item::Rgba16Sint,
+            Self::Rgba16Unorm => Self::Item::Rgba16Unorm,
+            Self::Rgba16Snorm => Self::Item::Rgba16Snorm,
+            Self::Rgba16Float => Self::Item::Rgba16Float,
+            Self::Rgba32Uint => Self::Item::Rgba32Uint,
+            Self::Rgba32Sint => Self::Item::Rgba32Sint,
+            Self::Rgba32Float => Self::Item::Rgba32Float,
+        }
+    }
+}
+
+impl FromBindgen for wit::client_sampler::FilterMode {
+    type Item = wgpu::FilterMode;
+
+    fn from_bindgen(self) -> Self::Item {
+        match self {
+            Self::Nearest => Self::Item::Nearest,
+            Self::Linear => Self::Item::Linear,
+        }
+    }
+}
+
+impl FromBindgen for wit::client_sampler::AddressMode {
+    type Item = wgpu::AddressMode;
+
+    fn from_bindgen(self) -> Self::Item {
+        match self {
+            Self::ClampToEdge => Self::Item::ClampToEdge,
+            Self::Repeat => Self::Item::Repeat,
+            Self::MirrorRepeat => Self::Item::MirrorRepeat,
+        }
+    }
+}

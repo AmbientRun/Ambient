@@ -17,18 +17,24 @@ pub struct Descriptor<'a> {
     pub indices: &'a [u32],
 }
 
+impl<'a> IntoBindgen for Descriptor<'a> {
+    type Item = wit::client_mesh::Descriptor<'a>;
+
+    fn into_bindgen(self) -> Self::Item {
+        Self::Item {
+            vertices: unsafe {
+                std::slice::from_raw_parts(
+                    self.vertices.as_ptr().cast::<wit::client_mesh::Vertex>(),
+                    self.vertices.len(),
+                )
+            },
+            indices: self.indices,
+        }
+    }
+}
+
 pub fn create(desc: &Descriptor) -> ProceduralMeshHandle {
-    let vertices = unsafe {
-        std::slice::from_raw_parts(
-            desc.vertices.as_ptr().cast::<wit::client_mesh::Vertex>(),
-            desc.vertices.len(),
-        )
-    };
-    wit::client_mesh::create(wit::client_mesh::Descriptor {
-        vertices,
-        indices: desc.indices,
-    })
-    .from_bindgen()
+    wit::client_mesh::create(desc.clone().into_bindgen()).from_bindgen()
 }
 
 pub fn destroy(handle: ProceduralMeshHandle) {

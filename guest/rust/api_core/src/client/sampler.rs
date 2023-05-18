@@ -8,11 +8,34 @@ pub enum FilterMode {
     Linear,
 }
 
+impl IntoBindgen for FilterMode {
+    type Item = wit::client_sampler::FilterMode;
+
+    fn into_bindgen(self) -> Self::Item {
+        match self {
+            FilterMode::Nearest => Self::Item::Nearest,
+            FilterMode::Linear => Self::Item::Linear,
+        }
+    }
+}
+
 #[derive(Clone, Copy)]
 pub enum AddressMode {
     ClampToEdge,
     Repeat,
     MirrorRepeat,
+}
+
+impl IntoBindgen for AddressMode {
+    type Item = wit::client_sampler::AddressMode;
+
+    fn into_bindgen(self) -> Self::Item {
+        match self {
+            AddressMode::ClampToEdge => Self::Item::ClampToEdge,
+            AddressMode::Repeat => Self::Item::Repeat,
+            AddressMode::MirrorRepeat => Self::Item::MirrorRepeat,
+        }
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -25,28 +48,23 @@ pub struct Descriptor {
     pub mipmap_filter: FilterMode,
 }
 
-pub fn create(desc: &Descriptor) -> ProceduralSamplerHandle {
-    let address_mode_from_guest = |guest: AddressMode| -> wit::client_sampler::AddressMode {
-        match guest {
-            AddressMode::ClampToEdge => wit::client_sampler::AddressMode::ClampToEdge,
-            AddressMode::Repeat => wit::client_sampler::AddressMode::Repeat,
-            AddressMode::MirrorRepeat => wit::client_sampler::AddressMode::MirrorRepeat,
-        }
-    };
-    let filter_mode_from_guest = |guest: FilterMode| match guest {
-        FilterMode::Nearest => wit::client_sampler::FilterMode::Nearest,
-        FilterMode::Linear => wit::client_sampler::FilterMode::Linear,
-    };
+impl IntoBindgen for Descriptor {
+    type Item = wit::client_sampler::Descriptor;
 
-    wit::client_sampler::create(wit::client_sampler::Descriptor {
-        address_mode_u: address_mode_from_guest(desc.address_mode_u),
-        address_mode_v: address_mode_from_guest(desc.address_mode_v),
-        address_mode_w: address_mode_from_guest(desc.address_mode_w),
-        mag_filter: filter_mode_from_guest(desc.mag_filter),
-        min_filter: filter_mode_from_guest(desc.min_filter),
-        mipmap_filter: filter_mode_from_guest(desc.mipmap_filter),
-    })
-    .from_bindgen()
+    fn into_bindgen(self) -> Self::Item {
+        Self::Item {
+            address_mode_u: self.address_mode_u.into_bindgen(),
+            address_mode_v: self.address_mode_v.into_bindgen(),
+            address_mode_w: self.address_mode_w.into_bindgen(),
+            mag_filter: self.mag_filter.into_bindgen(),
+            min_filter: self.min_filter.into_bindgen(),
+            mipmap_filter: self.mipmap_filter.into_bindgen(),
+        }
+    }
+}
+
+pub fn create(desc: &Descriptor) -> ProceduralSamplerHandle {
+    wit::client_sampler::create(desc.into_bindgen()).from_bindgen()
 }
 
 pub fn destroy(handle: ProceduralSamplerHandle) {

@@ -315,51 +315,6 @@ impl wit::client_texture::Host for Bindings {
         &mut self,
         desc: wit::client_texture::Descriptor2d,
     ) -> anyhow::Result<wit::client_texture::Handle> {
-        use wit::client_texture::Format as WitFormat;
-        let format = match desc.format {
-            WitFormat::R8Unorm => wgpu::TextureFormat::R8Unorm,
-            WitFormat::R8Snorm => wgpu::TextureFormat::R8Snorm,
-            WitFormat::R8Uint => wgpu::TextureFormat::R8Uint,
-            WitFormat::R8Sint => wgpu::TextureFormat::R8Sint,
-            WitFormat::R16Uint => wgpu::TextureFormat::R16Uint,
-            WitFormat::R16Sint => wgpu::TextureFormat::R16Sint,
-            WitFormat::R16Unorm => wgpu::TextureFormat::R16Unorm,
-            WitFormat::R16Snorm => wgpu::TextureFormat::R16Snorm,
-            WitFormat::R16Float => wgpu::TextureFormat::R16Float,
-            WitFormat::Rg8Unorm => wgpu::TextureFormat::Rg8Unorm,
-            WitFormat::Rg8Snorm => wgpu::TextureFormat::Rg8Snorm,
-            WitFormat::Rg8Uint => wgpu::TextureFormat::Rg8Uint,
-            WitFormat::Rg8Sint => wgpu::TextureFormat::Rg8Sint,
-            WitFormat::R32Uint => wgpu::TextureFormat::R32Uint,
-            WitFormat::R32Sint => wgpu::TextureFormat::R32Sint,
-            WitFormat::R32Float => wgpu::TextureFormat::R32Float,
-            WitFormat::Rg16Uint => wgpu::TextureFormat::Rg16Uint,
-            WitFormat::Rg16Sint => wgpu::TextureFormat::Rg16Sint,
-            WitFormat::Rg16Unorm => wgpu::TextureFormat::Rg16Unorm,
-            WitFormat::Rg16Snorm => wgpu::TextureFormat::Rg16Snorm,
-            WitFormat::Rg16Float => wgpu::TextureFormat::Rg16Float,
-            WitFormat::Rgba8Unorm => wgpu::TextureFormat::Rgba8Unorm,
-            WitFormat::Rgba8UnormSrgb => wgpu::TextureFormat::Rgba8UnormSrgb,
-            WitFormat::Rgba8Snorm => wgpu::TextureFormat::Rgba8Snorm,
-            WitFormat::Rgba8Uint => wgpu::TextureFormat::Rgba8Uint,
-            WitFormat::Rgba8Sint => wgpu::TextureFormat::Rgba8Sint,
-            WitFormat::Bgra8Unorm => wgpu::TextureFormat::Bgra8Unorm,
-            WitFormat::Bgra8UnormSrgb => wgpu::TextureFormat::Bgra8UnormSrgb,
-            WitFormat::Rgb9e5Ufloat => wgpu::TextureFormat::Rgb9e5Ufloat,
-            WitFormat::Rgb10a2Unorm => wgpu::TextureFormat::Rgb10a2Unorm,
-            WitFormat::Rg11b10Float => wgpu::TextureFormat::Rg11b10Float,
-            WitFormat::Rg32Uint => wgpu::TextureFormat::Rg32Uint,
-            WitFormat::Rg32Sint => wgpu::TextureFormat::Rg32Sint,
-            WitFormat::Rg32Float => wgpu::TextureFormat::Rg32Float,
-            WitFormat::Rgba16Uint => wgpu::TextureFormat::Rgba16Uint,
-            WitFormat::Rgba16Sint => wgpu::TextureFormat::Rgba16Sint,
-            WitFormat::Rgba16Unorm => wgpu::TextureFormat::Rgba16Unorm,
-            WitFormat::Rgba16Snorm => wgpu::TextureFormat::Rgba16Snorm,
-            WitFormat::Rgba16Float => wgpu::TextureFormat::Rgba16Float,
-            WitFormat::Rgba32Uint => wgpu::TextureFormat::Rgba32Uint,
-            WitFormat::Rgba32Sint => wgpu::TextureFormat::Rgba32Sint,
-            WitFormat::Rgba32Float => wgpu::TextureFormat::Rgba32Float,
-        };
         let world = self.world_mut();
         let assets = world.resource(asset_cache());
         let gpu = GpuKey.get(assets);
@@ -375,7 +330,7 @@ impl wit::client_texture::Host for Bindings {
                 mip_level_count: 1,
                 sample_count: 1,
                 dimension: wgpu::TextureDimension::D2,
-                format,
+                format: desc.format.from_bindgen(),
                 usage: wgpu::TextureUsages::TEXTURE_BINDING,
                 view_formats: &[],
             },
@@ -398,29 +353,17 @@ impl wit::client_sampler::Host for Bindings {
     fn create(
         &mut self,
         desc: wit::client_sampler::Descriptor,
-    ) -> wasmtime::Result<wit::client_sampler::Handle> {
-        let address_mode_from_wit = |wit: wit::client_sampler::AddressMode| -> wgpu::AddressMode {
-            match wit {
-                wit::client_sampler::AddressMode::ClampToEdge => wgpu::AddressMode::ClampToEdge,
-                wit::client_sampler::AddressMode::Repeat => wgpu::AddressMode::Repeat,
-                wit::client_sampler::AddressMode::MirrorRepeat => wgpu::AddressMode::MirrorRepeat,
-            }
-        };
-        let filter_mode_from_wit = |wit: wit::client_sampler::FilterMode| match wit {
-            wit::client_sampler::FilterMode::Nearest => wgpu::FilterMode::Nearest,
-            wit::client_sampler::FilterMode::Linear => wgpu::FilterMode::Linear,
-        };
-
+    ) -> anyhow::Result<wit::client_sampler::Handle> {
         let world = self.world_mut();
         let assets = world.resource(asset_cache());
         let gpu = GpuKey.get(assets);
         let sampler = gpu.device.create_sampler(&wgpu::SamplerDescriptor {
-            address_mode_u: address_mode_from_wit(desc.address_mode_u),
-            address_mode_v: address_mode_from_wit(desc.address_mode_v),
-            address_mode_w: address_mode_from_wit(desc.address_mode_w),
-            mag_filter: filter_mode_from_wit(desc.mag_filter),
-            min_filter: filter_mode_from_wit(desc.min_filter),
-            mipmap_filter: filter_mode_from_wit(desc.mipmap_filter),
+            address_mode_u: desc.address_mode_u.from_bindgen(),
+            address_mode_v: desc.address_mode_v.from_bindgen(),
+            address_mode_w: desc.address_mode_w.from_bindgen(),
+            mag_filter: desc.mag_filter.from_bindgen(),
+            min_filter: desc.min_filter.from_bindgen(),
+            mipmap_filter: desc.mipmap_filter.from_bindgen(),
             ..wgpu::SamplerDescriptor::default()
         });
         let sampler = Arc::new(sampler);

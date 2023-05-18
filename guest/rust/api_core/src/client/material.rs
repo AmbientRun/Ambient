@@ -10,14 +10,21 @@ pub struct Descriptor {
     pub sampler: ProceduralSamplerHandle,
 }
 
+impl IntoBindgen for Descriptor {
+    type Item = wit::client_material::Descriptor;
+
+    fn into_bindgen(self) -> Self::Item {
+        Self::Item {
+            base_color_map: self.base_color_map.into_bindgen(),
+            normal_map: self.normal_map.into_bindgen(),
+            metallic_roughness_map: self.metallic_roughness_map.into_bindgen(),
+            sampler: self.sampler.into_bindgen(),
+        }
+    }
+}
+
 pub fn create(desc: &Descriptor) -> ProceduralMaterialHandle {
-    wit::client_material::create(wit::client_material::Descriptor {
-        base_color_map: desc.base_color_map.into_bindgen(),
-        normal_map: desc.normal_map.into_bindgen(),
-        metallic_roughness_map: desc.metallic_roughness_map.into_bindgen(),
-        sampler: desc.sampler.into_bindgen(),
-    })
-    .from_bindgen()
+    wit::client_material::create(desc.into_bindgen()).from_bindgen()
 }
 
 pub fn destroy(handle: ProceduralMaterialHandle) {
