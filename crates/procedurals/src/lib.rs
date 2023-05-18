@@ -56,7 +56,6 @@ pub fn systems() -> SystemGroup {
                                 .with_default(primitives())
                                 .with_default(local_to_world())
                                 .with_default(mesh_to_world())
-                                .with_merge(make_transformable())
                                 .with(local_bounding_aabb(), mesh_aabb)
                                 .with(world_bounding_aabb(), mesh_aabb)
                                 .with(world_bounding_sphere(), mesh_aabb.to_sphere()),
