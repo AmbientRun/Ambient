@@ -54,35 +54,6 @@ impl Drop for GpuMesh {
     }
 }
 
-#[derive(Debug)]
-pub struct GpuMeshKey(ulid::Ulid);
-
-impl GpuMeshKey {
-    pub fn new() -> Self {
-        Self(ulid::Ulid::new())
-    }
-}
-
-impl std::str::FromStr for GpuMeshKey {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(ulid::Ulid::from_str(s)?))
-    }
-}
-
-impl std::fmt::Display for GpuMeshKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl SyncAssetKey<Arc<GpuMesh>> for GpuMeshKey {
-    fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
-        self.get(&assets)
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MeshBufferKey;
 
