@@ -64,9 +64,9 @@ impl ItemMap {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Semantic {
-    items: ItemMap,
+    pub items: ItemMap,
     root_scope: Scope,
-    scopes: BTreeMap<Identifier, Scope>,
+    pub scopes: BTreeMap<Identifier, Scope>,
 }
 impl Semantic {
     pub fn new() -> Self {
@@ -112,10 +112,9 @@ impl Semantic {
             "MaybeResource",
             "Store",
         ] {
-            let item_id = sem.items.add(Attribute {});
-            sem.root_scope
-                .attributes
-                .insert(CamelCaseIdentifier::new(name).unwrap(), item_id);
+            let id = CamelCaseIdentifier::new(name).unwrap();
+            let item_id = sem.items.add(Attribute { id: id.clone() });
+            sem.root_scope.attributes.insert(id, item_id);
         }
 
         sem
@@ -177,11 +176,7 @@ impl<'a> Scopes<'a> {
         None
     }
 
-    fn get_attribute_id(
-        &self,
-        items: &mut ItemMap,
-        path: &CamelCaseIdentifier,
-    ) -> Option<ItemId<Attribute>> {
+    fn get_attribute_id(&self, path: &CamelCaseIdentifier) -> Option<ItemId<Attribute>> {
         for scope in self.0.iter().rev() {
             if let Some(id) = scope.get_attribute_id(path) {
                 return Some(id);
@@ -193,15 +188,15 @@ impl<'a> Scopes<'a> {
 
 #[derive(Clone, PartialEq)]
 pub struct Scope {
-    id: Identifier,
+    pub id: Identifier,
     manifest: Option<Manifest>,
-    scopes: BTreeMap<Identifier, Scope>,
+    pub scopes: BTreeMap<Identifier, Scope>,
 
-    components: BTreeMap<Identifier, ItemId<Component>>,
-    concepts: BTreeMap<Identifier, ItemId<Concept>>,
-    messages: BTreeMap<Identifier, ItemId<Message>>,
-    types: BTreeMap<CamelCaseIdentifier, ItemId<Type>>,
-    attributes: BTreeMap<CamelCaseIdentifier, ItemId<Attribute>>,
+    pub components: BTreeMap<Identifier, ItemId<Component>>,
+    pub concepts: BTreeMap<Identifier, ItemId<Concept>>,
+    pub messages: BTreeMap<Identifier, ItemId<Message>>,
+    pub types: BTreeMap<CamelCaseIdentifier, ItemId<Type>>,
+    pub attributes: BTreeMap<CamelCaseIdentifier, ItemId<Attribute>>,
 }
 impl Debug for Scope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -285,9 +280,12 @@ impl Scope {
         }
 
         for (segment, ty) in manifest.enums.iter() {
-            scope
-                .types
-                .insert(segment.clone(), semantic.items.add(ty.into()));
+            scope.types.insert(
+                segment.clone(),
+                semantic
+                    .items
+                    .add(Type::from_project_enum(segment.clone(), ty)),
+            );
         }
 
         scope.manifest = Some(manifest);
@@ -482,7 +480,7 @@ impl Item for Component {
         for attribute in &new.attributes {
             attributes.push(match attribute {
                 ItemRef::Unresolved(path) => {
-                    let id = scopes.get_attribute_id(items, &path).unwrap();
+                    let id = scopes.get_attribute_id(&path).unwrap();
                     ItemRef::Resolved(id)
                 }
                 t => t.clone(),
@@ -614,7 +612,9 @@ impl From<&ambient_project::Message> for Message {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct Attribute {}
+pub struct Attribute {
+    pub id: CamelCaseIdentifier,
+}
 impl Item for Attribute {
     const TYPE: ItemType = ItemType::Attribute;
     type Unresolved = CamelCaseIdentifier;
@@ -653,7 +653,10 @@ impl Debug for PrimitiveType {
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]
-pub struct Enum(Vec<EnumMember>);
+pub struct Enum {
+    id: CamelCaseIdentifier,
+    members: Vec<EnumMember>,
+}
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct EnumMember {
@@ -682,6 +685,29 @@ pub enum Type {
     Option(ItemId<Type>),
     Enum(Enum),
 }
+impl Type {
+    fn from_project_enum(id: CamelCaseIdentifier, value: &ambient_project::Enum) -> Self {
+        Self::Enum(Enum {
+            id,
+            members: value.0.iter().map(|v| v.into()).collect(),
+        })
+    }
+
+    pub fn to_string(&self, semantic: &Semantic) -> String {
+        match self {
+            Type::Primitive(pt) => pt.rust_type.clone(),
+            Type::Vec(id) => {
+                let inner = semantic.items.get(*id).unwrap();
+                format!("Vec<{}>", inner.to_string(semantic))
+            }
+            Type::Option(id) => {
+                let inner = semantic.items.get(*id).unwrap();
+                format!("Option<{}>", inner.to_string(semantic))
+            }
+            Type::Enum(e) => e.id.to_string(),
+        }
+    }
+}
 impl Item for Type {
     const TYPE: ItemType = ItemType::Type;
     type Unresolved = ComponentType;
@@ -706,11 +732,6 @@ impl Item for Type {
 
     fn resolve(&mut self, items: &mut ItemMap, scopes: &Scopes) -> Self {
         self.clone()
-    }
-}
-impl From<&ambient_project::Enum> for Type {
-    fn from(value: &ambient_project::Enum) -> Self {
-        Self::Enum(Enum(value.0.iter().map(|v| v.into()).collect()))
     }
 }
 
