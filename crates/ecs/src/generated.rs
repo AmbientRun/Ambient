@@ -12,7 +12,10 @@ impl MessageSerde for crate::EntityId {
     }
 
     fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
-        let (id0, id1) = (input.read_u64::<BigEndian>()?, input.read_u64::<BigEndian>()?);
+        let (id0, id1) = (
+            input.read_u64::<BigEndian>()?,
+            input.read_u64::<BigEndian>()?,
+        );
         Ok(Self::from_u64s(id0, id1))
     }
 }

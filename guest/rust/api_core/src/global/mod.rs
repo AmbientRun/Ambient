@@ -10,6 +10,9 @@ pub use entity_id::*;
 mod shapes;
 pub use shapes::*;
 
+mod procedurals;
+pub use procedurals::*;
+
 /// Spatial audio system
 pub mod spatial_audio;
 

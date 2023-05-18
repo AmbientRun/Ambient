@@ -1,5 +1,4 @@
 use crate::shapes::AABB;
-use ambient_asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use anyhow::ensure;
 use glam::*;
 use serde::{Deserialize, Serialize};
@@ -197,38 +196,5 @@ impl Mesh {
     pub fn winding_flipped(mut self) -> Self {
         flip_winding(&mut self.indices);
         self
-    }
-}
-
-#[derive(Debug)]
-pub struct MeshKey(ulid::Ulid);
-
-impl MeshKey {
-    pub fn new() -> Self {
-        Self(ulid::Ulid::new())
-    }
-
-    pub fn into_inner(self) -> ulid::Ulid {
-        self.0
-    }
-}
-
-impl std::str::FromStr for MeshKey {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(ulid::Ulid::from_str(s)?))
-    }
-}
-
-impl std::fmt::Display for MeshKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl SyncAssetKey<Mesh> for MeshKey {
-    fn load(&self, assets: AssetCache) -> Mesh {
-        self.get(&assets)
     }
 }

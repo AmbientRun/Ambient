@@ -79,17 +79,7 @@ pub mod types{
       f.debug_struct("Uvec2").field("x", &self.x).field("y", &self.y).finish()
     }
   }
-  #[repr(C)]
-  #[derive(Copy, Clone)]
-  pub struct Ulid {
-    pub msb: u64,
-    pub lsb: u64,
-  }
-  impl core::fmt::Debug for Ulid {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-      f.debug_struct("Ulid").field("msb", &self.msb).field("lsb", &self.lsb).finish()
-    }
-  }
+  pub type Ulid = (u64,u64,);
   #[repr(C)]
   #[derive(Copy, Clone)]
   pub struct Ray {
@@ -386,6 +376,359 @@ pub mod asset{
     
     
     #[allow(clippy::all)]
+    pub mod client_mesh{
+      #[used]
+      #[doc(hidden)]
+      #[cfg(target_arch = "wasm32")]
+      static __FORCE_SECTION_REF: fn() = super::__link_section;
+      
+      pub type Vec2 = super::types::Vec2;
+      pub type Vec3 = super::types::Vec3;
+      pub type Ulid = super::types::Ulid;
+      #[repr(C)]
+      #[derive(Copy, Clone)]
+      pub struct Vertex {
+        pub position: Vec3,
+        pub normal: Vec3,
+        pub tangent: Vec3,
+        pub texcoord0: Vec2,
+      }
+      impl core::fmt::Debug for Vertex {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+          f.debug_struct("Vertex").field("position", &self.position).field("normal", &self.normal).field("tangent", &self.tangent).field("texcoord0", &self.texcoord0).finish()
+        }
+      }
+      #[repr(C)]
+      #[derive(Copy, Clone)]
+      pub struct Handle {
+        pub ulid: Ulid,
+      }
+      impl core::fmt::Debug for Handle {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+          f.debug_struct("Handle").field("ulid", &self.ulid).finish()
+        }
+      }
+      #[allow(clippy::all)]
+      pub fn create(vertices: &[Vertex],indices: &[u32],) -> Handle{
+        
+        #[allow(unused_imports)]
+        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+        unsafe {
+          
+          #[repr(align(8))]
+          struct RetArea([u8; 16]);
+          let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+          let vec0 = vertices;
+          let ptr0 = vec0.as_ptr() as i32;
+          let len0 = vec0.len() as i32;
+          let vec1 = indices;
+          let ptr1 = vec1.as_ptr() as i32;
+          let len1 = vec1.len() as i32;
+          let ptr2 = ret_area.as_mut_ptr() as i32;
+          #[link(wasm_import_module = "client-mesh")]
+          extern "C" {
+            #[cfg_attr(target_arch = "wasm32", link_name = "create")]
+            #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-mesh_create")]
+            fn wit_import(
+            _: i32, _: i32, _: i32, _: i32, _: i32, );
+          }
+          wit_import(ptr0, len0, ptr1, len1, ptr2);
+          Handle{ulid:(*((ptr2 + 0) as *const i64) as u64, *((ptr2 + 8) as *const i64) as u64), }
+        }
+      }
+      
+    }
+    
+    
+    #[allow(clippy::all)]
+    pub mod client_texture{
+      #[used]
+      #[doc(hidden)]
+      #[cfg(target_arch = "wasm32")]
+      static __FORCE_SECTION_REF: fn() = super::__link_section;
+      
+      pub type Ulid = super::types::Ulid;
+      #[repr(C)]
+      #[derive(Copy, Clone)]
+      pub struct Handle {
+        pub ulid: Ulid,
+      }
+      impl core::fmt::Debug for Handle {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+          f.debug_struct("Handle").field("ulid", &self.ulid).finish()
+        }
+      }
+      #[derive(Clone, Copy)]
+      pub enum Format{
+        Rgba8Unorm,
+      }
+      impl core::fmt::Debug for Format {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+          match self {
+            Format::Rgba8Unorm => {
+              f.debug_tuple("Format::Rgba8Unorm").finish()
+            }
+          }
+        }
+      }
+      #[allow(clippy::all)]
+      pub fn create2d(width: u32,height: u32,format: Format,data: &[u8],) -> Handle{
+        
+        #[allow(unused_imports)]
+        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+        unsafe {
+          
+          #[repr(align(8))]
+          struct RetArea([u8; 16]);
+          let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+          let result0 = match format {
+            Format::Rgba8Unorm=> {
+              0i32
+            }
+          };
+          let vec1 = data;
+          let ptr1 = vec1.as_ptr() as i32;
+          let len1 = vec1.len() as i32;
+          let ptr2 = ret_area.as_mut_ptr() as i32;
+          #[link(wasm_import_module = "client-texture")]
+          extern "C" {
+            #[cfg_attr(target_arch = "wasm32", link_name = "create2d")]
+            #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-texture_create2d")]
+            fn wit_import(
+            _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, );
+          }
+          wit_import(wit_bindgen::rt::as_i32(width), wit_bindgen::rt::as_i32(height), result0, ptr1, len1, ptr2);
+          Handle{ulid:(*((ptr2 + 0) as *const i64) as u64, *((ptr2 + 8) as *const i64) as u64), }
+        }
+      }
+      
+    }
+    
+    
+    #[allow(clippy::all)]
+    pub mod client_sampler{
+      #[used]
+      #[doc(hidden)]
+      #[cfg(target_arch = "wasm32")]
+      static __FORCE_SECTION_REF: fn() = super::__link_section;
+      
+      pub type Ulid = super::types::Ulid;
+      #[repr(C)]
+      #[derive(Copy, Clone)]
+      pub struct Handle {
+        pub ulid: Ulid,
+      }
+      impl core::fmt::Debug for Handle {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+          f.debug_struct("Handle").field("ulid", &self.ulid).finish()
+        }
+      }
+      #[derive(Clone, Copy)]
+      pub enum FilterMode{
+        Nearest,
+        Linear,
+      }
+      impl core::fmt::Debug for FilterMode {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+          match self {
+            FilterMode::Nearest => {
+              f.debug_tuple("FilterMode::Nearest").finish()
+            }
+            FilterMode::Linear => {
+              f.debug_tuple("FilterMode::Linear").finish()
+            }
+          }
+        }
+      }
+      #[derive(Clone, Copy)]
+      pub enum AddressMode{
+        ClampToEdge,
+        Repeat,
+        MirrorRepeat,
+      }
+      impl core::fmt::Debug for AddressMode {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+          match self {
+            AddressMode::ClampToEdge => {
+              f.debug_tuple("AddressMode::ClampToEdge").finish()
+            }
+            AddressMode::Repeat => {
+              f.debug_tuple("AddressMode::Repeat").finish()
+            }
+            AddressMode::MirrorRepeat => {
+              f.debug_tuple("AddressMode::MirrorRepeat").finish()
+            }
+          }
+        }
+      }
+      #[repr(C)]
+      #[derive(Copy, Clone)]
+      pub struct Descriptor {
+        pub address_mode_u: AddressMode,
+        pub address_mode_v: AddressMode,
+        pub address_mode_w: AddressMode,
+        pub mag_filter: FilterMode,
+        pub min_filter: FilterMode,
+        pub mipmap_filter: FilterMode,
+      }
+      impl core::fmt::Debug for Descriptor {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+          f.debug_struct("Descriptor").field("address-mode-u", &self.address_mode_u).field("address-mode-v", &self.address_mode_v).field("address-mode-w", &self.address_mode_w).field("mag-filter", &self.mag_filter).field("min-filter", &self.min_filter).field("mipmap-filter", &self.mipmap_filter).finish()
+        }
+      }
+      #[allow(clippy::all)]
+      pub fn create(desc: Descriptor,) -> Handle{
+        
+        #[allow(unused_imports)]
+        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+        unsafe {
+          
+          #[repr(align(8))]
+          struct RetArea([u8; 16]);
+          let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+          let Descriptor{ address_mode_u:address_mode_u0, address_mode_v:address_mode_v0, address_mode_w:address_mode_w0, mag_filter:mag_filter0, min_filter:min_filter0, mipmap_filter:mipmap_filter0, } = desc;
+          let result1 = match address_mode_u0 {
+            AddressMode::ClampToEdge=> {
+              0i32
+            }
+            AddressMode::Repeat=> {
+              1i32
+            }
+            AddressMode::MirrorRepeat=> {
+              2i32
+            }
+          };
+          let result2 = match address_mode_v0 {
+            AddressMode::ClampToEdge=> {
+              0i32
+            }
+            AddressMode::Repeat=> {
+              1i32
+            }
+            AddressMode::MirrorRepeat=> {
+              2i32
+            }
+          };
+          let result3 = match address_mode_w0 {
+            AddressMode::ClampToEdge=> {
+              0i32
+            }
+            AddressMode::Repeat=> {
+              1i32
+            }
+            AddressMode::MirrorRepeat=> {
+              2i32
+            }
+          };
+          let result4 = match mag_filter0 {
+            FilterMode::Nearest=> {
+              0i32
+            }
+            FilterMode::Linear=> {
+              1i32
+            }
+          };
+          let result5 = match min_filter0 {
+            FilterMode::Nearest=> {
+              0i32
+            }
+            FilterMode::Linear=> {
+              1i32
+            }
+          };
+          let result6 = match mipmap_filter0 {
+            FilterMode::Nearest=> {
+              0i32
+            }
+            FilterMode::Linear=> {
+              1i32
+            }
+          };
+          let ptr7 = ret_area.as_mut_ptr() as i32;
+          #[link(wasm_import_module = "client-sampler")]
+          extern "C" {
+            #[cfg_attr(target_arch = "wasm32", link_name = "create")]
+            #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-sampler_create")]
+            fn wit_import(
+            _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, );
+          }
+          wit_import(result1, result2, result3, result4, result5, result6, ptr7);
+          Handle{ulid:(*((ptr7 + 0) as *const i64) as u64, *((ptr7 + 8) as *const i64) as u64), }
+        }
+      }
+      
+    }
+    
+    
+    #[allow(clippy::all)]
+    pub mod client_material{
+      #[used]
+      #[doc(hidden)]
+      #[cfg(target_arch = "wasm32")]
+      static __FORCE_SECTION_REF: fn() = super::__link_section;
+      
+      pub type Ulid = super::types::Ulid;
+      pub type TextureHandle = super::client_texture::Handle;
+      pub type SamplerHandle = super::client_sampler::Handle;
+      #[repr(C)]
+      #[derive(Copy, Clone)]
+      pub struct Handle {
+        pub ulid: Ulid,
+      }
+      impl core::fmt::Debug for Handle {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+          f.debug_struct("Handle").field("ulid", &self.ulid).finish()
+        }
+      }
+      #[repr(C)]
+      #[derive(Copy, Clone)]
+      pub struct Descriptor {
+        pub base_color_map: TextureHandle,
+        pub normal_map: TextureHandle,
+        pub metallic_roughness_map: TextureHandle,
+        pub sampler: SamplerHandle,
+      }
+      impl core::fmt::Debug for Descriptor {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+          f.debug_struct("Descriptor").field("base-color-map", &self.base_color_map).field("normal-map", &self.normal_map).field("metallic-roughness-map", &self.metallic_roughness_map).field("sampler", &self.sampler).finish()
+        }
+      }
+      #[allow(clippy::all)]
+      pub fn create(desc: Descriptor,) -> Handle{
+        
+        #[allow(unused_imports)]
+        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
+        unsafe {
+          
+          #[repr(align(8))]
+          struct RetArea([u8; 16]);
+          let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
+          let Descriptor{ base_color_map:base_color_map0, normal_map:normal_map0, metallic_roughness_map:metallic_roughness_map0, sampler:sampler0, } = desc;
+          let super::client_texture::Handle{ ulid:ulid1, } = base_color_map0;
+          let (t2_0, t2_1, ) = ulid1;
+          let super::client_texture::Handle{ ulid:ulid3, } = normal_map0;
+          let (t4_0, t4_1, ) = ulid3;
+          let super::client_texture::Handle{ ulid:ulid5, } = metallic_roughness_map0;
+          let (t6_0, t6_1, ) = ulid5;
+          let super::client_sampler::Handle{ ulid:ulid7, } = sampler0;
+          let (t8_0, t8_1, ) = ulid7;
+          let ptr9 = ret_area.as_mut_ptr() as i32;
+          #[link(wasm_import_module = "client-material")]
+          extern "C" {
+            #[cfg_attr(target_arch = "wasm32", link_name = "create")]
+            #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-material_create")]
+            fn wit_import(
+            _: i64, _: i64, _: i64, _: i64, _: i64, _: i64, _: i64, _: i64, _: i32, );
+          }
+          wit_import(wit_bindgen::rt::as_i64(t2_0), wit_bindgen::rt::as_i64(t2_1), wit_bindgen::rt::as_i64(t4_0), wit_bindgen::rt::as_i64(t4_1), wit_bindgen::rt::as_i64(t6_0), wit_bindgen::rt::as_i64(t6_1), wit_bindgen::rt::as_i64(t8_0), wit_bindgen::rt::as_i64(t8_1), ptr9);
+          Handle{ulid:(*((ptr9 + 0) as *const i64) as u64, *((ptr9 + 8) as *const i64) as u64), }
+        }
+      }
+      
+    }
+    
+    
+    #[allow(clippy::all)]
     pub mod component{
       #[used]
       #[doc(hidden)]
@@ -401,6 +744,10 @@ pub mod asset{
       pub type Uvec2 = super::types::Uvec2;
       pub type Uvec3 = super::types::Uvec3;
       pub type Uvec4 = super::types::Uvec4;
+      pub type ProceduralMeshHandle = super::client_mesh::Handle;
+      pub type ProceduralTextureHandle = super::client_texture::Handle;
+      pub type ProceduralSamplerHandle = super::client_sampler::Handle;
+      pub type ProceduralMaterialHandle = super::client_material::Handle;
       #[repr(u8)]
       #[derive(Clone, Copy, PartialEq, Eq)]
       pub enum QueryEvent {
@@ -455,6 +802,10 @@ pub mod asset{
         TypeUvec2(wit_bindgen::rt::vec::Vec::<Uvec2>),
         TypeUvec3(wit_bindgen::rt::vec::Vec::<Uvec3>),
         TypeUvec4(wit_bindgen::rt::vec::Vec::<Uvec4>),
+        TypeProceduralMeshHandle(wit_bindgen::rt::vec::Vec::<ProceduralMeshHandle>),
+        TypeProceduralTextureHandle(wit_bindgen::rt::vec::Vec::<ProceduralTextureHandle>),
+        TypeProceduralSamplerHandle(wit_bindgen::rt::vec::Vec::<ProceduralSamplerHandle>),
+        TypeProceduralMaterialHandle(wit_bindgen::rt::vec::Vec::<ProceduralMaterialHandle>),
       }
       impl core::fmt::Debug for VecValue {
         fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -513,6 +864,18 @@ pub mod asset{
             VecValue::TypeUvec4(e) => {
               f.debug_tuple("VecValue::TypeUvec4").field(e).finish()
             }
+            VecValue::TypeProceduralMeshHandle(e) => {
+              f.debug_tuple("VecValue::TypeProceduralMeshHandle").field(e).finish()
+            }
+            VecValue::TypeProceduralTextureHandle(e) => {
+              f.debug_tuple("VecValue::TypeProceduralTextureHandle").field(e).finish()
+            }
+            VecValue::TypeProceduralSamplerHandle(e) => {
+              f.debug_tuple("VecValue::TypeProceduralSamplerHandle").field(e).finish()
+            }
+            VecValue::TypeProceduralMaterialHandle(e) => {
+              f.debug_tuple("VecValue::TypeProceduralMaterialHandle").field(e).finish()
+            }
           }
         }
       }
@@ -536,6 +899,10 @@ pub mod asset{
         TypeUvec2(Option<Uvec2>),
         TypeUvec3(Option<Uvec3>),
         TypeUvec4(Option<Uvec4>),
+        TypeProceduralMeshHandle(Option<ProceduralMeshHandle>),
+        TypeProceduralTextureHandle(Option<ProceduralTextureHandle>),
+        TypeProceduralSamplerHandle(Option<ProceduralSamplerHandle>),
+        TypeProceduralMaterialHandle(Option<ProceduralMaterialHandle>),
       }
       impl core::fmt::Debug for OptionValue {
         fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -594,6 +961,18 @@ pub mod asset{
             OptionValue::TypeUvec4(e) => {
               f.debug_tuple("OptionValue::TypeUvec4").field(e).finish()
             }
+            OptionValue::TypeProceduralMeshHandle(e) => {
+              f.debug_tuple("OptionValue::TypeProceduralMeshHandle").field(e).finish()
+            }
+            OptionValue::TypeProceduralTextureHandle(e) => {
+              f.debug_tuple("OptionValue::TypeProceduralTextureHandle").field(e).finish()
+            }
+            OptionValue::TypeProceduralSamplerHandle(e) => {
+              f.debug_tuple("OptionValue::TypeProceduralSamplerHandle").field(e).finish()
+            }
+            OptionValue::TypeProceduralMaterialHandle(e) => {
+              f.debug_tuple("OptionValue::TypeProceduralMaterialHandle").field(e).finish()
+            }
           }
         }
       }
@@ -617,6 +996,10 @@ pub mod asset{
         TypeUvec2(Uvec2),
         TypeUvec3(Uvec3),
         TypeUvec4(Uvec4),
+        TypeProceduralMeshHandle(ProceduralMeshHandle),
+        TypeProceduralTextureHandle(ProceduralTextureHandle),
+        TypeProceduralSamplerHandle(ProceduralSamplerHandle),
+        TypeProceduralMaterialHandle(ProceduralMaterialHandle),
         TypeVec(VecValue),
         TypeOption(OptionValue),
       }
@@ -676,6 +1059,18 @@ pub mod asset{
             }
             Value::TypeUvec4(e) => {
               f.debug_tuple("Value::TypeUvec4").field(e).finish()
+            }
+            Value::TypeProceduralMeshHandle(e) => {
+              f.debug_tuple("Value::TypeProceduralMeshHandle").field(e).finish()
+            }
+            Value::TypeProceduralTextureHandle(e) => {
+              f.debug_tuple("Value::TypeProceduralTextureHandle").field(e).finish()
+            }
+            Value::TypeProceduralSamplerHandle(e) => {
+              f.debug_tuple("Value::TypeProceduralSamplerHandle").field(e).finish()
+            }
+            Value::TypeProceduralMaterialHandle(e) => {
+              f.debug_tuple("Value::TypeProceduralMaterialHandle").field(e).finish()
             }
             Value::TypeVec(e) => {
               f.debug_tuple("Value::TypeVec").field(e).finish()
@@ -775,7 +1170,11 @@ pub mod asset{
               15 => Value::TypeUvec2(super::types::Uvec2{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, }),
               16 => Value::TypeUvec3(super::types::Uvec3{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, z:*((ptr1 + 24) as *const i32) as u32, }),
               17 => Value::TypeUvec4(super::types::Uvec4{x:*((ptr1 + 16) as *const i32) as u32, y:*((ptr1 + 20) as *const i32) as u32, z:*((ptr1 + 24) as *const i32) as u32, w:*((ptr1 + 28) as *const i32) as u32, }),
-              18 => Value::TypeVec({{match i32::from(*((ptr1 + 16) as *const u8)) {
+              18 => Value::TypeProceduralMeshHandle(super::client_mesh::Handle{ulid:(*((ptr1 + 16) as *const i64) as u64, *((ptr1 + 24) as *const i64) as u64), }),
+              19 => Value::TypeProceduralTextureHandle(super::client_texture::Handle{ulid:(*((ptr1 + 16) as *const i64) as u64, *((ptr1 + 24) as *const i64) as u64), }),
+              20 => Value::TypeProceduralSamplerHandle(super::client_sampler::Handle{ulid:(*((ptr1 + 16) as *const i64) as u64, *((ptr1 + 24) as *const i64) as u64), }),
+              21 => Value::TypeProceduralMaterialHandle(super::client_material::Handle{ulid:(*((ptr1 + 16) as *const i64) as u64, *((ptr1 + 24) as *const i64) as u64), }),
+              22 => Value::TypeVec({{match i32::from(*((ptr1 + 16) as *const u8)) {
                 0 => VecValue::TypeEmpty({
                   let len3 = *((ptr1 + 24) as *const i32) as usize;
                   
@@ -890,19 +1289,39 @@ pub mod asset{
                   
                   Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len20, len20)
                 }),
-                #[cfg(debug_assertions)]17 => VecValue::TypeUvec4({
+                17 => VecValue::TypeUvec4({
                   let len21 = *((ptr1 + 24) as *const i32) as usize;
                   
                   Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len21, len21)
                 }),
-                #[cfg(not(debug_assertions))]_ => VecValue::TypeUvec4({
-                  let len21 = *((ptr1 + 24) as *const i32) as usize;
+                18 => VecValue::TypeProceduralMeshHandle({
+                  let len22 = *((ptr1 + 24) as *const i32) as usize;
                   
-                  Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len21, len21)
+                  Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len22, len22)
+                }),
+                19 => VecValue::TypeProceduralTextureHandle({
+                  let len23 = *((ptr1 + 24) as *const i32) as usize;
+                  
+                  Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len23, len23)
+                }),
+                20 => VecValue::TypeProceduralSamplerHandle({
+                  let len24 = *((ptr1 + 24) as *const i32) as usize;
+                  
+                  Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len24, len24)
+                }),
+                #[cfg(debug_assertions)]21 => VecValue::TypeProceduralMaterialHandle({
+                  let len25 = *((ptr1 + 24) as *const i32) as usize;
+                  
+                  Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len25, len25)
+                }),
+                #[cfg(not(debug_assertions))]_ => VecValue::TypeProceduralMaterialHandle({
+                  let len25 = *((ptr1 + 24) as *const i32) as usize;
+                  
+                  Vec::from_raw_parts(*((ptr1 + 20) as *const i32) as *mut _, len25, len25)
                 }),
                 #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
               }}}),
-              #[cfg(debug_assertions)]19 => Value::TypeOption({{match i32::from(*((ptr1 + 16) as *const u8)) {
+              #[cfg(debug_assertions)]23 => Value::TypeOption({{match i32::from(*((ptr1 + 16) as *const u8)) {
                 0 => OptionValue::TypeEmpty(match i32::from(*((ptr1 + 24) as *const u8)) {
                   0 => None,
                   1 => Some(()),
@@ -981,9 +1400,9 @@ pub mod asset{
                 8 => OptionValue::TypeString(match i32::from(*((ptr1 + 24) as *const u8)) {
                   0 => None,
                   1 => Some({
-                    let len22 = *((ptr1 + 32) as *const i32) as usize;
+                    let len26 = *((ptr1 + 32) as *const i32) as usize;
                     
-                    {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len22, len22))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len22, len22)).unwrap()}}
+                    {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len26, len26))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len26, len26)).unwrap()}}
                   }),
                   #[cfg(not(debug_assertions))]
                   _ => core::hint::unreachable_unchecked(),
@@ -1054,7 +1473,7 @@ pub mod asset{
                   #[cfg(debug_assertions)]
                   _ => panic!("invalid enum discriminant"),
                 }),
-                #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+                17 => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
                   0 => None,
                   1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
                   #[cfg(not(debug_assertions))]
@@ -1062,9 +1481,41 @@ pub mod asset{
                   #[cfg(debug_assertions)]
                   _ => panic!("invalid enum discriminant"),
                 }),
-                #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+                18 => OptionValue::TypeProceduralMeshHandle(match i32::from(*((ptr1 + 24) as *const u8)) {
                   0 => None,
-                  1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
+                  1 => Some(super::client_mesh::Handle{ulid:(*((ptr1 + 32) as *const i64) as u64, *((ptr1 + 40) as *const i64) as u64), }),
+                  #[cfg(not(debug_assertions))]
+                  _ => core::hint::unreachable_unchecked(),
+                  #[cfg(debug_assertions)]
+                  _ => panic!("invalid enum discriminant"),
+                }),
+                19 => OptionValue::TypeProceduralTextureHandle(match i32::from(*((ptr1 + 24) as *const u8)) {
+                  0 => None,
+                  1 => Some(super::client_texture::Handle{ulid:(*((ptr1 + 32) as *const i64) as u64, *((ptr1 + 40) as *const i64) as u64), }),
+                  #[cfg(not(debug_assertions))]
+                  _ => core::hint::unreachable_unchecked(),
+                  #[cfg(debug_assertions)]
+                  _ => panic!("invalid enum discriminant"),
+                }),
+                20 => OptionValue::TypeProceduralSamplerHandle(match i32::from(*((ptr1 + 24) as *const u8)) {
+                  0 => None,
+                  1 => Some(super::client_sampler::Handle{ulid:(*((ptr1 + 32) as *const i64) as u64, *((ptr1 + 40) as *const i64) as u64), }),
+                  #[cfg(not(debug_assertions))]
+                  _ => core::hint::unreachable_unchecked(),
+                  #[cfg(debug_assertions)]
+                  _ => panic!("invalid enum discriminant"),
+                }),
+                #[cfg(debug_assertions)]21 => OptionValue::TypeProceduralMaterialHandle(match i32::from(*((ptr1 + 24) as *const u8)) {
+                  0 => None,
+                  1 => Some(super::client_material::Handle{ulid:(*((ptr1 + 32) as *const i64) as u64, *((ptr1 + 40) as *const i64) as u64), }),
+                  #[cfg(not(debug_assertions))]
+                  _ => core::hint::unreachable_unchecked(),
+                  #[cfg(debug_assertions)]
+                  _ => panic!("invalid enum discriminant"),
+                }),
+                #[cfg(not(debug_assertions))]_ => OptionValue::TypeProceduralMaterialHandle(match i32::from(*((ptr1 + 24) as *const u8)) {
+                  0 => None,
+                  1 => Some(super::client_material::Handle{ulid:(*((ptr1 + 32) as *const i64) as u64, *((ptr1 + 40) as *const i64) as u64), }),
                   #[cfg(not(debug_assertions))]
                   _ => core::hint::unreachable_unchecked(),
                   #[cfg(debug_assertions)]
@@ -1151,9 +1602,9 @@ pub mod asset{
                 8 => OptionValue::TypeString(match i32::from(*((ptr1 + 24) as *const u8)) {
                   0 => None,
                   1 => Some({
-                    let len22 = *((ptr1 + 32) as *const i32) as usize;
+                    let len26 = *((ptr1 + 32) as *const i32) as usize;
                     
-                    {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len22, len22))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len22, len22)).unwrap()}}
+                    {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len26, len26))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr1 + 28) as *const i32) as *mut _, len26, len26)).unwrap()}}
                   }),
                   #[cfg(not(debug_assertions))]
                   _ => core::hint::unreachable_unchecked(),
@@ -1224,7 +1675,7 @@ pub mod asset{
                   #[cfg(debug_assertions)]
                   _ => panic!("invalid enum discriminant"),
                 }),
-                #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+                17 => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
                   0 => None,
                   1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
                   #[cfg(not(debug_assertions))]
@@ -1232,9 +1683,41 @@ pub mod asset{
                   #[cfg(debug_assertions)]
                   _ => panic!("invalid enum discriminant"),
                 }),
-                #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((ptr1 + 24) as *const u8)) {
+                18 => OptionValue::TypeProceduralMeshHandle(match i32::from(*((ptr1 + 24) as *const u8)) {
                   0 => None,
-                  1 => Some(super::types::Uvec4{x:*((ptr1 + 28) as *const i32) as u32, y:*((ptr1 + 32) as *const i32) as u32, z:*((ptr1 + 36) as *const i32) as u32, w:*((ptr1 + 40) as *const i32) as u32, }),
+                  1 => Some(super::client_mesh::Handle{ulid:(*((ptr1 + 32) as *const i64) as u64, *((ptr1 + 40) as *const i64) as u64), }),
+                  #[cfg(not(debug_assertions))]
+                  _ => core::hint::unreachable_unchecked(),
+                  #[cfg(debug_assertions)]
+                  _ => panic!("invalid enum discriminant"),
+                }),
+                19 => OptionValue::TypeProceduralTextureHandle(match i32::from(*((ptr1 + 24) as *const u8)) {
+                  0 => None,
+                  1 => Some(super::client_texture::Handle{ulid:(*((ptr1 + 32) as *const i64) as u64, *((ptr1 + 40) as *const i64) as u64), }),
+                  #[cfg(not(debug_assertions))]
+                  _ => core::hint::unreachable_unchecked(),
+                  #[cfg(debug_assertions)]
+                  _ => panic!("invalid enum discriminant"),
+                }),
+                20 => OptionValue::TypeProceduralSamplerHandle(match i32::from(*((ptr1 + 24) as *const u8)) {
+                  0 => None,
+                  1 => Some(super::client_sampler::Handle{ulid:(*((ptr1 + 32) as *const i64) as u64, *((ptr1 + 40) as *const i64) as u64), }),
+                  #[cfg(not(debug_assertions))]
+                  _ => core::hint::unreachable_unchecked(),
+                  #[cfg(debug_assertions)]
+                  _ => panic!("invalid enum discriminant"),
+                }),
+                #[cfg(debug_assertions)]21 => OptionValue::TypeProceduralMaterialHandle(match i32::from(*((ptr1 + 24) as *const u8)) {
+                  0 => None,
+                  1 => Some(super::client_material::Handle{ulid:(*((ptr1 + 32) as *const i64) as u64, *((ptr1 + 40) as *const i64) as u64), }),
+                  #[cfg(not(debug_assertions))]
+                  _ => core::hint::unreachable_unchecked(),
+                  #[cfg(debug_assertions)]
+                  _ => panic!("invalid enum discriminant"),
+                }),
+                #[cfg(not(debug_assertions))]_ => OptionValue::TypeProceduralMaterialHandle(match i32::from(*((ptr1 + 24) as *const u8)) {
+                  0 => None,
+                  1 => Some(super::client_material::Handle{ulid:(*((ptr1 + 32) as *const i64) as u64, *((ptr1 + 40) as *const i64) as u64), }),
                   #[cfg(not(debug_assertions))]
                   _ => core::hint::unreachable_unchecked(),
                   #[cfg(debug_assertions)]
@@ -1405,204 +1888,164 @@ pub mod asset{
               *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(w16);
               
             },
-            Value::TypeVec(e) => {
+            Value::TypeProceduralMeshHandle(e) => {
               *((ptr0 + 24) as *mut u8) = (18i32) as u8;
+              let super::client_mesh::Handle{ ulid:ulid17, } = e;
+              let (t18_0, t18_1, ) = ulid17;
+              *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(t18_0);
+              *((ptr0 + 40) as *mut i64) = wit_bindgen::rt::as_i64(t18_1);
+              
+            },
+            Value::TypeProceduralTextureHandle(e) => {
+              *((ptr0 + 24) as *mut u8) = (19i32) as u8;
+              let super::client_texture::Handle{ ulid:ulid19, } = e;
+              let (t20_0, t20_1, ) = ulid19;
+              *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(t20_0);
+              *((ptr0 + 40) as *mut i64) = wit_bindgen::rt::as_i64(t20_1);
+              
+            },
+            Value::TypeProceduralSamplerHandle(e) => {
+              *((ptr0 + 24) as *mut u8) = (20i32) as u8;
+              let super::client_sampler::Handle{ ulid:ulid21, } = e;
+              let (t22_0, t22_1, ) = ulid21;
+              *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(t22_0);
+              *((ptr0 + 40) as *mut i64) = wit_bindgen::rt::as_i64(t22_1);
+              
+            },
+            Value::TypeProceduralMaterialHandle(e) => {
+              *((ptr0 + 24) as *mut u8) = (21i32) as u8;
+              let super::client_material::Handle{ ulid:ulid23, } = e;
+              let (t24_0, t24_1, ) = ulid23;
+              *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(t24_0);
+              *((ptr0 + 40) as *mut i64) = wit_bindgen::rt::as_i64(t24_1);
+              
+            },
+            Value::TypeVec(e) => {
+              *((ptr0 + 24) as *mut u8) = (22i32) as u8;
               match e {
                 VecValue::TypeEmpty(e) => {
                   *((ptr0 + 32) as *mut u8) = (0i32) as u8;
-                  let vec17 = e;
-                  let ptr17 = vec17.as_ptr() as i32;
-                  let len17 = vec17.len() as i32;
-                  *((ptr0 + 40) as *mut i32) = len17;
-                  *((ptr0 + 36) as *mut i32) = ptr17;
+                  let vec25 = e;
+                  let ptr25 = vec25.as_ptr() as i32;
+                  let len25 = vec25.len() as i32;
+                  *((ptr0 + 40) as *mut i32) = len25;
+                  *((ptr0 + 36) as *mut i32) = ptr25;
                   
                 },
                 VecValue::TypeBool(e) => {
                   *((ptr0 + 32) as *mut u8) = (1i32) as u8;
-                  let vec18 = e;
-                  let len18 = vec18.len() as i32;
-                  let layout18 = alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
-                  let result18 = if layout18.size() != 0
+                  let vec26 = e;
+                  let len26 = vec26.len() as i32;
+                  let layout26 = alloc::Layout::from_size_align_unchecked(vec26.len() * 1, 1);
+                  let result26 = if layout26.size() != 0
                   {
-                    let ptr = alloc::alloc(layout18);
+                    let ptr = alloc::alloc(layout26);
                     if ptr.is_null()
                     {
-                      alloc::handle_alloc_error(layout18);
+                      alloc::handle_alloc_error(layout26);
                     }
                     ptr
                   }else {
                     core::ptr::null_mut()
                   };
-                  for (i, e) in vec18.into_iter().enumerate() {
-                    let base = result18 as i32 + (i as i32) * 1;
+                  for (i, e) in vec26.into_iter().enumerate() {
+                    let base = result26 as i32 + (i as i32) * 1;
                     {
                       *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                       
                     }}
-                    *((ptr0 + 40) as *mut i32) = len18;
-                    *((ptr0 + 36) as *mut i32) = result18 as i32;
-                    cleanup_list.extend_from_slice(&[(result18, layout18),]);
+                    *((ptr0 + 40) as *mut i32) = len26;
+                    *((ptr0 + 36) as *mut i32) = result26 as i32;
+                    cleanup_list.extend_from_slice(&[(result26, layout26),]);
                     
                   },
                   VecValue::TypeEntityId(e) => {
                     *((ptr0 + 32) as *mut u8) = (2i32) as u8;
-                    let vec19 = e;
-                    let ptr19 = vec19.as_ptr() as i32;
-                    let len19 = vec19.len() as i32;
-                    *((ptr0 + 40) as *mut i32) = len19;
-                    *((ptr0 + 36) as *mut i32) = ptr19;
+                    let vec27 = e;
+                    let ptr27 = vec27.as_ptr() as i32;
+                    let len27 = vec27.len() as i32;
+                    *((ptr0 + 40) as *mut i32) = len27;
+                    *((ptr0 + 36) as *mut i32) = ptr27;
                     
                   },
                   VecValue::TypeF32(e) => {
                     *((ptr0 + 32) as *mut u8) = (3i32) as u8;
-                    let vec20 = e;
-                    let ptr20 = vec20.as_ptr() as i32;
-                    let len20 = vec20.len() as i32;
-                    *((ptr0 + 40) as *mut i32) = len20;
-                    *((ptr0 + 36) as *mut i32) = ptr20;
+                    let vec28 = e;
+                    let ptr28 = vec28.as_ptr() as i32;
+                    let len28 = vec28.len() as i32;
+                    *((ptr0 + 40) as *mut i32) = len28;
+                    *((ptr0 + 36) as *mut i32) = ptr28;
                     
                   },
                   VecValue::TypeF64(e) => {
                     *((ptr0 + 32) as *mut u8) = (4i32) as u8;
-                    let vec21 = e;
-                    let ptr21 = vec21.as_ptr() as i32;
-                    let len21 = vec21.len() as i32;
-                    *((ptr0 + 40) as *mut i32) = len21;
-                    *((ptr0 + 36) as *mut i32) = ptr21;
+                    let vec29 = e;
+                    let ptr29 = vec29.as_ptr() as i32;
+                    let len29 = vec29.len() as i32;
+                    *((ptr0 + 40) as *mut i32) = len29;
+                    *((ptr0 + 36) as *mut i32) = ptr29;
                     
                   },
                   VecValue::TypeMat4(e) => {
                     *((ptr0 + 32) as *mut u8) = (5i32) as u8;
-                    let vec22 = e;
-                    let ptr22 = vec22.as_ptr() as i32;
-                    let len22 = vec22.len() as i32;
-                    *((ptr0 + 40) as *mut i32) = len22;
-                    *((ptr0 + 36) as *mut i32) = ptr22;
+                    let vec30 = e;
+                    let ptr30 = vec30.as_ptr() as i32;
+                    let len30 = vec30.len() as i32;
+                    *((ptr0 + 40) as *mut i32) = len30;
+                    *((ptr0 + 36) as *mut i32) = ptr30;
                     
                   },
                   VecValue::TypeI32(e) => {
                     *((ptr0 + 32) as *mut u8) = (6i32) as u8;
-                    let vec23 = e;
-                    let ptr23 = vec23.as_ptr() as i32;
-                    let len23 = vec23.len() as i32;
-                    *((ptr0 + 40) as *mut i32) = len23;
-                    *((ptr0 + 36) as *mut i32) = ptr23;
+                    let vec31 = e;
+                    let ptr31 = vec31.as_ptr() as i32;
+                    let len31 = vec31.len() as i32;
+                    *((ptr0 + 40) as *mut i32) = len31;
+                    *((ptr0 + 36) as *mut i32) = ptr31;
                     
                   },
                   VecValue::TypeQuat(e) => {
                     *((ptr0 + 32) as *mut u8) = (7i32) as u8;
-                    let vec24 = e;
-                    let ptr24 = vec24.as_ptr() as i32;
-                    let len24 = vec24.len() as i32;
-                    *((ptr0 + 40) as *mut i32) = len24;
-                    *((ptr0 + 36) as *mut i32) = ptr24;
+                    let vec32 = e;
+                    let ptr32 = vec32.as_ptr() as i32;
+                    let len32 = vec32.len() as i32;
+                    *((ptr0 + 40) as *mut i32) = len32;
+                    *((ptr0 + 36) as *mut i32) = ptr32;
                     
                   },
                   VecValue::TypeString(e) => {
                     *((ptr0 + 32) as *mut u8) = (8i32) as u8;
-                    let vec26 = e;
-                    let len26 = vec26.len() as i32;
-                    let layout26 = alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
-                    let result26 = if layout26.size() != 0
+                    let vec34 = e;
+                    let len34 = vec34.len() as i32;
+                    let layout34 = alloc::Layout::from_size_align_unchecked(vec34.len() * 8, 4);
+                    let result34 = if layout34.size() != 0
                     {
-                      let ptr = alloc::alloc(layout26);
+                      let ptr = alloc::alloc(layout34);
                       if ptr.is_null()
                       {
-                        alloc::handle_alloc_error(layout26);
+                        alloc::handle_alloc_error(layout34);
                       }
                       ptr
                     }else {
                       core::ptr::null_mut()
                     };
-                    for (i, e) in vec26.into_iter().enumerate() {
-                      let base = result26 as i32 + (i as i32) * 8;
+                    for (i, e) in vec34.into_iter().enumerate() {
+                      let base = result34 as i32 + (i as i32) * 8;
                       {
-                        let vec25 = e;
-                        let ptr25 = vec25.as_ptr() as i32;
-                        let len25 = vec25.len() as i32;
-                        *((base + 4) as *mut i32) = len25;
-                        *((base + 0) as *mut i32) = ptr25;
+                        let vec33 = e;
+                        let ptr33 = vec33.as_ptr() as i32;
+                        let len33 = vec33.len() as i32;
+                        *((base + 4) as *mut i32) = len33;
+                        *((base + 0) as *mut i32) = ptr33;
                         
                       }}
-                      *((ptr0 + 40) as *mut i32) = len26;
-                      *((ptr0 + 36) as *mut i32) = result26 as i32;
-                      cleanup_list.extend_from_slice(&[(result26, layout26),]);
+                      *((ptr0 + 40) as *mut i32) = len34;
+                      *((ptr0 + 36) as *mut i32) = result34 as i32;
+                      cleanup_list.extend_from_slice(&[(result34, layout34),]);
                       
                     },
                     VecValue::TypeU8(e) => {
                       *((ptr0 + 32) as *mut u8) = (9i32) as u8;
-                      let vec27 = e;
-                      let ptr27 = vec27.as_ptr() as i32;
-                      let len27 = vec27.len() as i32;
-                      *((ptr0 + 40) as *mut i32) = len27;
-                      *((ptr0 + 36) as *mut i32) = ptr27;
-                      
-                    },
-                    VecValue::TypeU32(e) => {
-                      *((ptr0 + 32) as *mut u8) = (10i32) as u8;
-                      let vec28 = e;
-                      let ptr28 = vec28.as_ptr() as i32;
-                      let len28 = vec28.len() as i32;
-                      *((ptr0 + 40) as *mut i32) = len28;
-                      *((ptr0 + 36) as *mut i32) = ptr28;
-                      
-                    },
-                    VecValue::TypeU64(e) => {
-                      *((ptr0 + 32) as *mut u8) = (11i32) as u8;
-                      let vec29 = e;
-                      let ptr29 = vec29.as_ptr() as i32;
-                      let len29 = vec29.len() as i32;
-                      *((ptr0 + 40) as *mut i32) = len29;
-                      *((ptr0 + 36) as *mut i32) = ptr29;
-                      
-                    },
-                    VecValue::TypeVec2(e) => {
-                      *((ptr0 + 32) as *mut u8) = (12i32) as u8;
-                      let vec30 = e;
-                      let ptr30 = vec30.as_ptr() as i32;
-                      let len30 = vec30.len() as i32;
-                      *((ptr0 + 40) as *mut i32) = len30;
-                      *((ptr0 + 36) as *mut i32) = ptr30;
-                      
-                    },
-                    VecValue::TypeVec3(e) => {
-                      *((ptr0 + 32) as *mut u8) = (13i32) as u8;
-                      let vec31 = e;
-                      let ptr31 = vec31.as_ptr() as i32;
-                      let len31 = vec31.len() as i32;
-                      *((ptr0 + 40) as *mut i32) = len31;
-                      *((ptr0 + 36) as *mut i32) = ptr31;
-                      
-                    },
-                    VecValue::TypeVec4(e) => {
-                      *((ptr0 + 32) as *mut u8) = (14i32) as u8;
-                      let vec32 = e;
-                      let ptr32 = vec32.as_ptr() as i32;
-                      let len32 = vec32.len() as i32;
-                      *((ptr0 + 40) as *mut i32) = len32;
-                      *((ptr0 + 36) as *mut i32) = ptr32;
-                      
-                    },
-                    VecValue::TypeUvec2(e) => {
-                      *((ptr0 + 32) as *mut u8) = (15i32) as u8;
-                      let vec33 = e;
-                      let ptr33 = vec33.as_ptr() as i32;
-                      let len33 = vec33.len() as i32;
-                      *((ptr0 + 40) as *mut i32) = len33;
-                      *((ptr0 + 36) as *mut i32) = ptr33;
-                      
-                    },
-                    VecValue::TypeUvec3(e) => {
-                      *((ptr0 + 32) as *mut u8) = (16i32) as u8;
-                      let vec34 = e;
-                      let ptr34 = vec34.as_ptr() as i32;
-                      let len34 = vec34.len() as i32;
-                      *((ptr0 + 40) as *mut i32) = len34;
-                      *((ptr0 + 36) as *mut i32) = ptr34;
-                      
-                    },
-                    VecValue::TypeUvec4(e) => {
-                      *((ptr0 + 32) as *mut u8) = (17i32) as u8;
                       let vec35 = e;
                       let ptr35 = vec35.as_ptr() as i32;
                       let len35 = vec35.len() as i32;
@@ -1610,11 +2053,119 @@ pub mod asset{
                       *((ptr0 + 36) as *mut i32) = ptr35;
                       
                     },
+                    VecValue::TypeU32(e) => {
+                      *((ptr0 + 32) as *mut u8) = (10i32) as u8;
+                      let vec36 = e;
+                      let ptr36 = vec36.as_ptr() as i32;
+                      let len36 = vec36.len() as i32;
+                      *((ptr0 + 40) as *mut i32) = len36;
+                      *((ptr0 + 36) as *mut i32) = ptr36;
+                      
+                    },
+                    VecValue::TypeU64(e) => {
+                      *((ptr0 + 32) as *mut u8) = (11i32) as u8;
+                      let vec37 = e;
+                      let ptr37 = vec37.as_ptr() as i32;
+                      let len37 = vec37.len() as i32;
+                      *((ptr0 + 40) as *mut i32) = len37;
+                      *((ptr0 + 36) as *mut i32) = ptr37;
+                      
+                    },
+                    VecValue::TypeVec2(e) => {
+                      *((ptr0 + 32) as *mut u8) = (12i32) as u8;
+                      let vec38 = e;
+                      let ptr38 = vec38.as_ptr() as i32;
+                      let len38 = vec38.len() as i32;
+                      *((ptr0 + 40) as *mut i32) = len38;
+                      *((ptr0 + 36) as *mut i32) = ptr38;
+                      
+                    },
+                    VecValue::TypeVec3(e) => {
+                      *((ptr0 + 32) as *mut u8) = (13i32) as u8;
+                      let vec39 = e;
+                      let ptr39 = vec39.as_ptr() as i32;
+                      let len39 = vec39.len() as i32;
+                      *((ptr0 + 40) as *mut i32) = len39;
+                      *((ptr0 + 36) as *mut i32) = ptr39;
+                      
+                    },
+                    VecValue::TypeVec4(e) => {
+                      *((ptr0 + 32) as *mut u8) = (14i32) as u8;
+                      let vec40 = e;
+                      let ptr40 = vec40.as_ptr() as i32;
+                      let len40 = vec40.len() as i32;
+                      *((ptr0 + 40) as *mut i32) = len40;
+                      *((ptr0 + 36) as *mut i32) = ptr40;
+                      
+                    },
+                    VecValue::TypeUvec2(e) => {
+                      *((ptr0 + 32) as *mut u8) = (15i32) as u8;
+                      let vec41 = e;
+                      let ptr41 = vec41.as_ptr() as i32;
+                      let len41 = vec41.len() as i32;
+                      *((ptr0 + 40) as *mut i32) = len41;
+                      *((ptr0 + 36) as *mut i32) = ptr41;
+                      
+                    },
+                    VecValue::TypeUvec3(e) => {
+                      *((ptr0 + 32) as *mut u8) = (16i32) as u8;
+                      let vec42 = e;
+                      let ptr42 = vec42.as_ptr() as i32;
+                      let len42 = vec42.len() as i32;
+                      *((ptr0 + 40) as *mut i32) = len42;
+                      *((ptr0 + 36) as *mut i32) = ptr42;
+                      
+                    },
+                    VecValue::TypeUvec4(e) => {
+                      *((ptr0 + 32) as *mut u8) = (17i32) as u8;
+                      let vec43 = e;
+                      let ptr43 = vec43.as_ptr() as i32;
+                      let len43 = vec43.len() as i32;
+                      *((ptr0 + 40) as *mut i32) = len43;
+                      *((ptr0 + 36) as *mut i32) = ptr43;
+                      
+                    },
+                    VecValue::TypeProceduralMeshHandle(e) => {
+                      *((ptr0 + 32) as *mut u8) = (18i32) as u8;
+                      let vec44 = e;
+                      let ptr44 = vec44.as_ptr() as i32;
+                      let len44 = vec44.len() as i32;
+                      *((ptr0 + 40) as *mut i32) = len44;
+                      *((ptr0 + 36) as *mut i32) = ptr44;
+                      
+                    },
+                    VecValue::TypeProceduralTextureHandle(e) => {
+                      *((ptr0 + 32) as *mut u8) = (19i32) as u8;
+                      let vec45 = e;
+                      let ptr45 = vec45.as_ptr() as i32;
+                      let len45 = vec45.len() as i32;
+                      *((ptr0 + 40) as *mut i32) = len45;
+                      *((ptr0 + 36) as *mut i32) = ptr45;
+                      
+                    },
+                    VecValue::TypeProceduralSamplerHandle(e) => {
+                      *((ptr0 + 32) as *mut u8) = (20i32) as u8;
+                      let vec46 = e;
+                      let ptr46 = vec46.as_ptr() as i32;
+                      let len46 = vec46.len() as i32;
+                      *((ptr0 + 40) as *mut i32) = len46;
+                      *((ptr0 + 36) as *mut i32) = ptr46;
+                      
+                    },
+                    VecValue::TypeProceduralMaterialHandle(e) => {
+                      *((ptr0 + 32) as *mut u8) = (21i32) as u8;
+                      let vec47 = e;
+                      let ptr47 = vec47.as_ptr() as i32;
+                      let len47 = vec47.len() as i32;
+                      *((ptr0 + 40) as *mut i32) = len47;
+                      *((ptr0 + 36) as *mut i32) = ptr47;
+                      
+                    },
                   };
                   
                 },
                 Value::TypeOption(e) => {
-                  *((ptr0 + 24) as *mut u8) = (19i32) as u8;
+                  *((ptr0 + 24) as *mut u8) = (23i32) as u8;
                   match e {
                     OptionValue::TypeEmpty(e) => {
                       *((ptr0 + 32) as *mut u8) = (0i32) as u8;
@@ -1653,9 +2204,9 @@ pub mod asset{
                       match e {
                         Some(e) => {
                           *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                          let super::types::EntityId{ id0:id037, id1:id137, } = e;
-                          *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(id037);
-                          *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(id137);
+                          let super::types::EntityId{ id0:id049, id1:id149, } = e;
+                          *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(id049);
+                          *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(id149);
                           
                         },
                         None => {
@@ -1703,27 +2254,27 @@ pub mod asset{
                       match e {
                         Some(e) => {
                           *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                          let super::types::Mat4{ x:x38, y:y38, z:z38, w:w38, } = e;
-                          let super::types::Vec4{ x:x39, y:y39, z:z39, w:w39, } = x38;
-                          *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x39);
-                          *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y39);
-                          *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z39);
-                          *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w39);
-                          let super::types::Vec4{ x:x40, y:y40, z:z40, w:w40, } = y38;
-                          *((ptr0 + 60) as *mut f32) = wit_bindgen::rt::as_f32(x40);
-                          *((ptr0 + 64) as *mut f32) = wit_bindgen::rt::as_f32(y40);
-                          *((ptr0 + 68) as *mut f32) = wit_bindgen::rt::as_f32(z40);
-                          *((ptr0 + 72) as *mut f32) = wit_bindgen::rt::as_f32(w40);
-                          let super::types::Vec4{ x:x41, y:y41, z:z41, w:w41, } = z38;
-                          *((ptr0 + 76) as *mut f32) = wit_bindgen::rt::as_f32(x41);
-                          *((ptr0 + 80) as *mut f32) = wit_bindgen::rt::as_f32(y41);
-                          *((ptr0 + 84) as *mut f32) = wit_bindgen::rt::as_f32(z41);
-                          *((ptr0 + 88) as *mut f32) = wit_bindgen::rt::as_f32(w41);
-                          let super::types::Vec4{ x:x42, y:y42, z:z42, w:w42, } = w38;
-                          *((ptr0 + 92) as *mut f32) = wit_bindgen::rt::as_f32(x42);
-                          *((ptr0 + 96) as *mut f32) = wit_bindgen::rt::as_f32(y42);
-                          *((ptr0 + 100) as *mut f32) = wit_bindgen::rt::as_f32(z42);
-                          *((ptr0 + 104) as *mut f32) = wit_bindgen::rt::as_f32(w42);
+                          let super::types::Mat4{ x:x50, y:y50, z:z50, w:w50, } = e;
+                          let super::types::Vec4{ x:x51, y:y51, z:z51, w:w51, } = x50;
+                          *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x51);
+                          *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y51);
+                          *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z51);
+                          *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w51);
+                          let super::types::Vec4{ x:x52, y:y52, z:z52, w:w52, } = y50;
+                          *((ptr0 + 60) as *mut f32) = wit_bindgen::rt::as_f32(x52);
+                          *((ptr0 + 64) as *mut f32) = wit_bindgen::rt::as_f32(y52);
+                          *((ptr0 + 68) as *mut f32) = wit_bindgen::rt::as_f32(z52);
+                          *((ptr0 + 72) as *mut f32) = wit_bindgen::rt::as_f32(w52);
+                          let super::types::Vec4{ x:x53, y:y53, z:z53, w:w53, } = z50;
+                          *((ptr0 + 76) as *mut f32) = wit_bindgen::rt::as_f32(x53);
+                          *((ptr0 + 80) as *mut f32) = wit_bindgen::rt::as_f32(y53);
+                          *((ptr0 + 84) as *mut f32) = wit_bindgen::rt::as_f32(z53);
+                          *((ptr0 + 88) as *mut f32) = wit_bindgen::rt::as_f32(w53);
+                          let super::types::Vec4{ x:x54, y:y54, z:z54, w:w54, } = w50;
+                          *((ptr0 + 92) as *mut f32) = wit_bindgen::rt::as_f32(x54);
+                          *((ptr0 + 96) as *mut f32) = wit_bindgen::rt::as_f32(y54);
+                          *((ptr0 + 100) as *mut f32) = wit_bindgen::rt::as_f32(z54);
+                          *((ptr0 + 104) as *mut f32) = wit_bindgen::rt::as_f32(w54);
                           
                         },
                         None => {
@@ -1755,11 +2306,11 @@ pub mod asset{
                       match e {
                         Some(e) => {
                           *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                          let super::types::Quat{ x:x43, y:y43, z:z43, w:w43, } = e;
-                          *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x43);
-                          *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y43);
-                          *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z43);
-                          *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w43);
+                          let super::types::Quat{ x:x55, y:y55, z:z55, w:w55, } = e;
+                          *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x55);
+                          *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y55);
+                          *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z55);
+                          *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w55);
                           
                         },
                         None => {
@@ -1775,11 +2326,11 @@ pub mod asset{
                       match e {
                         Some(e) => {
                           *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                          let vec44 = e;
-                          let ptr44 = vec44.as_ptr() as i32;
-                          let len44 = vec44.len() as i32;
-                          *((ptr0 + 48) as *mut i32) = len44;
-                          *((ptr0 + 44) as *mut i32) = ptr44;
+                          let vec56 = e;
+                          let ptr56 = vec56.as_ptr() as i32;
+                          let len56 = vec56.len() as i32;
+                          *((ptr0 + 48) as *mut i32) = len56;
+                          *((ptr0 + 44) as *mut i32) = ptr56;
                           
                         },
                         None => {
@@ -1843,9 +2394,9 @@ pub mod asset{
                       match e {
                         Some(e) => {
                           *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                          let super::types::Vec2{ x:x45, y:y45, } = e;
-                          *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x45);
-                          *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y45);
+                          let super::types::Vec2{ x:x57, y:y57, } = e;
+                          *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x57);
+                          *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y57);
                           
                         },
                         None => {
@@ -1861,10 +2412,10 @@ pub mod asset{
                       match e {
                         Some(e) => {
                           *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                          let super::types::Vec3{ x:x46, y:y46, z:z46, } = e;
-                          *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x46);
-                          *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y46);
-                          *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z46);
+                          let super::types::Vec3{ x:x58, y:y58, z:z58, } = e;
+                          *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x58);
+                          *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y58);
+                          *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z58);
                           
                         },
                         None => {
@@ -1880,11 +2431,11 @@ pub mod asset{
                       match e {
                         Some(e) => {
                           *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                          let super::types::Vec4{ x:x47, y:y47, z:z47, w:w47, } = e;
-                          *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x47);
-                          *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y47);
-                          *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z47);
-                          *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w47);
+                          let super::types::Vec4{ x:x59, y:y59, z:z59, w:w59, } = e;
+                          *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x59);
+                          *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y59);
+                          *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z59);
+                          *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w59);
                           
                         },
                         None => {
@@ -1900,9 +2451,9 @@ pub mod asset{
                       match e {
                         Some(e) => {
                           *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                          let super::types::Uvec2{ x:x48, y:y48, } = e;
-                          *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x48);
-                          *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y48);
+                          let super::types::Uvec2{ x:x60, y:y60, } = e;
+                          *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x60);
+                          *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y60);
                           
                         },
                         None => {
@@ -1918,10 +2469,10 @@ pub mod asset{
                       match e {
                         Some(e) => {
                           *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                          let super::types::Uvec3{ x:x49, y:y49, z:z49, } = e;
-                          *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x49);
-                          *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y49);
-                          *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z49);
+                          let super::types::Uvec3{ x:x61, y:y61, z:z61, } = e;
+                          *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x61);
+                          *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y61);
+                          *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z61);
                           
                         },
                         None => {
@@ -1937,11 +2488,87 @@ pub mod asset{
                       match e {
                         Some(e) => {
                           *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                          let super::types::Uvec4{ x:x50, y:y50, z:z50, w:w50, } = e;
-                          *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x50);
-                          *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y50);
-                          *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z50);
-                          *((ptr0 + 56) as *mut i32) = wit_bindgen::rt::as_i32(w50);
+                          let super::types::Uvec4{ x:x62, y:y62, z:z62, w:w62, } = e;
+                          *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x62);
+                          *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y62);
+                          *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z62);
+                          *((ptr0 + 56) as *mut i32) = wit_bindgen::rt::as_i32(w62);
+                          
+                        },
+                        None => {
+                          {
+                            *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                            
+                          }
+                        },
+                      };
+                    },
+                    OptionValue::TypeProceduralMeshHandle(e) => {
+                      *((ptr0 + 32) as *mut u8) = (18i32) as u8;
+                      match e {
+                        Some(e) => {
+                          *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                          let super::client_mesh::Handle{ ulid:ulid63, } = e;
+                          let (t64_0, t64_1, ) = ulid63;
+                          *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(t64_0);
+                          *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(t64_1);
+                          
+                        },
+                        None => {
+                          {
+                            *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                            
+                          }
+                        },
+                      };
+                    },
+                    OptionValue::TypeProceduralTextureHandle(e) => {
+                      *((ptr0 + 32) as *mut u8) = (19i32) as u8;
+                      match e {
+                        Some(e) => {
+                          *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                          let super::client_texture::Handle{ ulid:ulid65, } = e;
+                          let (t66_0, t66_1, ) = ulid65;
+                          *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(t66_0);
+                          *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(t66_1);
+                          
+                        },
+                        None => {
+                          {
+                            *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                            
+                          }
+                        },
+                      };
+                    },
+                    OptionValue::TypeProceduralSamplerHandle(e) => {
+                      *((ptr0 + 32) as *mut u8) = (20i32) as u8;
+                      match e {
+                        Some(e) => {
+                          *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                          let super::client_sampler::Handle{ ulid:ulid67, } = e;
+                          let (t68_0, t68_1, ) = ulid67;
+                          *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(t68_0);
+                          *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(t68_1);
+                          
+                        },
+                        None => {
+                          {
+                            *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                            
+                          }
+                        },
+                      };
+                    },
+                    OptionValue::TypeProceduralMaterialHandle(e) => {
+                      *((ptr0 + 32) as *mut u8) = (21i32) as u8;
+                      match e {
+                        Some(e) => {
+                          *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                          let super::client_material::Handle{ ulid:ulid69, } = e;
+                          let (t70_0, t70_1, ) = ulid69;
+                          *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(t70_0);
+                          *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(t70_1);
                           
                         },
                         None => {
@@ -1984,22 +2611,22 @@ pub mod asset{
             unsafe {
               let mut cleanup_list = Vec::new();
               let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-              let vec51 = data;
-              let len51 = vec51.len() as i32;
-              let layout51 = alloc::Layout::from_size_align_unchecked(vec51.len() * 96, 8);
-              let result51 = if layout51.size() != 0
+              let vec71 = data;
+              let len71 = vec71.len() as i32;
+              let layout71 = alloc::Layout::from_size_align_unchecked(vec71.len() * 96, 8);
+              let result71 = if layout71.size() != 0
               {
-                let ptr = alloc::alloc(layout51);
+                let ptr = alloc::alloc(layout71);
                 if ptr.is_null()
                 {
-                  alloc::handle_alloc_error(layout51);
+                  alloc::handle_alloc_error(layout71);
                 }
                 ptr
               }else {
                 core::ptr::null_mut()
               };
-              for (i, e) in vec51.into_iter().enumerate() {
-                let base = result51 as i32 + (i as i32) * 96;
+              for (i, e) in vec71.into_iter().enumerate() {
+                let base = result71 as i32 + (i as i32) * 96;
                 {
                   let (t1_0, t1_1, ) = e;
                   *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t1_0);
@@ -2142,204 +2769,164 @@ pub mod asset{
                       *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(w16);
                       
                     },
-                    Value::TypeVec(e) => {
+                    Value::TypeProceduralMeshHandle(e) => {
                       *((base + 8) as *mut u8) = (18i32) as u8;
+                      let super::client_mesh::Handle{ ulid:ulid17, } = e;
+                      let (t18_0, t18_1, ) = ulid17;
+                      *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(t18_0);
+                      *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(t18_1);
+                      
+                    },
+                    Value::TypeProceduralTextureHandle(e) => {
+                      *((base + 8) as *mut u8) = (19i32) as u8;
+                      let super::client_texture::Handle{ ulid:ulid19, } = e;
+                      let (t20_0, t20_1, ) = ulid19;
+                      *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(t20_0);
+                      *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(t20_1);
+                      
+                    },
+                    Value::TypeProceduralSamplerHandle(e) => {
+                      *((base + 8) as *mut u8) = (20i32) as u8;
+                      let super::client_sampler::Handle{ ulid:ulid21, } = e;
+                      let (t22_0, t22_1, ) = ulid21;
+                      *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(t22_0);
+                      *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(t22_1);
+                      
+                    },
+                    Value::TypeProceduralMaterialHandle(e) => {
+                      *((base + 8) as *mut u8) = (21i32) as u8;
+                      let super::client_material::Handle{ ulid:ulid23, } = e;
+                      let (t24_0, t24_1, ) = ulid23;
+                      *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(t24_0);
+                      *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(t24_1);
+                      
+                    },
+                    Value::TypeVec(e) => {
+                      *((base + 8) as *mut u8) = (22i32) as u8;
                       match e {
                         VecValue::TypeEmpty(e) => {
                           *((base + 16) as *mut u8) = (0i32) as u8;
-                          let vec17 = e;
-                          let ptr17 = vec17.as_ptr() as i32;
-                          let len17 = vec17.len() as i32;
-                          *((base + 24) as *mut i32) = len17;
-                          *((base + 20) as *mut i32) = ptr17;
+                          let vec25 = e;
+                          let ptr25 = vec25.as_ptr() as i32;
+                          let len25 = vec25.len() as i32;
+                          *((base + 24) as *mut i32) = len25;
+                          *((base + 20) as *mut i32) = ptr25;
                           
                         },
                         VecValue::TypeBool(e) => {
                           *((base + 16) as *mut u8) = (1i32) as u8;
-                          let vec18 = e;
-                          let len18 = vec18.len() as i32;
-                          let layout18 = alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
-                          let result18 = if layout18.size() != 0
+                          let vec26 = e;
+                          let len26 = vec26.len() as i32;
+                          let layout26 = alloc::Layout::from_size_align_unchecked(vec26.len() * 1, 1);
+                          let result26 = if layout26.size() != 0
                           {
-                            let ptr = alloc::alloc(layout18);
+                            let ptr = alloc::alloc(layout26);
                             if ptr.is_null()
                             {
-                              alloc::handle_alloc_error(layout18);
+                              alloc::handle_alloc_error(layout26);
                             }
                             ptr
                           }else {
                             core::ptr::null_mut()
                           };
-                          for (i, e) in vec18.into_iter().enumerate() {
-                            let base = result18 as i32 + (i as i32) * 1;
+                          for (i, e) in vec26.into_iter().enumerate() {
+                            let base = result26 as i32 + (i as i32) * 1;
                             {
                               *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                               
                             }}
-                            *((base + 24) as *mut i32) = len18;
-                            *((base + 20) as *mut i32) = result18 as i32;
-                            cleanup_list.extend_from_slice(&[(result18, layout18),]);
+                            *((base + 24) as *mut i32) = len26;
+                            *((base + 20) as *mut i32) = result26 as i32;
+                            cleanup_list.extend_from_slice(&[(result26, layout26),]);
                             
                           },
                           VecValue::TypeEntityId(e) => {
                             *((base + 16) as *mut u8) = (2i32) as u8;
-                            let vec19 = e;
-                            let ptr19 = vec19.as_ptr() as i32;
-                            let len19 = vec19.len() as i32;
-                            *((base + 24) as *mut i32) = len19;
-                            *((base + 20) as *mut i32) = ptr19;
+                            let vec27 = e;
+                            let ptr27 = vec27.as_ptr() as i32;
+                            let len27 = vec27.len() as i32;
+                            *((base + 24) as *mut i32) = len27;
+                            *((base + 20) as *mut i32) = ptr27;
                             
                           },
                           VecValue::TypeF32(e) => {
                             *((base + 16) as *mut u8) = (3i32) as u8;
-                            let vec20 = e;
-                            let ptr20 = vec20.as_ptr() as i32;
-                            let len20 = vec20.len() as i32;
-                            *((base + 24) as *mut i32) = len20;
-                            *((base + 20) as *mut i32) = ptr20;
+                            let vec28 = e;
+                            let ptr28 = vec28.as_ptr() as i32;
+                            let len28 = vec28.len() as i32;
+                            *((base + 24) as *mut i32) = len28;
+                            *((base + 20) as *mut i32) = ptr28;
                             
                           },
                           VecValue::TypeF64(e) => {
                             *((base + 16) as *mut u8) = (4i32) as u8;
-                            let vec21 = e;
-                            let ptr21 = vec21.as_ptr() as i32;
-                            let len21 = vec21.len() as i32;
-                            *((base + 24) as *mut i32) = len21;
-                            *((base + 20) as *mut i32) = ptr21;
+                            let vec29 = e;
+                            let ptr29 = vec29.as_ptr() as i32;
+                            let len29 = vec29.len() as i32;
+                            *((base + 24) as *mut i32) = len29;
+                            *((base + 20) as *mut i32) = ptr29;
                             
                           },
                           VecValue::TypeMat4(e) => {
                             *((base + 16) as *mut u8) = (5i32) as u8;
-                            let vec22 = e;
-                            let ptr22 = vec22.as_ptr() as i32;
-                            let len22 = vec22.len() as i32;
-                            *((base + 24) as *mut i32) = len22;
-                            *((base + 20) as *mut i32) = ptr22;
+                            let vec30 = e;
+                            let ptr30 = vec30.as_ptr() as i32;
+                            let len30 = vec30.len() as i32;
+                            *((base + 24) as *mut i32) = len30;
+                            *((base + 20) as *mut i32) = ptr30;
                             
                           },
                           VecValue::TypeI32(e) => {
                             *((base + 16) as *mut u8) = (6i32) as u8;
-                            let vec23 = e;
-                            let ptr23 = vec23.as_ptr() as i32;
-                            let len23 = vec23.len() as i32;
-                            *((base + 24) as *mut i32) = len23;
-                            *((base + 20) as *mut i32) = ptr23;
+                            let vec31 = e;
+                            let ptr31 = vec31.as_ptr() as i32;
+                            let len31 = vec31.len() as i32;
+                            *((base + 24) as *mut i32) = len31;
+                            *((base + 20) as *mut i32) = ptr31;
                             
                           },
                           VecValue::TypeQuat(e) => {
                             *((base + 16) as *mut u8) = (7i32) as u8;
-                            let vec24 = e;
-                            let ptr24 = vec24.as_ptr() as i32;
-                            let len24 = vec24.len() as i32;
-                            *((base + 24) as *mut i32) = len24;
-                            *((base + 20) as *mut i32) = ptr24;
+                            let vec32 = e;
+                            let ptr32 = vec32.as_ptr() as i32;
+                            let len32 = vec32.len() as i32;
+                            *((base + 24) as *mut i32) = len32;
+                            *((base + 20) as *mut i32) = ptr32;
                             
                           },
                           VecValue::TypeString(e) => {
                             *((base + 16) as *mut u8) = (8i32) as u8;
-                            let vec26 = e;
-                            let len26 = vec26.len() as i32;
-                            let layout26 = alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
-                            let result26 = if layout26.size() != 0
+                            let vec34 = e;
+                            let len34 = vec34.len() as i32;
+                            let layout34 = alloc::Layout::from_size_align_unchecked(vec34.len() * 8, 4);
+                            let result34 = if layout34.size() != 0
                             {
-                              let ptr = alloc::alloc(layout26);
+                              let ptr = alloc::alloc(layout34);
                               if ptr.is_null()
                               {
-                                alloc::handle_alloc_error(layout26);
+                                alloc::handle_alloc_error(layout34);
                               }
                               ptr
                             }else {
                               core::ptr::null_mut()
                             };
-                            for (i, e) in vec26.into_iter().enumerate() {
-                              let base = result26 as i32 + (i as i32) * 8;
+                            for (i, e) in vec34.into_iter().enumerate() {
+                              let base = result34 as i32 + (i as i32) * 8;
                               {
-                                let vec25 = e;
-                                let ptr25 = vec25.as_ptr() as i32;
-                                let len25 = vec25.len() as i32;
-                                *((base + 4) as *mut i32) = len25;
-                                *((base + 0) as *mut i32) = ptr25;
+                                let vec33 = e;
+                                let ptr33 = vec33.as_ptr() as i32;
+                                let len33 = vec33.len() as i32;
+                                *((base + 4) as *mut i32) = len33;
+                                *((base + 0) as *mut i32) = ptr33;
                                 
                               }}
-                              *((base + 24) as *mut i32) = len26;
-                              *((base + 20) as *mut i32) = result26 as i32;
-                              cleanup_list.extend_from_slice(&[(result26, layout26),]);
+                              *((base + 24) as *mut i32) = len34;
+                              *((base + 20) as *mut i32) = result34 as i32;
+                              cleanup_list.extend_from_slice(&[(result34, layout34),]);
                               
                             },
                             VecValue::TypeU8(e) => {
                               *((base + 16) as *mut u8) = (9i32) as u8;
-                              let vec27 = e;
-                              let ptr27 = vec27.as_ptr() as i32;
-                              let len27 = vec27.len() as i32;
-                              *((base + 24) as *mut i32) = len27;
-                              *((base + 20) as *mut i32) = ptr27;
-                              
-                            },
-                            VecValue::TypeU32(e) => {
-                              *((base + 16) as *mut u8) = (10i32) as u8;
-                              let vec28 = e;
-                              let ptr28 = vec28.as_ptr() as i32;
-                              let len28 = vec28.len() as i32;
-                              *((base + 24) as *mut i32) = len28;
-                              *((base + 20) as *mut i32) = ptr28;
-                              
-                            },
-                            VecValue::TypeU64(e) => {
-                              *((base + 16) as *mut u8) = (11i32) as u8;
-                              let vec29 = e;
-                              let ptr29 = vec29.as_ptr() as i32;
-                              let len29 = vec29.len() as i32;
-                              *((base + 24) as *mut i32) = len29;
-                              *((base + 20) as *mut i32) = ptr29;
-                              
-                            },
-                            VecValue::TypeVec2(e) => {
-                              *((base + 16) as *mut u8) = (12i32) as u8;
-                              let vec30 = e;
-                              let ptr30 = vec30.as_ptr() as i32;
-                              let len30 = vec30.len() as i32;
-                              *((base + 24) as *mut i32) = len30;
-                              *((base + 20) as *mut i32) = ptr30;
-                              
-                            },
-                            VecValue::TypeVec3(e) => {
-                              *((base + 16) as *mut u8) = (13i32) as u8;
-                              let vec31 = e;
-                              let ptr31 = vec31.as_ptr() as i32;
-                              let len31 = vec31.len() as i32;
-                              *((base + 24) as *mut i32) = len31;
-                              *((base + 20) as *mut i32) = ptr31;
-                              
-                            },
-                            VecValue::TypeVec4(e) => {
-                              *((base + 16) as *mut u8) = (14i32) as u8;
-                              let vec32 = e;
-                              let ptr32 = vec32.as_ptr() as i32;
-                              let len32 = vec32.len() as i32;
-                              *((base + 24) as *mut i32) = len32;
-                              *((base + 20) as *mut i32) = ptr32;
-                              
-                            },
-                            VecValue::TypeUvec2(e) => {
-                              *((base + 16) as *mut u8) = (15i32) as u8;
-                              let vec33 = e;
-                              let ptr33 = vec33.as_ptr() as i32;
-                              let len33 = vec33.len() as i32;
-                              *((base + 24) as *mut i32) = len33;
-                              *((base + 20) as *mut i32) = ptr33;
-                              
-                            },
-                            VecValue::TypeUvec3(e) => {
-                              *((base + 16) as *mut u8) = (16i32) as u8;
-                              let vec34 = e;
-                              let ptr34 = vec34.as_ptr() as i32;
-                              let len34 = vec34.len() as i32;
-                              *((base + 24) as *mut i32) = len34;
-                              *((base + 20) as *mut i32) = ptr34;
-                              
-                            },
-                            VecValue::TypeUvec4(e) => {
-                              *((base + 16) as *mut u8) = (17i32) as u8;
                               let vec35 = e;
                               let ptr35 = vec35.as_ptr() as i32;
                               let len35 = vec35.len() as i32;
@@ -2347,11 +2934,119 @@ pub mod asset{
                               *((base + 20) as *mut i32) = ptr35;
                               
                             },
+                            VecValue::TypeU32(e) => {
+                              *((base + 16) as *mut u8) = (10i32) as u8;
+                              let vec36 = e;
+                              let ptr36 = vec36.as_ptr() as i32;
+                              let len36 = vec36.len() as i32;
+                              *((base + 24) as *mut i32) = len36;
+                              *((base + 20) as *mut i32) = ptr36;
+                              
+                            },
+                            VecValue::TypeU64(e) => {
+                              *((base + 16) as *mut u8) = (11i32) as u8;
+                              let vec37 = e;
+                              let ptr37 = vec37.as_ptr() as i32;
+                              let len37 = vec37.len() as i32;
+                              *((base + 24) as *mut i32) = len37;
+                              *((base + 20) as *mut i32) = ptr37;
+                              
+                            },
+                            VecValue::TypeVec2(e) => {
+                              *((base + 16) as *mut u8) = (12i32) as u8;
+                              let vec38 = e;
+                              let ptr38 = vec38.as_ptr() as i32;
+                              let len38 = vec38.len() as i32;
+                              *((base + 24) as *mut i32) = len38;
+                              *((base + 20) as *mut i32) = ptr38;
+                              
+                            },
+                            VecValue::TypeVec3(e) => {
+                              *((base + 16) as *mut u8) = (13i32) as u8;
+                              let vec39 = e;
+                              let ptr39 = vec39.as_ptr() as i32;
+                              let len39 = vec39.len() as i32;
+                              *((base + 24) as *mut i32) = len39;
+                              *((base + 20) as *mut i32) = ptr39;
+                              
+                            },
+                            VecValue::TypeVec4(e) => {
+                              *((base + 16) as *mut u8) = (14i32) as u8;
+                              let vec40 = e;
+                              let ptr40 = vec40.as_ptr() as i32;
+                              let len40 = vec40.len() as i32;
+                              *((base + 24) as *mut i32) = len40;
+                              *((base + 20) as *mut i32) = ptr40;
+                              
+                            },
+                            VecValue::TypeUvec2(e) => {
+                              *((base + 16) as *mut u8) = (15i32) as u8;
+                              let vec41 = e;
+                              let ptr41 = vec41.as_ptr() as i32;
+                              let len41 = vec41.len() as i32;
+                              *((base + 24) as *mut i32) = len41;
+                              *((base + 20) as *mut i32) = ptr41;
+                              
+                            },
+                            VecValue::TypeUvec3(e) => {
+                              *((base + 16) as *mut u8) = (16i32) as u8;
+                              let vec42 = e;
+                              let ptr42 = vec42.as_ptr() as i32;
+                              let len42 = vec42.len() as i32;
+                              *((base + 24) as *mut i32) = len42;
+                              *((base + 20) as *mut i32) = ptr42;
+                              
+                            },
+                            VecValue::TypeUvec4(e) => {
+                              *((base + 16) as *mut u8) = (17i32) as u8;
+                              let vec43 = e;
+                              let ptr43 = vec43.as_ptr() as i32;
+                              let len43 = vec43.len() as i32;
+                              *((base + 24) as *mut i32) = len43;
+                              *((base + 20) as *mut i32) = ptr43;
+                              
+                            },
+                            VecValue::TypeProceduralMeshHandle(e) => {
+                              *((base + 16) as *mut u8) = (18i32) as u8;
+                              let vec44 = e;
+                              let ptr44 = vec44.as_ptr() as i32;
+                              let len44 = vec44.len() as i32;
+                              *((base + 24) as *mut i32) = len44;
+                              *((base + 20) as *mut i32) = ptr44;
+                              
+                            },
+                            VecValue::TypeProceduralTextureHandle(e) => {
+                              *((base + 16) as *mut u8) = (19i32) as u8;
+                              let vec45 = e;
+                              let ptr45 = vec45.as_ptr() as i32;
+                              let len45 = vec45.len() as i32;
+                              *((base + 24) as *mut i32) = len45;
+                              *((base + 20) as *mut i32) = ptr45;
+                              
+                            },
+                            VecValue::TypeProceduralSamplerHandle(e) => {
+                              *((base + 16) as *mut u8) = (20i32) as u8;
+                              let vec46 = e;
+                              let ptr46 = vec46.as_ptr() as i32;
+                              let len46 = vec46.len() as i32;
+                              *((base + 24) as *mut i32) = len46;
+                              *((base + 20) as *mut i32) = ptr46;
+                              
+                            },
+                            VecValue::TypeProceduralMaterialHandle(e) => {
+                              *((base + 16) as *mut u8) = (21i32) as u8;
+                              let vec47 = e;
+                              let ptr47 = vec47.as_ptr() as i32;
+                              let len47 = vec47.len() as i32;
+                              *((base + 24) as *mut i32) = len47;
+                              *((base + 20) as *mut i32) = ptr47;
+                              
+                            },
                           };
                           
                         },
                         Value::TypeOption(e) => {
-                          *((base + 8) as *mut u8) = (19i32) as u8;
+                          *((base + 8) as *mut u8) = (23i32) as u8;
                           match e {
                             OptionValue::TypeEmpty(e) => {
                               *((base + 16) as *mut u8) = (0i32) as u8;
@@ -2390,9 +3085,9 @@ pub mod asset{
                               match e {
                                 Some(e) => {
                                   *((base + 24) as *mut u8) = (1i32) as u8;
-                                  let super::types::EntityId{ id0:id037, id1:id137, } = e;
-                                  *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(id037);
-                                  *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(id137);
+                                  let super::types::EntityId{ id0:id049, id1:id149, } = e;
+                                  *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(id049);
+                                  *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(id149);
                                   
                                 },
                                 None => {
@@ -2440,27 +3135,27 @@ pub mod asset{
                               match e {
                                 Some(e) => {
                                   *((base + 24) as *mut u8) = (1i32) as u8;
-                                  let super::types::Mat4{ x:x38, y:y38, z:z38, w:w38, } = e;
-                                  let super::types::Vec4{ x:x39, y:y39, z:z39, w:w39, } = x38;
-                                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x39);
-                                  *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y39);
-                                  *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z39);
-                                  *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w39);
-                                  let super::types::Vec4{ x:x40, y:y40, z:z40, w:w40, } = y38;
-                                  *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(x40);
-                                  *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(y40);
-                                  *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(z40);
-                                  *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(w40);
-                                  let super::types::Vec4{ x:x41, y:y41, z:z41, w:w41, } = z38;
-                                  *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(x41);
-                                  *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(y41);
-                                  *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(z41);
-                                  *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(w41);
-                                  let super::types::Vec4{ x:x42, y:y42, z:z42, w:w42, } = w38;
-                                  *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(x42);
-                                  *((base + 80) as *mut f32) = wit_bindgen::rt::as_f32(y42);
-                                  *((base + 84) as *mut f32) = wit_bindgen::rt::as_f32(z42);
-                                  *((base + 88) as *mut f32) = wit_bindgen::rt::as_f32(w42);
+                                  let super::types::Mat4{ x:x50, y:y50, z:z50, w:w50, } = e;
+                                  let super::types::Vec4{ x:x51, y:y51, z:z51, w:w51, } = x50;
+                                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x51);
+                                  *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y51);
+                                  *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z51);
+                                  *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w51);
+                                  let super::types::Vec4{ x:x52, y:y52, z:z52, w:w52, } = y50;
+                                  *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(x52);
+                                  *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(y52);
+                                  *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(z52);
+                                  *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(w52);
+                                  let super::types::Vec4{ x:x53, y:y53, z:z53, w:w53, } = z50;
+                                  *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(x53);
+                                  *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(y53);
+                                  *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(z53);
+                                  *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(w53);
+                                  let super::types::Vec4{ x:x54, y:y54, z:z54, w:w54, } = w50;
+                                  *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(x54);
+                                  *((base + 80) as *mut f32) = wit_bindgen::rt::as_f32(y54);
+                                  *((base + 84) as *mut f32) = wit_bindgen::rt::as_f32(z54);
+                                  *((base + 88) as *mut f32) = wit_bindgen::rt::as_f32(w54);
                                   
                                 },
                                 None => {
@@ -2492,11 +3187,11 @@ pub mod asset{
                               match e {
                                 Some(e) => {
                                   *((base + 24) as *mut u8) = (1i32) as u8;
-                                  let super::types::Quat{ x:x43, y:y43, z:z43, w:w43, } = e;
-                                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x43);
-                                  *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y43);
-                                  *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z43);
-                                  *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w43);
+                                  let super::types::Quat{ x:x55, y:y55, z:z55, w:w55, } = e;
+                                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x55);
+                                  *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y55);
+                                  *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z55);
+                                  *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w55);
                                   
                                 },
                                 None => {
@@ -2512,11 +3207,11 @@ pub mod asset{
                               match e {
                                 Some(e) => {
                                   *((base + 24) as *mut u8) = (1i32) as u8;
-                                  let vec44 = e;
-                                  let ptr44 = vec44.as_ptr() as i32;
-                                  let len44 = vec44.len() as i32;
-                                  *((base + 32) as *mut i32) = len44;
-                                  *((base + 28) as *mut i32) = ptr44;
+                                  let vec56 = e;
+                                  let ptr56 = vec56.as_ptr() as i32;
+                                  let len56 = vec56.len() as i32;
+                                  *((base + 32) as *mut i32) = len56;
+                                  *((base + 28) as *mut i32) = ptr56;
                                   
                                 },
                                 None => {
@@ -2580,9 +3275,9 @@ pub mod asset{
                               match e {
                                 Some(e) => {
                                   *((base + 24) as *mut u8) = (1i32) as u8;
-                                  let super::types::Vec2{ x:x45, y:y45, } = e;
-                                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x45);
-                                  *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y45);
+                                  let super::types::Vec2{ x:x57, y:y57, } = e;
+                                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x57);
+                                  *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y57);
                                   
                                 },
                                 None => {
@@ -2598,10 +3293,10 @@ pub mod asset{
                               match e {
                                 Some(e) => {
                                   *((base + 24) as *mut u8) = (1i32) as u8;
-                                  let super::types::Vec3{ x:x46, y:y46, z:z46, } = e;
-                                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x46);
-                                  *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y46);
-                                  *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z46);
+                                  let super::types::Vec3{ x:x58, y:y58, z:z58, } = e;
+                                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x58);
+                                  *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y58);
+                                  *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z58);
                                   
                                 },
                                 None => {
@@ -2617,11 +3312,11 @@ pub mod asset{
                               match e {
                                 Some(e) => {
                                   *((base + 24) as *mut u8) = (1i32) as u8;
-                                  let super::types::Vec4{ x:x47, y:y47, z:z47, w:w47, } = e;
-                                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x47);
-                                  *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y47);
-                                  *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z47);
-                                  *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w47);
+                                  let super::types::Vec4{ x:x59, y:y59, z:z59, w:w59, } = e;
+                                  *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x59);
+                                  *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y59);
+                                  *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z59);
+                                  *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w59);
                                   
                                 },
                                 None => {
@@ -2637,9 +3332,9 @@ pub mod asset{
                               match e {
                                 Some(e) => {
                                   *((base + 24) as *mut u8) = (1i32) as u8;
-                                  let super::types::Uvec2{ x:x48, y:y48, } = e;
-                                  *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x48);
-                                  *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y48);
+                                  let super::types::Uvec2{ x:x60, y:y60, } = e;
+                                  *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x60);
+                                  *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y60);
                                   
                                 },
                                 None => {
@@ -2655,10 +3350,10 @@ pub mod asset{
                               match e {
                                 Some(e) => {
                                   *((base + 24) as *mut u8) = (1i32) as u8;
-                                  let super::types::Uvec3{ x:x49, y:y49, z:z49, } = e;
-                                  *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x49);
-                                  *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y49);
-                                  *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z49);
+                                  let super::types::Uvec3{ x:x61, y:y61, z:z61, } = e;
+                                  *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x61);
+                                  *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y61);
+                                  *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z61);
                                   
                                 },
                                 None => {
@@ -2674,11 +3369,87 @@ pub mod asset{
                               match e {
                                 Some(e) => {
                                   *((base + 24) as *mut u8) = (1i32) as u8;
-                                  let super::types::Uvec4{ x:x50, y:y50, z:z50, w:w50, } = e;
-                                  *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x50);
-                                  *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y50);
-                                  *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z50);
-                                  *((base + 40) as *mut i32) = wit_bindgen::rt::as_i32(w50);
+                                  let super::types::Uvec4{ x:x62, y:y62, z:z62, w:w62, } = e;
+                                  *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x62);
+                                  *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y62);
+                                  *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z62);
+                                  *((base + 40) as *mut i32) = wit_bindgen::rt::as_i32(w62);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((base + 24) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeProceduralMeshHandle(e) => {
+                              *((base + 16) as *mut u8) = (18i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((base + 24) as *mut u8) = (1i32) as u8;
+                                  let super::client_mesh::Handle{ ulid:ulid63, } = e;
+                                  let (t64_0, t64_1, ) = ulid63;
+                                  *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(t64_0);
+                                  *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(t64_1);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((base + 24) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeProceduralTextureHandle(e) => {
+                              *((base + 16) as *mut u8) = (19i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((base + 24) as *mut u8) = (1i32) as u8;
+                                  let super::client_texture::Handle{ ulid:ulid65, } = e;
+                                  let (t66_0, t66_1, ) = ulid65;
+                                  *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(t66_0);
+                                  *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(t66_1);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((base + 24) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeProceduralSamplerHandle(e) => {
+                              *((base + 16) as *mut u8) = (20i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((base + 24) as *mut u8) = (1i32) as u8;
+                                  let super::client_sampler::Handle{ ulid:ulid67, } = e;
+                                  let (t68_0, t68_1, ) = ulid67;
+                                  *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(t68_0);
+                                  *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(t68_1);
+                                  
+                                },
+                                None => {
+                                  {
+                                    *((base + 24) as *mut u8) = (0i32) as u8;
+                                    
+                                  }
+                                },
+                              };
+                            },
+                            OptionValue::TypeProceduralMaterialHandle(e) => {
+                              *((base + 16) as *mut u8) = (21i32) as u8;
+                              match e {
+                                Some(e) => {
+                                  *((base + 24) as *mut u8) = (1i32) as u8;
+                                  let super::client_material::Handle{ ulid:ulid69, } = e;
+                                  let (t70_0, t70_1, ) = ulid69;
+                                  *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(t70_0);
+                                  *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(t70_1);
                                   
                                 },
                                 None => {
@@ -2703,9 +3474,9 @@ pub mod asset{
                       fn wit_import(
                       _: i64, _: i64, _: i32, _: i32, );
                     }
-                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), result51 as i32, len51);
-                    if layout51.size() != 0 {
-                      alloc::dealloc(result51, layout51);
+                    wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), result71 as i32, len71);
+                    if layout71.size() != 0 {
+                      alloc::dealloc(result71, layout71);
                     }
                     for (ptr, layout) in cleanup_list {
                       
@@ -2872,204 +3643,164 @@ pub mod asset{
                         *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(w16);
                         
                       },
-                      Value::TypeVec(e) => {
+                      Value::TypeProceduralMeshHandle(e) => {
                         *((ptr0 + 24) as *mut u8) = (18i32) as u8;
+                        let super::client_mesh::Handle{ ulid:ulid17, } = e;
+                        let (t18_0, t18_1, ) = ulid17;
+                        *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(t18_0);
+                        *((ptr0 + 40) as *mut i64) = wit_bindgen::rt::as_i64(t18_1);
+                        
+                      },
+                      Value::TypeProceduralTextureHandle(e) => {
+                        *((ptr0 + 24) as *mut u8) = (19i32) as u8;
+                        let super::client_texture::Handle{ ulid:ulid19, } = e;
+                        let (t20_0, t20_1, ) = ulid19;
+                        *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(t20_0);
+                        *((ptr0 + 40) as *mut i64) = wit_bindgen::rt::as_i64(t20_1);
+                        
+                      },
+                      Value::TypeProceduralSamplerHandle(e) => {
+                        *((ptr0 + 24) as *mut u8) = (20i32) as u8;
+                        let super::client_sampler::Handle{ ulid:ulid21, } = e;
+                        let (t22_0, t22_1, ) = ulid21;
+                        *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(t22_0);
+                        *((ptr0 + 40) as *mut i64) = wit_bindgen::rt::as_i64(t22_1);
+                        
+                      },
+                      Value::TypeProceduralMaterialHandle(e) => {
+                        *((ptr0 + 24) as *mut u8) = (21i32) as u8;
+                        let super::client_material::Handle{ ulid:ulid23, } = e;
+                        let (t24_0, t24_1, ) = ulid23;
+                        *((ptr0 + 32) as *mut i64) = wit_bindgen::rt::as_i64(t24_0);
+                        *((ptr0 + 40) as *mut i64) = wit_bindgen::rt::as_i64(t24_1);
+                        
+                      },
+                      Value::TypeVec(e) => {
+                        *((ptr0 + 24) as *mut u8) = (22i32) as u8;
                         match e {
                           VecValue::TypeEmpty(e) => {
                             *((ptr0 + 32) as *mut u8) = (0i32) as u8;
-                            let vec17 = e;
-                            let ptr17 = vec17.as_ptr() as i32;
-                            let len17 = vec17.len() as i32;
-                            *((ptr0 + 40) as *mut i32) = len17;
-                            *((ptr0 + 36) as *mut i32) = ptr17;
+                            let vec25 = e;
+                            let ptr25 = vec25.as_ptr() as i32;
+                            let len25 = vec25.len() as i32;
+                            *((ptr0 + 40) as *mut i32) = len25;
+                            *((ptr0 + 36) as *mut i32) = ptr25;
                             
                           },
                           VecValue::TypeBool(e) => {
                             *((ptr0 + 32) as *mut u8) = (1i32) as u8;
-                            let vec18 = e;
-                            let len18 = vec18.len() as i32;
-                            let layout18 = alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
-                            let result18 = if layout18.size() != 0
+                            let vec26 = e;
+                            let len26 = vec26.len() as i32;
+                            let layout26 = alloc::Layout::from_size_align_unchecked(vec26.len() * 1, 1);
+                            let result26 = if layout26.size() != 0
                             {
-                              let ptr = alloc::alloc(layout18);
+                              let ptr = alloc::alloc(layout26);
                               if ptr.is_null()
                               {
-                                alloc::handle_alloc_error(layout18);
+                                alloc::handle_alloc_error(layout26);
                               }
                               ptr
                             }else {
                               core::ptr::null_mut()
                             };
-                            for (i, e) in vec18.into_iter().enumerate() {
-                              let base = result18 as i32 + (i as i32) * 1;
+                            for (i, e) in vec26.into_iter().enumerate() {
+                              let base = result26 as i32 + (i as i32) * 1;
                               {
                                 *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                                 
                               }}
-                              *((ptr0 + 40) as *mut i32) = len18;
-                              *((ptr0 + 36) as *mut i32) = result18 as i32;
-                              cleanup_list.extend_from_slice(&[(result18, layout18),]);
+                              *((ptr0 + 40) as *mut i32) = len26;
+                              *((ptr0 + 36) as *mut i32) = result26 as i32;
+                              cleanup_list.extend_from_slice(&[(result26, layout26),]);
                               
                             },
                             VecValue::TypeEntityId(e) => {
                               *((ptr0 + 32) as *mut u8) = (2i32) as u8;
-                              let vec19 = e;
-                              let ptr19 = vec19.as_ptr() as i32;
-                              let len19 = vec19.len() as i32;
-                              *((ptr0 + 40) as *mut i32) = len19;
-                              *((ptr0 + 36) as *mut i32) = ptr19;
+                              let vec27 = e;
+                              let ptr27 = vec27.as_ptr() as i32;
+                              let len27 = vec27.len() as i32;
+                              *((ptr0 + 40) as *mut i32) = len27;
+                              *((ptr0 + 36) as *mut i32) = ptr27;
                               
                             },
                             VecValue::TypeF32(e) => {
                               *((ptr0 + 32) as *mut u8) = (3i32) as u8;
-                              let vec20 = e;
-                              let ptr20 = vec20.as_ptr() as i32;
-                              let len20 = vec20.len() as i32;
-                              *((ptr0 + 40) as *mut i32) = len20;
-                              *((ptr0 + 36) as *mut i32) = ptr20;
+                              let vec28 = e;
+                              let ptr28 = vec28.as_ptr() as i32;
+                              let len28 = vec28.len() as i32;
+                              *((ptr0 + 40) as *mut i32) = len28;
+                              *((ptr0 + 36) as *mut i32) = ptr28;
                               
                             },
                             VecValue::TypeF64(e) => {
                               *((ptr0 + 32) as *mut u8) = (4i32) as u8;
-                              let vec21 = e;
-                              let ptr21 = vec21.as_ptr() as i32;
-                              let len21 = vec21.len() as i32;
-                              *((ptr0 + 40) as *mut i32) = len21;
-                              *((ptr0 + 36) as *mut i32) = ptr21;
+                              let vec29 = e;
+                              let ptr29 = vec29.as_ptr() as i32;
+                              let len29 = vec29.len() as i32;
+                              *((ptr0 + 40) as *mut i32) = len29;
+                              *((ptr0 + 36) as *mut i32) = ptr29;
                               
                             },
                             VecValue::TypeMat4(e) => {
                               *((ptr0 + 32) as *mut u8) = (5i32) as u8;
-                              let vec22 = e;
-                              let ptr22 = vec22.as_ptr() as i32;
-                              let len22 = vec22.len() as i32;
-                              *((ptr0 + 40) as *mut i32) = len22;
-                              *((ptr0 + 36) as *mut i32) = ptr22;
+                              let vec30 = e;
+                              let ptr30 = vec30.as_ptr() as i32;
+                              let len30 = vec30.len() as i32;
+                              *((ptr0 + 40) as *mut i32) = len30;
+                              *((ptr0 + 36) as *mut i32) = ptr30;
                               
                             },
                             VecValue::TypeI32(e) => {
                               *((ptr0 + 32) as *mut u8) = (6i32) as u8;
-                              let vec23 = e;
-                              let ptr23 = vec23.as_ptr() as i32;
-                              let len23 = vec23.len() as i32;
-                              *((ptr0 + 40) as *mut i32) = len23;
-                              *((ptr0 + 36) as *mut i32) = ptr23;
+                              let vec31 = e;
+                              let ptr31 = vec31.as_ptr() as i32;
+                              let len31 = vec31.len() as i32;
+                              *((ptr0 + 40) as *mut i32) = len31;
+                              *((ptr0 + 36) as *mut i32) = ptr31;
                               
                             },
                             VecValue::TypeQuat(e) => {
                               *((ptr0 + 32) as *mut u8) = (7i32) as u8;
-                              let vec24 = e;
-                              let ptr24 = vec24.as_ptr() as i32;
-                              let len24 = vec24.len() as i32;
-                              *((ptr0 + 40) as *mut i32) = len24;
-                              *((ptr0 + 36) as *mut i32) = ptr24;
+                              let vec32 = e;
+                              let ptr32 = vec32.as_ptr() as i32;
+                              let len32 = vec32.len() as i32;
+                              *((ptr0 + 40) as *mut i32) = len32;
+                              *((ptr0 + 36) as *mut i32) = ptr32;
                               
                             },
                             VecValue::TypeString(e) => {
                               *((ptr0 + 32) as *mut u8) = (8i32) as u8;
-                              let vec26 = e;
-                              let len26 = vec26.len() as i32;
-                              let layout26 = alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
-                              let result26 = if layout26.size() != 0
+                              let vec34 = e;
+                              let len34 = vec34.len() as i32;
+                              let layout34 = alloc::Layout::from_size_align_unchecked(vec34.len() * 8, 4);
+                              let result34 = if layout34.size() != 0
                               {
-                                let ptr = alloc::alloc(layout26);
+                                let ptr = alloc::alloc(layout34);
                                 if ptr.is_null()
                                 {
-                                  alloc::handle_alloc_error(layout26);
+                                  alloc::handle_alloc_error(layout34);
                                 }
                                 ptr
                               }else {
                                 core::ptr::null_mut()
                               };
-                              for (i, e) in vec26.into_iter().enumerate() {
-                                let base = result26 as i32 + (i as i32) * 8;
+                              for (i, e) in vec34.into_iter().enumerate() {
+                                let base = result34 as i32 + (i as i32) * 8;
                                 {
-                                  let vec25 = e;
-                                  let ptr25 = vec25.as_ptr() as i32;
-                                  let len25 = vec25.len() as i32;
-                                  *((base + 4) as *mut i32) = len25;
-                                  *((base + 0) as *mut i32) = ptr25;
+                                  let vec33 = e;
+                                  let ptr33 = vec33.as_ptr() as i32;
+                                  let len33 = vec33.len() as i32;
+                                  *((base + 4) as *mut i32) = len33;
+                                  *((base + 0) as *mut i32) = ptr33;
                                   
                                 }}
-                                *((ptr0 + 40) as *mut i32) = len26;
-                                *((ptr0 + 36) as *mut i32) = result26 as i32;
-                                cleanup_list.extend_from_slice(&[(result26, layout26),]);
+                                *((ptr0 + 40) as *mut i32) = len34;
+                                *((ptr0 + 36) as *mut i32) = result34 as i32;
+                                cleanup_list.extend_from_slice(&[(result34, layout34),]);
                                 
                               },
                               VecValue::TypeU8(e) => {
                                 *((ptr0 + 32) as *mut u8) = (9i32) as u8;
-                                let vec27 = e;
-                                let ptr27 = vec27.as_ptr() as i32;
-                                let len27 = vec27.len() as i32;
-                                *((ptr0 + 40) as *mut i32) = len27;
-                                *((ptr0 + 36) as *mut i32) = ptr27;
-                                
-                              },
-                              VecValue::TypeU32(e) => {
-                                *((ptr0 + 32) as *mut u8) = (10i32) as u8;
-                                let vec28 = e;
-                                let ptr28 = vec28.as_ptr() as i32;
-                                let len28 = vec28.len() as i32;
-                                *((ptr0 + 40) as *mut i32) = len28;
-                                *((ptr0 + 36) as *mut i32) = ptr28;
-                                
-                              },
-                              VecValue::TypeU64(e) => {
-                                *((ptr0 + 32) as *mut u8) = (11i32) as u8;
-                                let vec29 = e;
-                                let ptr29 = vec29.as_ptr() as i32;
-                                let len29 = vec29.len() as i32;
-                                *((ptr0 + 40) as *mut i32) = len29;
-                                *((ptr0 + 36) as *mut i32) = ptr29;
-                                
-                              },
-                              VecValue::TypeVec2(e) => {
-                                *((ptr0 + 32) as *mut u8) = (12i32) as u8;
-                                let vec30 = e;
-                                let ptr30 = vec30.as_ptr() as i32;
-                                let len30 = vec30.len() as i32;
-                                *((ptr0 + 40) as *mut i32) = len30;
-                                *((ptr0 + 36) as *mut i32) = ptr30;
-                                
-                              },
-                              VecValue::TypeVec3(e) => {
-                                *((ptr0 + 32) as *mut u8) = (13i32) as u8;
-                                let vec31 = e;
-                                let ptr31 = vec31.as_ptr() as i32;
-                                let len31 = vec31.len() as i32;
-                                *((ptr0 + 40) as *mut i32) = len31;
-                                *((ptr0 + 36) as *mut i32) = ptr31;
-                                
-                              },
-                              VecValue::TypeVec4(e) => {
-                                *((ptr0 + 32) as *mut u8) = (14i32) as u8;
-                                let vec32 = e;
-                                let ptr32 = vec32.as_ptr() as i32;
-                                let len32 = vec32.len() as i32;
-                                *((ptr0 + 40) as *mut i32) = len32;
-                                *((ptr0 + 36) as *mut i32) = ptr32;
-                                
-                              },
-                              VecValue::TypeUvec2(e) => {
-                                *((ptr0 + 32) as *mut u8) = (15i32) as u8;
-                                let vec33 = e;
-                                let ptr33 = vec33.as_ptr() as i32;
-                                let len33 = vec33.len() as i32;
-                                *((ptr0 + 40) as *mut i32) = len33;
-                                *((ptr0 + 36) as *mut i32) = ptr33;
-                                
-                              },
-                              VecValue::TypeUvec3(e) => {
-                                *((ptr0 + 32) as *mut u8) = (16i32) as u8;
-                                let vec34 = e;
-                                let ptr34 = vec34.as_ptr() as i32;
-                                let len34 = vec34.len() as i32;
-                                *((ptr0 + 40) as *mut i32) = len34;
-                                *((ptr0 + 36) as *mut i32) = ptr34;
-                                
-                              },
-                              VecValue::TypeUvec4(e) => {
-                                *((ptr0 + 32) as *mut u8) = (17i32) as u8;
                                 let vec35 = e;
                                 let ptr35 = vec35.as_ptr() as i32;
                                 let len35 = vec35.len() as i32;
@@ -3077,11 +3808,119 @@ pub mod asset{
                                 *((ptr0 + 36) as *mut i32) = ptr35;
                                 
                               },
+                              VecValue::TypeU32(e) => {
+                                *((ptr0 + 32) as *mut u8) = (10i32) as u8;
+                                let vec36 = e;
+                                let ptr36 = vec36.as_ptr() as i32;
+                                let len36 = vec36.len() as i32;
+                                *((ptr0 + 40) as *mut i32) = len36;
+                                *((ptr0 + 36) as *mut i32) = ptr36;
+                                
+                              },
+                              VecValue::TypeU64(e) => {
+                                *((ptr0 + 32) as *mut u8) = (11i32) as u8;
+                                let vec37 = e;
+                                let ptr37 = vec37.as_ptr() as i32;
+                                let len37 = vec37.len() as i32;
+                                *((ptr0 + 40) as *mut i32) = len37;
+                                *((ptr0 + 36) as *mut i32) = ptr37;
+                                
+                              },
+                              VecValue::TypeVec2(e) => {
+                                *((ptr0 + 32) as *mut u8) = (12i32) as u8;
+                                let vec38 = e;
+                                let ptr38 = vec38.as_ptr() as i32;
+                                let len38 = vec38.len() as i32;
+                                *((ptr0 + 40) as *mut i32) = len38;
+                                *((ptr0 + 36) as *mut i32) = ptr38;
+                                
+                              },
+                              VecValue::TypeVec3(e) => {
+                                *((ptr0 + 32) as *mut u8) = (13i32) as u8;
+                                let vec39 = e;
+                                let ptr39 = vec39.as_ptr() as i32;
+                                let len39 = vec39.len() as i32;
+                                *((ptr0 + 40) as *mut i32) = len39;
+                                *((ptr0 + 36) as *mut i32) = ptr39;
+                                
+                              },
+                              VecValue::TypeVec4(e) => {
+                                *((ptr0 + 32) as *mut u8) = (14i32) as u8;
+                                let vec40 = e;
+                                let ptr40 = vec40.as_ptr() as i32;
+                                let len40 = vec40.len() as i32;
+                                *((ptr0 + 40) as *mut i32) = len40;
+                                *((ptr0 + 36) as *mut i32) = ptr40;
+                                
+                              },
+                              VecValue::TypeUvec2(e) => {
+                                *((ptr0 + 32) as *mut u8) = (15i32) as u8;
+                                let vec41 = e;
+                                let ptr41 = vec41.as_ptr() as i32;
+                                let len41 = vec41.len() as i32;
+                                *((ptr0 + 40) as *mut i32) = len41;
+                                *((ptr0 + 36) as *mut i32) = ptr41;
+                                
+                              },
+                              VecValue::TypeUvec3(e) => {
+                                *((ptr0 + 32) as *mut u8) = (16i32) as u8;
+                                let vec42 = e;
+                                let ptr42 = vec42.as_ptr() as i32;
+                                let len42 = vec42.len() as i32;
+                                *((ptr0 + 40) as *mut i32) = len42;
+                                *((ptr0 + 36) as *mut i32) = ptr42;
+                                
+                              },
+                              VecValue::TypeUvec4(e) => {
+                                *((ptr0 + 32) as *mut u8) = (17i32) as u8;
+                                let vec43 = e;
+                                let ptr43 = vec43.as_ptr() as i32;
+                                let len43 = vec43.len() as i32;
+                                *((ptr0 + 40) as *mut i32) = len43;
+                                *((ptr0 + 36) as *mut i32) = ptr43;
+                                
+                              },
+                              VecValue::TypeProceduralMeshHandle(e) => {
+                                *((ptr0 + 32) as *mut u8) = (18i32) as u8;
+                                let vec44 = e;
+                                let ptr44 = vec44.as_ptr() as i32;
+                                let len44 = vec44.len() as i32;
+                                *((ptr0 + 40) as *mut i32) = len44;
+                                *((ptr0 + 36) as *mut i32) = ptr44;
+                                
+                              },
+                              VecValue::TypeProceduralTextureHandle(e) => {
+                                *((ptr0 + 32) as *mut u8) = (19i32) as u8;
+                                let vec45 = e;
+                                let ptr45 = vec45.as_ptr() as i32;
+                                let len45 = vec45.len() as i32;
+                                *((ptr0 + 40) as *mut i32) = len45;
+                                *((ptr0 + 36) as *mut i32) = ptr45;
+                                
+                              },
+                              VecValue::TypeProceduralSamplerHandle(e) => {
+                                *((ptr0 + 32) as *mut u8) = (20i32) as u8;
+                                let vec46 = e;
+                                let ptr46 = vec46.as_ptr() as i32;
+                                let len46 = vec46.len() as i32;
+                                *((ptr0 + 40) as *mut i32) = len46;
+                                *((ptr0 + 36) as *mut i32) = ptr46;
+                                
+                              },
+                              VecValue::TypeProceduralMaterialHandle(e) => {
+                                *((ptr0 + 32) as *mut u8) = (21i32) as u8;
+                                let vec47 = e;
+                                let ptr47 = vec47.as_ptr() as i32;
+                                let len47 = vec47.len() as i32;
+                                *((ptr0 + 40) as *mut i32) = len47;
+                                *((ptr0 + 36) as *mut i32) = ptr47;
+                                
+                              },
                             };
                             
                           },
                           Value::TypeOption(e) => {
-                            *((ptr0 + 24) as *mut u8) = (19i32) as u8;
+                            *((ptr0 + 24) as *mut u8) = (23i32) as u8;
                             match e {
                               OptionValue::TypeEmpty(e) => {
                                 *((ptr0 + 32) as *mut u8) = (0i32) as u8;
@@ -3120,9 +3959,9 @@ pub mod asset{
                                 match e {
                                   Some(e) => {
                                     *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                    let super::types::EntityId{ id0:id037, id1:id137, } = e;
-                                    *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(id037);
-                                    *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(id137);
+                                    let super::types::EntityId{ id0:id049, id1:id149, } = e;
+                                    *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(id049);
+                                    *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(id149);
                                     
                                   },
                                   None => {
@@ -3170,27 +4009,27 @@ pub mod asset{
                                 match e {
                                   Some(e) => {
                                     *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                    let super::types::Mat4{ x:x38, y:y38, z:z38, w:w38, } = e;
-                                    let super::types::Vec4{ x:x39, y:y39, z:z39, w:w39, } = x38;
-                                    *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x39);
-                                    *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y39);
-                                    *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z39);
-                                    *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w39);
-                                    let super::types::Vec4{ x:x40, y:y40, z:z40, w:w40, } = y38;
-                                    *((ptr0 + 60) as *mut f32) = wit_bindgen::rt::as_f32(x40);
-                                    *((ptr0 + 64) as *mut f32) = wit_bindgen::rt::as_f32(y40);
-                                    *((ptr0 + 68) as *mut f32) = wit_bindgen::rt::as_f32(z40);
-                                    *((ptr0 + 72) as *mut f32) = wit_bindgen::rt::as_f32(w40);
-                                    let super::types::Vec4{ x:x41, y:y41, z:z41, w:w41, } = z38;
-                                    *((ptr0 + 76) as *mut f32) = wit_bindgen::rt::as_f32(x41);
-                                    *((ptr0 + 80) as *mut f32) = wit_bindgen::rt::as_f32(y41);
-                                    *((ptr0 + 84) as *mut f32) = wit_bindgen::rt::as_f32(z41);
-                                    *((ptr0 + 88) as *mut f32) = wit_bindgen::rt::as_f32(w41);
-                                    let super::types::Vec4{ x:x42, y:y42, z:z42, w:w42, } = w38;
-                                    *((ptr0 + 92) as *mut f32) = wit_bindgen::rt::as_f32(x42);
-                                    *((ptr0 + 96) as *mut f32) = wit_bindgen::rt::as_f32(y42);
-                                    *((ptr0 + 100) as *mut f32) = wit_bindgen::rt::as_f32(z42);
-                                    *((ptr0 + 104) as *mut f32) = wit_bindgen::rt::as_f32(w42);
+                                    let super::types::Mat4{ x:x50, y:y50, z:z50, w:w50, } = e;
+                                    let super::types::Vec4{ x:x51, y:y51, z:z51, w:w51, } = x50;
+                                    *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x51);
+                                    *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y51);
+                                    *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z51);
+                                    *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w51);
+                                    let super::types::Vec4{ x:x52, y:y52, z:z52, w:w52, } = y50;
+                                    *((ptr0 + 60) as *mut f32) = wit_bindgen::rt::as_f32(x52);
+                                    *((ptr0 + 64) as *mut f32) = wit_bindgen::rt::as_f32(y52);
+                                    *((ptr0 + 68) as *mut f32) = wit_bindgen::rt::as_f32(z52);
+                                    *((ptr0 + 72) as *mut f32) = wit_bindgen::rt::as_f32(w52);
+                                    let super::types::Vec4{ x:x53, y:y53, z:z53, w:w53, } = z50;
+                                    *((ptr0 + 76) as *mut f32) = wit_bindgen::rt::as_f32(x53);
+                                    *((ptr0 + 80) as *mut f32) = wit_bindgen::rt::as_f32(y53);
+                                    *((ptr0 + 84) as *mut f32) = wit_bindgen::rt::as_f32(z53);
+                                    *((ptr0 + 88) as *mut f32) = wit_bindgen::rt::as_f32(w53);
+                                    let super::types::Vec4{ x:x54, y:y54, z:z54, w:w54, } = w50;
+                                    *((ptr0 + 92) as *mut f32) = wit_bindgen::rt::as_f32(x54);
+                                    *((ptr0 + 96) as *mut f32) = wit_bindgen::rt::as_f32(y54);
+                                    *((ptr0 + 100) as *mut f32) = wit_bindgen::rt::as_f32(z54);
+                                    *((ptr0 + 104) as *mut f32) = wit_bindgen::rt::as_f32(w54);
                                     
                                   },
                                   None => {
@@ -3222,11 +4061,11 @@ pub mod asset{
                                 match e {
                                   Some(e) => {
                                     *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                    let super::types::Quat{ x:x43, y:y43, z:z43, w:w43, } = e;
-                                    *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x43);
-                                    *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y43);
-                                    *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z43);
-                                    *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w43);
+                                    let super::types::Quat{ x:x55, y:y55, z:z55, w:w55, } = e;
+                                    *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x55);
+                                    *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y55);
+                                    *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z55);
+                                    *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w55);
                                     
                                   },
                                   None => {
@@ -3242,11 +4081,11 @@ pub mod asset{
                                 match e {
                                   Some(e) => {
                                     *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                    let vec44 = e;
-                                    let ptr44 = vec44.as_ptr() as i32;
-                                    let len44 = vec44.len() as i32;
-                                    *((ptr0 + 48) as *mut i32) = len44;
-                                    *((ptr0 + 44) as *mut i32) = ptr44;
+                                    let vec56 = e;
+                                    let ptr56 = vec56.as_ptr() as i32;
+                                    let len56 = vec56.len() as i32;
+                                    *((ptr0 + 48) as *mut i32) = len56;
+                                    *((ptr0 + 44) as *mut i32) = ptr56;
                                     
                                   },
                                   None => {
@@ -3310,9 +4149,9 @@ pub mod asset{
                                 match e {
                                   Some(e) => {
                                     *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                    let super::types::Vec2{ x:x45, y:y45, } = e;
-                                    *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x45);
-                                    *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y45);
+                                    let super::types::Vec2{ x:x57, y:y57, } = e;
+                                    *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x57);
+                                    *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y57);
                                     
                                   },
                                   None => {
@@ -3328,10 +4167,10 @@ pub mod asset{
                                 match e {
                                   Some(e) => {
                                     *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                    let super::types::Vec3{ x:x46, y:y46, z:z46, } = e;
-                                    *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x46);
-                                    *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y46);
-                                    *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z46);
+                                    let super::types::Vec3{ x:x58, y:y58, z:z58, } = e;
+                                    *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x58);
+                                    *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y58);
+                                    *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z58);
                                     
                                   },
                                   None => {
@@ -3347,11 +4186,11 @@ pub mod asset{
                                 match e {
                                   Some(e) => {
                                     *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                    let super::types::Vec4{ x:x47, y:y47, z:z47, w:w47, } = e;
-                                    *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x47);
-                                    *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y47);
-                                    *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z47);
-                                    *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w47);
+                                    let super::types::Vec4{ x:x59, y:y59, z:z59, w:w59, } = e;
+                                    *((ptr0 + 44) as *mut f32) = wit_bindgen::rt::as_f32(x59);
+                                    *((ptr0 + 48) as *mut f32) = wit_bindgen::rt::as_f32(y59);
+                                    *((ptr0 + 52) as *mut f32) = wit_bindgen::rt::as_f32(z59);
+                                    *((ptr0 + 56) as *mut f32) = wit_bindgen::rt::as_f32(w59);
                                     
                                   },
                                   None => {
@@ -3367,9 +4206,9 @@ pub mod asset{
                                 match e {
                                   Some(e) => {
                                     *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                    let super::types::Uvec2{ x:x48, y:y48, } = e;
-                                    *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x48);
-                                    *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y48);
+                                    let super::types::Uvec2{ x:x60, y:y60, } = e;
+                                    *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x60);
+                                    *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y60);
                                     
                                   },
                                   None => {
@@ -3385,10 +4224,10 @@ pub mod asset{
                                 match e {
                                   Some(e) => {
                                     *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                    let super::types::Uvec3{ x:x49, y:y49, z:z49, } = e;
-                                    *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x49);
-                                    *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y49);
-                                    *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z49);
+                                    let super::types::Uvec3{ x:x61, y:y61, z:z61, } = e;
+                                    *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x61);
+                                    *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y61);
+                                    *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z61);
                                     
                                   },
                                   None => {
@@ -3404,11 +4243,87 @@ pub mod asset{
                                 match e {
                                   Some(e) => {
                                     *((ptr0 + 40) as *mut u8) = (1i32) as u8;
-                                    let super::types::Uvec4{ x:x50, y:y50, z:z50, w:w50, } = e;
-                                    *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x50);
-                                    *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y50);
-                                    *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z50);
-                                    *((ptr0 + 56) as *mut i32) = wit_bindgen::rt::as_i32(w50);
+                                    let super::types::Uvec4{ x:x62, y:y62, z:z62, w:w62, } = e;
+                                    *((ptr0 + 44) as *mut i32) = wit_bindgen::rt::as_i32(x62);
+                                    *((ptr0 + 48) as *mut i32) = wit_bindgen::rt::as_i32(y62);
+                                    *((ptr0 + 52) as *mut i32) = wit_bindgen::rt::as_i32(z62);
+                                    *((ptr0 + 56) as *mut i32) = wit_bindgen::rt::as_i32(w62);
+                                    
+                                  },
+                                  None => {
+                                    {
+                                      *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                      
+                                    }
+                                  },
+                                };
+                              },
+                              OptionValue::TypeProceduralMeshHandle(e) => {
+                                *((ptr0 + 32) as *mut u8) = (18i32) as u8;
+                                match e {
+                                  Some(e) => {
+                                    *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                    let super::client_mesh::Handle{ ulid:ulid63, } = e;
+                                    let (t64_0, t64_1, ) = ulid63;
+                                    *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(t64_0);
+                                    *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(t64_1);
+                                    
+                                  },
+                                  None => {
+                                    {
+                                      *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                      
+                                    }
+                                  },
+                                };
+                              },
+                              OptionValue::TypeProceduralTextureHandle(e) => {
+                                *((ptr0 + 32) as *mut u8) = (19i32) as u8;
+                                match e {
+                                  Some(e) => {
+                                    *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                    let super::client_texture::Handle{ ulid:ulid65, } = e;
+                                    let (t66_0, t66_1, ) = ulid65;
+                                    *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(t66_0);
+                                    *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(t66_1);
+                                    
+                                  },
+                                  None => {
+                                    {
+                                      *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                      
+                                    }
+                                  },
+                                };
+                              },
+                              OptionValue::TypeProceduralSamplerHandle(e) => {
+                                *((ptr0 + 32) as *mut u8) = (20i32) as u8;
+                                match e {
+                                  Some(e) => {
+                                    *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                    let super::client_sampler::Handle{ ulid:ulid67, } = e;
+                                    let (t68_0, t68_1, ) = ulid67;
+                                    *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(t68_0);
+                                    *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(t68_1);
+                                    
+                                  },
+                                  None => {
+                                    {
+                                      *((ptr0 + 40) as *mut u8) = (0i32) as u8;
+                                      
+                                    }
+                                  },
+                                };
+                              },
+                              OptionValue::TypeProceduralMaterialHandle(e) => {
+                                *((ptr0 + 32) as *mut u8) = (21i32) as u8;
+                                match e {
+                                  Some(e) => {
+                                    *((ptr0 + 40) as *mut u8) = (1i32) as u8;
+                                    let super::client_material::Handle{ ulid:ulid69, } = e;
+                                    let (t70_0, t70_1, ) = ulid69;
+                                    *((ptr0 + 48) as *mut i64) = wit_bindgen::rt::as_i64(t70_0);
+                                    *((ptr0 + 56) as *mut i64) = wit_bindgen::rt::as_i64(t70_1);
                                     
                                   },
                                   None => {
@@ -3451,22 +4366,22 @@ pub mod asset{
                       unsafe {
                         let mut cleanup_list = Vec::new();
                         let super::types::EntityId{ id0:id00, id1:id10, } = entity;
-                        let vec51 = data;
-                        let len51 = vec51.len() as i32;
-                        let layout51 = alloc::Layout::from_size_align_unchecked(vec51.len() * 96, 8);
-                        let result51 = if layout51.size() != 0
+                        let vec71 = data;
+                        let len71 = vec71.len() as i32;
+                        let layout71 = alloc::Layout::from_size_align_unchecked(vec71.len() * 96, 8);
+                        let result71 = if layout71.size() != 0
                         {
-                          let ptr = alloc::alloc(layout51);
+                          let ptr = alloc::alloc(layout71);
                           if ptr.is_null()
                           {
-                            alloc::handle_alloc_error(layout51);
+                            alloc::handle_alloc_error(layout71);
                           }
                           ptr
                         }else {
                           core::ptr::null_mut()
                         };
-                        for (i, e) in vec51.into_iter().enumerate() {
-                          let base = result51 as i32 + (i as i32) * 96;
+                        for (i, e) in vec71.into_iter().enumerate() {
+                          let base = result71 as i32 + (i as i32) * 96;
                           {
                             let (t1_0, t1_1, ) = e;
                             *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t1_0);
@@ -3609,204 +4524,164 @@ pub mod asset{
                                 *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(w16);
                                 
                               },
-                              Value::TypeVec(e) => {
+                              Value::TypeProceduralMeshHandle(e) => {
                                 *((base + 8) as *mut u8) = (18i32) as u8;
+                                let super::client_mesh::Handle{ ulid:ulid17, } = e;
+                                let (t18_0, t18_1, ) = ulid17;
+                                *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(t18_0);
+                                *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(t18_1);
+                                
+                              },
+                              Value::TypeProceduralTextureHandle(e) => {
+                                *((base + 8) as *mut u8) = (19i32) as u8;
+                                let super::client_texture::Handle{ ulid:ulid19, } = e;
+                                let (t20_0, t20_1, ) = ulid19;
+                                *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(t20_0);
+                                *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(t20_1);
+                                
+                              },
+                              Value::TypeProceduralSamplerHandle(e) => {
+                                *((base + 8) as *mut u8) = (20i32) as u8;
+                                let super::client_sampler::Handle{ ulid:ulid21, } = e;
+                                let (t22_0, t22_1, ) = ulid21;
+                                *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(t22_0);
+                                *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(t22_1);
+                                
+                              },
+                              Value::TypeProceduralMaterialHandle(e) => {
+                                *((base + 8) as *mut u8) = (21i32) as u8;
+                                let super::client_material::Handle{ ulid:ulid23, } = e;
+                                let (t24_0, t24_1, ) = ulid23;
+                                *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(t24_0);
+                                *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(t24_1);
+                                
+                              },
+                              Value::TypeVec(e) => {
+                                *((base + 8) as *mut u8) = (22i32) as u8;
                                 match e {
                                   VecValue::TypeEmpty(e) => {
                                     *((base + 16) as *mut u8) = (0i32) as u8;
-                                    let vec17 = e;
-                                    let ptr17 = vec17.as_ptr() as i32;
-                                    let len17 = vec17.len() as i32;
-                                    *((base + 24) as *mut i32) = len17;
-                                    *((base + 20) as *mut i32) = ptr17;
+                                    let vec25 = e;
+                                    let ptr25 = vec25.as_ptr() as i32;
+                                    let len25 = vec25.len() as i32;
+                                    *((base + 24) as *mut i32) = len25;
+                                    *((base + 20) as *mut i32) = ptr25;
                                     
                                   },
                                   VecValue::TypeBool(e) => {
                                     *((base + 16) as *mut u8) = (1i32) as u8;
-                                    let vec18 = e;
-                                    let len18 = vec18.len() as i32;
-                                    let layout18 = alloc::Layout::from_size_align_unchecked(vec18.len() * 1, 1);
-                                    let result18 = if layout18.size() != 0
+                                    let vec26 = e;
+                                    let len26 = vec26.len() as i32;
+                                    let layout26 = alloc::Layout::from_size_align_unchecked(vec26.len() * 1, 1);
+                                    let result26 = if layout26.size() != 0
                                     {
-                                      let ptr = alloc::alloc(layout18);
+                                      let ptr = alloc::alloc(layout26);
                                       if ptr.is_null()
                                       {
-                                        alloc::handle_alloc_error(layout18);
+                                        alloc::handle_alloc_error(layout26);
                                       }
                                       ptr
                                     }else {
                                       core::ptr::null_mut()
                                     };
-                                    for (i, e) in vec18.into_iter().enumerate() {
-                                      let base = result18 as i32 + (i as i32) * 1;
+                                    for (i, e) in vec26.into_iter().enumerate() {
+                                      let base = result26 as i32 + (i as i32) * 1;
                                       {
                                         *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                                         
                                       }}
-                                      *((base + 24) as *mut i32) = len18;
-                                      *((base + 20) as *mut i32) = result18 as i32;
-                                      cleanup_list.extend_from_slice(&[(result18, layout18),]);
+                                      *((base + 24) as *mut i32) = len26;
+                                      *((base + 20) as *mut i32) = result26 as i32;
+                                      cleanup_list.extend_from_slice(&[(result26, layout26),]);
                                       
                                     },
                                     VecValue::TypeEntityId(e) => {
                                       *((base + 16) as *mut u8) = (2i32) as u8;
-                                      let vec19 = e;
-                                      let ptr19 = vec19.as_ptr() as i32;
-                                      let len19 = vec19.len() as i32;
-                                      *((base + 24) as *mut i32) = len19;
-                                      *((base + 20) as *mut i32) = ptr19;
+                                      let vec27 = e;
+                                      let ptr27 = vec27.as_ptr() as i32;
+                                      let len27 = vec27.len() as i32;
+                                      *((base + 24) as *mut i32) = len27;
+                                      *((base + 20) as *mut i32) = ptr27;
                                       
                                     },
                                     VecValue::TypeF32(e) => {
                                       *((base + 16) as *mut u8) = (3i32) as u8;
-                                      let vec20 = e;
-                                      let ptr20 = vec20.as_ptr() as i32;
-                                      let len20 = vec20.len() as i32;
-                                      *((base + 24) as *mut i32) = len20;
-                                      *((base + 20) as *mut i32) = ptr20;
+                                      let vec28 = e;
+                                      let ptr28 = vec28.as_ptr() as i32;
+                                      let len28 = vec28.len() as i32;
+                                      *((base + 24) as *mut i32) = len28;
+                                      *((base + 20) as *mut i32) = ptr28;
                                       
                                     },
                                     VecValue::TypeF64(e) => {
                                       *((base + 16) as *mut u8) = (4i32) as u8;
-                                      let vec21 = e;
-                                      let ptr21 = vec21.as_ptr() as i32;
-                                      let len21 = vec21.len() as i32;
-                                      *((base + 24) as *mut i32) = len21;
-                                      *((base + 20) as *mut i32) = ptr21;
+                                      let vec29 = e;
+                                      let ptr29 = vec29.as_ptr() as i32;
+                                      let len29 = vec29.len() as i32;
+                                      *((base + 24) as *mut i32) = len29;
+                                      *((base + 20) as *mut i32) = ptr29;
                                       
                                     },
                                     VecValue::TypeMat4(e) => {
                                       *((base + 16) as *mut u8) = (5i32) as u8;
-                                      let vec22 = e;
-                                      let ptr22 = vec22.as_ptr() as i32;
-                                      let len22 = vec22.len() as i32;
-                                      *((base + 24) as *mut i32) = len22;
-                                      *((base + 20) as *mut i32) = ptr22;
+                                      let vec30 = e;
+                                      let ptr30 = vec30.as_ptr() as i32;
+                                      let len30 = vec30.len() as i32;
+                                      *((base + 24) as *mut i32) = len30;
+                                      *((base + 20) as *mut i32) = ptr30;
                                       
                                     },
                                     VecValue::TypeI32(e) => {
                                       *((base + 16) as *mut u8) = (6i32) as u8;
-                                      let vec23 = e;
-                                      let ptr23 = vec23.as_ptr() as i32;
-                                      let len23 = vec23.len() as i32;
-                                      *((base + 24) as *mut i32) = len23;
-                                      *((base + 20) as *mut i32) = ptr23;
+                                      let vec31 = e;
+                                      let ptr31 = vec31.as_ptr() as i32;
+                                      let len31 = vec31.len() as i32;
+                                      *((base + 24) as *mut i32) = len31;
+                                      *((base + 20) as *mut i32) = ptr31;
                                       
                                     },
                                     VecValue::TypeQuat(e) => {
                                       *((base + 16) as *mut u8) = (7i32) as u8;
-                                      let vec24 = e;
-                                      let ptr24 = vec24.as_ptr() as i32;
-                                      let len24 = vec24.len() as i32;
-                                      *((base + 24) as *mut i32) = len24;
-                                      *((base + 20) as *mut i32) = ptr24;
+                                      let vec32 = e;
+                                      let ptr32 = vec32.as_ptr() as i32;
+                                      let len32 = vec32.len() as i32;
+                                      *((base + 24) as *mut i32) = len32;
+                                      *((base + 20) as *mut i32) = ptr32;
                                       
                                     },
                                     VecValue::TypeString(e) => {
                                       *((base + 16) as *mut u8) = (8i32) as u8;
-                                      let vec26 = e;
-                                      let len26 = vec26.len() as i32;
-                                      let layout26 = alloc::Layout::from_size_align_unchecked(vec26.len() * 8, 4);
-                                      let result26 = if layout26.size() != 0
+                                      let vec34 = e;
+                                      let len34 = vec34.len() as i32;
+                                      let layout34 = alloc::Layout::from_size_align_unchecked(vec34.len() * 8, 4);
+                                      let result34 = if layout34.size() != 0
                                       {
-                                        let ptr = alloc::alloc(layout26);
+                                        let ptr = alloc::alloc(layout34);
                                         if ptr.is_null()
                                         {
-                                          alloc::handle_alloc_error(layout26);
+                                          alloc::handle_alloc_error(layout34);
                                         }
                                         ptr
                                       }else {
                                         core::ptr::null_mut()
                                       };
-                                      for (i, e) in vec26.into_iter().enumerate() {
-                                        let base = result26 as i32 + (i as i32) * 8;
+                                      for (i, e) in vec34.into_iter().enumerate() {
+                                        let base = result34 as i32 + (i as i32) * 8;
                                         {
-                                          let vec25 = e;
-                                          let ptr25 = vec25.as_ptr() as i32;
-                                          let len25 = vec25.len() as i32;
-                                          *((base + 4) as *mut i32) = len25;
-                                          *((base + 0) as *mut i32) = ptr25;
+                                          let vec33 = e;
+                                          let ptr33 = vec33.as_ptr() as i32;
+                                          let len33 = vec33.len() as i32;
+                                          *((base + 4) as *mut i32) = len33;
+                                          *((base + 0) as *mut i32) = ptr33;
                                           
                                         }}
-                                        *((base + 24) as *mut i32) = len26;
-                                        *((base + 20) as *mut i32) = result26 as i32;
-                                        cleanup_list.extend_from_slice(&[(result26, layout26),]);
+                                        *((base + 24) as *mut i32) = len34;
+                                        *((base + 20) as *mut i32) = result34 as i32;
+                                        cleanup_list.extend_from_slice(&[(result34, layout34),]);
                                         
                                       },
                                       VecValue::TypeU8(e) => {
                                         *((base + 16) as *mut u8) = (9i32) as u8;
-                                        let vec27 = e;
-                                        let ptr27 = vec27.as_ptr() as i32;
-                                        let len27 = vec27.len() as i32;
-                                        *((base + 24) as *mut i32) = len27;
-                                        *((base + 20) as *mut i32) = ptr27;
-                                        
-                                      },
-                                      VecValue::TypeU32(e) => {
-                                        *((base + 16) as *mut u8) = (10i32) as u8;
-                                        let vec28 = e;
-                                        let ptr28 = vec28.as_ptr() as i32;
-                                        let len28 = vec28.len() as i32;
-                                        *((base + 24) as *mut i32) = len28;
-                                        *((base + 20) as *mut i32) = ptr28;
-                                        
-                                      },
-                                      VecValue::TypeU64(e) => {
-                                        *((base + 16) as *mut u8) = (11i32) as u8;
-                                        let vec29 = e;
-                                        let ptr29 = vec29.as_ptr() as i32;
-                                        let len29 = vec29.len() as i32;
-                                        *((base + 24) as *mut i32) = len29;
-                                        *((base + 20) as *mut i32) = ptr29;
-                                        
-                                      },
-                                      VecValue::TypeVec2(e) => {
-                                        *((base + 16) as *mut u8) = (12i32) as u8;
-                                        let vec30 = e;
-                                        let ptr30 = vec30.as_ptr() as i32;
-                                        let len30 = vec30.len() as i32;
-                                        *((base + 24) as *mut i32) = len30;
-                                        *((base + 20) as *mut i32) = ptr30;
-                                        
-                                      },
-                                      VecValue::TypeVec3(e) => {
-                                        *((base + 16) as *mut u8) = (13i32) as u8;
-                                        let vec31 = e;
-                                        let ptr31 = vec31.as_ptr() as i32;
-                                        let len31 = vec31.len() as i32;
-                                        *((base + 24) as *mut i32) = len31;
-                                        *((base + 20) as *mut i32) = ptr31;
-                                        
-                                      },
-                                      VecValue::TypeVec4(e) => {
-                                        *((base + 16) as *mut u8) = (14i32) as u8;
-                                        let vec32 = e;
-                                        let ptr32 = vec32.as_ptr() as i32;
-                                        let len32 = vec32.len() as i32;
-                                        *((base + 24) as *mut i32) = len32;
-                                        *((base + 20) as *mut i32) = ptr32;
-                                        
-                                      },
-                                      VecValue::TypeUvec2(e) => {
-                                        *((base + 16) as *mut u8) = (15i32) as u8;
-                                        let vec33 = e;
-                                        let ptr33 = vec33.as_ptr() as i32;
-                                        let len33 = vec33.len() as i32;
-                                        *((base + 24) as *mut i32) = len33;
-                                        *((base + 20) as *mut i32) = ptr33;
-                                        
-                                      },
-                                      VecValue::TypeUvec3(e) => {
-                                        *((base + 16) as *mut u8) = (16i32) as u8;
-                                        let vec34 = e;
-                                        let ptr34 = vec34.as_ptr() as i32;
-                                        let len34 = vec34.len() as i32;
-                                        *((base + 24) as *mut i32) = len34;
-                                        *((base + 20) as *mut i32) = ptr34;
-                                        
-                                      },
-                                      VecValue::TypeUvec4(e) => {
-                                        *((base + 16) as *mut u8) = (17i32) as u8;
                                         let vec35 = e;
                                         let ptr35 = vec35.as_ptr() as i32;
                                         let len35 = vec35.len() as i32;
@@ -3814,11 +4689,119 @@ pub mod asset{
                                         *((base + 20) as *mut i32) = ptr35;
                                         
                                       },
+                                      VecValue::TypeU32(e) => {
+                                        *((base + 16) as *mut u8) = (10i32) as u8;
+                                        let vec36 = e;
+                                        let ptr36 = vec36.as_ptr() as i32;
+                                        let len36 = vec36.len() as i32;
+                                        *((base + 24) as *mut i32) = len36;
+                                        *((base + 20) as *mut i32) = ptr36;
+                                        
+                                      },
+                                      VecValue::TypeU64(e) => {
+                                        *((base + 16) as *mut u8) = (11i32) as u8;
+                                        let vec37 = e;
+                                        let ptr37 = vec37.as_ptr() as i32;
+                                        let len37 = vec37.len() as i32;
+                                        *((base + 24) as *mut i32) = len37;
+                                        *((base + 20) as *mut i32) = ptr37;
+                                        
+                                      },
+                                      VecValue::TypeVec2(e) => {
+                                        *((base + 16) as *mut u8) = (12i32) as u8;
+                                        let vec38 = e;
+                                        let ptr38 = vec38.as_ptr() as i32;
+                                        let len38 = vec38.len() as i32;
+                                        *((base + 24) as *mut i32) = len38;
+                                        *((base + 20) as *mut i32) = ptr38;
+                                        
+                                      },
+                                      VecValue::TypeVec3(e) => {
+                                        *((base + 16) as *mut u8) = (13i32) as u8;
+                                        let vec39 = e;
+                                        let ptr39 = vec39.as_ptr() as i32;
+                                        let len39 = vec39.len() as i32;
+                                        *((base + 24) as *mut i32) = len39;
+                                        *((base + 20) as *mut i32) = ptr39;
+                                        
+                                      },
+                                      VecValue::TypeVec4(e) => {
+                                        *((base + 16) as *mut u8) = (14i32) as u8;
+                                        let vec40 = e;
+                                        let ptr40 = vec40.as_ptr() as i32;
+                                        let len40 = vec40.len() as i32;
+                                        *((base + 24) as *mut i32) = len40;
+                                        *((base + 20) as *mut i32) = ptr40;
+                                        
+                                      },
+                                      VecValue::TypeUvec2(e) => {
+                                        *((base + 16) as *mut u8) = (15i32) as u8;
+                                        let vec41 = e;
+                                        let ptr41 = vec41.as_ptr() as i32;
+                                        let len41 = vec41.len() as i32;
+                                        *((base + 24) as *mut i32) = len41;
+                                        *((base + 20) as *mut i32) = ptr41;
+                                        
+                                      },
+                                      VecValue::TypeUvec3(e) => {
+                                        *((base + 16) as *mut u8) = (16i32) as u8;
+                                        let vec42 = e;
+                                        let ptr42 = vec42.as_ptr() as i32;
+                                        let len42 = vec42.len() as i32;
+                                        *((base + 24) as *mut i32) = len42;
+                                        *((base + 20) as *mut i32) = ptr42;
+                                        
+                                      },
+                                      VecValue::TypeUvec4(e) => {
+                                        *((base + 16) as *mut u8) = (17i32) as u8;
+                                        let vec43 = e;
+                                        let ptr43 = vec43.as_ptr() as i32;
+                                        let len43 = vec43.len() as i32;
+                                        *((base + 24) as *mut i32) = len43;
+                                        *((base + 20) as *mut i32) = ptr43;
+                                        
+                                      },
+                                      VecValue::TypeProceduralMeshHandle(e) => {
+                                        *((base + 16) as *mut u8) = (18i32) as u8;
+                                        let vec44 = e;
+                                        let ptr44 = vec44.as_ptr() as i32;
+                                        let len44 = vec44.len() as i32;
+                                        *((base + 24) as *mut i32) = len44;
+                                        *((base + 20) as *mut i32) = ptr44;
+                                        
+                                      },
+                                      VecValue::TypeProceduralTextureHandle(e) => {
+                                        *((base + 16) as *mut u8) = (19i32) as u8;
+                                        let vec45 = e;
+                                        let ptr45 = vec45.as_ptr() as i32;
+                                        let len45 = vec45.len() as i32;
+                                        *((base + 24) as *mut i32) = len45;
+                                        *((base + 20) as *mut i32) = ptr45;
+                                        
+                                      },
+                                      VecValue::TypeProceduralSamplerHandle(e) => {
+                                        *((base + 16) as *mut u8) = (20i32) as u8;
+                                        let vec46 = e;
+                                        let ptr46 = vec46.as_ptr() as i32;
+                                        let len46 = vec46.len() as i32;
+                                        *((base + 24) as *mut i32) = len46;
+                                        *((base + 20) as *mut i32) = ptr46;
+                                        
+                                      },
+                                      VecValue::TypeProceduralMaterialHandle(e) => {
+                                        *((base + 16) as *mut u8) = (21i32) as u8;
+                                        let vec47 = e;
+                                        let ptr47 = vec47.as_ptr() as i32;
+                                        let len47 = vec47.len() as i32;
+                                        *((base + 24) as *mut i32) = len47;
+                                        *((base + 20) as *mut i32) = ptr47;
+                                        
+                                      },
                                     };
                                     
                                   },
                                   Value::TypeOption(e) => {
-                                    *((base + 8) as *mut u8) = (19i32) as u8;
+                                    *((base + 8) as *mut u8) = (23i32) as u8;
                                     match e {
                                       OptionValue::TypeEmpty(e) => {
                                         *((base + 16) as *mut u8) = (0i32) as u8;
@@ -3857,9 +4840,9 @@ pub mod asset{
                                         match e {
                                           Some(e) => {
                                             *((base + 24) as *mut u8) = (1i32) as u8;
-                                            let super::types::EntityId{ id0:id037, id1:id137, } = e;
-                                            *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(id037);
-                                            *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(id137);
+                                            let super::types::EntityId{ id0:id049, id1:id149, } = e;
+                                            *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(id049);
+                                            *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(id149);
                                             
                                           },
                                           None => {
@@ -3907,27 +4890,27 @@ pub mod asset{
                                         match e {
                                           Some(e) => {
                                             *((base + 24) as *mut u8) = (1i32) as u8;
-                                            let super::types::Mat4{ x:x38, y:y38, z:z38, w:w38, } = e;
-                                            let super::types::Vec4{ x:x39, y:y39, z:z39, w:w39, } = x38;
-                                            *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x39);
-                                            *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y39);
-                                            *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z39);
-                                            *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w39);
-                                            let super::types::Vec4{ x:x40, y:y40, z:z40, w:w40, } = y38;
-                                            *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(x40);
-                                            *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(y40);
-                                            *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(z40);
-                                            *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(w40);
-                                            let super::types::Vec4{ x:x41, y:y41, z:z41, w:w41, } = z38;
-                                            *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(x41);
-                                            *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(y41);
-                                            *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(z41);
-                                            *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(w41);
-                                            let super::types::Vec4{ x:x42, y:y42, z:z42, w:w42, } = w38;
-                                            *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(x42);
-                                            *((base + 80) as *mut f32) = wit_bindgen::rt::as_f32(y42);
-                                            *((base + 84) as *mut f32) = wit_bindgen::rt::as_f32(z42);
-                                            *((base + 88) as *mut f32) = wit_bindgen::rt::as_f32(w42);
+                                            let super::types::Mat4{ x:x50, y:y50, z:z50, w:w50, } = e;
+                                            let super::types::Vec4{ x:x51, y:y51, z:z51, w:w51, } = x50;
+                                            *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x51);
+                                            *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y51);
+                                            *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z51);
+                                            *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w51);
+                                            let super::types::Vec4{ x:x52, y:y52, z:z52, w:w52, } = y50;
+                                            *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(x52);
+                                            *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(y52);
+                                            *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(z52);
+                                            *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(w52);
+                                            let super::types::Vec4{ x:x53, y:y53, z:z53, w:w53, } = z50;
+                                            *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(x53);
+                                            *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(y53);
+                                            *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(z53);
+                                            *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(w53);
+                                            let super::types::Vec4{ x:x54, y:y54, z:z54, w:w54, } = w50;
+                                            *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(x54);
+                                            *((base + 80) as *mut f32) = wit_bindgen::rt::as_f32(y54);
+                                            *((base + 84) as *mut f32) = wit_bindgen::rt::as_f32(z54);
+                                            *((base + 88) as *mut f32) = wit_bindgen::rt::as_f32(w54);
                                             
                                           },
                                           None => {
@@ -3959,11 +4942,11 @@ pub mod asset{
                                         match e {
                                           Some(e) => {
                                             *((base + 24) as *mut u8) = (1i32) as u8;
-                                            let super::types::Quat{ x:x43, y:y43, z:z43, w:w43, } = e;
-                                            *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x43);
-                                            *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y43);
-                                            *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z43);
-                                            *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w43);
+                                            let super::types::Quat{ x:x55, y:y55, z:z55, w:w55, } = e;
+                                            *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x55);
+                                            *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y55);
+                                            *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z55);
+                                            *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w55);
                                             
                                           },
                                           None => {
@@ -3979,11 +4962,11 @@ pub mod asset{
                                         match e {
                                           Some(e) => {
                                             *((base + 24) as *mut u8) = (1i32) as u8;
-                                            let vec44 = e;
-                                            let ptr44 = vec44.as_ptr() as i32;
-                                            let len44 = vec44.len() as i32;
-                                            *((base + 32) as *mut i32) = len44;
-                                            *((base + 28) as *mut i32) = ptr44;
+                                            let vec56 = e;
+                                            let ptr56 = vec56.as_ptr() as i32;
+                                            let len56 = vec56.len() as i32;
+                                            *((base + 32) as *mut i32) = len56;
+                                            *((base + 28) as *mut i32) = ptr56;
                                             
                                           },
                                           None => {
@@ -4047,9 +5030,9 @@ pub mod asset{
                                         match e {
                                           Some(e) => {
                                             *((base + 24) as *mut u8) = (1i32) as u8;
-                                            let super::types::Vec2{ x:x45, y:y45, } = e;
-                                            *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x45);
-                                            *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y45);
+                                            let super::types::Vec2{ x:x57, y:y57, } = e;
+                                            *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x57);
+                                            *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y57);
                                             
                                           },
                                           None => {
@@ -4065,10 +5048,10 @@ pub mod asset{
                                         match e {
                                           Some(e) => {
                                             *((base + 24) as *mut u8) = (1i32) as u8;
-                                            let super::types::Vec3{ x:x46, y:y46, z:z46, } = e;
-                                            *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x46);
-                                            *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y46);
-                                            *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z46);
+                                            let super::types::Vec3{ x:x58, y:y58, z:z58, } = e;
+                                            *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x58);
+                                            *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y58);
+                                            *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z58);
                                             
                                           },
                                           None => {
@@ -4084,11 +5067,11 @@ pub mod asset{
                                         match e {
                                           Some(e) => {
                                             *((base + 24) as *mut u8) = (1i32) as u8;
-                                            let super::types::Vec4{ x:x47, y:y47, z:z47, w:w47, } = e;
-                                            *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x47);
-                                            *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y47);
-                                            *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z47);
-                                            *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w47);
+                                            let super::types::Vec4{ x:x59, y:y59, z:z59, w:w59, } = e;
+                                            *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x59);
+                                            *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y59);
+                                            *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z59);
+                                            *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w59);
                                             
                                           },
                                           None => {
@@ -4104,9 +5087,9 @@ pub mod asset{
                                         match e {
                                           Some(e) => {
                                             *((base + 24) as *mut u8) = (1i32) as u8;
-                                            let super::types::Uvec2{ x:x48, y:y48, } = e;
-                                            *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x48);
-                                            *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y48);
+                                            let super::types::Uvec2{ x:x60, y:y60, } = e;
+                                            *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x60);
+                                            *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y60);
                                             
                                           },
                                           None => {
@@ -4122,10 +5105,10 @@ pub mod asset{
                                         match e {
                                           Some(e) => {
                                             *((base + 24) as *mut u8) = (1i32) as u8;
-                                            let super::types::Uvec3{ x:x49, y:y49, z:z49, } = e;
-                                            *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x49);
-                                            *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y49);
-                                            *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z49);
+                                            let super::types::Uvec3{ x:x61, y:y61, z:z61, } = e;
+                                            *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x61);
+                                            *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y61);
+                                            *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z61);
                                             
                                           },
                                           None => {
@@ -4141,11 +5124,87 @@ pub mod asset{
                                         match e {
                                           Some(e) => {
                                             *((base + 24) as *mut u8) = (1i32) as u8;
-                                            let super::types::Uvec4{ x:x50, y:y50, z:z50, w:w50, } = e;
-                                            *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x50);
-                                            *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y50);
-                                            *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z50);
-                                            *((base + 40) as *mut i32) = wit_bindgen::rt::as_i32(w50);
+                                            let super::types::Uvec4{ x:x62, y:y62, z:z62, w:w62, } = e;
+                                            *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x62);
+                                            *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y62);
+                                            *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z62);
+                                            *((base + 40) as *mut i32) = wit_bindgen::rt::as_i32(w62);
+                                            
+                                          },
+                                          None => {
+                                            {
+                                              *((base + 24) as *mut u8) = (0i32) as u8;
+                                              
+                                            }
+                                          },
+                                        };
+                                      },
+                                      OptionValue::TypeProceduralMeshHandle(e) => {
+                                        *((base + 16) as *mut u8) = (18i32) as u8;
+                                        match e {
+                                          Some(e) => {
+                                            *((base + 24) as *mut u8) = (1i32) as u8;
+                                            let super::client_mesh::Handle{ ulid:ulid63, } = e;
+                                            let (t64_0, t64_1, ) = ulid63;
+                                            *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(t64_0);
+                                            *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(t64_1);
+                                            
+                                          },
+                                          None => {
+                                            {
+                                              *((base + 24) as *mut u8) = (0i32) as u8;
+                                              
+                                            }
+                                          },
+                                        };
+                                      },
+                                      OptionValue::TypeProceduralTextureHandle(e) => {
+                                        *((base + 16) as *mut u8) = (19i32) as u8;
+                                        match e {
+                                          Some(e) => {
+                                            *((base + 24) as *mut u8) = (1i32) as u8;
+                                            let super::client_texture::Handle{ ulid:ulid65, } = e;
+                                            let (t66_0, t66_1, ) = ulid65;
+                                            *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(t66_0);
+                                            *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(t66_1);
+                                            
+                                          },
+                                          None => {
+                                            {
+                                              *((base + 24) as *mut u8) = (0i32) as u8;
+                                              
+                                            }
+                                          },
+                                        };
+                                      },
+                                      OptionValue::TypeProceduralSamplerHandle(e) => {
+                                        *((base + 16) as *mut u8) = (20i32) as u8;
+                                        match e {
+                                          Some(e) => {
+                                            *((base + 24) as *mut u8) = (1i32) as u8;
+                                            let super::client_sampler::Handle{ ulid:ulid67, } = e;
+                                            let (t68_0, t68_1, ) = ulid67;
+                                            *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(t68_0);
+                                            *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(t68_1);
+                                            
+                                          },
+                                          None => {
+                                            {
+                                              *((base + 24) as *mut u8) = (0i32) as u8;
+                                              
+                                            }
+                                          },
+                                        };
+                                      },
+                                      OptionValue::TypeProceduralMaterialHandle(e) => {
+                                        *((base + 16) as *mut u8) = (21i32) as u8;
+                                        match e {
+                                          Some(e) => {
+                                            *((base + 24) as *mut u8) = (1i32) as u8;
+                                            let super::client_material::Handle{ ulid:ulid69, } = e;
+                                            let (t70_0, t70_1, ) = ulid69;
+                                            *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(t70_0);
+                                            *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(t70_1);
                                             
                                           },
                                           None => {
@@ -4170,9 +5229,9 @@ pub mod asset{
                                 fn wit_import(
                                 _: i64, _: i64, _: i32, _: i32, );
                               }
-                              wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), result51 as i32, len51);
-                              if layout51.size() != 0 {
-                                alloc::dealloc(result51, layout51);
+                              wit_import(wit_bindgen::rt::as_i64(id00), wit_bindgen::rt::as_i64(id10), result71 as i32, len71);
+                              if layout71.size() != 0 {
+                                alloc::dealloc(result71, layout71);
                               }
                               for (ptr, layout) in cleanup_list {
                                 
@@ -4341,18 +5400,18 @@ pub mod asset{
                                 _: i64, _: i32, );
                               }
                               wit_import(wit_bindgen::rt::as_i64(q), ptr0);
-                              let base23 = *((ptr0 + 0) as *const i32);
-                              let len23 = *((ptr0 + 4) as *const i32);
-                              let mut result23 = Vec::with_capacity(len23 as usize);
-                              for i in 0..len23 {
-                                let base = base23 + i *24;
-                                result23.push({
-                                  let base22 = *((base + 16) as *const i32);
-                                  let len22 = *((base + 20) as *const i32);
-                                  let mut result22 = Vec::with_capacity(len22 as usize);
-                                  for i in 0..len22 {
-                                    let base = base22 + i *88;
-                                    result22.push({{match i32::from(*((base + 0) as *const u8)) {
+                              let base27 = *((ptr0 + 0) as *const i32);
+                              let len27 = *((ptr0 + 4) as *const i32);
+                              let mut result27 = Vec::with_capacity(len27 as usize);
+                              for i in 0..len27 {
+                                let base = base27 + i *24;
+                                result27.push({
+                                  let base26 = *((base + 16) as *const i32);
+                                  let len26 = *((base + 20) as *const i32);
+                                  let mut result26 = Vec::with_capacity(len26 as usize);
+                                  for i in 0..len26 {
+                                    let base = base26 + i *88;
+                                    result26.push({{match i32::from(*((base + 0) as *const u8)) {
                                       0 => Value::TypeEmpty(()),
                                       1 => Value::TypeBool({
                                         #[cfg(not(debug_assertions))]
@@ -4386,7 +5445,11 @@ pub mod asset{
                                       15 => Value::TypeUvec2(super::types::Uvec2{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, }),
                                       16 => Value::TypeUvec3(super::types::Uvec3{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, z:*((base + 16) as *const i32) as u32, }),
                                       17 => Value::TypeUvec4(super::types::Uvec4{x:*((base + 8) as *const i32) as u32, y:*((base + 12) as *const i32) as u32, z:*((base + 16) as *const i32) as u32, w:*((base + 20) as *const i32) as u32, }),
-                                      18 => Value::TypeVec({{match i32::from(*((base + 8) as *const u8)) {
+                                      18 => Value::TypeProceduralMeshHandle(super::client_mesh::Handle{ulid:(*((base + 8) as *const i64) as u64, *((base + 16) as *const i64) as u64), }),
+                                      19 => Value::TypeProceduralTextureHandle(super::client_texture::Handle{ulid:(*((base + 8) as *const i64) as u64, *((base + 16) as *const i64) as u64), }),
+                                      20 => Value::TypeProceduralSamplerHandle(super::client_sampler::Handle{ulid:(*((base + 8) as *const i64) as u64, *((base + 16) as *const i64) as u64), }),
+                                      21 => Value::TypeProceduralMaterialHandle(super::client_material::Handle{ulid:(*((base + 8) as *const i64) as u64, *((base + 16) as *const i64) as u64), }),
+                                      22 => Value::TypeVec({{match i32::from(*((base + 8) as *const u8)) {
                                         0 => VecValue::TypeEmpty({
                                           let len2 = *((base + 16) as *const i32) as usize;
                                           
@@ -4501,19 +5564,39 @@ pub mod asset{
                                           
                                           Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len19, len19)
                                         }),
-                                        #[cfg(debug_assertions)]17 => VecValue::TypeUvec4({
+                                        17 => VecValue::TypeUvec4({
                                           let len20 = *((base + 16) as *const i32) as usize;
                                           
                                           Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len20, len20)
                                         }),
-                                        #[cfg(not(debug_assertions))]_ => VecValue::TypeUvec4({
-                                          let len20 = *((base + 16) as *const i32) as usize;
+                                        18 => VecValue::TypeProceduralMeshHandle({
+                                          let len21 = *((base + 16) as *const i32) as usize;
                                           
-                                          Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len20, len20)
+                                          Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len21, len21)
+                                        }),
+                                        19 => VecValue::TypeProceduralTextureHandle({
+                                          let len22 = *((base + 16) as *const i32) as usize;
+                                          
+                                          Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len22, len22)
+                                        }),
+                                        20 => VecValue::TypeProceduralSamplerHandle({
+                                          let len23 = *((base + 16) as *const i32) as usize;
+                                          
+                                          Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len23, len23)
+                                        }),
+                                        #[cfg(debug_assertions)]21 => VecValue::TypeProceduralMaterialHandle({
+                                          let len24 = *((base + 16) as *const i32) as usize;
+                                          
+                                          Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len24, len24)
+                                        }),
+                                        #[cfg(not(debug_assertions))]_ => VecValue::TypeProceduralMaterialHandle({
+                                          let len24 = *((base + 16) as *const i32) as usize;
+                                          
+                                          Vec::from_raw_parts(*((base + 12) as *const i32) as *mut _, len24, len24)
                                         }),
                                         #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
                                       }}}),
-                                      #[cfg(debug_assertions)]19 => Value::TypeOption({{match i32::from(*((base + 8) as *const u8)) {
+                                      #[cfg(debug_assertions)]23 => Value::TypeOption({{match i32::from(*((base + 8) as *const u8)) {
                                         0 => OptionValue::TypeEmpty(match i32::from(*((base + 16) as *const u8)) {
                                           0 => None,
                                           1 => Some(()),
@@ -4592,9 +5675,9 @@ pub mod asset{
                                         8 => OptionValue::TypeString(match i32::from(*((base + 16) as *const u8)) {
                                           0 => None,
                                           1 => Some({
-                                            let len21 = *((base + 24) as *const i32) as usize;
+                                            let len25 = *((base + 24) as *const i32) as usize;
                                             
-                                            {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len21, len21))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len21, len21)).unwrap()}}
+                                            {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len25, len25))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len25, len25)).unwrap()}}
                                           }),
                                           #[cfg(not(debug_assertions))]
                                           _ => core::hint::unreachable_unchecked(),
@@ -4665,7 +5748,7 @@ pub mod asset{
                                           #[cfg(debug_assertions)]
                                           _ => panic!("invalid enum discriminant"),
                                         }),
-                                        #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
+                                        17 => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
                                           0 => None,
                                           1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
                                           #[cfg(not(debug_assertions))]
@@ -4673,9 +5756,41 @@ pub mod asset{
                                           #[cfg(debug_assertions)]
                                           _ => panic!("invalid enum discriminant"),
                                         }),
-                                        #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
+                                        18 => OptionValue::TypeProceduralMeshHandle(match i32::from(*((base + 16) as *const u8)) {
                                           0 => None,
-                                          1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
+                                          1 => Some(super::client_mesh::Handle{ulid:(*((base + 24) as *const i64) as u64, *((base + 32) as *const i64) as u64), }),
+                                          #[cfg(not(debug_assertions))]
+                                          _ => core::hint::unreachable_unchecked(),
+                                          #[cfg(debug_assertions)]
+                                          _ => panic!("invalid enum discriminant"),
+                                        }),
+                                        19 => OptionValue::TypeProceduralTextureHandle(match i32::from(*((base + 16) as *const u8)) {
+                                          0 => None,
+                                          1 => Some(super::client_texture::Handle{ulid:(*((base + 24) as *const i64) as u64, *((base + 32) as *const i64) as u64), }),
+                                          #[cfg(not(debug_assertions))]
+                                          _ => core::hint::unreachable_unchecked(),
+                                          #[cfg(debug_assertions)]
+                                          _ => panic!("invalid enum discriminant"),
+                                        }),
+                                        20 => OptionValue::TypeProceduralSamplerHandle(match i32::from(*((base + 16) as *const u8)) {
+                                          0 => None,
+                                          1 => Some(super::client_sampler::Handle{ulid:(*((base + 24) as *const i64) as u64, *((base + 32) as *const i64) as u64), }),
+                                          #[cfg(not(debug_assertions))]
+                                          _ => core::hint::unreachable_unchecked(),
+                                          #[cfg(debug_assertions)]
+                                          _ => panic!("invalid enum discriminant"),
+                                        }),
+                                        #[cfg(debug_assertions)]21 => OptionValue::TypeProceduralMaterialHandle(match i32::from(*((base + 16) as *const u8)) {
+                                          0 => None,
+                                          1 => Some(super::client_material::Handle{ulid:(*((base + 24) as *const i64) as u64, *((base + 32) as *const i64) as u64), }),
+                                          #[cfg(not(debug_assertions))]
+                                          _ => core::hint::unreachable_unchecked(),
+                                          #[cfg(debug_assertions)]
+                                          _ => panic!("invalid enum discriminant"),
+                                        }),
+                                        #[cfg(not(debug_assertions))]_ => OptionValue::TypeProceduralMaterialHandle(match i32::from(*((base + 16) as *const u8)) {
+                                          0 => None,
+                                          1 => Some(super::client_material::Handle{ulid:(*((base + 24) as *const i64) as u64, *((base + 32) as *const i64) as u64), }),
                                           #[cfg(not(debug_assertions))]
                                           _ => core::hint::unreachable_unchecked(),
                                           #[cfg(debug_assertions)]
@@ -4762,9 +5877,9 @@ pub mod asset{
                                         8 => OptionValue::TypeString(match i32::from(*((base + 16) as *const u8)) {
                                           0 => None,
                                           1 => Some({
-                                            let len21 = *((base + 24) as *const i32) as usize;
+                                            let len25 = *((base + 24) as *const i32) as usize;
                                             
-                                            {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len21, len21))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len21, len21)).unwrap()}}
+                                            {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len25, len25))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len25, len25)).unwrap()}}
                                           }),
                                           #[cfg(not(debug_assertions))]
                                           _ => core::hint::unreachable_unchecked(),
@@ -4835,7 +5950,7 @@ pub mod asset{
                                           #[cfg(debug_assertions)]
                                           _ => panic!("invalid enum discriminant"),
                                         }),
-                                        #[cfg(debug_assertions)]17 => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
+                                        17 => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
                                           0 => None,
                                           1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
                                           #[cfg(not(debug_assertions))]
@@ -4843,9 +5958,41 @@ pub mod asset{
                                           #[cfg(debug_assertions)]
                                           _ => panic!("invalid enum discriminant"),
                                         }),
-                                        #[cfg(not(debug_assertions))]_ => OptionValue::TypeUvec4(match i32::from(*((base + 16) as *const u8)) {
+                                        18 => OptionValue::TypeProceduralMeshHandle(match i32::from(*((base + 16) as *const u8)) {
                                           0 => None,
-                                          1 => Some(super::types::Uvec4{x:*((base + 20) as *const i32) as u32, y:*((base + 24) as *const i32) as u32, z:*((base + 28) as *const i32) as u32, w:*((base + 32) as *const i32) as u32, }),
+                                          1 => Some(super::client_mesh::Handle{ulid:(*((base + 24) as *const i64) as u64, *((base + 32) as *const i64) as u64), }),
+                                          #[cfg(not(debug_assertions))]
+                                          _ => core::hint::unreachable_unchecked(),
+                                          #[cfg(debug_assertions)]
+                                          _ => panic!("invalid enum discriminant"),
+                                        }),
+                                        19 => OptionValue::TypeProceduralTextureHandle(match i32::from(*((base + 16) as *const u8)) {
+                                          0 => None,
+                                          1 => Some(super::client_texture::Handle{ulid:(*((base + 24) as *const i64) as u64, *((base + 32) as *const i64) as u64), }),
+                                          #[cfg(not(debug_assertions))]
+                                          _ => core::hint::unreachable_unchecked(),
+                                          #[cfg(debug_assertions)]
+                                          _ => panic!("invalid enum discriminant"),
+                                        }),
+                                        20 => OptionValue::TypeProceduralSamplerHandle(match i32::from(*((base + 16) as *const u8)) {
+                                          0 => None,
+                                          1 => Some(super::client_sampler::Handle{ulid:(*((base + 24) as *const i64) as u64, *((base + 32) as *const i64) as u64), }),
+                                          #[cfg(not(debug_assertions))]
+                                          _ => core::hint::unreachable_unchecked(),
+                                          #[cfg(debug_assertions)]
+                                          _ => panic!("invalid enum discriminant"),
+                                        }),
+                                        #[cfg(debug_assertions)]21 => OptionValue::TypeProceduralMaterialHandle(match i32::from(*((base + 16) as *const u8)) {
+                                          0 => None,
+                                          1 => Some(super::client_material::Handle{ulid:(*((base + 24) as *const i64) as u64, *((base + 32) as *const i64) as u64), }),
+                                          #[cfg(not(debug_assertions))]
+                                          _ => core::hint::unreachable_unchecked(),
+                                          #[cfg(debug_assertions)]
+                                          _ => panic!("invalid enum discriminant"),
+                                        }),
+                                        #[cfg(not(debug_assertions))]_ => OptionValue::TypeProceduralMaterialHandle(match i32::from(*((base + 16) as *const u8)) {
+                                          0 => None,
+                                          1 => Some(super::client_material::Handle{ulid:(*((base + 24) as *const i64) as u64, *((base + 32) as *const i64) as u64), }),
                                           #[cfg(not(debug_assertions))]
                                           _ => core::hint::unreachable_unchecked(),
                                           #[cfg(debug_assertions)]
@@ -4856,13 +6003,13 @@ pub mod asset{
                                       #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
                                     }}});
                                   }
-                                  wit_bindgen::rt::dealloc(base22, (len22 as usize) * 88, 8);
+                                  wit_bindgen::rt::dealloc(base26, (len26 as usize) * 88, 8);
                                   
-                                  (super::types::EntityId{id0:*((base + 0) as *const i64) as u64, id1:*((base + 8) as *const i64) as u64, }, result22)
+                                  (super::types::EntityId{id0:*((base + 0) as *const i64) as u64, id1:*((base + 8) as *const i64) as u64, }, result26)
                                 });
                               }
-                              wit_bindgen::rt::dealloc(base23, (len23 as usize) * 24, 8);
-                              result23
+                              wit_bindgen::rt::dealloc(base27, (len27 as usize) * 24, 8);
+                              result27
                             }
                           }
                           
@@ -5246,22 +6393,22 @@ pub mod asset{
                                   #[repr(align(8))]
                                   struct RetArea([u8; 16]);
                                   let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                  let vec50 = data;
-                                  let len50 = vec50.len() as i32;
-                                  let layout50 = alloc::Layout::from_size_align_unchecked(vec50.len() * 96, 8);
-                                  let result50 = if layout50.size() != 0
+                                  let vec70 = data;
+                                  let len70 = vec70.len() as i32;
+                                  let layout70 = alloc::Layout::from_size_align_unchecked(vec70.len() * 96, 8);
+                                  let result70 = if layout70.size() != 0
                                   {
-                                    let ptr = alloc::alloc(layout50);
+                                    let ptr = alloc::alloc(layout70);
                                     if ptr.is_null()
                                     {
-                                      alloc::handle_alloc_error(layout50);
+                                      alloc::handle_alloc_error(layout70);
                                     }
                                     ptr
                                   }else {
                                     core::ptr::null_mut()
                                   };
-                                  for (i, e) in vec50.into_iter().enumerate() {
-                                    let base = result50 as i32 + (i as i32) * 96;
+                                  for (i, e) in vec70.into_iter().enumerate() {
+                                    let base = result70 as i32 + (i as i32) * 96;
                                     {
                                       let (t0_0, t0_1, ) = e;
                                       *((base + 0) as *mut i32) = wit_bindgen::rt::as_i32(t0_0);
@@ -5404,204 +6551,164 @@ pub mod asset{
                                           *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(w15);
                                           
                                         },
-                                        super::component::Value::TypeVec(e) => {
+                                        super::component::Value::TypeProceduralMeshHandle(e) => {
                                           *((base + 8) as *mut u8) = (18i32) as u8;
+                                          let super::client_mesh::Handle{ ulid:ulid16, } = e;
+                                          let (t17_0, t17_1, ) = ulid16;
+                                          *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(t17_0);
+                                          *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(t17_1);
+                                          
+                                        },
+                                        super::component::Value::TypeProceduralTextureHandle(e) => {
+                                          *((base + 8) as *mut u8) = (19i32) as u8;
+                                          let super::client_texture::Handle{ ulid:ulid18, } = e;
+                                          let (t19_0, t19_1, ) = ulid18;
+                                          *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(t19_0);
+                                          *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(t19_1);
+                                          
+                                        },
+                                        super::component::Value::TypeProceduralSamplerHandle(e) => {
+                                          *((base + 8) as *mut u8) = (20i32) as u8;
+                                          let super::client_sampler::Handle{ ulid:ulid20, } = e;
+                                          let (t21_0, t21_1, ) = ulid20;
+                                          *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(t21_0);
+                                          *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(t21_1);
+                                          
+                                        },
+                                        super::component::Value::TypeProceduralMaterialHandle(e) => {
+                                          *((base + 8) as *mut u8) = (21i32) as u8;
+                                          let super::client_material::Handle{ ulid:ulid22, } = e;
+                                          let (t23_0, t23_1, ) = ulid22;
+                                          *((base + 16) as *mut i64) = wit_bindgen::rt::as_i64(t23_0);
+                                          *((base + 24) as *mut i64) = wit_bindgen::rt::as_i64(t23_1);
+                                          
+                                        },
+                                        super::component::Value::TypeVec(e) => {
+                                          *((base + 8) as *mut u8) = (22i32) as u8;
                                           match e {
                                             super::component::VecValue::TypeEmpty(e) => {
                                               *((base + 16) as *mut u8) = (0i32) as u8;
-                                              let vec16 = e;
-                                              let ptr16 = vec16.as_ptr() as i32;
-                                              let len16 = vec16.len() as i32;
-                                              *((base + 24) as *mut i32) = len16;
-                                              *((base + 20) as *mut i32) = ptr16;
+                                              let vec24 = e;
+                                              let ptr24 = vec24.as_ptr() as i32;
+                                              let len24 = vec24.len() as i32;
+                                              *((base + 24) as *mut i32) = len24;
+                                              *((base + 20) as *mut i32) = ptr24;
                                               
                                             },
                                             super::component::VecValue::TypeBool(e) => {
                                               *((base + 16) as *mut u8) = (1i32) as u8;
-                                              let vec17 = e;
-                                              let len17 = vec17.len() as i32;
-                                              let layout17 = alloc::Layout::from_size_align_unchecked(vec17.len() * 1, 1);
-                                              let result17 = if layout17.size() != 0
+                                              let vec25 = e;
+                                              let len25 = vec25.len() as i32;
+                                              let layout25 = alloc::Layout::from_size_align_unchecked(vec25.len() * 1, 1);
+                                              let result25 = if layout25.size() != 0
                                               {
-                                                let ptr = alloc::alloc(layout17);
+                                                let ptr = alloc::alloc(layout25);
                                                 if ptr.is_null()
                                                 {
-                                                  alloc::handle_alloc_error(layout17);
+                                                  alloc::handle_alloc_error(layout25);
                                                 }
                                                 ptr
                                               }else {
                                                 core::ptr::null_mut()
                                               };
-                                              for (i, e) in vec17.into_iter().enumerate() {
-                                                let base = result17 as i32 + (i as i32) * 1;
+                                              for (i, e) in vec25.into_iter().enumerate() {
+                                                let base = result25 as i32 + (i as i32) * 1;
                                                 {
                                                   *((base + 0) as *mut u8) = (match e { true => 1, false => 0 }) as u8;
                                                   
                                                 }}
-                                                *((base + 24) as *mut i32) = len17;
-                                                *((base + 20) as *mut i32) = result17 as i32;
-                                                cleanup_list.extend_from_slice(&[(result17, layout17),]);
+                                                *((base + 24) as *mut i32) = len25;
+                                                *((base + 20) as *mut i32) = result25 as i32;
+                                                cleanup_list.extend_from_slice(&[(result25, layout25),]);
                                                 
                                               },
                                               super::component::VecValue::TypeEntityId(e) => {
                                                 *((base + 16) as *mut u8) = (2i32) as u8;
-                                                let vec18 = e;
-                                                let ptr18 = vec18.as_ptr() as i32;
-                                                let len18 = vec18.len() as i32;
-                                                *((base + 24) as *mut i32) = len18;
-                                                *((base + 20) as *mut i32) = ptr18;
+                                                let vec26 = e;
+                                                let ptr26 = vec26.as_ptr() as i32;
+                                                let len26 = vec26.len() as i32;
+                                                *((base + 24) as *mut i32) = len26;
+                                                *((base + 20) as *mut i32) = ptr26;
                                                 
                                               },
                                               super::component::VecValue::TypeF32(e) => {
                                                 *((base + 16) as *mut u8) = (3i32) as u8;
-                                                let vec19 = e;
-                                                let ptr19 = vec19.as_ptr() as i32;
-                                                let len19 = vec19.len() as i32;
-                                                *((base + 24) as *mut i32) = len19;
-                                                *((base + 20) as *mut i32) = ptr19;
+                                                let vec27 = e;
+                                                let ptr27 = vec27.as_ptr() as i32;
+                                                let len27 = vec27.len() as i32;
+                                                *((base + 24) as *mut i32) = len27;
+                                                *((base + 20) as *mut i32) = ptr27;
                                                 
                                               },
                                               super::component::VecValue::TypeF64(e) => {
                                                 *((base + 16) as *mut u8) = (4i32) as u8;
-                                                let vec20 = e;
-                                                let ptr20 = vec20.as_ptr() as i32;
-                                                let len20 = vec20.len() as i32;
-                                                *((base + 24) as *mut i32) = len20;
-                                                *((base + 20) as *mut i32) = ptr20;
+                                                let vec28 = e;
+                                                let ptr28 = vec28.as_ptr() as i32;
+                                                let len28 = vec28.len() as i32;
+                                                *((base + 24) as *mut i32) = len28;
+                                                *((base + 20) as *mut i32) = ptr28;
                                                 
                                               },
                                               super::component::VecValue::TypeMat4(e) => {
                                                 *((base + 16) as *mut u8) = (5i32) as u8;
-                                                let vec21 = e;
-                                                let ptr21 = vec21.as_ptr() as i32;
-                                                let len21 = vec21.len() as i32;
-                                                *((base + 24) as *mut i32) = len21;
-                                                *((base + 20) as *mut i32) = ptr21;
+                                                let vec29 = e;
+                                                let ptr29 = vec29.as_ptr() as i32;
+                                                let len29 = vec29.len() as i32;
+                                                *((base + 24) as *mut i32) = len29;
+                                                *((base + 20) as *mut i32) = ptr29;
                                                 
                                               },
                                               super::component::VecValue::TypeI32(e) => {
                                                 *((base + 16) as *mut u8) = (6i32) as u8;
-                                                let vec22 = e;
-                                                let ptr22 = vec22.as_ptr() as i32;
-                                                let len22 = vec22.len() as i32;
-                                                *((base + 24) as *mut i32) = len22;
-                                                *((base + 20) as *mut i32) = ptr22;
+                                                let vec30 = e;
+                                                let ptr30 = vec30.as_ptr() as i32;
+                                                let len30 = vec30.len() as i32;
+                                                *((base + 24) as *mut i32) = len30;
+                                                *((base + 20) as *mut i32) = ptr30;
                                                 
                                               },
                                               super::component::VecValue::TypeQuat(e) => {
                                                 *((base + 16) as *mut u8) = (7i32) as u8;
-                                                let vec23 = e;
-                                                let ptr23 = vec23.as_ptr() as i32;
-                                                let len23 = vec23.len() as i32;
-                                                *((base + 24) as *mut i32) = len23;
-                                                *((base + 20) as *mut i32) = ptr23;
+                                                let vec31 = e;
+                                                let ptr31 = vec31.as_ptr() as i32;
+                                                let len31 = vec31.len() as i32;
+                                                *((base + 24) as *mut i32) = len31;
+                                                *((base + 20) as *mut i32) = ptr31;
                                                 
                                               },
                                               super::component::VecValue::TypeString(e) => {
                                                 *((base + 16) as *mut u8) = (8i32) as u8;
-                                                let vec25 = e;
-                                                let len25 = vec25.len() as i32;
-                                                let layout25 = alloc::Layout::from_size_align_unchecked(vec25.len() * 8, 4);
-                                                let result25 = if layout25.size() != 0
+                                                let vec33 = e;
+                                                let len33 = vec33.len() as i32;
+                                                let layout33 = alloc::Layout::from_size_align_unchecked(vec33.len() * 8, 4);
+                                                let result33 = if layout33.size() != 0
                                                 {
-                                                  let ptr = alloc::alloc(layout25);
+                                                  let ptr = alloc::alloc(layout33);
                                                   if ptr.is_null()
                                                   {
-                                                    alloc::handle_alloc_error(layout25);
+                                                    alloc::handle_alloc_error(layout33);
                                                   }
                                                   ptr
                                                 }else {
                                                   core::ptr::null_mut()
                                                 };
-                                                for (i, e) in vec25.into_iter().enumerate() {
-                                                  let base = result25 as i32 + (i as i32) * 8;
+                                                for (i, e) in vec33.into_iter().enumerate() {
+                                                  let base = result33 as i32 + (i as i32) * 8;
                                                   {
-                                                    let vec24 = e;
-                                                    let ptr24 = vec24.as_ptr() as i32;
-                                                    let len24 = vec24.len() as i32;
-                                                    *((base + 4) as *mut i32) = len24;
-                                                    *((base + 0) as *mut i32) = ptr24;
+                                                    let vec32 = e;
+                                                    let ptr32 = vec32.as_ptr() as i32;
+                                                    let len32 = vec32.len() as i32;
+                                                    *((base + 4) as *mut i32) = len32;
+                                                    *((base + 0) as *mut i32) = ptr32;
                                                     
                                                   }}
-                                                  *((base + 24) as *mut i32) = len25;
-                                                  *((base + 20) as *mut i32) = result25 as i32;
-                                                  cleanup_list.extend_from_slice(&[(result25, layout25),]);
+                                                  *((base + 24) as *mut i32) = len33;
+                                                  *((base + 20) as *mut i32) = result33 as i32;
+                                                  cleanup_list.extend_from_slice(&[(result33, layout33),]);
                                                   
                                                 },
                                                 super::component::VecValue::TypeU8(e) => {
                                                   *((base + 16) as *mut u8) = (9i32) as u8;
-                                                  let vec26 = e;
-                                                  let ptr26 = vec26.as_ptr() as i32;
-                                                  let len26 = vec26.len() as i32;
-                                                  *((base + 24) as *mut i32) = len26;
-                                                  *((base + 20) as *mut i32) = ptr26;
-                                                  
-                                                },
-                                                super::component::VecValue::TypeU32(e) => {
-                                                  *((base + 16) as *mut u8) = (10i32) as u8;
-                                                  let vec27 = e;
-                                                  let ptr27 = vec27.as_ptr() as i32;
-                                                  let len27 = vec27.len() as i32;
-                                                  *((base + 24) as *mut i32) = len27;
-                                                  *((base + 20) as *mut i32) = ptr27;
-                                                  
-                                                },
-                                                super::component::VecValue::TypeU64(e) => {
-                                                  *((base + 16) as *mut u8) = (11i32) as u8;
-                                                  let vec28 = e;
-                                                  let ptr28 = vec28.as_ptr() as i32;
-                                                  let len28 = vec28.len() as i32;
-                                                  *((base + 24) as *mut i32) = len28;
-                                                  *((base + 20) as *mut i32) = ptr28;
-                                                  
-                                                },
-                                                super::component::VecValue::TypeVec2(e) => {
-                                                  *((base + 16) as *mut u8) = (12i32) as u8;
-                                                  let vec29 = e;
-                                                  let ptr29 = vec29.as_ptr() as i32;
-                                                  let len29 = vec29.len() as i32;
-                                                  *((base + 24) as *mut i32) = len29;
-                                                  *((base + 20) as *mut i32) = ptr29;
-                                                  
-                                                },
-                                                super::component::VecValue::TypeVec3(e) => {
-                                                  *((base + 16) as *mut u8) = (13i32) as u8;
-                                                  let vec30 = e;
-                                                  let ptr30 = vec30.as_ptr() as i32;
-                                                  let len30 = vec30.len() as i32;
-                                                  *((base + 24) as *mut i32) = len30;
-                                                  *((base + 20) as *mut i32) = ptr30;
-                                                  
-                                                },
-                                                super::component::VecValue::TypeVec4(e) => {
-                                                  *((base + 16) as *mut u8) = (14i32) as u8;
-                                                  let vec31 = e;
-                                                  let ptr31 = vec31.as_ptr() as i32;
-                                                  let len31 = vec31.len() as i32;
-                                                  *((base + 24) as *mut i32) = len31;
-                                                  *((base + 20) as *mut i32) = ptr31;
-                                                  
-                                                },
-                                                super::component::VecValue::TypeUvec2(e) => {
-                                                  *((base + 16) as *mut u8) = (15i32) as u8;
-                                                  let vec32 = e;
-                                                  let ptr32 = vec32.as_ptr() as i32;
-                                                  let len32 = vec32.len() as i32;
-                                                  *((base + 24) as *mut i32) = len32;
-                                                  *((base + 20) as *mut i32) = ptr32;
-                                                  
-                                                },
-                                                super::component::VecValue::TypeUvec3(e) => {
-                                                  *((base + 16) as *mut u8) = (16i32) as u8;
-                                                  let vec33 = e;
-                                                  let ptr33 = vec33.as_ptr() as i32;
-                                                  let len33 = vec33.len() as i32;
-                                                  *((base + 24) as *mut i32) = len33;
-                                                  *((base + 20) as *mut i32) = ptr33;
-                                                  
-                                                },
-                                                super::component::VecValue::TypeUvec4(e) => {
-                                                  *((base + 16) as *mut u8) = (17i32) as u8;
                                                   let vec34 = e;
                                                   let ptr34 = vec34.as_ptr() as i32;
                                                   let len34 = vec34.len() as i32;
@@ -5609,11 +6716,119 @@ pub mod asset{
                                                   *((base + 20) as *mut i32) = ptr34;
                                                   
                                                 },
+                                                super::component::VecValue::TypeU32(e) => {
+                                                  *((base + 16) as *mut u8) = (10i32) as u8;
+                                                  let vec35 = e;
+                                                  let ptr35 = vec35.as_ptr() as i32;
+                                                  let len35 = vec35.len() as i32;
+                                                  *((base + 24) as *mut i32) = len35;
+                                                  *((base + 20) as *mut i32) = ptr35;
+                                                  
+                                                },
+                                                super::component::VecValue::TypeU64(e) => {
+                                                  *((base + 16) as *mut u8) = (11i32) as u8;
+                                                  let vec36 = e;
+                                                  let ptr36 = vec36.as_ptr() as i32;
+                                                  let len36 = vec36.len() as i32;
+                                                  *((base + 24) as *mut i32) = len36;
+                                                  *((base + 20) as *mut i32) = ptr36;
+                                                  
+                                                },
+                                                super::component::VecValue::TypeVec2(e) => {
+                                                  *((base + 16) as *mut u8) = (12i32) as u8;
+                                                  let vec37 = e;
+                                                  let ptr37 = vec37.as_ptr() as i32;
+                                                  let len37 = vec37.len() as i32;
+                                                  *((base + 24) as *mut i32) = len37;
+                                                  *((base + 20) as *mut i32) = ptr37;
+                                                  
+                                                },
+                                                super::component::VecValue::TypeVec3(e) => {
+                                                  *((base + 16) as *mut u8) = (13i32) as u8;
+                                                  let vec38 = e;
+                                                  let ptr38 = vec38.as_ptr() as i32;
+                                                  let len38 = vec38.len() as i32;
+                                                  *((base + 24) as *mut i32) = len38;
+                                                  *((base + 20) as *mut i32) = ptr38;
+                                                  
+                                                },
+                                                super::component::VecValue::TypeVec4(e) => {
+                                                  *((base + 16) as *mut u8) = (14i32) as u8;
+                                                  let vec39 = e;
+                                                  let ptr39 = vec39.as_ptr() as i32;
+                                                  let len39 = vec39.len() as i32;
+                                                  *((base + 24) as *mut i32) = len39;
+                                                  *((base + 20) as *mut i32) = ptr39;
+                                                  
+                                                },
+                                                super::component::VecValue::TypeUvec2(e) => {
+                                                  *((base + 16) as *mut u8) = (15i32) as u8;
+                                                  let vec40 = e;
+                                                  let ptr40 = vec40.as_ptr() as i32;
+                                                  let len40 = vec40.len() as i32;
+                                                  *((base + 24) as *mut i32) = len40;
+                                                  *((base + 20) as *mut i32) = ptr40;
+                                                  
+                                                },
+                                                super::component::VecValue::TypeUvec3(e) => {
+                                                  *((base + 16) as *mut u8) = (16i32) as u8;
+                                                  let vec41 = e;
+                                                  let ptr41 = vec41.as_ptr() as i32;
+                                                  let len41 = vec41.len() as i32;
+                                                  *((base + 24) as *mut i32) = len41;
+                                                  *((base + 20) as *mut i32) = ptr41;
+                                                  
+                                                },
+                                                super::component::VecValue::TypeUvec4(e) => {
+                                                  *((base + 16) as *mut u8) = (17i32) as u8;
+                                                  let vec42 = e;
+                                                  let ptr42 = vec42.as_ptr() as i32;
+                                                  let len42 = vec42.len() as i32;
+                                                  *((base + 24) as *mut i32) = len42;
+                                                  *((base + 20) as *mut i32) = ptr42;
+                                                  
+                                                },
+                                                super::component::VecValue::TypeProceduralMeshHandle(e) => {
+                                                  *((base + 16) as *mut u8) = (18i32) as u8;
+                                                  let vec43 = e;
+                                                  let ptr43 = vec43.as_ptr() as i32;
+                                                  let len43 = vec43.len() as i32;
+                                                  *((base + 24) as *mut i32) = len43;
+                                                  *((base + 20) as *mut i32) = ptr43;
+                                                  
+                                                },
+                                                super::component::VecValue::TypeProceduralTextureHandle(e) => {
+                                                  *((base + 16) as *mut u8) = (19i32) as u8;
+                                                  let vec44 = e;
+                                                  let ptr44 = vec44.as_ptr() as i32;
+                                                  let len44 = vec44.len() as i32;
+                                                  *((base + 24) as *mut i32) = len44;
+                                                  *((base + 20) as *mut i32) = ptr44;
+                                                  
+                                                },
+                                                super::component::VecValue::TypeProceduralSamplerHandle(e) => {
+                                                  *((base + 16) as *mut u8) = (20i32) as u8;
+                                                  let vec45 = e;
+                                                  let ptr45 = vec45.as_ptr() as i32;
+                                                  let len45 = vec45.len() as i32;
+                                                  *((base + 24) as *mut i32) = len45;
+                                                  *((base + 20) as *mut i32) = ptr45;
+                                                  
+                                                },
+                                                super::component::VecValue::TypeProceduralMaterialHandle(e) => {
+                                                  *((base + 16) as *mut u8) = (21i32) as u8;
+                                                  let vec46 = e;
+                                                  let ptr46 = vec46.as_ptr() as i32;
+                                                  let len46 = vec46.len() as i32;
+                                                  *((base + 24) as *mut i32) = len46;
+                                                  *((base + 20) as *mut i32) = ptr46;
+                                                  
+                                                },
                                               };
                                               
                                             },
                                             super::component::Value::TypeOption(e) => {
-                                              *((base + 8) as *mut u8) = (19i32) as u8;
+                                              *((base + 8) as *mut u8) = (23i32) as u8;
                                               match e {
                                                 super::component::OptionValue::TypeEmpty(e) => {
                                                   *((base + 16) as *mut u8) = (0i32) as u8;
@@ -5652,9 +6867,9 @@ pub mod asset{
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let super::types::EntityId{ id0:id036, id1:id136, } = e;
-                                                      *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(id036);
-                                                      *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(id136);
+                                                      let super::types::EntityId{ id0:id048, id1:id148, } = e;
+                                                      *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(id048);
+                                                      *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(id148);
                                                       
                                                     },
                                                     None => {
@@ -5702,27 +6917,27 @@ pub mod asset{
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let super::types::Mat4{ x:x37, y:y37, z:z37, w:w37, } = e;
-                                                      let super::types::Vec4{ x:x38, y:y38, z:z38, w:w38, } = x37;
-                                                      *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x38);
-                                                      *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y38);
-                                                      *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z38);
-                                                      *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w38);
-                                                      let super::types::Vec4{ x:x39, y:y39, z:z39, w:w39, } = y37;
-                                                      *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(x39);
-                                                      *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(y39);
-                                                      *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(z39);
-                                                      *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(w39);
-                                                      let super::types::Vec4{ x:x40, y:y40, z:z40, w:w40, } = z37;
-                                                      *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(x40);
-                                                      *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(y40);
-                                                      *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(z40);
-                                                      *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(w40);
-                                                      let super::types::Vec4{ x:x41, y:y41, z:z41, w:w41, } = w37;
-                                                      *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(x41);
-                                                      *((base + 80) as *mut f32) = wit_bindgen::rt::as_f32(y41);
-                                                      *((base + 84) as *mut f32) = wit_bindgen::rt::as_f32(z41);
-                                                      *((base + 88) as *mut f32) = wit_bindgen::rt::as_f32(w41);
+                                                      let super::types::Mat4{ x:x49, y:y49, z:z49, w:w49, } = e;
+                                                      let super::types::Vec4{ x:x50, y:y50, z:z50, w:w50, } = x49;
+                                                      *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x50);
+                                                      *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y50);
+                                                      *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z50);
+                                                      *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w50);
+                                                      let super::types::Vec4{ x:x51, y:y51, z:z51, w:w51, } = y49;
+                                                      *((base + 44) as *mut f32) = wit_bindgen::rt::as_f32(x51);
+                                                      *((base + 48) as *mut f32) = wit_bindgen::rt::as_f32(y51);
+                                                      *((base + 52) as *mut f32) = wit_bindgen::rt::as_f32(z51);
+                                                      *((base + 56) as *mut f32) = wit_bindgen::rt::as_f32(w51);
+                                                      let super::types::Vec4{ x:x52, y:y52, z:z52, w:w52, } = z49;
+                                                      *((base + 60) as *mut f32) = wit_bindgen::rt::as_f32(x52);
+                                                      *((base + 64) as *mut f32) = wit_bindgen::rt::as_f32(y52);
+                                                      *((base + 68) as *mut f32) = wit_bindgen::rt::as_f32(z52);
+                                                      *((base + 72) as *mut f32) = wit_bindgen::rt::as_f32(w52);
+                                                      let super::types::Vec4{ x:x53, y:y53, z:z53, w:w53, } = w49;
+                                                      *((base + 76) as *mut f32) = wit_bindgen::rt::as_f32(x53);
+                                                      *((base + 80) as *mut f32) = wit_bindgen::rt::as_f32(y53);
+                                                      *((base + 84) as *mut f32) = wit_bindgen::rt::as_f32(z53);
+                                                      *((base + 88) as *mut f32) = wit_bindgen::rt::as_f32(w53);
                                                       
                                                     },
                                                     None => {
@@ -5754,11 +6969,11 @@ pub mod asset{
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let super::types::Quat{ x:x42, y:y42, z:z42, w:w42, } = e;
-                                                      *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x42);
-                                                      *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y42);
-                                                      *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z42);
-                                                      *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w42);
+                                                      let super::types::Quat{ x:x54, y:y54, z:z54, w:w54, } = e;
+                                                      *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x54);
+                                                      *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y54);
+                                                      *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z54);
+                                                      *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w54);
                                                       
                                                     },
                                                     None => {
@@ -5774,11 +6989,11 @@ pub mod asset{
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let vec43 = e;
-                                                      let ptr43 = vec43.as_ptr() as i32;
-                                                      let len43 = vec43.len() as i32;
-                                                      *((base + 32) as *mut i32) = len43;
-                                                      *((base + 28) as *mut i32) = ptr43;
+                                                      let vec55 = e;
+                                                      let ptr55 = vec55.as_ptr() as i32;
+                                                      let len55 = vec55.len() as i32;
+                                                      *((base + 32) as *mut i32) = len55;
+                                                      *((base + 28) as *mut i32) = ptr55;
                                                       
                                                     },
                                                     None => {
@@ -5842,9 +7057,9 @@ pub mod asset{
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let super::types::Vec2{ x:x44, y:y44, } = e;
-                                                      *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x44);
-                                                      *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y44);
+                                                      let super::types::Vec2{ x:x56, y:y56, } = e;
+                                                      *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x56);
+                                                      *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y56);
                                                       
                                                     },
                                                     None => {
@@ -5860,10 +7075,10 @@ pub mod asset{
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let super::types::Vec3{ x:x45, y:y45, z:z45, } = e;
-                                                      *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x45);
-                                                      *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y45);
-                                                      *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z45);
+                                                      let super::types::Vec3{ x:x57, y:y57, z:z57, } = e;
+                                                      *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x57);
+                                                      *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y57);
+                                                      *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z57);
                                                       
                                                     },
                                                     None => {
@@ -5879,11 +7094,11 @@ pub mod asset{
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let super::types::Vec4{ x:x46, y:y46, z:z46, w:w46, } = e;
-                                                      *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x46);
-                                                      *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y46);
-                                                      *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z46);
-                                                      *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w46);
+                                                      let super::types::Vec4{ x:x58, y:y58, z:z58, w:w58, } = e;
+                                                      *((base + 28) as *mut f32) = wit_bindgen::rt::as_f32(x58);
+                                                      *((base + 32) as *mut f32) = wit_bindgen::rt::as_f32(y58);
+                                                      *((base + 36) as *mut f32) = wit_bindgen::rt::as_f32(z58);
+                                                      *((base + 40) as *mut f32) = wit_bindgen::rt::as_f32(w58);
                                                       
                                                     },
                                                     None => {
@@ -5899,9 +7114,9 @@ pub mod asset{
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let super::types::Uvec2{ x:x47, y:y47, } = e;
-                                                      *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x47);
-                                                      *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y47);
+                                                      let super::types::Uvec2{ x:x59, y:y59, } = e;
+                                                      *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x59);
+                                                      *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y59);
                                                       
                                                     },
                                                     None => {
@@ -5917,10 +7132,10 @@ pub mod asset{
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let super::types::Uvec3{ x:x48, y:y48, z:z48, } = e;
-                                                      *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x48);
-                                                      *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y48);
-                                                      *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z48);
+                                                      let super::types::Uvec3{ x:x60, y:y60, z:z60, } = e;
+                                                      *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x60);
+                                                      *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y60);
+                                                      *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z60);
                                                       
                                                     },
                                                     None => {
@@ -5936,11 +7151,87 @@ pub mod asset{
                                                   match e {
                                                     Some(e) => {
                                                       *((base + 24) as *mut u8) = (1i32) as u8;
-                                                      let super::types::Uvec4{ x:x49, y:y49, z:z49, w:w49, } = e;
-                                                      *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x49);
-                                                      *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y49);
-                                                      *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z49);
-                                                      *((base + 40) as *mut i32) = wit_bindgen::rt::as_i32(w49);
+                                                      let super::types::Uvec4{ x:x61, y:y61, z:z61, w:w61, } = e;
+                                                      *((base + 28) as *mut i32) = wit_bindgen::rt::as_i32(x61);
+                                                      *((base + 32) as *mut i32) = wit_bindgen::rt::as_i32(y61);
+                                                      *((base + 36) as *mut i32) = wit_bindgen::rt::as_i32(z61);
+                                                      *((base + 40) as *mut i32) = wit_bindgen::rt::as_i32(w61);
+                                                      
+                                                    },
+                                                    None => {
+                                                      {
+                                                        *((base + 24) as *mut u8) = (0i32) as u8;
+                                                        
+                                                      }
+                                                    },
+                                                  };
+                                                },
+                                                super::component::OptionValue::TypeProceduralMeshHandle(e) => {
+                                                  *((base + 16) as *mut u8) = (18i32) as u8;
+                                                  match e {
+                                                    Some(e) => {
+                                                      *((base + 24) as *mut u8) = (1i32) as u8;
+                                                      let super::client_mesh::Handle{ ulid:ulid62, } = e;
+                                                      let (t63_0, t63_1, ) = ulid62;
+                                                      *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(t63_0);
+                                                      *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(t63_1);
+                                                      
+                                                    },
+                                                    None => {
+                                                      {
+                                                        *((base + 24) as *mut u8) = (0i32) as u8;
+                                                        
+                                                      }
+                                                    },
+                                                  };
+                                                },
+                                                super::component::OptionValue::TypeProceduralTextureHandle(e) => {
+                                                  *((base + 16) as *mut u8) = (19i32) as u8;
+                                                  match e {
+                                                    Some(e) => {
+                                                      *((base + 24) as *mut u8) = (1i32) as u8;
+                                                      let super::client_texture::Handle{ ulid:ulid64, } = e;
+                                                      let (t65_0, t65_1, ) = ulid64;
+                                                      *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(t65_0);
+                                                      *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(t65_1);
+                                                      
+                                                    },
+                                                    None => {
+                                                      {
+                                                        *((base + 24) as *mut u8) = (0i32) as u8;
+                                                        
+                                                      }
+                                                    },
+                                                  };
+                                                },
+                                                super::component::OptionValue::TypeProceduralSamplerHandle(e) => {
+                                                  *((base + 16) as *mut u8) = (20i32) as u8;
+                                                  match e {
+                                                    Some(e) => {
+                                                      *((base + 24) as *mut u8) = (1i32) as u8;
+                                                      let super::client_sampler::Handle{ ulid:ulid66, } = e;
+                                                      let (t67_0, t67_1, ) = ulid66;
+                                                      *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(t67_0);
+                                                      *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(t67_1);
+                                                      
+                                                    },
+                                                    None => {
+                                                      {
+                                                        *((base + 24) as *mut u8) = (0i32) as u8;
+                                                        
+                                                      }
+                                                    },
+                                                  };
+                                                },
+                                                super::component::OptionValue::TypeProceduralMaterialHandle(e) => {
+                                                  *((base + 16) as *mut u8) = (21i32) as u8;
+                                                  match e {
+                                                    Some(e) => {
+                                                      *((base + 24) as *mut u8) = (1i32) as u8;
+                                                      let super::client_material::Handle{ ulid:ulid68, } = e;
+                                                      let (t69_0, t69_1, ) = ulid68;
+                                                      *((base + 32) as *mut i64) = wit_bindgen::rt::as_i64(t69_0);
+                                                      *((base + 40) as *mut i64) = wit_bindgen::rt::as_i64(t69_1);
                                                       
                                                     },
                                                     None => {
@@ -5957,7 +7248,7 @@ pub mod asset{
                                           };
                                           
                                         }}
-                                        let ptr51 = ret_area.as_mut_ptr() as i32;
+                                        let ptr71 = ret_area.as_mut_ptr() as i32;
                                         #[link(wasm_import_module = "entity")]
                                         extern "C" {
                                           #[cfg_attr(target_arch = "wasm32", link_name = "spawn")]
@@ -5965,9 +7256,9 @@ pub mod asset{
                                           fn wit_import(
                                           _: i32, _: i32, _: i32, );
                                         }
-                                        wit_import(result50 as i32, len50, ptr51);
-                                        if layout50.size() != 0 {
-                                          alloc::dealloc(result50, layout50);
+                                        wit_import(result70 as i32, len70, ptr71);
+                                        if layout70.size() != 0 {
+                                          alloc::dealloc(result70, layout70);
                                         }
                                         for (ptr, layout) in cleanup_list {
                                           
@@ -5978,7 +7269,7 @@ pub mod asset{
                                           }
                                           
                                         }
-                                        super::types::EntityId{id0:*((ptr51 + 0) as *const i64) as u64, id1:*((ptr51 + 8) as *const i64) as u64, }
+                                        super::types::EntityId{id0:*((ptr71 + 0) as *const i64) as u64, id1:*((ptr71 + 8) as *const i64) as u64, }
                                       }
                                     }
                                     #[allow(clippy::all)]
@@ -6004,12 +7295,12 @@ pub mod asset{
                                         match i32::from(*((ptr1 + 0) as *const u8)) {
                                           0 => None,
                                           1 => Some({
-                                            let base23 = *((ptr1 + 4) as *const i32);
-                                            let len23 = *((ptr1 + 8) as *const i32);
-                                            let mut result23 = Vec::with_capacity(len23 as usize);
-                                            for i in 0..len23 {
-                                              let base = base23 + i *96;
-                                              result23.push((*((base + 0) as *const i32) as u32, {{match i32::from(*((base + 8) as *const u8)) {
+                                            let base27 = *((ptr1 + 4) as *const i32);
+                                            let len27 = *((ptr1 + 8) as *const i32);
+                                            let mut result27 = Vec::with_capacity(len27 as usize);
+                                            for i in 0..len27 {
+                                              let base = base27 + i *96;
+                                              result27.push((*((base + 0) as *const i32) as u32, {{match i32::from(*((base + 8) as *const u8)) {
                                                 0 => super::component::Value::TypeEmpty(()),
                                                 1 => super::component::Value::TypeBool({
                                                   #[cfg(not(debug_assertions))]
@@ -6043,7 +7334,11 @@ pub mod asset{
                                                 15 => super::component::Value::TypeUvec2(super::types::Uvec2{x:*((base + 16) as *const i32) as u32, y:*((base + 20) as *const i32) as u32, }),
                                                 16 => super::component::Value::TypeUvec3(super::types::Uvec3{x:*((base + 16) as *const i32) as u32, y:*((base + 20) as *const i32) as u32, z:*((base + 24) as *const i32) as u32, }),
                                                 17 => super::component::Value::TypeUvec4(super::types::Uvec4{x:*((base + 16) as *const i32) as u32, y:*((base + 20) as *const i32) as u32, z:*((base + 24) as *const i32) as u32, w:*((base + 28) as *const i32) as u32, }),
-                                                18 => super::component::Value::TypeVec({{match i32::from(*((base + 16) as *const u8)) {
+                                                18 => super::component::Value::TypeProceduralMeshHandle(super::client_mesh::Handle{ulid:(*((base + 16) as *const i64) as u64, *((base + 24) as *const i64) as u64), }),
+                                                19 => super::component::Value::TypeProceduralTextureHandle(super::client_texture::Handle{ulid:(*((base + 16) as *const i64) as u64, *((base + 24) as *const i64) as u64), }),
+                                                20 => super::component::Value::TypeProceduralSamplerHandle(super::client_sampler::Handle{ulid:(*((base + 16) as *const i64) as u64, *((base + 24) as *const i64) as u64), }),
+                                                21 => super::component::Value::TypeProceduralMaterialHandle(super::client_material::Handle{ulid:(*((base + 16) as *const i64) as u64, *((base + 24) as *const i64) as u64), }),
+                                                22 => super::component::Value::TypeVec({{match i32::from(*((base + 16) as *const u8)) {
                                                   0 => super::component::VecValue::TypeEmpty({
                                                     let len3 = *((base + 24) as *const i32) as usize;
                                                     
@@ -6158,19 +7453,39 @@ pub mod asset{
                                                     
                                                     Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len20, len20)
                                                   }),
-                                                  #[cfg(debug_assertions)]17 => super::component::VecValue::TypeUvec4({
+                                                  17 => super::component::VecValue::TypeUvec4({
                                                     let len21 = *((base + 24) as *const i32) as usize;
                                                     
                                                     Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len21, len21)
                                                   }),
-                                                  #[cfg(not(debug_assertions))]_ => super::component::VecValue::TypeUvec4({
-                                                    let len21 = *((base + 24) as *const i32) as usize;
+                                                  18 => super::component::VecValue::TypeProceduralMeshHandle({
+                                                    let len22 = *((base + 24) as *const i32) as usize;
                                                     
-                                                    Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len21, len21)
+                                                    Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len22, len22)
+                                                  }),
+                                                  19 => super::component::VecValue::TypeProceduralTextureHandle({
+                                                    let len23 = *((base + 24) as *const i32) as usize;
+                                                    
+                                                    Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len23, len23)
+                                                  }),
+                                                  20 => super::component::VecValue::TypeProceduralSamplerHandle({
+                                                    let len24 = *((base + 24) as *const i32) as usize;
+                                                    
+                                                    Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len24, len24)
+                                                  }),
+                                                  #[cfg(debug_assertions)]21 => super::component::VecValue::TypeProceduralMaterialHandle({
+                                                    let len25 = *((base + 24) as *const i32) as usize;
+                                                    
+                                                    Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len25, len25)
+                                                  }),
+                                                  #[cfg(not(debug_assertions))]_ => super::component::VecValue::TypeProceduralMaterialHandle({
+                                                    let len25 = *((base + 24) as *const i32) as usize;
+                                                    
+                                                    Vec::from_raw_parts(*((base + 20) as *const i32) as *mut _, len25, len25)
                                                   }),
                                                   #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
                                                 }}}),
-                                                #[cfg(debug_assertions)]19 => super::component::Value::TypeOption({{match i32::from(*((base + 16) as *const u8)) {
+                                                #[cfg(debug_assertions)]23 => super::component::Value::TypeOption({{match i32::from(*((base + 16) as *const u8)) {
                                                   0 => super::component::OptionValue::TypeEmpty(match i32::from(*((base + 24) as *const u8)) {
                                                     0 => None,
                                                     1 => Some(()),
@@ -6249,9 +7564,9 @@ pub mod asset{
                                                   8 => super::component::OptionValue::TypeString(match i32::from(*((base + 24) as *const u8)) {
                                                     0 => None,
                                                     1 => Some({
-                                                      let len22 = *((base + 32) as *const i32) as usize;
+                                                      let len26 = *((base + 32) as *const i32) as usize;
                                                       
-                                                      {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 28) as *const i32) as *mut _, len22, len22))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 28) as *const i32) as *mut _, len22, len22)).unwrap()}}
+                                                      {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 28) as *const i32) as *mut _, len26, len26))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 28) as *const i32) as *mut _, len26, len26)).unwrap()}}
                                                     }),
                                                     #[cfg(not(debug_assertions))]
                                                     _ => core::hint::unreachable_unchecked(),
@@ -6322,7 +7637,7 @@ pub mod asset{
                                                     #[cfg(debug_assertions)]
                                                     _ => panic!("invalid enum discriminant"),
                                                   }),
-                                                  #[cfg(debug_assertions)]17 => super::component::OptionValue::TypeUvec4(match i32::from(*((base + 24) as *const u8)) {
+                                                  17 => super::component::OptionValue::TypeUvec4(match i32::from(*((base + 24) as *const u8)) {
                                                     0 => None,
                                                     1 => Some(super::types::Uvec4{x:*((base + 28) as *const i32) as u32, y:*((base + 32) as *const i32) as u32, z:*((base + 36) as *const i32) as u32, w:*((base + 40) as *const i32) as u32, }),
                                                     #[cfg(not(debug_assertions))]
@@ -6330,9 +7645,41 @@ pub mod asset{
                                                     #[cfg(debug_assertions)]
                                                     _ => panic!("invalid enum discriminant"),
                                                   }),
-                                                  #[cfg(not(debug_assertions))]_ => super::component::OptionValue::TypeUvec4(match i32::from(*((base + 24) as *const u8)) {
+                                                  18 => super::component::OptionValue::TypeProceduralMeshHandle(match i32::from(*((base + 24) as *const u8)) {
                                                     0 => None,
-                                                    1 => Some(super::types::Uvec4{x:*((base + 28) as *const i32) as u32, y:*((base + 32) as *const i32) as u32, z:*((base + 36) as *const i32) as u32, w:*((base + 40) as *const i32) as u32, }),
+                                                    1 => Some(super::client_mesh::Handle{ulid:(*((base + 32) as *const i64) as u64, *((base + 40) as *const i64) as u64), }),
+                                                    #[cfg(not(debug_assertions))]
+                                                    _ => core::hint::unreachable_unchecked(),
+                                                    #[cfg(debug_assertions)]
+                                                    _ => panic!("invalid enum discriminant"),
+                                                  }),
+                                                  19 => super::component::OptionValue::TypeProceduralTextureHandle(match i32::from(*((base + 24) as *const u8)) {
+                                                    0 => None,
+                                                    1 => Some(super::client_texture::Handle{ulid:(*((base + 32) as *const i64) as u64, *((base + 40) as *const i64) as u64), }),
+                                                    #[cfg(not(debug_assertions))]
+                                                    _ => core::hint::unreachable_unchecked(),
+                                                    #[cfg(debug_assertions)]
+                                                    _ => panic!("invalid enum discriminant"),
+                                                  }),
+                                                  20 => super::component::OptionValue::TypeProceduralSamplerHandle(match i32::from(*((base + 24) as *const u8)) {
+                                                    0 => None,
+                                                    1 => Some(super::client_sampler::Handle{ulid:(*((base + 32) as *const i64) as u64, *((base + 40) as *const i64) as u64), }),
+                                                    #[cfg(not(debug_assertions))]
+                                                    _ => core::hint::unreachable_unchecked(),
+                                                    #[cfg(debug_assertions)]
+                                                    _ => panic!("invalid enum discriminant"),
+                                                  }),
+                                                  #[cfg(debug_assertions)]21 => super::component::OptionValue::TypeProceduralMaterialHandle(match i32::from(*((base + 24) as *const u8)) {
+                                                    0 => None,
+                                                    1 => Some(super::client_material::Handle{ulid:(*((base + 32) as *const i64) as u64, *((base + 40) as *const i64) as u64), }),
+                                                    #[cfg(not(debug_assertions))]
+                                                    _ => core::hint::unreachable_unchecked(),
+                                                    #[cfg(debug_assertions)]
+                                                    _ => panic!("invalid enum discriminant"),
+                                                  }),
+                                                  #[cfg(not(debug_assertions))]_ => super::component::OptionValue::TypeProceduralMaterialHandle(match i32::from(*((base + 24) as *const u8)) {
+                                                    0 => None,
+                                                    1 => Some(super::client_material::Handle{ulid:(*((base + 32) as *const i64) as u64, *((base + 40) as *const i64) as u64), }),
                                                     #[cfg(not(debug_assertions))]
                                                     _ => core::hint::unreachable_unchecked(),
                                                     #[cfg(debug_assertions)]
@@ -6419,9 +7766,9 @@ pub mod asset{
                                                   8 => super::component::OptionValue::TypeString(match i32::from(*((base + 24) as *const u8)) {
                                                     0 => None,
                                                     1 => Some({
-                                                      let len22 = *((base + 32) as *const i32) as usize;
+                                                      let len26 = *((base + 32) as *const i32) as usize;
                                                       
-                                                      {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 28) as *const i32) as *mut _, len22, len22))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 28) as *const i32) as *mut _, len22, len22)).unwrap()}}
+                                                      {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((base + 28) as *const i32) as *mut _, len26, len26))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((base + 28) as *const i32) as *mut _, len26, len26)).unwrap()}}
                                                     }),
                                                     #[cfg(not(debug_assertions))]
                                                     _ => core::hint::unreachable_unchecked(),
@@ -6492,7 +7839,7 @@ pub mod asset{
                                                     #[cfg(debug_assertions)]
                                                     _ => panic!("invalid enum discriminant"),
                                                   }),
-                                                  #[cfg(debug_assertions)]17 => super::component::OptionValue::TypeUvec4(match i32::from(*((base + 24) as *const u8)) {
+                                                  17 => super::component::OptionValue::TypeUvec4(match i32::from(*((base + 24) as *const u8)) {
                                                     0 => None,
                                                     1 => Some(super::types::Uvec4{x:*((base + 28) as *const i32) as u32, y:*((base + 32) as *const i32) as u32, z:*((base + 36) as *const i32) as u32, w:*((base + 40) as *const i32) as u32, }),
                                                     #[cfg(not(debug_assertions))]
@@ -6500,9 +7847,41 @@ pub mod asset{
                                                     #[cfg(debug_assertions)]
                                                     _ => panic!("invalid enum discriminant"),
                                                   }),
-                                                  #[cfg(not(debug_assertions))]_ => super::component::OptionValue::TypeUvec4(match i32::from(*((base + 24) as *const u8)) {
+                                                  18 => super::component::OptionValue::TypeProceduralMeshHandle(match i32::from(*((base + 24) as *const u8)) {
                                                     0 => None,
-                                                    1 => Some(super::types::Uvec4{x:*((base + 28) as *const i32) as u32, y:*((base + 32) as *const i32) as u32, z:*((base + 36) as *const i32) as u32, w:*((base + 40) as *const i32) as u32, }),
+                                                    1 => Some(super::client_mesh::Handle{ulid:(*((base + 32) as *const i64) as u64, *((base + 40) as *const i64) as u64), }),
+                                                    #[cfg(not(debug_assertions))]
+                                                    _ => core::hint::unreachable_unchecked(),
+                                                    #[cfg(debug_assertions)]
+                                                    _ => panic!("invalid enum discriminant"),
+                                                  }),
+                                                  19 => super::component::OptionValue::TypeProceduralTextureHandle(match i32::from(*((base + 24) as *const u8)) {
+                                                    0 => None,
+                                                    1 => Some(super::client_texture::Handle{ulid:(*((base + 32) as *const i64) as u64, *((base + 40) as *const i64) as u64), }),
+                                                    #[cfg(not(debug_assertions))]
+                                                    _ => core::hint::unreachable_unchecked(),
+                                                    #[cfg(debug_assertions)]
+                                                    _ => panic!("invalid enum discriminant"),
+                                                  }),
+                                                  20 => super::component::OptionValue::TypeProceduralSamplerHandle(match i32::from(*((base + 24) as *const u8)) {
+                                                    0 => None,
+                                                    1 => Some(super::client_sampler::Handle{ulid:(*((base + 32) as *const i64) as u64, *((base + 40) as *const i64) as u64), }),
+                                                    #[cfg(not(debug_assertions))]
+                                                    _ => core::hint::unreachable_unchecked(),
+                                                    #[cfg(debug_assertions)]
+                                                    _ => panic!("invalid enum discriminant"),
+                                                  }),
+                                                  #[cfg(debug_assertions)]21 => super::component::OptionValue::TypeProceduralMaterialHandle(match i32::from(*((base + 24) as *const u8)) {
+                                                    0 => None,
+                                                    1 => Some(super::client_material::Handle{ulid:(*((base + 32) as *const i64) as u64, *((base + 40) as *const i64) as u64), }),
+                                                    #[cfg(not(debug_assertions))]
+                                                    _ => core::hint::unreachable_unchecked(),
+                                                    #[cfg(debug_assertions)]
+                                                    _ => panic!("invalid enum discriminant"),
+                                                  }),
+                                                  #[cfg(not(debug_assertions))]_ => super::component::OptionValue::TypeProceduralMaterialHandle(match i32::from(*((base + 24) as *const u8)) {
+                                                    0 => None,
+                                                    1 => Some(super::client_material::Handle{ulid:(*((base + 32) as *const i64) as u64, *((base + 40) as *const i64) as u64), }),
                                                     #[cfg(not(debug_assertions))]
                                                     _ => core::hint::unreachable_unchecked(),
                                                     #[cfg(debug_assertions)]
@@ -6513,9 +7892,9 @@ pub mod asset{
                                                 #[cfg(debug_assertions)]_ => panic!("invalid enum discriminant"),
                                               }}}));
                                             }
-                                            wit_bindgen::rt::dealloc(base23, (len23 as usize) * 96, 8);
+                                            wit_bindgen::rt::dealloc(base27, (len27 as usize) * 96, 8);
                                             
-                                            result23
+                                            result27
                                           }),
                                           #[cfg(not(debug_assertions))]
                                           _ => core::hint::unreachable_unchecked(),
@@ -8695,320 +10074,6 @@ pub mod asset{
                                     
                                     
                                     #[allow(clippy::all)]
-                                    pub mod client_mesh{
-                                      #[used]
-                                      #[doc(hidden)]
-                                      #[cfg(target_arch = "wasm32")]
-                                      static __FORCE_SECTION_REF: fn() = super::__link_section;
-                                      
-                                      pub type Vec2 = super::types::Vec2;
-                                      pub type Vec3 = super::types::Vec3;
-                                      pub type Ulid = super::types::Ulid;
-                                      #[repr(C)]
-                                      #[derive(Copy, Clone)]
-                                      pub struct Vertex {
-                                        pub position: Vec3,
-                                        pub normal: Vec3,
-                                        pub tangent: Vec3,
-                                        pub texcoord0: Vec2,
-                                      }
-                                      impl core::fmt::Debug for Vertex {
-                                        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                                          f.debug_struct("Vertex").field("position", &self.position).field("normal", &self.normal).field("tangent", &self.tangent).field("texcoord0", &self.texcoord0).finish()
-                                        }
-                                      }
-                                      #[allow(clippy::all)]
-                                      pub fn create(vertices: &[Vertex],indices: &[u32],) -> Ulid{
-                                        
-                                        #[allow(unused_imports)]
-                                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                        unsafe {
-                                          
-                                          #[repr(align(8))]
-                                          struct RetArea([u8; 16]);
-                                          let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                          let vec0 = vertices;
-                                          let ptr0 = vec0.as_ptr() as i32;
-                                          let len0 = vec0.len() as i32;
-                                          let vec1 = indices;
-                                          let ptr1 = vec1.as_ptr() as i32;
-                                          let len1 = vec1.len() as i32;
-                                          let ptr2 = ret_area.as_mut_ptr() as i32;
-                                          #[link(wasm_import_module = "client-mesh")]
-                                          extern "C" {
-                                            #[cfg_attr(target_arch = "wasm32", link_name = "create")]
-                                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-mesh_create")]
-                                            fn wit_import(
-                                            _: i32, _: i32, _: i32, _: i32, _: i32, );
-                                          }
-                                          wit_import(ptr0, len0, ptr1, len1, ptr2);
-                                          super::types::Ulid{msb:*((ptr2 + 0) as *const i64) as u64, lsb:*((ptr2 + 8) as *const i64) as u64, }
-                                        }
-                                      }
-                                      
-                                    }
-                                    
-                                    
-                                    #[allow(clippy::all)]
-                                    pub mod client_material{
-                                      #[used]
-                                      #[doc(hidden)]
-                                      #[cfg(target_arch = "wasm32")]
-                                      static __FORCE_SECTION_REF: fn() = super::__link_section;
-                                      
-                                      #[derive(Clone)]
-                                      pub struct Descriptor<'a,> {
-                                        pub base_color_map: &'a str,
-                                        pub normal_map: &'a str,
-                                        pub metallic_roughness_map: &'a str,
-                                        pub sampler: &'a str,
-                                      }
-                                      impl<'a,> core::fmt::Debug for Descriptor<'a,> {
-                                        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                                          f.debug_struct("Descriptor").field("base-color-map", &self.base_color_map).field("normal-map", &self.normal_map).field("metallic-roughness-map", &self.metallic_roughness_map).field("sampler", &self.sampler).finish()
-                                        }
-                                      }
-                                      #[allow(clippy::all)]
-                                      pub fn create(desc: Descriptor<'_,>,) -> wit_bindgen::rt::string::String{
-                                        
-                                        #[allow(unused_imports)]
-                                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                        unsafe {
-                                          
-                                          #[repr(align(4))]
-                                          struct RetArea([u8; 8]);
-                                          let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                          let Descriptor{ base_color_map:base_color_map0, normal_map:normal_map0, metallic_roughness_map:metallic_roughness_map0, sampler:sampler0, } = desc;
-                                          let vec1 = base_color_map0;
-                                          let ptr1 = vec1.as_ptr() as i32;
-                                          let len1 = vec1.len() as i32;
-                                          let vec2 = normal_map0;
-                                          let ptr2 = vec2.as_ptr() as i32;
-                                          let len2 = vec2.len() as i32;
-                                          let vec3 = metallic_roughness_map0;
-                                          let ptr3 = vec3.as_ptr() as i32;
-                                          let len3 = vec3.len() as i32;
-                                          let vec4 = sampler0;
-                                          let ptr4 = vec4.as_ptr() as i32;
-                                          let len4 = vec4.len() as i32;
-                                          let ptr5 = ret_area.as_mut_ptr() as i32;
-                                          #[link(wasm_import_module = "client-material")]
-                                          extern "C" {
-                                            #[cfg_attr(target_arch = "wasm32", link_name = "create")]
-                                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-material_create")]
-                                            fn wit_import(
-                                            _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, );
-                                          }
-                                          wit_import(ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4, ptr5);
-                                          let len6 = *((ptr5 + 4) as *const i32) as usize;
-                                          {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr5 + 0) as *const i32) as *mut _, len6, len6))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr5 + 0) as *const i32) as *mut _, len6, len6)).unwrap()}}
-                                        }
-                                      }
-                                      
-                                    }
-                                    
-                                    
-                                    #[allow(clippy::all)]
-                                    pub mod client_sampler{
-                                      #[used]
-                                      #[doc(hidden)]
-                                      #[cfg(target_arch = "wasm32")]
-                                      static __FORCE_SECTION_REF: fn() = super::__link_section;
-                                      
-                                      #[derive(Clone, Copy)]
-                                      pub enum FilterMode{
-                                        Nearest,
-                                        Linear,
-                                      }
-                                      impl core::fmt::Debug for FilterMode {
-                                        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                                          match self {
-                                            FilterMode::Nearest => {
-                                              f.debug_tuple("FilterMode::Nearest").finish()
-                                            }
-                                            FilterMode::Linear => {
-                                              f.debug_tuple("FilterMode::Linear").finish()
-                                            }
-                                          }
-                                        }
-                                      }
-                                      #[derive(Clone, Copy)]
-                                      pub enum AddressMode{
-                                        ClampToEdge,
-                                        Repeat,
-                                        MirrorRepeat,
-                                      }
-                                      impl core::fmt::Debug for AddressMode {
-                                        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                                          match self {
-                                            AddressMode::ClampToEdge => {
-                                              f.debug_tuple("AddressMode::ClampToEdge").finish()
-                                            }
-                                            AddressMode::Repeat => {
-                                              f.debug_tuple("AddressMode::Repeat").finish()
-                                            }
-                                            AddressMode::MirrorRepeat => {
-                                              f.debug_tuple("AddressMode::MirrorRepeat").finish()
-                                            }
-                                          }
-                                        }
-                                      }
-                                      #[repr(C)]
-                                      #[derive(Copy, Clone)]
-                                      pub struct Descriptor {
-                                        pub address_mode_u: AddressMode,
-                                        pub address_mode_v: AddressMode,
-                                        pub address_mode_w: AddressMode,
-                                        pub mag_filter: FilterMode,
-                                        pub min_filter: FilterMode,
-                                        pub mipmap_filter: FilterMode,
-                                      }
-                                      impl core::fmt::Debug for Descriptor {
-                                        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                                          f.debug_struct("Descriptor").field("address-mode-u", &self.address_mode_u).field("address-mode-v", &self.address_mode_v).field("address-mode-w", &self.address_mode_w).field("mag-filter", &self.mag_filter).field("min-filter", &self.min_filter).field("mipmap-filter", &self.mipmap_filter).finish()
-                                        }
-                                      }
-                                      #[allow(clippy::all)]
-                                      pub fn create(desc: Descriptor,) -> wit_bindgen::rt::string::String{
-                                        
-                                        #[allow(unused_imports)]
-                                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                        unsafe {
-                                          
-                                          #[repr(align(4))]
-                                          struct RetArea([u8; 8]);
-                                          let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                          let Descriptor{ address_mode_u:address_mode_u0, address_mode_v:address_mode_v0, address_mode_w:address_mode_w0, mag_filter:mag_filter0, min_filter:min_filter0, mipmap_filter:mipmap_filter0, } = desc;
-                                          let result1 = match address_mode_u0 {
-                                            AddressMode::ClampToEdge=> {
-                                              0i32
-                                            }
-                                            AddressMode::Repeat=> {
-                                              1i32
-                                            }
-                                            AddressMode::MirrorRepeat=> {
-                                              2i32
-                                            }
-                                          };
-                                          let result2 = match address_mode_v0 {
-                                            AddressMode::ClampToEdge=> {
-                                              0i32
-                                            }
-                                            AddressMode::Repeat=> {
-                                              1i32
-                                            }
-                                            AddressMode::MirrorRepeat=> {
-                                              2i32
-                                            }
-                                          };
-                                          let result3 = match address_mode_w0 {
-                                            AddressMode::ClampToEdge=> {
-                                              0i32
-                                            }
-                                            AddressMode::Repeat=> {
-                                              1i32
-                                            }
-                                            AddressMode::MirrorRepeat=> {
-                                              2i32
-                                            }
-                                          };
-                                          let result4 = match mag_filter0 {
-                                            FilterMode::Nearest=> {
-                                              0i32
-                                            }
-                                            FilterMode::Linear=> {
-                                              1i32
-                                            }
-                                          };
-                                          let result5 = match min_filter0 {
-                                            FilterMode::Nearest=> {
-                                              0i32
-                                            }
-                                            FilterMode::Linear=> {
-                                              1i32
-                                            }
-                                          };
-                                          let result6 = match mipmap_filter0 {
-                                            FilterMode::Nearest=> {
-                                              0i32
-                                            }
-                                            FilterMode::Linear=> {
-                                              1i32
-                                            }
-                                          };
-                                          let ptr7 = ret_area.as_mut_ptr() as i32;
-                                          #[link(wasm_import_module = "client-sampler")]
-                                          extern "C" {
-                                            #[cfg_attr(target_arch = "wasm32", link_name = "create")]
-                                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-sampler_create")]
-                                            fn wit_import(
-                                            _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, );
-                                          }
-                                          wit_import(result1, result2, result3, result4, result5, result6, ptr7);
-                                          let len8 = *((ptr7 + 4) as *const i32) as usize;
-                                          {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr7 + 0) as *const i32) as *mut _, len8, len8))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr7 + 0) as *const i32) as *mut _, len8, len8)).unwrap()}}
-                                        }
-                                      }
-                                      
-                                    }
-                                    
-                                    
-                                    #[allow(clippy::all)]
-                                    pub mod client_texture{
-                                      #[used]
-                                      #[doc(hidden)]
-                                      #[cfg(target_arch = "wasm32")]
-                                      static __FORCE_SECTION_REF: fn() = super::__link_section;
-                                      
-                                      #[derive(Clone, Copy)]
-                                      pub enum Format{
-                                        Rgba8Unorm,
-                                      }
-                                      impl core::fmt::Debug for Format {
-                                        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                                          match self {
-                                            Format::Rgba8Unorm => {
-                                              f.debug_tuple("Format::Rgba8Unorm").finish()
-                                            }
-                                          }
-                                        }
-                                      }
-                                      #[allow(clippy::all)]
-                                      pub fn create2d(width: u32,height: u32,format: Format,data: &[u8],) -> wit_bindgen::rt::string::String{
-                                        
-                                        #[allow(unused_imports)]
-                                        use wit_bindgen::rt::{alloc, vec::Vec, string::String};
-                                        unsafe {
-                                          
-                                          #[repr(align(4))]
-                                          struct RetArea([u8; 8]);
-                                          let mut ret_area = core::mem::MaybeUninit::<RetArea>::uninit();
-                                          let result0 = match format {
-                                            Format::Rgba8Unorm=> {
-                                              0i32
-                                            }
-                                          };
-                                          let vec1 = data;
-                                          let ptr1 = vec1.as_ptr() as i32;
-                                          let len1 = vec1.len() as i32;
-                                          let ptr2 = ret_area.as_mut_ptr() as i32;
-                                          #[link(wasm_import_module = "client-texture")]
-                                          extern "C" {
-                                            #[cfg_attr(target_arch = "wasm32", link_name = "create2d")]
-                                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-texture_create2d")]
-                                            fn wit_import(
-                                            _: i32, _: i32, _: i32, _: i32, _: i32, _: i32, );
-                                          }
-                                          wit_import(wit_bindgen::rt::as_i32(width), wit_bindgen::rt::as_i32(height), result0, ptr1, len1, ptr2);
-                                          let len3 = *((ptr2 + 4) as *const i32) as usize;
-                                          {#[cfg(not(debug_assertions))]{String::from_utf8_unchecked(Vec::from_raw_parts(*((ptr2 + 0) as *const i32) as *mut _, len3, len3))}#[cfg(debug_assertions)]{String::from_utf8(Vec::from_raw_parts(*((ptr2 + 0) as *const i32) as *mut _, len3, len3)).unwrap()}}
-                                        }
-                                      }
-                                      
-                                    }
-                                    
-                                    
-                                    #[allow(clippy::all)]
                                     pub mod server_physics{
                                       #[used]
                                       #[doc(hidden)]
@@ -9701,7 +10766,7 @@ pub mod asset{
                                     
                                     #[cfg(target_arch = "wasm32")]
                                     #[link_section = "component-type:bindings"]
-                                    #[doc(hidden)]pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 24998] = [2, 0, 3, 119, 105, 116, 4, 109, 97, 105, 110, 8, 98, 105, 110, 100, 105, 110, 103, 115, 0, 97, 115, 109, 12, 0, 1, 0, 7, 165, 2, 1, 65, 2, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 3, 109, 115, 98, 119, 3, 108, 115, 98, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 4, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 11, 21, 1, 5, 116, 121, 112, 101, 115, 10, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 3, 0, 0, 7, 130, 4, 1, 65, 7, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 3, 109, 115, 98, 119, 3, 108, 115, 98, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 113, 117, 97, 116, 1, 66, 11, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 12, 115, 101, 116, 45, 108, 105, 115, 116, 101, 110, 101, 114, 0, 1, 6, 4, 11, 115, 101, 116, 45, 101, 109, 105, 116, 116, 101, 114, 0, 1, 6, 1, 64, 2, 5, 115, 111, 117, 110, 100, 115, 7, 101, 109, 105, 116, 116, 101, 114, 1, 1, 0, 4, 20, 112, 108, 97, 121, 45, 115, 111, 117, 110, 100, 45, 111, 110, 45, 101, 110, 116, 105, 116, 121, 0, 1, 7, 4, 11, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 28, 112, 107, 103, 58, 47, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 47, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 5, 4, 11, 33, 1, 11, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 16, 112, 107, 103, 58, 47, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 3, 2, 0, 7, 198, 9, 1, 65, 7, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 3, 109, 115, 98, 119, 3, 108, 115, 98, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 109, 97, 116, 52, 1, 66, 43, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 4, 1, 114, 3, 4, 115, 105, 100, 101, 127, 2, 117, 112, 127, 4, 100, 111, 119, 110, 127, 4, 19, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 99, 111, 108, 108, 105, 115, 105, 111, 110, 0, 3, 0, 6, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 1, 0, 4, 9, 97, 100, 100, 45, 102, 111, 114, 99, 101, 0, 1, 8, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 1, 0, 4, 11, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 9, 1, 107, 118, 1, 64, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 7, 105, 109, 112, 117, 108, 115, 101, 118, 6, 114, 97, 100, 105, 117, 115, 118, 14, 102, 97, 108, 108, 111, 102, 102, 45, 114, 97, 100, 105, 117, 115, 10, 1, 0, 4, 18, 97, 100, 100, 45, 114, 97, 100, 105, 97, 108, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 11, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 21, 97, 100, 100, 45, 102, 111, 114, 99, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 12, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 23, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 13, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 0, 3, 4, 24, 103, 101, 116, 45, 118, 101, 108, 111, 99, 105, 116, 121, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 14, 1, 64, 1, 7, 103, 114, 97, 118, 105, 116, 121, 3, 1, 0, 4, 11, 115, 101, 116, 45, 103, 114, 97, 118, 105, 116, 121, 0, 1, 15, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 8, 117, 110, 102, 114, 101, 101, 122, 101, 0, 1, 16, 4, 6, 102, 114, 101, 101, 122, 101, 0, 1, 16, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 118, 101, 108, 111, 99, 105, 116, 121, 118, 1, 0, 4, 11, 115, 116, 97, 114, 116, 45, 109, 111, 116, 111, 114, 0, 1, 17, 4, 10, 115, 116, 111, 112, 45, 109, 111, 116, 111, 114, 0, 1, 16, 1, 64, 4, 6, 97, 99, 116, 111, 114, 48, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 48, 5, 6, 97, 99, 116, 111, 114, 49, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 49, 5, 1, 0, 4, 21, 99, 114, 101, 97, 116, 101, 45, 114, 101, 118, 111, 108, 117, 116, 101, 45, 106, 111, 105, 110, 116, 0, 1, 18, 1, 111, 2, 1, 118, 1, 107, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 20, 4, 13, 114, 97, 121, 99, 97, 115, 116, 45, 102, 105, 114, 115, 116, 0, 1, 21, 1, 112, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 22, 4, 7, 114, 97, 121, 99, 97, 115, 116, 0, 1, 23, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 12, 100, 105, 115, 112, 108, 97, 99, 101, 109, 101, 110, 116, 3, 8, 109, 105, 110, 45, 100, 105, 115, 116, 118, 12, 101, 108, 97, 112, 115, 101, 100, 45, 116, 105, 109, 101, 118, 0, 7, 4, 14, 109, 111, 118, 101, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 0, 1, 24, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 22, 115, 101, 116, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 25, 4, 27, 115, 101, 116, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 102, 111, 111, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 25, 4, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 5, 4, 11, 39, 1, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 19, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 3, 4, 0, 7, 197, 4, 1, 65, 5, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 3, 109, 115, 98, 119, 3, 108, 115, 98, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 7, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 6, 27, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 25, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 26, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 24, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 4, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 5, 2, 11, 39, 1, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 19, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 3, 6, 0, 7, 75, 1, 65, 2, 1, 66, 3, 1, 107, 115, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 0, 4, 3, 117, 114, 108, 0, 1, 1, 4, 12, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 30, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 5, 0, 11, 35, 1, 12, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 17, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 3, 8, 0, 7, 139, 3, 1, 65, 5, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 3, 109, 115, 98, 119, 3, 108, 115, 98, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 5, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 107, 1, 1, 64, 1, 7, 117, 115, 101, 114, 45, 105, 100, 115, 0, 2, 4, 14, 103, 101, 116, 45, 98, 121, 45, 117, 115, 101, 114, 45, 105, 100, 0, 1, 3, 4, 6, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 47, 112, 108, 97, 121, 101, 114, 5, 2, 11, 23, 1, 6, 112, 108, 97, 121, 101, 114, 11, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 3, 10, 0, 7, 234, 3, 1, 65, 5, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 3, 109, 115, 98, 119, 3, 108, 115, 98, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 9, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 7, 114, 117, 110, 116, 105, 109, 101, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 6, 115, 101, 114, 118, 101, 114, 0, 0, 6, 99, 108, 105, 101, 110, 116, 1, 115, 0, 4, 6, 115, 111, 117, 114, 99, 101, 0, 3, 0, 2, 1, 64, 0, 1, 0, 4, 4, 105, 110, 105, 116, 0, 1, 4, 1, 112, 125, 1, 64, 4, 4, 116, 105, 109, 101, 118, 14, 109, 101, 115, 115, 97, 103, 101, 45, 115, 111, 117, 114, 99, 101, 3, 12, 109, 101, 115, 115, 97, 103, 101, 45, 110, 97, 109, 101, 115, 12, 109, 101, 115, 115, 97, 103, 101, 45, 100, 97, 116, 97, 5, 1, 0, 4, 4, 101, 120, 101, 99, 0, 1, 6, 4, 5, 103, 117, 101, 115, 116, 16, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 47, 103, 117, 101, 115, 116, 5, 2, 11, 21, 1, 5, 103, 117, 101, 115, 116, 10, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 3, 12, 0, 7, 211, 15, 1, 65, 13, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 3, 109, 115, 98, 119, 3, 108, 115, 98, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 94, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 7, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 1, 64, 1, 2, 105, 100, 115, 0, 53, 4, 9, 103, 101, 116, 45, 105, 110, 100, 101, 120, 0, 1, 68, 1, 107, 192, 0, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 197, 0, 4, 13, 103, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 70, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 5, 118, 97, 108, 117, 101, 192, 0, 1, 0, 4, 13, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 100, 97, 116, 97, 195, 0, 1, 0, 4, 14, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 4, 13, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 4, 14, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 127, 4, 13, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 73, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 0, 127, 4, 14, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 74, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 1, 0, 4, 16, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 75, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 1, 0, 4, 17, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 76, 1, 64, 2, 1, 113, 22, 1, 116, 19, 0, 119, 4, 5, 113, 117, 101, 114, 121, 0, 1, 77, 1, 112, 192, 0, 1, 111, 2, 1, 206, 0, 1, 112, 207, 0, 1, 64, 1, 1, 113, 119, 0, 208, 0, 4, 10, 113, 117, 101, 114, 121, 45, 101, 118, 97, 108, 0, 1, 81, 4, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 10, 11, 29, 1, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 14, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 3, 14, 0, 7, 140, 13, 1, 65, 16, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 3, 109, 115, 98, 119, 3, 108, 115, 98, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 68, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 7, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 10, 2, 3, 0, 1, 6, 101, 110, 116, 105, 116, 121, 1, 66, 4, 2, 3, 2, 1, 11, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 0, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 9, 115, 117, 98, 115, 99, 114, 105, 98, 101, 0, 1, 2, 4, 5, 101, 118, 101, 110, 116, 18, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 47, 101, 118, 101, 110, 116, 5, 12, 11, 25, 1, 7, 109, 101, 115, 115, 97, 103, 101, 12, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 3, 16, 0, 7, 207, 21, 1, 65, 16, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 3, 109, 115, 98, 119, 3, 108, 115, 98, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 68, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 7, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 10, 2, 3, 0, 1, 6, 101, 110, 116, 105, 116, 121, 1, 66, 59, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 2, 4, 4, 109, 97, 116, 52, 0, 3, 0, 6, 2, 3, 2, 1, 11, 4, 11, 101, 110, 116, 105, 116, 121, 45, 100, 97, 116, 97, 0, 3, 0, 8, 1, 114, 2, 6, 119, 101, 105, 103, 104, 116, 118, 4, 109, 97, 115, 107, 121, 4, 21, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 115, 116, 97, 99, 107, 45, 98, 108, 101, 110, 100, 0, 3, 0, 10, 1, 114, 2, 12, 97, 99, 116, 105, 111, 110, 45, 105, 110, 100, 101, 120, 121, 15, 116, 105, 109, 101, 45, 112, 101, 114, 99, 101, 110, 116, 97, 103, 101, 118, 4, 27, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 115, 97, 109, 112, 108, 101, 45, 112, 101, 114, 99, 101, 110, 116, 97, 103, 101, 0, 3, 0, 12, 1, 114, 2, 12, 97, 99, 116, 105, 111, 110, 45, 105, 110, 100, 101, 120, 121, 13, 116, 105, 109, 101, 45, 97, 98, 115, 111, 108, 117, 116, 101, 118, 4, 25, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 115, 97, 109, 112, 108, 101, 45, 97, 98, 115, 111, 108, 117, 116, 101, 0, 3, 0, 14, 1, 113, 5, 6, 115, 97, 109, 112, 108, 101, 1, 121, 0, 17, 115, 97, 109, 112, 108, 101, 45, 112, 101, 114, 99, 101, 110, 116, 97, 103, 101, 1, 13, 0, 15, 115, 97, 109, 112, 108, 101, 45, 97, 98, 115, 111, 108, 117, 116, 101, 1, 15, 0, 11, 105, 110, 116, 101, 114, 112, 111, 108, 97, 116, 101, 1, 118, 0, 5, 98, 108, 101, 110, 100, 1, 11, 0, 4, 22, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 45, 115, 116, 97, 99, 107, 0, 3, 0, 16, 1, 114, 3, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 119, 101, 105, 103, 104, 116, 118, 4, 16, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 0, 3, 0, 18, 1, 112, 19, 1, 114, 2, 7, 97, 99, 116, 105, 111, 110, 115, 20, 15, 97, 112, 112, 108, 121, 45, 98, 97, 115, 101, 45, 112, 111, 115, 101, 127, 4, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 3, 0, 21, 1, 112, 17, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 115, 116, 97, 99, 107, 23, 1, 0, 4, 26, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 45, 115, 116, 97, 99, 107, 0, 1, 24, 1, 112, 115, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 109, 97, 115, 107, 25, 1, 0, 4, 25, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 109, 97, 115, 107, 0, 1, 26, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 25, 4, 25, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 109, 97, 115, 107, 0, 1, 27, 1, 112, 118, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 4, 109, 97, 115, 107, 28, 1, 0, 4, 28, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 119, 101, 105, 103, 104, 116, 115, 0, 1, 29, 1, 112, 1, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 30, 4, 34, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 109, 97, 115, 107, 45, 101, 110, 116, 105, 116, 105, 101, 115, 0, 1, 31, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 7, 119, 101, 105, 103, 104, 116, 115, 28, 4, 116, 105, 109, 101, 28, 13, 97, 98, 115, 111, 108, 117, 116, 101, 45, 116, 105, 109, 101, 127, 1, 0, 4, 19, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 108, 101, 110, 100, 0, 1, 32, 1, 112, 7, 1, 64, 2, 8, 101, 110, 116, 105, 116, 105, 101, 115, 30, 6, 111, 114, 105, 103, 105, 110, 1, 0, 33, 4, 26, 103, 101, 116, 45, 116, 114, 97, 110, 115, 102, 111, 114, 109, 115, 45, 114, 101, 108, 97, 116, 105, 118, 101, 45, 116, 111, 0, 1, 34, 1, 64, 1, 4, 100, 97, 116, 97, 9, 0, 1, 4, 5, 115, 112, 97, 119, 110, 0, 1, 35, 1, 107, 9, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 36, 4, 7, 100, 101, 115, 112, 97, 119, 110, 0, 1, 37, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 22, 1, 0, 4, 24, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 1, 38, 1, 64, 2, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 114, 97, 100, 105, 117, 115, 118, 0, 30, 4, 7, 105, 110, 45, 97, 114, 101, 97, 0, 1, 39, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 127, 4, 6, 101, 120, 105, 115, 116, 115, 0, 1, 40, 1, 64, 1, 5, 105, 110, 100, 101, 120, 121, 0, 30, 4, 7, 103, 101, 116, 45, 97, 108, 108, 0, 1, 41, 1, 64, 0, 0, 1, 4, 9, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 42, 4, 22, 115, 121, 110, 99, 104, 114, 111, 110, 105, 122, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 42, 4, 19, 112, 101, 114, 115, 105, 115, 116, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 42, 4, 6, 101, 110, 116, 105, 116, 121, 18, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 47, 101, 110, 116, 105, 116, 121, 5, 12, 11, 23, 1, 6, 101, 110, 116, 105, 116, 121, 11, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 3, 18, 0, 7, 92, 1, 65, 2, 1, 66, 2, 1, 64, 1, 10, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 127, 1, 0, 4, 14, 115, 101, 116, 45, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 0, 1, 0, 4, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 5, 0, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 3, 20, 0, 7, 138, 1, 1, 65, 2, 1, 66, 5, 1, 113, 1, 11, 114, 103, 98, 97, 56, 45, 117, 110, 111, 114, 109, 0, 0, 4, 6, 102, 111, 114, 109, 97, 116, 0, 3, 0, 0, 1, 112, 125, 1, 64, 4, 5, 119, 105, 100, 116, 104, 121, 6, 104, 101, 105, 103, 104, 116, 121, 6, 102, 111, 114, 109, 97, 116, 1, 4, 100, 97, 116, 97, 2, 0, 115, 4, 8, 99, 114, 101, 97, 116, 101, 50, 100, 0, 1, 3, 4, 14, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 5, 0, 11, 39, 1, 14, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 19, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 3, 22, 0, 7, 160, 2, 1, 65, 2, 1, 66, 8, 1, 113, 2, 7, 110, 101, 97, 114, 101, 115, 116, 0, 0, 6, 108, 105, 110, 101, 97, 114, 0, 0, 4, 11, 102, 105, 108, 116, 101, 114, 45, 109, 111, 100, 101, 0, 3, 0, 0, 1, 113, 3, 13, 99, 108, 97, 109, 112, 45, 116, 111, 45, 101, 100, 103, 101, 0, 0, 6, 114, 101, 112, 101, 97, 116, 0, 0, 13, 109, 105, 114, 114, 111, 114, 45, 114, 101, 112, 101, 97, 116, 0, 0, 4, 12, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 0, 3, 0, 2, 1, 114, 6, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 117, 3, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 118, 3, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 119, 3, 10, 109, 97, 103, 45, 102, 105, 108, 116, 101, 114, 1, 10, 109, 105, 110, 45, 102, 105, 108, 116, 101, 114, 1, 13, 109, 105, 112, 109, 97, 112, 45, 102, 105, 108, 116, 101, 114, 1, 4, 10, 100, 101, 115, 99, 114, 105, 112, 116, 111, 114, 0, 3, 0, 4, 1, 64, 1, 4, 100, 101, 115, 99, 5, 0, 115, 4, 6, 99, 114, 101, 97, 116, 101, 0, 1, 6, 4, 14, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 5, 0, 11, 39, 1, 14, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 19, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 3, 24, 0, 7, 143, 3, 1, 65, 5, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 3, 109, 115, 98, 119, 3, 108, 115, 98, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 4, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 64, 0, 0, 1, 4, 9, 103, 101, 116, 45, 108, 111, 99, 97, 108, 0, 1, 2, 4, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 5, 2, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 3, 26, 0, 7, 247, 3, 1, 65, 5, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 3, 109, 115, 98, 119, 3, 108, 115, 98, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 7, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 17, 115, 101, 114, 118, 101, 114, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 115, 101, 114, 118, 101, 114, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 4, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 5, 2, 11, 39, 1, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 19, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 3, 28, 0, 7, 250, 3, 1, 65, 7, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 3, 109, 115, 98, 119, 3, 108, 115, 98, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 117, 108, 105, 100, 1, 66, 12, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 117, 108, 105, 100, 0, 3, 0, 4, 1, 114, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 110, 111, 114, 109, 97, 108, 3, 7, 116, 97, 110, 103, 101, 110, 116, 3, 9, 116, 101, 120, 99, 111, 111, 114, 100, 48, 1, 4, 6, 118, 101, 114, 116, 101, 120, 0, 3, 0, 6, 1, 112, 7, 1, 112, 121, 1, 64, 2, 8, 118, 101, 114, 116, 105, 99, 101, 115, 8, 7, 105, 110, 100, 105, 99, 101, 115, 9, 0, 5, 4, 6, 99, 114, 101, 97, 116, 101, 0, 1, 10, 4, 11, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 28, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 5, 4, 11, 33, 1, 11, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 16, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 3, 30, 0, 7, 164, 1, 1, 65, 2, 1, 66, 4, 1, 114, 4, 14, 98, 97, 115, 101, 45, 99, 111, 108, 111, 114, 45, 109, 97, 112, 115, 10, 110, 111, 114, 109, 97, 108, 45, 109, 97, 112, 115, 22, 109, 101, 116, 97, 108, 108, 105, 99, 45, 114, 111, 117, 103, 104, 110, 101, 115, 115, 45, 109, 97, 112, 115, 7, 115, 97, 109, 112, 108, 101, 114, 115, 4, 10, 100, 101, 115, 99, 114, 105, 112, 116, 111, 114, 0, 3, 0, 0, 1, 64, 1, 4, 100, 101, 115, 99, 1, 0, 115, 4, 6, 99, 114, 101, 97, 116, 101, 0, 1, 2, 4, 15, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 36, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 5, 0, 11, 41, 1, 15, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 20, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 3, 32, 0, 7, 215, 16, 1, 65, 6, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 3, 109, 115, 98, 119, 3, 108, 115, 98, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 23, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 2, 1, 109, 163, 1, 4, 107, 101, 121, 49, 4, 107, 101, 121, 50, 4, 107, 101, 121, 51, 4, 107, 101, 121, 52, 4, 107, 101, 121, 53, 4, 107, 101, 121, 54, 4, 107, 101, 121, 55, 4, 107, 101, 121, 56, 4, 107, 101, 121, 57, 4, 107, 101, 121, 48, 1, 97, 1, 98, 1, 99, 1, 100, 1, 101, 1, 102, 1, 103, 1, 104, 1, 105, 1, 106, 1, 107, 1, 108, 1, 109, 1, 110, 1, 111, 1, 112, 1, 113, 1, 114, 1, 115, 1, 116, 1, 117, 1, 118, 1, 119, 1, 120, 1, 121, 1, 122, 6, 101, 115, 99, 97, 112, 101, 2, 102, 49, 2, 102, 50, 2, 102, 51, 2, 102, 52, 2, 102, 53, 2, 102, 54, 2, 102, 55, 2, 102, 56, 2, 102, 57, 3, 102, 49, 48, 3, 102, 49, 49, 3, 102, 49, 50, 3, 102, 49, 51, 3, 102, 49, 52, 3, 102, 49, 53, 3, 102, 49, 54, 3, 102, 49, 55, 3, 102, 49, 56, 3, 102, 49, 57, 3, 102, 50, 48, 3, 102, 50, 49, 3, 102, 50, 50, 3, 102, 50, 51, 3, 102, 50, 52, 8, 115, 110, 97, 112, 115, 104, 111, 116, 6, 115, 99, 114, 111, 108, 108, 5, 112, 97, 117, 115, 101, 6, 105, 110, 115, 101, 114, 116, 4, 104, 111, 109, 101, 6, 100, 101, 108, 101, 116, 101, 3, 101, 110, 100, 9, 112, 97, 103, 101, 45, 100, 111, 119, 110, 7, 112, 97, 103, 101, 45, 117, 112, 4, 108, 101, 102, 116, 2, 117, 112, 5, 114, 105, 103, 104, 116, 4, 100, 111, 119, 110, 4, 98, 97, 99, 107, 6, 114, 101, 116, 117, 114, 110, 5, 115, 112, 97, 99, 101, 7, 99, 111, 109, 112, 111, 115, 101, 5, 99, 97, 114, 101, 116, 7, 110, 117, 109, 108, 111, 99, 107, 7, 110, 117, 109, 112, 97, 100, 48, 7, 110, 117, 109, 112, 97, 100, 49, 7, 110, 117, 109, 112, 97, 100, 50, 7, 110, 117, 109, 112, 97, 100, 51, 7, 110, 117, 109, 112, 97, 100, 52, 7, 110, 117, 109, 112, 97, 100, 53, 7, 110, 117, 109, 112, 97, 100, 54, 7, 110, 117, 109, 112, 97, 100, 55, 7, 110, 117, 109, 112, 97, 100, 56, 7, 110, 117, 109, 112, 97, 100, 57, 10, 110, 117, 109, 112, 97, 100, 45, 97, 100, 100, 13, 110, 117, 109, 112, 97, 100, 45, 100, 105, 118, 105, 100, 101, 14, 110, 117, 109, 112, 97, 100, 45, 100, 101, 99, 105, 109, 97, 108, 12, 110, 117, 109, 112, 97, 100, 45, 99, 111, 109, 109, 97, 12, 110, 117, 109, 112, 97, 100, 45, 101, 110, 116, 101, 114, 13, 110, 117, 109, 112, 97, 100, 45, 101, 113, 117, 97, 108, 115, 15, 110, 117, 109, 112, 97, 100, 45, 109, 117, 108, 116, 105, 112, 108, 121, 15, 110, 117, 109, 112, 97, 100, 45, 115, 117, 98, 116, 114, 97, 99, 116, 7, 97, 98, 110, 116, 45, 99, 49, 7, 97, 98, 110, 116, 45, 99, 50, 10, 97, 112, 111, 115, 116, 114, 111, 112, 104, 101, 4, 97, 112, 112, 115, 8, 97, 115, 116, 101, 114, 105, 115, 107, 2, 97, 116, 2, 97, 120, 9, 98, 97, 99, 107, 115, 108, 97, 115, 104, 10, 99, 97, 108, 99, 117, 108, 97, 116, 111, 114, 7, 99, 97, 112, 105, 116, 97, 108, 5, 99, 111, 108, 111, 110, 5, 99, 111, 109, 109, 97, 7, 99, 111, 110, 118, 101, 114, 116, 6, 101, 113, 117, 97, 108, 115, 5, 103, 114, 97, 118, 101, 4, 107, 97, 110, 97, 5, 107, 97, 110, 106, 105, 5, 108, 45, 97, 108, 116, 9, 108, 45, 98, 114, 97, 99, 107, 101, 116, 9, 108, 45, 99, 111, 110, 116, 114, 111, 108, 7, 108, 45, 115, 104, 105, 102, 116, 5, 108, 45, 119, 105, 110, 4, 109, 97, 105, 108, 12, 109, 101, 100, 105, 97, 45, 115, 101, 108, 101, 99, 116, 10, 109, 101, 100, 105, 97, 45, 115, 116, 111, 112, 5, 109, 105, 110, 117, 115, 4, 109, 117, 116, 101, 11, 109, 121, 45, 99, 111, 109, 112, 117, 116, 101, 114, 16, 110, 97, 118, 105, 103, 97, 116, 101, 45, 102, 111, 114, 119, 97, 114, 100, 17, 110, 97, 118, 105, 103, 97, 116, 101, 45, 98, 97, 99, 107, 119, 97, 114, 100, 10, 110, 101, 120, 116, 45, 116, 114, 97, 99, 107, 10, 110, 111, 45, 99, 111, 110, 118, 101, 114, 116, 6, 111, 101, 109, 49, 48, 50, 6, 112, 101, 114, 105, 111, 100, 10, 112, 108, 97, 121, 45, 112, 97, 117, 115, 101, 4, 112, 108, 117, 115, 5, 112, 111, 119, 101, 114, 10, 112, 114, 101, 118, 45, 116, 114, 97, 99, 107, 5, 114, 45, 97, 108, 116, 9, 114, 45, 98, 114, 97, 99, 107, 101, 116, 9, 114, 45, 99, 111, 110, 116, 114, 111, 108, 7, 114, 45, 115, 104, 105, 102, 116, 5, 114, 45, 119, 105, 110, 9, 115, 101, 109, 105, 99, 111, 108, 111, 110, 5, 115, 108, 97, 115, 104, 5, 115, 108, 101, 101, 112, 4, 115, 116, 111, 112, 5, 115, 121, 115, 114, 113, 3, 116, 97, 98, 9, 117, 110, 100, 101, 114, 108, 105, 110, 101, 9, 117, 110, 108, 97, 98, 101, 108, 101, 100, 11, 118, 111, 108, 117, 109, 101, 45, 100, 111, 119, 110, 9, 118, 111, 108, 117, 109, 101, 45, 117, 112, 4, 119, 97, 107, 101, 8, 119, 101, 98, 45, 98, 97, 99, 107, 13, 119, 101, 98, 45, 102, 97, 118, 111, 114, 105, 116, 101, 115, 11, 119, 101, 98, 45, 102, 111, 114, 119, 97, 114, 100, 8, 119, 101, 98, 45, 104, 111, 109, 101, 11, 119, 101, 98, 45, 114, 101, 102, 114, 101, 115, 104, 10, 119, 101, 98, 45, 115, 101, 97, 114, 99, 104, 8, 119, 101, 98, 45, 115, 116, 111, 112, 3, 121, 101, 110, 4, 99, 111, 112, 121, 5, 112, 97, 115, 116, 101, 3, 99, 117, 116, 4, 16, 118, 105, 114, 116, 117, 97, 108, 45, 107, 101, 121, 45, 99, 111, 100, 101, 0, 3, 0, 4, 1, 113, 4, 4, 108, 101, 102, 116, 0, 0, 5, 114, 105, 103, 104, 116, 0, 0, 6, 109, 105, 100, 100, 108, 101, 0, 0, 5, 111, 116, 104, 101, 114, 1, 123, 0, 4, 12, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 0, 3, 0, 6, 1, 112, 5, 1, 112, 7, 1, 114, 5, 4, 107, 101, 121, 115, 8, 14, 109, 111, 117, 115, 101, 45, 112, 111, 115, 105, 116, 105, 111, 110, 1, 11, 109, 111, 117, 115, 101, 45, 100, 101, 108, 116, 97, 1, 11, 109, 111, 117, 115, 101, 45, 119, 104, 101, 101, 108, 118, 13, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 115, 9, 4, 5, 105, 110, 112, 117, 116, 0, 3, 0, 10, 1, 113, 35, 12, 100, 101, 102, 97, 117, 108, 116, 45, 105, 99, 111, 110, 0, 0, 9, 99, 114, 111, 115, 115, 104, 97, 105, 114, 0, 0, 4, 104, 97, 110, 100, 0, 0, 5, 97, 114, 114, 111, 119, 0, 0, 4, 109, 111, 118, 101, 0, 0, 4, 116, 101, 120, 116, 0, 0, 4, 119, 97, 105, 116, 0, 0, 4, 104, 101, 108, 112, 0, 0, 8, 112, 114, 111, 103, 114, 101, 115, 115, 0, 0, 11, 110, 111, 116, 45, 97, 108, 108, 111, 119, 101, 100, 0, 0, 12, 99, 111, 110, 116, 101, 120, 116, 45, 109, 101, 110, 117, 0, 0, 4, 99, 101, 108, 108, 0, 0, 13, 118, 101, 114, 116, 105, 99, 97, 108, 45, 116, 101, 120, 116, 0, 0, 5, 97, 108, 105, 97, 115, 0, 0, 4, 99, 111, 112, 121, 0, 0, 7, 110, 111, 45, 100, 114, 111, 112, 0, 0, 4, 103, 114, 97, 98, 0, 0, 8, 103, 114, 97, 98, 98, 105, 110, 103, 0, 0, 10, 97, 108, 108, 45, 115, 99, 114, 111, 108, 108, 0, 0, 7, 122, 111, 111, 109, 45, 105, 110, 0, 0, 8, 122, 111, 111, 109, 45, 111, 117, 116, 0, 0, 8, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 110, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 101, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 101, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 119, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 99, 111, 108, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 114, 111, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 4, 11, 99, 117, 114, 115, 111, 114, 45, 105, 99, 111, 110, 0, 3, 0, 12, 1, 64, 0, 0, 11, 4, 3, 103, 101, 116, 0, 1, 14, 4, 12, 103, 101, 116, 45, 112, 114, 101, 118, 105, 111, 117, 115, 0, 1, 14, 1, 64, 1, 4, 105, 99, 111, 110, 13, 1, 0, 4, 10, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 0, 1, 15, 1, 64, 1, 7, 118, 105, 115, 105, 98, 108, 101, 127, 1, 0, 4, 18, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 118, 105, 115, 105, 98, 108, 101, 0, 1, 16, 1, 64, 1, 6, 108, 111, 99, 107, 101, 100, 127, 1, 0, 4, 15, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 108, 111, 99, 107, 0, 1, 17, 4, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 5, 3, 11, 35, 1, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 17, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 3, 34, 0, 7, 128, 5, 1, 65, 8, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 3, 109, 115, 98, 119, 3, 108, 115, 98, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 3, 114, 97, 121, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 16, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 51, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 50, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 3, 114, 97, 121, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 6, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 112, 111, 115, 3, 0, 5, 4, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 114, 97, 121, 0, 1, 8, 1, 64, 1, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 3, 4, 20, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 0, 1, 9, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 5, 4, 25, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 119, 111, 114, 108, 100, 45, 100, 105, 114, 101, 99, 116, 105, 111, 110, 0, 1, 10, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 1, 0, 3, 4, 15, 119, 111, 114, 108, 100, 45, 116, 111, 45, 115, 99, 114, 101, 101, 110, 0, 1, 11, 4, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 5, 5, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 3, 36, 0, 7, 193, 1, 1, 65, 2, 1, 66, 10, 1, 64, 1, 3, 117, 114, 108, 115, 1, 0, 4, 4, 108, 111, 97, 100, 0, 1, 0, 1, 64, 4, 4, 110, 97, 109, 101, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 118, 111, 108, 117, 109, 101, 118, 3, 117, 105, 100, 121, 1, 0, 4, 4, 112, 108, 97, 121, 0, 1, 1, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 4, 115, 116, 111, 112, 0, 1, 2, 1, 64, 1, 3, 117, 105, 100, 121, 1, 0, 4, 10, 115, 116, 111, 112, 45, 98, 121, 45, 105, 100, 0, 1, 3, 1, 64, 2, 4, 110, 97, 109, 101, 115, 6, 118, 111, 108, 117, 109, 101, 118, 1, 0, 4, 10, 115, 101, 116, 45, 118, 111, 108, 117, 109, 101, 0, 1, 4, 4, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 5, 0, 11, 35, 1, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 17, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 3, 38, 0, 7, 185, 2, 1, 65, 2, 1, 66, 15, 1, 113, 1, 11, 105, 110, 118, 97, 108, 105, 100, 45, 117, 114, 108, 1, 115, 0, 4, 9, 117, 114, 108, 45, 101, 114, 114, 111, 114, 0, 3, 0, 0, 1, 113, 3, 5, 114, 101, 97, 100, 121, 0, 0, 10, 110, 111, 116, 45, 108, 111, 97, 100, 101, 100, 0, 0, 14, 102, 97, 105, 108, 101, 100, 45, 108, 111, 97, 100, 105, 110, 103, 1, 115, 0, 4, 18, 97, 115, 115, 101, 116, 45, 99, 97, 99, 104, 101, 45, 115, 116, 97, 116, 117, 115, 0, 3, 0, 2, 1, 112, 115, 1, 114, 3, 7, 98, 105, 110, 100, 101, 114, 115, 4, 8, 100, 117, 114, 97, 116, 105, 111, 110, 118, 6, 115, 116, 97, 116, 117, 115, 3, 4, 24, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 109, 101, 116, 97, 100, 97, 116, 97, 0, 3, 0, 5, 1, 64, 1, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 0, 3, 4, 26, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 115, 116, 97, 116, 117, 115, 0, 1, 7, 1, 112, 6, 1, 64, 1, 5, 99, 108, 105, 112, 115, 4, 0, 8, 4, 28, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 109, 101, 116, 97, 100, 97, 116, 97, 0, 1, 9, 1, 106, 1, 115, 1, 1, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 10, 4, 3, 117, 114, 108, 0, 1, 11, 4, 5, 97, 115, 115, 101, 116, 16, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 47, 97, 115, 115, 101, 116, 5, 0, 11, 21, 1, 5, 97, 115, 115, 101, 116, 10, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 3, 40, 0, 7, 129, 68, 1, 65, 2, 1, 65, 52, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 114, 2, 3, 109, 115, 98, 119, 3, 108, 115, 98, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 1, 66, 15, 1, 113, 1, 11, 105, 110, 118, 97, 108, 105, 100, 45, 117, 114, 108, 1, 115, 0, 4, 9, 117, 114, 108, 45, 101, 114, 114, 111, 114, 0, 3, 0, 0, 1, 113, 3, 5, 114, 101, 97, 100, 121, 0, 0, 10, 110, 111, 116, 45, 108, 111, 97, 100, 101, 100, 0, 0, 14, 102, 97, 105, 108, 101, 100, 45, 108, 111, 97, 100, 105, 110, 103, 1, 115, 0, 4, 18, 97, 115, 115, 101, 116, 45, 99, 97, 99, 104, 101, 45, 115, 116, 97, 116, 117, 115, 0, 3, 0, 2, 1, 112, 115, 1, 114, 3, 7, 98, 105, 110, 100, 101, 114, 115, 4, 8, 100, 117, 114, 97, 116, 105, 111, 110, 118, 6, 115, 116, 97, 116, 117, 115, 3, 4, 24, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 109, 101, 116, 97, 100, 97, 116, 97, 0, 3, 0, 5, 1, 64, 1, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 0, 3, 4, 26, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 115, 116, 97, 116, 117, 115, 0, 1, 7, 1, 112, 6, 1, 64, 1, 5, 99, 108, 105, 112, 115, 4, 0, 8, 4, 28, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 109, 101, 116, 97, 100, 97, 116, 97, 0, 1, 9, 1, 106, 1, 115, 1, 1, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 10, 4, 3, 117, 114, 108, 0, 1, 11, 3, 5, 97, 115, 115, 101, 116, 16, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 47, 97, 115, 115, 101, 116, 5, 1, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 1, 66, 94, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 4, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 7, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 8, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 9, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 10, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 18, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 20, 7, 105, 110, 99, 108, 117, 100, 101, 20, 7, 101, 120, 99, 108, 117, 100, 101, 20, 7, 99, 104, 97, 110, 103, 101, 100, 20, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 21, 1, 111, 0, 1, 112, 23, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 24, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 25, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 26, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 27, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 28, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 29, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 30, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 31, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 32, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 33, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 20, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 34, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 35, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 36, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 37, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 38, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 39, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 40, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 41, 1, 107, 23, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 113, 18, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 43, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 44, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 45, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 46, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 47, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 48, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 49, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 50, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 51, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 52, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 53, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 54, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 55, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 56, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 57, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 58, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 59, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 60, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 61, 1, 113, 20, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 23, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 42, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 62, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 63, 1, 111, 2, 121, 192, 0, 1, 112, 193, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 66, 1, 64, 1, 2, 105, 100, 115, 0, 53, 4, 9, 103, 101, 116, 45, 105, 110, 100, 101, 120, 0, 1, 68, 1, 107, 192, 0, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 197, 0, 4, 13, 103, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 70, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 5, 118, 97, 108, 117, 101, 192, 0, 1, 0, 4, 13, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 100, 97, 116, 97, 195, 0, 1, 0, 4, 14, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 4, 13, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 71, 4, 14, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 72, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 127, 4, 13, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 73, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 0, 127, 4, 14, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 74, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 1, 0, 4, 16, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 75, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 20, 1, 0, 4, 17, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 76, 1, 64, 2, 1, 113, 22, 1, 116, 19, 0, 119, 4, 5, 113, 117, 101, 114, 121, 0, 1, 77, 1, 112, 192, 0, 1, 111, 2, 1, 206, 0, 1, 112, 207, 0, 1, 64, 1, 1, 113, 119, 0, 208, 0, 4, 10, 113, 117, 101, 114, 121, 45, 101, 118, 97, 108, 0, 1, 81, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 11, 2, 3, 0, 2, 6, 101, 110, 116, 105, 116, 121, 1, 66, 59, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 4, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 6, 2, 3, 2, 1, 12, 4, 11, 101, 110, 116, 105, 116, 121, 45, 100, 97, 116, 97, 0, 3, 0, 8, 1, 114, 2, 6, 119, 101, 105, 103, 104, 116, 118, 4, 109, 97, 115, 107, 121, 4, 21, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 115, 116, 97, 99, 107, 45, 98, 108, 101, 110, 100, 0, 3, 0, 10, 1, 114, 2, 12, 97, 99, 116, 105, 111, 110, 45, 105, 110, 100, 101, 120, 121, 15, 116, 105, 109, 101, 45, 112, 101, 114, 99, 101, 110, 116, 97, 103, 101, 118, 4, 27, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 115, 97, 109, 112, 108, 101, 45, 112, 101, 114, 99, 101, 110, 116, 97, 103, 101, 0, 3, 0, 12, 1, 114, 2, 12, 97, 99, 116, 105, 111, 110, 45, 105, 110, 100, 101, 120, 121, 13, 116, 105, 109, 101, 45, 97, 98, 115, 111, 108, 117, 116, 101, 118, 4, 25, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 115, 97, 109, 112, 108, 101, 45, 97, 98, 115, 111, 108, 117, 116, 101, 0, 3, 0, 14, 1, 113, 5, 6, 115, 97, 109, 112, 108, 101, 1, 121, 0, 17, 115, 97, 109, 112, 108, 101, 45, 112, 101, 114, 99, 101, 110, 116, 97, 103, 101, 1, 13, 0, 15, 115, 97, 109, 112, 108, 101, 45, 97, 98, 115, 111, 108, 117, 116, 101, 1, 15, 0, 11, 105, 110, 116, 101, 114, 112, 111, 108, 97, 116, 101, 1, 118, 0, 5, 98, 108, 101, 110, 100, 1, 11, 0, 4, 22, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 45, 115, 116, 97, 99, 107, 0, 3, 0, 16, 1, 114, 3, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 119, 101, 105, 103, 104, 116, 118, 4, 16, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 0, 3, 0, 18, 1, 112, 19, 1, 114, 2, 7, 97, 99, 116, 105, 111, 110, 115, 20, 15, 97, 112, 112, 108, 121, 45, 98, 97, 115, 101, 45, 112, 111, 115, 101, 127, 4, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 3, 0, 21, 1, 112, 17, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 115, 116, 97, 99, 107, 23, 1, 0, 4, 26, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 45, 115, 116, 97, 99, 107, 0, 1, 24, 1, 112, 115, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 109, 97, 115, 107, 25, 1, 0, 4, 25, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 109, 97, 115, 107, 0, 1, 26, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 25, 4, 25, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 109, 97, 115, 107, 0, 1, 27, 1, 112, 118, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 4, 109, 97, 115, 107, 28, 1, 0, 4, 28, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 119, 101, 105, 103, 104, 116, 115, 0, 1, 29, 1, 112, 1, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 30, 4, 34, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 109, 97, 115, 107, 45, 101, 110, 116, 105, 116, 105, 101, 115, 0, 1, 31, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 7, 119, 101, 105, 103, 104, 116, 115, 28, 4, 116, 105, 109, 101, 28, 13, 97, 98, 115, 111, 108, 117, 116, 101, 45, 116, 105, 109, 101, 127, 1, 0, 4, 19, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 108, 101, 110, 100, 0, 1, 32, 1, 112, 7, 1, 64, 2, 8, 101, 110, 116, 105, 116, 105, 101, 115, 30, 6, 111, 114, 105, 103, 105, 110, 1, 0, 33, 4, 26, 103, 101, 116, 45, 116, 114, 97, 110, 115, 102, 111, 114, 109, 115, 45, 114, 101, 108, 97, 116, 105, 118, 101, 45, 116, 111, 0, 1, 34, 1, 64, 1, 4, 100, 97, 116, 97, 9, 0, 1, 4, 5, 115, 112, 97, 119, 110, 0, 1, 35, 1, 107, 9, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 36, 4, 7, 100, 101, 115, 112, 97, 119, 110, 0, 1, 37, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 22, 1, 0, 4, 24, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 1, 38, 1, 64, 2, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 114, 97, 100, 105, 117, 115, 118, 0, 30, 4, 7, 105, 110, 45, 97, 114, 101, 97, 0, 1, 39, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 127, 4, 6, 101, 120, 105, 115, 116, 115, 0, 1, 40, 1, 64, 1, 5, 105, 110, 100, 101, 120, 121, 0, 30, 4, 7, 103, 101, 116, 45, 97, 108, 108, 0, 1, 41, 1, 64, 0, 0, 1, 4, 9, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 42, 4, 22, 115, 121, 110, 99, 104, 114, 111, 110, 105, 122, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 42, 4, 19, 112, 101, 114, 115, 105, 115, 116, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 42, 3, 6, 101, 110, 116, 105, 116, 121, 18, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 47, 101, 110, 116, 105, 116, 121, 5, 13, 1, 66, 4, 2, 3, 2, 1, 12, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 0, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 9, 115, 117, 98, 115, 99, 114, 105, 98, 101, 0, 1, 2, 3, 7, 109, 101, 115, 115, 97, 103, 101, 18, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 47, 101, 118, 101, 110, 116, 5, 14, 1, 66, 5, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 107, 1, 1, 64, 1, 7, 117, 115, 101, 114, 45, 105, 100, 115, 0, 2, 4, 14, 103, 101, 116, 45, 98, 121, 45, 117, 115, 101, 114, 45, 105, 100, 0, 1, 3, 3, 6, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 47, 112, 108, 97, 121, 101, 114, 5, 15, 1, 66, 11, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 4, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 12, 115, 101, 116, 45, 108, 105, 115, 116, 101, 110, 101, 114, 0, 1, 6, 4, 11, 115, 101, 116, 45, 101, 109, 105, 116, 116, 101, 114, 0, 1, 6, 1, 64, 2, 5, 115, 111, 117, 110, 100, 115, 7, 101, 109, 105, 116, 116, 101, 114, 1, 1, 0, 4, 20, 112, 108, 97, 121, 45, 115, 111, 117, 110, 100, 45, 111, 110, 45, 101, 110, 116, 105, 116, 121, 0, 1, 7, 3, 11, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 28, 112, 107, 103, 58, 47, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 47, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 5, 16, 1, 66, 10, 1, 64, 1, 3, 117, 114, 108, 115, 1, 0, 4, 4, 108, 111, 97, 100, 0, 1, 0, 1, 64, 4, 4, 110, 97, 109, 101, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 118, 111, 108, 117, 109, 101, 118, 3, 117, 105, 100, 121, 1, 0, 4, 4, 112, 108, 97, 121, 0, 1, 1, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 4, 115, 116, 111, 112, 0, 1, 2, 1, 64, 1, 3, 117, 105, 100, 121, 1, 0, 4, 10, 115, 116, 111, 112, 45, 98, 121, 45, 105, 100, 0, 1, 3, 1, 64, 2, 4, 110, 97, 109, 101, 115, 6, 118, 111, 108, 117, 109, 101, 118, 1, 0, 4, 10, 115, 101, 116, 45, 118, 111, 108, 117, 109, 101, 0, 1, 4, 3, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 5, 17, 1, 66, 7, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 17, 115, 101, 114, 118, 101, 114, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 115, 101, 114, 118, 101, 114, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 3, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 5, 18, 1, 66, 4, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 64, 0, 0, 1, 4, 9, 103, 101, 116, 45, 108, 111, 99, 97, 108, 0, 1, 2, 3, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 5, 19, 1, 66, 23, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 2, 1, 109, 163, 1, 4, 107, 101, 121, 49, 4, 107, 101, 121, 50, 4, 107, 101, 121, 51, 4, 107, 101, 121, 52, 4, 107, 101, 121, 53, 4, 107, 101, 121, 54, 4, 107, 101, 121, 55, 4, 107, 101, 121, 56, 4, 107, 101, 121, 57, 4, 107, 101, 121, 48, 1, 97, 1, 98, 1, 99, 1, 100, 1, 101, 1, 102, 1, 103, 1, 104, 1, 105, 1, 106, 1, 107, 1, 108, 1, 109, 1, 110, 1, 111, 1, 112, 1, 113, 1, 114, 1, 115, 1, 116, 1, 117, 1, 118, 1, 119, 1, 120, 1, 121, 1, 122, 6, 101, 115, 99, 97, 112, 101, 2, 102, 49, 2, 102, 50, 2, 102, 51, 2, 102, 52, 2, 102, 53, 2, 102, 54, 2, 102, 55, 2, 102, 56, 2, 102, 57, 3, 102, 49, 48, 3, 102, 49, 49, 3, 102, 49, 50, 3, 102, 49, 51, 3, 102, 49, 52, 3, 102, 49, 53, 3, 102, 49, 54, 3, 102, 49, 55, 3, 102, 49, 56, 3, 102, 49, 57, 3, 102, 50, 48, 3, 102, 50, 49, 3, 102, 50, 50, 3, 102, 50, 51, 3, 102, 50, 52, 8, 115, 110, 97, 112, 115, 104, 111, 116, 6, 115, 99, 114, 111, 108, 108, 5, 112, 97, 117, 115, 101, 6, 105, 110, 115, 101, 114, 116, 4, 104, 111, 109, 101, 6, 100, 101, 108, 101, 116, 101, 3, 101, 110, 100, 9, 112, 97, 103, 101, 45, 100, 111, 119, 110, 7, 112, 97, 103, 101, 45, 117, 112, 4, 108, 101, 102, 116, 2, 117, 112, 5, 114, 105, 103, 104, 116, 4, 100, 111, 119, 110, 4, 98, 97, 99, 107, 6, 114, 101, 116, 117, 114, 110, 5, 115, 112, 97, 99, 101, 7, 99, 111, 109, 112, 111, 115, 101, 5, 99, 97, 114, 101, 116, 7, 110, 117, 109, 108, 111, 99, 107, 7, 110, 117, 109, 112, 97, 100, 48, 7, 110, 117, 109, 112, 97, 100, 49, 7, 110, 117, 109, 112, 97, 100, 50, 7, 110, 117, 109, 112, 97, 100, 51, 7, 110, 117, 109, 112, 97, 100, 52, 7, 110, 117, 109, 112, 97, 100, 53, 7, 110, 117, 109, 112, 97, 100, 54, 7, 110, 117, 109, 112, 97, 100, 55, 7, 110, 117, 109, 112, 97, 100, 56, 7, 110, 117, 109, 112, 97, 100, 57, 10, 110, 117, 109, 112, 97, 100, 45, 97, 100, 100, 13, 110, 117, 109, 112, 97, 100, 45, 100, 105, 118, 105, 100, 101, 14, 110, 117, 109, 112, 97, 100, 45, 100, 101, 99, 105, 109, 97, 108, 12, 110, 117, 109, 112, 97, 100, 45, 99, 111, 109, 109, 97, 12, 110, 117, 109, 112, 97, 100, 45, 101, 110, 116, 101, 114, 13, 110, 117, 109, 112, 97, 100, 45, 101, 113, 117, 97, 108, 115, 15, 110, 117, 109, 112, 97, 100, 45, 109, 117, 108, 116, 105, 112, 108, 121, 15, 110, 117, 109, 112, 97, 100, 45, 115, 117, 98, 116, 114, 97, 99, 116, 7, 97, 98, 110, 116, 45, 99, 49, 7, 97, 98, 110, 116, 45, 99, 50, 10, 97, 112, 111, 115, 116, 114, 111, 112, 104, 101, 4, 97, 112, 112, 115, 8, 97, 115, 116, 101, 114, 105, 115, 107, 2, 97, 116, 2, 97, 120, 9, 98, 97, 99, 107, 115, 108, 97, 115, 104, 10, 99, 97, 108, 99, 117, 108, 97, 116, 111, 114, 7, 99, 97, 112, 105, 116, 97, 108, 5, 99, 111, 108, 111, 110, 5, 99, 111, 109, 109, 97, 7, 99, 111, 110, 118, 101, 114, 116, 6, 101, 113, 117, 97, 108, 115, 5, 103, 114, 97, 118, 101, 4, 107, 97, 110, 97, 5, 107, 97, 110, 106, 105, 5, 108, 45, 97, 108, 116, 9, 108, 45, 98, 114, 97, 99, 107, 101, 116, 9, 108, 45, 99, 111, 110, 116, 114, 111, 108, 7, 108, 45, 115, 104, 105, 102, 116, 5, 108, 45, 119, 105, 110, 4, 109, 97, 105, 108, 12, 109, 101, 100, 105, 97, 45, 115, 101, 108, 101, 99, 116, 10, 109, 101, 100, 105, 97, 45, 115, 116, 111, 112, 5, 109, 105, 110, 117, 115, 4, 109, 117, 116, 101, 11, 109, 121, 45, 99, 111, 109, 112, 117, 116, 101, 114, 16, 110, 97, 118, 105, 103, 97, 116, 101, 45, 102, 111, 114, 119, 97, 114, 100, 17, 110, 97, 118, 105, 103, 97, 116, 101, 45, 98, 97, 99, 107, 119, 97, 114, 100, 10, 110, 101, 120, 116, 45, 116, 114, 97, 99, 107, 10, 110, 111, 45, 99, 111, 110, 118, 101, 114, 116, 6, 111, 101, 109, 49, 48, 50, 6, 112, 101, 114, 105, 111, 100, 10, 112, 108, 97, 121, 45, 112, 97, 117, 115, 101, 4, 112, 108, 117, 115, 5, 112, 111, 119, 101, 114, 10, 112, 114, 101, 118, 45, 116, 114, 97, 99, 107, 5, 114, 45, 97, 108, 116, 9, 114, 45, 98, 114, 97, 99, 107, 101, 116, 9, 114, 45, 99, 111, 110, 116, 114, 111, 108, 7, 114, 45, 115, 104, 105, 102, 116, 5, 114, 45, 119, 105, 110, 9, 115, 101, 109, 105, 99, 111, 108, 111, 110, 5, 115, 108, 97, 115, 104, 5, 115, 108, 101, 101, 112, 4, 115, 116, 111, 112, 5, 115, 121, 115, 114, 113, 3, 116, 97, 98, 9, 117, 110, 100, 101, 114, 108, 105, 110, 101, 9, 117, 110, 108, 97, 98, 101, 108, 101, 100, 11, 118, 111, 108, 117, 109, 101, 45, 100, 111, 119, 110, 9, 118, 111, 108, 117, 109, 101, 45, 117, 112, 4, 119, 97, 107, 101, 8, 119, 101, 98, 45, 98, 97, 99, 107, 13, 119, 101, 98, 45, 102, 97, 118, 111, 114, 105, 116, 101, 115, 11, 119, 101, 98, 45, 102, 111, 114, 119, 97, 114, 100, 8, 119, 101, 98, 45, 104, 111, 109, 101, 11, 119, 101, 98, 45, 114, 101, 102, 114, 101, 115, 104, 10, 119, 101, 98, 45, 115, 101, 97, 114, 99, 104, 8, 119, 101, 98, 45, 115, 116, 111, 112, 3, 121, 101, 110, 4, 99, 111, 112, 121, 5, 112, 97, 115, 116, 101, 3, 99, 117, 116, 4, 16, 118, 105, 114, 116, 117, 97, 108, 45, 107, 101, 121, 45, 99, 111, 100, 101, 0, 3, 0, 4, 1, 113, 4, 4, 108, 101, 102, 116, 0, 0, 5, 114, 105, 103, 104, 116, 0, 0, 6, 109, 105, 100, 100, 108, 101, 0, 0, 5, 111, 116, 104, 101, 114, 1, 123, 0, 4, 12, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 0, 3, 0, 6, 1, 112, 5, 1, 112, 7, 1, 114, 5, 4, 107, 101, 121, 115, 8, 14, 109, 111, 117, 115, 101, 45, 112, 111, 115, 105, 116, 105, 111, 110, 1, 11, 109, 111, 117, 115, 101, 45, 100, 101, 108, 116, 97, 1, 11, 109, 111, 117, 115, 101, 45, 119, 104, 101, 101, 108, 118, 13, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 115, 9, 4, 5, 105, 110, 112, 117, 116, 0, 3, 0, 10, 1, 113, 35, 12, 100, 101, 102, 97, 117, 108, 116, 45, 105, 99, 111, 110, 0, 0, 9, 99, 114, 111, 115, 115, 104, 97, 105, 114, 0, 0, 4, 104, 97, 110, 100, 0, 0, 5, 97, 114, 114, 111, 119, 0, 0, 4, 109, 111, 118, 101, 0, 0, 4, 116, 101, 120, 116, 0, 0, 4, 119, 97, 105, 116, 0, 0, 4, 104, 101, 108, 112, 0, 0, 8, 112, 114, 111, 103, 114, 101, 115, 115, 0, 0, 11, 110, 111, 116, 45, 97, 108, 108, 111, 119, 101, 100, 0, 0, 12, 99, 111, 110, 116, 101, 120, 116, 45, 109, 101, 110, 117, 0, 0, 4, 99, 101, 108, 108, 0, 0, 13, 118, 101, 114, 116, 105, 99, 97, 108, 45, 116, 101, 120, 116, 0, 0, 5, 97, 108, 105, 97, 115, 0, 0, 4, 99, 111, 112, 121, 0, 0, 7, 110, 111, 45, 100, 114, 111, 112, 0, 0, 4, 103, 114, 97, 98, 0, 0, 8, 103, 114, 97, 98, 98, 105, 110, 103, 0, 0, 10, 97, 108, 108, 45, 115, 99, 114, 111, 108, 108, 0, 0, 7, 122, 111, 111, 109, 45, 105, 110, 0, 0, 8, 122, 111, 111, 109, 45, 111, 117, 116, 0, 0, 8, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 110, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 101, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 101, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 119, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 99, 111, 108, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 114, 111, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 4, 11, 99, 117, 114, 115, 111, 114, 45, 105, 99, 111, 110, 0, 3, 0, 12, 1, 64, 0, 0, 11, 4, 3, 103, 101, 116, 0, 1, 14, 4, 12, 103, 101, 116, 45, 112, 114, 101, 118, 105, 111, 117, 115, 0, 1, 14, 1, 64, 1, 4, 105, 99, 111, 110, 13, 1, 0, 4, 10, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 0, 1, 15, 1, 64, 1, 7, 118, 105, 115, 105, 98, 108, 101, 127, 1, 0, 4, 18, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 118, 105, 115, 105, 98, 108, 101, 0, 1, 16, 1, 64, 1, 6, 108, 111, 99, 107, 101, 100, 127, 1, 0, 4, 15, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 108, 111, 99, 107, 0, 1, 17, 3, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 5, 20, 2, 3, 0, 0, 3, 114, 97, 121, 1, 66, 16, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 0, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 2, 2, 3, 2, 1, 21, 4, 3, 114, 97, 121, 0, 3, 0, 4, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 6, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 112, 111, 115, 3, 0, 5, 4, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 114, 97, 121, 0, 1, 8, 1, 64, 1, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 3, 4, 20, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 0, 1, 9, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 5, 4, 25, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 119, 111, 114, 108, 100, 45, 100, 105, 114, 101, 99, 116, 105, 111, 110, 0, 1, 10, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 1, 0, 3, 4, 15, 119, 111, 114, 108, 100, 45, 116, 111, 45, 115, 99, 114, 101, 101, 110, 0, 1, 11, 3, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 5, 22, 1, 66, 2, 1, 64, 1, 10, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 127, 1, 0, 4, 14, 115, 101, 116, 45, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 0, 1, 0, 3, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 5, 23, 2, 3, 0, 0, 4, 117, 108, 105, 100, 1, 66, 12, 2, 3, 2, 1, 5, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 24, 4, 4, 117, 108, 105, 100, 0, 3, 0, 4, 1, 114, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 110, 111, 114, 109, 97, 108, 3, 7, 116, 97, 110, 103, 101, 110, 116, 3, 9, 116, 101, 120, 99, 111, 111, 114, 100, 48, 1, 4, 6, 118, 101, 114, 116, 101, 120, 0, 3, 0, 6, 1, 112, 7, 1, 112, 121, 1, 64, 2, 8, 118, 101, 114, 116, 105, 99, 101, 115, 8, 7, 105, 110, 100, 105, 99, 101, 115, 9, 0, 5, 4, 6, 99, 114, 101, 97, 116, 101, 0, 1, 10, 3, 11, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 28, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 5, 25, 1, 66, 4, 1, 114, 4, 14, 98, 97, 115, 101, 45, 99, 111, 108, 111, 114, 45, 109, 97, 112, 115, 10, 110, 111, 114, 109, 97, 108, 45, 109, 97, 112, 115, 22, 109, 101, 116, 97, 108, 108, 105, 99, 45, 114, 111, 117, 103, 104, 110, 101, 115, 115, 45, 109, 97, 112, 115, 7, 115, 97, 109, 112, 108, 101, 114, 115, 4, 10, 100, 101, 115, 99, 114, 105, 112, 116, 111, 114, 0, 3, 0, 0, 1, 64, 1, 4, 100, 101, 115, 99, 1, 0, 115, 4, 6, 99, 114, 101, 97, 116, 101, 0, 1, 2, 3, 15, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 36, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 5, 26, 1, 66, 8, 1, 113, 2, 7, 110, 101, 97, 114, 101, 115, 116, 0, 0, 6, 108, 105, 110, 101, 97, 114, 0, 0, 4, 11, 102, 105, 108, 116, 101, 114, 45, 109, 111, 100, 101, 0, 3, 0, 0, 1, 113, 3, 13, 99, 108, 97, 109, 112, 45, 116, 111, 45, 101, 100, 103, 101, 0, 0, 6, 114, 101, 112, 101, 97, 116, 0, 0, 13, 109, 105, 114, 114, 111, 114, 45, 114, 101, 112, 101, 97, 116, 0, 0, 4, 12, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 0, 3, 0, 2, 1, 114, 6, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 117, 3, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 118, 3, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 119, 3, 10, 109, 97, 103, 45, 102, 105, 108, 116, 101, 114, 1, 10, 109, 105, 110, 45, 102, 105, 108, 116, 101, 114, 1, 13, 109, 105, 112, 109, 97, 112, 45, 102, 105, 108, 116, 101, 114, 1, 4, 10, 100, 101, 115, 99, 114, 105, 112, 116, 111, 114, 0, 3, 0, 4, 1, 64, 1, 4, 100, 101, 115, 99, 5, 0, 115, 4, 6, 99, 114, 101, 97, 116, 101, 0, 1, 6, 3, 14, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 5, 27, 1, 66, 5, 1, 113, 1, 11, 114, 103, 98, 97, 56, 45, 117, 110, 111, 114, 109, 0, 0, 4, 6, 102, 111, 114, 109, 97, 116, 0, 3, 0, 0, 1, 112, 125, 1, 64, 4, 5, 119, 105, 100, 116, 104, 121, 6, 104, 101, 105, 103, 104, 116, 121, 6, 102, 111, 114, 109, 97, 116, 1, 4, 100, 97, 116, 97, 2, 0, 115, 4, 8, 99, 114, 101, 97, 116, 101, 50, 100, 0, 1, 3, 3, 14, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 5, 28, 1, 66, 43, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 6, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 4, 1, 114, 3, 4, 115, 105, 100, 101, 127, 2, 117, 112, 127, 4, 100, 111, 119, 110, 127, 4, 19, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 99, 111, 108, 108, 105, 115, 105, 111, 110, 0, 3, 0, 6, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 1, 0, 4, 9, 97, 100, 100, 45, 102, 111, 114, 99, 101, 0, 1, 8, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 1, 0, 4, 11, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 9, 1, 107, 118, 1, 64, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 7, 105, 109, 112, 117, 108, 115, 101, 118, 6, 114, 97, 100, 105, 117, 115, 118, 14, 102, 97, 108, 108, 111, 102, 102, 45, 114, 97, 100, 105, 117, 115, 10, 1, 0, 4, 18, 97, 100, 100, 45, 114, 97, 100, 105, 97, 108, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 11, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 21, 97, 100, 100, 45, 102, 111, 114, 99, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 12, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 23, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 13, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 0, 3, 4, 24, 103, 101, 116, 45, 118, 101, 108, 111, 99, 105, 116, 121, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 14, 1, 64, 1, 7, 103, 114, 97, 118, 105, 116, 121, 3, 1, 0, 4, 11, 115, 101, 116, 45, 103, 114, 97, 118, 105, 116, 121, 0, 1, 15, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 8, 117, 110, 102, 114, 101, 101, 122, 101, 0, 1, 16, 4, 6, 102, 114, 101, 101, 122, 101, 0, 1, 16, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 118, 101, 108, 111, 99, 105, 116, 121, 118, 1, 0, 4, 11, 115, 116, 97, 114, 116, 45, 109, 111, 116, 111, 114, 0, 1, 17, 4, 10, 115, 116, 111, 112, 45, 109, 111, 116, 111, 114, 0, 1, 16, 1, 64, 4, 6, 97, 99, 116, 111, 114, 48, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 48, 5, 6, 97, 99, 116, 111, 114, 49, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 49, 5, 1, 0, 4, 21, 99, 114, 101, 97, 116, 101, 45, 114, 101, 118, 111, 108, 117, 116, 101, 45, 106, 111, 105, 110, 116, 0, 1, 18, 1, 111, 2, 1, 118, 1, 107, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 20, 4, 13, 114, 97, 121, 99, 97, 115, 116, 45, 102, 105, 114, 115, 116, 0, 1, 21, 1, 112, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 22, 4, 7, 114, 97, 121, 99, 97, 115, 116, 0, 1, 23, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 12, 100, 105, 115, 112, 108, 97, 99, 101, 109, 101, 110, 116, 3, 8, 109, 105, 110, 45, 100, 105, 115, 116, 118, 12, 101, 108, 97, 112, 115, 101, 100, 45, 116, 105, 109, 101, 118, 0, 7, 4, 14, 109, 111, 118, 101, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 0, 1, 24, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 22, 115, 101, 116, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 25, 4, 27, 115, 101, 116, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 102, 111, 111, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 25, 3, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 5, 29, 1, 66, 7, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 6, 27, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 25, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 26, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 24, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 3, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 5, 30, 1, 66, 9, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 7, 114, 117, 110, 116, 105, 109, 101, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 6, 115, 101, 114, 118, 101, 114, 0, 0, 6, 99, 108, 105, 101, 110, 116, 1, 115, 0, 4, 6, 115, 111, 117, 114, 99, 101, 0, 3, 0, 2, 1, 64, 0, 1, 0, 4, 4, 105, 110, 105, 116, 0, 1, 4, 1, 112, 125, 1, 64, 4, 4, 116, 105, 109, 101, 118, 14, 109, 101, 115, 115, 97, 103, 101, 45, 115, 111, 117, 114, 99, 101, 3, 12, 109, 101, 115, 115, 97, 103, 101, 45, 110, 97, 109, 101, 115, 12, 109, 101, 115, 115, 97, 103, 101, 45, 100, 97, 116, 97, 5, 1, 0, 4, 4, 101, 120, 101, 99, 0, 1, 6, 4, 5, 103, 117, 101, 115, 116, 16, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 47, 103, 117, 101, 115, 116, 5, 31, 4, 8, 98, 105, 110, 100, 105, 110, 103, 115, 18, 112, 107, 103, 58, 47, 109, 97, 105, 110, 47, 98, 105, 110, 100, 105, 110, 103, 115, 4, 0, 0, 68, 9, 112, 114, 111, 100, 117, 99, 101, 114, 115, 1, 12, 112, 114, 111, 99, 101, 115, 115, 101, 100, 45, 98, 121, 2, 13, 119, 105, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 48, 46, 56, 46, 50, 16, 119, 105, 116, 45, 98, 105, 110, 100, 103, 101, 110, 45, 114, 117, 115, 116, 5, 48, 46, 54, 46, 48, 11, 19, 1, 4, 109, 97, 105, 110, 9, 112, 107, 103, 58, 47, 109, 97, 105, 110, 3, 42, 0];
+                                    #[doc(hidden)]pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 31517] = [2, 0, 3, 119, 105, 116, 4, 109, 97, 105, 110, 8, 98, 105, 110, 100, 105, 110, 103, 115, 0, 97, 115, 109, 12, 0, 1, 0, 7, 157, 2, 1, 65, 2, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 4, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 11, 21, 1, 5, 116, 121, 112, 101, 115, 10, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 3, 0, 0, 7, 250, 3, 1, 65, 7, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 113, 117, 97, 116, 1, 66, 11, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 12, 115, 101, 116, 45, 108, 105, 115, 116, 101, 110, 101, 114, 0, 1, 6, 4, 11, 115, 101, 116, 45, 101, 109, 105, 116, 116, 101, 114, 0, 1, 6, 1, 64, 2, 5, 115, 111, 117, 110, 100, 115, 7, 101, 109, 105, 116, 116, 101, 114, 1, 1, 0, 4, 20, 112, 108, 97, 121, 45, 115, 111, 117, 110, 100, 45, 111, 110, 45, 101, 110, 116, 105, 116, 121, 0, 1, 7, 4, 11, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 28, 112, 107, 103, 58, 47, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 47, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 5, 4, 11, 33, 1, 11, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 16, 112, 107, 103, 58, 47, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 3, 2, 0, 7, 190, 9, 1, 65, 7, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 109, 97, 116, 52, 1, 66, 43, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 109, 97, 116, 52, 0, 3, 0, 4, 1, 114, 3, 4, 115, 105, 100, 101, 127, 2, 117, 112, 127, 4, 100, 111, 119, 110, 127, 4, 19, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 99, 111, 108, 108, 105, 115, 105, 111, 110, 0, 3, 0, 6, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 1, 0, 4, 9, 97, 100, 100, 45, 102, 111, 114, 99, 101, 0, 1, 8, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 1, 0, 4, 11, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 9, 1, 107, 118, 1, 64, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 7, 105, 109, 112, 117, 108, 115, 101, 118, 6, 114, 97, 100, 105, 117, 115, 118, 14, 102, 97, 108, 108, 111, 102, 102, 45, 114, 97, 100, 105, 117, 115, 10, 1, 0, 4, 18, 97, 100, 100, 45, 114, 97, 100, 105, 97, 108, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 11, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 21, 97, 100, 100, 45, 102, 111, 114, 99, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 12, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 23, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 13, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 0, 3, 4, 24, 103, 101, 116, 45, 118, 101, 108, 111, 99, 105, 116, 121, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 14, 1, 64, 1, 7, 103, 114, 97, 118, 105, 116, 121, 3, 1, 0, 4, 11, 115, 101, 116, 45, 103, 114, 97, 118, 105, 116, 121, 0, 1, 15, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 8, 117, 110, 102, 114, 101, 101, 122, 101, 0, 1, 16, 4, 6, 102, 114, 101, 101, 122, 101, 0, 1, 16, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 118, 101, 108, 111, 99, 105, 116, 121, 118, 1, 0, 4, 11, 115, 116, 97, 114, 116, 45, 109, 111, 116, 111, 114, 0, 1, 17, 4, 10, 115, 116, 111, 112, 45, 109, 111, 116, 111, 114, 0, 1, 16, 1, 64, 4, 6, 97, 99, 116, 111, 114, 48, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 48, 5, 6, 97, 99, 116, 111, 114, 49, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 49, 5, 1, 0, 4, 21, 99, 114, 101, 97, 116, 101, 45, 114, 101, 118, 111, 108, 117, 116, 101, 45, 106, 111, 105, 110, 116, 0, 1, 18, 1, 111, 2, 1, 118, 1, 107, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 20, 4, 13, 114, 97, 121, 99, 97, 115, 116, 45, 102, 105, 114, 115, 116, 0, 1, 21, 1, 112, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 22, 4, 7, 114, 97, 121, 99, 97, 115, 116, 0, 1, 23, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 12, 100, 105, 115, 112, 108, 97, 99, 101, 109, 101, 110, 116, 3, 8, 109, 105, 110, 45, 100, 105, 115, 116, 118, 12, 101, 108, 97, 112, 115, 101, 100, 45, 116, 105, 109, 101, 118, 0, 7, 4, 14, 109, 111, 118, 101, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 0, 1, 24, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 22, 115, 101, 116, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 25, 4, 27, 115, 101, 116, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 102, 111, 111, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 25, 4, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 5, 4, 11, 39, 1, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 19, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 3, 4, 0, 7, 189, 4, 1, 65, 5, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 7, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 6, 27, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 25, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 26, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 24, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 4, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 5, 2, 11, 39, 1, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 19, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 3, 6, 0, 7, 75, 1, 65, 2, 1, 66, 3, 1, 107, 115, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 0, 4, 3, 117, 114, 108, 0, 1, 1, 4, 12, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 30, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 5, 0, 11, 35, 1, 12, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 17, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 97, 115, 115, 101, 116, 3, 8, 0, 7, 131, 3, 1, 65, 5, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 5, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 107, 1, 1, 64, 1, 7, 117, 115, 101, 114, 45, 105, 100, 115, 0, 2, 4, 14, 103, 101, 116, 45, 98, 121, 45, 117, 115, 101, 114, 45, 105, 100, 0, 1, 3, 4, 6, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 47, 112, 108, 97, 121, 101, 114, 5, 2, 11, 23, 1, 6, 112, 108, 97, 121, 101, 114, 11, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 3, 10, 0, 7, 226, 3, 1, 65, 5, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 9, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 7, 114, 117, 110, 116, 105, 109, 101, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 6, 115, 101, 114, 118, 101, 114, 0, 0, 6, 99, 108, 105, 101, 110, 116, 1, 115, 0, 4, 6, 115, 111, 117, 114, 99, 101, 0, 3, 0, 2, 1, 64, 0, 1, 0, 4, 4, 105, 110, 105, 116, 0, 1, 4, 1, 112, 125, 1, 64, 4, 4, 116, 105, 109, 101, 118, 14, 109, 101, 115, 115, 97, 103, 101, 45, 115, 111, 117, 114, 99, 101, 3, 12, 109, 101, 115, 115, 97, 103, 101, 45, 110, 97, 109, 101, 115, 12, 109, 101, 115, 115, 97, 103, 101, 45, 100, 97, 116, 97, 5, 1, 0, 4, 4, 101, 120, 101, 99, 0, 1, 6, 4, 5, 103, 117, 101, 115, 116, 16, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 47, 103, 117, 101, 115, 116, 5, 2, 11, 21, 1, 5, 103, 117, 101, 115, 116, 10, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 3, 12, 0, 7, 92, 1, 65, 2, 1, 66, 2, 1, 64, 1, 10, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 127, 1, 0, 4, 14, 115, 101, 116, 45, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 0, 1, 0, 4, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 5, 0, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 3, 14, 0, 7, 209, 3, 1, 65, 5, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 117, 108, 105, 100, 1, 66, 9, 2, 3, 2, 1, 1, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 1, 113, 1, 11, 114, 103, 98, 97, 56, 45, 117, 110, 111, 114, 109, 0, 0, 4, 6, 102, 111, 114, 109, 97, 116, 0, 3, 0, 4, 1, 112, 125, 1, 64, 4, 5, 119, 105, 100, 116, 104, 121, 6, 104, 101, 105, 103, 104, 116, 121, 6, 102, 111, 114, 109, 97, 116, 5, 4, 100, 97, 116, 97, 6, 0, 3, 4, 8, 99, 114, 101, 97, 116, 101, 50, 100, 0, 1, 7, 4, 14, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 5, 2, 11, 39, 1, 14, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 19, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 3, 16, 0, 7, 231, 4, 1, 65, 5, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 117, 108, 105, 100, 1, 66, 12, 2, 3, 2, 1, 1, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 1, 113, 2, 7, 110, 101, 97, 114, 101, 115, 116, 0, 0, 6, 108, 105, 110, 101, 97, 114, 0, 0, 4, 11, 102, 105, 108, 116, 101, 114, 45, 109, 111, 100, 101, 0, 3, 0, 4, 1, 113, 3, 13, 99, 108, 97, 109, 112, 45, 116, 111, 45, 101, 100, 103, 101, 0, 0, 6, 114, 101, 112, 101, 97, 116, 0, 0, 13, 109, 105, 114, 114, 111, 114, 45, 114, 101, 112, 101, 97, 116, 0, 0, 4, 12, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 0, 3, 0, 6, 1, 114, 6, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 117, 7, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 118, 7, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 119, 7, 10, 109, 97, 103, 45, 102, 105, 108, 116, 101, 114, 5, 10, 109, 105, 110, 45, 102, 105, 108, 116, 101, 114, 5, 13, 109, 105, 112, 109, 97, 112, 45, 102, 105, 108, 116, 101, 114, 5, 4, 10, 100, 101, 115, 99, 114, 105, 112, 116, 111, 114, 0, 3, 0, 8, 1, 64, 1, 4, 100, 101, 115, 99, 9, 0, 3, 4, 6, 99, 114, 101, 97, 116, 101, 0, 1, 10, 4, 14, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 5, 2, 11, 39, 1, 14, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 19, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 3, 18, 0, 7, 135, 3, 1, 65, 5, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 4, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 64, 0, 0, 1, 4, 9, 103, 101, 116, 45, 108, 111, 99, 97, 108, 0, 1, 2, 4, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 5, 2, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 3, 20, 0, 7, 239, 3, 1, 65, 5, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 7, 2, 3, 2, 1, 1, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 17, 115, 101, 114, 118, 101, 114, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 115, 101, 114, 118, 101, 114, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 4, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 5, 2, 11, 39, 1, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 19, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 3, 22, 0, 7, 135, 4, 1, 65, 7, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 117, 108, 105, 100, 1, 66, 14, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 117, 108, 105, 100, 0, 3, 0, 4, 1, 114, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 110, 111, 114, 109, 97, 108, 3, 7, 116, 97, 110, 103, 101, 110, 116, 3, 9, 116, 101, 120, 99, 111, 111, 114, 100, 48, 1, 4, 6, 118, 101, 114, 116, 101, 120, 0, 3, 0, 6, 1, 114, 1, 4, 117, 108, 105, 100, 5, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 8, 1, 112, 7, 1, 112, 121, 1, 64, 2, 8, 118, 101, 114, 116, 105, 99, 101, 115, 10, 7, 105, 110, 100, 105, 99, 101, 115, 11, 0, 9, 4, 6, 99, 114, 101, 97, 116, 101, 0, 1, 12, 4, 11, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 28, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 5, 4, 11, 33, 1, 11, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 16, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 3, 24, 0, 7, 215, 7, 1, 65, 11, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 117, 108, 105, 100, 1, 66, 6, 2, 3, 2, 1, 1, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 1, 113, 1, 11, 114, 103, 98, 97, 56, 45, 117, 110, 111, 114, 109, 0, 0, 4, 6, 102, 111, 114, 109, 97, 116, 0, 3, 0, 4, 3, 14, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 5, 2, 1, 66, 10, 2, 3, 2, 1, 1, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 1, 113, 2, 7, 110, 101, 97, 114, 101, 115, 116, 0, 0, 6, 108, 105, 110, 101, 97, 114, 0, 0, 4, 11, 102, 105, 108, 116, 101, 114, 45, 109, 111, 100, 101, 0, 3, 0, 4, 1, 113, 3, 13, 99, 108, 97, 109, 112, 45, 116, 111, 45, 101, 100, 103, 101, 0, 0, 6, 114, 101, 112, 101, 97, 116, 0, 0, 13, 109, 105, 114, 114, 111, 114, 45, 114, 101, 112, 101, 97, 116, 0, 0, 4, 12, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 0, 3, 0, 6, 1, 114, 6, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 117, 7, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 118, 7, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 119, 7, 10, 109, 97, 103, 45, 102, 105, 108, 116, 101, 114, 5, 10, 109, 105, 110, 45, 102, 105, 108, 116, 101, 114, 5, 13, 109, 105, 112, 109, 97, 112, 45, 102, 105, 108, 116, 101, 114, 5, 4, 10, 100, 101, 115, 99, 114, 105, 112, 116, 111, 114, 0, 3, 0, 8, 3, 14, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 5, 3, 2, 3, 0, 1, 6, 104, 97, 110, 100, 108, 101, 2, 3, 0, 2, 6, 104, 97, 110, 100, 108, 101, 1, 66, 12, 2, 3, 2, 1, 1, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 4, 4, 14, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 2, 3, 2, 1, 5, 4, 14, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 4, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 6, 1, 114, 4, 14, 98, 97, 115, 101, 45, 99, 111, 108, 111, 114, 45, 109, 97, 112, 3, 10, 110, 111, 114, 109, 97, 108, 45, 109, 97, 112, 3, 22, 109, 101, 116, 97, 108, 108, 105, 99, 45, 114, 111, 117, 103, 104, 110, 101, 115, 115, 45, 109, 97, 112, 3, 7, 115, 97, 109, 112, 108, 101, 114, 5, 4, 10, 100, 101, 115, 99, 114, 105, 112, 116, 111, 114, 0, 3, 0, 8, 1, 64, 1, 4, 100, 101, 115, 99, 9, 0, 7, 4, 6, 99, 114, 101, 97, 116, 101, 0, 1, 10, 4, 15, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 36, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 5, 6, 11, 41, 1, 15, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 20, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 3, 26, 0, 7, 242, 26, 1, 65, 26, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 117, 108, 105, 100, 1, 66, 10, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 117, 108, 105, 100, 0, 3, 0, 4, 1, 114, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 110, 111, 114, 109, 97, 108, 3, 7, 116, 97, 110, 103, 101, 110, 116, 3, 9, 116, 101, 120, 99, 111, 111, 114, 100, 48, 1, 4, 6, 118, 101, 114, 116, 101, 120, 0, 3, 0, 6, 1, 114, 1, 4, 117, 108, 105, 100, 5, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 8, 3, 11, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 28, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 5, 4, 1, 66, 6, 2, 3, 2, 1, 3, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 1, 113, 1, 11, 114, 103, 98, 97, 56, 45, 117, 110, 111, 114, 109, 0, 0, 4, 6, 102, 111, 114, 109, 97, 116, 0, 3, 0, 4, 3, 14, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 5, 5, 1, 66, 10, 2, 3, 2, 1, 3, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 1, 113, 2, 7, 110, 101, 97, 114, 101, 115, 116, 0, 0, 6, 108, 105, 110, 101, 97, 114, 0, 0, 4, 11, 102, 105, 108, 116, 101, 114, 45, 109, 111, 100, 101, 0, 3, 0, 4, 1, 113, 3, 13, 99, 108, 97, 109, 112, 45, 116, 111, 45, 101, 100, 103, 101, 0, 0, 6, 114, 101, 112, 101, 97, 116, 0, 0, 13, 109, 105, 114, 114, 111, 114, 45, 114, 101, 112, 101, 97, 116, 0, 0, 4, 12, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 0, 3, 0, 6, 1, 114, 6, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 117, 7, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 118, 7, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 119, 7, 10, 109, 97, 103, 45, 102, 105, 108, 116, 101, 114, 5, 10, 109, 105, 110, 45, 102, 105, 108, 116, 101, 114, 5, 13, 109, 105, 112, 109, 97, 112, 45, 102, 105, 108, 116, 101, 114, 5, 4, 10, 100, 101, 115, 99, 114, 105, 112, 116, 111, 114, 0, 3, 0, 8, 3, 14, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 5, 6, 2, 3, 0, 2, 6, 104, 97, 110, 100, 108, 101, 2, 3, 0, 3, 6, 104, 97, 110, 100, 108, 101, 1, 66, 10, 2, 3, 2, 1, 3, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 7, 4, 14, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 2, 3, 2, 1, 8, 4, 14, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 4, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 6, 1, 114, 4, 14, 98, 97, 115, 101, 45, 99, 111, 108, 111, 114, 45, 109, 97, 112, 3, 10, 110, 111, 114, 109, 97, 108, 45, 109, 97, 112, 3, 22, 109, 101, 116, 97, 108, 108, 105, 99, 45, 114, 111, 117, 103, 104, 110, 101, 115, 115, 45, 109, 97, 112, 3, 7, 115, 97, 109, 112, 108, 101, 114, 5, 4, 10, 100, 101, 115, 99, 114, 105, 112, 116, 111, 114, 0, 3, 0, 8, 3, 15, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 36, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 5, 9, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 2, 3, 0, 1, 6, 104, 97, 110, 100, 108, 101, 2, 3, 0, 4, 6, 104, 97, 110, 100, 108, 101, 1, 66, 110, 2, 3, 2, 1, 10, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 11, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 12, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 13, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 14, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 15, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 16, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 2, 3, 2, 1, 17, 4, 22, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 18, 2, 3, 2, 1, 7, 4, 25, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 20, 2, 3, 2, 1, 8, 4, 25, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 22, 2, 3, 2, 1, 18, 4, 26, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 24, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 26, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 28, 7, 105, 110, 99, 108, 117, 100, 101, 28, 7, 101, 120, 99, 108, 117, 100, 101, 28, 7, 99, 104, 97, 110, 103, 101, 100, 28, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 29, 1, 111, 0, 1, 112, 31, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 112, 19, 1, 112, 21, 1, 112, 23, 1, 112, 25, 1, 113, 22, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 32, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 33, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 34, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 35, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 36, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 37, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 38, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 39, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 40, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 41, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 28, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 42, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 43, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 44, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 45, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 46, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 47, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 48, 0, 27, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 1, 49, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 1, 50, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 1, 51, 0, 31, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 1, 52, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 53, 1, 107, 31, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 107, 19, 1, 107, 21, 1, 107, 23, 1, 107, 25, 1, 113, 22, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 55, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 56, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 57, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 58, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 59, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 60, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 61, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 62, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 63, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 192, 0, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 193, 0, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 194, 0, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 195, 0, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 196, 0, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 197, 0, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 198, 0, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 199, 0, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 200, 0, 0, 27, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 1, 201, 0, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 1, 202, 0, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 1, 203, 0, 0, 31, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 1, 204, 0, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 77, 1, 113, 24, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 31, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 27, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 1, 19, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 1, 21, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 1, 23, 0, 31, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 1, 25, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 54, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 206, 0, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 79, 1, 111, 2, 121, 208, 0, 1, 112, 209, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 82, 1, 64, 1, 2, 105, 100, 115, 0, 193, 0, 4, 9, 103, 101, 116, 45, 105, 110, 100, 101, 120, 0, 1, 84, 1, 107, 208, 0, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 213, 0, 4, 13, 103, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 86, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 5, 118, 97, 108, 117, 101, 208, 0, 1, 0, 4, 13, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 87, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 100, 97, 116, 97, 211, 0, 1, 0, 4, 14, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 88, 4, 13, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 87, 4, 14, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 88, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 127, 4, 13, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 89, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 28, 0, 127, 4, 14, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 90, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 1, 0, 4, 16, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 91, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 28, 1, 0, 4, 17, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 92, 1, 64, 2, 1, 113, 30, 1, 116, 27, 0, 119, 4, 5, 113, 117, 101, 114, 121, 0, 1, 93, 1, 112, 208, 0, 1, 111, 2, 1, 222, 0, 1, 112, 223, 0, 1, 64, 1, 1, 113, 119, 0, 224, 0, 4, 10, 113, 117, 101, 114, 121, 45, 101, 118, 97, 108, 0, 1, 97, 4, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 19, 11, 29, 1, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 14, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 3, 28, 0, 7, 170, 24, 1, 65, 29, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 117, 108, 105, 100, 1, 66, 10, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 117, 108, 105, 100, 0, 3, 0, 4, 1, 114, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 110, 111, 114, 109, 97, 108, 3, 7, 116, 97, 110, 103, 101, 110, 116, 3, 9, 116, 101, 120, 99, 111, 111, 114, 100, 48, 1, 4, 6, 118, 101, 114, 116, 101, 120, 0, 3, 0, 6, 1, 114, 1, 4, 117, 108, 105, 100, 5, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 8, 3, 11, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 28, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 5, 4, 1, 66, 6, 2, 3, 2, 1, 3, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 1, 113, 1, 11, 114, 103, 98, 97, 56, 45, 117, 110, 111, 114, 109, 0, 0, 4, 6, 102, 111, 114, 109, 97, 116, 0, 3, 0, 4, 3, 14, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 5, 5, 1, 66, 10, 2, 3, 2, 1, 3, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 1, 113, 2, 7, 110, 101, 97, 114, 101, 115, 116, 0, 0, 6, 108, 105, 110, 101, 97, 114, 0, 0, 4, 11, 102, 105, 108, 116, 101, 114, 45, 109, 111, 100, 101, 0, 3, 0, 4, 1, 113, 3, 13, 99, 108, 97, 109, 112, 45, 116, 111, 45, 101, 100, 103, 101, 0, 0, 6, 114, 101, 112, 101, 97, 116, 0, 0, 13, 109, 105, 114, 114, 111, 114, 45, 114, 101, 112, 101, 97, 116, 0, 0, 4, 12, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 0, 3, 0, 6, 1, 114, 6, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 117, 7, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 118, 7, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 119, 7, 10, 109, 97, 103, 45, 102, 105, 108, 116, 101, 114, 5, 10, 109, 105, 110, 45, 102, 105, 108, 116, 101, 114, 5, 13, 109, 105, 112, 109, 97, 112, 45, 102, 105, 108, 116, 101, 114, 5, 4, 10, 100, 101, 115, 99, 114, 105, 112, 116, 111, 114, 0, 3, 0, 8, 3, 14, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 5, 6, 2, 3, 0, 2, 6, 104, 97, 110, 100, 108, 101, 2, 3, 0, 3, 6, 104, 97, 110, 100, 108, 101, 1, 66, 10, 2, 3, 2, 1, 3, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 7, 4, 14, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 2, 3, 2, 1, 8, 4, 14, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 4, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 6, 1, 114, 4, 14, 98, 97, 115, 101, 45, 99, 111, 108, 111, 114, 45, 109, 97, 112, 3, 10, 110, 111, 114, 109, 97, 108, 45, 109, 97, 112, 3, 22, 109, 101, 116, 97, 108, 108, 105, 99, 45, 114, 111, 117, 103, 104, 110, 101, 115, 115, 45, 109, 97, 112, 3, 7, 115, 97, 109, 112, 108, 101, 114, 5, 4, 10, 100, 101, 115, 99, 114, 105, 112, 116, 111, 114, 0, 3, 0, 8, 3, 15, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 36, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 5, 9, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 2, 3, 0, 1, 6, 104, 97, 110, 100, 108, 101, 2, 3, 0, 4, 6, 104, 97, 110, 100, 108, 101, 1, 66, 84, 2, 3, 2, 1, 10, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 11, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 12, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 13, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 14, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 15, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 16, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 2, 3, 2, 1, 17, 4, 22, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 18, 2, 3, 2, 1, 7, 4, 25, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 20, 2, 3, 2, 1, 8, 4, 25, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 22, 2, 3, 2, 1, 18, 4, 26, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 24, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 26, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 28, 7, 105, 110, 99, 108, 117, 100, 101, 28, 7, 101, 120, 99, 108, 117, 100, 101, 28, 7, 99, 104, 97, 110, 103, 101, 100, 28, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 29, 1, 111, 0, 1, 112, 31, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 112, 19, 1, 112, 21, 1, 112, 23, 1, 112, 25, 1, 113, 22, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 32, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 33, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 34, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 35, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 36, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 37, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 38, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 39, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 40, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 41, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 28, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 42, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 43, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 44, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 45, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 46, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 47, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 48, 0, 27, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 1, 49, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 1, 50, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 1, 51, 0, 31, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 1, 52, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 53, 1, 107, 31, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 107, 19, 1, 107, 21, 1, 107, 23, 1, 107, 25, 1, 113, 22, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 55, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 56, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 57, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 58, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 59, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 60, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 61, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 62, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 63, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 192, 0, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 193, 0, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 194, 0, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 195, 0, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 196, 0, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 197, 0, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 198, 0, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 199, 0, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 200, 0, 0, 27, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 1, 201, 0, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 1, 202, 0, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 1, 203, 0, 0, 31, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 1, 204, 0, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 77, 1, 113, 24, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 31, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 27, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 1, 19, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 1, 21, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 1, 23, 0, 31, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 1, 25, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 54, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 206, 0, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 79, 1, 111, 2, 121, 208, 0, 1, 112, 209, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 82, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 19, 2, 3, 0, 5, 6, 101, 110, 116, 105, 116, 121, 1, 66, 4, 2, 3, 2, 1, 20, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 0, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 9, 115, 117, 98, 115, 99, 114, 105, 98, 101, 0, 1, 2, 4, 5, 101, 118, 101, 110, 116, 18, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 47, 101, 118, 101, 110, 116, 5, 21, 11, 25, 1, 7, 109, 101, 115, 115, 97, 103, 101, 12, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 3, 30, 0, 7, 237, 32, 1, 65, 29, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 117, 108, 105, 100, 1, 66, 10, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 4, 117, 108, 105, 100, 0, 3, 0, 4, 1, 114, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 110, 111, 114, 109, 97, 108, 3, 7, 116, 97, 110, 103, 101, 110, 116, 3, 9, 116, 101, 120, 99, 111, 111, 114, 100, 48, 1, 4, 6, 118, 101, 114, 116, 101, 120, 0, 3, 0, 6, 1, 114, 1, 4, 117, 108, 105, 100, 5, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 8, 3, 11, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 28, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 5, 4, 1, 66, 6, 2, 3, 2, 1, 3, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 1, 113, 1, 11, 114, 103, 98, 97, 56, 45, 117, 110, 111, 114, 109, 0, 0, 4, 6, 102, 111, 114, 109, 97, 116, 0, 3, 0, 4, 3, 14, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 5, 5, 1, 66, 10, 2, 3, 2, 1, 3, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 1, 113, 2, 7, 110, 101, 97, 114, 101, 115, 116, 0, 0, 6, 108, 105, 110, 101, 97, 114, 0, 0, 4, 11, 102, 105, 108, 116, 101, 114, 45, 109, 111, 100, 101, 0, 3, 0, 4, 1, 113, 3, 13, 99, 108, 97, 109, 112, 45, 116, 111, 45, 101, 100, 103, 101, 0, 0, 6, 114, 101, 112, 101, 97, 116, 0, 0, 13, 109, 105, 114, 114, 111, 114, 45, 114, 101, 112, 101, 97, 116, 0, 0, 4, 12, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 0, 3, 0, 6, 1, 114, 6, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 117, 7, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 118, 7, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 119, 7, 10, 109, 97, 103, 45, 102, 105, 108, 116, 101, 114, 5, 10, 109, 105, 110, 45, 102, 105, 108, 116, 101, 114, 5, 13, 109, 105, 112, 109, 97, 112, 45, 102, 105, 108, 116, 101, 114, 5, 4, 10, 100, 101, 115, 99, 114, 105, 112, 116, 111, 114, 0, 3, 0, 8, 3, 14, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 5, 6, 2, 3, 0, 2, 6, 104, 97, 110, 100, 108, 101, 2, 3, 0, 3, 6, 104, 97, 110, 100, 108, 101, 1, 66, 10, 2, 3, 2, 1, 3, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 7, 4, 14, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 2, 3, 2, 1, 8, 4, 14, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 4, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 6, 1, 114, 4, 14, 98, 97, 115, 101, 45, 99, 111, 108, 111, 114, 45, 109, 97, 112, 3, 10, 110, 111, 114, 109, 97, 108, 45, 109, 97, 112, 3, 22, 109, 101, 116, 97, 108, 108, 105, 99, 45, 114, 111, 117, 103, 104, 110, 101, 115, 115, 45, 109, 97, 112, 3, 7, 115, 97, 109, 112, 108, 101, 114, 5, 4, 10, 100, 101, 115, 99, 114, 105, 112, 116, 111, 114, 0, 3, 0, 8, 3, 15, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 36, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 5, 9, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 2, 3, 0, 1, 6, 104, 97, 110, 100, 108, 101, 2, 3, 0, 4, 6, 104, 97, 110, 100, 108, 101, 1, 66, 84, 2, 3, 2, 1, 10, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 11, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 12, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 13, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 14, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 15, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 16, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 2, 3, 2, 1, 17, 4, 22, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 18, 2, 3, 2, 1, 7, 4, 25, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 20, 2, 3, 2, 1, 8, 4, 25, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 22, 2, 3, 2, 1, 18, 4, 26, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 24, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 26, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 28, 7, 105, 110, 99, 108, 117, 100, 101, 28, 7, 101, 120, 99, 108, 117, 100, 101, 28, 7, 99, 104, 97, 110, 103, 101, 100, 28, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 29, 1, 111, 0, 1, 112, 31, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 112, 19, 1, 112, 21, 1, 112, 23, 1, 112, 25, 1, 113, 22, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 32, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 33, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 34, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 35, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 36, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 37, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 38, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 39, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 40, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 41, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 28, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 42, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 43, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 44, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 45, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 46, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 47, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 48, 0, 27, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 1, 49, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 1, 50, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 1, 51, 0, 31, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 1, 52, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 53, 1, 107, 31, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 107, 19, 1, 107, 21, 1, 107, 23, 1, 107, 25, 1, 113, 22, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 55, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 56, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 57, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 58, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 59, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 60, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 61, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 62, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 63, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 192, 0, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 193, 0, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 194, 0, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 195, 0, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 196, 0, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 197, 0, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 198, 0, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 199, 0, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 200, 0, 0, 27, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 1, 201, 0, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 1, 202, 0, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 1, 203, 0, 0, 31, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 1, 204, 0, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 77, 1, 113, 24, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 31, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 27, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 1, 19, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 1, 21, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 1, 23, 0, 31, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 1, 25, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 54, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 206, 0, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 79, 1, 111, 2, 121, 208, 0, 1, 112, 209, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 82, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 19, 2, 3, 0, 5, 6, 101, 110, 116, 105, 116, 121, 1, 66, 59, 2, 3, 2, 1, 10, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 12, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 11, 4, 4, 109, 97, 116, 52, 0, 3, 0, 6, 2, 3, 2, 1, 20, 4, 11, 101, 110, 116, 105, 116, 121, 45, 100, 97, 116, 97, 0, 3, 0, 8, 1, 114, 2, 6, 119, 101, 105, 103, 104, 116, 118, 4, 109, 97, 115, 107, 121, 4, 21, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 115, 116, 97, 99, 107, 45, 98, 108, 101, 110, 100, 0, 3, 0, 10, 1, 114, 2, 12, 97, 99, 116, 105, 111, 110, 45, 105, 110, 100, 101, 120, 121, 15, 116, 105, 109, 101, 45, 112, 101, 114, 99, 101, 110, 116, 97, 103, 101, 118, 4, 27, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 115, 97, 109, 112, 108, 101, 45, 112, 101, 114, 99, 101, 110, 116, 97, 103, 101, 0, 3, 0, 12, 1, 114, 2, 12, 97, 99, 116, 105, 111, 110, 45, 105, 110, 100, 101, 120, 121, 13, 116, 105, 109, 101, 45, 97, 98, 115, 111, 108, 117, 116, 101, 118, 4, 25, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 115, 97, 109, 112, 108, 101, 45, 97, 98, 115, 111, 108, 117, 116, 101, 0, 3, 0, 14, 1, 113, 5, 6, 115, 97, 109, 112, 108, 101, 1, 121, 0, 17, 115, 97, 109, 112, 108, 101, 45, 112, 101, 114, 99, 101, 110, 116, 97, 103, 101, 1, 13, 0, 15, 115, 97, 109, 112, 108, 101, 45, 97, 98, 115, 111, 108, 117, 116, 101, 1, 15, 0, 11, 105, 110, 116, 101, 114, 112, 111, 108, 97, 116, 101, 1, 118, 0, 5, 98, 108, 101, 110, 100, 1, 11, 0, 4, 22, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 45, 115, 116, 97, 99, 107, 0, 3, 0, 16, 1, 114, 3, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 119, 101, 105, 103, 104, 116, 118, 4, 16, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 0, 3, 0, 18, 1, 112, 19, 1, 114, 2, 7, 97, 99, 116, 105, 111, 110, 115, 20, 15, 97, 112, 112, 108, 121, 45, 98, 97, 115, 101, 45, 112, 111, 115, 101, 127, 4, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 3, 0, 21, 1, 112, 17, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 115, 116, 97, 99, 107, 23, 1, 0, 4, 26, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 45, 115, 116, 97, 99, 107, 0, 1, 24, 1, 112, 115, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 109, 97, 115, 107, 25, 1, 0, 4, 25, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 109, 97, 115, 107, 0, 1, 26, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 25, 4, 25, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 109, 97, 115, 107, 0, 1, 27, 1, 112, 118, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 4, 109, 97, 115, 107, 28, 1, 0, 4, 28, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 119, 101, 105, 103, 104, 116, 115, 0, 1, 29, 1, 112, 1, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 30, 4, 34, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 109, 97, 115, 107, 45, 101, 110, 116, 105, 116, 105, 101, 115, 0, 1, 31, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 7, 119, 101, 105, 103, 104, 116, 115, 28, 4, 116, 105, 109, 101, 28, 13, 97, 98, 115, 111, 108, 117, 116, 101, 45, 116, 105, 109, 101, 127, 1, 0, 4, 19, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 108, 101, 110, 100, 0, 1, 32, 1, 112, 7, 1, 64, 2, 8, 101, 110, 116, 105, 116, 105, 101, 115, 30, 6, 111, 114, 105, 103, 105, 110, 1, 0, 33, 4, 26, 103, 101, 116, 45, 116, 114, 97, 110, 115, 102, 111, 114, 109, 115, 45, 114, 101, 108, 97, 116, 105, 118, 101, 45, 116, 111, 0, 1, 34, 1, 64, 1, 4, 100, 97, 116, 97, 9, 0, 1, 4, 5, 115, 112, 97, 119, 110, 0, 1, 35, 1, 107, 9, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 36, 4, 7, 100, 101, 115, 112, 97, 119, 110, 0, 1, 37, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 22, 1, 0, 4, 24, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 1, 38, 1, 64, 2, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 114, 97, 100, 105, 117, 115, 118, 0, 30, 4, 7, 105, 110, 45, 97, 114, 101, 97, 0, 1, 39, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 127, 4, 6, 101, 120, 105, 115, 116, 115, 0, 1, 40, 1, 64, 1, 5, 105, 110, 100, 101, 120, 121, 0, 30, 4, 7, 103, 101, 116, 45, 97, 108, 108, 0, 1, 41, 1, 64, 0, 0, 1, 4, 9, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 42, 4, 22, 115, 121, 110, 99, 104, 114, 111, 110, 105, 122, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 42, 4, 19, 112, 101, 114, 115, 105, 115, 116, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 42, 4, 6, 101, 110, 116, 105, 116, 121, 18, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 47, 101, 110, 116, 105, 116, 121, 5, 21, 11, 23, 1, 6, 101, 110, 116, 105, 116, 121, 11, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 3, 32, 0, 7, 207, 16, 1, 65, 6, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 23, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 2, 1, 109, 163, 1, 4, 107, 101, 121, 49, 4, 107, 101, 121, 50, 4, 107, 101, 121, 51, 4, 107, 101, 121, 52, 4, 107, 101, 121, 53, 4, 107, 101, 121, 54, 4, 107, 101, 121, 55, 4, 107, 101, 121, 56, 4, 107, 101, 121, 57, 4, 107, 101, 121, 48, 1, 97, 1, 98, 1, 99, 1, 100, 1, 101, 1, 102, 1, 103, 1, 104, 1, 105, 1, 106, 1, 107, 1, 108, 1, 109, 1, 110, 1, 111, 1, 112, 1, 113, 1, 114, 1, 115, 1, 116, 1, 117, 1, 118, 1, 119, 1, 120, 1, 121, 1, 122, 6, 101, 115, 99, 97, 112, 101, 2, 102, 49, 2, 102, 50, 2, 102, 51, 2, 102, 52, 2, 102, 53, 2, 102, 54, 2, 102, 55, 2, 102, 56, 2, 102, 57, 3, 102, 49, 48, 3, 102, 49, 49, 3, 102, 49, 50, 3, 102, 49, 51, 3, 102, 49, 52, 3, 102, 49, 53, 3, 102, 49, 54, 3, 102, 49, 55, 3, 102, 49, 56, 3, 102, 49, 57, 3, 102, 50, 48, 3, 102, 50, 49, 3, 102, 50, 50, 3, 102, 50, 51, 3, 102, 50, 52, 8, 115, 110, 97, 112, 115, 104, 111, 116, 6, 115, 99, 114, 111, 108, 108, 5, 112, 97, 117, 115, 101, 6, 105, 110, 115, 101, 114, 116, 4, 104, 111, 109, 101, 6, 100, 101, 108, 101, 116, 101, 3, 101, 110, 100, 9, 112, 97, 103, 101, 45, 100, 111, 119, 110, 7, 112, 97, 103, 101, 45, 117, 112, 4, 108, 101, 102, 116, 2, 117, 112, 5, 114, 105, 103, 104, 116, 4, 100, 111, 119, 110, 4, 98, 97, 99, 107, 6, 114, 101, 116, 117, 114, 110, 5, 115, 112, 97, 99, 101, 7, 99, 111, 109, 112, 111, 115, 101, 5, 99, 97, 114, 101, 116, 7, 110, 117, 109, 108, 111, 99, 107, 7, 110, 117, 109, 112, 97, 100, 48, 7, 110, 117, 109, 112, 97, 100, 49, 7, 110, 117, 109, 112, 97, 100, 50, 7, 110, 117, 109, 112, 97, 100, 51, 7, 110, 117, 109, 112, 97, 100, 52, 7, 110, 117, 109, 112, 97, 100, 53, 7, 110, 117, 109, 112, 97, 100, 54, 7, 110, 117, 109, 112, 97, 100, 55, 7, 110, 117, 109, 112, 97, 100, 56, 7, 110, 117, 109, 112, 97, 100, 57, 10, 110, 117, 109, 112, 97, 100, 45, 97, 100, 100, 13, 110, 117, 109, 112, 97, 100, 45, 100, 105, 118, 105, 100, 101, 14, 110, 117, 109, 112, 97, 100, 45, 100, 101, 99, 105, 109, 97, 108, 12, 110, 117, 109, 112, 97, 100, 45, 99, 111, 109, 109, 97, 12, 110, 117, 109, 112, 97, 100, 45, 101, 110, 116, 101, 114, 13, 110, 117, 109, 112, 97, 100, 45, 101, 113, 117, 97, 108, 115, 15, 110, 117, 109, 112, 97, 100, 45, 109, 117, 108, 116, 105, 112, 108, 121, 15, 110, 117, 109, 112, 97, 100, 45, 115, 117, 98, 116, 114, 97, 99, 116, 7, 97, 98, 110, 116, 45, 99, 49, 7, 97, 98, 110, 116, 45, 99, 50, 10, 97, 112, 111, 115, 116, 114, 111, 112, 104, 101, 4, 97, 112, 112, 115, 8, 97, 115, 116, 101, 114, 105, 115, 107, 2, 97, 116, 2, 97, 120, 9, 98, 97, 99, 107, 115, 108, 97, 115, 104, 10, 99, 97, 108, 99, 117, 108, 97, 116, 111, 114, 7, 99, 97, 112, 105, 116, 97, 108, 5, 99, 111, 108, 111, 110, 5, 99, 111, 109, 109, 97, 7, 99, 111, 110, 118, 101, 114, 116, 6, 101, 113, 117, 97, 108, 115, 5, 103, 114, 97, 118, 101, 4, 107, 97, 110, 97, 5, 107, 97, 110, 106, 105, 5, 108, 45, 97, 108, 116, 9, 108, 45, 98, 114, 97, 99, 107, 101, 116, 9, 108, 45, 99, 111, 110, 116, 114, 111, 108, 7, 108, 45, 115, 104, 105, 102, 116, 5, 108, 45, 119, 105, 110, 4, 109, 97, 105, 108, 12, 109, 101, 100, 105, 97, 45, 115, 101, 108, 101, 99, 116, 10, 109, 101, 100, 105, 97, 45, 115, 116, 111, 112, 5, 109, 105, 110, 117, 115, 4, 109, 117, 116, 101, 11, 109, 121, 45, 99, 111, 109, 112, 117, 116, 101, 114, 16, 110, 97, 118, 105, 103, 97, 116, 101, 45, 102, 111, 114, 119, 97, 114, 100, 17, 110, 97, 118, 105, 103, 97, 116, 101, 45, 98, 97, 99, 107, 119, 97, 114, 100, 10, 110, 101, 120, 116, 45, 116, 114, 97, 99, 107, 10, 110, 111, 45, 99, 111, 110, 118, 101, 114, 116, 6, 111, 101, 109, 49, 48, 50, 6, 112, 101, 114, 105, 111, 100, 10, 112, 108, 97, 121, 45, 112, 97, 117, 115, 101, 4, 112, 108, 117, 115, 5, 112, 111, 119, 101, 114, 10, 112, 114, 101, 118, 45, 116, 114, 97, 99, 107, 5, 114, 45, 97, 108, 116, 9, 114, 45, 98, 114, 97, 99, 107, 101, 116, 9, 114, 45, 99, 111, 110, 116, 114, 111, 108, 7, 114, 45, 115, 104, 105, 102, 116, 5, 114, 45, 119, 105, 110, 9, 115, 101, 109, 105, 99, 111, 108, 111, 110, 5, 115, 108, 97, 115, 104, 5, 115, 108, 101, 101, 112, 4, 115, 116, 111, 112, 5, 115, 121, 115, 114, 113, 3, 116, 97, 98, 9, 117, 110, 100, 101, 114, 108, 105, 110, 101, 9, 117, 110, 108, 97, 98, 101, 108, 101, 100, 11, 118, 111, 108, 117, 109, 101, 45, 100, 111, 119, 110, 9, 118, 111, 108, 117, 109, 101, 45, 117, 112, 4, 119, 97, 107, 101, 8, 119, 101, 98, 45, 98, 97, 99, 107, 13, 119, 101, 98, 45, 102, 97, 118, 111, 114, 105, 116, 101, 115, 11, 119, 101, 98, 45, 102, 111, 114, 119, 97, 114, 100, 8, 119, 101, 98, 45, 104, 111, 109, 101, 11, 119, 101, 98, 45, 114, 101, 102, 114, 101, 115, 104, 10, 119, 101, 98, 45, 115, 101, 97, 114, 99, 104, 8, 119, 101, 98, 45, 115, 116, 111, 112, 3, 121, 101, 110, 4, 99, 111, 112, 121, 5, 112, 97, 115, 116, 101, 3, 99, 117, 116, 4, 16, 118, 105, 114, 116, 117, 97, 108, 45, 107, 101, 121, 45, 99, 111, 100, 101, 0, 3, 0, 4, 1, 113, 4, 4, 108, 101, 102, 116, 0, 0, 5, 114, 105, 103, 104, 116, 0, 0, 6, 109, 105, 100, 100, 108, 101, 0, 0, 5, 111, 116, 104, 101, 114, 1, 123, 0, 4, 12, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 0, 3, 0, 6, 1, 112, 5, 1, 112, 7, 1, 114, 5, 4, 107, 101, 121, 115, 8, 14, 109, 111, 117, 115, 101, 45, 112, 111, 115, 105, 116, 105, 111, 110, 1, 11, 109, 111, 117, 115, 101, 45, 100, 101, 108, 116, 97, 1, 11, 109, 111, 117, 115, 101, 45, 119, 104, 101, 101, 108, 118, 13, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 115, 9, 4, 5, 105, 110, 112, 117, 116, 0, 3, 0, 10, 1, 113, 35, 12, 100, 101, 102, 97, 117, 108, 116, 45, 105, 99, 111, 110, 0, 0, 9, 99, 114, 111, 115, 115, 104, 97, 105, 114, 0, 0, 4, 104, 97, 110, 100, 0, 0, 5, 97, 114, 114, 111, 119, 0, 0, 4, 109, 111, 118, 101, 0, 0, 4, 116, 101, 120, 116, 0, 0, 4, 119, 97, 105, 116, 0, 0, 4, 104, 101, 108, 112, 0, 0, 8, 112, 114, 111, 103, 114, 101, 115, 115, 0, 0, 11, 110, 111, 116, 45, 97, 108, 108, 111, 119, 101, 100, 0, 0, 12, 99, 111, 110, 116, 101, 120, 116, 45, 109, 101, 110, 117, 0, 0, 4, 99, 101, 108, 108, 0, 0, 13, 118, 101, 114, 116, 105, 99, 97, 108, 45, 116, 101, 120, 116, 0, 0, 5, 97, 108, 105, 97, 115, 0, 0, 4, 99, 111, 112, 121, 0, 0, 7, 110, 111, 45, 100, 114, 111, 112, 0, 0, 4, 103, 114, 97, 98, 0, 0, 8, 103, 114, 97, 98, 98, 105, 110, 103, 0, 0, 10, 97, 108, 108, 45, 115, 99, 114, 111, 108, 108, 0, 0, 7, 122, 111, 111, 109, 45, 105, 110, 0, 0, 8, 122, 111, 111, 109, 45, 111, 117, 116, 0, 0, 8, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 110, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 101, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 101, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 119, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 99, 111, 108, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 114, 111, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 4, 11, 99, 117, 114, 115, 111, 114, 45, 105, 99, 111, 110, 0, 3, 0, 12, 1, 64, 0, 0, 11, 4, 3, 103, 101, 116, 0, 1, 14, 4, 12, 103, 101, 116, 45, 112, 114, 101, 118, 105, 111, 117, 115, 0, 1, 14, 1, 64, 1, 4, 105, 99, 111, 110, 13, 1, 0, 4, 10, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 0, 1, 15, 1, 64, 1, 7, 118, 105, 115, 105, 98, 108, 101, 127, 1, 0, 4, 18, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 118, 105, 115, 105, 98, 108, 101, 0, 1, 16, 1, 64, 1, 6, 108, 111, 99, 107, 101, 100, 127, 1, 0, 4, 15, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 108, 111, 99, 107, 0, 1, 17, 4, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 5, 3, 11, 35, 1, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 17, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 3, 34, 0, 7, 248, 4, 1, 65, 8, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 3, 114, 97, 121, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 66, 16, 2, 3, 2, 1, 1, 4, 4, 118, 101, 99, 51, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 50, 0, 3, 0, 2, 2, 3, 2, 1, 3, 4, 3, 114, 97, 121, 0, 3, 0, 4, 2, 3, 2, 1, 4, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 6, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 112, 111, 115, 3, 0, 5, 4, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 114, 97, 121, 0, 1, 8, 1, 64, 1, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 3, 4, 20, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 0, 1, 9, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 5, 4, 25, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 119, 111, 114, 108, 100, 45, 100, 105, 114, 101, 99, 116, 105, 111, 110, 0, 1, 10, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 1, 0, 3, 4, 15, 119, 111, 114, 108, 100, 45, 116, 111, 45, 115, 99, 114, 101, 101, 110, 0, 1, 11, 4, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 5, 5, 11, 37, 1, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 18, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 3, 36, 0, 7, 193, 1, 1, 65, 2, 1, 66, 10, 1, 64, 1, 3, 117, 114, 108, 115, 1, 0, 4, 4, 108, 111, 97, 100, 0, 1, 0, 1, 64, 4, 4, 110, 97, 109, 101, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 118, 111, 108, 117, 109, 101, 118, 3, 117, 105, 100, 121, 1, 0, 4, 4, 112, 108, 97, 121, 0, 1, 1, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 4, 115, 116, 111, 112, 0, 1, 2, 1, 64, 1, 3, 117, 105, 100, 121, 1, 0, 4, 10, 115, 116, 111, 112, 45, 98, 121, 45, 105, 100, 0, 1, 3, 1, 64, 2, 4, 110, 97, 109, 101, 115, 6, 118, 111, 108, 117, 109, 101, 118, 1, 0, 4, 10, 115, 101, 116, 45, 118, 111, 108, 117, 109, 101, 0, 1, 4, 4, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 5, 0, 11, 35, 1, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 17, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 3, 38, 0, 7, 185, 2, 1, 65, 2, 1, 66, 15, 1, 113, 1, 11, 105, 110, 118, 97, 108, 105, 100, 45, 117, 114, 108, 1, 115, 0, 4, 9, 117, 114, 108, 45, 101, 114, 114, 111, 114, 0, 3, 0, 0, 1, 113, 3, 5, 114, 101, 97, 100, 121, 0, 0, 10, 110, 111, 116, 45, 108, 111, 97, 100, 101, 100, 0, 0, 14, 102, 97, 105, 108, 101, 100, 45, 108, 111, 97, 100, 105, 110, 103, 1, 115, 0, 4, 18, 97, 115, 115, 101, 116, 45, 99, 97, 99, 104, 101, 45, 115, 116, 97, 116, 117, 115, 0, 3, 0, 2, 1, 112, 115, 1, 114, 3, 7, 98, 105, 110, 100, 101, 114, 115, 4, 8, 100, 117, 114, 97, 116, 105, 111, 110, 118, 6, 115, 116, 97, 116, 117, 115, 3, 4, 24, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 109, 101, 116, 97, 100, 97, 116, 97, 0, 3, 0, 5, 1, 64, 1, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 0, 3, 4, 26, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 115, 116, 97, 116, 117, 115, 0, 1, 7, 1, 112, 6, 1, 64, 1, 5, 99, 108, 105, 112, 115, 4, 0, 8, 4, 28, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 109, 101, 116, 97, 100, 97, 116, 97, 0, 1, 9, 1, 106, 1, 115, 1, 1, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 10, 4, 3, 117, 114, 108, 0, 1, 11, 4, 5, 97, 115, 115, 101, 116, 16, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 47, 97, 115, 115, 101, 116, 5, 0, 11, 21, 1, 5, 97, 115, 115, 101, 116, 10, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 3, 40, 0, 7, 159, 74, 1, 65, 2, 1, 65, 56, 1, 66, 22, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 118, 101, 99, 52, 0, 3, 0, 0, 1, 114, 3, 1, 120, 118, 1, 121, 118, 1, 122, 118, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 1, 114, 2, 1, 120, 118, 1, 121, 118, 4, 4, 118, 101, 99, 50, 0, 3, 0, 4, 1, 114, 4, 1, 120, 121, 1, 121, 121, 1, 122, 121, 1, 119, 121, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 6, 1, 114, 3, 1, 120, 121, 1, 121, 121, 1, 122, 121, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 8, 1, 114, 2, 1, 120, 121, 1, 121, 121, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 10, 1, 111, 2, 119, 119, 4, 4, 117, 108, 105, 100, 0, 3, 0, 12, 1, 114, 2, 6, 111, 114, 105, 103, 105, 110, 3, 3, 100, 105, 114, 3, 4, 3, 114, 97, 121, 0, 3, 0, 14, 1, 114, 4, 1, 120, 118, 1, 121, 118, 1, 122, 118, 1, 119, 118, 4, 4, 113, 117, 97, 116, 0, 3, 0, 16, 1, 114, 4, 1, 120, 1, 1, 121, 1, 1, 122, 1, 1, 119, 1, 4, 4, 109, 97, 116, 52, 0, 3, 0, 18, 1, 114, 2, 3, 105, 100, 48, 119, 3, 105, 100, 49, 119, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 20, 3, 5, 116, 121, 112, 101, 115, 16, 112, 107, 103, 58, 47, 116, 121, 112, 101, 115, 47, 116, 121, 112, 101, 115, 5, 0, 1, 66, 15, 1, 113, 1, 11, 105, 110, 118, 97, 108, 105, 100, 45, 117, 114, 108, 1, 115, 0, 4, 9, 117, 114, 108, 45, 101, 114, 114, 111, 114, 0, 3, 0, 0, 1, 113, 3, 5, 114, 101, 97, 100, 121, 0, 0, 10, 110, 111, 116, 45, 108, 111, 97, 100, 101, 100, 0, 0, 14, 102, 97, 105, 108, 101, 100, 45, 108, 111, 97, 100, 105, 110, 103, 1, 115, 0, 4, 18, 97, 115, 115, 101, 116, 45, 99, 97, 99, 104, 101, 45, 115, 116, 97, 116, 117, 115, 0, 3, 0, 2, 1, 112, 115, 1, 114, 3, 7, 98, 105, 110, 100, 101, 114, 115, 4, 8, 100, 117, 114, 97, 116, 105, 111, 110, 118, 6, 115, 116, 97, 116, 117, 115, 3, 4, 24, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 109, 101, 116, 97, 100, 97, 116, 97, 0, 3, 0, 5, 1, 64, 1, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 0, 3, 4, 26, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 115, 116, 97, 116, 117, 115, 0, 1, 7, 1, 112, 6, 1, 64, 1, 5, 99, 108, 105, 112, 115, 4, 0, 8, 4, 28, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 115, 115, 101, 116, 45, 109, 101, 116, 97, 100, 97, 116, 97, 0, 1, 9, 1, 106, 1, 115, 1, 1, 1, 64, 1, 4, 112, 97, 116, 104, 115, 0, 10, 4, 3, 117, 114, 108, 0, 1, 11, 3, 5, 97, 115, 115, 101, 116, 16, 112, 107, 103, 58, 47, 97, 115, 115, 101, 116, 47, 97, 115, 115, 101, 116, 5, 1, 2, 3, 0, 0, 4, 118, 101, 99, 50, 2, 3, 0, 0, 4, 118, 101, 99, 51, 2, 3, 0, 0, 4, 117, 108, 105, 100, 1, 66, 14, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 3, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 4, 4, 4, 117, 108, 105, 100, 0, 3, 0, 4, 1, 114, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 110, 111, 114, 109, 97, 108, 3, 7, 116, 97, 110, 103, 101, 110, 116, 3, 9, 116, 101, 120, 99, 111, 111, 114, 100, 48, 1, 4, 6, 118, 101, 114, 116, 101, 120, 0, 3, 0, 6, 1, 114, 1, 4, 117, 108, 105, 100, 5, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 8, 1, 112, 7, 1, 112, 121, 1, 64, 2, 8, 118, 101, 114, 116, 105, 99, 101, 115, 10, 7, 105, 110, 100, 105, 99, 101, 115, 11, 0, 9, 4, 6, 99, 114, 101, 97, 116, 101, 0, 1, 12, 3, 11, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 28, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 104, 5, 5, 1, 66, 9, 2, 3, 2, 1, 4, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 1, 113, 1, 11, 114, 103, 98, 97, 56, 45, 117, 110, 111, 114, 109, 0, 0, 4, 6, 102, 111, 114, 109, 97, 116, 0, 3, 0, 4, 1, 112, 125, 1, 64, 4, 5, 119, 105, 100, 116, 104, 121, 6, 104, 101, 105, 103, 104, 116, 121, 6, 102, 111, 114, 109, 97, 116, 5, 4, 100, 97, 116, 97, 6, 0, 3, 4, 8, 99, 114, 101, 97, 116, 101, 50, 100, 0, 1, 7, 3, 14, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 47, 99, 108, 105, 101, 110, 116, 45, 116, 101, 120, 116, 117, 114, 101, 5, 6, 1, 66, 12, 2, 3, 2, 1, 4, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 1, 113, 2, 7, 110, 101, 97, 114, 101, 115, 116, 0, 0, 6, 108, 105, 110, 101, 97, 114, 0, 0, 4, 11, 102, 105, 108, 116, 101, 114, 45, 109, 111, 100, 101, 0, 3, 0, 4, 1, 113, 3, 13, 99, 108, 97, 109, 112, 45, 116, 111, 45, 101, 100, 103, 101, 0, 0, 6, 114, 101, 112, 101, 97, 116, 0, 0, 13, 109, 105, 114, 114, 111, 114, 45, 114, 101, 112, 101, 97, 116, 0, 0, 4, 12, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 0, 3, 0, 6, 1, 114, 6, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 117, 7, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 118, 7, 14, 97, 100, 100, 114, 101, 115, 115, 45, 109, 111, 100, 101, 45, 119, 7, 10, 109, 97, 103, 45, 102, 105, 108, 116, 101, 114, 5, 10, 109, 105, 110, 45, 102, 105, 108, 116, 101, 114, 5, 13, 109, 105, 112, 109, 97, 112, 45, 102, 105, 108, 116, 101, 114, 5, 4, 10, 100, 101, 115, 99, 114, 105, 112, 116, 111, 114, 0, 3, 0, 8, 1, 64, 1, 4, 100, 101, 115, 99, 9, 0, 3, 4, 6, 99, 114, 101, 97, 116, 101, 0, 1, 10, 3, 14, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 115, 97, 109, 112, 108, 101, 114, 5, 7, 2, 3, 0, 3, 6, 104, 97, 110, 100, 108, 101, 2, 3, 0, 4, 6, 104, 97, 110, 100, 108, 101, 1, 66, 12, 2, 3, 2, 1, 4, 4, 4, 117, 108, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 8, 4, 14, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 2, 2, 3, 2, 1, 9, 4, 14, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 4, 1, 114, 1, 4, 117, 108, 105, 100, 1, 4, 6, 104, 97, 110, 100, 108, 101, 0, 3, 0, 6, 1, 114, 4, 14, 98, 97, 115, 101, 45, 99, 111, 108, 111, 114, 45, 109, 97, 112, 3, 10, 110, 111, 114, 109, 97, 108, 45, 109, 97, 112, 3, 22, 109, 101, 116, 97, 108, 108, 105, 99, 45, 114, 111, 117, 103, 104, 110, 101, 115, 115, 45, 109, 97, 112, 3, 7, 115, 97, 109, 112, 108, 101, 114, 5, 4, 10, 100, 101, 115, 99, 114, 105, 112, 116, 111, 114, 0, 3, 0, 8, 1, 64, 1, 4, 100, 101, 115, 99, 9, 0, 7, 4, 6, 99, 114, 101, 97, 116, 101, 0, 1, 10, 3, 15, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 36, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 47, 99, 108, 105, 101, 110, 116, 45, 109, 97, 116, 101, 114, 105, 97, 108, 5, 10, 2, 3, 0, 0, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 2, 3, 0, 0, 4, 109, 97, 116, 52, 2, 3, 0, 0, 4, 113, 117, 97, 116, 2, 3, 0, 0, 4, 118, 101, 99, 52, 2, 3, 0, 0, 5, 117, 118, 101, 99, 50, 2, 3, 0, 0, 5, 117, 118, 101, 99, 51, 2, 3, 0, 0, 5, 117, 118, 101, 99, 52, 2, 3, 0, 2, 6, 104, 97, 110, 100, 108, 101, 2, 3, 0, 5, 6, 104, 97, 110, 100, 108, 101, 1, 66, 110, 2, 3, 2, 1, 11, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 12, 4, 4, 109, 97, 116, 52, 0, 3, 0, 2, 2, 3, 2, 1, 13, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 50, 0, 3, 0, 6, 2, 3, 2, 1, 3, 4, 4, 118, 101, 99, 51, 0, 3, 0, 8, 2, 3, 2, 1, 14, 4, 4, 118, 101, 99, 52, 0, 3, 0, 10, 2, 3, 2, 1, 15, 4, 5, 117, 118, 101, 99, 50, 0, 3, 0, 12, 2, 3, 2, 1, 16, 4, 5, 117, 118, 101, 99, 51, 0, 3, 0, 14, 2, 3, 2, 1, 17, 4, 5, 117, 118, 101, 99, 52, 0, 3, 0, 16, 2, 3, 2, 1, 18, 4, 22, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 18, 2, 3, 2, 1, 8, 4, 25, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 20, 2, 3, 2, 1, 9, 4, 25, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 22, 2, 3, 2, 1, 19, 4, 26, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 0, 3, 0, 24, 1, 109, 3, 5, 102, 114, 97, 109, 101, 5, 115, 112, 97, 119, 110, 7, 100, 101, 115, 112, 97, 119, 110, 4, 11, 113, 117, 101, 114, 121, 45, 101, 118, 101, 110, 116, 0, 3, 0, 26, 1, 112, 121, 1, 114, 4, 10, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 28, 7, 105, 110, 99, 108, 117, 100, 101, 28, 7, 101, 120, 99, 108, 117, 100, 101, 28, 7, 99, 104, 97, 110, 103, 101, 100, 28, 4, 11, 113, 117, 101, 114, 121, 45, 98, 117, 105, 108, 100, 0, 3, 0, 29, 1, 111, 0, 1, 112, 31, 1, 112, 127, 1, 112, 1, 1, 112, 118, 1, 112, 117, 1, 112, 3, 1, 112, 122, 1, 112, 5, 1, 112, 115, 1, 112, 125, 1, 112, 119, 1, 112, 7, 1, 112, 9, 1, 112, 11, 1, 112, 13, 1, 112, 15, 1, 112, 17, 1, 112, 19, 1, 112, 21, 1, 112, 23, 1, 112, 25, 1, 113, 22, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 32, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 33, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 34, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 35, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 36, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 37, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 38, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 39, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 40, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 41, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 28, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 42, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 43, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 44, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 45, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 46, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 47, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 48, 0, 27, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 1, 49, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 1, 50, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 1, 51, 0, 31, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 1, 52, 0, 4, 9, 118, 101, 99, 45, 118, 97, 108, 117, 101, 0, 3, 0, 53, 1, 107, 31, 1, 107, 127, 1, 107, 1, 1, 107, 118, 1, 107, 117, 1, 107, 3, 1, 107, 122, 1, 107, 5, 1, 107, 115, 1, 107, 125, 1, 107, 121, 1, 107, 119, 1, 107, 7, 1, 107, 9, 1, 107, 11, 1, 107, 13, 1, 107, 15, 1, 107, 17, 1, 107, 19, 1, 107, 21, 1, 107, 23, 1, 107, 25, 1, 113, 22, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 55, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 56, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 57, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 58, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 59, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 60, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 61, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 62, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 63, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 192, 0, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 193, 0, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 194, 0, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 195, 0, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 196, 0, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 197, 0, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 198, 0, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 199, 0, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 200, 0, 0, 27, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 1, 201, 0, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 1, 202, 0, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 1, 203, 0, 0, 31, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 1, 204, 0, 0, 4, 12, 111, 112, 116, 105, 111, 110, 45, 118, 97, 108, 117, 101, 0, 3, 0, 77, 1, 113, 24, 10, 116, 121, 112, 101, 45, 101, 109, 112, 116, 121, 1, 31, 0, 9, 116, 121, 112, 101, 45, 98, 111, 111, 108, 1, 127, 0, 14, 116, 121, 112, 101, 45, 101, 110, 116, 105, 116, 121, 45, 105, 100, 1, 1, 0, 8, 116, 121, 112, 101, 45, 102, 51, 50, 1, 118, 0, 8, 116, 121, 112, 101, 45, 102, 54, 52, 1, 117, 0, 9, 116, 121, 112, 101, 45, 109, 97, 116, 52, 1, 3, 0, 8, 116, 121, 112, 101, 45, 105, 51, 50, 1, 122, 0, 9, 116, 121, 112, 101, 45, 113, 117, 97, 116, 1, 5, 0, 11, 116, 121, 112, 101, 45, 115, 116, 114, 105, 110, 103, 1, 115, 0, 7, 116, 121, 112, 101, 45, 117, 56, 1, 125, 0, 8, 116, 121, 112, 101, 45, 117, 51, 50, 1, 121, 0, 8, 116, 121, 112, 101, 45, 117, 54, 52, 1, 119, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 50, 1, 7, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 51, 1, 9, 0, 9, 116, 121, 112, 101, 45, 118, 101, 99, 52, 1, 11, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 50, 1, 13, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 51, 1, 15, 0, 10, 116, 121, 112, 101, 45, 117, 118, 101, 99, 52, 1, 17, 0, 27, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 101, 115, 104, 45, 104, 97, 110, 100, 108, 101, 1, 19, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 116, 101, 120, 116, 117, 114, 101, 45, 104, 97, 110, 100, 108, 101, 1, 21, 0, 30, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 115, 97, 109, 112, 108, 101, 114, 45, 104, 97, 110, 100, 108, 101, 1, 23, 0, 31, 116, 121, 112, 101, 45, 112, 114, 111, 99, 101, 100, 117, 114, 97, 108, 45, 109, 97, 116, 101, 114, 105, 97, 108, 45, 104, 97, 110, 100, 108, 101, 1, 25, 0, 8, 116, 121, 112, 101, 45, 118, 101, 99, 1, 54, 0, 11, 116, 121, 112, 101, 45, 111, 112, 116, 105, 111, 110, 1, 206, 0, 0, 4, 5, 118, 97, 108, 117, 101, 0, 3, 0, 79, 1, 111, 2, 121, 208, 0, 1, 112, 209, 0, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 82, 1, 64, 1, 2, 105, 100, 115, 0, 193, 0, 4, 9, 103, 101, 116, 45, 105, 110, 100, 101, 120, 0, 1, 84, 1, 107, 208, 0, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 213, 0, 4, 13, 103, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 86, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 5, 118, 97, 108, 117, 101, 208, 0, 1, 0, 4, 13, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 87, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 100, 97, 116, 97, 211, 0, 1, 0, 4, 14, 97, 100, 100, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 88, 4, 13, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 87, 4, 14, 115, 101, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 88, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 0, 127, 4, 13, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 89, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 28, 0, 127, 4, 14, 104, 97, 115, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 90, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 1, 0, 4, 16, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 0, 1, 91, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 110, 100, 105, 99, 101, 115, 28, 1, 0, 4, 17, 114, 101, 109, 111, 118, 101, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 115, 0, 1, 92, 1, 64, 2, 1, 113, 30, 1, 116, 27, 0, 119, 4, 5, 113, 117, 101, 114, 121, 0, 1, 93, 1, 112, 208, 0, 1, 111, 2, 1, 222, 0, 1, 112, 223, 0, 1, 64, 1, 1, 113, 119, 0, 224, 0, 4, 10, 113, 117, 101, 114, 121, 45, 101, 118, 97, 108, 0, 1, 97, 3, 9, 99, 111, 109, 112, 111, 110, 101, 110, 116, 24, 112, 107, 103, 58, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 47, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 20, 2, 3, 0, 6, 6, 101, 110, 116, 105, 116, 121, 1, 66, 59, 2, 3, 2, 1, 11, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 3, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 13, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 2, 3, 2, 1, 12, 4, 4, 109, 97, 116, 52, 0, 3, 0, 6, 2, 3, 2, 1, 21, 4, 11, 101, 110, 116, 105, 116, 121, 45, 100, 97, 116, 97, 0, 3, 0, 8, 1, 114, 2, 6, 119, 101, 105, 103, 104, 116, 118, 4, 109, 97, 115, 107, 121, 4, 21, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 115, 116, 97, 99, 107, 45, 98, 108, 101, 110, 100, 0, 3, 0, 10, 1, 114, 2, 12, 97, 99, 116, 105, 111, 110, 45, 105, 110, 100, 101, 120, 121, 15, 116, 105, 109, 101, 45, 112, 101, 114, 99, 101, 110, 116, 97, 103, 101, 118, 4, 27, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 115, 97, 109, 112, 108, 101, 45, 112, 101, 114, 99, 101, 110, 116, 97, 103, 101, 0, 3, 0, 12, 1, 114, 2, 12, 97, 99, 116, 105, 111, 110, 45, 105, 110, 100, 101, 120, 121, 13, 116, 105, 109, 101, 45, 97, 98, 115, 111, 108, 117, 116, 101, 118, 4, 25, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 115, 97, 109, 112, 108, 101, 45, 97, 98, 115, 111, 108, 117, 116, 101, 0, 3, 0, 14, 1, 113, 5, 6, 115, 97, 109, 112, 108, 101, 1, 121, 0, 17, 115, 97, 109, 112, 108, 101, 45, 112, 101, 114, 99, 101, 110, 116, 97, 103, 101, 1, 13, 0, 15, 115, 97, 109, 112, 108, 101, 45, 97, 98, 115, 111, 108, 117, 116, 101, 1, 15, 0, 11, 105, 110, 116, 101, 114, 112, 111, 108, 97, 116, 101, 1, 118, 0, 5, 98, 108, 101, 110, 100, 1, 11, 0, 4, 22, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 45, 115, 116, 97, 99, 107, 0, 3, 0, 16, 1, 114, 3, 8, 99, 108, 105, 112, 45, 117, 114, 108, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 119, 101, 105, 103, 104, 116, 118, 4, 16, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 0, 3, 0, 18, 1, 112, 19, 1, 114, 2, 7, 97, 99, 116, 105, 111, 110, 115, 20, 15, 97, 112, 112, 108, 121, 45, 98, 97, 115, 101, 45, 112, 111, 115, 101, 127, 4, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 3, 0, 21, 1, 112, 17, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 115, 116, 97, 99, 107, 23, 1, 0, 4, 26, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 97, 99, 116, 105, 111, 110, 45, 115, 116, 97, 99, 107, 0, 1, 24, 1, 112, 115, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 4, 109, 97, 115, 107, 25, 1, 0, 4, 25, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 109, 97, 115, 107, 0, 1, 26, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 25, 4, 25, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 109, 97, 115, 107, 0, 1, 27, 1, 112, 118, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 105, 110, 100, 101, 120, 121, 4, 109, 97, 115, 107, 28, 1, 0, 4, 28, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 119, 101, 105, 103, 104, 116, 115, 0, 1, 29, 1, 112, 1, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 30, 4, 34, 103, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 105, 110, 100, 101, 114, 45, 109, 97, 115, 107, 45, 101, 110, 116, 105, 116, 105, 101, 115, 0, 1, 31, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 7, 119, 101, 105, 103, 104, 116, 115, 28, 4, 116, 105, 109, 101, 28, 13, 97, 98, 115, 111, 108, 117, 116, 101, 45, 116, 105, 109, 101, 127, 1, 0, 4, 19, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 98, 108, 101, 110, 100, 0, 1, 32, 1, 112, 7, 1, 64, 2, 8, 101, 110, 116, 105, 116, 105, 101, 115, 30, 6, 111, 114, 105, 103, 105, 110, 1, 0, 33, 4, 26, 103, 101, 116, 45, 116, 114, 97, 110, 115, 102, 111, 114, 109, 115, 45, 114, 101, 108, 97, 116, 105, 118, 101, 45, 116, 111, 0, 1, 34, 1, 64, 1, 4, 100, 97, 116, 97, 9, 0, 1, 4, 5, 115, 112, 97, 119, 110, 0, 1, 35, 1, 107, 9, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 36, 4, 7, 100, 101, 115, 112, 97, 119, 110, 0, 1, 37, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 20, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 22, 1, 0, 4, 24, 115, 101, 116, 45, 97, 110, 105, 109, 97, 116, 105, 111, 110, 45, 99, 111, 110, 116, 114, 111, 108, 108, 101, 114, 0, 1, 38, 1, 64, 2, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 6, 114, 97, 100, 105, 117, 115, 118, 0, 30, 4, 7, 105, 110, 45, 97, 114, 101, 97, 0, 1, 39, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 0, 127, 4, 6, 101, 120, 105, 115, 116, 115, 0, 1, 40, 1, 64, 1, 5, 105, 110, 100, 101, 120, 121, 0, 30, 4, 7, 103, 101, 116, 45, 97, 108, 108, 0, 1, 41, 1, 64, 0, 0, 1, 4, 9, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 42, 4, 22, 115, 121, 110, 99, 104, 114, 111, 110, 105, 122, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 42, 4, 19, 112, 101, 114, 115, 105, 115, 116, 101, 100, 45, 114, 101, 115, 111, 117, 114, 99, 101, 115, 0, 1, 42, 3, 6, 101, 110, 116, 105, 116, 121, 18, 112, 107, 103, 58, 47, 101, 110, 116, 105, 116, 121, 47, 101, 110, 116, 105, 116, 121, 5, 22, 1, 66, 4, 2, 3, 2, 1, 21, 4, 6, 101, 110, 116, 105, 116, 121, 0, 3, 0, 0, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 9, 115, 117, 98, 115, 99, 114, 105, 98, 101, 0, 1, 2, 3, 7, 109, 101, 115, 115, 97, 103, 101, 18, 112, 107, 103, 58, 47, 109, 101, 115, 115, 97, 103, 101, 47, 101, 118, 101, 110, 116, 5, 23, 1, 66, 5, 2, 3, 2, 1, 11, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 107, 1, 1, 64, 1, 7, 117, 115, 101, 114, 45, 105, 100, 115, 0, 2, 4, 14, 103, 101, 116, 45, 98, 121, 45, 117, 115, 101, 114, 45, 105, 100, 0, 1, 3, 3, 6, 112, 108, 97, 121, 101, 114, 18, 112, 107, 103, 58, 47, 112, 108, 97, 121, 101, 114, 47, 112, 108, 97, 121, 101, 114, 5, 24, 1, 66, 11, 2, 3, 2, 1, 11, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 3, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 13, 4, 4, 113, 117, 97, 116, 0, 3, 0, 4, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 12, 115, 101, 116, 45, 108, 105, 115, 116, 101, 110, 101, 114, 0, 1, 6, 4, 11, 115, 101, 116, 45, 101, 109, 105, 116, 116, 101, 114, 0, 1, 6, 1, 64, 2, 5, 115, 111, 117, 110, 100, 115, 7, 101, 109, 105, 116, 116, 101, 114, 1, 1, 0, 4, 20, 112, 108, 97, 121, 45, 115, 111, 117, 110, 100, 45, 111, 110, 45, 101, 110, 116, 105, 116, 121, 0, 1, 7, 3, 11, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 28, 112, 107, 103, 58, 47, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 47, 119, 111, 114, 108, 100, 45, 97, 117, 100, 105, 111, 5, 25, 1, 66, 10, 1, 64, 1, 3, 117, 114, 108, 115, 1, 0, 4, 4, 108, 111, 97, 100, 0, 1, 0, 1, 64, 4, 4, 110, 97, 109, 101, 115, 7, 108, 111, 111, 112, 105, 110, 103, 127, 6, 118, 111, 108, 117, 109, 101, 118, 3, 117, 105, 100, 121, 1, 0, 4, 4, 112, 108, 97, 121, 0, 1, 1, 1, 64, 1, 4, 110, 97, 109, 101, 115, 1, 0, 4, 4, 115, 116, 111, 112, 0, 1, 2, 1, 64, 1, 3, 117, 105, 100, 121, 1, 0, 4, 10, 115, 116, 111, 112, 45, 98, 121, 45, 105, 100, 0, 1, 3, 1, 64, 2, 4, 110, 97, 109, 101, 115, 6, 118, 111, 108, 117, 109, 101, 118, 1, 0, 4, 10, 115, 101, 116, 45, 118, 111, 108, 117, 109, 101, 0, 1, 4, 3, 12, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 47, 99, 108, 105, 101, 110, 116, 45, 97, 117, 100, 105, 111, 5, 26, 1, 66, 7, 2, 3, 2, 1, 11, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 17, 115, 101, 114, 118, 101, 114, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 115, 101, 114, 118, 101, 114, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 3, 14, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 47, 99, 108, 105, 101, 110, 116, 45, 109, 101, 115, 115, 97, 103, 101, 5, 27, 1, 66, 4, 2, 3, 2, 1, 11, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 64, 0, 0, 1, 4, 9, 103, 101, 116, 45, 108, 111, 99, 97, 108, 0, 1, 2, 3, 13, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 47, 99, 108, 105, 101, 110, 116, 45, 112, 108, 97, 121, 101, 114, 5, 28, 1, 66, 23, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 50, 0, 3, 0, 0, 2, 3, 2, 1, 11, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 2, 1, 109, 163, 1, 4, 107, 101, 121, 49, 4, 107, 101, 121, 50, 4, 107, 101, 121, 51, 4, 107, 101, 121, 52, 4, 107, 101, 121, 53, 4, 107, 101, 121, 54, 4, 107, 101, 121, 55, 4, 107, 101, 121, 56, 4, 107, 101, 121, 57, 4, 107, 101, 121, 48, 1, 97, 1, 98, 1, 99, 1, 100, 1, 101, 1, 102, 1, 103, 1, 104, 1, 105, 1, 106, 1, 107, 1, 108, 1, 109, 1, 110, 1, 111, 1, 112, 1, 113, 1, 114, 1, 115, 1, 116, 1, 117, 1, 118, 1, 119, 1, 120, 1, 121, 1, 122, 6, 101, 115, 99, 97, 112, 101, 2, 102, 49, 2, 102, 50, 2, 102, 51, 2, 102, 52, 2, 102, 53, 2, 102, 54, 2, 102, 55, 2, 102, 56, 2, 102, 57, 3, 102, 49, 48, 3, 102, 49, 49, 3, 102, 49, 50, 3, 102, 49, 51, 3, 102, 49, 52, 3, 102, 49, 53, 3, 102, 49, 54, 3, 102, 49, 55, 3, 102, 49, 56, 3, 102, 49, 57, 3, 102, 50, 48, 3, 102, 50, 49, 3, 102, 50, 50, 3, 102, 50, 51, 3, 102, 50, 52, 8, 115, 110, 97, 112, 115, 104, 111, 116, 6, 115, 99, 114, 111, 108, 108, 5, 112, 97, 117, 115, 101, 6, 105, 110, 115, 101, 114, 116, 4, 104, 111, 109, 101, 6, 100, 101, 108, 101, 116, 101, 3, 101, 110, 100, 9, 112, 97, 103, 101, 45, 100, 111, 119, 110, 7, 112, 97, 103, 101, 45, 117, 112, 4, 108, 101, 102, 116, 2, 117, 112, 5, 114, 105, 103, 104, 116, 4, 100, 111, 119, 110, 4, 98, 97, 99, 107, 6, 114, 101, 116, 117, 114, 110, 5, 115, 112, 97, 99, 101, 7, 99, 111, 109, 112, 111, 115, 101, 5, 99, 97, 114, 101, 116, 7, 110, 117, 109, 108, 111, 99, 107, 7, 110, 117, 109, 112, 97, 100, 48, 7, 110, 117, 109, 112, 97, 100, 49, 7, 110, 117, 109, 112, 97, 100, 50, 7, 110, 117, 109, 112, 97, 100, 51, 7, 110, 117, 109, 112, 97, 100, 52, 7, 110, 117, 109, 112, 97, 100, 53, 7, 110, 117, 109, 112, 97, 100, 54, 7, 110, 117, 109, 112, 97, 100, 55, 7, 110, 117, 109, 112, 97, 100, 56, 7, 110, 117, 109, 112, 97, 100, 57, 10, 110, 117, 109, 112, 97, 100, 45, 97, 100, 100, 13, 110, 117, 109, 112, 97, 100, 45, 100, 105, 118, 105, 100, 101, 14, 110, 117, 109, 112, 97, 100, 45, 100, 101, 99, 105, 109, 97, 108, 12, 110, 117, 109, 112, 97, 100, 45, 99, 111, 109, 109, 97, 12, 110, 117, 109, 112, 97, 100, 45, 101, 110, 116, 101, 114, 13, 110, 117, 109, 112, 97, 100, 45, 101, 113, 117, 97, 108, 115, 15, 110, 117, 109, 112, 97, 100, 45, 109, 117, 108, 116, 105, 112, 108, 121, 15, 110, 117, 109, 112, 97, 100, 45, 115, 117, 98, 116, 114, 97, 99, 116, 7, 97, 98, 110, 116, 45, 99, 49, 7, 97, 98, 110, 116, 45, 99, 50, 10, 97, 112, 111, 115, 116, 114, 111, 112, 104, 101, 4, 97, 112, 112, 115, 8, 97, 115, 116, 101, 114, 105, 115, 107, 2, 97, 116, 2, 97, 120, 9, 98, 97, 99, 107, 115, 108, 97, 115, 104, 10, 99, 97, 108, 99, 117, 108, 97, 116, 111, 114, 7, 99, 97, 112, 105, 116, 97, 108, 5, 99, 111, 108, 111, 110, 5, 99, 111, 109, 109, 97, 7, 99, 111, 110, 118, 101, 114, 116, 6, 101, 113, 117, 97, 108, 115, 5, 103, 114, 97, 118, 101, 4, 107, 97, 110, 97, 5, 107, 97, 110, 106, 105, 5, 108, 45, 97, 108, 116, 9, 108, 45, 98, 114, 97, 99, 107, 101, 116, 9, 108, 45, 99, 111, 110, 116, 114, 111, 108, 7, 108, 45, 115, 104, 105, 102, 116, 5, 108, 45, 119, 105, 110, 4, 109, 97, 105, 108, 12, 109, 101, 100, 105, 97, 45, 115, 101, 108, 101, 99, 116, 10, 109, 101, 100, 105, 97, 45, 115, 116, 111, 112, 5, 109, 105, 110, 117, 115, 4, 109, 117, 116, 101, 11, 109, 121, 45, 99, 111, 109, 112, 117, 116, 101, 114, 16, 110, 97, 118, 105, 103, 97, 116, 101, 45, 102, 111, 114, 119, 97, 114, 100, 17, 110, 97, 118, 105, 103, 97, 116, 101, 45, 98, 97, 99, 107, 119, 97, 114, 100, 10, 110, 101, 120, 116, 45, 116, 114, 97, 99, 107, 10, 110, 111, 45, 99, 111, 110, 118, 101, 114, 116, 6, 111, 101, 109, 49, 48, 50, 6, 112, 101, 114, 105, 111, 100, 10, 112, 108, 97, 121, 45, 112, 97, 117, 115, 101, 4, 112, 108, 117, 115, 5, 112, 111, 119, 101, 114, 10, 112, 114, 101, 118, 45, 116, 114, 97, 99, 107, 5, 114, 45, 97, 108, 116, 9, 114, 45, 98, 114, 97, 99, 107, 101, 116, 9, 114, 45, 99, 111, 110, 116, 114, 111, 108, 7, 114, 45, 115, 104, 105, 102, 116, 5, 114, 45, 119, 105, 110, 9, 115, 101, 109, 105, 99, 111, 108, 111, 110, 5, 115, 108, 97, 115, 104, 5, 115, 108, 101, 101, 112, 4, 115, 116, 111, 112, 5, 115, 121, 115, 114, 113, 3, 116, 97, 98, 9, 117, 110, 100, 101, 114, 108, 105, 110, 101, 9, 117, 110, 108, 97, 98, 101, 108, 101, 100, 11, 118, 111, 108, 117, 109, 101, 45, 100, 111, 119, 110, 9, 118, 111, 108, 117, 109, 101, 45, 117, 112, 4, 119, 97, 107, 101, 8, 119, 101, 98, 45, 98, 97, 99, 107, 13, 119, 101, 98, 45, 102, 97, 118, 111, 114, 105, 116, 101, 115, 11, 119, 101, 98, 45, 102, 111, 114, 119, 97, 114, 100, 8, 119, 101, 98, 45, 104, 111, 109, 101, 11, 119, 101, 98, 45, 114, 101, 102, 114, 101, 115, 104, 10, 119, 101, 98, 45, 115, 101, 97, 114, 99, 104, 8, 119, 101, 98, 45, 115, 116, 111, 112, 3, 121, 101, 110, 4, 99, 111, 112, 121, 5, 112, 97, 115, 116, 101, 3, 99, 117, 116, 4, 16, 118, 105, 114, 116, 117, 97, 108, 45, 107, 101, 121, 45, 99, 111, 100, 101, 0, 3, 0, 4, 1, 113, 4, 4, 108, 101, 102, 116, 0, 0, 5, 114, 105, 103, 104, 116, 0, 0, 6, 109, 105, 100, 100, 108, 101, 0, 0, 5, 111, 116, 104, 101, 114, 1, 123, 0, 4, 12, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 0, 3, 0, 6, 1, 112, 5, 1, 112, 7, 1, 114, 5, 4, 107, 101, 121, 115, 8, 14, 109, 111, 117, 115, 101, 45, 112, 111, 115, 105, 116, 105, 111, 110, 1, 11, 109, 111, 117, 115, 101, 45, 100, 101, 108, 116, 97, 1, 11, 109, 111, 117, 115, 101, 45, 119, 104, 101, 101, 108, 118, 13, 109, 111, 117, 115, 101, 45, 98, 117, 116, 116, 111, 110, 115, 9, 4, 5, 105, 110, 112, 117, 116, 0, 3, 0, 10, 1, 113, 35, 12, 100, 101, 102, 97, 117, 108, 116, 45, 105, 99, 111, 110, 0, 0, 9, 99, 114, 111, 115, 115, 104, 97, 105, 114, 0, 0, 4, 104, 97, 110, 100, 0, 0, 5, 97, 114, 114, 111, 119, 0, 0, 4, 109, 111, 118, 101, 0, 0, 4, 116, 101, 120, 116, 0, 0, 4, 119, 97, 105, 116, 0, 0, 4, 104, 101, 108, 112, 0, 0, 8, 112, 114, 111, 103, 114, 101, 115, 115, 0, 0, 11, 110, 111, 116, 45, 97, 108, 108, 111, 119, 101, 100, 0, 0, 12, 99, 111, 110, 116, 101, 120, 116, 45, 109, 101, 110, 117, 0, 0, 4, 99, 101, 108, 108, 0, 0, 13, 118, 101, 114, 116, 105, 99, 97, 108, 45, 116, 101, 120, 116, 0, 0, 5, 97, 108, 105, 97, 115, 0, 0, 4, 99, 111, 112, 121, 0, 0, 7, 110, 111, 45, 100, 114, 111, 112, 0, 0, 4, 103, 114, 97, 98, 0, 0, 8, 103, 114, 97, 98, 98, 105, 110, 103, 0, 0, 10, 97, 108, 108, 45, 115, 99, 114, 111, 108, 108, 0, 0, 7, 122, 111, 111, 109, 45, 105, 110, 0, 0, 8, 122, 111, 111, 109, 45, 111, 117, 116, 0, 0, 8, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 110, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 8, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 101, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 9, 110, 115, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 101, 115, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 11, 110, 119, 115, 101, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 99, 111, 108, 45, 114, 101, 115, 105, 122, 101, 0, 0, 10, 114, 111, 119, 45, 114, 101, 115, 105, 122, 101, 0, 0, 4, 11, 99, 117, 114, 115, 111, 114, 45, 105, 99, 111, 110, 0, 3, 0, 12, 1, 64, 0, 0, 11, 4, 3, 103, 101, 116, 0, 1, 14, 4, 12, 103, 101, 116, 45, 112, 114, 101, 118, 105, 111, 117, 115, 0, 1, 14, 1, 64, 1, 4, 105, 99, 111, 110, 13, 1, 0, 4, 10, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 0, 1, 15, 1, 64, 1, 7, 118, 105, 115, 105, 98, 108, 101, 127, 1, 0, 4, 18, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 118, 105, 115, 105, 98, 108, 101, 0, 1, 16, 1, 64, 1, 6, 108, 111, 99, 107, 101, 100, 127, 1, 0, 4, 15, 115, 101, 116, 45, 99, 117, 114, 115, 111, 114, 45, 108, 111, 99, 107, 0, 1, 17, 3, 12, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 30, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 47, 99, 108, 105, 101, 110, 116, 45, 105, 110, 112, 117, 116, 5, 29, 2, 3, 0, 0, 3, 114, 97, 121, 1, 66, 16, 2, 3, 2, 1, 3, 4, 4, 118, 101, 99, 51, 0, 3, 0, 0, 2, 3, 2, 1, 2, 4, 4, 118, 101, 99, 50, 0, 3, 0, 2, 2, 3, 2, 1, 30, 4, 3, 114, 97, 121, 0, 3, 0, 4, 2, 3, 2, 1, 11, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 6, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 112, 111, 115, 3, 0, 5, 4, 14, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 45, 114, 97, 121, 0, 1, 8, 1, 64, 1, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 3, 4, 20, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 99, 108, 105, 112, 45, 115, 112, 97, 99, 101, 0, 1, 9, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 3, 0, 5, 4, 25, 115, 99, 114, 101, 101, 110, 45, 116, 111, 45, 119, 111, 114, 108, 100, 45, 100, 105, 114, 101, 99, 116, 105, 111, 110, 0, 1, 10, 1, 64, 2, 6, 99, 97, 109, 101, 114, 97, 7, 10, 115, 99, 114, 101, 101, 110, 45, 112, 111, 115, 1, 0, 3, 4, 15, 119, 111, 114, 108, 100, 45, 116, 111, 45, 115, 99, 114, 101, 101, 110, 0, 1, 11, 3, 13, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 47, 99, 108, 105, 101, 110, 116, 45, 99, 97, 109, 101, 114, 97, 5, 31, 1, 66, 2, 1, 64, 1, 10, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 127, 1, 0, 4, 14, 115, 101, 116, 45, 102, 117, 108, 108, 115, 99, 114, 101, 101, 110, 0, 1, 0, 3, 13, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 32, 112, 107, 103, 58, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 47, 99, 108, 105, 101, 110, 116, 45, 119, 105, 110, 100, 111, 119, 5, 32, 1, 66, 43, 2, 3, 2, 1, 11, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 2, 3, 2, 1, 3, 4, 4, 118, 101, 99, 51, 0, 3, 0, 2, 2, 3, 2, 1, 12, 4, 4, 109, 97, 116, 52, 0, 3, 0, 4, 1, 114, 3, 4, 115, 105, 100, 101, 127, 2, 117, 112, 127, 4, 100, 111, 119, 110, 127, 4, 19, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 99, 111, 108, 108, 105, 115, 105, 111, 110, 0, 3, 0, 6, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 1, 0, 4, 9, 97, 100, 100, 45, 102, 111, 114, 99, 101, 0, 1, 8, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 1, 0, 4, 11, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 9, 1, 107, 118, 1, 64, 4, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 7, 105, 109, 112, 117, 108, 115, 101, 118, 6, 114, 97, 100, 105, 117, 115, 118, 14, 102, 97, 108, 108, 111, 102, 102, 45, 114, 97, 100, 105, 117, 115, 10, 1, 0, 4, 18, 97, 100, 100, 45, 114, 97, 100, 105, 97, 108, 45, 105, 109, 112, 117, 108, 115, 101, 0, 1, 11, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 5, 102, 111, 114, 99, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 21, 97, 100, 100, 45, 102, 111, 114, 99, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 12, 1, 64, 3, 6, 101, 110, 116, 105, 116, 121, 1, 7, 105, 109, 112, 117, 108, 115, 101, 3, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 23, 97, 100, 100, 45, 105, 109, 112, 117, 108, 115, 101, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 13, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 0, 3, 4, 24, 103, 101, 116, 45, 118, 101, 108, 111, 99, 105, 116, 121, 45, 97, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 14, 1, 64, 1, 7, 103, 114, 97, 118, 105, 116, 121, 3, 1, 0, 4, 11, 115, 101, 116, 45, 103, 114, 97, 118, 105, 116, 121, 0, 1, 15, 1, 64, 1, 6, 101, 110, 116, 105, 116, 121, 1, 1, 0, 4, 8, 117, 110, 102, 114, 101, 101, 122, 101, 0, 1, 16, 4, 6, 102, 114, 101, 101, 122, 101, 0, 1, 16, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 118, 101, 108, 111, 99, 105, 116, 121, 118, 1, 0, 4, 11, 115, 116, 97, 114, 116, 45, 109, 111, 116, 111, 114, 0, 1, 17, 4, 10, 115, 116, 111, 112, 45, 109, 111, 116, 111, 114, 0, 1, 16, 1, 64, 4, 6, 97, 99, 116, 111, 114, 48, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 48, 5, 6, 97, 99, 116, 111, 114, 49, 1, 10, 116, 114, 97, 110, 115, 102, 111, 114, 109, 49, 5, 1, 0, 4, 21, 99, 114, 101, 97, 116, 101, 45, 114, 101, 118, 111, 108, 117, 116, 101, 45, 106, 111, 105, 110, 116, 0, 1, 18, 1, 111, 2, 1, 118, 1, 107, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 20, 4, 13, 114, 97, 121, 99, 97, 115, 116, 45, 102, 105, 114, 115, 116, 0, 1, 21, 1, 112, 19, 1, 64, 2, 6, 111, 114, 105, 103, 105, 110, 3, 9, 100, 105, 114, 101, 99, 116, 105, 111, 110, 3, 0, 22, 4, 7, 114, 97, 121, 99, 97, 115, 116, 0, 1, 23, 1, 64, 4, 6, 101, 110, 116, 105, 116, 121, 1, 12, 100, 105, 115, 112, 108, 97, 99, 101, 109, 101, 110, 116, 3, 8, 109, 105, 110, 45, 100, 105, 115, 116, 118, 12, 101, 108, 97, 112, 115, 101, 100, 45, 116, 105, 109, 101, 118, 0, 7, 4, 14, 109, 111, 118, 101, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 0, 1, 24, 1, 64, 2, 6, 101, 110, 116, 105, 116, 121, 1, 8, 112, 111, 115, 105, 116, 105, 111, 110, 3, 1, 0, 4, 22, 115, 101, 116, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 25, 4, 27, 115, 101, 116, 45, 99, 104, 97, 114, 97, 99, 116, 101, 114, 45, 102, 111, 111, 116, 45, 112, 111, 115, 105, 116, 105, 111, 110, 0, 1, 25, 3, 14, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 47, 115, 101, 114, 118, 101, 114, 45, 112, 104, 121, 115, 105, 99, 115, 5, 33, 1, 66, 7, 2, 3, 2, 1, 11, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 6, 27, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 25, 99, 108, 105, 101, 110, 116, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 45, 114, 101, 108, 105, 97, 98, 108, 101, 0, 0, 26, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 117, 110, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 24, 99, 108, 105, 101, 110, 116, 45, 116, 97, 114, 103, 101, 116, 101, 100, 45, 114, 101, 108, 105, 97, 98, 108, 101, 1, 115, 0, 15, 108, 111, 99, 97, 108, 45, 98, 114, 111, 97, 100, 99, 97, 115, 116, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 4, 6, 116, 97, 114, 103, 101, 116, 0, 3, 0, 2, 1, 112, 125, 1, 64, 3, 9, 116, 97, 114, 103, 101, 116, 45, 105, 100, 3, 4, 110, 97, 109, 101, 115, 4, 100, 97, 116, 97, 4, 1, 0, 4, 4, 115, 101, 110, 100, 0, 1, 5, 3, 14, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 34, 112, 107, 103, 58, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 47, 115, 101, 114, 118, 101, 114, 45, 109, 101, 115, 115, 97, 103, 101, 5, 34, 1, 66, 9, 2, 3, 2, 1, 11, 4, 9, 101, 110, 116, 105, 116, 121, 45, 105, 100, 0, 3, 0, 0, 1, 113, 4, 7, 114, 117, 110, 116, 105, 109, 101, 0, 0, 5, 108, 111, 99, 97, 108, 1, 1, 0, 6, 115, 101, 114, 118, 101, 114, 0, 0, 6, 99, 108, 105, 101, 110, 116, 1, 115, 0, 4, 6, 115, 111, 117, 114, 99, 101, 0, 3, 0, 2, 1, 64, 0, 1, 0, 4, 4, 105, 110, 105, 116, 0, 1, 4, 1, 112, 125, 1, 64, 4, 4, 116, 105, 109, 101, 118, 14, 109, 101, 115, 115, 97, 103, 101, 45, 115, 111, 117, 114, 99, 101, 3, 12, 109, 101, 115, 115, 97, 103, 101, 45, 110, 97, 109, 101, 115, 12, 109, 101, 115, 115, 97, 103, 101, 45, 100, 97, 116, 97, 5, 1, 0, 4, 4, 101, 120, 101, 99, 0, 1, 6, 4, 5, 103, 117, 101, 115, 116, 16, 112, 107, 103, 58, 47, 103, 117, 101, 115, 116, 47, 103, 117, 101, 115, 116, 5, 35, 4, 8, 98, 105, 110, 100, 105, 110, 103, 115, 18, 112, 107, 103, 58, 47, 109, 97, 105, 110, 47, 98, 105, 110, 100, 105, 110, 103, 115, 4, 0, 0, 68, 9, 112, 114, 111, 100, 117, 99, 101, 114, 115, 1, 12, 112, 114, 111, 99, 101, 115, 115, 101, 100, 45, 98, 121, 2, 13, 119, 105, 116, 45, 99, 111, 109, 112, 111, 110, 101, 110, 116, 5, 48, 46, 56, 46, 50, 16, 119, 105, 116, 45, 98, 105, 110, 100, 103, 101, 110, 45, 114, 117, 115, 116, 5, 48, 46, 54, 46, 48, 11, 19, 1, 4, 109, 97, 105, 110, 9, 112, 107, 103, 58, 47, 109, 97, 105, 110, 3, 42, 0];
                                     
                                     #[inline(never)]
                                     #[doc(hidden)]

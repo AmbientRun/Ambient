@@ -122,15 +122,3 @@ type = "String"
 name = "Decal material from URL"
 description = "Load a Decal material from the URL and attach it to this entity."
 attributes = ["Debuggable", "Networked", "Store"]
-
-[components."core::rendering::mesh_from_url"]
-type = "String"
-name = "Mesh from URL"
-description = "Loads a mesh from the URL."
-attributes = ["Debuggable", "Store"]
-
-[components."core::rendering::material_from_url"]
-type = "String"
-name = "Material from URL"
-description = "Loads a material from the URL."
-attributes = ["Debuggable", "Store"]

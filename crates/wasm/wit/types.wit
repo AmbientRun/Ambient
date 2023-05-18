@@ -59,8 +59,5 @@ default interface types {
         dir: vec3,
     }
 
-    record ulid {
-        msb: u64,
-        lsb: u64,
-    }
+    type ulid = tuple<u64, u64>
 }

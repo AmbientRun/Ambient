@@ -8,5 +8,9 @@ default interface client-mesh {
         texcoord0: vec2,
     }
 
-    create: func(vertices: list<vertex>, indices: list<u32>) -> ulid
+    record handle {
+        ulid: ulid
+    }
+
+    create: func(vertices: list<vertex>, indices: list<u32>) -> handle
 }

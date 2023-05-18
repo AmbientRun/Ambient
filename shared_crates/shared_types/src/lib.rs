@@ -20,7 +20,11 @@ macro_rules! primitive_component_definitions {
             (Vec4, Vec4),
             (Uvec2, UVec2),
             (Uvec3, UVec3),
-            (Uvec4, UVec4)
+            (Uvec4, UVec4),
+            (ProceduralMeshHandle, ProceduralMeshHandle),
+            (ProceduralTextureHandle, ProceduralTextureHandle),
+            (ProceduralSamplerHandle, ProceduralSamplerHandle),
+            (ProceduralMaterialHandle, ProceduralMaterialHandle)
         );
     };
 }
@@ -30,9 +34,12 @@ macro_rules! primitive_component_definitions {
 use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
+use ulid::Ulid;
 
 /// Describes the appearance of the mouse cursor.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, EnumString, Display, Default, Serialize, Deserialize)]
+#[derive(
+    Debug, Copy, Clone, PartialEq, Eq, Hash, EnumString, Display, Default, Serialize, Deserialize,
+)]
 pub enum CursorIcon {
     /// The platform-dependent default cursor.
     #[default]
@@ -177,7 +184,20 @@ impl From<winit::window::CursorIcon> for CursorIcon {
 }
 
 /// Symbolic name for a keyboard key.
-#[derive(Debug, Hash, Ord, PartialOrd, PartialEq, Eq, Clone, Copy, EnumString, Display, Serialize, Deserialize)]
+#[derive(
+    Debug,
+    Hash,
+    Ord,
+    PartialOrd,
+    PartialEq,
+    Eq,
+    Clone,
+    Copy,
+    EnumString,
+    Display,
+    Serialize,
+    Deserialize,
+)]
 #[repr(u32)]
 pub enum VirtualKeyCode {
     /// The '1' key over the letters.
@@ -815,3 +835,47 @@ impl From<MouseButton> for winit::event::MouseButton {
         }
     }
 }
+
+macro_rules! procedural_storage_handle {
+    ($name:ident) => {
+        #[derive(
+            Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Hash, Serialize, Deserialize,
+        )]
+        pub struct $name(Ulid);
+
+        impl $name {
+            pub fn new() -> Self {
+                Self(Ulid::new())
+            }
+        }
+
+        impl Default for $name {
+            fn default() -> Self {
+                Self(Ulid::nil())
+            }
+        }
+
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, "{}", self.0)
+            }
+        }
+
+        impl From<Ulid> for $name {
+            fn from(ulid: Ulid) -> Self {
+                Self(ulid)
+            }
+        }
+
+        impl From<$name> for Ulid {
+            fn from(handle: $name) -> Self {
+                handle.0
+            }
+        }
+    };
+}
+
+procedural_storage_handle!(ProceduralMeshHandle);
+procedural_storage_handle!(ProceduralTextureHandle);
+procedural_storage_handle!(ProceduralSamplerHandle);
+procedural_storage_handle!(ProceduralMaterialHandle);

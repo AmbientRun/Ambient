@@ -12,6 +12,7 @@ bitflags = { workspace = true }
 strum = { workspace = true }
 serde = { workspace = true }
 winit = { workspace = true, optional = true }
+ulid = { workspace = true }
 
 [features]
 native = ["dep:winit"]

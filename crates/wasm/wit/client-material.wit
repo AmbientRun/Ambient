@@ -1,9 +1,18 @@
 default interface client-material {
+    use pkg.types.{ulid}
+    use pkg.client-texture.{handle as texture-handle}
+    use pkg.client-sampler.{handle as sampler-handle}
+
     record descriptor {
-        base-color-map: string,
-        normal-map: string,
-        metallic-roughness-map: string,
-        sampler: string,
+        base-color-map: texture-handle,
+        normal-map: texture-handle,
+        metallic-roughness-map: texture-handle,
+        sampler: sampler-handle,
     }
-    create: func(desc: descriptor) -> string
+
+    record handle {
+        ulid: ulid
+    }
+
+    create: func(desc: descriptor) -> handle
 }

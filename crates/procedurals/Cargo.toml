@@ -8,5 +8,14 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
+ambient_std = { path = "../std" , version = "0.2.1" }
+ambient_core = { path = "../core" , version = "0.2.1" }
+ambient_ecs = { path = "../ecs" , version = "0.2.1" }
 ambient_gpu = { path = "../gpu" , version = "0.2.1" }
 ambient_renderer = { path = "../renderer" , version = "0.2.1" }
+ambient_shared_types = { path = "../../shared_crates/shared_types" , version = "0.2.1" }
+
+parking_lot = { workspace = true }
+ulid = { workspace = true }
+tracing = { workspace = true }
+wgpu = { workspace = true }

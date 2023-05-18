@@ -1,6 +1,13 @@
 default interface client-texture {
+    use pkg.types.{ulid}
+
     variant format {
         rgba8-unorm
     }
-    create2d: func(width: u32, height: u32, format: format, data: list<u8>) -> string
+
+    record handle {
+        ulid: ulid
+    }
+
+    create2d: func(width: u32, height: u32, format: format, data: list<u8>) -> handle
 }

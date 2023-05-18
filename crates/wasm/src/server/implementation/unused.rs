@@ -99,17 +99,23 @@ impl wit::client_mesh::Host for Bindings {
         &mut self,
         _vertices: Vec<wit::client_mesh::Vertex>,
         _indices: Vec<u32>,
-    ) -> anyhow::Result<wit::types::Ulid> {
+    ) -> anyhow::Result<wit::client_mesh::Handle> {
         unsupported()
     }
 }
 impl wit::client_material::Host for Bindings {
-    fn create(&mut self, _desc: wit::client_material::Descriptor) -> anyhow::Result<String> {
+    fn create(
+        &mut self,
+        _desc: wit::client_material::Descriptor,
+    ) -> anyhow::Result<wit::client_material::Handle> {
         unsupported()
     }
 }
 impl wit::client_sampler::Host for Bindings {
-    fn create(&mut self, _desc: wit::client_sampler::Descriptor) -> anyhow::Result<String> {
+    fn create(
+        &mut self,
+        _desc: wit::client_sampler::Descriptor,
+    ) -> anyhow::Result<wit::client_sampler::Handle> {
         unsupported()
     }
 }
@@ -120,7 +126,7 @@ impl wit::client_texture::Host for Bindings {
         _height: u32,
         _format: wit::client_texture::Format,
         _data: Vec<u8>,
-    ) -> anyhow::Result<String> {
+    ) -> anyhow::Result<wit::client_texture::Handle> {
         unsupported()
     }
 }

@@ -1,3 +1,5 @@
+use crate::global::ProceduralSamplerHandle;
+use crate::internal::conversion::*;
 use crate::internal::wit;
 
 #[derive(Clone, Copy)]
@@ -23,7 +25,7 @@ pub struct Descriptor {
     pub mipmap_filter: FilterMode,
 }
 
-pub fn create(desc: &Descriptor) -> String {
+pub fn create(desc: &Descriptor) -> ProceduralSamplerHandle {
     let address_mode_from_guest = |guest: AddressMode| -> wit::client_sampler::AddressMode {
         match guest {
             AddressMode::ClampToEdge => wit::client_sampler::AddressMode::ClampToEdge,
@@ -44,5 +46,5 @@ pub fn create(desc: &Descriptor) -> String {
         min_filter: filter_mode_from_guest(desc.min_filter),
         mipmap_filter: filter_mode_from_guest(desc.mipmap_filter),
     };
-    wit::client_sampler::create(desc)
+    wit::client_sampler::create(desc).from_bindgen()
 }

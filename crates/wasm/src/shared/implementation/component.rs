@@ -3,6 +3,10 @@ use ambient_ecs::{
     ComponentValue, Entity, EntityId, PrimitiveComponentType as PCT, QueryEvent, QueryState, World,
 };
 use ambient_shared_types::primitive_component_definitions;
+use ambient_shared_types::{
+    ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
+    ProceduralTextureHandle,
+};
 use anyhow::Context;
 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 use itertools::Itertools;

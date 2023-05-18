@@ -29,6 +29,7 @@ use ambient_gpu::{
     mesh_buffer::MeshBufferKey,
     settings::Settings,
 };
+use ambient_procedurals::{procedural_storage, ProceduralStorage};
 use ambient_renderer::lod::lod_system;
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
@@ -37,7 +38,7 @@ use ambient_std::{
 use ambient_sys::{task::RuntimeHandle, time::SystemTime};
 use glam::{uvec2, vec2, UVec2, Vec2};
 use parking_lot::Mutex;
-use renderers::{main_renderer, ui_renderer, UiRenderer, MainRenderer};
+use renderers::{main_renderer, ui_renderer, MainRenderer, UiRenderer};
 use winit::{
     event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
@@ -70,6 +71,7 @@ pub fn init_all_components() {
     ambient_model::init_components();
     ambient_cameras::init_all_components();
     renderers::init_components();
+    ambient_procedurals::init_components();
 }
 
 pub fn gpu_world_sync_systems() -> SystemGroup<GpuWorldSyncEvent> {
@@ -114,6 +116,7 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
             Box::new(ambient_renderer::skinning::skinning_systems()),
             Box::new(bounding_systems()),
             Box::new(camera_systems()),
+            Box::new(ambient_procedurals::systems()),
         ],
     )
 }
@@ -177,6 +180,7 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
             resources.window_scale_factor,
         )
         .with(ambient_core::window::window_ctl(), resources.ctl_tx)
+        .with(procedural_storage(), ProceduralStorage::new())
 }
 
 pub fn get_time_since_app_start(world: &World) -> Duration {
@@ -338,7 +342,10 @@ impl AppBuilder {
 
             // Set a background color for the canvas to make it easier to tell where the canvas is for debugging purposes.
             // Use the maximum available width and height as the canvas dimensions.
-            canvas.style().set_css_text(&format!("position: fixed; background-color: black; width: {}px; height: {}px; z-index: 50", max_width, max_height));
+            canvas.style().set_css_text(&format!(
+                "position: fixed; background-color: black; width: {}px; height: {}px; z-index: 50",
+                max_width, max_height
+            ));
             target.append_child(&canvas).unwrap();
         }
 
@@ -416,8 +423,7 @@ impl AppBuilder {
                 world.add_resource(ui_renderer(), renderer);
             } else {
                 tracing::debug!("Setting up Main renderer");
-                let renderer =
-                    MainRenderer::new(&mut world, self.ui_renderer, self.main_renderer);
+                let renderer = MainRenderer::new(&mut world, self.ui_renderer, self.main_renderer);
                 tracing::debug!("Created main renderer");
                 let renderer = Arc::new(Mutex::new(renderer));
                 world.add_resource(main_renderer(), renderer);
@@ -792,10 +798,7 @@ impl System<Event<'static, ()>> for ExamplesSystem {
             } => match virtual_keycode {
                 VirtualKeyCode::F1 => dump_world_hierarchy_to_tmp_file(world),
                 VirtualKeyCode::F2 => world.dump_to_tmp_file(),
-                VirtualKeyCode::F3 => world
-                    .resource(main_renderer())
-                    .lock()
-                    .dump_to_tmp_file(),
+                VirtualKeyCode::F3 => world.resource(main_renderer()).lock().dump_to_tmp_file(),
                 _ => {}
             },
             _ => {}

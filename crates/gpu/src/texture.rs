@@ -8,7 +8,7 @@ use std::{
     },
 };
 
-use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
+use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use bytemuck::Pod;
 use byteorder::{ByteOrder, LittleEndian};
 use glam::{uvec2, UVec4, Vec4};
@@ -808,35 +808,6 @@ impl NTextureChannels for wgpu::TextureFormat {
             wgpu::TextureFormat::Depth24PlusStencil8 => 1,
             _ => panic!("Unsupported texture format"),
         }
-    }
-}
-
-#[derive(Debug)]
-pub struct TextureViewKey(ulid::Ulid);
-
-impl TextureViewKey {
-    pub fn new() -> Self {
-        Self(ulid::Ulid::new())
-    }
-}
-
-impl std::str::FromStr for TextureViewKey {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(ulid::Ulid::from_str(s)?))
-    }
-}
-
-impl std::fmt::Display for TextureViewKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl SyncAssetKey<Arc<TextureView>> for TextureViewKey {
-    fn load(&self, assets: AssetCache) -> Arc<TextureView> {
-        self.get(&assets)
     }
 }
 

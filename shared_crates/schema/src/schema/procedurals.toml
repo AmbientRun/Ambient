@@ -1,0 +1,27 @@
+[components."core::procedurals"]
+name = "Procedurals"
+description = "todo"
+
+[components."core::procedurals::procedural_mesh"]
+type = "ProceduralMeshHandle"
+name = "Procedural mesh"
+description = "todo"
+attributes = ["Debuggable", "Store"]
+
+[components."core::procedurals::procedural_texture"]
+type = "ProceduralTextureHandle"
+name = "Procedural texture"
+description = "todo"
+attributes = ["Debuggable", "Store"]
+
+[components."core::procedurals::procedural_sampler"]
+type = "ProceduralSamplerHandle"
+name = "Procedural sampler"
+description = "todo"
+attributes = ["Debuggable", "Store"]
+
+[components."core::procedurals::procedural_material"]
+type = "ProceduralMaterialHandle"
+name = "Procedural material"
+description = "todo"
+attributes = ["Debuggable", "Store"]

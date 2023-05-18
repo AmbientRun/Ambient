@@ -242,6 +242,7 @@ dependencies = [
  "ambient_input",
  "ambient_model",
  "ambient_primitives",
+ "ambient_procedurals",
  "ambient_profiling",
  "ambient_renderer",
  "ambient_std",
@@ -1047,8 +1048,16 @@ dependencies = [
 name = "ambient_procedurals"
 version = "0.2.1"
 dependencies = [
+ "ambient_core",
+ "ambient_ecs",
  "ambient_gpu",
  "ambient_renderer",
+ "ambient_shared_types",
+ "ambient_std",
+ "parking_lot",
+ "tracing",
+ "ulid",
+ "wgpu 0.16.0",
 ]
 
 [[package]]
@@ -1102,6 +1111,7 @@ name = "ambient_project_macro_common"
 version = "0.2.1"
 dependencies = [
  "ambient_project",
+ "ambient_shared_types",
  "anyhow",
  "indoc",
  "proc-macro2 1.0.56",
@@ -1244,6 +1254,7 @@ dependencies = [
  "bitflags 1.3.2",
  "serde",
  "strum",
+ "ulid",
  "winit",
 ]
 

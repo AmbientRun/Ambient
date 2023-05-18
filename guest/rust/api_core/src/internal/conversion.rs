@@ -1,5 +1,8 @@
 use crate::{
-    global::{Mat4, Quat, Vec2, Vec3, Vec4},
+    global::{
+        Mat4, ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
+        ProceduralTextureHandle, Quat, Vec2, Vec3, Vec4,
+    },
     internal::wit,
 };
 use glam::{UVec2, UVec3, UVec4};
@@ -231,7 +234,7 @@ impl FromBindgen for wit::types::Ulid {
     type Item = Ulid;
 
     fn from_bindgen(self) -> Self::Item {
-        Ulid::from((self.msb, self.lsb))
+        Ulid::from(self)
     }
 }
 
@@ -239,7 +242,33 @@ impl IntoBindgen for Ulid {
     type Item = wit::types::Ulid;
 
     fn into_bindgen(self) -> Self::Item {
-        let (msb, lsb): (u64, u64) = self.into();
-        wit::types::Ulid { msb, lsb }
+        self.into()
     }
 }
+
+macro_rules! procedural_storage_handle {
+    ($name:ident, $wit_name: ident) => {
+        impl FromBindgen for wit::$wit_name::Handle {
+            type Item = $name;
+
+            fn from_bindgen(self) -> Self::Item {
+                $name::from(self.ulid.from_bindgen())
+            }
+        }
+
+        impl IntoBindgen for $name {
+            type Item = wit::$wit_name::Handle;
+
+            fn into_bindgen(self) -> Self::Item {
+                wit::$wit_name::Handle {
+                    ulid: Ulid::from(self).into_bindgen(),
+                }
+            }
+        }
+    };
+}
+
+procedural_storage_handle!(ProceduralMeshHandle, client_mesh);
+procedural_storage_handle!(ProceduralTextureHandle, client_texture);
+procedural_storage_handle!(ProceduralSamplerHandle, client_sampler);
+procedural_storage_handle!(ProceduralMaterialHandle, client_material);

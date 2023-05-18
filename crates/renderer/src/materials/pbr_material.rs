@@ -472,32 +472,3 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialDesc {
         )))
     }
 }
-
-#[derive(Debug)]
-pub struct PbrMaterialConfigKey(ulid::Ulid);
-
-impl PbrMaterialConfigKey {
-    pub fn new() -> Self {
-        Self(ulid::Ulid::new())
-    }
-}
-
-impl std::str::FromStr for PbrMaterialConfigKey {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(ulid::Ulid::from_str(s)?))
-    }
-}
-
-impl std::fmt::Display for PbrMaterialConfigKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl SyncAssetKey<PbrMaterialConfig> for PbrMaterialConfigKey {
-    fn load(&self, assets: AssetCache) -> PbrMaterialConfig {
-        self.get(&assets)
-    }
-}

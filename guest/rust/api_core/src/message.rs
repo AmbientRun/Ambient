@@ -290,8 +290,12 @@ mod serde {
     pub use ambient_project_rt::message_serde::*;
 
     use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
+    use ulid::Ulid;
 
-    use crate::global::EntityId;
+    use crate::global::{
+        EntityId, ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
+        ProceduralTextureHandle,
+    };
 
     impl MessageSerde for EntityId {
         fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
@@ -310,5 +314,34 @@ mod serde {
             Ok(Self { id0, id1 })
         }
     }
+
+    macro_rules! procedural_storage_handle {
+        ($name:ident) => {
+            impl MessageSerde for $name {
+                fn serialize_message_part(
+                    &self,
+                    output: &mut Vec<u8>,
+                ) -> Result<(), MessageSerdeError> {
+                    let ulid = Ulid::from(*self);
+                    let ulid = u128::from(ulid);
+                    output.write_u128::<BigEndian>(ulid)?;
+                    Ok(())
+                }
+
+                fn deserialize_message_part(
+                    input: &mut dyn std::io::Read,
+                ) -> Result<Self, MessageSerdeError> {
+                    let ulid = input.read_u128::<BigEndian>()?;
+                    let ulid = Ulid::from(ulid);
+                    Ok(ulid.into())
+                }
+            }
+        };
+    }
+
+    procedural_storage_handle!(ProceduralMeshHandle);
+    procedural_storage_handle!(ProceduralTextureHandle);
+    procedural_storage_handle!(ProceduralSamplerHandle);
+    procedural_storage_handle!(ProceduralMaterialHandle);
 }
 pub use serde::*;

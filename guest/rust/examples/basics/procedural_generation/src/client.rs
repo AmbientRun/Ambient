@@ -1,6 +1,7 @@
 use ambient_api::client::{material, mesh, sampler, texture};
 use ambient_api::components::core::camera::aspect_ratio_from_window;
 use ambient_api::components::core::primitives::cube;
+use ambient_api::components::core::procedurals::{procedural_material, procedural_mesh};
 use ambient_api::concepts::{make_perspective_infinite_reverse_camera, make_transformable};
 use ambient_api::prelude::*;
 
@@ -62,7 +63,7 @@ pub async fn main() {
             indices.extend([i + 1, i + 3, i + 2]);
         }
     }
-    let mesh_url = mesh::create(&vertices, &indices);
+    let mesh_handle = mesh::create(&vertices, &indices);
 
     let texture_width = 16;
     let texture_height = 16;
@@ -83,17 +84,17 @@ pub async fn main() {
         }
     }
 
-    let base_color_map_url = texture::create_2d(
+    let base_color_map_handle = texture::create_2d(
         texture_width,
         texture_height,
         texture::Format::Rgba8Unorm,
         &texture_data,
     );
-
-    let normal_map_url = texture::create_2d(1, 1, texture::Format::Rgba8Unorm, &[128, 128, 255, 0]);
-    let metallic_roughness_map_url =
+    let normal_map_handle =
+        texture::create_2d(1, 1, texture::Format::Rgba8Unorm, &[128, 128, 255, 0]);
+    let metallic_roughness_map_handle =
         texture::create_2d(1, 1, texture::Format::Rgba8Unorm, &[255, 255, 255, 255]);
-    let sampler_url = sampler::create(&sampler::Descriptor {
+    let sampler_handle = sampler::create(&sampler::Descriptor {
         address_mode_u: sampler::AddressMode::ClampToEdge,
         address_mode_v: sampler::AddressMode::ClampToEdge,
         address_mode_w: sampler::AddressMode::ClampToEdge,
@@ -101,18 +102,16 @@ pub async fn main() {
         min_filter: sampler::FilterMode::Nearest,
         mipmap_filter: sampler::FilterMode::Nearest,
     });
-
-    let material_desc = material::Descriptor {
-        base_color_map: &base_color_map_url,
-        normal_map: &normal_map_url,
-        metallic_roughness_map: &metallic_roughness_map_url,
-        sampler: &sampler_url,
-    };
-    let material_url = material::create(&material_desc);
+    let material_handle = material::create(&material::Descriptor {
+        base_color_map: base_color_map_handle,
+        normal_map: normal_map_handle,
+        metallic_roughness_map: metallic_roughness_map_handle,
+        sampler: sampler_handle,
+    });
 
     Entity::new()
-        .with(mesh_from_url(), mesh_url.to_string()) // Todo: mesh_from_ulid()
-        .with(material_from_url(), material_url)
+        .with(procedural_mesh(), mesh_handle)
+        .with(procedural_material(), material_handle)
         .with(color(), vec4(1.0, 1.0, 1.0, 1.0))
         .spawn();
 
