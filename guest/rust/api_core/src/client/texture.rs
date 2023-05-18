@@ -7,10 +7,25 @@ pub enum Format {
     Rgba8Unorm,
 }
 
-pub fn create_2d(width: u32, height: u32, format: Format, data: &[u8]) -> ProceduralTextureHandle {
+#[derive(Clone)]
+pub struct Descriptor2d<'a> {
+    pub width: u32,
+    pub height: u32,
+    pub format: Format,
+    pub data: &'a [u8],
+}
+
+pub fn create_2d(desc: &Descriptor2d) -> ProceduralTextureHandle {
     use wit::client_texture::Format as WitFormat;
-    let format = match format {
+    let format = match desc.format {
         Format::Rgba8Unorm => WitFormat::Rgba8Unorm,
     };
-    wit::client_texture::create2d(width, height, format, data).from_bindgen()
+
+    wit::client_texture::create2d(wit::client_texture::Descriptor2d {
+        width: desc.width,
+        height: desc.height,
+        format,
+        data: desc.data,
+    })
+    .from_bindgen()
 }

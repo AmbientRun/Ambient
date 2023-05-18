@@ -97,8 +97,7 @@ impl wit::client_window::Host for Bindings {
 impl wit::client_mesh::Host for Bindings {
     fn create(
         &mut self,
-        _vertices: Vec<wit::client_mesh::Vertex>,
-        _indices: Vec<u32>,
+        _desc: wit::client_mesh::Descriptor,
     ) -> anyhow::Result<wit::client_mesh::Handle> {
         unsupported()
     }
@@ -122,10 +121,7 @@ impl wit::client_sampler::Host for Bindings {
 impl wit::client_texture::Host for Bindings {
     fn create2d(
         &mut self,
-        _width: u32,
-        _height: u32,
-        _format: wit::client_texture::Format,
-        _data: Vec<u8>,
+        _desc: wit::client_texture::Descriptor2d,
     ) -> anyhow::Result<wit::client_texture::Handle> {
         unsupported()
     }

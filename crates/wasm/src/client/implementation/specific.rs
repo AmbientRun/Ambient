@@ -275,9 +275,9 @@ impl wit::client_window::Host for Bindings {
 impl wit::client_mesh::Host for Bindings {
     fn create(
         &mut self,
-        vertices: Vec<wit::client_mesh::Vertex>,
-        indices: Vec<u32>,
+        desc: wit::client_mesh::Descriptor,
     ) -> anyhow::Result<wit::client_mesh::Handle> {
+        let wit::client_mesh::Descriptor { vertices, indices } = desc;
         let mut positions = Vec::with_capacity(vertices.len());
         let mut normals = Vec::with_capacity(vertices.len());
         let mut tangents = Vec::with_capacity(vertices.len());
@@ -374,15 +374,12 @@ impl wit::client_sampler::Host for Bindings {
 impl wit::client_texture::Host for Bindings {
     fn create2d(
         &mut self,
-        width: u32,
-        height: u32,
-        format: wit::client_texture::Format,
-        data: Vec<u8>,
+        desc: wit::client_texture::Descriptor2d,
     ) -> anyhow::Result<wit::client_texture::Handle> {
         let world = self.world_mut();
         let assets = world.resource(asset_cache());
         let gpu = GpuKey.get(assets);
-        let format = match format {
+        let format = match desc.format {
             wit::client_texture::Format::Rgba8Unorm => wgpu::TextureFormat::Rgba8Unorm,
         };
         let texture = Texture::new_with_data(
@@ -390,8 +387,8 @@ impl wit::client_texture::Host for Bindings {
             &wgpu::TextureDescriptor {
                 label: None,
                 size: wgpu::Extent3d {
-                    width,
-                    height,
+                    width: desc.width,
+                    height: desc.height,
                     depth_or_array_layers: 1,
                 },
                 mip_level_count: 1,
@@ -401,7 +398,7 @@ impl wit::client_texture::Host for Bindings {
                 usage: wgpu::TextureUsages::TEXTURE_BINDING,
                 view_formats: &[],
             },
-            &data,
+            &desc.data,
         );
         let texture = Arc::new(texture);
         let texture_view = Arc::new(texture.create_view(&TextureViewDescriptor::default()));

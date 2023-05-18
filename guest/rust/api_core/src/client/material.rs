@@ -11,11 +11,11 @@ pub struct Descriptor {
 }
 
 pub fn create(desc: &Descriptor) -> ProceduralMaterialHandle {
-    let desc = wit::client_material::Descriptor {
+    wit::client_material::create(wit::client_material::Descriptor {
         base_color_map: desc.base_color_map.into_bindgen(),
         normal_map: desc.normal_map.into_bindgen(),
         metallic_roughness_map: desc.metallic_roughness_map.into_bindgen(),
         sampler: desc.sampler.into_bindgen(),
-    };
-    wit::client_material::create(desc).from_bindgen()
+    })
+    .from_bindgen()
 }

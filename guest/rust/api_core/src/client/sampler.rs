@@ -38,13 +38,13 @@ pub fn create(desc: &Descriptor) -> ProceduralSamplerHandle {
         FilterMode::Linear => wit::client_sampler::FilterMode::Linear,
     };
 
-    let desc = wit::client_sampler::Descriptor {
+    wit::client_sampler::create(wit::client_sampler::Descriptor {
         address_mode_u: address_mode_from_guest(desc.address_mode_u),
         address_mode_v: address_mode_from_guest(desc.address_mode_v),
         address_mode_w: address_mode_from_guest(desc.address_mode_w),
         mag_filter: filter_mode_from_guest(desc.mag_filter),
         min_filter: filter_mode_from_guest(desc.min_filter),
         mipmap_filter: filter_mode_from_guest(desc.mipmap_filter),
-    };
-    wit::client_sampler::create(desc).from_bindgen()
+    })
+    .from_bindgen()
 }

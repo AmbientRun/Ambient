@@ -63,7 +63,10 @@ pub async fn main() {
             indices.extend([i + 1, i + 3, i + 2]);
         }
     }
-    let mesh_handle = mesh::create(&vertices, &indices);
+    let mesh_handle = mesh::create(&mesh::Descriptor {
+        vertices: &vertices,
+        indices: &indices,
+    });
 
     let texture_width = 16;
     let texture_height = 16;
@@ -84,16 +87,24 @@ pub async fn main() {
         }
     }
 
-    let base_color_map_handle = texture::create_2d(
-        texture_width,
-        texture_height,
-        texture::Format::Rgba8Unorm,
-        &texture_data,
-    );
-    let normal_map_handle =
-        texture::create_2d(1, 1, texture::Format::Rgba8Unorm, &[128, 128, 255, 0]);
-    let metallic_roughness_map_handle =
-        texture::create_2d(1, 1, texture::Format::Rgba8Unorm, &[255, 255, 255, 255]);
+    let base_color_map_handle = texture::create_2d(&texture::Descriptor2d {
+        width: texture_width,
+        height: texture_height,
+        format: texture::Format::Rgba8Unorm,
+        data: &texture_data,
+    });
+    let normal_map_handle = texture::create_2d(&texture::Descriptor2d {
+        width: 1,
+        height: 1,
+        format: texture::Format::Rgba8Unorm,
+        data: &[128, 128, 255, 0],
+    });
+    let metallic_roughness_map_handle = texture::create_2d(&texture::Descriptor2d {
+        width: 1,
+        height: 1,
+        format: texture::Format::Rgba8Unorm,
+        data: &[255, 255, 255, 255],
+    });
     let sampler_handle = sampler::create(&sampler::Descriptor {
         address_mode_u: sampler::AddressMode::ClampToEdge,
         address_mode_v: sampler::AddressMode::ClampToEdge,

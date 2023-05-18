@@ -11,12 +11,22 @@ pub struct Vertex {
     pub texcoord0: Vec2,
 }
 
-pub fn create(vertices: &[Vertex], indices: &[u32]) -> ProceduralMeshHandle {
+#[derive(Clone)]
+pub struct Descriptor<'a> {
+    pub vertices: &'a [Vertex],
+    pub indices: &'a [u32],
+}
+
+pub fn create(desc: &Descriptor) -> ProceduralMeshHandle {
     let vertices = unsafe {
         std::slice::from_raw_parts(
-            vertices.as_ptr().cast::<wit::client_mesh::Vertex>(),
-            vertices.len(),
+            desc.vertices.as_ptr().cast::<wit::client_mesh::Vertex>(),
+            desc.vertices.len(),
         )
     };
-    wit::client_mesh::create(vertices, indices).from_bindgen()
+    wit::client_mesh::create(wit::client_mesh::Descriptor {
+        vertices,
+        indices: desc.indices,
+    })
+    .from_bindgen()
 }

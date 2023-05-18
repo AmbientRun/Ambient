@@ -5,9 +5,16 @@ default interface client-texture {
         rgba8-unorm
     }
 
+    record descriptor2d {
+        width: u32,
+        height: u32,
+        format: format,
+        data: list<u8>,
+    }
+
     record handle {
         ulid: ulid
     }
 
-    create2d: func(width: u32, height: u32, format: format, data: list<u8>) -> handle
+    create2d: func(desc: descriptor2d) -> handle
 }
