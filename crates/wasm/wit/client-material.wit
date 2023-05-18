@@ -8,6 +8,7 @@ default interface client-material {
         normal-map: texture-handle,
         metallic-roughness-map: texture-handle,
         sampler: sampler-handle,
+        transparent: bool,
     }
 
     record handle {

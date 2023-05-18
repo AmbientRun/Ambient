@@ -402,9 +402,9 @@ impl wit::client_material::Host for Bindings {
                 storage.get_texture(desc.metallic_roughness_map.from_bindgen()),
             ),
             sampler: Arc::clone(storage.get_sampler(desc.sampler.from_bindgen())),
-            transparent: false,
+            transparent: desc.transparent,
             double_sided: false,
-            depth_write_enabled: true,
+            depth_write_enabled: !desc.transparent,
         };
         let material_handle = storage.insert_material(material);
         Ok(material_handle.into_bindgen())

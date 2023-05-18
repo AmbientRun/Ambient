@@ -8,6 +8,7 @@ pub struct Descriptor {
     pub normal_map: ProceduralTextureHandle,
     pub metallic_roughness_map: ProceduralTextureHandle,
     pub sampler: ProceduralSamplerHandle,
+    pub transparent: bool,
 }
 
 impl IntoBindgen for Descriptor {
@@ -19,6 +20,7 @@ impl IntoBindgen for Descriptor {
             normal_map: self.normal_map.into_bindgen(),
             metallic_roughness_map: self.metallic_roughness_map.into_bindgen(),
             sampler: self.sampler.into_bindgen(),
+            transparent: self.transparent,
         }
     }
 }
