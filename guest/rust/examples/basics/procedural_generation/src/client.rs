@@ -18,6 +18,7 @@ const SIZE_X: f32 = RESOLUTION_X as f32 / RESOLUTION_Y as f32;
 const SIZE_Y: f32 = 1.0;
 const WAVE_AMPLITUDE: f32 = 0.25;
 const WAVE_FREQUENCY: f32 = 0.5 * TAU;
+const ROTATING_SUN: bool = false;
 
 fn make_camera() {
     Entity::new()
@@ -41,15 +42,17 @@ fn make_lighting() {
         .with(light_diffuse(), Vec3::ONE * 4.0)
         .with_default(main_scene())
         .spawn();
-    query(rotation()).requires(sun()).each_frame(move |suns| {
-        for (sun_id, sun_rotation) in suns {
-            entity::set_component(
-                sun_id,
-                rotation(),
-                Quat::from_rotation_z(frametime()) * sun_rotation,
-            );
-        }
-    });
+    if ROTATING_SUN {
+        query(rotation()).requires(sun()).each_frame(move |suns| {
+            for (sun_id, sun_rotation) in suns {
+                entity::set_component(
+                    sun_id,
+                    rotation(),
+                    Quat::from_rotation_z(frametime()) * sun_rotation,
+                );
+            }
+        });
+    }
 }
 
 fn make_coordinate_system() {
