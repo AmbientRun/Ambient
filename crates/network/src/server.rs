@@ -103,7 +103,7 @@ pub fn register_rpc_bi_stream_handler(
                 let state = state;
                 let user_id = user_id.to_string();
                 let rpc_registry = rpc_registry.clone();
-                tokio::spawn(async move {
+                ambient_sys::task::spawn(async move {
                     let try_block = || async {
                         let mut buf = Vec::new();
                         recv.take(1024 * 1024 * 1024).read_to_end(&mut buf).await?;

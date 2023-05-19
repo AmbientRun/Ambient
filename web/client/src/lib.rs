@@ -1,27 +1,33 @@
-use std::time::Duration;
+use std::{collections::HashMap, time::Duration};
 
 use ambient_app::App;
+use ambient_audio::*;
 use ambient_cameras::UICamera;
 use ambient_core::camera::active_camera;
+use ambient_ecs::{Entity, SystemGroup};
+use ambient_network::{server::RpcArgs, web::GameClientView};
 use ambient_renderer::color;
+use ambient_rpc::RpcRegistry;
+use ambient_std::{cb, friendly_id};
 use ambient_sys::time::Instant;
 use ambient_ui_native::{
     element::{element_component, Element, ElementComponentExt, Group, Hooks},
-    font_size, padding, space_between_items, Borders, Button, FlowColumn, FocusRoot, Separator,
-    StylesExt, Text, TextEditor, UIExt,
+    font_size, padding, space_between_items, Borders, Button, Dock, FlowColumn, FocusRoot,
+    Separator, StylesExt, Text, TextEditor, UIExt,
 };
+use game_view::GameView;
 use glam::vec4;
-use tracing_subscriber::{filter::LevelFilter, fmt::time::UtcTime, prelude::*, registry};
-use tracing_web::MakeConsoleWriter;
-use wasm_bindgen::prelude::*;
-
-use ambient_audio::*;
+use js_sys::{Float32Array, Function};
 use std::cell::RefCell;
 use std::rc::Rc;
-
+use tracing_subscriber::{filter::LevelFilter, fmt::time::UtcTime, prelude::*, registry};
+use tracing_web::MakeConsoleWriter;
+use url::Url;
+use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use js_sys::{Float32Array, Function};
+
+mod game_view;
 
 fn window() -> web_sys::Window {
     web_sys::window().expect("no global `window` exists")
@@ -72,6 +78,7 @@ async fn run(target: Option<web_sys::HtmlElement>) -> anyhow::Result<()> {
         .build()
         .await
         .context("Failed to build app")?;
+
     tracing::info!("Finished building app");
 
     init(&mut app).await;
@@ -84,9 +91,6 @@ async fn run(target: Option<web_sys::HtmlElement>) -> anyhow::Result<()> {
 
 #[element_component]
 pub fn View(hooks: &mut Hooks) -> Element {
-    let (count, set_count) = hooks.use_state(0);
-    let (text, set_text) = hooks.use_state(Default::default());
-
     let now = Instant::now();
     let (elapsed, set_elapsed) = hooks.use_state(Duration::ZERO);
     hooks.use_interval(0.2, move || set_elapsed(now.elapsed()));
@@ -97,78 +101,118 @@ pub fn View(hooks: &mut Hooks) -> Element {
             elapsed.as_secs_f32()
         ))
         .header_style(),
-        Text::el("Section").section_style(),
-        Text::el("Default text \u{f1e2} \u{fb8f}"),
-        Text::el("Small").small_style(),
-        Button::new(
-            format!("You have clicked the button {count} times"),
-            move |_| set_count(count + 1),
-        )
-        .el()
-        .with_background(vec4(0.0, 0.5, 0.5, 1.0)),
-        TextEditor::new(text, set_text)
-        .placeholder(Some("Go ahead, type something clever"))
-        .el(),
-    Separator { vertical: false }.el(),
-    Text::el("Custom size").with(font_size(), 20.),
-    Text::el("Custom color").with(color(), vec4(1., 0., 0., 1.)),
-    Text::el("Multi\n\nLine"),
+        // GameClientView {
+        //     url: Url::parse("https://127.0.0.1:9000").unwrap(),
+        //     user_id: friendly_id(),
+        //     systems_and_resources: cb(|| {
+        //         let mut resources = Entity::new();
 
-        Button::new(
-            "Play audio",
-            move |_| {
-                let mut sine = SineWave::new(440.0);
-                // let mut phase = 0.0;
-                let window = web_sys::window().expect("no global `window` exists");
-                let this = JsValue::null();
-                let start = window.get("audioStart").unwrap().dyn_into::<Function>().unwrap();
-                start.call0(&this).unwrap();
+        //         let bistream_handlers = HashMap::new();
+        //         resources.set(
+        //             ambient_network::client::bi_stream_handlers(),
+        //             bistream_handlers,
+        //         );
 
-                let sab = window.get("dataSAB").unwrap().dyn_into::<js_sys::SharedArrayBuffer>().unwrap();
-                let buf = Float32Array::new(&sab);
-                let write_ptr = JsValue::from(window.get("writePtr").unwrap().dyn_into::<js_sys::Uint32Array>().unwrap()); //.dyn_into::<js_sys::Uint32Array>().unwrap();
-                let read_ptr = JsValue::from(window.get("readPtr").unwrap().dyn_into::<js_sys::Uint32Array>().unwrap()); //.dyn_into::<js_sys::Uint32Array>().unwrap();
+        //         let unistream_handlers = HashMap::new();
+        //         resources.set(
+        //             ambient_network::client::uni_stream_handlers(),
+        //             unistream_handlers,
+        //         );
 
-                let f = Rc::new(RefCell::new(None));
-                let g = f.clone();
-                *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-                    loop {
-                        let wr = js_sys::Atomics::load(&write_ptr, 0).unwrap();
-                        let rd = js_sys::Atomics::load(&read_ptr, 0).unwrap();
-                        let available_read = (wr + 2048 - rd) % 2048;
-                        let available_write = 2048 - available_read;
-                        if available_write <= 128 {
-                            break;
-                        }
-                        for _ in 0..128 {
-                            let wr = js_sys::Atomics::load(&write_ptr, 0).unwrap();
-                            // let val = (phase * 2.0 * std::f32::consts::PI).sin();
-                            let val = sine.next_sample().unwrap()[0];
-                            buf.set_index(wr as u32, val);
-                            js_sys::Atomics::store(&write_ptr, 0, (wr + 1) % (2048)).unwrap();
-                            // phase += 440.0 / 44100.0;
-                            // if phase > 1.0 {
-                            //     phase -= 1.0;
-                            // }
-                        }
+        //         let dgram_handlers = HashMap::new();
+        //         resources.set(ambient_network::client::datagram_handlers(), dgram_handlers);
+
+        //         (systems(), resources)
+        //     }),
+        //     on_loaded: cb(move |client| {
+        //         let mut game_state = client.game_state.lock();
+        //         let world = &mut game_state.world;
+
+        //         // wasm::initialize(world).unwrap();
+
+        //         UICamera.el().spawn_static(world);
+
+        //         Ok(Box::new(|| {
+        //             tracing::info!("Disconnecting client");
+        //         }))
+        //     }),
+        //     create_rpc_registry: cb(create_server_rpc_registry),
+        //     inner: Dock::el(vec![GameView { show_debug: false }.el()]),
+        // }
+        // .el(),
+        Button::new("Play audio", move |_| {
+            let mut sine = SineWave::new(440.0);
+            // let mut phase = 0.0;
+            let window = web_sys::window().expect("no global `window` exists");
+            let this = JsValue::null();
+            let start = window
+                .get("audioStart")
+                .unwrap()
+                .dyn_into::<Function>()
+                .unwrap();
+            start.call0(&this).unwrap();
+
+            let sab = window
+                .get("dataSAB")
+                .unwrap()
+                .dyn_into::<js_sys::SharedArrayBuffer>()
+                .unwrap();
+            let buf = Float32Array::new(&sab);
+            let write_ptr = JsValue::from(
+                window
+                    .get("writePtr")
+                    .unwrap()
+                    .dyn_into::<js_sys::Uint32Array>()
+                    .unwrap(),
+            ); //.dyn_into::<js_sys::Uint32Array>().unwrap();
+            let read_ptr = JsValue::from(
+                window
+                    .get("readPtr")
+                    .unwrap()
+                    .dyn_into::<js_sys::Uint32Array>()
+                    .unwrap(),
+            ); //.dyn_into::<js_sys::Uint32Array>().unwrap();
+
+            let f = Rc::new(RefCell::new(None));
+            let g = f.clone();
+            *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
+                loop {
+                    let wr = js_sys::Atomics::load(&write_ptr, 0).unwrap();
+                    let rd = js_sys::Atomics::load(&read_ptr, 0).unwrap();
+                    let available_read = (wr + 2048 - rd) % 2048;
+                    let available_write = 2048 - available_read;
+                    if available_write <= 128 {
+                        break;
                     }
-                    request_animation_frame(f.borrow().as_ref().unwrap());
-                }) as Box<dyn FnMut()>));
+                    for _ in 0..128 {
+                        let wr = js_sys::Atomics::load(&write_ptr, 0).unwrap();
+                        // let val = (phase * 2.0 * std::f32::consts::PI).sin();
+                        let val = sine.next_sample().unwrap()[0];
+                        buf.set_index(wr as u32, val);
+                        js_sys::Atomics::store(&write_ptr, 0, (wr + 1) % (2048)).unwrap();
+                        // phase += 440.0 / 44100.0;
+                        // if phase > 1.0 {
+                        //     phase -= 1.0;
+                        // }
+                    }
+                }
+                request_animation_frame(f.borrow().as_ref().unwrap());
+            }) as Box<dyn FnMut()>));
 
-                request_animation_frame(g.borrow().as_ref().unwrap());
-            },
-        )
+            request_animation_frame(g.borrow().as_ref().unwrap());
+        })
         .el()
         .with_background(vec4(1.0, 0.5, 0.5, 1.0)),
-        Button::new(
-            "Stop audio",
-            move |_| {
-                let window = web_sys::window().expect("no global `window` exists");
-                let this = JsValue::null();
-                let stop = window.get("audioStop").unwrap().dyn_into::<Function>().unwrap();
-                stop.call0(&this).unwrap();
-            },
-        )
+        Button::new("Stop audio", move |_| {
+            let window = web_sys::window().expect("no global `window` exists");
+            let this = JsValue::null();
+            let stop = window
+                .get("audioStop")
+                .unwrap()
+                .dyn_into::<Function>()
+                .unwrap();
+            stop.call0(&this).unwrap();
+        })
         .el()
         .with_background(vec4(0.0, 0.5, 0.9, 1.0)),
     ])
@@ -185,4 +229,28 @@ async fn init(app: &mut App) {
     ])
     .el()
     .spawn_interactive(world);
+}
+
+/// Declares the systems to run in the network client world
+fn systems() -> SystemGroup {
+    SystemGroup::new(
+        "client",
+        vec![
+            // Box::new(ambient_prefab::systems()),
+            // Box::new(ambient_decals::client_systems()),
+            // Box::new(ambient_primitives::systems()),
+            // Box::new(ambient_sky::systems()),
+            // Box::new(ambient_water::systems()),
+            // Box::new(ambient_physics::client_systems()),
+            // Box::new(wasm::systems()),
+            // Box::new(player::systems_final()),
+        ],
+    )
+}
+
+pub fn create_server_rpc_registry() -> RpcRegistry<RpcArgs> {
+    let mut reg = RpcRegistry::new();
+    ambient_network::rpc::register_server_rpcs(&mut reg);
+    // ambient_debugger::register_server_rpcs(&mut reg);
+    reg
 }

@@ -964,6 +964,7 @@ dependencies = [
  "h3-webtransport",
  "http",
  "itertools",
+ "js-sys",
  "log",
  "manual_future",
  "once_cell",
@@ -979,7 +980,11 @@ dependencies = [
  "tokio",
  "tokio-util",
  "tracing",
+ "url",
  "uuid 1.3.3",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
  "webpki-roots 0.23.0",
  "wgpu 0.16.1",
  "winit",
@@ -1238,6 +1243,7 @@ dependencies = [
 name = "ambient_rpc"
 version = "0.3.0-dev"
 dependencies = [
+ "ambient_sys",
  "bincode",
  "futures",
  "lazy_static",
@@ -4958,9 +4964,9 @@ dependencies = [
 
 [[package]]
 name = "naga"
-version = "0.12.2"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80cd00bd6180a8790f1c020ed258a46b8d73dd5bd6af104a238c9d71f806938e"
+checksum = "94d3edd593521f4a1dfd9b25193ed0224764572905f013d30ca5fbb85e010876"
 dependencies = [
  "bit-set",
  "bitflags 1.3.2",
@@ -7543,9 +7549,9 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.19.10"
+version = "0.19.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2380d56e8670370eee6566b0bfd4265f65b3f432e8c6d85623f728d4fa31f739"
+checksum = "92d964908cec0d030b812013af25a0e57fddfadb1e066ecc6681d86253129d4f"
 dependencies = [
  "indexmap",
  "serde",
@@ -8638,7 +8644,7 @@ dependencies = [
  "cfg-if",
  "js-sys",
  "log",
- "naga 0.12.2",
+ "naga 0.12.1",
  "parking_lot",
  "profiling",
  "raw-window-handle",
@@ -8687,7 +8693,7 @@ dependencies = [
  "bitflags 2.3.1",
  "codespan-reporting",
  "log",
- "naga 0.12.2",
+ "naga 0.12.1",
  "parking_lot",
  "profiling",
  "raw-window-handle",
@@ -8769,7 +8775,7 @@ dependencies = [
  "libloading 0.8.0",
  "log",
  "metal",
- "naga 0.12.2",
+ "naga 0.12.1",
  "objc",
  "parking_lot",
  "profiling",

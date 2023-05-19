@@ -2,6 +2,8 @@
 //!
 //! This included quinn server+client and webtransport server using `h3`
 pub mod client;
+pub mod client_connection;
+pub mod common;
 pub mod server;
 mod webtransport;
 

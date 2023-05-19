@@ -153,6 +153,20 @@ enum_dispatch = "0.3"
 uuid = "1.3"
 scopeguard = "1.0"
 
+# Web Client
+web-sys = { version = "0.3.61", features = [
+    "CanvasRenderingContext2d",
+    "Document",
+    "Element",
+    "HtmlCanvasElement",
+    "HtmlDocument",
+    "Performance",
+    "Window",
+] }
+js-sys = { version = "0.3.61" }
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+
 # Networking
 
 time = { version = "0.3", features = ["macros"] }

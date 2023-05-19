@@ -22,15 +22,15 @@ use anyhow::Context;
 use colored::Colorize;
 use futures::{SinkExt, StreamExt};
 use parking_lot::{Mutex, RwLock};
-use rustls::{Certificate, PrivateKey};
 use quinn::{ClientConfig, Connecting, Endpoint, ServerConfig, TransportConfig};
+use rustls::{Certificate, PrivateKey};
 use tokio::time::{interval, MissedTickBehavior};
 use uuid::Uuid;
 
 use crate::{
-    client_connection::ConnectionKind,
-    native::load_root_certs,
-    native::webtransport::handle_h3_connection,
+    native::{
+        client_connection::ConnectionKind, load_root_certs, webtransport::handle_h3_connection,
+    },
     proto::{
         self,
         server::{handle_diffs, ConnectionData},
@@ -525,9 +525,7 @@ fn create_server(server_addr: SocketAddr, crypto: &Crypto) -> anyhow::Result<End
         .with_safe_defaults()
         .with_root_certificates(roots)
         .with_no_client_auth();
-    crypto.alpn_protocols = vec![
-        b"ambient-proxy-03".to_vec(),
-    ];
+    crypto.alpn_protocols = vec![b"ambient-proxy-03".to_vec()];
 
     let mut client_config = ClientConfig::new(Arc::new(crypto));
     client_config.transport_config(transport);

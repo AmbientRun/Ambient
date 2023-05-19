@@ -4,8 +4,9 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id, to_byte_unit, Cb};
+use ambient_sys::task::RuntimeHandle;
 use ambient_ui_native::{Image, MeasureSize};
-use bytes::{BufMut, Bytes, BytesMut};
+use bytes::Bytes;
 use futures::future::BoxFuture;
 use glam::UVec2;
 use parking_lot::Mutex;
@@ -20,8 +21,8 @@ use std::{
 use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
 
 use crate::{
-    client_connection::ConnectionKind, client_game_state::ClientGameState, log_network_result,
-    proto::client::SharedClientState, server, NetworkError, MAX_FRAME_SIZE, RPC_BISTREAM_ID,
+    client_game_state::ClientGameState, log_network_result, proto::client::SharedClientState,
+    server, NetworkError, MAX_FRAME_SIZE, RPC_BISTREAM_ID,
 };
 
 components!("network::client", {
@@ -58,82 +59,6 @@ pub trait ClientConnection: 'static + Send + Sync {
     /// Performs a unidirectional request without waiting for a response.
     fn request_uni(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>>;
     fn send_datagram(&self, id: u32, data: Bytes) -> Result<(), NetworkError>;
-}
-
-impl ClientConnection for quinn::Connection {
-    fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>> {
-        Box::pin(async move {
-            let (mut send, mut recv) = self.open_bi().await?;
-
-            send.write_u32(id).await?;
-            send.write_all(&data).await?;
-
-            drop(send);
-
-            let buf = recv.read_to_end(MAX_FRAME_SIZE).await?.into();
-
-            Ok(buf)
-        })
-    }
-
-    fn request_uni(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>> {
-        Box::pin(async move {
-            let mut send = self.open_uni().await?;
-
-            send.write_u32(id).await?;
-            send.write_all(&data).await?;
-
-            Ok(())
-        })
-    }
-
-    fn send_datagram(&self, id: u32, data: Bytes) -> Result<(), NetworkError> {
-        let mut bytes = BytesMut::with_capacity(4 + data.len());
-        bytes.put_u32(id);
-        bytes.put(data);
-
-        self.send_datagram(bytes.freeze())?;
-
-        Ok(())
-    }
-}
-
-impl ClientConnection for ConnectionKind {
-    fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>> {
-        Box::pin(async move {
-            let (mut send, mut recv) = self.open_bi().await?;
-
-            send.write_u32(id).await?;
-            send.write_all(&data).await?;
-
-            drop(send);
-
-            let buf = recv.read_to_end(MAX_FRAME_SIZE).await?.into();
-
-            Ok(buf)
-        })
-    }
-
-    fn request_uni(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>> {
-        Box::pin(async move {
-            let mut send = self.open_uni().await?;
-
-            send.write_u32(id).await?;
-            send.write_all(&data).await?;
-
-            Ok(())
-        })
-    }
-
-    fn send_datagram(&self, id: u32, data: Bytes) -> Result<(), NetworkError> {
-        let mut bytes = BytesMut::with_capacity(4 + data.len());
-        bytes.put_u32(id);
-        bytes.put(data);
-
-        self.send_datagram(bytes.freeze())?;
-
-        Ok(())
-    }
 }
 
 #[derive(Clone)]
@@ -194,7 +119,7 @@ impl GameClient {
         L: Future<Output = Resp> + Send,
     >(
         &self,
-        runtime: &tokio::runtime::Handle,
+        runtime: &RuntimeHandle,
         func: F,
     ) -> Cb<impl Fn(Req)> {
         let runtime = runtime.clone();

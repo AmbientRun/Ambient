@@ -26,6 +26,7 @@ ambient_world_audio = { path = "../world_audio", version = "0.3.0-dev" }
 
 rustls-native-certs = { workspace = true, optional = true }
 
+url = { workspace = true }
 itertools = { workspace = true }
 dashmap = { workspace = true }
 serde = { workspace = true }
@@ -51,13 +52,13 @@ enum_dispatch = { workspace = true }
 pin-project = { workspace = true }
 uuid = { workspace = true }
 scopeguard = { workspace = true }
+tokio = { workspace = true, features = ["io-util"] }
+tokio-util = { version = "0.7", features = ["codec"] }
 
 webpki-roots = { workspace = true, optional = true }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 async-trait = { workspace = true }
-tokio = { workspace = true }
-tokio-util = "0.7"
 
 
 quinn = { workspace = true }
@@ -67,6 +68,33 @@ h3-quinn = { workspace = true }
 h3-webtransport = { workspace = true }
 http = { workspace = true }
 ambient_proxy = { version = "0.3.3", git = "https://github.com/AmbientRun/AmbientProxy" }
+
+[target.'cfg(target_os = "unknown")'.dependencies]
+web-sys = { workspace = true, features = [
+    "WebSocket",
+    "WebTransport",
+    "WritableStream",
+    "ReadableStream",
+    "ReadableStreamDefaultReader",
+    "ReadableStreamReadResult",
+    "WebTransportSendStream",
+    "WritableStreamDefaultWriter",
+    "WebTransportDatagramDuplexStream",
+    "WebTransportCloseInfo",
+    "WebTransportBidirectionalStream",
+    "WebTransportReceiveStream",
+] }
+wasm-bindgen = { workspace = true }
+wasm-bindgen-futures = { workspace = true }
+js-sys = { workspace = true }
+
+# Required since the webtransport stuff is yet on crates.io
+[patch.crates-io]
+web-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
+wasm-bindgen = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
+js-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
+wasm-bindgen-futures = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
+wasm-bindgen-shared = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
 
 [features]
 

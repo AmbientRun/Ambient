@@ -150,9 +150,6 @@ fn MainApp(
                     log::info!("Disconnecting client");
                 }))
             }),
-            error_view: cb(move |error| {
-                Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el()
-            }),
             systems_and_resources: cb(|| {
                 let mut resources = Entity::new();
 

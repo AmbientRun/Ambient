@@ -1,4 +1,7 @@
 {
+    "check": {
+        "cmd": "cargo check"
+    },
     "client": {
         "cmd": "cargo run -p ambient"
     },
@@ -56,8 +59,8 @@
             }
         }
     },
-    "check-tests": {
-        "cmd": "cargo check --workspace --tests --examples"
+    "check-all": {
+        "cmd": "cargo check --workspace --all-targets"
     },
     "test": {
         "cmd": "cargo nextest run --workspace"
@@ -80,34 +83,20 @@
     "launch-chrome": {
         "cmd": "./scripts/launch_chrome.sh"
     },
-    "example-with-space": {
-        "cmd": [
-            "cargo",
-            "run",
-            "--features",
-            "tracing",
-            "--",
-            "run",
-            "--clean-build",
-            "./guest/rust/examples/breaking basics/with space"
-        ],
-        "env": {
-            "RUST_LOG": "ambient_build=debug,ambient_std=trace,info"
+    "build-web": {
+        "cmd": "wasm-pack build client --dev",
+        "cwd": "web",
+        "components": {
+            "qf": {
+                "compiler": "cargo"
+            }
         }
     },
-    "example-assets": {
-        "cmd": [
-            "cargo",
-            "run",
-            "--features",
-            "tracing",
-            "--",
-            "run",
-            "--clean-build",
-            "./guest/rust/examples/basics/asset_loading/"
-        ],
+    "run": {
+        "cmd": "npm run start",
+        "cwd": "web/www",
         "env": {
-            "RUST_LOG": "ambient_build=debug,ambient_std=trace,info"
+            "RUST_LOG": "info"
         }
     }
 }

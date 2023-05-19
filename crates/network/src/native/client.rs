@@ -17,7 +17,7 @@ use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
 use ambient_std::{cb, Cb};
-use ambient_ui_native::{Centered, FlowColumn, FlowRow, Text, Throbber};
+use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Throbber};
 use anyhow::Context;
 use futures::{SinkExt, StreamExt};
 use glam::uvec2;
@@ -67,7 +67,6 @@ pub struct GameClientView {
     pub cert: Option<Vec<u8>>,
     pub user_id: String,
     pub systems_and_resources: Cb<dyn Fn() -> (SystemGroup, Entity) + Sync + Send>,
-    pub error_view: Cb<dyn Fn(String) -> Element + Sync + Send>,
     pub on_loaded: LoadedFunc,
     pub create_rpc_registry: Cb<dyn Fn() -> RpcRegistry<RpcArgs> + Sync + Send>,
     pub inner: Element,
@@ -78,7 +77,6 @@ impl ElementComponent for GameClientView {
         let Self {
             server_addr,
             user_id,
-            error_view,
             systems_and_resources,
             create_rpc_registry,
             on_loaded,
@@ -155,7 +153,7 @@ impl ElementComponent for GameClientView {
         let (window_title_state, _set_window_title) = hooks.use_state("Ambient".to_string());
         *hooks.world.resource_mut(window_title()) = window_title_state;
 
-        let (error, set_error) = hooks.use_state(None);
+        let (err, set_error) = hooks.use_state(None);
 
         hooks.use_task(move |_| {
             let task = async move {
@@ -225,8 +223,8 @@ impl ElementComponent for GameClientView {
             }
         });
 
-        if let Some(err) = error {
-            return error_view(err);
+        if let Some(err) = err {
+            return Dock(vec![Text::el("Error").header_style(), Text::el(err)]).el();
         }
 
         if let Some(game_client) = game_client {
