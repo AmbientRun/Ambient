@@ -1,14 +1,15 @@
 [target.'cfg(all())']
 rustflags = [
-  # Global lints/warnings.
-  # See https://github.com/EmbarkStudios/rust-ecosystem/issues/22 for why they need to be specified here
-  #
-  # We don't need a default implementation for every type that implements a new function
-  "-Aclippy::new_without_default",
-  # We have a lot of complex types
-  "-Aclippy::type_complexity",
-  "-Dclippy::dbg_macro",
-  "-Dclippy::disallowed_types"
+    # Global lints/warnings.
+    # See https://github.com/EmbarkStudios/rust-ecosystem/issues/22 for why they need to be specified here
+    #
+    # We don't need a default implementation for every type that implements a new function
+    "-Aclippy::new_without_default",
+    # We have a lot of complex types
+    "-Aclippy::type_complexity",
+    "-Dclippy::dbg_macro",
+    "-Dclippy::disallowed_types",
+    "-Dclippy::disallowed_methods",
 ]
 
 [target.'cfg(target_os = "unknown")']
@@ -18,3 +19,4 @@ rustflags = ["--cfg=web_sys_unstable_apis"]
 [alias]
 campfire = "run --package campfire --"
 cf = "run --package campfire --"
+

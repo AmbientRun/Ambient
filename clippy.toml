@@ -10,4 +10,9 @@ disallowed-types = [
     { path = "std::time::Instant", reason = "time is not implemented on wasm" },
     { path = "std::time::SystemTime", reason = "time is not implemented on wasm" },
 ]
+
+disallowed-methods = [
+    { path = "ulid::Ulid::new", reason = "panics on wasm: https://github.com/dylanhart/ulid-rs/issues/52" },
+]
+
 allow-dbg-in-tests = true
