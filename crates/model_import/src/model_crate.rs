@@ -7,12 +7,18 @@ use ambient_core::{
     name,
     transform::{local_to_parent, local_to_world, mesh_to_local, TransformSystem},
 };
-use ambient_ecs::{query, query_mut, Component, ComponentValue, Entity, EntityId, FrameEvent, System, World};
+use ambient_ecs::{
+    query, query_mut, Component, ComponentValue, Entity, EntityId, FrameEvent, System, World,
+};
 use ambient_model::{
-    animation_bind_id, model_from_url, model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl,
+    animation_bind_id, model_from_url, model_skin_ix, model_skins,
+    pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl,
 };
 use ambient_physics::{
-    collider::{character_controller_height, character_controller_radius, collider, ColliderDef, ColliderFromUrls},
+    collider::{
+        character_controller_height, character_controller_radius, collider, ColliderDef,
+        ColliderFromUrls,
+    },
     mesh::PhysxGeometryFromUrl,
     physx::PhysicsKey,
 };
@@ -34,7 +40,9 @@ use glam::{Mat4, Vec3};
 use image::{ImageOutputFormat, RgbaImage};
 use itertools::Itertools;
 use ordered_float::Float;
-use physxx::{PxConvexFlag, PxConvexMeshDesc, PxDefaultMemoryOutputStream, PxMeshFlag, PxTriangleMeshDesc};
+use physxx::{
+    PxConvexFlag, PxConvexMeshDesc, PxDefaultMemoryOutputStream, PxMeshFlag, PxTriangleMeshDesc,
+};
 use relative_path::RelativePathBuf;
 
 use crate::{dotdot_path, MaterialFilter, TextureResolver};
@@ -74,7 +82,14 @@ pub struct AssetMap<T> {
 }
 impl<T: Send + 'static> AssetMap<T> {
     fn new(store: &str, extension: &str, serialize: fn(&T) -> Vec<u8>) -> Self {
-        Self { loc: AssetMapLoc { store: store.to_string(), extension: extension.into() }, content: Default::default(), serialize }
+        Self {
+            loc: AssetMapLoc {
+                store: store.to_string(),
+                extension: extension.into(),
+            },
+            content: Default::default(),
+            serialize,
+        }
     }
 
     pub fn get_by_path(&self, path: impl Into<RelativePathBuf>) -> Option<&T> {
@@ -83,10 +98,19 @@ impl<T: Send + 'static> AssetMap<T> {
     pub fn insert(&mut self, id: impl Into<String>, content: T) -> AssetLoc {
         let id: String = id.into();
         self.content.insert(id.clone(), content);
-        AssetLoc { path: self.loc.path(&id), id }
+        AssetLoc {
+            path: self.loc.path(&id),
+            id,
+        }
     }
     pub fn to_items(&self) -> Vec<AssetItem> {
-        self.content.iter().map(|(id, content)| AssetItem { path: self.loc.path(id), data: Arc::new((self.serialize)(content)) }).collect()
+        self.content
+            .iter()
+            .map(|(id, content)| AssetItem {
+                path: self.loc.path(id),
+                data: Arc::new((self.serialize)(content)),
+            })
+            .collect()
     }
 }
 
@@ -119,8 +143,16 @@ impl ModelCrate {
             colliders: AssetMap::new("colliders", "json", |v| serde_json::to_vec(v).unwrap()),
         }
     }
-    pub async fn local_import(assets: &AssetCache, url: &AbsAssetUrl, normalize: bool, force_assimp: bool) -> anyhow::Result<Model> {
-        let cache_path = AssetsCacheDir.get(assets).join("pipelines").join(url.relative_cache_path());
+    pub async fn local_import(
+        assets: &AssetCache,
+        url: &AbsAssetUrl,
+        normalize: bool,
+        force_assimp: bool,
+    ) -> anyhow::Result<Model> {
+        let cache_path = AssetsCacheDir
+            .get(assets)
+            .join("pipelines")
+            .join(url.relative_cache_path());
         let mut model = Self::new();
         model
             .import(
@@ -147,9 +179,15 @@ impl ModelCrate {
         for item in self.to_items() {
             let item_path = item.path.to_path(path);
             std::fs::create_dir_all(item_path.parent().unwrap())
-                .context(format!("Failed to create dir: {:?}", item_path.parent().unwrap()))
+                .context(format!(
+                    "Failed to create dir: {:?}",
+                    item_path.parent().unwrap()
+                ))
                 .unwrap();
-            tokio::fs::write(&item_path, &*item.data).await.context(format!("Failed to write file: {item_path:?}")).unwrap();
+            tokio::fs::write(&item_path, &*item.data)
+                .await
+                .context(format!("Failed to write file: {item_path:?}"))
+                .unwrap();
         }
     }
     pub fn to_items(&self) -> Vec<AssetItem> {
@@ -179,7 +217,11 @@ impl ModelCrate {
         self.models.content.get(Self::MAIN).map(|x| &x.0).unwrap()
     }
     pub fn model_world_mut(&mut self) -> &mut World {
-        self.models.content.get_mut(Self::MAIN).map(|x| &mut x.0).unwrap()
+        self.models
+            .content
+            .get_mut(Self::MAIN)
+            .map(|x| &mut x.0)
+            .unwrap()
     }
     pub fn prefab_world(&self) -> &World {
         self.prefabs.content.get(Self::MAIN).unwrap()
@@ -193,7 +235,11 @@ impl ModelCrate {
         let model_id = self.models.content.keys().next().unwrap();
         Ok(self.models.loc.path(model_id).to_path(path))
     }
-    pub async fn produce_local_model(&self, assets: &AssetCache, path: PathBuf) -> anyhow::Result<Model> {
+    pub async fn produce_local_model(
+        &self,
+        assets: &AssetCache,
+        path: PathBuf,
+    ) -> anyhow::Result<Model> {
         let url = self.produce_local_model_url(path).await?;
         let mut model = Model::from_file(&url).await?;
         model.load(assets, &url.into()).await?;
@@ -213,12 +259,16 @@ impl ModelCrate {
         if force_assimp {
             crate::assimp::import_url(assets, url, self, resolve_texture).await?;
         } else if is_fbx {
-            if let Err(err) = crate::fbx::import_url(assets, url, self, resolve_texture.clone()).await {
+            if let Err(err) =
+                crate::fbx::import_url(assets, url, self, resolve_texture.clone()).await
+            {
                 match err.downcast::<fbxcel::tree::any::Error>() {
                     Ok(err) => {
-                        if let fbxcel::tree::any::Error::ParserCreation(fbxcel::pull_parser::any::Error::Header(
-                            fbxcel::low::HeaderError::MagicNotDetected,
-                        )) = &err
+                        if let fbxcel::tree::any::Error::ParserCreation(
+                            fbxcel::pull_parser::any::Error::Header(
+                                fbxcel::low::HeaderError::MagicNotDetected,
+                            ),
+                        ) = &err
                         {
                             crate::assimp::import_url(assets, url, self, resolve_texture).await?;
                         } else {
@@ -236,7 +286,8 @@ impl ModelCrate {
         if normalize {
             self.model_mut().rotate_yup_to_zup();
             if is_fbx {
-                self.model_mut().transform(Mat4::from_scale(Vec3::ONE / 100.));
+                self.model_mut()
+                    .transform(Mat4::from_scale(Vec3::ONE / 100.));
             }
         }
         Ok(())
@@ -244,13 +295,26 @@ impl ModelCrate {
     pub fn merge_mesh_lods(&mut self, cutoffs: Option<Vec<f32>>, lods: Vec<ModelNodeRef>) {
         let default_min_screen_size = 0.04; // i.e. 4%
         let lod_step = (1. / default_min_screen_size).powf(1. / (lods.len() - 1) as f32);
-        let cutoffs = cutoffs.unwrap_or_else(|| (0..lods.len()).map(|i| 1. / lod_step.powi(i as i32)).collect_vec());
+        let cutoffs = cutoffs.unwrap_or_else(|| {
+            (0..lods.len())
+                .map(|i| 1. / lod_step.powi(i as i32))
+                .collect_vec()
+        });
 
         let lod_0_node = lods[0].get_node_id();
         let lod_0_world = lods[0].world();
 
         let mut world = World::new("model mesh lods");
-        world.add_resource(name(), format!("{}_merged_lods", lod_0_world.resource_opt(name()).map(|x| x as &str).unwrap_or("unknown")));
+        world.add_resource(
+            name(),
+            format!(
+                "{}_merged_lods",
+                lod_0_world
+                    .resource_opt(name())
+                    .map(|x| x as &str)
+                    .unwrap_or("unknown")
+            ),
+        );
         if let Some(aabb) = lod_0_world.resource_opt(local_bounding_aabb()) {
             world.add_resource(local_bounding_aabb(), *aabb);
         }
@@ -264,31 +328,68 @@ impl ModelCrate {
             .with_default(gpu_lod())
             .with(
                 mesh_to_local(),
-                lod_0_world.get(lod_0_node, local_to_world()).unwrap_or_default()
-                    * lod_0_world.get(lod_0_node, mesh_to_local()).unwrap_or(Mat4::IDENTITY),
+                lod_0_world
+                    .get(lod_0_node, local_to_world())
+                    .unwrap_or_default()
+                    * lod_0_world
+                        .get(lod_0_node, mesh_to_local())
+                        .unwrap_or(Mat4::IDENTITY),
             )
-            .with(double_sided(), lod_0_world.get(lod_0_node, double_sided()).unwrap_or_default())
-            .with(local_bounding_aabb(), lod_0_world.get(lod_0_node, local_bounding_aabb()).unwrap_or_default())
+            .with(
+                double_sided(),
+                lod_0_world
+                    .get(lod_0_node, double_sided())
+                    .unwrap_or_default(),
+            )
+            .with(
+                local_bounding_aabb(),
+                lod_0_world
+                    .get(lod_0_node, local_bounding_aabb())
+                    .unwrap_or_default(),
+            )
             .with_default(local_to_world())
             .with_default(pbr_renderer_primitives_from_url());
 
         for (i, lod) in lods.iter().enumerate() {
             let lod_world = lod.world();
             let lod_id = lod.get_node_id();
-            for primitive in lod_world.get_ref(lod_id, pbr_renderer_primitives_from_url()).cloned().unwrap_or_default() {
-                let mesh_id = format!("{}_{}", i, lod.model.meshes.loc.id_from_path(primitive.mesh.path()).unwrap());
-                let mesh_path =
-                    self.meshes.insert(mesh_id.clone(), lod.model.meshes.get_by_path(primitive.mesh.path()).unwrap().clone()).path;
+            for primitive in lod_world
+                .get_ref(lod_id, pbr_renderer_primitives_from_url())
+                .cloned()
+                .unwrap_or_default()
+            {
+                let mesh_id = format!(
+                    "{}_{}",
+                    i,
+                    lod.model
+                        .meshes
+                        .loc
+                        .id_from_path(primitive.mesh.path())
+                        .unwrap()
+                );
+                let mesh_path = self
+                    .meshes
+                    .insert(
+                        mesh_id.clone(),
+                        lod.model
+                            .meshes
+                            .get_by_path(primitive.mesh.path())
+                            .unwrap()
+                            .clone(),
+                    )
+                    .path;
                 let material = primitive.material.as_ref().and_then(|mat_url| {
                     let mat_id = lod.model.materials.loc.id_from_path(mat_url.path())?;
                     let lod_mat = lod.model.materials.content.get(&mat_id)?;
                     Some(self.materials.insert(i.to_string(), lod_mat.clone()).path)
                 });
-                root.get_mut(pbr_renderer_primitives_from_url()).unwrap().push(PbrRenderPrimitiveFromUrl {
-                    mesh: dotdot_path(mesh_path).into(),
-                    material: material.map(|x| dotdot_path(x).into()),
-                    lod: i,
-                });
+                root.get_mut(pbr_renderer_primitives_from_url())
+                    .unwrap()
+                    .push(PbrRenderPrimitiveFromUrl {
+                        mesh: dotdot_path(mesh_path).into(),
+                        material: material.map(|x| dotdot_path(x).into()),
+                        lod: i,
+                    });
             }
         }
         let root = root.spawn(&mut world);
@@ -301,12 +402,22 @@ impl ModelCrate {
             let name = source.model_world().get_ref(*id, name()).unwrap();
             &name[(name.len() - 2)..]
         });
-        self.merge_mesh_lods(cutoffs, lods.into_iter().map(|id| ModelNodeRef { model: source, root: Some(id) }).collect())
+        self.merge_mesh_lods(
+            cutoffs,
+            lods.into_iter()
+                .map(|id| ModelNodeRef {
+                    model: source,
+                    root: Some(id),
+                })
+                .collect(),
+        )
     }
     pub fn set_all_material(&mut self, material: PbrMaterialDesc) {
         self.materials.content.clear();
         let mat_path = dotdot_path(self.materials.insert("main".to_string(), material).path);
-        for (_, primitives, _) in query_mut(pbr_renderer_primitives_from_url(), ()).iter(self.model_world_mut(), None) {
+        for (_, primitives, _) in
+            query_mut(pbr_renderer_primitives_from_url(), ()).iter(self.model_world_mut(), None)
+        {
             for primitive in primitives.iter_mut() {
                 primitive.material = Some(mat_path.clone().into());
             }
@@ -321,19 +432,27 @@ impl ModelCrate {
                     skin.joints
                         .iter()
                         .zip(skin.inverse_bind_matrices.iter())
-                        .map(|(joint, inv_bind_mat)| world.get(*joint, local_to_world()).unwrap_or_default() * *inv_bind_mat)
+                        .map(|(joint, inv_bind_mat)| {
+                            world.get(*joint, local_to_world()).unwrap_or_default() * *inv_bind_mat
+                        })
                         .collect_vec()
                 })
                 .collect::<Vec<_>>()
         });
-        for (node, primitives) in query(pbr_renderer_primitives_from_url()).collect_cloned(world, None) {
+        for (node, primitives) in
+            query(pbr_renderer_primitives_from_url()).collect_cloned(world, None)
+        {
             let aabbs = primitives
                 .iter()
                 .filter_map(|p| {
-                    if let Some(mesh) = self.meshes.get_by_path(&RelativePathBuf::from("materials").join(p.mesh.path())) {
+                    if let Some(mesh) = self
+                        .meshes
+                        .get_by_path(&RelativePathBuf::from("materials").join(p.mesh.path()))
+                    {
                         if let Ok(skin_id) = world.get(node, model_skin_ix()) {
-                            if let Some(joint_matrices) = joint_matrices.as_ref().unwrap().get(skin_id) {
-                                let mut mesh = mesh.clone();
+                            if let Some(joint_matrices) =
+                                joint_matrices.as_ref().unwrap().get(skin_id)
+                            {
                                 let joint_matrices = joint_matrices
                                     .iter()
                                     .map(|mat| {
@@ -343,18 +462,33 @@ impl ModelCrate {
                                             * *mat
                                     })
                                     .collect_vec();
-                                mesh.apply_skin(&joint_matrices);
-                                return mesh.aabb();
+                                let mut aabb = AABB::new_invalid();
+                                for (position, (weight, index)) in mesh
+                                    .positions()
+                                    .iter()
+                                    .zip(mesh.joint_weights().iter().zip(mesh.joint_indices()))
+                                {
+                                    let mat = joint_matrices[index.x as usize] * weight.x
+                                        + joint_matrices[index.y as usize] * weight.y
+                                        + joint_matrices[index.z as usize] * weight.z
+                                        + joint_matrices[index.w as usize] * weight.w;
+                                    let position = mat.transform_point3(*position);
+                                    aabb.min = aabb.min.min(position);
+                                    aabb.max = aabb.max.max(position);
+                                }
+                                return Some(aabb);
                             }
                         } else {
-                            return mesh.aabb();
+                            return Some(mesh.aabb());
                         }
                     }
                     None
                 })
                 .collect_vec();
             if let Some(aabb) = AABB::unions(&aabbs) {
-                world.add_component(node, local_bounding_aabb(), aabb).unwrap();
+                world
+                    .add_component(node, local_bounding_aabb(), aabb)
+                    .unwrap();
             }
         }
     }
@@ -429,7 +563,9 @@ impl ModelCrate {
     pub fn create_animation_bind_ids(&mut self) {
         let world = self.model_world_mut();
         for (id, name) in query(name()).collect_cloned(world, None) {
-            world.add_component(id, animation_bind_id(), animation_bind_id_from_name(&name)).unwrap();
+            world
+                .add_component(id, animation_bind_id(), animation_bind_id_from_name(&name))
+                .unwrap();
         }
     }
     pub fn finalize_model(&mut self) {
@@ -441,7 +577,10 @@ impl ModelCrate {
     }
 
     pub fn create_prefab_from_model(&mut self) {
-        self.create_prefab(Entity::new().with(model_from_url(), dotdot_path(self.models.loc.path(ModelCrate::MAIN)).into()))
+        self.create_prefab(Entity::new().with(
+            model_from_url(),
+            dotdot_path(self.models.loc.path(ModelCrate::MAIN)).into(),
+        ))
     }
 
     pub fn create_prefab(&mut self, data: Entity) {
@@ -450,7 +589,11 @@ impl ModelCrate {
         prefab.add_resource(children(), vec![o]);
         self.prefabs.insert(ModelCrate::MAIN, prefab);
     }
-    pub fn add_component_to_prefab<T: ComponentValue>(&mut self, component: Component<T>, value: T) {
+    pub fn add_component_to_prefab<T: ComponentValue>(
+        &mut self,
+        component: Component<T>,
+        value: T,
+    ) {
         let world = self.prefab_world_mut();
         let object = world.resource(children())[0];
         world.add_component(object, component, value).unwrap();
@@ -458,10 +601,19 @@ impl ModelCrate {
     pub fn create_character_collider(&mut self, radius: Option<f32>, height: Option<f32>) {
         let world = self.prefab_world_mut();
         let object = world.resource(children())[0];
-        world.add_component(object, character_controller_radius(), radius.unwrap_or(0.5)).unwrap();
-        world.add_component(object, character_controller_height(), height.unwrap_or(2.0)).unwrap();
+        world
+            .add_component(object, character_controller_radius(), radius.unwrap_or(0.5))
+            .unwrap();
+        world
+            .add_component(object, character_controller_height(), height.unwrap_or(2.0))
+            .unwrap();
     }
-    pub fn create_collider_from_model(&mut self, assets: &AssetCache, flip_normals: bool, reverse_indices: bool) -> anyhow::Result<()> {
+    pub fn create_collider_from_model(
+        &mut self,
+        assets: &AssetCache,
+        flip_normals: bool,
+        reverse_indices: bool,
+    ) -> anyhow::Result<()> {
         self.update_transforms();
         let physics = PhysicsKey.get(assets);
         let create_triangle_mesh = |asset_crate: &mut ModelCrate, id: &str| -> bool {
@@ -469,24 +621,37 @@ impl ModelCrate {
                 return true;
             }
             let mesh = asset_crate.meshes.content.get(id).unwrap();
-            if let Some(desc) = physx_triangle_mesh_desc_from_mesh(mesh, flip_normals, reverse_indices) {
+            if let Some(desc) =
+                physx_triangle_mesh_desc_from_mesh(mesh, flip_normals, reverse_indices)
+            {
                 let stream = PxDefaultMemoryOutputStream::new();
                 let mut res = physxx::PxTriangleMeshCookingResult::Success;
                 if !physics.cooking.cook_triangle_mesh(&desc, &stream, &mut res) {
                     log::error!("Failed to cook triangle mesh: {:?}", res);
                     return false;
                 }
-                asset_crate.px_triangle_meshes.content.insert(id.to_string(), stream.get_data());
+                asset_crate
+                    .px_triangle_meshes
+                    .content
+                    .insert(id.to_string(), stream.get_data());
                 true
             } else {
                 false
             }
         };
-        let create_convex_mesh = |asset_crate: &mut ModelCrate, id: &str, scale_signum: Vec3| -> Option<RelativePathBuf> {
+        let create_convex_mesh = |asset_crate: &mut ModelCrate,
+                                  id: &str,
+                                  scale_signum: Vec3|
+         -> Option<RelativePathBuf> {
             // Physx doesn't support negative scaling on Convex meshes, so we need to generate a mesh with the right
             // scale signum first, and then scale that with the absolute scale
             let to_sign = |v| if v >= 0. { "p" } else { "n" }.to_string();
-            let full_id = format!("{id}_{}{}{}", to_sign(scale_signum.x), to_sign(scale_signum.y), to_sign(scale_signum.z));
+            let full_id = format!(
+                "{id}_{}{}{}",
+                to_sign(scale_signum.x),
+                to_sign(scale_signum.y),
+                to_sign(scale_signum.z)
+            );
             if asset_crate.px_convex_meshes.content.contains_key(&full_id) {
                 return Some(asset_crate.px_convex_meshes.loc.path(&full_id));
             }
@@ -494,8 +659,12 @@ impl ModelCrate {
 
             let desc = PxConvexMeshDesc {
                 // Apply the correct mirroring according to the base scale
-                points: mesh.positions.iter().map(|&p| p * scale_signum).collect_vec(),
-                indices: Some(mesh.indices.clone()),
+                points: mesh
+                    .positions()
+                    .iter()
+                    .map(|&p| p * scale_signum)
+                    .collect_vec(),
+                indices: Some(mesh.indices().to_vec()),
                 vertex_limit: None,
                 flags: Some(PxConvexFlag::COMPUTE_CONVEX),
             };
@@ -505,7 +674,12 @@ impl ModelCrate {
                 log::error!("Failed to cook convex mesh: {:?}", res);
                 return None;
             }
-            Some(asset_crate.px_convex_meshes.insert(full_id, stream.get_data()).path)
+            Some(
+                asset_crate
+                    .px_convex_meshes
+                    .insert(full_id, stream.get_data())
+                    .path,
+            )
         };
         let mut convex = Vec::new();
         let mut triangle = Vec::new();
@@ -515,18 +689,27 @@ impl ModelCrate {
             query(pbr_renderer_primitives_from_url()).collect_cloned(world, None)
         };
         for (id, prims) in entities {
-            let ltw = self.model_world().get(id, local_to_world()).unwrap_or_default();
+            let ltw = self
+                .model_world()
+                .get(id, local_to_world())
+                .unwrap_or_default();
             if let Some(max_lod) = prims.iter().map(|x| x.lod).max() {
-                let mtl = self.model_world().get(id, mesh_to_local()).unwrap_or_default();
+                let mtl = self
+                    .model_world()
+                    .get(id, mesh_to_local())
+                    .unwrap_or_default();
                 // Only use the "max" lod for colliders
                 for primitive in prims.into_iter().filter(|x| x.lod == max_lod) {
                     let transform = world_transform * ltw * mtl;
                     let (scale, rot, pos) = transform.to_scale_rotation_translation();
                     let mesh_id = self.meshes.loc.id_from_path(primitive.mesh.path()).unwrap();
                     if create_triangle_mesh(self, &mesh_id) {
-                        if let Some(convex_path) = create_convex_mesh(self, &mesh_id, scale.signum()) {
+                        if let Some(convex_path) =
+                            create_convex_mesh(self, &mesh_id, scale.signum())
+                        {
                             let convex_path = dotdot_path(convex_path);
-                            let triangle_path = dotdot_path(self.px_triangle_meshes.loc.path(mesh_id));
+                            let triangle_path =
+                                dotdot_path(self.px_triangle_meshes.loc.path(mesh_id));
                             convex.push((
                                 Mat4::from_scale_rotation_translation(scale.abs(), rot, pos),
                                 PhysxGeometryFromUrl(convex_path.into()),
@@ -537,13 +720,21 @@ impl ModelCrate {
                 }
             }
         }
-        let obj_collider = self.colliders.insert(ModelCrate::MAIN.to_string(), ColliderFromUrls { convex, concave: triangle });
+        let obj_collider = self.colliders.insert(
+            ModelCrate::MAIN.to_string(),
+            ColliderFromUrls {
+                convex,
+                concave: triangle,
+            },
+        );
         let prefab = self.prefab_world_mut();
         prefab
             .add_component(
                 prefab.resource(children())[0],
                 collider(),
-                ColliderDef::Asset { collider: dotdot_path(obj_collider.path).into() },
+                ColliderDef::Asset {
+                    collider: dotdot_path(obj_collider.path).into(),
+                },
             )
             .unwrap();
         Ok(())
@@ -557,11 +748,22 @@ pub struct AssetItem {
 pub fn cap_texture_size(image: &mut RgbaImage, max_size: u32) {
     if image.width() > max_size || image.height() > max_size {
         let (width, height) = if image.width() >= image.height() {
-            (max_size, (max_size as f32 * image.height() as f32 / image.width() as f32) as u32)
+            (
+                max_size,
+                (max_size as f32 * image.height() as f32 / image.width() as f32) as u32,
+            )
         } else {
-            ((max_size as f32 * image.width() as f32 / image.height() as f32) as u32, max_size)
+            (
+                (max_size as f32 * image.width() as f32 / image.height() as f32) as u32,
+                max_size,
+            )
         };
-        *image = image::imageops::resize(&*image as &image::RgbaImage, width, height, image::imageops::FilterType::CatmullRom);
+        *image = image::imageops::resize(
+            &*image as &image::RgbaImage,
+            width,
+            height,
+            image::imageops::FilterType::CatmullRom,
+        );
     }
 }
 
@@ -578,11 +780,19 @@ impl<'a> ModelNodeRef<'a> {
     }
 }
 
-pub fn physx_triangle_mesh_desc_from_mesh(mesh: &Mesh, flip_normals: bool, reverse_indices: bool) -> Option<PxTriangleMeshDesc> {
+pub fn physx_triangle_mesh_desc_from_mesh(
+    mesh: &Mesh,
+    flip_normals: bool,
+    reverse_indices: bool,
+) -> Option<PxTriangleMeshDesc> {
     let mut desc = PxTriangleMeshDesc {
-        points: mesh.positions.clone(),
-        indices: mesh.indices.clone(),
-        flags: if flip_normals { Some(PxMeshFlag::FLIPNORMALS) } else { None },
+        points: mesh.positions().to_vec(),
+        indices: mesh.indices().to_vec(),
+        flags: if flip_normals {
+            Some(PxMeshFlag::FLIPNORMALS)
+        } else {
+            None
+        },
     };
     if desc.points.is_empty() || desc.indices.is_empty() {
         return None;

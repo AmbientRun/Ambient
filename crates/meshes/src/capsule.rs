@@ -2,7 +2,7 @@
 //
 // https://github.com/bevyengine/bevy/blob/695d30bd54af2978dc99f214dda34b568348cf86/crates/bevy_render/src/mesh/shape/capsule.rs
 
-use ambient_std::mesh::Mesh;
+use ambient_std::mesh::{generate_tangents, Mesh, MeshBuilder};
 use glam::*;
 use serde::{Deserialize, Serialize};
 
@@ -364,15 +364,16 @@ impl From<CapsuleMesh> for Mesh {
         assert_eq!(vs.len(), vert_len);
         assert_eq!(tris.len(), fs_len);
 
-        let mut mesh = Mesh {
-            name: "capsule".into(),
+        let tangents = generate_tangents(&vs, &vts, &tris);
+        MeshBuilder {
             positions: vs,
-            normals: Some(vns),
+            normals: vns,
+            tangents,
             texcoords: vec![vts],
             indices: tris,
-            ..Default::default()
-        };
-        mesh.create_tangents();
-        mesh
+            ..MeshBuilder::default()
+        }
+        .build()
+        .expect("Invalid capsule mesh")
     }
 }

@@ -66,7 +66,7 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureFromUrl {
         let image = image_from_url(assets.clone(), self.url.clone()).await?;
         task::block_in_place(|| {
             Ok(Arc::new(Texture::from_image_mipmapped(
-                assets,
+                &assets,
                 image,
                 self.format,
                 Some(&self.url.to_string()),
@@ -89,7 +89,7 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureFromRgba8Image {
         let img = self.image.get(&assets).await?;
         task::block_in_place(|| {
             Ok(Arc::new(Texture::from_rgba8_image_mipmapped(
-                assets,
+                &assets,
                 &img,
                 self.format,
                 Some(&format!("{:?}", self.image)),
@@ -125,7 +125,7 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureFromBytes {
             let image = image::load_from_memory(&self.bytes[..])
                 .context("Failed to load image from bytes")?;
             Ok(Arc::new(Texture::from_image_mipmapped(
-                assets,
+                &assets,
                 image,
                 wgpu::TextureFormat::Rgba8UnormSrgb,
                 self.label.as_deref(),
@@ -200,7 +200,7 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for SplitTextureFromUrl {
             }
             let label = format!("color={} alpha={}", self.color, self.alpha);
             Ok(Arc::new(Texture::from_image_mipmapped(
-                assets,
+                &assets,
                 DynamicImage::ImageRgba8(color),
                 self.format,
                 Some(&label),
@@ -287,7 +287,7 @@ where
 
         task::block_in_place(|| {
             Ok(Arc::new(Texture::from_image_mipmapped(
-                assets,
+                &assets,
                 DynamicImage::ImageRgba8(image),
                 self.inner.format,
                 Some(&self.inner.url.to_string()),
@@ -333,7 +333,7 @@ impl AsyncAssetKey<Result<Arc<Texture>, AssetError>> for TextureArrayFromUrls {
                 .into_iter()
                 .collect::<anyhow::Result<Vec<RgbaImage>>>()?;
             Ok(Arc::new(Texture::array_rgba8_mipmapped(
-                assets,
+                &assets,
                 self.label.as_ref().map(|x| x as &str),
                 imgs,
                 self.format,

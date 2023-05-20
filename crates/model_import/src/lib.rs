@@ -23,7 +23,8 @@ pub mod fbx;
 pub mod gltf;
 pub mod model_crate;
 
-pub type TextureResolver = Arc<dyn Fn(String) -> futures::future::BoxFuture<'static, Option<RgbaImage>> + Sync + Send>;
+pub type TextureResolver =
+    Arc<dyn Fn(String) -> futures::future::BoxFuture<'static, Option<RgbaImage>> + Sync + Send>;
 
 #[derive(Default, Clone, Debug)]
 pub struct ModelImportPipeline {
@@ -34,10 +35,18 @@ impl ModelImportPipeline {
         Self::default()
     }
     pub fn model(url: AbsAssetUrl) -> Self {
-        ModelImportPipeline::new().add_step(ModelImportTransform::ImportModelFromUrl { url, normalize: true, force_assimp: false })
+        ModelImportPipeline::new().add_step(ModelImportTransform::ImportModelFromUrl {
+            url,
+            normalize: true,
+            force_assimp: false,
+        })
     }
     pub fn model_raw(url: AbsAssetUrl) -> Self {
-        ModelImportPipeline::new().add_step(ModelImportTransform::ImportModelFromUrl { url, normalize: false, force_assimp: false })
+        ModelImportPipeline::new().add_step(ModelImportTransform::ImportModelFromUrl {
+            url,
+            normalize: false,
+            force_assimp: false,
+        })
     }
     pub fn add_step(mut self, step: ModelImportTransform) -> Self {
         self.steps.push(step);
@@ -48,24 +57,45 @@ impl ModelImportPipeline {
             if let ModelImportTransform::ImportModelFromUrl { url, .. } = step {
                 return Ok(url.relative_cache_path());
             } else if let ModelImportTransform::MergeMeshLods { lods, .. } = step {
-                return Ok(format!("merged_mesh_lods/{}", lods[0].get_cache_path().context("Lod 0 doesn't have a cache path")?));
+                return Ok(format!(
+                    "merged_mesh_lods/{}",
+                    lods[0]
+                        .get_cache_path()
+                        .context("Lod 0 doesn't have a cache path")?
+                ));
             } else if let ModelImportTransform::MergeUnityMeshLods { url, .. } = step {
                 return Ok(url.relative_cache_path());
             }
         }
-        Err(anyhow!("Can't create cache path, no ImportModelFromUrl or MergeMeshLods"))
+        Err(anyhow!(
+            "Can't create cache path, no ImportModelFromUrl or MergeMeshLods"
+        ))
     }
     pub async fn produce_crate(&self, assets: &AssetCache) -> anyhow::Result<ModelCrate> {
         let mut asset_crate = ModelCrate::new();
         for step in &self.steps {
-            step.run(assets, &mut asset_crate).await.with_context(|| format!("Failed to run step: {step:?}"))?;
+            step.run(assets, &mut asset_crate)
+                .await
+                .with_context(|| format!("Failed to run step: {step:?}"))?;
         }
         Ok(asset_crate)
     }
-    pub async fn produce_local_model_url(&self, asset_cache: &AssetCache) -> anyhow::Result<PathBuf> {
-        let cache_path = AssetsCacheDir.get(asset_cache).join("pipelines").join(self.get_cache_path()?);
-        let model_crate = self.clone().add_step(ModelImportTransform::Finalize).produce_crate(asset_cache).await?;
-        model_crate.produce_local_model_url(format!("{}/", cache_path.to_str().unwrap()).into()).await
+    pub async fn produce_local_model_url(
+        &self,
+        asset_cache: &AssetCache,
+    ) -> anyhow::Result<PathBuf> {
+        let cache_path = AssetsCacheDir
+            .get(asset_cache)
+            .join("pipelines")
+            .join(self.get_cache_path()?);
+        let model_crate = self
+            .clone()
+            .add_step(ModelImportTransform::Finalize)
+            .produce_crate(asset_cache)
+            .await?;
+        model_crate
+            .produce_local_model_url(format!("{}/", cache_path.to_str().unwrap()).into())
+            .await
     }
     // pub async fn produce_local_model(&self, asset_cache: &AssetCache) -> anyhow::Result<Model> {
     //     let url = self.produce_local_model_url(asset_cache).await?;
@@ -108,13 +138,30 @@ impl Default for MaterialFilter {
 
 #[derive(Clone, Debug)]
 pub enum ModelImportTransform {
-    ImportModelFromUrl { url: AbsAssetUrl, normalize: bool, force_assimp: bool },
-    MergeMeshLods { lods: Vec<ModelImportPipeline>, lod_cutoffs: Option<Vec<f32>> },
-    MergeUnityMeshLods { url: AbsAssetUrl, lod_cutoffs: Option<Vec<f32>> },
-    SetName { name: String },
+    ImportModelFromUrl {
+        url: AbsAssetUrl,
+        normalize: bool,
+        force_assimp: bool,
+    },
+    MergeMeshLods {
+        lods: Vec<ModelImportPipeline>,
+        lod_cutoffs: Option<Vec<f32>>,
+    },
+    MergeUnityMeshLods {
+        url: AbsAssetUrl,
+        lod_cutoffs: Option<Vec<f32>>,
+    },
+    SetName {
+        name: String,
+    },
     Transform(ModelTransform),
-    OverrideMaterial { filter: MaterialFilter, material: Box<PbrMaterialDesc> },
-    CapTextureSizes { max_size: ModelTextureSize },
+    OverrideMaterial {
+        filter: MaterialFilter,
+        material: Box<PbrMaterialDesc>,
+    },
+    CapTextureSizes {
+        max_size: ModelTextureSize,
+    },
     // RemoveAllMaterials,
     // SetAnimatable { animatable: bool },
     CreatePrefab,
@@ -124,25 +171,53 @@ pub enum ModelImportTransform {
 }
 impl ModelImportTransform {
     #[async_recursion]
-    pub async fn run(&self, assets: &AssetCache, model_crate: &mut ModelCrate) -> anyhow::Result<()> {
+    pub async fn run(
+        &self,
+        assets: &AssetCache,
+        model_crate: &mut ModelCrate,
+    ) -> anyhow::Result<()> {
         match self {
-            ModelImportTransform::ImportModelFromUrl { url, normalize, force_assimp } => {
-                model_crate.import(assets, url, *normalize, *force_assimp, Arc::new(|_| async move { None }.boxed())).await?;
+            ModelImportTransform::ImportModelFromUrl {
+                url,
+                normalize,
+                force_assimp,
+            } => {
+                model_crate
+                    .import(
+                        assets,
+                        url,
+                        *normalize,
+                        *force_assimp,
+                        Arc::new(|_| async move { None }.boxed()),
+                    )
+                    .await?;
             }
             ModelImportTransform::MergeMeshLods { lods, lod_cutoffs } => {
                 let mut res_lods = Vec::new();
                 for lod in lods {
                     res_lods.push(lod.produce_crate(assets).await?);
                 }
-                model_crate
-                    .merge_mesh_lods(lod_cutoffs.clone(), res_lods.iter().map(|lod| ModelNodeRef { model: lod, root: None }).collect());
+                model_crate.merge_mesh_lods(
+                    lod_cutoffs.clone(),
+                    res_lods
+                        .iter()
+                        .map(|lod| ModelNodeRef {
+                            model: lod,
+                            root: None,
+                        })
+                        .collect(),
+                );
             }
             ModelImportTransform::MergeUnityMeshLods { url, lod_cutoffs } => {
-                let source = ModelImportPipeline::model(url.clone()).produce_crate(assets).await?;
+                let source = ModelImportPipeline::model(url.clone())
+                    .produce_crate(assets)
+                    .await?;
                 model_crate.merge_unity_style_mesh_lods(&source, lod_cutoffs.clone());
             }
             ModelImportTransform::SetName { name } => {
-                model_crate.model_world_mut().add_resource(ambient_core::name(), name.clone());
+                model_crate
+                    .model_world_mut()
+                    .add_resource(ambient_core::name(), name.clone());
             }
             ModelImportTransform::Transform(transform) => transform.apply(model_crate),
             ModelImportTransform::OverrideMaterial { filter, material } => {
@@ -231,19 +306,29 @@ impl ModelTransform {
                 model_crate.model_mut().transform(transform);
             }
             ModelTransform::RotateX { deg } => {
-                model_crate.model_mut().transform(Mat4::from_rotation_x(deg * PI / 180.));
+                model_crate
+                    .model_mut()
+                    .transform(Mat4::from_rotation_x(deg * PI / 180.));
             }
             ModelTransform::RotateY { deg } => {
-                model_crate.model_mut().transform(Mat4::from_rotation_y(deg * PI / 180.));
+                model_crate
+                    .model_mut()
+                    .transform(Mat4::from_rotation_y(deg * PI / 180.));
             }
             ModelTransform::RotateZ { deg } => {
-                model_crate.model_mut().transform(Mat4::from_rotation_z(deg * PI / 180.));
+                model_crate
+                    .model_mut()
+                    .transform(Mat4::from_rotation_z(deg * PI / 180.));
             }
             ModelTransform::Scale { scale } => {
-                model_crate.model_mut().transform(Mat4::from_scale(Vec3::ONE * *scale));
+                model_crate
+                    .model_mut()
+                    .transform(Mat4::from_scale(Vec3::ONE * *scale));
             }
             ModelTransform::Translate { translation } => {
-                model_crate.model_mut().transform(Mat4::from_translation(*translation));
+                model_crate
+                    .model_mut()
+                    .transform(Mat4::from_translation(*translation));
             }
             ModelTransform::ScaleAABB { scale } => {
                 let world = model_crate.model_world_mut();
@@ -257,10 +342,20 @@ impl ModelTransform {
                         if outputs.component() == translation() {
                             match outputs {
                                 AnimationOutputs::Vec3 { component, data } => {
-                                    AnimationOutputs::Vec3 { component: *component, data: data.iter().map(|x| *x * *anim_scale).collect() }
+                                    AnimationOutputs::Vec3 {
+                                        component: *component,
+                                        data: data.iter().map(|x| *x * *anim_scale).collect(),
+                                    }
                                 }
-                                AnimationOutputs::Quat { component: _, data: _ } => unreachable!(),
-                                AnimationOutputs::Vec3Field { component, field, data } => AnimationOutputs::Vec3Field {
+                                AnimationOutputs::Quat {
+                                    component: _,
+                                    data: _,
+                                } => unreachable!(),
+                                AnimationOutputs::Vec3Field {
+                                    component,
+                                    field,
+                                    data,
+                                } => AnimationOutputs::Vec3Field {
                                     component: *component,
                                     field: *field,
                                     data: data.iter().map(|x| *x * *anim_scale).collect(),

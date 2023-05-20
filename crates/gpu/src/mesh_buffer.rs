@@ -31,7 +31,6 @@ pub type GpuMeshIndex = u64;
 #[derive(Debug)]
 pub struct GpuMesh {
     index: GpuMeshIndex,
-    name: String,
     size_in_bytes: usize,
     // Notify parent to remove self on drop
     to_remove: Arc<Mutex<Vec<u64>>>,
@@ -40,9 +39,6 @@ pub struct GpuMesh {
 impl GpuMesh {
     pub fn from_mesh(assets: &AssetCache, mesh: &Mesh) -> Arc<GpuMesh> {
         MeshBufferKey.get(assets).lock().insert(mesh)
-    }
-    pub fn name(&self) -> &str {
-        &self.name
     }
     pub fn index(&self) -> GpuMeshIndex {
         self.index
@@ -182,7 +178,7 @@ impl MeshBuffer {
             base_offset: self.base_buffer.front.len() as u32,
             skinned_offset: self.skinned_buffer.front.len() as u32,
             index_offset: self.index_buffer.front.len() as u32,
-            index_count: mesh.indices.len() as u32,
+            index_count: mesh.index_count(),
         };
 
         let mut internal_mesh = InternalMesh {
@@ -190,47 +186,46 @@ impl MeshBuffer {
             ..Default::default()
         };
 
-        match (&mesh.normals, &mesh.tangents, mesh.texcoords.first()) {
-            (None, None, None) => {
-                tracing::warn!("No positions, normals, tangents, or texture coordinates on mesh");
-            }
-            (norm, tan, uv) => {
-                let pos = mesh.positions.as_slice();
-                let norm = norm.as_deref().unwrap_or_default();
-                let tan = tan.as_deref().unwrap_or_default();
-                let uv = uv.map(|v| &**v).unwrap_or_default();
+        // Pad all vertex attributes to match vertex positions buffer.
+        {
+            let pos = mesh.positions();
+            let norm = mesh.normals();
+            let tan = mesh.tangents();
+            let uv = mesh.texcoords(0);
 
-                let len = ([pos.len(), norm.len(), tan.len(), uv.len()])
-                    .into_iter()
-                    .max()
-                    .unwrap_or(0);
+            let len = ([pos.len(), norm.len(), tan.len(), uv.len()])
+                .into_iter()
+                .max()
+                .unwrap_or(0);
 
-                let mut data = vec![BaseMesh::default(); len];
+            let mut data = vec![BaseMesh::default(); len];
 
-                pos.iter()
-                    .zip(&mut data)
-                    .for_each(|(src, dst)| dst.position = src.extend(0.0));
-                norm.iter()
-                    .zip(&mut data)
-                    .for_each(|(src, dst)| dst.normal = src.extend(0.0));
-                tan.iter()
-                    .zip(&mut data)
-                    .for_each(|(src, dst)| dst.tangent = src.extend(0.0));
-                uv.iter()
-                    .zip(&mut data)
-                    .for_each(|(src, dst)| dst.texcoord0 = *src);
+            pos.iter()
+                .zip(&mut data)
+                .for_each(|(src, dst)| dst.position = src.extend(0.0));
+            norm.iter()
+                .zip(&mut data)
+                .for_each(|(src, dst)| dst.normal = src.extend(0.0));
+            tan.iter()
+                .zip(&mut data)
+                .for_each(|(src, dst)| dst.tangent = src.extend(0.0));
+            uv.iter()
+                .zip(&mut data)
+                .for_each(|(src, dst)| dst.texcoord0 = *src);
 
-                self.base_buffer
-                    .front
-                    .resize(self.base_buffer.front.len() + data.len() as u64, true);
-                self.base_buffer
-                    .front
-                    .write(metadata.base_offset as u64, &data);
-                internal_mesh.base_count += data.len() as u64;
-            }
-        };
+            self.base_buffer
+                .front
+                .resize(self.base_buffer.front.len() + data.len() as u64, true);
+            self.base_buffer
+                .front
+                .write(metadata.base_offset as u64, &data);
+            internal_mesh.base_count += data.len() as u64;
+        }
 
-        if let (Some(joints), Some(weights)) = (&mesh.joint_indices, &mesh.joint_weights) {
+        if !mesh.joint_indices().is_empty() && !mesh.joint_weights().is_empty() {
+            let joints = mesh.joint_indices();
+            let weights = mesh.joint_weights();
+
             let len = joints.len().max(weights.len());
 
             let mut data = vec![SkinnedMesh::default(); len];
@@ -253,13 +248,13 @@ impl MeshBuffer {
         }
 
         self.index_buffer.front.resize(
-            self.index_buffer.front.len() + mesh.indices.len() as u64,
+            self.index_buffer.front.len() + mesh.index_count() as u64,
             true,
         );
         self.index_buffer
             .front
-            .write(metadata.index_offset as u64, &mesh.indices);
-        internal_mesh.index_count = mesh.indices.len() as u64;
+            .write(metadata.index_offset as u64, mesh.indices());
+        internal_mesh.index_count = mesh.index_count() as u64;
 
         let metadata_offset = if let Some(offset) = self.free_indices.pop() {
             self.meshes[offset as usize] = Some(internal_mesh);
@@ -277,7 +272,6 @@ impl MeshBuffer {
 
         Arc::new(GpuMesh {
             index: metadata_offset,
-            name: mesh.name.clone(),
             size_in_bytes: mesh.size_in_bytes(),
             to_remove: self.to_remove.clone(),
         })

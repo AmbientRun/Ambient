@@ -99,7 +99,7 @@ pub fn spread_terrain_cells(
                             depth_or_array_layers: 1,
                         },
                     );
-                    normalmap.generate_mipmaps_with_encoder(world.resource(asset_cache()).clone(), encoder);
+                    normalmap.generate_mipmaps_with_encoder(world.resource(asset_cache()), encoder);
                     changed_cells.push(id);
                 }
             }

@@ -280,7 +280,7 @@ fn ServerInstancesInfo(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn TerrainMaterialEditor(hooks: &mut Hooks) -> Element {
-    let (value, set_value) = use_remote_persisted_resource(hooks, terrain_material_def());
+    let (value, set_value) = use_remote_persisted_resource(hooks, terrain_material_def()).unwrap();
     let value = value.unwrap_or_default();
     let set_value = cb(move |value| set_value(Some(value)));
     FlowColumn::el([
@@ -369,7 +369,7 @@ fn EditorAtmosphereMode(_hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn NaturalLayersEditor(hooks: &mut Hooks) -> Element {
-    let (value, set_value) = use_remote_persisted_resource(hooks, natural_layers());
+    let (value, set_value) = use_remote_persisted_resource(hooks, natural_layers()).unwrap();
     let value = value.unwrap_or_else(|| get_default_natural_layers(NaturalsPreset::Mountains));
     let set_value = cb(move |value| set_value(Some(value)));
     FlowColumn::el([

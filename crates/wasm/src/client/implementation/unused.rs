@@ -111,6 +111,25 @@ impl wit::server_physics::Host for Bindings {
     ) -> anyhow::Result<wit::server_physics::CharacterCollision> {
         unsupported()
     }
+
+
+    fn set_character_position(
+        &mut self,
+        _entity: wit::types::EntityId,
+        _position: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        unsupported()
+    }
+
+
+    fn set_character_foot_position(
+        &mut self,
+        _entity: wit::types::EntityId,
+        _position: wit::types::Vec3,
+    ) -> anyhow::Result<()> {
+        unsupported()
+    }
+
 }
 impl wit::server_message::Host for Bindings {
     fn send(
@@ -119,6 +138,6 @@ impl wit::server_message::Host for Bindings {
         _: String,
         _: Vec<u8>,
     ) -> anyhow::Result<()> {
-        todo!()
+        unimplemented!()
     }
 }

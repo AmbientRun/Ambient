@@ -11,7 +11,7 @@ use std::sync::Arc;
 use ambient_gpu::mesh_buffer::GpuMesh;
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey},
-    mesh::Mesh,
+    mesh::{generate_tangents, Mesh, MeshBuilder},
 };
 pub use capsule::*;
 pub use cube::*;
@@ -101,8 +101,7 @@ impl SyncAssetKey<Arc<GpuMesh>> for UIRectMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
         let mut quad = QuadMesh::from_position_size(Vec2::ZERO, Vec2::ONE);
         quad.flip_uvs = true;
-        let mut mesh = Mesh::from(quad);
-        mesh.name = "ui_rect".to_string();
+        let mesh = Mesh::from(quad);
         GpuMesh::from_mesh(&assets, &mesh)
     }
 }
@@ -116,26 +115,26 @@ impl SyncAssetKey<Arc<GpuMesh>> for GridMeshKey {
 }
 
 pub fn triangle() -> Mesh {
-    Mesh {
-        name: "triangle".into(),
+    MeshBuilder {
         positions: vec![
             vec3(0.0, 0.5, 0.0),
             vec3(-0.5, -0.5, 0.0),
             vec3(0.5, -0.5, 0.0),
         ],
-        colors: Some(vec![
-            vec4(1.0, 0.0, 0.0, 1.),
-            vec4(0.0, 1.0, 0.0, 1.),
-            vec4(0.0, 0.0, 1.0, 1.),
-        ]),
+        colors: vec![
+            vec4(1.0, 0.0, 0.0, 1.0),
+            vec4(0.0, 1.0, 0.0, 1.0),
+            vec4(0.0, 0.0, 1.0, 1.0),
+        ],
         indices: vec![0, 1, 2],
-        ..Default::default()
+        ..MeshBuilder::default()
     }
+    .build()
+    .expect("Invalid triangle mesh")
 }
 
 pub fn pentagon() -> Mesh {
-    Mesh {
-        name: "pentagon".into(),
+    MeshBuilder {
         positions: vec![
             vec3(-0.0868241, 0.49240386, 0.0),
             vec3(-0.49513406, 0.06958647, 0.0),
@@ -143,16 +142,18 @@ pub fn pentagon() -> Mesh {
             vec3(0.35966998, -0.3473291, 0.0),
             vec3(0.44147372, 0.2347359, 0.0),
         ],
-        colors: Some(vec![
-            vec4(0.5, 0.0, 0.5, 1.),
-            vec4(0.5, 1.0, 0.5, 1.),
-            vec4(0.5, 0.0, 0.5, 1.),
-            vec4(0.5, 0.0, 0.5, 1.),
-            vec4(0.5, 0.0, 1.0, 1.),
-        ]),
+        colors: vec![
+            vec4(0.5, 0.0, 0.5, 1.0),
+            vec4(0.5, 1.0, 0.5, 1.0),
+            vec4(0.5, 0.0, 0.5, 1.0),
+            vec4(0.5, 0.0, 0.5, 1.0),
+            vec4(0.5, 0.0, 1.0, 1.0),
+        ],
         indices: vec![0, 1, 4, 1, 2, 4, 2, 3, 4],
-        ..Default::default()
+        ..MeshBuilder::default()
     }
+    .build()
+    .expect("Invalid pentagon mesh")
 }
 
 pub struct QuadMesh {
@@ -179,24 +180,40 @@ impl QuadMesh {
 }
 impl From<QuadMesh> for Mesh {
     fn from(quad: QuadMesh) -> Self {
-        let mut mesh = Mesh {
-            name: "quad".into(),
-            positions: quad.corners.into_iter().collect(),
-            normals: Some(vec![
-                vec3(0., 0., 1.),
-                vec3(0., 0., 1.),
-                vec3(0., 0., 1.),
-                vec3(0., 0., 1.),
-            ]),
-            texcoords: if quad.flip_uvs {
-                vec![vec![vec2(0., 0.), vec2(1., 0.), vec2(0., 1.), vec2(1., 1.)]]
-            } else {
-                vec![vec![vec2(0., 0.), vec2(0., 1.), vec2(1., 0.), vec2(1., 1.)]]
-            },
-            indices: vec![0, 1, 2, 1, 3, 2],
-            ..Default::default()
+        let positions = quad.corners.into_iter().collect::<Vec<_>>();
+        let normals = vec![
+            vec3(0.0, 0.0, 1.0),
+            vec3(0.0, 0.0, 1.0),
+            vec3(0.0, 0.0, 1.0),
+            vec3(0.0, 0.0, 1.0),
+        ];
+        let texcoords = if quad.flip_uvs {
+            vec![
+                vec2(0.0, 0.0),
+                vec2(1.0, 0.0),
+                vec2(0.0, 1.0),
+                vec2(1.0, 1.0),
+            ]
+        } else {
+            vec![
+                vec2(0.0, 0.0),
+                vec2(0.0, 1.0),
+                vec2(1.0, 0.0),
+                vec2(1.0, 1.0),
+            ]
         };
-        mesh.create_tangents();
-        mesh
+        let indices = vec![0, 1, 2, 1, 3, 2];
+        let tangents = generate_tangents(&positions, &texcoords, &indices);
+
+        MeshBuilder {
+            positions,
+            normals,
+            tangents,
+            texcoords: vec![texcoords],
+            indices,
+            ..MeshBuilder::default()
+        }
+        .build()
+        .expect("Invalid quad mesh")
     }
 }

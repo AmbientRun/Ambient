@@ -6,7 +6,7 @@
         "cmd": "cargo run --features profile --release -- run ./guest/rust/examples/basics/third_person_camera"
     },
     "third-person-camera": {
-        "cmd": "cargo run -- run ./guest/rust/examples/basics/third_person_camera"
+        "cmd": "cargo run --features tracing -- run ./guest/rust/examples/basics/third_person_camera --no-proxy"
     },
     "minigolf": {
         "cmd": "cargo run -- run ./guest/rust/examples/games/minigolf"
@@ -21,14 +21,16 @@
         "cmd": "cargo run -- run ./guest/rust/examples/basics/skinmesh"
     },
     "debug-third-person-camera": {
-        "cmd": "cargo build -p ambient",
+        "cmd": "cargo build -p ambient --features tracing",
         "components": {
             "dap": {
                 "program": "./target/debug/ambient",
                 "adapter": "rust",
+                "justMyCode": true,
                 "args": [
                     "run",
-                    "./guest/rust/examples/basics/third_person_camera"
+                    "./guest/rust/examples/basics/third_person_camera",
+                    "--no-proxy"
                 ]
             }
         }
@@ -60,5 +62,23 @@
     },
     "test": {
         "cmd": "cargo nextest run --workspace"
+    },
+    "client-spatial": {
+        "cmd": [
+            "cargo",
+            "build",
+            "--message-format=json",
+            "--package",
+            "ambient_world_audio",
+            "--example",
+            "client_spatial",
+            "--"
+        ],
+        "components": {
+            "cargo-dap": {}
+        }
+    },
+    "launch-chrome": {
+        "cmd": "./scripts/launch_chrome.sh"
     }
 }

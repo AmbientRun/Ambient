@@ -35,7 +35,9 @@ ambient_naturals = { path = "../naturals" }
 physxx = { path = "../../libs/physxx" }
 
 ambient_element = { path = "../../shared_crates/element" }
-ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] }
+ambient_shared_types = { path = "../../shared_crates/shared_types", features = [
+    "native",
+] }
 
 glam = { workspace = true }
 itertools = { workspace = true }
@@ -71,4 +73,3 @@ hotload-includes = [
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 tokio = { workspace = true }
-quinn = { workspace = true }

@@ -11,7 +11,7 @@ use ambient_renderer::{
     color, flat_material::get_flat_shader_unlit, gpu_primitives_lod, gpu_primitives_mesh, material, materials::flat_material::FlatMaterial,
     primitives, renderer_shader, SharedMaterial,
 };
-use ambient_std::{asset_cache::SyncAssetKeyExt, cb, mesh::Mesh};
+use ambient_std::{asset_cache::SyncAssetKeyExt, cb, mesh::{MeshBuilder}};
 use glam::{vec2, vec3, Quat, Vec2, Vec3, Vec4};
 use itertools::Itertools;
 
@@ -143,14 +143,14 @@ impl Default for Graph {
 
 impl ElementComponent for Graph {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
-        let assets = hooks.world.resource(asset_cache()).clone();
+        let assets = hooks.world.resource(asset_cache());
         let Self { points, guide_style, style, width, height, max_value, x_scale, y_scale, x_bounds, y_bounds } = *self;
 
         let points = points.into_iter().filter(|v| v.x.is_normal() && v.y.is_normal() && v.x.abs() < max_value && v.y.abs() < max_value);
 
         let point_count = points.clone().count();
 
-        let mesh_buffer = MeshBufferKey.get(&assets);
+        let mesh_buffer = MeshBufferKey.get(assets);
         let mut mesh_buffer = mesh_buffer.lock();
 
         // points.clone().minmax_by_key(|v| v.x)
@@ -207,7 +207,7 @@ impl ElementComponent for Graph {
         let indices =
             (0..point_count.saturating_sub(1) as u32).map(|i| i * 2).flat_map(|i| [i, 1 + i, 2 + i, 1 + i, 3 + i, 2 + i]).collect_vec();
 
-        let mesh = Mesh { name: "Graph Mesh".to_string(), positions: points, indices, ..Default::default() };
+        let mesh = MeshBuilder { positions: points, indices, ..MeshBuilder::default() }.build().expect("Invalid graph mesh");
 
         let mesh = mesh_buffer.insert(&mesh);
 

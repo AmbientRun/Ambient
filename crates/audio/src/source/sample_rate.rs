@@ -33,11 +33,13 @@ pub struct SampleConversion<S> {
     next_dst_frame: Option<Frame>,
 
     source: Peek<S>,
+    src_sample_count: Option<u64>,
 }
 
 impl<S: Source> SampleConversion<S> {
     pub fn new(source: S, dst_rate: SampleRate) -> Self {
         let src_rate = source.sample_rate();
+        let src_sample_count = source.sample_count();
 
         let mut source = Peek::new(source);
 
@@ -61,6 +63,7 @@ impl<S: Source> SampleConversion<S> {
 
             cur_dst_frame: first_frame,
             next_dst_frame: second_frame,
+            src_sample_count,
         }
     }
 
@@ -161,7 +164,7 @@ impl<S: Source> Source for SampleConversion<S> {
     }
 
     fn sample_count(&self) -> Option<u64> {
-        let samples = self.source.sample_count()?;
+        let samples = self.src_sample_count?;
         let samples = div_ceil(samples * self.dst_rate, self.src_rate);
         Some(samples)
     }

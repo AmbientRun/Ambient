@@ -4,16 +4,17 @@ use ambient_core::{
 };
 use ambient_ecs::{EntityId, World};
 use ambient_network::{
-    connection::Connection, log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
+    client::{ClientConnection, DynRecv},
+    log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
 };
 
 use anyhow::Context;
-use bytes::Bytes;
-use quinn::RecvStream;
+use bytes::{Buf, BufMut, Bytes, BytesMut};
 
 use std::{
     collections::HashSet,
     io::{Cursor, Read},
+    sync::Arc,
 };
 
 use crate::shared::remote_paired_id;
@@ -33,7 +34,7 @@ pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> 
     let remote_module_id = cursor.read_u128::<byteorder::BigEndian>()?;
     let remote_module_id = EntityId(remote_module_id);
 
-    let name_len = usize::try_from(cursor.read_u32::<byteorder::BigEndian>()?)?;
+    let name_len: usize = cursor.get_u32().try_into()?;
     let mut name = vec![0u8; name_len];
     cursor.read_exact(&mut name)?;
     let name = String::from_utf8(name)?;
@@ -47,7 +48,7 @@ pub fn on_datagram(world: &mut World, user_id: Option<String>, bytes: Bytes) -> 
 }
 
 /// Reads an incoming unistream and dispatches to WASM
-pub fn on_unistream(world: &mut World, user_id: Option<String>, recv_stream: RecvStream) {
+pub fn on_unistream(world: &mut World, user_id: Option<String>, recv_stream: DynRecv) {
     let async_run = world.resource(async_run()).clone();
     world.resource(runtime()).spawn(async move {
         log_network_result!(unistream_handler(async_run, user_id, recv_stream).await);
@@ -56,7 +57,7 @@ pub fn on_unistream(world: &mut World, user_id: Option<String>, recv_stream: Rec
     async fn unistream_handler(
         async_run: AsyncRun,
         user_id: Option<String>,
-        mut recv_stream: RecvStream,
+        mut recv_stream: DynRecv,
     ) -> anyhow::Result<()> {
         use tokio::io::AsyncReadExt;
 
@@ -68,7 +69,12 @@ pub fn on_unistream(world: &mut World, user_id: Option<String>, recv_stream: Rec
         recv_stream.read_exact(&mut name).await?;
         let name = String::from_utf8(name)?;
 
-        let data = recv_stream.read_to_end(MAX_STREAM_LENGTH).await?;
+        let mut data = Vec::new();
+
+        recv_stream
+            .take(MAX_STREAM_LENGTH as _)
+            .read_to_end(&mut data)
+            .await?;
 
         async_run.run(move |world| {
             log_network_result!(process_network_message(
@@ -137,9 +143,9 @@ pub fn send_local(
 }
 
 /// Sends a message over the network for the specified module
-pub fn send_networked<C: Connection + 'static>(
+pub fn send_networked(
     world: &World,
-    connection: C,
+    connection: Arc<dyn ClientConnection>,
     module_id: EntityId,
     name: &str,
     data: &[u8],
@@ -149,62 +155,53 @@ pub fn send_networked<C: Connection + 'static>(
         send_unistream(world, connection, module_id, name, data);
         Ok(())
     } else {
-        send_datagram(world, connection, module_id, name, data)
+        send_datagram(world, &*connection, module_id, name, data)
     }
 }
 
-fn send_datagram<C: Connection + 'static>(
-    world: &World,
-    connection: C,
+fn send_datagram(
+    _world: &World,
+    connection: &dyn ClientConnection,
     module_id: EntityId,
     name: &str,
     data: &[u8],
 ) -> anyhow::Result<()> {
-    use byteorder::WriteBytesExt;
-    let mut payload = vec![];
+    let mut payload = BytesMut::new();
 
-    payload.write_u128::<byteorder::BigEndian>(module_id.0)?;
+    payload.put_u128(module_id.0);
 
-    payload.write_u32::<byteorder::BigEndian>(name.len().try_into()?)?;
+    payload.put_u32(name.len().try_into()?);
     payload.extend_from_slice(name.as_bytes());
 
     payload.extend_from_slice(data);
 
-    world.resource(runtime()).spawn(async move {
-        ambient_network::send_datagram(&connection, WASM_DATAGRAM_ID, payload).await?;
-
-        anyhow::Ok(())
-    });
+    connection.send_datagram(WASM_DATAGRAM_ID, payload.freeze())?;
 
     Ok(())
 }
 
-fn send_unistream<C: Connection + 'static>(
+fn send_unistream(
     world: &World,
-    connection: C,
+    connection: Arc<dyn ClientConnection>,
     module_id: EntityId,
     name: &str,
     data: &[u8],
 ) {
-    use tokio::io::AsyncWriteExt;
-
     let name = name.to_owned();
     let data = data.to_owned();
 
     world.resource(runtime()).spawn(async move {
-        let mut outgoing_stream =
-            ambient_network::OutgoingStream::open_uni_with_id(&connection, WASM_UNISTREAM_ID)
-                .await?;
+        let mut payload = BytesMut::new();
+        payload.put_u128(module_id.0);
 
-        {
-            let stream = outgoing_stream.stream.get_mut();
-            stream.write_u128(module_id.0).await?;
+        payload.put_u32(name.len().try_into()?);
+        payload.put(name.as_bytes());
 
-            stream.write_u32(name.len().try_into()?).await?;
-            stream.write_all(name.as_bytes()).await?;
+        payload.put(&data[..]);
 
-            stream.write_all(&data).await?;
-        }
+        connection
+            .request_uni(WASM_UNISTREAM_ID, payload.freeze())
+            .await?;
 
         anyhow::Ok(())
     });

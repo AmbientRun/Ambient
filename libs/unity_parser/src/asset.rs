@@ -1,8 +1,8 @@
-use ambient_std::mesh::Mesh;
+use ambient_std::mesh::{Mesh, MeshBuilder};
+use anyhow::bail;
 use glam::{vec2, vec3};
 use itertools::Itertools;
 use yaml_rust::Yaml;
-use anyhow::bail;
 
 use crate::parse_unity_yaml;
 
@@ -12,7 +12,7 @@ pub struct Asset {
 }
 impl Asset {
     pub fn from_string(data: &str) -> anyhow::Result<Self> {
-        Ok(Self::from_yaml(parse_unity_yaml(data)?.pop().unwrap())?)
+        Self::from_yaml(parse_unity_yaml(data)?.pop().unwrap())
     }
     pub fn from_yaml(asset: Yaml) -> anyhow::Result<Self> {
         // From: https://docs.unity3d.com/ScriptReference/Rendering.VertexAttribute.html
@@ -59,7 +59,6 @@ impl Asset {
             .unwrap();
         let vertex_data = parse_unity_typeless_data(vertex_data);
 
-        #[allow(clippy::identity_op)]
         let positions = if channels[UnityVertexAttribs::Position as usize].dimension > 0 {
             (0..vertex_count)
                 .map(|i| {
@@ -67,7 +66,7 @@ impl Asset {
                         + channels[UnityVertexAttribs::Position as usize].offset)
                         / 4;
                     vec3(
-                        vertex_data[offset + 0],
+                        vertex_data[offset],
                         vertex_data[offset + 1],
                         vertex_data[offset + 2],
                     )
@@ -76,47 +75,40 @@ impl Asset {
         } else {
             bail!("Unity mesh contains no vertex positions");
         };
-        #[allow(clippy::identity_op)]
         let normals = if channels[UnityVertexAttribs::Normal as usize].dimension > 0 {
-            Some(
-                (0..vertex_count)
-                    .map(|i| {
-                        let offset = (i * vertex_size
-                            + channels[UnityVertexAttribs::Normal as usize].offset)
-                            / 4;
-                        vec3(
-                            vertex_data[offset + 0],
-                            vertex_data[offset + 1],
-                            vertex_data[offset + 2],
-                        )
-                    })
-                    .collect_vec(),
-            )
+            (0..vertex_count)
+                .map(|i| {
+                    let offset = (i * vertex_size
+                        + channels[UnityVertexAttribs::Normal as usize].offset)
+                        / 4;
+                    vec3(
+                        vertex_data[offset],
+                        vertex_data[offset + 1],
+                        vertex_data[offset + 2],
+                    )
+                })
+                .collect_vec()
         } else {
-            None
+            Vec::new()
         };
-        #[allow(clippy::identity_op)]
         let tangents = if channels[UnityVertexAttribs::Tangent as usize].dimension > 0 {
-            Some(
-                (0..vertex_count)
-                    .map(|i| {
-                        let offset = (i * vertex_size
-                            + channels[UnityVertexAttribs::Tangent as usize].offset)
-                            / 4;
-                        vec3(
-                            vertex_data[offset + 0],
-                            vertex_data[offset + 1],
-                            vertex_data[offset + 2],
-                        )
-                    })
-                    .collect_vec(),
-            )
+            (0..vertex_count)
+                .map(|i| {
+                    let offset = (i * vertex_size
+                        + channels[UnityVertexAttribs::Tangent as usize].offset)
+                        / 4;
+                    vec3(
+                        vertex_data[offset],
+                        vertex_data[offset + 1],
+                        vertex_data[offset + 2],
+                    )
+                })
+                .collect_vec()
         } else {
-            None
+            Vec::new()
         };
         let texcoords = (0..8)
             .filter_map(|texcoord| {
-                #[allow(clippy::identity_op)]
                 if channels[UnityVertexAttribs::TexCoord0 as usize + texcoord].dimension > 0 {
                     Some(
                         (0..vertex_count)
@@ -137,25 +129,18 @@ impl Asset {
 
         let index_data = asset["Mesh"]["m_IndexBuffer"].as_str().unwrap();
         let indices = parse_unity_index_data(index_data);
-        // for i in 0..(indices.len() / 3) {
-        //     let x = indices[i * 3 + 1];
-        //     indices[i * 3 + 1] = indices[i * 3 + 2];
-        //     indices[i * 3 + 2] = x;
-        // }
 
-        Ok(Asset {
-            mesh: Mesh {
-                name: "unity_mesh".to_string(),
-                positions,
-                colors: None,
-                normals,
-                tangents,
-                texcoords,
-                joint_indices: None,
-                joint_weights: None,
-                indices,
-            },
-        })
+        let mesh_builder = MeshBuilder {
+            positions,
+            normals,
+            tangents,
+            texcoords,
+            indices,
+            ..MeshBuilder::default()
+        };
+        let mesh = mesh_builder.build()?;
+
+        Ok(Asset { mesh })
     }
 }
 

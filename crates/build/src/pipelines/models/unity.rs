@@ -474,7 +474,7 @@ async fn primitives_from_unity_mesh_renderer(
         let mat_ref = mesh_renderer.materials[0].clone();
         let mut mat = ctx.materials_lookup.lock().await.get_by_guid(ctx.config, ctx.guid_lookup, &mat_ref).await.unwrap();
         mat = mat.relative_path_from(&out_model_url.abs().unwrap().push("materials").unwrap());
-        mesh.transform(Mat4::from_cols(-Vec4::X, Vec4::Z, -Vec4::Y, Vec4::W));
+        mesh = mesh.transformed(Mat4::from_cols(-Vec4::X, Vec4::Z, -Vec4::Y, Vec4::W));
         let mut model_crate = model_crate.lock();
         Ok(vec![PbrRenderPrimitiveFromUrl {
             mesh: dotdot_path(model_crate.meshes.insert(mesh_guid.clone(), mesh).path).into(),
@@ -501,8 +501,8 @@ async fn primitives_from_unity_mesh_renderer(
             // Also, TODO(fred): We should probably get rid of mesh_to_local and put the mesh transform on the primitive,
             // so that we don't need to transform the actual mesh here, but instead just put the transform on the primitive
             // below
-            mesh.transform(go_transform.inverse() * file_scale * transform);
-            mesh.flip_winding();
+            mesh = mesh.transformed(go_transform.inverse() * file_scale * transform);
+            mesh = mesh.winding_flipped();
             let mut model_crate = model_crate.lock();
             res.push(PbrRenderPrimitiveFromUrl {
                 mesh: dotdot_path(model_crate.meshes.insert(format!("{}_{}", mesh_guid, prim.mesh.path()), mesh).path).into(),

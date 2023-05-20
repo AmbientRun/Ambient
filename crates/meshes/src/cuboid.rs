@@ -1,5 +1,5 @@
-use ambient_std::mesh::Mesh;
-use glam::{vec2, vec3, vec4, Vec3, Vec4};
+use ambient_std::mesh::{generate_tangents, Mesh, MeshBuilder};
+use glam::{vec2, vec3, Vec3, Vec4};
 
 pub struct CuboidMesh {
     /// Order: Bottom [ Left (Back, Front), Right (Back, Front) ] - Top [ Left (Back, Front), Right (Back, Front) ]
@@ -93,7 +93,7 @@ impl<'a> From<&'a CuboidMesh> for Mesh {
         };
 
         let normals = if cuboid.normals {
-            Some(vec![
+            vec![
                 //-Z
                 vec3(0.0, 0.0, -1.0),
                 vec3(0.0, 0.0, -1.0),
@@ -124,14 +124,16 @@ impl<'a> From<&'a CuboidMesh> for Mesh {
                 vec3(0.0, 1.0, 0.0),
                 vec3(0.0, 1.0, 0.0),
                 vec3(0.0, 1.0, 0.0),
-            ])
+            ]
         } else {
-            None
+            Vec::new()
         };
 
-        let colors = cuboid
-            .color
-            .map(|color| std::iter::repeat(color).take(24).collect());
+        let colors = if let Some(color) = cuboid.color {
+            vec![color; 24]
+        } else {
+            Vec::new()
+        };
 
         let mut indices = Vec::new();
 
@@ -145,18 +147,21 @@ impl<'a> From<&'a CuboidMesh> for Mesh {
             indices.push(i * 4 + 3);
         }
 
-        let mut mesh = Mesh {
-            name: "cuboid".into(),
+        let tangents = if cuboid.tangents {
+            generate_tangents(&positions, &texcoords[0], &indices)
+        } else {
+            Vec::new()
+        };
+
+        let mesh_builder = MeshBuilder {
             positions,
             colors,
             normals,
+            tangents,
             texcoords,
             indices,
-            ..Default::default()
+            ..MeshBuilder::default()
         };
-        if cuboid.tangents {
-            mesh.create_tangents();
-        }
-        mesh
+        mesh_builder.build().expect("Invalid cuboid mesh")
     }
 }

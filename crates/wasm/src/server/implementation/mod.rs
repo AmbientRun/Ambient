@@ -87,6 +87,28 @@ impl wit::entity::Host for Bindings {
         )
     }
 
+    fn get_animation_binder_mask_entities(
+        &mut self,
+        entity: wit::types::EntityId,
+    ) -> anyhow::Result<Vec<wit::types::EntityId>> {
+        shared::implementation::entity::get_animation_binder_mask_entities(self.world_mut(), entity)
+    }
+
+    fn get_animation_binder_mask(
+        &mut self,
+        entity: wit::types::EntityId,
+    ) -> anyhow::Result<Vec<String>> {
+        shared::implementation::entity::get_animation_binder_mask(self.world_mut(), entity)
+    }
+
+    fn get_transforms_relative_to(
+        &mut self,
+        list: Vec<wit::types::EntityId>,
+        origin: wit::types::EntityId,
+    ) -> anyhow::Result<Vec<wit::types::Mat4>> {
+        shared::implementation::entity::get_transforms_relative_to(self.world(), list, origin)
+    }
+
     fn exists(&mut self, entity: wit::types::EntityId) -> anyhow::Result<bool> {
         shared::implementation::entity::exists(self.world(), entity)
     }
@@ -233,5 +255,25 @@ impl wit::asset::Host for Bindings {
         clip_urls: Vec<String>,
     ) -> anyhow::Result<Vec<wit::asset::AnimationAssetMetadata>> {
         shared::implementation::asset::get_animation_asset_metadata(self.world_mut(), &clip_urls)
+    }
+}
+
+impl wit::world_audio::Host for Bindings {
+    fn set_listener(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
+        shared::implementation::world_audio::set_listener(self.world_mut(), entity)
+    }
+
+    fn set_emitter(
+        &mut self,
+        entity: wit::types::EntityId,
+    ) -> anyhow::Result<()> {
+        shared::implementation::world_audio::set_emitter(self.world_mut(), entity)
+    }
+    fn play_sound_on_entity(
+        &mut self,
+        sound: String,
+        emitter: wit::types::EntityId,
+    ) -> anyhow::Result<()> {
+        shared::implementation::world_audio::play_sound_on_entity(self.world_mut(), sound, emitter)
     }
 }
