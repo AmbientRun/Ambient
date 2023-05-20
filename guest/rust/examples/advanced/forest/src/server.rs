@@ -40,7 +40,7 @@ pub fn main() {
     Entity::new()
         .with_merge(make_transformable())
         .with_default(quad())
-        .with(scale(), Vec3::ONE * 150.)
+        .with(scale(), Vec3::ONE * 500.)
         .with(color(), vec4(1., 0., 0., 1.))
         .spawn();
 
