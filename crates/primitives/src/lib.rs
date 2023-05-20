@@ -26,7 +26,7 @@ use glam::{vec3, Mat4, Quat, Vec3, Vec4};
 pub use ambient_ecs::generated::components::core::primitives::{
     capsule, capsule_half_height, capsule_latitudes, capsule_longitudes, capsule_radius,
     capsule_rings, cube, quad, sphere, sphere_radius, sphere_sectors, sphere_stacks, torus,
-    torus_inner_radius, torus_loops, torus_outer_radius, torus_slices, tree, tree_trunk_radius,
+    torus_inner_radius, torus_loops, torus_outer_radius, torus_slices, tree, tree_seed, tree_trunk_radius,
     tree_trunk_height, tree_branch_length, tree_branch_angle, tree_foliage_radius,
     tree_foliage_density, tree_trunk_segments, tree_branch_segments, tree_foliage_segments
 };
@@ -276,6 +276,7 @@ pub fn systems() -> SystemGroup {
                 }
             }),
             query((
+                //tree_seed().changed(),
                 tree_trunk_radius().changed(),
                 tree_trunk_height().changed(),
                 tree_branch_length().changed(),
@@ -290,6 +291,7 @@ pub fn systems() -> SystemGroup {
             .spawned()
             .to_system(|q, world, qs, _| {
                 for (id, (
+                    //seed,
                     trunk_radius,
                     trunk_height,
                     branch_length,
@@ -302,6 +304,7 @@ pub fn systems() -> SystemGroup {
 
             )) in q.collect_cloned(world, qs) {
                     let mesh = TreeMesh {
+                        //seed,
                         trunk_radius,
                         trunk_height,
                         branch_length,

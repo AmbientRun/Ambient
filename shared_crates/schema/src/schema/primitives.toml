@@ -88,6 +88,12 @@ If attached to an entity alongside the other `treee_*` components, the entity wi
 To easily instantiate a default `tree`, consider using the `tree` concept (e.g. `make_tree`)."""
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::primitives::tree_seed"]
+type = "I32"
+name = "Tree trunk seed"
+description = "Set the trunk seed of a `tree` for some predictable randomness"
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::primitives::tree_trunk_radius"]
 type = "F32"
 name = "Tree trunk radius"
@@ -228,6 +234,7 @@ description = "A procedural Treee, with trunk, branches and foliage"
 
 [concepts.tree.components]
 "core::primitives::tree" = {}
+"core::primitives::tree_seed" = 1234
 "core::primitives::tree_trunk_radius" = 0.1
 "core::primitives::tree_trunk_height"= 1.0
 "core::primitives::tree_branch_length" = 0.5

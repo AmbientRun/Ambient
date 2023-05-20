@@ -16,3 +16,4 @@ ambient_gpu = { path = "../gpu" , version = "0.2.1" }
 glam = { workspace = true }
 serde = { workspace = true }
 rand = "0.8"
+rand_chacha = "0.3.1"
