@@ -60,8 +60,8 @@ pub fn main() {
             .with(tree_foliage_density(), 20)
             .with(scale(), Vec3::ONE * gen_rn(i as i32,  0.1,0.5))
             .with(translation(), vec3(
-                gen_rn((seed + i as i32), 0.0, 250.0),
-                gen_rn((seed + seed + i as i32), 0.0, 250.0),
+                gen_rn(seed + i as i32, 0.0, 250.0),
+                gen_rn(seed + seed + i as i32, 0.0, 250.0),
                 0.0,
             ))
             .with(color(), vec4(
