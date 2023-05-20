@@ -1,9 +1,9 @@
-use ambient_std::mesh::{Mesh, MeshBuilder, generate_tangents};
+use ambient_std::mesh::{generate_tangents, Mesh, MeshBuilder};
 use glam::*;
-use serde::{Deserialize, Serialize};
-use rand::SeedableRng;
 use rand::prelude::*;
+use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct TreeMesh {
@@ -70,12 +70,15 @@ impl From<TreeMesh> for Mesh {
         let foliage_position_variance = vec3(56.0, 56.0, 36.0);
 
         for i in 0..foliage_count {
-            let foliage_radius = tree.foliage_radius * (1.0 - gen_rn(tree.seed + i as i32, 0.0, 1.0) * foliage_radius_variance);
-            let foliage_position = top_vertices1[gen_rn(tree.seed, 0.0, top_vertices1.len() as f32) as usize] + vec3(
-                gen_rn(tree.seed + i as i32, 0.0, 1.0) * foliage_position_variance.x,
-                gen_rn(tree.seed + i as i32+ 1, 0.0, 1.0) * foliage_position_variance.y,
-                gen_rn(tree.seed + i as i32+ 2, 0.0, 1.0) * foliage_position_variance.z + 2.0,
-            );
+            let foliage_radius = tree.foliage_radius
+                * (1.0 - gen_rn(tree.seed + i as i32, 0.0, 1.0) * foliage_radius_variance);
+            let foliage_position = top_vertices1
+                [gen_rn(tree.seed, 0.0, top_vertices1.len() as f32) as usize]
+                + vec3(
+                    gen_rn(tree.seed + i as i32, 0.0, 1.0) * foliage_position_variance.x,
+                    gen_rn(tree.seed + i as i32 + 1, 0.0, 1.0) * foliage_position_variance.y,
+                    gen_rn(tree.seed + i as i32 + 2, 0.0, 1.0) * foliage_position_variance.z + 2.0,
+                );
 
             let segments = tree.foliage_segments;
             let density = tree.foliage_density;
@@ -97,7 +100,14 @@ impl From<TreeMesh> for Mesh {
                     let z = height;
 
                     sphere_vertices.push(vec3(x, y, z));
-                    sphere_normals.push(vec3(x - foliage_position.x, y - foliage_position.y, z - foliage_position.z).normalize());
+                    sphere_normals.push(
+                        vec3(
+                            x - foliage_position.x,
+                            y - foliage_position.y,
+                            z - foliage_position.z,
+                        )
+                        .normalize(),
+                    );
                     sphere_uvs.push(vec2(j as f32 / density as f32, i as f32 / segments as f32));
                 }
             }
@@ -180,8 +190,10 @@ fn build_trunk(tree: &TreeMesh) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) 
         let random_direction = vec3(
             gen_rn(tree.seed + i as i32 + 1, 0.0, 1.0) - 0.5,
             gen_rn(tree.seed + i as i32 + 2, 0.0, 1.0) - 0.5,
-            gen_rn(tree.seed + i as i32 + 3, 0.0, 1.0) - 0.5
-        ).normalize() * direction_variance;
+            gen_rn(tree.seed + i as i32 + 3, 0.0, 1.0) - 0.5,
+        )
+        .normalize()
+            * direction_variance;
         trunk_direction = (trunk_direction + random_direction).normalize();
 
         let top_position = trunk_direction * z;
@@ -196,7 +208,10 @@ fn build_trunk(tree: &TreeMesh) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) 
 
             vertices.push(top_position + vec3(x, y, 0.0) - gravity_offset);
             normals.push(vec3(x, y, 0.0).normalize());
-            uvs.push(vec2(j as f32 / sectors as f32, i as f32 / tree.trunk_segments as f32));
+            uvs.push(vec2(
+                j as f32 / sectors as f32,
+                i as f32 / tree.trunk_segments as f32,
+            ));
         }
 
         if i == tree.trunk_segments {
@@ -245,7 +260,5 @@ fn build_trunk(tree: &TreeMesh) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) 
 
 pub fn gen_rn(seed: i32, min: f32, max: f32) -> f32 {
     let mut rng = ChaCha8Rng::seed_from_u64(seed as u64);
-    let mut n = rng.gen::<f32>();
-    n = n * (max - min) + min;
-    n
+    rng.gen_range(min..max)
 }
