@@ -1,4 +1,4 @@
-use ambient_std::mesh::Mesh;
+use ambient_std::mesh::{Mesh, MeshBuilder, generate_tangents};
 use glam::*;
 use serde::{Deserialize, Serialize};
 use rand::SeedableRng;
@@ -136,16 +136,17 @@ impl From<TreeMesh> for Mesh {
             indices
         }
 
-        let mut mesh = Mesh {
+        let tangents = generate_tangents(&vertices1, &uvs1, &indices);
+        MeshBuilder {
             positions: vertices1,
+            normals: normals1,
+            tangents: tangents,
             texcoords: vec![uvs1],
-            normals: Some(normals1),
             indices: indices,
-            ..Default::default()
-        };
-
-        mesh.name = "tree".to_string();
-        mesh
+            ..MeshBuilder::default()
+        }
+        .build()
+        .expect("Invalid tree mesh")
     }
 }
 
