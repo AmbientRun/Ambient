@@ -5,7 +5,7 @@ use ambient_api::{
         ecs::{children, parent},
         physics::{
             character_controller_height, character_controller_radius, physics_controlled,
-            quad_collider, sphere_collider,
+            plane_collider, sphere_collider,
         },
         player::{player, user_id},
         primitives::{cube, quad},
@@ -26,7 +26,7 @@ pub fn main() {
         .with_default(quad())
         .with(scale(), Vec3::ONE * 10.)
         .with(color(), vec4(1., 0., 0., 1.))
-        .with_default(quad_collider())
+        .with_default(plane_collider())
         .spawn();
 
     Entity::new()

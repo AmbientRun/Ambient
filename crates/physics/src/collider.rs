@@ -109,7 +109,7 @@ pub fn server_systems() -> SystemGroup {
     SystemGroup::new(
         "physics/collider/server",
         vec![
-            query(quad_collider().changed()).to_system(|q, world, qs, _| {
+            query(plane_collider().changed()).to_system(|q, world, qs, _| {
                 for (id, _) in changed_or_missing(q, world, qs, collider()) {
                     world
                         .add_component(id, collider(), ColliderDef::Plane)
