@@ -436,11 +436,20 @@ impl AssetUrl {
             AssetUrl::Absolute(url) => Ok(Self::Absolute(url.join(path)?)),
             AssetUrl::Relative(p) => Ok(Self::Relative(
                 // The Url::join method has some intricacies so we want these to behave the same
-                Url::parse(&format!("http://localhost/{}", p.as_str()))
+                if cfg!(target_os = "windows") {
+                    Url::parse(&format!("http://localhost/{}", p.as_str().replace("/","\\")))
                     .unwrap()
                     .join(path.as_ref())?
                     .path()[1..]
-                    .into(),
+                    .into()
+                } else {
+                    Url::parse(&format!("http://localhost/{}", p.as_str()))
+                    .unwrap()
+                    .join(path.as_ref())?
+                    .path()[1..]
+                    .into()
+                }
+                ,
             )),
         }
     }

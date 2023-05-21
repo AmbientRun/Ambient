@@ -1,0 +1,24 @@
+[
+    {
+        "pipeline": {
+            "type": "Materials",
+            "importer": {
+            "type": "Single",
+            "name": "sand",
+            "base_color": "sand.png"
+            },
+            "output_quads": true
+        }
+    },
+    {
+        "pipeline": {
+          "type": "Materials",
+          "importer": {
+            "type": "Single",
+            "name": "bark",
+            "base_color": "bark.png"
+          },
+          "output_quads": true
+        }
+      }
+]

@@ -46,7 +46,10 @@ pub fn main() {
         .with(sphere_sectors(), 24)
         .with(sphere_stacks(), 24)
         .with(translation(), vec3(80., 80., -970.))
-        .with(color(), vec4(0.4, 0.2, 0.2, 1.))
+        .with(
+            pbr_material_from_url(),
+            asset::url("assets/pipeline.json/0/mat.json").unwrap(),
+        )
         .spawn();
 
     // ocean
@@ -62,7 +65,7 @@ pub fn main() {
         .with_merge(make_transformable())
         .with_default(sun())
         .with(rotation(), Quat::from_rotation_y(-45_f32.to_radians()))
-        .with(light_diffuse(), Vec3::ONE)
+        .with(light_diffuse(), Vec3::ONE * 5.0)
         .with(fog_density(), 0.)
         .with_default(main_scene())
         .spawn();
@@ -96,13 +99,8 @@ pub fn main() {
                 ),
             )
             .with(
-                color(),
-                vec4(
-                    0.2,
-                    gen_rn(seed + i * i, 0.3, 0.9),
-                    gen_rn(seed + i * i * i, 0.2, 0.3),
-                    1.0,
-                ),
+                pbr_material_from_url(),
+                asset::url("assets/pipeline.json/1/mat.json").unwrap(),
             )
             .spawn();
     }
