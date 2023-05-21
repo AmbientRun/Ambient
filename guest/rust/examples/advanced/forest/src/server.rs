@@ -3,13 +3,19 @@ use ambient_api::{
         app::main_scene,
         camera::aspect_ratio_from_window,
         primitives::{
-            quad, tree_foliage_density, tree_foliage_radius, tree_foliage_segments, tree_seed,
+            sphere_radius, sphere_sectors, sphere_stacks,
+            tree_foliage_density, tree_foliage_radius, tree_foliage_segments, tree_seed,
             tree_trunk_height, tree_trunk_radius, tree_trunk_segments,
         },
+        physics::{
+            character_controller_height, character_controller_radius, physics_controlled,
+            plane_collider, sphere_collider,
+        },
+        player::{player, user_id},
         rendering::{color, fog_density, light_diffuse, sky, sun, water},
         transform::{lookat_target, scale, translation},
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable, make_tree},
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable, make_tree, make_sphere},
     prelude::*,
 };
 
@@ -36,16 +42,21 @@ pub fn main() {
     // ground
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(quad())
-        .with(scale(), Vec3::ONE * 500.)
-        .with(color(), vec4(1., 0., 0., 1.))
+        .with_merge(make_sphere())
+        .with(sphere_collider(), 0.5)
+        .with(sphere_radius(), 1000.0)
+        .with(sphere_sectors(), 24)
+        .with(sphere_stacks(), 24)
+        .with(translation(), vec3(80., 80., -970.))
+        .with(color(), vec4(0.4, 0.2, 0.2, 1.))
         .spawn();
 
     // ocean
     Entity::new()
         .with_merge(make_transformable())
         .with_default(water())
-        .with(scale(), Vec3::ONE * 2000.)
+        .with(scale(), Vec3::ONE * 1000.)
+        .with(translation(), vec3(0., 0., 100.))
         .spawn();
 
     // sun, light, fog
@@ -68,6 +79,7 @@ pub fn main() {
         Entity::new()
             .with_merge(make_transformable())
             .with_merge(make_tree())
+            .with_default(cast_shadows())
             .with(tree_seed(), seed + i)
             .with(tree_trunk_radius(), gen_rn(seed + i, 10.0, 20.0))
             .with(tree_trunk_height(), gen_rn(seed + i, 50.0, 200.0))
