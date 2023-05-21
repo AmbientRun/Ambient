@@ -130,7 +130,7 @@ pub fn server_systems() -> SystemGroup {
                         .unwrap();
                 }
             }),
-            query(box_collider().changed()).to_system(|q, world, qs, _| {
+            query(cube_collider().changed()).to_system(|q, world, qs, _| {
                 for (id, size) in changed_or_missing(q, world, qs, collider()) {
                     world
                         .add_component(
