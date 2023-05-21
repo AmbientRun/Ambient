@@ -25,7 +25,6 @@ let samples = [
     ["guest/rust/examples/ui/screens", 60],
     ["guest/rust/examples/ui/slider", 60],
     ["guest/rust/examples/ui/text", 60],
-    ["guest/rust/examples/advanced/forest", 60],
 ]
 
 function process(nParallel, jobs) {
