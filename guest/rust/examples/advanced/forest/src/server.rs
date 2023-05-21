@@ -8,7 +8,7 @@ use ambient_api::{
             tree_foliage_radius, tree_foliage_segments, tree_seed, tree_trunk_height,
             tree_trunk_radius, tree_trunk_segments,
         },
-        rendering::{color, fog_density, light_diffuse, sky, sun, water},
+        rendering::{fog_density, light_diffuse, sky, sun, water},
         transform::{lookat_target, scale, translation},
     },
     concepts::{
