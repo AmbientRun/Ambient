@@ -8,8 +8,7 @@ use ambient_api::{
             tree_trunk_height, tree_trunk_radius, tree_trunk_segments,
         },
         physics::{
-            character_controller_height, character_controller_radius, physics_controlled,
-            plane_collider, sphere_collider,
+            sphere_collider,
         },
         player::{player, user_id},
         rendering::{color, fog_density, light_diffuse, sky, sun, water},
