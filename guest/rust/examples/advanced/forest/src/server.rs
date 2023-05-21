@@ -6,7 +6,7 @@ use ambient_api::{
             quad, tree_foliage_density, tree_foliage_radius, tree_foliage_segments, tree_seed,
             tree_trunk_height, tree_trunk_radius, tree_trunk_segments,
         },
-        rendering::color,
+        rendering::{color, fog_density, light_diffuse, sky, sun, water},
         transform::{lookat_target, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable, make_tree},
@@ -24,6 +24,7 @@ pub fn main() {
 
     let num_trees = 100;
 
+    // camera
     Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())
         .with(aspect_ratio_from_window(), EntityId::resources())
@@ -32,12 +33,35 @@ pub fn main() {
         .with(lookat_target(), vec3(0., 0., 2.))
         .spawn();
 
+    // ground
     Entity::new()
         .with_merge(make_transformable())
         .with_default(quad())
         .with(scale(), Vec3::ONE * 500.)
         .with(color(), vec4(1., 0., 0., 1.))
         .spawn();
+
+    // ocean
+    Entity::new()
+        .with_merge(make_transformable())
+        .with_default(water())
+        .with(scale(), Vec3::ONE * 2000.)
+        .spawn();
+
+    // sun, light, fog
+    Entity::new()
+        .with_merge(make_transformable())
+        .with_default(sun())
+        .with(rotation(), Quat::from_rotation_y(-45_f32.to_radians()))
+        .with(light_diffuse(), Vec3::ONE)
+        .with(fog_density(), 0.)
+        .with_default(main_scene())
+        .spawn();
+
+    // sky
+    Entity::new()
+        .with_merge(make_transformable())
+        .with_default(sky()).spawn();
 
     // lets plant some trees :)
     for i in 0..num_trees {
