@@ -2,19 +2,18 @@ use ambient_api::{
     components::core::{
         app::main_scene,
         camera::aspect_ratio_from_window,
+        physics::sphere_collider,
         primitives::{
-            sphere_radius, sphere_sectors, sphere_stacks,
-            tree_foliage_density, tree_foliage_radius, tree_foliage_segments, tree_seed,
-            tree_trunk_height, tree_trunk_radius, tree_trunk_segments,
+            sphere_radius, sphere_sectors, sphere_stacks, tree_foliage_density,
+            tree_foliage_radius, tree_foliage_segments, tree_seed, tree_trunk_height,
+            tree_trunk_radius, tree_trunk_segments,
         },
-        physics::{
-            sphere_collider,
-        },
-        player::{player, user_id},
         rendering::{color, fog_density, light_diffuse, sky, sun, water},
         transform::{lookat_target, scale, translation},
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable, make_tree, make_sphere},
+    concepts::{
+        make_perspective_infinite_reverse_camera, make_sphere, make_transformable, make_tree,
+    },
     prelude::*,
 };
 
@@ -71,7 +70,8 @@ pub fn main() {
     // sky
     Entity::new()
         .with_merge(make_transformable())
-        .with_default(sky()).spawn();
+        .with_default(sky())
+        .spawn();
 
     // lets plant some trees :)
     for i in 0..num_trees {
