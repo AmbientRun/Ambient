@@ -79,7 +79,7 @@ rusty-hook = "^0.11.2"
 
 [features]
 no_bundled_certs = []
-default = ["assimp"]
+default = []
 deploy = ["ambient_deploy"]
 production = ["assimp", "no_bundled_certs"]
 profile = ["ambient_app/profile"]
