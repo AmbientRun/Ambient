@@ -16,9 +16,9 @@ description = "Size of the font."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components.font_style]
-type = "String"
+type = "FontStyle"
 name = "Font style"
-description = "One of Bold, BoldItalic, Medium, MediumItalic, Regular, Italic, Light or LightItalic."
+description = "Style of the font."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components.text]
@@ -26,3 +26,15 @@ type = "String"
 name = "Text"
 description = "Create a text mesh on this entity."
 attributes = ["Debuggable", "Networked", "Store"]
+
+[enums]
+FontStyle = [
+    { name = "Bold", description = "Use bold for this text." },
+    { name = "BoldItalic", description = "Use bold italic for this text." },
+    { name = "Medium", description = "Use medium for this text." },
+    { name = "MediumItalic", description = "Use medium italic for this text." },
+    { name = "Regular", description = "Use regular for this text." },
+    { name = "Italic", description = "Use italic for this text." },
+    { name = "Light", description = "Use light for this text." },
+    { name = "LightItalic", description = "Use light italic for this text." }
+]
