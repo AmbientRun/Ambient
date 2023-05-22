@@ -6,7 +6,6 @@ use crate::{
     internal::wit,
 };
 use glam::{UVec2, UVec3, UVec4};
-use ulid::Ulid;
 
 /// Converts from a Rust representation to a wit-bindgen representation.
 pub trait IntoBindgen {
