@@ -16,3 +16,5 @@ ulid = { workspace = true }
 glam = { workspace = true }
 toml = { workspace = true }
 thiserror = { workspace = true }
+paste = { workspace = true }
+data-encoding = { workspace = true }

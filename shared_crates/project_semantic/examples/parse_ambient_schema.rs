@@ -1,7 +1,9 @@
 use std::{fmt::Display, path::Path};
 
-use ambient_project::Identifier;
-use ambient_project_semantic::{Component, FileProvider, Item, ItemId, ItemRef, Scope, Semantic};
+use ambient_project_semantic::{
+    Attribute, Component, Concept, FileProvider, Item, Message, ResolvableItemId, Scope, Semantic,
+    Type,
+};
 
 pub fn main() {
     const SCHEMA_PATH: &str = "shared_crates/schema/src";
@@ -46,41 +48,137 @@ impl Printer {
             self.with_indent(|p| p.print_scope(semantic, scope));
         }
 
-        for (name, id) in scope.components.iter() {
-            self.with_indent(|p| p.print_component(semantic, name, *id));
+        for id in scope.components.values() {
+            self.with_indent(|p| p.print_component(semantic, semantic.items.get(*id).unwrap()));
+        }
+
+        for id in scope.concepts.values() {
+            self.with_indent(|p| p.print_concept(semantic, semantic.items.get(*id).unwrap()));
+        }
+
+        for id in scope.messages.values() {
+            self.with_indent(|p| p.print_message(semantic, semantic.items.get(*id).unwrap()));
+        }
+
+        for id in scope.types.values() {
+            self.with_indent(|p| p.print_type(semantic, semantic.items.get(*id).unwrap()));
+        }
+
+        for id in scope.attributes.values() {
+            self.with_indent(|p| p.print_attribute(semantic, semantic.items.get(*id).unwrap()));
         }
     }
 
-    fn print_component(&mut self, semantic: &Semantic, name: &Identifier, id: ItemId<Component>) {
-        let component = semantic.items.get(id).unwrap();
+    fn print_component(&mut self, semantic: &Semantic, component: &Component) {
         self.print_indent();
-        println!("component({}): ", name);
+        println!("component({}): ", component.id);
 
         self.with_indent(|p| {
             p.print_indent();
             println!("name: {:?}", component.name.as_deref().unwrap_or_default());
+
             p.print_indent();
             println!(
                 "description: {:?}",
                 component.description.as_deref().unwrap_or_default()
             );
+
             p.print_indent();
             println!(
                 "type: {}",
-                write_ref(semantic, &component.type_, |t| t.to_string(semantic))
+                write_resolvable_id(semantic, &component.type_, |t| t.to_string(semantic))
             );
+
             p.print_indent();
             print!("attributes: ");
             for attribute in &component.attributes {
                 print!(
                     "{} ",
-                    write_ref(semantic, attribute, |attribute| attribute.id.clone())
+                    write_resolvable_id(semantic, attribute, |attribute| attribute.id.clone())
                 );
             }
             println!();
+
             p.print_indent();
             println!("default: {:?}", component.default);
         });
+    }
+
+    fn print_concept(&mut self, semantic: &Semantic, concept: &Concept) {
+        self.print_indent();
+        println!("concept({}): ", concept.id);
+
+        self.with_indent(|p| {
+            p.print_indent();
+            println!("name: {:?}", concept.name.as_deref().unwrap_or_default());
+
+            p.print_indent();
+            println!(
+                "description: {:?}",
+                concept.description.as_deref().unwrap_or_default()
+            );
+
+            p.print_indent();
+            print!("extends: ");
+            for extend in &concept.extends {
+                print!(
+                    "{} ",
+                    write_resolvable_id(semantic, extend, |extend| extend.id.clone())
+                );
+            }
+            println!();
+
+            p.print_indent();
+            println!("components:");
+
+            p.with_indent(|p| {
+                for (component, value) in concept.components.iter() {
+                    p.print_indent();
+                    println!(
+                        "{} => {:?}",
+                        write_resolvable_id(semantic, component, |component| component.id.clone()),
+                        value,
+                    );
+                }
+            });
+        });
+    }
+
+    fn print_message(&mut self, semantic: &Semantic, message: &Message) {
+        self.print_indent();
+        println!("message({}): ", message.id);
+
+        self.with_indent(|p| {
+            p.print_indent();
+            println!(
+                "description: {:?}",
+                message.description.as_deref().unwrap_or_default()
+            );
+
+            p.print_indent();
+            println!("fields:");
+
+            p.with_indent(|p| {
+                for (id, ty) in message.fields.iter() {
+                    p.print_indent();
+                    println!(
+                        "{} => {}",
+                        id,
+                        write_resolvable_id(semantic, ty, |ty| ty.to_string(semantic)),
+                    );
+                }
+            });
+        });
+    }
+
+    fn print_type(&mut self, semantic: &Semantic, type_: &Type) {
+        self.print_indent();
+        println!("type: {}", type_.to_string(semantic));
+    }
+
+    fn print_attribute(&mut self, _semantic: &Semantic, attribute: &Attribute) {
+        self.print_indent();
+        println!("attribute({}): ", attribute.id);
     }
 
     fn print_indent(&self) {
@@ -96,14 +194,14 @@ impl Printer {
     }
 }
 
-fn write_ref<T: Item, D: Display>(
+fn write_resolvable_id<T: Item, D: Display>(
     semantic: &Semantic,
-    r: &ItemRef<T>,
+    r: &ResolvableItemId<T>,
     extractor: impl FnOnce(&T) -> D,
 ) -> String {
     match r {
-        ItemRef::Unresolved(unresolved) => format!("unresolved({:?})", unresolved),
-        ItemRef::Resolved(resolved) => {
+        ResolvableItemId::Unresolved(unresolved) => format!("unresolved({:?})", unresolved),
+        ResolvableItemId::Resolved(resolved) => {
             format!("{}", extractor(semantic.items.get(*resolved).unwrap()))
         }
     }

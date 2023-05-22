@@ -11,7 +11,6 @@ use ambient_shared_types::primitive_component_definitions;
 use anyhow::Context;
 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 
-use thiserror::Error;
 use ulid::Ulid;
 
 #[derive(Clone, PartialEq, Debug, Default)]
@@ -76,9 +75,7 @@ impl Semantic {
                     $(
                         (
                             CamelCaseIdentifier::new(stringify!($value)).unwrap(),
-                            Type::Primitive(PrimitiveType {
-                                rust_type: stringify!($type).to_string(),
-                            }),
+                            Type::Primitive(PrimitiveType::$value),
                         )
                     ),*
                 ]
@@ -255,28 +252,34 @@ impl Scope {
         for (path, component) in manifest.components.iter() {
             let path = path.as_path();
             let (parent, last) = path.parent_and_last();
-            scope
-                .get_scope_mut(parent)
-                .components
-                .insert(last.clone(), semantic.items.add(component.into()));
+            scope.get_scope_mut(parent).components.insert(
+                last.clone(),
+                semantic
+                    .items
+                    .add(Component::from_project(last.clone(), component)),
+            );
         }
 
         for (path, concept) in manifest.concepts.iter() {
             let path = path.as_path();
             let (parent, last) = path.parent_and_last();
-            scope
-                .get_scope_mut(parent)
-                .concepts
-                .insert(last.clone(), semantic.items.add(concept.into()));
+            scope.get_scope_mut(parent).concepts.insert(
+                last.clone(),
+                semantic
+                    .items
+                    .add(Concept::from_project(last.clone(), concept)),
+            );
         }
 
         for (path, message) in manifest.messages.iter() {
             let path = path.as_path();
             let (parent, last) = path.parent_and_last();
-            scope
-                .get_scope_mut(parent)
-                .messages
-                .insert(last.clone(), semantic.items.add(message.into()));
+            scope.get_scope_mut(parent).messages.insert(
+                last.clone(),
+                semantic
+                    .items
+                    .add(Message::from_project(last.clone(), message)),
+            );
         }
 
         for (segment, ty) in manifest.enums.iter() {
@@ -401,11 +404,19 @@ impl<T: Item> PartialEq for ItemId<T> {
 impl<T: Item> Eq for ItemId<T> {}
 
 #[derive(Clone)]
-pub enum ItemRef<T: Item> {
+pub enum ResolvableItemId<T: Item> {
     Unresolved(T::Unresolved),
     Resolved(ItemId<T>),
 }
-impl<T: Item + Debug> Debug for ItemRef<T> {
+impl<T: Item> ResolvableItemId<T> {
+    fn as_resolved(&self) -> Option<ItemId<T>> {
+        match self {
+            Self::Unresolved(_) => None,
+            Self::Resolved(id) => Some(*id),
+        }
+    }
+}
+impl<T: Item + Debug> Debug for ResolvableItemId<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Unresolved(arg0) => write!(f, "Unresolved({arg0:?})"),
@@ -413,7 +424,7 @@ impl<T: Item + Debug> Debug for ItemRef<T> {
         }
     }
 }
-impl<T: Item> PartialEq for ItemRef<T> {
+impl<T: Item> PartialEq for ResolvableItemId<T> {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (Self::Unresolved(l0), Self::Unresolved(r0)) => l0 == r0,
@@ -422,26 +433,56 @@ impl<T: Item> PartialEq for ItemRef<T> {
         }
     }
 }
-impl<T: Item> Eq for ItemRef<T> {}
-impl<T: Item> std::hash::Hash for ItemRef<T> {
+impl<T: Item> Eq for ResolvableItemId<T> {}
+impl<T: Item> std::hash::Hash for ResolvableItemId<T> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         core::mem::discriminant(self).hash(state);
     }
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum MaybePrimitiveValue {
+pub enum ResolvedValue {
+    Primitive(PrimitiveValue),
+    Enum(ItemId<Type>, CamelCaseIdentifier),
+}
+impl ResolvedValue {
+    fn from_toml_value(value: &toml::Value, items: &ItemMap, id: ItemId<Type>) -> Self {
+        match items.get(id).unwrap() {
+            Type::Enum(e) => {
+                let variant = value.as_str().unwrap();
+                let variant = e
+                    .members
+                    .iter()
+                    .find(|v| v.name.as_ref() == variant)
+                    .unwrap();
+                Self::Enum(id, variant.name.clone())
+            }
+            ty => Self::Primitive(PrimitiveValue::from_toml_value(value, ty)),
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub enum ResolvableValue {
     Unresolved(toml::Value),
-    Resolved(PrimitiveValue),
+    Resolved(ResolvedValue),
+}
+impl ResolvableValue {
+    fn resolve(&mut self, items: &ItemMap, id: ItemId<Type>) {
+        if let Self::Unresolved(value) = self {
+            *self = Self::Resolved(ResolvedValue::from_toml_value(value, items, id));
+        }
+    }
 }
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Component {
+    pub id: Identifier,
     pub name: Option<String>,
     pub description: Option<String>,
-    pub type_: ItemRef<Type>,
-    pub attributes: Vec<ItemRef<Attribute>>,
-    pub default: Option<MaybePrimitiveValue>,
+    pub type_: ResolvableItemId<Type>,
+    pub attributes: Vec<ResolvableItemId<Attribute>>,
+    pub default: Option<ResolvableValue>,
 }
 impl Item for Component {
     const TYPE: ItemType = ItemType::Component;
@@ -469,9 +510,9 @@ impl Item for Component {
         let mut new = self.clone();
 
         new.type_ = match new.type_ {
-            ItemRef::Unresolved(path) => {
+            ResolvableItemId::Unresolved(path) => {
                 let id = scopes.get_type_id(items, &path).unwrap();
-                ItemRef::Resolved(id)
+                ResolvableItemId::Resolved(id)
             }
             t => t,
         };
@@ -479,43 +520,49 @@ impl Item for Component {
         let mut attributes = vec![];
         for attribute in &new.attributes {
             attributes.push(match attribute {
-                ItemRef::Unresolved(path) => {
+                ResolvableItemId::Unresolved(path) => {
                     let id = scopes.get_attribute_id(&path).unwrap();
-                    ItemRef::Resolved(id)
+                    ResolvableItemId::Resolved(id)
                 }
                 t => t.clone(),
             });
         }
         new.attributes = attributes;
 
+        if let Some(default) = &mut new.default {
+            default.resolve(items, new.type_.as_resolved().unwrap());
+        }
+
         new
     }
 }
-impl From<&ambient_project::Component> for Component {
-    fn from(value: &ambient_project::Component) -> Self {
+impl Component {
+    fn from_project(id: Identifier, value: &ambient_project::Component) -> Self {
         Self {
+            id,
             name: value.name.clone(),
             description: value.description.clone(),
-            type_: ItemRef::Unresolved(value.type_.clone()),
+            type_: ResolvableItemId::Unresolved(value.type_.clone()),
             attributes: value
                 .attributes
                 .iter()
-                .map(|attribute| ItemRef::Unresolved(attribute.clone()))
+                .map(|attribute| ResolvableItemId::Unresolved(attribute.clone()))
                 .collect(),
             default: value
                 .default
                 .as_ref()
-                .map(|v| MaybePrimitiveValue::Unresolved(v.clone())),
+                .map(|v| ResolvableValue::Unresolved(v.clone())),
         }
     }
 }
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Concept {
+    pub id: Identifier,
     pub name: Option<String>,
     pub description: Option<String>,
-    pub extends: Vec<ItemRef<Concept>>,
-    pub components: HashMap<ItemRef<Component>, MaybePrimitiveValue>,
+    pub extends: Vec<ResolvableItemId<Concept>>,
+    pub components: HashMap<ResolvableItemId<Component>, ResolvableValue>,
 }
 impl Item for Concept {
     const TYPE: ItemType = ItemType::Concept;
@@ -543,23 +590,24 @@ impl Item for Concept {
         self.clone()
     }
 }
-impl From<&ambient_project::Concept> for Concept {
-    fn from(value: &ambient_project::Concept) -> Self {
+impl Concept {
+    fn from_project(id: Identifier, value: &ambient_project::Concept) -> Self {
         Concept {
+            id,
             name: value.name.clone(),
             description: value.description.clone(),
             extends: value
                 .extends
                 .iter()
-                .map(|v| ItemRef::Unresolved(v.clone()))
+                .map(|v| ResolvableItemId::Unresolved(v.clone()))
                 .collect(),
             components: value
                 .components
                 .iter()
                 .map(|(k, v)| {
                     (
-                        ItemRef::Unresolved(k.clone()),
-                        MaybePrimitiveValue::Unresolved(v.clone()),
+                        ResolvableItemId::Unresolved(k.clone()),
+                        ResolvableValue::Unresolved(v.clone()),
                     )
                 })
                 .collect(),
@@ -569,8 +617,9 @@ impl From<&ambient_project::Concept> for Concept {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Message {
+    pub id: Identifier,
     pub description: Option<String>,
-    pub fields: BTreeMap<Identifier, ItemRef<Type>>,
+    pub fields: BTreeMap<Identifier, ResolvableItemId<Type>>,
 }
 impl Item for Message {
     const TYPE: ItemType = ItemType::Message;
@@ -598,14 +647,15 @@ impl Item for Message {
         self.clone()
     }
 }
-impl From<&ambient_project::Message> for Message {
-    fn from(value: &ambient_project::Message) -> Self {
+impl Message {
+    fn from_project(id: Identifier, value: &ambient_project::Message) -> Self {
         Message {
+            id,
             description: value.description.clone(),
             fields: value
                 .fields
                 .iter()
-                .map(|(k, v)| (k.clone(), ItemRef::Unresolved(v.clone())))
+                .map(|(k, v)| (k.clone(), ResolvableItemId::Unresolved(v.clone())))
                 .collect(),
         }
     }
@@ -642,15 +692,28 @@ impl Item for Attribute {
     }
 }
 
-#[derive(Clone, PartialEq, Eq)]
-pub struct PrimitiveType {
-    pub rust_type: String,
-}
-impl Debug for PrimitiveType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "PrimitiveType({:?})", self.rust_type)
+macro_rules! define_primitive_type {
+    ($(($value:ident, $type:ty)),*) => {
+        #[derive(Copy, Clone, PartialEq, Eq, Debug)]
+        pub enum PrimitiveType {
+            $(
+                #[doc = stringify!($type)]
+                $value,
+            )*
+        }
+
+        impl std::fmt::Display for PrimitiveType {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                match self {
+                    $(
+                        Self::$value => write!(f, stringify!($type)),
+                    )*
+                }
+            }
+        }
     }
 }
+primitive_component_definitions!(define_primitive_type);
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Enum {
@@ -695,7 +758,7 @@ impl Type {
 
     pub fn to_string(&self, semantic: &Semantic) -> String {
         match self {
-            Type::Primitive(pt) => pt.rust_type.clone(),
+            Type::Primitive(pt) => pt.to_string(),
             Type::Vec(id) => {
                 let inner = semantic.items.get(*id).unwrap();
                 format!("Vec<{}>", inner.to_string(semantic))
@@ -735,31 +798,98 @@ impl Item for Type {
     }
 }
 
+pub type EntityId = u128;
 macro_rules! define_primitive_value {
     ($(($value:ident, $type:ty)),*) => {
-        #[derive(Debug, Clone, PartialEq)]
-        pub enum PrimitiveValue {
+        paste::paste! {
+            #[derive(Debug, Clone, PartialEq)]
+            pub enum PrimitiveValue {
+                $(
+                    $value($type),
+                    [<Vec $value>](Vec<$type>),
+                    [<Option $value>](Option<$type>),
+                )*
+            }
             $(
-                $value($type),
+                impl From<$type> for PrimitiveValue {
+                    fn from(value: $type) -> Self {
+                        Self::$value(value)
+                    }
+                }
             )*
         }
-        $(
-            impl From<$type> for PrimitiveValue {
-                fn from(value: $type) -> Self {
-                    Self::$value(value)
-                }
-            }
-        )*
     };
 }
-
-pub type EntityId = u128;
-
 primitive_component_definitions!(define_primitive_value);
+impl PrimitiveValue {
+    pub fn from_toml_value(value: &toml::Value, ty: &Type) -> Self {
+        match ty {
+            Type::Primitive(pt) => Self::primitive_from_toml_value(value, *pt)
+                .context("Failed to parse primitive value")
+                .unwrap(),
+            Type::Vec(v) => todo!(),
+            Type::Option(o) => todo!(),
+            Type::Enum(_) => unreachable!("Enum should be resolved"),
+        }
+    }
 
-#[allow(dead_code)]
-#[derive(Error, Debug)]
-enum ParseError {
-    #[error("failed to parse toml value {0:?}")]
-    TomlParseError(toml::Value),
+    pub fn primitive_from_toml_value(value: &toml::Value, ty: PrimitiveType) -> Option<Self> {
+        fn as_array<T: Default + Copy, const N: usize>(
+            value: &toml::Value,
+            converter: impl Fn(&toml::Value) -> Option<T>,
+        ) -> Option<[T; N]> {
+            let arr = value.as_array().unwrap();
+            assert_eq!(arr.len(), N);
+
+            let mut result = [T::default(); N];
+            for (i, v) in arr.iter().enumerate() {
+                result[i] = converter(v)?;
+            }
+            Some(result)
+        }
+
+        let v = value;
+        Some(match ty {
+            PrimitiveType::Empty => Self::Empty(()),
+            PrimitiveType::Bool => Self::Bool(v.as_bool()?),
+            PrimitiveType::EntityId => Self::EntityId(EntityId::from_le_bytes(
+                data_encoding::BASE64
+                    .decode(v.as_str()?.as_bytes())
+                    .unwrap()
+                    .try_into()
+                    .unwrap(),
+            )),
+            PrimitiveType::F32 => Self::F32(v.as_float()? as f32),
+            PrimitiveType::F64 => Self::F64(v.as_float()?),
+            PrimitiveType::Mat4 => Self::Mat4(Mat4::from_cols_array(&as_array(v, |v| {
+                v.as_float().map(|v| v as f32)
+            })?)),
+            PrimitiveType::I32 => Self::I32(v.as_integer().map(|v| v as i32)?),
+            PrimitiveType::Quat => Self::Quat(Quat::from_array(as_array(v, |v| {
+                v.as_float().map(|v| v as f32)
+            })?)),
+            PrimitiveType::String => Self::String(v.as_str()?.to_string()),
+            PrimitiveType::U8 => Self::U8(v.as_integer().map(|v| v as u8)?),
+            PrimitiveType::U32 => Self::U32(v.as_integer().map(|v| v as u32)?),
+            PrimitiveType::U64 => Self::U64(v.as_integer().map(|v| v as u64)?),
+            PrimitiveType::Vec2 => Self::Vec2(Vec2::from_array(as_array(v, |v| {
+                v.as_float().map(|v| v as f32)
+            })?)),
+            PrimitiveType::Vec3 => Self::Vec3(Vec3::from_array(as_array(v, |v| {
+                v.as_float().map(|v| v as f32)
+            })?)),
+            PrimitiveType::Vec4 => Self::Vec4(Vec4::from_array(as_array(v, |v| {
+                v.as_float().map(|v| v as f32)
+            })?)),
+            PrimitiveType::Uvec2 => Self::Uvec2(UVec2::from_array(as_array(v, |v| {
+                v.as_integer().map(|v| v as u32)
+            })?)),
+            PrimitiveType::Uvec3 => Self::Uvec3(UVec3::from_array(as_array(v, |v| {
+                v.as_integer().map(|v| v as u32)
+            })?)),
+            PrimitiveType::Uvec4 => Self::Uvec4(UVec4::from_array(as_array(v, |v| {
+                v.as_integer().map(|v| v as u32)
+            })?)),
+        })
+    }
 }
