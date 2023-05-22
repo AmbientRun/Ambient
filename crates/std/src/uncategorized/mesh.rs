@@ -40,7 +40,7 @@ impl MeshBuilder {
         }
 
         Ok(Mesh {
-            id: ulid::Ulid::new(),
+            id: crate::ulid(),
             positions: self.positions,
             colors: self.colors,
             normals: self.normals,
