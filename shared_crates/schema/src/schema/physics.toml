@@ -11,12 +11,12 @@ Angular velocity (radians/second) of this entity in the physics scene.
 Updating this component will update the entity's angular velocity in the physics scene."""
 attributes = ["Debuggable", "Networked", "Store"]
 
-[components.box_collider]
+[components.cube_collider]
 type = "Vec3"
-name = "Box collider"
+name = "Cube collider"
 description = """
-If attached, this entity will have a box physics collider.
-`x, y, z` is the size of the box."""
+If attached, this entity will have a cube physics collider.
+`x, y, z` is the size of the cube."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components.character_controller_height]

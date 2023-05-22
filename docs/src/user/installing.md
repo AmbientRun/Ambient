@@ -28,9 +28,10 @@ cargo install --git https://github.com/AmbientRun/Ambient.git ambient
 
 Note that if you are running a project outside of the `guest/rust` workspace, it is likely that the published version of the API will be incompatible with `main`, and you will need to specify the dependency manually.
 
-### Building problems and solutions
+### Optional features
+You can supply these feature flags to get optional features that are disabled by default, e.g. `cargo install --git https://github.com/AmbientRun/Ambient.git ambient --features assimp`
 
-- If you run into troubles building russimp/assimp, you can turn it off by installing with `--no-default-features`. See [this issue](https://github.com/AmbientRun/Ambient/issues/173) for more details.
+- *assimp*: This adds support for [assimp](https://github.com/assimp/assimp), which loads ~40 additional model file formats, such as .obj, text based fbx and much more
 
 ### Build dependencies: Linux/Ubuntu
 
