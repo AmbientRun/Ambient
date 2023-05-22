@@ -78,12 +78,6 @@ ambient join proxy-eu.ambient.run:9176
 
 Note that content is always streamed, so the only thing the joining user requires is Ambient itself to join the session.
 
-## Contributing
-
-We welcome community contributions to this project.
-
-Please talk with us on Discord beforehand if you'd like to contribute a larger piece of work.
-
 ## License
 
 Licensed under either of
