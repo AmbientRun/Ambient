@@ -641,7 +641,24 @@ impl Item for Message {
     }
 
     fn resolve(&mut self, items: &mut ItemMap, scopes: &Scopes) -> Self {
-        self.clone()
+        let mut new = self.clone();
+
+        let mut fields = IndexMap::new();
+        for (name, type_) in &new.fields {
+            fields.insert(
+                name.clone(),
+                match type_ {
+                    ResolvableItemId::Unresolved(path) => {
+                        let id = scopes.get_type_id(items, &path).unwrap();
+                        ResolvableItemId::Resolved(id)
+                    }
+                    t => t.clone(),
+                },
+            );
+        }
+        new.fields = fields;
+
+        new
     }
 }
 impl Message {
