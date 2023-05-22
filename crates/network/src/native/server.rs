@@ -92,8 +92,8 @@ impl GameServer {
                 Ok(server) => {
                     return Ok(server);
                 }
-                Err(_err) => {
-                    tracing::warn!("Failed to create server on port {}", port);
+                Err(err) => {
+                    tracing::warn!("Failed to create server on port {port}.\n{err:?}");
                 }
             }
         }
