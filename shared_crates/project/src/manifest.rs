@@ -1,5 +1,6 @@
-use std::{collections::BTreeMap, fs, path::Path};
+use std::{fs, path::Path};
 
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -14,13 +15,13 @@ pub struct Manifest {
     #[serde(default)]
     pub build: Build,
     #[serde(default)]
-    pub components: BTreeMap<IdentifierPathBuf, Component>,
+    pub components: IndexMap<IdentifierPathBuf, Component>,
     #[serde(default)]
-    pub concepts: BTreeMap<IdentifierPathBuf, Concept>,
+    pub concepts: IndexMap<IdentifierPathBuf, Concept>,
     #[serde(default)]
-    pub messages: BTreeMap<IdentifierPathBuf, Message>,
+    pub messages: IndexMap<IdentifierPathBuf, Message>,
     #[serde(default)]
-    pub enums: BTreeMap<CamelCaseIdentifier, Enum>,
+    pub enums: IndexMap<CamelCaseIdentifier, Enum>,
 }
 impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, toml::de::Error> {
@@ -92,7 +93,7 @@ impl Default for BuildRust {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
+    use indexmap::IndexMap;
 
     use crate::{
         Build, BuildRust, CamelCaseIdentifier, Component, ComponentType, Concept, ContainerType,
@@ -138,7 +139,7 @@ mod tests {
                         feature_multibuild: vec!["client".to_string(), "server".to_string()]
                     }
                 },
-                components: BTreeMap::from_iter([(
+                components: IndexMap::from_iter([(
                     IdentifierPathBuf::new("cell").unwrap(),
                     Component {
                         name: Some("Cell".to_string()),
@@ -149,21 +150,21 @@ mod tests {
                     }
                     .into()
                 )]),
-                concepts: BTreeMap::from_iter([(
+                concepts: IndexMap::from_iter([(
                     IdentifierPathBuf::new("cell").unwrap(),
                     Concept {
                         name: Some("Cell".to_string()),
                         description: Some("A cell object".to_string()),
                         extends: vec![],
-                        components: BTreeMap::from_iter([(
+                        components: IndexMap::from_iter([(
                             IdentifierPathBuf::new("cell").unwrap(),
                             toml::Value::Integer(0)
                         )])
                     }
                     .into()
                 )]),
-                messages: BTreeMap::new(),
-                enums: BTreeMap::new(),
+                messages: IndexMap::new(),
+                enums: IndexMap::new(),
             })
         )
     }
@@ -197,10 +198,10 @@ mod tests {
                         feature_multibuild: vec!["client".to_string()]
                     }
                 },
-                components: BTreeMap::new(),
-                concepts: BTreeMap::new(),
-                messages: BTreeMap::new(),
-                enums: BTreeMap::new(),
+                components: IndexMap::new(),
+                concepts: IndexMap::new(),
+                messages: IndexMap::new(),
+                enums: IndexMap::new(),
             })
         )
     }
@@ -221,13 +222,21 @@ mod tests {
         "core::transform::spherical_billboard" = { type = "Empty", name = "Spherical billboard", description = "" }
         "core::transform::translation" = { type = "Vec3", name = "Translation", description = "" }
 
-        [concepts]
-        "ns::transformable" = { name = "Transformable", description = "Can be translated, rotated and scaled.", components = {"core::transform::translation" = [0, 0, 0], "core::transform::rotation" = [0, 0, 0, 1], "core::transform::scale" = [1, 1, 1]} }
+        [concepts."ns::transformable"]
+        name = "Transformable"
+        description = "Can be translated, rotated and scaled."
+
+        [concepts."ns::transformable".components]
+        # This is intentionally out of order to ensure that order is preserved
+        "core::transform::translation" = [0, 0, 0]
+        "core::transform::scale" = [1, 1, 1]
+        "core::transform::rotation" = [0, 0, 0, 1]
         "#;
 
+        let manifest = Manifest::parse(TOML).unwrap();
         assert_eq!(
-            Manifest::parse(TOML),
-            Ok(Manifest {
+            manifest,
+            Manifest {
                 project: Project {
                     id: Identifier::new("my_project").unwrap(),
                     name: Some("My Project".to_string()),
@@ -242,7 +251,7 @@ mod tests {
                         feature_multibuild: vec!["client".to_string(), "server".to_string()]
                     }
                 },
-                components: BTreeMap::from_iter([
+                components: IndexMap::from_iter([
                     (
                         IdentifierPathBuf::new("core::transform::rotation").unwrap(),
                         Component {
@@ -288,19 +297,27 @@ mod tests {
                         .into()
                     ),
                 ]),
-                concepts: BTreeMap::from_iter([(
+                concepts: IndexMap::from_iter([(
                     IdentifierPathBuf::new("ns::transformable").unwrap(),
                     Concept {
                         name: Some("Transformable".to_string()),
                         description: Some("Can be translated, rotated and scaled.".to_string()),
                         extends: vec![],
-                        components: BTreeMap::from_iter([
+                        components: IndexMap::from_iter([
                             (
                                 IdentifierPathBuf::new("core::transform::translation").unwrap(),
                                 Value::Array(vec![
                                     Value::Integer(0),
                                     Value::Integer(0),
                                     Value::Integer(0)
+                                ])
+                            ),
+                            (
+                                IdentifierPathBuf::new("core::transform::scale").unwrap(),
+                                Value::Array(vec![
+                                    Value::Integer(1),
+                                    Value::Integer(1),
+                                    Value::Integer(1)
                                 ])
                             ),
                             (
@@ -312,22 +329,30 @@ mod tests {
                                     Value::Integer(1)
                                 ])
                             ),
-                            (
-                                IdentifierPathBuf::new("core::transform::scale").unwrap(),
-                                Value::Array(vec![
-                                    Value::Integer(1),
-                                    Value::Integer(1),
-                                    Value::Integer(1)
-                                ])
-                            )
                         ])
                     }
                     .into()
                 )]),
-                messages: BTreeMap::new(),
-                enums: BTreeMap::new(),
-            })
-        )
+                messages: IndexMap::new(),
+                enums: IndexMap::new(),
+            }
+        );
+
+        assert_eq!(
+            manifest
+                .concepts
+                .first()
+                .unwrap()
+                .1
+                .components
+                .keys()
+                .collect::<Vec<_>>(),
+            vec![
+                &IdentifierPathBuf::new("core::transform::translation").unwrap(),
+                &IdentifierPathBuf::new("core::transform::scale").unwrap(),
+                &IdentifierPathBuf::new("core::transform::rotation").unwrap(),
+            ]
+        );
     }
 
     #[test]
@@ -358,10 +383,10 @@ mod tests {
                     includes: Default::default(),
                 },
                 build: Build::default(),
-                components: BTreeMap::new(),
-                concepts: BTreeMap::new(),
-                messages: BTreeMap::new(),
-                enums: BTreeMap::from_iter([(
+                components: IndexMap::new(),
+                concepts: IndexMap::new(),
+                messages: IndexMap::new(),
+                enums: IndexMap::from_iter([(
                     CamelCaseIdentifier::new("CellState").unwrap(),
                     Enum(vec![
                         EnumMember {
@@ -411,7 +436,7 @@ mod tests {
                         feature_multibuild: vec!["client".to_string(), "server".to_string()]
                     }
                 },
-                components: BTreeMap::from_iter([
+                components: IndexMap::from_iter([
                     (
                         IdentifierPathBuf::new("test").unwrap(),
                         Component {
@@ -452,9 +477,9 @@ mod tests {
                         .into()
                     )
                 ]),
-                concepts: BTreeMap::new(),
-                messages: BTreeMap::new(),
-                enums: BTreeMap::new(),
+                concepts: IndexMap::new(),
+                messages: IndexMap::new(),
+                enums: IndexMap::new(),
             })
         )
     }

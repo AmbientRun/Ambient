@@ -1,5 +1,4 @@
-use std::collections::BTreeMap;
-
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 use crate::IdentifierPathBuf;
@@ -10,5 +9,5 @@ pub struct Concept {
     pub description: Option<String>,
     #[serde(default)]
     pub extends: Vec<IdentifierPathBuf>,
-    pub components: BTreeMap<IdentifierPathBuf, toml::Value>,
+    pub components: IndexMap<IdentifierPathBuf, toml::Value>,
 }

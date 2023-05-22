@@ -1,8 +1,4 @@
-use std::{
-    collections::{BTreeMap, HashMap},
-    fmt::Debug,
-    marker::PhantomData,
-};
+use std::{collections::HashMap, fmt::Debug, marker::PhantomData};
 
 use ambient_project::{
     CamelCaseIdentifier, ComponentType, Identifier, IdentifierPath, IdentifierPathBuf, Manifest,
@@ -11,6 +7,7 @@ use ambient_shared_types::primitive_component_definitions;
 use anyhow::Context;
 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 
+use indexmap::IndexMap;
 use ulid::Ulid;
 
 #[derive(Clone, PartialEq, Debug, Default)]
@@ -65,7 +62,7 @@ impl ItemMap {
 pub struct Semantic {
     pub items: ItemMap,
     root_scope: Scope,
-    pub scopes: BTreeMap<Identifier, Scope>,
+    pub scopes: IndexMap<Identifier, Scope>,
 }
 impl Semantic {
     pub fn new() -> Self {
@@ -87,14 +84,14 @@ impl Semantic {
             root_scope: Scope {
                 id: Identifier::default(),
                 manifest: None,
-                scopes: BTreeMap::new(),
-                components: BTreeMap::new(),
-                concepts: BTreeMap::new(),
-                messages: BTreeMap::new(),
-                types: BTreeMap::new(),
-                attributes: BTreeMap::new(),
+                scopes: IndexMap::new(),
+                components: IndexMap::new(),
+                concepts: IndexMap::new(),
+                messages: IndexMap::new(),
+                types: IndexMap::new(),
+                attributes: IndexMap::new(),
             },
-            scopes: BTreeMap::new(),
+            scopes: IndexMap::new(),
         };
 
         for (id, ty) in primitive_component_definitions!(define_primitive_types) {
@@ -187,13 +184,13 @@ impl<'a> Scopes<'a> {
 pub struct Scope {
     pub id: Identifier,
     manifest: Option<Manifest>,
-    pub scopes: BTreeMap<Identifier, Scope>,
+    pub scopes: IndexMap<Identifier, Scope>,
 
-    pub components: BTreeMap<Identifier, ItemId<Component>>,
-    pub concepts: BTreeMap<Identifier, ItemId<Concept>>,
-    pub messages: BTreeMap<Identifier, ItemId<Message>>,
-    pub types: BTreeMap<CamelCaseIdentifier, ItemId<Type>>,
-    pub attributes: BTreeMap<CamelCaseIdentifier, ItemId<Attribute>>,
+    pub components: IndexMap<Identifier, ItemId<Component>>,
+    pub concepts: IndexMap<Identifier, ItemId<Concept>>,
+    pub messages: IndexMap<Identifier, ItemId<Message>>,
+    pub types: IndexMap<CamelCaseIdentifier, ItemId<Type>>,
+    pub attributes: IndexMap<CamelCaseIdentifier, ItemId<Attribute>>,
 }
 impl Debug for Scope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -231,7 +228,7 @@ impl Scope {
         let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename}"))?;
 
-        let mut scopes = BTreeMap::new();
+        let mut scopes = IndexMap::new();
         for include in &manifest.project.includes {
             let scope = Scope::from_file(semantic, include, file_provider)?;
             scopes.insert(scope.id.clone(), scope);
@@ -242,11 +239,11 @@ impl Scope {
             manifest: None,
             scopes,
 
-            components: BTreeMap::new(),
-            concepts: BTreeMap::new(),
-            messages: BTreeMap::new(),
-            types: BTreeMap::new(),
-            attributes: BTreeMap::new(),
+            components: IndexMap::new(),
+            concepts: IndexMap::new(),
+            messages: IndexMap::new(),
+            types: IndexMap::new(),
+            attributes: IndexMap::new(),
         };
 
         for (path, component) in manifest.components.iter() {
@@ -318,7 +315,7 @@ impl Scope {
 
     fn resolve<'a>(&'a self, items: &mut ItemMap, mut scopes: Scopes<'a>) {
         fn resolve<T: Item, U>(
-            item_ids: &BTreeMap<U, ItemId<T>>,
+            item_ids: &IndexMap<U, ItemId<T>>,
             items: &mut ItemMap,
             scopes: &Scopes,
         ) {
@@ -562,7 +559,7 @@ pub struct Concept {
     pub name: Option<String>,
     pub description: Option<String>,
     pub extends: Vec<ResolvableItemId<Concept>>,
-    pub components: HashMap<ResolvableItemId<Component>, ResolvableValue>,
+    pub components: IndexMap<ResolvableItemId<Component>, ResolvableValue>,
 }
 impl Item for Concept {
     const TYPE: ItemType = ItemType::Concept;
@@ -619,7 +616,7 @@ impl Concept {
 pub struct Message {
     pub id: Identifier,
     pub description: Option<String>,
-    pub fields: BTreeMap<Identifier, ResolvableItemId<Type>>,
+    pub fields: IndexMap<Identifier, ResolvableItemId<Type>>,
 }
 impl Item for Message {
     const TYPE: ItemType = ItemType::Message;
