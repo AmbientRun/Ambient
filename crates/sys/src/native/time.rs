@@ -114,7 +114,9 @@ impl Interval {
     }
 
     pub fn new_at(start: Instant, period: Duration) -> Self {
-        Self { inner: tokio::time::interval_at(start.0.into(), period) }
+        Self {
+            inner: tokio::time::interval_at(start.0.into(), period),
+        }
     }
 
     pub async fn tick(&mut self) -> Instant {

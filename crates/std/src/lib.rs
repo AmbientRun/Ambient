@@ -10,6 +10,23 @@ pub mod line_hash;
 pub mod path;
 pub use ambient_cb::*;
 
+/// Generate a new Ulid based on the current time regardless of platform
+///
+/// Uses `Data.now` on the web
+pub fn ulid() -> ulid::Ulid {
+    #[allow(clippy::disallowed_types)]
+    // Retrieve a "normal" std::time::SystemTime regardless of platform
+    let now = std::time::SystemTime::UNIX_EPOCH
+        .checked_add(
+            ambient_sys::time::SystemTime::now()
+                .duration_since(ambient_sys::time::SystemTime::UNIX_EPOCH)
+                .expect("Current time is before UNIX_EPOCH"),
+        )
+        .expect("Current system time could not be represented");
+
+    ulid::Ulid::from_datetime(now)
+}
+
 /// Read a file as a string during debug at runtime, or use include_str at release
 /// # Panics
 /// Panics if the file can not be read (debug_assertions only)
@@ -21,7 +38,8 @@ macro_rules! include_file {
             let mut path = std::path::PathBuf::from(file!());
             path.pop();
             path.push($f);
-            let content = std::fs::read_to_string(&path).expect(&format!("Failed to read file {:?}", path));
+            let content =
+                std::fs::read_to_string(&path).expect(&format!("Failed to read file {:?}", path));
             content
         }
         #[cfg(not(feature = "hotload-includes"))]

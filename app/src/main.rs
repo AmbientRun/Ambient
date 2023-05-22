@@ -16,6 +16,12 @@ use cli::{Cli, Commands};
 use log::LevelFilter;
 use server::QUIC_INTERFACE_PORT;
 
+#[cfg(not(feature = "no_bundled_certs"))]
+const CERT: &[u8] = include_bytes!("../../localhost.crt");
+
+#[cfg(not(feature = "no_bundled_certs"))]
+const CERT_KEY: &[u8] = include_bytes!("../../localhost.key");
+
 fn setup_logging() -> anyhow::Result<()> {
     const MODULES: &[(LevelFilter, &[&str])] = &[
         (
@@ -290,6 +296,25 @@ fn main() -> anyhow::Result<()> {
             format!("127.0.0.1:{QUIC_INTERFACE_PORT}").parse()?
         }
     } else if let Some(host) = &cli.host() {
+        let crypto = if let (Some(cert_file), Some(key_file)) = (&host.cert, &host.key) {
+            let cert = std::fs::read(cert_file).context("Failed to read certificate file")?;
+            let key = std::fs::read(key_file).context("Failed to read certificate key")?;
+            ambient_network::native::server::Crypto { cert, key }
+        } else {
+            #[cfg(feature = "no_bundled_certs")]
+            {
+                anyhow::bail!("--cert and --key are required without bundled certs.");
+            }
+            #[cfg(not(feature = "no_bundled_certs"))]
+            {
+                tracing::info!("Using bundled certificate and key");
+                ambient_network::native::server::Crypto {
+                    cert: CERT.to_vec(),
+                    key: CERT_KEY.to_vec(),
+                }
+            }
+        };
+
         let port = server::start(
             &runtime,
             assets.clone(),
@@ -297,10 +322,7 @@ fn main() -> anyhow::Result<()> {
             project_path.url,
             manifest.as_ref().expect("no manifest"),
             metadata.as_ref().expect("no build metadata"),
-            ambient_network::native::server::Crypto {
-                cert_file: host.cert.clone(),
-                key_file: host.key.clone(),
-            },
+            crypto,
         );
         format!("127.0.0.1:{port}").parse()?
     } else {
