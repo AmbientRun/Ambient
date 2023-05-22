@@ -81,6 +81,20 @@ pub fn systems() -> SystemGroup {
     )
 }
 
+macro_rules! procedural_storage_handle {
+    ($name:ident, $fn_name:ident) => {
+        #[must_use]
+        pub fn $fn_name() -> $name {
+            ambient_std::ulid().into()
+        }
+    };
+}
+
+procedural_storage_handle!(ProceduralMeshHandle, new_mesh_handle);
+procedural_storage_handle!(ProceduralTextureHandle, new_texture_handle);
+procedural_storage_handle!(ProceduralSamplerHandle, new_sampler_handle);
+procedural_storage_handle!(ProceduralMaterialHandle, new_material_handle);
+
 pub type ProceduralMesh = Mesh;
 pub type ProceduralTexture = Arc<TextureView>;
 pub type ProceduralSampler = Arc<wgpu::Sampler>;
@@ -105,25 +119,25 @@ impl ProceduralStorage {
     }
 
     pub fn insert_mesh(&mut self, mesh: ProceduralMesh) -> ProceduralMeshHandle {
-        let handle = ProceduralMeshHandle::new();
+        let handle = new_mesh_handle();
         self.meshes.insert(handle, mesh);
         handle
     }
 
     pub fn insert_texture(&mut self, texture: ProceduralTexture) -> ProceduralTextureHandle {
-        let handle = ProceduralTextureHandle::new();
+        let handle = new_texture_handle();
         self.textures.insert(handle, texture);
         handle
     }
 
     pub fn insert_sampler(&mut self, sampler: ProceduralSampler) -> ProceduralSamplerHandle {
-        let handle = ProceduralSamplerHandle::new();
+        let handle = new_sampler_handle();
         self.samplers.insert(handle, sampler);
         handle
     }
 
     pub fn insert_material(&mut self, material: ProceduralMaterial) -> ProceduralMaterialHandle {
-        let handle = ProceduralMaterialHandle::new();
+        let handle = new_material_handle();
         self.materials.insert(handle, material);
         handle
     }

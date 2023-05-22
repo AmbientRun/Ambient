@@ -230,29 +230,13 @@ where
     }
 }
 
-impl FromBindgen for wit::types::Ulid {
-    type Item = Ulid;
-
-    fn from_bindgen(self) -> Self::Item {
-        Ulid::from(self)
-    }
-}
-
-impl IntoBindgen for Ulid {
-    type Item = wit::types::Ulid;
-
-    fn into_bindgen(self) -> Self::Item {
-        self.into()
-    }
-}
-
 macro_rules! procedural_storage_handle {
     ($name:ident, $wit_name: ident) => {
         impl FromBindgen for wit::$wit_name::Handle {
             type Item = $name;
 
             fn from_bindgen(self) -> Self::Item {
-                $name::from(self.ulid.from_bindgen())
+                unsafe { std::mem::transmute(self.ulid) }
             }
         }
 
@@ -261,7 +245,7 @@ macro_rules! procedural_storage_handle {
 
             fn into_bindgen(self) -> Self::Item {
                 wit::$wit_name::Handle {
-                    ulid: Ulid::from(self).into_bindgen(),
+                    ulid: unsafe { std::mem::transmute(self) },
                 }
             }
         }

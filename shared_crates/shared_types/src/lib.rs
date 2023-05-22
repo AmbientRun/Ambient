@@ -843,12 +843,6 @@ macro_rules! procedural_storage_handle {
         )]
         pub struct $name(Ulid);
 
-        impl $name {
-            pub fn new() -> Self {
-                Self(Ulid::new())
-            }
-        }
-
         impl Default for $name {
             fn default() -> Self {
                 Self(Ulid::nil())

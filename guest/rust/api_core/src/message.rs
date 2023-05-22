@@ -322,7 +322,7 @@ mod serde {
                     &self,
                     output: &mut Vec<u8>,
                 ) -> Result<(), MessageSerdeError> {
-                    let ulid = Ulid::from(*self);
+                    let ulid: Ulid = unsafe { std::mem::transmute(*self) };
                     let ulid = u128::from(ulid);
                     output.write_u128::<BigEndian>(ulid)?;
                     Ok(())
@@ -333,7 +333,7 @@ mod serde {
                 ) -> Result<Self, MessageSerdeError> {
                     let ulid = input.read_u128::<BigEndian>()?;
                     let ulid = Ulid::from(ulid);
-                    Ok(ulid.into())
+                    Ok(unsafe { std::mem::transmute(ulid) })
                 }
             }
         };
