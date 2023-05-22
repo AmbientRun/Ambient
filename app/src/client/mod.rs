@@ -52,6 +52,25 @@ pub async fn run(
 
     let is_debug = std::env::var("AMBIENT_DEBUGGER").is_ok() || run.debugger;
 
+    let cert = if let Some(ca) = &run.ca {
+        match std::fs::read(ca) {
+            Ok(v) => Some(v),
+            Err(err) => {
+                tracing::error!("Failed to load certificate from file: {}", err);
+                None
+            }
+        }
+    } else {
+        #[cfg(not(feature = "no_bundled_certs"))]
+        {
+            Some(super::CERT.to_vec())
+        }
+        #[cfg(feature = "no_bundled_certs")]
+        {
+            None
+        }
+    };
+
     AppBuilder::new()
         .ui_renderer(true)
         .with_asset_cache(assets)
@@ -65,7 +84,7 @@ pub async fn run(
                 show_debug: is_debug,
                 golden_image_test: run.golden_image_test,
                 golden_image_output_dir,
-                ca_file: run.ca.clone(),
+                cert,
             }
             .el()
             .spawn_interactive(&mut app.world);
@@ -106,7 +125,7 @@ fn MainApp(
     user_id: String,
     show_debug: bool,
     golden_image_test: Option<f32>,
-    ca_file: Option<PathBuf>,
+    cert: Option<Vec<u8>>,
 ) -> Element {
     let (loaded, set_loaded) = hooks.use_state(false);
 
@@ -152,7 +171,7 @@ fn MainApp(
 
                 (systems(), resources)
             }),
-            ca_file,
+            cert,
             create_rpc_registry: cb(shared::create_server_rpc_registry),
             inner: Dock::el(vec![
                 TitleUpdater.el(),

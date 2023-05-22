@@ -27,7 +27,6 @@ use rand::Rng;
 use rustls::Certificate;
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
-    path::PathBuf,
     sync::Arc,
     time::Duration,
 };
@@ -35,7 +34,7 @@ use std::{
 #[derive(Debug, Clone)]
 pub struct GameClientView {
     pub server_addr: SocketAddr,
-    pub ca_file: Option<PathBuf>,
+    pub cert: Option<Vec<u8>>,
     pub user_id: String,
     pub systems_and_resources: Cb<dyn Fn() -> (SystemGroup, Entity) + Sync + Send>,
     pub error_view: Cb<dyn Fn(String) -> Element + Sync + Send>,
@@ -54,7 +53,7 @@ impl ElementComponent for GameClientView {
             create_rpc_registry,
             on_loaded,
             inner,
-            ca_file,
+            cert,
         } = *self;
 
         let gpu = hooks.world.resource(gpu()).clone();
@@ -129,7 +128,7 @@ impl ElementComponent for GameClientView {
 
         hooks.use_task(move |_| {
             let task = async move {
-                let conn = open_connection(server_addr, ca_file)
+                let conn = open_connection(server_addr, cert.map(Certificate))
                     .await
                     .with_context(|| format!("Failed to connect to endpoint: {server_addr:?}"))?;
 
@@ -334,12 +333,12 @@ async fn handle_connection(
 #[tracing::instrument(level = "debug")]
 async fn open_connection(
     server_addr: SocketAddr,
-    ca_file: Option<PathBuf>,
+    cert: Option<Certificate>,
 ) -> anyhow::Result<Connection> {
     log::debug!("Connecting to world instance: {server_addr:?}");
 
     let endpoint =
-        create_client_endpoint_random_port(ca_file).context("Failed to create client endpoint")?;
+        create_client_endpoint_random_port(cert).context("Failed to create client endpoint")?;
 
     log::debug!("Got endpoint");
     let conn = endpoint.connect(server_addr, "localhost")?.await?;
@@ -348,13 +347,12 @@ async fn open_connection(
     Ok(conn)
 }
 
-pub fn create_client_endpoint_random_port(cert_file: Option<PathBuf>) -> anyhow::Result<Endpoint> {
+pub fn create_client_endpoint_random_port(cert: Option<Certificate>) -> anyhow::Result<Endpoint> {
     let mut roots = load_native_roots();
-    if let Some(cert_file) = cert_file {
+
+    if let Some(cert) = cert {
         roots
-            .add(&Certificate(
-                std::fs::read(&cert_file).context("Failed to read custom certificate")?,
-            ))
+            .add(&cert)
             .context("Failed to add custom certificate")?;
     }
 
@@ -363,6 +361,7 @@ pub fn create_client_endpoint_random_port(cert_file: Option<PathBuf>) -> anyhow:
             let mut rng = rand::thread_rng();
             rng.gen_range(15000..25000)
         };
+
         let client_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), client_port);
 
         if let Ok(mut endpoint) = Endpoint::client(client_addr) {

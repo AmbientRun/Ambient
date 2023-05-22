@@ -3,7 +3,7 @@ use ambient_api::{
         app::main_scene,
         camera::aspect_ratio_from_window,
         physics::{
-            angular_velocity, box_collider, dynamic, linear_velocity, physics_controlled,
+            angular_velocity, cube_collider, dynamic, linear_velocity, physics_controlled,
             visualizing,
         },
         prefab::prefab_from_url,
@@ -33,7 +33,7 @@ pub async fn main() {
         .with_default(cast_shadows())
         .with_default(linear_velocity())
         .with_default(angular_velocity())
-        .with(box_collider(), Vec3::ONE)
+        .with(cube_collider(), Vec3::ONE)
         .with(dynamic(), true)
         .with(translation(), vec3(0., 0., 5.))
         .with(rotation(), Quat::IDENTITY)

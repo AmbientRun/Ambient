@@ -1,7 +1,6 @@
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     ops::Range,
-    path::PathBuf,
     sync::Arc,
     time::Duration,
 };
@@ -44,8 +43,8 @@ use crate::{
 
 #[derive(Debug, Clone)]
 pub struct Crypto {
-    pub cert_file: PathBuf,
-    pub key_file: PathBuf,
+    pub cert: Vec<u8>,
+    pub key: Vec<u8>,
 }
 
 /// Quinn and Webtransport game server
@@ -93,8 +92,8 @@ impl GameServer {
                 Ok(server) => {
                     return Ok(server);
                 }
-                Err(_err) => {
-                    tracing::warn!("Failed to create server on port {}", port);
+                Err(err) => {
+                    tracing::warn!("Failed to create server on port {port}.\n{err:?}");
                 }
             }
         }
@@ -420,16 +419,16 @@ async fn start_proxy_connection(
 }
 
 fn create_server(server_addr: SocketAddr, crypto: &Crypto) -> anyhow::Result<Endpoint> {
-    let cert = Certificate(std::fs::read(&crypto.cert_file)?);
-    let key = PrivateKey(std::fs::read(&crypto.key_file)?);
-
     let mut tls_config = rustls::ServerConfig::builder()
         .with_safe_default_cipher_suites()
         .with_safe_default_kx_groups()
         .with_protocol_versions(&[&rustls::version::TLS13])
         .unwrap()
         .with_no_client_auth()
-        .with_single_cert(vec![cert.clone()], key)?;
+        .with_single_cert(
+            vec![Certificate(crypto.cert.clone())],
+            PrivateKey(crypto.key.clone()),
+        )?;
 
     tls_config.max_early_data_size = u32::MAX;
     let alpn: Vec<Vec<u8>> = vec![
@@ -463,7 +462,7 @@ fn create_server(server_addr: SocketAddr, crypto: &Crypto) -> anyhow::Result<End
 
     // Create client config for the server endpoint for proxying and hole punching
     let mut roots = load_native_roots();
-    roots.add(&cert).unwrap();
+    roots.add(&Certificate(crypto.cert.clone())).unwrap();
 
     // add proxy test cert if provided
     if let Ok(test_ca_cert_path) = std::env::var("AMBIENT_PROXY_TEST_CA_CERT") {
@@ -471,7 +470,7 @@ fn create_server(server_addr: SocketAddr, crypto: &Crypto) -> anyhow::Result<End
         roots.add(&cert).unwrap();
     }
 
-    let mut crypto = rustls::ClientConfig::builder()
+    let crypto = rustls::ClientConfig::builder()
         .with_safe_defaults()
         .with_root_certificates(roots)
         .with_no_client_auth();
