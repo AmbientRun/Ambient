@@ -296,25 +296,22 @@ fn main() -> anyhow::Result<()> {
             format!("127.0.0.1:{QUIC_INTERFACE_PORT}").parse()?
         }
     } else if let Some(host) = &cli.host() {
-        #[cfg(feature = "no_bundled_certs")]
         let crypto = if let (Some(cert_file), Some(key_file)) = (&host.cert, &host.key) {
-            let cert = std::fs::read(cert_file)?;
-            let key = std::fs::read(key_file)?;
+            let cert = std::fs::read(cert_file).context("Failed to read certificate file")?;
+            let key = std::fs::read(key_file).context("Failed to read certificate key")?;
             ambient_network::native::server::Crypto { cert, key }
         } else {
-            anyhow::bail!("--cert and --key are required without bundled certs.");
-        };
-
-        #[cfg(not(feature = "no_bundled_certs"))]
-        let crypto = if let (Some(cert_file), Some(key_file)) = (&host.cert, &host.key) {
-            let cert = std::fs::read(cert_file)?;
-            let key = std::fs::read(key_file)?;
-            ambient_network::native::server::Crypto { cert, key }
-        } else {
-            tracing::info!("Using bundled certificate and key");
-            ambient_network::native::server::Crypto {
-                cert: CERT.to_vec(),
-                key: CERT_KEY.to_vec(),
+            #[cfg(feature = "no_bundled_certs")]
+            {
+                anyhow::bail!("--cert and --key are required without bundled certs.");
+            }
+            #[cfg(not(feature = "no_bundled_certs"))]
+            {
+                tracing::info!("Using bundled certificate and key");
+                ambient_network::native::server::Crypto {
+                    cert: CERT.to_vec(),
+                    key: CERT_KEY.to_vec(),
+                }
             }
         };
 

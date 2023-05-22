@@ -62,21 +62,14 @@ pub async fn run(
             }
         }
     } else {
-        None
-    };
-
-    #[cfg(not(feature = "no_bundled_certs"))]
-    let cert = if let Some(ca) = &run.ca {
-        match std::fs::read(ca) {
-            Ok(v) => Some(v),
-            Err(err) => {
-                tracing::error!("Failed to load certificate from file: {}", err);
-                None
-            }
+        #[cfg(not(feature = "no_bundled_certs"))]
+        {
+            Some(super::CERT.to_vec())
         }
-    } else {
-        tracing::info!("Using bundled self-signed certificate as trusted root");
-        Some(super::CERT.to_vec())
+        #[cfg(feature = "no_bundled_certs")]
+        {
+            None
+        }
     };
 
     AppBuilder::new()
