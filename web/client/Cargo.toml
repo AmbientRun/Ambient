@@ -25,6 +25,7 @@ ambient_cameras = { workspace = true }
 ambient_renderer = { workspace = true }
 ambient_element = { workspace = true }
 ambient_audio = { workspace = true }
+ambient_world_audio = { workspace = true }
 ambient_network = { workspace = true }
 
 url = { workspace = true }
