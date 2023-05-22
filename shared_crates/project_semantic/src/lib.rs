@@ -714,8 +714,8 @@ primitive_component_definitions!(define_primitive_type);
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Enum {
-    id: CamelCaseIdentifier,
-    members: Vec<EnumMember>,
+    pub id: CamelCaseIdentifier,
+    pub members: Vec<EnumMember>,
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -723,7 +723,6 @@ pub struct EnumMember {
     pub name: CamelCaseIdentifier,
     pub description: Option<String>,
 }
-
 impl Debug for EnumMember {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}: {:?}", self.name, self.description)
