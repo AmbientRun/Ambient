@@ -89,7 +89,7 @@ pub struct RunCli {
     pub user_id: Option<String>,
 
     /// Specify a trusted certificate authority
-    #[arg(long, default_value = "./localhost.crt")]
+    #[arg(long)]
     pub ca: Option<PathBuf>,
 }
 
