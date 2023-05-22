@@ -404,7 +404,7 @@ impl wit::client_material::Host for Bindings {
             sampler: Arc::clone(storage.get_sampler(desc.sampler.from_bindgen())),
             transparent: desc.transparent,
             double_sided: false,
-            depth_write_enabled: !desc.transparent,
+            depth_write_enabled: false,
         };
         let material_handle = storage.insert_material(material);
         Ok(material_handle.into_bindgen())
