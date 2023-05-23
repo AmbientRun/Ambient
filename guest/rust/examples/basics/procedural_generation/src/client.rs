@@ -57,31 +57,34 @@ fn make_lighting() {
     }
 }
 
+fn make_simple_cube(t: Vec3, s: Vec3, c: Vec4) {
+    Entity::new()
+        .with_merge(make_transformable())
+        .with_default(cube())
+        .with(translation(), t)
+        .with(scale(), s)
+        .with(color(), c)
+        .with_default(main_scene())
+        .spawn();
+}
+
+fn make_simple_sphere(t: Vec3, r: f32, c: Vec4) {
+    Entity::new()
+        .with_merge(make_transformable())
+        .with_merge(make_sphere())
+        .with(translation(), t)
+        .with(sphere_radius(), r)
+        .with(color(), c)
+        .with_default(main_scene())
+        .spawn();
+}
+
+fn make_axis(axis: Vec3) {
+    make_simple_cube(axis, Vec3::ONE * 0.25, axis.extend(1.0));
+}
+
 fn make_coordinate_system() {
-    let make_cube = |t: Vec3, s: Vec3, c: Vec4| {
-        Entity::new()
-            .with_merge(make_transformable())
-            .with_default(cube())
-            .with(translation(), t)
-            .with(scale(), s)
-            .with(color(), c)
-            .with_default(main_scene())
-            .spawn();
-    };
-    let make_sphere = |t: Vec3, r: f32, c: Vec4| {
-        Entity::new()
-            .with_merge(make_transformable())
-            .with_merge(make_sphere())
-            .with(translation(), t)
-            .with(sphere_radius(), r)
-            .with(color(), c)
-            .with_default(main_scene())
-            .spawn();
-    };
-    let make_axis = |axis: Vec3| {
-        make_cube(axis, Vec3::ONE * 0.25, axis.extend(1.0));
-    };
-    make_sphere(Vec3::ZERO, 0.25, Vec4::ONE);
+    make_simple_sphere(Vec3::ZERO, 0.25, Vec4::ONE);
     make_axis(Vec3::X);
     make_axis(Vec3::Y);
     make_axis(Vec3::Z);
