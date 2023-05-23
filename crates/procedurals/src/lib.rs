@@ -18,17 +18,18 @@ use ambient_renderer::{
     primitives, renderer_shader, SharedMaterial,
 };
 use ambient_shared_types::{
-    ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
-    ProceduralTextureHandle,
+    procedural_storage_handle_definitions, ProceduralMaterialHandle, ProceduralMeshHandle,
+    ProceduralSamplerHandle, ProceduralTextureHandle,
 };
 use ambient_std::{cb, mesh::Mesh};
+use paste::paste;
 
 components!("procedurals", {
     @[Resource]
     procedural_storage: ProceduralStorage,
 });
 
-pub fn systems() -> SystemGroup {
+pub fn client_systems() -> SystemGroup {
     SystemGroup::new(
         "procedurals",
         vec![
@@ -37,7 +38,7 @@ pub fn systems() -> SystemGroup {
                 for (id, mesh_handle) in query.collect_cloned(world, query_state) {
                     let (gpu_mesh, mesh_aabb) = {
                         let storage = world.resource(procedural_storage());
-                        let mesh = storage.get_mesh(mesh_handle);
+                        let mesh = storage.meshes.get(mesh_handle);
                         let mesh_aabb = mesh.aabb();
                         let gpu_mesh = GpuMesh::from_mesh(&assets, mesh);
                         (gpu_mesh, mesh_aabb)
@@ -64,7 +65,7 @@ pub fn systems() -> SystemGroup {
                 let assets = world.resource(asset_cache()).clone();
                 for (id, material_handle) in query.collect_cloned(world, query_state) {
                     let storage = world.resource(procedural_storage());
-                    let material = storage.get_material(material_handle).clone();
+                    let material = storage.materials.get(material_handle).clone();
                     let material = PbrMaterial::new(&assets, material);
                     let material = SharedMaterial::new(material);
                     world
@@ -81,17 +82,16 @@ pub fn systems() -> SystemGroup {
     )
 }
 
-macro_rules! procedural_storage_handle {
-    ($name:ident, $fn_name:ident) => {
+macro_rules! make_procedural_storage_new_fns {
+    ($($name:ident),*) => { paste!{$(
         #[must_use]
-        pub fn $fn_name() -> $name {
+        pub fn [<new_ $name _handle>]() -> [<Procedural $name:camel Handle>] {
             ambient_std::ulid().into()
         }
-    };
+    )*}};
 }
 
-procedural_storage_handle!(ProceduralMeshHandle, new_mesh_handle);
-procedural_storage_handle!(ProceduralTextureHandle, new_texture_handle);
+procedural_storage_handle_definitions!(make_procedural_storage_new_fns);
 procedural_storage_handle!(ProceduralSamplerHandle, new_sampler_handle);
 procedural_storage_handle!(ProceduralMaterialHandle, new_material_handle);
 

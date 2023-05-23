@@ -19,3 +19,4 @@ parking_lot = { workspace = true }
 ulid = { workspace = true }
 tracing = { workspace = true }
 wgpu = { workspace = true }
+paste = { workspace = true }

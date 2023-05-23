@@ -1,3 +1,5 @@
+use paste::paste;
+
 /// A mapping from enum names to Rust types. Instantiate this with a macro that takes `$(($value:ident, $type:ty)),*`.
 #[macro_export]
 macro_rules! primitive_component_definitions {
@@ -26,6 +28,14 @@ macro_rules! primitive_component_definitions {
             (ProceduralSamplerHandle, ProceduralSamplerHandle),
             (ProceduralMaterialHandle, ProceduralMaterialHandle)
         );
+    };
+}
+
+#[macro_export]
+macro_rules! procedural_storage_handle_definitions {
+    ($macro_to_instantiate:ident) => {
+        // Handle names must be in snake_case.
+        $macro_to_instantiate!(mesh, texture, sampler, material);
     };
 }
 
@@ -836,40 +846,37 @@ impl From<MouseButton> for winit::event::MouseButton {
     }
 }
 
-macro_rules! procedural_storage_handle {
-    ($name:ident) => {
+macro_rules! make_procedural_storage_handles {
+    ($($name:ident),*) => { paste!{$(
         #[derive(
             Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Hash, Serialize, Deserialize,
         )]
-        pub struct $name(Ulid);
+        pub struct [<Procedural $name:camel Handle>](Ulid);
 
-        impl Default for $name {
+        impl Default for [<Procedural $name:camel Handle>] {
             fn default() -> Self {
                 Self(Ulid::nil())
             }
         }
 
-        impl std::fmt::Display for $name {
+        impl std::fmt::Display for [<Procedural $name:camel Handle>] {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(f, "{}", self.0)
+                write!(f, concat!(stringify!([<Procedural $name:camel Handle>]), "({})"), self.0)
             }
         }
 
-        impl From<Ulid> for $name {
+        impl From<Ulid> for [<Procedural $name:camel Handle>] {
             fn from(ulid: Ulid) -> Self {
                 Self(ulid)
             }
         }
 
-        impl From<$name> for Ulid {
-            fn from(handle: $name) -> Self {
+        impl From<[<Procedural $name:camel Handle>]> for Ulid {
+            fn from(handle: [<Procedural $name:camel Handle>]) -> Self {
                 handle.0
             }
         }
-    };
+    )*}};
 }
 
-procedural_storage_handle!(ProceduralMeshHandle);
-procedural_storage_handle!(ProceduralTextureHandle);
-procedural_storage_handle!(ProceduralSamplerHandle);
-procedural_storage_handle!(ProceduralMaterialHandle);
+procedural_storage_handle_definitions!(make_procedural_storage_handles);

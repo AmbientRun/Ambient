@@ -289,7 +289,9 @@ pub trait RuntimeMessage: Message {
 mod serde {
     pub use ambient_project_rt::message_serde::*;
 
+    use ambient_shared_types::procedural_storage_handle_definitions;
     use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
+    use paste::paste;
 
     use crate::global::{
         EntityId, ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
@@ -314,9 +316,9 @@ mod serde {
         }
     }
 
-    macro_rules! procedural_storage_handle {
-        ($name:ident) => {
-            impl MessageSerde for $name {
+    macro_rules! make_procedural_storage_handle_serializers {
+        ($($name:ident),*) => { paste!{$(
+            impl MessageSerde for [<Procedural $name:camel Handle>] {
                 fn serialize_message_part(
                     &self,
                     output: &mut Vec<u8>,
@@ -336,12 +338,9 @@ mod serde {
                     )))
                 }
             }
-        };
+        )*}};
     }
 
-    procedural_storage_handle!(ProceduralMeshHandle);
-    procedural_storage_handle!(ProceduralTextureHandle);
-    procedural_storage_handle!(ProceduralSamplerHandle);
-    procedural_storage_handle!(ProceduralMaterialHandle);
+    procedural_storage_handle_definitions!(make_procedural_storage_handle_serializers);
 }
 pub use serde::*;
