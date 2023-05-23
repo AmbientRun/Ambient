@@ -109,7 +109,7 @@ where
             dst.copy_from_slice(&pixel_fn(px, py));
         }
     }
-    texture::create_2d(&texture::Descriptor2d {
+    texture::create_2d(&texture::Descriptor2D {
         width: TEXTURE_RESOLUTION_X,
         height: TEXTURE_RESOLUTION_Y,
         format: texture::Format::Rgba8Unorm,

@@ -100,14 +100,14 @@ impl IntoBindgen for Format {
 }
 
 #[derive(Clone)]
-pub struct Descriptor2d<'a> {
+pub struct Descriptor2D<'a> {
     pub width: u32,
     pub height: u32,
     pub format: Format,
     pub data: &'a [u8],
 }
 
-impl<'a> IntoBindgen for Descriptor2d<'a> {
+impl<'a> IntoBindgen for Descriptor2D<'a> {
     type Item = wit::client_texture::Descriptor2d<'a>;
 
     fn into_bindgen(self) -> Self::Item {
@@ -120,7 +120,7 @@ impl<'a> IntoBindgen for Descriptor2d<'a> {
     }
 }
 
-pub fn create_2d(desc: &Descriptor2d) -> ProceduralTextureHandle {
+pub fn create_2d(desc: &Descriptor2D) -> ProceduralTextureHandle {
     wit::client_texture::create2d(desc.clone().into_bindgen()).from_bindgen()
 }
 
