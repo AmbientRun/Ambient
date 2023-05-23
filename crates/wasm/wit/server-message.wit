@@ -6,7 +6,7 @@ default interface server-message {
         client-broadcast-reliable,
         client-targeted-unreliable(string),
         client-targeted-reliable(string),
-        local-broadcast,
+        local-broadcast(bool),
         local(entity-id),
     }
 

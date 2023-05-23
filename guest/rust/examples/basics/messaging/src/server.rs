@@ -43,7 +43,7 @@ pub fn main() {
     run_async(async move {
         while !handled.load(Ordering::SeqCst) {
             sleep(1.0).await;
-            messages::Local::new("Hello!").send_local_broadcast();
+            messages::Local::new("Hello!").send_local_broadcast(true);
         }
     });
 }

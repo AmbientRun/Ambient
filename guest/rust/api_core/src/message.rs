@@ -79,8 +79,11 @@ impl FromBindgen for wit::guest::Source {
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
 /// The target for a originating message.
 pub enum Target {
-    /// A message to all other modules running on this side, *not* including the originating module.
-    LocalBroadcast,
+    /// A message to all other modules running on this side.
+    LocalBroadcast {
+        /// Whether or not the message should be sent to the module that originally sent the message.
+        include_self: bool,
+    },
     /// A message to a specific module running on this side.
     Local(EntityId),
 
@@ -127,7 +130,7 @@ impl IntoBindgen for Target {
         match self {
             Target::ServerUnreliable => Self::Item::ServerUnreliable,
             Target::ServerReliable => Self::Item::ServerReliable,
-            Target::LocalBroadcast => Self::Item::LocalBroadcast,
+            Target::LocalBroadcast { include_self } => Self::Item::LocalBroadcast(include_self),
             Target::Local(id) => Self::Item::Local(id.into_bindgen()),
             #[cfg(feature = "server")]
             _ => unreachable!(),
@@ -149,7 +152,7 @@ impl<'a> IntoBindgen for &'a Target {
             Target::ClientTargetedReliable(user_id) => {
                 Self::Item::ClientTargetedReliable(user_id.as_str())
             }
-            Target::LocalBroadcast => Self::Item::LocalBroadcast,
+            Target::LocalBroadcast { include_self } => Self::Item::LocalBroadcast(*include_self),
             Target::Local(id) => Self::Item::Local(id.into_bindgen()),
             #[cfg(feature = "client")]
             _ => unreachable!(),
@@ -214,9 +217,11 @@ pub trait ModuleMessage: Message {
         self::send(target, self)
     }
 
-    /// Sends a message to every module on this side, *not* including the module that sent the message.
-    fn send_local_broadcast(&self) {
-        self.send(Target::LocalBroadcast)
+    /// Sends a message to every module on this side.
+    ///
+    /// `include_self` controls whether or not the message is sent to the module that originally sent the message.
+    fn send_local_broadcast(&self, include_self: bool) {
+        self.send(Target::LocalBroadcast { include_self })
     }
 
     /// Sends a message to a specific module on this side.
