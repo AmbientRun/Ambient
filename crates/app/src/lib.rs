@@ -116,7 +116,7 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
             Box::new(ambient_renderer::skinning::skinning_systems()),
             Box::new(bounding_systems()),
             Box::new(camera_systems()),
-            Box::new(ambient_procedurals::systems()),
+            Box::new(ambient_procedurals::client_systems()),
         ],
     )
 }
