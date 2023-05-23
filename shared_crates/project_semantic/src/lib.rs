@@ -1,6 +1,8 @@
 use std::{collections::HashMap, fmt::Debug, marker::PhantomData};
 
-use ambient_project::{CamelCaseIdentifier, ComponentType, Identifier, ItemPathBuf, Manifest};
+use ambient_project::{
+    CamelCaseIdentifier, ComponentType, Identifier, ItemPath, ItemPathBuf, Manifest,
+};
 use ambient_shared_types::primitive_component_definitions;
 use anyhow::Context;
 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
@@ -147,16 +149,16 @@ impl<'a> Scopes<'a> {
     ) -> Option<ItemId<Type>> {
         for scope in self.0.iter().rev() {
             match component_type {
-                ComponentType::Identifier(id) => {
-                    if let Some(id) = scope.get_type_id(id) {
+                ComponentType::Item(id) => {
+                    if let Some(id) = scope.get_type_id(id.as_path()) {
                         return Some(id);
                     }
                 }
-                ComponentType::ContainerType {
+                ComponentType::Contained {
                     type_,
                     element_type,
                 } => {
-                    if let Some(id) = scope.get_type_id(element_type) {
+                    if let Some(id) = scope.get_type_id(element_type.as_path()) {
                         return Some(match type_ {
                             ambient_project::ContainerType::Vec => items.get_vec_id(id),
                             ambient_project::ContainerType::Option => items.get_option_id(id),
@@ -168,7 +170,7 @@ impl<'a> Scopes<'a> {
         None
     }
 
-    fn get_attribute_id(&self, path: &CamelCaseIdentifier) -> Option<ItemId<Attribute>> {
+    fn get_attribute_id(&self, path: ItemPath) -> Option<ItemId<Attribute>> {
         for scope in self.0.iter().rev() {
             if let Some(id) = scope.get_attribute_id(path) {
                 return Some(id);
@@ -251,7 +253,7 @@ impl Scope {
                 .as_identifier()
                 .expect("component name must be an identifier");
 
-            scope.get_scope_mut(scope_path).components.insert(
+            scope.get_or_create_scope_mut(scope_path).components.insert(
                 item.clone(),
                 semantic
                     .items
@@ -266,7 +268,7 @@ impl Scope {
                 .as_identifier()
                 .expect("component name must be an identifier");
 
-            scope.get_scope_mut(scope_path).concepts.insert(
+            scope.get_or_create_scope_mut(scope_path).concepts.insert(
                 item.clone(),
                 semantic
                     .items
@@ -281,7 +283,7 @@ impl Scope {
                 .as_identifier()
                 .expect("component name must be an identifier");
 
-            scope.get_scope_mut(scope_path).messages.insert(
+            scope.get_or_create_scope_mut(scope_path).messages.insert(
                 item.clone(),
                 semantic
                     .items
@@ -303,7 +305,15 @@ impl Scope {
         Ok(scope)
     }
 
-    fn get_scope_mut(&mut self, path: &[Identifier]) -> &mut Scope {
+    fn get_scope(&self, path: &[Identifier]) -> Option<&Scope> {
+        let mut scope = self;
+        for segment in path.iter() {
+            scope = scope.scopes.get(segment)?;
+        }
+        Some(scope)
+    }
+
+    fn get_or_create_scope_mut(&mut self, path: &[Identifier]) -> &mut Scope {
         let mut scope = self;
         for segment in path.iter() {
             scope = scope
@@ -348,12 +358,20 @@ impl Scope {
         }
     }
 
-    fn get_type_id(&self, id: &CamelCaseIdentifier) -> Option<ItemId<Type>> {
-        self.types.get(id).copied()
+    fn get_type_id(&self, path: ItemPath) -> Option<ItemId<Type>> {
+        let (scope, item) = path.scope_and_item();
+        self.get_scope(scope)?
+            .types
+            .get(item.as_camel_case_identifier()?)
+            .copied()
     }
 
-    fn get_attribute_id(&self, path: &CamelCaseIdentifier) -> Option<ItemId<Attribute>> {
-        self.attributes.get(path).copied()
+    fn get_attribute_id(&self, path: ItemPath) -> Option<ItemId<Attribute>> {
+        let (scope, item) = path.scope_and_item();
+        self.get_scope(scope)?
+            .attributes
+            .get(item.as_camel_case_identifier()?)
+            .copied()
     }
 }
 
@@ -528,7 +546,7 @@ impl Item for Component {
         for attribute in &new.attributes {
             attributes.push(match attribute {
                 ResolvableItemId::Unresolved(path) => {
-                    let id = scopes.get_attribute_id(&path).unwrap();
+                    let id = scopes.get_attribute_id(path.as_path()).unwrap();
                     ResolvableItemId::Resolved(id)
                 }
                 t => t.clone(),
@@ -705,7 +723,7 @@ pub struct Attribute {
 }
 impl Item for Attribute {
     const TYPE: ItemType = ItemType::Attribute;
-    type Unresolved = CamelCaseIdentifier;
+    type Unresolved = ItemPathBuf;
 
     fn from_item_value(value: &ItemValue) -> Option<&Self> {
         match value {

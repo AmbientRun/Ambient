@@ -160,7 +160,7 @@ pub fn type_to_token_stream(
     match ty {
         ComponentType::String(ty) => convert_primitive_type_to_rust_type(ty, context)
             .ok_or(TypeTokenStreamError::InvalidPrimitiveType),
-        ComponentType::ContainerType {
+        ComponentType::Contained {
             type_,
             element_type,
         } => {

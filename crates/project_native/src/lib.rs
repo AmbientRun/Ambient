@@ -46,7 +46,7 @@ pub fn all_defined_components(
 fn component_type_to_primitive(ty: &ComponentType) -> Result<PrimitiveComponentType, &'static str> {
     match ty {
         ComponentType::String(ty) => PrimitiveComponentType::try_from(ty.as_str()),
-        ComponentType::ContainerType {
+        ComponentType::Contained {
             type_,
             element_type,
         } => {
@@ -80,7 +80,7 @@ mod tests {
                 CT::String(ty.to_string())
             }
             fn ct_ty(ct: &str, ty: &str) -> CT {
-                CT::ContainerType {
+                CT::Contained {
                     type_: ct.to_string(),
                     element_type: ty.to_string(),
                 }

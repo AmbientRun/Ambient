@@ -63,6 +63,16 @@ impl<'a> From<&'a ItemIdentifierBuf> for ItemIdentifier<'a> {
         }
     }
 }
+impl From<Identifier> for ItemIdentifierBuf {
+    fn from(value: Identifier) -> Self {
+        Self::Identifier(value)
+    }
+}
+impl From<CamelCaseIdentifier> for ItemIdentifierBuf {
+    fn from(value: CamelCaseIdentifier) -> Self {
+        Self::CamelCaseIdentifier(value)
+    }
+}
 impl ItemIdentifierBuf {
     pub fn new(segment: &str) -> Result<Self, &'static str> {
         if let Ok(value) = Identifier::new(segment) {
@@ -156,36 +166,6 @@ pub struct ItemPathBuf {
     scope: Vec<Identifier>,
     item: ItemIdentifierBuf,
 }
-impl ItemPathBuf {
-    pub fn new(path: impl Into<String>) -> Result<Self, &'static str> {
-        Self::new_impl(path.into())
-    }
-
-    fn new_impl(path: String) -> Result<Self, &'static str> {
-        let segments: Vec<_> = path.split("::").filter(|s| !s.is_empty()).collect();
-        if segments.len() == 0 {
-            return Err("an identifier path must not be empty");
-        }
-
-        let scope = segments
-            .iter()
-            .copied()
-            .take(segments.len() - 1)
-            .map(Identifier::new)
-            .collect::<Result<_, _>>()?;
-
-        let item = ItemIdentifierBuf::new(segments.last().unwrap())?;
-
-        Ok(Self { scope, item })
-    }
-
-    pub fn as_path(&self) -> ItemPath {
-        ItemPath {
-            scope: &self.scope,
-            item: (&self.item).into(),
-        }
-    }
-}
 impl Display for ItemPathBuf {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.as_path(), f)
@@ -215,6 +195,57 @@ impl Serialize for ItemPathBuf {
 impl ToTokens for ItemPathBuf {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.as_path().to_tokens(tokens)
+    }
+}
+impl From<ItemPath<'_>> for ItemPathBuf {
+    fn from(path: ItemPath<'_>) -> Self {
+        path.to_owned()
+    }
+}
+impl From<Identifier> for ItemPathBuf {
+    fn from(id: Identifier) -> Self {
+        Self {
+            scope: Vec::new(),
+            item: id.into(),
+        }
+    }
+}
+impl From<CamelCaseIdentifier> for ItemPathBuf {
+    fn from(id: CamelCaseIdentifier) -> Self {
+        Self {
+            scope: Vec::new(),
+            item: id.into(),
+        }
+    }
+}
+impl ItemPathBuf {
+    pub fn new(path: impl Into<String>) -> Result<Self, &'static str> {
+        Self::new_impl(path.into())
+    }
+
+    fn new_impl(path: String) -> Result<Self, &'static str> {
+        let segments: Vec<_> = path.split("::").filter(|s| !s.is_empty()).collect();
+        if segments.len() == 0 {
+            return Err("an identifier path must not be empty");
+        }
+
+        let scope = segments
+            .iter()
+            .copied()
+            .take(segments.len() - 1)
+            .map(Identifier::new)
+            .collect::<Result<_, _>>()?;
+
+        let item = ItemIdentifierBuf::new(segments.last().unwrap())?;
+
+        Ok(Self { scope, item })
+    }
+
+    pub fn as_path(&self) -> ItemPath {
+        ItemPath {
+            scope: &self.scope,
+            item: (&self.item).into(),
+        }
     }
 }
 

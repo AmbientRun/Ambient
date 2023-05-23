@@ -111,8 +111,8 @@ mod tests {
                     Component {
                         name: Some("Cell".to_string()),
                         description: Some("The ID of the cell this player is in".to_string()),
-                        type_: ComponentType::Identifier(cci("I32")),
-                        attributes: vec![cci("Store")],
+                        type_: ComponentType::Item(cci("I32").into()),
+                        attributes: vec![cci("Store").into()],
                         default: None,
                     }
                     .into()
@@ -224,7 +224,7 @@ mod tests {
                         Component {
                             name: Some("Rotation".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::Identifier(cci("Quat")),
+                            type_: ComponentType::Item(cci("Quat").into()),
                             attributes: vec![],
                             default: None,
                         }
@@ -235,7 +235,7 @@ mod tests {
                         Component {
                             name: Some("Scale".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::Identifier(cci("Vec3")),
+                            type_: ComponentType::Item(cci("Vec3").into()),
                             attributes: vec![],
                             default: None,
                         }
@@ -246,7 +246,7 @@ mod tests {
                         Component {
                             name: Some("Spherical billboard".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::Identifier(cci("Empty")),
+                            type_: ComponentType::Item(cci("Empty").into()),
                             attributes: vec![],
                             default: None,
                         }
@@ -257,7 +257,7 @@ mod tests {
                         Component {
                             name: Some("Translation".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::Identifier(cci("Vec3")),
+                            type_: ComponentType::Item(cci("Vec3").into()),
                             attributes: vec![],
                             default: None,
                         }
@@ -409,7 +409,7 @@ mod tests {
                         Component {
                             name: Some("Test".to_string()),
                             description: Some("Test".to_string()),
-                            type_: ComponentType::Identifier(cci("I32")),
+                            type_: ComponentType::Item(cci("I32").into()),
                             attributes: vec![],
                             default: None,
                         }
@@ -420,9 +420,9 @@ mod tests {
                         Component {
                             name: Some("Test".to_string()),
                             description: Some("Test".to_string()),
-                            type_: ComponentType::ContainerType {
+                            type_: ComponentType::Contained {
                                 type_: ContainerType::Vec,
-                                element_type: cci("I32")
+                                element_type: cci("I32").into()
                             },
                             attributes: vec![],
                             default: None,
@@ -434,9 +434,9 @@ mod tests {
                         Component {
                             name: Some("Test".to_string()),
                             description: Some("Test".to_string()),
-                            type_: ComponentType::ContainerType {
+                            type_: ComponentType::Contained {
                                 type_: ContainerType::Option,
-                                element_type: cci("I32")
+                                element_type: cci("I32").into()
                             },
                             attributes: vec![],
                             default: None,

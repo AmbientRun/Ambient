@@ -264,7 +264,7 @@ fn toml_value_to_tokens(
 ) -> anyhow::Result<TokenStream> {
     match ty {
         ComponentType::String(ty) => toml_value_to_tokens_primitive(path, ty, value),
-        ComponentType::ContainerType {
+        ComponentType::Contained {
             type_,
             element_type,
         } => {
