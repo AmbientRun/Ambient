@@ -118,7 +118,7 @@ impl PixelTextureViewKey {
     }
     pub fn black() -> Self {
         Self {
-            color: uvec4(255, 255, 255, 255),
+            color: uvec4(0, 0, 0, 255),
         }
     }
 }
