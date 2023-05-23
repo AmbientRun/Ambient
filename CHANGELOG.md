@@ -12,7 +12,6 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 ### Added
 
 #### Headline features
-- **Client**: The client can now **run on the web**.
 
 #### Other
 
@@ -32,6 +31,34 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 ### Removed
 -->
+
+## Version 0.3.0-dev (YYYY-MM-DD)
+
+### Added
+
+#### Headline features
+
+<!-- - **Client**: The client can now **run on the web**. -->
+
+#### Other
+
+#### Examples
+
+### Changed
+
+#### Breaking
+
+- Locally-broadcasted messages can now choose to include the originating module in the broadcast; this is an additional boolean parameter to `ModuleMessage::send_local_broadcast` and `message::Target::LocalBroadcast`.
+
+#### Non-breaking
+
+### Fixed
+
+### Community PRs to internals
+
+These PRs are not directly user-facing, but improve the development experience. They're just as appreciated!
+
+### Removed
 
 ## Version 0.2.1 (2023-05-06)
 
