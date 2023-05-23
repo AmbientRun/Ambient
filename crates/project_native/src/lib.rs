@@ -3,7 +3,7 @@ use ambient_ecs::{
     PrimitiveComponentType,
 };
 
-use ambient_project::{ComponentType, IdentifierPathBuf, Manifest};
+use ambient_project::{ComponentType, ItemPathBuf, Manifest};
 
 pub fn all_defined_components(
     manifest: &Manifest,
@@ -26,9 +26,8 @@ pub fn all_defined_components(
         .iter()
         .filter_map(|(id, component)| Some((id, component.other()?)))
         .map(|(id, component)| {
-            let full_path = IdentifierPathBuf::from_iter(
-                project_path.iter().chain(id.as_path().iter()).cloned(),
-            );
+            let full_path =
+                ItemPathBuf::from_iter(project_path.iter().chain(id.as_path().iter()).cloned());
             Ok(ExternalComponentDesc {
                 path: full_path.to_string(),
                 ty: component_type_to_primitive(&component.type_)?,

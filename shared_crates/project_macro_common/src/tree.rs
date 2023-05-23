@@ -1,4 +1,4 @@
-use ambient_project::{Identifier, IdentifierPath, IdentifierPathBuf, Namespace, NamespaceOr};
+use ambient_project::{Identifier, ItemPath, ItemPathBuf, Namespace, NamespaceOr};
 use anyhow::Context;
 use std::{collections::BTreeMap, fmt::Debug};
 
@@ -8,12 +8,12 @@ pub struct Tree<T: Clone + Debug> {
 }
 impl<T: Clone + Debug> Tree<T> {
     pub(super) fn new(
-        values: &BTreeMap<IdentifierPathBuf, NamespaceOr<T>>,
+        values: &BTreeMap<ItemPathBuf, NamespaceOr<T>>,
         validate_namespaces_documented: bool,
     ) -> anyhow::Result<Self> {
         let mut tree = Self {
             root: TreeNode::new(
-                IdentifierPathBuf::empty(),
+                ItemPathBuf::empty(),
                 TreeNodeInner::Namespace(TreeNodeNamespace {
                     children: BTreeMap::new(),
                     namespace: None,
@@ -41,7 +41,7 @@ impl<T: Clone + Debug> Tree<T> {
         Ok(tree)
     }
 
-    pub fn get(&self, path: IdentifierPath) -> Option<&T> {
+    pub fn get(&self, path: ItemPath) -> Option<&T> {
         self.root_namespace().get(path)
     }
 
@@ -63,11 +63,11 @@ impl<T: Clone + Debug> Tree<T> {
         }
     }
 
-    fn insert(&mut self, path: IdentifierPathBuf, inner: TreeNodeInner<T>) -> anyhow::Result<()> {
+    fn insert(&mut self, path: ItemPathBuf, inner: TreeNodeInner<T>) -> anyhow::Result<()> {
         let mut manifest_head = &mut self.root_namespace_mut().children;
         let (leaf_id, namespaces) = path.split_last().context("empty segments")?;
 
-        let mut segments_so_far = IdentifierPathBuf::empty();
+        let mut segments_so_far = ItemPathBuf::empty();
         for segment in namespaces {
             segments_so_far.push(segment.clone());
 
@@ -122,11 +122,11 @@ impl<T: Clone + Debug> Tree<T> {
 
 #[derive(Debug, Clone)]
 pub struct TreeNode<T: Clone + Debug> {
-    pub path: IdentifierPathBuf,
+    pub path: ItemPathBuf,
     pub inner: TreeNodeInner<T>,
 }
 impl<T: Clone + Debug> TreeNode<T> {
-    pub fn new(path: IdentifierPathBuf, inner: TreeNodeInner<T>) -> Self {
+    pub fn new(path: ItemPathBuf, inner: TreeNodeInner<T>) -> Self {
         Self { path, inner }
     }
 }
@@ -150,11 +150,11 @@ impl<T: Clone + Debug> TreeNodeNamespace<T> {
         }
     }
 
-    fn get(&self, path: IdentifierPath) -> Option<&T> {
+    fn get(&self, path: ItemPath) -> Option<&T> {
         let (root, rest) = path.split_first()?;
         let child = self.children.get(root)?;
         match &child.inner {
-            TreeNodeInner::Namespace(ns) => ns.get(IdentifierPath(rest)),
+            TreeNodeInner::Namespace(ns) => ns.get(ItemPath(rest)),
             TreeNodeInner::Other(v) => Some(v),
         }
     }

@@ -1,12 +1,9 @@
-use std::{fs, path::Path};
-
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    CamelCaseIdentifier, Component, Concept, Enum, Identifier, IdentifierPathBuf, Message, Version,
+    CamelCaseIdentifier, Component, Concept, Enum, Identifier, ItemPathBuf, Message, Version,
 };
-use anyhow::Context;
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Manifest {
@@ -15,47 +12,17 @@ pub struct Manifest {
     #[serde(default)]
     pub build: Build,
     #[serde(default)]
-    pub components: IndexMap<IdentifierPathBuf, Component>,
+    pub components: IndexMap<ItemPathBuf, Component>,
     #[serde(default)]
-    pub concepts: IndexMap<IdentifierPathBuf, Concept>,
+    pub concepts: IndexMap<ItemPathBuf, Concept>,
     #[serde(default)]
-    pub messages: IndexMap<IdentifierPathBuf, Message>,
+    pub messages: IndexMap<ItemPathBuf, Message>,
     #[serde(default)]
     pub enums: IndexMap<CamelCaseIdentifier, Enum>,
 }
 impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, toml::de::Error> {
         toml::from_str(manifest)
-    }
-    pub fn from_file(path: impl AsRef<Path>) -> anyhow::Result<Self> {
-        let mut res = Self::parse(
-            &fs::read_to_string(path.as_ref())
-                .context(format!("Failed to read file: {:?}", path.as_ref()))?,
-        )?;
-        res.resolve_imports(path.as_ref().parent().context("No parent directory")?)?;
-        Ok(res)
-    }
-
-    pub fn project_path(&self) -> IdentifierPathBuf {
-        self.project
-            .organization
-            .iter()
-            .chain(std::iter::once(&self.project.id))
-            .cloned()
-            .collect()
-    }
-
-    fn resolve_imports(&mut self, directory: impl AsRef<Path>) -> anyhow::Result<()> {
-        let mut new_includes = vec![];
-        for include in &self.project.includes {
-            let manifest = Manifest::from_file(directory.as_ref().join(include))?;
-            new_includes.extend(manifest.project.includes);
-            self.components.extend(manifest.components);
-            self.concepts.extend(manifest.concepts);
-            self.messages.extend(manifest.messages);
-        }
-        self.project.includes.extend(new_includes);
-        Ok(())
     }
 }
 
@@ -97,7 +64,7 @@ mod tests {
 
     use crate::{
         Build, BuildRust, CamelCaseIdentifier, Component, ComponentType, Concept, ContainerType,
-        Enum, EnumMember, Identifier, IdentifierPathBuf, Manifest, Project, Version, VersionSuffix,
+        Enum, EnumMember, Identifier, ItemPathBuf, Manifest, Project, Version, VersionSuffix,
     };
 
     fn cci(s: &str) -> CamelCaseIdentifier {
@@ -140,7 +107,7 @@ mod tests {
                     }
                 },
                 components: IndexMap::from_iter([(
-                    IdentifierPathBuf::new("cell").unwrap(),
+                    ItemPathBuf::new("cell").unwrap(),
                     Component {
                         name: Some("Cell".to_string()),
                         description: Some("The ID of the cell this player is in".to_string()),
@@ -151,13 +118,13 @@ mod tests {
                     .into()
                 )]),
                 concepts: IndexMap::from_iter([(
-                    IdentifierPathBuf::new("cell").unwrap(),
+                    ItemPathBuf::new("cell").unwrap(),
                     Concept {
                         name: Some("Cell".to_string()),
                         description: Some("A cell object".to_string()),
                         extends: vec![],
                         components: IndexMap::from_iter([(
-                            IdentifierPathBuf::new("cell").unwrap(),
+                            ItemPathBuf::new("cell").unwrap(),
                             toml::Value::Integer(0)
                         )])
                     }
@@ -253,7 +220,7 @@ mod tests {
                 },
                 components: IndexMap::from_iter([
                     (
-                        IdentifierPathBuf::new("core::transform::rotation").unwrap(),
+                        ItemPathBuf::new("core::transform::rotation").unwrap(),
                         Component {
                             name: Some("Rotation".to_string()),
                             description: Some("".to_string()),
@@ -264,7 +231,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        IdentifierPathBuf::new("core::transform::scale").unwrap(),
+                        ItemPathBuf::new("core::transform::scale").unwrap(),
                         Component {
                             name: Some("Scale".to_string()),
                             description: Some("".to_string()),
@@ -275,7 +242,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        IdentifierPathBuf::new("core::transform::spherical_billboard").unwrap(),
+                        ItemPathBuf::new("core::transform::spherical_billboard").unwrap(),
                         Component {
                             name: Some("Spherical billboard".to_string()),
                             description: Some("".to_string()),
@@ -286,7 +253,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        IdentifierPathBuf::new("core::transform::translation").unwrap(),
+                        ItemPathBuf::new("core::transform::translation").unwrap(),
                         Component {
                             name: Some("Translation".to_string()),
                             description: Some("".to_string()),
@@ -298,14 +265,14 @@ mod tests {
                     ),
                 ]),
                 concepts: IndexMap::from_iter([(
-                    IdentifierPathBuf::new("ns::transformable").unwrap(),
+                    ItemPathBuf::new("ns::transformable").unwrap(),
                     Concept {
                         name: Some("Transformable".to_string()),
                         description: Some("Can be translated, rotated and scaled.".to_string()),
                         extends: vec![],
                         components: IndexMap::from_iter([
                             (
-                                IdentifierPathBuf::new("core::transform::translation").unwrap(),
+                                ItemPathBuf::new("core::transform::translation").unwrap(),
                                 Value::Array(vec![
                                     Value::Integer(0),
                                     Value::Integer(0),
@@ -313,7 +280,7 @@ mod tests {
                                 ])
                             ),
                             (
-                                IdentifierPathBuf::new("core::transform::scale").unwrap(),
+                                ItemPathBuf::new("core::transform::scale").unwrap(),
                                 Value::Array(vec![
                                     Value::Integer(1),
                                     Value::Integer(1),
@@ -321,7 +288,7 @@ mod tests {
                                 ])
                             ),
                             (
-                                IdentifierPathBuf::new("core::transform::rotation").unwrap(),
+                                ItemPathBuf::new("core::transform::rotation").unwrap(),
                                 Value::Array(vec![
                                     Value::Integer(0),
                                     Value::Integer(0),
@@ -348,9 +315,9 @@ mod tests {
                 .keys()
                 .collect::<Vec<_>>(),
             vec![
-                &IdentifierPathBuf::new("core::transform::translation").unwrap(),
-                &IdentifierPathBuf::new("core::transform::scale").unwrap(),
-                &IdentifierPathBuf::new("core::transform::rotation").unwrap(),
+                &ItemPathBuf::new("core::transform::translation").unwrap(),
+                &ItemPathBuf::new("core::transform::scale").unwrap(),
+                &ItemPathBuf::new("core::transform::rotation").unwrap(),
             ]
         );
     }
@@ -438,7 +405,7 @@ mod tests {
                 },
                 components: IndexMap::from_iter([
                     (
-                        IdentifierPathBuf::new("test").unwrap(),
+                        ItemPathBuf::new("test").unwrap(),
                         Component {
                             name: Some("Test".to_string()),
                             description: Some("Test".to_string()),
@@ -449,7 +416,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        IdentifierPathBuf::new("vec_test").unwrap(),
+                        ItemPathBuf::new("vec_test").unwrap(),
                         Component {
                             name: Some("Test".to_string()),
                             description: Some("Test".to_string()),
@@ -463,7 +430,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        IdentifierPathBuf::new("option_test").unwrap(),
+                        ItemPathBuf::new("option_test").unwrap(),
                         Component {
                             name: Some("Test".to_string()),
                             description: Some("Test".to_string()),

@@ -1,8 +1,6 @@
 use std::{collections::HashMap, fmt::Debug, marker::PhantomData};
 
-use ambient_project::{
-    CamelCaseIdentifier, ComponentType, Identifier, IdentifierPath, IdentifierPathBuf, Manifest,
-};
+use ambient_project::{CamelCaseIdentifier, ComponentType, Identifier, ItemPathBuf, Manifest};
 use ambient_shared_types::primitive_component_definitions;
 use anyhow::Context;
 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
@@ -248,34 +246,46 @@ impl Scope {
 
         for (path, component) in manifest.components.iter() {
             let path = path.as_path();
-            let (parent, last) = path.parent_and_last();
-            scope.get_scope_mut(parent).components.insert(
-                last.clone(),
+            let (scope_path, item) = path.scope_and_item();
+            let item = item
+                .as_identifier()
+                .expect("component name must be an identifier");
+
+            scope.get_scope_mut(scope_path).components.insert(
+                item.clone(),
                 semantic
                     .items
-                    .add(Component::from_project(last.clone(), component)),
+                    .add(Component::from_project(item.clone(), component)),
             );
         }
 
         for (path, concept) in manifest.concepts.iter() {
             let path = path.as_path();
-            let (parent, last) = path.parent_and_last();
-            scope.get_scope_mut(parent).concepts.insert(
-                last.clone(),
+            let (scope_path, item) = path.scope_and_item();
+            let item = item
+                .as_identifier()
+                .expect("component name must be an identifier");
+
+            scope.get_scope_mut(scope_path).concepts.insert(
+                item.clone(),
                 semantic
                     .items
-                    .add(Concept::from_project(last.clone(), concept)),
+                    .add(Concept::from_project(item.clone(), concept)),
             );
         }
 
         for (path, message) in manifest.messages.iter() {
             let path = path.as_path();
-            let (parent, last) = path.parent_and_last();
-            scope.get_scope_mut(parent).messages.insert(
-                last.clone(),
+            let (scope_path, item) = path.scope_and_item();
+            let item = item
+                .as_identifier()
+                .expect("component name must be an identifier");
+
+            scope.get_scope_mut(scope_path).messages.insert(
+                item.clone(),
                 semantic
                     .items
-                    .add(Message::from_project(last.clone(), message)),
+                    .add(Message::from_project(item.clone(), message)),
             );
         }
 
@@ -293,7 +303,7 @@ impl Scope {
         Ok(scope)
     }
 
-    fn get_scope_mut(&mut self, path: IdentifierPath) -> &mut Scope {
+    fn get_scope_mut(&mut self, path: &[Identifier]) -> &mut Scope {
         let mut scope = self;
         for segment in path.iter() {
             scope = scope
@@ -483,7 +493,7 @@ pub struct Component {
 }
 impl Item for Component {
     const TYPE: ItemType = ItemType::Component;
-    type Unresolved = IdentifierPathBuf;
+    type Unresolved = ItemPathBuf;
 
     fn from_item_value(value: &ItemValue) -> Option<&Self> {
         match value {
@@ -563,7 +573,7 @@ pub struct Concept {
 }
 impl Item for Concept {
     const TYPE: ItemType = ItemType::Concept;
-    type Unresolved = IdentifierPathBuf;
+    type Unresolved = ItemPathBuf;
 
     fn from_item_value(value: &ItemValue) -> Option<&Self> {
         match value {
@@ -584,7 +594,21 @@ impl Item for Concept {
     }
 
     fn resolve(&mut self, items: &mut ItemMap, scopes: &Scopes) -> Self {
-        self.clone()
+        let mut new = self.clone();
+
+        let mut extends = vec![];
+        for extend in &new.extends {
+            // extends.push(match extend {
+            //     ResolvableItemId::Unresolved(path) => {
+            //         let id = scopes.get_concept_id(items, &path).unwrap();
+            //         ResolvableItemId::Resolved(id)
+            //     }
+            //     t => t.clone(),
+            // });
+        }
+        new.extends = extends;
+
+        new
     }
 }
 impl Concept {
@@ -620,7 +644,7 @@ pub struct Message {
 }
 impl Item for Message {
     const TYPE: ItemType = ItemType::Message;
-    type Unresolved = IdentifierPathBuf;
+    type Unresolved = ItemPathBuf;
 
     fn from_item_value(value: &ItemValue) -> Option<&Self> {
         match value {

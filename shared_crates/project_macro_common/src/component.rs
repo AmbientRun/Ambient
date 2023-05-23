@@ -2,7 +2,7 @@ use super::{
     tree::{Tree, TreeNode, TreeNodeInner, TreeNodeNamespace},
     util, Context,
 };
-use ambient_project::{Component, ComponentType, IdentifierPath, IdentifierPathBuf};
+use ambient_project::{Component, ComponentType, ItemPath, ItemPathBuf};
 use proc_macro2::TokenStream;
 use quote::quote;
 use thiserror::Error;
@@ -10,14 +10,14 @@ use thiserror::Error;
 pub fn tree_to_token_stream(
     tree: &Tree<Component>,
     context: &Context,
-    project_path: IdentifierPath,
+    project_path: ItemPath,
 ) -> anyhow::Result<proc_macro2::TokenStream> {
     let tree_output = to_token_stream(
         tree.root(),
         context,
         |context, ns, ts| match context {
             Context::Host => {
-                let namespace_path = IdentifierPath(ns.path.split_first().unwrap().1).to_string();
+                let namespace_path = ItemPath(ns.path.split_first().unwrap().1).to_string();
                 quote! {
                     use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
                     use crate::{EntityId, Debuggable, Networked, Store, Resource, MaybeResource, Name, Description};
@@ -39,8 +39,8 @@ pub fn tree_to_token_stream(
             let init_all_components = {
                 fn get_namespaces<'a>(
                     ns: &'a TreeNodeNamespace<Component>,
-                    path: IdentifierPath<'a>,
-                ) -> Vec<IdentifierPath<'a>> {
+                    path: ItemPath<'a>,
+                ) -> Vec<ItemPath<'a>> {
                     let mut result = vec![];
                     if ns
                         .children
@@ -57,7 +57,7 @@ pub fn tree_to_token_stream(
                     result
                 }
 
-                let namespaces = get_namespaces(tree.root_namespace(), IdentifierPath(&[]));
+                let namespaces = get_namespaces(tree.root_namespace(), ItemPath(&[]));
 
                 quote! {
                     pub fn init() {
@@ -81,7 +81,7 @@ fn to_token_stream(
     node: &TreeNode<Component>,
     context: &Context,
     wrapper: impl Fn(&Context, &TreeNode<Component>, TokenStream) -> TokenStream + Copy,
-    project_path: IdentifierPath,
+    project_path: ItemPath,
 ) -> anyhow::Result<TokenStream> {
     util::tree_to_token_stream(
         node,
@@ -112,9 +112,8 @@ fn to_token_stream(
                 doc_comment += &format!("\n\n*Suggested Default*: {default}")
             }
 
-            let id =
-                IdentifierPathBuf::from_iter(project_path.iter().chain(node.path.iter()).cloned())
-                    .to_string();
+            let id = ItemPathBuf::from_iter(project_path.iter().chain(node.path.iter()).cloned())
+                .to_string();
             let doc_comment = doc_comment.trim();
 
             match context {

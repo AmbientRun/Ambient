@@ -3,9 +3,7 @@ use super::{
     tree::{Tree, TreeNode},
     util, Context,
 };
-use ambient_project::{
-    Component, ComponentType, Concept, Identifier, IdentifierPath, IdentifierPathBuf,
-};
+use ambient_project::{Component, ComponentType, Concept, Identifier, ItemPath, ItemPathBuf};
 use anyhow::Context as AnyhowContext;
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -204,7 +202,7 @@ fn generate_concept(
         concept_tree: &'a Tree<Concept>,
         component_tree: &'a Tree<Component>,
         concept: &'a Concept,
-    ) -> anyhow::Result<Vec<(IdentifierPath<'a>, &'a Component)>> {
+    ) -> anyhow::Result<Vec<(ItemPath<'a>, &'a Component)>> {
         let mut result = vec![];
 
         for concept_path in &concept.extends {
@@ -255,12 +253,12 @@ fn generate_concept(
     })
 }
 
-fn build_component_path(prefix: &Identifier, path: IdentifierPath) -> IdentifierPathBuf {
-    IdentifierPathBuf::from_iter(std::iter::once(prefix).chain(path.iter()).cloned())
+fn build_component_path(prefix: &Identifier, path: ItemPath) -> ItemPathBuf {
+    ItemPathBuf::from_iter(std::iter::once(prefix).chain(path.iter()).cloned())
 }
 
 fn toml_value_to_tokens(
-    path: IdentifierPath,
+    path: ItemPath,
     ty: &ComponentType,
     value: &toml::Value,
 ) -> anyhow::Result<TokenStream> {
@@ -298,7 +296,7 @@ fn toml_value_to_tokens(
 }
 
 fn toml_value_to_tokens_primitive(
-    path: IdentifierPath,
+    path: ItemPath,
     ty: &str,
     value: &toml::Value,
 ) -> anyhow::Result<TokenStream> {
@@ -351,7 +349,7 @@ fn toml_value_to_tokens_primitive(
 }
 
 fn toml_array_f32_to_array_tokens(
-    path: IdentifierPath,
+    path: ItemPath,
     array: &toml::value::Array,
 ) -> anyhow::Result<TokenStream> {
     let members = array
@@ -473,7 +471,7 @@ impl std::fmt::Display for SemiprettyTokenStream {
 mod tests {
     use std::collections::BTreeMap;
 
-    use ambient_project::{Component, ComponentType, Concept, IdentifierPathBuf};
+    use ambient_project::{Component, ComponentType, Concept, ItemPathBuf};
 
     use crate::{tests::guest_context, tree::Tree};
 
@@ -486,7 +484,7 @@ mod tests {
                     .enumerate()
                     .map(|(idx, ty)| {
                         (
-                            IdentifierPathBuf::new(format!("component{idx}")).unwrap(),
+                            ItemPathBuf::new(format!("component{idx}")).unwrap(),
                             Component {
                                 name: Some(format!("Component {idx}")),
                                 description: None,
@@ -505,60 +503,60 @@ mod tests {
         let concept_tree = Tree::<Concept>::new(
             &BTreeMap::from_iter([
                 (
-                    IdentifierPathBuf::new("concept0").unwrap(),
+                    ItemPathBuf::new("concept0").unwrap(),
                     Concept {
                         name: None,
                         description: None,
                         extends: vec![],
                         components: BTreeMap::from_iter([(
-                            IdentifierPathBuf::new("component0").unwrap(),
+                            ItemPathBuf::new("component0").unwrap(),
                             toml::Value::Boolean(true),
                         )]),
                     }
                     .into(),
                 ),
                 (
-                    IdentifierPathBuf::new("concept1").unwrap(),
+                    ItemPathBuf::new("concept1").unwrap(),
                     Concept {
                         name: None,
                         description: None,
-                        extends: vec![IdentifierPathBuf::new("concept0").unwrap()],
+                        extends: vec![ItemPathBuf::new("concept0").unwrap()],
                         components: BTreeMap::from_iter([(
-                            IdentifierPathBuf::new("component1").unwrap(),
+                            ItemPathBuf::new("component1").unwrap(),
                             toml::Value::Float(4.56),
                         )]),
                     }
                     .into(),
                 ),
                 (
-                    IdentifierPathBuf::new("concept2").unwrap(),
+                    ItemPathBuf::new("concept2").unwrap(),
                     Concept {
                         name: None,
                         description: None,
                         extends: vec![],
                         components: BTreeMap::from_iter([(
-                            IdentifierPathBuf::new("component2").unwrap(),
+                            ItemPathBuf::new("component2").unwrap(),
                             toml::Value::Integer(3),
                         )]),
                     }
                     .into(),
                 ),
                 (
-                    IdentifierPathBuf::new("concept3").unwrap(),
+                    ItemPathBuf::new("concept3").unwrap(),
                     Concept {
                         name: None,
                         description: None,
                         extends: vec![
-                            IdentifierPathBuf::new("concept1").unwrap(),
-                            IdentifierPathBuf::new("concept2").unwrap(),
+                            ItemPathBuf::new("concept1").unwrap(),
+                            ItemPathBuf::new("concept2").unwrap(),
                         ],
                         components: BTreeMap::from_iter([
                             (
-                                IdentifierPathBuf::new("component3").unwrap(),
+                                ItemPathBuf::new("component3").unwrap(),
                                 toml::Value::String("It's pi".to_string()),
                             ),
                             (
-                                IdentifierPathBuf::new("component4").unwrap(),
+                                ItemPathBuf::new("component4").unwrap(),
                                 toml::Value::Array((0..3).map(toml::Value::Integer).collect()),
                             ),
                         ]),
@@ -575,7 +573,7 @@ mod tests {
             &component_tree,
             &guest_context(),
             concept_tree
-                .get(IdentifierPathBuf::new("concept3").unwrap().as_path())
+                .get(ItemPathBuf::new("concept3").unwrap().as_path())
                 .unwrap(),
         )
         .unwrap();

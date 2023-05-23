@@ -1,6 +1,6 @@
 extern crate proc_macro;
 
-use ambient_project::{Component, Concept, IdentifierPath, IdentifierPathBuf, Manifest, Message};
+use ambient_project::{Component, Concept, ItemPath, ItemPathBuf, Manifest, Message};
 use quote::quote;
 
 use proc_macro2::Ident;
@@ -60,7 +60,7 @@ pub struct TypeRegistry {
     pub messages: Tree<Message>,
 }
 impl TypeRegistry {
-    pub fn get_component(&self, path: IdentifierPath) -> Option<&Component> {
+    pub fn get_component(&self, path: ItemPath) -> Option<&Component> {
         self.components.get(path)
     }
 }
@@ -76,7 +76,7 @@ pub fn generate_code(
     let project_path = if !is_api_manifest {
         manifest.project_path()
     } else {
-        IdentifierPathBuf::empty()
+        ItemPathBuf::empty()
     };
 
     let component_tree = Tree::new(&manifest.components, validate_namespaces_documented)?;
