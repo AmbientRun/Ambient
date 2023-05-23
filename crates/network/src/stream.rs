@@ -11,13 +11,13 @@ use crate::{NetworkError, MAX_FRAME_SIZE};
 
 /// Transport agnostic framed reader
 #[pin_project]
-pub struct RecvStream<T, S> {
+pub struct FramedRecvStream<T, S> {
     #[pin]
     read: FramedRead<S, LengthDelimitedCodec>,
     _marker: PhantomData<T>,
 }
 
-impl<T, S> RecvStream<T, S>
+impl<T, S> FramedRecvStream<T, S>
 where
     S: AsyncRead,
     T: serde::de::DeserializeOwned,
@@ -32,7 +32,7 @@ where
     }
 }
 
-impl<T, S> Stream for RecvStream<T, S>
+impl<T, S> Stream for FramedRecvStream<T, S>
 where
     S: AsyncRead,
     T: serde::de::DeserializeOwned,
@@ -58,13 +58,13 @@ where
 
 /// Transport agnostic framed writer
 #[pin_project]
-pub struct SendStream<T, S> {
+pub struct FramedSendStream<T, S> {
     #[pin]
     write: FramedWrite<S, LengthDelimitedCodec>,
     _marker: PhantomData<T>,
 }
 
-impl<T, S> SendStream<T, S>
+impl<T, S> FramedSendStream<T, S>
 where
     S: AsyncWrite,
     T: serde::Serialize,
@@ -86,7 +86,7 @@ where
     }
 }
 
-impl<T, S> Sink<&'_ T> for SendStream<T, S>
+impl<T, S> Sink<&'_ T> for FramedSendStream<T, S>
 where
     S: AsyncWrite,
     T: serde::Serialize,
@@ -132,7 +132,7 @@ where
     }
 }
 
-impl<T, S> Sink<T> for SendStream<T, S>
+impl<T, S> Sink<T> for FramedSendStream<T, S>
 where
     S: AsyncWrite,
     T: serde::Serialize,

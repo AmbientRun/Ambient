@@ -1,8 +1,9 @@
 use ambient_ecs::{
     query, Component, ComponentValue, EntityId, Networked, Serializable, Store, World,
 };
-use std::io::ErrorKind;
+use std::{io::ErrorKind, pin::Pin};
 use stream::FrameError;
+use tokio::io::{AsyncRead, AsyncWrite};
 
 use ambient_rpc::RpcError;
 use ambient_std::log_error;
@@ -29,6 +30,9 @@ pub mod native;
 pub mod web;
 #[cfg(target_os = "unknown")]
 pub mod webtransport;
+
+pub type DynSend = Pin<Box<dyn AsyncWrite + Send + Sync>>;
+pub type DynRecv = Pin<Box<dyn AsyncRead + Send + Sync>>;
 
 pub const RPC_BISTREAM_ID: u32 = 2;
 

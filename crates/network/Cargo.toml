@@ -52,12 +52,13 @@ enum_dispatch = { workspace = true }
 pin-project = { workspace = true }
 uuid = { workspace = true }
 scopeguard = { workspace = true }
-tokio = { workspace = true, features = ["io-util"] }
+tokio = { workspace = true, features = ["macros", "io-util"] }
 tokio-util = { version = "0.7", features = ["codec"] }
 
 webpki-roots = { workspace = true, optional = true }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
+tokio = { workspace = true, features = ["io-util"] }
 async-trait = { workspace = true }
 
 

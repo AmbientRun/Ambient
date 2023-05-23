@@ -1,9 +1,8 @@
 use std::{collections::HashMap, fmt::Debug, sync::Arc, time::Duration};
 
 use crate::{
-    client::{ClientConnection, DynRecv, DynSend},
-    proto::server::Player,
-    NetworkError, RPC_BISTREAM_ID,
+    client::ClientConnection, proto::server::Player, DynRecv, DynSend, NetworkError,
+    RPC_BISTREAM_ID,
 };
 use ambient_core::{
     name,

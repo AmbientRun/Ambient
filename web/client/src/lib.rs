@@ -49,6 +49,8 @@ async fn run(target: Option<web_sys::HtmlElement>) -> anyhow::Result<()> {
     use ambient_sys::timer::TimerWheel;
     ambient_sys::task::spawn(TimerWheel::new().start());
 
+    let a = format!("enersntenraentnernte {}");
+
     use anyhow::Context;
     let mut app = App::builder()
         .ui_renderer(true)

@@ -1,5 +1,5 @@
 use crate::{
-    client::{GameClient, GameClientRenderTarget, LoadedFunc, NetworkStats},
+    client::{Control, GameClient, GameClientRenderTarget, LoadedFunc, NetworkStats},
     client_game_state::ClientGameState,
     native::load_root_certs,
     proto::{
@@ -7,7 +7,7 @@ use crate::{
         ClientRequest,
     },
     server::RpcArgs,
-    stream::{self, RecvStream, SendStream},
+    stream::{FramedRecvStream, FramedSendStream},
     NetworkError,
 };
 use ambient_app::window_title;
@@ -175,29 +175,27 @@ impl ElementComponent for GameClientView {
                     game_client,
                     conn,
                     user_id,
-                    ClientCallbacks {
-                        on_loaded: cb(move |game_client| {
-                            let game_state = &game_client.game_state;
-                            {
-                                // Updates the game client context in the Ui tree
-                                set_game_client(Some(game_client.clone()));
-                                // Update the resources on the client side world to reflect the new connection
-                                // state
-                                let world = &mut game_state.lock().world;
-                                world.add_resource(
-                                    crate::client::game_client(),
-                                    Some(game_client.clone()),
-                                );
-                            }
-                            (on_loaded)(game_client)
-                        }),
-                    },
+                    cb(move |game_client| {
+                        let game_state = &game_client.game_state;
+                        {
+                            // Updates the game client context in the Ui tree
+                            set_game_client(Some(game_client.clone()));
+                            // Update the resources on the client side world to reflect the new connection
+                            // state
+                            let world = &mut game_state.lock().world;
+                            world.add_resource(
+                                crate::client::game_client(),
+                                Some(game_client.clone()),
+                            );
+                        }
+                        (on_loaded)(game_client)
+                    }),
                     game_state,
                     control_rx,
                 )
                 .await?;
 
-                tracing::info!("Finished handling connection");
+                tracing::info!("finished handling connection");
 
                 Ok(()) as anyhow::Result<()>
             };
@@ -245,28 +243,19 @@ impl ElementComponent for GameClientView {
     }
 }
 
-#[derive(Debug)]
-struct ClientCallbacks {
-    on_loaded: LoadedFunc,
-}
-
-pub enum Control {
-    Disconnect,
-}
-
 #[tracing::instrument(name = "client", level = "info", skip(conn))]
 async fn handle_connection(
     game_client: GameClient,
     conn: quinn::Connection,
     user_id: String,
-    callbacks: ClientCallbacks,
+    on_loaded: LoadedFunc,
     state: SharedClientState,
     control_rx: flume::Receiver<Control>,
 ) -> anyhow::Result<()> {
     tracing::info!("Handling client connection");
     tracing::info!("Opening control stream");
 
-    let mut request_send = SendStream::new(conn.open_uni().await?);
+    let mut request_send = FramedSendStream::new(conn.open_uni().await?);
 
     tracing::info!("Opened control stream");
 
@@ -283,7 +272,7 @@ async fn handle_connection(
     let mut client = ClientState::Connecting(user_id);
 
     tracing::info!("Accepting control stream from server");
-    let mut push_recv = stream::RecvStream::new(conn.accept_uni().await?);
+    let mut push_recv = FramedRecvStream::new(conn.accept_uni().await?);
 
     tracing::info!("Entering client loop");
     while client.is_connecting() {
@@ -294,9 +283,9 @@ async fn handle_connection(
     }
 
     tracing::info!("Accepting diff stream");
-    let mut diff_stream = RecvStream::new(conn.accept_uni().await?);
+    let mut diff_stream = FramedRecvStream::new(conn.accept_uni().await?);
 
-    let cleanup = (callbacks.on_loaded)(game_client)?;
+    let cleanup = on_loaded(game_client)?;
     let on_disconnect = move || {
         tracing::info!("Running connection cleanup");
         cleanup()

@@ -1,12 +1,9 @@
-use std::{future::Future, task::Poll};
+use std::{future::Future, pin::Pin, task::Poll};
 
 use derive_more::{Deref, From};
 use futures::FutureExt;
 
-use crate::{
-    control::ControlHandle,
-    platform::{self},
-};
+use crate::{control::ControlHandle, platform};
 pub use platform::task::wasm_nonsend;
 
 /// Spawns a new background task in the current runtime
@@ -86,7 +83,10 @@ impl<T> JoinHandle<T> {
 impl<T> Future for JoinHandle<T> {
     type Output = Result<T, JoinError>;
 
-    fn poll(mut self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> std::task::Poll<Self::Output> {
+    fn poll(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<Self::Output> {
         self.0.poll_unpin(cx)
     }
 }
@@ -98,7 +98,10 @@ pub struct ChildTask<T>(JoinHandle<T>);
 impl<T> Future for ChildTask<T> {
     type Output = Result<T, JoinError>;
 
-    fn poll(mut self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Self::Output> {
+    fn poll(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> Poll<Self::Output> {
         self.0.poll_unpin(cx)
     }
 }
@@ -143,5 +146,34 @@ impl RuntimeHandle {
         R: 'static + Send,
     {
         JoinHandle(self.0.spawn_blocking(f))
+    }
+}
+
+pub struct PlatformBoxFuture<T>(platform::task::PlatformBoxFutureImpl<T>);
+
+impl<T> PlatformBoxFuture<T> {
+    pub fn new(future: impl Future<Output = T>) -> Self {
+        Self(platform::task::PlatformBoxFutureImpl::new(future))
+    }
+
+    #[cfg(target_os = "unknown")]
+    /// Convert this into a thread local future for [`wasm_bindgen_futures::spawn_local`] or
+    /// [`tokio::LocalSet`].
+    pub fn into_local(self) -> futures::future::LocalBoxFuture<'static, T> {
+        self.0.into_local()
+    }
+
+    #[cfg(not(target_os = "unknown"))]
+    /// Convert into a sendable future, sutable for [`tokio::spawn`].
+    pub fn into_shared(self) -> futures::future::BoxFuture<'static, T> {
+        self.0.into_shared()
+    }
+}
+
+impl<T> Future for PlatformBoxFuture<T> {
+    type Output = T;
+
+    fn poll(mut self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Self::Output> {
+        self.0.poll_unpin(cx)
     }
 }

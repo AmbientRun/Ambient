@@ -7,7 +7,7 @@ use ambient_std::{asset_cache::AssetCache, cb, friendly_id, to_byte_unit, Cb};
 use ambient_sys::task::RuntimeHandle;
 use ambient_ui_native::{Image, MeasureSize};
 use bytes::Bytes;
-use futures::future::BoxFuture;
+use futures::future::{BoxFuture, LocalBoxFuture};
 use glam::UVec2;
 use parking_lot::Mutex;
 use serde::{de::DeserializeOwned, Serialize};
@@ -18,11 +18,11 @@ use std::{
     pin::Pin,
     sync::Arc,
 };
-use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
+use tokio::io::{AsyncRead, AsyncWrite};
 
 use crate::{
     client_game_state::ClientGameState, log_network_result, proto::client::SharedClientState,
-    server, NetworkError, MAX_FRAME_SIZE, RPC_BISTREAM_ID,
+    server, NetworkError, RPC_BISTREAM_ID,
 };
 
 components!("network::client", {
@@ -39,12 +39,25 @@ components!("network::client", {
     client_network_stats: NetworkStats,
 });
 
-pub type DynSend = Pin<Box<dyn AsyncWrite + Send + Sync>>;
-pub type DynRecv = Pin<Box<dyn AsyncRead + Send + Sync>>;
+#[cfg(not(target_os = "unknown"))]
+type PlatformSendStream = quinn::SendStream;
+#[cfg(not(target_os = "unknown"))]
+type PlatformRecvStream = quinn::RecvStream;
 
-type BiStreamHandler = Arc<dyn Fn(&mut World, AssetCache, DynSend, DynRecv) + Sync + Send>;
-type UniStreamHandler = Arc<dyn Fn(&mut World, AssetCache, DynRecv) + Sync + Send>;
-type DatagramHandler = Arc<dyn Fn(&mut World, AssetCache, Bytes) + Sync + Send>;
+#[cfg(target_os = "unknown")]
+type PlatformSendStream = crate::webtransport::SendStream;
+#[cfg(target_os = "unknown")]
+type PlatformRecvStream = crate::webtransport::RecvStream;
+
+type BiStreamHandler = Arc<
+    dyn Fn(&mut World, AssetCache, PlatformSendStream, PlatformRecvStream) -> LocalBoxFuture<()>
+        + Sync
+        + Send,
+>;
+type UniStreamHandler =
+    Arc<dyn Fn(&mut World, AssetCache, PlatformRecvStream) -> LocalBoxFuture<()> + Sync + Send>;
+type DatagramHandler =
+    Arc<dyn Fn(&mut World, AssetCache, Bytes) -> LocalBoxFuture<()> + Sync + Send>;
 
 pub type BiStreamHandlers = HashMap<u32, (&'static str, BiStreamHandler)>;
 pub type UniStreamHandlers = HashMap<u32, (&'static str, UniStreamHandler)>;
@@ -59,6 +72,10 @@ pub trait ClientConnection: 'static + Send + Sync {
     /// Performs a unidirectional request without waiting for a response.
     fn request_uni(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>>;
     fn send_datagram(&self, id: u32, data: Bytes) -> Result<(), NetworkError>;
+}
+
+pub(crate) enum Control {
+    Disconnect,
 }
 
 #[derive(Clone)]

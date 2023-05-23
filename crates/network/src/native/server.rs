@@ -40,7 +40,8 @@ use crate::{
         server_stats, ForkingEvent, ProxySettings, ServerState, SharedServerState, ShutdownEvent,
         WorldInstance, MAIN_INSTANCE_ID,
     },
-    stream, ServerWorldExt,
+    stream::{self, FramedRecvStream, FramedSendStream},
+    ServerWorldExt,
 };
 
 #[derive(Debug, Clone)]
@@ -307,9 +308,9 @@ async fn handle_quinn_connection(
     let mut server = proto::server::ServerState::default();
 
     tracing::info!("Accepting request stream from client");
-    let mut request_recv = stream::RecvStream::new(conn.accept_uni().await?);
+    let mut request_recv = FramedRecvStream::new(conn.accept_uni().await?);
     tracing::info!("Opening control stream");
-    let mut push_send = stream::SendStream::new(conn.open_uni().await?);
+    let mut push_send = FramedSendStream::new(conn.open_uni().await?);
 
     let diffs_rx = diffs_rx.into_stream();
 
@@ -337,7 +338,7 @@ async fn handle_quinn_connection(
     tracing::debug!("Performing additional on connect tracingic after the fact");
 
     tokio::spawn(handle_diffs(
-        stream::SendStream::new(conn.open_uni().await?),
+        FramedSendStream::new(conn.open_uni().await?),
         diffs_rx,
     ));
 

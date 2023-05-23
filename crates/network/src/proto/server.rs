@@ -341,7 +341,7 @@ impl ConnectedClient {
 
 /// Send the server stats over the network
 pub async fn handle_stats<S>(
-    stream: stream::SendStream<FpsSample, S>,
+    stream: stream::FramedSendStream<FpsSample, S>,
     stats: impl Stream<Item = FpsSample>,
 ) where
     S: Unpin + AsyncWrite,
@@ -351,7 +351,7 @@ pub async fn handle_stats<S>(
 
 /// Sends the world diffs over the network
 pub async fn handle_diffs<S>(
-    mut stream: stream::SendStream<WorldDiff, S>,
+    mut stream: stream::FramedSendStream<WorldDiff, S>,
     mut diffs_rx: impl Unpin + Stream<Item = Bytes>,
 ) where
     S: Unpin + AsyncWrite,
