@@ -79,7 +79,7 @@ impl FromBindgen for wit::guest::Source {
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
 /// The target for a originating message.
 pub enum Target {
-    /// A message to all other modules running on this side.
+    /// A message to all other modules running on this side, *not* including the originating module.
     LocalBroadcast,
     /// A message to a specific module running on this side.
     Local(EntityId),
@@ -214,7 +214,7 @@ pub trait ModuleMessage: Message {
         self::send(target, self)
     }
 
-    /// Sends a message to every module on this side.
+    /// Sends a message to every module on this side, *not* including the module that sent the message.
     fn send_local_broadcast(&self) {
         self.send(Target::LocalBroadcast)
     }
