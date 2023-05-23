@@ -8,6 +8,7 @@ use ambient_api::{
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     prelude::*,
 };
+use components::rotating_sun;
 use noise::{utils::*, Fbm, Perlin};
 use palette::IntoColor;
 
@@ -20,7 +21,6 @@ const SIZE_X: f32 = RESOLUTION_X as f32 / RESOLUTION_Y as f32;
 const SIZE_Y: f32 = 1.0;
 const WAVE_AMPLITUDE: f32 = 0.25;
 const WAVE_FREQUENCY: f32 = 0.5 * TAU;
-const ROTATING_SUN: bool = false;
 
 fn make_camera() {
     Entity::new()
@@ -32,8 +32,22 @@ fn make_camera() {
         .spawn();
 }
 
+#[element_component]
+fn App(_hooks: &mut Hooks, sun_id: EntityId) -> Element {
+    FocusRoot::el([FlowColumn::el([FlowRow::el([Button::new(
+        "Toggle sun rotation",
+        move |_| {
+            entity::mutate_component(sun_id, rotating_sun(), |rotating_sun| {
+                *rotating_sun = !*rotating_sun;
+            });
+        },
+    )
+    .el()])])
+    .with_padding_even(10.0)])
+}
+
 fn make_lighting() {
-    Entity::new()
+    let sun_id = Entity::new()
         .with_merge(make_transformable())
         .with_default(sun())
         .with(
@@ -43,10 +57,16 @@ fn make_lighting() {
         )
         .with(light_diffuse(), Vec3::ONE * 4.0)
         .with_default(main_scene())
+        .with(rotating_sun(), false)
         .spawn();
-    if ROTATING_SUN {
-        query(rotation()).requires(sun()).each_frame(move |suns| {
-            for (sun_id, sun_rotation) in suns {
+    App::el(sun_id).spawn_interactive();
+    query((rotation(), (rotating_sun())))
+        .requires(sun())
+        .each_frame(move |suns| {
+            for (sun_id, (sun_rotation, rotating_sun)) in suns {
+                if !rotating_sun {
+                    continue;
+                }
                 entity::set_component(
                     sun_id,
                     rotation(),
@@ -54,7 +74,6 @@ fn make_lighting() {
                 );
             }
         });
-    }
 }
 
 fn make_simple_cube(t: Vec3, s: Vec3, c: Vec4) {
