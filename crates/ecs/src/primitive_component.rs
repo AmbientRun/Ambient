@@ -5,11 +5,15 @@ use once_cell::sync::Lazy;
 use paste::paste;
 
 use crate::{
-    AttributeConstructor, AttributeStore, ComponentDesc, ComponentRegistry, ComponentVTable, Description, EntityId,
-    ExternalComponentAttributes, Name,
+    AttributeConstructor, AttributeStore, ComponentDesc, ComponentRegistry, ComponentVTable,
+    Description, EntityId, ExternalComponentAttributes, Name,
 };
 
 use ambient_shared_types::primitive_component_definitions;
+use ambient_shared_types::{
+    ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
+    ProceduralTextureHandle,
+};
 
 // implementation
 macro_rules! build_attribute_registration {

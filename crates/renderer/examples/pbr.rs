@@ -1,7 +1,7 @@
 use ambient_app::{App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
 use ambient_ecs::{query_mut, Entity};
-use ambient_gpu::std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey};
+use ambient_gpu::std_assets::{DefaultNormalMapViewKey, DefaultSamplerKey, PixelTextureViewKey};
 use ambient_meshes::{CubeMeshKey, SphereMeshKey};
 use ambient_renderer::{
     color, gpu_primitives_lod, gpu_primitives_mesh,
@@ -36,9 +36,10 @@ async fn init(app: &mut App) {
                         ),
                     }
                     .get(&assets),
-                    transparent: None,
-                    double_sided: None,
-                    depth_write_enabled: None,
+                    sampler: DefaultSamplerKey.get(&assets),
+                    transparent: false,
+                    double_sided: false,
+                    depth_write_enabled: false,
                 },
             ));
 

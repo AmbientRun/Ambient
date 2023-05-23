@@ -30,6 +30,8 @@ thiserror = { workspace = true }
 rand = { workspace = true }
 glam = { workspace = true }
 wit-bindgen = { workspace = true }
+ulid = { workspace = true }
+static_assertions = { workspace = true }
 
 [features]
 client = []

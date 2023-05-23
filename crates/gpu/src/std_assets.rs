@@ -116,6 +116,11 @@ impl PixelTextureViewKey {
             color: uvec4(255, 255, 255, 255),
         }
     }
+    pub fn black() -> Self {
+        Self {
+            color: uvec4(0, 0, 0, 255),
+        }
+    }
 }
 impl SyncAssetKey<Arc<TextureView>> for PixelTextureViewKey {
     fn load(&self, assets: AssetCache) -> Arc<TextureView> {

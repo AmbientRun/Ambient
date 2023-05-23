@@ -1,5 +1,8 @@
 use crate::{
-    global::{EntityId, Mat4, Quat, Vec2, Vec3, Vec4},
+    global::{
+        EntityId, Mat4, ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
+        ProceduralTextureHandle, Quat, Vec2, Vec3, Vec4,
+    },
     internal::{
         component::Component,
         conversion::{FromBindgen, IntoBindgen},
