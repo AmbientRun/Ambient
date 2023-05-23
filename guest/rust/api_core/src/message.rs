@@ -290,7 +290,6 @@ mod serde {
     pub use ambient_project_rt::message_serde::*;
 
     use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
-    use ulid::Ulid;
 
     use crate::global::{
         EntityId, ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
@@ -322,18 +321,19 @@ mod serde {
                     &self,
                     output: &mut Vec<u8>,
                 ) -> Result<(), MessageSerdeError> {
-                    let ulid: Ulid = unsafe { std::mem::transmute(*self) };
-                    let ulid = u128::from(ulid);
-                    output.write_u128::<BigEndian>(ulid)?;
+                    let ulid = self.0;
+                    output.write_u64::<BigEndian>(ulid.0)?;
+                    output.write_u64::<BigEndian>(ulid.1)?;
                     Ok(())
                 }
 
                 fn deserialize_message_part(
                     input: &mut dyn std::io::Read,
                 ) -> Result<Self, MessageSerdeError> {
-                    let ulid = input.read_u128::<BigEndian>()?;
-                    let ulid = Ulid::from(ulid);
-                    Ok(unsafe { std::mem::transmute(ulid) })
+                    Ok(Self((
+                        input.read_u64::<BigEndian>()?,
+                        input.read_u64::<BigEndian>()?,
+                    )))
                 }
             }
         };

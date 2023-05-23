@@ -4,7 +4,7 @@ macro_rules! procedural_storage_handle {
     ($name:ident) => {
         #[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Hash)]
         /// Procedural storage handle type
-        pub struct $name(wit::types::Ulid);
+        pub struct $name(pub(crate) wit::types::Ulid);
 
         impl Default for $name {
             fn default() -> Self {

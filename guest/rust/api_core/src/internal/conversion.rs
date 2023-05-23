@@ -235,7 +235,7 @@ macro_rules! procedural_storage_handle {
             type Item = $name;
 
             fn from_bindgen(self) -> Self::Item {
-                unsafe { std::mem::transmute(self.ulid) }
+                $name(self.ulid)
             }
         }
 
@@ -243,9 +243,7 @@ macro_rules! procedural_storage_handle {
             type Item = wit::$wit_name::Handle;
 
             fn into_bindgen(self) -> Self::Item {
-                wit::$wit_name::Handle {
-                    ulid: unsafe { std::mem::transmute(self) },
-                }
+                wit::$wit_name::Handle { ulid: self.0 }
             }
         }
     };
