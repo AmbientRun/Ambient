@@ -217,7 +217,7 @@ fn GoldenImageTest(
                 if let Some(old) = old_screnshot.clone() {
                     let render_target = render_target.clone();
                     rt.spawn(async move {
-                        // log::info!("Comparing new and old screenshots");
+                        log::info!("Comparing new and old screenshots");
                         let new = render_target
                             .0
                             .color_buffer
