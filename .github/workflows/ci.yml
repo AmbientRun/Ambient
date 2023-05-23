@@ -90,7 +90,7 @@ jobs:
   #       run: tree --du -h target
 
   golden-image-tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       RUST_LOG: ambient_gpu=debug
     steps:
