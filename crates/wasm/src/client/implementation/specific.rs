@@ -15,7 +15,10 @@ use ambient_core::{
 use ambient_gpu::{gpu::GpuKey, texture::Texture};
 use ambient_input::{player_prev_raw_input, player_raw_input};
 use ambient_network::client::game_client;
-use ambient_procedurals::procedural_storage;
+use ambient_procedurals::{
+    new_material_handle, new_mesh_handle, new_sampler_handle, new_texture_handle,
+    procedural_storage,
+};
 use ambient_renderer::pbr_material::{PbrMaterialConfig, PbrMaterialParams};
 use ambient_std::{
     asset_cache::{AsyncAssetKeyExt, SyncAssetKeyExt},
@@ -300,13 +303,14 @@ impl wit::client_mesh::Host for Bindings {
 
         let world = self.world_mut();
         let storage = world.resource_mut(procedural_storage());
-        let mesh_handle = storage.insert_mesh(mesh);
+        let mesh_handle = new_mesh_handle();
+        storage.meshes.insert(mesh_handle, mesh);
         Ok(mesh_handle.into_bindgen())
     }
     fn destroy(&mut self, handle: wit::client_mesh::Handle) -> anyhow::Result<()> {
         let world = self.world_mut();
         let storage = world.resource_mut(procedural_storage());
-        storage.remove_mesh(handle.from_bindgen());
+        storage.meshes.remove(handle.from_bindgen());
         Ok(())
     }
 }
@@ -339,13 +343,14 @@ impl wit::client_texture::Host for Bindings {
         let texture = Arc::new(texture);
         let texture_view = Arc::new(texture.create_view(&TextureViewDescriptor::default()));
         let storage = world.resource_mut(procedural_storage());
-        let texture_handle = storage.insert_texture(texture_view);
+        let texture_handle = new_texture_handle();
+        storage.textures.insert(texture_handle, texture_view);
         Ok(texture_handle.into_bindgen())
     }
     fn destroy(&mut self, handle: wit::client_texture::Handle) -> anyhow::Result<()> {
         let world = self.world_mut();
         let storage = world.resource_mut(procedural_storage());
-        storage.remove_texture(handle.from_bindgen());
+        storage.textures.remove(handle.from_bindgen());
         Ok(())
     }
 }
@@ -368,13 +373,14 @@ impl wit::client_sampler::Host for Bindings {
         });
         let sampler = Arc::new(sampler);
         let storage = world.resource_mut(procedural_storage());
-        let sampler_handle = storage.insert_sampler(sampler);
+        let sampler_handle = new_sampler_handle();
+        storage.samplers.insert(sampler_handle, sampler);
         Ok(sampler_handle.into_bindgen())
     }
     fn destroy(&mut self, handle: wit::client_sampler::Handle) -> anyhow::Result<()> {
         let world = self.world_mut();
         let storage = world.resource_mut(procedural_storage());
-        storage.remove_sampler(handle.from_bindgen());
+        storage.samplers.remove(handle.from_bindgen());
         Ok(())
     }
 }
@@ -396,23 +402,26 @@ impl wit::client_material::Host for Bindings {
                 roughness: 1.0,
                 ..PbrMaterialParams::default()
             },
-            base_color: Arc::clone(storage.get_texture(desc.base_color_map.from_bindgen())),
-            normalmap: Arc::clone(storage.get_texture(desc.normal_map.from_bindgen())),
+            base_color: Arc::clone(storage.textures.get(desc.base_color_map.from_bindgen())),
+            normalmap: Arc::clone(storage.textures.get(desc.normal_map.from_bindgen())),
             metallic_roughness: Arc::clone(
-                storage.get_texture(desc.metallic_roughness_map.from_bindgen()),
+                storage
+                    .textures
+                    .get(desc.metallic_roughness_map.from_bindgen()),
             ),
-            sampler: Arc::clone(storage.get_sampler(desc.sampler.from_bindgen())),
+            sampler: Arc::clone(storage.samplers.get(desc.sampler.from_bindgen())),
             transparent: desc.transparent,
             double_sided: false,
             depth_write_enabled: false,
         };
-        let material_handle = storage.insert_material(material);
+        let material_handle = new_material_handle();
+        storage.materials.insert(material_handle, material);
         Ok(material_handle.into_bindgen())
     }
     fn destroy(&mut self, handle: wit::client_material::Handle) -> anyhow::Result<()> {
         let world = self.world_mut();
         let storage = world.resource_mut(procedural_storage());
-        storage.remove_material(handle.from_bindgen());
+        storage.materials.remove(handle.from_bindgen());
         Ok(())
     }
 }

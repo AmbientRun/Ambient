@@ -92,8 +92,6 @@ macro_rules! make_procedural_storage_new_fns {
 }
 
 procedural_storage_handle_definitions!(make_procedural_storage_new_fns);
-procedural_storage_handle!(ProceduralSamplerHandle, new_sampler_handle);
-procedural_storage_handle!(ProceduralMaterialHandle, new_material_handle);
 
 pub type ProceduralMesh = Mesh;
 pub type ProceduralTexture = Arc<TextureView>;
@@ -101,14 +99,45 @@ pub type ProceduralSampler = Arc<wgpu::Sampler>;
 pub type ProceduralMaterial = PbrMaterialConfig;
 
 #[derive(Clone)]
+pub struct ProceduralMap<Handle, Resource>(HashMap<Handle, Resource>);
+
+impl<Handle, Resource> ProceduralMap<Handle, Resource>
+where
+    Handle: Eq + std::hash::Hash + std::fmt::Display,
+{
+    pub fn insert(&mut self, handle: Handle, resource: Resource) {
+        self.0.insert(handle, resource);
+    }
+
+    pub fn get(&self, handle: Handle) -> &Resource {
+        self.0
+            .get(&handle)
+            .unwrap_or_else(|| panic!("Procedural resource {handle} must exist"))
+    }
+
+    pub fn remove(&mut self, handle: Handle) -> Resource {
+        self.0
+            .remove(&handle)
+            .unwrap_or_else(|| panic!("Procedural resource {handle} must exist"))
+    }
+}
+
+impl<Handle, Resource> Default for ProceduralMap<Handle, Resource> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
+#[derive(Clone)]
 pub struct ProceduralStorage {
-    meshes: HashMap<ProceduralMeshHandle, ProceduralMesh>,
-    textures: HashMap<ProceduralTextureHandle, ProceduralTexture>,
-    samplers: HashMap<ProceduralSamplerHandle, ProceduralSampler>,
-    materials: HashMap<ProceduralMaterialHandle, ProceduralMaterial>,
+    pub meshes: ProceduralMap<ProceduralMeshHandle, ProceduralMesh>,
+    pub textures: ProceduralMap<ProceduralTextureHandle, ProceduralTexture>,
+    pub samplers: ProceduralMap<ProceduralSamplerHandle, ProceduralSampler>,
+    pub materials: ProceduralMap<ProceduralMaterialHandle, ProceduralMaterial>,
 }
 
 impl ProceduralStorage {
+    #[must_use]
     pub fn new() -> Self {
         Self {
             meshes: Default::default(),
@@ -117,76 +146,10 @@ impl ProceduralStorage {
             materials: Default::default(),
         }
     }
+}
 
-    pub fn insert_mesh(&mut self, mesh: ProceduralMesh) -> ProceduralMeshHandle {
-        let handle = new_mesh_handle();
-        self.meshes.insert(handle, mesh);
-        handle
-    }
-
-    pub fn insert_texture(&mut self, texture: ProceduralTexture) -> ProceduralTextureHandle {
-        let handle = new_texture_handle();
-        self.textures.insert(handle, texture);
-        handle
-    }
-
-    pub fn insert_sampler(&mut self, sampler: ProceduralSampler) -> ProceduralSamplerHandle {
-        let handle = new_sampler_handle();
-        self.samplers.insert(handle, sampler);
-        handle
-    }
-
-    pub fn insert_material(&mut self, material: ProceduralMaterial) -> ProceduralMaterialHandle {
-        let handle = new_material_handle();
-        self.materials.insert(handle, material);
-        handle
-    }
-
-    pub fn remove_mesh(&mut self, handle: ProceduralMeshHandle) -> ProceduralMesh {
-        self.meshes
-            .remove(&handle)
-            .unwrap_or_else(|| panic!("Procedural mesh {handle} must exist"))
-    }
-
-    pub fn remove_texture(&mut self, handle: ProceduralTextureHandle) -> ProceduralTexture {
-        self.textures
-            .remove(&handle)
-            .unwrap_or_else(|| panic!("Procedural texture {handle} must exist"))
-    }
-
-    pub fn remove_sampler(&mut self, handle: ProceduralSamplerHandle) -> ProceduralSampler {
-        self.samplers
-            .remove(&handle)
-            .unwrap_or_else(|| panic!("Procedural sampler {handle} must exist"))
-    }
-
-    pub fn remove_material(&mut self, handle: ProceduralMaterialHandle) -> ProceduralMaterial {
-        self.materials
-            .remove(&handle)
-            .unwrap_or_else(|| panic!("Procedural material {handle} must exist"))
-    }
-
-    pub fn get_mesh(&self, handle: ProceduralMeshHandle) -> &ProceduralMesh {
-        self.meshes
-            .get(&handle)
-            .unwrap_or_else(|| panic!("Procedural mesh {handle} must exist"))
-    }
-
-    pub fn get_texture(&self, handle: ProceduralTextureHandle) -> &ProceduralTexture {
-        self.textures
-            .get(&handle)
-            .unwrap_or_else(|| panic!("Procedural texture {handle} must exist"))
-    }
-
-    pub fn get_sampler(&self, handle: ProceduralSamplerHandle) -> &ProceduralSampler {
-        self.samplers
-            .get(&handle)
-            .unwrap_or_else(|| panic!("Procedural sampler {handle} must exist"))
-    }
-
-    pub fn get_material(&self, handle: ProceduralMaterialHandle) -> &ProceduralMaterial {
-        self.materials
-            .get(&handle)
-            .unwrap_or_else(|| panic!("Procedural material {handle} must exist"))
+impl Default for ProceduralStorage {
+    fn default() -> Self {
+        Self::new()
     }
 }
