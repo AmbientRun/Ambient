@@ -210,6 +210,7 @@ dependencies = [
  "once_cell",
  "paste",
  "rand 0.8.5",
+ "static_assertions",
  "thiserror",
  "ulid",
  "wit-bindgen",

@@ -1,3 +1,7 @@
+use std::mem::size_of;
+
+use static_assertions::const_assert_eq;
+
 use crate::global::{ProceduralMeshHandle, Vec2, Vec3};
 use crate::internal::conversion::*;
 use crate::internal::wit;
@@ -21,6 +25,7 @@ impl<'a> IntoBindgen for Descriptor<'a> {
     type Item = wit::client_mesh::Descriptor<'a>;
 
     fn into_bindgen(self) -> Self::Item {
+        const_assert_eq!(size_of::<Vertex>(), size_of::<wit::client_mesh::Vertex>());
         Self::Item {
             vertices: unsafe {
                 std::slice::from_raw_parts(
