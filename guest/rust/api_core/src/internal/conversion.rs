@@ -1,8 +1,13 @@
 use crate::{
-    global::{Mat4, Quat, Vec2, Vec3, Vec4},
+    global::{
+        Mat4, ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
+        ProceduralTextureHandle, Quat, Vec2, Vec3, Vec4,
+    },
     internal::wit,
 };
+use ambient_shared_types::procedural_storage_handle_definitions;
 use glam::{UVec2, UVec3, UVec4};
+use paste::paste;
 
 /// Converts from a Rust representation to a wit-bindgen representation.
 pub trait IntoBindgen {
@@ -225,3 +230,25 @@ where
         self.into_iter().map(|i| i.from_bindgen()).collect()
     }
 }
+
+macro_rules! make_procedural_storage_handle_converters {
+    ($($name:ident),*) => { paste!{$(
+        impl FromBindgen for wit::[<client_ $name>]::Handle {
+            type Item = [<Procedural $name:camel Handle>];
+
+            fn from_bindgen(self) -> Self::Item {
+                [<Procedural $name:camel Handle>](self.ulid)
+            }
+        }
+
+        impl IntoBindgen for [<Procedural $name:camel Handle>] {
+            type Item = wit::[<client_ $name>]::Handle;
+
+            fn into_bindgen(self) -> Self::Item {
+                Self::Item { ulid: self.0 }
+            }
+        }
+    )*}};
+}
+
+procedural_storage_handle_definitions!(make_procedural_storage_handle_converters);

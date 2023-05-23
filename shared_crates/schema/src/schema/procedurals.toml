@@ -1,0 +1,16 @@
+[project]
+id = "procedurals"
+name = "Procedurals"
+description = "Procedural asset functionality and related."
+
+[components.procedural_mesh]
+type = "ProceduralMeshHandle"
+name = "Procedural mesh"
+description = "Attaches a procedural mesh to this entity"
+attributes = ["Debuggable", "Store"]
+
+[components.procedural_material]
+type = "ProceduralMaterialHandle"
+name = "Procedural material"
+description = "Attaches a procedural material to this entity"
+attributes = ["Debuggable", "Store"]

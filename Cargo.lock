@@ -210,7 +210,9 @@ dependencies = [
  "once_cell",
  "paste",
  "rand 0.8.5",
+ "static_assertions",
  "thiserror",
+ "ulid",
  "wit-bindgen",
 ]
 
@@ -241,6 +243,7 @@ dependencies = [
  "ambient_input",
  "ambient_model",
  "ambient_primitives",
+ "ambient_procedurals",
  "ambient_profiling",
  "ambient_renderer",
  "ambient_std",
@@ -730,6 +733,7 @@ dependencies = [
  "tokio",
  "toml 0.7.4",
  "tracing",
+ "ulid",
  "wgpu 0.15.1",
  "wgpu 0.16.0",
  "winit",
@@ -1042,6 +1046,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_procedurals"
+version = "0.2.1"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_gpu",
+ "ambient_renderer",
+ "ambient_shared_types",
+ "ambient_std",
+ "parking_lot",
+ "paste",
+ "tracing",
+ "ulid",
+ "wgpu 0.16.0",
+]
+
+[[package]]
 name = "ambient_profiling"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1093,6 +1114,7 @@ name = "ambient_project_macro_common"
 version = "0.2.1"
 dependencies = [
  "ambient_project",
+ "ambient_shared_types",
  "anyhow",
  "indoc",
  "proc-macro2 1.0.56",
@@ -1212,6 +1234,7 @@ dependencies = [
  "smallvec",
  "tracing",
  "tracing-subscriber",
+ "ulid",
  "wgpu 0.16.0",
  "winit",
 ]
@@ -1248,8 +1271,10 @@ name = "ambient_shared_types"
 version = "0.2.1"
 dependencies = [
  "bitflags 1.3.2",
+ "paste",
  "serde",
  "strum",
+ "ulid",
  "winit",
 ]
 
@@ -1506,13 +1531,16 @@ dependencies = [
  "ambient_audio",
  "ambient_core",
  "ambient_ecs",
+ "ambient_gpu",
  "ambient_input",
  "ambient_model",
  "ambient_network",
  "ambient_physics",
  "ambient_prefab",
+ "ambient_procedurals",
  "ambient_profiling",
  "ambient_project",
+ "ambient_renderer",
  "ambient_shared_types",
  "ambient_std",
  "ambient_sys",
@@ -1542,9 +1570,11 @@ dependencies = [
  "serde_json",
  "slotmap",
  "tokio",
+ "ulid",
  "wasi-cap-std-sync",
  "wasi-common",
  "wasmtime",
+ "wgpu 0.16.0",
  "winit",
  "wit-bindgen-core",
  "wit-bindgen-rust",

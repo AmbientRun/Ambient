@@ -399,21 +399,22 @@ pub fn create_client_endpoint_random_port(cert: Option<Certificate>) -> anyhow::
 #[tracing::instrument(level = "info")]
 fn load_native_roots() -> RootCertStore {
     tracing::info!("Loading native roots");
-    let mut roots = rustls::RootCertStore::empty();
-    match rustls_native_certs::load_native_certs() {
-        Ok(certs) => {
-            for cert in certs {
-                let cert = rustls::Certificate(cert.0);
-                if let Err(e) = roots.add(&cert) {
-                    tracing::error!(?cert, "Failed to parse trust anchor: {}", e);
-                }
-            }
-        }
+    let roots = rustls::RootCertStore::empty();
+    // This crashes when we run ambient via VSCode and CodeLLDB, so we've disabled it for now. See this issue: https://github.com/kornelski/rust-security-framework/issues/185
+    // match rustls_native_certs::load_native_certs() {
+    //     Ok(certs) => {
+    //         for cert in certs {
+    //             let cert = rustls::Certificate(cert.0);
+    //             if let Err(e) = roots.add(&cert) {
+    //                 tracing::error!(?cert, "Failed to parse trust anchor: {}", e);
+    //             }
+    //         }
+    //     }
 
-        Err(e) => {
-            tracing::error!("Failed load any default trust roots: {}", e);
-        }
-    };
+    //     Err(e) => {
+    //         tracing::error!("Failed load any default trust roots: {}", e);
+    //     }
+    // };
 
     roots
 }

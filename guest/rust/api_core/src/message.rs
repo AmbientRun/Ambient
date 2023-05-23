@@ -79,7 +79,7 @@ impl FromBindgen for wit::guest::Source {
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
 /// The target for a originating message.
 pub enum Target {
-    /// A message to all other modules running on this side.
+    /// A message to all other modules running on this side, *not* including the originating module.
     LocalBroadcast,
     /// A message to a specific module running on this side.
     Local(EntityId),
@@ -214,7 +214,7 @@ pub trait ModuleMessage: Message {
         self::send(target, self)
     }
 
-    /// Sends a message to every module on this side.
+    /// Sends a message to every module on this side, *not* including the module that sent the message.
     fn send_local_broadcast(&self) {
         self.send(Target::LocalBroadcast)
     }
@@ -289,9 +289,14 @@ pub trait RuntimeMessage: Message {
 mod serde {
     pub use ambient_project_rt::message_serde::*;
 
+    use ambient_shared_types::procedural_storage_handle_definitions;
     use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
+    use paste::paste;
 
-    use crate::global::EntityId;
+    use crate::global::{
+        EntityId, ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
+        ProceduralTextureHandle,
+    };
 
     impl MessageSerde for EntityId {
         fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
@@ -310,5 +315,32 @@ mod serde {
             Ok(Self { id0, id1 })
         }
     }
+
+    macro_rules! make_procedural_storage_handle_serializers {
+        ($($name:ident),*) => { paste!{$(
+            impl MessageSerde for [<Procedural $name:camel Handle>] {
+                fn serialize_message_part(
+                    &self,
+                    output: &mut Vec<u8>,
+                ) -> Result<(), MessageSerdeError> {
+                    let ulid = self.0;
+                    output.write_u64::<BigEndian>(ulid.0)?;
+                    output.write_u64::<BigEndian>(ulid.1)?;
+                    Ok(())
+                }
+
+                fn deserialize_message_part(
+                    input: &mut dyn std::io::Read,
+                ) -> Result<Self, MessageSerdeError> {
+                    Ok(Self((
+                        input.read_u64::<BigEndian>()?,
+                        input.read_u64::<BigEndian>()?,
+                    )))
+                }
+            }
+        )*}};
+    }
+
+    procedural_storage_handle_definitions!(make_procedural_storage_handle_serializers);
 }
 pub use serde::*;

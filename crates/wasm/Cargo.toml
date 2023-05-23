@@ -20,6 +20,9 @@ ambient_model = { path = "../model" }
 ambient_prefab = { path = "../prefab" }
 ambient_physics = { path = "../physics" }
 ambient_std = { path = "../std" }
+ambient_gpu = { path = "../gpu" }
+ambient_renderer = { path = "../renderer" }
+ambient_procedurals = { path = "../procedurals" }
 
 ambient_project = { path = "../../shared_crates/project" }
 ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] }
@@ -50,6 +53,8 @@ serde = { workspace = true }
 slotmap = { workspace = true }
 tokio = { workspace = true }
 winit = { workspace = true }
+wgpu = { workspace = true }
+ulid = { workspace = true }
 
 wasmtime = { workspace = true }
 wasmtime-wasi = { workspace = true }

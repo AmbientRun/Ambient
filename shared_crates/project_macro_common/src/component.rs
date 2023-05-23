@@ -21,6 +21,7 @@ pub fn tree_to_token_stream(
                 quote! {
                     use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
                     use crate::{EntityId, Debuggable, Networked, Store, Resource, MaybeResource, Name, Description};
+                    use ambient_shared_types::{ProceduralMeshHandle, ProceduralTextureHandle, ProceduralSamplerHandle, ProceduralMaterialHandle};
                     crate::components!(#namespace_path, {
                         #ts
                     });
@@ -216,6 +217,12 @@ fn convert_primitive_type_to_rust_type(
         "Uvec2" => Some(quote! {#fully_qualified_prefix UVec2}),
         "Uvec3" => Some(quote! {#fully_qualified_prefix UVec3}),
         "Uvec4" => Some(quote! {#fully_qualified_prefix UVec4}),
+        "ProceduralMeshHandle" => Some(quote! {#fully_qualified_prefix ProceduralMeshHandle}),
+        "ProceduralTextureHandle" => Some(quote! {#fully_qualified_prefix ProceduralTextureHandle}),
+        "ProceduralSamplerHandle" => Some(quote! {#fully_qualified_prefix ProceduralSamplerHandle}),
+        "ProceduralMaterialHandle" => {
+            Some(quote! {#fully_qualified_prefix ProceduralMaterialHandle})
+        }
         _ => None,
     }
 }

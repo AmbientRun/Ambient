@@ -58,4 +58,6 @@ default interface types {
         origin: vec3,
         dir: vec3,
     }
+
+    type ulid = tuple<u64, u64>
 }

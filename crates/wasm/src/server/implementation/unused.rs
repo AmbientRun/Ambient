@@ -94,3 +94,47 @@ impl wit::client_window::Host for Bindings {
         unsupported()
     }
 }
+impl wit::client_mesh::Host for Bindings {
+    fn create(
+        &mut self,
+        _desc: wit::client_mesh::Descriptor,
+    ) -> anyhow::Result<wit::client_mesh::Handle> {
+        unsupported()
+    }
+    fn destroy(&mut self, _handle: wit::client_mesh::Handle) -> anyhow::Result<()> {
+        unsupported()
+    }
+}
+impl wit::client_texture::Host for Bindings {
+    fn create2d(
+        &mut self,
+        _desc: wit::client_texture::Descriptor2d,
+    ) -> anyhow::Result<wit::client_texture::Handle> {
+        unsupported()
+    }
+    fn destroy(&mut self, _handle: wit::client_texture::Handle) -> anyhow::Result<()> {
+        unsupported()
+    }
+}
+impl wit::client_sampler::Host for Bindings {
+    fn create(
+        &mut self,
+        _desc: wit::client_sampler::Descriptor,
+    ) -> anyhow::Result<wit::client_sampler::Handle> {
+        unsupported()
+    }
+    fn destroy(&mut self, _handle: wit::client_sampler::Handle) -> anyhow::Result<()> {
+        unsupported()
+    }
+}
+impl wit::client_material::Host for Bindings {
+    fn create(
+        &mut self,
+        _desc: wit::client_material::Descriptor,
+    ) -> anyhow::Result<wit::client_material::Handle> {
+        unsupported()
+    }
+    fn destroy(&mut self, _handle: wit::client_material::Handle) -> anyhow::Result<()> {
+        unsupported()
+    }
+}

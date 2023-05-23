@@ -3,7 +3,10 @@ use std::{collections::HashMap, fmt::Debug, marker::PhantomData};
 use ambient_project::{
     CamelCaseIdentifier, ComponentType, Identifier, ItemPath, ItemPathBuf, Manifest,
 };
-use ambient_shared_types::primitive_component_definitions;
+use ambient_shared_types::{
+    primitive_component_definitions, ProceduralMaterialHandle, ProceduralMeshHandle,
+    ProceduralSamplerHandle, ProceduralTextureHandle,
+};
 use anyhow::Context as AnyhowContext;
 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 
@@ -1008,6 +1011,10 @@ impl PrimitiveValue {
             PrimitiveType::Uvec4 => Self::Uvec4(UVec4::from_array(as_array(v, |v| {
                 v.as_integer().map(|v| v as u32)
             })?)),
+            PrimitiveType::ProceduralMeshHandle => return None,
+            PrimitiveType::ProceduralTextureHandle => return None,
+            PrimitiveType::ProceduralSamplerHandle => return None,
+            PrimitiveType::ProceduralMaterialHandle => return None,
         })
     }
 }
