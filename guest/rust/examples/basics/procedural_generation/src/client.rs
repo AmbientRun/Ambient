@@ -1,11 +1,13 @@
-use ambient_api::client::{material, mesh, sampler, texture};
-use ambient_api::components::core::camera::aspect_ratio_from_window;
-use ambient_api::components::core::primitives::{cube, quad, sphere_radius};
-use ambient_api::components::core::procedurals::{procedural_material, procedural_mesh};
-use ambient_api::concepts::{
-    make_perspective_infinite_reverse_camera, make_sphere, make_transformable,
+use ambient_api::{
+    client::{material, mesh, sampler, texture},
+    components::core::{
+        camera::aspect_ratio_from_window,
+        primitives::{cube, quad, sphere_radius},
+        procedurals::{procedural_material, procedural_mesh},
+    },
+    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
+    prelude::*,
 };
-use ambient_api::prelude::*;
 use noise::{utils::*, Fbm, Perlin};
 use palette::IntoColor;
 
