@@ -4,7 +4,7 @@ use ambient_project::{
     CamelCaseIdentifier, ComponentType, Identifier, ItemPath, ItemPathBuf, Manifest,
 };
 use ambient_shared_types::primitive_component_definitions;
-use anyhow::Context;
+use anyhow::Context as AnyhowContext;
 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 
 use indexmap::IndexMap;
@@ -125,7 +125,7 @@ impl Semantic {
 
     pub fn resolve(&mut self) -> anyhow::Result<()> {
         for scope in self.scopes.values_mut() {
-            scope.resolve(&mut self.items, Scopes(vec![&self.root_scope]));
+            scope.resolve(&mut self.items, Context(vec![&self.root_scope]));
         }
         Ok(())
     }
@@ -136,8 +136,8 @@ pub trait FileProvider {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct Scopes<'a>(Vec<&'a Scope>);
-impl<'a> Scopes<'a> {
+pub struct Context<'a>(Vec<&'a Scope>);
+impl<'a> Context<'a> {
     fn push(&mut self, scope: &'a Scope) {
         self.0.push(scope);
     }
@@ -173,6 +173,24 @@ impl<'a> Scopes<'a> {
     fn get_attribute_id(&self, path: ItemPath) -> Option<ItemId<Attribute>> {
         for scope in self.0.iter().rev() {
             if let Some(id) = scope.get_attribute_id(path) {
+                return Some(id);
+            }
+        }
+        None
+    }
+
+    fn get_concept_id(&self, path: ItemPath) -> Option<ItemId<Concept>> {
+        for scope in self.0.iter().rev() {
+            if let Some(id) = scope.get_concept_id(path) {
+                return Some(id);
+            }
+        }
+        None
+    }
+
+    fn get_component_id(&self, path: ItemPath) -> Option<ItemId<Component>> {
+        for scope in self.0.iter().rev() {
+            if let Some(id) = scope.get_component_id(path) {
                 return Some(id);
             }
         }
@@ -333,28 +351,28 @@ impl Scope {
         scope
     }
 
-    fn resolve<'a>(&'a self, items: &mut ItemMap, mut scopes: Scopes<'a>) {
+    fn resolve<'a>(&'a self, items: &mut ItemMap, mut context: Context<'a>) {
         fn resolve<T: Item, U>(
             item_ids: &IndexMap<U, ItemId<T>>,
             items: &mut ItemMap,
-            scopes: &Scopes,
+            context: &Context,
         ) {
             for id in item_ids.values().copied() {
-                let item = items.get(id).cloned().unwrap().resolve(items, scopes);
+                let item = items.get(id).cloned().unwrap().resolve(items, context);
                 items.insert(id, item);
             }
         }
 
-        scopes.push(self);
+        context.push(self);
 
-        resolve(&self.components, items, &scopes);
-        resolve(&self.concepts, items, &scopes);
-        resolve(&self.messages, items, &scopes);
-        resolve(&self.types, items, &scopes);
-        resolve(&self.attributes, items, &scopes);
+        resolve(&self.components, items, &context);
+        resolve(&self.concepts, items, &context);
+        resolve(&self.messages, items, &context);
+        resolve(&self.types, items, &context);
+        resolve(&self.attributes, items, &context);
 
         for scope in self.scopes.values() {
-            scope.resolve(items, scopes.clone());
+            scope.resolve(items, context.clone());
         }
     }
 
@@ -371,6 +389,22 @@ impl Scope {
         self.get_scope(scope)?
             .attributes
             .get(item.as_camel_case_identifier()?)
+            .copied()
+    }
+
+    fn get_concept_id(&self, path: ItemPath) -> Option<ItemId<Concept>> {
+        let (scope, item) = path.scope_and_item();
+        self.get_scope(scope)?
+            .concepts
+            .get(item.as_identifier()?)
+            .copied()
+    }
+
+    fn get_component_id(&self, path: ItemPath) -> Option<ItemId<Component>> {
+        let (scope, item) = path.scope_and_item();
+        self.get_scope(scope)?
+            .components
+            .get(item.as_identifier()?)
             .copied()
     }
 }
@@ -400,7 +434,7 @@ pub trait Item: Clone {
     fn from_item_value(value: &ItemValue) -> Option<&Self>;
     fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self>;
     fn into_item_value(self) -> ItemValue;
-    fn resolve(&mut self, items: &mut ItemMap, scopes: &Scopes) -> Self;
+    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> Self;
 }
 
 pub struct ItemId<T: Item>(Ulid, PhantomData<T>);
@@ -531,12 +565,12 @@ impl Item for Component {
         ItemValue::Component(self)
     }
 
-    fn resolve(&mut self, items: &mut ItemMap, scopes: &Scopes) -> Self {
+    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> Self {
         let mut new = self.clone();
 
         new.type_ = match new.type_ {
             ResolvableItemId::Unresolved(path) => {
-                let id = scopes.get_type_id(items, &path).unwrap();
+                let id = context.get_type_id(items, &path).unwrap();
                 ResolvableItemId::Resolved(id)
             }
             t => t,
@@ -546,7 +580,7 @@ impl Item for Component {
         for attribute in &new.attributes {
             attributes.push(match attribute {
                 ResolvableItemId::Unresolved(path) => {
-                    let id = scopes.get_attribute_id(path.as_path()).unwrap();
+                    let id = context.get_attribute_id(path.as_path()).unwrap();
                     ResolvableItemId::Resolved(id)
                 }
                 t => t.clone(),
@@ -611,20 +645,49 @@ impl Item for Concept {
         ItemValue::Concept(self)
     }
 
-    fn resolve(&mut self, items: &mut ItemMap, scopes: &Scopes) -> Self {
+    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> Self {
         let mut new = self.clone();
 
         let mut extends = vec![];
         for extend in &new.extends {
-            // extends.push(match extend {
-            //     ResolvableItemId::Unresolved(path) => {
-            //         let id = scopes.get_concept_id(items, &path).unwrap();
-            //         ResolvableItemId::Resolved(id)
-            //     }
-            //     t => t.clone(),
-            // });
+            extends.push(match extend {
+                ResolvableItemId::Unresolved(path) => {
+                    let id = context.get_concept_id(path.as_path()).unwrap_or_else(|| {
+                        panic!(
+                            "Failed to resolve concept `{}` for concept `{}",
+                            path, self.id
+                        )
+                    });
+                    ResolvableItemId::Resolved(id)
+                }
+                t => t.clone(),
+            });
         }
         new.extends = extends;
+
+        let mut components = IndexMap::new();
+        for (resolvable_component, resolvable_value) in &new.components {
+            let component_id = match resolvable_component {
+                ResolvableItemId::Unresolved(path) => {
+                    context.get_component_id(path.as_path()).unwrap_or_else(|| {
+                        panic!(
+                            "Failed to resolve component `{}` for concept `{}",
+                            path, self.id
+                        )
+                    })
+                }
+                ResolvableItemId::Resolved(id) => *id,
+            };
+            let component = items.get(component_id).unwrap();
+
+            let mut value = resolvable_value.clone();
+            // Commented out because component resolution is not guaranteed to have happened.
+            // Need to change how resolution works to make this work.
+            // value.resolve(items, component.type_.as_resolved().unwrap());
+
+            components.insert(ResolvableItemId::Resolved(component_id), value);
+        }
+        new.components = components;
 
         new
     }
@@ -682,7 +745,7 @@ impl Item for Message {
         ItemValue::Message(self)
     }
 
-    fn resolve(&mut self, items: &mut ItemMap, scopes: &Scopes) -> Self {
+    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> Self {
         let mut new = self.clone();
 
         let mut fields = IndexMap::new();
@@ -691,7 +754,7 @@ impl Item for Message {
                 name.clone(),
                 match type_ {
                     ResolvableItemId::Unresolved(path) => {
-                        let id = scopes.get_type_id(items, &path).unwrap();
+                        let id = context.get_type_id(items, &path).unwrap();
                         ResolvableItemId::Resolved(id)
                     }
                     t => t.clone(),
@@ -743,7 +806,7 @@ impl Item for Attribute {
         ItemValue::Attribute(self)
     }
 
-    fn resolve(&mut self, items: &mut ItemMap, scopes: &Scopes) -> Self {
+    fn resolve(&mut self, _items: &mut ItemMap, _context: &Context) -> Self {
         self.clone()
     }
 }
@@ -848,7 +911,7 @@ impl Item for Type {
         ItemValue::Type(self)
     }
 
-    fn resolve(&mut self, items: &mut ItemMap, scopes: &Scopes) -> Self {
+    fn resolve(&mut self, _items: &mut ItemMap, _context: &Context) -> Self {
         self.clone()
     }
 }
