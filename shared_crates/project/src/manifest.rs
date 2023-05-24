@@ -10,12 +10,16 @@ pub struct Manifest {
     #[serde(default)]
     pub build: Build,
     #[serde(default)]
+    #[serde(alias = "component")]
     pub components: IndexMap<ItemPathBuf, Component>,
     #[serde(default)]
+    #[serde(alias = "concept")]
     pub concepts: IndexMap<ItemPathBuf, Concept>,
     #[serde(default)]
+    #[serde(alias = "message")]
     pub messages: IndexMap<ItemPathBuf, Message>,
     #[serde(default)]
+    #[serde(alias = "enum")]
     pub enums: IndexMap<Identifier, Enum>,
 }
 impl Manifest {
