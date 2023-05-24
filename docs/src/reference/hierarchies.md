@@ -59,7 +59,7 @@ entity b:
 In this case, the `local_to_world` and `local_to_parent` will be updated using the `translation`, `scale` and `rotation` whenever they change. I.e. the following computations will happen, in this order:
 
 ```rust
-a.local_to_world = Mat4::from_from_scale_rotation_translation(a.scale, a.rotation, a.translation);
-b.local_to_parent = Mat4::from_from_scale_rotation_translation(b.scale, b.rotation, b.translation);
+a.local_to_world = mat4_from(a.scale, a.rotation, a.translation);
+b.local_to_parent = mat4_from(b.scale, b.rotation, b.translation);
 b.local_to_world = a.local_to_world * b.local_to_parent;
 ```
