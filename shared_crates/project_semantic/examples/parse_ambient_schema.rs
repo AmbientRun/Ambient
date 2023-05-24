@@ -21,13 +21,7 @@ pub fn main() {
         .unwrap();
 
     let mut printer = Printer { indent: 0 };
-
-    println!("------ Pre-resolve:");
-    printer.print(&semantic);
-
     semantic.resolve().unwrap();
-
-    println!("------ Post-resolve:");
     printer.print(&semantic);
 }
 
@@ -49,23 +43,33 @@ impl Printer {
         }
 
         for id in scope.components.values() {
-            self.with_indent(|p| p.print_component(semantic, semantic.items.get(*id).unwrap()));
+            self.with_indent(|p| {
+                p.print_component(semantic, semantic.items.get_without_resolve(*id).unwrap())
+            });
         }
 
         for id in scope.concepts.values() {
-            self.with_indent(|p| p.print_concept(semantic, semantic.items.get(*id).unwrap()));
+            self.with_indent(|p| {
+                p.print_concept(semantic, semantic.items.get_without_resolve(*id).unwrap())
+            });
         }
 
         for id in scope.messages.values() {
-            self.with_indent(|p| p.print_message(semantic, semantic.items.get(*id).unwrap()));
+            self.with_indent(|p| {
+                p.print_message(semantic, semantic.items.get_without_resolve(*id).unwrap())
+            });
         }
 
         for id in scope.types.values() {
-            self.with_indent(|p| p.print_type(semantic, semantic.items.get(*id).unwrap()));
+            self.with_indent(|p| {
+                p.print_type(semantic, semantic.items.get_without_resolve(*id).unwrap())
+            });
         }
 
         for id in scope.attributes.values() {
-            self.with_indent(|p| p.print_attribute(semantic, semantic.items.get(*id).unwrap()));
+            self.with_indent(|p| {
+                p.print_attribute(semantic, semantic.items.get_without_resolve(*id).unwrap())
+            });
         }
     }
 
@@ -135,7 +139,7 @@ impl Printer {
                 for (component, value) in concept.components.iter() {
                     p.print_indent();
                     println!(
-                        "{} => {:?}",
+                        "{}: {:?}",
                         write_resolvable_id(semantic, component, |component| component.id.clone()),
                         value,
                     );
@@ -162,7 +166,7 @@ impl Printer {
                 for (id, ty) in message.fields.iter() {
                     p.print_indent();
                     println!(
-                        "{} => {}",
+                        "{}: {}",
                         id,
                         write_resolvable_id(semantic, ty, |ty| ty.to_string(semantic)),
                     );
@@ -214,7 +218,10 @@ fn write_resolvable_id<T: Item, D: Display>(
     match r {
         ResolvableItemId::Unresolved(unresolved) => format!("unresolved({:?})", unresolved),
         ResolvableItemId::Resolved(resolved) => {
-            format!("{}", extractor(semantic.items.get(*resolved).unwrap()))
+            format!(
+                "{}",
+                extractor(semantic.items.get_without_resolve(*resolved).unwrap())
+            )
         }
     }
 }
