@@ -61,8 +61,8 @@ mod tests {
     use indexmap::IndexMap;
 
     use crate::{
-        Build, BuildRust, Component, ComponentType, Concept, ContainerType, Enum, EnumMember,
-        Identifier, ItemPathBuf, Manifest, Project, Version, VersionSuffix,
+        Build, BuildRust, Component, ComponentType, Concept, ContainerType, Enum, Identifier,
+        ItemPathBuf, Manifest, Project, Version, VersionSuffix,
     };
 
     fn i(s: &str) -> Identifier {
@@ -328,11 +328,9 @@ mod tests {
         name = "Tic Tac Toe"
         version = "0.0.1"
 
-        [enums]
-        cell-state = [
-            { name = "free", description = "The cell is free" },
-            { name = "taken", description = "The cell is taken" }
-        ]
+        [enums.cell-state]
+        taken = "The cell is taken"
+        free = "The cell is free"
         "#;
 
         assert_eq!(
@@ -353,16 +351,10 @@ mod tests {
                 messages: IndexMap::new(),
                 enums: IndexMap::from_iter([(
                     i("cell-state"),
-                    Enum(vec![
-                        EnumMember {
-                            name: i("free"),
-                            description: Some("The cell is free".to_string()),
-                        },
-                        EnumMember {
-                            name: i("taken"),
-                            description: Some("The cell is taken".to_string()),
-                        }
-                    ])
+                    Enum(IndexMap::from_iter([
+                        (i("taken"), "The cell is taken".to_string()),
+                        (i("free"), "The cell is free".to_string()),
+                    ]))
                     .into()
                 )]),
             })

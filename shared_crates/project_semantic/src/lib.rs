@@ -1,4 +1,8 @@
-use std::{collections::HashMap, fmt::Debug, marker::PhantomData};
+use std::{
+    collections::HashMap,
+    fmt::{Debug, Display},
+    marker::PhantomData,
+};
 
 use ambient_project::{ComponentType, Identifier, ItemPath, ItemPathBuf, Manifest};
 use ambient_shared_types::{
@@ -507,9 +511,9 @@ impl ResolvedValue {
                 let variant = e
                     .members
                     .iter()
-                    .find(|v| v.name.as_ref() == variant)
+                    .find(|(name, _description)| name.as_ref() == variant)
                     .unwrap();
-                Self::Enum(id, variant.name.clone())
+                Self::Enum(id, variant.0.clone())
             }
             ty => Self::Primitive(PrimitiveValue::from_toml_value(value, ty)),
         }
@@ -833,25 +837,11 @@ primitive_component_definitions!(define_primitive_type);
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Enum {
     pub id: Identifier,
-    pub members: Vec<EnumMember>,
+    pub members: IndexMap<Identifier, String>,
 }
-
-#[derive(Clone, PartialEq, Eq)]
-pub struct EnumMember {
-    pub name: Identifier,
-    pub description: Option<String>,
-}
-impl Debug for EnumMember {
+impl Display for Enum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}: {:?}", self.name, self.description)
-    }
-}
-impl From<&ambient_project::EnumMember> for EnumMember {
-    fn from(value: &ambient_project::EnumMember) -> Self {
-        Self {
-            name: value.name.clone(),
-            description: value.description.clone(),
-        }
+        write!(f, "enum({})", self.id)
     }
 }
 
@@ -866,7 +856,7 @@ impl Type {
     fn from_project_enum(id: Identifier, value: &ambient_project::Enum) -> Self {
         Self::Enum(Enum {
             id,
-            members: value.0.iter().map(|v| v.into()).collect(),
+            members: value.0.clone(),
         })
     }
 
@@ -881,7 +871,7 @@ impl Type {
                 let inner = semantic.items.get_without_resolve(*id).unwrap();
                 format!("Option<{}>", inner.to_string(semantic))
             }
-            Type::Enum(e) => e.id.to_string(),
+            Type::Enum(e) => e.to_string(),
         }
     }
 }

@@ -180,12 +180,9 @@ impl Printer {
         println!("type: {}", type_.to_string(semantic));
         if let Type::Enum(e) = type_ {
             self.with_indent(|p| {
-                for member in &e.members {
+                for (name, description) in &e.members {
                     p.print_indent();
-                    print!("{}", member.name);
-                    if let Some(description) = &member.description {
-                        print!(": {description}");
-                    }
+                    print!("{name}: {description}");
                     println!();
                 }
             });

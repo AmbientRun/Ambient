@@ -123,31 +123,29 @@ name = "GPU UI size"
 description = "Upload the width and height of this UI element to the GPU."
 attributes = ["debuggable", "networked", "store"]
 
-[enums]
-align = [
-    {name = "begin", description = "Begin"},
-    {name = "center", description = "Center"},
-    {name = "end", description = "End"}
-]
-fit = [
-    {name = "none", description = "None"},
-    {name = "parent", description = "Parent"},
-    {name = "children", description = "Children"}
-]
-orientation = [
-    {name = "horizontal", description = "Horizontal"},
-    {name = "vertical", description = "Vertical"}
-]
-docking = [
-    {name = "left", description = "Left"},
-    {name = "right", description = "Right"},
-    {name = "top", description = "Top"},
-    {name = "bottom", description = "Bottom"},
-    {name = "fill", description = "Fill"}
-]
-layout = [
-    {name = "flow", description = "Bottom-up flow layout."},
-    {name = "dock", description = "Top-down dock layout."},
-    {name = "bookcase", description = "Min-max bookcase layout."},
-    {name = "width-to-children", description = "Width to children."}
-]
+[enums.align]
+begin = "Begin"
+center = "Center"
+end = "End"
+
+[enums.fit]
+none = "None"
+parent = "Parent"
+children = "Children"
+
+[enums.orientation]
+horizontal = "Horizontal"
+vertical = "Vertical"
+
+[enums.docking]
+left = "Left"
+right = "Right"
+top = "Top"
+bottom = "Bottom"
+fill = "Fill"
+
+[enums.layout]
+flow = "Bottom-up flow layout."
+dock = "Top-down dock layout."
+bookcase = "Min-max bookcase layout."
+width-to-children = "Width to children."
