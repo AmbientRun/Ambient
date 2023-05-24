@@ -14,6 +14,7 @@ pub use ambient_ecs::generated::components::core::network::{
 };
 
 pub type AsyncMutex<T> = tokio::sync::Mutex<T>;
+pub mod bytes_ext;
 pub mod client;
 pub mod client_game_state;
 pub mod codec;
@@ -25,11 +26,11 @@ pub mod stream;
 
 #[cfg(not(target_os = "unknown"))]
 pub mod native;
+#[cfg(target_os = "unknown")]
+pub(crate) mod webtransport;
 
 #[cfg(target_os = "unknown")]
 pub mod web;
-#[cfg(target_os = "unknown")]
-pub mod webtransport;
 
 pub type DynSend = Pin<Box<dyn AsyncWrite + Send + Sync>>;
 pub type DynRecv = Pin<Box<dyn AsyncRead + Send + Sync>>;

@@ -97,7 +97,7 @@ dependencies = [
  "async-trait",
  "convert_case 0.6.0",
  "derive_more",
- "glam 0.22.0",
+ "glam",
  "itertools",
  "ordered-float 3.7.0",
  "serde",
@@ -124,7 +124,7 @@ dependencies = [
  "ambient_ui_native",
  "anyhow",
  "flume",
- "glam 0.22.0",
+ "glam",
  "parking_lot",
  "thread-priority",
  "tokio",
@@ -167,7 +167,7 @@ dependencies = [
  "derivative",
  "derive_more",
  "flume",
- "glam 0.22.0",
+ "glam",
  "hound",
  "itertools",
  "lewton",
@@ -196,7 +196,7 @@ dependencies = [
  "ambient_element",
  "ambient_std",
  "derive_more",
- "glam 0.22.0",
+ "glam",
  "winit",
 ]
 
@@ -208,7 +208,7 @@ version = "0.3.0-dev"
 name = "ambient_color"
 version = "0.3.0-dev"
 dependencies = [
- "glam 0.22.0",
+ "glam",
  "hex",
  "serde",
  "thiserror",
@@ -228,7 +228,7 @@ dependencies = [
  "chrono",
  "derive_more",
  "flume",
- "glam 0.22.0",
+ "glam",
  "itertools",
  "lazy_static",
  "ordered-float 3.7.0",
@@ -260,7 +260,7 @@ dependencies = [
  "derive_more",
  "downcast-rs",
  "erased-serde",
- "glam 0.22.0",
+ "glam",
  "itertools",
  "lazy_static",
  "log",
@@ -345,7 +345,7 @@ dependencies = [
  "ambient_std",
  "bytemuck",
  "dashmap",
- "glam 0.22.0",
+ "glam",
  "log",
  "once_cell",
  "serde",
@@ -365,7 +365,7 @@ dependencies = [
  "byteorder",
  "directories",
  "futures",
- "glam 0.22.0",
+ "glam",
  "image",
  "itertools",
  "log",
@@ -406,7 +406,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_shared_types",
  "ambient_std",
- "glam 0.22.0",
+ "glam",
  "serde",
  "serde_json",
  "tracing",
@@ -421,7 +421,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_input",
  "ambient_profiling",
- "glam 0.22.0",
+ "glam",
  "itertools",
  "log",
  "serde",
@@ -431,7 +431,7 @@ dependencies = [
 name = "ambient_math"
 version = "0.3.0-dev"
 dependencies = [
- "glam 0.22.0",
+ "glam",
  "rand",
  "serde",
 ]
@@ -442,7 +442,7 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_gpu",
  "ambient_std",
- "glam 0.22.0",
+ "glam",
  "serde",
 ]
 
@@ -463,7 +463,7 @@ dependencies = [
  "async-trait",
  "bytemuck",
  "futures",
- "glam 0.22.0",
+ "glam",
  "itertools",
  "serde",
  "tokio",
@@ -500,7 +500,7 @@ dependencies = [
  "enum_dispatch",
  "flume",
  "futures",
- "glam 0.22.0",
+ "glam",
  "h3",
  "h3-quinn",
  "h3-webtransport",
@@ -611,7 +611,7 @@ name = "ambient_project_rt"
 version = "0.3.0-dev"
 dependencies = [
  "byteorder",
- "glam 0.22.0",
+ "glam",
  "thiserror",
 ]
 
@@ -650,7 +650,7 @@ dependencies = [
  "ambient_renderer",
  "ambient_std",
  "bytemuck",
- "glam 0.22.0",
+ "glam",
  "wgpu",
 ]
 
@@ -671,7 +671,7 @@ dependencies = [
  "bytemuck",
  "derive_more",
  "downcast-rs",
- "glam 0.22.0",
+ "glam",
  "itertools",
  "log",
  "ordered-float 3.7.0",
@@ -731,7 +731,7 @@ dependencies = [
  "convert_case 0.6.0",
  "data-encoding",
  "futures",
- "glam 0.22.0",
+ "glam",
  "itertools",
  "log",
  "mikktspace",
@@ -794,7 +794,7 @@ dependencies = [
  "ambient_std",
  "anyhow",
  "async-trait",
- "glam 0.22.0",
+ "glam",
  "glyph_brush",
  "log",
  "parking_lot",
@@ -824,7 +824,7 @@ dependencies = [
  "ambient_time",
  "convert_case 0.6.0",
  "futures",
- "glam 0.22.0",
+ "glam",
  "indexmap",
  "itertools",
  "parking_lot",
@@ -860,7 +860,7 @@ dependencies = [
  "closure",
  "convert_case 0.6.0",
  "futures",
- "glam 0.22.0",
+ "glam",
  "indexmap",
  "itertools",
  "log",
@@ -896,7 +896,7 @@ dependencies = [
  "chrono",
  "futures",
  "getrandom",
- "glam 0.24.0",
+ "glam",
  "js-sys",
  "time 0.3.21",
  "tracing",
@@ -927,7 +927,7 @@ dependencies = [
  "derive_more",
  "flume",
  "futures",
- "glam 0.22.0",
+ "glam",
  "indexmap",
  "itertools",
  "log",
@@ -2380,16 +2380,6 @@ dependencies = [
  "bytemuck",
  "rand",
  "serde",
-]
-
-[[package]]
-name = "glam"
-version = "0.24.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad83ab008a4fa3b31dfa713dd41b5a9bdea1e94e4cf1e2fc274ffbd49b0271d3"
-dependencies = [
- "bytemuck",
- "rand",
 ]
 
 [[package]]

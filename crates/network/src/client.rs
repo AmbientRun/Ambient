@@ -4,7 +4,7 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id, to_byte_unit, Cb};
-use ambient_sys::task::RuntimeHandle;
+use ambient_sys::task::{PlatformBoxFuture, RuntimeHandle};
 use ambient_ui_native::{Image, MeasureSize};
 use bytes::Bytes;
 use futures::future::{BoxFuture, LocalBoxFuture};
@@ -40,24 +40,23 @@ components!("network::client", {
 });
 
 #[cfg(not(target_os = "unknown"))]
-type PlatformSendStream = quinn::SendStream;
+pub type PlatformSendStream = quinn::SendStream;
 #[cfg(not(target_os = "unknown"))]
-type PlatformRecvStream = quinn::RecvStream;
+pub type PlatformRecvStream = quinn::RecvStream;
 
 #[cfg(target_os = "unknown")]
-type PlatformSendStream = crate::webtransport::SendStream;
+pub type PlatformSendStream = crate::webtransport::SendStream;
 #[cfg(target_os = "unknown")]
-type PlatformRecvStream = crate::webtransport::RecvStream;
+pub type PlatformRecvStream = crate::webtransport::RecvStream;
 
 type BiStreamHandler = Arc<
-    dyn Fn(&mut World, AssetCache, PlatformSendStream, PlatformRecvStream) -> LocalBoxFuture<()>
+    dyn Fn(&mut World, AssetCache, PlatformSendStream, PlatformRecvStream) -> PlatformBoxFuture<()>
         + Sync
         + Send,
 >;
 type UniStreamHandler =
-    Arc<dyn Fn(&mut World, AssetCache, PlatformRecvStream) -> LocalBoxFuture<()> + Sync + Send>;
-type DatagramHandler =
-    Arc<dyn Fn(&mut World, AssetCache, Bytes) -> LocalBoxFuture<()> + Sync + Send>;
+    Arc<dyn Fn(&mut World, AssetCache, PlatformRecvStream) -> PlatformBoxFuture<()> + Sync + Send>;
+type DatagramHandler = Arc<dyn Fn(&mut World, AssetCache, Bytes) + Sync + Send>;
 
 pub type BiStreamHandlers = HashMap<u32, (&'static str, BiStreamHandler)>;
 pub type UniStreamHandlers = HashMap<u32, (&'static str, UniStreamHandler)>;

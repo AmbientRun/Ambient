@@ -132,6 +132,16 @@ impl RuntimeHandle {
         JoinHandle(self.0.spawn(future))
     }
 
+    #[inline]
+    #[cfg(target_os = "unknown")]
+    pub fn spawn_local<F, T>(&self, future: F) -> JoinHandle<T>
+    where
+        F: 'static + Future<Output = T>,
+        T: 'static,
+    {
+        JoinHandle(self.0.spawn(future))
+    }
+
     pub fn block_in_place<R, F>(&self, f: F) -> R
     where
         F: FnOnce() -> R,
@@ -152,8 +162,24 @@ impl RuntimeHandle {
 pub struct PlatformBoxFuture<T>(platform::task::PlatformBoxFutureImpl<T>);
 
 impl<T> PlatformBoxFuture<T> {
-    pub fn new(future: impl Future<Output = T>) -> Self {
-        Self(platform::task::PlatformBoxFutureImpl::new(future))
+    #[cfg(target_os = "unknown")]
+    pub fn new<F>(future: F) -> Self
+    where
+        F: 'static + Future<Output = T>,
+    {
+        Self(platform::task::PlatformBoxFutureImpl::from_boxed(Box::pin(
+            future,
+        )))
+    }
+
+    #[cfg(not(target_os = "unknown"))]
+    pub fn new<F>(future: F) -> Self
+    where
+        F: 'static + Future<Output = T> + Send,
+    {
+        Self(platform::task::PlatformBoxFutureImpl::from_boxed(Box::pin(
+            future,
+        )))
     }
 
     #[cfg(target_os = "unknown")]

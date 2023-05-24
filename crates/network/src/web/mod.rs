@@ -11,11 +11,13 @@ use anyhow::Context;
 use futures::{SinkExt, StreamExt};
 use glam::{uvec2, uvec4};
 use parking_lot::Mutex;
+use tokio::io::AsyncReadExt;
 use url::Url;
 
 use crate::{
     client::{ClientConnection, Control, GameClient, GameClientRenderTarget, LoadedFunc},
     client_game_state::ClientGameState,
+    log_network_result,
     proto::{
         client::{ClientState, SharedClientState},
         ClientRequest,
@@ -78,55 +80,60 @@ impl ElementComponent for GameClientView {
 
         // When the client is connected, run the update logic each frame
         if game_client.is_some() {
-            run_game_logic(hooks, &user_id, assets, game_state, render_target);
+            run_game_logic(hooks, &user_id, assets, game_state.clone(), render_target);
         }
 
         let ((control_tx, control_rx), _) = hooks.use_state_with(|_| flume::unbounded());
 
-        let task = async move {
-            let mut conn = Connection::connect(url.clone()).await.with_context(|| {
-                format!("Failed to establish a WebTransport  session to {url:?}")
-            })?;
+        hooks.use_local_task(|_| {
+            let task = async move {
+                let mut conn = Connection::connect(url.clone()).await.with_context(|| {
+                    format!("Failed to establish a WebTransport  session to {url:?}")
+                })?;
 
-            let conn = Arc::new(conn);
+                let conn = Arc::new(conn);
 
-            tracing::info!("Established WebTransport session");
+                tracing::info!("Established WebTransport session");
 
-            // Create a handle for the game client
-            let game_client = GameClient::new(
-                todo!(),
-                Arc::new(create_rpc_registry()),
-                game_state.clone(),
-                user_id.clone(),
-            );
+                // Create a handle for the game client
+                let game_client = GameClient::new(
+                    todo!(),
+                    Arc::new(create_rpc_registry()),
+                    game_state.clone(),
+                    user_id.clone(),
+                );
 
-            handle_connection(
-                game_client,
-                conn,
-                user_id,
-                cb(move |game_client| {
-                    let game_state = &game_client.game_state;
-                    {
-                        // Updates the game client context in the Ui tree
-                        set_game_client(Some(game_client.clone()));
-                        // Update the resources on the client side world to reflect the new connection
-                        // state
-                        let world = &mut game_state.lock().world;
-                        world.add_resource(crate::client::game_client(), Some(game_client.clone()));
-                    }
-                    (on_loaded)(game_client)
-                }),
-                game_state,
-                control_rx,
-            )
-            .await?;
+                handle_connection(
+                    game_client,
+                    conn,
+                    user_id,
+                    cb(move |game_client| {
+                        let game_state = &game_client.game_state;
+                        {
+                            // Updates the game client context in the Ui tree
+                            set_game_client(Some(game_client.clone()));
+                            // Update the resources on the client side world to reflect the new connection
+                            // state
+                            let world = &mut game_state.lock().world;
+                            world.add_resource(
+                                crate::client::game_client(),
+                                Some(game_client.clone()),
+                            );
+                        }
+                        (on_loaded)(game_client)
+                    }),
+                    game_state,
+                    control_rx,
+                )
+                .await?;
 
-            tracing::info!("Finished handling connection");
+                tracing::info!("Finished handling connection");
 
-            Ok(()) as anyhow::Result<()>
-        };
+                Ok(()) as anyhow::Result<()>
+            };
 
-        // hooks.use_task(move |_| {});
+            async move { log_network_result!(task.await) }
+        });
 
         todo!()
     }
