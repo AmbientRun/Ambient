@@ -24,7 +24,7 @@ pub fn screen_to_clip_space(screen_position: Vec2) -> Vec2 {
 
 /// Converts a screen position (e.g. mouse position) to a [Ray] in world space.
 pub fn screen_position_to_world_ray(camera: EntityId, screen_position: Vec2) -> Ray {
-    wit::client_camera::screen_position_to_world_rayray(
+    wit::client_camera::screen_position_to_world_ray(
         camera.into_bindgen(),
         screen_position.into_bindgen(),
     )
