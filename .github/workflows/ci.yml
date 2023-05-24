@@ -120,20 +120,8 @@ jobs:
           sudo apt-get update
           sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
 
-      - name: Cargo cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-            guest/rust/target/
-          key: ${{ runner.os }}-golden-image-${{ hashFiles('**/Cargo.toml') }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-golden-image-${{ hashFiles('**/Cargo.toml') }}-
-            ${{ runner.os }}-golden-image-
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
       - name: Build Ambient
         run: cargo build --release --workspace
       - name: Run golden image tests
