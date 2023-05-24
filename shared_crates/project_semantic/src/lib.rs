@@ -26,7 +26,7 @@ impl ItemMap {
         ItemId(ulid, PhantomData)
     }
 
-    pub fn get<T: Item>(&self, id: ItemId<T>) -> Option<&T> {
+    pub fn get_without_resolve<T: Item>(&self, id: ItemId<T>) -> Option<&T> {
         T::from_item_value(self.items.get(&id.0)?)
     }
 
@@ -36,6 +36,16 @@ impl ItemMap {
 
     pub fn insert<T: Item>(&mut self, id: ItemId<T>, item: T) {
         self.items.insert(id.0, item.into_item_value());
+    }
+
+    pub fn resolve<T: Item>(&mut self, id: ItemId<T>, context: &Context) -> &mut T {
+        let item = self
+            .get_without_resolve(id)
+            .cloned()
+            .unwrap()
+            .resolve(self, context);
+        self.insert(id, item);
+        self.get_mut(id).unwrap()
     }
 
     pub fn get_vec_id(&mut self, id: ItemId<Type>) -> ItemId<Type> {
@@ -361,8 +371,7 @@ impl Scope {
             context: &Context,
         ) {
             for id in item_ids.values().copied() {
-                let item = items.get(id).cloned().unwrap().resolve(items, context);
-                items.insert(id, item);
+                items.resolve(id, context);
             }
         }
 
@@ -509,7 +518,7 @@ pub enum ResolvedValue {
 }
 impl ResolvedValue {
     fn from_toml_value(value: &toml::Value, items: &ItemMap, id: ItemId<Type>) -> Self {
-        match items.get(id).unwrap() {
+        match items.get_without_resolve(id).unwrap() {
             Type::Enum(e) => {
                 let variant = value.as_str().unwrap();
                 let variant = e
@@ -674,20 +683,21 @@ impl Item for Concept {
                 ResolvableItemId::Unresolved(path) => {
                     context.get_component_id(path.as_path()).unwrap_or_else(|| {
                         panic!(
-                            "Failed to resolve component `{}` for concept `{}",
+                            "Failed to get component `{}` for concept `{}",
                             path, self.id
                         )
                     })
                 }
                 ResolvableItemId::Resolved(id) => *id,
             };
-            let component = items.get(component_id).unwrap();
+            let component_type = items
+                .resolve(component_id, context)
+                .type_
+                .as_resolved()
+                .unwrap();
 
             let mut value = resolvable_value.clone();
-            // Commented out because component resolution is not guaranteed to have happened.
-            // Need to change how resolution works to make this work.
-            // value.resolve(items, component.type_.as_resolved().unwrap());
-
+            value.resolve(items, component_type);
             components.insert(ResolvableItemId::Resolved(component_id), value);
         }
         new.components = components;
@@ -881,11 +891,11 @@ impl Type {
         match self {
             Type::Primitive(pt) => pt.to_string(),
             Type::Vec(id) => {
-                let inner = semantic.items.get(*id).unwrap();
+                let inner = semantic.items.get_without_resolve(*id).unwrap();
                 format!("Vec<{}>", inner.to_string(semantic))
             }
             Type::Option(id) => {
-                let inner = semantic.items.get(*id).unwrap();
+                let inner = semantic.items.get_without_resolve(*id).unwrap();
                 format!("Option<{}>", inner.to_string(semantic))
             }
             Type::Enum(e) => e.id.to_string(),
