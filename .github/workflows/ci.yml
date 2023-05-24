@@ -122,6 +122,10 @@ jobs:
 
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            .
+            guest/rust
       - name: Build Ambient
         run: cargo build --release
       - name: Run golden image tests
