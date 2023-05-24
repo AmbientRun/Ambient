@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap, net::SocketAddr, path::PathBuf, process::exit, sync::Arc, time::Duration,
+    collections::HashMap, path::PathBuf, process::exit, sync::Arc, time::Duration,
 };
 
 use ambient_app::{fps_stats, window_title, AppBuilder};
@@ -17,7 +17,7 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::{
     client::{client_network_stats, GameClient, GameClientRenderTarget, GameClientWorld},
     hooks::use_remote_resource,
-    native::client::GameClientView,
+    native::client::{GameClientView, ResolvedAddr},
 };
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_ui_native::{
@@ -36,7 +36,7 @@ mod wasm;
 /// Construct an app and enter the main client view
 pub async fn run(
     assets: AssetCache,
-    server_addr: SocketAddr,
+    server_addr: ResolvedAddr,
     run: &RunCli,
     golden_image_output_dir: Option<PathBuf>,
 ) {
@@ -120,7 +120,7 @@ fn TitleUpdater(hooks: &mut Hooks) -> Element {
 #[element_component]
 fn MainApp(
     hooks: &mut Hooks,
-    server_addr: SocketAddr,
+    server_addr: ResolvedAddr,
     golden_image_output_dir: Option<PathBuf>,
     user_id: String,
     show_debug: bool,

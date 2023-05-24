@@ -25,6 +25,7 @@ use parking_lot::Mutex;
 use quinn::{ClientConfig, Connection, Endpoint, TransportConfig};
 use rand::Rng;
 use rustls::Certificate;
+use tokio::net::ToSocketAddrs;
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::Arc,
@@ -32,8 +33,37 @@ use std::{
 };
 
 #[derive(Debug, Clone)]
+pub struct ResolvedAddr {
+    pub host_name: String,
+    pub addr: SocketAddr,
+}
+
+impl ResolvedAddr {
+    pub async fn lookup_host<T: ToSocketAddrs + ToString + Clone>(host: T) -> anyhow::Result<Self> {
+        let addr = tokio::net::lookup_host(host.clone())
+            .await?
+            .find(SocketAddr::is_ipv4)
+            .ok_or_else(|| anyhow::anyhow!("No IPv4 addresses found for: {}", host.to_string()))?;
+        let host = host.to_string();
+        let host_name = if host.contains(':') {
+            host.split(':').next().unwrap().to_string()
+        }else {
+            host
+        };
+        Ok(Self { host_name, addr })
+    }
+
+    pub fn localhost_with_port(port: u16) -> Self {
+        Self {
+            host_name: "localhost".into(),
+            addr: ([127, 0, 0, 1], port).into(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct GameClientView {
-    pub server_addr: SocketAddr,
+    pub server_addr: ResolvedAddr,
     pub cert: Option<Vec<u8>>,
     pub user_id: String,
     pub systems_and_resources: Cb<dyn Fn() -> (SystemGroup, Entity) + Sync + Send>,
@@ -128,7 +158,7 @@ impl ElementComponent for GameClientView {
 
         hooks.use_task(move |_| {
             let task = async move {
-                let conn = open_connection(server_addr, cert.map(Certificate))
+                let conn = open_connection(server_addr.clone(), cert.map(Certificate))
                     .await
                     .with_context(|| format!("Failed to connect to endpoint: {server_addr:?}"))?;
 
@@ -332,7 +362,7 @@ async fn handle_connection(
 /// Connnect to the server endpoint.
 #[tracing::instrument(level = "debug")]
 async fn open_connection(
-    server_addr: SocketAddr,
+    server_addr: ResolvedAddr,
     cert: Option<Certificate>,
 ) -> anyhow::Result<Connection> {
     log::debug!("Connecting to world instance: {server_addr:?}");
@@ -341,7 +371,7 @@ async fn open_connection(
         create_client_endpoint_random_port(cert).context("Failed to create client endpoint")?;
 
     log::debug!("Got endpoint");
-    let conn = endpoint.connect(server_addr, "localhost")?.await?;
+    let conn = endpoint.connect(server_addr.addr, &server_addr.host_name)?.await?;
 
     log::debug!("Got connection");
     Ok(conn)

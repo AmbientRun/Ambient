@@ -1124,9 +1124,9 @@ dependencies = [
 
 [[package]]
 name = "ambient_proxy"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6f701d66054909fc249f412eb6866483a6566a219267caaf8a56f36bffdcfb8"
+checksum = "aa07343b5d4344542ecf45aa2b3b52526de3a5ba521df7126fc89fa8f08f4a1c"
 dependencies = [
  "anyhow",
  "bincode",
@@ -1138,6 +1138,7 @@ dependencies = [
  "quinn",
  "reqwest",
  "rustls 0.20.8",
+ "rustls-pemfile",
  "serde",
  "thiserror",
  "tokio",

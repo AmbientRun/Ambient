@@ -470,7 +470,7 @@ fn create_server(server_addr: SocketAddr, crypto: &Crypto) -> anyhow::Result<End
         roots.add(&cert).unwrap();
     }
 
-    let crypto = rustls::ClientConfig::builder()
+    let mut crypto = rustls::ClientConfig::builder()
         .with_safe_defaults()
         .with_root_certificates(roots)
         .with_no_client_auth();
