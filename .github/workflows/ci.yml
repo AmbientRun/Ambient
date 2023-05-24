@@ -123,7 +123,7 @@ jobs:
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
       - name: Build Ambient
-        run: cargo build --release --workspace
+        run: cargo build --release
       - name: Run golden image tests
         run: cargo cf golden-images check
       - uses: actions/upload-artifact@v3
