@@ -1,4 +1,6 @@
-use ambient_ecs::{components, query, query_mut, Component, ECSError, Entity, EntityId, SystemGroup, World};
+use ambient_ecs::{
+    components, query, query_mut, Component, ECSError, Entity, EntityId, SystemGroup, World,
+};
 use ambient_std::{
     math::Line,
     shapes::{BoundingBox, Plane, Ray, AABB},
@@ -8,9 +10,10 @@ use itertools::Itertools;
 use ordered_float::OrderedFloat;
 
 pub use ambient_ecs::generated::components::core::camera::{
-    active_camera, aspect_ratio, aspect_ratio_from_window, far, fog, fovy, near, orthographic, orthographic_bottom,
-    orthographic_from_window, orthographic_left, orthographic_right, orthographic_top, perspective, perspective_infinite_reverse,
-    projection, projection_view, shadows_far,
+    active_camera, aspect_ratio, aspect_ratio_from_window, far, fog, fovy, near, orthographic,
+    orthographic_bottom, orthographic_from_window, orthographic_left, orthographic_right,
+    orthographic_top, perspective, perspective_infinite_reverse, projection, projection_view,
+    shadows_far,
 };
 
 use crate::{
@@ -37,7 +40,9 @@ pub fn camera_systems() -> SystemGroup {
         vec![
             query((aspect_ratio_from_window(), aspect_ratio())).to_system(|q, world, qs, _| {
                 for (id, (window, old_ratio)) in q.collect_cloned(world, qs) {
-                    let window_size = world.get(window, window_physical_size()).unwrap_or_default();
+                    let window_size = world
+                        .get(window, window_physical_size())
+                        .unwrap_or_default();
                     if window_size.x == 0 || window_size.y == 0 {
                         continue;
                     }
@@ -48,20 +53,38 @@ pub fn camera_systems() -> SystemGroup {
                     }
                 }
             }),
-            query((near(), fovy(), aspect_ratio())).incl(projection()).incl(perspective_infinite_reverse()).to_system(|q, world, qs, _| {
-                for (id, (near, fovy, aspect_ratio)) in q.collect_cloned(world, qs) {
-                    let proj = glam::Mat4::perspective_infinite_reverse_lh(fovy, aspect_ratio, near);
-                    world.set_if_changed(id, projection(), proj).unwrap();
-                    if proj.is_nan() {
-                        tracing::error!(near, fovy, aspect_ratio, "Perspective projection is NaN");
+            query((near(), fovy(), aspect_ratio()))
+                .incl(projection())
+                .incl(perspective_infinite_reverse())
+                .to_system(|q, world, qs, _| {
+                    for (id, (near, fovy, aspect_ratio)) in q.collect_cloned(world, qs) {
+                        let proj =
+                            glam::Mat4::perspective_infinite_reverse_lh(fovy, aspect_ratio, near);
+                        world.set_if_changed(id, projection(), proj).unwrap();
+                        if proj.is_nan() {
+                            tracing::error!(
+                                near,
+                                fovy,
+                                aspect_ratio,
+                                "Perspective projection is NaN"
+                            );
+                        }
                     }
-                }
-            }),
-            query((near(), far(), fovy(), aspect_ratio())).incl(projection()).incl(perspective()).to_system(|q, world, qs, _| {
-                for (id, (near, far, fovy, aspect_ratio)) in q.collect_cloned(world, qs) {
-                    world.set_if_changed(id, projection(), perspective_reverse(fovy, aspect_ratio, near, far)).unwrap();
-                }
-            }),
+                }),
+            query((near(), far(), fovy(), aspect_ratio()))
+                .incl(projection())
+                .incl(perspective())
+                .to_system(|q, world, qs, _| {
+                    for (id, (near, far, fovy, aspect_ratio)) in q.collect_cloned(world, qs) {
+                        world
+                            .set_if_changed(
+                                id,
+                                projection(),
+                                perspective_reverse(fovy, aspect_ratio, near, far),
+                            )
+                            .unwrap();
+                    }
+                }),
             query(orthographic_from_window())
                 .incl(orthographic_left())
                 .incl(orthographic_right())
@@ -70,17 +93,34 @@ pub fn camera_systems() -> SystemGroup {
                 .incl(local_to_world())
                 .to_system(|q, world, qs, _| {
                     for (id, window) in q.collect_cloned(world, qs) {
-                        let window_size = world.get(window, window_logical_size()).unwrap_or_default().as_vec2();
+                        let window_size = world
+                            .get(window, window_logical_size())
+                            .unwrap_or_default()
+                            .as_vec2();
 
                         if window_size.x <= 0.0 || window_size.y <= 0.0 {
                             continue;
                         }
 
-                        world.set_if_changed(id, local_to_world(), Mat4::from_translation((window_size / 2.).extend(0.))).unwrap();
-                        world.set_if_changed(id, orthographic_left(), -window_size.x / 2.).unwrap();
-                        world.set_if_changed(id, orthographic_right(), window_size.x / 2.).unwrap();
-                        world.set_if_changed(id, orthographic_top(), -window_size.y / 2.).unwrap();
-                        world.set_if_changed(id, orthographic_bottom(), window_size.y / 2.).unwrap();
+                        world
+                            .set_if_changed(
+                                id,
+                                local_to_world(),
+                                Mat4::from_translation((window_size / 2.).extend(0.)),
+                            )
+                            .unwrap();
+                        world
+                            .set_if_changed(id, orthographic_left(), -window_size.x / 2.)
+                            .unwrap();
+                        world
+                            .set_if_changed(id, orthographic_right(), window_size.x / 2.)
+                            .unwrap();
+                        world
+                            .set_if_changed(id, orthographic_top(), -window_size.y / 2.)
+                            .unwrap();
+                        world
+                            .set_if_changed(id, orthographic_bottom(), window_size.y / 2.)
+                            .unwrap();
                     }
                 }),
             query((
@@ -92,26 +132,49 @@ pub fn camera_systems() -> SystemGroup {
             .incl(orthographic())
             .to_system(|q, world, qs, _| {
                 for (id, (left, right, top, bottom)) in q.collect_cloned(world, qs) {
-                    world.add_component(id, orthographic_rect(), OrthographicRect { left, right, top, bottom }).unwrap();
+                    world
+                        .add_component(
+                            id,
+                            orthographic_rect(),
+                            OrthographicRect {
+                                left,
+                                right,
+                                top,
+                                bottom,
+                            },
+                        )
+                        .unwrap();
                 }
             }),
-            query_mut((projection(),), (near(), far(), orthographic_rect())).to_system(|q, world, qs, _| {
-                for (_, (projection,), (&near, &far, orth)) in q.iter(world, qs) {
-                    *projection = orthographic_reverse(orth.left, orth.right, orth.bottom, orth.top, near, far);
-                }
-            }),
-            query_mut((projection_view(),), (projection().changed(), inv_local_to_world().changed())).to_system_with_name(
-                "update_projection_view",
+            query_mut((projection(),), (near(), far(), orthographic_rect())).to_system(
                 |q, world, qs, _| {
-                    for (id, (projection_view,), (projection, view)) in q.iter(world, qs) {
-                        *projection_view = *projection * *view;
-
-                        if projection_view.is_nan() {
-                            tracing::error!("Projection view for {id} is nan.\nproj: {projection},\nview: {view:}")
-                        }
+                    for (_, (projection,), (&near, &far, orth)) in q.iter(world, qs) {
+                        *projection = orthographic_reverse(
+                            orth.left,
+                            orth.right,
+                            orth.bottom,
+                            orth.top,
+                            near,
+                            far,
+                        );
                     }
                 },
             ),
+            query_mut(
+                (projection_view(),),
+                (projection().changed(), inv_local_to_world().changed()),
+            )
+            .to_system_with_name("update_projection_view", |q, world, qs, _| {
+                for (id, (projection_view,), (projection, view)) in q.iter(world, qs) {
+                    *projection_view = *projection * *view;
+
+                    if projection_view.is_nan() {
+                        tracing::error!(
+                            "Projection view for {id} is nan.\nproj: {projection},\nview: {view:}"
+                        )
+                    }
+                }
+            }),
         ],
     )
 }
@@ -122,12 +185,23 @@ pub fn perspective_reverse(fov_y_radians: f32, aspect_ratio: f32, z_near: f32, z
     Mat4::perspective_lh(fov_y_radians, aspect_ratio, z_far, z_near)
 }
 /// Ambient uses a left handed reverse-z NDC. This function will produce a correct orthographic matrix for that
-pub fn orthographic_reverse(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Mat4 {
+pub fn orthographic_reverse(
+    left: f32,
+    right: f32,
+    bottom: f32,
+    top: f32,
+    near: f32,
+    far: f32,
+) -> Mat4 {
     // far and near and swapped on purpose
     Mat4::orthographic_lh(left, right, bottom, top, far, near)
 }
 
-pub fn clip_space_ray(world: &World, camera: EntityId, mouse_origin: Vec2) -> Result<Ray, ECSError> {
+pub fn clip_position_to_world_ray(
+    world: &World,
+    camera: EntityId,
+    mouse_origin: Vec2,
+) -> Result<Ray, ECSError> {
     let camera_projection = world.get(camera, projection())?;
     let camera_view = world.get(camera, inv_local_to_world())?;
     let camera_pv = (camera_projection * camera_view).inverse();
@@ -137,14 +211,22 @@ pub fn clip_space_ray(world: &World, camera: EntityId, mouse_origin: Vec2) -> Re
     Ok(Ray::new(camera_mouse_origin, camera_mouse_dir))
 }
 
-pub fn world_to_clip_space(world: &World, camera: EntityId, world_position: Vec3) -> Result<Vec2, ECSError> {
+pub fn world_to_clip_space(
+    world: &World,
+    camera: EntityId,
+    world_position: Vec3,
+) -> Result<Vec2, ECSError> {
     let camera_projection = world.get(camera, projection())?;
     let camera_view = world.get(camera, inv_local_to_world())?;
     let camera_pv = camera_projection * camera_view;
     Ok(camera_pv.project_point3(world_position).xy())
 }
 
-pub fn get_active_camera(world: &World, scene: Component<()>, user_id: Option<&String>) -> Option<EntityId> {
+pub fn get_active_camera(
+    world: &World,
+    scene: Component<()>,
+    user_id: Option<&String>,
+) -> Option<EntityId> {
     query((scene, active_camera()))
         .iter(world, None)
         .filter(|(id, _)| {
@@ -166,15 +248,32 @@ pub fn get_active_camera(world: &World, scene: Component<()>, user_id: Option<&S
 
 #[derive(Clone, Debug)]
 pub enum Projection {
-    Orthographic { rect: OrthographicRect, near: f32, far: f32 },
-    PerspectiveInfiniteReverse { fovy: f32, aspect_ratio: f32, near: f32 },
-    Perspective { fovy: f32, aspect_ratio: f32, near: f32, far: f32 },
+    Orthographic {
+        rect: OrthographicRect,
+        near: f32,
+        far: f32,
+    },
+    PerspectiveInfiniteReverse {
+        fovy: f32,
+        aspect_ratio: f32,
+        near: f32,
+    },
+    Perspective {
+        fovy: f32,
+        aspect_ratio: f32,
+        near: f32,
+        far: f32,
+    },
     Identity,
 }
 impl Projection {
     pub fn from_world(world: &World, entity: EntityId) -> Self {
         if let Ok(rect) = world.get(entity, orthographic_rect()) {
-            Self::Orthographic { rect, near: world.get(entity, near()).unwrap_or(-1.), far: world.get(entity, far()).unwrap_or(1.) }
+            Self::Orthographic {
+                rect,
+                near: world.get(entity, near()).unwrap_or(-1.),
+                far: world.get(entity, far()).unwrap_or(1.),
+            }
         } else {
             let window_size = world.resource(window_physical_size());
             let aspect_ratio = window_size.x as f32 / window_size.y as f32;
@@ -203,13 +302,32 @@ impl Projection {
     }
     pub fn set_far(&mut self, new_far: f32) {
         *self = match self.clone() {
-            Projection::Orthographic { rect, near, far: _ } => Projection::Orthographic { rect, near, far: new_far },
-            Projection::PerspectiveInfiniteReverse { fovy, aspect_ratio, near } => {
-                Projection::Perspective { fovy, aspect_ratio, near, far: new_far }
-            }
-            Projection::Perspective { fovy, aspect_ratio, near, far: _ } => {
-                Projection::Perspective { fovy, aspect_ratio, near, far: new_far }
-            }
+            Projection::Orthographic { rect, near, far: _ } => Projection::Orthographic {
+                rect,
+                near,
+                far: new_far,
+            },
+            Projection::PerspectiveInfiniteReverse {
+                fovy,
+                aspect_ratio,
+                near,
+            } => Projection::Perspective {
+                fovy,
+                aspect_ratio,
+                near,
+                far: new_far,
+            },
+            Projection::Perspective {
+                fovy,
+                aspect_ratio,
+                near,
+                far: _,
+            } => Projection::Perspective {
+                fovy,
+                aspect_ratio,
+                near,
+                far: new_far,
+            },
             Projection::Identity => panic!("Identity projection is not supported"),
         }
     }
@@ -234,7 +352,9 @@ impl Projection {
     }
     pub fn orthographic_size(&self) -> Option<Vec3> {
         match self {
-            Projection::Orthographic { rect, near, far } => Some(vec3(rect.right - rect.left, rect.top - rect.bottom, far - near).abs()),
+            Projection::Orthographic { rect, near, far } => {
+                Some(vec3(rect.right - rect.left, rect.top - rect.bottom, far - near).abs())
+            }
             Projection::PerspectiveInfiniteReverse { .. } => None,
             Projection::Perspective { .. } => None,
             Projection::Identity => None,
@@ -242,25 +362,44 @@ impl Projection {
     }
     pub fn matrix(&self) -> Mat4 {
         match self {
-            Projection::Orthographic { rect, near, far } => orthographic_reverse(rect.left, rect.right, rect.bottom, rect.top, *near, *far),
-            Projection::PerspectiveInfiniteReverse { fovy, aspect_ratio, near } => {
-                Mat4::perspective_infinite_reverse_lh(*fovy, *aspect_ratio, *near)
+            Projection::Orthographic { rect, near, far } => {
+                orthographic_reverse(rect.left, rect.right, rect.bottom, rect.top, *near, *far)
             }
-            Projection::Perspective { fovy, aspect_ratio, near, far } => perspective_reverse(*fovy, *aspect_ratio, *near, *far),
+            Projection::PerspectiveInfiniteReverse {
+                fovy,
+                aspect_ratio,
+                near,
+            } => Mat4::perspective_infinite_reverse_lh(*fovy, *aspect_ratio, *near),
+            Projection::Perspective {
+                fovy,
+                aspect_ratio,
+                near,
+                far,
+            } => perspective_reverse(*fovy, *aspect_ratio, *near, *far),
             Projection::Identity => Mat4::IDENTITY,
         }
     }
     pub fn to_entity_data(&self) -> Entity {
         match self.clone() {
-            Projection::Orthographic { rect, near, far } => {
-                Entity::new().with(orthographic_rect(), rect).with(self::near(), near).with(self::far(), far)
-            }
-            Projection::PerspectiveInfiniteReverse { fovy, aspect_ratio, near } => Entity::new()
+            Projection::Orthographic { rect, near, far } => Entity::new()
+                .with(orthographic_rect(), rect)
+                .with(self::near(), near)
+                .with(self::far(), far),
+            Projection::PerspectiveInfiniteReverse {
+                fovy,
+                aspect_ratio,
+                near,
+            } => Entity::new()
                 .with(perspective_infinite_reverse(), ())
                 .with(self::near(), near)
                 .with(self::fovy(), fovy)
                 .with(self::aspect_ratio(), aspect_ratio),
-            Projection::Perspective { fovy, aspect_ratio, near, far } => Entity::new()
+            Projection::Perspective {
+                fovy,
+                aspect_ratio,
+                near,
+                far,
+            } => Entity::new()
                 .with(perspective(), ())
                 .with(self::near(), near)
                 .with(self::far(), far)
@@ -282,8 +421,10 @@ impl Projection {
         // assert!((right_top_back.y.abs() - right_bottom_back.y.abs()).abs() < 0.001);
 
         CameraViewSpaceFrustum {
-            right: Plane::from_points(right_top_front, right_bottom_back, right_top_back).unwrap_or_else(Plane::zero),
-            top: Plane::from_points(left_top_front, right_top_front, right_top_back).unwrap_or_else(Plane::zero),
+            right: Plane::from_points(right_top_front, right_bottom_back, right_top_back)
+                .unwrap_or_else(Plane::zero),
+            top: Plane::from_points(left_top_front, right_top_front, right_top_back)
+                .unwrap_or_else(Plane::zero),
         }
     }
 }
@@ -302,7 +443,11 @@ impl Camera {
             shadows_far: world.get(entity, shadows_far()).unwrap_or(2_000.0),
         })
     }
-    pub fn get_active(world: &World, scene: Component<()>, user_id: Option<&String>) -> Option<Self> {
+    pub fn get_active(
+        world: &World,
+        scene: Component<()>,
+        user_id: Option<&String>,
+    ) -> Option<Self> {
         if let Some(cam) = get_active_camera(world, scene, user_id) {
             Self::from_world(world, cam)
         } else {
@@ -323,18 +468,25 @@ impl Camera {
             proj_view_inv.project_point3(vec3(s, s, s)),
         ]
     }
-    pub fn world_space_frustum_points_for_shadow_cascade(&self, cascade_index: u32, n_cascades: u32) -> Vec<Vec3> {
+    pub fn world_space_frustum_points_for_shadow_cascade(
+        &self,
+        cascade_index: u32,
+        n_cascades: u32,
+    ) -> Vec<Vec3> {
         // From: http://developer.download.nvidia.com/SDK/10.5/opengl/src/cascaded_shadow_maps/doc/cascaded_shadow_maps.pdf
         fn split_z(linear_factor: f32, near: f32, far: f32, i: u32, n: u32) -> f32 {
             let p = (i as f32) / (n as f32);
-            (1. - linear_factor) * near * (far / near).powf(p) + linear_factor * (near + p * (far - near))
+            (1. - linear_factor) * near * (far / near).powf(p)
+                + linear_factor * (near + p * (far - near))
         }
 
         let near = 1.;
         let linear_factor = 0.0;
         let main_projection = self.projection.matrix();
         let main_projection_view_inv = self.projection_view().inverse();
-        let far = self.projection.far().expect("Shadow camera can't be infinite. Use set_far(shadow_far) to get a shadow camera");
+        let far = self.projection.far().expect(
+            "Shadow camera can't be infinite. Use set_far(shadow_far) to get a shadow camera",
+        );
         let p0 = split_z(linear_factor, near, far, cascade_index, n_cascades);
         let p1 = split_z(linear_factor, near, far, cascade_index + 1, n_cascades);
         let z0 = main_projection.project_point3(vec3(0., 0., p0)).z;
@@ -349,7 +501,10 @@ impl Camera {
             Vec3::new(1.0, -1.0, z1),
             Vec3::new(1.0, 1.0, z1),
         ];
-        frustum.iter().map(|x| main_projection_view_inv.project_point3(*x)).collect()
+        frustum
+            .iter()
+            .map(|x| main_projection_view_inv.project_point3(*x))
+            .collect()
     }
     pub fn world_space_frustum_lines(&self) -> Vec<Line> {
         let points = self.world_space_frustum_points();
@@ -393,16 +548,27 @@ impl Camera {
         shadow_map_resolution: u32,
     ) -> Self {
         let main_camera = self.to_shadows_far_bound();
-        let frustum_world = main_camera.world_space_frustum_points_for_shadow_cascade(cascade_index, n_cascades);
-        let frustum_perspective = frustum_world.iter().map(|x| main_camera.view.project_point3(*x)).collect_vec();
+        let frustum_world =
+            main_camera.world_space_frustum_points_for_shadow_cascade(cascade_index, n_cascades);
+        let frustum_perspective = frustum_world
+            .iter()
+            .map(|x| main_camera.view.project_point3(*x))
+            .collect_vec();
         let frustum_size = AABB::from_points(&frustum_perspective);
         let mut shadow_view = if light_direction != Vec3::Z {
             Mat4::look_at_lh(light_direction, Vec3::ZERO, Vec3::Z)
         } else {
-            Mat4::look_at_lh(light_direction, Vec3::ZERO, (Vec3::Z + Vec3::X * 0.001).normalize())
+            Mat4::look_at_lh(
+                light_direction,
+                Vec3::ZERO,
+                (Vec3::Z + Vec3::X * 0.001).normalize(),
+            )
         };
         assert!(!shadow_view.is_nan());
-        let frustum_shadow = frustum_world.iter().map(|x| shadow_view.project_point3(*x)).collect_vec();
+        let frustum_shadow = frustum_world
+            .iter()
+            .map(|x| shadow_view.project_point3(*x))
+            .collect_vec();
 
         // find min and max in shadow space
         let frustum_shadow_aabb = AABB::from_points(&frustum_shadow);
@@ -428,14 +594,25 @@ impl Camera {
         Self {
             view: shadow_view,
             projection: Projection::Orthographic {
-                rect: OrthographicRect { left: left.x, right: right.x, bottom: left.y, top: right.y },
+                rect: OrthographicRect {
+                    left: left.x,
+                    right: right.x,
+                    bottom: left.y,
+                    top: right.y,
+                },
                 near,
                 far,
             },
             shadows_far: far,
         }
     }
-    pub fn fitted_ortographic(eye: Vec3, lookat: Vec3, up: Vec3, fit: BoundingBox, aspect: f32) -> Self {
+    pub fn fitted_ortographic(
+        eye: Vec3,
+        lookat: Vec3,
+        up: Vec3,
+        fit: BoundingBox,
+        aspect: f32,
+    ) -> Self {
         let view = Mat4::look_at_lh(eye, lookat, up);
         let bounding = fit.transform(&view).to_aabb();
         let size = bounding.size();
@@ -455,7 +632,15 @@ impl Camera {
                 bottom: bounding.center().y - size.x * (1. / aspect) * 0.5,
             }
         };
-        Self { projection: Projection::Orthographic { rect: ortho, near: bounding.min.z, far: bounding.max.z }, view, shadows_far: 100. }
+        Self {
+            projection: Projection::Orthographic {
+                rect: ortho,
+                near: bounding.min.z,
+                far: bounding.max.z,
+            },
+            view,
+            shadows_far: 100.,
+        }
     }
     pub fn to_entity_data(&self) -> Entity {
         self.projection
@@ -469,7 +654,16 @@ impl Camera {
 impl Default for Camera {
     fn default() -> Self {
         let view = Mat4::from_translation(-Vec3::X * 10.);
-        Self { projection: Projection::Perspective { near: 0.1, far: 100., fovy: 1., aspect_ratio: 1. }, view, shadows_far: 100. }
+        Self {
+            projection: Projection::Perspective {
+                near: 0.1,
+                far: 100.,
+                fovy: 1.,
+                aspect_ratio: 1.,
+            },
+            view,
+            shadows_far: 100.,
+        }
     }
 }
 
@@ -489,13 +683,29 @@ pub fn shadow_cameras_from_world(
 ) -> Vec<Camera> {
     let camera = Camera::get_active(world, scene, user_id).unwrap();
     (0..shadow_cascades)
-        .map(|cascade| camera.create_snapping_shadow_camera(light_direction, cascade, shadow_cascades, shadow_map_resolution))
+        .map(|cascade| {
+            camera.create_snapping_shadow_camera(
+                light_direction,
+                cascade,
+                shadow_cascades,
+                shadow_map_resolution,
+            )
+        })
         .collect()
 }
 
 #[test]
 fn test_frustum() {
-    let projection = Projection::Orthographic { rect: OrthographicRect { left: -5., right: 5., bottom: -5., top: 5. }, near: -5., far: 5. };
+    let projection = Projection::Orthographic {
+        rect: OrthographicRect {
+            left: -5.,
+            right: 5.,
+            bottom: -5.,
+            top: 5.,
+        },
+        near: -5.,
+        far: 5.,
+    };
     let frustum = projection.view_space_frustum();
     assert_eq!(frustum.right.distance(Vec3::X * 6.), 1.);
     assert_eq!(frustum.top.distance(Vec3::Y * 6.), 1.);
@@ -503,10 +713,16 @@ fn test_frustum() {
 
 #[test]
 fn test_frustum_reverse_z() {
-    let projection = Projection::PerspectiveInfiniteReverse { fovy: 1., aspect_ratio: 1., near: 1. };
+    let projection = Projection::PerspectiveInfiniteReverse {
+        fovy: 1.,
+        aspect_ratio: 1.,
+        near: 1.,
+    };
 
     for z in [1., 10., 100.] {
-        let near = projection.matrix().project_point3(Vec3::Z * z + vec3(1., 1., 0.));
+        let near = projection
+            .matrix()
+            .project_point3(Vec3::Z * z + vec3(1., 1., 0.));
         eprintln!("point {z} = {near}");
     }
 

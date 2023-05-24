@@ -20,7 +20,7 @@ pub fn main() {
 
     ambient_api::messages::Frame::subscribe(move |_| {
         let input = input::get();
-        let ray = camera::screen_to_world_direction(camera, input.mouse_position);
+        let ray = camera::screen_position_to_world_ray(camera, input.mouse_position);
 
         // Send screen ray to server
         messages::Input {
