@@ -212,28 +212,36 @@ impl Scope {
         scope
     }
 
-    pub(crate) fn resolve<'a>(&'a self, items: &mut ItemMap, mut context: Context<'a>) {
+    pub(crate) fn resolve<'a>(
+        &'a self,
+        items: &mut ItemMap,
+        mut context: Context<'a>,
+    ) -> anyhow::Result<()> {
         fn resolve<T: Item, U>(
             item_ids: &IndexMap<U, ItemId<T>>,
             items: &mut ItemMap,
             context: &Context,
-        ) {
+        ) -> anyhow::Result<()> {
             for id in item_ids.values().copied() {
-                items.resolve(id, context);
+                items.resolve(id, context)?;
             }
+
+            Ok(())
         }
 
         context.push(self);
 
-        resolve(&self.components, items, &context);
-        resolve(&self.concepts, items, &context);
-        resolve(&self.messages, items, &context);
-        resolve(&self.types, items, &context);
-        resolve(&self.attributes, items, &context);
+        resolve(&self.components, items, &context)?;
+        resolve(&self.concepts, items, &context)?;
+        resolve(&self.messages, items, &context)?;
+        resolve(&self.types, items, &context)?;
+        resolve(&self.attributes, items, &context)?;
 
         for scope in self.scopes.values() {
-            scope.resolve(items, context.clone());
+            scope.resolve(items, context.clone())?;
         }
+
+        Ok(())
     }
 
     fn get_type_id(&self, path: ItemPath) -> Option<ItemId<Type>> {

@@ -15,12 +15,12 @@ pub fn main() -> anyhow::Result<()> {
         }
     }
 
-    let mut semantic = Semantic::new();
+    let mut semantic = Semantic::new()?;
     semantic.add_file("ambient.toml", &DiskFileProvider)?;
 
     let mut printer = Printer { indent: 0 };
     semantic.resolve()?;
-    printer.print(&semantic);
+    printer.print(&semantic)?;
 
     Ok(())
 }
@@ -29,49 +29,56 @@ struct Printer {
     indent: usize,
 }
 impl Printer {
-    fn print(&mut self, semantic: &Semantic) {
+    fn print(&mut self, semantic: &Semantic) -> anyhow::Result<()> {
         for scope in semantic.scopes.values() {
-            self.print_scope(semantic, scope);
+            self.print_scope(semantic, scope)?;
         }
+        Ok(())
     }
 
-    fn print_scope(&mut self, semantic: &Semantic, scope: &Scope) {
+    fn print_scope(&mut self, semantic: &Semantic, scope: &Scope) -> anyhow::Result<()> {
         self.print_indent();
         println!("{}: ", scope.id);
         for scope in scope.scopes.values() {
-            self.with_indent(|p| p.print_scope(semantic, scope));
+            self.with_indent(|p| p.print_scope(semantic, scope))?;
         }
 
         for id in scope.components.values() {
             self.with_indent(|p| {
-                p.print_component(semantic, semantic.items.get_without_resolve(*id))
-            });
+                p.print_component(semantic, semantic.items.get_without_resolve(*id)?)
+            })?;
         }
 
         for id in scope.concepts.values() {
             self.with_indent(|p| {
-                p.print_concept(semantic, semantic.items.get_without_resolve(*id))
-            });
+                p.print_concept(semantic, semantic.items.get_without_resolve(*id)?)
+            })?;
         }
 
         for id in scope.messages.values() {
             self.with_indent(|p| {
-                p.print_message(semantic, semantic.items.get_without_resolve(*id))
-            });
+                p.print_message(semantic, semantic.items.get_without_resolve(*id)?)
+            })?;
         }
 
         for id in scope.types.values() {
-            self.with_indent(|p| p.print_type(semantic, semantic.items.get_without_resolve(*id)));
+            self.with_indent(|p| p.print_type(semantic, semantic.items.get_without_resolve(*id)?))?;
         }
 
         for id in scope.attributes.values() {
             self.with_indent(|p| {
-                p.print_attribute(semantic, semantic.items.get_without_resolve(*id))
-            });
+                p.print_attribute(semantic, semantic.items.get_without_resolve(*id)?)
+            })?;
         }
+
+        Ok(())
     }
 
-    fn print_component(&mut self, semantic: &Semantic, component: &Component) {
+    fn print_component(
+        &mut self,
+        semantic: &Semantic,
+        component: &Component,
+    ) -> anyhow::Result<()> {
         self.print_indent();
         println!("component({}): ", component.id);
 
@@ -88,7 +95,7 @@ impl Printer {
             p.print_indent();
             println!(
                 "type: {}",
-                write_resolvable_id(semantic, &component.type_, |t| t.to_string(semantic))
+                write_resolvable_id(semantic, &component.type_, |t| t.to_string(semantic))?
             );
 
             p.print_indent();
@@ -96,17 +103,19 @@ impl Printer {
             for attribute in &component.attributes {
                 print!(
                     "{} ",
-                    write_resolvable_id(semantic, attribute, |attribute| attribute.id.clone())
+                    write_resolvable_id(semantic, attribute, |attribute| Ok(attribute.id.clone()))?
                 );
             }
             println!();
 
             p.print_indent();
             println!("default: {:?}", component.default);
-        });
+
+            Ok(())
+        })
     }
 
-    fn print_concept(&mut self, semantic: &Semantic, concept: &Concept) {
+    fn print_concept(&mut self, semantic: &Semantic, concept: &Concept) -> anyhow::Result<()> {
         self.print_indent();
         println!("concept({}): ", concept.id);
 
@@ -125,7 +134,7 @@ impl Printer {
             for extend in &concept.extends {
                 print!(
                     "{} ",
-                    write_resolvable_id(semantic, extend, |extend| extend.id.clone())
+                    write_resolvable_id(semantic, extend, |extend| Ok(extend.id.clone()))?
                 );
             }
             println!();
@@ -138,15 +147,19 @@ impl Printer {
                     p.print_indent();
                     println!(
                         "{}: {:?}",
-                        write_resolvable_id(semantic, component, |component| component.id.clone()),
+                        write_resolvable_id(semantic, component, |component| Ok(component
+                            .id
+                            .clone()))?,
                         value,
                     );
                 }
-            });
-        });
+
+                Ok(())
+            })
+        })
     }
 
-    fn print_message(&mut self, semantic: &Semantic, message: &Message) {
+    fn print_message(&mut self, semantic: &Semantic, message: &Message) -> anyhow::Result<()> {
         self.print_indent();
         println!("message({}): ", message.id);
 
@@ -166,16 +179,18 @@ impl Printer {
                     println!(
                         "{}: {}",
                         id,
-                        write_resolvable_id(semantic, ty, |ty| ty.to_string(semantic)),
+                        write_resolvable_id(semantic, ty, |ty| ty.to_string(semantic))?,
                     );
                 }
-            });
-        });
+
+                Ok(())
+            })
+        })
     }
 
-    fn print_type(&mut self, semantic: &Semantic, type_: &Type) {
+    fn print_type(&mut self, semantic: &Semantic, type_: &Type) -> anyhow::Result<()> {
         self.print_indent();
-        println!("type: {}", type_.to_string(semantic));
+        println!("type: {}", type_.to_string(semantic)?);
         if let Type::Enum(e) = type_ {
             self.with_indent(|p| {
                 for (name, description) in &e.members {
@@ -183,13 +198,20 @@ impl Printer {
                     print!("{name}: {description}");
                     println!();
                 }
-            });
+                Ok(())
+            })?;
         }
+        Ok(())
     }
 
-    fn print_attribute(&mut self, _semantic: &Semantic, attribute: &Attribute) {
+    fn print_attribute(
+        &mut self,
+        _semantic: &Semantic,
+        attribute: &Attribute,
+    ) -> anyhow::Result<()> {
         self.print_indent();
         println!("attribute({}): ", attribute.id);
+        Ok(())
     }
 
     fn print_indent(&self) {
@@ -198,25 +220,29 @@ impl Printer {
         }
     }
 
-    fn with_indent(&mut self, f: impl FnOnce(&mut Self)) {
+    fn with_indent(
+        &mut self,
+        f: impl FnOnce(&mut Self) -> anyhow::Result<()>,
+    ) -> anyhow::Result<()> {
         self.indent += 1;
-        f(self);
+        f(self)?;
         self.indent -= 1;
+        Ok(())
     }
 }
 
 fn write_resolvable_id<T: Item, D: Display>(
     semantic: &Semantic,
     r: &ResolvableItemId<T>,
-    extractor: impl FnOnce(&T) -> D,
-) -> String {
-    match r {
+    extractor: impl FnOnce(&T) -> anyhow::Result<D>,
+) -> anyhow::Result<String> {
+    Ok(match r {
         ResolvableItemId::Unresolved(unresolved) => format!("unresolved({:?})", unresolved),
         ResolvableItemId::Resolved(resolved) => {
             format!(
                 "{}",
-                extractor(semantic.items.get_without_resolve(*resolved))
+                extractor(semantic.items.get_without_resolve(*resolved)?)?
             )
         }
-    }
+    })
 }

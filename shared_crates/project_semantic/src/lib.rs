@@ -2,6 +2,7 @@ use std::fmt::Debug;
 
 use ambient_project::Identifier;
 use ambient_shared_types::primitive_component_definitions;
+use anyhow::Context as AnyhowContext;
 use convert_case::{Boundary, Case, Casing};
 
 use indexmap::IndexMap;
@@ -44,7 +45,7 @@ pub struct Semantic {
     pub scopes: IndexMap<Identifier, Scope>,
 }
 impl Semantic {
-    pub fn new() -> Self {
+    pub fn new() -> anyhow::Result<Self> {
         macro_rules! define_primitive_types {
             ($(($value:ident, $_type:ty)),*) => {
                 [
@@ -76,7 +77,9 @@ impl Semantic {
                     Boundary::Acronym,
                 ])
                 .to_case(Case::Kebab);
-            let id = Identifier::new(id).expect("standard value was not valid kebab-case");
+            let id = Identifier::new(id)
+                .map_err(anyhow::Error::msg)
+                .context("standard value was not valid kebab-case")?;
 
             let item_id = sem.items.add(ty);
             sem.root_scope.types.insert(id, item_id);
@@ -89,12 +92,14 @@ impl Semantic {
             "maybe-resource",
             "store",
         ] {
-            let id = Identifier::new(name).expect("standard value was not valid kebab-case");
+            let id = Identifier::new(name)
+                .map_err(anyhow::Error::msg)
+                .context("standard value was not valid kebab-case")?;
             let item_id = sem.items.add(Attribute { id: id.clone() });
             sem.root_scope.attributes.insert(id, item_id);
         }
 
-        sem
+        Ok(sem)
     }
 
     pub fn add_file(
@@ -108,7 +113,7 @@ impl Semantic {
 
     pub fn resolve(&mut self) -> anyhow::Result<()> {
         for scope in self.scopes.values_mut() {
-            scope.resolve(&mut self.items, Context::new(&self.root_scope));
+            scope.resolve(&mut self.items, Context::new(&self.root_scope))?;
         }
         Ok(())
     }

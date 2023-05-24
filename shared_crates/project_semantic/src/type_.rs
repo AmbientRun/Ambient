@@ -20,19 +20,19 @@ impl Type {
         })
     }
 
-    pub fn to_string(&self, semantic: &Semantic) -> String {
-        match self {
+    pub fn to_string(&self, semantic: &Semantic) -> anyhow::Result<String> {
+        Ok(match self {
             Type::Primitive(pt) => pt.to_string(),
             Type::Vec(id) => {
-                let inner = semantic.items.get_without_resolve(*id);
-                format!("Vec<{}>", inner.to_string(semantic))
+                let inner = semantic.items.get_without_resolve(*id)?;
+                format!("Vec<{}>", inner.to_string(semantic)?)
             }
             Type::Option(id) => {
-                let inner = semantic.items.get_without_resolve(*id);
-                format!("Option<{}>", inner.to_string(semantic))
+                let inner = semantic.items.get_without_resolve(*id)?;
+                format!("Option<{}>", inner.to_string(semantic)?)
             }
             Type::Enum(e) => e.to_string(),
-        }
+        })
     }
 }
 impl Item for Type {
@@ -57,8 +57,8 @@ impl Item for Type {
         ItemValue::Type(self)
     }
 
-    fn resolve(&mut self, _items: &mut ItemMap, _context: &Context) -> Self {
-        self.clone()
+    fn resolve(&mut self, _items: &mut ItemMap, _context: &Context) -> anyhow::Result<Self> {
+        Ok(self.clone())
     }
 }
 

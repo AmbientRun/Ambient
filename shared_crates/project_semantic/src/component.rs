@@ -1,4 +1,5 @@
 use ambient_project::{Identifier, ItemPathBuf};
+use anyhow::Context as AnyhowContext;
 
 use crate::{
     Attribute, Context, Item, ItemMap, ItemType, ItemValue, ResolvableItemId, ResolvableValue, Type,
@@ -35,14 +36,14 @@ impl Item for Component {
         ItemValue::Component(self)
     }
 
-    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> Self {
+    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> anyhow::Result<Self> {
         let mut new = self.clone();
 
         let type_id = match new.type_ {
             ResolvableItemId::Unresolved(ty) => {
-                context.get_type_id(items, &ty).unwrap_or_else(|| {
-                    panic!("Failed to resolve type `{ty:?}` for component `{}`", new.id)
-                })
+                context.get_type_id(items, &ty).with_context(|| {
+                    format!("Failed to resolve type `{ty:?}` for component `{}`", new.id)
+                })?
             }
             ResolvableItemId::Resolved(id) => id,
         };
@@ -52,12 +53,12 @@ impl Item for Component {
         for attribute in &new.attributes {
             attributes.push(match attribute {
                 ResolvableItemId::Unresolved(path) => {
-                    let id = context.get_attribute_id(path.as_path()).unwrap_or_else(|| {
-                        panic!(
+                    let id = context.get_attribute_id(path.as_path()).with_context(|| {
+                        format!(
                             "Failed to resolve attribute `{path}` for component `{}`",
                             new.id
                         )
-                    });
+                    })?;
                     ResolvableItemId::Resolved(id)
                 }
                 t => t.clone(),
@@ -66,10 +67,10 @@ impl Item for Component {
         new.attributes = attributes;
 
         if let Some(default) = &mut new.default {
-            default.resolve(items, type_id);
+            default.resolve(items, type_id)?;
         }
 
-        new
+        Ok(new)
     }
 }
 impl Component {

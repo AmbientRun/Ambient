@@ -1,4 +1,5 @@
 use ambient_project::{Identifier, ItemPathBuf};
+use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{Context, Item, ItemMap, ItemType, ItemValue, ResolvableItemId, Type};
@@ -32,7 +33,7 @@ impl Item for Message {
         ItemValue::Message(self)
     }
 
-    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> Self {
+    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> anyhow::Result<Self> {
         let mut new = self.clone();
 
         let mut fields = IndexMap::new();
@@ -41,9 +42,9 @@ impl Item for Message {
                 name.clone(),
                 match type_ {
                     ResolvableItemId::Unresolved(path) => {
-                        let id = context.get_type_id(items, path).unwrap_or_else(|| {
-                            panic!("Failed to resolve type `{path:?}` for field `{name}` of message `{}", self.id)
-                        });
+                        let id = context.get_type_id(items, path).with_context(|| {
+                            format!("Failed to resolve type `{path:?}` for field `{name}` of message `{}", self.id)
+                        })?;
                         ResolvableItemId::Resolved(id)
                     }
                     t => t.clone(),
@@ -52,7 +53,7 @@ impl Item for Message {
         }
         new.fields = fields;
 
-        new
+        Ok(new)
     }
 }
 

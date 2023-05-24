@@ -1,4 +1,5 @@
 use ambient_project::{Identifier, ItemPathBuf};
+use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
@@ -35,19 +36,19 @@ impl Item for Concept {
         ItemValue::Concept(self)
     }
 
-    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> Self {
+    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> anyhow::Result<Self> {
         let mut new = self.clone();
 
         let mut extends = vec![];
         for extend in &new.extends {
             extends.push(match extend {
                 ResolvableItemId::Unresolved(path) => {
-                    let id = context.get_concept_id(path.as_path()).unwrap_or_else(|| {
-                        panic!(
+                    let id = context.get_concept_id(path.as_path()).with_context(|| {
+                        format!(
                             "Failed to resolve concept `{}` for concept `{}",
                             path, self.id
                         )
-                    });
+                    })?;
                     ResolvableItemId::Resolved(id)
                 }
                 t => t.clone(),
@@ -59,30 +60,30 @@ impl Item for Concept {
         for (resolvable_component, resolvable_value) in &new.components {
             let component_id = match resolvable_component {
                 ResolvableItemId::Unresolved(path) => {
-                    context.get_component_id(path.as_path()).unwrap_or_else(|| {
-                        panic!(
+                    context.get_component_id(path.as_path()).with_context(|| {
+                        format!(
                             "Failed to get component `{}` for concept `{}",
                             path, self.id
                         )
-                    })
+                    })?
                 }
                 ResolvableItemId::Resolved(id) => *id,
             };
-            let component = items.resolve(component_id, context);
-            let component_type = component.type_.as_resolved().unwrap_or_else(|| {
-                panic!(
+            let component = items.resolve(component_id, context)?;
+            let component_type = component.type_.as_resolved().with_context(|| {
+                format!(
                     "Failed to get type for component `{}` for concept `{}`",
                     component.id, self.id
                 )
-            });
+            })?;
 
             let mut value = resolvable_value.clone();
-            value.resolve(items, component_type);
+            value.resolve(items, component_type)?;
             components.insert(ResolvableItemId::Resolved(component_id), value);
         }
         new.components = components;
 
-        new
+        Ok(new)
     }
 }
 impl Concept {

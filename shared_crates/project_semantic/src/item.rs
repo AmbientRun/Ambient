@@ -1,6 +1,7 @@
 use ulid::Ulid;
 
 use crate::{Attribute, Component, Concept, Context, Message, Type};
+use anyhow::Context as AnyhowContext;
 use std::{
     collections::HashMap,
     fmt::{Debug, Display},
@@ -20,30 +21,33 @@ impl ItemMap {
         ItemId(ulid, PhantomData)
     }
 
-    pub fn get_without_resolve<T: Item>(&self, id: ItemId<T>) -> &T {
+    pub fn get_without_resolve<T: Item>(&self, id: ItemId<T>) -> anyhow::Result<&T> {
         T::from_item_value(
             self.items
                 .get(&id.0)
-                .unwrap_or_else(|| panic!("Item not found: {id}")),
+                .with_context(|| format!("Item not found: {id}"))?,
         )
-        .unwrap_or_else(|| panic!("Item is the wrong type: {id}"))
+        .with_context(|| format!("Item is the wrong type: {id}"))
     }
 
-    pub fn get_mut<T: Item>(&mut self, id: ItemId<T>) -> &mut T {
+    pub fn get_mut<T: Item>(&mut self, id: ItemId<T>) -> anyhow::Result<&mut T> {
         T::from_item_value_mut(
             self.items
                 .get_mut(&id.0)
-                .unwrap_or_else(|| panic!("Item not found: {id}")),
+                .with_context(|| format!("Item not found: {id}"))?,
         )
-        .unwrap_or_else(|| panic!("Item is the wrong type: {id}"))
+        .with_context(|| format!("Item is the wrong type: {id}"))
     }
 
     pub fn insert<T: Item>(&mut self, id: ItemId<T>, item: T) {
         self.items.insert(id.0, item.into_item_value());
     }
 
-    pub fn resolve<T: Item>(&mut self, id: ItemId<T>, context: &Context) -> &mut T {
-        let item = self.get_without_resolve(id).clone().resolve(self, context);
+    pub fn resolve<T: Item>(&mut self, id: ItemId<T>, context: &Context) -> anyhow::Result<&mut T> {
+        let item = self
+            .get_without_resolve(id)?
+            .clone()
+            .resolve(self, context)?;
         self.insert(id, item);
         self.get_mut(id)
     }
@@ -96,7 +100,7 @@ pub trait Item: Clone {
     fn from_item_value(value: &ItemValue) -> Option<&Self>;
     fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self>;
     fn into_item_value(self) -> ItemValue;
-    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> Self;
+    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> anyhow::Result<Self>;
 }
 
 pub struct ItemId<T: Item>(Ulid, PhantomData<T>);

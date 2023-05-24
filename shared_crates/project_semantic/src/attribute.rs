@@ -28,7 +28,7 @@ impl Item for Attribute {
         ItemValue::Attribute(self)
     }
 
-    fn resolve(&mut self, _items: &mut ItemMap, _context: &Context) -> Self {
-        self.clone()
+    fn resolve(&mut self, _items: &mut ItemMap, _context: &Context) -> anyhow::Result<Self> {
+        Ok(self.clone())
     }
 }
