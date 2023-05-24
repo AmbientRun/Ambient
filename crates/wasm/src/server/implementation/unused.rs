@@ -36,7 +36,7 @@ impl wit::client_input::Host for Bindings {
     }
 }
 impl wit::client_camera::Host for Bindings {
-    fn clip_space_ray(
+    fn clip_position_to_world_ray(
         &mut self,
         _camera: wit::types::EntityId,
         _clip_space_pos: wit::types::Vec2,
@@ -50,7 +50,7 @@ impl wit::client_camera::Host for Bindings {
         unsupported()
     }
 
-    fn screen_to_world_direction(
+    fn screen_position_to_world_ray(
         &mut self,
         _camera: wit::types::EntityId,
         _screen_pos: wit::types::Vec2,
