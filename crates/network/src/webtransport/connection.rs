@@ -5,16 +5,18 @@ use std::{
 
 use anyhow::anyhow;
 use bytes::Bytes;
-use futures::{ready, Future, StreamExt};
+use futures::{ready, Future};
 use js_sys::Uint8Array;
 use parking_lot::Mutex;
 use url::Url;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{
-    ReadableStream, ReadableStreamDefaultReader, WebTransport, WebTransportBidirectionalStream,
-    WebTransportReceiveStream, WritableStream, WritableStreamDefaultWriter,
+    ReadableStream, WebTransport, WebTransportBidirectionalStream, WritableStream,
+    WritableStreamDefaultWriter,
 };
+
+use crate::NetworkError;
 
 use super::{
     reader::{ReadError, StreamReader},
@@ -77,20 +79,20 @@ impl Connection {
         })
     }
 
-    pub async fn open_uni(&self) -> anyhow::Result<SendStream> {
+    pub async fn open_uni(&self) -> Result<SendStream, NetworkError> {
         let stream = JsFuture::from(self.transport.create_unidirectional_stream())
             .await
-            .map_err(|e| anyhow!("{e:?}"))?
+            .map_err(|_| NetworkError::ConnectionClosed)?
             .dyn_into::<WritableStream>()
             .unwrap();
 
         Ok(SendStream::new(stream))
     }
 
-    pub async fn open_bi(&self) -> anyhow::Result<(SendStream, RecvStream)> {
+    pub async fn open_bi(&self) -> Result<(SendStream, RecvStream), NetworkError> {
         let stream = JsFuture::from(self.transport.create_bidirectional_stream())
             .await
-            .map_err(|e| anyhow!("{e:?}"))?
+            .map_err(|_| NetworkError::ConnectionClosed)?
             .dyn_into::<WebTransportBidirectionalStream>()
             .unwrap();
 
@@ -122,13 +124,15 @@ impl Connection {
     }
 
     /// Sends data to a WebTransport connection.
-    pub async fn send_datagram(&self, data: &[u8]) -> anyhow::Result<()> {
+    pub fn send_datagram(&self, data: &[u8]) -> impl Future<Output = Result<(), NetworkError>> {
         let data = Uint8Array::from(data);
-        let _stream = JsFuture::from(self.datagrams.write_with_chunk(&data))
-            .await
-            .map_err(|e| anyhow!("{e:?}"));
+        let fut = JsFuture::from(self.datagrams.write_with_chunk(&data));
 
-        Ok(())
+        async move {
+            let _stream = fut.await.map_err(|_| NetworkError::ConnectionClosed)?;
+            tracing::info!("Sent datagram {_stream:?}");
+            Ok(())
+        }
     }
 }
 

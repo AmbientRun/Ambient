@@ -7,7 +7,7 @@ use ambient_std::{asset_cache::AssetCache, cb, friendly_id, to_byte_unit, Cb};
 use ambient_sys::task::{PlatformBoxFuture, RuntimeHandle};
 use ambient_ui_native::{Image, MeasureSize};
 use bytes::Bytes;
-use futures::future::{BoxFuture, LocalBoxFuture};
+use futures::future::BoxFuture;
 use glam::UVec2;
 use parking_lot::Mutex;
 use serde::{de::DeserializeOwned, Serialize};
@@ -15,10 +15,8 @@ use std::{
     collections::HashMap,
     fmt::{Debug, Display},
     future::Future,
-    pin::Pin,
     sync::Arc,
 };
-use tokio::io::{AsyncRead, AsyncWrite};
 
 use crate::{
     client_game_state::ClientGameState, log_network_result, proto::client::SharedClientState,
@@ -70,7 +68,7 @@ pub trait ClientConnection: 'static + Send + Sync {
     fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>>;
     /// Performs a unidirectional request without waiting for a response.
     fn request_uni(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>>;
-    fn send_datagram(&self, id: u32, data: Bytes) -> Result<(), NetworkError>;
+    fn send_datagram(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>>;
 }
 
 pub(crate) enum Control {

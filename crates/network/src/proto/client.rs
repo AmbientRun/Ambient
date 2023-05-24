@@ -7,7 +7,7 @@ use ambient_std::{asset_cache::SyncAssetKeyExt, asset_url::ContentBaseUrlKey};
 use anyhow::{bail, Context};
 use bytes::{Buf, Bytes};
 use parking_lot::Mutex;
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
+use tokio::io::AsyncReadExt;
 use tracing::debug_span;
 
 use crate::{

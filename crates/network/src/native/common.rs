@@ -31,14 +31,14 @@ impl ClientConnection for quinn::Connection {
         })
     }
 
-    fn send_datagram(&self, id: u32, data: Bytes) -> Result<(), NetworkError> {
+    fn send_datagram(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>> {
         let mut bytes = bytes::BytesMut::with_capacity(4 + data.len());
         bytes.put_u32(id);
         bytes.put(data);
 
-        self.send_datagram(bytes.freeze())?;
+        let res = self.send_datagram(bytes.freeze()).map_err(Into::into);
 
-        Ok(())
+        Box::pin(futures::future::ready(res))
     }
 }
 
@@ -69,13 +69,13 @@ impl ClientConnection for crate::native::client_connection::ConnectionKind {
         })
     }
 
-    fn send_datagram(&self, id: u32, data: Bytes) -> Result<(), NetworkError> {
+    fn send_datagram(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>> {
         let mut bytes = BytesMut::with_capacity(4 + data.len());
         bytes.put_u32(id);
         bytes.put(data);
 
-        self.send_datagram(bytes.freeze())?;
+        let res = self.send_datagram(bytes.freeze()).map_err(Into::into);
 
-        Ok(())
+        Box::pin(futures::future::ready(res))
     }
 }

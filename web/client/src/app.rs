@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use ambient_cameras::UICamera;
 use ambient_ecs::{Entity, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_network::{server::RpcArgs, web::GameClientView};
+use ambient_network::{server::RpcArgs, web::client::GameClientView};
 use ambient_rpc::RpcRegistry;
 use ambient_std::friendly_id;
 use ambient_ui_native::{cb, space_between_items, Dock, FlowColumn, StylesExt, Text};

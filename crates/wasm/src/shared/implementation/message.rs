@@ -1,11 +1,7 @@
-use ambient_core::{
-    async_ecs::{async_run, AsyncRun},
-    runtime,
-};
+use ambient_core::runtime;
 use ambient_ecs::{EntityId, World};
 use ambient_network::{
-    client::ClientConnection, log_network_error, log_network_result, WASM_DATAGRAM_ID,
-    WASM_UNISTREAM_ID,
+    client::ClientConnection, log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
 };
 
 use anyhow::Context;
@@ -203,13 +199,13 @@ pub fn send_networked(
         send_unistream(world, connection, module_id, name, data);
         Ok(())
     } else {
-        send_datagram(world, &*connection, module_id, name, data)
+        send_datagram(world, connection, module_id, name, data)
     }
 }
 
 fn send_datagram(
-    _world: &World,
-    connection: &dyn ClientConnection,
+    world: &World,
+    connection: Arc<dyn ClientConnection>,
     module_id: EntityId,
     name: &str,
     data: &[u8],
@@ -223,7 +219,13 @@ fn send_datagram(
 
     payload.extend_from_slice(data);
 
-    connection.send_datagram(WASM_DATAGRAM_ID, payload.freeze())?;
+    world.resource(runtime()).spawn(async move {
+        log_network_result!(
+            connection
+                .send_datagram(WASM_DATAGRAM_ID, payload.freeze())
+                .await
+        );
+    });
 
     Ok(())
 }
