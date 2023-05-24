@@ -131,7 +131,7 @@ jobs:
             ${{ runner.os }}-golden-image-${{ hashFiles('**/Cargo.toml') }}-
             ${{ runner.os }}-golden-image-
       - name: Build Ambient
-        run: cargo build --release
+        run: cargo build --release --workspace
       - name: Run golden image tests
         run: cargo cf golden-images check
       - uses: actions/upload-artifact@v3
