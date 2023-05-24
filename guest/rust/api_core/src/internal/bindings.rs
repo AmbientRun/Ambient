@@ -10347,8 +10347,8 @@ pub mod asset{
                                           let ptr2 = ret_area.as_mut_ptr() as i32;
                                           #[link(wasm_import_module = "client-camera")]
                                           extern "C" {
-                                            #[cfg_attr(target_arch = "wasm32", link_name = "clip-space-ray")]
-                                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-camera_clip-space-ray")]
+                                            #[cfg_attr(target_arch = "wasm32", link_name = "clip-position-to-world-ray")]
+                                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-camera_clip-position-to-world-ray")]
                                             fn wit_import(
                                             _: i64, _: i64, _: f32, _: f32, _: i32, );
                                           }
@@ -10394,8 +10394,8 @@ pub mod asset{
                                           let ptr2 = ret_area.as_mut_ptr() as i32;
                                           #[link(wasm_import_module = "client-camera")]
                                           extern "C" {
-                                            #[cfg_attr(target_arch = "wasm32", link_name = "screen-to-world-direction")]
-                                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-camera_screen-to-world-direction")]
+                                            #[cfg_attr(target_arch = "wasm32", link_name = "screen-position-to-world-ray")]
+                                            #[cfg_attr(not(target_arch = "wasm32"), link_name = "client-camera_screen-position-to-world-ray")]
                                             fn wit_import(
                                             _: i64, _: i64, _: f32, _: f32, _: i32, );
                                           }
