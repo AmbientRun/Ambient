@@ -1,13 +1,18 @@
 use ambient_core::{asset_cache, gpu, RuntimeKey};
 use ambient_ecs::{world_events, Entity, SystemGroup};
-use ambient_element::{Element, ElementComponent, Hooks};
+use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     cb, Cb,
 };
-use ambient_sys::{task::RuntimeHandle, time::interval, MissedTickBehavior};
+use ambient_sys::{
+    task::RuntimeHandle,
+    time::{interval, sleep},
+    MissedTickBehavior,
+};
+use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Throbber};
 use anyhow::Context;
 use bytes::{BufMut, BytesMut};
 use futures::{SinkExt, StreamExt};
@@ -91,8 +96,11 @@ impl ElementComponent for GameClientView {
 
         let ((control_tx, control_rx), _) = hooks.use_state_with(|_| flume::unbounded());
 
+        let (err, set_error) = hooks.use_state(None);
+
         hooks.use_local_task(|_| {
             let task = async move {
+                sleep(Duration::from_millis(2000)).await;
                 let conn = Connection::connect(url.clone()).await.with_context(|| {
                     format!("Failed to establish a WebTransport  session to {url:?}")
                 })?;
@@ -140,10 +148,46 @@ impl ElementComponent for GameClientView {
                 Ok(()) as anyhow::Result<()>
             };
 
-            async move { log_network_result!(task.await) }
+            async move {
+                match task.await {
+                    Ok(()) => {
+                        tracing::info!("Client disconnected");
+                    }
+                    Err(err) => {
+                        if let Some(err) = err.downcast_ref::<NetworkError>() {
+                            if let NetworkError::ConnectionClosed = err {
+                                tracing::info!("Connection closed by peer");
+                            } else {
+                                tracing::error!("Network error: {:?}", err);
+                            }
+                        } else {
+                            tracing::error!("Game failed: {:?}", err);
+                        }
+                        set_error(Some(format!("{err:?}")));
+                    }
+                }
+            }
         });
 
-        todo!()
+        if let Some(err) = err {
+            return Dock(vec![Text::el("Error").header_style(), Text::el(err)]).el();
+        }
+
+        if let Some(game_client) = game_client {
+            // Provide the context
+            hooks.provide_context(|| game_client.clone());
+            hooks
+                .world
+                .add_resource(crate::client::game_client(), Some(game_client.clone()));
+
+            inner
+        } else {
+            Centered(vec![FlowColumn::el([FlowRow::el([
+                Text::el("Connecting"),
+                Throbber.el(),
+            ])])])
+            .el()
+        }
     }
 }
 

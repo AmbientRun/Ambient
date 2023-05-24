@@ -16,7 +16,7 @@ pub fn MainApp(hooks: &mut Hooks) -> Element {
     let url = Url::parse("https://127.0.0.1:9000").unwrap();
 
     FlowColumn(vec![
-        Text::el(format!("Url: {url:?}")).header_style(),
+        Text::el(format!("Url: {url}")),
         GameClientView {
             url,
             user_id: friendly_id(),
