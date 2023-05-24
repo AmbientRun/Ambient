@@ -41,7 +41,9 @@ impl Item for Message {
                 name.clone(),
                 match type_ {
                     ResolvableItemId::Unresolved(path) => {
-                        let id = context.get_type_id(items, path).unwrap();
+                        let id = context.get_type_id(items, path).unwrap_or_else(|| {
+                            panic!("Failed to resolve type `{path:?}` for field `{name}` of message `{}", self.id)
+                        });
                         ResolvableItemId::Resolved(id)
                     }
                     t => t.clone(),

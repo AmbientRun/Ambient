@@ -6,7 +6,6 @@ use ambient_shared_types::{
     primitive_component_definitions, ProceduralMaterialHandle, ProceduralMeshHandle,
     ProceduralSamplerHandle, ProceduralTextureHandle,
 };
-use anyhow::Context;
 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 
 pub type EntityId = u128;
@@ -18,14 +17,23 @@ pub enum ResolvedValue {
 }
 impl ResolvedValue {
     fn from_toml_value(value: &toml::Value, items: &ItemMap, id: ItemId<Type>) -> Self {
-        match items.get_without_resolve(id).unwrap() {
+        match items.get_without_resolve(id) {
             Type::Enum(e) => {
-                let variant = value.as_str().unwrap();
+                let variant = value
+                    .as_str()
+                    .unwrap_or_else(|| panic!("Expected string for enum variant, got {:?}", value));
+
                 let variant = e
                     .members
                     .iter()
                     .find(|(name, _description)| name.as_ref() == variant)
-                    .unwrap();
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "Expected enum variant to be one of {:?}, got {:?}",
+                            e.members, variant
+                        )
+                    });
+
                 Self::Enum(id, variant.0.clone())
             }
             ty => Self::Primitive(PrimitiveValue::from_toml_value(value, ty)),
@@ -74,8 +82,7 @@ impl PrimitiveValue {
     pub fn from_toml_value(value: &toml::Value, ty: &Type) -> Self {
         match ty {
             Type::Primitive(pt) => Self::primitive_from_toml_value(value, *pt)
-                .context("Failed to parse primitive value")
-                .unwrap(),
+                .unwrap_or_else(|| panic!("Failed to parse TOML value {:?} as {:?}", value, pt)),
             Type::Vec(_v) => todo!(),
             Type::Option(_o) => todo!(),
             Type::Enum(_) => unreachable!("Enum should be resolved"),
@@ -87,7 +94,10 @@ impl PrimitiveValue {
             value: &toml::Value,
             converter: impl Fn(&toml::Value) -> Option<T>,
         ) -> Option<[T; N]> {
-            let arr = value.as_array().unwrap();
+            let arr = value
+                .as_array()
+                .unwrap_or_else(|| panic!("Expected array, got {:?}", value));
+
             assert_eq!(arr.len(), N);
 
             let mut result = [T::default(); N];
@@ -101,13 +111,17 @@ impl PrimitiveValue {
         Some(match ty {
             PrimitiveType::Empty => Self::Empty(()),
             PrimitiveType::Bool => Self::Bool(v.as_bool()?),
-            PrimitiveType::EntityId => Self::EntityId(EntityId::from_le_bytes(
-                data_encoding::BASE64
-                    .decode(v.as_str()?.as_bytes())
-                    .unwrap()
-                    .try_into()
-                    .unwrap(),
-            )),
+            PrimitiveType::EntityId => {
+                let value = v.as_str()?;
+                let bytes = data_encoding::BASE64
+                    .decode(value.as_bytes())
+                    .unwrap_or_else(|_| panic!("Failed to decode Base64 for entity id {value:?}"));
+                Self::EntityId(EntityId::from_le_bytes(
+                    bytes.as_slice().try_into().unwrap_or_else(|_| {
+                        panic!("Failed to convert decoded Base64 bytes {bytes:?} to entity id")
+                    }),
+                ))
+            }
             PrimitiveType::F32 => Self::F32(v.as_float()? as f32),
             PrimitiveType::F64 => Self::F64(v.as_float()?),
             PrimitiveType::Mat4 => Self::Mat4(Mat4::from_cols_array(&as_array(v, |v| {

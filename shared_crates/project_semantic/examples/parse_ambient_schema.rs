@@ -5,7 +5,7 @@ use ambient_project_semantic::{
     Type,
 };
 
-pub fn main() {
+pub fn main() -> anyhow::Result<()> {
     const SCHEMA_PATH: &str = "shared_crates/schema/src";
 
     struct DiskFileProvider;
@@ -16,13 +16,13 @@ pub fn main() {
     }
 
     let mut semantic = Semantic::new();
-    semantic
-        .add_file("ambient.toml", &DiskFileProvider)
-        .unwrap();
+    semantic.add_file("ambient.toml", &DiskFileProvider)?;
 
     let mut printer = Printer { indent: 0 };
-    semantic.resolve().unwrap();
+    semantic.resolve()?;
     printer.print(&semantic);
+
+    Ok(())
 }
 
 struct Printer {
@@ -44,31 +44,29 @@ impl Printer {
 
         for id in scope.components.values() {
             self.with_indent(|p| {
-                p.print_component(semantic, semantic.items.get_without_resolve(*id).unwrap())
+                p.print_component(semantic, semantic.items.get_without_resolve(*id))
             });
         }
 
         for id in scope.concepts.values() {
             self.with_indent(|p| {
-                p.print_concept(semantic, semantic.items.get_without_resolve(*id).unwrap())
+                p.print_concept(semantic, semantic.items.get_without_resolve(*id))
             });
         }
 
         for id in scope.messages.values() {
             self.with_indent(|p| {
-                p.print_message(semantic, semantic.items.get_without_resolve(*id).unwrap())
+                p.print_message(semantic, semantic.items.get_without_resolve(*id))
             });
         }
 
         for id in scope.types.values() {
-            self.with_indent(|p| {
-                p.print_type(semantic, semantic.items.get_without_resolve(*id).unwrap())
-            });
+            self.with_indent(|p| p.print_type(semantic, semantic.items.get_without_resolve(*id)));
         }
 
         for id in scope.attributes.values() {
             self.with_indent(|p| {
-                p.print_attribute(semantic, semantic.items.get_without_resolve(*id).unwrap())
+                p.print_attribute(semantic, semantic.items.get_without_resolve(*id))
             });
         }
     }
@@ -217,7 +215,7 @@ fn write_resolvable_id<T: Item, D: Display>(
         ResolvableItemId::Resolved(resolved) => {
             format!(
                 "{}",
-                extractor(semantic.items.get_without_resolve(*resolved).unwrap())
+                extractor(semantic.items.get_without_resolve(*resolved))
             )
         }
     }

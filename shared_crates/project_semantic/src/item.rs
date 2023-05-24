@@ -1,7 +1,11 @@
 use ulid::Ulid;
 
 use crate::{Attribute, Component, Concept, Context, Message, Type};
-use std::{collections::HashMap, fmt::Debug, marker::PhantomData};
+use std::{
+    collections::HashMap,
+    fmt::{Debug, Display},
+    marker::PhantomData,
+};
 
 #[derive(Clone, PartialEq, Debug, Default)]
 pub struct ItemMap {
@@ -16,12 +20,22 @@ impl ItemMap {
         ItemId(ulid, PhantomData)
     }
 
-    pub fn get_without_resolve<T: Item>(&self, id: ItemId<T>) -> Option<&T> {
-        T::from_item_value(self.items.get(&id.0)?)
+    pub fn get_without_resolve<T: Item>(&self, id: ItemId<T>) -> &T {
+        T::from_item_value(
+            self.items
+                .get(&id.0)
+                .unwrap_or_else(|| panic!("Item not found: {id}")),
+        )
+        .unwrap_or_else(|| panic!("Item is the wrong type: {id}"))
     }
 
-    pub fn get_mut<T: Item>(&mut self, id: ItemId<T>) -> Option<&mut T> {
-        T::from_item_value_mut(self.items.get_mut(&id.0)?)
+    pub fn get_mut<T: Item>(&mut self, id: ItemId<T>) -> &mut T {
+        T::from_item_value_mut(
+            self.items
+                .get_mut(&id.0)
+                .unwrap_or_else(|| panic!("Item not found: {id}")),
+        )
+        .unwrap_or_else(|| panic!("Item is the wrong type: {id}"))
     }
 
     pub fn insert<T: Item>(&mut self, id: ItemId<T>, item: T) {
@@ -29,13 +43,9 @@ impl ItemMap {
     }
 
     pub fn resolve<T: Item>(&mut self, id: ItemId<T>, context: &Context) -> &mut T {
-        let item = self
-            .get_without_resolve(id)
-            .cloned()
-            .unwrap()
-            .resolve(self, context);
+        let item = self.get_without_resolve(id).clone().resolve(self, context);
         self.insert(id, item);
-        self.get_mut(id).unwrap()
+        self.get_mut(id)
     }
 
     pub fn get_vec_id(&mut self, id: ItemId<Type>) -> ItemId<Type> {
@@ -102,9 +112,14 @@ impl<T: Item> Clone for ItemId<T> {
         *self
     }
 }
-impl<T: Item + Debug> Debug for ItemId<T> {
+impl<T: Item> Debug for ItemId<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("ItemId").field(&self.0 .0).finish()
+        write!(f, "ItemId<{}>({:?})", std::any::type_name::<T>(), self.0)
+    }
+}
+impl<T: Item> Display for ItemId<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(self, f)
     }
 }
 impl<T: Item> PartialEq for ItemId<T> {

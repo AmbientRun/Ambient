@@ -68,11 +68,13 @@ impl Item for Concept {
                 }
                 ResolvableItemId::Resolved(id) => *id,
             };
-            let component_type = items
-                .resolve(component_id, context)
-                .type_
-                .as_resolved()
-                .unwrap();
+            let component = items.resolve(component_id, context);
+            let component_type = component.type_.as_resolved().unwrap_or_else(|| {
+                panic!(
+                    "Failed to get type for component `{}` for concept `{}`",
+                    component.id, self.id
+                )
+            });
 
             let mut value = resolvable_value.clone();
             value.resolve(items, component_type);

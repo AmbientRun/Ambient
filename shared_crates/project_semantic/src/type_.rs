@@ -24,11 +24,11 @@ impl Type {
         match self {
             Type::Primitive(pt) => pt.to_string(),
             Type::Vec(id) => {
-                let inner = semantic.items.get_without_resolve(*id).unwrap();
+                let inner = semantic.items.get_without_resolve(*id);
                 format!("Vec<{}>", inner.to_string(semantic))
             }
             Type::Option(id) => {
-                let inner = semantic.items.get_without_resolve(*id).unwrap();
+                let inner = semantic.items.get_without_resolve(*id);
                 format!("Option<{}>", inner.to_string(semantic))
             }
             Type::Enum(e) => e.to_string(),

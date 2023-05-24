@@ -38,19 +38,26 @@ impl Item for Component {
     fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> Self {
         let mut new = self.clone();
 
-        new.type_ = match new.type_ {
-            ResolvableItemId::Unresolved(path) => {
-                let id = context.get_type_id(items, &path).unwrap();
-                ResolvableItemId::Resolved(id)
+        let type_id = match new.type_ {
+            ResolvableItemId::Unresolved(ty) => {
+                context.get_type_id(items, &ty).unwrap_or_else(|| {
+                    panic!("Failed to resolve type `{ty:?}` for component `{}`", new.id)
+                })
             }
-            t => t,
+            ResolvableItemId::Resolved(id) => id,
         };
+        new.type_ = ResolvableItemId::Resolved(type_id);
 
         let mut attributes = vec![];
         for attribute in &new.attributes {
             attributes.push(match attribute {
                 ResolvableItemId::Unresolved(path) => {
-                    let id = context.get_attribute_id(path.as_path()).unwrap();
+                    let id = context.get_attribute_id(path.as_path()).unwrap_or_else(|| {
+                        panic!(
+                            "Failed to resolve attribute `{path}` for component `{}`",
+                            new.id
+                        )
+                    });
                     ResolvableItemId::Resolved(id)
                 }
                 t => t.clone(),
@@ -59,7 +66,7 @@ impl Item for Component {
         new.attributes = attributes;
 
         if let Some(default) = &mut new.default {
-            default.resolve(items, new.type_.as_resolved().unwrap());
+            default.resolve(items, type_id);
         }
 
         new

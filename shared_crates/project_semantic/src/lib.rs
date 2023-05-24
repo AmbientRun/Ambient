@@ -76,7 +76,7 @@ impl Semantic {
                     Boundary::Acronym,
                 ])
                 .to_case(Case::Kebab);
-            let id = Identifier::new(id).unwrap();
+            let id = Identifier::new(id).expect("standard value was not valid kebab-case");
 
             let item_id = sem.items.add(ty);
             sem.root_scope.types.insert(id, item_id);
@@ -89,7 +89,7 @@ impl Semantic {
             "maybe-resource",
             "store",
         ] {
-            let id = Identifier::new(name).unwrap();
+            let id = Identifier::new(name).expect("standard value was not valid kebab-case");
             let item_id = sem.items.add(Attribute { id: id.clone() });
             sem.root_scope.attributes.insert(id, item_id);
         }

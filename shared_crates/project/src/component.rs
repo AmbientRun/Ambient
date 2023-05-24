@@ -22,7 +22,7 @@ pub enum ContainerType {
     Option,
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Eq, Serialize)]
+#[derive(Deserialize, Clone, PartialEq, Eq, Serialize)]
 #[serde(untagged)]
 pub enum ComponentType {
     Item(ItemPathBuf),
@@ -34,4 +34,15 @@ pub enum ComponentType {
         #[serde(alias = "element-type")]
         element_type: ItemPathBuf,
     },
+}
+impl std::fmt::Debug for ComponentType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Item(arg0) => write!(f, "{}", arg0),
+            Self::Contained {
+                type_,
+                element_type,
+            } => write!(f, "{:?}<{}>", type_, element_type),
+        }
+    }
 }
