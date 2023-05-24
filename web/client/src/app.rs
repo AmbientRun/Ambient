@@ -6,13 +6,13 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::{server::RpcArgs, web::client::GameClientView};
 use ambient_rpc::RpcRegistry;
 use ambient_std::friendly_id;
-use ambient_ui_native::{cb, space_between_items, Dock, FlowColumn, StylesExt, Text};
+use ambient_ui_native::{cb, space_between_items, Dock, FlowColumn, Text};
 use url::Url;
 
 use crate::game_view::GameView;
 
 #[element_component]
-pub fn MainApp(hooks: &mut Hooks) -> Element {
+pub fn MainApp(_hooks: &mut Hooks) -> Element {
     let url = Url::parse("https://127.0.0.1:9000").unwrap();
 
     FlowColumn(vec![

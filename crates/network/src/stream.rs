@@ -49,7 +49,8 @@ where
 
         match bytes {
             Some(v) => Poll::Ready(Some(
-                bincode::deserialize(&v).map_err(|e| FrameError::Payload(e, type_name::<T>())),
+                bincode::deserialize(&v)
+                    .map_err(|e| FrameError::DeserializePayload(e, type_name::<T>())),
             )),
             None => Poll::Ready(None),
         }
@@ -106,7 +107,7 @@ where
         let p = self.project();
 
         let bytes = bincode::serialize(item)
-            .map_err(|e| FrameError::Payload(e, type_name::<T>()))?
+            .map_err(|e| FrameError::SerializePayload(e, type_name::<T>()))?
             .into();
         p.write.start_send(bytes)?;
 
@@ -167,8 +168,10 @@ where
 
 #[derive(Error, Debug)]
 pub enum FrameError {
-    #[error("Failed to serialize or deserialize payload of type {1}")]
-    Payload(#[source] bincode::Error, &'static str),
+    #[error("Failed to serialize payload of type {1}")]
+    SerializePayload(#[source] bincode::Error, &'static str),
+    #[error("Failed to deserialize payload of type {1}")]
+    DeserializePayload(#[source] bincode::Error, &'static str),
     #[error("Invalid frame")]
     Io(#[from] std::io::Error),
 }

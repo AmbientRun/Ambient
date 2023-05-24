@@ -3,27 +3,20 @@ use ambient_ecs::{world_events, Entity, SystemGroup};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt},
-    cb, Cb,
-};
-use ambient_sys::{
-    task::RuntimeHandle,
-    time::{interval, sleep},
-    MissedTickBehavior,
-};
+use ambient_std::{asset_cache::SyncAssetKeyExt, cb, Cb};
+use ambient_sys::{task::RuntimeHandle, time::sleep};
 use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Throbber};
 use anyhow::Context;
 use bytes::{BufMut, BytesMut};
 use futures::{SinkExt, StreamExt};
-use glam::{uvec2, uvec4};
+use glam::uvec2;
 use parking_lot::Mutex;
 use std::{sync::Arc, time::Duration};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use url::Url;
 
 use crate::{
-    client::{ClientConnection, Control, GameClient, GameClientRenderTarget, LoadedFunc},
+    client::{Control, GameClient, GameClientRenderTarget, LoadedFunc},
     client_game_state::ClientGameState,
     log_network_result,
     proto::{
@@ -31,9 +24,9 @@ use crate::{
         ClientRequest,
     },
     server::RpcArgs,
-    stream::{self, FramedRecvStream, FramedSendStream},
+    stream::{FramedRecvStream, FramedSendStream},
     web::WebTransportProxy,
-    webtransport::{self, Connection},
+    webtransport::Connection,
     NetworkError,
 };
 
@@ -94,7 +87,8 @@ impl ElementComponent for GameClientView {
             run_game_logic(hooks, game_state.clone(), render_target);
         }
 
-        let ((control_tx, control_rx), _) = hooks.use_state_with(|_| flume::unbounded());
+        // TODO: allow remote shutdown
+        let ((_control_tx, control_rx), _) = hooks.use_state_with(|_| flume::unbounded());
 
         let (err, set_error) = hooks.use_state(None);
 

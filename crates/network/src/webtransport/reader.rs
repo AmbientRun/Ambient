@@ -14,7 +14,7 @@ use web_sys::{ReadableStream, ReadableStreamDefaultReader};
 
 pub struct StreamReader<T> {
     fut: Option<JsFuture>,
-    stream: ReadableStream,
+    _stream: ReadableStream,
     reader: ReadableStreamDefaultReader,
     marker: PhantomData<T>,
     label: Option<Cow<'static, str>>,
@@ -34,7 +34,7 @@ impl<T: JsCast> StreamReader<T> {
             .unwrap();
         Self {
             fut: None,
-            stream,
+            _stream: stream,
             reader,
             marker: PhantomData,
             label: label.map(Into::into),

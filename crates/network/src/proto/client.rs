@@ -73,6 +73,7 @@ impl ClientState {
         }
     }
 
+    #[cfg(not(target_os = "unknown"))]
     pub fn process_client_stats(&mut self, state: &SharedClientState, stats: NetworkStats) {
         let mut gs = state.lock();
         tracing::debug!(?stats, "Client network stats");

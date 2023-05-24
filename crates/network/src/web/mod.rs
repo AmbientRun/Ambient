@@ -1,23 +1,9 @@
 pub mod client;
 
-use std::{sync::Arc, time::Duration};
-
-use ambient_core::{asset_cache, gpu};
-use ambient_ecs::{world_events, Entity, SystemGroup};
-use ambient_element::{Element, ElementComponent, Hooks};
-use ambient_renderer::RenderTarget;
-use ambient_rpc::RpcRegistry;
-use ambient_std::{asset_cache::AssetCache, cb, Cb};
-use ambient_sys::{time::interval, MissedTickBehavior};
-use anyhow::Context;
 use bytes::Bytes;
 use flume::Sender;
-use futures::{future::BoxFuture, SinkExt, StreamExt};
-use glam::{uvec2, uvec4};
-use parking_lot::Mutex;
-use tokio::io::AsyncReadExt;
+use futures::future::BoxFuture;
 use tokio::sync::oneshot;
-use url::Url;
 
 use crate::{
     client::{ClientConnection, Control, GameClient, GameClientRenderTarget, LoadedFunc},
