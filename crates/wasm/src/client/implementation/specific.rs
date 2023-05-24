@@ -35,10 +35,11 @@ use super::Bindings;
 use crate::shared::{
     conversion::{FromBindgen, IntoBindgen},
     implementation::message,
+    message::Target,
     wit,
 };
 
-use ambient_core::camera::{clip_space_ray, world_to_clip_space};
+use ambient_core::camera::{clip_position_to_world_ray, world_to_clip_space};
 
 impl wit::client_message::Host for Bindings {
     fn send(
@@ -47,12 +48,13 @@ impl wit::client_message::Host for Bindings {
         name: String,
         data: Vec<u8>,
     ) -> anyhow::Result<()> {
-        use wit::client_message::Target;
+        use wit::client_message::Target as WitTarget;
+
         let module_id = self.id;
         let world = self.world_mut();
 
         match target {
-            Target::ServerUnreliable | Target::ServerReliable => {
+            WitTarget::ServerUnreliable | WitTarget::ServerReliable => {
                 let connection = world
                     .resource(game_client())
                     .as_ref()
@@ -66,13 +68,19 @@ impl wit::client_message::Host for Bindings {
                     module_id,
                     &name,
                     &data,
-                    matches!(target, Target::ServerReliable),
+                    matches!(target, WitTarget::ServerReliable),
                 )
             }
-            Target::LocalBroadcast => message::send_local(world, module_id, None, name, data),
-            Target::Local(id) => {
-                message::send_local(world, module_id, Some(id.from_bindgen()), name, data)
+            WitTarget::LocalBroadcast(include_self) => {
+                message::send_local(world, module_id, Target::All { include_self }, name, data)
             }
+            WitTarget::Local(id) => message::send_local(
+                world,
+                module_id,
+                Target::Module(id.from_bindgen()),
+                name,
+                data,
+            ),
         }
     }
 }
@@ -139,12 +147,12 @@ impl wit::client_input::Host for Bindings {
     }
 }
 impl wit::client_camera::Host for Bindings {
-    fn clip_space_ray(
+    fn clip_position_to_world_ray(
         &mut self,
         camera: wit::types::EntityId,
         clip_space_pos: wit::types::Vec2,
     ) -> anyhow::Result<wit::types::Ray> {
-        let mut ray = clip_space_ray(
+        let mut ray = clip_position_to_world_ray(
             self.world(),
             camera.from_bindgen(),
             clip_space_pos.from_bindgen(),
@@ -163,14 +171,14 @@ impl wit::client_camera::Host for Bindings {
         )
     }
 
-    fn screen_to_world_direction(
+    fn screen_position_to_world_ray(
         &mut self,
         camera: wit::types::EntityId,
         screen_pos: wit::types::Vec2,
     ) -> anyhow::Result<wit::types::Ray> {
         let clip_space =
             ambient_core::window::screen_to_clip_space(self.world(), screen_pos.from_bindgen());
-        let mut ray = clip_space_ray(self.world(), camera.from_bindgen(), clip_space)?;
+        let mut ray = clip_position_to_world_ray(self.world(), camera.from_bindgen(), clip_space)?;
         ray.dir *= -1.;
         Ok(ray.into_bindgen())
     }

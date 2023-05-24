@@ -14,6 +14,7 @@ use super::super::Bindings;
 use crate::shared::{
     conversion::{FromBindgen, IntoBindgen},
     implementation::message,
+    message::Target,
     wit,
 };
 
@@ -241,24 +242,22 @@ impl wit::server_physics::Host for Bindings {
         entity: wit::types::EntityId,
         position: wit::types::Vec3,
     ) -> anyhow::Result<()> {
-        self
-            .world()
-            .get(entity.from_bindgen(), character_controller())?.set_position(position.from_bindgen().as_dvec3());
+        self.world()
+            .get(entity.from_bindgen(), character_controller())?
+            .set_position(position.from_bindgen().as_dvec3());
         Ok(())
     }
-
 
     fn set_character_foot_position(
         &mut self,
         entity: wit::types::EntityId,
         position: wit::types::Vec3,
     ) -> anyhow::Result<()> {
-        self
-            .world()
-            .get(entity.from_bindgen(), character_controller())?.set_foot_position(position.from_bindgen().as_dvec3());
+        self.world()
+            .get(entity.from_bindgen(), character_controller())?
+            .set_foot_position(position.from_bindgen().as_dvec3());
         Ok(())
     }
-
 }
 
 impl wit::server_message::Host for Bindings {
@@ -268,27 +267,33 @@ impl wit::server_message::Host for Bindings {
         name: String,
         data: Vec<u8>,
     ) -> anyhow::Result<()> {
-        use wit::server_message::Target;
+        use wit::server_message::Target as WitTarget;
         let module_id = self.id;
         let world = self.world_mut();
 
         match target {
-            Target::ClientBroadcastUnreliable => {
+            WitTarget::ClientBroadcastUnreliable => {
                 send_networked(world, None, module_id, name, data, false)
             }
-            Target::ClientBroadcastReliable => {
+            WitTarget::ClientBroadcastReliable => {
                 send_networked(world, None, module_id, name, data, true)
             }
-            Target::ClientTargetedUnreliable(user_id) => {
+            WitTarget::ClientTargetedUnreliable(user_id) => {
                 send_networked(world, Some(user_id), module_id, name, data, false)
             }
-            Target::ClientTargetedReliable(user_id) => {
+            WitTarget::ClientTargetedReliable(user_id) => {
                 send_networked(world, Some(user_id), module_id, name, data, true)
             }
-            Target::LocalBroadcast => message::send_local(world, module_id, None, name, data),
-            Target::Local(id) => {
-                message::send_local(world, module_id, Some(id.from_bindgen()), name, data)
+            WitTarget::LocalBroadcast(include_self) => {
+                message::send_local(world, module_id, Target::All { include_self }, name, data)
             }
+            WitTarget::Local(id) => message::send_local(
+                world,
+                module_id,
+                Target::Module(id.from_bindgen()),
+                name,
+                data,
+            ),
         }
     }
 }

@@ -57,7 +57,7 @@ pub use internal::{
 };
 
 use self::message::Source;
-use crate::shared::message::RuntimeMessageExt;
+use crate::shared::message::{RuntimeMessageExt, Target};
 
 pub fn init_all_components() {
     internal::init_components();
@@ -109,7 +109,7 @@ pub fn systems() -> SystemGroup {
                     message::run(
                         world,
                         message::SerializedMessage {
-                            module_id: None,
+                            target: Target::All { include_self: true },
                             source: message::Source::Runtime,
                             name,
                             data,

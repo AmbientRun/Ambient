@@ -12,7 +12,6 @@ This changelog is manually updated. While an effort will be made to keep the [Un
 ### Added
 
 #### Headline features
-- **Client**: The client can now **run on the web**.
 
 #### Other
 
@@ -33,7 +32,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 ### Removed
 -->
 
-## Unreleased (YYYY-MM-DD)
+## Version 0.3.0-dev (YYYY-MM-DD)
 
 ### Added
 
@@ -49,6 +48,8 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 #### Breaking
 
+- Locally-broadcasted messages can now choose to include the originating module in the broadcast; this is an additional boolean parameter to `ModuleMessage::send_local_broadcast` and `message::Target::LocalBroadcast`.
+- `screen_to_world_direction` and `clip_space_ray` renamed. See [#410](https://github.com/AmbientRun/Ambient/issues/410)
 - `type = { type = "Vec3" }` is no longer valid syntax in `ambient.toml`. Only `type = "Vec3"` and `type = { type = "Vec", element_type = "Vec3" }` are valid.
 
 #### Non-breaking

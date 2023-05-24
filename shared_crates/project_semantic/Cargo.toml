@@ -8,8 +8,8 @@ rust-version = { workspace = true }
 version = { workspace = true }
 
 [dependencies]
-ambient_project = { path = "../project" , version = "0.2.1" }
-ambient_shared_types = { path = "../shared_types" , version = "0.2.1" }
+ambient_project = { path = "../project" , version = "0.3.0-dev" }
+ambient_shared_types = { path = "../shared_types" , version = "0.3.0-dev" }
 
 anyhow = { workspace = true }
 ulid = { workspace = true }
