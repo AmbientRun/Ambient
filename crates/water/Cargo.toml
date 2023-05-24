@@ -10,14 +10,14 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_ecs = { path = "../ecs" , version = "0.2.1" }
-ambient_std = { path = "../std" , version = "0.2.1" }
-ambient_core = { path = "../core" , version = "0.2.1" }
-ambient_gpu = { path = "../gpu" , version = "0.2.1" }
-ambient_gizmos = { path = "../gizmos" , version = "0.2.1" }
-ambient_meshes = { path = "../meshes" , version = "0.2.1" }
-ambient_renderer = { path = "../renderer" , version = "0.2.1" }
-ambient_primitives = { path = "../primitives" , version = "0.2.1" }
-ambient_sky = { path = "../sky" , version = "0.2.1" }
+ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
+ambient_std = { path = "../std" , version = "0.3.0-dev" }
+ambient_core = { path = "../core" , version = "0.3.0-dev" }
+ambient_gpu = { path = "../gpu" , version = "0.3.0-dev" }
+ambient_gizmos = { path = "../gizmos" , version = "0.3.0-dev" }
+ambient_meshes = { path = "../meshes" , version = "0.3.0-dev" }
+ambient_renderer = { path = "../renderer" , version = "0.3.0-dev" }
+ambient_primitives = { path = "../primitives" , version = "0.3.0-dev" }
+ambient_sky = { path = "../sky" , version = "0.3.0-dev" }
 wgpu = { workspace = true }
 glam = { workspace = true }
