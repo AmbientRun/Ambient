@@ -410,12 +410,12 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                             Ok(BrushAction::Draw(vertices)) => {
                                 if vertices.is_empty() {
                                     // Mesh has no vertices. We have to clear any left over GPU state.
-                                    if world.has_component(id, primitives()) {
-                                        world.remove_component(id, primitives()).unwrap();
-                                    }
-                                    if world.has_component(id, mesh()) {
-                                        world.remove_component(id, mesh()).unwrap();
-                                    }
+                                    world
+                                        .remove_components(
+                                            id,
+                                            vec![primitives().desc(), mesh().desc()],
+                                        )
+                                        .unwrap();
                                 }
                                 let mut data = Entity::new();
                                 if use_gpu && !vertices.is_empty() {
