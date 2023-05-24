@@ -160,6 +160,15 @@ pub enum NetworkError {
     ProxyError(#[from] ambient_proxy::Error),
     #[error("Bad frame")]
     FrameError(#[from] FrameError),
+    #[error("Frame or stream exceeds maximum allowed size")]
+    FrameTooLarge,
+}
+
+#[cfg(not(target_os = "unknown"))]
+impl From<h3::Error> for NetworkError {
+    fn from(value: h3::Error) -> Self {
+        Self::IOError(std::io::Error::new(ErrorKind::Other, value))
+    }
 }
 
 impl NetworkError {
