@@ -142,8 +142,8 @@ The `screenshots.zip` will show what image the CI produced.
 
 ## Releasing
 
-1. Run `cargo campfire doc runtime` to update the documentation from the codebase.
-2. Run `cargo campfire release update-version new_version_here` to update the Ambient version across the crates and documentation.
+1. Run `cargo campfire release update-version new_version_here` to update the Ambient version across the crates and documentation.
+2. Run `cargo campfire doc runtime` to update the documentation from the codebase.
 3. If a new system dependency was added, ensure it is added to `docs/src/installing.md` and `Dockerfile`.
 4. Run `cargo campfire example check-all` and ensure all guest projects build without errors.
 5. Run `cargo campfire example run-all` and visually verify that they work as expected.

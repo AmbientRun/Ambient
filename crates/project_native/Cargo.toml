@@ -8,8 +8,8 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
-ambient_ecs = { path = "../ecs" , version = "0.2.1" }
-ambient_project = { path = "../../shared_crates/project" , version = "0.2.1" }
+ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
+ambient_project = { path = "../../shared_crates/project" , version = "0.3.0-dev" }
 
 [dev-dependencies]
 paste = { workspace = true }
