@@ -3,95 +3,95 @@ id = "transform"
 name = "Transform"
 description = "Entity transform state (including translation, rotation and scale), as well as other transformations for this entity."
 
-[components.cylindrical_billboard_z]
-type = "Empty"
+[components.cylindrical-billboard-z]
+type = "empty"
 name = "Cylindrical billboard Z"
 description = """
 If attached, this ensures this entity is always aligned with the camera, except on the Z-axis.
 This is useful for decorations that the player will be looking at from roughly the same altitude."""
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.euler_rotation]
-type = "Vec3"
+[components.euler-rotation]
+type = "vec3"
 name = "Euler rotation"
 description = "The Euler rotation of this entity in ZYX order."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.inv_local_to_world]
-type = "Mat4"
+[components.inv-local-to-world]
+type = "mat4"
 name = "Inverse Local to World"
 description = """
 Converts a world position to a local position.
 This is automatically updated."""
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.local_to_parent]
-type = "Mat4"
+[components.local-to-parent]
+type = "mat4"
 name = "Local to Parent"
 description = "Transformation from the entity's local space to the parent's space."
-attributes = ["Debuggable", "Networked", "Store", "MaybeResource"]
+attributes = ["debuggable", "networked", "store", "maybe-resource"]
 
-[components.local_to_world]
-type = "Mat4"
+[components.local-to-world]
+type = "mat4"
 name = "Local to World"
 description = "Transformation from the entity's local space to worldspace."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.lookat_target]
-type = "Vec3"
+[components.lookat-target]
+type = "vec3"
 name = "Look-at target"
 description = "The position that this entity should be looking at."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.lookat_up]
-type = "Vec3"
+[components.lookat-up]
+type = "vec3"
 name = "Look-at up"
-description = "When combined with `lookat_target`, the up vector for this entity."
-attributes = ["Debuggable", "Networked", "Store"]
+description = "When combined with `lookat-target`, the up vector for this entity."
+attributes = ["debuggable", "networked", "store"]
 
-[components.mesh_to_local]
-type = "Mat4"
+[components.mesh-to-local]
+type = "mat4"
 name = "Mesh to Local"
 description = "Transformation from mesh-space to the entity's local space."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.mesh_to_world]
-type = "Mat4"
+[components.mesh-to-world]
+type = "mat4"
 name = "Mesh to World"
 description = """
 Transformation from mesh-space to world space.
-This is automatically updated when `mesh_to_local` and `local_to_world` change."""
-attributes = ["Debuggable", "Networked", "Store"]
+This is automatically updated when `mesh-to-local` and `local-to-world` change."""
+attributes = ["debuggable", "networked", "store"]
 
-[components.reset_scale]
-type = "Empty"
+[components.reset-scale]
+type = "empty"
 name = "Reset scale"
 description = "If attached to a transform hierarchy, the scale will be reset at that point, with only rotation/translation considered."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [components.rotation]
-type = "Quat"
+type = "quat"
 name = "Rotation"
 description = "The rotation of this entity."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [components.scale]
-type = "Vec3"
+type = "vec3"
 name = "Scale"
 description = "The scale of this entity."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.spherical_billboard]
-type = "Empty"
+[components.spherical-billboard]
+type = "empty"
 name = "Spherical billboard"
 description = "If attached, this ensures that this entity is always aligned with the camera."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [components.translation]
-type = "Vec3"
+type = "vec3"
 name = "Translation"
 description = "The translation/position of this entity."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 # Concepts
 

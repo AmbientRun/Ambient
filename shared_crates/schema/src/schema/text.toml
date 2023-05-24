@@ -3,38 +3,38 @@ id = "text"
 name = "Text"
 description = "Text rendering."
 
-[components.font_family]
-type = "String"
+[components.font-family]
+type = "string"
 name = "Font family"
 description = "Font family to be used. Can either be 'Default', 'FontAwesome', 'FontAwesomeSolid', 'Code' or a url to a font."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.font_size]
-type = "F32"
+[components.font-size]
+type = "f32"
 name = "Font size"
 description = "Size of the font."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.font_style]
-type = "FontStyle"
+[components.font-style]
+type = "font-style"
 name = "Font style"
 description = "Style of the font."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [components.text]
-type = "String"
+type = "string"
 name = "Text"
 description = "Create a text mesh on this entity."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [enums]
-FontStyle = [
-    { name = "Bold", description = "Use bold for this text." },
-    { name = "BoldItalic", description = "Use bold italic for this text." },
-    { name = "Medium", description = "Use medium for this text." },
-    { name = "MediumItalic", description = "Use medium italic for this text." },
-    { name = "Regular", description = "Use regular for this text." },
-    { name = "Italic", description = "Use italic for this text." },
-    { name = "Light", description = "Use light for this text." },
-    { name = "LightItalic", description = "Use light italic for this text." }
+font-style = [
+    { name = "bold", description = "Use bold for this text." },
+    { name = "bold-italic", description = "Use bold italic for this text." },
+    { name = "medium", description = "Use medium for this text." },
+    { name = "medium-italic", description = "Use medium italic for this text." },
+    { name = "regular", description = "Use regular for this text." },
+    { name = "italic", description = "Use italic for this text." },
+    { name = "light", description = "Use light for this text." },
+    { name = "light-italic", description = "Use light italic for this text." }
 ]

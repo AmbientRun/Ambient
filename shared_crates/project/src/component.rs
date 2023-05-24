@@ -16,7 +16,9 @@ pub struct Component {
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Eq, Serialize)]
 pub enum ContainerType {
+    #[serde(rename = "vec")]
     Vec,
+    #[serde(rename = "option")]
     Option,
 }
 
@@ -27,7 +29,9 @@ pub enum ComponentType {
     Contained {
         #[serde(rename = "type")]
         #[serde(alias = "container_type")]
+        #[serde(alias = "container-type")]
         type_: ContainerType,
+        #[serde(alias = "element-type")]
         element_type: ItemPathBuf,
     },
 }

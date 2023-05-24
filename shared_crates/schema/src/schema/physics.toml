@@ -3,159 +3,159 @@ id = "physics"
 name = "Physics"
 description = "Physics functionality and state."
 
-[components.angular_velocity]
-type = "Vec3"
+[components.angular-velocity]
+type = "vec3"
 name = "Angular velocity"
 description = """
 Angular velocity (radians/second) of this entity in the physics scene.
 Updating this component will update the entity's angular velocity in the physics scene."""
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.cube_collider]
-type = "Vec3"
+[components.cube-collider]
+type = "vec3"
 name = "Cube collider"
 description = """
 If attached, this entity will have a cube physics collider.
 `x, y, z` is the size of the cube."""
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.character_controller_height]
-type = "F32"
+[components.character-controller-height]
+type = "f32"
 name = "Character controller height"
 description = """
 The height of the physics character controller attached to this entity.
-If an entity has both this and a `character_controller_radius`, it will be given a physical character collider."""
-attributes = ["Debuggable", "Networked", "Store"]
+If an entity has both this and a `character-controller-radius`, it will be given a physical character collider."""
+attributes = ["debuggable", "networked", "store"]
 
-[components.character_controller_radius]
-type = "F32"
+[components.character-controller-radius]
+type = "f32"
 name = "Character controller radius"
 description = """
 The radius of the physics character controller attached to this entity.
-If an entity has both this and a `character_controller_height`, it will be given a physical character collider."""
-attributes = ["Debuggable", "Networked", "Store"]
+If an entity has both this and a `character-controller-height`, it will be given a physical character collider."""
+attributes = ["debuggable", "networked", "store"]
 
-[components.collider_from_url]
-type = "String"
+[components.collider-from-url]
+type = "string"
 name = "Collider from URL"
 description = """
 This entity will load its physics collider from the URL.
 The value is the URL to load from."""
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.collider_loaded]
-type = "Empty"
+[components.collider-loaded]
+type = "empty"
 name = "Collider loaded"
 description = """
-This component is automatically attached to an entity once the collider has been loaded (through e.g. `collider_from_url`)."""
-attributes = ["Debuggable", "Networked", "Store"]
+This component is automatically attached to an entity once the collider has been loaded (through e.g. `collider-from-url`)."""
+attributes = ["debuggable", "networked", "store"]
 
-[components.collider_loads]
-type = { type = "Vec", element_type = "EntityId" }
+[components.collider-loads]
+type = { type = "vec", element-type = "entity-id" }
 name = "Collider loads"
 description = "Contains all colliders that were loaded in this physics tick."
-attributes = ["Debuggable", "Networked", "Resource", "Store"]
+attributes = ["debuggable", "networked", "resource", "store"]
 
-[components.contact_offset]
-type = "F32"
+[components.contact-offset]
+type = "f32"
 name = "Contact offset"
 description = """
 Contact offset (in meters) of this entity in the physics scene.
 Updating this component will update the entity's contact offset for each attached shape in the physics scene."""
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [components.density]
-type = "F32"
+type = "f32"
 name = "Density"
 description = """
 The density of this entity.
 This is used to update the `mass` when the entity is rescaled."""
 default = 1.0
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [components.dynamic]
-type = "Bool"
+type = "bool"
 name = "Dynamic"
 description = "If this is true, the entity will be dynamic (i.e. be able to move). Otherwise, it will be static."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [components.kinematic]
-type = "Empty"
+type = "empty"
 name = "Kinematic"
 description = "If attached, and this entity is dynamic, this entity will also be kinematic (i.e. unable to be affected by other entities motion). Otherwise, it will receive forces normally."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.linear_velocity]
-type = "Vec3"
+[components.linear-velocity]
+type = "vec3"
 name = "Linear velocity"
 description = """
 Linear velocity (meters/second) of this entity in the physics scene.
 Updating this component will update the entity's linear velocity in the physics scene."""
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.make_physics_static]
-type = "Bool"
+[components.make-physics-static]
+type = "bool"
 name = "Make physics static"
 description = "All physics objects will be made static when loaded."
-attributes = ["Debuggable", "Networked", "Resource", "Store"]
+attributes = ["debuggable", "networked", "resource", "store"]
 
 [components.mass]
-type = "F32"
+type = "f32"
 name = "Mass"
 description = "The mass of this entity, measured in kilograms."
 default = 1.0
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.physics_controlled]
-type = "Empty"
+[components.physics-controlled]
+type = "empty"
 name = "Physics controlled"
 description = """
 If attached, this entity will be controlled by physics.
 Note that this requires the entity to have a collider."""
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.plane_collider]
-type = "Empty"
+[components.plane-collider]
+type = "empty"
 name = "Plane collider"
 description = "If attached, this entity will have a plane physics collider."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.rest_offset]
-type = "F32"
+[components.rest-offset]
+type = "f32"
 name = "Rest offset"
 description = """
 Rest offset (in meters) of this entity in the physics scene.
 Updating this component will update the entity's rest offset for each attached shape in the physics scene."""
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.sphere_collider]
-type = "F32"
+[components.sphere-collider]
+type = "f32"
 name = "Sphere collider"
 description = """
 If attached, this entity will have a sphere physics collider.
 The value corresponds to the radius of the sphere."""
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.unit_mass]
-type = "F32"
+[components.unit-mass]
+type = "f32"
 name = "Unit mass"
 description = "The mass of a character/unit."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.unit_velocity]
-type = "Vec3"
+[components.unit-velocity]
+type = "vec3"
 name = "Unit velocity"
 description = "The velocity of a character/unit."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.unit_yaw]
-type = "F32"
+[components.unit-yaw]
+type = "f32"
 name = "Unit yaw"
 description = "The yaw of a character/unit."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [components.visualizing]
-type = "Empty"
+type = "empty"
 name = "Visualizing"
 description = "If attached, the physics state of this object will be rendered for debugging purposes."
-attributes = ["Debuggable", "Networked"]
+attributes = ["debuggable", "networked"]

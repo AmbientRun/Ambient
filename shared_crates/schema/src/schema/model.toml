@@ -3,20 +3,20 @@ id = "model"
 name = "Model"
 description = "Information about models attached to entities."
 
-[components.model_animatable]
-type = "Bool"
+[components.model-animatable]
+type = "bool"
 name = "Model animatable"
 description = "Controls whether this model can be animated."
-attributes = ["MaybeResource", "Debuggable", "Networked", "Store"]
+attributes = ["maybe-resource", "debuggable", "networked", "store"]
 
-[components.model_from_url]
-type = "String"
+[components.model-from-url]
+type = "string"
 name = "Model from URL"
 description = "Load a model from the given URL or relative path."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.model_loaded]
-type = "Empty"
+[components.model-loaded]
+type = "empty"
 name = "Model loaded"
 description = "If attached, this entity has a model attached to it."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]

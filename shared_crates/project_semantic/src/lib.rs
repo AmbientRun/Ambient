@@ -1,13 +1,12 @@
 use std::{collections::HashMap, fmt::Debug, marker::PhantomData};
 
-use ambient_project::{
-    CamelCaseIdentifier, ComponentType, Identifier, ItemPath, ItemPathBuf, Manifest,
-};
+use ambient_project::{ComponentType, Identifier, ItemPath, ItemPathBuf, Manifest};
 use ambient_shared_types::{
     primitive_component_definitions, ProceduralMaterialHandle, ProceduralMeshHandle,
     ProceduralSamplerHandle, ProceduralTextureHandle,
 };
 use anyhow::Context as AnyhowContext;
+use convert_case::{Boundary, Case, Casing};
 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 
 use indexmap::IndexMap;
@@ -80,14 +79,9 @@ pub struct Semantic {
 impl Semantic {
     pub fn new() -> Self {
         macro_rules! define_primitive_types {
-            ($(($value:ident, $type:ty)),*) => {
+            ($(($value:ident, $_type:ty)),*) => {
                 [
-                    $(
-                        (
-                            CamelCaseIdentifier::new(stringify!($value)).unwrap(),
-                            Type::Primitive(PrimitiveType::$value),
-                        )
-                    ),*
+                    $((stringify!($value), Type::Primitive(PrimitiveType::$value))),*
                 ]
             };
         }
@@ -108,18 +102,28 @@ impl Semantic {
         };
 
         for (id, ty) in primitive_component_definitions!(define_primitive_types) {
+            let id = id
+                .with_boundaries(&[
+                    Boundary::LowerUpper,
+                    Boundary::DigitUpper,
+                    Boundary::DigitLower,
+                    Boundary::Acronym,
+                ])
+                .to_case(Case::Kebab);
+            let id = Identifier::new(id).unwrap();
+
             let item_id = sem.items.add(ty);
             sem.root_scope.types.insert(id, item_id);
         }
 
         for name in [
-            "Debuggable",
-            "Networked",
-            "Resource",
-            "MaybeResource",
-            "Store",
+            "debuggable",
+            "networked",
+            "resource",
+            "maybe-resource",
+            "store",
         ] {
-            let id = CamelCaseIdentifier::new(name).unwrap();
+            let id = Identifier::new(name).unwrap();
             let item_id = sem.items.add(Attribute { id: id.clone() });
             sem.root_scope.attributes.insert(id, item_id);
         }
@@ -220,8 +224,8 @@ pub struct Scope {
     pub components: IndexMap<Identifier, ItemId<Component>>,
     pub concepts: IndexMap<Identifier, ItemId<Concept>>,
     pub messages: IndexMap<Identifier, ItemId<Message>>,
-    pub types: IndexMap<CamelCaseIdentifier, ItemId<Type>>,
-    pub attributes: IndexMap<CamelCaseIdentifier, ItemId<Attribute>>,
+    pub types: IndexMap<Identifier, ItemId<Type>>,
+    pub attributes: IndexMap<Identifier, ItemId<Attribute>>,
 }
 impl Debug for Scope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -280,9 +284,6 @@ impl Scope {
         for (path, component) in manifest.components.iter() {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
-            let item = item
-                .as_identifier()
-                .expect("component name must be an identifier");
 
             scope.get_or_create_scope_mut(scope_path).components.insert(
                 item.clone(),
@@ -295,9 +296,6 @@ impl Scope {
         for (path, concept) in manifest.concepts.iter() {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
-            let item = item
-                .as_identifier()
-                .expect("component name must be an identifier");
 
             scope.get_or_create_scope_mut(scope_path).concepts.insert(
                 item.clone(),
@@ -310,9 +308,6 @@ impl Scope {
         for (path, message) in manifest.messages.iter() {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
-            let item = item
-                .as_identifier()
-                .expect("component name must be an identifier");
 
             scope.get_or_create_scope_mut(scope_path).messages.insert(
                 item.clone(),
@@ -390,34 +385,22 @@ impl Scope {
 
     fn get_type_id(&self, path: ItemPath) -> Option<ItemId<Type>> {
         let (scope, item) = path.scope_and_item();
-        self.get_scope(scope)?
-            .types
-            .get(item.as_camel_case_identifier()?)
-            .copied()
+        self.get_scope(scope)?.types.get(item).copied()
     }
 
     fn get_attribute_id(&self, path: ItemPath) -> Option<ItemId<Attribute>> {
         let (scope, item) = path.scope_and_item();
-        self.get_scope(scope)?
-            .attributes
-            .get(item.as_camel_case_identifier()?)
-            .copied()
+        self.get_scope(scope)?.attributes.get(item).copied()
     }
 
     fn get_concept_id(&self, path: ItemPath) -> Option<ItemId<Concept>> {
         let (scope, item) = path.scope_and_item();
-        self.get_scope(scope)?
-            .concepts
-            .get(item.as_identifier()?)
-            .copied()
+        self.get_scope(scope)?.concepts.get(item).copied()
     }
 
     fn get_component_id(&self, path: ItemPath) -> Option<ItemId<Component>> {
         let (scope, item) = path.scope_and_item();
-        self.get_scope(scope)?
-            .components
-            .get(item.as_identifier()?)
-            .copied()
+        self.get_scope(scope)?.components.get(item).copied()
     }
 }
 
@@ -459,7 +442,7 @@ impl<T: Item> std::hash::Hash for ItemId<T> {
 impl<T: Item> Copy for ItemId<T> {}
 impl<T: Item> Clone for ItemId<T> {
     fn clone(&self) -> Self {
-        Self(self.0.clone(), self.1.clone())
+        *self
     }
 }
 impl<T: Item + Debug> Debug for ItemId<T> {
@@ -514,7 +497,7 @@ impl<T: Item> std::hash::Hash for ResolvableItemId<T> {
 #[derive(Clone, PartialEq, Debug)]
 pub enum ResolvedValue {
     Primitive(PrimitiveValue),
-    Enum(ItemId<Type>, CamelCaseIdentifier),
+    Enum(ItemId<Type>, Identifier),
 }
 impl ResolvedValue {
     fn from_toml_value(value: &toml::Value, items: &ItemMap, id: ItemId<Type>) -> Self {
@@ -767,7 +750,7 @@ impl Item for Message {
                 name.clone(),
                 match type_ {
                     ResolvableItemId::Unresolved(path) => {
-                        let id = context.get_type_id(items, &path).unwrap();
+                        let id = context.get_type_id(items, path).unwrap();
                         ResolvableItemId::Resolved(id)
                     }
                     t => t.clone(),
@@ -795,7 +778,7 @@ impl Message {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Attribute {
-    pub id: CamelCaseIdentifier,
+    pub id: Identifier,
 }
 impl Item for Attribute {
     const TYPE: ItemType = ItemType::Attribute;
@@ -849,13 +832,13 @@ primitive_component_definitions!(define_primitive_type);
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Enum {
-    pub id: CamelCaseIdentifier,
+    pub id: Identifier,
     pub members: Vec<EnumMember>,
 }
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct EnumMember {
-    pub name: CamelCaseIdentifier,
+    pub name: Identifier,
     pub description: Option<String>,
 }
 impl Debug for EnumMember {
@@ -880,7 +863,7 @@ pub enum Type {
     Enum(Enum),
 }
 impl Type {
-    fn from_project_enum(id: CamelCaseIdentifier, value: &ambient_project::Enum) -> Self {
+    fn from_project_enum(id: Identifier, value: &ambient_project::Enum) -> Self {
         Self::Enum(Enum {
             id,
             members: value.0.iter().map(|v| v.into()).collect(),
@@ -958,8 +941,8 @@ impl PrimitiveValue {
             Type::Primitive(pt) => Self::primitive_from_toml_value(value, *pt)
                 .context("Failed to parse primitive value")
                 .unwrap(),
-            Type::Vec(v) => todo!(),
-            Type::Option(o) => todo!(),
+            Type::Vec(_v) => todo!(),
+            Type::Option(_o) => todo!(),
             Type::Enum(_) => unreachable!("Enum should be resolved"),
         }
     }

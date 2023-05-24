@@ -3,20 +3,20 @@ id = "network"
 name = "Network"
 description = "Network-related state."
 
-[components.is_remote_entity]
-type = "Empty"
+[components.is-remote-entity]
+type = "empty"
 name = "Is remote entity"
 description = "If attached, this entity was not spawned locally (e.g. if this is the client, it was spawned by the server)."
-attributes = ["Debuggable", "Networked"]
+attributes = ["debuggable", "networked"]
 
-[components.persistent_resources]
-type = "Empty"
+[components.persistent-resources]
+type = "empty"
 name = "Persistent resources"
 description = "If attached, this entity contains global resources that are persisted to disk and synchronized to clients."
-attributes = ["Debuggable", "Networked"]
+attributes = ["debuggable", "networked"]
 
-[components.synced_resources]
-type = "Empty"
+[components.synced-resources]
+type = "empty"
 name = "Synchronized resources"
 description = "If attached, this entity contains global resources that are synchronized to clients, but not persisted."
-attributes = ["Debuggable", "Networked"]
+attributes = ["debuggable", "networked"]

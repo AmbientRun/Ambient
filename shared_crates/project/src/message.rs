@@ -17,9 +17,9 @@ mod tests {
     fn does_message_preserve_order_of_fields() {
         let t = r#"
         [fields]
-        a = "A"
-        c = "C"
-        b = "B"
+        a = "a"
+        c = "c"
+        b = "b"
         "#;
 
         let message: Message = toml::from_str(&t).unwrap();

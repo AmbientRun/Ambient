@@ -19,3 +19,4 @@ thiserror = { workspace = true }
 paste = { workspace = true }
 data-encoding = { workspace = true }
 indexmap = { workspace = true }
+convert_case = { workspace = true }

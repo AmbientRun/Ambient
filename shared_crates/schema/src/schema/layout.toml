@@ -3,151 +3,151 @@ id = "layout"
 name = "Layout"
 description = "Layout components such as flow, margins etc."
 
-[components.align_horizontal]
-type = "Align"
+[components.align-horizontal]
+type = "align"
 name = "Align horizontal"
 description = "Layout alignment: horizontal."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.align_vertical]
-type = "Align"
+[components.align-vertical]
+type = "align"
 name = "Align vertical"
 description = "Layout alignment: vertical."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [components.docking]
-type = "Docking"
+type = "docking"
 name = "Docking"
 description = "Layout docking."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.fit_horizontal]
-type = "Fit"
+[components.fit-horizontal]
+type = "fit"
 name = "Fit horizontal"
 description = "Layout fit: horizontal."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.fit_vertical]
-type = "Fit"
+[components.fit-vertical]
+type = "fit"
 name = "Fit vertical"
 description = "Layout fit: vertical."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [components.layout]
-type = "Layout"
+type = "layout"
 name = "Layout"
 description = "Layout."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [components.orientation]
-type = "Orientation"
+type = "orientation"
 name = "Orientation"
 description = "Layout orientation."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.is_book_file]
-type = "Empty"
+[components.is-book-file]
+type = "empty"
 name = "Is book file"
-description = "This is a file in a `layout_bookcase`."
-attributes = ["Debuggable", "Networked", "Store"]
+description = "This is a file in a `layout-bookcase`."
+attributes = ["debuggable", "networked", "store"]
 
 [components.margin]
-type = "Vec4"
+type = "vec4"
 name = "Margin"
 description = "Layout margin: [top, right, bottom, left]."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [components.padding]
-type = "Vec4"
+type = "vec4"
 name = "Padding"
 description = "Layout padding: [top, right, bottom, left]."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.mesh_to_local_from_size]
-type = "Empty"
+[components.mesh-to-local-from-size]
+type = "empty"
 name = "Mesh to local from size"
-description = "Update the `mesh_to_local` based on the width and height of this entity."
-attributes = ["Debuggable", "Networked", "Store"]
+description = "Update the `mesh-to-local` based on the width and height of this entity."
+attributes = ["debuggable", "networked", "store"]
 
-[components.min_height]
-type = "F32"
+[components.min-height]
+type = "f32"
 name = "Minimum height"
 description = "The minimum height of a UI element."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.min_width]
-type = "F32"
+[components.min-width]
+type = "f32"
 name = "Minimum width"
 description = "The minimum width of a UI element."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.max_height]
-type = "F32"
+[components.max-height]
+type = "f32"
 name = "Maximum height"
 description = "The maximum height of a UI element."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.max_width]
-type = "F32"
+[components.max-width]
+type = "f32"
 name = "Maximum width"
 description = "The maximum width of a UI element."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [components.screen]
-type = "Empty"
+type = "empty"
 name = "Screen"
 description = "This entity will be treated as a screen. Used by the Screen ui component."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.space_between_items]
-type = "F32"
+[components.space-between-items]
+type = "f32"
 name = "Space between items"
 description = "Space between items in a layout."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [components.width]
-type = "F32"
+type = "f32"
 name = "Width"
 description = "The width of a UI element."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [components.height]
-type = "F32"
+type = "f32"
 name = "Height"
 description = "The height of a UI element."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
-[components.gpu_ui_size]
-type = "Vec4"
+[components.gpu-ui-size]
+type = "vec4"
 name = "GPU UI size"
 description = "Upload the width and height of this UI element to the GPU."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["debuggable", "networked", "store"]
 
 [enums]
-Align = [
-    {name = "Begin", description = "Begin"},
-    {name = "Center", description = "Center"},
-    {name = "End", description = "End"}
+align = [
+    {name = "begin", description = "Begin"},
+    {name = "center", description = "Center"},
+    {name = "end", description = "End"}
 ]
-Fit = [
-    {name = "None", description = "None"},
-    {name = "Parent", description = "Parent"},
-    {name = "Children", description = "Children"}
+fit = [
+    {name = "none", description = "None"},
+    {name = "parent", description = "Parent"},
+    {name = "children", description = "Children"}
 ]
-Orientation = [
-    {name = "Horizontal", description = "Horizontal"},
-    {name = "Vertical", description = "Vertical"}
+orientation = [
+    {name = "horizontal", description = "Horizontal"},
+    {name = "vertical", description = "Vertical"}
 ]
-Docking = [
-    {name = "Left", description = "Left"},
-    {name = "Right", description = "Right"},
-    {name = "Top", description = "Top"},
-    {name = "Bottom", description = "Bottom"},
-    {name = "Fill", description = "Fill"}
+docking = [
+    {name = "left", description = "Left"},
+    {name = "right", description = "Right"},
+    {name = "top", description = "Top"},
+    {name = "bottom", description = "Bottom"},
+    {name = "fill", description = "Fill"}
 ]
-Layout = [
-    {name = "Flow", description = "Bottom-up flow layout."},
-    {name = "Dock", description = "Top-down dock layout."},
-    {name = "Bookcase", description = "Min-max bookcase layout."},
-    {name = "WidthToChildren", description = "Width to children."}
+layout = [
+    {name = "flow", description = "Bottom-up flow layout."},
+    {name = "dock", description = "Top-down dock layout."},
+    {name = "bookcase", description = "Min-max bookcase layout."},
+    {name = "width-to-children", description = "Width to children."}
 ]

@@ -1,9 +1,7 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    CamelCaseIdentifier, Component, Concept, Enum, Identifier, ItemPathBuf, Message, Version,
-};
+use crate::{Component, Concept, Enum, Identifier, ItemPathBuf, Message, Version};
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Manifest {
@@ -18,7 +16,7 @@ pub struct Manifest {
     #[serde(default)]
     pub messages: IndexMap<ItemPathBuf, Message>,
     #[serde(default)]
-    pub enums: IndexMap<CamelCaseIdentifier, Enum>,
+    pub enums: IndexMap<Identifier, Enum>,
 }
 impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, toml::de::Error> {
@@ -63,12 +61,12 @@ mod tests {
     use indexmap::IndexMap;
 
     use crate::{
-        Build, BuildRust, CamelCaseIdentifier, Component, ComponentType, Concept, ContainerType,
-        Enum, EnumMember, Identifier, ItemPathBuf, Manifest, Project, Version, VersionSuffix,
+        Build, BuildRust, Component, ComponentType, Concept, ContainerType, Enum, EnumMember,
+        Identifier, ItemPathBuf, Manifest, Project, Version, VersionSuffix,
     };
 
-    fn cci(s: &str) -> CamelCaseIdentifier {
-        CamelCaseIdentifier::new(s).unwrap()
+    fn i(s: &str) -> Identifier {
+        Identifier::new(s).unwrap()
     }
 
     #[test]
@@ -80,7 +78,7 @@ mod tests {
         version = "0.0.1"
 
         [components]
-        cell = { type = "I32", name = "Cell", description = "The ID of the cell this player is in", attributes = ["Store"] }
+        cell = { type = "i32", name = "Cell", description = "The ID of the cell this player is in", attributes = ["store"] }
 
         [concepts.cell]
         name = "Cell"
@@ -93,7 +91,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 project: Project {
-                    id: Identifier::new("tictactoe").unwrap(),
+                    id: i("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     description: None,
@@ -111,8 +109,8 @@ mod tests {
                     Component {
                         name: Some("Cell".to_string()),
                         description: Some("The ID of the cell this player is in".to_string()),
-                        type_: ComponentType::Item(cci("I32").into()),
-                        attributes: vec![cci("Store").into()],
+                        type_: ComponentType::Item(i("i32").into()),
+                        attributes: vec![i("store").into()],
                         default: None,
                     }
                     .into()
@@ -152,7 +150,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 project: Project {
-                    id: Identifier::new("tictactoe").unwrap(),
+                    id: i("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     description: None,
@@ -179,15 +177,15 @@ mod tests {
 
         const TOML: &str = r#"
         [project]
-        id = "my_project"
+        id = "my-project"
         name = "My Project"
         version = "0.0.1"
 
         [components]
-        "core::transform::rotation" = { type = "Quat", name = "Rotation", description = "" }
-        "core::transform::scale" = { type = "Vec3", name = "Scale", description = "" }
-        "core::transform::spherical_billboard" = { type = "Empty", name = "Spherical billboard", description = "" }
-        "core::transform::translation" = { type = "Vec3", name = "Translation", description = "" }
+        "core::transform::rotation" = { type = "quat", name = "Rotation", description = "" }
+        "core::transform::scale" = { type = "vec3", name = "Scale", description = "" }
+        "core::transform::spherical-billboard" = { type = "empty", name = "Spherical billboard", description = "" }
+        "core::transform::translation" = { type = "vec3", name = "Translation", description = "" }
 
         [concepts."ns::transformable"]
         name = "Transformable"
@@ -205,7 +203,7 @@ mod tests {
             manifest,
             Manifest {
                 project: Project {
-                    id: Identifier::new("my_project").unwrap(),
+                    id: i("my-project"),
                     name: Some("My Project".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     description: None,
@@ -224,7 +222,7 @@ mod tests {
                         Component {
                             name: Some("Rotation".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::Item(cci("Quat").into()),
+                            type_: ComponentType::Item(i("quat").into()),
                             attributes: vec![],
                             default: None,
                         }
@@ -235,18 +233,18 @@ mod tests {
                         Component {
                             name: Some("Scale".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::Item(cci("Vec3").into()),
+                            type_: ComponentType::Item(i("vec3").into()),
                             attributes: vec![],
                             default: None,
                         }
                         .into()
                     ),
                     (
-                        ItemPathBuf::new("core::transform::spherical_billboard").unwrap(),
+                        ItemPathBuf::new("core::transform::spherical-billboard").unwrap(),
                         Component {
                             name: Some("Spherical billboard".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::Item(cci("Empty").into()),
+                            type_: ComponentType::Item(i("empty").into()),
                             attributes: vec![],
                             default: None,
                         }
@@ -257,7 +255,7 @@ mod tests {
                         Component {
                             name: Some("Translation".to_string()),
                             description: Some("".to_string()),
-                            type_: ComponentType::Item(cci("Vec3").into()),
+                            type_: ComponentType::Item(i("vec3").into()),
                             attributes: vec![],
                             default: None,
                         }
@@ -331,9 +329,9 @@ mod tests {
         version = "0.0.1"
 
         [enums]
-        CellState = [
-            { name = "Free", description = "The cell is free" },
-            { name = "Taken", description = "The cell is taken" }
+        cell-state = [
+            { name = "free", description = "The cell is free" },
+            { name = "taken", description = "The cell is taken" }
         ]
         "#;
 
@@ -341,7 +339,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 project: Project {
-                    id: Identifier::new("tictactoe").unwrap(),
+                    id: i("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     description: None,
@@ -354,14 +352,14 @@ mod tests {
                 concepts: IndexMap::new(),
                 messages: IndexMap::new(),
                 enums: IndexMap::from_iter([(
-                    CamelCaseIdentifier::new("CellState").unwrap(),
+                    i("cell-state"),
                     Enum(vec![
                         EnumMember {
-                            name: cci("Free"),
+                            name: i("free"),
                             description: Some("The cell is free".to_string()),
                         },
                         EnumMember {
-                            name: cci("Taken"),
+                            name: i("taken"),
                             description: Some("The cell is taken".to_string()),
                         }
                     ])
@@ -380,9 +378,9 @@ mod tests {
         version = "0.0.1"
 
         [components]
-        test = { type = "I32", name = "Test", description = "Test" }
-        vec_test = { type = { container_type = "Vec", element_type = "I32" }, name = "Test", description = "Test" }
-        option_test = { type = { container_type = "Option", element_type = "I32" }, name = "Test", description = "Test" }
+        test = { type = "i32", name = "Test", description = "Test" }
+        vec-test = { type = { container_type = "vec", element_type = "i32" }, name = "Test", description = "Test" }
+        option-test = { type = { container_type = "option", element_type = "i32" }, name = "Test", description = "Test" }
 
         "#;
 
@@ -390,7 +388,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 project: Project {
-                    id: Identifier::new("test").unwrap(),
+                    id: i("test"),
                     name: Some("Test".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     description: None,
@@ -409,20 +407,20 @@ mod tests {
                         Component {
                             name: Some("Test".to_string()),
                             description: Some("Test".to_string()),
-                            type_: ComponentType::Item(cci("I32").into()),
+                            type_: ComponentType::Item(i("i32").into()),
                             attributes: vec![],
                             default: None,
                         }
                         .into()
                     ),
                     (
-                        ItemPathBuf::new("vec_test").unwrap(),
+                        ItemPathBuf::new("vec-test").unwrap(),
                         Component {
                             name: Some("Test".to_string()),
                             description: Some("Test".to_string()),
                             type_: ComponentType::Contained {
                                 type_: ContainerType::Vec,
-                                element_type: cci("I32").into()
+                                element_type: i("i32").into()
                             },
                             attributes: vec![],
                             default: None,
@@ -430,13 +428,13 @@ mod tests {
                         .into()
                     ),
                     (
-                        ItemPathBuf::new("option_test").unwrap(),
+                        ItemPathBuf::new("option-test").unwrap(),
                         Component {
                             name: Some("Test".to_string()),
                             description: Some("Test".to_string()),
                             type_: ComponentType::Contained {
                                 type_: ContainerType::Option,
-                                element_type: cci("I32").into()
+                                element_type: i("i32").into()
                             },
                             attributes: vec![],
                             default: None,
