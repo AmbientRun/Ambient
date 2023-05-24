@@ -4,10 +4,15 @@
 
 use anyhow::{bail, Context};
 use clap::Parser;
-use indicatif::{ProgressBar, ProgressStyle};
 use std::{process::Command, time::Instant};
 
-const TEST_PATHS: &[&str] = &[
+mod failure;
+use failure::*;
+
+mod progress;
+use progress::*;
+
+const TESTS: &[&str] = &[
     "guest/rust/examples/basics/async",
     "guest/rust/examples/basics/decals",
     "guest/rust/examples/basics/first_person_camera",
@@ -41,84 +46,39 @@ pub enum GoldenImages {
     Check,
 }
 
-fn status_emoji(status: bool) -> char {
-    if status {
-        '✅'
-    } else {
-        '❌'
-    }
-}
-
-#[derive(Debug)]
-struct Failure {
-    test_path: &'static str,
-    stdout: String,
-    stderr: String,
-}
-
-impl Failure {
-    fn from_output(test_path: &'static str, output: &std::process::Output) -> Self {
-        let stdout =
-            String::from_utf8(output.stdout.clone()).expect("stdout must be a valid UTF-8");
-        let stderr =
-            String::from_utf8(output.stderr.clone()).expect("stderr must be a valid UTF-8");
-        Failure {
-            test_path,
-            stdout,
-            stderr,
-        }
-    }
-    fn log(&self) {
-        log::error!("{} failed", self.test_path);
-        log::error!("stdout:");
-        self.stdout.lines().for_each(|line| eprintln!("{line}"));
-        log::error!("stderr:");
-        self.stderr.lines().for_each(|line| eprintln!("{line}"));
-        eprintln!(); // Space between consecutive errors.
-    }
-}
-
 pub(crate) fn main(_gi: &GoldenImages) -> anyhow::Result<()> {
     let start_time = Instant::now();
-    build_tests().with_context(|| format!("Building {} tests", TEST_PATHS.len()))?;
-    run_tests().with_context(|| format!("Running {} tests", TEST_PATHS.len()))?;
+    build_tests().with_context(|| format!("Building {} tests", TESTS.len()))?;
+    run_tests().with_context(|| format!("Running {} tests", TESTS.len()))?;
     log::info!(
         "Running {} golden image tests took {:.03} seconds",
-        TEST_PATHS.len(),
+        TESTS.len(),
         start_time.elapsed().as_secs_f64()
     );
     Ok(())
 }
 
-fn default_progress_bar() -> ProgressBar {
-    ProgressBar::new(TEST_PATHS.len() as _).with_style(
-        ProgressStyle::with_template("{wide_bar} {msg} eta={eta} {pos}/{len}")
-            .expect("Invalid progress bar style"),
-    )
-}
-
 fn build_tests() -> anyhow::Result<()> {
-    let pb = default_progress_bar();
-    pb.println(format!("Building {} tests", TEST_PATHS.len()));
+    let pb = Progress::new(TESTS.len());
+    pb.println(format!("Building {} tests", TESTS.len()));
     let mut failures = vec![];
-    for &test_path in TEST_PATHS {
-        pb.set_message(test_path);
+    for &test in TESTS {
+        pb.set_message(test);
         let start_time = Instant::now();
-        let program = "cargo";
-        let args = ["run", "--release", "--", "build", "--release", test_path];
-        let output = Command::new(program).args(args).output()?;
+        let args = ["run", "--release", "--", "build", "--release", test];
+        let output = Command::new("cargo").args(args).output()?;
         if !output.status.success() {
-            failures.push(Failure::from_output(test_path, &output));
+            failures.push(Failure::from_output(test, &output));
         }
         pb.println(format!(
-            "{} | {:.03}s | {program} {}",
+            "{} | {:.03}s | cargo {}",
             status_emoji(output.status.success()),
             start_time.elapsed().as_secs_f64(),
             args.join(" "),
         ));
-        pb.inc(1);
+        pb.inc();
     }
-    pb.finish_and_clear();
+    pb.finish();
     if !failures.is_empty() {
         for failure in &failures {
             failure.log();
@@ -129,21 +89,19 @@ fn build_tests() -> anyhow::Result<()> {
 }
 
 fn run_tests() -> anyhow::Result<()> {
-    let pb = default_progress_bar();
-    pb.println(format!("Running {} tests", TEST_PATHS.len()));
+    let pb = Progress::new(TESTS.len());
+    pb.println(format!("Running {} tests", TESTS.len()));
     let mut failures = vec![];
-    for &test_path in TEST_PATHS {
-        pb.set_message(test_path);
+    for &test in TESTS {
+        pb.set_message(test);
         let start_time = Instant::now();
-        // log::info!("Testing: {test_path}");
-        let program = "cargo";
         let args = [
             "run",
             "--release",
             "--",
             "run",
             "--release",
-            test_path,
+            test,
             "--headless",
             "--no-proxy",
             "--golden-image-test",
@@ -158,19 +116,19 @@ fn run_tests() -> anyhow::Result<()> {
             "--http-interface-port",
             "10000",
         ];
-        let output = Command::new(program).args(args).output()?;
+        let output = Command::new("cargo").args(args).output()?;
         if !output.status.success() {
-            failures.push(Failure::from_output(test_path, &output));
+            failures.push(Failure::from_output(test, &output));
         }
         pb.println(format!(
-            "{} | {:.03}s | {program} {}",
+            "{} | {:.03}s | cargo {}",
             status_emoji(output.status.success()),
             start_time.elapsed().as_secs_f64(),
             args.join(" "),
         ));
-        pb.inc(1);
+        pb.inc();
     }
-    pb.finish_and_clear();
+    pb.finish();
     if !failures.is_empty() {
         for failure in &failures {
             failure.log();
@@ -178,4 +136,12 @@ fn run_tests() -> anyhow::Result<()> {
         bail!("{} tests failed", failures.len());
     }
     Ok(())
+}
+
+fn status_emoji(status: bool) -> char {
+    if status {
+        '✅'
+    } else {
+        '❌'
+    }
 }
