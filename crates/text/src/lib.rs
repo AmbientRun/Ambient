@@ -408,6 +408,15 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                         };
                         match process_result {
                             Ok(BrushAction::Draw(vertices)) => {
+                                if vertices.is_empty() {
+                                    // Mesh has no vertices. We have to clear any left over GPU state.
+                                    world
+                                        .remove_components(
+                                            id,
+                                            vec![primitives().desc(), mesh().desc()],
+                                        )
+                                        .unwrap();
+                                }
                                 let mut data = Entity::new();
                                 if use_gpu && !vertices.is_empty() {
                                     let cpu_mesh = mesh_from_glyph_vertices(vertices);
