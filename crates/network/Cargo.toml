@@ -49,7 +49,8 @@ enum_dispatch = { workspace = true }
 pin-project = "1.0"
 uuid = { workspace = true }
 scopeguard = { workspace = true }
-rustls-native-certs = { workspace = true }
+rustls-native-certs = { workspace = true, optional = true }
+webpki-roots = { workspace = true, optional = true }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 async-trait = { workspace = true }
@@ -57,3 +58,7 @@ quinn = { workspace = true }
 rustls = { workspace = true }
 tokio-util = "0.7"
 tokio = { workspace = true }
+
+[features]
+tls-webpki-roots = ["dep:webpki-roots"]
+tls-native-roots = ["dep:rustls-native-certs"]
