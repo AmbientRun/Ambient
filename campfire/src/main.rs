@@ -2,6 +2,7 @@ use clap::Parser;
 
 mod doc;
 mod example;
+mod golden_images;
 mod release;
 
 #[derive(Parser, Clone)]
@@ -13,6 +14,9 @@ pub enum Cli {
     /// Example-related functionality
     #[command(subcommand)]
     Example(example::Example),
+    /// Running golden image tests
+    #[command(subcommand)]
+    GoldenImages(golden_images::GoldenImages),
     /// Release-related functionality
     #[command(subcommand)]
     Release(release::Release),
@@ -36,6 +40,7 @@ fn main() -> anyhow::Result<()> {
     match cli {
         Cli::Doc(doc) => doc::main(&doc),
         Cli::Example(ex) => example::main(&ex),
+        Cli::GoldenImages(gi) => golden_images::main(&gi),
         Cli::Release(re) => release::main(&re),
 
         Cli::Clean => example::clean(),
