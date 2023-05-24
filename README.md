@@ -9,7 +9,7 @@ https://user-images.githubusercontent.com/707827/236472178-ed520f95-0e0a-434e-96
 
 Ambient is a runtime for building high-performance multiplayer games and 3D applications, powered by WebAssembly, Rust and WebGPU.
 
-See our [announcement blog post](https://www.ambient.run/post/introducing-ambient) for more details.
+See our [announcement blog post](https://www.ambient.run/post/introducing-ambient) for more details, or jump into our [documentation](https://ambientrun.github.io/Ambient/).
 
 ## Design principles
 
@@ -77,12 +77,6 @@ ambient join proxy-eu.ambient.run:9176
 ```
 
 Note that content is always streamed, so the only thing the joining user requires is Ambient itself to join the session.
-
-## Contributing
-
-We welcome community contributions to this project.
-
-Please talk with us on Discord beforehand if you'd like to contribute a larger piece of work.
 
 ## License
 

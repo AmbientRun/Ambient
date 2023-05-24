@@ -10,6 +10,9 @@ pub use entity_id::*;
 mod shapes;
 pub use shapes::*;
 
+mod procedurals;
+pub use procedurals::*;
+
 /// Spatial audio system
 pub mod spatial_audio;
 
@@ -17,6 +20,7 @@ pub mod spatial_audio;
 pub use ambient_shared_types::{CursorIcon, ModifiersState, MouseButton, VirtualKeyCode};
 pub use futures::{Future, FutureExt};
 pub use glam::{f32::*, u32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
+pub use ulid::Ulid;
 
 /// In Rust, functions that can fail are expected to return a [Result] type.
 /// [ResultEmpty] is a [Result] type that has no value and can accept

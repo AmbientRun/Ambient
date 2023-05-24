@@ -10,17 +10,17 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_std = { path = "../std" , version = "0.2.1" }
-ambient_core = { path = "../core" , version = "0.2.1" }
-ambient_ecs = { path = "../ecs" , version = "0.2.1" }
-ambient_renderer = { path = "../renderer" , version = "0.2.1" }
-ambient_element = { path = "../../shared_crates/element" , version = "0.2.1" }
-ambient_ui_native = { path = "../ui_native" , version = "0.2.1" }
-ambient_physics = { path = "../physics" , version = "0.2.1" }
-ambient_model = { path = "../model" , version = "0.2.1" }
-ambient_animation = { path = "../animation" , version = "0.2.1" }
-ambient_editor_derive = { path = "../../shared_crates/editor_derive" , version = "0.2.1" }
-physxx = { path = "../../libs/physxx" , version = "0.2.1" }
+ambient_std = { path = "../std" , version = "0.3.0-dev" }
+ambient_core = { path = "../core" , version = "0.3.0-dev" }
+ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
+ambient_renderer = { path = "../renderer" , version = "0.3.0-dev" }
+ambient_element = { path = "../../shared_crates/element" , version = "0.3.0-dev" }
+ambient_ui_native = { path = "../ui_native" , version = "0.3.0-dev" }
+ambient_physics = { path = "../physics" , version = "0.3.0-dev" }
+ambient_model = { path = "../model" , version = "0.3.0-dev" }
+ambient_animation = { path = "../animation" , version = "0.3.0-dev" }
+ambient_editor_derive = { path = "../../shared_crates/editor_derive" , version = "0.3.0-dev" }
+physxx = { path = "../../libs/physxx" , version = "0.3.0-dev" }
 glam = { workspace = true }
 env_logger = { workspace = true }
 gltf = { workspace = true }

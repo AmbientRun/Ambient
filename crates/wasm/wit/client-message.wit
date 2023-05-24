@@ -4,7 +4,7 @@ default interface client-message {
     variant target {
         server-unreliable,
         server-reliable,
-        local-broadcast,
+        local-broadcast(bool),
         local(entity-id),
     }
 

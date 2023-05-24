@@ -16,23 +16,25 @@ pub enum Source {
 #[derive(Clone, PartialEq, Debug)]
 pub struct SerializedMessage {
     /// If unspecified, this will broadcast to all modules
-    pub(super) module_id: Option<EntityId>,
+    pub(super) target: Target,
     pub(super) source: Source,
     pub(super) name: String,
     pub(super) data: Vec<u8>,
 }
 
-pub fn send(
-    world: &mut World,
-    module_id: Option<EntityId>,
-    source: Source,
-    name: String,
-    data: Vec<u8>,
-) {
+#[derive(Clone, PartialEq, Debug)]
+pub enum Target {
+    /// Send to all modules on this side
+    All { include_self: bool },
+    /// Send to a specific module on this side
+    Module(EntityId),
+}
+
+pub fn send(world: &mut World, target: Target, source: Source, name: String, data: Vec<u8>) {
     world
         .resource_mut(pending_messages())
         .push(SerializedMessage {
-            module_id,
+            target,
             source,
             name,
             data,
@@ -42,7 +44,7 @@ pub fn send(
 pub(super) fn run(
     world: &mut World,
     SerializedMessage {
-        module_id,
+        target,
         source,
         name,
         data,
@@ -57,8 +59,17 @@ pub(super) fn run(
         None
     };
 
-    if let Some(module_id) = module_id {
-        match world.get_cloned(module_id, module_state()) {
+    match target {
+        Target::All { include_self } => {
+            for (id, sms) in query(module_state()).collect_cloned(world, None) {
+                if Some(id) == source_id && !include_self {
+                    continue;
+                }
+
+                super::run(world, id, sms, &source, &name, &data)
+            }
+        }
+        Target::Module(module_id) => match world.get_cloned(module_id, module_state()) {
             Ok(state) => super::run(world, module_id, state, &source, &name, &data),
             Err(_) => {
                 let module_name = world
@@ -70,15 +81,7 @@ pub(super) fn run(
                     &format!("Received message for unloaded module {module_id} ({module_name}); message {name:?} from {source:?}")
                 );
             }
-        }
-    } else {
-        for (id, sms) in query(module_state()).collect_cloned(world, None) {
-            if Some(id) == source_id {
-                continue;
-            }
-
-            super::run(world, id, sms, &source, &name, &data)
-        }
+        },
     }
 }
 
@@ -90,7 +93,9 @@ impl<T: ambient_ecs::RuntimeMessage> RuntimeMessageExt for T {
         run(
             world,
             SerializedMessage {
-                module_id,
+                target: module_id
+                    .map(|id| Target::Module(id))
+                    .unwrap_or(Target::All { include_self: true }),
                 source: Source::Runtime,
                 name: T::id().to_string(),
                 data: self.serialize_message()?,

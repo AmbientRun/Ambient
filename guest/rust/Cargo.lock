@@ -18,8 +18,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
 
 [[package]]
+name = "adler32"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aae1277d39aeec15cb388266ecc24b11c80469deae6067e17a1a7aa9e5c1f234"
+
+[[package]]
 name = "ambient_api"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api_core",
  "ambient_cb",
@@ -30,12 +36,12 @@ dependencies = [
  "futures",
  "glam",
  "once_cell",
- "rand",
+ "rand 0.8.5",
 ]
 
 [[package]]
 name = "ambient_api_core"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api_macros",
  "ambient_project_rt",
@@ -47,14 +53,16 @@ dependencies = [
  "glam",
  "once_cell",
  "paste",
- "rand",
+ "rand 0.8.5",
+ "static_assertions",
  "thiserror",
+ "ulid",
  "wit-bindgen",
 ]
 
 [[package]]
 name = "ambient_api_macros"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_project",
  "ambient_project_macro_common",
@@ -68,11 +76,11 @@ dependencies = [
 
 [[package]]
 name = "ambient_cb"
-version = "0.2.1"
+version = "0.3.0-dev"
 
 [[package]]
 name = "ambient_color"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "glam",
  "hex",
@@ -82,7 +90,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_editor_derive"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "convert_case",
  "itertools",
@@ -95,7 +103,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_element"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_cb",
  "ambient_element_component",
@@ -114,7 +122,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_element_component"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "itertools",
  "proc-macro-crate",
@@ -125,14 +133,14 @@ dependencies = [
 
 [[package]]
 name = "ambient_friendly_id"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
- "rand",
+ "rand 0.8.5",
 ]
 
 [[package]]
 name = "ambient_guest_bridge"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api_core",
  "ambient_shared_types",
@@ -140,10 +148,10 @@ dependencies = [
 
 [[package]]
 name = "ambient_math"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "glam",
- "rand",
+ "rand 0.8.5",
  "serde",
 ]
 
@@ -169,7 +177,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_project"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "anyhow",
  "proc-macro2",
@@ -182,9 +190,10 @@ dependencies = [
 
 [[package]]
 name = "ambient_project_macro_common"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_project",
+ "ambient_shared_types",
  "anyhow",
  "proc-macro2",
  "quote",
@@ -196,7 +205,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_project_rt"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "byteorder",
  "glam",
@@ -205,20 +214,22 @@ dependencies = [
 
 [[package]]
 name = "ambient_schema"
-version = "0.2.1"
+version = "0.3.0-dev"
 
 [[package]]
 name = "ambient_shared_types"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "bitflags 1.3.2",
+ "paste",
  "serde",
  "strum",
+ "ulid",
 ]
 
 [[package]]
 name = "ambient_time"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "itertools",
  "thiserror",
@@ -226,7 +237,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_ui"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_cb",
  "ambient_color",
@@ -241,7 +252,7 @@ dependencies = [
  "indexmap",
  "itertools",
  "parking_lot",
- "rand",
+ "rand 0.8.5",
  "serde",
  "serde_json",
 ]
@@ -272,14 +283,14 @@ checksum = "088ccb346677e658e7ccd9627c62576fba881f4db7fab71fa9e21bf31c0aa4cb"
 
 [[package]]
 name = "asset_loading"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "async"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -292,7 +303,7 @@ checksum = "857253367827bd9d0fd973f0ef15506a96e79e41b0ad7aa691203a4e3214f6c8"
 
 [[package]]
 name = "auto_editor"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -313,7 +324,7 @@ dependencies = [
  "cc",
  "cfg-if",
  "libc",
- "miniz_oxide",
+ "miniz_oxide 0.6.2",
  "object",
  "rustc-demangle",
 ]
@@ -332,7 +343,7 @@ checksum = "24a6904aef64d73cf10ab17ebace7befb918b82164785cb89907993be7f83813"
 
 [[package]]
 name = "button"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -363,10 +374,16 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "clientside"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
+
+[[package]]
+name = "color_quant"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
 
 [[package]]
 name = "convert_case"
@@ -379,9 +396,61 @@ dependencies = [
 
 [[package]]
 name = "counter"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
+]
+
+[[package]]
+name = "crc32fast"
+version = "1.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b540bd8bc810d3885c6ea91e2018302f68baba2129ab3e88f32389ee9370880d"
+dependencies = [
+ "cfg-if",
+]
+
+[[package]]
+name = "crossbeam-channel"
+version = "0.5.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a33c2bf77f2df06183c3aa30d1e96c0695a313d4f9c453cc3762a6db39f99200"
+dependencies = [
+ "cfg-if",
+ "crossbeam-utils",
+]
+
+[[package]]
+name = "crossbeam-deque"
+version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce6fd6f855243022dcecf8702fef0c297d4338e226845fe067f6341ad9fa0cef"
+dependencies = [
+ "cfg-if",
+ "crossbeam-epoch",
+ "crossbeam-utils",
+]
+
+[[package]]
+name = "crossbeam-epoch"
+version = "0.9.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "46bd5f3f85273295a9d14aedfb86f6aadbff6d8f5295c4a9edb08e819dcf5695"
+dependencies = [
+ "autocfg",
+ "cfg-if",
+ "crossbeam-utils",
+ "memoffset",
+ "scopeguard",
+]
+
+[[package]]
+name = "crossbeam-utils"
+version = "0.8.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c063cd8cc95f5c377ed0d4b49a4b21f632396ff690e8470c29b3359b346984b"
+dependencies = [
+ "cfg-if",
 ]
 
 [[package]]
@@ -402,9 +471,19 @@ checksum = "23d8666cb01533c39dde32bcbab8e227b4ed6679b2c925eba05feabea39508fb"
 
 [[package]]
 name = "decals"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
+]
+
+[[package]]
+name = "deflate"
+version = "0.8.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73770f8e1fe7d64df17ca66ad28994a0a623ea497fa69486e14984e715c5d174"
+dependencies = [
+ "adler32",
+ "byteorder",
 ]
 
 [[package]]
@@ -426,7 +505,7 @@ checksum = "56254986775e3233ffa9c4d7d3faaf6d36a2c09d30b20687e9f88bc8bafc16c8"
 
 [[package]]
 name = "dock_layout"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -460,7 +539,7 @@ checksum = "68b0cf012f1230e43cd00ebb729c6bb58707ecfa8ad08b52ef3a4ccd2697fc30"
 
 [[package]]
 name = "editors"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
  "indexmap",
@@ -473,6 +552,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7fcaabb2fef8c910e7f4c7ce9f67a1283a1715879a7c230ca9d6d1ae31f16d91"
 
 [[package]]
+name = "fast-srgb8"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd2e7510819d6fbf51a5545c8f922716ecfb14df168a3242f7d33e0239efe6a1"
+
+[[package]]
 name = "find-crate"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -483,21 +568,21 @@ dependencies = [
 
 [[package]]
 name = "first_person_camera"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "flow_layout"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "fog"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -602,13 +687,34 @@ dependencies = [
 
 [[package]]
 name = "getrandom"
+version = "0.1.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8fc3cb4d91f53b50155bdcfd23f6a4c39ae1969c2ae85982b135750cccaf5fce"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "wasi 0.9.0+wasi-snapshot-preview1",
+]
+
+[[package]]
+name = "getrandom"
 version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c05aeb6a22b8f62540c194aac980f2115af067bfe15a0734d7277a768d396b31"
 dependencies = [
  "cfg-if",
  "libc",
- "wasi",
+ "wasi 0.11.0+wasi-snapshot-preview1",
+]
+
+[[package]]
+name = "gif"
+version = "0.11.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3edd93c6756b4dfaf2709eafcc345ba2636565295c198a9cfbf75fa5e3e00b06"
+dependencies = [
+ "color_quant",
+ "weezl",
 ]
 
 [[package]]
@@ -624,7 +730,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "12f597d56c1bd55a811a1be189459e8fad2bbc272616375602443bdfb37fa774"
 dependencies = [
  "bytemuck",
- "rand",
+ "rand 0.8.5",
  "serde",
 ]
 
@@ -641,6 +747,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 dependencies = [
  "unicode-segmentation",
+]
+
+[[package]]
+name = "hermit-abi"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee512640fe35acbfb4bb779db6f0d80704c2cacfa2e39b601ef3e3f47d1ae4c7"
+dependencies = [
+ "libc",
 ]
 
 [[package]]
@@ -666,8 +781,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "image"
+version = "0.23.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24ffcb7e7244a9bf19d35bf2883b9c080c4ced3c07a9895572178cdb8f13f6a1"
+dependencies = [
+ "bytemuck",
+ "byteorder",
+ "color_quant",
+ "gif",
+ "jpeg-decoder",
+ "num-iter",
+ "num-rational",
+ "num-traits",
+ "png",
+ "scoped_threadpool",
+ "tiff",
+]
+
+[[package]]
 name = "image_quad"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -691,7 +825,7 @@ checksum = "9f2cb48b81b1dc9f39676bf99f5499babfec7cd8fe14307f7b3d747208fb5690"
 
 [[package]]
 name = "input"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -719,6 +853,15 @@ name = "itoa"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "453ad9f582a441959e5f0d088b02ce04cfe8d51a8eaf077f12ac6d3e94164ca6"
+
+[[package]]
+name = "jpeg-decoder"
+version = "0.1.22"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "229d53d58899083193af11e15917b5640cd40b29ff475a1fe4ef725deb02d0f2"
+dependencies = [
+ "rayon",
+]
 
 [[package]]
 name = "leb128"
@@ -759,17 +902,45 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
+name = "memoffset"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d61c719bcfbcf5d62b3a09efa6088de8c54bc0bfcd3ea7ae39fcc186108b8de1"
+dependencies = [
+ "autocfg",
+]
+
+[[package]]
 name = "messaging"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "minigolf"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
+]
+
+[[package]]
+name = "miniz_oxide"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "791daaae1ed6889560f8c4359194f56648355540573244a5448a83ba1ecc7435"
+dependencies = [
+ "adler32",
+]
+
+[[package]]
+name = "miniz_oxide"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a92518e98c078586bc6c934028adcca4c92a53d6a958196de835170a01d84e4b"
+dependencies = [
+ "adler",
+ "autocfg",
 ]
 
 [[package]]
@@ -783,17 +954,61 @@ dependencies = [
 
 [[package]]
 name = "multiplayer"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
- "rand",
+ "rand 0.8.5",
 ]
 
 [[package]]
 name = "music_sequencer"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
+]
+
+[[package]]
+name = "noise"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ba869e17168793186c10ca82c7079a4ffdeac4f1a7d9e755b9491c028180e40"
+dependencies = [
+ "image",
+ "num-traits",
+ "rand 0.7.3",
+ "rand_xorshift",
+]
+
+[[package]]
+name = "num-integer"
+version = "0.1.45"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "225d3389fb3509a24c93f5c29eb6bde2586b98d9f016636dff58d7c6f7569cd9"
+dependencies = [
+ "autocfg",
+ "num-traits",
+]
+
+[[package]]
+name = "num-iter"
+version = "0.1.43"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d03e6c028c5dc5cac6e2dec0efda81fc887605bb3d884578bb6d6bf7514e252"
+dependencies = [
+ "autocfg",
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
+name = "num-rational"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "12ac428b1cb17fce6f731001d307d351ec70a6d202fc2e60f7d4c5e42d8f4f07"
+dependencies = [
+ "autocfg",
+ "num-integer",
+ "num-traits",
 ]
 
 [[package]]
@@ -803,6 +1018,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "578ede34cf02f8924ab9447f50c28075b4d3e5b269972345e7e0372b38c6cdcd"
 dependencies = [
  "autocfg",
+]
+
+[[package]]
+name = "num_cpus"
+version = "1.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0fac9e2da13b5eb447a6ce3d392f23a29d8694bff781bf03a16cd9ac8697593b"
+dependencies = [
+ "hermit-abi",
+ "libc",
 ]
 
 [[package]]
@@ -837,7 +1062,19 @@ checksum = "8f9cd68f7112581033f157e56c77ac4a5538ec5836a2e39284e65bd7d7275e49"
 dependencies = [
  "approx",
  "num-traits",
- "palette_derive",
+ "palette_derive 0.6.1",
+ "phf",
+]
+
+[[package]]
+name = "palette"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a250fc99a431a52d50ee11b8bab599e97480ce7dc8e0165b9d205fefaa3727c0"
+dependencies = [
+ "approx",
+ "fast-srgb8",
+ "palette_derive 0.7.1",
  "phf",
 ]
 
@@ -851,6 +1088,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "palette_derive"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53221e709161225a9aafab8eb94ec05b308fd284917e814965d0bb4e4aeed268"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.15",
 ]
 
 [[package]]
@@ -905,7 +1153,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1181c94580fa345f50f19d738aaa39c0ed30a600d95cb2d3e23f94266f14fbf"
 dependencies = [
  "phf_shared",
- "rand",
+ "rand 0.8.5",
 ]
 
 [[package]]
@@ -932,7 +1180,7 @@ dependencies = [
 
 [[package]]
 name = "physics"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -950,8 +1198,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
+name = "png"
+version = "0.16.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c3287920cb847dee3de33d301c463fba14dda99db24214ddf93f83d3021f4c6"
+dependencies = [
+ "bitflags 1.3.2",
+ "crc32fast",
+ "deflate",
+ "miniz_oxide 0.3.7",
+]
+
+[[package]]
 name = "pong"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -976,7 +1236,7 @@ dependencies = [
 
 [[package]]
 name = "primitives"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -998,6 +1258,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b63bdb0cd06f1f4dedf69b254734f9b45af66e4a031e42a7480257d9898b435"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "procedural_generation"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+ "noise",
+ "palette 0.7.1",
+ "rand 0.8.5",
+ "rand_pcg",
 ]
 
 [[package]]
@@ -1033,13 +1304,36 @@ dependencies = [
 
 [[package]]
 name = "rand"
+version = "0.7.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a6b1679d49b24bbfe0c803429aa1874472f50d9b363131f0e89fc356b544d03"
+dependencies = [
+ "getrandom 0.1.16",
+ "libc",
+ "rand_chacha 0.2.2",
+ "rand_core 0.5.1",
+ "rand_hc",
+]
+
+[[package]]
+name = "rand"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
 dependencies = [
  "libc",
- "rand_chacha",
- "rand_core",
+ "rand_chacha 0.3.1",
+ "rand_core 0.6.4",
+]
+
+[[package]]
+name = "rand_chacha"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4c8ed856279c9737206bf725bf36935d8666ead7aa69b52be55af369d193402"
+dependencies = [
+ "ppv-lite86",
+ "rand_core 0.5.1",
 ]
 
 [[package]]
@@ -1049,7 +1343,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
 dependencies = [
  "ppv-lite86",
- "rand_core",
+ "rand_core 0.6.4",
+]
+
+[[package]]
+name = "rand_core"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "90bde5296fc891b0cef12a6d03ddccc162ce7b2aff54160af9338f8d40df6d19"
+dependencies = [
+ "getrandom 0.1.16",
 ]
 
 [[package]]
@@ -1058,19 +1361,68 @@ version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
- "getrandom",
+ "getrandom 0.2.8",
+]
+
+[[package]]
+name = "rand_hc"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca3129af7b92a17112d59ad498c6f81eaf463253766b90396d39ea7a39d6613c"
+dependencies = [
+ "rand_core 0.5.1",
+]
+
+[[package]]
+name = "rand_pcg"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59cad018caf63deb318e5a4586d99a24424a364f40f1e5778c29aca23f4fc73e"
+dependencies = [
+ "rand_core 0.6.4",
+]
+
+[[package]]
+name = "rand_xorshift"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77d416b86801d23dde1aa643023b775c3a462efc0ed96443add11546cdf1dca8"
+dependencies = [
+ "rand_core 0.5.1",
 ]
 
 [[package]]
 name = "raw_text"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
+name = "rayon"
+version = "1.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d2df5196e37bcc87abebc0053e20787d73847bb33134a69841207dd0a47f03b"
+dependencies = [
+ "either",
+ "rayon-core",
+]
+
+[[package]]
+name = "rayon-core"
+version = "1.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4b8f95bd6966f5c87776639160a66bd8ab9895d9d4ab01ddba9fc60661aebe8d"
+dependencies = [
+ "crossbeam-channel",
+ "crossbeam-deque",
+ "crossbeam-utils",
+ "num_cpus",
+]
+
+[[package]]
 name = "rect"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -1103,6 +1455,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f91339c0467de62360649f8d3e185ca8de4224ff281f66000de5eb2a77a79041"
 
 [[package]]
+name = "scoped_threadpool"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d51f5df5af43ab3f1360b429fa5e0152ac5ce8c0bd6485cae490332e96846a8"
+
+[[package]]
 name = "scopeguard"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1110,14 +1468,14 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "screen_ray"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "screens"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
  "ambient_friendly_id",
@@ -1171,14 +1529,14 @@ checksum = "7bd3e3206899af3f8b12af284fafc038cc1dc2b41d1b89dd17297221c5d225de"
 
 [[package]]
 name = "skin_tracking"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "skinmesh"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -1194,7 +1552,7 @@ dependencies = [
 
 [[package]]
 name = "slider"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -1204,6 +1562,12 @@ name = "smallvec"
 version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
+
+[[package]]
+name = "static_assertions"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "strum"
@@ -1229,7 +1593,7 @@ dependencies = [
 
 [[package]]
 name = "sun"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -1258,14 +1622,14 @@ dependencies = [
 
 [[package]]
 name = "text"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
 
 [[package]]
 name = "third_person_camera"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -1292,10 +1656,21 @@ dependencies = [
 
 [[package]]
 name = "tictactoe"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
- "palette",
+ "palette 0.6.1",
+]
+
+[[package]]
+name = "tiff"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a53f4706d65497df0c4349241deddf35f84cee19c87ed86ea8ca590f4464437"
+dependencies = [
+ "jpeg-decoder",
+ "miniz_oxide 0.4.4",
+ "weezl",
 ]
 
 [[package]]
@@ -1315,7 +1690,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "todo"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
 ]
@@ -1397,9 +1772,19 @@ dependencies = [
 
 [[package]]
 name = "transparency"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
+]
+
+[[package]]
+name = "ulid"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "13a3aaa69b04e5b66cc27309710a569ea23593612387d67daaf102e73aa974fd"
+dependencies = [
+ "rand 0.8.5",
+ "serde",
 ]
 
 [[package]]
@@ -1463,6 +1848,12 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "wasi"
+version = "0.9.0+wasi-snapshot-preview1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cccddf32554fecc6acb585f82a32a72e28b48f8c4c1883ddfeeeaa96f7d8e519"
+
+[[package]]
+name = "wasi"
 version = "0.11.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
@@ -1498,6 +1889,12 @@ dependencies = [
  "indexmap",
  "url",
 ]
+
+[[package]]
+name = "weezl"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9193164d4de03a926d909d3bc7c30543cecb35400c02114792c2cae20d5e2dbb"
 
 [[package]]
 name = "winapi"

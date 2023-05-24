@@ -36,7 +36,7 @@ impl wit::client_input::Host for Bindings {
     }
 }
 impl wit::client_camera::Host for Bindings {
-    fn clip_space_ray(
+    fn clip_position_to_world_ray(
         &mut self,
         _camera: wit::types::EntityId,
         _clip_space_pos: wit::types::Vec2,
@@ -50,7 +50,7 @@ impl wit::client_camera::Host for Bindings {
         unsupported()
     }
 
-    fn screen_to_world_direction(
+    fn screen_position_to_world_ray(
         &mut self,
         _camera: wit::types::EntityId,
         _screen_pos: wit::types::Vec2,
@@ -91,6 +91,50 @@ impl wit::client_audio::Host for Bindings {
 }
 impl wit::client_window::Host for Bindings {
     fn set_fullscreen(&mut self, _fullscreen: bool) -> anyhow::Result<()> {
+        unsupported()
+    }
+}
+impl wit::client_mesh::Host for Bindings {
+    fn create(
+        &mut self,
+        _desc: wit::client_mesh::Descriptor,
+    ) -> anyhow::Result<wit::client_mesh::Handle> {
+        unsupported()
+    }
+    fn destroy(&mut self, _handle: wit::client_mesh::Handle) -> anyhow::Result<()> {
+        unsupported()
+    }
+}
+impl wit::client_texture::Host for Bindings {
+    fn create2d(
+        &mut self,
+        _desc: wit::client_texture::Descriptor2d,
+    ) -> anyhow::Result<wit::client_texture::Handle> {
+        unsupported()
+    }
+    fn destroy(&mut self, _handle: wit::client_texture::Handle) -> anyhow::Result<()> {
+        unsupported()
+    }
+}
+impl wit::client_sampler::Host for Bindings {
+    fn create(
+        &mut self,
+        _desc: wit::client_sampler::Descriptor,
+    ) -> anyhow::Result<wit::client_sampler::Handle> {
+        unsupported()
+    }
+    fn destroy(&mut self, _handle: wit::client_sampler::Handle) -> anyhow::Result<()> {
+        unsupported()
+    }
+}
+impl wit::client_material::Host for Bindings {
+    fn create(
+        &mut self,
+        _desc: wit::client_material::Descriptor,
+    ) -> anyhow::Result<wit::client_material::Handle> {
+        unsupported()
+    }
+    fn destroy(&mut self, _handle: wit::client_material::Handle) -> anyhow::Result<()> {
         unsupported()
     }
 }

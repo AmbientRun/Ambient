@@ -107,6 +107,7 @@ dependencies = [
  "ambient_gpu",
  "ambient_input",
  "ambient_model",
+ "ambient_procedurals",
  "ambient_profiling",
  "ambient_renderer",
  "ambient_std",
@@ -367,6 +368,7 @@ dependencies = [
  "tokio",
  "toml",
  "tracing",
+ "ulid",
  "wgpu",
  "winit",
 ]
@@ -462,6 +464,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_procedurals"
+version = "0.2.1"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_gpu",
+ "ambient_renderer",
+ "ambient_shared_types",
+ "ambient_std",
+ "parking_lot",
+ "tracing",
+ "ulid",
+ "wgpu",
+]
+
+[[package]]
 name = "ambient_profiling"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -509,6 +527,7 @@ name = "ambient_project_macro_common"
 version = "0.2.1"
 dependencies = [
  "ambient_project",
+ "ambient_shared_types",
  "anyhow",
  "proc-macro2",
  "quote",
@@ -568,6 +587,7 @@ dependencies = [
  "serde",
  "smallvec",
  "tracing",
+ "ulid",
  "wgpu",
 ]
 
@@ -582,6 +602,7 @@ dependencies = [
  "bitflags 1.3.2",
  "serde",
  "strum",
+ "ulid",
  "winit",
 ]
 

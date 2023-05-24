@@ -10,5 +10,15 @@
                 "run"
             ],
         },
+        {
+            "name": "Debugger",
+            "type": "lldb",
+            "request": "launch",
+            "program": "ambient",
+            "args": [
+                "run",
+                "--debugger"
+            ],
+        },
     ]
 }

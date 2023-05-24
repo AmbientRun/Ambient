@@ -1,0 +1,15 @@
+[components."core::procedurals"]
+name = "Procedurals"
+description = "Procedural assets generation"
+
+[components."core::procedurals::procedural_mesh"]
+type = "ProceduralMeshHandle"
+name = "Procedural mesh"
+description = "Attaches the procedural mesh into this entity"
+attributes = ["Debuggable", "Store"]
+
+[components."core::procedurals::procedural_material"]
+type = "ProceduralMaterialHandle"
+name = "Procedural material"
+description = "Attaches the procedural material to this entity"
+attributes = ["Debuggable", "Store"]

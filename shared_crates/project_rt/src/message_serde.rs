@@ -247,11 +247,18 @@ impl<T: MessageSerde> MessageSerde for Option<T> {
 
     fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
         let present = bool::deserialize_message_part(input)?;
-        Ok(if present { Some(T::deserialize_message_part(input)?) } else { None })
+        Ok(if present {
+            Some(T::deserialize_message_part(input)?)
+        } else {
+            None
+        })
     }
 }
 
-fn serialize_array<T: MessageSerde>(output: &mut Vec<u8>, data: &[T]) -> Result<(), MessageSerdeError> {
+fn serialize_array<T: MessageSerde>(
+    output: &mut Vec<u8>,
+    data: &[T],
+) -> Result<(), MessageSerdeError> {
     output.write_u32::<BigEndian>(data.len().try_into()?)?;
     for value in data {
         value.serialize_message_part(output)?;

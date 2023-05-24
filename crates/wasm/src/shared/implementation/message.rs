@@ -17,7 +17,7 @@ use std::{
     sync::Arc,
 };
 
-use crate::shared::remote_paired_id;
+use crate::shared::{message::Target, remote_paired_id};
 
 pub const MAX_STREAM_LENGTH: usize = 10 * 1024 * 1024;
 
@@ -109,7 +109,7 @@ pub fn process_network_message(
 
     message::send(
         world,
-        Some(module_id),
+        Target::Module(module_id),
         match user_id {
             Some(user_id) => message::Source::Client(user_id),
             None => message::Source::Server,
@@ -125,7 +125,7 @@ pub fn process_network_message(
 pub fn send_local(
     world: &mut World,
     source_module_id: EntityId,
-    module_id: Option<EntityId>,
+    target: Target,
     name: String,
     data: Vec<u8>,
 ) -> anyhow::Result<()> {
@@ -133,7 +133,7 @@ pub fn send_local(
 
     message::send(
         world,
-        module_id,
+        target,
         message::Source::Local(source_module_id),
         name,
         data,

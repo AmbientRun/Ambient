@@ -80,7 +80,10 @@ impl FromBindgen for wit::guest::Source {
 /// The target for a originating message.
 pub enum Target {
     /// A message to all other modules running on this side.
-    LocalBroadcast,
+    LocalBroadcast {
+        /// Whether or not the message should be sent to the module that originally sent the message.
+        include_self: bool,
+    },
     /// A message to a specific module running on this side.
     Local(EntityId),
 
@@ -127,7 +130,7 @@ impl IntoBindgen for Target {
         match self {
             Target::ServerUnreliable => Self::Item::ServerUnreliable,
             Target::ServerReliable => Self::Item::ServerReliable,
-            Target::LocalBroadcast => Self::Item::LocalBroadcast,
+            Target::LocalBroadcast { include_self } => Self::Item::LocalBroadcast(include_self),
             Target::Local(id) => Self::Item::Local(id.into_bindgen()),
             #[cfg(feature = "server")]
             _ => unreachable!(),
@@ -149,7 +152,7 @@ impl<'a> IntoBindgen for &'a Target {
             Target::ClientTargetedReliable(user_id) => {
                 Self::Item::ClientTargetedReliable(user_id.as_str())
             }
-            Target::LocalBroadcast => Self::Item::LocalBroadcast,
+            Target::LocalBroadcast { include_self } => Self::Item::LocalBroadcast(*include_self),
             Target::Local(id) => Self::Item::Local(id.into_bindgen()),
             #[cfg(feature = "client")]
             _ => unreachable!(),
@@ -215,8 +218,10 @@ pub trait ModuleMessage: Message {
     }
 
     /// Sends a message to every module on this side.
-    fn send_local_broadcast(&self) {
-        self.send(Target::LocalBroadcast)
+    ///
+    /// `include_self` controls whether or not the message is sent to the module that originally sent the message.
+    fn send_local_broadcast(&self, include_self: bool) {
+        self.send(Target::LocalBroadcast { include_self })
     }
 
     /// Sends a message to a specific module on this side.
@@ -289,9 +294,14 @@ pub trait RuntimeMessage: Message {
 mod serde {
     pub use ambient_project_rt::message_serde::*;
 
+    use ambient_shared_types::procedural_storage_handle_definitions;
     use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
+    use paste::paste;
 
-    use crate::global::EntityId;
+    use crate::global::{
+        EntityId, ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
+        ProceduralTextureHandle,
+    };
 
     impl MessageSerde for EntityId {
         fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
@@ -310,5 +320,32 @@ mod serde {
             Ok(Self { id0, id1 })
         }
     }
+
+    macro_rules! make_procedural_storage_handle_serializers {
+        ($($name:ident),*) => { paste!{$(
+            impl MessageSerde for [<Procedural $name:camel Handle>] {
+                fn serialize_message_part(
+                    &self,
+                    output: &mut Vec<u8>,
+                ) -> Result<(), MessageSerdeError> {
+                    let ulid = self.0;
+                    output.write_u64::<BigEndian>(ulid.0)?;
+                    output.write_u64::<BigEndian>(ulid.1)?;
+                    Ok(())
+                }
+
+                fn deserialize_message_part(
+                    input: &mut dyn std::io::Read,
+                ) -> Result<Self, MessageSerdeError> {
+                    Ok(Self((
+                        input.read_u64::<BigEndian>()?,
+                        input.read_u64::<BigEndian>()?,
+                    )))
+                }
+            }
+        )*}};
+    }
+
+    procedural_storage_handle_definitions!(make_procedural_storage_handle_serializers);
 }
 pub use serde::*;

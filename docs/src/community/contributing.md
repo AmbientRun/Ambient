@@ -1,5 +1,9 @@
 # Contributing
 
+We welcome community contributions to this project.
+
+Please talk with us on Discord beforehand if you'd like to contribute a larger piece of work. This is particularly important if your contribution involves adding new functionality to the host; our goal is to implement as much functionality on the guest as possible, so that the host can remain simple and enable a wide variety of use cases without being too opinionated.
+
 ## Campfire
 
 Campfire is our internal tool for working with the repository. It has several commands that can be used to help with development, which you can find by running `cargo campfire --help`.
@@ -138,8 +142,8 @@ The `screenshots.zip` will show what image the CI produced.
 
 ## Releasing
 
-1. Run `cargo campfire doc runtime` to update the documentation from the codebase.
-2. Run `cargo campfire release update-version new_version_here` to update the Ambient version across the crates and documentation.
+1. Run `cargo campfire release update-version new_version_here` to update the Ambient version across the crates and documentation.
+2. Run `cargo campfire doc runtime` to update the documentation from the codebase.
 3. If a new system dependency was added, ensure it is added to `docs/src/installing.md` and `Dockerfile`.
 4. Run `cargo campfire example check-all` and ensure all guest projects build without errors.
 5. Run `cargo campfire example run-all` and visually verify that they work as expected.
@@ -147,3 +151,4 @@ The `screenshots.zip` will show what image the CI produced.
 7. Update the `CHANGELOG.md` at the root of the repository. Copy the unreleased block, set the version and date on the copy, and then empty out the unreleased block for the next release.
 8. Make a commit with the above changes, and create a tag `v0.X.Y`.
 9. Push to origin.
+10. If this is a new major release (e.g. `0.2.0`), immediately update the version using `cargo campfire release update-version` to the next major release suffixed by dev (e.g. `0.3.0-dev`) and push that up (but do not tag it). This is to disambiguate in-development major releases from stable ones. If we need to update the released version, we will branch off from the release, cherry-pick relevant hotfixes, and cut a new release from that branch.

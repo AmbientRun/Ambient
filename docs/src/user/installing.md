@@ -17,7 +17,7 @@ Ambient can be installed through `cargo install`, which will download and build 
 To install the latest released version from Git, run the following:
 
 ```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.2.1 ambient
+cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.3.0-dev ambient
 ```
 
 To install the latest version on the `main` branch, run the following:
