@@ -2,30 +2,25 @@ use ambient_api::{
     client::{material, mesh, sampler, texture},
     components::core::{
         camera::aspect_ratio_from_window,
-        procedurals::{procedural_material, procedural_mesh},
         primitives::quad,
+        procedurals::{procedural_material, procedural_mesh},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
-    prelude::*,
     mesh::Vertex,
+    prelude::*,
 };
 
 use components::rotating_sun;
-use noise::{utils::*, Fbm, Perlin};
 use palette::IntoColor;
-use glam::*;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 
-const TAU: f32 = std::f32::consts::TAU;
 const RESOLUTION_X: u32 = 32;
 const RESOLUTION_Y: u32 = 8;
 const TEXTURE_RESOLUTION_X: u32 = 4 * RESOLUTION_X;
 const TEXTURE_RESOLUTION_Y: u32 = 4 * RESOLUTION_Y;
 const SIZE_X: f32 = RESOLUTION_X as f32 / RESOLUTION_Y as f32;
 const SIZE_Y: f32 = 1.0;
-const WAVE_AMPLITUDE: f32 = 0.25;
-const WAVE_FREQUENCY: f32 = 0.5 * TAU;
 
 #[derive(Clone)]
 pub struct TreeMesh {
@@ -38,32 +33,12 @@ pub struct TreeMesh {
     pub foliage_segments: u32,
 }
 
-impl Default for TreeMesh {
-    fn default() -> Self {
-        Self {
-            seed: 123 as i32,
-            trunk_radius: 3.0,
-            trunk_height: 15.0,
-            trunk_segments: 8,
-            foliage_radius: 2.0,
-            foliage_density: 5,
-            foliage_segments: 5,
-        }
-    }
-}
 pub struct MeshDescriptor {
     vertices: Vec<Vertex>,
     indices: Vec<u32>,
 }
 
-pub fn create_tree(t: TreeMesh , seed: i32, trunk_radius: f32, trunk_height: f32, trunk_segments: u32) -> MeshDescriptor {
-    let mut tree = t;
-
-    tree.trunk_radius = trunk_radius;
-    tree.trunk_height = trunk_height;
-    tree.trunk_segments = trunk_segments;
-    tree.seed = seed;
-
+pub fn create_tree(tree: TreeMesh) -> MeshDescriptor {
     // Create the trunk
     let (mut vertices1, top_vertices1, mut normals1, mut uvs1) = build_trunk(&tree);
 
@@ -74,8 +49,8 @@ pub fn create_tree(t: TreeMesh , seed: i32, trunk_radius: f32, trunk_height: f32
     // Connect trunk segments
     for i in 0..(trunk_segments) {
         for j in 0..sectors {
-            let k1 = (i * (sectors as u32 + 1) + j as u32) as u32;
-            let k2 = ((i + 1) * (sectors as u32 + 1) + j as u32) as u32;
+            let k1 = i * (sectors + 1) + j;
+            let k2 = (i + 1) * (sectors + 1) + j;
 
             indices.push(k1);
             indices.push(k1 + 1);
@@ -168,7 +143,7 @@ pub fn create_tree(t: TreeMesh , seed: i32, trunk_radius: f32, trunk_height: f32
         indices
     }
 
-    let mut vec_of_vertex : Vec<Vertex> = Vec::with_capacity(vertices1.len());
+    let mut vertices: Vec<Vertex> = Vec::with_capacity(vertices1.len());
 
     for i in 0..vertices1.len() {
         let px = vertices1[i].x;
@@ -186,16 +161,10 @@ pub fn create_tree(t: TreeMesh , seed: i32, trunk_radius: f32, trunk_height: f32
             tangent: vec3(1.0, 0.0, 0.0),
             texcoord0: vec2(u, v),
         };
-        vec_of_vertex.push(v);
+        vertices.push(v);
     }
 
-    let vcs = vec_of_vertex.clone();
-    let ids = indices.clone();
-
-    MeshDescriptor {
-        vertices: vec_of_vertex,
-        indices: indices.clone(),
-    }
+    MeshDescriptor { vertices, indices }
 }
 
 fn build_trunk(tree: &TreeMesh) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) {
@@ -387,110 +356,85 @@ where
     })
 }
 
-fn default_base_color(_: f32, _: f32) -> [u8; 4] {
-    [255, 255, 255, 255]
-}
-
-fn default_normal(_: f32, _: f32) -> [u8; 4] {
-    [128, 128, 255, 0]
-}
-
-fn default_metallic_roughness(_: f32, _: f32) -> [u8; 4] {
-    [255, 255, 0, 0]
-}
-
-fn default_nearest_sampler() -> ProceduralSamplerHandle {
-    sampler::create(&sampler::Descriptor {
+fn register_tree_entity_augmentors() {
+    let base_color_map = make_texture(|x, _| {
+        let hsl = palette::Hsl::new(360.0 * x, 1.0, 0.5).into_format::<f32>();
+        let rgb: palette::LinSrgb = hsl.into_color();
+        let r = (255.0 * rgb.red) as u8;
+        let g = (255.0 * rgb.green) as u8;
+        let b = (255.0 * rgb.blue) as u8;
+        let a = 255;
+        [r, g, b, a]
+    });
+    let normal_map = make_texture(|_, _| [128, 128, 255, 0]);
+    let metallic_roughness_map = make_texture(|_, _| [255, 255, 0, 0]);
+    let sampler = sampler::create(&sampler::Descriptor {
         address_mode_u: sampler::AddressMode::ClampToEdge,
         address_mode_v: sampler::AddressMode::ClampToEdge,
         address_mode_w: sampler::AddressMode::ClampToEdge,
         mag_filter: sampler::FilterMode::Nearest,
         min_filter: sampler::FilterMode::Nearest,
         mipmap_filter: sampler::FilterMode::Nearest,
-    })
-}
-
-fn default_linear_sampler() -> ProceduralSamplerHandle {
-    sampler::create(&sampler::Descriptor {
-        address_mode_u: sampler::AddressMode::ClampToEdge,
-        address_mode_v: sampler::AddressMode::ClampToEdge,
-        address_mode_w: sampler::AddressMode::ClampToEdge,
-        mag_filter: sampler::FilterMode::Linear,
-        min_filter: sampler::FilterMode::Linear,
-        mipmap_filter: sampler::FilterMode::Linear,
-    })
-}
-
-fn make_procedural<BaseColorFn, NormalFn, MetallicRoughnessFn, SamplerFn>(
-    world_translation: Vec3,
-    base_color_fn: BaseColorFn,
-    normal_fn: NormalFn,
-    metallic_roughness_fn: MetallicRoughnessFn,
-    sampler_fn: SamplerFn,
-    transparent: bool,
-) where
-    BaseColorFn: FnMut(f32, f32) -> [u8; 4],
-    NormalFn: FnMut(f32, f32) -> [u8; 4],
-    MetallicRoughnessFn: FnMut(f32, f32) -> [u8; 4],
-    SamplerFn: FnOnce() -> ProceduralSamplerHandle,
-{
-    let mut vertices = vec![];
-    let mut indices = vec![];
-    for y in 0..=RESOLUTION_Y {
-        for x in 0..=RESOLUTION_X {
-            let px = SIZE_X * (x as f32) / (RESOLUTION_X as f32);
-            let py = SIZE_Y * (y as f32) / (RESOLUTION_Y as f32);
-            let pz = WAVE_AMPLITUDE * f32::sin(WAVE_FREQUENCY * px);
-            let u = (x as f32) / (RESOLUTION_X as f32);
-            let v = (y as f32) / (RESOLUTION_Y as f32);
-            vertices.push(mesh::Vertex {
-                position: vec3(px, py, pz) + vec3(-0.5 * SIZE_X, -0.5 * SIZE_Y, 0.0),
-                normal: vec3(0.0, 0.0, 1.0),
-                tangent: vec3(1.0, 0.0, 0.0),
-                texcoord0: vec2(u, v),
-            });
-        }
-    }
-    for y in 0..RESOLUTION_Y {
-        for x in 0..RESOLUTION_X {
-            let i0 = x + y * (RESOLUTION_X + 1);
-            let i1 = (x + 1) + y * (RESOLUTION_X + 1);
-            let i2 = x + (y + 1) * (RESOLUTION_X + 1);
-            let i3 = (x + 1) + (y + 1) * (RESOLUTION_X + 1);
-            indices.extend([i0, i1, i2]);
-            indices.extend([i1, i3, i2]);
-        }
-    }
-    for triangle in indices.chunks_exact(3) {
-        let [i0, i1, i2]: [_; 3] = triangle.try_into().unwrap();
-        let p0 = vertices[i0 as usize].position;
-        let p1 = vertices[i1 as usize].position;
-        let p2 = vertices[i2 as usize].position;
-        let n01 = (p1 - p0).normalize();
-        let n02 = (p2 - p0).normalize();
-        let n = n01.cross(n02).normalize();
-        vertices[i0 as usize].normal += n;
-        vertices[i1 as usize].normal += n;
-        vertices[i2 as usize].normal += n;
-    }
-    for vertex in &mut vertices {
-        vertex.normal = vertex.normal.normalize();
-    }
-
-    let seed = 12345;
-    let num_trees = 15;
-
-    let base_color_map = make_texture(base_color_fn);
-    let normal_map = make_texture(normal_fn);
-    let metallic_roughness_map = make_texture(metallic_roughness_fn);
-    let sampler = sampler_fn();
+    });
     let material = material::create(&material::Descriptor {
         base_color_map,
         normal_map,
         metallic_roughness_map,
         sampler,
-        transparent,
+        transparent: false,
     });
+
+    spawn_query((
+        components::tree_seed(),
+        components::tree_foliage_density(),
+        components::tree_foliage_radius(),
+        components::tree_foliage_segments(),
+        components::tree_trunk_height(),
+        components::tree_trunk_radius(),
+        components::tree_trunk_segments(),
+    ))
+    .bind(move |trees| {
+        for (
+            id,
+            (
+                seed,
+                foliage_density,
+                foliage_radius,
+                foliage_segments,
+                trunk_height,
+                trunk_radius,
+                trunk_segments,
+            ),
+        ) in trees
+        {
+            let tree = create_tree(TreeMesh {
+                seed,
+                trunk_radius,
+                trunk_height,
+                trunk_segments,
+                foliage_radius,
+                foliage_density,
+                foliage_segments,
+            });
+            let mesh = mesh::create(&mesh::Descriptor {
+                vertices: &tree.vertices,
+                indices: &tree.indices,
+            });
+
+            entity::add_components(
+                id,
+                Entity::new()
+                    .with(procedural_mesh(), mesh)
+                    .with(procedural_material(), material)
+                    .with_default(cast_shadows()),
+            );
+        }
+    });
+}
+
+fn make_trees() {
+    let seed = 12345;
+    let num_trees = 15;
 
     // lets plant some trees :)
     for i in 0..num_trees {
@@ -498,59 +442,23 @@ fn make_procedural<BaseColorFn, NormalFn, MetallicRoughnessFn, SamplerFn>(
         let trunk_height = gen_rn(seed + i, 15.0, 20.0);
         let trunk_segments = gen_rn(seed + i, 6.0, 12.0) as u32;
 
-        let tree = create_tree(TreeMesh::default(), seed, trunk_radius, trunk_height, trunk_segments);
-
-        let td = mesh::Descriptor {
-            vertices: &tree.vertices,
-            indices: &tree.indices,
-        };
-
-        let mesh = mesh::create(&td);
+        let position = vec3(
+            gen_rn(seed + i, 0.0, 15.0),
+            gen_rn(seed + seed + i, 0.0, 15.0),
+            0.0,
+        );
 
         Entity::new()
-        .with_merge(make_transformable())
-        .with(procedural_mesh(), mesh)
-        .with(procedural_material(), material)
-        .with_default(cast_shadows())
-        .with(scale(), Vec3::ONE * gen_rn(i, 0.2, 0.4))
-        .with(
-            translation(),
-            vec3(
-                gen_rn(seed + i, 0.0, 15.0),
-                gen_rn(seed + seed + i, 0.0, 15.0),
-                0.0,
-            ),
-        )
-        .spawn();
-}
-
-}
-
-fn make_procedurals() {
-    const X: f32 = 2.125;
-    const Y: f32 = 1.25;
-
-    let rng = rand_pcg::Pcg64::seed_from_u64(0);
-    let dist_zero_to_255 = rand::distributions::Uniform::new_inclusive(0_u8, 255_u8);
-    let dist_minus_one_to_one = rand::distributions::Uniform::new_inclusive(-1.0_f32, 1.0_f32);
-
-    // Interpolated hue.
-    make_procedural(
-        vec3(-X, Y, 0.0),
-        |x, _| {
-            let hsl = palette::Hsl::new(360.0 * x, 1.0, 0.5).into_format::<f32>();
-            let rgb: palette::LinSrgb = hsl.into_color();
-            let r = (255.0 * rgb.red) as u8;
-            let g = (255.0 * rgb.green) as u8;
-            let b = (255.0 * rgb.blue) as u8;
-            let a = 255;
-            [r, g, b, a]
-        },
-        default_normal,
-        default_metallic_roughness,
-        default_nearest_sampler,
-        false,
-    );
+            .with_merge(concepts::make_tree())
+            .with_merge(make_transformable())
+            .with(scale(), Vec3::ONE * gen_rn(i, 0.2, 0.4))
+            .with(translation(), position)
+            .with(components::tree_seed(), seed + i)
+            .with(components::tree_trunk_radius(), trunk_radius)
+            .with(components::tree_trunk_height(), trunk_height)
+            .with(components::tree_trunk_segments(), trunk_segments)
+            .spawn();
+    }
 }
 
 #[main]
@@ -558,5 +466,7 @@ pub async fn main() {
     make_camera();
     make_lighting();
     make_ground();
-    make_procedurals();
+
+    register_tree_entity_augmentors();
+    make_trees();
 }
