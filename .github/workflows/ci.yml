@@ -94,7 +94,7 @@ jobs:
     # llvmpipe versions can randomly fail.
     runs-on: ubuntu-latest
     env:
-      RUST_LOG: ambient_gpu=debug
+      RUST_LOG: ambient_gpu=info
     steps:
       - name: Free up disk space
         run: |

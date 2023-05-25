@@ -79,7 +79,7 @@ impl Gpu {
             .await
             .expect("Failed to find an appropriate adapter");
 
-        tracing::debug!("Using gpu adapter: {:?}", adapter.get_info());
+        tracing::info!("Using gpu adapter: {:?}", adapter.get_info());
         tracing::debug!("Adapter features:\n{:#?}", adapter.features());
         let adapter_limits = adapter.limits();
         tracing::debug!("Adapter limits:\n{:#?}", adapter_limits);
