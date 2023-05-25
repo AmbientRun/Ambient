@@ -78,7 +78,9 @@ impl AsyncAssetKey<Result<Arc<World>, AssetError>> for PrefabFromUrl {
                 .context("Failed to resolve model url")?
                 .into();
         }
-        for (_id, (def,), _) in query_mut((collider(),), ()).iter(&mut world, None) {
+        for (_id, (def,), _) in
+            query_mut((ambient_physics::collider::collider(),), ()).iter(&mut world, None)
+        {
             def.resolve(&obj_url)
                 .context("Failed to resolve collider")?;
         }

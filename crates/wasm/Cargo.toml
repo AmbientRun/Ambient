@@ -53,14 +53,17 @@ tokio = { workspace = true }
 winit = { workspace = true }
 wgpu = { workspace = true }
 ulid = { workspace = true }
+<<<<<<< HEAD
 tracing = { workspace = true }
+=======
+wit-component = { workspace = true }
+>>>>>>> 230aadae (wip: mock out wasm)
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 wasmtime = { workspace = true }
 wasmtime-wasi = { workspace = true }
 wasi-common = { workspace = true }
 wasi-cap-std-sync = { workspace = true }
-wit-component = { workspace = true }
 ambient_physics = { path = "../physics" }
 physxx = { path = "../../libs/physxx" }
 

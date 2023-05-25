@@ -16,7 +16,7 @@ use ambient_ecs::{
     dont_despawn_on_unload, generated::messages, query, world_events, Entity, EntityId, FnSystem,
     Message, SystemGroup, World, WorldEventReader,
 };
-use ambient_physics::{collider_loads, collisions};
+
 use ambient_project::Identifier;
 use itertools::Itertools;
 pub use module::*;
@@ -129,7 +129,7 @@ pub fn systems() -> SystemGroup {
             Box::new(FnSystem::new(move |world, _| {
                 ambient_profiling::scope!("WASM module collision event");
                 // trigger collision event
-                let collisions = match world.resource_opt(collisions()) {
+                let collisions = match world.resource_opt(ambient_physics::collisions()) {
                     Some(collisions) => collisions.lock().clone(),
                     None => return,
                 };
@@ -142,7 +142,7 @@ pub fn systems() -> SystemGroup {
             Box::new(FnSystem::new(move |world, _| {
                 ambient_profiling::scope!("WASM module collider loads");
                 // trigger collider loads
-                let collider_loads = match world.resource_opt(collider_loads()) {
+                let collider_loads = match world.resource_opt(ambient_physics::collider_loads()) {
                     Some(collider_loads) => collider_loads.clone(),
                     None => return,
                 };
