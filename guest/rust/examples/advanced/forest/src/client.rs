@@ -2,18 +2,18 @@ use ambient_api::{
     client::{material, mesh, sampler, texture},
     components::core::{
         camera::aspect_ratio_from_window,
-        procedurals::{procedural_material, procedural_mesh},
         primitives::quad,
+        procedurals::{procedural_material, procedural_mesh},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
-    prelude::*,
     mesh::Vertex,
+    prelude::*,
 };
 
 use components::rotating_sun;
+use glam::*;
 use noise::{utils::*, Fbm, Perlin};
 use palette::IntoColor;
-use glam::*;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 
@@ -56,7 +56,13 @@ pub struct MeshDescriptor {
     indices: Vec<u32>,
 }
 
-pub fn create_tree(t: TreeMesh , seed: i32, trunk_radius: f32, trunk_height: f32, trunk_segments: u32) -> MeshDescriptor {
+pub fn create_tree(
+    t: TreeMesh,
+    seed: i32,
+    trunk_radius: f32,
+    trunk_height: f32,
+    trunk_segments: u32,
+) -> MeshDescriptor {
     let mut tree = t;
 
     tree.trunk_radius = trunk_radius;
@@ -168,7 +174,7 @@ pub fn create_tree(t: TreeMesh , seed: i32, trunk_radius: f32, trunk_height: f32
         indices
     }
 
-    let mut vec_of_vertex : Vec<Vertex> = Vec::with_capacity(vertices1.len());
+    let mut vec_of_vertex: Vec<Vertex> = Vec::with_capacity(vertices1.len());
 
     for i in 0..vertices1.len() {
         let px = vertices1[i].x;
@@ -498,7 +504,13 @@ fn make_procedural<BaseColorFn, NormalFn, MetallicRoughnessFn, SamplerFn>(
         let trunk_height = gen_rn(seed + i, 15.0, 20.0);
         let trunk_segments = gen_rn(seed + i, 6.0, 12.0) as u32;
 
-        let tree = create_tree(TreeMesh::default(), seed, trunk_radius, trunk_height, trunk_segments);
+        let tree = create_tree(
+            TreeMesh::default(),
+            seed,
+            trunk_radius,
+            trunk_height,
+            trunk_segments,
+        );
 
         let td = mesh::Descriptor {
             vertices: &tree.vertices,
@@ -508,22 +520,21 @@ fn make_procedural<BaseColorFn, NormalFn, MetallicRoughnessFn, SamplerFn>(
         let mesh = mesh::create(&td);
 
         Entity::new()
-        .with_merge(make_transformable())
-        .with(procedural_mesh(), mesh)
-        .with(procedural_material(), material)
-        .with_default(cast_shadows())
-        .with(scale(), Vec3::ONE * gen_rn(i, 0.2, 0.4))
-        .with(
-            translation(),
-            vec3(
-                gen_rn(seed + i, 0.0, 15.0),
-                gen_rn(seed + seed + i, 0.0, 15.0),
-                0.0,
-            ),
-        )
-        .spawn();
-}
-
+            .with_merge(make_transformable())
+            .with(procedural_mesh(), mesh)
+            .with(procedural_material(), material)
+            .with_default(cast_shadows())
+            .with(scale(), Vec3::ONE * gen_rn(i, 0.2, 0.4))
+            .with(
+                translation(),
+                vec3(
+                    gen_rn(seed + i, 0.0, 15.0),
+                    gen_rn(seed + seed + i, 0.0, 15.0),
+                    0.0,
+                ),
+            )
+            .spawn();
+    }
 }
 
 fn make_procedurals() {
