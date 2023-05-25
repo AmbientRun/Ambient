@@ -96,7 +96,7 @@ pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
             TEST_NAME_PLACEHOLDER,
         ],
         &tests,
-        false,
+        true,
     )?;
 
     match gi.mode {
@@ -155,9 +155,9 @@ pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
                 true,
             )
             .context(
-                "Checking failed, possible causes: \
-                - Missing golden image: consider running `cargo cf golden-images update` first. \
-                - Golden image differs: investigate if the difference was intentional.",
+                "Checking failed, possible causes:\n \
+                - Missing golden image: consider running `cargo cf golden-images update` first.\n \
+                - Golden image differs: investigate if the difference was intentional.\n",
             )?;
         }
     }
