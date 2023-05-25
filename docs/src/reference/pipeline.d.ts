@@ -41,7 +41,7 @@ export type Pipeline = {
       /// Whether or not the indices should be reversed for each triangle. On by default.
       reverse_indices?: boolean,
     } | {
-      /// Use a spherical character collider.
+      /// Use a cylindrical character collider.
       type: "Character",
       /// The radius of the collider.
       radius?: f32,
