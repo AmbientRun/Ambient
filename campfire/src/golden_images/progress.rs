@@ -8,7 +8,7 @@ impl Progress {
     pub(super) fn new(count: usize) -> Self {
         Self(
             ProgressBar::new(count as _).with_style(
-                ProgressStyle::with_template("{msg} {wide_bar} eta={eta} {pos}/{len}")
+                ProgressStyle::with_template("{msg} {wide_bar} elapsed={elapsed} eta={eta}")
                     .expect("Invalid progress bar style"),
             ),
         )

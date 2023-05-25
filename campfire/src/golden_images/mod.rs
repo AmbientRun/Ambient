@@ -13,28 +13,29 @@ use failure::*;
 mod progress;
 use progress::*;
 
+const TEST_BASE_PATH: &str = "guest/rust/examples";
 const TESTS: &[&str] = &[
-    "guest/rust/examples/basics/async",
-    "guest/rust/examples/basics/decals",
-    "guest/rust/examples/basics/first_person_camera",
-    "guest/rust/examples/basics/fog",
-    "guest/rust/examples/basics/image",
-    "guest/rust/examples/basics/input",
-    "guest/rust/examples/basics/primitives",
-    "guest/rust/examples/basics/procedural_generation",
-    "guest/rust/examples/basics/raw_text",
-    "guest/rust/examples/basics/third_person_camera",
-    "guest/rust/examples/basics/transparency",
-    "guest/rust/examples/games/tictactoe",
-    "guest/rust/examples/ui/auto_editor",
-    "guest/rust/examples/ui/button",
-    "guest/rust/examples/ui/dock_layout",
-    "guest/rust/examples/ui/editors",
-    "guest/rust/examples/ui/flow_layout",
-    "guest/rust/examples/ui/rect",
-    "guest/rust/examples/ui/screens",
-    "guest/rust/examples/ui/slider",
-    "guest/rust/examples/ui/text",
+    "basics/async",
+    "basics/decals",
+    "basics/first_person_camera",
+    "basics/fog",
+    "basics/image",
+    "basics/input",
+    "basics/primitives",
+    "basics/procedural_generation",
+    "basics/raw_text",
+    "basics/third_person_camera",
+    "basics/transparency",
+    "games/tictactoe",
+    "ui/auto_editor",
+    "ui/button",
+    "ui/dock_layout",
+    "ui/editors",
+    "ui/flow_layout",
+    "ui/rect",
+    "ui/screens",
+    "ui/slider",
+    "ui/text",
 ];
 
 // Todo: accept filters like `guest/rust/examples/ui/` for running only UI tests.
@@ -130,7 +131,7 @@ fn run_all_tests(command: &str, args: &[&str]) -> anyhow::Result<()> {
             .iter()
             .map(|&arg| {
                 if arg == TEST_NAME_PLACEHOLDER {
-                    test.to_string()
+                    format!("{TEST_BASE_PATH}/{}", test)
                 } else {
                     arg.to_string()
                 }
