@@ -199,9 +199,9 @@ fn GoldenImageTest(
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
     let render_target_ref = hooks.use_ref_with(|_| render_target.clone());
     *render_target_ref.lock() = render_target.clone();
-    let screenshot_path = golden_image_output_dir
-        .unwrap_or(PathBuf::new())
-        .join("screenshot.png");
+    let golden_image_output_dir = golden_image_output_dir.unwrap_or(PathBuf::new());
+    let screenshot_path = golden_image_output_dir.join("screenshot.png");
+    let fail_screenshot_path = golden_image_output_dir.join("fail_screenshot.png");
     let (old_screenshot, _) = hooks.use_state_with(|_| {
         tracing::info!("Loading screenshot from {:?}", screenshot_path);
         Some(Arc::new(image::open(&screenshot_path).ok()?))
@@ -255,13 +255,10 @@ fn GoldenImageTest(
                 render_target.0.color_buffer.id,
                 {
                     move |_| {
+                        let fail_screenshot_path = fail_screenshot_path.clone();
                         if let Some(old) = old_screenshot.clone() {
                             let render_target = render_target.clone();
                             rt.spawn(async move {
-                                if start_time.elapsed().as_secs_f32() > timeout_seconds {
-                                    exit(1);
-                                }
-
                                 let new = render_target
                                     .0
                                     .color_buffer
@@ -270,6 +267,13 @@ fn GoldenImageTest(
                                     .await
                                     .unwrap()
                                     .into_rgba8();
+
+                                if start_time.elapsed().as_secs_f32() > timeout_seconds {
+                                    tracing::error!("Golden image check timed out after {timeout_seconds} seconds!");
+                                    tracing::error!("Writing last frame to {}", fail_screenshot_path.display());
+                                    new.save(fail_screenshot_path).unwrap();
+                                    exit(1);
+                                }
 
                                 // Todo: replace with NVIDIA FLIP.
                                 let hasher = image_hasher::HasherConfig::new().to_hasher();

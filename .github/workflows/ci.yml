@@ -134,7 +134,9 @@ jobs:
         if: always()
         with:
           name: screenshots
-          path: guest/rust/examples/*/*/screenshot.png
+          path: |
+            guest/rust/examples/*/*/screenshot.png
+            guest/rust/examples/*/*/fail_screenshot.png
 
   build-api-and-doc:
     runs-on: ubuntu-20.04
