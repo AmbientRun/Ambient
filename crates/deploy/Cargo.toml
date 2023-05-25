@@ -3,12 +3,15 @@ name = "ambient_deploy"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
+description = "Functionality for deploying Ambient projects."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_project = { path = "../../shared_crates/project" }
-ambient_sys = { path = "../sys" }
+ambient_project = { path = "../../shared_crates/project" , version = "0.3.0-dev" }
+ambient_sys = { path = "../sys" , version = "0.3.0-dev" }
 
 anyhow = { workspace = true }
 flume = { workspace = true }

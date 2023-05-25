@@ -245,6 +245,7 @@ impl MeshBuffer {
             self.skinned_buffer
                 .front
                 .write(metadata.skinned_offset as u64, &data);
+            internal_mesh.skinned_count += len as u64;
         }
 
         self.index_buffer.front.resize(

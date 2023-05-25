@@ -39,7 +39,7 @@ use crate::shared::{
     wit,
 };
 
-use ambient_core::camera::{clip_space_ray, world_to_clip_space};
+use ambient_core::camera::{clip_position_to_world_ray, world_to_clip_space};
 
 impl wit::client_message::Host for Bindings {
     fn send(
@@ -147,12 +147,12 @@ impl wit::client_input::Host for Bindings {
     }
 }
 impl wit::client_camera::Host for Bindings {
-    fn clip_space_ray(
+    fn clip_position_to_world_ray(
         &mut self,
         camera: wit::types::EntityId,
         clip_space_pos: wit::types::Vec2,
     ) -> anyhow::Result<wit::types::Ray> {
-        let mut ray = clip_space_ray(
+        let mut ray = clip_position_to_world_ray(
             self.world(),
             camera.from_bindgen(),
             clip_space_pos.from_bindgen(),
@@ -171,14 +171,14 @@ impl wit::client_camera::Host for Bindings {
         )
     }
 
-    fn screen_to_world_direction(
+    fn screen_position_to_world_ray(
         &mut self,
         camera: wit::types::EntityId,
         screen_pos: wit::types::Vec2,
     ) -> anyhow::Result<wit::types::Ray> {
         let clip_space =
             ambient_core::window::screen_to_clip_space(self.world(), screen_pos.from_bindgen());
-        let mut ray = clip_space_ray(self.world(), camera.from_bindgen(), clip_space)?;
+        let mut ray = clip_position_to_world_ray(self.world(), camera.from_bindgen(), clip_space)?;
         ray.dir *= -1.;
         Ok(ray.into_bindgen())
     }
@@ -418,9 +418,9 @@ impl wit::client_material::Host for Bindings {
                     .get(desc.metallic_roughness_map.from_bindgen()),
             ),
             sampler: Arc::clone(storage.samplers.get(desc.sampler.from_bindgen())),
-            transparent: desc.transparent,
-            double_sided: false,
-            depth_write_enabled: false,
+            transparent: Some(desc.transparent),
+            double_sided: None,
+            depth_write_enabled: None,
         };
         let material_handle = new_material_handle();
         storage.materials.insert(material_handle, material);

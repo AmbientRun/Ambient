@@ -1,3 +1,4 @@
+use ambient_network::native::client::ResolvedAddr;
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ContentBaseUrlKey},
@@ -288,12 +289,9 @@ fn main() -> anyhow::Result<()> {
             if !host.contains(':') {
                 host = format!("{host}:{QUIC_INTERFACE_PORT}");
             }
-            runtime
-                .block_on(tokio::net::lookup_host(&host))?
-                .next()
-                .ok_or_else(|| anyhow::anyhow!("No address found for host {host}"))?
+            runtime.block_on(ResolvedAddr::lookup_host(&host))?
         } else {
-            format!("127.0.0.1:{QUIC_INTERFACE_PORT}").parse()?
+            ResolvedAddr::localhost_with_port(QUIC_INTERFACE_PORT)
         }
     } else if let Some(host) = &cli.host() {
         let crypto = if let (Some(cert_file), Some(key_file)) = (&host.cert, &host.key) {
@@ -324,7 +322,7 @@ fn main() -> anyhow::Result<()> {
             metadata.as_ref().expect("no build metadata"),
             crypto,
         );
-        format!("127.0.0.1:{port}").parse()?
+        ResolvedAddr::localhost_with_port(port)
     } else {
         unreachable!()
     };

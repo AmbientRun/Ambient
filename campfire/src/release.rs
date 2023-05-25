@@ -132,6 +132,7 @@ fn update_version(new_version: &str) -> anyhow::Result<()> {
         anyhow::bail!("version must start with an integer");
     }
 
+    let all_publishable_crates = get_all_publishable_crates()?;
     edit_toml(AMBIENT_MANIFEST, |toml| {
         toml["project"]["version"] = toml_edit::value(new_version);
     })?;
@@ -144,7 +145,6 @@ fn update_version(new_version: &str) -> anyhow::Result<()> {
         toml["workspace"]["package"]["version"] = toml_edit::value(new_version);
     })?;
 
-    let all_publishable_crates = get_all_publishable_crates()?;
     edit_toml(GUEST_RUST_CARGO, |toml| {
         toml["workspace"]["package"]["version"] = toml_edit::value(new_version);
         update_ambient_dependency_versions(

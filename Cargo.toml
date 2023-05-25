@@ -5,7 +5,7 @@ members = ["crates/*", "libs/*", "shared_crates/*", "app", "campfire"]
 resolver = "2"
 
 [workspace.package]
-version = "0.2.1"
+version = "0.3.0-dev"
 rust-version = "1.67.0"
 
 [workspace.dependencies]
@@ -150,6 +150,7 @@ enum_dispatch = "0.3"
 uuid = "1.3"
 scopeguard = "1.0"
 rustls-native-certs = "0.6.2"
+webpki-roots = "0.23.0"
 
 #
 # WASM dependencies. Should be able to move off these once this all begins to stabilise a little.
