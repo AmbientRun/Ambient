@@ -33,19 +33,6 @@ pub struct TreeMesh {
     pub foliage_segments: u32,
 }
 
-impl Default for TreeMesh {
-    fn default() -> Self {
-        Self {
-            seed: 123,
-            trunk_radius: 3.0,
-            trunk_height: 15.0,
-            trunk_segments: 8,
-            foliage_radius: 2.0,
-            foliage_density: 5,
-            foliage_segments: 5,
-        }
-    }
-}
 pub struct MeshDescriptor {
     vertices: Vec<Vertex>,
     indices: Vec<u32>,
@@ -369,8 +356,8 @@ where
     })
 }
 
-fn make_procedurals() {
-    let base_color_fn = |x, _| {
+fn register_tree_entity_augmentors() {
+    let base_color_map = make_texture(|x, _| {
         let hsl = palette::Hsl::new(360.0 * x, 1.0, 0.5).into_format::<f32>();
         let rgb: palette::LinSrgb = hsl.into_color();
         let r = (255.0 * rgb.red) as u8;
@@ -378,12 +365,7 @@ fn make_procedurals() {
         let b = (255.0 * rgb.blue) as u8;
         let a = 255;
         [r, g, b, a]
-    };
-
-    let seed = 12345;
-    let num_trees = 15;
-
-    let base_color_map = make_texture(base_color_fn);
+    });
     let normal_map = make_texture(|_, _| [128, 128, 255, 0]);
     let metallic_roughness_map = make_texture(|_, _| [255, 255, 0, 0]);
     let sampler = sampler::create(&sampler::Descriptor {
@@ -402,43 +384,79 @@ fn make_procedurals() {
         transparent: false,
     });
 
+    spawn_query((
+        components::tree_seed(),
+        components::tree_foliage_density(),
+        components::tree_foliage_radius(),
+        components::tree_foliage_segments(),
+        components::tree_trunk_height(),
+        components::tree_trunk_radius(),
+        components::tree_trunk_segments(),
+    ))
+    .bind(move |trees| {
+        for (
+            id,
+            (
+                seed,
+                foliage_density,
+                foliage_radius,
+                foliage_segments,
+                trunk_height,
+                trunk_radius,
+                trunk_segments,
+            ),
+        ) in trees
+        {
+            let tree = create_tree(TreeMesh {
+                seed,
+                trunk_radius,
+                trunk_height,
+                trunk_segments,
+                foliage_radius,
+                foliage_density,
+                foliage_segments,
+            });
+            let mesh = mesh::create(&mesh::Descriptor {
+                vertices: &tree.vertices,
+                indices: &tree.indices,
+            });
+
+            entity::add_components(
+                id,
+                Entity::new()
+                    .with(procedural_mesh(), mesh)
+                    .with(procedural_material(), material)
+                    .with_default(cast_shadows()),
+            );
+        }
+    });
+}
+
+fn make_trees() {
+    let seed = 12345;
+    let num_trees = 15;
+
     // lets plant some trees :)
     for i in 0..num_trees {
         let trunk_radius = gen_rn(seed + i, 2.0, 3.0);
         let trunk_height = gen_rn(seed + i, 15.0, 20.0);
         let trunk_segments = gen_rn(seed + i, 6.0, 12.0) as u32;
 
-        let tree = TreeMesh {
-            seed,
-            trunk_radius,
-            trunk_height,
-            trunk_segments,
-            ..Default::default()
-        };
-
-        let tree = create_tree(tree);
-
-        let td = mesh::Descriptor {
-            vertices: &tree.vertices,
-            indices: &tree.indices,
-        };
-
-        let mesh = mesh::create(&td);
+        let position = vec3(
+            gen_rn(seed + i, 0.0, 15.0),
+            gen_rn(seed + seed + i, 0.0, 15.0),
+            0.0,
+        );
 
         Entity::new()
+            .with_merge(concepts::make_tree())
             .with_merge(make_transformable())
-            .with(procedural_mesh(), mesh)
-            .with(procedural_material(), material)
-            .with_default(cast_shadows())
             .with(scale(), Vec3::ONE * gen_rn(i, 0.2, 0.4))
-            .with(
-                translation(),
-                vec3(
-                    gen_rn(seed + i, 0.0, 15.0),
-                    gen_rn(seed + seed + i, 0.0, 15.0),
-                    0.0,
-                ),
-            )
+            .with(translation(), position)
+            .with(components::tree_seed(), seed + i)
+            .with(components::tree_trunk_radius(), trunk_radius)
+            .with(components::tree_trunk_height(), trunk_height)
+            .with(components::tree_trunk_segments(), trunk_segments)
             .spawn();
     }
 }
@@ -448,5 +466,7 @@ pub async fn main() {
     make_camera();
     make_lighting();
     make_ground();
-    make_procedurals();
+
+    register_tree_entity_augmentors();
+    make_trees();
 }
