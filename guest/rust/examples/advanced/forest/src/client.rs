@@ -28,6 +28,9 @@ pub struct TreeMesh {
     pub trunk_radius: f32,
     pub trunk_height: f32,
     pub trunk_segments: u32,
+    pub branch_length: f32,
+    pub branch_angle: f32,
+    pub branch_segments: u32,
     pub foliage_radius: f32,
     pub foliage_density: u32,
     pub foliage_segments: u32,
@@ -40,7 +43,7 @@ pub struct MeshDescriptor {
 
 pub fn create_tree(tree: TreeMesh) -> MeshDescriptor {
     // Create the trunk
-    let (mut vertices1, top_vertices1, mut normals1, mut uvs1) = build_trunk(&tree);
+    let (mut vertices1, top_vertices1, mut normals1, mut uvs1, trunk_direction) = build_trunk(&tree);
 
     let sectors = 12;
     let trunk_segments = tree.trunk_segments;
@@ -62,10 +65,98 @@ pub fn create_tree(tree: TreeMesh) -> MeshDescriptor {
         }
     }
 
+
+
+    // Generate branches
+    let branch_count = tree.branch_segments;
+    let branch_radius_variance = 0.02;
+    let branch_position_variance = vec3(0.8, 0.8, 0.7);
+
+    let mut rng = ChaCha8Rng::seed_from_u64(tree.seed as u64);
+
+    for i in 0..branch_count {
+        let branch_radius = 0.3;
+            //* (1.0 - rng.gen_range(0.0..1.0) * branch_radius_variance);
+        let mut branch_position = top_vertices1[rng.gen_range(0..top_vertices1.len())]
+            + vec3(
+                rng.gen_range(0.0..1.0) * branch_position_variance.x,
+                rng.gen_range(0.0..1.0) * branch_position_variance.y,
+                rng.gen_range(0.0..1.0) * branch_position_variance.z-1.0,
+            );
+
+        let segments = tree.branch_segments;
+        let sector_step = 2. * std::f32::consts::PI / segments as f32;
+
+        let mut branch_vertices = Vec::new();
+        let mut branch_normals = Vec::new();
+        let mut branch_uvs = Vec::new();
+
+        let mut direction = vec3(0.0, 0.0, 1.0);
+        let direction_variance = 0.05;
+
+
+        // Get a random vertex from the top vertices of the trunk
+        let random_vertex_index = rng.gen_range(0..top_vertices1.len());
+        let random_vertex = normals1[random_vertex_index];
+
+        // Calculate the initial direction of the branch from the chosen vertex
+        direction = (random_vertex - branch_position).normalize() + vec3(gen_rn(tree.seed + i as i32 + 4, -1.0, 1.0), gen_rn(tree.seed + i as i32 + 5, -1.0, 1.0), 0.0);
+
+        for i in 0..=segments {
+
+        let random_direction = vec3(
+            gen_rn(tree.seed + i as i32 + 1, 0.0, 1.0) - 0.5,
+            gen_rn(tree.seed + i as i32 + 2, 0.0, 1.0) - 0.5,
+            gen_rn(tree.seed + i as i32 + 3, 0.0, 1.0) - 0.5,
+        )
+        .normalize()
+            * direction_variance;
+        direction = (direction + random_direction).normalize();
+
+            let theta = (i as f32 / segments as f32) * tree.branch_angle;
+            let height = branch_position.z + (tree.branch_length * theta.cos())*direction.z;
+            let segment_radius = branch_radius * theta.sin();
+
+            for j in 0..=sectors {
+                let phi = j as f32 * sector_step;
+                let x = branch_position.x + segment_radius * phi.cos();
+                let y = branch_position.y + segment_radius * phi.sin();
+                let z = height;
+
+                branch_vertices.push(vec3(x, y, z));
+                branch_normals.push(
+                    vec3(
+                        x - branch_position.x,
+                        y - branch_position.y,
+                        z - branch_position.z,
+                    )
+                    .normalize(),
+                );
+                branch_uvs.push(vec2(j as f32 / sectors as f32, i as f32 / segments as f32));
+            }
+            branch_position = branch_position
+            + vec3(
+                rng.gen_range(-1.0..1.0) * branch_position_variance.x,
+                rng.gen_range(-1.0..1.0) * branch_position_variance.y,
+                rng.gen_range(0.0..1.0) * branch_position_variance.z,
+            );
+        }
+
+        let branch_indices = generate_branch_indices(segments as usize, sectors as usize);
+
+        vertices1.extend(branch_vertices.clone());
+        normals1.extend(branch_normals);
+        uvs1.extend(branch_uvs);
+
+        let offset = vertices1.len() - branch_vertices.len();
+        indices.extend(branch_indices.iter().map(|i| *i + offset as u32));
+    }
+
+
     // Generate foliage
     let foliage_count = tree.foliage_density + tree.foliage_segments;
     let foliage_radius_variance = 0.05;
-    let foliage_position_variance = vec3(5.0, 5.0, 3.0);
+    let foliage_position_variance = vec3(3.0, 3.0, 3.0);
 
     for i in 0..foliage_count {
         let foliage_radius = tree.foliage_radius
@@ -73,9 +164,9 @@ pub fn create_tree(tree: TreeMesh) -> MeshDescriptor {
         let foliage_position = top_vertices1
             [gen_rn(tree.seed, 0.0, top_vertices1.len() as f32) as usize]
             + vec3(
-                gen_rn(tree.seed + i as i32, 0.0, 1.0) * foliage_position_variance.x,
-                gen_rn(tree.seed + i as i32 + 1, 0.0, 1.0) * foliage_position_variance.y,
-                gen_rn(tree.seed + i as i32 + 2, 0.0, 1.0) * foliage_position_variance.z,
+                gen_rn(tree.seed + i as i32, -1.0, 1.0) * foliage_position_variance.x,
+                gen_rn(tree.seed + i as i32 + 1, -1.0, 1.0) * foliage_position_variance.y,
+                gen_rn(tree.seed + i as i32 + 2, 0.0, 1.0) * foliage_position_variance.z + 2.0,
             );
 
         let segments = tree.foliage_segments;
@@ -143,6 +234,29 @@ pub fn create_tree(tree: TreeMesh) -> MeshDescriptor {
         indices
     }
 
+    // Function to generate indices for a branch based on segments and sectors
+    fn generate_branch_indices(segments: usize, sectors: usize) -> Vec<u32> {
+        let mut indices = Vec::with_capacity(segments * sectors * 6);
+
+        for i in 0..segments {
+            for j in 0..sectors {
+                let index1 = i * (sectors + 1) + j;
+                let index2 = index1 + 1;
+                let index3 = (i + 1) * (sectors + 1) + j;
+                let index4 = index3 + 1;
+
+                indices.push(index1 as u32);
+                indices.push(index2 as u32);
+                indices.push(index3 as u32);
+
+                indices.push(index2 as u32);
+                indices.push(index4 as u32);
+                indices.push(index3 as u32);
+            }
+        }
+        indices
+    }
+
     let mut vertices: Vec<Vertex> = Vec::with_capacity(vertices1.len());
 
     for i in 0..vertices1.len() {
@@ -167,7 +281,7 @@ pub fn create_tree(tree: TreeMesh) -> MeshDescriptor {
     MeshDescriptor { vertices, indices }
 }
 
-fn build_trunk(tree: &TreeMesh) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) {
+fn build_trunk(tree: &TreeMesh) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec3>, Vec<Vec2>, Vec3) {
     let sectors = 12;
     let sector_step = 2. * std::f32::consts::PI / sectors as f32;
 
@@ -262,7 +376,7 @@ fn build_trunk(tree: &TreeMesh) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) 
         }
     }
 
-    (vertices, top_vertices, normals, uvs)
+    (vertices, top_vertices, normals, uvs, trunk_direction)
 }
 
 pub fn gen_rn(seed: i32, min: f32, max: f32) -> f32 {
@@ -276,7 +390,7 @@ fn make_camera() {
         .with(aspect_ratio_from_window(), EntityId::resources())
         .with_default(main_scene())
         .with(translation(), vec3(10.0, 10.0, 4.0) * 2.0)
-        .with(lookat_target(), vec3(0.0, 3.0, 0.0))
+        .with(lookat_target(), vec3(0.0, 0.0, 0.0))
         .spawn();
 }
 
@@ -389,6 +503,8 @@ fn register_tree_entity_augmentors() {
         components::tree_foliage_density(),
         components::tree_foliage_radius(),
         components::tree_foliage_segments(),
+        components::tree_branch_length(),
+        components::tree_branch_angle(),
         components::tree_trunk_height(),
         components::tree_trunk_radius(),
         components::tree_trunk_segments(),
@@ -401,6 +517,8 @@ fn register_tree_entity_augmentors() {
                 foliage_density,
                 foliage_radius,
                 foliage_segments,
+                branch_length,
+                branch_angle,
                 trunk_height,
                 trunk_radius,
                 trunk_segments,
@@ -412,6 +530,9 @@ fn register_tree_entity_augmentors() {
                 trunk_radius,
                 trunk_height,
                 trunk_segments,
+                branch_length,
+                branch_angle,
+                branch_segments:8,
                 foliage_radius,
                 foliage_density,
                 foliage_segments,
@@ -434,18 +555,20 @@ fn register_tree_entity_augmentors() {
 
 fn make_trees() {
     let seed = 12345;
-    let num_trees = 15;
+    let num_trees = 30;
 
     // lets plant some trees :)
     for i in 0..num_trees {
         let trunk_radius = gen_rn(seed + i, 2.0, 3.0);
         let trunk_height = gen_rn(seed + i, 15.0, 20.0);
         let trunk_segments = gen_rn(seed + i, 6.0, 12.0) as u32;
+        let branch_length = gen_rn(seed + i, 0.1, 0.3);
+        let branch_angle = gen_rn(seed + i, 10., 12.);
 
         let position = vec3(
-            gen_rn(seed + i, 0.0, 15.0),
-            gen_rn(seed + seed + i, 0.0, 15.0),
-            0.0,
+            gen_rn(seed + i, -10.0, 15.0),
+            gen_rn(seed + seed + i, -10.0, 15.0),
+            -1.0,
         );
 
         Entity::new()
@@ -457,6 +580,8 @@ fn make_trees() {
             .with(components::tree_trunk_radius(), trunk_radius)
             .with(components::tree_trunk_height(), trunk_height)
             .with(components::tree_trunk_segments(), trunk_segments)
+            .with(components::tree_branch_length(), branch_length)
+            .with(components::tree_branch_angle(), branch_angle)
             .spawn();
     }
 }

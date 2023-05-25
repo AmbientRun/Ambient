@@ -9,6 +9,9 @@ tree_seed = { type = "I32", name = "Tree seed", description = "The seed of the t
 tree_trunk_radius = { type = "F32", name = "Tree trunk radius", description = "The radius of the trunk" }
 tree_trunk_height = { type = "F32", name = "Tree trunk height", description = "The height of the trunk" }
 tree_trunk_segments = { type = "U32", name = "Tree trunk segments", description = "The number of segments of the trunk" }
+tree_branch_length = { type = "F32", name = "Tree branches lenght", description = "The lenght of the branches" }
+tree_branch_angle = { type = "F32", name = "Tree branches angle", description = "The angle of the branches" }
+tree_branch_segments = { type = "U32", name = "Tree branch segments", description = "The number of segments of the branches" }
 tree_foliage_radius = { type = "F32", name = "Tree foliage radius", description = "The radius of the foliage" }
 tree_foliage_density = { type = "U32", name = "Tree foliage density", description = "The number of foliage" }
 tree_foliage_segments = { type = "U32", name = "Tree foliage segments", description = "The number of segments of the foliage" }
@@ -18,6 +21,9 @@ tree_seed = 123
 tree_trunk_radius = 3.0
 tree_trunk_height = 15.0
 tree_trunk_segments = 8
+tree_branch_length = 1.0
+tree_branch_angle = 1.0
+tree_branch_segments = 3
 tree_foliage_radius = 2.0
 tree_foliage_density = 5
 tree_foliage_segments = 5
