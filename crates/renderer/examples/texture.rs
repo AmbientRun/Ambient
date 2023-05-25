@@ -39,9 +39,9 @@ async fn init(app: &mut App) {
             normalmap: DefaultNormalMapViewKey.get(&assets),
             metallic_roughness: PixelTextureViewKey::white().get(&assets),
             sampler: DefaultSamplerKey.get(&assets),
-            transparent: false,
-            double_sided: false,
-            depth_write_enabled: false,
+            transparent: None,
+            double_sided: None,
+            depth_write_enabled: None,
         },
     ));
 
