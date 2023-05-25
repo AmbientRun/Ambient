@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::{Args, Parser};
+use clap::{Args, Parser, Subcommand};
 
 pub mod new_project;
 
@@ -70,6 +70,20 @@ pub enum Commands {
     },
 }
 
+#[derive(Subcommand, Clone, Copy, Debug)]
+pub enum GoldenImageCommand {
+    /// Renders an image and saves it after waiting for the specified number of seconds
+    GoldenImageUpdate {
+        #[arg(long)]
+        wait_seconds: f32,
+    },
+    /// Renders an image and compares it against existing golden image and timeouts after the specified number seconds
+    GoldenImageCheck {
+        #[arg(long)]
+        timeout_seconds: f32,
+    },
+}
+
 #[derive(Args, Clone, Debug)]
 pub struct RunCli {
     /// If set, show a debugger that can be used to investigate the state of the project. Can also be accessed through the `AMBIENT_DEBUGGER` environment variable
@@ -80,9 +94,9 @@ pub struct RunCli {
     #[arg(long)]
     pub headless: bool,
 
-    /// Take a screenshot after N seconds, compare it to the existing one and then exit with an exit code of 1 if they are different
-    #[arg(long)]
-    pub golden_image_test: Option<f32>,
+    /// Run golden image test
+    #[command(subcommand)]
+    pub golden_image: Option<GoldenImageCommand>,
 
     /// The user ID to join this server with
     #[clap(short, long)]

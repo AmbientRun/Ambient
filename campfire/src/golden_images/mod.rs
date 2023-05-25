@@ -4,6 +4,7 @@
 
 use anyhow::{bail, Context};
 use clap::Parser;
+use itertools::Itertools;
 use std::{process::Command, time::Instant};
 
 mod failure;
@@ -36,7 +37,6 @@ const TESTS: &[&str] = &[
     "guest/rust/examples/ui/text",
 ];
 
-// Todo: implement update and check.
 // Todo: accept filters like `guest/rust/examples/ui/` for running only UI tests.
 #[derive(Parser, Clone)]
 pub enum GoldenImages {
@@ -46,10 +46,71 @@ pub enum GoldenImages {
     Check,
 }
 
-pub(crate) fn main(_gi: &GoldenImages) -> anyhow::Result<()> {
+const TEST_NAME_PLACEHOLDER: &str = "{test}";
+
+pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     let start_time = Instant::now();
-    build_tests().with_context(|| format!("Building {} tests", TESTS.len()))?;
-    run_tests().with_context(|| format!("Running {} tests", TESTS.len()))?;
+    run_all_tests(
+        "Building",
+        &[
+            "run",
+            "--release",
+            "--",
+            "build",
+            "--release",
+            TEST_NAME_PLACEHOLDER,
+        ],
+    )?;
+    match gi {
+        GoldenImages::Update => {
+            run_all_tests(
+                "Updating",
+                &[
+                    "run",
+                    "--release",
+                    "--",
+                    "run",
+                    "--release",
+                    TEST_NAME_PLACEHOLDER,
+                    "--headless",
+                    "--no-proxy",
+                    "golden-image-update",
+                    // Todo: Ideally this waiting should be unnecessary, because
+                    // we only care about rendering the first frame of the test,
+                    // no matter how long it takes to start the test. Being able
+                    // to stall the renderer before everything has been loaded
+                    // eliminates the need for timeouts and reduces test
+                    // flakiness.
+                    "--wait-seconds",
+                    "5.0",
+                ],
+            )?;
+        }
+        GoldenImages::Check => {
+            run_all_tests(
+                "Checking",
+                &[
+                    "run",
+                    "--release",
+                    "--",
+                    "run",
+                    "--release",
+                    TEST_NAME_PLACEHOLDER,
+                    "--headless",
+                    "--no-proxy",
+                    "golden-image-check",
+                    // Todo: See notes on --wait-seconds from above.
+                    "--timeout-seconds",
+                    "30.0",
+                ],
+            )
+            .context(
+                "Checking failed, possible causes: \
+                - Missing golden image: consider running `cargo cf golden-images update` first. \
+                - Golden image differs: investigate if the difference was intentional.",
+            )?;
+        }
+    }
     log::info!(
         "Running {} golden image tests took {:.03} seconds",
         TESTS.len(),
@@ -58,65 +119,24 @@ pub(crate) fn main(_gi: &GoldenImages) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn build_tests() -> anyhow::Result<()> {
+fn run_all_tests(command: &str, args: &[&str]) -> anyhow::Result<()> {
     let pb = Progress::new(TESTS.len());
-    pb.println(format!("Building {} tests", TESTS.len()));
+    pb.println(format!("{command} {} tests", TESTS.len()));
     let mut failures = vec![];
     for &test in TESTS {
         pb.set_message(test);
         let start_time = Instant::now();
-        let args = ["run", "--release", "--", "build", "--release", test];
-        let output = Command::new("cargo").args(args).output()?;
-        if !output.status.success() {
-            failures.push(Failure::from_output(test, &output));
-        }
-        pb.println(format!(
-            "{} | {:.03}s | cargo {}",
-            status_emoji(output.status.success()),
-            start_time.elapsed().as_secs_f64(),
-            args.join(" "),
-        ));
-        pb.inc();
-    }
-    pb.finish();
-    if !failures.is_empty() {
-        for failure in &failures {
-            failure.log();
-        }
-        bail!("{} tests failed", failures.len());
-    }
-    Ok(())
-}
-
-fn run_tests() -> anyhow::Result<()> {
-    let pb = Progress::new(TESTS.len());
-    pb.println(format!("Running {} tests", TESTS.len()));
-    let mut failures = vec![];
-    for &test in TESTS {
-        pb.set_message(test);
-        let start_time = Instant::now();
-        let args = [
-            "run",
-            "--release",
-            "--",
-            "run",
-            "--release",
-            test,
-            "--headless",
-            "--no-proxy",
-            "--golden-image-test",
-            // Todo: Ideally this timeout should be unnecessary, because we only
-            // care about rendering the first frame of the test, no matter how
-            // long it takes to load the test. Being able to stall the renderer
-            // before everything has been loaded eliminates the need for
-            // timeouts and reduces test flakiness.
-            "60",
-            "--quic-interface-port",
-            "9000",
-            "--http-interface-port",
-            "10000",
-        ];
-        let output = Command::new("cargo").args(args).output()?;
+        let args = args
+            .iter()
+            .map(|&arg| {
+                if arg == TEST_NAME_PLACEHOLDER {
+                    test.to_string()
+                } else {
+                    arg.to_string()
+                }
+            })
+            .collect_vec();
+        let output = Command::new("cargo").args(&args).output()?;
         if !output.status.success() {
             failures.push(Failure::from_output(test, &output));
         }
