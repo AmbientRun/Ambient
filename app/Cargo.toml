@@ -79,12 +79,14 @@ rusty-hook = "^0.11.2"
 
 [features]
 no_bundled_certs = []
-default = []
+default = ["tls-webpki-roots"]
 deploy = ["ambient_deploy"]
 production = ["assimp"]
 profile = ["ambient_app/profile"]
 assimp = ["ambient_model_import/russimp"]
 tracing = ["tracing-tree", "tracing-subscriber", "tracing-log"]
+tls-native-roots = ["ambient_network/tls-native-roots"]
+tls-webpki-roots = ["ambient_network/tls-webpki-roots"]
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 axum = { workspace = true }

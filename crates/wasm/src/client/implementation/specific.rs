@@ -418,9 +418,9 @@ impl wit::client_material::Host for Bindings {
                     .get(desc.metallic_roughness_map.from_bindgen()),
             ),
             sampler: Arc::clone(storage.samplers.get(desc.sampler.from_bindgen())),
-            transparent: desc.transparent,
-            double_sided: false,
-            depth_write_enabled: false,
+            transparent: Some(desc.transparent),
+            double_sided: None,
+            depth_write_enabled: None,
         };
         let material_handle = new_material_handle();
         storage.materials.insert(material_handle, material);
