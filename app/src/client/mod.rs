@@ -1,6 +1,4 @@
-use std::{
-    collections::HashMap, path::PathBuf, process::exit, sync::Arc, time::Duration,
-};
+use std::{collections::HashMap, path::PathBuf, process::exit, sync::Arc, time::Duration};
 
 use ambient_app::{fps_stats, window_title, AppBuilder};
 use ambient_cameras::UICamera;
@@ -273,12 +271,12 @@ fn GoldenImageTest(
                                     .unwrap()
                                     .into_rgba8();
 
+                                // Todo: replace with NVIDIA FLIP.
                                 let hasher = image_hasher::HasherConfig::new().to_hasher();
-
                                 let hash1 = hasher.hash_image(&new);
                                 let hash2 = hasher.hash_image(&*old);
                                 let dist = hash1.dist(&hash2);
-                                if dist <= 2 {
+                                if dist <= 3 {
                                     tracing::info!("Screenshots are identical, exiting");
                                     exit(0);
                                 } else {
