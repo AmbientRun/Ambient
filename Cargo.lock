@@ -2146,6 +2146,7 @@ dependencies = [
  "indicatif",
  "itertools",
  "log",
+ "rayon",
  "regex",
  "rustdoc-json",
  "rustdoc-types",

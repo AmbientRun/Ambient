@@ -58,6 +58,8 @@ enum Mode {
 }
 
 const TEST_NAME_PLACEHOLDER: &str = "{test}";
+const QUIC_INTERFACE_PORT_PLACEHOLDER: &str = "{quic-port}";
+const HTTP_INTERFACE_PORT_PLACEHOLDER: &str = "{http-port}";
 
 pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     let start_time = Instant::now();
@@ -94,6 +96,7 @@ pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
             TEST_NAME_PLACEHOLDER,
         ],
         &tests,
+        false,
     )?;
 
     match gi.mode {
@@ -109,6 +112,10 @@ pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
                     TEST_NAME_PLACEHOLDER,
                     "--headless",
                     "--no-proxy",
+                    "--quic-interface-port",
+                    QUIC_INTERFACE_PORT_PLACEHOLDER,
+                    "--http-interface-port",
+                    HTTP_INTERFACE_PORT_PLACEHOLDER,
                     "golden-image-update",
                     // Todo: Ideally this waiting should be unnecessary, because
                     // we only care about rendering the first frame of the test,
@@ -120,6 +127,7 @@ pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
                     "5.0",
                 ],
                 &tests,
+                true,
             )?;
         }
         Mode::Check => {
@@ -134,12 +142,17 @@ pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
                     TEST_NAME_PLACEHOLDER,
                     "--headless",
                     "--no-proxy",
+                    "--quic-interface-port",
+                    QUIC_INTERFACE_PORT_PLACEHOLDER,
+                    "--http-interface-port",
+                    HTTP_INTERFACE_PORT_PLACEHOLDER,
                     "golden-image-check",
                     // Todo: See notes on --wait-seconds from above.
                     "--timeout-seconds",
                     "30.0",
                 ],
                 &tests,
+                true,
             )
             .context(
                 "Checking failed, possible causes: \
@@ -158,42 +171,70 @@ pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn run(command: &str, args: &[&str], tests: &[&'static str]) -> anyhow::Result<()> {
-    let pb = Progress::new(tests.len());
-    pb.println(format!("{command} {} tests", tests.len()));
-    let mut failures = vec![];
-    for &test in tests {
-        pb.set_message(test);
-        let start_time = Instant::now();
-        let args = args
-            .iter()
-            .map(|&arg| {
-                if arg == TEST_NAME_PLACEHOLDER {
-                    format!("{TEST_BASE_PATH}/{}", test)
-                } else {
-                    arg.to_string()
-                }
+fn run(command: &str, args: &[&str], tests: &[&'static str], parallel: bool) -> anyhow::Result<()> {
+    use rayon::prelude::*;
+
+    // Run.
+    let pool = rayon::ThreadPoolBuilder::new()
+        .num_threads(if parallel { 0 } else { 1 })
+        .build()?;
+    let outputs = pool.install(|| {
+        let pb = Progress::new(tests.len());
+        pb.println(format!("{command} {} tests", tests.len()));
+        let mut outputs = vec![];
+        tests
+            .par_iter()
+            .enumerate()
+            .map(|(test_index, &test)| {
+                let start_time = Instant::now();
+                let args = args
+                    .iter()
+                    .map(|&arg| {
+                        let arg = match arg {
+                            TEST_NAME_PLACEHOLDER => format!("{TEST_BASE_PATH}/{}", test),
+                            QUIC_INTERFACE_PORT_PLACEHOLDER => format!("{}", 9000 + test_index),
+                            HTTP_INTERFACE_PORT_PLACEHOLDER => format!("{}", 10000 + test_index),
+                            _ => arg.to_string(),
+                        };
+                        if arg == TEST_NAME_PLACEHOLDER {
+                            format!("{TEST_BASE_PATH}/{}", test)
+                        } else {
+                            arg.to_string()
+                        }
+                    })
+                    .collect_vec();
+                let output = Command::new("cargo").args(&args).output().unwrap();
+                pb.println_and_inc(format!(
+                    "{} | {:.03}s | cargo {}",
+                    status_emoji(output.status.success()),
+                    start_time.elapsed().as_secs_f64(),
+                    args.join(" "),
+                ));
+                (test, output)
             })
-            .collect_vec();
-        let output = Command::new("cargo").args(&args).output()?;
-        if !output.status.success() {
-            failures.push(Failure::from_output(test, &output));
-        }
-        pb.println(format!(
-            "{} | {:.03}s | cargo {}",
-            status_emoji(output.status.success()),
-            start_time.elapsed().as_secs_f64(),
-            args.join(" "),
-        ));
-        pb.inc();
-    }
-    pb.finish();
+            .collect_into_vec(&mut outputs);
+        pb.finish();
+        outputs
+    });
+
+    // Collect failures.
+    let failures = outputs
+        .into_iter()
+        .filter_map(|(test, output)| {
+            if output.status.success() {
+                None
+            } else {
+                Some(Failure::from_output(test, &output))
+            }
+        })
+        .collect_vec();
     if !failures.is_empty() {
         for failure in &failures {
             failure.log();
         }
         bail!("{} tests failed", failures.len());
     }
+
     Ok(())
 }
 
