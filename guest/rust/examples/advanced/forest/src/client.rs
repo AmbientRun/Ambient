@@ -12,7 +12,6 @@ use ambient_api::{
 
 use components::rotating_sun;
 use glam::*;
-use noise::{utils::*, Fbm, Perlin};
 use palette::IntoColor;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
@@ -56,20 +55,7 @@ pub struct MeshDescriptor {
     indices: Vec<u32>,
 }
 
-pub fn create_tree(
-    t: TreeMesh,
-    seed: i32,
-    trunk_radius: f32,
-    trunk_height: f32,
-    trunk_segments: u32,
-) -> MeshDescriptor {
-    let mut tree = t;
-
-    tree.trunk_radius = trunk_radius;
-    tree.trunk_height = trunk_height;
-    tree.trunk_segments = trunk_segments;
-    tree.seed = seed;
-
+pub fn create_tree(tree: TreeMesh) -> MeshDescriptor {
     // Create the trunk
     let (mut vertices1, top_vertices1, mut normals1, mut uvs1) = build_trunk(&tree);
 
@@ -174,7 +160,7 @@ pub fn create_tree(
         indices
     }
 
-    let mut vec_of_vertex: Vec<Vertex> = Vec::with_capacity(vertices1.len());
+    let mut vertices: Vec<Vertex> = Vec::with_capacity(vertices1.len());
 
     for i in 0..vertices1.len() {
         let px = vertices1[i].x;
@@ -192,16 +178,10 @@ pub fn create_tree(
             tangent: vec3(1.0, 0.0, 0.0),
             texcoord0: vec2(u, v),
         };
-        vec_of_vertex.push(v);
+        vertices.push(v);
     }
 
-    let vcs = vec_of_vertex.clone();
-    let ids = indices.clone();
-
-    MeshDescriptor {
-        vertices: vec_of_vertex,
-        indices: indices.clone(),
-    }
+    MeshDescriptor { vertices, indices }
 }
 
 fn build_trunk(tree: &TreeMesh) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) {
@@ -393,10 +373,6 @@ where
     })
 }
 
-fn default_base_color(_: f32, _: f32) -> [u8; 4] {
-    [255, 255, 255, 255]
-}
-
 fn default_normal(_: f32, _: f32) -> [u8; 4] {
     [128, 128, 255, 0]
 }
@@ -416,19 +392,7 @@ fn default_nearest_sampler() -> ProceduralSamplerHandle {
     })
 }
 
-fn default_linear_sampler() -> ProceduralSamplerHandle {
-    sampler::create(&sampler::Descriptor {
-        address_mode_u: sampler::AddressMode::ClampToEdge,
-        address_mode_v: sampler::AddressMode::ClampToEdge,
-        address_mode_w: sampler::AddressMode::ClampToEdge,
-        mag_filter: sampler::FilterMode::Linear,
-        min_filter: sampler::FilterMode::Linear,
-        mipmap_filter: sampler::FilterMode::Linear,
-    })
-}
-
 fn make_procedural<BaseColorFn, NormalFn, MetallicRoughnessFn, SamplerFn>(
-    world_translation: Vec3,
     base_color_fn: BaseColorFn,
     normal_fn: NormalFn,
     metallic_roughness_fn: MetallicRoughnessFn,
@@ -504,13 +468,15 @@ fn make_procedural<BaseColorFn, NormalFn, MetallicRoughnessFn, SamplerFn>(
         let trunk_height = gen_rn(seed + i, 15.0, 20.0);
         let trunk_segments = gen_rn(seed + i, 6.0, 12.0) as u32;
 
-        let tree = create_tree(
-            TreeMesh::default(),
+        let tree = TreeMesh {
             seed,
             trunk_radius,
             trunk_height,
             trunk_segments,
-        );
+            ..Default::default()
+        };
+
+        let tree = create_tree(tree);
 
         let td = mesh::Descriptor {
             vertices: &tree.vertices,
@@ -538,16 +504,8 @@ fn make_procedural<BaseColorFn, NormalFn, MetallicRoughnessFn, SamplerFn>(
 }
 
 fn make_procedurals() {
-    const X: f32 = 2.125;
-    const Y: f32 = 1.25;
-
-    let rng = rand_pcg::Pcg64::seed_from_u64(0);
-    let dist_zero_to_255 = rand::distributions::Uniform::new_inclusive(0_u8, 255_u8);
-    let dist_minus_one_to_one = rand::distributions::Uniform::new_inclusive(-1.0_f32, 1.0_f32);
-
     // Interpolated hue.
     make_procedural(
-        vec3(-X, Y, 0.0),
         |x, _| {
             let hsl = palette::Hsl::new(360.0 * x, 1.0, 0.5).into_format::<f32>();
             let rgb: palette::LinSrgb = hsl.into_color();
