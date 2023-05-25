@@ -1,0 +1,7 @@
+[project]
+id = "forest"
+name = "A forest"
+version = "0.0.1"
+
+[components]
+rotating_sun = { type = "Bool", name = "Rotating sun", description = "Whether or not rotate the sun automatically" }
