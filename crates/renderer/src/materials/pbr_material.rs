@@ -139,9 +139,9 @@ pub struct PbrMaterialConfig {
     /// r: Metallic, g: Roughness
     pub metallic_roughness: Arc<TextureView>,
     pub sampler: Arc<wgpu::Sampler>,
-    pub transparent: bool,
-    pub double_sided: bool,
-    pub depth_write_enabled: bool,
+    pub transparent: Option<bool>,
+    pub double_sided: Option<bool>,
+    pub depth_write_enabled: Option<bool>,
 }
 
 pub struct PbrMaterial {
@@ -219,9 +219,9 @@ impl PbrMaterial {
                 normalmap: DefaultNormalMapViewKey.get(assets),
                 metallic_roughness: PixelTextureViewKey::white().get(assets),
                 sampler: DefaultSamplerKey.get(assets),
-                transparent: false,
-                double_sided: false,
-                depth_write_enabled: false,
+                transparent: None,
+                double_sided: None,
+                depth_write_enabled: None,
             },
         )
     }
@@ -257,13 +257,13 @@ impl Material for PbrMaterial {
         &self.config.name
     }
     fn transparent(&self) -> Option<bool> {
-        Some(self.config.transparent)
+        self.config.transparent
     }
     fn double_sided(&self) -> Option<bool> {
-        Some(self.config.double_sided)
+        self.config.double_sided
     }
     fn depth_write_enabled(&self) -> Option<bool> {
-        Some(self.config.depth_write_enabled)
+        self.config.depth_write_enabled
     }
 }
 
@@ -465,9 +465,9 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialDesc {
                 normalmap,
                 metallic_roughness,
                 sampler,
-                transparent: self.transparent.unwrap_or_default(),
-                double_sided: self.double_sided.unwrap_or_default(),
-                depth_write_enabled: false,
+                transparent: self.transparent,
+                double_sided: self.double_sided,
+                depth_write_enabled: None,
             },
         )))
     }

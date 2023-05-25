@@ -37,9 +37,9 @@ async fn init(app: &mut App) {
                     }
                     .get(&assets),
                     sampler: DefaultSamplerKey.get(&assets),
-                    transparent: false,
-                    double_sided: false,
-                    depth_write_enabled: false,
+                    transparent: None,
+                    double_sided: None,
+                    depth_write_enabled: None,
                 },
             ));
 
