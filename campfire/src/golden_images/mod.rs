@@ -38,9 +38,19 @@ const TESTS: &[&str] = &[
     "ui/text",
 ];
 
-// Todo: accept filters like `guest/rust/examples/ui/` for running only UI tests.
 #[derive(Parser, Clone)]
-pub enum GoldenImages {
+pub struct GoldenImages {
+    /// Only run tests which start with the specified prefix
+    #[arg(long)]
+    prefix: Option<String>,
+
+    /// Selects testing mode
+    #[command(subcommand)]
+    mode: Mode,
+}
+
+#[derive(Parser, Clone)]
+enum Mode {
     /// For each test, updates the golden image
     Update,
     /// For each test, check the current image against the committed image
@@ -51,7 +61,29 @@ const TEST_NAME_PLACEHOLDER: &str = "{test}";
 
 pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     let start_time = Instant::now();
-    run_all_tests(
+
+    // Filter tests.
+    let tests = if let Some(prefix) = &gi.prefix {
+        let tests = TESTS
+            .iter()
+            .filter(|test| test.starts_with(prefix))
+            .map(|test| *test)
+            .collect_vec();
+        log::info!(
+            "--prefix {prefix} resulted in {} out of {} tests",
+            tests.len(),
+            TESTS.len(),
+        );
+        tests
+    } else {
+        TESTS.to_vec()
+    };
+    if tests.is_empty() {
+        bail!("Nothing to do!");
+    }
+
+    // Build tests.
+    run(
         "Building",
         &[
             "run",
@@ -61,10 +93,12 @@ pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
             "--release",
             TEST_NAME_PLACEHOLDER,
         ],
+        &tests,
     )?;
-    match gi {
-        GoldenImages::Update => {
-            run_all_tests(
+
+    match gi.mode {
+        Mode::Update => {
+            run(
                 "Updating",
                 &[
                     "run",
@@ -85,10 +119,11 @@ pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
                     "--wait-seconds",
                     "5.0",
                 ],
+                &tests,
             )?;
         }
-        GoldenImages::Check => {
-            run_all_tests(
+        Mode::Check => {
+            run(
                 "Checking",
                 &[
                     "run",
@@ -104,6 +139,7 @@ pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
                     "--timeout-seconds",
                     "30.0",
                 ],
+                &tests,
             )
             .context(
                 "Checking failed, possible causes: \
@@ -112,19 +148,21 @@ pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
             )?;
         }
     }
+
     log::info!(
         "Running {} golden image tests took {:.03} seconds",
         TESTS.len(),
         start_time.elapsed().as_secs_f64()
     );
+
     Ok(())
 }
 
-fn run_all_tests(command: &str, args: &[&str]) -> anyhow::Result<()> {
-    let pb = Progress::new(TESTS.len());
-    pb.println(format!("{command} {} tests", TESTS.len()));
+fn run(command: &str, args: &[&str], tests: &[&'static str]) -> anyhow::Result<()> {
+    let pb = Progress::new(tests.len());
+    pb.println(format!("{command} {} tests", tests.len()));
     let mut failures = vec![];
-    for &test in TESTS {
+    for &test in tests {
         pb.set_message(test);
         let start_time = Instant::now();
         let args = args

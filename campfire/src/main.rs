@@ -15,7 +15,6 @@ pub enum Cli {
     #[command(subcommand)]
     Example(example::Example),
     /// Running golden image tests
-    #[command(subcommand)]
     GoldenImages(golden_images::GoldenImages),
     /// Release-related functionality
     #[command(subcommand)]
