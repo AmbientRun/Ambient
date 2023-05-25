@@ -28,7 +28,7 @@ use uuid::Uuid;
 
 use crate::{
     client_connection::ConnectionKind,
-    native::load_native_roots,
+    native::load_root_certs,
     proto::{
         self,
         server::{handle_diffs, ConnectionData},
@@ -461,7 +461,7 @@ fn create_server(server_addr: SocketAddr, crypto: &Crypto) -> anyhow::Result<End
     let mut endpoint = Endpoint::server(server_conf, server_addr)?;
 
     // Create client config for the server endpoint for proxying and hole punching
-    let mut roots = load_native_roots();
+    let mut roots = load_root_certs();
     roots.add(&Certificate(crypto.cert.clone())).unwrap();
 
     // add proxy test cert if provided

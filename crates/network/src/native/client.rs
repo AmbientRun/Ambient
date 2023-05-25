@@ -1,7 +1,7 @@
 use crate::{
     client::{GameClient, GameClientRenderTarget, LoadedFunc, NetworkStats},
     client_game_state::ClientGameState,
-    native::load_native_roots,
+    native::load_root_certs,
     proto::{
         client::{ClientState, SharedClientState},
         ClientRequest,
@@ -378,7 +378,7 @@ async fn open_connection(
 }
 
 pub fn create_client_endpoint_random_port(cert: Option<Certificate>) -> anyhow::Result<Endpoint> {
-    let mut roots = load_native_roots();
+    let mut roots = load_root_certs();
 
     if let Some(cert) = cert {
         roots
