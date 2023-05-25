@@ -21,8 +21,8 @@ use ambient_std::{
     math::interpolate,
     shapes::Ray,
 };
+use ambient_world_audio::systems::{setup_audio, spatial_audio_systems};
 use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
-use ambient_world_audio::systems::{spatial_audio_systems, setup_audio};
 
 use ambient_core::player::{player, user_id};
 use tracing::debug_span;
@@ -112,11 +112,6 @@ impl ClientGameState {
     #[ambient_profiling::function]
     pub fn on_frame(&mut self, target: &RenderTarget) {
         let _span = debug_span!("ClientGameState.on_frame").entered();
-        let mut s = Vec::new();
-        self.world.dump(&mut s);
-        let s = String::from_utf8(s).unwrap();
-
-        tracing::trace!("{s}");
 
         self.world.next_frame();
         self.systems.run(&mut self.world, &FrameEvent);
