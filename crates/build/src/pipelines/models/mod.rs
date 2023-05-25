@@ -2,7 +2,9 @@ use std::{path::PathBuf, sync::Arc};
 
 use ambient_core::hierarchy::children;
 use ambient_ecs::Entity;
-use ambient_model_import::{model_crate::ModelCrate, MaterialFilter, ModelTextureSize, ModelTransform, TextureResolver};
+use ambient_model_import::{
+    model_crate::ModelCrate, MaterialFilter, ModelTextureSize, ModelTransform, TextureResolver,
+};
 use ambient_physics::collider::{collider_type, ColliderType};
 use ambient_std::asset_url::AssetType;
 use futures::FutureExt;
@@ -23,7 +25,9 @@ pub mod unity;
 pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset> {
     let mut assets = match &config.importer {
         ModelImporter::Regular => regular::pipeline(ctx, config.clone()).await,
-        ModelImporter::UnityModels { use_prefabs } => unity::pipeline(ctx, *use_prefabs, config.clone()).await,
+        ModelImporter::UnityModels { use_prefabs } => {
+            unity::pipeline(ctx, *use_prefabs, config.clone()).await
+        }
         ModelImporter::Quixel => quixel::pipeline(ctx, config.clone()).await,
     };
     if config.collection_of_variants && assets.len() > 1 {
@@ -105,8 +109,15 @@ impl ModelsPipeline {
             transform.apply(model_crate);
         }
         for mat in &self.material_overrides {
-            let material =
-                mat.material.to_mat(ctx, &ctx.in_root(), &ctx.out_root().push(out_model_path.as_ref().join("materials"))?).await?;
+            let material = mat
+                .material
+                .to_mat(
+                    ctx,
+                    &ctx.in_root(),
+                    &ctx.out_root()
+                        .push(out_model_path.as_ref().join("materials"))?,
+                )
+                .await?;
             model_crate.override_material(&mat.filter, material);
         }
         if let Some(max_size) = self.cap_texture_sizes {
@@ -115,15 +126,28 @@ impl ModelsPipeline {
         model_crate.finalize_model();
         match self.collider {
             Collider::None => {}
-            Collider::FromModel { flip_normals, reverse_indices } => {
-                model_crate.create_collider_from_model(&ctx.process_ctx.assets, flip_normals, reverse_indices).unwrap();
+            Collider::FromModel {
+                flip_normals,
+                reverse_indices,
+            } => {
+                model_crate
+                    .create_collider_from_model(
+                        &ctx.process_ctx.assets,
+                        flip_normals,
+                        reverse_indices,
+                    )
+                    .unwrap();
             }
-            Collider::Character { radius, height } => model_crate.create_character_collider(radius, height),
+            Collider::Character { radius, height } => {
+                model_crate.create_character_collider(radius, height)
+            }
         }
         model_crate.add_component_to_prefab(collider_type(), self.collider_type);
         let world = model_crate.prefab_world_mut();
         let obj = world.resource(children())[0];
-        world.add_components(obj, self.prefab_components.clone()).unwrap();
+        world
+            .add_components(obj, self.prefab_components.clone())
+            .unwrap();
         Ok(())
     }
 }
@@ -166,7 +190,7 @@ pub enum Collider {
         #[serde(default = "true_value")]
         reverse_indices: bool,
     },
-    /// Use a spherical character collider.
+    /// Use a cylindrical character collider.
     Character {
         /// The radius of the collider.
         radius: Option<f32>,
@@ -182,7 +206,12 @@ fn create_texture_resolver(ctx: &PipelineCtx) -> TextureResolver {
         async move {
             let path: PathBuf = path.into();
             let filename = path.file_name().unwrap().to_str().unwrap().to_string();
-            if let Some(file) = ctx.files.0.iter().find(|file| file.path().as_str().contains(&filename)) {
+            if let Some(file) = ctx
+                .files
+                .0
+                .iter()
+                .find(|file| file.path().as_str().contains(&filename))
+            {
                 match download_image(&ctx.process_ctx.assets, file).await {
                     Ok(img) => Some(img.into_rgba8()),
                     Err(err) => {
