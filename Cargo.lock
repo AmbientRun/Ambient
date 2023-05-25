@@ -971,6 +971,7 @@ dependencies = [
  "tokio-util",
  "tracing",
  "uuid 1.3.1",
+ "webpki-roots 0.23.0",
  "wgpu 0.16.0",
  "winit",
 ]
@@ -1164,9 +1165,9 @@ dependencies = [
 
 [[package]]
 name = "ambient_proxy"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6f701d66054909fc249f412eb6866483a6566a219267caaf8a56f36bffdcfb8"
+checksum = "aa07343b5d4344542ecf45aa2b3b52526de3a5ba521df7126fc89fa8f08f4a1c"
 dependencies = [
  "anyhow",
  "bincode",
@@ -1178,6 +1179,7 @@ dependencies = [
  "quinn",
  "reqwest",
  "rustls 0.20.8",
+ "rustls-pemfile",
  "serde",
  "thiserror",
  "tokio",
@@ -6216,7 +6218,7 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "webpki-roots",
+ "webpki-roots 0.22.6",
  "winreg",
 ]
 
@@ -7768,7 +7770,7 @@ dependencies = [
  "rustls 0.20.8",
  "url",
  "webpki",
- "webpki-roots",
+ "webpki-roots 0.22.6",
 ]
 
 [[package]]
@@ -8453,6 +8455,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6c71e40d7d2c34a5106301fb632274ca37242cd0c9d3e64dbece371a40a2d87"
 dependencies = [
  "webpki",
+]
+
+[[package]]
+name = "webpki-roots"
+version = "0.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aa54963694b65584e170cf5dc46aeb4dcaa5584e652ff5f3952e56d66aff0125"
+dependencies = [
+ "rustls-webpki",
 ]
 
 [[package]]
