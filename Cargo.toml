@@ -196,3 +196,13 @@ wasi-common = { git = "https://github.com/AmbientRun/preview2-prototyping.git", 
 wit-bindgen-core = "0.6.0"
 wit-bindgen-rust = "0.6.0"
 wit-component = "0.8.1"
+
+
+# Required since the webtransport stuff is yet on crates.io
+# TODO: use crates.io dependencies
+[patch.crates-io]
+web-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
+wasm-bindgen = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
+js-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
+wasm-bindgen-futures = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
+wasm-bindgen-shared = { git = "https://github.com/rustwasm/wasm-bindgen.git" }

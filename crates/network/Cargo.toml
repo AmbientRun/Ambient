@@ -89,13 +89,6 @@ wasm-bindgen = { workspace = true }
 wasm-bindgen-futures = { workspace = true }
 js-sys = { workspace = true }
 
-# Required since the webtransport stuff is yet on crates.io
-[patch.crates-io]
-web-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
-wasm-bindgen = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
-js-sys = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
-wasm-bindgen-futures = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
-wasm-bindgen-shared = { git = "https://github.com/rustwasm/wasm-bindgen.git" }
 
 [features]
 

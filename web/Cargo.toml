@@ -28,14 +28,14 @@ ambient_wasm = { path = "../crates/wasm" }
 
 url = "2.3"
 anyhow = "1.0"
-glam = { workspace = true, features = ["rand", "bytemuck"] }
+glam = { version = "0.22", features = ["rand", "bytemuck"] }
 futures = "0.3"
 tracing = "0.1"
-tracing-subscriber = { workspace = true, features = ["time"] }
+tracing-subscriber = { version = "0.3", features = ["time"] }
 
 # Web specific
-wasm-bindgen = { workspace = true }
-wasm-bindgen-futures = { workspace = true }
+wasm-bindgen = { version = "0.2" }
+wasm-bindgen-futures = { version = "0.4" }
 tracing-web = "0.1"
 time = { version = "0.3", features = ["wasm-bindgen"] }
 chrono = { version = "0.4", default-features = false, features = [
@@ -45,7 +45,7 @@ chrono = { version = "0.4", default-features = false, features = [
 ] }
 
 getrandom = { version = "0.2.8", features = ["js"] }
-web-sys = { workspace = true, features = [
+web-sys = { version = "0.3", features = [
     "CanvasRenderingContext2d",
     "Document",
     "Element",
@@ -54,4 +54,4 @@ web-sys = { workspace = true, features = [
     "Performance",
     "Window",
 ] }
-js-sys = { workspace = true }
+js-sys = { version = "0.3" }
