@@ -180,7 +180,11 @@ fn run(command: &str, args: &[&str], tests: &[&'static str], parallel: bool) -> 
         .build()?;
     let outputs = pool.install(|| {
         let pb = Progress::new(tests.len());
-        pb.println(format!("{command} {} tests", tests.len()));
+        pb.println(format!(
+            "{command} {} tests across {} CPUs",
+            tests.len(),
+            if parallel { num_cpus::get() } else { 1 }
+        ));
         let mut outputs = vec![];
         tests
             .par_iter()
