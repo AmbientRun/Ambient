@@ -261,7 +261,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_decals"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_asset_cache",
  "ambient_core",
@@ -507,7 +507,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_network"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_app",
  "ambient_core",
@@ -548,7 +548,6 @@ dependencies = [
  "quinn",
  "rand",
  "rustls",
- "rustls-native-certs",
  "scopeguard",
  "serde",
  "thiserror",
@@ -566,7 +565,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_physics"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -596,7 +595,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_prefab"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_core",
  "ambient_decals",
@@ -618,7 +617,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_primitives"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
@@ -784,7 +783,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_rpc"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_sys",
  "bincode",
@@ -976,7 +975,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_wasm"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_animation",
  "ambient_app",
@@ -1069,7 +1068,7 @@ dependencies = [
 
 [[package]]
 name = "ambient_world_audio"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "ambient_app",
  "ambient_audio",
@@ -4684,7 +4683,7 @@ dependencies = [
 
 [[package]]
 name = "physxx"
-version = "0.2.1"
+version = "0.3.0-dev"
 dependencies = [
  "as-any",
  "bitflags 1.3.2",

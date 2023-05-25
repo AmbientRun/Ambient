@@ -17,8 +17,6 @@ ambient_ecs = { path = "../ecs" }
 ambient_input = { path = "../input" }
 ambient_network = { path = "../network" }
 ambient_model = { path = "../model" }
-ambient_prefab = { path = "../prefab" }
-ambient_physics = { path = "../physics" }
 ambient_std = { path = "../std" }
 ambient_gpu = { path = "../gpu" }
 ambient_renderer = { path = "../renderer" }
@@ -28,8 +26,6 @@ ambient_project = { path = "../../shared_crates/project" }
 ambient_shared_types = { path = "../../shared_crates/shared_types", features = [
     "native",
 ] }
-
-physxx = { path = "../../libs/physxx" }
 
 anyhow = { workspace = true }
 async-trait = { workspace = true }
@@ -59,11 +55,17 @@ wgpu = { workspace = true }
 ulid = { workspace = true }
 tracing = { workspace = true }
 
+[target.'cfg(not(target_os = "unknown"))'.dependencies]
 wasmtime = { workspace = true }
 wasmtime-wasi = { workspace = true }
 wasi-common = { workspace = true }
 wasi-cap-std-sync = { workspace = true }
 wit-component = { workspace = true }
+ambient_physics = { path = "../physics" }
+physxx = { path = "../../libs/physxx" }
+
+# Uses physx
+ambient_prefab = { path = "../prefab" }
 
 [target.'cfg(windows)'.build-dependencies]
 tracing = { workspace = true }
