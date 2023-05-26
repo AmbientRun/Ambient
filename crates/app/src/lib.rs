@@ -1,4 +1,4 @@
-use std::{future::Future, sync::Arc, time::Duration};
+use std::{future::Future, process::ExitStatus, sync::Arc, time::Duration};
 
 use ambient_cameras::assets_camera_systems;
 pub use ambient_core::gpu;
@@ -13,8 +13,8 @@ use ambient_core::{
     name, remove_at_time_system, runtime, time,
     transform::TransformSystem,
     window::{
-        cursor_position, get_window_sizes, window_logical_size, window_physical_size,
-        window_scale_factor, WindowCtl,
+        cursor_position, exit_status_success, get_window_sizes, window_logical_size,
+        window_physical_size, window_scale_factor, WindowCtl,
     },
     RuntimeKey, TimeResourcesSystem,
 };
@@ -487,7 +487,7 @@ impl AppBuilder {
     }
 
     /// Finalizes the app and enters the main loop
-    pub async fn run(self, init: impl FnOnce(&mut App, RuntimeHandle)) {
+    pub async fn run(self, init: impl FnOnce(&mut App, RuntimeHandle)) -> ExitStatus {
         let mut app = self.build().await.unwrap();
         let runtime = app.runtime.clone();
         init(&mut app, runtime);
@@ -495,7 +495,7 @@ impl AppBuilder {
     }
 
     #[inline]
-    pub async fn run_world(self, init: impl FnOnce(&mut World)) {
+    pub async fn run_world(self, init: impl FnOnce(&mut World)) -> ExitStatus {
         self.run(|app, _| init(&mut app.world)).await
     }
 }
@@ -580,7 +580,7 @@ impl App {
         });
     }
 
-    pub fn run_blocking(mut self) {
+    pub fn run_blocking(mut self) -> ExitStatus {
         if let Some(event_loop) = self.event_loop.take() {
             event_loop.run(move |event, _, control_flow| {
                 // HACK(philpax): treat dpi changes as resize events. Ideally we'd handle this in handle_event proper,
@@ -610,9 +610,10 @@ impl App {
             // Fake event loop in headless mode
             loop {
                 let mut control_flow = ControlFlow::default();
-                self.handle_static_event(&Event::MainEventsCleared, &mut control_flow);
+                let exit_status =
+                    self.handle_static_event(&Event::MainEventsCleared, &mut control_flow);
                 if control_flow == ControlFlow::Exit {
-                    return;
+                    return exit_status;
                 }
             }
         }
@@ -622,7 +623,7 @@ impl App {
         &mut self,
         event: &Event<'static, ()>,
         control_flow: &mut ControlFlow,
-    ) {
+    ) -> ExitStatus {
         *control_flow = ControlFlow::Poll;
 
         // From: https://github.com/gfx-rs/wgpu/issues/1783
@@ -672,6 +673,10 @@ impl App {
                                     None
                                 });
                             }
+                        }
+                        WindowCtl::ExitProcess(exit_status) => {
+                            *control_flow = ControlFlow::Exit;
+                            return exit_status;
                         }
                     }
                 }
@@ -770,6 +775,7 @@ impl App {
             },
             _ => {}
         }
+        exit_status_success()
     }
     pub fn add_system(&mut self, system: DynSystem) -> &mut Self {
         self.systems.add(system);

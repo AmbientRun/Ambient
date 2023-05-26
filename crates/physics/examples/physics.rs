@@ -68,5 +68,5 @@ async fn main() {
                 })),
             )));
         })
-        .await
+        .await;
 }

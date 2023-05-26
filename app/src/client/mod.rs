@@ -1,12 +1,12 @@
-use std::{collections::HashMap, path::PathBuf, process::exit, sync::Arc, time::Duration};
+use std::{collections::HashMap, path::PathBuf, process::ExitStatus, sync::Arc, time::Duration};
 
 use ambient_app::{fps_stats, window_title, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::{
     runtime,
     window::{
-        cursor_position, window_ctl, window_logical_size, window_physical_size,
-        window_scale_factor, WindowCtl,
+        cursor_position, exit_status_failure, exit_status_success, window_ctl, window_logical_size,
+        window_physical_size, window_scale_factor, WindowCtl,
     },
 };
 use ambient_debugger::Debugger;
@@ -41,7 +41,7 @@ pub async fn run(
     server_addr: ResolvedAddr,
     run: &RunCli,
     golden_image_output_dir: Option<PathBuf>,
-) {
+) -> ExitStatus {
     let user_id = run
         .user_id
         .clone()
@@ -91,7 +91,7 @@ pub async fn run(
             .el()
             .spawn_interactive(&mut app.world);
         })
-        .await;
+        .await
 }
 
 #[element_component]
@@ -218,14 +218,16 @@ fn GoldenImageTest(
         );
     }
 
-    let rt = hooks.world.resource(runtime()).clone();
     match golden_image_cmd {
         GoldenImageCommand::GoldenImageUpdate { wait_seconds } => {
             hooks.use_spawn(move |world| {
+                let window_ctl = world.resource(window_ctl()).clone();
                 world.resource(runtime()).spawn(async move {
+                    // Wait until image is sufficiently converged.
                     tokio::time::sleep(Duration::from_secs_f32(wait_seconds)).await;
+
+                    // Capture current frame.
                     let render_target = render_target_ref.lock().clone();
-                    tracing::info!("Saving screenshot to {:?}", screenshot_path);
                     let new = render_target
                         .0
                         .color_buffer
@@ -234,9 +236,18 @@ fn GoldenImageTest(
                         .await
                         .unwrap()
                         .into_rgba8();
-                    new.save(screenshot_path).unwrap();
-                    tracing::info!("Screenshot saved, exiting with 0");
-                    exit(0);
+
+                    // Save to disk.
+                    new.save(&screenshot_path).unwrap();
+                    tracing::info!(
+                        "Saved screenshot to {}, exiting with 0",
+                        screenshot_path.display()
+                    );
+
+                    // Graceful exit.
+                    window_ctl
+                        .send(WindowCtl::ExitProcess(exit_status_success()))
+                        .unwrap();
                 });
 
                 |_| {}
@@ -244,62 +255,68 @@ fn GoldenImageTest(
         }
 
         GoldenImageCommand::GoldenImageCheck { timeout_seconds } => {
-            if old_screenshot.is_none() {
-                panic!("Existing screenshot must exist")
-            }
+            let Some(old_screenshot) = old_screenshot else {
+                panic!("Existing screenshot must exist");
+            };
 
-            let start_time = Instant::now();
-            hooks.use_interval_deps(
-                Duration::from_secs_f32(0.25),
-                false,
-                render_target.0.color_buffer.id,
-                move |_| {
-                    let fail_screenshot_path = fail_screenshot_path.clone();
-                    if let Some(old) = old_screenshot.clone() {
-                        let render_target = render_target.clone();
-                        rt.spawn(async move {
-                            let new = render_target
-                                .0
-                                .color_buffer
-                                .reader()
-                                .read_image()
-                                .await
-                                .unwrap()
-                                .into_rgba8();
+            hooks.use_spawn(move |world| {
+                let window_ctl = world.resource(window_ctl()).clone();
+                world.resource(runtime()).spawn(async move {
+                    let start_time = Instant::now();
+                    loop {
+                        tokio::time::sleep(Duration::from_secs_f32(0.25)).await;
 
-                            if start_time.elapsed().as_secs_f32() > timeout_seconds {
-                                tracing::error!(
-                                    "Golden image check timed out after {timeout_seconds} seconds!"
-                                );
-                                new.save(&fail_screenshot_path).unwrap();
-                                tracing::error!(
-                                    "Wrote last frame to {}, exiting with 1",
-                                    fail_screenshot_path.display()
-                                );
-                                exit(1);
-                            }
+                        // Capture current frame.
+                        let new = render_target
+                            .0
+                            .color_buffer
+                            .reader()
+                            .read_image()
+                            .await
+                            .unwrap()
+                            .into_rgba8();
 
-                            // Todo: replace with NVIDIA FLIP.
-                            let hasher = image_hasher::HasherConfig::new().to_hasher();
-                            let hash1 = hasher.hash_image(&new);
-                            let hash2 = hasher.hash_image(&*old);
-                            let dist = hash1.dist(&hash2);
-                            if dist <= 3 {
-                                tracing::info!(
-                                    "Screenshots are identical, exiting with 0, {:?}",
-                                    std::thread::current().id()
-                                );
-                                exit(0);
-                            } else {
-                                tracing::warn!(
-                                    "Screenshot differ, distance={dist}, {:?}",
-                                    std::thread::current().id()
-                                );
-                            }
-                        });
+                        // Handle timeout.
+                        if start_time.elapsed().as_secs_f32() > timeout_seconds {
+                            tracing::error!(
+                                "Golden image check timed out after {timeout_seconds} seconds!"
+                            );
+
+                            // Save failed image to disk for later analysis.
+                            new.save(&fail_screenshot_path).unwrap();
+                            tracing::error!(
+                                "Wrote last frame to {}, exiting with 1",
+                                fail_screenshot_path.display()
+                            );
+
+                            // Graceful exit.
+                            window_ctl
+                                .send(WindowCtl::ExitProcess(exit_status_failure()))
+                                .unwrap();
+                            break;
+                        }
+
+                        // Perceptual image difference.
+                        // Todo: replace with NVIDIA FLIP.
+                        let hasher = image_hasher::HasherConfig::new().to_hasher();
+                        let hash1 = hasher.hash_image(&new);
+                        let hash2 = hasher.hash_image(&*old_screenshot);
+                        let dist = hash1.dist(&hash2);
+                        if dist <= 3 {
+                            tracing::info!("Screenshots are identical, exiting with 0");
+
+                            // Graceful exit.
+                            window_ctl
+                                .send(WindowCtl::ExitProcess(exit_status_success()))
+                                .unwrap();
+                        } else {
+                            tracing::warn!("Screenshot differ, distance={dist}");
+                        }
                     }
-                },
-            );
+                });
+
+                |_| {}
+            });
         }
     }
 

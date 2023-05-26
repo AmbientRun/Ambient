@@ -12,7 +12,7 @@ mod server;
 mod shared;
 
 use ambient_physics::physx::PhysicsKey;
-use anyhow::Context;
+use anyhow::{bail, Context};
 use cli::{Cli, Commands};
 use log::LevelFilter;
 use server::QUIC_INTERFACE_PORT;
@@ -331,7 +331,11 @@ fn main() -> anyhow::Result<()> {
     let handle = runtime.handle().clone();
     if let Some(run) = cli.run() {
         // If we have run parameters, start a client and join a server
-        runtime.block_on(client::run(assets, server_addr, run, project_path.fs_path));
+        let exit_status =
+            runtime.block_on(client::run(assets, server_addr, run, project_path.fs_path));
+        if !exit_status.success() {
+            bail!("client::run failed with {exit_status:?}");
+        }
     } else {
         // Otherwise, wait for the Ctrl+C signal
         handle.block_on(async move {
