@@ -1,8 +1,11 @@
+use std::process::ExitStatus;
+
 #[derive(Debug)]
 pub(super) struct Failure {
     test: &'static str,
     stdout: String,
     stderr: String,
+    status: ExitStatus,
 }
 
 impl Failure {
@@ -15,10 +18,11 @@ impl Failure {
             test,
             stdout,
             stderr,
+            status: output.status,
         }
     }
     pub(super) fn log(&self) {
-        log::error!("{} failed", self.test);
+        log::error!("{} failed with status {}", self.test, self.status);
         log::error!("stdout:");
         self.stdout.lines().for_each(|line| eprintln!("{line}"));
         log::error!("stderr:");

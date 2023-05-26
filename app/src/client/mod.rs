@@ -234,8 +234,8 @@ fn GoldenImageTest(
                         .await
                         .unwrap()
                         .into_rgba8();
-                    tracing::info!("Screenshot saved");
                     new.save(screenshot_path).unwrap();
+                    tracing::info!("Screenshot saved, exiting with 0");
                     exit(0);
                 });
 
@@ -270,8 +270,8 @@ fn GoldenImageTest(
 
                                 if start_time.elapsed().as_secs_f32() > timeout_seconds {
                                     tracing::error!("Golden image check timed out after {timeout_seconds} seconds!");
-                                    tracing::error!("Writing last frame to {}", fail_screenshot_path.display());
-                                    new.save(fail_screenshot_path).unwrap();
+                                    new.save(&fail_screenshot_path).unwrap();
+                                    tracing::error!("Wrote last frame to {}, exiting with 1", fail_screenshot_path.display());
                                     exit(1);
                                 }
 
@@ -281,7 +281,7 @@ fn GoldenImageTest(
                                 let hash2 = hasher.hash_image(&*old);
                                 let dist = hash1.dist(&hash2);
                                 if dist <= 3 {
-                                    tracing::info!("Screenshots are identical, exiting");
+                                    tracing::info!("Screenshots are identical, exiting with 0");
                                     exit(0);
                                 } else {
                                     tracing::warn!("Screenshot differ, distance={dist}");
