@@ -43,7 +43,8 @@ pub struct MeshDescriptor {
 
 pub fn create_tree(tree: TreeMesh) -> MeshDescriptor {
     // Create the trunk
-    let (mut vertices1, top_vertices1, mut normals1, mut uvs1, trunk_direction) = build_trunk(&tree);
+    let (mut vertices1, top_vertices1, mut normals1, mut uvs1, trunk_direction) =
+        build_trunk(&tree);
 
     let sectors = 12;
     let trunk_segments = tree.trunk_segments;
@@ -65,8 +66,6 @@ pub fn create_tree(tree: TreeMesh) -> MeshDescriptor {
         }
     }
 
-
-
     // Generate branches
     let branch_count = tree.branch_segments;
     let branch_radius_variance = 0.02;
@@ -76,12 +75,12 @@ pub fn create_tree(tree: TreeMesh) -> MeshDescriptor {
 
     for i in 0..branch_count {
         let branch_radius = 0.3;
-            //* (1.0 - rng.gen_range(0.0..1.0) * branch_radius_variance);
+        //* (1.0 - rng.gen_range(0.0..1.0) * branch_radius_variance);
         let mut branch_position = top_vertices1[rng.gen_range(0..top_vertices1.len())]
             + vec3(
                 rng.gen_range(0.0..1.0) * branch_position_variance.x,
                 rng.gen_range(0.0..1.0) * branch_position_variance.y,
-                rng.gen_range(0.0..1.0) * branch_position_variance.z-1.0,
+                rng.gen_range(0.0..1.0) * branch_position_variance.z - 1.0,
             );
 
         let segments = tree.branch_segments;
@@ -94,27 +93,30 @@ pub fn create_tree(tree: TreeMesh) -> MeshDescriptor {
         let mut direction = vec3(0.0, 0.0, 1.0);
         let direction_variance = 0.05;
 
-
         // Get a random vertex from the top vertices of the trunk
         let random_vertex_index = rng.gen_range(0..top_vertices1.len());
         let random_vertex = normals1[random_vertex_index];
 
         // Calculate the initial direction of the branch from the chosen vertex
-        direction = (random_vertex - branch_position).normalize() + vec3(gen_rn(tree.seed + i as i32 + 4, -1.0, 1.0), gen_rn(tree.seed + i as i32 + 5, -1.0, 1.0), 0.0);
+        direction = (random_vertex - branch_position).normalize()
+            + vec3(
+                gen_rn(tree.seed + i as i32 + 4, -1.0, 1.0),
+                gen_rn(tree.seed + i as i32 + 5, -1.0, 1.0),
+                0.0,
+            );
 
         for i in 0..=segments {
-
-        let random_direction = vec3(
-            gen_rn(tree.seed + i as i32 + 1, 0.0, 1.0) - 0.5,
-            gen_rn(tree.seed + i as i32 + 2, 0.0, 1.0) - 0.5,
-            gen_rn(tree.seed + i as i32 + 3, 0.0, 1.0) - 0.5,
-        )
-        .normalize()
-            * direction_variance;
-        direction = (direction + random_direction).normalize();
+            let random_direction = vec3(
+                gen_rn(tree.seed + i as i32 + 1, 0.0, 1.0) - 0.5,
+                gen_rn(tree.seed + i as i32 + 2, 0.0, 1.0) - 0.5,
+                gen_rn(tree.seed + i as i32 + 3, 0.0, 1.0) - 0.5,
+            )
+            .normalize()
+                * direction_variance;
+            direction = (direction + random_direction).normalize();
 
             let theta = (i as f32 / segments as f32) * tree.branch_angle;
-            let height = branch_position.z + (tree.branch_length * theta.cos())*direction.z;
+            let height = branch_position.z + (tree.branch_length * theta.cos()) * direction.z;
             let segment_radius = branch_radius * theta.sin();
 
             for j in 0..=sectors {
@@ -135,11 +137,11 @@ pub fn create_tree(tree: TreeMesh) -> MeshDescriptor {
                 branch_uvs.push(vec2(j as f32 / sectors as f32, i as f32 / segments as f32));
             }
             branch_position = branch_position
-            + vec3(
-                rng.gen_range(-1.0..1.0) * branch_position_variance.x,
-                rng.gen_range(-1.0..1.0) * branch_position_variance.y,
-                rng.gen_range(0.0..1.0) * branch_position_variance.z,
-            );
+                + vec3(
+                    rng.gen_range(-1.0..1.0) * branch_position_variance.x,
+                    rng.gen_range(-1.0..1.0) * branch_position_variance.y,
+                    rng.gen_range(0.0..1.0) * branch_position_variance.z,
+                );
         }
 
         let branch_indices = generate_branch_indices(segments as usize, sectors as usize);
@@ -151,7 +153,6 @@ pub fn create_tree(tree: TreeMesh) -> MeshDescriptor {
         let offset = vertices1.len() - branch_vertices.len();
         indices.extend(branch_indices.iter().map(|i| *i + offset as u32));
     }
-
 
     // Generate foliage
     let foliage_count = tree.foliage_density + tree.foliage_segments;
@@ -532,7 +533,7 @@ fn register_augmentors() {
                 trunk_segments,
                 branch_length,
                 branch_angle,
-                branch_segments:8,
+                branch_segments: 8,
                 foliage_radius,
                 foliage_density,
                 foliage_segments,
@@ -552,19 +553,21 @@ fn register_augmentors() {
         }
     });
 
-    spawn_query((
-        components::tile_seed(),
-        components::tile_size(),
-    ))
-    .bind(move |tiles| {
-        for (
-            id,
-            (
-                seed, size
-            ),
-        ) in tiles
-        {
-            let tile = create_tile(GridMesh { top_left: Vec2 { x: 0.0, y: 0.0 }, size: Vec2 { x: size, y: size }, n_vertices_width: 10, n_vertices_height: 10, uv_min: Vec2 { x: 0.0, y: 0.0 }  , uv_max: Vec2 { x: 0.0, y: 0.0 }, normal: Vec3 { x: 0.0, y: 0.0, z: 1.0 } });
+    spawn_query((components::tile_seed(), components::tile_size())).bind(move |tiles| {
+        for (id, (seed, size)) in tiles {
+            let tile = create_tile(GridMesh {
+                top_left: Vec2 { x: 0.0, y: 0.0 },
+                size: Vec2 { x: size, y: size },
+                n_vertices_width: 10,
+                n_vertices_height: 10,
+                uv_min: Vec2 { x: 0.0, y: 0.0 },
+                uv_max: Vec2 { x: 0.0, y: 0.0 },
+                normal: Vec3 {
+                    x: 0.0,
+                    y: 0.0,
+                    z: 1.0,
+                },
+            });
             let mesh = mesh::create(&mesh::Descriptor {
                 vertices: &tile.vertices,
                 indices: &tile.indices,
@@ -574,8 +577,7 @@ fn register_augmentors() {
                 id,
                 Entity::new()
                     .with(procedural_mesh(), mesh)
-                    .with(procedural_material(), material)
-                    //.with_default(cast_shadows()),
+                    .with(procedural_material(), material), //.with_default(cast_shadows()),
             );
         }
     });
@@ -621,11 +623,7 @@ fn make_tiles() {
 
     for num_tile_x in 0..num_tiles_x {
         for num_tile_y in 0..num_tiles_y {
-            let position = vec3(
-                num_tile_x as f32 * 2.0,
-                num_tile_y as f32 * 2.0,
-                0.001,
-            );
+            let position = vec3(num_tile_x as f32 * 2.0, num_tile_y as f32 * 2.0, 0.001);
 
             let id = Entity::new()
                 .with_merge(concepts::make_tile())
@@ -636,8 +634,6 @@ fn make_tiles() {
         }
     }
 }
-
-
 
 #[derive(Debug, Clone)]
 pub struct GridMesh {
@@ -664,7 +660,6 @@ impl Default for GridMesh {
     }
 }
 
-
 pub fn create_tile(grid: GridMesh) -> MeshDescriptor {
     // Create the tile
     let (mut vertices1, mut uvs1, mut normals1, mut indices) = build_tile(&grid);
@@ -690,11 +685,10 @@ pub fn create_tile(grid: GridMesh) -> MeshDescriptor {
         vertices.push(v);
     }
 
-    MeshDescriptor{ vertices, indices }
-
+    MeshDescriptor { vertices, indices }
 }
 
-pub fn build_tile(grid: &GridMesh) ->  (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>, Vec<u32>) {
+pub fn build_tile(grid: &GridMesh) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>, Vec<u32>) {
     let mut positions = Vec::new();
     let mut texcoords = Vec::new();
     let mut normals = Vec::new();
@@ -729,14 +723,7 @@ pub fn build_tile(grid: &GridMesh) ->  (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>, Vec<u32
         }
     }
 
-    (
-      positions,
-        texcoords,
-        normals,
-        indices,
-
-    )
-
+    (positions, texcoords, normals, indices)
 }
 
 #[main]
@@ -748,5 +735,4 @@ pub async fn main() {
     register_augmentors();
     make_trees();
     make_tiles();
-
 }
