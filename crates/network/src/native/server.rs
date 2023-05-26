@@ -40,7 +40,7 @@ use crate::{
         server_stats, ForkingEvent, ProxySettings, ServerState, SharedServerState, ShutdownEvent,
         WorldInstance, MAIN_INSTANCE_ID,
     },
-    stream::{self, FramedRecvStream, FramedSendStream},
+    stream::{FramedRecvStream, FramedSendStream},
     ServerWorldExt,
 };
 
@@ -116,6 +116,7 @@ impl GameServer {
             proxy_settings,
             ..
         } = self;
+
         let assets = world.resource(asset_cache()).clone();
         let world_stream_filter =
             WorldStreamFilter::new(ArchetypeFilter::new().excl(no_sync()), is_sync_component);

@@ -20,8 +20,8 @@ use ambient_network::{
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_sys::time::Instant;
 use ambient_ui_native::{
-    Button, Dock, FlowColumn, FocusRoot, MeasureSize, ScrollArea, ScrollAreaSizing, StylesExt,
-    Text, UIExt, WindowSized, STREET,
+    Button, Dock, FlowColumn, FocusRoot, MeasureSize, ScrollArea, ScrollAreaSizing, UIExt,
+    WindowSized, STREET,
 };
 use glam::{uvec2, vec4, Vec2};
 
