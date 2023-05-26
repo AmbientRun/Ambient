@@ -4525,7 +4525,7 @@ dependencies = [
 [[package]]
 name = "js-sys"
 version = "0.3.63"
-source = "git+https://github.com/rustwasm/wasm-bindgen.git#a334ce4a4cd6e688795c1b11f59a9f7e007f43ed"
+source = "git+https://github.com/rustwasm/wasm-bindgen.git#5453e332dc8222a1dc3f4d8dadb0d922da528790"
 dependencies = [
  "wasm-bindgen",
 ]
@@ -8052,7 +8052,7 @@ dependencies = [
 [[package]]
 name = "wasm-bindgen"
 version = "0.2.86"
-source = "git+https://github.com/rustwasm/wasm-bindgen.git#a334ce4a4cd6e688795c1b11f59a9f7e007f43ed"
+source = "git+https://github.com/rustwasm/wasm-bindgen.git#5453e332dc8222a1dc3f4d8dadb0d922da528790"
 dependencies = [
  "cfg-if",
  "wasm-bindgen-macro",
@@ -8061,7 +8061,7 @@ dependencies = [
 [[package]]
 name = "wasm-bindgen-backend"
 version = "0.2.86"
-source = "git+https://github.com/rustwasm/wasm-bindgen.git#a334ce4a4cd6e688795c1b11f59a9f7e007f43ed"
+source = "git+https://github.com/rustwasm/wasm-bindgen.git#5453e332dc8222a1dc3f4d8dadb0d922da528790"
 dependencies = [
  "bumpalo",
  "log",
@@ -8075,7 +8075,7 @@ dependencies = [
 [[package]]
 name = "wasm-bindgen-futures"
 version = "0.4.36"
-source = "git+https://github.com/rustwasm/wasm-bindgen.git#a334ce4a4cd6e688795c1b11f59a9f7e007f43ed"
+source = "git+https://github.com/rustwasm/wasm-bindgen.git#5453e332dc8222a1dc3f4d8dadb0d922da528790"
 dependencies = [
  "cfg-if",
  "js-sys",
@@ -8086,7 +8086,7 @@ dependencies = [
 [[package]]
 name = "wasm-bindgen-macro"
 version = "0.2.86"
-source = "git+https://github.com/rustwasm/wasm-bindgen.git#a334ce4a4cd6e688795c1b11f59a9f7e007f43ed"
+source = "git+https://github.com/rustwasm/wasm-bindgen.git#5453e332dc8222a1dc3f4d8dadb0d922da528790"
 dependencies = [
  "quote 1.0.28",
  "wasm-bindgen-macro-support",
@@ -8095,7 +8095,7 @@ dependencies = [
 [[package]]
 name = "wasm-bindgen-macro-support"
 version = "0.2.86"
-source = "git+https://github.com/rustwasm/wasm-bindgen.git#a334ce4a4cd6e688795c1b11f59a9f7e007f43ed"
+source = "git+https://github.com/rustwasm/wasm-bindgen.git#5453e332dc8222a1dc3f4d8dadb0d922da528790"
 dependencies = [
  "proc-macro2 1.0.59",
  "quote 1.0.28",
@@ -8107,7 +8107,7 @@ dependencies = [
 [[package]]
 name = "wasm-bindgen-shared"
 version = "0.2.86"
-source = "git+https://github.com/rustwasm/wasm-bindgen.git#a334ce4a4cd6e688795c1b11f59a9f7e007f43ed"
+source = "git+https://github.com/rustwasm/wasm-bindgen.git#5453e332dc8222a1dc3f4d8dadb0d922da528790"
 
 [[package]]
 name = "wasm-bindgen-test"
@@ -8562,7 +8562,7 @@ dependencies = [
 [[package]]
 name = "web-sys"
 version = "0.3.63"
-source = "git+https://github.com/rustwasm/wasm-bindgen.git#a334ce4a4cd6e688795c1b11f59a9f7e007f43ed"
+source = "git+https://github.com/rustwasm/wasm-bindgen.git#5453e332dc8222a1dc3f4d8dadb0d922da528790"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
