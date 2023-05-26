@@ -73,12 +73,14 @@ pub enum Commands {
 #[derive(Subcommand, Clone, Copy, Debug)]
 pub enum GoldenImageCommand {
     /// Renders an image and saves it after waiting for the specified number of seconds
-    GoldenImageUpdate {
+    #[command(name = "golden-image-update")]
+    Update {
         #[arg(long)]
         wait_seconds: f32,
     },
     /// Renders an image and compares it against existing golden image and timeouts after the specified number seconds
-    GoldenImageCheck {
+    #[command(name = "golden-image-check")]
+    Check {
         #[arg(long)]
         timeout_seconds: f32,
     },

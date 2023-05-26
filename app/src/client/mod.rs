@@ -206,11 +206,7 @@ fn GoldenImageTest(
         tracing::info!("Loading screenshot from {:?}", screenshot_path);
         Some(Arc::new(image::open(&screenshot_path).ok()?))
     });
-    if matches!(
-        golden_image_cmd,
-        GoldenImageCommand::GoldenImageCheck { .. }
-    ) && old_screenshot.is_none()
-    {
+    if matches!(golden_image_cmd, GoldenImageCommand::Check { .. }) && old_screenshot.is_none() {
         panic!(
             "Failed golden image check: existing screenshot must exist at '{}'. \
             Consider running the test with --golden-image update --wait-seconds 5",
@@ -219,7 +215,7 @@ fn GoldenImageTest(
     }
 
     match golden_image_cmd {
-        GoldenImageCommand::GoldenImageUpdate { wait_seconds } => {
+        GoldenImageCommand::Update { wait_seconds } => {
             hooks.use_spawn(move |world| {
                 let window_ctl = world.resource(window_ctl()).clone();
                 world.resource(runtime()).spawn(async move {
@@ -254,7 +250,7 @@ fn GoldenImageTest(
             });
         }
 
-        GoldenImageCommand::GoldenImageCheck { timeout_seconds } => {
+        GoldenImageCommand::Check { timeout_seconds } => {
             let Some(old_screenshot) = old_screenshot else {
                 panic!("Existing screenshot must exist");
             };

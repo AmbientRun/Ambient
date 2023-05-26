@@ -5,7 +5,8 @@
 use anyhow::{bail, Context};
 use clap::Parser;
 use itertools::Itertools;
-use std::{process::Command, time::Instant};
+use serde::Deserialize;
+use std::{path::PathBuf, process::Command, time::Instant};
 
 mod failure;
 use failure::*;
@@ -14,29 +15,7 @@ mod progress;
 use progress::*;
 
 const TEST_BASE_PATH: &str = "guest/rust/examples";
-const TESTS: &[&str] = &[
-    "basics/async",
-    "basics/decals",
-    "basics/first_person_camera",
-    "basics/fog",
-    "basics/image",
-    "basics/input",
-    "basics/primitives",
-    "basics/procedural_generation",
-    "basics/raw_text",
-    "basics/third_person_camera",
-    "basics/transparency",
-    "games/tictactoe",
-    "ui/auto_editor",
-    "ui/button",
-    "ui/dock_layout",
-    "ui/editors",
-    "ui/flow_layout",
-    "ui/rect",
-    "ui/screens",
-    "ui/slider",
-    "ui/text",
-];
+const TEST_MANIFEST: &str = "golden-image-manifest.toml";
 
 #[derive(Parser, Clone)]
 pub struct GoldenImages {
@@ -64,21 +43,23 @@ const HTTP_INTERFACE_PORT_PLACEHOLDER: &str = "{http-port}";
 pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     let start_time = Instant::now();
 
+    // Get tests.
+    let tests = parse_tests_from_manifest()?;
+
     // Filter tests.
     let tests = if let Some(prefix) = &gi.prefix {
-        let tests = TESTS
-            .iter()
+        let total_test_count = tests.len();
+        let filtered_tests = tests
+            .into_iter()
             .filter(|test| test.starts_with(prefix))
-            .map(|test| *test)
             .collect_vec();
         log::info!(
-            "--prefix {prefix} resulted in {} out of {} tests",
-            tests.len(),
-            TESTS.len(),
+            "--prefix {prefix} resulted in {} out of {total_test_count} tests",
+            filtered_tests.len(),
         );
-        tests
+        filtered_tests
     } else {
-        TESTS.to_vec()
+        tests
     };
     if tests.is_empty() {
         bail!("Nothing to do!");
@@ -164,14 +145,31 @@ pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
 
     log::info!(
         "Running {} golden image tests took {:.03} seconds",
-        TESTS.len(),
+        tests.len(),
         start_time.elapsed().as_secs_f64()
     );
 
     Ok(())
 }
 
-fn run(command: &str, args: &[&str], tests: &[&'static str], parallel: bool) -> anyhow::Result<()> {
+#[derive(Deserialize)]
+struct Manifest {
+    tests: Vec<String>,
+}
+
+fn parse_tests_from_manifest() -> anyhow::Result<Vec<String>> {
+    let manifest_path = PathBuf::from(TEST_BASE_PATH).join(TEST_MANIFEST);
+    let manifest = std::fs::read_to_string(&manifest_path)?;
+    let manifest: Manifest = toml::from_str(&manifest)?;
+    log::info!(
+        "Read manifest from '{}', parsed {} tests",
+        manifest_path.display(),
+        manifest.tests.len()
+    );
+    Ok(manifest.tests)
+}
+
+fn run(command: &str, args: &[&str], tests: &[String], parallel: bool) -> anyhow::Result<()> {
     use rayon::prelude::*;
 
     // Run.
@@ -187,21 +185,21 @@ fn run(command: &str, args: &[&str], tests: &[&'static str], parallel: bool) -> 
         ));
         let mut outputs = vec![];
         tests
-            .par_iter()
+            .into_par_iter()
             .enumerate()
-            .map(|(test_index, &test)| {
+            .map(|(test_index, test)| {
                 let start_time = Instant::now();
                 let args = args
                     .iter()
                     .map(|&arg| {
                         let arg = match arg {
-                            TEST_NAME_PLACEHOLDER => format!("{TEST_BASE_PATH}/{}", test),
+                            TEST_NAME_PLACEHOLDER => format!("{TEST_BASE_PATH}/{test}"),
                             QUIC_INTERFACE_PORT_PLACEHOLDER => format!("{}", 9000 + test_index),
                             HTTP_INTERFACE_PORT_PLACEHOLDER => format!("{}", 10000 + test_index),
                             _ => arg.to_string(),
                         };
                         if arg == TEST_NAME_PLACEHOLDER {
-                            format!("{TEST_BASE_PATH}/{}", test)
+                            format!("{TEST_BASE_PATH}/{test}")
                         } else {
                             arg.to_string()
                         }
@@ -214,7 +212,7 @@ fn run(command: &str, args: &[&str], tests: &[&'static str], parallel: bool) -> 
                     start_time.elapsed().as_secs_f64(),
                     args.join(" "),
                 ));
-                (test, output)
+                (test.to_string(), output)
             })
             .collect_into_vec(&mut outputs);
         pb.finish();

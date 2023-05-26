@@ -2,14 +2,14 @@ use std::process::ExitStatus;
 
 #[derive(Debug)]
 pub(super) struct Failure {
-    test: &'static str,
+    test: String,
     stdout: String,
     stderr: String,
     status: ExitStatus,
 }
 
 impl Failure {
-    pub(super) fn from_output(test: &'static str, output: &std::process::Output) -> Self {
+    pub(super) fn from_output(test: String, output: &std::process::Output) -> Self {
         let stdout =
             String::from_utf8(output.stdout.clone()).expect("stdout must be a valid UTF-8");
         let stderr =
