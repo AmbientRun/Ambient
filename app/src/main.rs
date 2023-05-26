@@ -1,3 +1,4 @@
+use ambient_core::window::ExitStatus;
 use ambient_network::native::client::ResolvedAddr;
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
@@ -333,7 +334,7 @@ fn main() -> anyhow::Result<()> {
         // If we have run parameters, start a client and join a server
         let exit_status =
             runtime.block_on(client::run(assets, server_addr, run, project_path.fs_path));
-        if !exit_status.success() {
+        if exit_status == ExitStatus::FAILURE {
             bail!("client::run failed with {exit_status:?}");
         }
     } else {

@@ -1,5 +1,3 @@
-use std::{os::unix::process::ExitStatusExt, process::ExitStatus};
-
 use ambient_ecs::{components, Description, Name, Resource, World};
 use ambient_std::math::interpolate;
 use glam::{uvec2, vec2, UVec2, Vec2};
@@ -56,10 +54,10 @@ pub enum WindowCtl {
     ExitProcess(ExitStatus),
 }
 
-pub fn exit_status_success() -> ExitStatus {
-    ExitStatus::from_raw(0)
-}
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub struct ExitStatus(i32);
 
-pub fn exit_status_failure() -> ExitStatus {
-    ExitStatus::from_raw(1)
+impl ExitStatus {
+    pub const SUCCESS: Self = ExitStatus(0);
+    pub const FAILURE: Self = ExitStatus(1);
 }

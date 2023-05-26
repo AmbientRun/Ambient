@@ -1,4 +1,4 @@
-use std::{future::Future, process::ExitStatus, sync::Arc, time::Duration};
+use std::{future::Future, sync::Arc, time::Duration};
 
 use ambient_cameras::assets_camera_systems;
 pub use ambient_core::gpu;
@@ -13,8 +13,8 @@ use ambient_core::{
     name, remove_at_time_system, runtime, time,
     transform::TransformSystem,
     window::{
-        cursor_position, exit_status_success, get_window_sizes, window_logical_size,
-        window_physical_size, window_scale_factor, WindowCtl,
+        cursor_position, get_window_sizes, window_logical_size, window_physical_size,
+        window_scale_factor, ExitStatus, WindowCtl,
     },
     RuntimeKey, TimeResourcesSystem,
 };
@@ -775,7 +775,7 @@ impl App {
             },
             _ => {}
         }
-        exit_status_success()
+        ExitStatus::SUCCESS
     }
     pub fn add_system(&mut self, system: DynSystem) -> &mut Self {
         self.systems.add(system);

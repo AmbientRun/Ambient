@@ -1,12 +1,12 @@
-use std::{collections::HashMap, path::PathBuf, process::ExitStatus, sync::Arc, time::Duration};
+use std::{collections::HashMap, path::PathBuf, sync::Arc, time::Duration};
 
 use ambient_app::{fps_stats, window_title, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::{
     runtime,
     window::{
-        cursor_position, exit_status_failure, exit_status_success, window_ctl, window_logical_size,
-        window_physical_size, window_scale_factor, WindowCtl,
+        cursor_position, window_ctl, window_logical_size, window_physical_size,
+        window_scale_factor, ExitStatus, WindowCtl,
     },
 };
 use ambient_debugger::Debugger;
@@ -246,7 +246,7 @@ fn GoldenImageTest(
 
                     // Graceful exit.
                     window_ctl
-                        .send(WindowCtl::ExitProcess(exit_status_success()))
+                        .send(WindowCtl::ExitProcess(ExitStatus::SUCCESS))
                         .unwrap();
                 });
 
@@ -259,12 +259,17 @@ fn GoldenImageTest(
                 panic!("Existing screenshot must exist");
             };
 
-            hooks.use_spawn(move |world| {
+            // Note: this is basically hooks.use_interval_deps() except its
+            // internals are unwrapped in order to access the `world`, which we
+            // need for window_ctl().
+            hooks.use_effect(render_target.0.color_buffer.id, move |world, _| {
                 let window_ctl = world.resource(window_ctl()).clone();
-                world.resource(runtime()).spawn(async move {
-                    let start_time = Instant::now();
+                let start_time = Instant::now();
+                let task = world.resource(runtime()).spawn(async move {
+                    let mut interval = ambient_sys::time::interval(Duration::from_secs_f32(0.25));
+                    interval.tick().await;
                     loop {
-                        tokio::time::sleep(Duration::from_secs_f32(0.25)).await;
+                        interval.tick().await;
 
                         // Capture current frame.
                         let new = render_target
@@ -291,7 +296,7 @@ fn GoldenImageTest(
 
                             // Graceful exit.
                             window_ctl
-                                .send(WindowCtl::ExitProcess(exit_status_failure()))
+                                .send(WindowCtl::ExitProcess(ExitStatus::FAILURE))
                                 .unwrap();
                             break;
                         }
@@ -307,15 +312,18 @@ fn GoldenImageTest(
 
                             // Graceful exit.
                             window_ctl
-                                .send(WindowCtl::ExitProcess(exit_status_success()))
+                                .send(WindowCtl::ExitProcess(ExitStatus::SUCCESS))
                                 .unwrap();
+                            break;
                         } else {
                             tracing::warn!("Screenshot differ, distance={dist}");
                         }
                     }
                 });
 
-                |_| {}
+                move |_| {
+                    task.abort();
+                }
             });
         }
     }
