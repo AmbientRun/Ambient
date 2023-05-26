@@ -281,10 +281,10 @@ fn GoldenImageTest(
                                 let hash2 = hasher.hash_image(&*old);
                                 let dist = hash1.dist(&hash2);
                                 if dist <= 3 {
-                                    tracing::info!("Screenshots are identical, exiting with 0");
+                                    tracing::info!("Screenshots are identical, exiting with 0, {:?}", std::thread::current().id());
                                     exit(0);
                                 } else {
-                                    tracing::warn!("Screenshot differ, distance={dist}");
+                                    tracing::warn!("Screenshot differ, distance={dist}, {:?}", std::thread::current().id());
                                 }
                             });
                         }
