@@ -52,7 +52,7 @@ impl Texture {
     }
 
     fn size_in_bytes_from_desc(descriptor: &wgpu::TextureDescriptor) -> u64 {
-        tracing::info!("descriptor: {:?}", descriptor);
+        tracing::debug!("descriptor: {:?}", descriptor);
         let mut mip_size = (descriptor.size.width as u64
             * descriptor.size.height as u64
             * descriptor.size.depth_or_array_layers as u64)

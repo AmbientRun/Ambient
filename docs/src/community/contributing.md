@@ -134,11 +134,32 @@ To do so, you will need to update the following files:
 
 ## Golden image tests
 
-The golden image tests run on the CI and produce a `screenshot.png`, which is compared to the one in the repository.
-To update the golden images, run `node scripts/golden_image_tests.js`.
+Golden image tests are a type of end-to-end test where a rendered image is captured and compared against an existing known-good image. This test is ran in our CI against all PRs, but you can also run it locally with `cargo campfire golden-images`.
+
+### Golden images on CI
 
 To debug why the CI fails, download the `screenshots.zip` file from the build artifacts, and look in the logs of the CI.
 The `screenshots.zip` will show what image the CI produced.
+
+### Running golden images locally
+
+To update golden images, run `cargo campfire golden-images update`. This renders and saves a new set of golden images and replaces existing images.
+To check against existing golden images, run `cargo campfire golden-images check`. This renders a new set of golden images and compares against existing images using a perceptual image difference metric.
+
+### Filtering tests
+
+Running `cargo campfire golden-images --prefix ui check` will only check tests which begin with `ui` prefix.
+
+### Common failures
+
+- If your test includes anything that animates over time, this is likely to fail the golden image test because the current golden image test implementation waits for a brief moment before capturing the image. During this moment, the animation might advance to a state which causes golden image test to fail. Therefore all  tests should be static by default.
+
+### Flakiness
+
+There are known situations where a test might fail seemingly randomly, even if the images look perceptually identical. These situations include:
+
+- The golden image was generated on a real graphics hardware, for example on the contributors computer, while the CI version runs `llvmpipe` which is a software rasterizer. This might cause small imperceptible differences. There are currently no clean solutions to this other than increasing the error threshold.
+- Timing out. Each test runs with a timeout setting which could happen if the test takes too long to produce an image. On a powerful enough local machine this might not be an issue, but runtimes might be more unpredictable in Github Actions. In these cases we can either increase the timeout or see if we can optimize the test.
 
 ## Releasing
 

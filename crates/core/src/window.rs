@@ -3,7 +3,9 @@ use ambient_std::math::interpolate;
 use glam::{uvec2, vec2, UVec2, Vec2};
 use winit::window::{CursorGrabMode, CursorIcon, Window};
 
-pub use ambient_ecs::generated::components::core::app::{cursor_position, window_logical_size, window_physical_size, window_scale_factor};
+pub use ambient_ecs::generated::components::core::app::{
+    cursor_position, window_logical_size, window_physical_size, window_scale_factor,
+};
 
 components!("app", {
     @[Resource, Name["Window Control"], Description["Allows controlling the window from afar."]]
@@ -12,11 +14,23 @@ components!("app", {
 
 pub fn screen_to_clip_space(world: &World, screen_pos: Vec2) -> Vec2 {
     let screen_size = *world.resource(window_logical_size());
-    interpolate(screen_pos, Vec2::ZERO, screen_size.as_vec2(), vec2(-1., 1.), vec2(1., -1.))
+    interpolate(
+        screen_pos,
+        Vec2::ZERO,
+        screen_size.as_vec2(),
+        vec2(-1., 1.),
+        vec2(1., -1.),
+    )
 }
 pub fn clip_to_screen_space(world: &World, clip_pos: Vec2) -> Vec2 {
     let screen_size = *world.resource(window_logical_size());
-    interpolate(clip_pos, vec2(-1., 1.), vec2(1., -1.), Vec2::ZERO, screen_size.as_vec2())
+    interpolate(
+        clip_pos,
+        vec2(-1., 1.),
+        vec2(1., -1.),
+        Vec2::ZERO,
+        screen_size.as_vec2(),
+    )
 }
 pub fn get_mouse_clip_space_position(world: &World) -> Vec2 {
     let mouse_position = *world.resource(cursor_position());
@@ -37,4 +51,13 @@ pub enum WindowCtl {
     ShowCursor(bool),
     SetTitle(String),
     SetFullscreen(bool),
+    ExitProcess(ExitStatus),
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub struct ExitStatus(i32);
+
+impl ExitStatus {
+    pub const SUCCESS: Self = ExitStatus(0);
+    pub const FAILURE: Self = ExitStatus(1);
 }
