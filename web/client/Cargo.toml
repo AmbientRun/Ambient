@@ -27,7 +27,6 @@ ambient_element = { workspace = true }
 ambient_audio = { workspace = true }
 ambient_world_audio = { workspace = true }
 ambient_network = { workspace = true }
-ambient_wasm = { workspace = true }
 
 url = { workspace = true }
 anyhow = { workspace = true }

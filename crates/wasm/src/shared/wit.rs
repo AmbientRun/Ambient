@@ -1,1 +1,1 @@
-wasmtime::component::bindgen!("main.bindings" in "wit");
+wasmtime::component::bindgen!("main.bindings");

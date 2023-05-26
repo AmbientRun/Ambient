@@ -11,8 +11,8 @@
     "third-person-camera": {
         "cmd": "cargo run --features tracing -- run ./guest/rust/examples/basics/third_person_camera"
     },
-    "serve-third-person-camera": {
-        "cmd": "cargo run --features tracing -- serve ./guest/rust/examples/basics/third_person_camera"
+    "serve-primitives": {
+        "cmd": "cargo run --features tracing -- serve ./guest/rust/examples/basics/primitives/"
     },
     "minigolf": {
         "cmd": "cargo run -- run ./guest/rust/examples/games/minigolf"

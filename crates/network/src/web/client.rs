@@ -96,7 +96,7 @@ impl ElementComponent for GameClientView {
             let task = async move {
                 sleep(Duration::from_millis(2000)).await;
                 let conn = Connection::connect(url.clone()).await.with_context(|| {
-                    format!("Failed to establish a WebTransport  session to {url:?}")
+                    format!("Failed to establish a WebTransport  session to {url}")
                 })?;
 
                 tracing::info!("Established WebTransport session");
