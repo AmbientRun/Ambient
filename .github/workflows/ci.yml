@@ -124,6 +124,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           prefix-key: golden-images
+          cache-on-failure: true
           workspaces: |
             .
             guest/rust

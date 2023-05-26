@@ -236,7 +236,7 @@ fn run(command: &str, args: &[&str], tests: &[&'static str], parallel: bool) -> 
         for failure in &failures {
             failure.log();
         }
-        log::error!("{} tests failed", failures.len());
+        bail!("{} tests failed", failures.len());
     }
 
     Ok(())
