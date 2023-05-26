@@ -127,35 +127,6 @@ pub fn systems() -> SystemGroup {
                     .unwrap();
             })),
             Box::new(FnSystem::new(move |world, _| {
-                ambient_profiling::scope!("WASM module collision event");
-                // trigger collision event
-                let collisions = match world.resource_opt(ambient_physics::collisions()) {
-                    Some(collisions) => collisions.lock().clone(),
-                    None => return,
-                };
-                for (a, b) in collisions.into_iter() {
-                    ambient_ecs::generated::messages::Collision::new(vec![a, b])
-                        .run(world, None)
-                        .unwrap();
-                }
-            })),
-            Box::new(FnSystem::new(move |world, _| {
-                ambient_profiling::scope!("WASM module collider loads");
-                // trigger collider loads
-                let collider_loads = match world.resource_opt(ambient_physics::collider_loads()) {
-                    Some(collider_loads) => collider_loads.clone(),
-                    None => return,
-                };
-
-                if collider_loads.is_empty() {
-                    return;
-                }
-
-                ambient_ecs::generated::messages::ColliderLoads::new(collider_loads)
-                    .run(world, None)
-                    .unwrap();
-            })),
-            Box::new(FnSystem::new(move |world, _| {
                 ambient_profiling::scope!("WASM module pending messages");
 
                 let pending_messages =
