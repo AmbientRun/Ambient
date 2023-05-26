@@ -253,41 +253,50 @@ fn GoldenImageTest(
                 Duration::from_secs_f32(0.25),
                 false,
                 render_target.0.color_buffer.id,
-                {
-                    move |_| {
-                        let fail_screenshot_path = fail_screenshot_path.clone();
-                        if let Some(old) = old_screenshot.clone() {
-                            let render_target = render_target.clone();
-                            rt.spawn(async move {
-                                let new = render_target
-                                    .0
-                                    .color_buffer
-                                    .reader()
-                                    .read_image()
-                                    .await
-                                    .unwrap()
-                                    .into_rgba8();
+                move |_| {
+                    let fail_screenshot_path = fail_screenshot_path.clone();
+                    if let Some(old) = old_screenshot.clone() {
+                        let render_target = render_target.clone();
+                        rt.spawn(async move {
+                            let new = render_target
+                                .0
+                                .color_buffer
+                                .reader()
+                                .read_image()
+                                .await
+                                .unwrap()
+                                .into_rgba8();
 
-                                if start_time.elapsed().as_secs_f32() > timeout_seconds {
-                                    tracing::error!("Golden image check timed out after {timeout_seconds} seconds!");
-                                    new.save(&fail_screenshot_path).unwrap();
-                                    tracing::error!("Wrote last frame to {}, exiting with 1", fail_screenshot_path.display());
-                                    exit(1);
-                                }
+                            if start_time.elapsed().as_secs_f32() > timeout_seconds {
+                                tracing::error!(
+                                    "Golden image check timed out after {timeout_seconds} seconds!"
+                                );
+                                new.save(&fail_screenshot_path).unwrap();
+                                tracing::error!(
+                                    "Wrote last frame to {}, exiting with 1",
+                                    fail_screenshot_path.display()
+                                );
+                                exit(1);
+                            }
 
-                                // Todo: replace with NVIDIA FLIP.
-                                let hasher = image_hasher::HasherConfig::new().to_hasher();
-                                let hash1 = hasher.hash_image(&new);
-                                let hash2 = hasher.hash_image(&*old);
-                                let dist = hash1.dist(&hash2);
-                                if dist <= 3 {
-                                    tracing::info!("Screenshots are identical, exiting with 0, {:?}", std::thread::current().id());
-                                    exit(0);
-                                } else {
-                                    tracing::warn!("Screenshot differ, distance={dist}, {:?}", std::thread::current().id());
-                                }
-                            });
-                        }
+                            // Todo: replace with NVIDIA FLIP.
+                            let hasher = image_hasher::HasherConfig::new().to_hasher();
+                            let hash1 = hasher.hash_image(&new);
+                            let hash2 = hasher.hash_image(&*old);
+                            let dist = hash1.dist(&hash2);
+                            if dist <= 3 {
+                                tracing::info!(
+                                    "Screenshots are identical, exiting with 0, {:?}",
+                                    std::thread::current().id()
+                                );
+                                exit(0);
+                            } else {
+                                tracing::warn!(
+                                    "Screenshot differ, distance={dist}, {:?}",
+                                    std::thread::current().id()
+                                );
+                            }
+                        });
                     }
                 },
             );
