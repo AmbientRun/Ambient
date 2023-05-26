@@ -470,7 +470,7 @@ where
     })
 }
 
-fn register_tree_entity_augmentors() {
+fn register_augmentors() {
     let base_color_map = make_texture(|x, _| {
         let hsl = palette::Hsl::new(360.0 * x, 1.0, 0.5).into_format::<f32>();
         let rgb: palette::LinSrgb = hsl.into_color();
@@ -551,6 +551,34 @@ fn register_tree_entity_augmentors() {
             );
         }
     });
+
+    spawn_query((
+        components::tile_seed(),
+        components::tile_size(),
+    ))
+    .bind(move |tiles| {
+        for (
+            id,
+            (
+                seed, size
+            ),
+        ) in tiles
+        {
+            let tile = create_tile(GridMesh { top_left: Vec2 { x: 0.0, y: 0.0 }, size: Vec2 { x: size, y: size }, n_vertices_width: 10, n_vertices_height: 10, uv_min: Vec2 { x: 0.0, y: 0.0 }  , uv_max: Vec2 { x: 0.0, y: 0.0 }, normal: Vec3 { x: 0.0, y: 0.0, z: 1.0 } });
+            let mesh = mesh::create(&mesh::Descriptor {
+                vertices: &tile.vertices,
+                indices: &tile.indices,
+            });
+
+            entity::add_components(
+                id,
+                Entity::new()
+                    .with(procedural_mesh(), mesh)
+                    .with(procedural_material(), material)
+                    //.with_default(cast_shadows()),
+            );
+        }
+    });
 }
 
 fn make_trees() {
@@ -571,7 +599,7 @@ fn make_trees() {
             -1.0,
         );
 
-        Entity::new()
+        let id = Entity::new()
             .with_merge(concepts::make_tree())
             .with_merge(make_transformable())
             .with(scale(), Vec3::ONE * gen_rn(i, 0.2, 0.4))
@@ -586,12 +614,139 @@ fn make_trees() {
     }
 }
 
+fn make_tiles() {
+    let num_tiles_x = 10;
+    let num_tiles_y = 10;
+    let size = Vec2::ONE * 1.0;
+
+    for num_tile_x in 0..num_tiles_x {
+        for num_tile_y in 0..num_tiles_y {
+            let position = vec3(
+                num_tile_x as f32 * 2.0,
+                num_tile_y as f32 * 2.0,
+                0.001,
+            );
+
+            let id = Entity::new()
+                .with_merge(concepts::make_tile())
+                .with_merge(make_transformable())
+                .with(translation(), position)
+                .with(components::tile_size(), size)
+                .spawn();
+        }
+    }
+}
+
+
+
+#[derive(Debug, Clone)]
+pub struct GridMesh {
+    pub top_left: glam::Vec2,
+    pub size: glam::Vec2,
+    pub n_vertices_width: usize,
+    pub n_vertices_height: usize,
+    pub uv_min: glam::Vec2,
+    pub uv_max: glam::Vec2,
+    pub normal: glam::Vec3,
+}
+
+impl Default for GridMesh {
+    fn default() -> GridMesh {
+        GridMesh {
+            top_left: glam::Vec2::ZERO,
+            size: glam::Vec2::ONE,
+            n_vertices_width: 2,
+            n_vertices_height: 2,
+            uv_min: glam::Vec2::ZERO,
+            uv_max: glam::Vec2::ONE,
+            normal: glam::Vec3::Z,
+        }
+    }
+}
+
+
+pub fn create_tile(grid: GridMesh) -> MeshDescriptor {
+    // Create the tile
+    let (mut vertices1, mut uvs1, mut normals1, mut indices) = build_tile(&grid);
+
+    let mut vertices: Vec<Vertex> = Vec::with_capacity(vertices1.len());
+
+    for i in 0..vertices1.len() {
+        let px = vertices1[i].x;
+        let py = vertices1[i].y;
+        let pz = vertices1[i].z;
+        let u = uvs1[i].x;
+        let v = uvs1[i].y;
+        let nx = normals1[i].x;
+        let ny = normals1[i].y;
+        let nz = normals1[i].z;
+
+        let v = mesh::Vertex {
+            position: vec3(px, py, pz) + vec3(-0.5 * SIZE_X, -0.5 * SIZE_Y, 0.0),
+            normal: vec3(nx, ny, nz),
+            tangent: vec3(1.0, 0.0, 0.0),
+            texcoord0: vec2(u, v),
+        };
+        vertices.push(v);
+    }
+
+    MeshDescriptor{ vertices, indices }
+
+}
+
+pub fn build_tile(grid: &GridMesh) ->  (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>, Vec<u32>) {
+    let mut positions = Vec::new();
+    let mut texcoords = Vec::new();
+    let mut normals = Vec::new();
+    let mut indices = Vec::new();
+    for y in 0..grid.n_vertices_height {
+        for x in 0..grid.n_vertices_width {
+            let p = glam::Vec2::new(
+                x as f32 / (grid.n_vertices_width as f32 - 1.0),
+                y as f32 / (grid.n_vertices_height as f32 - 1.0),
+            );
+            positions.push(vec3(
+                grid.top_left.x + grid.size.x * p.x,
+                grid.top_left.y + grid.size.y * p.y,
+                0.,
+            ));
+            texcoords.push(vec2(
+                grid.uv_min.x + (grid.uv_max.x - grid.uv_min.x) * p.x,
+                grid.uv_min.y + (grid.uv_max.y - grid.uv_min.y) * p.y,
+            ));
+            let normal = grid.normal;
+            normals.push(vec3(normal.x, normal.y, normal.z));
+            if y < grid.n_vertices_height - 1 && x < grid.n_vertices_width - 1 {
+                let vert_index = x + y * grid.n_vertices_width;
+                indices.push((vert_index) as u32);
+                indices.push((vert_index + 1) as u32);
+                indices.push((vert_index + grid.n_vertices_width) as u32);
+
+                indices.push((vert_index + 1) as u32);
+                indices.push((vert_index + grid.n_vertices_width + 1) as u32);
+                indices.push((vert_index + grid.n_vertices_width) as u32);
+            }
+        }
+    }
+
+    (
+      positions,
+        texcoords,
+        normals,
+        indices,
+
+    )
+
+}
+
 #[main]
 pub async fn main() {
     make_camera();
     make_lighting();
     make_ground();
 
-    register_tree_entity_augmentors();
+    register_augmentors();
     make_trees();
+    make_tiles();
+
 }

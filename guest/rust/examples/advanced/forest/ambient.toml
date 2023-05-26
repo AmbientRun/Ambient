@@ -5,6 +5,8 @@ version = "0.0.1"
 
 [components]
 rotating_sun = { type = "Bool", name = "Rotating sun", description = "Whether or not rotate the sun automatically" }
+tile_seed = { type = "I32", name = "Tile seed", description = "The seed of the tile" }
+tile_size = { type = "F32", name = "Tile seed", description = "The size of the tree" }
 tree_seed = { type = "I32", name = "Tree seed", description = "The seed of the tree" }
 tree_trunk_radius = { type = "F32", name = "Tree trunk radius", description = "The radius of the trunk" }
 tree_trunk_height = { type = "F32", name = "Tree trunk height", description = "The height of the trunk" }
@@ -15,6 +17,11 @@ tree_branch_segments = { type = "U32", name = "Tree branch segments", descriptio
 tree_foliage_radius = { type = "F32", name = "Tree foliage radius", description = "The radius of the foliage" }
 tree_foliage_density = { type = "U32", name = "Tree foliage density", description = "The number of foliage" }
 tree_foliage_segments = { type = "U32", name = "Tree foliage segments", description = "The number of segments of the foliage" }
+
+
+[concepts.tile.components]
+tile_seed = 123
+tile_size = 1.0
 
 [concepts.tree.components]
 tree_seed = 123
