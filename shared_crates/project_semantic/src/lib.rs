@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use ambient_project::Identifier;
+use ambient_project::{Identifier, Manifest};
 use ambient_shared_types::primitive_component_definitions;
 use anyhow::Context as AnyhowContext;
 use convert_case::{Boundary, Case, Casing};
@@ -107,32 +107,39 @@ impl Semantic {
         Ok(sem)
     }
 
+    pub fn add_file_at_non_toplevel(
+        &mut self,
+        filename: &str,
+        file_provider: &dyn FileProvider,
+    ) -> anyhow::Result<ItemId<Scope>> {
+        let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
+            .with_context(|| format!("failed to parse toml for {filename}"))?;
+
+        Scope::from_manifest(self, file_provider, manifest)
+    }
+
     pub fn add_file(
         &mut self,
         filename: &str,
         file_provider: &dyn FileProvider,
     ) -> anyhow::Result<ItemId<Scope>> {
-        let scope = Scope::from_file(&mut self.items, filename, file_provider)?;
+        let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
+            .with_context(|| format!("failed to parse toml for {filename}"))?;
 
-        if self.scopes.contains_key(&scope.id) {
-            anyhow::bail!("file `{}` has already been added as {}", filename, scope.id);
+        let scope_id = manifest.project.id.clone();
+        if self.scopes.contains_key(&scope_id) {
+            anyhow::bail!("file `{}` has already been added as {}", filename, scope_id);
         }
 
-        let scope_id = scope.id.clone();
-        let item_id = self.items.add(scope);
+        let item_id = Scope::from_manifest(self, file_provider, manifest)?;
         self.scopes.insert(scope_id, item_id);
-
         Ok(item_id)
     }
 
     pub fn resolve(&mut self) -> anyhow::Result<()> {
         for &scope_id in self.scopes.values() {
-            let scope = self.items.get_without_resolve(scope_id)?.clone().resolve(
-                &mut self.items,
-                scope_id,
-                &Context::new(self.root_scope),
-            )?;
-            self.items.insert(scope_id, scope);
+            self.items
+                .resolve_clone(scope_id, &Context::new(self.root_scope))?;
         }
         Ok(())
     }

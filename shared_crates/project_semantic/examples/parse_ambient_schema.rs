@@ -31,7 +31,7 @@ struct Printer {
 impl Printer {
     fn print(&mut self, semantic: &Semantic) -> anyhow::Result<()> {
         for id in semantic.scopes.values() {
-            self.print_scope(semantic, semantic.items.get_without_resolve(*id)?)?;
+            self.print_scope(semantic, &*semantic.items.get_without_resolve(*id)?)?;
         }
         Ok(())
     }
@@ -41,35 +41,37 @@ impl Printer {
         println!("{}: ", scope.id);
         for id in scope.scopes.values() {
             self.with_indent(|p| {
-                p.print_scope(semantic, semantic.items.get_without_resolve(*id)?)
+                p.print_scope(semantic, &*semantic.items.get_without_resolve(*id)?)
             })?;
         }
 
         for id in scope.components.values() {
             self.with_indent(|p| {
-                p.print_component(semantic, semantic.items.get_without_resolve(*id)?)
+                p.print_component(semantic, &*semantic.items.get_without_resolve(*id)?)
             })?;
         }
 
         for id in scope.concepts.values() {
             self.with_indent(|p| {
-                p.print_concept(semantic, semantic.items.get_without_resolve(*id)?)
+                p.print_concept(semantic, &*semantic.items.get_without_resolve(*id)?)
             })?;
         }
 
         for id in scope.messages.values() {
             self.with_indent(|p| {
-                p.print_message(semantic, semantic.items.get_without_resolve(*id)?)
+                p.print_message(semantic, &*semantic.items.get_without_resolve(*id)?)
             })?;
         }
 
         for id in scope.types.values() {
-            self.with_indent(|p| p.print_type(semantic, semantic.items.get_without_resolve(*id)?))?;
+            self.with_indent(|p| {
+                p.print_type(semantic, &*semantic.items.get_without_resolve(*id)?)
+            })?;
         }
 
         for id in scope.attributes.values() {
             self.with_indent(|p| {
-                p.print_attribute(semantic, semantic.items.get_without_resolve(*id)?)
+                p.print_attribute(semantic, &*semantic.items.get_without_resolve(*id)?)
             })?;
         }
 
@@ -243,7 +245,7 @@ fn write_resolvable_id<T: Item, D: Display>(
         ResolvableItemId::Resolved(resolved) => {
             format!(
                 "{}",
-                extractor(semantic.items.get_without_resolve(*resolved)?)?
+                extractor(&*semantic.items.get_without_resolve(*resolved)?)?
             )
         }
     })

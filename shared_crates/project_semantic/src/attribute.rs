@@ -1,6 +1,6 @@
 use ambient_project::{Identifier, ItemPathBuf};
 
-use crate::{Context, Item, ItemId, ItemMap, ItemType, ItemValue};
+use crate::{item::Resolve, Context, Item, ItemId, ItemMap, ItemType, ItemValue};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Attribute {
@@ -27,13 +27,14 @@ impl Item for Attribute {
     fn into_item_value(self) -> ItemValue {
         ItemValue::Attribute(self)
     }
-
+}
+impl Resolve for Attribute {
     fn resolve(
-        self,
-        _items: &mut ItemMap,
+        &mut self,
+        _items: &ItemMap,
         _self_id: ItemId<Self>,
         _context: &Context,
-    ) -> anyhow::Result<Self> {
-        Ok(self)
+    ) -> anyhow::Result<()> {
+        Ok(())
     }
 }

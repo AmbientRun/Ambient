@@ -3,7 +3,9 @@ use std::fmt::Display;
 use ambient_project::{ComponentType, Identifier};
 use indexmap::IndexMap;
 
-use crate::{Context, Item, ItemId, ItemMap, ItemType, ItemValue, PrimitiveType, Semantic};
+use crate::{
+    item::Resolve, Context, Item, ItemId, ItemMap, ItemType, ItemValue, PrimitiveType, Semantic,
+};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum Type {
@@ -56,14 +58,15 @@ impl Item for Type {
     fn into_item_value(self) -> ItemValue {
         ItemValue::Type(self)
     }
-
+}
+impl Resolve for Type {
     fn resolve(
-        self,
-        _items: &mut ItemMap,
+        &mut self,
+        _items: &ItemMap,
         _self_id: ItemId<Self>,
         _context: &Context,
-    ) -> anyhow::Result<Self> {
-        Ok(self)
+    ) -> anyhow::Result<()> {
+        Ok(())
     }
 }
 

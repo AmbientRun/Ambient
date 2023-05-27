@@ -3,8 +3,8 @@ use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
-    Component, Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
-    ResolvableValue,
+    item::Resolve, Component, Context, Item, ItemId, ItemMap, ItemType, ItemValue,
+    ResolvableItemId, ResolvableValue,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -36,13 +36,14 @@ impl Item for Concept {
     fn into_item_value(self) -> ItemValue {
         ItemValue::Concept(self)
     }
-
+}
+impl Resolve for Concept {
     fn resolve(
-        mut self,
-        items: &mut ItemMap,
+        &mut self,
+        items: &ItemMap,
         _self_id: ItemId<Self>,
         context: &Context,
-    ) -> anyhow::Result<Self> {
+    ) -> anyhow::Result<()> {
         let mut extends = vec![];
         for extend in &self.extends {
             extends.push(match extend {
@@ -75,13 +76,15 @@ impl Item for Concept {
                     })?,
                 ResolvableItemId::Resolved(id) => *id,
             };
-            let component = items.resolve(component_id, context)?;
-            let component_type = component.type_.as_resolved().with_context(|| {
-                format!(
-                    "Failed to get type for component `{}` for concept `{}`",
-                    component.id, self.id
-                )
-            })?;
+            let component_type = {
+                let component = items.resolve(component_id, context)?;
+                component.type_.as_resolved().with_context(|| {
+                    format!(
+                        "Failed to get type for component `{}` for concept `{}`",
+                        component.id, self.id
+                    )
+                })?
+            };
 
             let mut value = resolvable_value.clone();
             value.resolve(items, component_type)?;
@@ -89,7 +92,7 @@ impl Item for Concept {
         }
         self.components = components;
 
-        Ok(self)
+        Ok(())
     }
 }
 impl Concept {

@@ -1,8 +1,10 @@
+use ambient_project::Identifier;
 use ulid::Ulid;
 
 use crate::{Attribute, Component, Concept, Context, Message, Scope, Type};
 use anyhow::Context as AnyhowContext;
 use std::{
+    cell::{Ref, RefCell, RefMut},
     collections::HashMap,
     fmt::{Debug, Display},
     marker::PhantomData,
@@ -10,68 +12,138 @@ use std::{
 
 #[derive(Clone, PartialEq, Debug, Default)]
 pub struct ItemMap {
-    items: HashMap<Ulid, ItemValue>,
+    items: HashMap<Ulid, RefCell<ItemValue>>,
     vec_items: HashMap<ItemId<Type>, ItemId<Type>>,
     option_items: HashMap<ItemId<Type>, ItemId<Type>>,
 }
 impl ItemMap {
     pub fn add<T: Item>(&mut self, item: T) -> ItemId<T> {
+        let value = item.into_item_value();
+        let is_type = matches!(value, ItemValue::Type(_));
+
+        let new_id = self.add_raw(value);
+
+        if is_type {
+            let new_id = ItemId::<Type>(new_id.0, PhantomData);
+
+            let vec_id = self.add_raw(Type::Vec(new_id).into_item_value());
+            self.vec_items.insert(new_id, vec_id);
+
+            let option_id = self.add_raw(Type::Option(new_id).into_item_value());
+            self.option_items.insert(new_id, option_id);
+        }
+
+        new_id
+    }
+
+    fn add_raw<T: Item>(&mut self, value: ItemValue) -> ItemId<T> {
         let ulid = ulid::Ulid::new();
-        self.items.insert(ulid, item.into_item_value());
+        self.items.insert(ulid, RefCell::new(value));
         ItemId(ulid, PhantomData)
     }
 
-    pub fn get_without_resolve<T: Item>(&self, id: ItemId<T>) -> anyhow::Result<&T> {
-        T::from_item_value(
-            self.items
-                .get(&id.0)
-                .with_context(|| format!("Item not found: {id}"))?,
-        )
-        .with_context(|| format!("Item is the wrong type: {id}"))
+    pub fn get_without_resolve<T: Item>(&self, id: ItemId<T>) -> anyhow::Result<Ref<T>> {
+        let value = self
+            .items
+            .get(&id.0)
+            .with_context(|| format!("Item not found: {id}"))?;
+
+        Ok(Ref::map(value.borrow(), |r| T::from_item_value(r).unwrap()))
     }
 
-    pub fn get_mut<T: Item>(&mut self, id: ItemId<T>) -> anyhow::Result<&mut T> {
-        T::from_item_value_mut(
-            self.items
-                .get_mut(&id.0)
-                .with_context(|| format!("Item not found: {id}"))?,
-        )
-        .with_context(|| format!("Item is the wrong type: {id}"))
+    pub fn get_mut<T: Item>(&self, id: ItemId<T>) -> anyhow::Result<RefMut<T>> {
+        let value = self
+            .items
+            .get(&id.0)
+            .with_context(|| format!("Item not found: {id}"))?;
+
+        Ok(RefMut::map(value.borrow_mut(), |r| {
+            T::from_item_value_mut(r).unwrap()
+        }))
     }
 
     pub fn insert<T: Item>(&mut self, id: ItemId<T>, item: T) {
-        self.items.insert(id.0, item.into_item_value());
+        self.items
+            .insert(id.0, RefCell::new(item.into_item_value()));
     }
 
-    pub fn resolve<T: Item>(&mut self, id: ItemId<T>, context: &Context) -> anyhow::Result<&mut T> {
-        let item = self
-            .get_without_resolve(id)?
-            .clone()
-            .resolve(self, id, context)?;
-        self.insert(id, item);
-        self.get_mut(id)
+    pub(crate) fn resolve<T: Resolve>(
+        &self,
+        id: ItemId<T>,
+        context: &Context,
+    ) -> anyhow::Result<RefMut<T>> {
+        let mut item = self.get_mut(id)?;
+        item.resolve(self, id, context)?;
+        Ok(item)
     }
 
-    pub fn get_vec_id(&mut self, id: ItemId<Type>) -> ItemId<Type> {
-        if let Some(id) = self.vec_items.get(&id).cloned() {
-            return id;
+    pub(crate) fn resolve_clone<T: ResolveClone>(
+        &mut self,
+        id: ItemId<T>,
+        context: &Context,
+    ) -> anyhow::Result<()> {
+        let item = self.get_without_resolve(id)?.clone();
+        let new_item = item.resolve_clone(self, id, context)?;
+        self.insert(id, new_item);
+        Ok(())
+    }
+
+    pub fn get_vec_id(&self, id: ItemId<Type>) -> ItemId<Type> {
+        self.vec_items.get(&id).copied().unwrap()
+    }
+
+    pub fn get_option_id(&self, id: ItemId<Type>) -> ItemId<Type> {
+        self.option_items.get(&id).copied().unwrap()
+    }
+
+    pub(crate) fn get_scope<'a>(
+        &'a self,
+        start_scope_id: ItemId<Scope>,
+        path: &[Identifier],
+    ) -> anyhow::Result<Ref<Scope>> {
+        let mut scope_id = start_scope_id;
+        for segment in path.iter() {
+            let scope = self.get_without_resolve(scope_id)?;
+            scope_id = *scope
+                .scopes
+                .get(segment)
+                .with_context(|| format!("failed to find scope {segment} in {scope_id}",))?;
         }
-
-        let vec_id = self.add(Type::Vec(id));
-        self.vec_items.insert(id, vec_id);
-
-        vec_id
+        self.get_without_resolve(scope_id)
     }
 
-    pub fn get_option_id(&mut self, id: ItemId<Type>) -> ItemId<Type> {
-        if let Some(id) = self.option_items.get(&id).cloned() {
-            return id;
+    pub(crate) fn get_or_create_scope_mut<'a>(
+        &'a mut self,
+        start_scope_id: ItemId<Scope>,
+        path: &[Identifier],
+    ) -> anyhow::Result<RefMut<Scope>> {
+        let mut scope_id = start_scope_id;
+        for segment in path.iter() {
+            let existing_id = self
+                .get_without_resolve(scope_id)?
+                .scopes
+                .get(segment)
+                .copied();
+            scope_id = match existing_id {
+                Some(id) => id,
+                None => {
+                    let new_id = self.add(Scope {
+                        id: segment.clone(),
+                        scopes: Default::default(),
+                        components: Default::default(),
+                        concepts: Default::default(),
+                        messages: Default::default(),
+                        types: Default::default(),
+                        attributes: Default::default(),
+                    });
+                    self.get_mut(scope_id)?
+                        .scopes
+                        .insert(segment.clone(), new_id);
+                    new_id
+                }
+            };
         }
-
-        let option_id = self.add(Type::Option(id));
-        self.option_items.insert(id, option_id);
-
-        option_id
+        self.get_mut(scope_id)
     }
 }
 
@@ -102,7 +174,19 @@ pub trait Item: Clone {
     fn from_item_value(value: &ItemValue) -> Option<&Self>;
     fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self>;
     fn into_item_value(self) -> ItemValue;
+}
+
+pub(crate) trait Resolve: Item {
     fn resolve(
+        &mut self,
+        items: &ItemMap,
+        self_id: ItemId<Self>,
+        context: &Context,
+    ) -> anyhow::Result<()>;
+}
+
+pub(crate) trait ResolveClone: Item {
+    fn resolve_clone(
         self,
         items: &mut ItemMap,
         self_id: ItemId<Self>,

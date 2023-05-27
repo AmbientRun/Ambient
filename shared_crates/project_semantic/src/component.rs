@@ -2,8 +2,8 @@ use ambient_project::{Identifier, ItemPathBuf};
 use anyhow::Context as AnyhowContext;
 
 use crate::{
-    Attribute, Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
-    ResolvableValue, Type,
+    item::Resolve, Attribute, Context, Item, ItemId, ItemMap, ItemType, ItemValue,
+    ResolvableItemId, ResolvableValue, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -36,14 +36,15 @@ impl Item for Component {
     fn into_item_value(self) -> ItemValue {
         ItemValue::Component(self)
     }
-
+}
+impl Resolve for Component {
     fn resolve(
-        mut self,
-        items: &mut ItemMap,
+        &mut self,
+        items: &ItemMap,
         _self_id: ItemId<Self>,
         context: &Context,
-    ) -> anyhow::Result<Self> {
-        let type_id = match self.type_ {
+    ) -> anyhow::Result<()> {
+        let type_id = match &self.type_ {
             ResolvableItemId::Unresolved(ty) => {
                 context.get_type_id(items, &ty).with_context(|| {
                     format!(
@@ -52,7 +53,7 @@ impl Item for Component {
                     )
                 })?
             }
-            ResolvableItemId::Resolved(id) => id,
+            ResolvableItemId::Resolved(id) => *id,
         };
         self.type_ = ResolvableItemId::Resolved(type_id);
 
@@ -79,7 +80,7 @@ impl Item for Component {
             default.resolve(items, type_id)?;
         }
 
-        Ok(self)
+        Ok(())
     }
 }
 impl Component {

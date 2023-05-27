@@ -22,7 +22,7 @@ impl ResolvedValue {
         items: &ItemMap,
         id: ItemId<Type>,
     ) -> anyhow::Result<Self> {
-        Ok(match items.get_without_resolve(id)? {
+        Ok(match &*items.get_without_resolve(id)? {
             Type::Enum(e) => {
                 let variant = value.as_str().with_context(|| {
                     format!("Expected string for enum variant, got {:?}", value)
@@ -41,7 +41,7 @@ impl ResolvedValue {
 
                 Self::Enum(id, variant.0.clone())
             }
-            ty => Self::Primitive(PrimitiveValue::from_toml_value(value, ty)?),
+            ty => Self::Primitive(PrimitiveValue::from_toml_value(value, &ty)?),
         })
     }
 }
