@@ -310,6 +310,7 @@ impl TransformSystem {
                         .optional_changed(fbx_scaling_pivot())
                         .optional_changed(scale())
                         .optional_changed(fbx_scaling_pivot())
+                        .excl(local_to_parent())
                         .to_system(|q, world, qs, _| {
                             // See: https://help.autodesk.com/view/FBX/2017/ENU/?guid=__files_GUID_10CDD63C_79C1_4F2D_BB28_AD2BE65A02ED_htm
                             // and: https://github.com/assimp/assimp/blob/add7f1355e96c6ff0df0ba3cec084f25332d154e/code/AssetLib/FBX/FBXConverter.cpp#L687
