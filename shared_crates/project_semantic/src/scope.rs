@@ -88,6 +88,7 @@ impl Context {
 
 #[derive(Clone, PartialEq)]
 pub struct Scope {
+    pub parent: Option<ItemId<Scope>>,
     pub id: Identifier,
 
     pub scopes: IndexMap<Identifier, ItemId<Scope>>,
@@ -146,6 +147,14 @@ impl Item for Scope {
     fn into_item_value(self) -> ItemValue {
         ItemValue::Scope(self)
     }
+
+    fn parent(&self) -> Option<ItemId<Scope>> {
+        self.parent
+    }
+
+    fn id(&self) -> &Identifier {
+        &self.id
+    }
 }
 /// Scope uses `ResolveClone` because scopes can be accessed during resolution
 /// of their children, so we need to clone the scope to avoid a double-borrow.
@@ -186,28 +195,35 @@ impl ResolveClone for Scope {
 impl Scope {
     pub fn from_manifest(
         semantic: &mut Semantic,
+        parent: ItemId<Scope>,
         file_provider: &dyn FileProvider,
         manifest: Manifest,
     ) -> anyhow::Result<ItemId<Scope>> {
-        let mut scopes = IndexMap::new();
-        for include in &manifest.project.includes {
-            let scope_id = semantic.add_file_at_non_toplevel(&include, file_provider)?;
-            scopes.insert(semantic.items.get(scope_id)?.id.clone(), scope_id);
-        }
-
-        let items = &mut semantic.items;
         let scope = Scope {
+            parent: Some(parent),
             id: manifest.project.id.clone(),
-            scopes,
 
+            scopes: IndexMap::new(),
             components: IndexMap::new(),
             concepts: IndexMap::new(),
             messages: IndexMap::new(),
             types: IndexMap::new(),
             attributes: IndexMap::new(),
         };
-        let scope_id = items.add(scope);
+        let scope_id = semantic.items.add(scope);
 
+        for include in &manifest.project.includes {
+            let child_scope_id =
+                semantic.add_file_at_non_toplevel(scope_id, &include, file_provider)?;
+            let id = semantic.items.get(child_scope_id)?.id.clone();
+            semantic
+                .items
+                .get_mut(scope_id)?
+                .scopes
+                .insert(id, child_scope_id);
+        }
+
+        let items = &mut semantic.items;
         for (path, component) in manifest.components.iter() {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();

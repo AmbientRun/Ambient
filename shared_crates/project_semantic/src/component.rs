@@ -36,6 +36,10 @@ impl Item for Component {
     fn into_item_value(self) -> ItemValue {
         ItemValue::Component(self)
     }
+
+    fn id(&self) -> &Identifier {
+        &self.id
+    }
 }
 impl Resolve for Component {
     fn resolve(

@@ -1,7 +1,7 @@
 use ambient_project::Identifier;
 use ulid::Ulid;
 
-use crate::{Attribute, Component, Concept, Context, Message, Scope, Type};
+use crate::{Attribute, Component, Concept, Context, Message, Scope, Type, TypeInner};
 use anyhow::Context as AnyhowContext;
 use std::{
     cell::{Ref, RefCell, RefMut},
@@ -18,6 +18,8 @@ pub struct ItemMap {
 }
 impl ItemMap {
     pub fn add<T: Item>(&mut self, item: T) -> ItemId<T> {
+        let item_id = item.id().clone();
+
         let value = item.into_item_value();
         let is_type = matches!(value, ItemValue::Type(_));
 
@@ -26,10 +28,12 @@ impl ItemMap {
         if is_type {
             let new_id = ItemId::<Type>(new_id.0, PhantomData);
 
-            let vec_id = self.add_raw(Type::Vec(new_id).into_item_value());
+            let vec_id =
+                self.add_raw(Type::new(item_id.clone(), TypeInner::Vec(new_id)).into_item_value());
             self.vec_items.insert(new_id, vec_id);
 
-            let option_id = self.add_raw(Type::Option(new_id).into_item_value());
+            let option_id =
+                self.add_raw(Type::new(item_id, TypeInner::Option(new_id)).into_item_value());
             self.option_items.insert(new_id, option_id);
         }
 
@@ -132,6 +136,7 @@ impl ItemMap {
                 Some(id) => id,
                 None => {
                     let new_id = self.add(Scope {
+                        parent: Some(scope_id),
                         id: segment.clone(),
                         scopes: Default::default(),
                         components: Default::default(),
@@ -178,6 +183,10 @@ pub trait Item: Clone {
     fn from_item_value(value: &ItemValue) -> Option<&Self>;
     fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self>;
     fn into_item_value(self) -> ItemValue;
+    fn parent(&self) -> Option<ItemId<Scope>> {
+        None
+    }
+    fn id(&self) -> &Identifier;
 }
 
 /// This item supports being resolved in-place.

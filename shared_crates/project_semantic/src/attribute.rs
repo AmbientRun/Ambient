@@ -27,6 +27,10 @@ impl Item for Attribute {
     fn into_item_value(self) -> ItemValue {
         ItemValue::Attribute(self)
     }
+
+    fn id(&self) -> &Identifier {
+        &self.id
+    }
 }
 impl Resolve for Attribute {
     fn resolve(

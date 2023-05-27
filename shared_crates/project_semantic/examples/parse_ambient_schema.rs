@@ -2,7 +2,7 @@ use std::{fmt::Display, path::Path};
 
 use ambient_project_semantic::{
     Attribute, Component, Concept, FileProvider, Item, ItemMap, Message, ResolvableItemId, Scope,
-    Semantic, Type,
+    Semantic, Type, TypeInner,
 };
 
 pub fn main() -> anyhow::Result<()> {
@@ -39,7 +39,7 @@ impl Printer {
 
     fn print_scope(&mut self, items: &ItemMap, scope: &Scope) -> anyhow::Result<()> {
         self.print_indent();
-        println!("{}: ", scope.id);
+        println!("{}: ", fully_qualified_path(items, scope)?);
         for id in scope.scopes.values() {
             self.with_indent(|p| p.print_scope(items, &*items.get(*id)?))?;
         }
@@ -180,7 +180,7 @@ impl Printer {
     fn print_type(&mut self, items: &ItemMap, type_: &Type) -> anyhow::Result<()> {
         self.print_indent();
         println!("type: {}", type_.to_string(items)?);
-        if let Type::Enum(e) = type_ {
+        if let TypeInner::Enum(e) = &type_.inner {
             self.with_indent(|p| {
                 for (name, description) in &e.members {
                     p.print_indent();
@@ -227,4 +227,19 @@ fn write_resolvable_id<T: Item, D: Display>(
             format!("{}", extractor(&*items.get(*resolved)?)?)
         }
     })
+}
+
+fn fully_qualified_path<T: Item>(items: &ItemMap, item: &T) -> anyhow::Result<String> {
+    let mut path = vec![item.id().to_string()];
+    let mut parent_id = item.parent();
+    while let Some(this_parent_id) = parent_id {
+        let parent = items.get(this_parent_id)?;
+        let id = parent.id().to_string();
+        if !id.is_empty() {
+            path.push(id);
+        }
+        parent_id = parent.parent();
+    }
+    path.reverse();
+    Ok(path.join("/"))
 }

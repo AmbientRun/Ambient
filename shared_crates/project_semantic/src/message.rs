@@ -32,6 +32,10 @@ impl Item for Message {
     fn into_item_value(self) -> ItemValue {
         ItemValue::Message(self)
     }
+
+    fn id(&self) -> &Identifier {
+        &self.id
+    }
 }
 impl Resolve for Message {
     fn resolve(

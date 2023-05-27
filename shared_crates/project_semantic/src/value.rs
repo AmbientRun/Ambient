@@ -1,4 +1,4 @@
-use crate::{ItemId, ItemMap};
+use crate::{ItemId, ItemMap, TypeInner};
 
 use super::{PrimitiveType, Type};
 use ambient_project::Identifier;
@@ -22,8 +22,9 @@ impl ResolvedValue {
         items: &ItemMap,
         id: ItemId<Type>,
     ) -> anyhow::Result<Self> {
-        Ok(match &*items.get(id)? {
-            Type::Enum(e) => {
+        let ty = &*items.get(id)?;
+        Ok(match &ty.inner {
+            TypeInner::Enum(e) => {
                 let variant = value.as_str().with_context(|| {
                     format!("Expected string for enum variant, got {:?}", value)
                 })?;
@@ -41,7 +42,7 @@ impl ResolvedValue {
 
                 Self::Enum(id, variant.0.clone())
             }
-            ty => Self::Primitive(PrimitiveValue::from_toml_value(value, &ty)?),
+            _ => Self::Primitive(PrimitiveValue::from_toml_value(value, ty)?),
         })
     }
 }
@@ -86,12 +87,12 @@ primitive_component_definitions!(define_primitive_value);
 
 impl PrimitiveValue {
     pub(crate) fn from_toml_value(value: &toml::Value, ty: &Type) -> anyhow::Result<Self> {
-        Ok(match ty {
-            Type::Primitive(pt) => Self::primitive_from_toml_value(value, *pt)?
+        Ok(match ty.inner {
+            TypeInner::Primitive(pt) => Self::primitive_from_toml_value(value, pt)?
                 .with_context(|| format!("Failed to parse TOML value {:?} as {:?}", value, pt))?,
-            Type::Vec(_v) => todo!("We don't support vecs yet"),
-            Type::Option(_o) => todo!("We don't support options yet"),
-            Type::Enum(_) => unreachable!("Enum should be resolved"),
+            TypeInner::Vec(_v) => todo!("We don't support vecs yet"),
+            TypeInner::Option(_o) => todo!("We don't support options yet"),
+            TypeInner::Enum(_) => unreachable!("Enum should be resolved"),
         })
     }
 

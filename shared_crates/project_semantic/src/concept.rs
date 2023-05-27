@@ -36,6 +36,10 @@ impl Item for Concept {
     fn into_item_value(self) -> ItemValue {
         ItemValue::Concept(self)
     }
+
+    fn id(&self) -> &Identifier {
+        &self.id
+    }
 }
 impl Resolve for Concept {
     fn resolve(

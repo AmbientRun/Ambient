@@ -27,7 +27,7 @@ mod primitive_type;
 pub use primitive_type::PrimitiveType;
 
 mod type_;
-pub use type_::{Enum, Type};
+pub use type_::{Enum, Type, TypeInner};
 
 mod message;
 pub use message::Message;
@@ -50,13 +50,14 @@ impl Semantic {
         macro_rules! define_primitive_types {
             ($(($value:ident, $_type:ty)),*) => {
                 [
-                    $((stringify!($value), Type::Primitive(PrimitiveType::$value))),*
+                    $((stringify!($value), PrimitiveType::$value)),*
                 ]
             };
         }
 
         let mut items = ItemMap::default();
         let root_scope = items.add(Scope {
+            parent: None,
             id: Identifier::default(),
             scopes: IndexMap::new(),
             components: IndexMap::new(),
@@ -71,7 +72,7 @@ impl Semantic {
             scopes: IndexMap::new(),
         };
 
-        for (id, ty) in primitive_component_definitions!(define_primitive_types) {
+        for (id, pt) in primitive_component_definitions!(define_primitive_types) {
             let id = id
                 .with_boundaries(&[
                     Boundary::LowerUpper,
@@ -84,6 +85,7 @@ impl Semantic {
                 .map_err(anyhow::Error::msg)
                 .context("standard value was not valid kebab-case")?;
 
+            let ty = Type::new(id.clone(), TypeInner::Primitive(pt));
             let item_id = sem.items.add(ty);
             sem.items.get_mut(sem.root_scope)?.types.insert(id, item_id);
         }
@@ -110,13 +112,14 @@ impl Semantic {
 
     pub fn add_file_at_non_toplevel(
         &mut self,
+        parent_scope: ItemId<Scope>,
         filename: &str,
         file_provider: &dyn FileProvider,
     ) -> anyhow::Result<ItemId<Scope>> {
         let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename}"))?;
 
-        Scope::from_manifest(self, file_provider, manifest)
+        Scope::from_manifest(self, parent_scope, file_provider, manifest)
     }
 
     pub fn add_file(
@@ -132,7 +135,7 @@ impl Semantic {
             anyhow::bail!("file `{}` has already been added as {}", filename, scope_id);
         }
 
-        let item_id = Scope::from_manifest(self, file_provider, manifest)?;
+        let item_id = Scope::from_manifest(self, self.root_scope, file_provider, manifest)?;
         self.scopes.insert(scope_id, item_id);
         Ok(item_id)
     }

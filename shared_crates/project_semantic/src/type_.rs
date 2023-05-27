@@ -1,37 +1,46 @@
-use std::fmt::Display;
-
 use ambient_project::{ComponentType, Identifier};
 use indexmap::IndexMap;
 
 use crate::{Context, Item, ItemId, ItemMap, ItemType, ItemValue, PrimitiveType, Resolve};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
-pub enum Type {
+pub struct Type {
+    pub id: Identifier,
+    pub inner: TypeInner,
+}
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum TypeInner {
     Primitive(PrimitiveType),
     Vec(ItemId<Type>),
     Option(ItemId<Type>),
     Enum(Enum),
 }
 impl Type {
+    pub fn new(id: Identifier, inner: TypeInner) -> Self {
+        Self { id, inner }
+    }
+
     pub(crate) fn from_project_enum(id: Identifier, value: &ambient_project::Enum) -> Self {
-        Self::Enum(Enum {
+        Self::new(
             id,
-            members: value.0.clone(),
-        })
+            TypeInner::Enum(Enum {
+                members: value.0.clone(),
+            }),
+        )
     }
 
     pub fn to_string(&self, items: &ItemMap) -> anyhow::Result<String> {
-        Ok(match self {
-            Type::Primitive(pt) => pt.to_string(),
-            Type::Vec(id) => {
-                let inner = items.get(*id)?;
-                format!("Vec<{}>", inner.to_string(items)?)
+        Ok(match &self.inner {
+            TypeInner::Primitive(pt) => pt.to_string(),
+            TypeInner::Vec(id) => {
+                let contained = items.get(*id)?;
+                format!("vec<{}>", contained.to_string(items)?)
             }
-            Type::Option(id) => {
-                let inner = items.get(*id)?;
-                format!("Option<{}>", inner.to_string(items)?)
+            TypeInner::Option(id) => {
+                let contained = items.get(*id)?;
+                format!("option<{}>", contained.to_string(items)?)
             }
-            Type::Enum(e) => e.to_string(),
+            TypeInner::Enum(_) => self.id.to_string(),
         })
     }
 }
@@ -56,6 +65,10 @@ impl Item for Type {
     fn into_item_value(self) -> ItemValue {
         ItemValue::Type(self)
     }
+
+    fn id(&self) -> &Identifier {
+        &self.id
+    }
 }
 impl Resolve for Type {
     fn resolve(
@@ -70,11 +83,5 @@ impl Resolve for Type {
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Enum {
-    pub id: Identifier,
     pub members: IndexMap<Identifier, String>,
-}
-impl Display for Enum {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "enum({})", self.id)
-    }
 }
