@@ -3,17 +3,18 @@ use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
-    Attribute, Component, Concept, FileProvider, Item, ItemId, ItemMap, Message, Semantic, Type,
+    Attribute, Component, Concept, FileProvider, Item, ItemId, ItemMap, ItemType, ItemValue,
+    Message, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct Context<'a>(Vec<&'a Scope>);
-impl<'a> Context<'a> {
-    pub(crate) fn new(root_scope: &'a Scope) -> Self {
+pub struct Context(Vec<ItemId<Scope>>);
+impl Context {
+    pub(crate) fn new(root_scope: ItemId<Scope>) -> Self {
         Self(vec![root_scope])
     }
 
-    fn push(&mut self, scope: &'a Scope) {
+    fn push(&mut self, scope: ItemId<Scope>) {
         self.0.push(scope);
     }
 
@@ -22,10 +23,11 @@ impl<'a> Context<'a> {
         items: &mut ItemMap,
         component_type: &ComponentType,
     ) -> Option<ItemId<Type>> {
-        for scope in self.0.iter().rev() {
+        for &scope_id in self.0.iter().rev() {
             match component_type {
                 ComponentType::Item(id) => {
-                    if let Some(id) = scope.get_type_id(id.as_path()) {
+                    let scope = items.get_without_resolve(scope_id).ok()?;
+                    if let Ok(id) = scope.get_type_id(items, id.as_path()) {
                         return Some(id);
                     }
                 }
@@ -33,7 +35,8 @@ impl<'a> Context<'a> {
                     type_,
                     element_type,
                 } => {
-                    if let Some(id) = scope.get_type_id(element_type.as_path()) {
+                    let scope = items.get_without_resolve(scope_id).ok()?;
+                    if let Ok(id) = scope.get_type_id(items, element_type.as_path()) {
                         return Some(match type_ {
                             ambient_project::ContainerType::Vec => items.get_vec_id(id),
                             ambient_project::ContainerType::Option => items.get_option_id(id),
@@ -45,39 +48,54 @@ impl<'a> Context<'a> {
         None
     }
 
-    pub(crate) fn get_attribute_id(&self, path: ItemPath) -> Option<ItemId<Attribute>> {
-        for scope in self.0.iter().rev() {
-            if let Some(id) = scope.get_attribute_id(path) {
-                return Some(id);
+    pub(crate) fn get_attribute_id(
+        &self,
+        items: &ItemMap,
+        path: ItemPath,
+    ) -> anyhow::Result<ItemId<Attribute>> {
+        for &scope_id in self.0.iter().rev() {
+            let Ok(scope) = items.get_without_resolve(scope_id) else { continue; };
+            if let Ok(id) = scope.get_attribute_id(items, path) {
+                return Ok(id);
             }
         }
-        None
+        anyhow::bail!("failed to find attribute {:?}", path);
     }
 
-    pub(crate) fn get_concept_id(&self, path: ItemPath) -> Option<ItemId<Concept>> {
-        for scope in self.0.iter().rev() {
-            if let Some(id) = scope.get_concept_id(path) {
-                return Some(id);
+    pub(crate) fn get_concept_id(
+        &self,
+        items: &ItemMap,
+        path: ItemPath,
+    ) -> anyhow::Result<ItemId<Concept>> {
+        for &scope_id in self.0.iter().rev() {
+            let Ok(scope) = items.get_without_resolve(scope_id) else { continue; };
+            if let Ok(id) = scope.get_concept_id(items, path) {
+                return Ok(id);
             }
         }
-        None
+        anyhow::bail!("failed to find concept {:?}", path);
     }
 
-    pub(crate) fn get_component_id(&self, path: ItemPath) -> Option<ItemId<Component>> {
-        for scope in self.0.iter().rev() {
-            if let Some(id) = scope.get_component_id(path) {
-                return Some(id);
+    pub(crate) fn get_component_id(
+        &self,
+        items: &ItemMap,
+        path: ItemPath,
+    ) -> anyhow::Result<ItemId<Component>> {
+        for &scope_id in self.0.iter().rev() {
+            let Ok(scope) = items.get_without_resolve(scope_id) else { continue; };
+            if let Ok(id) = scope.get_component_id(items, path) {
+                return Ok(id);
             }
         }
-        None
+        anyhow::bail!("failed to find component {:?}", path);
     }
 }
 
 #[derive(Clone, PartialEq)]
 pub struct Scope {
     pub id: Identifier,
-    pub scopes: IndexMap<Identifier, Scope>,
 
+    pub scopes: IndexMap<Identifier, ItemId<Scope>>,
     pub components: IndexMap<Identifier, ItemId<Component>>,
     pub concepts: IndexMap<Identifier, ItemId<Concept>>,
     pub messages: IndexMap<Identifier, ItemId<Message>>,
@@ -111,9 +129,63 @@ impl std::fmt::Debug for Scope {
         ds.finish()
     }
 }
+impl Item for Scope {
+    const TYPE: ItemType = ItemType::Scope;
+
+    type Unresolved = ();
+
+    fn from_item_value(value: &ItemValue) -> Option<&Self> {
+        match value {
+            ItemValue::Scope(value) => Some(value),
+            _ => None,
+        }
+    }
+
+    fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self> {
+        match value {
+            ItemValue::Scope(value) => Some(value),
+            _ => None,
+        }
+    }
+
+    fn into_item_value(self) -> ItemValue {
+        ItemValue::Scope(self)
+    }
+
+    fn resolve(
+        self,
+        items: &mut ItemMap,
+        self_id: ItemId<Self>,
+        context: &Context,
+    ) -> anyhow::Result<Self> {
+        fn resolve<T: Item, U>(
+            item_ids: &IndexMap<U, ItemId<T>>,
+            items: &mut ItemMap,
+            context: &Context,
+        ) -> anyhow::Result<()> {
+            for id in item_ids.values().copied() {
+                items.resolve(id, context)?;
+            }
+
+            Ok(())
+        }
+
+        let mut context = context.clone();
+        context.push(self_id);
+
+        resolve(&self.scopes, items, &context)?;
+        resolve(&self.components, items, &context)?;
+        resolve(&self.concepts, items, &context)?;
+        resolve(&self.messages, items, &context)?;
+        resolve(&self.types, items, &context)?;
+        resolve(&self.attributes, items, &context)?;
+
+        Ok(self)
+    }
+}
 impl Scope {
     pub fn from_file(
-        semantic: &mut Semantic,
+        items: &mut ItemMap,
         filename: &str,
         file_provider: &dyn FileProvider,
     ) -> anyhow::Result<Self> {
@@ -122,8 +194,8 @@ impl Scope {
 
         let mut scopes = IndexMap::new();
         for include in &manifest.project.includes {
-            let scope = Scope::from_file(semantic, include, file_provider)?;
-            scopes.insert(scope.id.clone(), scope);
+            let scope = Scope::from_file(items, include, file_provider)?;
+            scopes.insert(scope.id.clone(), items.add(scope));
         }
 
         let mut scope = Scope {
@@ -141,65 +213,78 @@ impl Scope {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            scope.get_or_create_scope_mut(scope_path).components.insert(
-                item.clone(),
-                semantic
-                    .items
-                    .add(Component::from_project(item.clone(), component)),
-            );
+            let value = items.add(Component::from_project(item.clone(), component));
+            scope
+                .get_or_create_scope_mut(items, scope_path)
+                .components
+                .insert(item.clone(), value);
         }
 
         for (path, concept) in manifest.concepts.iter() {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            scope.get_or_create_scope_mut(scope_path).concepts.insert(
-                item.clone(),
-                semantic
-                    .items
-                    .add(Concept::from_project(item.clone(), concept)),
-            );
+            let value = items.add(Concept::from_project(item.clone(), concept));
+            scope
+                .get_or_create_scope_mut(items, scope_path)
+                .concepts
+                .insert(item.clone(), value);
         }
 
         for (path, message) in manifest.messages.iter() {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            scope.get_or_create_scope_mut(scope_path).messages.insert(
-                item.clone(),
-                semantic
-                    .items
-                    .add(Message::from_project(item.clone(), message)),
-            );
+            let value = items.add(Message::from_project(item.clone(), message));
+            scope
+                .get_or_create_scope_mut(items, scope_path)
+                .messages
+                .insert(item.clone(), value);
         }
 
         for (segment, ty) in manifest.enums.iter() {
             scope.types.insert(
                 segment.clone(),
-                semantic
-                    .items
-                    .add(Type::from_project_enum(segment.clone(), ty)),
+                items.add(Type::from_project_enum(segment.clone(), ty)),
             );
         }
 
         Ok(scope)
     }
 
-    fn get_scope(&self, path: &[Identifier]) -> Option<&Scope> {
+    fn get_scope<'a>(
+        &'a self,
+        items: &'a ItemMap,
+        path: &[Identifier],
+    ) -> anyhow::Result<&'a Scope> {
         let mut scope = self;
         for segment in path.iter() {
-            scope = scope.scopes.get(segment)?;
+            scope =
+                items.get_without_resolve(*scope.scopes.get(segment).with_context(|| {
+                    format!(
+                        "failed to find scope {segment} in {scope}",
+                        segment = segment,
+                        scope = scope.id
+                    )
+                })?)?;
         }
-        Some(scope)
+        Ok(scope)
     }
 
-    fn get_or_create_scope_mut(&mut self, path: &[Identifier]) -> &mut Scope {
-        let mut scope = self;
+    fn get_or_create_scope_mut<'a>(
+        &'a mut self,
+        items: &'a mut ItemMap,
+        path: &[Identifier],
+    ) -> &'a mut Scope {
+        let mut scope_id = None;
         for segment in path.iter() {
-            scope = scope
-                .scopes
-                .entry(segment.clone())
-                .or_insert_with(|| Scope {
+            let scope = match scope_id {
+                Some(id) => items.get_mut(id).unwrap(),
+                None => self,
+            };
+            let new_scope_id = match scope.scopes.get(segment) {
+                Some(id) => *id,
+                None => items.add(Scope {
                     id: segment.clone(),
                     scopes: Default::default(),
                     components: Default::default(),
@@ -207,60 +292,57 @@ impl Scope {
                     messages: Default::default(),
                     types: Default::default(),
                     attributes: Default::default(),
-                });
+                }),
+            };
+            scope_id = Some(new_scope_id);
         }
-        scope
-    }
-
-    pub(crate) fn resolve<'a>(
-        &'a self,
-        items: &mut ItemMap,
-        mut context: Context<'a>,
-    ) -> anyhow::Result<()> {
-        fn resolve<T: Item, U>(
-            item_ids: &IndexMap<U, ItemId<T>>,
-            items: &mut ItemMap,
-            context: &Context,
-        ) -> anyhow::Result<()> {
-            for id in item_ids.values().copied() {
-                items.resolve(id, context)?;
-            }
-
-            Ok(())
+        match scope_id {
+            Some(id) => items.get_mut(id).unwrap(),
+            None => self,
         }
-
-        context.push(self);
-
-        resolve(&self.components, items, &context)?;
-        resolve(&self.concepts, items, &context)?;
-        resolve(&self.messages, items, &context)?;
-        resolve(&self.types, items, &context)?;
-        resolve(&self.attributes, items, &context)?;
-
-        for scope in self.scopes.values() {
-            scope.resolve(items, context.clone())?;
-        }
-
-        Ok(())
     }
 
-    fn get_type_id(&self, path: ItemPath) -> Option<ItemId<Type>> {
+    fn get_type_id(&self, items: &ItemMap, path: ItemPath) -> anyhow::Result<ItemId<Type>> {
         let (scope, item) = path.scope_and_item();
-        self.get_scope(scope)?.types.get(item).copied()
+        self.get_scope(items, scope)?
+            .types
+            .get(item)
+            .copied()
+            .with_context(|| format!("failed to find type {item} in {scope:?}",))
     }
 
-    fn get_attribute_id(&self, path: ItemPath) -> Option<ItemId<Attribute>> {
+    fn get_attribute_id(
+        &self,
+        items: &ItemMap,
+        path: ItemPath,
+    ) -> anyhow::Result<ItemId<Attribute>> {
         let (scope, item) = path.scope_and_item();
-        self.get_scope(scope)?.attributes.get(item).copied()
+        self.get_scope(items, scope)?
+            .attributes
+            .get(item)
+            .copied()
+            .with_context(|| format!("failed to find attribute {item} in {scope:?}",))
     }
 
-    fn get_concept_id(&self, path: ItemPath) -> Option<ItemId<Concept>> {
+    fn get_concept_id(&self, items: &ItemMap, path: ItemPath) -> anyhow::Result<ItemId<Concept>> {
         let (scope, item) = path.scope_and_item();
-        self.get_scope(scope)?.concepts.get(item).copied()
+        self.get_scope(items, scope)?
+            .concepts
+            .get(item)
+            .copied()
+            .with_context(|| format!("failed to find concept {item} in {scope:?}",))
     }
 
-    fn get_component_id(&self, path: ItemPath) -> Option<ItemId<Component>> {
+    fn get_component_id(
+        &self,
+        items: &ItemMap,
+        path: ItemPath,
+    ) -> anyhow::Result<ItemId<Component>> {
         let (scope, item) = path.scope_and_item();
-        self.get_scope(scope)?.components.get(item).copied()
+        self.get_scope(items, scope)?
+            .components
+            .get(item)
+            .copied()
+            .with_context(|| format!("failed to find component {item} in {scope:?}",))
     }
 }

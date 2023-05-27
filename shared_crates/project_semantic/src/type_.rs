@@ -57,8 +57,13 @@ impl Item for Type {
         ItemValue::Type(self)
     }
 
-    fn resolve(&mut self, _items: &mut ItemMap, _context: &Context) -> anyhow::Result<Self> {
-        Ok(self.clone())
+    fn resolve(
+        self,
+        _items: &mut ItemMap,
+        _self_id: ItemId<Self>,
+        _context: &Context,
+    ) -> anyhow::Result<Self> {
+        Ok(self)
     }
 }
 

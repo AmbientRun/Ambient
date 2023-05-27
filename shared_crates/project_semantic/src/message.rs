@@ -2,7 +2,7 @@ use ambient_project::{Identifier, ItemPathBuf};
 use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
-use crate::{Context, Item, ItemMap, ItemType, ItemValue, ResolvableItemId, Type};
+use crate::{Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId, Type};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Message {
@@ -33,11 +33,14 @@ impl Item for Message {
         ItemValue::Message(self)
     }
 
-    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> anyhow::Result<Self> {
-        let mut new = self.clone();
-
+    fn resolve(
+        mut self,
+        items: &mut ItemMap,
+        _self_id: ItemId<Self>,
+        context: &Context,
+    ) -> anyhow::Result<Self> {
         let mut fields = IndexMap::new();
-        for (name, type_) in &new.fields {
+        for (name, type_) in &self.fields {
             fields.insert(
                 name.clone(),
                 match type_ {
@@ -51,9 +54,9 @@ impl Item for Message {
                 },
             );
         }
-        new.fields = fields;
+        self.fields = fields;
 
-        Ok(new)
+        Ok(self)
     }
 }
 

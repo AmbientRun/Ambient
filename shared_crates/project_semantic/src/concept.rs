@@ -3,7 +3,8 @@ use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
-    Component, Context, Item, ItemMap, ItemType, ItemValue, ResolvableItemId, ResolvableValue,
+    Component, Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
+    ResolvableValue,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -36,37 +37,42 @@ impl Item for Concept {
         ItemValue::Concept(self)
     }
 
-    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> anyhow::Result<Self> {
-        let mut new = self.clone();
-
+    fn resolve(
+        mut self,
+        items: &mut ItemMap,
+        _self_id: ItemId<Self>,
+        context: &Context,
+    ) -> anyhow::Result<Self> {
         let mut extends = vec![];
-        for extend in &new.extends {
+        for extend in &self.extends {
             extends.push(match extend {
                 ResolvableItemId::Unresolved(path) => {
-                    let id = context.get_concept_id(path.as_path()).with_context(|| {
-                        format!(
-                            "Failed to resolve concept `{}` for concept `{}",
-                            path, self.id
-                        )
-                    })?;
+                    let id = context
+                        .get_concept_id(items, path.as_path())
+                        .with_context(|| {
+                            format!(
+                                "Failed to resolve concept `{}` for concept `{}",
+                                path, self.id
+                            )
+                        })?;
                     ResolvableItemId::Resolved(id)
                 }
                 t => t.clone(),
             });
         }
-        new.extends = extends;
+        self.extends = extends;
 
         let mut components = IndexMap::new();
-        for (resolvable_component, resolvable_value) in &new.components {
+        for (resolvable_component, resolvable_value) in &self.components {
             let component_id = match resolvable_component {
-                ResolvableItemId::Unresolved(path) => {
-                    context.get_component_id(path.as_path()).with_context(|| {
+                ResolvableItemId::Unresolved(path) => context
+                    .get_component_id(items, path.as_path())
+                    .with_context(|| {
                         format!(
                             "Failed to get component `{}` for concept `{}",
                             path, self.id
                         )
-                    })?
-                }
+                    })?,
                 ResolvableItemId::Resolved(id) => *id,
             };
             let component = items.resolve(component_id, context)?;
@@ -81,9 +87,9 @@ impl Item for Concept {
             value.resolve(items, component_type)?;
             components.insert(ResolvableItemId::Resolved(component_id), value);
         }
-        new.components = components;
+        self.components = components;
 
-        Ok(new)
+        Ok(self)
     }
 }
 impl Concept {

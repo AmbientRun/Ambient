@@ -1,6 +1,6 @@
 use ulid::Ulid;
 
-use crate::{Attribute, Component, Concept, Context, Message, Type};
+use crate::{Attribute, Component, Concept, Context, Message, Scope, Type};
 use anyhow::Context as AnyhowContext;
 use std::{
     collections::HashMap,
@@ -47,7 +47,7 @@ impl ItemMap {
         let item = self
             .get_without_resolve(id)?
             .clone()
-            .resolve(self, context)?;
+            .resolve(self, id, context)?;
         self.insert(id, item);
         self.get_mut(id)
     }
@@ -82,6 +82,7 @@ pub enum ItemType {
     Message,
     Type,
     Attribute,
+    Scope,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -91,6 +92,7 @@ pub enum ItemValue {
     Message(Message),
     Type(Type),
     Attribute(Attribute),
+    Scope(Scope),
 }
 
 pub trait Item: Clone {
@@ -100,7 +102,12 @@ pub trait Item: Clone {
     fn from_item_value(value: &ItemValue) -> Option<&Self>;
     fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self>;
     fn into_item_value(self) -> ItemValue;
-    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> anyhow::Result<Self>;
+    fn resolve(
+        self,
+        items: &mut ItemMap,
+        self_id: ItemId<Self>,
+        context: &Context,
+    ) -> anyhow::Result<Self>;
 }
 
 pub struct ItemId<T: Item>(Ulid, PhantomData<T>);

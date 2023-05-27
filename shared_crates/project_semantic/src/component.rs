@@ -2,7 +2,8 @@ use ambient_project::{Identifier, ItemPathBuf};
 use anyhow::Context as AnyhowContext;
 
 use crate::{
-    Attribute, Context, Item, ItemMap, ItemType, ItemValue, ResolvableItemId, ResolvableValue, Type,
+    Attribute, Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
+    ResolvableValue, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -36,41 +37,49 @@ impl Item for Component {
         ItemValue::Component(self)
     }
 
-    fn resolve(&mut self, items: &mut ItemMap, context: &Context) -> anyhow::Result<Self> {
-        let mut new = self.clone();
-
-        let type_id = match new.type_ {
+    fn resolve(
+        mut self,
+        items: &mut ItemMap,
+        _self_id: ItemId<Self>,
+        context: &Context,
+    ) -> anyhow::Result<Self> {
+        let type_id = match self.type_ {
             ResolvableItemId::Unresolved(ty) => {
                 context.get_type_id(items, &ty).with_context(|| {
-                    format!("Failed to resolve type `{ty:?}` for component `{}`", new.id)
+                    format!(
+                        "Failed to resolve type `{ty:?}` for component `{}`",
+                        self.id
+                    )
                 })?
             }
             ResolvableItemId::Resolved(id) => id,
         };
-        new.type_ = ResolvableItemId::Resolved(type_id);
+        self.type_ = ResolvableItemId::Resolved(type_id);
 
         let mut attributes = vec![];
-        for attribute in &new.attributes {
+        for attribute in &self.attributes {
             attributes.push(match attribute {
                 ResolvableItemId::Unresolved(path) => {
-                    let id = context.get_attribute_id(path.as_path()).with_context(|| {
-                        format!(
-                            "Failed to resolve attribute `{path}` for component `{}`",
-                            new.id
-                        )
-                    })?;
+                    let id = context
+                        .get_attribute_id(items, path.as_path())
+                        .with_context(|| {
+                            format!(
+                                "Failed to resolve attribute `{path}` for component `{}`",
+                                self.id
+                            )
+                        })?;
                     ResolvableItemId::Resolved(id)
                 }
                 t => t.clone(),
             });
         }
-        new.attributes = attributes;
+        self.attributes = attributes;
 
-        if let Some(default) = &mut new.default {
+        if let Some(default) = &mut self.default {
             default.resolve(items, type_id)?;
         }
 
-        Ok(new)
+        Ok(self)
     }
 }
 impl Component {

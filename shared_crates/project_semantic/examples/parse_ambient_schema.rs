@@ -30,8 +30,8 @@ struct Printer {
 }
 impl Printer {
     fn print(&mut self, semantic: &Semantic) -> anyhow::Result<()> {
-        for scope in semantic.scopes.values() {
-            self.print_scope(semantic, scope)?;
+        for id in semantic.scopes.values() {
+            self.print_scope(semantic, semantic.items.get_without_resolve(*id)?)?;
         }
         Ok(())
     }
@@ -39,8 +39,10 @@ impl Printer {
     fn print_scope(&mut self, semantic: &Semantic, scope: &Scope) -> anyhow::Result<()> {
         self.print_indent();
         println!("{}: ", scope.id);
-        for scope in scope.scopes.values() {
-            self.with_indent(|p| p.print_scope(semantic, scope))?;
+        for id in scope.scopes.values() {
+            self.with_indent(|p| {
+                p.print_scope(semantic, semantic.items.get_without_resolve(*id)?)
+            })?;
         }
 
         for id in scope.components.values() {
