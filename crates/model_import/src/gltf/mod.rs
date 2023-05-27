@@ -46,7 +46,10 @@ pub async fn import(
     import: &GltfImport,
     asset_crate: &mut ModelCrate,
 ) -> anyhow::Result<RelativePathBuf> {
-    let name_ = |name: Option<&str>| name.map(|x| format!("{x}_")).unwrap_or_default();
+    let name_ = |name: Option<&str>| {
+        name.map(|x| format!("{}_", x.replace("/", "-").replace("\\", "-")))
+            .unwrap_or_default()
+    };
 
     let mut meshes = import
         .document
