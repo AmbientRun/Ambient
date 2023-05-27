@@ -3,9 +3,8 @@ use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
-    item::{Resolve, ResolveClone},
     Attribute, Component, Concept, FileProvider, Item, ItemId, ItemMap, ItemType, ItemValue,
-    Message, Semantic, Type,
+    Message, Resolve, ResolveClone, Semantic, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -148,6 +147,8 @@ impl Item for Scope {
         ItemValue::Scope(self)
     }
 }
+/// Scope uses `ResolveClone` because scopes can be accessed during resolution
+/// of their children, so we need to clone the scope to avoid a double-borrow.
 impl ResolveClone for Scope {
     fn resolve_clone(
         self,
@@ -191,10 +192,7 @@ impl Scope {
         let mut scopes = IndexMap::new();
         for include in &manifest.project.includes {
             let scope_id = semantic.add_file_at_non_toplevel(&include, file_provider)?;
-            scopes.insert(
-                semantic.items.get_without_resolve(scope_id)?.id.clone(),
-                scope_id,
-            );
+            scopes.insert(semantic.items.get(scope_id)?.id.clone(), scope_id);
         }
 
         let items = &mut semantic.items;

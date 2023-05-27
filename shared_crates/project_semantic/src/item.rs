@@ -42,7 +42,10 @@ impl ItemMap {
         ItemId(ulid, PhantomData)
     }
 
-    pub fn get_without_resolve<T: Item>(&self, id: ItemId<T>) -> anyhow::Result<Ref<T>> {
+    /// Returns a reference to the item with the given id.
+    ///
+    /// Does not resolve the item.
+    pub fn get<T: Item>(&self, id: ItemId<T>) -> anyhow::Result<Ref<T>> {
         let value = self
             .items
             .get(&id.0)
@@ -51,6 +54,9 @@ impl ItemMap {
         Ok(Ref::map(value.borrow(), |r| T::from_item_value(r).unwrap()))
     }
 
+    /// Returns a mutable reference to the item with the given id.
+    ///
+    /// Does not resolve the item.
     pub fn get_mut<T: Item>(&self, id: ItemId<T>) -> anyhow::Result<RefMut<T>> {
         let value = self
             .items
@@ -67,6 +73,7 @@ impl ItemMap {
             .insert(id.0, RefCell::new(item.into_item_value()));
     }
 
+    /// Resolve the item with the given id in-place, and return a mutable reference to it.
     pub(crate) fn resolve<T: Resolve>(
         &self,
         id: ItemId<T>,
@@ -77,12 +84,13 @@ impl ItemMap {
         Ok(item)
     }
 
+    /// Resolve the item with the given id by cloning it, avoiding borrowing issues.
     pub(crate) fn resolve_clone<T: ResolveClone>(
         &mut self,
         id: ItemId<T>,
         context: &Context,
     ) -> anyhow::Result<()> {
-        let item = self.get_without_resolve(id)?.clone();
+        let item = self.get(id)?.clone();
         let new_item = item.resolve_clone(self, id, context)?;
         self.insert(id, new_item);
         Ok(())
@@ -103,13 +111,13 @@ impl ItemMap {
     ) -> anyhow::Result<Ref<Scope>> {
         let mut scope_id = start_scope_id;
         for segment in path.iter() {
-            let scope = self.get_without_resolve(scope_id)?;
+            let scope = self.get(scope_id)?;
             scope_id = *scope
                 .scopes
                 .get(segment)
                 .with_context(|| format!("failed to find scope {segment} in {scope_id}",))?;
         }
-        self.get_without_resolve(scope_id)
+        self.get(scope_id)
     }
 
     pub(crate) fn get_or_create_scope_mut<'a>(
@@ -119,11 +127,7 @@ impl ItemMap {
     ) -> anyhow::Result<RefMut<Scope>> {
         let mut scope_id = start_scope_id;
         for segment in path.iter() {
-            let existing_id = self
-                .get_without_resolve(scope_id)?
-                .scopes
-                .get(segment)
-                .copied();
+            let existing_id = self.get(scope_id)?.scopes.get(segment).copied();
             scope_id = match existing_id {
                 Some(id) => id,
                 None => {
@@ -176,6 +180,7 @@ pub trait Item: Clone {
     fn into_item_value(self) -> ItemValue;
 }
 
+/// This item supports being resolved in-place.
 pub(crate) trait Resolve: Item {
     fn resolve(
         &mut self,
@@ -185,6 +190,7 @@ pub(crate) trait Resolve: Item {
     ) -> anyhow::Result<()>;
 }
 
+/// This item supports being resolved by cloning.
 pub(crate) trait ResolveClone: Item {
     fn resolve_clone(
         self,

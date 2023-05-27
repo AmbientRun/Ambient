@@ -3,9 +3,7 @@ use std::fmt::Display;
 use ambient_project::{ComponentType, Identifier};
 use indexmap::IndexMap;
 
-use crate::{
-    item::Resolve, Context, Item, ItemId, ItemMap, ItemType, ItemValue, PrimitiveType, Semantic,
-};
+use crate::{Context, Item, ItemId, ItemMap, ItemType, ItemValue, PrimitiveType, Resolve};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum Type {
@@ -22,16 +20,16 @@ impl Type {
         })
     }
 
-    pub fn to_string(&self, semantic: &Semantic) -> anyhow::Result<String> {
+    pub fn to_string(&self, items: &ItemMap) -> anyhow::Result<String> {
         Ok(match self {
             Type::Primitive(pt) => pt.to_string(),
             Type::Vec(id) => {
-                let inner = semantic.items.get_without_resolve(*id)?;
-                format!("Vec<{}>", inner.to_string(semantic)?)
+                let inner = items.get(*id)?;
+                format!("Vec<{}>", inner.to_string(items)?)
             }
             Type::Option(id) => {
-                let inner = semantic.items.get_without_resolve(*id)?;
-                format!("Option<{}>", inner.to_string(semantic)?)
+                let inner = items.get(*id)?;
+                format!("Option<{}>", inner.to_string(items)?)
             }
             Type::Enum(e) => e.to_string(),
         })

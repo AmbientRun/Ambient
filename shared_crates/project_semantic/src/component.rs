@@ -2,8 +2,8 @@ use ambient_project::{Identifier, ItemPathBuf};
 use anyhow::Context as AnyhowContext;
 
 use crate::{
-    item::Resolve, Attribute, Context, Item, ItemId, ItemMap, ItemType, ItemValue,
-    ResolvableItemId, ResolvableValue, Type,
+    Attribute, Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
+    ResolvableValue, Resolve, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]

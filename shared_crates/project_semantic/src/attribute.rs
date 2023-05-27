@@ -1,6 +1,6 @@
 use ambient_project::{Identifier, ItemPathBuf};
 
-use crate::{item::Resolve, Context, Item, ItemId, ItemMap, ItemType, ItemValue};
+use crate::{Context, Item, ItemId, ItemMap, ItemType, ItemValue, Resolve};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Attribute {

@@ -3,8 +3,8 @@ use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
-    item::Resolve, Component, Context, Item, ItemId, ItemMap, ItemType, ItemValue,
-    ResolvableItemId, ResolvableValue,
+    Component, Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
+    ResolvableValue, Resolve,
 };
 
 #[derive(Clone, PartialEq, Debug)]

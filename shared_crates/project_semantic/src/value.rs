@@ -22,7 +22,7 @@ impl ResolvedValue {
         items: &ItemMap,
         id: ItemId<Type>,
     ) -> anyhow::Result<Self> {
-        Ok(match &*items.get_without_resolve(id)? {
+        Ok(match &*items.get(id)? {
             Type::Enum(e) => {
                 let variant = value.as_str().with_context(|| {
                     format!("Expected string for enum variant, got {:?}", value)

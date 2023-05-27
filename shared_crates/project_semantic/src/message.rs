@@ -2,9 +2,7 @@ use ambient_project::{Identifier, ItemPathBuf};
 use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
-use crate::{
-    item::Resolve, Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId, Type,
-};
+use crate::{Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId, Resolve, Type};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Message {

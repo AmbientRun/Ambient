@@ -12,6 +12,7 @@ pub use scope::{Context, Scope};
 
 mod item;
 pub use item::{Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId};
+use item::{Resolve, ResolveClone};
 
 mod component;
 pub use component::Component;
