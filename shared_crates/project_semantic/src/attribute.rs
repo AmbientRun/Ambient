@@ -1,9 +1,10 @@
 use ambient_project::{Identifier, ItemPathBuf};
 
-use crate::{Context, Item, ItemId, ItemMap, ItemType, ItemValue, Resolve};
+use crate::{Context, Item, ItemId, ItemMap, ItemType, ItemValue, Resolve, Scope};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Attribute {
+    pub parent: ItemId<Scope>,
     pub id: Identifier,
 }
 impl Item for Attribute {
@@ -26,6 +27,10 @@ impl Item for Attribute {
 
     fn into_item_value(self) -> ItemValue {
         ItemValue::Attribute(self)
+    }
+
+    fn parent(&self) -> Option<ItemId<Scope>> {
+        Some(self.parent)
     }
 
     fn id(&self) -> &Identifier {

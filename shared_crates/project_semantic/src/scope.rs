@@ -228,7 +228,7 @@ impl Scope {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            let value = items.add(Component::from_project(item.clone(), component));
+            let value = items.add(Component::from_project(scope_id, item.clone(), component));
             items
                 .get_or_create_scope_mut(scope_id, scope_path)?
                 .components
@@ -239,7 +239,7 @@ impl Scope {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            let value = items.add(Concept::from_project(item.clone(), concept));
+            let value = items.add(Concept::from_project(scope_id, item.clone(), concept));
             items
                 .get_or_create_scope_mut(scope_id, scope_path)?
                 .concepts
@@ -250,7 +250,7 @@ impl Scope {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            let value = items.add(Message::from_project(item.clone(), message));
+            let value = items.add(Message::from_project(scope_id, item.clone(), message));
             items
                 .get_or_create_scope_mut(scope_id, scope_path)?
                 .messages
@@ -258,7 +258,7 @@ impl Scope {
         }
 
         for (segment, enum_ty) in manifest.enums.iter() {
-            let enum_id = items.add(Type::from_project_enum(segment.clone(), enum_ty));
+            let enum_id = items.add(Type::from_project_enum(scope_id, segment.clone(), enum_ty));
             items
                 .get_mut(scope_id)?
                 .types

@@ -85,7 +85,7 @@ impl Semantic {
                 .map_err(anyhow::Error::msg)
                 .context("standard value was not valid kebab-case")?;
 
-            let ty = Type::new(id.clone(), TypeInner::Primitive(pt));
+            let ty = Type::new(root_scope, id.clone(), TypeInner::Primitive(pt));
             let item_id = sem.items.add(ty);
             sem.items.get_mut(sem.root_scope)?.types.insert(id, item_id);
         }
@@ -100,7 +100,10 @@ impl Semantic {
             let id = Identifier::new(name)
                 .map_err(anyhow::Error::msg)
                 .context("standard value was not valid kebab-case")?;
-            let item_id = sem.items.add(Attribute { id: id.clone() });
+            let item_id = sem.items.add(Attribute {
+                parent: sem.root_scope,
+                id: id.clone(),
+            });
             sem.items
                 .get_mut(sem.root_scope)?
                 .attributes

@@ -2,11 +2,14 @@ use ambient_project::{Identifier, ItemPathBuf};
 use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
-use crate::{Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId, Resolve, Type};
+use crate::{
+    Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId, Resolve, Scope, Type,
+};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Message {
     pub id: Identifier,
+    pub parent: ItemId<Scope>,
     pub description: Option<String>,
     pub fields: IndexMap<Identifier, ResolvableItemId<Type>>,
 }
@@ -35,6 +38,10 @@ impl Item for Message {
 
     fn id(&self) -> &Identifier {
         &self.id
+    }
+
+    fn parent(&self) -> Option<ItemId<Scope>> {
+        Some(self.parent)
     }
 }
 impl Resolve for Message {
@@ -66,9 +73,14 @@ impl Resolve for Message {
 }
 
 impl Message {
-    pub(crate) fn from_project(id: Identifier, value: &ambient_project::Message) -> Self {
+    pub(crate) fn from_project(
+        parent: ItemId<Scope>,
+        id: Identifier,
+        value: &ambient_project::Message,
+    ) -> Self {
         Message {
             id,
+            parent,
             description: value.description.clone(),
             fields: value
                 .fields

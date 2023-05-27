@@ -1,4 +1,4 @@
-use std::{fmt::Display, path::Path};
+use std::path::Path;
 
 use ambient_project_semantic::{
     Attribute, Component, Concept, FileProvider, Item, ItemMap, Message, ResolvableItemId, Scope,
@@ -69,7 +69,7 @@ impl Printer {
 
     fn print_component(&mut self, items: &ItemMap, component: &Component) -> anyhow::Result<()> {
         self.print_indent();
-        println!("component({}): ", component.id);
+        println!("component({}): ", fully_qualified_path(items, component)?);
 
         self.with_indent(|p| {
             p.print_indent();
@@ -82,18 +82,12 @@ impl Printer {
             );
 
             p.print_indent();
-            println!(
-                "type: {}",
-                write_resolvable_id(items, &component.type_, |t| t.to_string(items))?
-            );
+            println!("type: {}", write_resolvable_id(items, &component.type_)?);
 
             p.print_indent();
             print!("attributes: ");
             for attribute in &component.attributes {
-                print!(
-                    "{} ",
-                    write_resolvable_id(items, attribute, |attribute| Ok(attribute.id.clone()))?
-                );
+                print!("{} ", write_resolvable_id(items, attribute)?);
             }
             println!();
 
@@ -106,7 +100,7 @@ impl Printer {
 
     fn print_concept(&mut self, items: &ItemMap, concept: &Concept) -> anyhow::Result<()> {
         self.print_indent();
-        println!("concept({}): ", concept.id);
+        println!("concept({}): ", fully_qualified_path(items, concept)?);
 
         self.with_indent(|p| {
             p.print_indent();
@@ -121,10 +115,7 @@ impl Printer {
             p.print_indent();
             print!("extends: ");
             for extend in &concept.extends {
-                print!(
-                    "{} ",
-                    write_resolvable_id(items, extend, |extend| Ok(extend.id.clone()))?
-                );
+                print!("{} ", write_resolvable_id(items, extend)?);
             }
             println!();
 
@@ -134,13 +125,7 @@ impl Printer {
             p.with_indent(|p| {
                 for (component, value) in concept.components.iter() {
                     p.print_indent();
-                    println!(
-                        "{}: {:?}",
-                        write_resolvable_id(items, component, |component| Ok(component
-                            .id
-                            .clone()))?,
-                        value,
-                    );
+                    println!("{}: {:?}", write_resolvable_id(items, component)?, value,);
                 }
 
                 Ok(())
@@ -150,7 +135,7 @@ impl Printer {
 
     fn print_message(&mut self, items: &ItemMap, message: &Message) -> anyhow::Result<()> {
         self.print_indent();
-        println!("message({}): ", message.id);
+        println!("message({}): ", fully_qualified_path(items, message)?);
 
         self.with_indent(|p| {
             p.print_indent();
@@ -165,11 +150,7 @@ impl Printer {
             p.with_indent(|p| {
                 for (id, ty) in message.fields.iter() {
                     p.print_indent();
-                    println!(
-                        "{}: {}",
-                        id,
-                        write_resolvable_id(items, ty, |ty| ty.to_string(items))?,
-                    );
+                    println!("{}: {}", id, write_resolvable_id(items, ty)?);
                 }
 
                 Ok(())
@@ -179,7 +160,11 @@ impl Printer {
 
     fn print_type(&mut self, items: &ItemMap, type_: &Type) -> anyhow::Result<()> {
         self.print_indent();
-        println!("type: {}", type_.to_string(items)?);
+        println!(
+            "type: {} [{}]",
+            fully_qualified_path(items, type_)?,
+            type_.to_string(items)?
+        );
         if let TypeInner::Enum(e) = &type_.inner {
             self.with_indent(|p| {
                 for (name, description) in &e.members {
@@ -193,9 +178,9 @@ impl Printer {
         Ok(())
     }
 
-    fn print_attribute(&mut self, _items: &ItemMap, attribute: &Attribute) -> anyhow::Result<()> {
+    fn print_attribute(&mut self, items: &ItemMap, attribute: &Attribute) -> anyhow::Result<()> {
         self.print_indent();
-        println!("attribute({}): ", attribute.id);
+        println!("attribute({}): ", fully_qualified_path(items, attribute)?);
         Ok(())
     }
 
@@ -216,15 +201,14 @@ impl Printer {
     }
 }
 
-fn write_resolvable_id<T: Item, D: Display>(
+fn write_resolvable_id<T: Item>(
     items: &ItemMap,
     r: &ResolvableItemId<T>,
-    extractor: impl FnOnce(&T) -> anyhow::Result<D>,
 ) -> anyhow::Result<String> {
     Ok(match r {
         ResolvableItemId::Unresolved(unresolved) => format!("unresolved({:?})", unresolved),
         ResolvableItemId::Resolved(resolved) => {
-            format!("{}", extractor(&*items.get(*resolved)?)?)
+            format!("{}", fully_qualified_path(items, &*items.get(*resolved)?)?)
         }
     })
 }

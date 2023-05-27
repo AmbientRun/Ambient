@@ -3,11 +3,12 @@ use anyhow::Context as AnyhowContext;
 
 use crate::{
     Attribute, Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
-    ResolvableValue, Resolve, Type,
+    ResolvableValue, Resolve, Scope, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Component {
+    pub parent: ItemId<Scope>,
     pub id: Identifier,
     pub name: Option<String>,
     pub description: Option<String>,
@@ -35,6 +36,10 @@ impl Item for Component {
 
     fn into_item_value(self) -> ItemValue {
         ItemValue::Component(self)
+    }
+
+    fn parent(&self) -> Option<ItemId<Scope>> {
+        Some(self.parent)
     }
 
     fn id(&self) -> &Identifier {
@@ -88,8 +93,13 @@ impl Resolve for Component {
     }
 }
 impl Component {
-    pub(crate) fn from_project(id: Identifier, value: &ambient_project::Component) -> Self {
+    pub(crate) fn from_project(
+        parent: ItemId<Scope>,
+        id: Identifier,
+        value: &ambient_project::Component,
+    ) -> Self {
         Self {
+            parent,
             id,
             name: value.name.clone(),
             description: value.description.clone(),

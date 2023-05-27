@@ -4,11 +4,12 @@ use indexmap::IndexMap;
 
 use crate::{
     Component, Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
-    ResolvableValue, Resolve,
+    ResolvableValue, Resolve, Scope,
 };
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Concept {
+    pub parent: ItemId<Scope>,
     pub id: Identifier,
     pub name: Option<String>,
     pub description: Option<String>,
@@ -35,6 +36,10 @@ impl Item for Concept {
 
     fn into_item_value(self) -> ItemValue {
         ItemValue::Concept(self)
+    }
+
+    fn parent(&self) -> Option<ItemId<Scope>> {
+        Some(self.parent)
     }
 
     fn id(&self) -> &Identifier {
@@ -100,8 +105,13 @@ impl Resolve for Concept {
     }
 }
 impl Concept {
-    pub(crate) fn from_project(id: Identifier, value: &ambient_project::Concept) -> Self {
+    pub(crate) fn from_project(
+        parent: ItemId<Scope>,
+        id: Identifier,
+        value: &ambient_project::Concept,
+    ) -> Self {
         Concept {
+            parent,
             id,
             name: value.name.clone(),
             description: value.description.clone(),
