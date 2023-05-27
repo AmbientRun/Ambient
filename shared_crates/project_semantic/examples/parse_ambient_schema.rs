@@ -214,18 +214,26 @@ fn write_resolvable_id<T: Item>(
 fn fully_qualified_path<T: Item>(items: &ItemMap, item: &T) -> anyhow::Result<String> {
     let mut path = vec![item.id().to_string()];
     let mut parent_id = item.parent();
+    let mut last_parent_id = parent_id.unwrap();
     while let Some(this_parent_id) = parent_id {
         let parent = items.get(this_parent_id)?;
         let id = parent.id().to_string();
         if !id.is_empty() {
             path.push(id);
         }
+        last_parent_id = this_parent_id;
         parent_id = parent.parent();
     }
     path.reverse();
     Ok(format!(
-        "{}:{}",
+        "{}:{}{}",
         T::TYPE.to_string().to_lowercase(),
+        items
+            .get(last_parent_id)?
+            .organization
+            .as_ref()
+            .map(|s| s.to_string() + "/")
+            .unwrap_or_default(),
         path.join("/")
     ))
 }

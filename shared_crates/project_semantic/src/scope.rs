@@ -90,6 +90,7 @@ impl Context {
 pub struct Scope {
     pub parent: Option<ItemId<Scope>>,
     pub id: Identifier,
+    pub organization: Option<Identifier>,
 
     pub scopes: IndexMap<Identifier, ItemId<Scope>>,
     pub components: IndexMap<Identifier, ItemId<Component>>,
@@ -195,13 +196,14 @@ impl ResolveClone for Scope {
 impl Scope {
     pub fn from_manifest(
         semantic: &mut Semantic,
-        parent: ItemId<Scope>,
+        parent: Option<ItemId<Scope>>,
         file_provider: &dyn FileProvider,
         manifest: Manifest,
     ) -> anyhow::Result<ItemId<Scope>> {
         let scope = Scope {
-            parent: Some(parent),
+            parent,
             id: manifest.project.id.clone(),
+            organization: manifest.project.organization.clone(),
 
             scopes: IndexMap::new(),
             components: IndexMap::new(),

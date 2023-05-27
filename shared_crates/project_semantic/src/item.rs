@@ -152,6 +152,7 @@ impl ItemMap {
                 None => {
                     let new_id = self.add(Scope {
                         parent: Some(scope_id),
+                        organization: None,
                         id: segment.clone(),
                         scopes: Default::default(),
                         components: Default::default(),

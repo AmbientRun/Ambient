@@ -31,12 +31,12 @@ impl Manifest {
 #[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
 pub struct Project {
     pub id: Identifier,
+    pub organization: Option<Identifier>,
     pub name: Option<String>,
     pub version: Option<Version>,
     pub description: Option<String>,
     #[serde(default)]
     pub authors: Vec<String>,
-    pub organization: Option<Identifier>,
     #[serde(default)]
     pub includes: Vec<String>,
 }

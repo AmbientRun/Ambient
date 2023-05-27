@@ -58,6 +58,7 @@ impl Semantic {
         let mut items = ItemMap::default();
         let root_scope = items.add(Scope {
             parent: None,
+            organization: None,
             id: Identifier::default(),
             scopes: IndexMap::new(),
             components: IndexMap::new(),
@@ -122,7 +123,7 @@ impl Semantic {
         let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename}"))?;
 
-        Scope::from_manifest(self, parent_scope, file_provider, manifest)
+        Scope::from_manifest(self, Some(parent_scope), file_provider, manifest)
     }
 
     pub fn add_file(
@@ -138,7 +139,11 @@ impl Semantic {
             anyhow::bail!("file `{}` has already been added as {}", filename, scope_id);
         }
 
-        let item_id = Scope::from_manifest(self, self.root_scope, file_provider, manifest)?;
+        if manifest.project.organization.is_none() {
+            anyhow::bail!("file `{}` has no organization, which is required", filename);
+        }
+
+        let item_id = Scope::from_manifest(self, None, file_provider, manifest)?;
         self.scopes.insert(scope_id, item_id);
         Ok(item_id)
     }
