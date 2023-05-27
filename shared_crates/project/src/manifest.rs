@@ -186,20 +186,20 @@ mod tests {
         version = "0.0.1"
 
         [components]
-        "core::transform::rotation" = { type = "quat", name = "Rotation", description = "" }
-        "core::transform::scale" = { type = "vec3", name = "Scale", description = "" }
-        "core::transform::spherical-billboard" = { type = "empty", name = "Spherical billboard", description = "" }
-        "core::transform::translation" = { type = "vec3", name = "Translation", description = "" }
+        "core/transform/rotation" = { type = "quat", name = "Rotation", description = "" }
+        "core/transform/scale" = { type = "vec3", name = "Scale", description = "" }
+        "core/transform/spherical-billboard" = { type = "empty", name = "Spherical billboard", description = "" }
+        "core/transform/translation" = { type = "vec3", name = "Translation", description = "" }
 
-        [concepts."ns::transformable"]
+        [concepts."ns/transformable"]
         name = "Transformable"
         description = "Can be translated, rotated and scaled."
 
-        [concepts."ns::transformable".components]
+        [concepts."ns/transformable".components]
         # This is intentionally out of order to ensure that order is preserved
-        "core::transform::translation" = [0, 0, 0]
-        "core::transform::scale" = [1, 1, 1]
-        "core::transform::rotation" = [0, 0, 0, 1]
+        "core/transform/translation" = [0, 0, 0]
+        "core/transform/scale" = [1, 1, 1]
+        "core/transform/rotation" = [0, 0, 0, 1]
         "#;
 
         let manifest = Manifest::parse(TOML).unwrap();
@@ -222,7 +222,7 @@ mod tests {
                 },
                 components: IndexMap::from_iter([
                     (
-                        ItemPathBuf::new("core::transform::rotation").unwrap(),
+                        ItemPathBuf::new("core/transform/rotation").unwrap(),
                         Component {
                             name: Some("Rotation".to_string()),
                             description: Some("".to_string()),
@@ -233,7 +233,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        ItemPathBuf::new("core::transform::scale").unwrap(),
+                        ItemPathBuf::new("core/transform/scale").unwrap(),
                         Component {
                             name: Some("Scale".to_string()),
                             description: Some("".to_string()),
@@ -244,7 +244,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        ItemPathBuf::new("core::transform::spherical-billboard").unwrap(),
+                        ItemPathBuf::new("core/transform/spherical-billboard").unwrap(),
                         Component {
                             name: Some("Spherical billboard".to_string()),
                             description: Some("".to_string()),
@@ -255,7 +255,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        ItemPathBuf::new("core::transform::translation").unwrap(),
+                        ItemPathBuf::new("core/transform/translation").unwrap(),
                         Component {
                             name: Some("Translation".to_string()),
                             description: Some("".to_string()),
@@ -267,14 +267,14 @@ mod tests {
                     ),
                 ]),
                 concepts: IndexMap::from_iter([(
-                    ItemPathBuf::new("ns::transformable").unwrap(),
+                    ItemPathBuf::new("ns/transformable").unwrap(),
                     Concept {
                         name: Some("Transformable".to_string()),
                         description: Some("Can be translated, rotated and scaled.".to_string()),
                         extends: vec![],
                         components: IndexMap::from_iter([
                             (
-                                ItemPathBuf::new("core::transform::translation").unwrap(),
+                                ItemPathBuf::new("core/transform/translation").unwrap(),
                                 Value::Array(vec![
                                     Value::Integer(0),
                                     Value::Integer(0),
@@ -282,7 +282,7 @@ mod tests {
                                 ])
                             ),
                             (
-                                ItemPathBuf::new("core::transform::scale").unwrap(),
+                                ItemPathBuf::new("core/transform/scale").unwrap(),
                                 Value::Array(vec![
                                     Value::Integer(1),
                                     Value::Integer(1),
@@ -290,7 +290,7 @@ mod tests {
                                 ])
                             ),
                             (
-                                ItemPathBuf::new("core::transform::rotation").unwrap(),
+                                ItemPathBuf::new("core/transform/rotation").unwrap(),
                                 Value::Array(vec![
                                     Value::Integer(0),
                                     Value::Integer(0),
@@ -317,9 +317,9 @@ mod tests {
                 .keys()
                 .collect::<Vec<_>>(),
             vec![
-                &ItemPathBuf::new("core::transform::translation").unwrap(),
-                &ItemPathBuf::new("core::transform::scale").unwrap(),
-                &ItemPathBuf::new("core::transform::rotation").unwrap(),
+                &ItemPathBuf::new("core/transform/translation").unwrap(),
+                &ItemPathBuf::new("core/transform/scale").unwrap(),
+                &ItemPathBuf::new("core/transform/rotation").unwrap(),
             ]
         );
     }

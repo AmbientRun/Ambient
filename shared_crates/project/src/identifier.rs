@@ -15,7 +15,7 @@ impl<'a> Display for ItemPath<'a> {
         let mut first = true;
         for id in self.iter() {
             if !first {
-                write!(f, "::")?;
+                write!(f, "/")?;
             }
 
             write!(f, "{}", id)?;
@@ -127,7 +127,7 @@ impl ItemPathBuf {
     }
 
     fn new_impl(path: String) -> Result<Self, &'static str> {
-        let segments: Vec<_> = path.split("::").filter(|s| !s.is_empty()).collect();
+        let segments: Vec<_> = path.split("/").filter(|s| !s.is_empty()).collect();
         if segments.is_empty() {
             return Err("an identifier path must not be empty");
         }
@@ -309,7 +309,7 @@ mod tests {
         );
 
         assert_eq!(
-            IP::new("my::CoolComponent00"),
+            IP::new("my/CoolComponent00"),
             Err("identifier must start with a lowercase ASCII character")
         );
 
@@ -319,12 +319,12 @@ mod tests {
         );
 
         assert_eq!(
-            IP::new("my::CoolComponent00::lol"),
+            IP::new("my/CoolComponent00/lol"),
             Err("identifier must start with a lowercase ASCII character")
         );
 
         assert_eq!(
-            IP::new("my::cool-component-c00"),
+            IP::new("my/cool-component-c00"),
             Ok(IP {
                 scope: vec![I("my".to_string())],
                 item: I("cool-component-c00".to_string()),
