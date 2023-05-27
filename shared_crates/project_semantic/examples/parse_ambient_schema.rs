@@ -30,38 +30,37 @@ struct Printer {
 }
 impl Printer {
     fn print(&mut self, semantic: &Semantic) -> anyhow::Result<()> {
+        let items = &semantic.items;
+        self.print_scope(items, &*items.get(semantic.root_scope)?)?;
         for id in semantic.scopes.values() {
-            let items = &semantic.items;
             self.print_scope(items, &*items.get(*id)?)?;
         }
         Ok(())
     }
 
     fn print_scope(&mut self, items: &ItemMap, scope: &Scope) -> anyhow::Result<()> {
-        self.print_indent();
-        println!("{}: ", fully_qualified_path(items, scope)?);
-        for id in scope.scopes.values() {
-            self.with_indent(|p| p.print_scope(items, &*items.get(*id)?))?;
-        }
-
         for id in scope.components.values() {
-            self.with_indent(|p| p.print_component(items, &*items.get(*id)?))?;
+            self.print_component(items, &*items.get(*id)?)?;
         }
 
         for id in scope.concepts.values() {
-            self.with_indent(|p| p.print_concept(items, &*items.get(*id)?))?;
+            self.print_concept(items, &*items.get(*id)?)?;
         }
 
         for id in scope.messages.values() {
-            self.with_indent(|p| p.print_message(items, &*items.get(*id)?))?;
+            self.print_message(items, &*items.get(*id)?)?;
         }
 
         for id in scope.types.values() {
-            self.with_indent(|p| p.print_type(items, &*items.get(*id)?))?;
+            self.print_type(items, &*items.get(*id)?)?;
         }
 
         for id in scope.attributes.values() {
-            self.with_indent(|p| p.print_attribute(items, &*items.get(*id)?))?;
+            self.print_attribute(items, &*items.get(*id)?)?;
+        }
+
+        for id in scope.scopes.values() {
+            self.print_scope(items, &*items.get(*id)?)?;
         }
 
         Ok(())
@@ -69,7 +68,7 @@ impl Printer {
 
     fn print_component(&mut self, items: &ItemMap, component: &Component) -> anyhow::Result<()> {
         self.print_indent();
-        println!("component({}): ", fully_qualified_path(items, component)?);
+        println!("{}", fully_qualified_path(items, component)?);
 
         self.with_indent(|p| {
             p.print_indent();
@@ -85,11 +84,14 @@ impl Printer {
             println!("type: {}", write_resolvable_id(items, &component.type_)?);
 
             p.print_indent();
-            print!("attributes: ");
-            for attribute in &component.attributes {
-                print!("{} ", write_resolvable_id(items, attribute)?);
-            }
-            println!();
+            println!("attributes: ");
+            p.with_indent(|p| {
+                for attribute in &component.attributes {
+                    p.print_indent();
+                    println!("{}", write_resolvable_id(items, attribute)?);
+                }
+                Ok(())
+            })?;
 
             p.print_indent();
             println!("default: {:?}", component.default);
@@ -100,7 +102,7 @@ impl Printer {
 
     fn print_concept(&mut self, items: &ItemMap, concept: &Concept) -> anyhow::Result<()> {
         self.print_indent();
-        println!("concept({}): ", fully_qualified_path(items, concept)?);
+        println!("{}", fully_qualified_path(items, concept)?);
 
         self.with_indent(|p| {
             p.print_indent();
@@ -135,7 +137,7 @@ impl Printer {
 
     fn print_message(&mut self, items: &ItemMap, message: &Message) -> anyhow::Result<()> {
         self.print_indent();
-        println!("message({}): ", fully_qualified_path(items, message)?);
+        println!("{}", fully_qualified_path(items, message)?);
 
         self.with_indent(|p| {
             p.print_indent();
@@ -160,11 +162,7 @@ impl Printer {
 
     fn print_type(&mut self, items: &ItemMap, type_: &Type) -> anyhow::Result<()> {
         self.print_indent();
-        println!(
-            "type: {} [{}]",
-            fully_qualified_path(items, type_)?,
-            type_.to_string(items)?
-        );
+        println!("{}", fully_qualified_path(items, type_)?,);
         if let TypeInner::Enum(e) = &type_.inner {
             self.with_indent(|p| {
                 for (name, description) in &e.members {
@@ -180,7 +178,7 @@ impl Printer {
 
     fn print_attribute(&mut self, items: &ItemMap, attribute: &Attribute) -> anyhow::Result<()> {
         self.print_indent();
-        println!("attribute({}): ", fully_qualified_path(items, attribute)?);
+        println!("{}", fully_qualified_path(items, attribute)?);
         Ok(())
     }
 
@@ -225,5 +223,9 @@ fn fully_qualified_path<T: Item>(items: &ItemMap, item: &T) -> anyhow::Result<St
         parent_id = parent.parent();
     }
     path.reverse();
-    Ok(path.join("/"))
+    Ok(format!(
+        "{}:{}",
+        T::TYPE.to_string().to_lowercase(),
+        path.join("/")
+    ))
 }

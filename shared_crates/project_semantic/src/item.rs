@@ -6,7 +6,7 @@ use anyhow::Context as AnyhowContext;
 use std::{
     cell::{Ref, RefCell, RefMut},
     collections::HashMap,
-    fmt::{Debug, Display},
+    fmt::{self, Debug, Display},
     marker::PhantomData,
 };
 
@@ -179,6 +179,11 @@ pub enum ItemType {
     Type,
     Attribute,
     Scope,
+}
+impl Display for ItemType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        Debug::fmt(self, f)
+    }
 }
 
 #[derive(Clone, PartialEq, Debug)]

@@ -42,7 +42,7 @@ pub trait FileProvider {
 #[derive(Clone, PartialEq, Debug)]
 pub struct Semantic {
     pub items: ItemMap,
-    root_scope: ItemId<Scope>,
+    pub root_scope: ItemId<Scope>,
     pub scopes: IndexMap<Identifier, ItemId<Scope>>,
 }
 impl Semantic {

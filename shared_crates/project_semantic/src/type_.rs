@@ -34,21 +34,6 @@ impl Type {
             }),
         )
     }
-
-    pub fn to_string(&self, items: &ItemMap) -> anyhow::Result<String> {
-        Ok(match &self.inner {
-            TypeInner::Primitive(pt) => pt.to_string(),
-            TypeInner::Vec(id) => {
-                let contained = items.get(*id)?;
-                format!("vec<{}>", contained.to_string(items)?)
-            }
-            TypeInner::Option(id) => {
-                let contained = items.get(*id)?;
-                format!("option<{}>", contained.to_string(items)?)
-            }
-            TypeInner::Enum(_) => self.id.to_string(),
-        })
-    }
 }
 impl Item for Type {
     const TYPE: ItemType = ItemType::Type;
