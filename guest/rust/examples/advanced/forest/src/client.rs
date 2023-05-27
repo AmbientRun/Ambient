@@ -472,6 +472,9 @@ where
 }
 
 fn register_augmentors() {
+    let mut rng = rand_pcg::Pcg64::seed_from_u64(0);
+    let dist_zero_to_255 = rand::distributions::Uniform::new_inclusive(0_u8, 255_u8);
+
     let base_color_map = make_texture(|x, _| {
         let hsl = palette::Hsl::new(360.0 * x, 1.0, 0.5).into_format::<f32>();
         let rgb: palette::LinSrgb = hsl.into_color();
@@ -479,6 +482,13 @@ fn register_augmentors() {
         let g = (255.0 * rgb.green) as u8;
         let b = (255.0 * rgb.blue) as u8;
         let a = 255;
+        [r, g, b, a]
+    });
+    let base_color_map2 = make_texture(|x, _| {
+        let r = 255;
+        let g = 255;
+        let b = 255;
+        let a = dist_zero_to_255.sample(&mut rng);
         [r, g, b, a]
     });
     let normal_map = make_texture(|_, _| [128, 128, 255, 0]);
@@ -493,6 +503,13 @@ fn register_augmentors() {
     });
     let material = material::create(&material::Descriptor {
         base_color_map,
+        normal_map,
+        metallic_roughness_map,
+        sampler,
+        transparent: false,
+    });
+    let material2 = material::create(&material::Descriptor {
+        base_color_map: base_color_map2,
         normal_map,
         metallic_roughness_map,
         sampler,
@@ -553,10 +570,15 @@ fn register_augmentors() {
         }
     });
 
-    spawn_query((components::tile_seed(), components::tile_size())).bind(move |tiles| {
-        for (id, (seed, size)) in tiles {
+    spawn_query(
+        (components::tile_seed(),
+        components::tile_size(),
+        components::tile_x(),
+        components::tile_y(),
+    )).bind(move |tiles| {
+        for (id, (seed, size, tile_x, tile_y)) in tiles {
             let tile = create_tile(GridMesh {
-                top_left: Vec2 { x: 0.0, y: 0.0 },
+                top_left: Vec2 { x: tile_x as f32 * size, y: tile_y as f32 * size},
                 size: Vec2 { x: size, y: size },
                 n_vertices_width: 10,
                 n_vertices_height: 10,
@@ -577,7 +599,9 @@ fn register_augmentors() {
                 id,
                 Entity::new()
                     .with(procedural_mesh(), mesh)
-                    .with(procedural_material(), material), //.with_default(cast_shadows()),
+                    .with(color(), vec4(0.25, 1.0, 0.25, 1.0))
+                    .with(procedural_material(), material)
+                    .with_default(cast_shadows()),
             );
         }
     });
@@ -617,19 +641,23 @@ fn make_trees() {
 }
 
 fn make_tiles() {
-    let num_tiles_x = 10;
-    let num_tiles_y = 10;
-    let size = Vec2::ONE * 1.0;
+    let num_tiles_x = 30;
+    let num_tiles_y = 30;
+    let size = 10.0;
+    let seed = 123;
 
     for num_tile_x in 0..num_tiles_x {
         for num_tile_y in 0..num_tiles_y {
-            let position = vec3(num_tile_x as f32 * 2.0, num_tile_y as f32 * 2.0, 0.001);
+            let position = vec3(num_tile_x as f32 * 1.0-20.0, num_tile_y as f32 * 1.0-20.0, 0.001);
 
             let id = Entity::new()
                 .with_merge(concepts::make_tile())
                 .with_merge(make_transformable())
                 .with(translation(), position)
+                .with(components::tile_seed(), seed + num_tile_x + num_tile_y * num_tiles_x)
                 .with(components::tile_size(), size)
+                .with(components::tile_x(), num_tile_x)
+                .with(components::tile_y(), num_tile_y)
                 .spawn();
         }
     }
@@ -702,7 +730,7 @@ pub fn build_tile(grid: &GridMesh) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>, Vec<u32>
             positions.push(vec3(
                 grid.top_left.x + grid.size.x * p.x,
                 grid.top_left.y + grid.size.y * p.y,
-                0.,
+                get_height((grid.top_left.x + grid.size.x * p.x) as i32, (grid.top_left.y + grid.size.y * p.y) as i32)
             ));
             texcoords.push(vec2(
                 grid.uv_min.x + (grid.uv_max.x - grid.uv_min.x) * p.x,
@@ -724,6 +752,15 @@ pub fn build_tile(grid: &GridMesh) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>, Vec<u32>
     }
 
     (positions, texcoords, normals, indices)
+}
+
+fn get_height(x:i32, y:i32) -> f32 {
+    let x = x as f32;
+    let y = y as f32;
+    // perlin noise without crate
+    let noise = (x.sin() + y.cos()) * 0.5;
+    let height = noise * 0.5 + 0.5;
+    height * 2.0
 }
 
 #[main]
