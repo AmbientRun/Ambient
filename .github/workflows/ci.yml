@@ -94,7 +94,7 @@ jobs:
     # llvmpipe versions can randomly fail.
     runs-on: ubuntu-latest
     env:
-      RUST_LOG: ambient_gpu=debug
+      RUST_LOG: ambient_gpu=info
     steps:
       - name: Free up disk space
         run: |
@@ -116,31 +116,25 @@ jobs:
           sudo apt-get update
           sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
 
-      - name: Cargo cache
-        uses: actions/cache@v3
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-            guest/rust/target/
-          key: ${{ runner.os }}-golden-image-${{ hashFiles('**/Cargo.toml') }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-golden-image-${{ hashFiles('**/Cargo.toml') }}-
-            ${{ runner.os }}-golden-image-
-      - name: Build
-        run: cargo run --release -- --help
-      - name: Build golden image tests
-        run: node scripts/golden_image_tests.js --build
+          prefix-key: golden-images
+          cache-on-failure: true
+          workspaces: |
+            .
+            guest/rust
+      - name: Build Ambient
+        run: cargo build --release
       - name: Run golden image tests
-        run: node scripts/golden_image_tests.js --no-build
+        run: cargo cf golden-images check
       - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: screenshots
-          path: guest/rust/examples/*/*/screenshot.png
+          path: |
+            guest/rust/examples/*/*/screenshot.png
+            guest/rust/examples/*/*/fail_screenshot.png
 
   build-api-and-doc:
     runs-on: ubuntu-20.04
