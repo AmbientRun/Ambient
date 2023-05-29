@@ -179,6 +179,7 @@ impl TryFrom<Option<String>> for ProjectPath {
 
 fn main() -> anyhow::Result<()> {
     setup_logging()?;
+    tracing::debug!("Local ip {:?}", local_ip_address::local_ip());
 
     shared::components::init()?;
     let runtime = tokio::runtime::Builder::new_multi_thread()

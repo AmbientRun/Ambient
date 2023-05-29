@@ -8200,7 +8200,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d014e33793cab91655fa6349b0bc974984de106b2e0f6b0dfe6f6594b260624d"
 dependencies = [
  "indexmap",
- "semver 1.0.17",
+ "url",
 ]
 
 [[package]]
