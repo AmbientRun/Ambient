@@ -1,9 +1,10 @@
 [project]
 id = "clientside"
+organization = "ambient"
 name = "clientside"
 version = "0.0.1"
 
 [components]
-grid_side_length = {name = "Grid Side Length", description = "The length of a grid side, ignoring the centre (i.e. if this is 10, the total axis length is 21)", type = "I32", attributes = ["Networked", "Debuggable"]}
-grid_x = {name = "Grid X", description = "X location of the cell on the grid", type = "I32", attributes = ["Networked", "Debuggable"]}
-grid_y = {name = "Grid Y", description = "Y location of the cell on the grid", type = "I32", attributes = ["Networked", "Debuggable"]}
+grid-side-length = {name = "Grid Side Length", description = "The length of a grid side, ignoring the centre (i.e. if this is 10, the total axis length is 21)", type = "i32", attributes = ["networked", "debuggable"]}
+grid-x = {name = "Grid X", description = "X location of the cell on the grid", type = "i32", attributes = ["networked", "debuggable"]}
+grid-y = {name = "Grid Y", description = "Y location of the cell on the grid", type = "i32", attributes = ["networked", "debuggable"]}

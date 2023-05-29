@@ -1,8 +1,9 @@
 [project]
 id = "physics"
+organization = "ambient"
 name = "Physics"
 version = "0.0.1"
 
 [messages.bonk]
 description = "Collision between two objects."
-fields = { emitter = "EntityId", listener = "EntityId"  }
+fields = { emitter = "entity-id", listener = "entity-id" }

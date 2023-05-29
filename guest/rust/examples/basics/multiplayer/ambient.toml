@@ -1,4 +1,5 @@
 [project]
 id = "multiplayer"
+organization = "ambient"
 name = "Multiplayer"
 version = "0.0.1"

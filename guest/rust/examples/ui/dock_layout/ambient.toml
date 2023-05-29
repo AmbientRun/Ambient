@@ -1,4 +1,5 @@
 [project]
-id = "dock_layout"
+id = "dock-layout"
+organization = "ambient"
 name = "Dock Layout"
 version = "0.0.1"

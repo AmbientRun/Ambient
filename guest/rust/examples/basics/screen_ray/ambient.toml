@@ -1,11 +1,12 @@
 [project]
-id = "screen_ray"
-name = "screen_ray"
+id = "screen-ray"
+organization = "ambient"
+name = "screen-ray"
 version = "0.0.1"
 
 [messages.input.fields]
-ray_origin = { type = "Vec3" }
-ray_dir = { type = "Vec3" }
+ray-origin = "vec3"
+ray-dir = "vec3"
 
-[messages.world_position.fields]
-position = { type = "Vec3" }
+[messages.world-position.fields]
+position = "vec3"

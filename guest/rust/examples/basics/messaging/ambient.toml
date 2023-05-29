@@ -1,15 +1,16 @@
 [project]
 id = "messaging"
+organization = "ambient"
 name = "Messaging"
 version = "0.0.1"
 
 [messages.hello]
 name = "Hello"
 description = "Sent when a client joins the server, then sent back from the server"
-fields = { text = "String", source_reliable = "Bool" }
+fields = { text = "string", source-reliable = "bool" }
 # see all the supported types here:
 # https://ambientrun.github.io/Ambient/reference/project.html#components--components
 
 [messages.local]
 description = "Sent until it's acknowledged"
-fields = { text = "String" }
+fields = { text = "string" }

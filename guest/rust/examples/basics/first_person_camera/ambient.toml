@@ -1,24 +1,25 @@
 [project]
-id = "first_person_camera"
+id = "first-person-camera"
+organization = "ambient"
 name = "First person camera"
 version = "0.0.1"
 
 [components]
-player_head_ref = { type = "EntityId", name = "Player head ref", description = "The player's head.", attributes = [
-    "Debuggable",
+player-head-ref = { type = "entity-id", name = "Player head ref", description = "The player's head.", attributes = [
+    "debuggable",
 ] }
-player_movement_direction = { type = "Vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
-    "Debuggable",
+player-movement-direction = { type = "vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
+    "debuggable",
 ] }
-player_yaw = { type = "F32", name = "Player yaw", description = "The player's yaw.", attributes = [
-    "Debuggable",
+player-yaw = { type = "f32", name = "Player yaw", description = "The player's yaw.", attributes = [
+    "debuggable",
 ] }
-player_pitch = { type = "F32", name = "Player pitch", description = "The player's pitch.", attributes = [
-    "Debuggable",
+player-pitch = { type = "f32", name = "Player pitch", description = "The player's pitch.", attributes = [
+    "debuggable",
 ] }
 
 [messages.input]
 description = "Describes the input state of the player."
 [messages.input.fields]
-direction = { type = "Vec2", name = "Direction", description = "The movement direction of the player." }
-mouse_delta = { type = "Vec2", name = "Mouse delta", description = "The mouse delta." }
+direction = "vec2"
+mouse-delta = "vec2"

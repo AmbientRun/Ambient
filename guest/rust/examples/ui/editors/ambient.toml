@@ -1,4 +1,5 @@
 [project]
 id = "editors"
+organization = "ambient"
 name = "Editors"
 version = "0.0.1"

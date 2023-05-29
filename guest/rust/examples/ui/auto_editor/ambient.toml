@@ -1,4 +1,5 @@
 [project]
-id = "auto_editor"
+id = "auto-editor"
+organization = "ambient"
 name = "Auto editor"
 version = "0.0.1"

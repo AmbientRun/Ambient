@@ -1,7 +1,8 @@
 [project]
 id = "skinmesh"
+organization = "ambient"
 name = "Skinmesh"
 version = "0.0.1"
 
 [messages]
-set_controller = { name = "Set controller", description = "Sets the animation controller.", fields = { value = { type = "U32" } } }
+set-controller = { name = "Set controller", description = "Sets the animation controller.", fields = { value = "u32" } }

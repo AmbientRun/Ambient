@@ -1,4 +1,5 @@
 [project]
-id = "flow_layout"
+id = "flow-layout"
+organization = "ambient"
 name = "Flow Layout"
 version = "0.0.1"

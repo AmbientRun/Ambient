@@ -1,4 +1,5 @@
 [project]
-id = "raw_text"
+id = "raw-text"
+organization = "ambient"
 name = "Raw Text"
 version = "0.0.1"

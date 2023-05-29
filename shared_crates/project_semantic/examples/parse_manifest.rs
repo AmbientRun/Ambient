@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use ambient_project_semantic::{
     Attribute, Component, Concept, FileProvider, Item, ItemMap, Message, ResolvableItemId, Scope,
@@ -8,15 +8,34 @@ use ambient_project_semantic::{
 pub fn main() -> anyhow::Result<()> {
     const SCHEMA_PATH: &str = "shared_crates/schema/src";
 
-    struct DiskFileProvider;
+    struct DiskFileProvider(PathBuf);
     impl FileProvider for DiskFileProvider {
         fn get(&self, filename: &str) -> std::io::Result<String> {
-            std::fs::read_to_string(Path::new(SCHEMA_PATH).join(filename))
+            std::fs::read_to_string(self.0.join(filename))
         }
     }
 
     let mut semantic = Semantic::new()?;
-    semantic.add_file("ambient.toml", &DiskFileProvider, true)?;
+    semantic.add_file(
+        "ambient.toml",
+        &DiskFileProvider(PathBuf::from(SCHEMA_PATH)),
+        true,
+    )?;
+
+    if let Some(filename) = std::env::args().nth(1) {
+        let file_provider = DiskFileProvider(PathBuf::new());
+        if filename == "all" {
+            for path in all_examples()? {
+                semantic.add_file(
+                    &path.join("ambient.toml").to_string_lossy(),
+                    &file_provider,
+                    false,
+                )?;
+            }
+        } else {
+            semantic.add_file(&filename, &file_provider, false)?;
+        }
+    }
 
     let mut printer = Printer { indent: 0 };
     semantic.resolve()?;
@@ -238,4 +257,26 @@ fn fully_qualified_path<T: Item>(items: &ItemMap, item: &T) -> anyhow::Result<St
         path.join("/"),
         if data.is_ambient { " [A]" } else { "" }
     ))
+}
+
+// Copied from campfire
+fn all_examples() -> anyhow::Result<Vec<PathBuf>> {
+    let mut examples = Vec::new();
+
+    for guest in all_directories_in(Path::new("guest"))? {
+        for category_path in all_directories_in(&guest.join("examples"))? {
+            for example_path in all_directories_in(&category_path)? {
+                examples.push(example_path);
+            }
+        }
+    }
+
+    Ok(examples)
+}
+
+fn all_directories_in(path: &Path) -> anyhow::Result<impl Iterator<Item = PathBuf>> {
+    Ok(std::fs::read_dir(path)?
+        .filter_map(Result::ok)
+        .map(|de| de.path())
+        .filter(|p| p.is_dir()))
 }

@@ -1,32 +1,33 @@
 [project]
-id = "third_person_camera"
+id = "third-person-camera"
+organization = "ambient"
 name = "Third person camera"
 version = "0.0.1"
 
 [components]
-player_camera_ref = { type = "EntityId", name = "Player camera ref", description = "The player's camera.", attributes = [
-    "Debuggable",
+player-camera-ref = { type = "entity-id", name = "Player camera ref", description = "The player's camera.", attributes = [
+    "debuggable",
 ] }
-player_movement_direction = { type = "Vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
-    "Debuggable",
+player-movement-direction = { type = "vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
+    "debuggable",
 ] }
-player_mouse_delta_x = { type = "F32", name = "Player mouse delta X", description = "The player's mouse delta X.", attributes = [
-    "Debuggable",
-] }
-
-camera_follow_distance = { type = "F32", name = "Camera follow distance", description = "The distance the camera follows the player.", attributes = [
-    "Debuggable",
-    "Networked",
+player-mouse-delta-x = { type = "f32", name = "Player mouse delta X", description = "The player's mouse delta X.", attributes = [
+    "debuggable",
 ] }
 
-player_scroll = { type = "F32", name = "Player mouse scroll", description = "The player's mouse scroll.", attributes = [
-    "Debuggable",
+camera-follow-distance = { type = "f32", name = "Camera follow distance", description = "The distance the camera follows the player.", attributes = [
+    "debuggable",
+    "networked",
+] }
+
+player-scroll = { type = "f32", name = "Player mouse scroll", description = "The player's mouse scroll.", attributes = [
+    "debuggable",
 ] }
 
 [messages.input]
 description = "Describes the input state of the player."
 
 [messages.input.fields]
-direction = { type = "Vec2", name = "Direction", description = "The movement direction of the player." }
-mouse_delta_x = { type = "F32", name = "Mouse delta X", description = "The mouse delta X." }
-scroll = { type = "F32", name = "Scroll", description = "The vertical scroll." }
+direction = "vec2"
+mouse-delta-x = "f32"
+scroll = "f32"

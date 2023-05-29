@@ -1,24 +1,25 @@
 [project]
 id = "todo"
+organization = "ambient"
 name = "todo"
 version = "0.0.1"
 
-[messages.new_item]
+[messages.new-item]
 description = "Add a new todo item"
-fields = { description = "String" }
+fields = { description = "string" }
 
-[messages.delete_item]
+[messages.delete-item]
 description = "Remove todo item"
-fields = { id = "EntityId" }
+fields = { id = "entity-id" }
 
-[components.todo_item]
-type = "String"
+[components.todo-item]
+type = "string"
 name = "Todo item"
 description = "Item in the todo list."
-attributes = ["Networked", "Debuggable"]
+attributes = ["networked", "debuggable"]
 
-[components.todo_time]
-type = "U32"
+[components.todo-time]
+type = "u32"
 name = "Todo time"
 description = "The time the todo was created."
-attributes = ["Networked", "Debuggable"]
+attributes = ["networked", "debuggable"]

@@ -1,4 +1,5 @@
 [project]
-id = "image_quad"
+id = "image-quad"
+organization = "ambient"
 name = "Image"
 version = "0.0.1"

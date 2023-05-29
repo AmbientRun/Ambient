@@ -1,4 +1,5 @@
 [project]
 id = "rect"
+organization = "ambient"
 name = "Rect"
 version = "0.0.1"

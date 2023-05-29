@@ -1,15 +1,15 @@
 [project]
-id = "skin_tracking"
-sname = "Skin Tracking"
+id = "skin-tracking"
+organization = "ambient"
+name = "Skin Tracking"
 version = "0.0.1"
 
 [components]
-bone_tracker_index = { type = "U32", name = "Bone Tracker Index", description = "Index of current marker" }
-bone_tracker_markers = { type = { type = "Vec", element_type = "EntityId" }, name = "Bone Tracker Markers", description = "List of markers" }
+bone-tracker-index = { type = "u32", name = "Bone Tracker Index", description = "Index of current marker" }
+bone-tracker-markers = { type = { type = "vec", element-type = "entity-id" }, name = "Bone Tracker Markers", description = "List of markers" }
 
-
-bone_tracker_enabled = { type = "Bool", name = "Bone Tracker Enabled for Entity" }
-bone_tracker_entities = { type = { type = "Vec", element_type = "EntityId" }, name = "Bone Tracker Entities", description = "List of entities to track" }
-bone_tracker_binders = { type = { type = "Vec", element_type = "String" }, name = "Bone Tracker Binder Names", description = "List of names to track" }
+bone-tracker-enabled = { type = "bool", name = "Bone Tracker Enabled for Entity" }
+bone-tracker-entities = { type = { type = "vec", element-type = "entity-id" }, name = "Bone Tracker Entities", description = "List of entities to track" }
+bone-tracker-binders = { type = { type = "vec", element-type = "string" }, name = "Bone Tracker Binder Names", description = "List of names to track" }
 
 

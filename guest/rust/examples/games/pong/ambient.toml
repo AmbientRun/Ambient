@@ -1,16 +1,17 @@
 [project]
 id = "pong"
+organization = "ambient"
 name = "Pong"
 version = "0.0.1"
 
 [components]
-player_movement_direction = { type = "F32", name = "Player Movement Direction", description = "Direction of player movement" }
-track_audio_url = { type = "String", name = "Track Audio URL", description = "URL of the track audio", attributes = ["Networked", "Debuggable"]}
+player-movement-direction = { type = "f32", name = "Player Movement Direction", description = "Direction of player movement" }
+track-audio-url = { type = "string", name = "Track Audio URL", description = "URL of the track audio", attributes = ["networked", "debuggable"]}
 
 [messages.input]
 description = "Describes the input state of the player."
 [messages.input.fields]
-direction = { type = "F32", name = "Direction", description = "The movement direction of the player." }
+direction = "f32"
 
 [messages.ping]
 description = "Time to ping sound."

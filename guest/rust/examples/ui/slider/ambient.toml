@@ -1,4 +1,5 @@
 [project]
 id = "slider"
+organization = "ambient"
 name = "Slider"
 version = "0.0.1"
