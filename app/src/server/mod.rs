@@ -77,6 +77,7 @@ pub fn start(
     });
     let port = server.port;
 
+    log::info!("Host: {:#?}", cli.host());
     let public_host = cli
         .host()
         .and_then(|h| h.public_host.clone())
