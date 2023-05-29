@@ -22,7 +22,7 @@ winit = { version = "0.28.1", features = ["serde"] }
 futures = { version = "0.3", default-features = false, features = ["std"] }
 tokio = { version = "1.20", features = ["parking_lot"] }
 bytemuck = { version = "1.10", features = ["derive"] }
-glam = { version = "0.22", features = ["bytemuck", "serde", "rand"] }
+glam = { version = "0.24", features = ["bytemuck", "serde", "rand"] }
 gltf = "1.1.0"
 ordered-float = { version = "3.4.0", features = ["serde"] }
 derive_more = "0.99.11"

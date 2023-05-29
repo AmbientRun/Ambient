@@ -20,6 +20,7 @@ use ambient_std::{
     asset_cache::AssetCache,
     asset_url::{AbsAssetUrl, AssetType, ModelCrateAssetType, TypedAssetUrl},
 };
+use ambient_unity_parser as unity_parser;
 use anyhow::Context;
 use async_recursion::async_recursion;
 use futures::{future::join_all, FutureExt};
@@ -28,12 +29,13 @@ use image::ImageOutputFormat;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
-use ambient_unity_parser as unity_parser;
 use unity_parser::{parse_unity_yaml, prefab::PrefabObject, UnityRef};
 use yaml_rust::Yaml;
 
 use super::{super::context::PipelineCtx, create_texture_resolver, ModelsPipeline};
-use crate::pipelines::{download_image, out_asset::asset_id_from_url, OutAsset, OutAssetContent, OutAssetPreview};
+use crate::pipelines::{
+    download_image, out_asset::asset_id_from_url, OutAsset, OutAssetContent, OutAssetPreview,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UnityConfig {
@@ -41,7 +43,11 @@ pub struct UnityConfig {
     use_prefabs: bool,
 }
 
-pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeline) -> Vec<OutAsset> {
+pub async fn pipeline(
+    ctx: &PipelineCtx,
+    use_prefabs: bool,
+    config: ModelsPipeline,
+) -> Vec<OutAsset> {
     let guid_lookup = join_all(
         ctx.files
             .0
@@ -73,9 +79,15 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
 
     log::info!("guid_lookup done");
 
-    let materials = Arc::new(Mutex::new(UnityMaterials { materials: Default::default(), ctx: ctx.clone() }));
+    let materials = Arc::new(Mutex::new(UnityMaterials {
+        materials: Default::default(),
+        ctx: ctx.clone(),
+    }));
     let guid_lookup = Arc::new(guid_lookup);
-    let mesh_models = Arc::new(Mutex::new(MeshModels { models: Default::default(), force_assimp: config.force_assimp }));
+    let mesh_models = Arc::new(Mutex::new(MeshModels {
+        models: Default::default(),
+        force_assimp: config.force_assimp,
+    }));
 
     if use_prefabs {
         ctx.process_files(
@@ -87,11 +99,14 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                 let guid_lookup = guid_lookup.clone();
                 async move {
                     let mut res = Vec::new();
-                    let prefab =
-                        unity_parser::prefab::PrefabFile::from_yaml(download_unity_yaml(ctx.assets(), &file).await.unwrap()).unwrap();
+                    let prefab = unity_parser::prefab::PrefabFile::from_yaml(
+                        download_unity_yaml(ctx.assets(), &file).await.unwrap(),
+                    )
+                    .unwrap();
 
                     let out_model_path = ctx.in_root().relative_path(file.path());
-                    let out_model_url = ctx.out_root().push(&out_model_path).unwrap().as_directory();
+                    let out_model_url =
+                        ctx.out_root().push(&out_model_path).unwrap().as_directory();
 
                     let mut asset_crate = model_from_prefab(
                         UnityCtx {
@@ -105,9 +120,12 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                         &out_model_url.into(),
                     )
                     .await?;
-                    config.apply(&ctx, &mut asset_crate, &out_model_path).await?;
+                    config
+                        .apply(&ctx, &mut asset_crate, &out_model_path)
+                        .await?;
 
-                    let model_crate_url = ctx.write_model_crate(&asset_crate, &out_model_path).await;
+                    let model_crate_url =
+                        ctx.write_model_crate(&asset_crate, &out_model_path).await;
                     res.push(OutAsset {
                         id: asset_id_from_url(&file),
                         type_: AssetType::Prefab,
@@ -115,7 +133,9 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                         name: file.path().file_name().unwrap().to_string(),
                         tags: Default::default(),
                         categories: Default::default(),
-                        preview: OutAssetPreview::FromModel { url: model_crate_url.model().abs().unwrap() },
+                        preview: OutAssetPreview::FromModel {
+                            url: model_crate_url.model().abs().unwrap(),
+                        },
                         content: OutAssetContent::Content(model_crate_url.prefab().abs().unwrap()),
                         source: Some(file.clone()),
                     });
@@ -144,15 +164,25 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                             normalize: true,
                             force_assimp: config.force_assimp,
                         })
-                        .add_step(ModelImportTransform::SetName { name: file.path().file_name().unwrap().to_string() })
+                        .add_step(ModelImportTransform::SetName {
+                            name: file.path().file_name().unwrap().to_string(),
+                        })
                         .add_step(ModelImportTransform::Transform(ModelTransform::Center))
                         .add_step(ModelImportTransform::CreatePrefab)
                         .add_step(ModelImportTransform::CreateColliderFromModel);
                     let mut asset_crate = pipeline.produce_crate(ctx.assets()).await.unwrap();
                     for mat in asset_crate.materials.content.values_mut() {
                         let name = mat.name.clone().unwrap();
-                        let material_url = ctx.files.find_file(format!("**/Materials/{name}.mat")).unwrap();
-                        *mat = materials.lock().await.get_unity_material(&config, &guid_lookup, material_url, &name).await.unwrap();
+                        let material_url = ctx
+                            .files
+                            .find_file(format!("**/Materials/{name}.mat"))
+                            .unwrap();
+                        *mat = materials
+                            .lock()
+                            .await
+                            .get_unity_material(&config, &guid_lookup, material_url, &name)
+                            .await
+                            .unwrap();
                         *mat = mat.relative_path_from(&out_root.push("materials").unwrap());
                     }
 
@@ -166,7 +196,9 @@ pub async fn pipeline(ctx: &PipelineCtx, use_prefabs: bool, config: ModelsPipeli
                         name: file.path().file_name().unwrap().to_string(),
                         tags: Default::default(),
                         categories: Default::default(),
-                        preview: OutAssetPreview::FromModel { url: model_crate_url.model().abs().unwrap() },
+                        preview: OutAssetPreview::FromModel {
+                            url: model_crate_url.model().abs().unwrap(),
+                        },
                         content: OutAssetContent::Content(model_crate_url.prefab().abs().unwrap()),
                         source: Some(file.clone()),
                     });
@@ -209,9 +241,14 @@ impl UnityMaterials {
     ) -> anyhow::Result<PbrMaterialDesc> {
         let material_path = guid_lookup.get(unity_ref.guid.as_ref().unwrap()).unwrap();
         if unity_ref.type_ == Some(2) {
-            self.get_unity_material(config, guid_lookup, material_path, unity_ref.guid.as_ref().unwrap())
-                .await
-                .with_context(|| format!("Failed to get material {material_path}"))
+            self.get_unity_material(
+                config,
+                guid_lookup,
+                material_path,
+                unity_ref.guid.as_ref().unwrap(),
+            )
+            .await
+            .with_context(|| format!("Failed to get material {material_path}"))
         } else if unity_ref.type_ == Some(3) {
             Ok(Default::default())
         } else {
@@ -229,7 +266,10 @@ impl UnityMaterials {
             Ok(mat.clone())
         } else {
             let get_texture = |ref_: &Option<UnityRef>| -> Option<&AbsAssetUrl> {
-                if let Some(UnityRef { guid: Some(guid), .. }) = ref_ {
+                if let Some(UnityRef {
+                    guid: Some(guid), ..
+                }) = ref_
+                {
                     if let Some(url) = guid_lookup.get(guid) {
                         return Some(url);
                     }
@@ -239,18 +279,28 @@ impl UnityMaterials {
 
             let docs = download_unity_yaml(self.ctx.assets(), material_url).await?;
             let mat = unity_parser::mat::Material::from_yaml(&docs[0])?;
-            let metallic_r_ao_g_smothness_a = if let Some(file) = get_texture(&mat.metallic_r_ao_g_smothness_a) {
-                Some((download_image(self.ctx.assets(), file).await?.into_rgba8(), file))
-            } else {
-                None
-            };
+            let metallic_r_ao_g_smothness_a =
+                if let Some(file) = get_texture(&mat.metallic_r_ao_g_smothness_a) {
+                    Some((
+                        download_image(self.ctx.assets(), file).await?.into_rgba8(),
+                        file,
+                    ))
+                } else {
+                    None
+                };
             let metallic_gloss_map = if let Some(file) = get_texture(&mat.metallic_gloss_map) {
-                Some((download_image(self.ctx.assets(), file).await?.into_rgba8(), file))
+                Some((
+                    download_image(self.ctx.assets(), file).await?.into_rgba8(),
+                    file,
+                ))
             } else {
                 None
             };
             let occlusion_map = if let Some(file) = get_texture(&mat.occlusion_map) {
-                Some((download_image(self.ctx.assets(), file).await?.into_rgba8(), file))
+                Some((
+                    download_image(self.ctx.assets(), file).await?.into_rgba8(),
+                    file,
+                ))
             } else {
                 None
             };
@@ -296,7 +346,12 @@ impl UnityMaterials {
             };
             let get_image = |image_and_file: Option<(image::RgbaImage, AbsAssetUrl)>| {
                 if let Some((mut image, file)) = image_and_file {
-                    let out_image_path = self.ctx.in_root().relative_path(file.path()).prejoin("materials").with_extension("png");
+                    let out_image_path = self
+                        .ctx
+                        .in_root()
+                        .relative_path(file.path())
+                        .prejoin("materials")
+                        .with_extension("png");
                     let ctx = self.ctx.clone();
                     let config = config.clone();
                     async move {
@@ -314,8 +369,11 @@ impl UnityMaterials {
                     async move { None as Option<AbsAssetUrl> }.boxed()
                 }
             };
-            let (base_color, normalmap, metallic_roughness) =
-                futures::join!(get_image(base_color), get_image(normalmap), get_image(metallic_roughness));
+            let (base_color, normalmap, metallic_roughness) = futures::join!(
+                get_image(base_color),
+                get_image(normalmap),
+                get_image(metallic_roughness)
+            );
             let mat = PbrMaterialDesc {
                 name: Some(name.to_string()),
                 source: None,
@@ -345,17 +403,30 @@ async fn model_from_prefab(
     // std::fs::write("tmp/unity.yml", prefab_file.dump());
     let root_game_objects = prefab_file.get_root_game_objects();
     let model_crate = parking_lot::Mutex::new(ModelCrate::new());
-    model_crate.lock().models.insert(ModelCrate::MAIN, Model(World::new("model")));
-    let roots =
-        join_all(root_game_objects.into_iter().map(|root_game_object| {
-            recursively_create_game_objects(ctx, prefab_file, root_game_object, None, &model_crate, out_model_url)
-        }))
-        .await
-        .into_iter()
-        .collect::<anyhow::Result<Vec<_>>>()?;
+    model_crate
+        .lock()
+        .models
+        .insert(ModelCrate::MAIN, Model(World::new("model")));
+    let roots = join_all(root_game_objects.into_iter().map(|root_game_object| {
+        recursively_create_game_objects(
+            ctx,
+            prefab_file,
+            root_game_object,
+            None,
+            &model_crate,
+            out_model_url,
+        )
+    }))
+    .await
+    .into_iter()
+    .collect::<anyhow::Result<Vec<_>>>()?;
     let mut model_crate = model_crate.into_inner();
-    model_crate.model_world_mut().add_resource(children(), roots);
-    model_crate.model_mut().transform(Mat4::from_cols(Vec4::Y, Vec4::Z, Vec4::X, Vec4::W));
+    model_crate
+        .model_world_mut()
+        .add_resource(children(), roots);
+    model_crate
+        .model_mut()
+        .transform(Mat4::from_cols(Vec4::Y, Vec4::Z, Vec4::X, Vec4::W));
 
     model_crate.create_prefab_from_model();
     Ok(model_crate)
@@ -370,35 +441,59 @@ async fn recursively_create_game_objects<'a: 'async_recursion>(
     model_crate: &parking_lot::Mutex<ModelCrate>,
     out_model_url: &TypedAssetUrl<ModelCrateAssetType>,
 ) -> anyhow::Result<EntityId> {
-    let go_transform =
-        object.get_component::<unity_parser::prefab::Transform>(prefab).map(|t| t.absolute_transform(prefab)).unwrap_or_default();
+    let go_transform = object
+        .get_component::<unity_parser::prefab::Transform>(prefab)
+        .map(|t| t.absolute_transform(prefab))
+        .unwrap_or_default();
     let mut has_lod_group = false;
-    let mut node = if let Some(lod_group) = object.get_component::<unity_parser::prefab::LODGroup>(prefab) {
-        has_lod_group = true;
-        let mut model_lods = Vec::<PbrRenderPrimitiveFromUrl>::new();
-        let mut cutoffs = Vec::new();
-        for (lod_i, lod) in lod_group.lods.iter().enumerate() {
-            let mesh_renderer = lod.get_renderer(prefab).unwrap();
+    let mut node =
+        if let Some(lod_group) = object.get_component::<unity_parser::prefab::LODGroup>(prefab) {
+            has_lod_group = true;
+            let mut model_lods = Vec::<PbrRenderPrimitiveFromUrl>::new();
+            let mut cutoffs = Vec::new();
+            for (lod_i, lod) in lod_group.lods.iter().enumerate() {
+                let mesh_renderer = lod.get_renderer(prefab).unwrap();
 
-            model_lods.extend(
-                primitives_from_unity_mesh_renderer(ctx, prefab, mesh_renderer, model_crate, go_transform, lod_i, out_model_url)
+                model_lods.extend(
+                    primitives_from_unity_mesh_renderer(
+                        ctx,
+                        prefab,
+                        mesh_renderer,
+                        model_crate,
+                        go_transform,
+                        lod_i,
+                        out_model_url,
+                    )
                     .await?
                     .into_iter(),
-            );
-            cutoffs.push(lod.screen_relative_height);
-        }
+                );
+                cutoffs.push(lod.screen_relative_height);
+            }
 
-        Entity::new()
-            .with(lod_cutoffs(), LodCutoffs::new(&cutoffs))
-            .with_default(gpu_lod())
-            .with(pbr_renderer_primitives_from_url(), model_lods)
-    } else if let Some(mesh_renderer) = object.get_component::<unity_parser::prefab::MeshRenderer>(prefab) {
-        let primitives =
-            primitives_from_unity_mesh_renderer(ctx, prefab, mesh_renderer, model_crate, go_transform, 0, out_model_url).await?;
-        Entity::new().with_default(lod_cutoffs()).with_default(gpu_lod()).with(pbr_renderer_primitives_from_url(), primitives)
-    } else {
-        Entity::new()
-    };
+            Entity::new()
+                .with(lod_cutoffs(), LodCutoffs::new(&cutoffs))
+                .with_default(gpu_lod())
+                .with(pbr_renderer_primitives_from_url(), model_lods)
+        } else if let Some(mesh_renderer) =
+            object.get_component::<unity_parser::prefab::MeshRenderer>(prefab)
+        {
+            let primitives = primitives_from_unity_mesh_renderer(
+                ctx,
+                prefab,
+                mesh_renderer,
+                model_crate,
+                go_transform,
+                0,
+                out_model_url,
+            )
+            .await?;
+            Entity::new()
+                .with_default(lod_cutoffs())
+                .with_default(gpu_lod())
+                .with(pbr_renderer_primitives_from_url(), primitives)
+        } else {
+            Entity::new()
+        };
 
     node.set(name(), object.name.clone());
 
@@ -415,8 +510,20 @@ async fn recursively_create_game_objects<'a: 'async_recursion>(
         if let Some(transform) = object.get_component::<unity_parser::prefab::Transform>(prefab) {
             let childs = join_all(transform.children.iter().map(|c| async move {
                 if let Some(PrefabObject::Transform(trans)) = prefab.objects.get(&c.file_id) {
-                    if let Some(PrefabObject::GameObject(obj)) = prefab.objects.get(&trans.game_object.file_id) {
-                        return Ok(Some(recursively_create_game_objects(ctx, prefab, obj, Some(id), model_crate, out_model_url).await?));
+                    if let Some(PrefabObject::GameObject(obj)) =
+                        prefab.objects.get(&trans.game_object.file_id)
+                    {
+                        return Ok(Some(
+                            recursively_create_game_objects(
+                                ctx,
+                                prefab,
+                                obj,
+                                Some(id),
+                                model_crate,
+                                out_model_url,
+                            )
+                            .await?,
+                        ));
                     }
                 }
                 Ok(None)
@@ -428,7 +535,11 @@ async fn recursively_create_game_objects<'a: 'async_recursion>(
             .flatten()
             .collect::<Vec<_>>();
             if !childs.is_empty() {
-                model_crate.lock().model_world_mut().add_component(id, children(), childs).unwrap();
+                model_crate
+                    .lock()
+                    .model_world_mut()
+                    .add_component(id, children(), childs)
+                    .unwrap();
             }
         }
     }
@@ -440,10 +551,22 @@ struct MeshModels {
     force_assimp: bool,
 }
 impl MeshModels {
-    async fn get(&mut self, ctx: &PipelineCtx, mesh_url: &AbsAssetUrl) -> anyhow::Result<Arc<ModelCrate>> {
+    async fn get(
+        &mut self,
+        ctx: &PipelineCtx,
+        mesh_url: &AbsAssetUrl,
+    ) -> anyhow::Result<Arc<ModelCrate>> {
         if !self.models.contains_key(mesh_url) {
             let mut tmp_model = ModelCrate::new();
-            tmp_model.import(ctx.assets(), mesh_url, false, self.force_assimp, create_texture_resolver(ctx)).await?;
+            tmp_model
+                .import(
+                    ctx.assets(),
+                    mesh_url,
+                    false,
+                    self.force_assimp,
+                    create_texture_resolver(ctx),
+                )
+                .await?;
             tmp_model.update_transforms();
             // dump_world_hierarchy_to_tmp_file(tmp_model.model_world());
             self.models.insert(mesh_url.clone(), Arc::new(tmp_model));
@@ -463,39 +586,82 @@ async fn primitives_from_unity_mesh_renderer(
     out_model_url: &TypedAssetUrl<ModelCrateAssetType>,
 ) -> anyhow::Result<Vec<PbrRenderPrimitiveFromUrl>> {
     let game_object = mesh_renderer.get_game_object(prefab).unwrap();
-    let mesh_filter = game_object.get_component::<unity_parser::prefab::MeshFilter>(prefab).unwrap();
+    let mesh_filter = game_object
+        .get_component::<unity_parser::prefab::MeshFilter>(prefab)
+        .unwrap();
     let mesh_guid = mesh_filter.mesh.guid.as_ref().unwrap().clone();
     let mesh_url = ctx.guid_lookup.get(&mesh_guid).unwrap().clone();
-    let mesh_meta_url = ctx.ctx.get_downloadable_url(&mesh_url.add_extension("meta")).unwrap();
-    let mesh_meta = download_unity_yaml(ctx.ctx.assets(), mesh_meta_url).await.unwrap();
+    let mesh_meta_url = ctx
+        .ctx
+        .get_downloadable_url(&mesh_url.add_extension("meta"))
+        .unwrap();
+    let mesh_meta = download_unity_yaml(ctx.ctx.assets(), mesh_meta_url)
+        .await
+        .unwrap();
     if mesh_url.extension_is("asset") {
-        let asset = download_unity_yaml(ctx.ctx.assets(), &mesh_url).await.unwrap();
+        let asset = download_unity_yaml(ctx.ctx.assets(), &mesh_url)
+            .await
+            .unwrap();
         let mut mesh = unity_parser::asset::Asset::from_yaml(asset[0].clone())?.mesh;
         let mat_ref = mesh_renderer.materials[0].clone();
-        let mut mat = ctx.materials_lookup.lock().await.get_by_guid(ctx.config, ctx.guid_lookup, &mat_ref).await.unwrap();
+        let mut mat = ctx
+            .materials_lookup
+            .lock()
+            .await
+            .get_by_guid(ctx.config, ctx.guid_lookup, &mat_ref)
+            .await
+            .unwrap();
         mat = mat.relative_path_from(&out_model_url.abs().unwrap().push("materials").unwrap());
         mesh = mesh.transformed(Mat4::from_cols(-Vec4::X, Vec4::Z, -Vec4::Y, Vec4::W));
         let mut model_crate = model_crate.lock();
         Ok(vec![PbrRenderPrimitiveFromUrl {
             mesh: dotdot_path(model_crate.meshes.insert(mesh_guid.clone(), mesh).path).into(),
-            material: Some(dotdot_path(model_crate.materials.insert(mat_ref.to_string(), mat).path).into()),
+            material: Some(
+                dotdot_path(model_crate.materials.insert(mat_ref.to_string(), mat).path).into(),
+            ),
             lod: lod_i,
         }])
     } else {
-        let model_importer = unity_parser::model_importer::ModelImporter::from_yaml(&mesh_meta[0]).unwrap();
-        let root_node = model_importer.id_to_name.get(&mesh_filter.mesh.file_id).unwrap();
+        let model_importer =
+            unity_parser::model_importer::ModelImporter::from_yaml(&mesh_meta[0]).unwrap();
+        let root_node = model_importer
+            .id_to_name
+            .get(&mesh_filter.mesh.file_id)
+            .unwrap();
         let tmp_model = ctx.mesh_models.lock().await.get(ctx.ctx, &mesh_url).await?;
         let node = tmp_model.model().get_entity_id_by_name(root_node).unwrap();
-        let prims = tmp_model.model_world().get_ref(node, pbr_renderer_primitives_from_url()).unwrap();
+        let prims = tmp_model
+            .model_world()
+            .get_ref(node, pbr_renderer_primitives_from_url())
+            .unwrap();
         let mut res = Vec::new();
         for (prim, mat_ref) in prims.iter().zip(mesh_renderer.materials.iter()) {
-            let mut mat = ctx.materials_lookup.lock().await.get_by_guid(ctx.config, ctx.guid_lookup, mat_ref).await.unwrap();
+            let mut mat = ctx
+                .materials_lookup
+                .lock()
+                .await
+                .get_by_guid(ctx.config, ctx.guid_lookup, mat_ref)
+                .await
+                .unwrap();
             mat = mat.relative_path_from(&out_model_url.abs().unwrap().push("materials").unwrap());
-            let mut mesh = tmp_model.meshes.get_by_path(prim.mesh.path()).unwrap().clone();
+            let mut mesh = tmp_model
+                .meshes
+                .get_by_path(prim.mesh.path())
+                .unwrap()
+                .clone();
             let node_world = get_world_transform(tmp_model.model_world(), node).unwrap();
-            let node_mesh_transform = tmp_model.model_world().get(node, mesh_to_local()).unwrap_or_default();
-            let transform = tmp_model.model().get_transform().unwrap_or_default() * node_world * node_mesh_transform;
-            let file_scale = if model_importer.use_file_scale { Mat4::from_scale(Vec3::ONE * 0.01) } else { Mat4::IDENTITY };
+            let node_mesh_transform = tmp_model
+                .model_world()
+                .get(node, mesh_to_local())
+                .unwrap_or_default();
+            let transform = tmp_model.model().get_transform().unwrap_or_default()
+                * node_world
+                * node_mesh_transform;
+            let file_scale = if model_importer.use_file_scale {
+                Mat4::from_scale(Vec3::ONE * 0.01)
+            } else {
+                Mat4::IDENTITY
+            };
             // This is a complete guess, but basically we're "zeroing" the game objects absolute transform, and "only" using the
             // models absolute transform
             // Also, TODO(fred): We should probably get rid of mesh_to_local and put the mesh transform on the primitive,
@@ -505,8 +671,16 @@ async fn primitives_from_unity_mesh_renderer(
             mesh = mesh.winding_flipped();
             let mut model_crate = model_crate.lock();
             res.push(PbrRenderPrimitiveFromUrl {
-                mesh: dotdot_path(model_crate.meshes.insert(format!("{}_{}", mesh_guid, prim.mesh.path()), mesh).path).into(),
-                material: Some(dotdot_path(model_crate.materials.insert(mat_ref.to_string(), mat).path).into()),
+                mesh: dotdot_path(
+                    model_crate
+                        .meshes
+                        .insert(format!("{}_{}", mesh_guid, prim.mesh.path()), mesh)
+                        .path,
+                )
+                .into(),
+                material: Some(
+                    dotdot_path(model_crate.materials.insert(mat_ref.to_string(), mat).path).into(),
+                ),
                 lod: lod_i,
             });
         }

@@ -42,21 +42,34 @@ impl Metadata {
 /// src/**  This is where you store Rust source files
 /// build  This is the output directory, and is created when building
 /// ambient.toml  This is a metadata file to describe the project
-pub async fn build(physics: Physics, _assets: &AssetCache, path: PathBuf, manifest: &ProjectManifest, optimize: bool) -> Metadata {
+pub async fn build(
+    physics: Physics,
+    _assets: &AssetCache,
+    path: PathBuf,
+    manifest: &ProjectManifest,
+    optimize: bool,
+) -> Metadata {
     log::info!(
         "Building project `{}` ({})",
         manifest.project.id,
-        manifest.project.name.as_deref().unwrap_or_else(|| manifest.project.id.as_ref())
+        manifest
+            .project
+            .name
+            .as_deref()
+            .unwrap_or_else(|| manifest.project.id.as_ref())
     );
 
-    ambient_ecs::ComponentRegistry::get_mut().add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
+    ambient_ecs::ComponentRegistry::get_mut()
+        .add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
 
     let build_path = path.join("build");
     let assets_path = path.join("assets");
 
     std::fs::create_dir_all(&build_path).unwrap();
     build_assets(physics, &assets_path, &build_path).await;
-    build_rust_if_available(&path, manifest, &build_path, optimize).await.unwrap();
+    build_rust_if_available(&path, manifest, &build_path, optimize)
+        .await
+        .unwrap();
     store_manifest(manifest, &build_path).await.unwrap();
     store_metadata(&build_path).await.unwrap()
 }
@@ -102,7 +115,12 @@ async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
     pipelines::process_pipelines(&ctx).await;
 }
 
-async fn build_rust_if_available(project_path: &Path, manifest: &ProjectManifest, build_path: &Path, optimize: bool) -> anyhow::Result<()> {
+async fn build_rust_if_available(
+    project_path: &Path,
+    manifest: &ProjectManifest,
+    build_path: &Path,
+    optimize: bool,
+) -> anyhow::Result<()> {
     let cargo_toml_path = project_path.join("Cargo.toml");
     if !cargo_toml_path.exists() {
         return Ok(());
@@ -118,13 +136,21 @@ async fn build_rust_if_available(project_path: &Path, manifest: &ProjectManifest
                 manifest.project.id
             );
         }
-        None => anyhow::bail!("No [package] present in Cargo.toml for project {}", manifest.project.id.as_ref()),
+        None => anyhow::bail!(
+            "No [package] present in Cargo.toml for project {}",
+            manifest.project.id.as_ref()
+        ),
     }
 
     let rustc = ambient_rustc::Rust::get_system_installation().await?;
 
     for feature in &manifest.build.rust.feature_multibuild {
-        for (path, bytecode) in rustc.build(project_path, manifest.project.id.as_ref(), optimize, &[feature])? {
+        for (path, bytecode) in rustc.build(
+            project_path,
+            manifest.project.id.as_ref(),
+            optimize,
+            &[feature],
+        )? {
             let component_bytecode = ambient_wasm::shared::build::componentize(&bytecode)?;
 
             let output_path = build_path.join(feature);
@@ -141,14 +167,13 @@ async fn build_rust_if_available(project_path: &Path, manifest: &ProjectManifest
 fn get_component_paths(target: &str, build_path: &Path) -> Vec<String> {
     std::fs::read_dir(build_path.join(target))
         .ok()
-        .map(
-            |rd| rd
-                .filter_map(Result::ok)
+        .map(|rd| {
+            rd.filter_map(Result::ok)
                 .map(|p| p.path())
                 .filter(|p| p.extension().unwrap_or_default() == "wasm")
                 .map(|p| path_to_unix_string(p.strip_prefix(build_path).unwrap()))
                 .collect()
-        )
+        })
         .unwrap_or_default()
 }
 

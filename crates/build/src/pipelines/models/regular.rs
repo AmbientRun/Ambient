@@ -14,7 +14,11 @@ use crate::pipelines::{out_asset::asset_id_from_url, OutAsset};
 
 pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset> {
     ctx.process_files(
-        |f| MODEL_EXTENSIONS.iter().any(|x| x == &f.extension().unwrap_or_default().to_lowercase()),
+        |f| {
+            MODEL_EXTENSIONS
+                .iter()
+                .any(|x| x == &f.extension().unwrap_or_default().to_lowercase())
+        },
         move |ctx, file| {
             let config = config.clone();
             async move {
@@ -22,14 +26,24 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
 
                 let mut model_crate = ModelCrate::new();
                 model_crate
-                    .import(&ctx.process_ctx.assets, &file, true, config.force_assimp, create_texture_resolver(&ctx))
+                    .import(
+                        &ctx.process_ctx.assets,
+                        &file,
+                        true,
+                        config.force_assimp,
+                        create_texture_resolver(&ctx),
+                    )
                     .await
                     .with_context(|| format!("Failed to import model {file}"))?;
-                model_crate.model_mut().set_name(file.path().file_name().unwrap());
+                model_crate
+                    .model_mut()
+                    .set_name(file.path().file_name().unwrap());
                 model_crate.create_prefab_from_model();
 
                 let out_model_path = ctx.in_root().relative_path(file.path());
-                config.apply(&ctx, &mut model_crate, &out_model_path).await?;
+                config
+                    .apply(&ctx, &mut model_crate, &out_model_path)
+                    .await?;
 
                 let model_crate_url = ctx.write_model_crate(&model_crate, &out_model_path).await;
 
@@ -42,7 +56,9 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
 
                         tags: Default::default(),
                         categories: Default::default(),
-                        preview: OutAssetPreview::FromModel { url: model_crate_url.model().abs().unwrap() },
+                        preview: OutAssetPreview::FromModel {
+                            url: model_crate_url.model().abs().unwrap(),
+                        },
                         content: OutAssetContent::Content(model_crate_url.prefab().abs().unwrap()),
                         source: Some(file.clone()),
                     });
@@ -57,7 +73,9 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                             tags: Default::default(),
                             categories: Default::default(),
                             preview: OutAssetPreview::None,
-                            content: OutAssetContent::Content(model_crate_url.animation(anim).abs().unwrap()),
+                            content: OutAssetContent::Content(
+                                model_crate_url.animation(anim).abs().unwrap(),
+                            ),
                             source: Some(file.clone()),
                         });
                     }

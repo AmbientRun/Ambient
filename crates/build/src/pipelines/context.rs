@@ -27,13 +27,24 @@ impl PipelineCtx {
         &self.process_ctx.assets
     }
     pub fn in_root(&self) -> AbsAssetUrl {
-        self.process_ctx.in_root.push(&self.root_path).unwrap().as_directory()
+        self.process_ctx
+            .in_root
+            .push(&self.root_path)
+            .unwrap()
+            .as_directory()
     }
     pub fn out_root(&self) -> AbsAssetUrl {
-        self.process_ctx.out_root.push(&self.root_path).unwrap().as_directory()
+        self.process_ctx
+            .out_root
+            .push(&self.root_path)
+            .unwrap()
+            .as_directory()
     }
     pub fn pipeline_path(&self) -> RelativePathBuf {
-        let path = self.process_ctx.in_root.relative_path(self.pipeline_file.path());
+        let path = self
+            .process_ctx
+            .in_root
+            .relative_path(self.pipeline_file.path());
         if let Some(fragment) = self.pipeline_file.0.fragment() {
             path.join(fragment)
         } else {
@@ -41,8 +52,18 @@ impl PipelineCtx {
         }
     }
 
-    pub async fn write_model_crate(&self, model_crate: &ModelCrate, path: &RelativePath) -> TypedAssetUrl<ModelCrateAssetType> {
-        join_all(model_crate.to_items().iter().map(|item| self.write_file(path.join(&item.path), (*item.data).clone()))).await;
+    pub async fn write_model_crate(
+        &self,
+        model_crate: &ModelCrate,
+        path: &RelativePath,
+    ) -> TypedAssetUrl<ModelCrateAssetType> {
+        join_all(
+            model_crate
+                .to_items()
+                .iter()
+                .map(|item| self.write_file(path.join(&item.path), (*item.data).clone())),
+        )
+        .await;
         self.out_root().push(path).unwrap().as_directory().into()
     }
     pub async fn write_file(&self, path: impl AsRef<str>, content: Vec<u8>) -> AbsAssetUrl {
@@ -54,7 +75,11 @@ impl PipelineCtx {
     ) -> Vec<OutAsset> {
         let res = tokio::spawn({
             let ctx = self.clone();
-            async move { process(ctx.clone()).await.with_context(|| format!("In pipeline {}", ctx.pipeline_path())) }
+            async move {
+                process(ctx.clone())
+                    .await
+                    .with_context(|| format!("In pipeline {}", ctx.pipeline_path()))
+            }
         })
         .await
         .with_context(|| format!("In pipeline {}", self.pipeline_path()));
@@ -71,9 +96,18 @@ impl PipelineCtx {
         filter: impl Fn(&AbsAssetUrl) -> bool,
         process_file: impl Fn(PipelineCtx, AbsAssetUrl) -> F + Sync + Send + 'static,
     ) -> Vec<OutAsset> {
-        let sources_filter =
-            self.pipeline.sources.iter().map(|p| glob::Pattern::new(p)).collect::<Result<Vec<_>, glob::PatternError>>().unwrap();
-        let opt_filter = self.process_ctx.input_file_filter.as_ref().and_then(|x| glob::Pattern::new(x).ok());
+        let sources_filter = self
+            .pipeline
+            .sources
+            .iter()
+            .map(|p| glob::Pattern::new(p))
+            .collect::<Result<Vec<_>, glob::PatternError>>()
+            .unwrap();
+        let opt_filter = self
+            .process_ctx
+            .input_file_filter
+            .as_ref()
+            .and_then(|x| glob::Pattern::new(x).ok());
         let files = self
             .files
             .0
@@ -93,7 +127,10 @@ impl PipelineCtx {
             })
             .filter(|f| {
                 let path = self.in_root().relative_path(f.path());
-                opt_filter.as_ref().map(|p| p.matches(path.as_str())).unwrap_or(true)
+                opt_filter
+                    .as_ref()
+                    .map(|p| p.matches(path.as_str()))
+                    .unwrap_or(true)
             })
             .filter(|f| filter(f))
             .cloned()
@@ -122,11 +159,23 @@ impl PipelineCtx {
                         .await;
                         process_file(ctx.clone(), file.clone())
                             .await
-                            .with_context(|| format!("In pipeline {}, at file {}", ctx.pipeline_path(), file_path))
+                            .with_context(|| {
+                                format!(
+                                    "In pipeline {}, at file {}",
+                                    ctx.pipeline_path(),
+                                    file_path
+                                )
+                            })
                     }
                 })
                 .await
-                .with_context(|| format!("In pipeline {}, at file {}", ctx.pipeline_path(), ctx.in_root().relative_path(file.path())));
+                .with_context(|| {
+                    format!(
+                        "In pipeline {}, at file {}",
+                        ctx.pipeline_path(),
+                        ctx.in_root().relative_path(file.path())
+                    )
+                });
                 let err = match res {
                     Ok(Ok(res)) => return res,
                     Ok(Err(err)) => err,
@@ -142,7 +191,12 @@ impl PipelineCtx {
         .collect()
     }
     pub fn get_downloadable_url(&self, url: &AbsAssetUrl) -> anyhow::Result<&AbsAssetUrl> {
-        self.process_ctx.files.0.iter().find(|x| x.path() == url.path()).with_context(|| format!("No such file: {url}"))
+        self.process_ctx
+            .files
+            .0
+            .iter()
+            .find(|x| x.path() == url.path())
+            .with_context(|| format!("No such file: {url}"))
     }
 }
 

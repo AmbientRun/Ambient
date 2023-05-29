@@ -142,22 +142,40 @@ impl FileCollection {
         self.0.iter().any(|x| x == url)
     }
     pub fn find_file_res(&self, glob_pattern: impl AsRef<str>) -> anyhow::Result<&AbsAssetUrl> {
-        self.find_file(&glob_pattern).with_context(|| format!("Failed to find file with pattern {}", glob_pattern.as_ref()))
+        self.find_file(&glob_pattern)
+            .with_context(|| format!("Failed to find file with pattern {}", glob_pattern.as_ref()))
     }
     pub fn find_file(&self, glob_pattern: impl AsRef<str>) -> Option<&AbsAssetUrl> {
         let pattern = glob::Pattern::new(glob_pattern.as_ref()).unwrap();
         self.0.iter().find(|f| pattern.matches(f.path().as_str()))
     }
     pub fn sub_directory(&self, path: &str) -> Self {
-        Self(Arc::new(self.0.iter().filter(|url| url.path().starts_with(path)).cloned().collect()))
+        Self(Arc::new(
+            self.0
+                .iter()
+                .filter(|url| url.path().starts_with(path))
+                .cloned()
+                .collect(),
+        ))
     }
 }
 
-pub async fn download_image(assets: &AssetCache, url: &AbsAssetUrl) -> anyhow::Result<image::DynamicImage> {
+pub async fn download_image(
+    assets: &AssetCache,
+    url: &AbsAssetUrl,
+) -> anyhow::Result<image::DynamicImage> {
     let data = url.download_bytes(assets).await?;
-    if let Some(format) = url.extension().as_ref().and_then(ImageFormat::from_extension) {
-        Ok(image::load_from_memory_with_format(&data, format).with_context(|| format!("Failed to load image {url}"))?)
+    if let Some(format) = url
+        .extension()
+        .as_ref()
+        .and_then(ImageFormat::from_extension)
+    {
+        Ok(image::load_from_memory_with_format(&data, format)
+            .with_context(|| format!("Failed to load image {url}"))?)
     } else {
-        Ok(image::load_from_memory(&data).with_context(|| format!("Failed to load image {url}"))?)
+        Ok(
+            image::load_from_memory(&data)
+                .with_context(|| format!("Failed to load image {url}"))?,
+        )
     }
 }

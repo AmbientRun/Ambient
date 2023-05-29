@@ -2,8 +2,9 @@ use std::sync::Arc;
 
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
+    sampler::SamplerKey,
     shader_module::{BindGroupDesc, ShaderModule},
-    std_assets::{DefaultNormalMapViewKey, DefaultSamplerKey, PixelTextureViewKey},
+    std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},
     texture::{Texture, TextureView},
     texture_loaders::{SplitTextureFromUrl, TextureFromUrl},
 };
@@ -218,7 +219,7 @@ impl PbrMaterial {
                 base_color: texture,
                 normalmap: DefaultNormalMapViewKey.get(assets),
                 metallic_roughness: PixelTextureViewKey::white().get(assets),
-                sampler: DefaultSamplerKey.get(assets),
+                sampler: SamplerKey::LINEAR_CLAMP_TO_EDGE.get(assets),
                 transparent: None,
                 double_sided: None,
                 depth_write_enabled: None,
@@ -440,7 +441,7 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialDesc {
             PixelTextureViewKey::white().get(&assets)
         };
 
-        let sampler = DefaultSamplerKey.get(&assets);
+        let sampler = SamplerKey::LINEAR_CLAMP_TO_EDGE.get(&assets);
 
         let params = PbrMaterialParams {
             base_color_factor: self.base_color_factor.unwrap_or(Vec4::ONE),

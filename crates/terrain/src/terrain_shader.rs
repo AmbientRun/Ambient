@@ -9,9 +9,8 @@ use ambient_editor_derive::ElementEditor;
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule, WgslValue},
-    std_assets::DefaultSamplerKey,
     texture::{Texture, TextureView},
-    texture_loaders::TextureArrayFromUrls,
+    texture_loaders::TextureArrayFromUrls, sampler::SamplerKey,
 };
 use ambient_renderer::{
     materials::pbr_material::PbrMaterialDesc, Material, RendererShader, GLOBALS_BIND_GROUP, MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP,
@@ -217,7 +216,7 @@ impl TerrainMaterial {
             mipmap_filter: wgpu::FilterMode::Linear,
             ..Default::default()
         }));
-        let default_sampler = DefaultSamplerKey.get(&assets);
+        let default_sampler = SamplerKey::LINEAR_CLAMP_TO_EDGE.get(&assets);
         Self {
             id: friendly_id(),
             params,
