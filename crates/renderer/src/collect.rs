@@ -51,7 +51,7 @@ pub struct RendererCollectState {
     pub params: TypedBuffer<RendererCollectParams>,
     pub commands: TypedBuffer<DrawIndexedIndirect>,
     pub counts: TypedBuffer<u32>,
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "unknown"))]
     pub counts_cpu: Arc<Mutex<Vec<u32>>>,
     pub material_layouts: TypedBuffer<UVec2>,
 }
@@ -86,7 +86,7 @@ impl RendererCollectState {
                     | wgpu::BufferUsages::COPY_SRC
                     | wgpu::BufferUsages::INDIRECT,
             ),
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", target_os = "unknown"))]
             counts_cpu: Arc::new(Mutex::new(Vec::new())),
             material_layouts: TypedBuffer::new(
                 gpu,
