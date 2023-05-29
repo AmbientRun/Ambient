@@ -6,3 +6,10 @@ version = "0.0.1"
 
 [dependencies]
 "ambient/deps-assets" = { path = "../assets" }
+
+[messages.spawn]
+name = "Spawn"
+description = "Spawn the asset."
+[messages.spawn.fields]
+spin-speed = "f32"
+spin-direction = "ambient/deps-assets/spin-direction"

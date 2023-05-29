@@ -54,7 +54,7 @@ impl Resolve for Message {
                 match type_ {
                     ResolvableItemId::Unresolved(path) => {
                         let id = context.get_type_id(items, path).with_context(|| {
-                            format!("Failed to resolve type `{path:?}` for field `{name}` of message `{}", self.data.id)
+                            format!("Failed to resolve type `{path:?}` for field `{name}` of message `{}`", self.data.id)
                         })?;
                         ResolvableItemId::Resolved(id)
                     }

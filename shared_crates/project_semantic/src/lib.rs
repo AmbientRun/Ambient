@@ -185,11 +185,19 @@ impl Semantic {
             .organizations
             .entry(organization_key.clone())
             .or_insert_with(|| {
-                self.items.add(Scope::new(ItemData {
-                    parent_id: None,
+                let id = self.items.add(Scope::new(ItemData {
+                    parent_id: Some(self.root_scope),
                     id: organization_key.clone(),
                     is_ambient: false,
-                }))
+                }));
+
+                self.items
+                    .get_mut(self.root_scope)
+                    .unwrap()
+                    .scopes
+                    .insert(organization_key.clone(), (Default::default(), id));
+
+                id
             });
 
         // Check that this scope hasn't already been created for this organization
@@ -257,6 +265,19 @@ impl Semantic {
                 .get_mut(scope_id)?
                 .scopes
                 .insert(id, (file_provider.full_path(include), child_scope_id));
+        }
+
+        for (_, dependency) in manifest.dependencies.iter() {
+            match dependency {
+                Dependency::Path { path } => {
+                    let file_provider = ProxyFileProvider {
+                        provider: file_provider,
+                        base: &path,
+                    };
+
+                    self.add_file(Path::new("ambient.toml"), &file_provider, is_ambient)?;
+                }
+            }
         }
 
         let make_item_data = |item_id: &Identifier| -> ItemData {
