@@ -152,7 +152,7 @@ impl TryFrom<Option<String>> for ProjectPath {
                 let project_path = if project_path.is_absolute() {
                     project_path
                 } else {
-                    ambient_std::path::normalize(&current_dir.join(project_path))
+                    ambient_shared_types::path::normalize(&current_dir.join(project_path))
                 };
 
                 if project_path.exists() && !project_path.is_dir() {

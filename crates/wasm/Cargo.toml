@@ -66,6 +66,6 @@ wit-component = { workspace = true }
 dunce = "1.0"
 
 [build-dependencies]
-ambient_std = { path = "../std", default-features = false }
+ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] }
 wit-bindgen-core = { workspace = true }
 wit-bindgen-rust = { workspace = true }
