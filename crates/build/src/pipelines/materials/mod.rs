@@ -1,6 +1,8 @@
 use std::{io::Cursor, sync::Arc};
 
-use ambient_asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt};
+use ambient_asset_cache::{
+    AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt,
+};
 use ambient_decals::decal;
 use ambient_ecs::Entity;
 use ambient_model_import::{
@@ -53,13 +55,32 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
     let materials = match *config.importer.clone() {
         MaterialsImporter::Single(mat) => {
             ctx.process_single(move |ctx| async move {
-                let name = mat.name.as_ref().or(mat.source.as_ref()).unwrap().to_string();
+                let name = mat
+                    .name
+                    .as_ref()
+                    .or(mat.source.as_ref())
+                    .unwrap()
+                    .to_string();
 
                 let mat_out_url = ctx.out_root().join(ctx.pipeline_path())?.as_directory();
                 let material = mat.to_mat(&ctx, &ctx.in_root(), &mat_out_url).await?;
-                let base_color_url = material.base_color.clone().unwrap().resolve(&mat_out_url).unwrap();
-                let base_color = ImageFromUrl { url: base_color_url }.get(ctx.assets()).await?;
-                let mat_url = ctx.write_file(ctx.pipeline_path().join("mat.json"), serde_json::to_vec(&material).unwrap()).await;
+                let base_color_url = material
+                    .base_color
+                    .clone()
+                    .unwrap()
+                    .resolve(&mat_out_url)
+                    .unwrap();
+                let base_color = ImageFromUrl {
+                    url: base_color_url,
+                }
+                .get(ctx.assets())
+                .await?;
+                let mat_url = ctx
+                    .write_file(
+                        ctx.pipeline_path().join("mat.json"),
+                        serde_json::to_vec(&material).unwrap(),
+                    )
+                    .await;
                 Ok(vec![OutAsset {
                     id: asset_id_from_url(&ctx.out_root()),
                     type_: AssetType::Material,
@@ -80,16 +101,35 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
         let mut res = materials.clone();
         for mat in materials {
             if let OutAssetContent::Content(mat_url) = mat.content {
-                let model_path =
-                    ctx.in_root().relative_path(mat.source.clone().map(|x| x.path()).unwrap_or_else(|| ctx.pipeline_path())).join("decal");
+                let model_path = ctx
+                    .in_root()
+                    .relative_path(
+                        mat.source
+                            .clone()
+                            .map(|x| x.path())
+                            .unwrap_or_else(|| ctx.pipeline_path()),
+                    )
+                    .join("decal");
                 let out_model_url = ctx.out_root().join(&model_path).unwrap();
                 let mut model_crate = ModelCrate::new();
-                let decal_path = out_model_url.path().join("prefabs").relative(mat_url.path());
+                let decal_path = out_model_url
+                    .path()
+                    .join("prefabs")
+                    .relative(mat_url.path());
                 model_crate.create_prefab(
                     Entity::new()
                         .with(decal(), decal_path.into())
-                        .with(collider(), ambient_physics::collider::ColliderDef::Box { size: Vec3::ONE, center: Vec3::ZERO })
-                        .with(collider_type(), ambient_physics::collider::ColliderType::Picking),
+                        .with(
+                            collider(),
+                            ambient_physics::collider::ColliderDef::Box {
+                                size: Vec3::ONE,
+                                center: Vec3::ZERO,
+                            },
+                        )
+                        .with(
+                            collider_type(),
+                            ambient_physics::collider::ColliderType::Picking,
+                        ),
                 );
                 let model_url = ctx.write_model_crate(&model_crate, &model_path).await;
                 res.push(OutAsset {
@@ -151,20 +191,30 @@ pub struct PipelinePbrMaterial {
     pub specular_exponent: Option<f32>,
 }
 impl PipelinePbrMaterial {
-    pub async fn to_mat(&self, ctx: &PipelineCtx, source_root: &AbsAssetUrl, out_root: &AbsAssetUrl) -> anyhow::Result<PbrMaterialDesc> {
-        let pipe_image = |path: &Option<AssetUrl>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
-            let source_root = source_root.clone();
-            let path = path.clone();
-            let ctx = ctx.clone();
-            async move {
-                if let Some(path) = path {
-                    Ok(Some(AssetUrl::from(PipeImage::resolve(&ctx, path.resolve(&source_root).unwrap()).get(ctx.assets()).await?)))
-                } else {
-                    Ok(None)
+    pub async fn to_mat(
+        &self,
+        ctx: &PipelineCtx,
+        source_root: &AbsAssetUrl,
+        out_root: &AbsAssetUrl,
+    ) -> anyhow::Result<PbrMaterialDesc> {
+        let pipe_image =
+            |path: &Option<AssetUrl>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
+                let source_root = source_root.clone();
+                let path = path.clone();
+                let ctx = ctx.clone();
+                async move {
+                    if let Some(path) = path {
+                        Ok(Some(AssetUrl::from(
+                            PipeImage::resolve(&ctx, path.resolve(&source_root).unwrap())
+                                .get(ctx.assets())
+                                .await?,
+                        )))
+                    } else {
+                        Ok(None)
+                    }
                 }
-            }
-            .boxed()
-        };
+                .boxed()
+            };
         Ok(PbrMaterialDesc {
             name: self.name.clone(),
             source: self.source.clone(),
@@ -172,14 +222,20 @@ impl PipelinePbrMaterial {
             opacity: pipe_image(&self.opacity).await?,
             normalmap: pipe_image(&self.normalmap).await?,
             metallic_roughness: if let Some(url) = &self.metallic_roughness {
-                Some(PipeImage::resolve(ctx, url.resolve(source_root).unwrap()).get(ctx.assets()).await?.into())
+                Some(
+                    PipeImage::resolve(ctx, url.resolve(source_root).unwrap())
+                        .get(ctx.assets())
+                        .await?
+                        .into(),
+                )
             } else if let Some(specular) = &self.specular {
                 let specular_exponent = self.specular_exponent.unwrap_or(1.);
                 Some(
                     PipeImage::resolve(ctx, specular.resolve(source_root).unwrap())
                         .transform("mr_from_s", move |image, _| {
                             for p in image.pixels_mut() {
-                                let specular = 1. - (1. - p[1] as f32 / 255.).powf(specular_exponent);
+                                let specular =
+                                    1. - (1. - p[1] as f32 / 255.).powf(specular_exponent);
                                 p[0] = (specular * 255.) as u8;
                                 p[1] = ((1. - specular) * 255.) as u8;
                                 p[2] = 0;
@@ -217,20 +273,34 @@ pub struct FnImageTransformer<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync +
 }
 impl<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static> FnImageTransformer<F> {
     pub fn new_boxed(name: &'static str, func: F) -> Box<dyn ImageTransformer> {
-        Box::new(Self { func: Arc::new(func), name })
+        Box::new(Self {
+            func: Arc::new(func),
+            name,
+        })
     }
 }
-impl<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static> Clone for FnImageTransformer<F> {
+impl<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static> Clone
+    for FnImageTransformer<F>
+{
     fn clone(&self) -> Self {
-        Self { func: self.func.clone(), name: self.name }
+        Self {
+            func: self.func.clone(),
+            name: self.name,
+        }
     }
 }
-impl<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static> std::fmt::Debug for FnImageTransformer<F> {
+impl<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static> std::fmt::Debug
+    for FnImageTransformer<F>
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("FnImageTransformer").field("name", &self.name).finish()
+        f.debug_struct("FnImageTransformer")
+            .field("name", &self.name)
+            .finish()
     }
 }
-impl<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static> ImageTransformer for FnImageTransformer<F> {
+impl<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static> ImageTransformer
+    for FnImageTransformer<F>
+{
     fn transform(&self, image: &mut RgbaImage, second_image: Option<&RgbaImage>) {
         (self.func)(image, second_image)
     }
@@ -251,7 +321,12 @@ impl PipeImage {
         Self::new(ctx.get_downloadable_url(&source).unwrap().clone())
     }
     pub fn new(source: AbsAssetUrl) -> Self {
-        PipeImage { source, second_source: None, transform: None, cap_texture_sizes: None }
+        PipeImage {
+            source,
+            second_source: None,
+            transform: None,
+            cap_texture_sizes: None,
+        }
     }
     pub fn transform<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static>(
         mut self,
@@ -270,18 +345,22 @@ impl PipeImage {
 impl AsyncAssetKey<AssetResult<Arc<AbsAssetUrl>>> for PipeImage {
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<AbsAssetUrl>> {
         let ctx = ProcessCtxKey.get(&assets);
-        let mut image = (*ImageFromUrl { url: self.source.clone() }
-            .get(&assets)
-            .await
-            .with_context(|| format!("Failed to download image {}", self.source))?)
+        let mut image = (*ImageFromUrl {
+            url: self.source.clone(),
+        }
+        .get(&assets)
+        .await
+        .with_context(|| format!("Failed to download image {}", self.source))?)
         .clone();
         let mut extension = "png".to_string();
         let second_image = if let Some(second_source) = &self.second_source {
             Some(
-                ImageFromUrl { url: second_source.clone() }
-                    .get(&assets)
-                    .await
-                    .with_context(|| format!("Failed to download second image {}", self.source))?,
+                ImageFromUrl {
+                    url: second_source.clone(),
+                }
+                .get(&assets)
+                .await
+                .with_context(|| format!("Failed to download second image {}", self.source))?,
             )
         } else {
             None
@@ -298,7 +377,13 @@ impl AsyncAssetKey<AssetResult<Arc<AbsAssetUrl>>> for PipeImage {
             }
             image.write_to(&mut data, ImageOutputFormat::Png).unwrap();
         });
-        Ok(Arc::new((ctx.write_file)(path.with_extension(extension).to_string(), data.into_inner()).await))
+        Ok(Arc::new(
+            (ctx.write_file)(
+                path.with_extension(extension).to_string(),
+                data.into_inner(),
+            )
+            .await,
+        ))
     }
 }
 
@@ -312,6 +397,8 @@ impl AsyncAssetKey<AssetResult<Arc<image::RgbaImage>>> for ImageFromUrl {
         AssetKeepalive::None
     }
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<image::RgbaImage>> {
-        Ok(Arc::new(download_image(&assets, &self.url).await?.into_rgba8()))
+        Ok(Arc::new(
+            download_image(&assets, &self.url).await?.into_rgba8(),
+        ))
     }
 }

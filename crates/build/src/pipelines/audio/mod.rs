@@ -20,7 +20,12 @@ pub struct AudioPipeline {
 
 pub async fn pipeline(ctx: &PipelineCtx, config: AudioPipeline) -> Vec<OutAsset> {
     ctx.process_files(
-        |file| matches!(file.extension().as_deref(), Some("ogg") | Some("wav") | Some("mp3")),
+        |file| {
+            matches!(
+                file.extension().as_deref(),
+                Some("ogg") | Some("wav") | Some("mp3")
+            )
+        },
         move |ctx, file| async move {
             let contents = file.download_bytes(ctx.assets()).await?;
 
@@ -33,7 +38,8 @@ pub async fn pipeline(ctx: &PipelineCtx, config: AudioPipeline) -> Vec<OutAsset>
                     if config.convert {
                         tracing::info!("Processing wav file");
                         let contents = symphonia_convert("wav", contents).await?;
-                        ctx.write_file(rel_path.with_extension("ogg"), contents).await
+                        ctx.write_file(rel_path.with_extension("ogg"), contents)
+                            .await
                     } else {
                         ctx.write_file(&rel_path, contents).await
                     }
@@ -44,13 +50,24 @@ pub async fn pipeline(ctx: &PipelineCtx, config: AudioPipeline) -> Vec<OutAsset>
                     // Make sure to take the contents, to avoid having both the input and output in
                     // memory at once
                     let contents = symphonia_convert(ext, contents).await?;
-                    ctx.write_file(rel_path.with_extension("ogg"), contents).await
+                    ctx.write_file(rel_path.with_extension("ogg"), contents)
+                        .await
                 }
-                other => anyhow::bail!("Audio filetype {:?} is not yet supported", other.unwrap_or_default()),
+                other => anyhow::bail!(
+                    "Audio filetype {:?} is not yet supported",
+                    other.unwrap_or_default()
+                ),
             };
 
-            let root_node = AudioNode::Vorbis { url: content_url.to_string() };
-            let graph_url = ctx.write_file(&rel_path.with_extension(SOUND_GRAPH_EXTENSION), save_audio_graph(root_node).unwrap()).await;
+            let root_node = AudioNode::Vorbis {
+                url: content_url.to_string(),
+            };
+            let graph_url = ctx
+                .write_file(
+                    &rel_path.with_extension(SOUND_GRAPH_EXTENSION),
+                    save_audio_graph(root_node).unwrap(),
+                )
+                .await;
 
             Ok(vec![
                 OutAsset {
@@ -83,7 +100,9 @@ pub async fn pipeline(ctx: &PipelineCtx, config: AudioPipeline) -> Vec<OutAsset>
 }
 
 fn save_audio_graph(root: AudioNode) -> anyhow::Result<Vec<u8>> {
-    Ok(serde_json::to_string_pretty(&root).context("Invalid sound graph")?.into_bytes())
+    Ok(serde_json::to_string_pretty(&root)
+        .context("Invalid sound graph")?
+        .into_bytes())
 }
 
 #[tracing::instrument(level = "info", skip(input))]
@@ -117,15 +136,23 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
     let fmt_opts = FormatOptions::default();
 
     // probe the audio file for its params
-    let probed = symphonia::default::get_probe().format(&hint, mss, &fmt_opts, &meta_opts).context("Failed to probe audio format")?;
+    let probed = symphonia::default::get_probe()
+        .format(&hint, mss, &fmt_opts, &meta_opts)
+        .context("Failed to probe audio format")?;
     let mut format = probed.format;
 
     // find the default audio track for this file
-    let track = format.tracks().iter().find(|t| t.codec_params.codec != CODEC_TYPE_NULL).context("Failed to select default audio track")?;
+    let track = format
+        .tracks()
+        .iter()
+        .find(|t| t.codec_params.codec != CODEC_TYPE_NULL)
+        .context("Failed to select default audio track")?;
 
     // init an audio decoder with default options
     let dec_opts = DecoderOptions::default();
-    let mut decoder = symphonia::default::get_codecs().make(&track.codec_params, &dec_opts).context("Failed to create audio decoder")?;
+    let mut decoder = symphonia::default::get_codecs()
+        .make(&track.codec_params, &dec_opts)
+        .context("Failed to create audio decoder")?;
 
     // randomize an ogg stream serial number
     let stream_serial: i32 = rand::random();
@@ -139,11 +166,19 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
         .context("Audio must have >0 sampling rate")?;
 
     // retrieve the channel count from the input file
-    let channels = decoder.codec_params().channels.context("Audio does not have any channels")?.count();
-    let channels: NonZeroU8 = (channels as u8).try_into().context("Audio must have >0 channels")?;
+    let channels = decoder
+        .codec_params()
+        .channels
+        .context("Audio does not have any channels")?
+        .count();
+    let channels: NonZeroU8 = (channels as u8)
+        .try_into()
+        .context("Audio must have >0 channels")?;
 
     // select a bitrate
-    let bitrate = VorbisBitrateManagementStrategy::QualityVbr { target_quality: 0.9 };
+    let bitrate = VorbisBitrateManagementStrategy::QualityVbr {
+        target_quality: 0.9,
+    };
 
     // create the ogg Vorbis encoder
     let mut encoder = VorbisEncoder::new(
@@ -185,7 +220,9 @@ async fn symphonia_convert(ext: &str, input: Vec<u8>) -> anyhow::Result<Vec<u8>>
     // process the error returned by the loop
     match result {
         // "end of stream" is non-fatal, ignore it
-        Error::IoError(err) if err.kind() == std::io::ErrorKind::UnexpectedEof && err.to_string() == "end of stream" => {}
+        Error::IoError(err)
+            if err.kind() == std::io::ErrorKind::UnexpectedEof
+                && err.to_string() == "end of stream" => {}
         // return every other kind of error
         err => return Err(err.into()),
     }
