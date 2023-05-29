@@ -198,8 +198,10 @@ pub type LoadedFunc = Cb<dyn Fn(GameClient) -> anyhow::Result<CleanupFunc> + Sen
 pub fn GameClientWorld(hooks: &mut Hooks) -> Element {
     let (render_target, set_render_target) =
         hooks.consume_context::<GameClientRenderTarget>().unwrap();
+
     let gpu = hooks.world.resource(gpu()).clone();
     let scale_factor = *hooks.world.resource(window_scale_factor());
+
     MeasureSize::el(
         Image {
             texture: Some(Arc::new(

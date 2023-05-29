@@ -84,6 +84,7 @@ impl ElementComponent for GameClientView {
 
         // When the client is connected, run the update logic each frame
         if game_client.is_some() {
+            tracing::info!("Adding game logic hook");
             run_game_logic(hooks, game_state.clone(), render_target);
         }
 
@@ -174,7 +175,7 @@ impl ElementComponent for GameClientView {
                 .world
                 .add_resource(crate::client::game_client(), Some(game_client.clone()));
 
-            inner
+            FlowRow(vec![Text::el(format!("Connected")), inner]).el()
         } else {
             Centered(vec![FlowColumn::el([FlowRow::el([
                 Text::el("Connecting"),
@@ -206,7 +207,7 @@ fn run_game_logic(
                 .add_event(event.clone());
         }
 
-        // tracing::info!("Drawing game state");
+        tracing::info!("Drawing game state");
         game_state.on_frame(&render_target.0);
     });
 }
