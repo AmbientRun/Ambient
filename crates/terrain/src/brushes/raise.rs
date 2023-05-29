@@ -2,10 +2,9 @@ use std::{borrow::Cow, sync::Arc};
 
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
-    std_assets::DefaultSamplerKey,
     texture::{Texture, TextureView},
     texture_loaders::TextureFromUrl,
-    wgsl_utils::wgsl_interpolate,
+    wgsl_utils::wgsl_interpolate, sampler::SamplerKey,
 };
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
@@ -143,7 +142,7 @@ impl RaiseBrush {
             .get(&assets)
             .await
             .unwrap(),
-            noise_sampler: DefaultSamplerKey.get(&assets),
+            noise_sampler: SamplerKey::LINEAR_CLAMP_TO_EDGE.get(&assets),
         }
     }
     pub fn run(&self, gpu: &Gpu, encoder: &mut wgpu::CommandEncoder, heightmap: &TextureView, size: UVec2, config: &RaiseBrushConfig) {

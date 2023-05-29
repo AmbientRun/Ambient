@@ -3,8 +3,7 @@ use std::sync::Arc;
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
-    std_assets::DefaultSamplerKey,
-    texture::TextureView,
+    texture::TextureView, sampler::SamplerKey,
 };
 use ambient_renderer::{Material, MaterialShader, RendererConfig, RendererShader, StandardShaderKey, MATERIAL_BIND_GROUP};
 use ambient_std::{
@@ -68,7 +67,7 @@ impl TextMaterial {
                 layout: &get_text_layout().get(&assets),
                 entries: &[
                     wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(&font_atlas) },
-                    wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&DefaultSamplerKey.get(&assets)) },
+                    wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&SamplerKey::LINEAR_CLAMP_TO_EDGE.get(&assets)) },
                 ],
                 label: Some("TextMaterial.bind_group"),
             }),

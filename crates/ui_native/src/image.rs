@@ -3,9 +3,9 @@ use std::{borrow::Cow, sync::Arc};
 use ambient_core::{asset_cache, mesh, transform::*, ui_scene};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_gpu::{
-    std_assets::{DefaultNormalMapViewKey, DefaultSamplerKey, PixelTextureViewKey},
+    std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},
     texture::TextureView,
-    texture_loaders::{TextureFromBytes, TextureFromUrl},
+    texture_loaders::{TextureFromBytes, TextureFromUrl}, sampler::SamplerKey,
 };
 use ambient_meshes::UIRectMeshKey;
 use ambient_renderer::{
@@ -45,7 +45,7 @@ impl ElementComponent for Image {
                         base_color: texture,
                         normalmap: DefaultNormalMapViewKey.get(&assets),
                         metallic_roughness: PixelTextureViewKey::white().get(&assets),
-                        sampler: DefaultSamplerKey.get(&assets),
+                        sampler: SamplerKey::LINEAR_CLAMP_TO_EDGE.get(&assets),
                         transparent: None,
                         double_sided: None,
                         depth_write_enabled: None,
