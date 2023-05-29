@@ -28,7 +28,7 @@ ambient_wasm = { path = "../crates/wasm" }
 
 url = "2.3"
 anyhow = "1.0"
-glam = { version = "0.22", features = ["rand", "bytemuck"] }
+glam = { version = "0.24", features = ["rand", "bytemuck"] }
 futures = "0.3"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["time"] }
