@@ -51,7 +51,7 @@ impl Resolve for Component {
     ) -> anyhow::Result<()> {
         let type_id = match &self.type_ {
             ResolvableItemId::Unresolved(ty) => {
-                context.get_type_id(items, &ty).with_context(|| {
+                context.get_type_id(items, ty).with_context(|| {
                     format!(
                         "Failed to resolve type `{ty:?}` for component `{}`",
                         self.data.id

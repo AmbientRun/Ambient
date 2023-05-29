@@ -124,8 +124,8 @@ impl ItemMap {
         self.option_items.get(&id).copied().unwrap()
     }
 
-    pub(crate) fn get_scope<'a>(
-        &'a self,
+    pub(crate) fn get_scope(
+        &self,
         start_scope_id: ItemId<Scope>,
         path: &[Identifier],
     ) -> anyhow::Result<Ref<Scope>> {
@@ -140,8 +140,8 @@ impl ItemMap {
         self.get(scope_id)
     }
 
-    pub(crate) fn get_or_create_scope_mut<'a>(
-        &'a mut self,
+    pub(crate) fn get_or_create_scope_mut(
+        &mut self,
         start_scope_id: ItemId<Scope>,
         path: &[Identifier],
     ) -> anyhow::Result<RefMut<Scope>> {

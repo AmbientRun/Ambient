@@ -198,7 +198,7 @@ impl Semantic {
 
         for include in &manifest.project.includes {
             let child_scope_id =
-                self.add_file_at_non_toplevel(scope_id, &include, file_provider, is_ambient)?;
+                self.add_file_at_non_toplevel(scope_id, include, file_provider, is_ambient)?;
             let id = self.items.get(child_scope_id)?.data().id.clone();
             self.items
                 .get_mut(scope_id)?
