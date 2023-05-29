@@ -14,6 +14,7 @@ pub use ambient_ecs::generated::components::core::network::{
 };
 
 pub type AsyncMutex<T> = tokio::sync::Mutex<T>;
+
 pub mod bytes_ext;
 pub mod client;
 pub mod client_game_state;

@@ -4,9 +4,12 @@ pub(crate) mod implementation;
 mod module;
 
 pub mod build;
+#[cfg(feature = "wit")]
 pub mod conversion;
 pub mod host_guest_state;
 pub mod message;
+
+#[cfg(feature = "wit")]
 pub mod wit;
 
 use std::sync::Arc;
@@ -53,6 +56,7 @@ mod internal {
         module_state_maker: Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<ModuleState> + Sync + Send>,
     });
 }
+
 pub use internal::{
     client_bytecode_from_url, messenger, module, module_bytecode, module_enabled, module_errors,
     module_state, module_state_maker, remote_paired_id,
@@ -140,6 +144,7 @@ pub fn systems() -> SystemGroup {
     )
 }
 
+#[cfg(feature = "wit")]
 pub fn initialize<Bindings: bindings::BindingsBound + 'static>(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,

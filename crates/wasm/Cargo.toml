@@ -59,16 +59,15 @@ tracing = { workspace = true }
 wit-component = { workspace = true }
 >>>>>>> 230aadae (wip: mock out wasm)
 
-[target.'cfg(not(target_os = "unknown"))'.dependencies]
-wasmtime = { workspace = true }
-wasmtime-wasi = { workspace = true }
-wasi-common = { workspace = true }
-wasi-cap-std-sync = { workspace = true }
-ambient_physics = { path = "../physics" }
-physxx = { path = "../../libs/physxx" }
+wasmtime = { workspace = true, optional = true }
+wasmtime-wasi = { workspace = true, optional = true }
+wasi-common = { workspace = true, optional = true }
+wasi-cap-std-sync = { workspace = true, optional = true }
+ambient_physics = { path = "../physics", optional = true }
+physxx = { path = "../../libs/physxx", optional = true }
 
 # Uses physx
-ambient_prefab = { path = "../prefab" }
+ambient_prefab = { path = "../prefab", optional = true }
 
 [target.'cfg(windows)'.build-dependencies]
 tracing = { workspace = true }
@@ -78,3 +77,8 @@ dunce = "1.0"
 ambient_std = { path = "../std", default-features = false }
 wit-bindgen-core = { workspace = true }
 wit-bindgen-rust = { workspace = true }
+
+[features]
+native = ["wasmtime", "wasmtime-wasi", "wasi-common", "wasi-cap-std-sync"]
+physics = ["physxx", "ambient_prefab", "ambient_physics"]
+wit = []

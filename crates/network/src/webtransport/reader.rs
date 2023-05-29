@@ -52,7 +52,6 @@ impl<T: JsCast> StreamReader<T> {
                 })?;
                 self.fut = None;
 
-                tracing::info!("Got: {chunk:?}");
                 let done = Reflect::get(&chunk, &JsValue::from_str("done"))
                     .unwrap()
                     .dyn_into::<Boolean>()
