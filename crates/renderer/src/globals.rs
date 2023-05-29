@@ -9,8 +9,8 @@ use ambient_ecs::{Component, ECSError, World};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     mesh_buffer::MeshBuffer,
+    sampler::SamplerKey,
     shader_module::{BindGroupDesc, DEPTH_FORMAT},
-    std_assets::DefaultSamplerKey,
     texture::{Texture, TextureView},
 };
 use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
@@ -244,7 +244,9 @@ impl ForwardGlobals {
                 entries: &[
                     wgpu::BindGroupEntry {
                         binding: 0,
-                        resource: wgpu::BindingResource::Sampler(&DefaultSamplerKey.get(assets)),
+                        resource: wgpu::BindingResource::Sampler(
+                            &SamplerKey::LINEAR_CLAMP_TO_EDGE.get(assets),
+                        ),
                     },
                     wgpu::BindGroupEntry {
                         binding: 1,
@@ -464,7 +466,7 @@ impl ShadowAndUIGlobals {
                     wgpu::BindGroupEntry {
                         binding: 0,
                         resource: wgpu::BindingResource::Sampler(
-                            &DefaultSamplerKey.get(&self.assets),
+                            &SamplerKey::LINEAR_CLAMP_TO_EDGE.get(&self.assets),
                         ),
                     },
                     wgpu::BindGroupEntry {

@@ -5,6 +5,7 @@ pub mod gpu_run;
 pub mod mesh_buffer;
 pub mod mipmap;
 pub mod multi_buffer;
+pub mod sampler;
 pub mod settings;
 pub mod shader_module;
 pub mod std_assets;
