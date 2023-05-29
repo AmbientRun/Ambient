@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use ambient_project::{ComponentType, Identifier, ItemPath};
 use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
@@ -90,7 +92,7 @@ impl Context {
 pub struct Scope {
     pub data: ItemData,
 
-    pub scopes: IndexMap<Identifier, ItemId<Scope>>,
+    pub scopes: IndexMap<Identifier, (PathBuf, ItemId<Scope>)>,
     pub components: IndexMap<Identifier, ItemId<Component>>,
     pub concepts: IndexMap<Identifier, ItemId<Concept>>,
     pub messages: IndexMap<Identifier, ItemId<Message>>,
@@ -175,8 +177,8 @@ impl ResolveClone for Scope {
         let mut context = context.clone();
         context.push(self_id);
 
-        for id in self.scopes.values().copied() {
-            items.resolve_clone(id, &context)?;
+        for (_, id) in self.scopes.values() {
+            items.resolve_clone(*id, &context)?;
         }
         resolve(&self.components, items, &context)?;
         resolve(&self.concepts, items, &context)?;

@@ -8,6 +8,7 @@ use std::{
     collections::HashMap,
     fmt::{self, Debug, Display},
     marker::PhantomData,
+    path::PathBuf,
 };
 
 #[derive(Clone, PartialEq, Debug, Default)]
@@ -132,22 +133,24 @@ impl ItemMap {
         let mut scope_id = start_scope_id;
         for segment in path.iter() {
             let scope = self.get(scope_id)?;
-            scope_id = *scope
+            scope_id = scope
                 .scopes
                 .get(segment)
-                .with_context(|| format!("failed to find scope {segment} in {scope_id}",))?;
+                .with_context(|| format!("failed to find scope {segment} in {scope_id}"))?
+                .1;
         }
         self.get(scope_id)
     }
 
     pub(crate) fn get_or_create_scope_mut(
         &mut self,
+        manifest_path: PathBuf,
         start_scope_id: ItemId<Scope>,
         path: &[Identifier],
     ) -> anyhow::Result<RefMut<Scope>> {
         let mut scope_id = start_scope_id;
         for segment in path.iter() {
-            let existing_id = self.get(scope_id)?.scopes.get(segment).copied();
+            let existing_id = self.get(scope_id)?.scopes.get(segment).map(|(_, id)| *id);
             scope_id = match existing_id {
                 Some(id) => id,
                 None => {
@@ -159,7 +162,7 @@ impl ItemMap {
                     }));
                     self.get_mut(scope_id)?
                         .scopes
-                        .insert(segment.clone(), new_id);
+                        .insert(segment.clone(), (manifest_path.clone(), new_id));
                     new_id
                 }
             };

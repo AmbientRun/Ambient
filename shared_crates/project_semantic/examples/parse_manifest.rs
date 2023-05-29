@@ -10,30 +10,33 @@ pub fn main() -> anyhow::Result<()> {
 
     struct DiskFileProvider(PathBuf);
     impl FileProvider for DiskFileProvider {
-        fn get(&self, filename: &str) -> std::io::Result<String> {
-            std::fs::read_to_string(self.0.join(filename))
+        fn get(&self, path: &Path) -> std::io::Result<String> {
+            std::fs::read_to_string(self.0.join(path))
+        }
+
+        fn full_path(&self, path: &Path) -> PathBuf {
+            self.0.join(path)
         }
     }
 
+    let ambient_toml = Path::new("ambient.toml");
+
     let mut semantic = Semantic::new()?;
     semantic.add_file(
-        "ambient.toml",
+        ambient_toml,
         &DiskFileProvider(PathBuf::from(SCHEMA_PATH)),
         true,
     )?;
 
-    if let Some(filename) = std::env::args().nth(1) {
-        let file_provider = DiskFileProvider(PathBuf::new());
-        if filename == "all" {
+    if let Some(project_path) = std::env::args().nth(1) {
+        if project_path == "all" {
             for path in all_examples()? {
-                semantic.add_file(
-                    &path.join("ambient.toml").to_string_lossy(),
-                    &file_provider,
-                    false,
-                )?;
+                let file_provider = DiskFileProvider(path);
+                semantic.add_file(ambient_toml, &file_provider, false)?;
             }
         } else {
-            semantic.add_file(&filename, &file_provider, false)?;
+            let file_provider = DiskFileProvider(project_path.into());
+            semantic.add_file(ambient_toml, &file_provider, false)?;
         }
     }
 
@@ -78,7 +81,7 @@ impl Printer {
             self.print_attribute(items, &*items.get(*id)?)?;
         }
 
-        for id in scope.scopes.values() {
+        for (_, id) in scope.scopes.values() {
             self.print_scope(items, &*items.get(*id)?)?;
         }
 

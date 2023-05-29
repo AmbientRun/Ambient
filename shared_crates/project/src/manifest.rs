@@ -42,7 +42,7 @@ pub struct Project {
     #[serde(default)]
     pub authors: Vec<String>,
     #[serde(default)]
-    pub includes: Vec<String>,
+    pub includes: Vec<PathBuf>,
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]

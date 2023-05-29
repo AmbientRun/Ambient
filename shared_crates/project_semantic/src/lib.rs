@@ -1,6 +1,9 @@
-use std::fmt::Debug;
+use std::{
+    fmt::Debug,
+    path::{Path, PathBuf},
+};
 
-use ambient_project::{Identifier, Manifest};
+use ambient_project::{Dependency, Identifier, Manifest};
 use ambient_shared_types::primitive_component_definitions;
 use anyhow::Context as AnyhowContext;
 use convert_case::{Boundary, Case, Casing};
@@ -36,7 +39,22 @@ mod value;
 pub use value::{PrimitiveValue, ResolvableValue, ResolvedValue};
 
 pub trait FileProvider {
-    fn get(&self, filename: &str) -> std::io::Result<String>;
+    fn get(&self, path: &Path) -> std::io::Result<String>;
+    fn full_path(&self, path: &Path) -> PathBuf;
+}
+
+pub struct ProxyFileProvider<'a> {
+    pub provider: &'a dyn FileProvider,
+    pub base: &'a Path,
+}
+impl FileProvider for ProxyFileProvider<'_> {
+    fn get(&self, path: &Path) -> std::io::Result<String> {
+        self.provider.get(&self.base.join(path))
+    }
+
+    fn full_path(&self, path: &Path) -> PathBuf {
+        ambient_shared_types::path::normalize(&self.provider.full_path(&self.base.join(path)))
+    }
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -121,38 +139,45 @@ impl Semantic {
     pub fn add_file_at_non_toplevel(
         &mut self,
         parent_scope: ItemId<Scope>,
-        filename: &str,
+        filename: &Path,
         file_provider: &dyn FileProvider,
         is_ambient: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
         let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
-            .with_context(|| format!("failed to parse toml for {filename}"))?;
+            .with_context(|| format!("failed to parse toml for {filename:?}"))?;
 
         let id = manifest.project.id.clone();
-        self.add_scope_from_manifest(Some(parent_scope), file_provider, manifest, id, is_ambient)
+        self.add_scope_from_manifest(
+            Some(parent_scope),
+            file_provider,
+            manifest,
+            file_provider.full_path(filename),
+            id,
+            is_ambient,
+        )
     }
 
     pub fn add_file(
         &mut self,
-        filename: &str,
+        filename: &Path,
         file_provider: &dyn FileProvider,
         is_ambient: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
         let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
-            .with_context(|| format!("failed to parse toml for {filename}"))?;
+            .with_context(|| format!("failed to parse toml for {filename:?}"))?;
 
         if manifest.project.organization.is_none() {
             anyhow::bail!(
-                "file `{}` has no organization, which is required for a top-level package",
-                filename
+                "file `{:?}` has no organization, which is required for a top-level package",
+                file_provider.full_path(filename)
             );
         }
 
         // Create an organization scope if necessary
         let organization_key = manifest.project.organization.as_ref().with_context(|| {
             format!(
-                "file `{}` has no organization, which is required for a top-level package",
-                filename
+                "file `{:?}` has no organization, which is required for a top-level package",
+                file_provider.full_path(filename)
             )
         })?;
 
@@ -169,29 +194,33 @@ impl Semantic {
 
         // Check that this scope hasn't already been created for this organization
         let scope_id = manifest.project.id.clone();
-        if self
-            .items
-            .get(organization_id)?
-            .scopes
-            .contains_key(&scope_id)
+        if let Some((existing_path, existing_scope_id)) =
+            self.items.get(organization_id)?.scopes.get(&scope_id)
         {
+            if existing_path == &file_provider.full_path(filename) {
+                return Ok(*existing_scope_id);
+            }
+
             anyhow::bail!(
-                "attempted to add {filename}, but a scope already exists at `{scope_id}`"
+                "attempted to add {:?}, but a scope already exists at `{scope_id}`",
+                file_provider.full_path(filename)
             );
         }
 
         // Create a new scope and add it to the organization
+        let manifest_path = file_provider.full_path(filename);
         let item_id = self.add_scope_from_manifest(
             Some(organization_id),
             file_provider,
             manifest,
+            manifest_path.clone(),
             scope_id.clone(),
             is_ambient,
         )?;
         self.items
             .get_mut(organization_id)?
             .scopes
-            .insert(scope_id, item_id);
+            .insert(scope_id, (manifest_path, item_id));
         Ok(item_id)
     }
 
@@ -209,6 +238,7 @@ impl Semantic {
         parent_id: Option<ItemId<Scope>>,
         file_provider: &dyn FileProvider,
         manifest: Manifest,
+        manifest_path: PathBuf,
         id: Identifier,
         is_ambient: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
@@ -226,7 +256,7 @@ impl Semantic {
             self.items
                 .get_mut(scope_id)?
                 .scopes
-                .insert(id, child_scope_id);
+                .insert(id, (file_provider.full_path(include), child_scope_id));
         }
 
         let make_item_data = |item_id: &Identifier| -> ItemData {
@@ -244,7 +274,7 @@ impl Semantic {
 
             let value = items.add(Component::from_project(make_item_data(item), component));
             items
-                .get_or_create_scope_mut(scope_id, scope_path)?
+                .get_or_create_scope_mut(manifest_path.clone(), scope_id, scope_path)?
                 .components
                 .insert(item.clone(), value);
         }
@@ -255,7 +285,7 @@ impl Semantic {
 
             let value = items.add(Concept::from_project(make_item_data(item), concept));
             items
-                .get_or_create_scope_mut(scope_id, scope_path)?
+                .get_or_create_scope_mut(manifest_path.clone(), scope_id, scope_path)?
                 .concepts
                 .insert(item.clone(), value);
         }
@@ -266,7 +296,7 @@ impl Semantic {
 
             let value = items.add(Message::from_project(make_item_data(item), message));
             items
-                .get_or_create_scope_mut(scope_id, scope_path)?
+                .get_or_create_scope_mut(manifest_path.clone(), scope_id, scope_path)?
                 .messages
                 .insert(item.clone(), value);
         }
