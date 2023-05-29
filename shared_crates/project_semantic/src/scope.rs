@@ -1,10 +1,10 @@
-use ambient_project::{ComponentType, Identifier, ItemPath, Manifest};
+use ambient_project::{ComponentType, Identifier, ItemPath};
 use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
-    Attribute, Component, Concept, FileProvider, Item, ItemId, ItemMap, ItemType, ItemValue,
-    Message, Resolve, ResolveClone, Semantic, Type,
+    Attribute, Component, Concept, Item, ItemId, ItemMap, ItemType, ItemValue, Message, Resolve,
+    ResolveClone, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -191,83 +191,6 @@ impl ResolveClone for Scope {
         resolve(&self.attributes, items, &context)?;
 
         Ok(self)
-    }
-}
-impl Scope {
-    pub fn from_manifest(
-        semantic: &mut Semantic,
-        parent: Option<ItemId<Scope>>,
-        file_provider: &dyn FileProvider,
-        manifest: Manifest,
-    ) -> anyhow::Result<ItemId<Scope>> {
-        let scope = Scope {
-            parent,
-            id: manifest.project.id.clone(),
-            organization: manifest.project.organization.clone(),
-
-            scopes: IndexMap::new(),
-            components: IndexMap::new(),
-            concepts: IndexMap::new(),
-            messages: IndexMap::new(),
-            types: IndexMap::new(),
-            attributes: IndexMap::new(),
-        };
-        let scope_id = semantic.items.add(scope);
-
-        for include in &manifest.project.includes {
-            let child_scope_id =
-                semantic.add_file_at_non_toplevel(scope_id, &include, file_provider)?;
-            let id = semantic.items.get(child_scope_id)?.id.clone();
-            semantic
-                .items
-                .get_mut(scope_id)?
-                .scopes
-                .insert(id, child_scope_id);
-        }
-
-        let items = &mut semantic.items;
-        for (path, component) in manifest.components.iter() {
-            let path = path.as_path();
-            let (scope_path, item) = path.scope_and_item();
-
-            let value = items.add(Component::from_project(scope_id, item.clone(), component));
-            items
-                .get_or_create_scope_mut(scope_id, scope_path)?
-                .components
-                .insert(item.clone(), value);
-        }
-
-        for (path, concept) in manifest.concepts.iter() {
-            let path = path.as_path();
-            let (scope_path, item) = path.scope_and_item();
-
-            let value = items.add(Concept::from_project(scope_id, item.clone(), concept));
-            items
-                .get_or_create_scope_mut(scope_id, scope_path)?
-                .concepts
-                .insert(item.clone(), value);
-        }
-
-        for (path, message) in manifest.messages.iter() {
-            let path = path.as_path();
-            let (scope_path, item) = path.scope_and_item();
-
-            let value = items.add(Message::from_project(scope_id, item.clone(), message));
-            items
-                .get_or_create_scope_mut(scope_id, scope_path)?
-                .messages
-                .insert(item.clone(), value);
-        }
-
-        for (segment, enum_ty) in manifest.enums.iter() {
-            let enum_id = items.add(Type::from_project_enum(scope_id, segment.clone(), enum_ty));
-            items
-                .get_mut(scope_id)?
-                .types
-                .insert(segment.clone(), enum_id);
-        }
-
-        Ok(scope_id)
     }
 }
 

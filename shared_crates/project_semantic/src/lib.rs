@@ -123,7 +123,7 @@ impl Semantic {
         let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename}"))?;
 
-        Scope::from_manifest(self, Some(parent_scope), file_provider, manifest)
+        self.add_scope_from_manifest(Some(parent_scope), file_provider, manifest)
     }
 
     pub fn add_file(
@@ -143,7 +143,7 @@ impl Semantic {
             anyhow::bail!("file `{}` has no organization, which is required", filename);
         }
 
-        let item_id = Scope::from_manifest(self, None, file_provider, manifest)?;
+        let item_id = self.add_scope_from_manifest(None, file_provider, manifest)?;
         self.scopes.insert(scope_id, item_id);
         Ok(item_id)
     }
@@ -154,5 +154,81 @@ impl Semantic {
                 .resolve_clone(scope_id, &Context::new(self.root_scope))?;
         }
         Ok(())
+    }
+}
+impl Semantic {
+    fn add_scope_from_manifest(
+        &mut self,
+        parent: Option<ItemId<Scope>>,
+        file_provider: &dyn FileProvider,
+        manifest: Manifest,
+    ) -> anyhow::Result<ItemId<Scope>> {
+        let scope = Scope {
+            parent,
+            id: manifest.project.id.clone(),
+            organization: manifest.project.organization.clone(),
+
+            scopes: IndexMap::new(),
+            components: IndexMap::new(),
+            concepts: IndexMap::new(),
+            messages: IndexMap::new(),
+            types: IndexMap::new(),
+            attributes: IndexMap::new(),
+        };
+        let scope_id = self.items.add(scope);
+
+        for include in &manifest.project.includes {
+            let child_scope_id =
+                self.add_file_at_non_toplevel(scope_id, &include, file_provider)?;
+            let id = self.items.get(child_scope_id)?.id.clone();
+            self.items
+                .get_mut(scope_id)?
+                .scopes
+                .insert(id, child_scope_id);
+        }
+
+        let items = &mut self.items;
+        for (path, component) in manifest.components.iter() {
+            let path = path.as_path();
+            let (scope_path, item) = path.scope_and_item();
+
+            let value = items.add(Component::from_project(scope_id, item.clone(), component));
+            items
+                .get_or_create_scope_mut(scope_id, scope_path)?
+                .components
+                .insert(item.clone(), value);
+        }
+
+        for (path, concept) in manifest.concepts.iter() {
+            let path = path.as_path();
+            let (scope_path, item) = path.scope_and_item();
+
+            let value = items.add(Concept::from_project(scope_id, item.clone(), concept));
+            items
+                .get_or_create_scope_mut(scope_id, scope_path)?
+                .concepts
+                .insert(item.clone(), value);
+        }
+
+        for (path, message) in manifest.messages.iter() {
+            let path = path.as_path();
+            let (scope_path, item) = path.scope_and_item();
+
+            let value = items.add(Message::from_project(scope_id, item.clone(), message));
+            items
+                .get_or_create_scope_mut(scope_id, scope_path)?
+                .messages
+                .insert(item.clone(), value);
+        }
+
+        for (segment, enum_ty) in manifest.enums.iter() {
+            let enum_id = items.add(Type::from_project_enum(scope_id, segment.clone(), enum_ty));
+            items
+                .get_mut(scope_id)?
+                .types
+                .insert(segment.clone(), enum_id);
+        }
+
+        Ok(scope_id)
     }
 }
