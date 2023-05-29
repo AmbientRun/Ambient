@@ -1,0 +1,8 @@
+[project]
+id = "deps-assets"
+organization = "ambient"
+name = "Dependencies (Assets)"
+version = "0.0.1"
+
+[components]
+spin-speed = { type = "F32", name = "Spin speed" }

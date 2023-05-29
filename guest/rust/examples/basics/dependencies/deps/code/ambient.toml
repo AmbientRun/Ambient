@@ -1,0 +1,8 @@
+[project]
+id = "deps-code"
+organization = "ambient"
+name = "Dependencies (Code)"
+version = "0.0.1"
+
+[dependencies]
+"ambient/deps-assets" = { path = "../assets" }

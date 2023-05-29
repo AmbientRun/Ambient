@@ -151,7 +151,9 @@ impl Semantic {
 
         let scope_id = manifest.project.id.clone();
         if self.scopes.contains_key(&scope_id) {
-            anyhow::bail!("file `{}` has already been added as {}", filename, scope_id);
+            anyhow::bail!(
+                "attempted to add {filename}, but a scope already exists at `{scope_id}`"
+            );
         }
 
         if manifest.project.organization.is_none() {
