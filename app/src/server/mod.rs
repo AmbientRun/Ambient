@@ -42,6 +42,7 @@ pub fn start(
     metadata: &ambient_build::Metadata,
     crypto: Crypto,
 ) -> u16 {
+    log::info!("Sanity check ip {:?}", local_ip_address::local_ip());
     log::info!("Creating server");
     let host_cli = cli.host().unwrap();
     let quic_interface_port = host_cli.quic_interface_port;
