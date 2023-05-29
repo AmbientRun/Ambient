@@ -314,6 +314,7 @@ fn main() -> anyhow::Result<()> {
             }
         };
 
+        tracing::debug!("Local ip {:?}", local_ip_address::local_ip());
         let port = server::start(
             &runtime,
             assets.clone(),
