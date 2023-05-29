@@ -18,8 +18,7 @@ pub struct ItemMap {
 }
 impl ItemMap {
     pub fn add<T: Item>(&mut self, item: T) -> ItemId<T> {
-        let item_id = item.id().clone();
-        let parent_id = item.parent();
+        let data = item.data().clone();
 
         let value = item.into_item_value();
         let is_type = matches!(value, ItemValue::Type(_));
@@ -29,12 +28,12 @@ impl ItemMap {
         if is_type {
             let new_id = ItemId::<Type>(new_id.0, PhantomData);
 
-            let parent_id = parent_id.expect("type must have a parent");
-
             let vec_id = self.add_raw(
                 Type::new(
-                    parent_id,
-                    Identifier::new(format!("vec-{item_id}")).unwrap(),
+                    ItemData {
+                        id: Identifier::new(format!("vec-{}", data.id)).unwrap(),
+                        ..data
+                    },
                     TypeInner::Vec(new_id),
                 )
                 .into_item_value(),
@@ -43,8 +42,10 @@ impl ItemMap {
 
             let option_id = self.add_raw(
                 Type::new(
-                    parent_id,
-                    Identifier::new(format!("option-{item_id}")).unwrap(),
+                    ItemData {
+                        id: Identifier::new(format!("option-{}", data.id)).unwrap(),
+                        ..data
+                    },
                     TypeInner::Option(new_id),
                 )
                 .into_item_value(),
@@ -150,10 +151,14 @@ impl ItemMap {
             scope_id = match existing_id {
                 Some(id) => id,
                 None => {
+                    let parent_scope_data = self.get(scope_id)?.data().clone();
                     let new_id = self.add(Scope {
-                        parent: Some(scope_id),
+                        data: ItemData {
+                            parent_id: Some(scope_id),
+                            id: segment.clone(),
+                            ..parent_scope_data
+                        },
                         organization: None,
-                        id: segment.clone(),
                         scopes: Default::default(),
                         components: Default::default(),
                         concepts: Default::default(),
@@ -197,6 +202,19 @@ pub enum ItemValue {
     Scope(Scope),
 }
 
+#[derive(Clone, PartialEq, Debug, Eq)]
+pub struct ItemData {
+    /// The parent scope of this item, if available
+    pub parent_id: Option<ItemId<Scope>>,
+    /// The identifier of this item
+    pub id: Identifier,
+    /// Whether this item is ambient: that is, whether or not generated code should behave as though it's present,
+    /// but not actually generate any code for it.
+    ///
+    /// Similar to [TypeScript ambient modules](https://www.typescriptlang.org/docs/handbook/modules.html#ambient-modules).
+    pub is_ambient: bool,
+}
+
 pub trait Item: Clone {
     const TYPE: ItemType;
     type Unresolved: Eq + Debug;
@@ -204,8 +222,8 @@ pub trait Item: Clone {
     fn from_item_value(value: &ItemValue) -> Option<&Self>;
     fn from_item_value_mut(value: &mut ItemValue) -> Option<&mut Self>;
     fn into_item_value(self) -> ItemValue;
-    fn parent(&self) -> Option<ItemId<Scope>>;
-    fn id(&self) -> &Identifier;
+
+    fn data(&self) -> &ItemData;
 }
 
 /// This item supports being resolved in-place.

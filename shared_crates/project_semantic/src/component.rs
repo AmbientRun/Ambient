@@ -1,15 +1,15 @@
-use ambient_project::{Identifier, ItemPathBuf};
+use ambient_project::ItemPathBuf;
 use anyhow::Context as AnyhowContext;
 
 use crate::{
-    Attribute, Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
-    ResolvableValue, Resolve, Scope, Type,
+    Attribute, Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
+    ResolvableValue, Resolve, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Component {
-    pub parent: ItemId<Scope>,
-    pub id: Identifier,
+    pub data: ItemData,
+
     pub name: Option<String>,
     pub description: Option<String>,
     pub type_: ResolvableItemId<Type>,
@@ -38,12 +38,8 @@ impl Item for Component {
         ItemValue::Component(self)
     }
 
-    fn parent(&self) -> Option<ItemId<Scope>> {
-        Some(self.parent)
-    }
-
-    fn id(&self) -> &Identifier {
-        &self.id
+    fn data(&self) -> &ItemData {
+        &self.data
     }
 }
 impl Resolve for Component {
@@ -58,7 +54,7 @@ impl Resolve for Component {
                 context.get_type_id(items, &ty).with_context(|| {
                     format!(
                         "Failed to resolve type `{ty:?}` for component `{}`",
-                        self.id
+                        self.data.id
                     )
                 })?
             }
@@ -75,7 +71,7 @@ impl Resolve for Component {
                         .with_context(|| {
                             format!(
                                 "Failed to resolve attribute `{path}` for component `{}`",
-                                self.id
+                                self.data.id
                             )
                         })?;
                     ResolvableItemId::Resolved(id)
@@ -93,14 +89,9 @@ impl Resolve for Component {
     }
 }
 impl Component {
-    pub(crate) fn from_project(
-        parent: ItemId<Scope>,
-        id: Identifier,
-        value: &ambient_project::Component,
-    ) -> Self {
+    pub(crate) fn from_project(data: ItemData, value: &ambient_project::Component) -> Self {
         Self {
-            parent,
-            id,
+            data,
             name: value.name.clone(),
             description: value.description.clone(),
             type_: ResolvableItemId::Unresolved(value.type_.clone()),

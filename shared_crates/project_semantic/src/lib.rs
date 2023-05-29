@@ -11,7 +11,7 @@ mod scope;
 pub use scope::{Context, Scope};
 
 mod item;
-pub use item::{Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId};
+pub use item::{Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId};
 use item::{Resolve, ResolveClone};
 
 mod component;
@@ -57,9 +57,12 @@ impl Semantic {
 
         let mut items = ItemMap::default();
         let root_scope = items.add(Scope {
-            parent: None,
+            data: ItemData {
+                parent_id: None,
+                id: Identifier::default(),
+                is_ambient: true,
+            },
             organization: None,
-            id: Identifier::default(),
             scopes: IndexMap::new(),
             components: IndexMap::new(),
             concepts: IndexMap::new(),
@@ -86,7 +89,14 @@ impl Semantic {
                 .map_err(anyhow::Error::msg)
                 .context("standard value was not valid kebab-case")?;
 
-            let ty = Type::new(root_scope, id.clone(), TypeInner::Primitive(pt));
+            let ty = Type::new(
+                ItemData {
+                    parent_id: Some(root_scope),
+                    id: id.clone(),
+                    is_ambient: true,
+                },
+                TypeInner::Primitive(pt),
+            );
             let item_id = sem.items.add(ty);
             sem.items.get_mut(sem.root_scope)?.types.insert(id, item_id);
         }
@@ -102,8 +112,11 @@ impl Semantic {
                 .map_err(anyhow::Error::msg)
                 .context("standard value was not valid kebab-case")?;
             let item_id = sem.items.add(Attribute {
-                parent: sem.root_scope,
-                id: id.clone(),
+                data: ItemData {
+                    parent_id: Some(sem.root_scope),
+                    id: id.clone(),
+                    is_ambient: true,
+                },
             });
             sem.items
                 .get_mut(sem.root_scope)?
@@ -119,17 +132,19 @@ impl Semantic {
         parent_scope: ItemId<Scope>,
         filename: &str,
         file_provider: &dyn FileProvider,
+        is_ambient: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
         let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename}"))?;
 
-        self.add_scope_from_manifest(Some(parent_scope), file_provider, manifest)
+        self.add_scope_from_manifest(Some(parent_scope), file_provider, manifest, is_ambient)
     }
 
     pub fn add_file(
         &mut self,
         filename: &str,
         file_provider: &dyn FileProvider,
+        is_ambient: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
         let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename}"))?;
@@ -143,7 +158,7 @@ impl Semantic {
             anyhow::bail!("file `{}` has no organization, which is required", filename);
         }
 
-        let item_id = self.add_scope_from_manifest(None, file_provider, manifest)?;
+        let item_id = self.add_scope_from_manifest(None, file_provider, manifest, is_ambient)?;
         self.scopes.insert(scope_id, item_id);
         Ok(item_id)
     }
@@ -159,13 +174,17 @@ impl Semantic {
 impl Semantic {
     fn add_scope_from_manifest(
         &mut self,
-        parent: Option<ItemId<Scope>>,
+        parent_id: Option<ItemId<Scope>>,
         file_provider: &dyn FileProvider,
         manifest: Manifest,
+        is_ambient: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
         let scope = Scope {
-            parent,
-            id: manifest.project.id.clone(),
+            data: ItemData {
+                parent_id,
+                id: manifest.project.id.clone(),
+                is_ambient,
+            },
             organization: manifest.project.organization.clone(),
 
             scopes: IndexMap::new(),
@@ -179,20 +198,28 @@ impl Semantic {
 
         for include in &manifest.project.includes {
             let child_scope_id =
-                self.add_file_at_non_toplevel(scope_id, &include, file_provider)?;
-            let id = self.items.get(child_scope_id)?.id.clone();
+                self.add_file_at_non_toplevel(scope_id, &include, file_provider, is_ambient)?;
+            let id = self.items.get(child_scope_id)?.data().id.clone();
             self.items
                 .get_mut(scope_id)?
                 .scopes
                 .insert(id, child_scope_id);
         }
 
+        let make_item_data = |item_id: &Identifier| -> ItemData {
+            ItemData {
+                parent_id: Some(scope_id),
+                id: item_id.clone(),
+                is_ambient,
+            }
+        };
+
         let items = &mut self.items;
         for (path, component) in manifest.components.iter() {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            let value = items.add(Component::from_project(scope_id, item.clone(), component));
+            let value = items.add(Component::from_project(make_item_data(item), component));
             items
                 .get_or_create_scope_mut(scope_id, scope_path)?
                 .components
@@ -203,7 +230,7 @@ impl Semantic {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            let value = items.add(Concept::from_project(scope_id, item.clone(), concept));
+            let value = items.add(Concept::from_project(make_item_data(item), concept));
             items
                 .get_or_create_scope_mut(scope_id, scope_path)?
                 .concepts
@@ -214,7 +241,7 @@ impl Semantic {
             let path = path.as_path();
             let (scope_path, item) = path.scope_and_item();
 
-            let value = items.add(Message::from_project(scope_id, item.clone(), message));
+            let value = items.add(Message::from_project(make_item_data(item), message));
             items
                 .get_or_create_scope_mut(scope_id, scope_path)?
                 .messages
@@ -222,7 +249,7 @@ impl Semantic {
         }
 
         for (segment, enum_ty) in manifest.enums.iter() {
-            let enum_id = items.add(Type::from_project_enum(scope_id, segment.clone(), enum_ty));
+            let enum_id = items.add(Type::from_project_enum(make_item_data(segment), enum_ty));
             items
                 .get_mut(scope_id)?
                 .types

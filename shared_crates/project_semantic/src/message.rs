@@ -3,13 +3,13 @@ use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
-    Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId, Resolve, Scope, Type,
+    Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId, Resolve, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Message {
-    pub id: Identifier,
-    pub parent: ItemId<Scope>,
+    data: ItemData,
+
     pub description: Option<String>,
     pub fields: IndexMap<Identifier, ResolvableItemId<Type>>,
 }
@@ -36,12 +36,8 @@ impl Item for Message {
         ItemValue::Message(self)
     }
 
-    fn id(&self) -> &Identifier {
-        &self.id
-    }
-
-    fn parent(&self) -> Option<ItemId<Scope>> {
-        Some(self.parent)
+    fn data(&self) -> &ItemData {
+        &self.data
     }
 }
 impl Resolve for Message {
@@ -58,7 +54,7 @@ impl Resolve for Message {
                 match type_ {
                     ResolvableItemId::Unresolved(path) => {
                         let id = context.get_type_id(items, path).with_context(|| {
-                            format!("Failed to resolve type `{path:?}` for field `{name}` of message `{}", self.id)
+                            format!("Failed to resolve type `{path:?}` for field `{name}` of message `{}", self.data.id)
                         })?;
                         ResolvableItemId::Resolved(id)
                     }
@@ -73,14 +69,9 @@ impl Resolve for Message {
 }
 
 impl Message {
-    pub(crate) fn from_project(
-        parent: ItemId<Scope>,
-        id: Identifier,
-        value: &ambient_project::Message,
-    ) -> Self {
+    pub(crate) fn from_project(data: ItemData, value: &ambient_project::Message) -> Self {
         Message {
-            id,
-            parent,
+            data,
             description: value.description.clone(),
             fields: value
                 .fields

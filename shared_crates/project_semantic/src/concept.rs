@@ -1,16 +1,16 @@
-use ambient_project::{Identifier, ItemPathBuf};
+use ambient_project::ItemPathBuf;
 use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
-    Component, Context, Item, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
-    ResolvableValue, Resolve, Scope,
+    Component, Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
+    ResolvableValue, Resolve,
 };
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Concept {
-    pub parent: ItemId<Scope>,
-    pub id: Identifier,
+    data: ItemData,
+
     pub name: Option<String>,
     pub description: Option<String>,
     pub extends: Vec<ResolvableItemId<Concept>>,
@@ -38,12 +38,8 @@ impl Item for Concept {
         ItemValue::Concept(self)
     }
 
-    fn parent(&self) -> Option<ItemId<Scope>> {
-        Some(self.parent)
-    }
-
-    fn id(&self) -> &Identifier {
-        &self.id
+    fn data(&self) -> &ItemData {
+        &self.data
     }
 }
 impl Resolve for Concept {
@@ -62,7 +58,7 @@ impl Resolve for Concept {
                         .with_context(|| {
                             format!(
                                 "Failed to resolve concept `{}` for concept `{}",
-                                path, self.id
+                                path, self.data.id
                             )
                         })?;
                     ResolvableItemId::Resolved(id)
@@ -80,7 +76,7 @@ impl Resolve for Concept {
                     .with_context(|| {
                         format!(
                             "Failed to get component `{}` for concept `{}",
-                            path, self.id
+                            path, self.data.id
                         )
                     })?,
                 ResolvableItemId::Resolved(id) => *id,
@@ -90,7 +86,8 @@ impl Resolve for Concept {
                 component.type_.as_resolved().with_context(|| {
                     format!(
                         "Failed to get type for component `{}` for concept `{}`",
-                        component.id, self.id
+                        component.data().id,
+                        self.data.id
                     )
                 })?
             };
@@ -105,14 +102,9 @@ impl Resolve for Concept {
     }
 }
 impl Concept {
-    pub(crate) fn from_project(
-        parent: ItemId<Scope>,
-        id: Identifier,
-        value: &ambient_project::Concept,
-    ) -> Self {
+    pub(crate) fn from_project(data: ItemData, value: &ambient_project::Concept) -> Self {
         Concept {
-            parent,
-            id,
+            data,
             name: value.name.clone(),
             description: value.description.clone(),
             extends: value

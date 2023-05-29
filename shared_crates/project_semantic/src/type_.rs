@@ -1,12 +1,13 @@
 use ambient_project::{ComponentType, Identifier};
 use indexmap::IndexMap;
 
-use crate::{Context, Item, ItemId, ItemMap, ItemType, ItemValue, PrimitiveType, Resolve, Scope};
+use crate::{
+    Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, PrimitiveType, Resolve,
+};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Type {
-    pub parent: ItemId<Scope>,
-    pub id: Identifier,
+    pub data: ItemData,
     pub inner: TypeInner,
 }
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -17,18 +18,13 @@ pub enum TypeInner {
     Enum(Enum),
 }
 impl Type {
-    pub fn new(parent: ItemId<Scope>, id: Identifier, inner: TypeInner) -> Self {
-        Self { parent, id, inner }
+    pub fn new(data: ItemData, inner: TypeInner) -> Self {
+        Self { data, inner }
     }
 
-    pub(crate) fn from_project_enum(
-        parent: ItemId<Scope>,
-        id: Identifier,
-        value: &ambient_project::Enum,
-    ) -> Self {
+    pub(crate) fn from_project_enum(data: ItemData, value: &ambient_project::Enum) -> Self {
         Self::new(
-            parent,
-            id,
+            data,
             TypeInner::Enum(Enum {
                 members: value.0.clone(),
             }),
@@ -57,12 +53,8 @@ impl Item for Type {
         ItemValue::Type(self)
     }
 
-    fn id(&self) -> &Identifier {
-        &self.id
-    }
-
-    fn parent(&self) -> Option<ItemId<Scope>> {
-        Some(self.parent)
+    fn data(&self) -> &ItemData {
+        &self.data
     }
 }
 impl Resolve for Type {

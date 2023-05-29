@@ -3,8 +3,8 @@ use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
 use crate::{
-    Attribute, Component, Concept, Item, ItemId, ItemMap, ItemType, ItemValue, Message, Resolve,
-    ResolveClone, Type,
+    Attribute, Component, Concept, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, Message,
+    Resolve, ResolveClone, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -88,8 +88,8 @@ impl Context {
 
 #[derive(Clone, PartialEq)]
 pub struct Scope {
-    pub parent: Option<ItemId<Scope>>,
-    pub id: Identifier,
+    pub data: ItemData,
+
     pub organization: Option<Identifier>,
 
     pub scopes: IndexMap<Identifier, ItemId<Scope>>,
@@ -102,7 +102,7 @@ pub struct Scope {
 impl std::fmt::Debug for Scope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut ds = f.debug_struct("Scope");
-        ds.field("id", &self.id);
+        ds.field("id", &self.data);
 
         if !self.components.is_empty() {
             ds.field("components", &self.components);
@@ -149,12 +149,8 @@ impl Item for Scope {
         ItemValue::Scope(self)
     }
 
-    fn parent(&self) -> Option<ItemId<Scope>> {
-        self.parent
-    }
-
-    fn id(&self) -> &Identifier {
-        &self.id
+    fn data(&self) -> &ItemData {
+        &self.data
     }
 }
 /// Scope uses `ResolveClone` because scopes can be accessed during resolution
