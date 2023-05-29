@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
@@ -21,6 +23,8 @@ pub struct Manifest {
     #[serde(default)]
     #[serde(alias = "enum")]
     pub enums: IndexMap<Identifier, Enum>,
+    #[serde(default)]
+    pub dependencies: IndexMap<ItemPathBuf, Dependency>,
 }
 impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, toml::de::Error> {
@@ -60,17 +64,29 @@ impl Default for BuildRust {
     }
 }
 
+#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
+#[serde(untagged)]
+pub enum Dependency {
+    Path { path: PathBuf },
+}
+
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
     use indexmap::IndexMap;
 
     use crate::{
-        Build, BuildRust, Component, ComponentType, Concept, ContainerType, Enum, Identifier,
-        ItemPathBuf, Manifest, Project, Version, VersionSuffix,
+        Build, BuildRust, Component, ComponentType, Concept, ContainerType, Dependency, Enum,
+        Identifier, ItemPathBuf, Manifest, Project, Version, VersionSuffix,
     };
 
     fn i(s: &str) -> Identifier {
         Identifier::new(s).unwrap()
+    }
+
+    fn ipb(s: &str) -> ItemPathBuf {
+        ItemPathBuf::new(s).unwrap()
     }
 
     #[test]
@@ -109,7 +125,7 @@ mod tests {
                     }
                 },
                 components: IndexMap::from_iter([(
-                    ItemPathBuf::new("cell").unwrap(),
+                    ipb("cell"),
                     Component {
                         name: Some("Cell".to_string()),
                         description: Some("The ID of the cell this player is in".to_string()),
@@ -120,20 +136,18 @@ mod tests {
                     .into()
                 )]),
                 concepts: IndexMap::from_iter([(
-                    ItemPathBuf::new("cell").unwrap(),
+                    ipb("cell"),
                     Concept {
                         name: Some("Cell".to_string()),
                         description: Some("A cell object".to_string()),
                         extends: vec![],
-                        components: IndexMap::from_iter([(
-                            ItemPathBuf::new("cell").unwrap(),
-                            toml::Value::Integer(0)
-                        )])
+                        components: IndexMap::from_iter([(ipb("cell"), toml::Value::Integer(0))])
                     }
                     .into()
                 )]),
-                messages: IndexMap::new(),
-                enums: IndexMap::new(),
+                messages: Default::default(),
+                enums: Default::default(),
+                dependencies: Default::default(),
             })
         )
     }
@@ -167,10 +181,11 @@ mod tests {
                         feature_multibuild: vec!["client".to_string()]
                     }
                 },
-                components: IndexMap::new(),
-                concepts: IndexMap::new(),
-                messages: IndexMap::new(),
-                enums: IndexMap::new(),
+                components: Default::default(),
+                concepts: Default::default(),
+                messages: Default::default(),
+                enums: Default::default(),
+                dependencies: Default::default(),
             })
         )
     }
@@ -222,7 +237,7 @@ mod tests {
                 },
                 components: IndexMap::from_iter([
                     (
-                        ItemPathBuf::new("core/transform/rotation").unwrap(),
+                        ipb("core/transform/rotation"),
                         Component {
                             name: Some("Rotation".to_string()),
                             description: Some("".to_string()),
@@ -233,7 +248,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        ItemPathBuf::new("core/transform/scale").unwrap(),
+                        ipb("core/transform/scale"),
                         Component {
                             name: Some("Scale".to_string()),
                             description: Some("".to_string()),
@@ -244,7 +259,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        ItemPathBuf::new("core/transform/spherical-billboard").unwrap(),
+                        ipb("core/transform/spherical-billboard"),
                         Component {
                             name: Some("Spherical billboard".to_string()),
                             description: Some("".to_string()),
@@ -255,7 +270,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        ItemPathBuf::new("core/transform/translation").unwrap(),
+                        ipb("core/transform/translation"),
                         Component {
                             name: Some("Translation".to_string()),
                             description: Some("".to_string()),
@@ -267,14 +282,14 @@ mod tests {
                     ),
                 ]),
                 concepts: IndexMap::from_iter([(
-                    ItemPathBuf::new("ns/transformable").unwrap(),
+                    ipb("ns/transformable"),
                     Concept {
                         name: Some("Transformable".to_string()),
                         description: Some("Can be translated, rotated and scaled.".to_string()),
                         extends: vec![],
                         components: IndexMap::from_iter([
                             (
-                                ItemPathBuf::new("core/transform/translation").unwrap(),
+                                ipb("core/transform/translation"),
                                 Value::Array(vec![
                                     Value::Integer(0),
                                     Value::Integer(0),
@@ -282,7 +297,7 @@ mod tests {
                                 ])
                             ),
                             (
-                                ItemPathBuf::new("core/transform/scale").unwrap(),
+                                ipb("core/transform/scale"),
                                 Value::Array(vec![
                                     Value::Integer(1),
                                     Value::Integer(1),
@@ -290,7 +305,7 @@ mod tests {
                                 ])
                             ),
                             (
-                                ItemPathBuf::new("core/transform/rotation").unwrap(),
+                                ipb("core/transform/rotation"),
                                 Value::Array(vec![
                                     Value::Integer(0),
                                     Value::Integer(0),
@@ -302,8 +317,9 @@ mod tests {
                     }
                     .into()
                 )]),
-                messages: IndexMap::new(),
-                enums: IndexMap::new(),
+                messages: Default::default(),
+                enums: Default::default(),
+                dependencies: Default::default(),
             }
         );
 
@@ -317,9 +333,9 @@ mod tests {
                 .keys()
                 .collect::<Vec<_>>(),
             vec![
-                &ItemPathBuf::new("core/transform/translation").unwrap(),
-                &ItemPathBuf::new("core/transform/scale").unwrap(),
-                &ItemPathBuf::new("core/transform/rotation").unwrap(),
+                &ipb("core/transform/translation"),
+                &ipb("core/transform/scale"),
+                &ipb("core/transform/rotation"),
             ]
         );
     }
@@ -350,9 +366,9 @@ mod tests {
                     includes: Default::default(),
                 },
                 build: Build::default(),
-                components: IndexMap::new(),
-                concepts: IndexMap::new(),
-                messages: IndexMap::new(),
+                components: Default::default(),
+                concepts: Default::default(),
+                messages: Default::default(),
                 enums: IndexMap::from_iter([(
                     i("cell-state"),
                     Enum(IndexMap::from_iter([
@@ -361,6 +377,7 @@ mod tests {
                     ]))
                     .into()
                 )]),
+                dependencies: Default::default(),
             })
         )
     }
@@ -399,7 +416,7 @@ mod tests {
                 },
                 components: IndexMap::from_iter([
                     (
-                        ItemPathBuf::new("test").unwrap(),
+                        ipb("test"),
                         Component {
                             name: Some("Test".to_string()),
                             description: Some("Test".to_string()),
@@ -410,7 +427,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        ItemPathBuf::new("vec-test").unwrap(),
+                        ipb("vec-test"),
                         Component {
                             name: Some("Test".to_string()),
                             description: Some("Test".to_string()),
@@ -424,7 +441,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        ItemPathBuf::new("option-test").unwrap(),
+                        ipb("option-test"),
                         Component {
                             name: Some("Test".to_string()),
                             description: Some("Test".to_string()),
@@ -438,9 +455,60 @@ mod tests {
                         .into()
                     )
                 ]),
-                concepts: IndexMap::new(),
-                messages: IndexMap::new(),
-                enums: IndexMap::new(),
+                concepts: Default::default(),
+                messages: Default::default(),
+                enums: Default::default(),
+                dependencies: Default::default(),
+            })
+        )
+    }
+
+    #[test]
+    fn can_parse_dependencies() {
+        const TOML: &str = r#"
+        [project]
+        id = "dependencies"
+        organization = "ambient"
+        name = "dependencies"
+        version = "0.0.1"
+
+        [dependencies]
+        "ambient/deps-assets" = { path = "deps/assets" }
+        "ambient/deps-code" = { path = "deps/code" }
+
+        "#;
+
+        assert_eq!(
+            Manifest::parse(TOML),
+            Ok(Manifest {
+                project: Project {
+                    id: i("dependencies"),
+                    name: Some("dependencies".to_string()),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
+                    description: None,
+                    authors: vec![],
+                    organization: Some(i("ambient")),
+                    includes: Default::default(),
+                },
+                build: Default::default(),
+                components: Default::default(),
+                concepts: Default::default(),
+                messages: Default::default(),
+                enums: Default::default(),
+                dependencies: IndexMap::from_iter([
+                    (
+                        ipb("ambient/deps-assets"),
+                        Dependency::Path {
+                            path: PathBuf::from("deps/assets")
+                        }
+                    ),
+                    (
+                        ipb("ambient/deps-code"),
+                        Dependency::Path {
+                            path: PathBuf::from("deps/code")
+                        }
+                    )
+                ])
             })
         )
     }
