@@ -152,20 +152,11 @@ impl ItemMap {
                 Some(id) => id,
                 None => {
                     let parent_scope_data = self.get(scope_id)?.data().clone();
-                    let new_id = self.add(Scope {
-                        data: ItemData {
-                            parent_id: Some(scope_id),
-                            id: segment.clone(),
-                            ..parent_scope_data
-                        },
-                        organization: None,
-                        scopes: Default::default(),
-                        components: Default::default(),
-                        concepts: Default::default(),
-                        messages: Default::default(),
-                        types: Default::default(),
-                        attributes: Default::default(),
-                    });
+                    let new_id = self.add(Scope::new(ItemData {
+                        parent_id: Some(scope_id),
+                        id: segment.clone(),
+                        ..parent_scope_data
+                    }));
                     self.get_mut(scope_id)?
                         .scopes
                         .insert(segment.clone(), new_id);

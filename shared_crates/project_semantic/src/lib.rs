@@ -43,7 +43,7 @@ pub trait FileProvider {
 pub struct Semantic {
     pub items: ItemMap,
     pub root_scope: ItemId<Scope>,
-    pub scopes: IndexMap<Identifier, ItemId<Scope>>,
+    pub organizations: IndexMap<Identifier, ItemId<Scope>>,
 }
 impl Semantic {
     pub fn new() -> anyhow::Result<Self> {
@@ -56,24 +56,15 @@ impl Semantic {
         }
 
         let mut items = ItemMap::default();
-        let root_scope = items.add(Scope {
-            data: ItemData {
-                parent_id: None,
-                id: Identifier::default(),
-                is_ambient: true,
-            },
-            organization: None,
-            scopes: IndexMap::new(),
-            components: IndexMap::new(),
-            concepts: IndexMap::new(),
-            messages: IndexMap::new(),
-            types: IndexMap::new(),
-            attributes: IndexMap::new(),
-        });
+        let root_scope = items.add(Scope::new(ItemData {
+            parent_id: None,
+            id: Identifier::default(),
+            is_ambient: true,
+        }));
         let mut sem = Self {
             items,
             root_scope,
-            scopes: IndexMap::new(),
+            organizations: IndexMap::new(),
         };
 
         for (id, pt) in primitive_component_definitions!(define_primitive_types) {
@@ -137,7 +128,8 @@ impl Semantic {
         let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename}"))?;
 
-        self.add_scope_from_manifest(Some(parent_scope), file_provider, manifest, is_ambient)
+        let id = manifest.project.id.clone();
+        self.add_scope_from_manifest(Some(parent_scope), file_provider, manifest, id, is_ambient)
     }
 
     pub fn add_file(
@@ -149,24 +141,62 @@ impl Semantic {
         let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename}"))?;
 
+        if manifest.project.organization.is_none() {
+            anyhow::bail!(
+                "file `{}` has no organization, which is required for a top-level package",
+                filename
+            );
+        }
+
+        // Create an organization scope if necessary
+        let organization_key = manifest.project.organization.as_ref().with_context(|| {
+            format!(
+                "file `{}` has no organization, which is required for a top-level package",
+                filename
+            )
+        })?;
+
+        let organization_id = *self
+            .organizations
+            .entry(organization_key.clone())
+            .or_insert_with(|| {
+                self.items.add(Scope::new(ItemData {
+                    parent_id: None,
+                    id: organization_key.clone(),
+                    is_ambient: false,
+                }))
+            });
+
+        // Check that this scope hasn't already been created for this organization
         let scope_id = manifest.project.id.clone();
-        if self.scopes.contains_key(&scope_id) {
+        if self
+            .items
+            .get(organization_id)?
+            .scopes
+            .contains_key(&scope_id)
+        {
             anyhow::bail!(
                 "attempted to add {filename}, but a scope already exists at `{scope_id}`"
             );
         }
 
-        if manifest.project.organization.is_none() {
-            anyhow::bail!("file `{}` has no organization, which is required", filename);
-        }
-
-        let item_id = self.add_scope_from_manifest(None, file_provider, manifest, is_ambient)?;
-        self.scopes.insert(scope_id, item_id);
+        // Create a new scope and add it to the organization
+        let item_id = self.add_scope_from_manifest(
+            Some(organization_id),
+            file_provider,
+            manifest,
+            scope_id.clone(),
+            is_ambient,
+        )?;
+        self.items
+            .get_mut(organization_id)?
+            .scopes
+            .insert(scope_id, item_id);
         Ok(item_id)
     }
 
     pub fn resolve(&mut self) -> anyhow::Result<()> {
-        for &scope_id in self.scopes.values() {
+        for &scope_id in self.organizations.values() {
             self.items
                 .resolve_clone(scope_id, &Context::new(self.root_scope))?;
         }
@@ -179,23 +209,14 @@ impl Semantic {
         parent_id: Option<ItemId<Scope>>,
         file_provider: &dyn FileProvider,
         manifest: Manifest,
+        id: Identifier,
         is_ambient: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
-        let scope = Scope {
-            data: ItemData {
-                parent_id,
-                id: manifest.project.id.clone(),
-                is_ambient,
-            },
-            organization: manifest.project.organization.clone(),
-
-            scopes: IndexMap::new(),
-            components: IndexMap::new(),
-            concepts: IndexMap::new(),
-            messages: IndexMap::new(),
-            types: IndexMap::new(),
-            attributes: IndexMap::new(),
-        };
+        let scope = Scope::new(ItemData {
+            parent_id,
+            id,
+            is_ambient,
+        });
         let scope_id = self.items.add(scope);
 
         for include in &manifest.project.includes {

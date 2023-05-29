@@ -51,7 +51,7 @@ impl Printer {
     fn print(&mut self, semantic: &Semantic) -> anyhow::Result<()> {
         let items = &semantic.items;
         self.print_scope(items, &*items.get(semantic.root_scope)?)?;
-        for id in semantic.scopes.values() {
+        for id in semantic.organizations.values() {
             self.print_scope(items, &*items.get(*id)?)?;
         }
         Ok(())
@@ -103,7 +103,7 @@ impl Printer {
             println!("type: {}", write_resolvable_id(items, &component.type_)?);
 
             p.print_indent();
-            println!("attributes: ");
+            println!("attributes:");
             p.with_indent(|p| {
                 for attribute in &component.attributes {
                     p.print_indent();
@@ -134,7 +134,7 @@ impl Printer {
             );
 
             p.print_indent();
-            print!("extends: ");
+            print!("extends:");
             for extend in &concept.extends {
                 print!("{} ", write_resolvable_id(items, extend)?);
             }
@@ -234,26 +234,18 @@ fn fully_qualified_path<T: Item>(items: &ItemMap, item: &T) -> anyhow::Result<St
     let data = item.data();
     let mut path = vec![data.id.to_string()];
     let mut parent_id = data.parent_id;
-    let mut last_parent_id = parent_id.unwrap();
     while let Some(this_parent_id) = parent_id {
         let parent = items.get(this_parent_id)?;
         let id = parent.data().id.to_string();
         if !id.is_empty() {
             path.push(id);
         }
-        last_parent_id = this_parent_id;
         parent_id = parent.data().parent_id;
     }
     path.reverse();
     Ok(format!(
-        "{}:{}{}{}",
+        "{}:{}{}",
         T::TYPE.to_string().to_lowercase(),
-        items
-            .get(last_parent_id)?
-            .organization
-            .as_ref()
-            .map(|s| s.to_string() + "/")
-            .unwrap_or_default(),
         path.join("/"),
         if data.is_ambient { " [A]" } else { "" }
     ))

@@ -90,8 +90,6 @@ impl Context {
 pub struct Scope {
     pub data: ItemData,
 
-    pub organization: Option<Identifier>,
-
     pub scopes: IndexMap<Identifier, ItemId<Scope>>,
     pub components: IndexMap<Identifier, ItemId<Component>>,
     pub concepts: IndexMap<Identifier, ItemId<Concept>>,
@@ -187,6 +185,20 @@ impl ResolveClone for Scope {
         resolve(&self.attributes, items, &context)?;
 
         Ok(self)
+    }
+}
+impl Scope {
+    /// Creates a new empty scope with the specified data.
+    pub fn new(data: ItemData) -> Self {
+        Self {
+            data,
+            scopes: Default::default(),
+            components: Default::default(),
+            concepts: Default::default(),
+            messages: Default::default(),
+            types: Default::default(),
+            attributes: Default::default(),
+        }
     }
 }
 
