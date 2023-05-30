@@ -314,7 +314,7 @@ dependencies = [
  "ambient_std",
  "ambient_sys",
  "ambient_ui_native",
- "approx",
+ "approx 0.5.1",
  "async-trait",
  "byteorder",
  "circular-queue",
@@ -1310,6 +1310,7 @@ dependencies = [
  "glam 0.24.0",
  "itertools",
  "log",
+ "mikktspace",
  "once_cell",
  "ordered-float",
  "parking_lot",
@@ -1739,6 +1740,15 @@ checksum = "fccf12dee70dbae164314a8218b53744422ee37c43d2df98f402001a94556d62"
 dependencies = [
  "cc",
  "ogg_next_sys",
+]
+
+[[package]]
+name = "approx"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f2a05fd1bd10b2527e20a2cd32d8873d115b8b39fe219ee25f42a8aca6ba278"
+dependencies = [
+ "num-traits",
 ]
 
 [[package]]
@@ -3918,7 +3928,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cc32c2334f00ca5ac3695c5009ae35da21da8c62d255b5b96d56e2597a637a38"
 dependencies = [
  "ab_glyph",
- "approx",
+ "approx 0.5.1",
  "xi-unicode",
 ]
 
@@ -4309,7 +4319,7 @@ dependencies = [
  "exr",
  "gif",
  "jpeg-decoder",
- "num-rational",
+ "num-rational 0.4.1",
  "num-traits",
  "png",
  "qoi",
@@ -4853,6 +4863,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "mikktspace"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d0b56b403871a8f992ca626d52cc0a690d4841baea8955dc4af6304ac62f8b0"
+dependencies = [
+ "nalgebra",
+]
+
+[[package]]
 name = "mime"
 version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4965,6 +4984,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "nalgebra"
+version = "0.26.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "476d1d59fe02fe54c86356e91650cd892f392782a1cb9fc524ec84f7aa9e1d06"
+dependencies = [
+ "approx 0.4.0",
+ "matrixmultiply",
+ "num-complex 0.3.1",
+ "num-rational 0.3.2",
+ "num-traits",
+ "simba",
+ "typenum",
+]
+
+[[package]]
 name = "nanorand"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4980,7 +5014,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "adb12d4e967ec485a5f71c6311fe28158e9d6f4bc4a447b474184d0f91a8fa32"
 dependencies = [
  "matrixmultiply",
- "num-complex",
+ "num-complex 0.4.3",
  "num-integer",
  "num-traits",
  "rawpointer",
@@ -5141,10 +5175,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43db66d1170d347f9a065114077f7dccb00c1b9478c89384490a3425279a4606"
 dependencies = [
  "num-bigint",
- "num-complex",
+ "num-complex 0.4.3",
  "num-integer",
  "num-iter",
- "num-rational",
+ "num-rational 0.4.1",
  "num-traits",
 ]
 
@@ -5156,6 +5190,15 @@ checksum = "f93ab6289c7b344a8a9f60f88d80aa20032336fe78da341afc91c8a2341fc75f"
 dependencies = [
  "autocfg 1.1.0",
  "num-integer",
+ "num-traits",
+]
+
+[[package]]
+name = "num-complex"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "747d632c0c558b87dbabbe6a82f3b4ae03720d0646ac5b7b4dae89394be5f2c5"
+dependencies = [
  "num-traits",
 ]
 
@@ -5194,6 +5237,17 @@ name = "num-iter"
 version = "0.1.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d03e6c028c5dc5cac6e2dec0efda81fc887605bb3d884578bb6d6bf7514e252"
+dependencies = [
+ "autocfg 1.1.0",
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
+name = "num-rational"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "12ac428b1cb17fce6f731001d307d351ec70a6d202fc2e60f7d4c5e42d8f4f07"
 dependencies = [
  "autocfg 1.1.0",
  "num-integer",
@@ -6393,7 +6447,7 @@ version = "6.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e17d4f6cbdb180c9f4b2a26bbf01c4e647f1e1dea22fe8eb9db54198b32f9434"
 dependencies = [
- "num-complex",
+ "num-complex 0.4.3",
  "num-integer",
  "num-traits",
  "primal-check",
@@ -6822,6 +6876,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d8229b473baa5980ac72ef434c4415e70c4b5e71b423043adb4ba059f89c99a1"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "simba"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5132a955559188f3d13c9ba831e77c802ddc8782783f050ed0c52f5988b95f4c"
+dependencies = [
+ "approx 0.4.0",
+ "num-complex 0.3.1",
+ "num-traits",
+ "paste",
 ]
 
 [[package]]

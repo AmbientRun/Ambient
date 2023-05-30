@@ -148,7 +148,7 @@ impl<'a> From<&'a CuboidMesh> for Mesh {
         }
 
         let tangents = if cuboid.tangents {
-            generate_tangents(&positions, &texcoords[0], &indices)
+            generate_tangents(&positions, &texcoords[0], &normals, &indices)
         } else {
             Vec::new()
         };

@@ -64,7 +64,7 @@ impl From<&GridMesh> for Mesh {
                 }
             }
         }
-        let tangents = generate_tangents(&positions, &texcoords, &indices);
+        let tangents = generate_tangents(&positions, &texcoords, &normals, &indices);
 
         let mesh_builder = MeshBuilder {
             positions,

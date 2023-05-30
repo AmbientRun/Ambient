@@ -193,7 +193,7 @@ impl From<QuadMesh> for Mesh {
             ]
         };
         let indices = vec![0, 1, 2, 1, 3, 2];
-        let tangents = generate_tangents(&positions, &texcoords, &indices);
+        let tangents = generate_tangents(&positions, &texcoords, &normals, &indices);
 
         MeshBuilder {
             positions,

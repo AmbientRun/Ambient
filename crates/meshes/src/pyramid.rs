@@ -141,7 +141,7 @@ impl From<&PyramidMesh> for Mesh {
             indices.push(6 + i * 3 + 2);
             indices.push(6 + i * 3 + 1);
         }
-        let tangents = generate_tangents(&positions, &texcoords, &indices);
+        let tangents = generate_tangents(&positions, &texcoords, &normals, &indices);
         MeshBuilder {
             positions,
             colors,
