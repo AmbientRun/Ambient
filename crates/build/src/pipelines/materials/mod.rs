@@ -5,6 +5,7 @@ use ambient_asset_cache::{
 };
 use ambient_decals::decal;
 use ambient_ecs::Entity;
+use ambient_gpu::sampler::SamplerKey;
 use ambient_model_import::{
     model_crate::{cap_texture_size, ModelCrate},
     ModelTextureSize,
@@ -189,6 +190,9 @@ pub struct PipelinePbrMaterial {
     pub specular: Option<AssetUrl>,
     /// The non-PBR specular exponent of this material. If specified alongside `specular`, it will be translated to a PBR equivalent.
     pub specular_exponent: Option<f32>,
+
+    /// The sampler used by every texture in this material. Defaults to a sampler with `Linear` min/mag/mip filter modes and `ClampToEdge` wrap modes across uvw-coordinates.
+    pub sampler: Option<SamplerKey>,
 }
 impl PipelinePbrMaterial {
     pub async fn to_mat(
@@ -257,6 +261,7 @@ impl PipelinePbrMaterial {
             double_sided: self.double_sided,
             metallic: self.metallic.unwrap_or(1.),
             roughness: self.roughness.unwrap_or(1.),
+            sampler: self.sampler,
         }
         .relative_path_from(out_root))
     }
