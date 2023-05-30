@@ -9,7 +9,10 @@ use ambient_api::{
         },
         player::{player, user_id},
         primitives::{cube, quad},
-        rendering::color,
+        rendering::{
+            cast_shadows, color, fog_color, fog_density, fog_height_falloff, light_diffuse, sky,
+            sun,
+        },
         transform::{local_to_parent, rotation, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
@@ -21,6 +24,22 @@ use std::f32::consts::{PI, TAU};
 
 #[main]
 pub fn main() {
+    let sun = Entity::new()
+    .with_merge(make_transformable())
+    .with_default(sun())
+    .with(rotation(), Quat::from_rotation_y(-0.6))
+    .with_default(main_scene())
+    // .with(light_diffuse(), Vec3::ONE)
+    // .with(fog_color(), vec3(1., 1., 1.))
+    .with(fog_density(), 0.0)
+    // .with(fog_height_falloff(), 0.01)
+    .spawn();
+
+    Entity::new()
+        .with_merge(make_transformable())
+        .with_default(sky())
+        .spawn();
+
     Entity::new()
         .with_merge(make_transformable())
         .with_default(quad())

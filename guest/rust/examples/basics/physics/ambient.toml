@@ -3,6 +3,9 @@ id = "physics"
 name = "Physics"
 version = "0.0.1"
 
+[components]
+camera_ref = { type = "Empty", name = "Camera ref", description = "Camera ref for query" , attributes = ["Networked", "Debuggable"] }
+
 [messages.bonk]
 description = "Collision between two objects."
-fields = { emitter = "EntityId", listener = "EntityId"  }
+fields = { emitter = "EntityId"  }

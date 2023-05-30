@@ -26,7 +26,13 @@ pub(crate) fn set_listener(
 ) -> anyhow::Result<()> {
     let pos = world.get(entity.from_bindgen(), translation())?;
     let rotation = world.get(entity.from_bindgen(), rotation())?;
-    world.add_component(entity.from_bindgen(), audio_listener(), Arc::new(Mutex::new(AudioListener::new(Mat4::from_rotation_translation(rotation, pos), Vec3::X * 0.3))))?;
+    world.add_component(
+        entity.from_bindgen(),
+        audio_listener(),
+        Arc::new(Mutex::new(
+            AudioListener::new(
+                Mat4::from_rotation_translation(rotation, pos),
+                Vec3::X * 0.3))))?;
     Ok(())
 }
 
@@ -36,7 +42,7 @@ pub(crate) fn set_emitter(
 ) -> anyhow::Result<()> {
     let pos = world.get(entity.from_bindgen(), translation())?;
     let emitter = Arc::new(Mutex::new(AudioEmitter {
-        amplitude: 5.0,
+        amplitude: 1.0,
         attenuation: Attenuation::InversePoly { quad: 0.1, lin: 0.0, constant: 1.0 },
         pos,
     }));

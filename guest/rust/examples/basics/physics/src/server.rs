@@ -23,6 +23,7 @@ pub async fn main() {
         .with_default(main_scene())
         .with(translation(), vec3(5., 5., 4.))
         .with(lookat_target(), vec3(0., 0., 0.))
+        .with_default(components::camera_ref())
         .spawn();
 
     let cube = Entity::new()
@@ -48,7 +49,7 @@ pub async fn main() {
 
     ambient_api::messages::Collision::subscribe(move |msg| {
         println!("Bonk! {:?} collided", msg.ids);
-        messages::Bonk::new(cube, camera).send_client_broadcast_reliable();
+        messages::Bonk::new(cube).send_client_broadcast_reliable();
     });
 
     ambient_api::messages::Frame::subscribe(move |_| {
