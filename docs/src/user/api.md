@@ -4,10 +4,6 @@ The Ambient API is what developers use to interact with Ambient. It offers full 
 
 The easiest way to get started is by looking at some of the [examples](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples), which detail individual aspects of Ambient and its API. These can be combined to produce more complex functionality.
 
-## Setting up your IDE
-
-For Rust, we recommend using [Visual Studio Code](https://code.visualstudio.com/) with [rust-analyzer](https://rust-analyzer.github.io/), as described [here](https://code.visualstudio.com/docs/languages/rust).
-
 Opening the `guest/rust` folder in VS Code or another Cargo/Rust-aware IDE will give you auto-completion and other related functionality.
 
 ## Reference documentation
