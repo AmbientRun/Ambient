@@ -277,48 +277,122 @@ impl TransformSystem {
                         }
                     }),
                     // FBX
-                    query((fbx_complex_transform(), local_to_parent()))
-                        .optional_changed(translation())
-                        .optional_changed(fbx_rotation_offset())
-                        .optional_changed(fbx_rotation_pivot())
-                        .optional_changed(fbx_pre_rotation())
-                        .optional_changed(rotation())
-                        .optional_changed(fbx_post_rotation())
-                        .optional_changed(fbx_rotation_pivot())
-                        .optional_changed(fbx_scaling_offset())
-                        .optional_changed(fbx_scaling_pivot())
-                        .optional_changed(scale())
-                        .optional_changed(fbx_scaling_pivot())
-                        .to_system(|q, world, qs, _| {
-                            // See: https://help.autodesk.com/view/FBX/2017/ENU/?guid=__files_GUID_10CDD63C_79C1_4F2D_BB28_AD2BE65A02ED_htm
-                            // and: https://github.com/assimp/assimp/blob/add7f1355e96c6ff0df0ba3cec084f25332d154e/code/AssetLib/FBX/FBXConverter.cpp#L687
-                            for (id, _) in q.collect_cloned(world, qs) {
-                                world
-                                    .set(id, local_to_parent(), get_fbx_transform(world, id))
-                                    .unwrap();
-                            }
-                        }),
-                    query((fbx_complex_transform(), local_to_world()))
-                        .optional_changed(translation())
-                        .optional_changed(fbx_rotation_offset())
-                        .optional_changed(fbx_rotation_pivot())
-                        .optional_changed(fbx_pre_rotation())
-                        .optional_changed(rotation())
-                        .optional_changed(fbx_post_rotation())
-                        .optional_changed(fbx_rotation_pivot())
-                        .optional_changed(fbx_scaling_offset())
-                        .optional_changed(fbx_scaling_pivot())
-                        .optional_changed(scale())
-                        .optional_changed(fbx_scaling_pivot())
-                        .to_system(|q, world, qs, _| {
-                            // See: https://help.autodesk.com/view/FBX/2017/ENU/?guid=__files_GUID_10CDD63C_79C1_4F2D_BB28_AD2BE65A02ED_htm
-                            // and: https://github.com/assimp/assimp/blob/add7f1355e96c6ff0df0ba3cec084f25332d154e/code/AssetLib/FBX/FBXConverter.cpp#L687
-                            for (id, _) in q.collect_cloned(world, qs) {
-                                world
-                                    .set(id, local_to_world(), get_fbx_transform(world, id))
-                                    .unwrap();
-                            }
-                        }),
+                    query_mut(
+                        local_to_parent(),
+                        (
+                            translation(),
+                            fbx_rotation_offset(),
+                            fbx_rotation_pivot(),
+                            fbx_pre_rotation(),
+                            rotation(),
+                            fbx_post_rotation(),
+                            fbx_scaling_offset(),
+                            fbx_scaling_pivot(),
+                            scale(),
+                        ),
+                    )
+                    .optional_changed(translation())
+                    .optional_changed(fbx_rotation_offset())
+                    .optional_changed(fbx_rotation_pivot())
+                    .optional_changed(fbx_pre_rotation())
+                    .optional_changed(rotation())
+                    .optional_changed(fbx_post_rotation())
+                    .optional_changed(fbx_scaling_offset())
+                    .optional_changed(fbx_scaling_pivot())
+                    .optional_changed(scale())
+                    .incl(fbx_complex_transform())
+                    .to_system(|q, world, qs, _| {
+                        // See: https://help.autodesk.com/view/FBX/2017/ENU/?guid=__files_GUID_10CDD63C_79C1_4F2D_BB28_AD2BE65A02ED_htm
+                        // and: https://github.com/assimp/assimp/blob/add7f1355e96c6ff0df0ba3cec084f25332d154e/code/AssetLib/FBX/FBXConverter.cpp#L687
+                        for (
+                            _,
+                            transform,
+                            (
+                                &pos,
+                                &rot_offset,
+                                &rot_pivot,
+                                &pre_rot,
+                                &rot,
+                                &post_rot,
+                                &scaling_offset,
+                                &scaling_pivot,
+                                &scaling,
+                            ),
+                        ) in q.iter(world, qs)
+                        {
+                            let o = pos + rot_offset + rot_pivot;
+                            let r = pre_rot * rot * post_rot.inverse();
+                            let p = scaling_offset + scaling_pivot
+                                - rot_pivot
+                                - scaling * scaling_pivot;
+                            let t = o + r * p;
+
+                            *transform = Mat4::from_scale_rotation_translation(
+                                    scaling,
+                                    r,
+                                    t,
+                                );
+                        }
+                    }),
+
+                    query_mut(
+                        local_to_world(),
+                        (
+                            translation(),
+                            fbx_rotation_offset(),
+                            fbx_rotation_pivot(),
+                            fbx_pre_rotation(),
+                            rotation(),
+                            fbx_post_rotation(),
+                            fbx_scaling_offset(),
+                            fbx_scaling_pivot(),
+                            scale(),
+                        ),
+                    )
+                    .optional_changed(translation())
+                    .optional_changed(fbx_rotation_offset())
+                    .optional_changed(fbx_rotation_pivot())
+                    .optional_changed(fbx_pre_rotation())
+                    .optional_changed(rotation())
+                    .optional_changed(fbx_post_rotation())
+                    .optional_changed(fbx_scaling_offset())
+                    .optional_changed(fbx_scaling_pivot())
+                    .optional_changed(scale())
+                    .incl(fbx_complex_transform())
+                    .excl(local_to_parent())
+                    .to_system(|q, world, qs, _| {
+                        // See: https://help.autodesk.com/view/FBX/2017/ENU/?guid=__files_GUID_10CDD63C_79C1_4F2D_BB28_AD2BE65A02ED_htm
+                        // and: https://github.com/assimp/assimp/blob/add7f1355e96c6ff0df0ba3cec084f25332d154e/code/AssetLib/FBX/FBXConverter.cpp#L687
+                        for (
+                            _,
+                            transform,
+                            (
+                                &pos,
+                                &rot_offset,
+                                &rot_pivot,
+                                &pre_rot,
+                                &rot,
+                                &post_rot,
+                                &scaling_offset,
+                                &scaling_pivot,
+                                &scaling,
+                            ),
+                        ) in q.iter(world, qs)
+                        {
+                            let o = pos + rot_offset + rot_pivot;
+                            let r = pre_rot * rot * post_rot.inverse();
+                            let p = scaling_offset + scaling_pivot
+                                - rot_pivot
+                                - scaling * scaling_pivot;
+                            let t = o + r * p;
+
+                            *transform = Mat4::from_scale_rotation_translation(
+                                    scaling,
+                                    r,
+                                    t,
+                                );
+                        }
+                    }),
                 ],
             ),
             post_parented_systems: SystemGroup::new(
@@ -453,52 +527,6 @@ fn update_transform_recursive(world: &mut World, id: EntityId, mut parent_transf
             update_transform_recursive(world, child, transform);
         }
     }
-}
-fn get_fbx_transform(world: &World, id: EntityId) -> Mat4 {
-    world
-        .get(id, translation())
-        .map(Mat4::from_translation)
-        .unwrap_or_default()
-        * world
-            .get(id, fbx_rotation_offset())
-            .map(Mat4::from_translation)
-            .unwrap_or_default()
-        * world
-            .get(id, fbx_rotation_pivot())
-            .map(Mat4::from_translation)
-            .unwrap_or_default()
-        * world
-            .get(id, fbx_pre_rotation())
-            .map(Mat4::from_quat)
-            .unwrap_or_default()
-        * world
-            .get(id, rotation())
-            .map(Mat4::from_quat)
-            .unwrap_or_default()
-        * world
-            .get(id, fbx_post_rotation())
-            .map(|v| Mat4::from_quat(v).inverse())
-            .unwrap_or_default()
-        * world
-            .get(id, fbx_rotation_pivot())
-            .map(|x| Mat4::from_translation(x).inverse())
-            .unwrap_or_default()
-        * world
-            .get(id, fbx_scaling_offset())
-            .map(Mat4::from_translation)
-            .unwrap_or_default()
-        * world
-            .get(id, fbx_scaling_pivot())
-            .map(Mat4::from_translation)
-            .unwrap_or_default()
-        * world
-            .get(id, scale())
-            .map(Mat4::from_scale)
-            .unwrap_or_default()
-        * world
-            .get(id, fbx_scaling_pivot())
-            .map(|x| Mat4::from_translation(x).inverse())
-            .unwrap_or_default()
 }
 
 fn get_transform_root(world: &World, id: EntityId) -> EntityId {

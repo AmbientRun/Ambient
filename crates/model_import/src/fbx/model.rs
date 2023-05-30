@@ -146,6 +146,18 @@ impl FbxModel {
         if self.double_sided {
             out_node.set(double_sided(), true);
         }
+        if self.is_complex_transform() {
+            out_node.set(fbx_complex_transform(), ());
+            out_node.set(fbx_rotation_offset(), Vec3::ZERO);
+            out_node.set(fbx_rotation_pivot(), Vec3::ZERO);
+            out_node.set(fbx_pre_rotation(), Quat::IDENTITY);
+            out_node.set(fbx_post_rotation(), Quat::IDENTITY);
+            out_node.set(fbx_scaling_offset(), Vec3::ZERO);
+            out_node.set(fbx_scaling_pivot(), Vec3::ZERO);
+            out_node.set(translation(), Vec3::ZERO);
+            out_node.set(rotation(), Quat::IDENTITY);
+            out_node.set(scale(), Vec3::ONE);
+        }
 
         if let Some(value) = self.rotation_offset {
             out_node.set(fbx_rotation_offset(), value);
@@ -170,9 +182,6 @@ impl FbxModel {
         }
         if let Some(value) = self.scaling_pivot {
             out_node.set(fbx_scaling_pivot(), value);
-        }
-        if self.is_complex_transform() {
-            out_node.set(fbx_complex_transform(), ());
         }
 
         // Need to give these values since they might be animated

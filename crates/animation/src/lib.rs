@@ -1,6 +1,6 @@
 use ambient_core::{asset_cache, hierarchy::children, time};
 use ambient_ecs::{
-    components, query, Debuggable, EntityId, MakeDefault, Networked, Store, SystemGroup,
+    components, query, Debuggable, EntityId, MakeDefault, Networked, Store, SystemGroup, World,
 };
 use ambient_model::{animation_binder, model, model_from_url, ModelFromUrl};
 use ambient_std::{
@@ -137,10 +137,6 @@ fn anim_time(
 }
 
 impl AnimationAction {
-    fn time(&self, time: &Duration, clip: &AnimationClip) -> f32 {
-        anim_time(time, &self.time, clip, self.looping)
-    }
-
     fn sample_tracks(
         &self,
         time: &Duration,
@@ -210,13 +206,6 @@ impl AnimationController {
     }
 }
 
-#[derive(Debug)]
-struct AnimationBlendOutput {
-    target: EntityId,
-    value: AnimationOutput,
-    weight: f32,
-}
-
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum AnimationActionStack {
     Sample {
@@ -237,6 +226,61 @@ pub enum AnimationActionStack {
         weight: f32,
         mask: u32,
     },
+}
+
+fn setup_controller(world: &mut World, id: EntityId, controller: &AnimationController) {
+    if !world.has_component(id, animation_binder_mask()) {
+        world
+            .add_component(id, animation_binder_mask(), vec![])
+            .unwrap();
+    }
+
+    if !world.has_component(id, animation_binder_weights()) {
+        world
+            .add_component(id, animation_binder_weights(), vec![])
+            .unwrap();
+    }
+
+    let mut stack = vec![];
+    let mut weight = 0.0;
+    for (index, action) in controller.actions.iter().enumerate() {
+        if action.weight == 0.0 {
+            continue;
+        }
+
+        weight += action.weight;
+
+        match action.time {
+            AnimationActionTime::Absolute { time } => {
+                stack.push(AnimationActionStack::SampleAbsolute {
+                    action_index: index as u32,
+                    time_absolute: time,
+                });
+            }
+            AnimationActionTime::Offset { .. } => {
+                stack.push(AnimationActionStack::Sample {
+                    action_index: index as u32,
+                });
+            }
+            AnimationActionTime::Percentage { percentage } => {
+                stack.push(AnimationActionStack::SamplePercentage {
+                    action_index: index as u32,
+                    time_percentage: percentage,
+                });
+            }
+        }
+
+        if stack.len() > 1 {
+            let p = action.weight / weight;
+            stack.push(AnimationActionStack::Interpolate { weight: p });
+        }
+    }
+
+    if !world.has_component(id, animation_stack()) {
+        world.add_component(id, animation_stack(), stack).unwrap();
+    } else {
+        world.set(id, animation_stack(), stack).unwrap();
+    }
 }
 
 pub fn animation_systems() -> SystemGroup {
@@ -281,6 +325,7 @@ pub fn animation_systems() -> SystemGroup {
                                 }
                             }
                         }
+                        setup_controller(world, id, &ctrlr);
                     }
                 }),
             // This exists mostly because some FBX animations have pre-rotations, and to apply them to
@@ -299,103 +344,6 @@ pub fn animation_systems() -> SystemGroup {
                     }
                 }
             }),
-            query((animation_controller(), animation_binder()))
-                .excl(animation_errors())
-                .excl(animation_stack())
-                .to_system(|q, world, qs, _| {
-                    let assets = world.resource(asset_cache()).clone();
-                    let time = *world.resource(time());
-                    let mut outputs: HashMap<String, AnimationBlendOutput> = HashMap::new();
-                    let mut in_error = Vec::new();
-                    for (id, (controller, binder)) in q.iter(world, qs) {
-                        let retarget = world
-                            .get(id, animation_retargeting())
-                            .unwrap_or(AnimationRetargeting::None);
-                        let model = world
-                            .get_ref(id, model_from_url())
-                            .ok()
-                            .and_then(|def| TypedAssetUrl::parse(def).ok());
-                        // Calc
-                        for action in controller.actions.iter() {
-                            match action.clip.get_clip(&assets, retarget, model.clone()) {
-                                Some(Err(err)) => {
-                                    in_error.push((id, err));
-                                    break;
-                                }
-                                Some(Ok(clip)) => {
-                                    let anim_time = action.time(&time, &clip);
-                                    for track in clip.tracks.iter() {
-                                        let value = AnimationTrackInterpolator::new()
-                                            .value(track, anim_time);
-                                        let key = format!(
-                                            "{}_{:?}_{}_{:?}",
-                                            id,
-                                            track.target,
-                                            track.outputs.component().index(),
-                                            track.outputs.field()
-                                        );
-                                        if action.weight == 0.0 {
-                                            continue;
-                                        }
-                                        if let Some(o) = outputs.get_mut(&key) {
-                                            o.weight += action.weight;
-                                            let p = action.weight / o.weight;
-                                            o.value = o.value.mix(value, p);
-                                        } else {
-                                            outputs.insert(
-                                                key.to_string(),
-                                                AnimationBlendOutput {
-                                                    target: match &track.target {
-                                                        AnimationTarget::BinderId(index) => {
-                                                            match binder.get(index) {
-                                                                Some(entity) => *entity,
-                                                                None => {
-                                                                    continue;
-                                                                }
-                                                            }
-                                                        }
-                                                        AnimationTarget::Entity(entity) => *entity,
-                                                    },
-                                                    value,
-                                                    weight: action.weight,
-                                                },
-                                            );
-                                        }
-                                    }
-                                }
-                                None => {}
-                            }
-                        }
-                    }
-
-                    // Apply
-                    for (_, output) in outputs.into_iter() {
-                        match output.value {
-                            AnimationOutput::Vec3 { component, value } => {
-                                world.set(output.target, component, value).ok();
-                            }
-                            AnimationOutput::Quat { component, value } => {
-                                world.set(output.target, component, value).ok();
-                            }
-                            AnimationOutput::Vec3Field {
-                                component,
-                                field,
-                                value,
-                            } => {
-                                if let Ok(d) = world.get_mut(output.target, component) {
-                                    match field {
-                                        Vec3Field::X => d.x = value,
-                                        Vec3Field::Y => d.y = value,
-                                        Vec3Field::Z => d.z = value,
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    for (id, err) in in_error {
-                        world.add_component(id, animation_errors(), err).unwrap();
-                    }
-                }),
             query((
                 animation_controller(),
                 animation_stack(),
@@ -427,9 +375,7 @@ pub fn animation_systems() -> SystemGroup {
                     samples.clear();
                     for operation in stack.iter() {
                         match operation {
-                            &AnimationActionStack::Sample {
-                                action_index,
-                            } => {
+                            &AnimationActionStack::Sample { action_index } => {
                                 let mut tracks =
                                     buffers.pop().unwrap_or_else(|| HashMap::with_capacity(128));
                                 tracks.clear();
@@ -594,7 +540,11 @@ pub fn animation_systems() -> SystemGroup {
                             AnimationOutput::Quat { component, value } => {
                                 world.set(target, component, value).ok();
                             }
-                            AnimationOutput::Vec3Field { component, field, value } => {
+                            AnimationOutput::Vec3Field {
+                                component,
+                                field,
+                                value,
+                            } => {
                                 if let Ok(d) = world.get_mut(target, component) {
                                     match field {
                                         Vec3Field::X => d.x = value,
