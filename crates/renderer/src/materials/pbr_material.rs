@@ -314,6 +314,8 @@ pub struct PbrMaterialDesc {
     pub metallic: f32,
     #[serde(default)]
     pub roughness: f32,
+
+    pub sampler: Option<SamplerKey>,
 }
 impl PbrMaterialDesc {
     pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<Self> {
@@ -349,6 +351,7 @@ impl PbrMaterialDesc {
             double_sided: self.double_sided,
             metallic: self.metallic,
             roughness: self.roughness,
+            sampler: self.sampler,
         })
     }
     pub fn relative_path_from(&self, base_url: &AbsAssetUrl) -> Self {
@@ -380,6 +383,7 @@ impl PbrMaterialDesc {
             double_sided: self.double_sided,
             metallic: self.metallic,
             roughness: self.roughness,
+            sampler: self.sampler,
         }
     }
 }
@@ -441,7 +445,11 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialDesc {
             PixelTextureViewKey::white().get(&assets)
         };
 
-        let sampler = SamplerKey::LINEAR_CLAMP_TO_EDGE.get(&assets);
+        let sampler = if let Some(sampler) = self.sampler {
+            sampler.get(&assets)
+        } else {
+            SamplerKey::LINEAR_CLAMP_TO_EDGE.get(&assets)
+        };
 
         let params = PbrMaterialParams {
             base_color_factor: self.base_color_factor.unwrap_or(Vec4::ONE),
