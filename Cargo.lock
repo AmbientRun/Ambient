@@ -1147,9 +1147,9 @@ dependencies = [
 
 [[package]]
 name = "ambient_proxy"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aa07343b5d4344542ecf45aa2b3b52526de3a5ba521df7126fc89fa8f08f4a1c"
+checksum = "cc0ba2b921630150fb6bd0c8cf959d1d93da64b6d2849a7c1840f99b0d62790a"
 dependencies = [
  "anyhow",
  "bincode",
