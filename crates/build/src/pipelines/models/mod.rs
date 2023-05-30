@@ -99,7 +99,7 @@ pub struct ModelsPipeline {
     transforms: Vec<ModelTransform>,
 }
 impl ModelsPipeline {
-    pub async fn apply(
+    async fn apply(
         &self,
         ctx: &PipelineCtx,
         model_crate: &mut ModelCrate,

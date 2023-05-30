@@ -4,7 +4,7 @@ use ambient_asset_cache::SyncAssetKey;
 use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use anyhow::Context;
 use context::PipelineCtx;
-use futures::{future::BoxFuture, StreamExt};
+use futures::{future::BoxFuture, StreamExt, TryStreamExt};
 use image::ImageFormat;
 use out_asset::{OutAsset, OutAssetContent, OutAssetPreview};
 use serde::{Deserialize, Serialize};
@@ -68,9 +68,8 @@ impl Pipeline {
     }
 }
 
-pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
-    tracing::info!(?ctx.out_root, 
-        "Processing pipeline");
+pub async fn process_pipelines(ctx: &ProcessCtx) -> anyhow::Result<Vec<OutAsset>> {
+    tracing::info!(?ctx.out_root, "Processing pipeline");
 
     #[derive(Debug, Clone, Deserialize)]
     #[serde(untagged)]
@@ -89,21 +88,32 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
 
     futures::stream::iter(ctx.files.0.iter())
         .filter_map(|file| async move {
-            let pipelines: PipelineOneOrMany = if file.0.path().ends_with("pipeline.json") {
-                file.download_json(&ctx.assets).await.unwrap()
+            if file.0.path().ends_with("pipeline.json") {
+                let res = file
+                    .download_json::<PipelineOneOrMany>(&ctx.assets)
+                    .await
+                    .with_context(|| format!("Failed to read pipeline {:?}", file.0.path()));
+
+                match res {
+                    Ok(pipelines) => {
+                        tracing::info!("Got pipelines: {pipelines:#?}");
+                        Some(Ok((file, pipelines.into_vec())))
+                    }
+                    Err(err) => Some(Err(err)),
+                }
             } else {
-                return None;
-            };
-            Some((file, pipelines.into_vec()))
+                None
+            }
         })
-        .flat_map(|(file, pipelines)| {
+        .map_ok(|(file, pipelines)| {
             futures::stream::iter(pipelines.into_iter().enumerate().map(|(i, pipeline)| {
                 let mut file = file.clone();
                 file.0.set_fragment(Some(&i.to_string()));
-                (file, pipeline)
+                Ok((file, pipeline)) as anyhow::Result<_>
             }))
         })
-        .map(|(pipeline_file, pipeline)| {
+        .try_flatten()
+        .map_ok(|(pipeline_file, pipeline): (AbsAssetUrl, Pipeline)| {
             let root = pipeline_file.join(".").unwrap();
             let ctx = PipelineCtx {
                 files: ctx.files.sub_directory(root.decoded_path().as_str()),
@@ -112,12 +122,17 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
                 pipeline_file,
                 root_path: ctx.in_root.relative_path(root.decoded_path()),
             };
-            tokio::spawn(async move { pipeline.process(ctx).await })
+
+            async move {
+                tokio::spawn(async move { pipeline.process(ctx).await })
+                    .await
+                    .context("Pipeline processing panicked")
+            }
         })
-        .buffered(30)
-        .map(|x| x.unwrap())
-        .flat_map(|out_assets| futures::stream::iter(out_assets.into_iter()))
-        .collect::<Vec<_>>()
+        .try_buffered(30)
+        .map_ok(|out_assets| futures::stream::iter(out_assets.into_iter().map(Ok)))
+        .try_flatten()
+        .try_collect::<Vec<_>>()
         .await
 }
 

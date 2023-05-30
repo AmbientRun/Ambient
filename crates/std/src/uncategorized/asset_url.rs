@@ -269,7 +269,9 @@ impl AbsAssetUrl {
             let content: Vec<u8> = ambient_sys::fs::read(path)
                 .await
                 .context(format!("Failed to read file at: {:}", self.0))?;
-            Ok(serde_json::from_slice(&content)?)
+            let de = &mut serde_json::de::Deserializer::from_slice(&content);
+            let res = serde_path_to_error::deserialize(de)?;
+            Ok(res)
         } else {
             Ok(
                 download(assets, self.to_download_raw_url(assets)?, |resp| async {

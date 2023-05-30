@@ -1,0 +1,25 @@
+[package]
+name = "invalid_asset_loading"
+
+edition = "2021"
+publish = false
+rust-version = { workspace = true }
+version = { workspace = true }
+
+[dependencies]
+ambient_api = { workspace = true }
+
+[[bin]]
+name = "asset_loading_client"
+path = "src/client.rs"
+required-features = ["client"]
+
+
+[[bin]]
+name = "asset_loading_server"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

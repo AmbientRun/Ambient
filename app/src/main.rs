@@ -241,18 +241,20 @@ fn main() -> anyhow::Result<()> {
 
             tracing::info!("Building project {:?}", project_name);
 
-            let metadata = runtime.block_on(ambient_build::build(
-                PhysicsKey.get(&assets),
-                &assets,
-                project_path
-                    .fs_path
-                    .clone()
-                    .expect("should be present as it's already checked above"),
-                manifest,
-                project.release,
-                project.clean_build,
-            ));
-
+            let metadata = runtime
+                .block_on(ambient_build::build(
+                    PhysicsKey.get(&assets),
+                    &assets,
+                    project_path
+                        .fs_path
+                        .clone()
+                        .expect("should be present as it's already checked above"),
+                    manifest,
+                    project.release,
+                    project.clean_build,
+                ))
+                .context("Failed to build project")?;
+     
             Some(metadata)
         } else {
             let metadata_url = project_path.push("build/metadata.toml");
