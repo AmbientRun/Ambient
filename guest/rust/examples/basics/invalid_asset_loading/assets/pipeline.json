@@ -1,8 +1,12 @@
 {
-    "pipeline": {
-        "type": "Models",
-        "colliders": {
-            "type": "fromModel"
+    "pipelines": [
+        {
+            "pipeline": {
+                "type": "Models",
+                "colliders": {
+                    "type": "fromModel"
+                }
+            }
         }
-    }
+    ]
 }

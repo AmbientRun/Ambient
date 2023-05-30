@@ -72,33 +72,21 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> anyhow::Result<Vec<OutAsset>
     tracing::info!(?ctx.out_root, "Processing pipeline");
 
     #[derive(Debug, Clone, Deserialize)]
-    #[serde(untagged)]
-    enum PipelineOneOrMany {
-        Many(Vec<Pipeline>),
-        One(Pipeline),
-    }
-    impl PipelineOneOrMany {
-        fn into_vec(self) -> Vec<Pipeline> {
-            match self {
-                PipelineOneOrMany::Many(v) => v,
-                PipelineOneOrMany::One(p) => vec![p],
-            }
-        }
+    #[serde(deny_unknown_fields)]
+    struct PipelineSchema {
+        pipelines: Vec<Pipeline>,
     }
 
     futures::stream::iter(ctx.files.0.iter())
         .filter_map(|file| async move {
             if file.0.path().ends_with("pipeline.json") {
                 let res = file
-                    .download_json::<PipelineOneOrMany>(&ctx.assets)
+                    .download_json::<PipelineSchema>(&ctx.assets)
                     .await
                     .with_context(|| format!("Failed to read pipeline {:?}", file.0.path()));
 
                 match res {
-                    Ok(pipelines) => {
-                        tracing::info!("Got pipelines: {pipelines:#?}");
-                        Some(Ok((file, pipelines.into_vec())))
-                    }
+                    Ok(schema) => Some(Ok((file, schema.pipelines))),
                     Err(err) => Some(Err(err)),
                 }
             } else {
