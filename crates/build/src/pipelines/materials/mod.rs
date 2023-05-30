@@ -36,6 +36,7 @@ pub mod quixel_surfaces;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[allow(clippy::large_enum_variant)]
+#[serde(deny_unknown_fields)]
 pub enum MaterialsImporter {
     /// Import a single material, as specified.
     /// All of its dependent assets (URLs, etc) will be resolved during the build process.
@@ -44,6 +45,7 @@ pub enum MaterialsImporter {
     Quixel,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MaterialsPipeline {
     /// The importer to use for materials.
     pub importer: Box<MaterialsImporter>,
@@ -153,6 +155,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(deny_unknown_fields)]
 pub struct PipelinePbrMaterial {
     /// The name of the material.
     pub name: Option<String>,

@@ -55,6 +55,7 @@ fn true_value() -> bool {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ModelsPipeline {
     /// The importer to use to process models.
     #[serde(default)]
@@ -153,6 +154,7 @@ impl ModelsPipeline {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MaterialOverride {
     /// The filter for this override (i.e. what it should apply to).
     pub filter: MaterialFilter,
@@ -177,6 +179,7 @@ pub enum ModelImporter {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(tag = "type")]
+#[serde(deny_unknown_fields)]
 pub enum Collider {
     #[default]
     /// No physics collider. The default.

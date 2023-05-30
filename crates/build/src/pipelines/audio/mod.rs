@@ -12,6 +12,7 @@ use super::{
 pub const SOUND_GRAPH_EXTENSION: &str = "sgr";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AudioPipeline {
     /// Whether or not the audio should be converted to Ogg Vorbis.
     #[serde(default)]
