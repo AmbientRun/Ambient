@@ -6,6 +6,7 @@ use ambient_core::{
     transform::{get_world_transform, mesh_to_local, rotation, scale, translation},
 };
 use ambient_ecs::{Entity, EntityId, World};
+use ambient_gpu::sampler::SamplerKey;
 use ambient_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
 use ambient_model_import::{
     dotdot_path,
@@ -388,6 +389,7 @@ impl UnityMaterials {
                 double_sided: Some(true), // TODO: Double sided is configured in the shader in unity, so hard to know. Maybe make user configureable
                 metallic: 1.,
                 roughness: 1.,
+                sampler: Some(SamplerKey::LINEAR_CLAMP_TO_EDGE),
             };
             self.materials.insert(name.to_string(), mat.clone());
             Ok(mat)

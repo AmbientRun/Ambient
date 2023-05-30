@@ -355,6 +355,7 @@ dependencies = [
  "ambient_core",
  "ambient_decals",
  "ambient_ecs",
+ "ambient_gpu",
  "ambient_model",
  "ambient_model_import",
  "ambient_physics",
@@ -865,6 +866,7 @@ dependencies = [
  "ambient_editor_derive",
  "ambient_element",
  "ambient_gizmos",
+ "ambient_gpu",
  "ambient_model",
  "ambient_physics",
  "ambient_primitives",
@@ -1779,6 +1781,9 @@ name = "arrayvec"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "as-any"
@@ -4952,6 +4957,7 @@ dependencies = [
  "log",
  "num-traits",
  "rustc-hash",
+ "serde",
  "spirv",
  "termcolor",
  "thiserror",
@@ -6279,6 +6285,17 @@ name = "rle-decode-fast"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3582f63211428f83597b51b2ddb88e2a91a9d52d12831f9d08f5e624e8977422"
+
+[[package]]
+name = "ron"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "300a51053b1cb55c80b7a9fde4120726ddf25ca241a1cbb926626f62fb136bff"
+dependencies = [
+ "base64 0.13.1",
+ "bitflags 1.3.2",
+ "serde",
+]
 
 [[package]]
 name = "russimp"
@@ -8547,6 +8564,7 @@ dependencies = [
  "parking_lot",
  "profiling",
  "raw-window-handle",
+ "serde",
  "smallvec",
  "static_assertions",
  "wasm-bindgen",
@@ -8595,7 +8613,9 @@ dependencies = [
  "parking_lot",
  "profiling",
  "raw-window-handle",
+ "ron",
  "rustc-hash",
+ "serde",
  "smallvec",
  "thiserror",
  "web-sys",
@@ -8706,6 +8726,7 @@ checksum = "5bd33a976130f03dcdcd39b3810c0c3fc05daf86f0aaf867db14bfb7c4a9a32b"
 dependencies = [
  "bitflags 2.2.1",
  "js-sys",
+ "serde",
  "web-sys",
 ]
 

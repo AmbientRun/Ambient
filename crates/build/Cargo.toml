@@ -11,6 +11,7 @@ ambient_std = { path = "../std" }
 ambient_asset_cache = { path = "../asset_cache" }
 ambient_model_import = { path = "../model_import" }
 ambient_model = { path = "../model" }
+ambient_gpu = { path = "../gpu" }
 ambient_renderer = { path = "../renderer" }
 ambient_core = { path = "../core" }
 ambient_ecs = { path = "../ecs" }

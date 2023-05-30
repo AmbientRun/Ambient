@@ -76,7 +76,7 @@ fn get_decal(in: VertexOutput) -> Decal {
     material_in.position = in.position;
     // Note: Decals assume we're using a unit cube
     material_in.texcoord.y = (0.5 - local_pos.x);
-    material_in.texcoord.x = (local_pos.y - 0.5);
+    material_in.texcoord.x = (local_pos.y + 0.5);
     material_in.world_position = world_position;
     let screen_normal_mat = mat3_from_quat(get_solids_screen_normal_quat(screen_ndc));
     material_in.normal = screen_normal_mat * vec3<f32>(0., 0., 1.);

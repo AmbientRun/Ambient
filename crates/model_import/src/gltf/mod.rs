@@ -10,6 +10,7 @@ use ambient_core::{
     transform::{local_to_parent, local_to_world, rotation, scale, translation},
 };
 use ambient_ecs::{Entity, World};
+use ambient_gpu::sampler::SamplerKey;
 use ambient_model::{
     model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelSkin,
     PbrRenderPrimitiveFromUrl,
@@ -288,6 +289,11 @@ pub async fn import(
                 .map(|x| dotdot_path(x).into()),
             double_sided: Some(mat.double_sided()),
             opacity: None,
+            // TODO: Each GLTF texture knows its sampler modes, but Ambient's
+            // current material model assumes a single sampler for all textures
+            // in a material. Revisit once the renderer supports arbitrary
+            // texture-sampler pairs.
+            sampler: Some(SamplerKey::LINEAR_CLAMP_TO_EDGE),
         };
         materials.push(
             asset_crate

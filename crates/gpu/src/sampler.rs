@@ -1,10 +1,11 @@
 use std::sync::Arc;
 
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
+use serde::{Deserialize, Serialize};
 
 use crate::gpu::GpuKey;
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SamplerKey {
     pub address_mode_u: wgpu::AddressMode,
     pub address_mode_v: wgpu::AddressMode,
