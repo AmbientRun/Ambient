@@ -54,37 +54,72 @@ impl MeshBuilder {
     }
 }
 
-pub fn generate_tangents(positions: &[Vec3], texcoords: &[Vec2], indices: &[u32]) -> Vec<Vec3> {
-    let mut tangents = vec![Vec3::ZERO; positions.len()];
-    let mut tangent_counts = vec![0.0; positions.len()];
-    for triangle in indices.chunks(3) {
-        let (a, b, c) = (triangle[0], triangle[1], triangle[2]);
-        let pos0 = positions[a as usize];
-        let pos1 = positions[b as usize];
-        let pos2 = positions[c as usize];
-
-        let uv0 = texcoords[a as usize];
-        let uv1 = texcoords[b as usize];
-        let uv2 = texcoords[c as usize];
-
-        let d1 = pos1 - pos0;
-        let d2 = pos2 - pos0;
-
-        let dt1 = uv1 - uv0;
-        let dt2 = uv2 - uv0;
-
-        let tangent = (d1 * dt2.y - d2 * dt1.y).normalize_or_zero();
-
-        tangents[triangle[0] as usize] += tangent;
-        tangents[triangle[1] as usize] += tangent;
-        tangents[triangle[2] as usize] += tangent;
-
-        tangent_counts[triangle[0] as usize] += 1.0;
-        tangent_counts[triangle[1] as usize] += 1.0;
-        tangent_counts[triangle[2] as usize] += 1.0;
+pub fn generate_tangents(
+    positions: &[Vec3],
+    texcoords: &[Vec2],
+    normals: &[Vec3],
+    indices: &[u32],
+) -> Vec<Vec3> {
+    struct Geometry<'a> {
+        positions: &'a [Vec3],
+        texcoords: &'a [Vec2],
+        normals: &'a [Vec3],
+        indices: &'a [u32],
+        tangents: &'a mut [Vec3],
     }
-    for i in 0..tangents.len() {
-        tangents[i] /= tangent_counts[i];
+
+    impl Geometry<'_> {
+        fn index(&self, face: usize, vert: usize) -> usize {
+            self.indices[3 * face + vert] as _
+        }
+    }
+
+    impl mikktspace::Geometry for Geometry<'_> {
+        fn num_faces(&self) -> usize {
+            self.indices.len() / 3
+        }
+
+        fn num_vertices_of_face(&self, _face: usize) -> usize {
+            3
+        }
+
+        fn position(&self, face: usize, vert: usize) -> [f32; 3] {
+            self.positions[self.index(face, vert)].into()
+        }
+
+        fn normal(&self, face: usize, vert: usize) -> [f32; 3] {
+            self.normals[self.index(face, vert)].into()
+        }
+
+        fn tex_coord(&self, face: usize, vert: usize) -> [f32; 2] {
+            self.texcoords[self.index(face, vert)].into()
+        }
+
+        fn set_tangent(
+            &mut self,
+            tangent: [f32; 3],
+            _bi_tangent: [f32; 3],
+            _f_mag_s: f32,
+            _f_mag_t: f32,
+            _bi_tangent_preserves_orientation: bool,
+            face: usize,
+            vert: usize,
+        ) {
+            self.tangents[self.index(face, vert)] = tangent.into();
+        }
+    }
+
+    let mut tangents = vec![Vec3::ZERO; positions.len()];
+    let mut geometry = Geometry {
+        positions,
+        texcoords,
+        normals,
+        indices,
+        tangents: &mut tangents,
+    };
+    let result = mikktspace::generate_tangents(&mut geometry);
+    if !result {
+        log::warn!("mikktspace::generate_tangents failed");
     }
     tangents
 }

@@ -364,7 +364,7 @@ impl From<CapsuleMesh> for Mesh {
         assert_eq!(vs.len(), vert_len);
         assert_eq!(tris.len(), fs_len);
 
-        let tangents = generate_tangents(&vs, &vts, &tris);
+        let tangents = generate_tangents(&vs, &vts, &vns, &tris);
         MeshBuilder {
             positions: vs,
             normals: vns,

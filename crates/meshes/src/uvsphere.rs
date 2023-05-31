@@ -81,7 +81,7 @@ impl From<UVSphereMesh> for Mesh {
             }
         }
 
-        let tangents = generate_tangents(&vertices, &uvs, &indices);
+        let tangents = generate_tangents(&vertices, &uvs, &normals, &indices);
         MeshBuilder {
             positions: vertices,
             normals,

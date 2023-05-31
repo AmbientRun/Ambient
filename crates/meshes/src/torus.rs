@@ -80,7 +80,7 @@ impl From<TorusMesh> for Mesh {
             }
         }
 
-        let tangents = generate_tangents(&vertices, &texcoords, &indices);
+        let tangents = generate_tangents(&vertices, &texcoords, &normals, &indices);
         MeshBuilder {
             positions: vertices,
             normals,

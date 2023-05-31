@@ -97,8 +97,8 @@ pub async fn import(
             } else {
                 Vec::new()
             };
-            if tangents.is_empty() && !texcoords[0].is_empty() {
-                tangents = generate_tangents(&positions, &texcoords[0], &indices);
+            if tangents.is_empty() && !texcoords[0].is_empty() && !normals.is_empty() {
+                tangents = generate_tangents(&positions, &texcoords[0], &normals, &indices);
             }
 
             let joint_indices = if let Some(joints) = reader.read_joints(0) {
