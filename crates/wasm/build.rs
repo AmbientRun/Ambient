@@ -20,14 +20,21 @@ fn main() {
     let files: Vec<_> = filenames_to_copy
         .iter()
         .map(|path| -> std::io::Result<_> {
-            let absolute_path = working_dir.join(path).canonicalize().unwrap();
+            let canonicalized_path = working_dir.join(path).canonicalize().unwrap();
 
             // De-UNC the path.
             #[cfg(target_os = "windows")]
             let absolute_path = dunce::simplified(&absolute_path).to_owned();
+            #[cfg(not(target_os = "windows"))]
+            let absolute_path = canonicalized_path.clone();
+
+            eprintln!(
+                "Reading files to build {:?} {:?}",
+                canonicalized_path, absolute_path,
+            );
 
             Ok(File {
-                absolute_path,
+                absolute_path: canonicalized_path,
                 contents: std::fs::read_to_string(path)?,
             })
         })

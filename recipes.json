@@ -80,5 +80,17 @@
     },
     "launch-chrome": {
         "cmd": "./scripts/launch_chrome.sh"
+    },
+    "example-with-space": {
+        "cmd": [
+            "cargo",
+            "run",
+            "--",
+            "build",
+            "./guest/rust/examples/breaking basics/with space"
+        ],
+        "env": {
+            "RUST_LOG": "ambient_build=info,info"
+        }
     }
 }

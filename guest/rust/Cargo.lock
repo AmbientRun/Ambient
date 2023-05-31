@@ -2091,6 +2091,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "with_space"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "yansi"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

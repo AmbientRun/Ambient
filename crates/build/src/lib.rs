@@ -50,7 +50,8 @@ pub async fn build(
     manifest: &ProjectManifest,
     optimize: bool,
 ) -> Metadata {
-    log::info!(
+    tracing::info!(
+        ?path,
         "Building project `{}` ({})",
         manifest.project.id,
         manifest
@@ -66,6 +67,8 @@ pub async fn build(
     let build_path = path.join("build");
     let assets_path = path.join("assets");
 
+    tracing::info!(?build_path, ?assets_path);
+
     std::fs::create_dir_all(&build_path).unwrap();
     build_assets(physics, &assets_path, &build_path).await;
     build_rust_if_available(&path, manifest, &build_path, optimize)
@@ -76,13 +79,17 @@ pub async fn build(
 }
 
 async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
+    tracing::info!(?assets_path, ?build_path, "Building assets");
+
     let files = WalkDir::new(assets_path)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
         .map(|x| AbsAssetUrl::from_file_path(x.into_path()))
         .collect_vec();
+
     let assets = AssetCache::new_with_config(tokio::runtime::Handle::current(), None);
+
     PhysicsKey.insert(&assets, physics);
     let ctx = ProcessCtx {
         assets: assets.clone(),
