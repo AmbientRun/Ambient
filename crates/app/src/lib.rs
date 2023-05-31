@@ -163,7 +163,10 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         .with(ambient_core::app_start_time(), current_time)
         .with(ambient_core::time(), current_time)
         .with(ambient_core::dtime(), 0.)
-        .with(gpu_world(), GpuWorld::new_arced(resources.assets))
+        .with(
+            gpu_world(),
+            GpuWorld::new_arced(&resources.gpu, resources.assets),
+        )
         .with_merge(ambient_input::resources())
         .with_merge(ambient_input::picking::resources())
         .with_merge(ambient_core::async_ecs::async_ecs_resources())
@@ -400,7 +403,7 @@ impl AppBuilder {
             };
 
         let app_resources = AppResources {
-            gpu,
+            gpu: gpu.clone(),
             runtime: runtime.clone(),
             assets,
             ctl_tx,
@@ -423,7 +426,8 @@ impl AppBuilder {
                 world.add_resource(ui_renderer(), renderer);
             } else {
                 tracing::debug!("Setting up Main renderer");
-                let renderer = MainRenderer::new(&mut world, self.ui_renderer, self.main_renderer);
+                let renderer =
+                    MainRenderer::new(&gpu, &mut world, self.ui_renderer, self.main_renderer);
                 tracing::debug!("Created main renderer");
                 let renderer = Arc::new(Mutex::new(renderer));
                 world.add_resource(main_renderer(), renderer);
@@ -818,9 +822,10 @@ impl System for MeshBufferUpdate {
     fn run(&mut self, world: &mut World, _event: &FrameEvent) {
         ambient_profiling::scope!("MeshBufferUpdate.run");
         let assets = world.resource(asset_cache()).clone();
+        let gpu = world.resource(gpu()).clone();
         let mesh_buffer = MeshBufferKey.get(&assets);
         let mut mesh_buffer = mesh_buffer.lock();
-        mesh_buffer.update();
+        mesh_buffer.update(&gpu);
     }
 }
 

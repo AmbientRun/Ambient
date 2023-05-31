@@ -16,7 +16,7 @@ use ambient_ecs::{
 use ambient_gpu::{
     mesh_buffer::GpuMesh,
     shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule},
-    wgsl_utils::wgsl_interpolate,
+    wgsl_utils::wgsl_interpolate, gpu::Gpu,
 };
 use ambient_std::{asset_cache::*, asset_url::AbsAssetUrl, cb, include_file, Cb};
 use derive_more::*;
@@ -398,7 +398,7 @@ pub trait Material: Debug + Sync + Send + DowncastSync {
         self.id()
     }
 
-    fn update(&self, _: &World) {}
+    fn update(&self, _: &Gpu, _: &World) {}
 
     fn bind_group(&self) -> &wgpu::BindGroup;
 

@@ -29,14 +29,12 @@ struct OverlayEntity {
 }
 
 pub struct OverlayConfig {
-    pub gpu: Arc<Gpu>,
     pub fs_main: FSMain,
     pub targets: Vec<Option<ColorTargetState>>,
     pub resources: RendererResources,
 }
 
 pub struct OverlayRenderer {
-    assets: AssetCache,
     config: OverlayConfig,
     renderer_config: RendererConfig,
     pipelines_map: HashMap<String, usize>,
@@ -48,21 +46,24 @@ pub struct OverlayRenderer {
 }
 
 impl OverlayRenderer {
-    pub fn new(assets: AssetCache, renderer_config: RendererConfig, config: OverlayConfig) -> Self {
+    pub fn new(
+        assets: &AssetCache,
+        renderer_config: RendererConfig,
+        config: OverlayConfig,
+    ) -> Self {
         Self {
-            assets: assets.clone(),
             config,
             renderer_config,
             entities: Vec::new(),
             spawn_qs: QueryState::new(),
             despawn_qs: QueryState::new(),
-            mesh: QuadMeshKey.get(&assets),
+            mesh: QuadMeshKey.get(assets),
             pipelines: Default::default(),
             pipelines_map: Default::default(),
         }
     }
 
-    pub fn update(&mut self, world: &mut World) {
+    pub fn update(&mut self, gpu: &Gpu, assets: &AssetCache, world: &mut World) {
         let mut spawn_qs = std::mem::replace(&mut self.spawn_qs, QueryState::new());
         let mut despawn_qs = std::mem::replace(&mut self.despawn_qs, QueryState::new());
         for (id, ((), shader, material, pos)) in query((
@@ -75,7 +76,7 @@ impl OverlayRenderer {
         {
             self.remove(id);
 
-            let shader = self.shader(&shader(&self.assets, &self.renderer_config)).0;
+            let shader = self.shader(gpu, &shader(assets, &self.renderer_config)).0;
 
             // Insert again
             self.entities.push(OverlayEntity {
@@ -109,7 +110,7 @@ impl OverlayRenderer {
         }
     }
 
-    fn shader(&mut self, shader: &RendererShader) -> (usize, &RenderPipeline) {
+    fn shader(&mut self, gpu: &Gpu, shader: &RendererShader) -> (usize, &RenderPipeline) {
         let config = &self.config;
         match self.pipelines_map.entry(shader.id.to_owned()) {
             std::collections::hash_map::Entry::Occupied(entry) => {
@@ -121,7 +122,7 @@ impl OverlayRenderer {
                 let idx = self.pipelines.len();
 
                 let pipeline = shader.shader.to_pipeline(
-                    &config.gpu,
+                    gpu,
                     GraphicsPipelineInfo {
                         vs_main: &shader.vs_main,
                         fs_main: shader.get_fs_main_name(config.fs_main),

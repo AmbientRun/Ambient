@@ -18,12 +18,10 @@ use super::{
     double_sided, lod::cpu_lod_visible, primitives, CollectPrimitive, DrawIndexedIndirect, FSMain,
     PrimitiveIndex, RendererCollectState, RendererResources, RendererShader, SharedMaterial,
 };
-use crate::{bind_groups::BindGroups, is_transparent, RendererConfig};
+use crate::{bind_groups::BindGroups, is_transparent, PostSubmitFunc, RendererConfig};
 
 pub struct TreeRendererConfig {
-    pub gpu: Arc<Gpu>,
     pub renderer_config: RendererConfig,
-    pub assets: AssetCache,
     pub filter: ArchetypeFilter,
     pub targets: Vec<Option<wgpu::ColorTargetState>>,
     pub renderer_resources: RendererResources,
@@ -48,7 +46,7 @@ pub struct TreeRenderer {
     material_indices: MaterialIndices,
 }
 impl TreeRenderer {
-    pub fn new(config: TreeRendererConfig) -> Self {
+    pub fn new(gpu: &Gpu, config: TreeRendererConfig) -> Self {
         Self {
             tree: HashMap::new(),
             entity_primitive_count: HashMap::new(),
@@ -57,7 +55,7 @@ impl TreeRenderer {
 
             primitives_bind_group: None,
             primitives: TypedMultiBuffer::new(
-                config.gpu.clone(),
+                gpu,
                 "TreeRenderer.primitives",
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
@@ -87,7 +85,7 @@ impl TreeRenderer {
         })
     }
     #[ambient_profiling::function]
-    pub fn update(&mut self, world: &mut World) {
+    pub fn update(&mut self, gpu: &Gpu, assets: &AssetCache, world: &mut World) {
         tracing::debug!("Updating TreeRenderer");
         let mut to_update = HashSet::new();
         let mut spawn_qs = std::mem::replace(&mut self.spawn_qs, QueryState::new());
@@ -106,9 +104,9 @@ impl TreeRenderer {
                 }
             }
             for (primitive_index, primitive) in primitives.iter().enumerate() {
-                let primitive_shader =
-                    (primitive.shader)(&self.config.assets, &self.config.renderer_config);
+                let primitive_shader = (primitive.shader)(assets, &self.config.renderer_config);
                 if let Some(update) = self.insert(
+                    gpu,
                     world,
                     id,
                     primitive_index,
@@ -139,7 +137,7 @@ impl TreeRenderer {
 
         self.spawn_qs = spawn_qs;
         self.despawn_qs = despawn_qs;
-        self.clean_empty();
+        self.clean_empty(gpu);
         for (_, id) in self.loc_changed_reader.iter(world.loc_changed()) {
             if let Ok(primitives) = world.get_ref(*id, primitives()) {
                 for primivite_index in 0..primitives.len() {
@@ -152,13 +150,11 @@ impl TreeRenderer {
             }
         }
 
-        let mut encoder =
-            self.config
-                .gpu
-                .device
-                .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                    label: Some("TreeRenderer.update"),
-                });
+        let mut encoder = gpu
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: Some("TreeRenderer.update"),
+            });
         let mut primitives_to_write = Vec::new();
         for (shader_id, material_id) in to_update.into_iter() {
             if let Some(shader) = self.tree.get(&shader_id) {
@@ -177,6 +173,7 @@ impl TreeRenderer {
                         .collect_vec();
                     self.primitives
                         .resize_buffer_with_encoder(
+                            gpu,
                             &mut encoder,
                             mat.primitives_subbuffer,
                             primitives.len() as u64,
@@ -187,22 +184,24 @@ impl TreeRenderer {
             }
         }
 
-        self.config.gpu.queue.submit(Some(encoder.finish()));
+        gpu.queue.submit(Some(encoder.finish()));
         for (subbuffer, primitives) in primitives_to_write.into_iter() {
-            self.primitives.write(subbuffer, 0, &primitives).unwrap();
+            self.primitives
+                .write(gpu, subbuffer, 0, &primitives)
+                .unwrap();
         }
 
         for node in self.tree.values_mut() {
             for mat in node.tree.values_mut() {
                 // TODO: Materials can be shared between many renderers, so this should be moved
                 // somewhere where it's done just once for all of them
-                mat.material.update(world);
+                mat.material.update(gpu, world);
             }
         }
 
         self.primitives_bind_group = if self.primitives.total_len() > 0 {
             Some(Self::create_primitives_bind_group(
-                &self.config.gpu,
+                gpu,
                 &self.config.renderer_resources.primitives_layout,
                 self.primitives.buffer(),
             ))
@@ -212,8 +211,10 @@ impl TreeRenderer {
     }
     pub fn run_collect(
         &self,
+        gpu: &Gpu,
+        assets: &AssetCache,
         encoder: &mut wgpu::CommandEncoder,
-        post_submit: &mut Vec<Box<dyn FnOnce() + Send + Send>>,
+        post_submit: &mut Vec<PostSubmitFunc>,
         resources_bind_group: &wgpu::BindGroup,
         entities_bind_group: &wgpu::BindGroup,
         collect_state: &mut RendererCollectState,
@@ -236,6 +237,8 @@ impl TreeRenderer {
         }
 
         self.config.renderer_resources.collect.run(
+            gpu,
+            assets,
             encoder,
             post_submit,
             resources_bind_group,
@@ -249,6 +252,7 @@ impl TreeRenderer {
 
     fn insert(
         &mut self,
+        gpu: &Gpu,
         world: &World,
         id: EntityId,
         primitive_index: usize,
@@ -267,14 +271,14 @@ impl TreeRenderer {
             let node = self
                 .tree
                 .entry(shader_id.clone())
-                .or_insert_with(|| ShaderNode::new(config, shader.clone(), double_sided));
+                .or_insert_with(|| ShaderNode::new(gpu, config, shader.clone(), double_sided));
 
             let mat = node
                 .tree
                 .entry(material.id().to_string())
                 .or_insert_with(|| MaterialNode {
                     material_index: self.material_indices.acquire_index(),
-                    primitives_subbuffer: self.primitives.create_buffer(None),
+                    primitives_subbuffer: self.primitives.create_buffer(gpu, None),
                     material: material.clone(),
                     primitives: Vec::new(),
                 });
@@ -315,13 +319,13 @@ impl TreeRenderer {
             None
         }
     }
-    fn clean_empty(&mut self) {
+    fn clean_empty(&mut self, gpu: &Gpu) {
         for node in self.tree.values_mut() {
             node.tree.retain(|_, mat| {
                 let to_remove = mat.primitives.is_empty();
                 if to_remove {
                     self.primitives
-                        .remove_buffer(mat.primitives_subbuffer)
+                        .remove_buffer(gpu, mat.primitives_subbuffer)
                         .unwrap();
                     self.material_indices.release_index(mat.material_index);
                 }
@@ -418,12 +422,11 @@ struct ShaderNode {
 }
 impl ShaderNode {
     pub fn new(
+        gpu: &Gpu,
         config: &TreeRendererConfig,
         shader: Arc<RendererShader>,
         double_sided: bool,
     ) -> Self {
-        let gpu = config.gpu.clone();
-
         let mut pipeline_info = GraphicsPipelineInfo {
             vs_main: &shader.vs_main,
             fs_main: shader.get_fs_main_name(config.fs_main),
@@ -439,7 +442,7 @@ impl ShaderNode {
                 .with_depth_bias(config.depth_bias);
         }
 
-        let pipeline = shader.shader.to_pipeline(&gpu, pipeline_info);
+        let pipeline = shader.shader.to_pipeline(gpu, pipeline_info);
 
         Self {
             pipeline,

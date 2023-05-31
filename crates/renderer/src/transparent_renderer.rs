@@ -20,8 +20,6 @@ use super::{
 use crate::{bind_groups::BindGroups, is_transparent, transparency_group, RendererConfig};
 
 pub struct TransparentRendererConfig {
-    pub gpu: Arc<Gpu>,
-    pub assets: AssetCache,
     pub renderer_config: RendererConfig,
     pub filter: ArchetypeFilter,
     pub targets: Vec<Option<wgpu::ColorTargetState>>,
@@ -43,9 +41,9 @@ pub struct TransparentRenderer {
     despawn_qs: QueryState,
 }
 impl TransparentRenderer {
-    pub fn new(config: TransparentRendererConfig) -> Self {
+    pub fn new(gpu: &Gpu, config: TransparentRendererConfig) -> Self {
         let gpu_primitives = TypedBuffer::new(
-            config.gpu.clone(),
+            gpu,
             "TransparentRenderer.primitives",
             1,
             1,
@@ -60,7 +58,7 @@ impl TransparentRenderer {
             shaders: HashMap::new(),
             entity_primitive_count: HashMap::new(),
             primitives_bind_group: Self::create_primitives_bind_group(
-                &config.gpu,
+                gpu,
                 &config.renderer_resources.primitives_layout,
                 gpu_primitives.buffer(),
             ),
@@ -74,6 +72,8 @@ impl TransparentRenderer {
     #[ambient_profiling::function]
     pub fn update(
         &mut self,
+        gpu: &Gpu,
+        assets: &AssetCache,
         world: &mut World,
         mesh_buffer: &MeshBuffer,
         camera_projection_view: Mat4,
@@ -90,8 +90,7 @@ impl TransparentRenderer {
                 }
             }
             for (primitive_index, primitive) in primitives.iter().enumerate() {
-                let primitive_shader =
-                    (primitive.shader)(&self.config.assets, &self.config.renderer_config);
+                let primitive_shader = (primitive.shader)(assets, &self.config.renderer_config);
                 let transparent = is_transparent(world, id, &primitive.material, &primitive_shader);
                 if transparent || self.config.render_opaque {
                     let config = self.config.clone();
@@ -110,6 +109,7 @@ impl TransparentRenderer {
                         .entry(primitive_shader.id.clone())
                         .or_insert_with(|| {
                             Arc::new(ShaderNode::new(
+                                gpu,
                                 config,
                                 primitive_shader.clone(),
                                 double_sided,
@@ -149,7 +149,7 @@ impl TransparentRenderer {
         self.spawn_qs = spawn_qs;
         self.despawn_qs = despawn_qs;
         for entry in self.primitives.iter_mut() {
-            entry.material.update(world);
+            entry.material.update(gpu, world);
             let primitives = world.get_ref(entry.id, primitives()).unwrap();
             let mesh = &primitives[entry.primitive_index].mesh;
             entry.mesh_metadata = *mesh_buffer.get_mesh_metadata(mesh);
@@ -164,15 +164,16 @@ impl TransparentRenderer {
 
         if self
             .gpu_primitives
-            .resize(self.primitives.len() as u64, true)
+            .resize(gpu, self.primitives.len() as u64, true)
         {
             self.primitives_bind_group = Self::create_primitives_bind_group(
-                &self.config.gpu,
+                gpu,
                 &self.config.renderer_resources.primitives_layout,
                 self.gpu_primitives.buffer(),
             );
         }
         self.gpu_primitives.write(
+            gpu,
             0,
             &self
                 .primitives
@@ -260,15 +261,14 @@ struct ShaderNode {
 }
 impl ShaderNode {
     pub fn new(
+        gpu: &Gpu,
         config: Arc<TransparentRendererConfig>,
         shader: Arc<RendererShader>,
         double_sided: bool,
         depth_write_enabled: bool,
     ) -> Self {
-        let gpu = config.gpu.clone();
-
         let pipeline = shader.shader.to_pipeline(
-            &gpu,
+            gpu,
             GraphicsPipelineInfo {
                 vs_main: &shader.vs_main,
                 fs_main: shader.get_fs_main_name(config.fs_main),

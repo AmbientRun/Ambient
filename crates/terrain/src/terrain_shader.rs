@@ -7,7 +7,7 @@ use async_trait::async_trait;
 use ambient_ecs::World;
 use ambient_editor_derive::ElementEditor;
 use ambient_gpu::{
-    gpu::{Gpu, GpuKey},
+    gpu::Gpu,
     shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule, WgslValue},
     texture::{Texture, TextureView},
     texture_loaders::TextureArrayFromUrls, sampler::SamplerKey,
@@ -175,7 +175,6 @@ pub struct TerrainMaterialParams {
 }
 #[derive(Debug)]
 pub struct TerrainMaterial {
-    gpu: Arc<Gpu>,
     id: String,
     pub params: TerrainMaterialParams,
     pub buffer: wgpu::Buffer,
@@ -184,7 +183,8 @@ pub struct TerrainMaterial {
 impl TerrainMaterial {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        assets: AssetCache,
+        gpu: &Gpu,
+        assets: &AssetCache,
         params: TerrainMaterialParams,
         heightmap: Arc<TextureView>,
         normalmap: Arc<TextureView>,
@@ -193,8 +193,7 @@ impl TerrainMaterial {
         noise_texture: Arc<TextureView>,
         material_def: TerrainMaterialDef,
     ) -> Self {
-        let gpu = GpuKey.get(&assets);
-        let layout = get_terrain_layout().get(&assets);
+        let layout = get_terrain_layout().get(assets);
 
         let params_buffer = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("TerrainMaterial.params_buffer"),
@@ -216,7 +215,7 @@ impl TerrainMaterial {
             mipmap_filter: wgpu::FilterMode::Linear,
             ..Default::default()
         }));
-        let default_sampler = SamplerKey::LINEAR_CLAMP_TO_EDGE.get(&assets);
+        let default_sampler = SamplerKey::LINEAR_CLAMP_TO_EDGE.get(assets);
         Self {
             id: friendly_id(),
             params,
@@ -238,14 +237,13 @@ impl TerrainMaterial {
             buffer: params_buffer,
             // surface_colors,
             // noise_texture,
-            gpu: gpu.clone(),
         }
     }
 }
 impl Material for TerrainMaterial {
-    fn update(&self, _world: &World) {
+    fn update(&self, gpu: &Gpu, _world: &World) {
         let params = self.params;
-        self.gpu.queue.write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[params]));
+        gpu.queue.write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[params]));
     }
     fn bind_group(&self) -> &BindGroup {
         &self.bind_group

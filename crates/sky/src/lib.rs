@@ -4,10 +4,10 @@
 
 use std::sync::Arc;
 
-use ambient_core::{asset_cache, mesh, transform::translation};
+use ambient_core::{asset_cache, gpu, mesh, transform::translation};
 use ambient_ecs::{components, query, Entity, SystemGroup};
 use ambient_gpu::{
-    gpu::GpuKey,
+    gpu::Gpu,
     shader_module::{BindGroupDesc, Shader, ShaderModule},
     typed_buffer::TypedBuffer,
 };
@@ -65,10 +65,11 @@ pub fn systems() -> SystemGroup {
                 .excl(renderer_shader())
                 .to_system(|q, world, qs, _| {
                     let assets = world.resource(asset_cache()).clone();
+                    let gpu = world.resource(gpu()).clone();
                     for (id, _) in q.collect_cloned(world, qs) {
                         let clouds = CloudState::new(100.0);
 
-                        let material = CloudMaterial::new(assets.clone(), &clouds);
+                        let material = CloudMaterial::new(&gpu, &assets, &clouds);
 
                         let data = Entity::new()
                             .with(
@@ -144,11 +145,9 @@ pub struct CloudMaterial {
 }
 
 impl CloudMaterial {
-    pub fn new(assets: AssetCache, state: &CloudState) -> Self {
-        let gpu = GpuKey.get(&assets);
-
+    pub fn new(gpu: &Gpu, assets: &AssetCache, state: &CloudState) -> Self {
         let cloud_buffer = TypedBuffer::new(
-            gpu.clone(),
+            gpu,
             "Cloud Buffer",
             state.tree.len().max(64) as u64,
             0,
@@ -158,7 +157,7 @@ impl CloudMaterial {
         Self {
             id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
-                layout: &get_cloud_shader_layout().get(&assets),
+                layout: &get_cloud_shader_layout().get(assets),
                 entries: &[wgpu::BindGroupEntry {
                     binding: 0,
                     resource: cloud_buffer.buffer().as_entire_binding(),

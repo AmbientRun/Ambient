@@ -13,14 +13,9 @@ use ambient_core::{
 };
 use ambient_ecs::{components, query, Entity, FrameEvent, System, SystemGroup, World};
 use ambient_gizmos::render::GizmoRenderer;
-use ambient_gpu::gpu::GpuKey;
+use ambient_gpu::gpu::Gpu;
 use ambient_renderer::{RenderTarget, Renderer, RendererConfig, RendererTarget};
-use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt},
-    color::Color,
-    math::interpolate,
-    shapes::Ray,
-};
+use ambient_std::{asset_cache::AssetCache, color::Color, math::interpolate, shapes::Ray};
 use ambient_world_audio::systems::{setup_audio, spatial_audio_systems};
 use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
 
@@ -52,6 +47,7 @@ impl std::fmt::Debug for TempSystem {
 
 impl ClientGameState {
     pub fn new(
+        gpu: &Gpu,
         world: &mut World,
         assets: AssetCache,
         player_id: String,
@@ -78,19 +74,19 @@ impl ClientGameState {
             ],
         );
         let mut renderer = Renderer::new(
-            world,
-            assets.clone(),
+            gpu,
+            &assets,
             RendererConfig {
                 scene: main_scene(),
                 shadows: true,
                 ..Default::default()
             },
         );
-        renderer.post_transparent = Some(Box::new(GizmoRenderer::new(&assets)));
+        renderer.post_transparent = Some(Box::new(GizmoRenderer::new(gpu, &assets)));
 
         let ui_renderer = Renderer::new(
-            world,
-            assets.clone(),
+            gpu,
+            &assets,
             RendererConfig {
                 scene: ui_scene(),
                 shadows: false,
@@ -110,7 +106,7 @@ impl ClientGameState {
         }
     }
     #[ambient_profiling::function]
-    pub fn on_frame(&mut self, target: &RenderTarget) {
+    pub fn on_frame(&mut self, gpu: &Gpu, target: &RenderTarget) {
         let _span = debug_span!("ClientGameState.on_frame").entered();
 
         self.world.next_frame();
@@ -120,7 +116,6 @@ impl ClientGameState {
 
         self.gpu_world_sync_systems
             .run(&mut self.world, &GpuWorldSyncEvent);
-        let gpu = GpuKey.get(&self.assets);
         let mut encoder = gpu
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
@@ -129,6 +124,7 @@ impl ClientGameState {
         let mut post_submit = Vec::new();
         tracing::debug!("Drawing world");
         self.renderer.render(
+            gpu,
             &mut self.world,
             &mut encoder,
             &mut post_submit,
@@ -137,6 +133,7 @@ impl ClientGameState {
         );
         tracing::debug!("Drawing ui");
         self.ui_renderer.render(
+            gpu,
             &mut self.world,
             &mut encoder,
             &mut post_submit,

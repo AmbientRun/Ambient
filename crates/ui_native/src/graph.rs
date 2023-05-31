@@ -3,7 +3,7 @@ use std::iter::once;
 use ambient_core::{
     asset_cache,
     transform::{mesh_to_local, rotation, translation},
-    ui_scene,
+    ui_scene, gpu,
 };
 use ambient_element::{Element, ElementComponent, ElementComponentExt};
 use ambient_gpu::{self, mesh_buffer::MeshBufferKey};
@@ -144,6 +144,7 @@ impl Default for Graph {
 impl ElementComponent for Graph {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
         let assets = hooks.world.resource(asset_cache());
+        let gpu = hooks.world.resource(gpu());
         let Self { points, guide_style, style, width, height, max_value, x_scale, y_scale, x_bounds, y_bounds } = *self;
 
         let points = points.into_iter().filter(|v| v.x.is_normal() && v.y.is_normal() && v.x.abs() < max_value && v.y.abs() < max_value);
@@ -209,7 +210,7 @@ impl ElementComponent for Graph {
 
         let mesh = MeshBuilder { positions: points, indices, ..MeshBuilder::default() }.build().expect("Invalid graph mesh");
 
-        let mesh = mesh_buffer.insert(&mesh);
+        let mesh = mesh_buffer.insert(gpu, &mesh);
 
         let origin = to_screen_space(Vec2::ZERO) * size;
         let guides = vec![
@@ -228,7 +229,7 @@ impl ElementComponent for Graph {
             .init(crate::height(), height)
             .init(crate::scale(), Vec3::ONE)
             .init(renderer_shader(), cb(get_flat_shader_unlit))
-            .init(material(), SharedMaterial::new(FlatMaterial::new(assets, style.color, None)))
+            .init(material(), SharedMaterial::new(FlatMaterial::new(gpu, assets, style.color, None)))
             .init(color(), Vec4::ONE)
             .init(ui_scene(), ())
             .with(ambient_core::mesh(), mesh)

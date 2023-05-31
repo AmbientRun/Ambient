@@ -56,7 +56,6 @@ impl SyncAssetKey<Arc<RendererShader>> for LoadingMaterialKey {}
 #[derive(Debug)]
 #[allow(dead_code)]
 pub struct LoadingMaterial {
-    gpu: Arc<Gpu>,
     id: String,
     buffer: wgpu::Buffer,
     bind_group: wgpu::BindGroup,
@@ -64,13 +63,13 @@ pub struct LoadingMaterial {
 
 impl SyncAssetKey<SharedMaterial> for LoadingMaterialKey {
     fn load(&self, assets: AssetCache) -> SharedMaterial {
-        SharedMaterial::new(LoadingMaterial::new(assets, *self))
+        let gpu = GpuKey.get(&assets);
+        SharedMaterial::new(LoadingMaterial::new(&gpu, &assets, *self))
     }
 }
 impl LoadingMaterial {
-    pub fn new(assets: AssetCache, params: LoadingMaterialKey) -> Self {
-        let gpu = GpuKey.get(&assets);
-        let layout = get_loading_layout().get(&assets);
+    pub fn new(gpu: &Gpu, assets: &AssetCache, params: LoadingMaterialKey) -> Self {
+        let layout = get_loading_layout().get(assets);
 
         let buffer = gpu
             .device
@@ -91,7 +90,6 @@ impl LoadingMaterial {
                 label: Some("LoadingMaterial.bind_group"),
             }),
             buffer,
-            gpu: gpu.clone(),
         }
     }
 }

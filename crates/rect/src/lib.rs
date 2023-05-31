@@ -6,7 +6,7 @@ use ambient_core::{
 };
 use ambient_ecs::{ensure_has_component, ensure_has_component_with_default, query, Entity, SystemGroup};
 use ambient_gpu::{
-    gpu::GpuKey,
+    gpu::{GpuKey, Gpu},
     shader_module::{BindGroupDesc, ShaderModule},
     typed_buffer::TypedBuffer,
 };
@@ -168,7 +168,8 @@ pub struct RectMaterialKey {
 }
 impl SyncAssetKey<SharedMaterial> for RectMaterialKey {
     fn load(&self, assets: AssetCache) -> SharedMaterial {
-        SharedMaterial::new(RectMaterial::new(assets, self.params))
+        let gpu = GpuKey.get(&assets);
+        SharedMaterial::new(RectMaterial::new(&gpu, &assets, self.params))
     }
 }
 
@@ -188,12 +189,11 @@ pub struct RectMaterial {
     transparent: Option<bool>,
 }
 impl RectMaterial {
-    pub fn new(assets: AssetCache, params: RectMaterialParams) -> Self {
-        let gpu = GpuKey.get(&assets);
-        let layout = get_rect_layout().get(&assets);
+    pub fn new(gpu: &Gpu, assets: &AssetCache, params: RectMaterialParams) -> Self {
+        let layout = get_rect_layout().get(assets);
 
         let buffer = TypedBuffer::new_init(
-            gpu.clone(),
+            gpu,
             "RectMaterial.buffer",
             wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             &[params],

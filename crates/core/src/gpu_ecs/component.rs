@@ -59,7 +59,11 @@ pub struct GpuComponentsConfig {
 
 impl GpuComponentsConfig {
     pub fn new(format: GpuComponentFormat) -> Self {
-        Self { format, components: Vec::new(), components_before_this: 0 }
+        Self {
+            format,
+            components: Vec::new(),
+            components_before_this: 0,
+        }
     }
     pub fn layout_offset(&self, archetypes: usize) -> usize {
         1 + self.components_before_this * archetypes
@@ -177,7 +181,12 @@ impl GpuWorldConfig {
         Self { buffers }
     }
     pub fn wgsl(&self, writeable: bool) -> String {
-        let buffers = self.buffers.iter().enumerate().map(|(i, buf)| buf.wgsl(ENTITIES_BIND_GROUP, i as u32, writeable)).join("\n");
+        let buffers = self
+            .buffers
+            .iter()
+            .enumerate()
+            .map(|(i, buf)| buf.wgsl(ENTITIES_BIND_GROUP, i as u32, writeable))
+            .join("\n");
 
         format!(
             "
@@ -201,7 +210,9 @@ var<storage> entity_layout: EntityLayoutBuffer;
                     wgpu::ShaderStages::VERTEX_FRAGMENT | wgpu::ShaderStages::COMPUTE
                 },
                 ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Storage { read_only: !(writeable && binding != 0) },
+                    ty: wgpu::BufferBindingType::Storage {
+                        read_only: !(writeable && binding != 0),
+                    },
                     has_dynamic_offset: false,
                     min_binding_size: None,
                 },
@@ -209,7 +220,8 @@ var<storage> entity_layout: EntityLayoutBuffer;
             }
         }
 
-        (0..self.buffers.len() + 1).map(move |i| entity_component_storage_entry(i as u32, !read_only))
+        (0..self.buffers.len() + 1)
+            .map(move |i| entity_component_storage_entry(i as u32, !read_only))
     }
 }
 
@@ -221,7 +233,9 @@ impl SyncAssetKey<GpuWorldConfig> for GpuWorldConfigKey {
         let mut by_format = HashMap::new();
         let components = &registry.components;
         for comp in components {
-            let entry = by_format.entry(comp.format).or_insert_with(|| GpuComponentsConfig::new(comp.format));
+            let entry = by_format
+                .entry(comp.format)
+                .or_insert_with(|| GpuComponentsConfig::new(comp.format));
             entry.components.push(comp.clone());
         }
         GpuWorldConfig::new(by_format.into_values().collect())
@@ -229,7 +243,8 @@ impl SyncAssetKey<GpuWorldConfig> for GpuWorldConfigKey {
 }
 
 lazy_static! {
-    pub static ref GPU_COMPONENT_REGISTRY: Mutex<GpuComponentRegistry> = Mutex::new(GpuComponentRegistry::new());
+    pub static ref GPU_COMPONENT_REGISTRY: Mutex<GpuComponentRegistry> =
+        Mutex::new(GpuComponentRegistry::new());
 }
 
 pub struct GpuComponentRegistry {
@@ -237,7 +252,9 @@ pub struct GpuComponentRegistry {
 }
 impl GpuComponentRegistry {
     fn new() -> Self {
-        Self { components: Vec::new() }
+        Self {
+            components: Vec::new(),
+        }
     }
 }
 

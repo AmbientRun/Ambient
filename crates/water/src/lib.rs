@@ -131,20 +131,19 @@ impl WaterMaterialKey {
 }
 impl SyncAssetKey<SharedMaterial> for WaterMaterialKey {
     fn load(&self, assets: AssetCache) -> SharedMaterial {
-        SharedMaterial::new(WaterMaterial::new(assets, self.normals.clone()))
+        let gpu = GpuKey.get(&assets);
+        SharedMaterial::new(WaterMaterial::new(&gpu, &assets, self.normals.clone()))
     }
 }
 
 #[derive(Debug)]
 pub struct WaterMaterial {
-    _gpu: Arc<Gpu>,
     id: String,
     pub bind_group: wgpu::BindGroup,
 }
 impl WaterMaterial {
-    pub fn new(assets: AssetCache, normals: Arc<Texture>) -> Self {
-        let gpu = GpuKey.get(&assets);
-        let layout = get_water_layout().get(&assets);
+    pub fn new(gpu: &Gpu, assets: &AssetCache, normals: Arc<Texture>) -> Self {
+        let layout = get_water_layout().get(assets);
 
         Self {
             id: friendly_id(),
@@ -158,7 +157,6 @@ impl WaterMaterial {
                 }],
                 label: Some("WaterMaterial.bind_group"),
             }),
-            _gpu: gpu.clone(),
         }
     }
 }

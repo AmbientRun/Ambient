@@ -7,7 +7,6 @@ use std::{
 };
 
 use ambient_gizmos::{Cuboid, Gizmo, GizmoPrimitive, DEFAULT_RADIUS};
-use ambient_gpu::typed_buffer::TypedBuffer;
 use ambient_std::{color::Color, shapes::Ray};
 use bytemuck::{Pod, Zeroable};
 use derive_more::Deref;
@@ -114,10 +113,6 @@ impl Octree {
             }
             1
         }
-    }
-
-    pub fn _write_buffer(&self, buf: &mut TypedBuffer<Node>, on_resize: &mut impl FnMut(&TypedBuffer<Node>)) {
-        buf.fill(&self.nodes, on_resize)
     }
 
     /// Split a node

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ambient_core::{
-    asset_cache, runtime,
+    asset_cache, gpu, runtime,
     transform::{scale, translation},
     window::get_mouse_clip_space_position,
 };
@@ -9,7 +9,7 @@ use ambient_decals::DecalShaderKey;
 use ambient_ecs::{generated::messages, query, ArchetypeFilter};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use ambient_gpu::{
-    gpu::{Gpu, GpuKey},
+    gpu::Gpu,
     shader_module::{BindGroupDesc, ShaderModule},
 };
 use ambient_intent::client_push_intent;
@@ -78,6 +78,7 @@ impl ElementComponent for TerrainRaycastPicker {
         let game_state = game_client.game_state.clone();
         hooks.use_spawn(move |ui_world| {
             let assets = ui_world.resource(asset_cache());
+            let gpu = ui_world.resource(gpu());
             let new_vis_brush_id = Cube
                 .el()
                 .with(color(), Vec4::ONE)
@@ -96,7 +97,7 @@ impl ElementComponent for TerrainRaycastPicker {
                 )
                 .with(
                     material(),
-                    SharedMaterial::new(BrushCursorMaterial::new(assets)),
+                    SharedMaterial::new(BrushCursorMaterial::new(gpu, assets)),
                 )
                 .spawn_static(&mut game_state.lock().world);
 
@@ -114,6 +115,7 @@ impl ElementComponent for TerrainRaycastPicker {
             }
         });
         hooks.use_frame(move |world| {
+            let gpu = world.resource(gpu());
             let mouse_clip_pos = get_mouse_clip_space_position(world);
             let mut state = game_client.game_state.lock();
 
@@ -147,6 +149,7 @@ impl ElementComponent for TerrainRaycastPicker {
                         if let Ok(material) = state.world.get_ref(vis_brush_id, material()) {
                             let picker_material: &BrushCursorMaterial = material.borrow_downcast();
                             picker_material.upload_params(
+                                gpu,
                                 brush,
                                 target_position,
                                 brush_size,
@@ -256,14 +259,12 @@ impl SyncAssetKey<Arc<MaterialShader>> for BrushCursorShaderMaterialKey {
 
 #[derive(Debug)]
 pub struct BrushCursorMaterial {
-    gpu: Arc<Gpu>,
     buffer: wgpu::Buffer,
     id: String,
     pub bind_group: wgpu::BindGroup,
 }
 impl BrushCursorMaterial {
-    pub fn new(assets: &AssetCache) -> Self {
-        let gpu = GpuKey.get(assets);
+    pub fn new(gpu: &Gpu, assets: &AssetCache) -> Self {
         let layout = get_brush_cursor_layout().get(assets);
 
         let buffer = gpu
@@ -282,7 +283,6 @@ impl BrushCursorMaterial {
             label: Some("BrushCursorMaterial.bind_group"),
         });
         Self {
-            gpu,
             buffer,
             id: friendly_id(),
             bind_group,
@@ -290,6 +290,7 @@ impl BrushCursorMaterial {
     }
     pub fn upload_params(
         &self,
+        gpu: &Gpu,
         brush: Brush,
         brush_position: Vec3,
         brush_radius: f32,
@@ -298,7 +299,7 @@ impl BrushCursorMaterial {
     ) {
         // This code assumes that the range is from 0.1 to 10.
         let brush_strength = ((brush_strength.log10() + 1.0) / 2.0).clamp(0.0, 1.0);
-        self.gpu.queue.write_buffer(
+        gpu.queue.write_buffer(
             &self.buffer,
             0,
             bytemuck::bytes_of(&BrushCursorMaterialParams {

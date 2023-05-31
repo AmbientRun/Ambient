@@ -25,7 +25,8 @@ pub struct NaturalsPipelineKey;
 #[async_trait]
 impl AsyncAssetKey<Arc<NaturalsPipeline>> for NaturalsPipelineKey {
     async fn load(self, assets: AssetCache) -> Arc<NaturalsPipeline> {
-        Arc::new(NaturalsPipeline::new(assets).await)
+        let gpu = GpuKey.get(&assets);
+        Arc::new(NaturalsPipeline::new(&gpu, &assets).await)
     }
     fn keepalive(&self) -> AssetKeepalive {
         AssetKeepalive::Forever
@@ -33,7 +34,6 @@ impl AsyncAssetKey<Arc<NaturalsPipeline>> for NaturalsPipelineKey {
 }
 
 pub struct NaturalsPipeline {
-    gpu: Arc<Gpu>,
     pipeline: wgpu::ComputePipeline,
     blue_noise: Arc<Texture>,
     cluster_noise: Arc<Texture>,
@@ -41,9 +41,7 @@ pub struct NaturalsPipeline {
     default_sampler: Arc<wgpu::Sampler>,
 }
 impl NaturalsPipeline {
-    pub async fn new(assets: AssetCache) -> Self {
-        let gpu = GpuKey.get(&assets);
-
+    pub async fn new(gpu: &Gpu, assets: &AssetCache) -> Self {
         let pipeline = gpu.device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
             label: Some("Naturals"),
             layout: Some(&gpu.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -168,7 +166,7 @@ impl NaturalsPipeline {
                     .unwrap(),
                 format: wgpu::TextureFormat::Rgba8Unorm,
             }
-            .get(&assets)
+            .get(assets)
             .await
             .unwrap(),
             cluster_noise: TextureFromUrl {
@@ -179,7 +177,7 @@ impl NaturalsPipeline {
                 .unwrap(),
                 format: wgpu::TextureFormat::Rgba8Unorm,
             }
-            .get(&assets)
+            .get(assets)
             .await
             .unwrap(),
 
@@ -202,24 +200,24 @@ impl NaturalsPipeline {
                 mipmap_filter: wgpu::FilterMode::Linear,
                 ..Default::default()
             })),
-            gpu,
         }
     }
     pub async fn run(
         &self,
+        gpu: &Gpu,
         elements: &[(NaturalElement, BoxModelKey)],
         grid_size: f32,
         terrain_state: &TerrainState,
     ) -> Vec<NaturalEntity> {
         let out_count_staging = TypedBuffer::<u32>::new(
-            self.gpu.clone(),
+            gpu,
             "Naturals.out_count_staging",
             1,
             1,
             wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
         );
         let out_entities_staging = TypedBuffer::<NaturalEntity>::new(
-            self.gpu.clone(),
+            gpu,
             "Naturals.out_entities_staging",
             NATURALS_MAX_ENTITIES as u64,
             NATURALS_MAX_ENTITIES as u64,
@@ -228,21 +226,21 @@ impl NaturalsPipeline {
 
         {
             let natural_elements = TypedBuffer::<NaturalElementWGSL>::new_init(
-                self.gpu.clone(),
+                gpu,
                 "Naturals.elements",
                 wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
                 &elements.iter().map(|(el, _)| NaturalElementWGSL::from(el.clone())).collect_vec(),
             );
 
             let out_count_buffer = TypedBuffer::<u32>::new(
-                self.gpu.clone(),
+                gpu,
                 "Naturals.out_count",
                 1,
                 1,
                 wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::COPY_DST,
             );
             let out_entities_buffer = TypedBuffer::<NaturalEntity>::new(
-                self.gpu.clone(),
+                gpu,
                 "Naturals.out_entities",
                 NATURALS_MAX_ENTITIES as u64,
                 NATURALS_MAX_ENTITIES as u64,
@@ -250,7 +248,7 @@ impl NaturalsPipeline {
             );
 
             let bind_group_layout = self.pipeline.get_bind_group_layout(0);
-            let bind_group = self.gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
                 label: None,
                 layout: &bind_group_layout,
                 entries: &[
@@ -281,7 +279,7 @@ impl NaturalsPipeline {
             let size = TerrainSize::default();
             let cells = (size.texture_size() as f32 / grid_size) as u32;
 
-            let mut encoder = self.gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+            let mut encoder = gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
             {
                 let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
@@ -298,13 +296,13 @@ impl NaturalsPipeline {
                 NATURALS_MAX_ENTITIES as u64 * 4 * 4,
             );
 
-            self.gpu.queue.submit(Some(encoder.finish()));
+            gpu.queue.submit(Some(encoder.finish()));
         }
 
-        let count = out_count_staging.read(.., false).await.unwrap().to_vec()[0].min(NATURALS_MAX_ENTITIES);
+        let count = out_count_staging.read(gpu, .., false).await.unwrap().to_vec()[0].min(NATURALS_MAX_ENTITIES);
 
         if count > 0 {
-            out_entities_staging.read(0..count as u64, false).await.unwrap().to_vec()
+            out_entities_staging.read(gpu, 0..count as u64, false).await.unwrap().to_vec()
         } else {
             Vec::new()
         }
