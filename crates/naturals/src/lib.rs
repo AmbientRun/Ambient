@@ -10,6 +10,7 @@ use ambient_core::{
     transform::{local_to_world, translation},
 };
 use ambient_ecs::{components, query, Entity, EntityId, FnSystem, SystemGroup};
+use ambient_gpu::gpu::GpuKey;
 use ambient_model::{Model, ModelFromUrl, ModelSpawnOpts, ModelSpawnRoot};
 use ambient_renderer::color;
 use ambient_std::{
@@ -177,7 +178,8 @@ async fn update_natural_layer(
     let semaphore = NaturalsSemaphore.get(&assets);
     let permit = semaphore.acquire().await;
 
-    let entities = naturals.run(&elements, layer.grid_size, &terrain_state).await;
+    let gpu = GpuKey.get(&assets);
+    let entities = naturals.run(&gpu, &elements, layer.grid_size, &terrain_state).await;
 
     drop(permit); // This permit is only to make sure we don't use too much GPU memory
 
@@ -189,6 +191,7 @@ async fn update_natural_layer(
 
     for ((element, model_def), entities) in elements.into_iter().zip(entities_by_element.into_iter()) {
         let assets = assets.clone();
+        let gpu = GpuKey.get(&assets);
         let async_run = async_run.clone();
         tokio::spawn(async move {
             let model_key = model_def.key();
@@ -204,6 +207,7 @@ async fn update_natural_layer(
                             let missing = entities.len() as i32 - existing.len() as i32;
                             if missing > 0 {
                                 let ids = model.batch_spawn(
+                                    &gpu,
                                     world,
                                     &ModelSpawnOpts {
                                         root: ModelSpawnRoot::Spawn,

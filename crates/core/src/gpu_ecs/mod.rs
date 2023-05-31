@@ -20,6 +20,8 @@ pub use sync::*;
 pub use update::*;
 use wgpu::BindGroupLayout;
 
+use crate::gpu;
+
 components!("rendering", {
     @[Resource]
     gpu_world: Arc<Mutex<GpuWorld>>,
@@ -64,17 +66,15 @@ impl SyncAssetKey<Arc<BindGroupLayout>> for GpuWorldBindingGroupLayoutKey {
 }
 
 pub struct GpuWorld {
-    gpu: Arc<Gpu>,
     layout_buffer: TypedBuffer<i32>,
     buffers: Vec<GpuComponentsBuffer>,
     assets: AssetCache,
 }
 impl GpuWorld {
-    pub fn new_arced(assets: AssetCache) -> Arc<Mutex<Self>> {
-        Arc::new(Mutex::new(Self::new(assets)))
+    pub fn new_arced(gpu: &Gpu, assets: AssetCache) -> Arc<Mutex<Self>> {
+        Arc::new(Mutex::new(Self::new(gpu, assets)))
     }
-    pub fn new(assets: AssetCache) -> Self {
-        let gpu = GpuKey.get(&assets);
+    pub fn new(gpu: &Gpu, assets: AssetCache) -> Self {
         let config = GpuWorldConfigKey.get(&assets);
 
         tracing::debug!(
@@ -84,7 +84,7 @@ impl GpuWorld {
 
         Self {
             layout_buffer: TypedBuffer::new(
-                gpu.clone(),
+                gpu,
                 "GpuWorld.layout_buffer",
                 1,
                 1,
@@ -95,21 +95,20 @@ impl GpuWorld {
             buffers: config
                 .buffers
                 .iter()
-                .map(|buffer| GpuComponentsBuffer::new(gpu.clone(), buffer.clone()))
+                .map(|buffer| GpuComponentsBuffer::new(gpu, buffer.clone()))
                 .collect(),
             assets,
-            gpu,
         }
     }
-    pub fn update(&mut self, world: &World) {
+    pub fn update(&mut self, gpu: &Gpu, world: &World) {
         self.layout_buffer
-            .write(0, &[world.archetypes().len() as i32]);
+            .write(gpu, 0, &[world.archetypes().len() as i32]);
         for buf in self.buffers.iter_mut() {
             let layout_offset = buf.config.layout_offset(world.archetypes().len());
-            buf.update(world, &mut self.layout_buffer, layout_offset as u64);
+            buf.update(gpu, world, &mut self.layout_buffer, layout_offset as u64);
         }
     }
-    pub fn create_bind_group(&self, read_only: bool) -> wgpu::BindGroup {
+    pub fn create_bind_group(&self, gpu: &Gpu, read_only: bool) -> wgpu::BindGroup {
         let layout = GpuWorldBindingGroupLayoutKey { read_only }.get(&self.assets);
 
         let mut buffers = vec![wgpu::BindGroupEntry {
@@ -124,13 +123,11 @@ impl GpuWorld {
             });
         }
 
-        self.gpu
-            .device
-            .create_bind_group(&wgpu::BindGroupDescriptor {
-                layout: &layout,
-                entries: &buffers,
-                label: Some("EntityBuffers.bind_group"),
-            })
+        gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &layout,
+            entries: &buffers,
+            label: Some("EntityBuffers.bind_group"),
+        })
     }
 
     pub fn get_buffer(
@@ -163,7 +160,7 @@ pub struct GpuComponentsBuffer {
 }
 
 impl GpuComponentsBuffer {
-    pub fn new(gpu: Arc<Gpu>, config: GpuComponentsConfig) -> Self {
+    pub fn new(gpu: &Gpu, config: GpuComponentsConfig) -> Self {
         Self {
             data: UntypedBuffer::new(
                 gpu,
@@ -188,6 +185,7 @@ impl GpuComponentsBuffer {
     }
     pub fn update(
         &mut self,
+        gpu: &Gpu,
         world: &World,
         layout_buffer: &mut TypedBuffer<i32>,
         layout_buffer_offset: u64,
@@ -216,9 +214,9 @@ impl GpuComponentsBuffer {
             self.layout_version += 1;
         }
         self.layout_buffer_offset = layout_buffer_offset;
-        self.data.resize(offset as u64, true);
-        layout_buffer.resize(layout_buffer_offset + gpu_layout.len() as u64, true);
-        layout_buffer.write(layout_buffer_offset, &gpu_layout);
+        self.data.resize(gpu, offset as u64, true);
+        layout_buffer.resize(gpu, layout_buffer_offset + gpu_layout.len() as u64, true);
+        layout_buffer.write(gpu, layout_buffer_offset, &gpu_layout);
         self.layout_offsets = gpu_layout;
     }
 }
@@ -228,6 +226,11 @@ pub struct GpuWorldUpdate;
 impl System<GpuWorldSyncEvent> for GpuWorldUpdate {
     fn run(&mut self, world: &mut World, _event: &GpuWorldSyncEvent) {
         ambient_profiling::scope!("GpuWorldUpdate.run");
-        world.resource_mut(gpu_world()).clone().lock().update(world);
+        let gpu = world.resource(gpu()).clone();
+        world
+            .resource_mut(gpu_world())
+            .clone()
+            .lock()
+            .update(&gpu, world);
     }
 }

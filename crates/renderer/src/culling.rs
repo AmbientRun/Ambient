@@ -9,7 +9,7 @@ use ambient_core::{
 };
 use ambient_ecs::{ArchetypeFilter, World};
 use ambient_gpu::{
-    gpu::GpuKey,
+    gpu::Gpu,
     shader_module::{BindGroupDesc, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
 };
@@ -100,7 +100,7 @@ fn get_culling_layout() -> BindGroupDesc<'static> {
 }
 
 impl Culling {
-    pub fn new(assets: &AssetCache, config: RendererConfig) -> Self {
+    pub fn new(gpu: &Gpu, assets: &AssetCache, config: RendererConfig) -> Self {
         log::debug!("Setting up culling");
         let module = ShaderModule::new("CullingParams", include_file!("culling.wgsl"))
             .with_ident(ShaderIdent::constant(
@@ -115,6 +115,7 @@ impl Culling {
 
         Self {
             updater: GpuWorldUpdater::new(
+                gpu,
                 assets.clone(),
                 "Culling".to_string(),
                 ArchetypeFilter::new()
@@ -125,7 +126,7 @@ impl Culling {
                 "update(entity_loc);",
             ),
             params: TypedBuffer::new(
-                GpuKey.get(assets),
+                gpu,
                 "Culling.params",
                 1,
                 1,
@@ -139,7 +140,7 @@ impl Culling {
     }
 
     #[ambient_profiling::function]
-    pub fn run<'a>(&mut self, encoder: &'a mut wgpu::CommandEncoder, world: &World) {
+    pub fn run<'a>(&mut self, gpu: &Gpu, encoder: &'a mut wgpu::CommandEncoder, world: &World) {
         let main_camera = if let Some(camera) = Camera::get_active(
             world,
             self.config.scene,
@@ -171,22 +172,18 @@ impl Culling {
             }
         }
 
-        self.params.fill(&[params], |_| {});
+        self.params.fill(gpu, &[params], |_| {});
 
-        let bind_group = self
-            .updater
-            .gpu
-            .device
-            .create_bind_group(&wgpu::BindGroupDescriptor {
-                label: None,
-                layout: &self.layout,
-                entries: &[wgpu::BindGroupEntry {
-                    binding: 0,
-                    resource: self.params.buffer().as_entire_binding(),
-                }],
-            });
+        let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: None,
+            layout: &self.layout,
+            entries: &[wgpu::BindGroupEntry {
+                binding: 0,
+                resource: self.params.buffer().as_entire_binding(),
+            }],
+        });
 
         self.updater
-            .run_with_encoder(encoder, world, &[&bind_group]);
+            .run_with_encoder(gpu, encoder, world, &[&bind_group]);
     }
 }

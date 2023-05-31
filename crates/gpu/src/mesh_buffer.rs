@@ -37,8 +37,8 @@ pub struct GpuMesh {
 }
 
 impl GpuMesh {
-    pub fn from_mesh(assets: &AssetCache, mesh: &Mesh) -> Arc<GpuMesh> {
-        MeshBufferKey.get(assets).lock().insert(mesh)
+    pub fn from_mesh(gpu: &Gpu, assets: &AssetCache, mesh: &Mesh) -> Arc<GpuMesh> {
+        MeshBufferKey.get(assets).lock().insert(gpu, mesh)
     }
     pub fn index(&self) -> GpuMeshIndex {
         self.index
@@ -60,7 +60,7 @@ pub struct MeshBufferKey;
 impl SyncAssetKey<Arc<Mutex<MeshBuffer>>> for MeshBufferKey {
     fn load(&self, assets: AssetCache) -> Arc<Mutex<MeshBuffer>> {
         let gpu = GpuKey.get(&assets);
-        Arc::new(Mutex::new(MeshBuffer::new(gpu)))
+        Arc::new(Mutex::new(MeshBuffer::new(&gpu)))
     }
 }
 
@@ -82,10 +82,11 @@ impl GpuMeshFromUrl {
 #[async_trait]
 impl AsyncAssetKey<AssetResult<Arc<GpuMesh>>> for GpuMeshFromUrl {
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<GpuMesh>> {
+        let gpu = GpuKey.get(&assets);
         let mesh = MeshFromUrl::new(self.url, self.cache_on_disk)
             .get(&assets)
             .await?;
-        Ok(GpuMesh::from_mesh(&assets, &mesh))
+        Ok(GpuMesh::from_mesh(&gpu, &assets, &mesh))
     }
 }
 
@@ -115,7 +116,6 @@ pub struct SkinnedMesh {
 /// from the application, all current GpuMesh.index's are still valid (and the content
 /// of the metadata is just updated at the index).
 pub struct MeshBuffer {
-    gpu: Arc<Gpu>,
     pub metadata_buffer: TypedBuffer<MeshMetadata>,
     pub base_buffer: AttributeBuffer<BaseMesh>,
     pub skinned_buffer: AttributeBuffer<SkinnedMesh>,
@@ -127,10 +127,10 @@ pub struct MeshBuffer {
 }
 
 impl MeshBuffer {
-    pub fn new(gpu: Arc<Gpu>) -> Self {
+    pub fn new(gpu: &Gpu) -> Self {
         Self {
             metadata_buffer: TypedBuffer::new(
-                gpu.clone(),
+                gpu,
                 "MeshBuffer.metadata_buffer",
                 4,
                 0,
@@ -139,7 +139,7 @@ impl MeshBuffer {
                     | wgpu::BufferUsages::COPY_SRC,
             ),
             index_buffer: AttributeBuffer::new(
-                gpu.clone(),
+                gpu,
                 "MeshBuffer.index_buffer",
                 4,
                 0,
@@ -148,7 +148,7 @@ impl MeshBuffer {
                     | wgpu::BufferUsages::COPY_SRC,
             ),
             base_buffer: AttributeBuffer::new(
-                gpu.clone(),
+                gpu,
                 "MeshBuffer.base_buffer",
                 4,
                 0,
@@ -158,7 +158,7 @@ impl MeshBuffer {
             ),
 
             skinned_buffer: AttributeBuffer::new(
-                gpu.clone(),
+                gpu,
                 "MeshBuffer.skinned_buffer",
                 4,
                 0,
@@ -169,11 +169,10 @@ impl MeshBuffer {
             meshes: Vec::new(),
             to_remove: Arc::new(Mutex::new(Vec::new())),
             free_indices: Vec::new(),
-            gpu,
         }
     }
 
-    pub fn insert(&mut self, mesh: &Mesh) -> Arc<GpuMesh> {
+    pub fn insert(&mut self, gpu: &Gpu, mesh: &Mesh) -> Arc<GpuMesh> {
         let metadata = MeshMetadata {
             base_offset: self.base_buffer.front.len() as u32,
             skinned_offset: self.skinned_buffer.front.len() as u32,
@@ -213,12 +212,14 @@ impl MeshBuffer {
                 .zip(&mut data)
                 .for_each(|(src, dst)| dst.texcoord0 = *src);
 
+            self.base_buffer.front.resize(
+                gpu,
+                self.base_buffer.front.len() + data.len() as u64,
+                true,
+            );
             self.base_buffer
                 .front
-                .resize(self.base_buffer.front.len() + data.len() as u64, true);
-            self.base_buffer
-                .front
-                .write(metadata.base_offset as u64, &data);
+                .write(gpu, metadata.base_offset as u64, &data);
             internal_mesh.base_count += data.len() as u64;
         }
 
@@ -239,22 +240,25 @@ impl MeshBuffer {
                 .zip(&mut data)
                 .for_each(|(src, dst)| dst.weights = *src);
 
+            self.skinned_buffer.front.resize(
+                gpu,
+                self.skinned_buffer.front.len() + len as u64,
+                true,
+            );
             self.skinned_buffer
                 .front
-                .resize(self.skinned_buffer.front.len() + len as u64, true);
-            self.skinned_buffer
-                .front
-                .write(metadata.skinned_offset as u64, &data);
+                .write(gpu, metadata.skinned_offset as u64, &data);
             internal_mesh.skinned_count += len as u64;
         }
 
         self.index_buffer.front.resize(
+            gpu,
             self.index_buffer.front.len() + mesh.index_count() as u64,
             true,
         );
         self.index_buffer
             .front
-            .write(metadata.index_offset as u64, mesh.indices());
+            .write(gpu, metadata.index_offset as u64, mesh.indices());
         internal_mesh.index_count = mesh.index_count() as u64;
 
         let metadata_offset = if let Some(offset) = self.free_indices.pop() {
@@ -263,12 +267,13 @@ impl MeshBuffer {
         } else {
             let offset = self.metadata_buffer.len();
             self.metadata_buffer
-                .resize(self.metadata_buffer.len() + 1, true);
+                .resize(gpu, self.metadata_buffer.len() + 1, true);
             self.meshes.push(Some(internal_mesh));
             offset
         };
 
-        self.metadata_buffer.write(metadata_offset, &[metadata]);
+        self.metadata_buffer
+            .write(gpu, metadata_offset, &[metadata]);
         MESHES_TOTAL_SIZE.store(self.size() as usize, Ordering::SeqCst);
 
         Arc::new(GpuMesh {
@@ -278,7 +283,7 @@ impl MeshBuffer {
         })
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, gpu: &Gpu) {
         let to_remove = {
             let mut to_remove = self.to_remove.lock();
             to_remove.drain(..).collect_vec()
@@ -306,8 +311,7 @@ impl MeshBuffer {
             .unwrap()
             .metadata;
 
-        let mut encoder = self
-            .gpu
+        let mut encoder = gpu
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: Some("MeshBuffer"),
@@ -334,13 +338,15 @@ impl MeshBuffer {
             sizes.index_offset += mesh.index_count as u32;
         }
 
-        self.base_buffer.tmp.resize(sizes.base_offset as u64, true);
+        self.base_buffer
+            .tmp
+            .resize(gpu, sizes.base_offset as u64, true);
         self.skinned_buffer
             .tmp
-            .resize(sizes.skinned_offset as u64, true);
+            .resize(gpu, sizes.skinned_offset as u64, true);
         self.index_buffer
             .tmp
-            .resize(sizes.index_offset as u64, true);
+            .resize(gpu, sizes.index_offset as u64, true);
 
         let mut cursor = MeshMetadata::default();
         for (index, mesh) in update_meshes_sorted {
@@ -386,10 +392,12 @@ impl MeshBuffer {
         }
 
         macro_rules! copy_back_buff {
-            ( $encoder:expr, $base_offset:ident, $buff:ident, $field:ident ) => {
-                self.$buff
-                    .front
-                    .resize($base_offset.$field as u64 + self.$buff.tmp.len(), true);
+            ( $gpu:expr, $encoder:expr, $base_offset:ident, $buff:ident, $field:ident ) => {
+                self.$buff.front.resize(
+                    $gpu,
+                    $base_offset.$field as u64 + self.$buff.tmp.len(),
+                    true,
+                );
                 encoder.copy_buffer_to_buffer(
                     self.$buff.tmp.buffer(),
                     0,
@@ -400,18 +408,18 @@ impl MeshBuffer {
             };
         }
 
-        copy_back_buff!(encoder, base_metadata, base_buffer, base_offset);
-        copy_back_buff!(encoder, base_metadata, skinned_buffer, skinned_offset);
-        copy_back_buff!(encoder, base_metadata, index_buffer, index_offset);
+        copy_back_buff!(gpu, encoder, base_metadata, base_buffer, base_offset);
+        copy_back_buff!(gpu, encoder, base_metadata, skinned_buffer, skinned_offset);
+        copy_back_buff!(gpu, encoder, base_metadata, index_buffer, index_offset);
 
         let metadata = self
             .meshes
             .iter()
             .map(|mesh| mesh.as_ref().map(|x| x.metadata).unwrap_or_default())
             .collect_vec();
-        self.metadata_buffer.write(0, &metadata);
+        self.metadata_buffer.write(gpu, 0, &metadata);
 
-        self.gpu.queue.submit(Some(encoder.finish()));
+        gpu.queue.submit(Some(encoder.finish()));
         MESHES_TOTAL_SIZE.store(self.size() as usize, Ordering::SeqCst);
     }
 
@@ -473,14 +481,14 @@ pub struct AttributeBuffer<T: bytemuck::Pod> {
 
 impl<T: bytemuck::Pod> AttributeBuffer<T> {
     pub fn new(
-        gpu: Arc<Gpu>,
+        gpu: &Gpu,
         label: &str,
         capacity: u64,
         length: u64,
         usage: wgpu::BufferUsages,
     ) -> Self {
         Self {
-            front: TypedBuffer::new(gpu.clone(), label, capacity, length, usage),
+            front: TypedBuffer::new(gpu, label, capacity, length, usage),
             tmp: TypedBuffer::new(gpu, label, capacity, length, usage),
         }
     }

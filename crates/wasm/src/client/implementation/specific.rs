@@ -8,11 +8,12 @@ use ambient_audio::AudioFromUrl;
 use ambient_core::{
     asset_cache,
     async_ecs::async_run,
+    gpu,
     player::local_user_id,
     runtime,
     window::{window_ctl, WindowCtl},
 };
-use ambient_gpu::{gpu::GpuKey, texture::Texture};
+use ambient_gpu::texture::Texture;
 use ambient_input::{player_prev_raw_input, player_raw_input};
 use ambient_network::client::game_client;
 use ambient_procedurals::{
@@ -20,11 +21,7 @@ use ambient_procedurals::{
     procedural_storage,
 };
 use ambient_renderer::pbr_material::{PbrMaterialConfig, PbrMaterialParams};
-use ambient_std::{
-    asset_cache::{AsyncAssetKeyExt, SyncAssetKeyExt},
-    asset_url::AbsAssetUrl,
-    mesh::MeshBuilder,
-};
+use ambient_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl, mesh::MeshBuilder};
 use ambient_world_audio::{audio_sender, AudioMessage};
 use anyhow::Context;
 use glam::Vec4;
@@ -328,8 +325,7 @@ impl wit::client_texture::Host for Bindings {
         desc: wit::client_texture::Descriptor2d,
     ) -> anyhow::Result<wit::client_texture::Handle> {
         let world = self.world_mut();
-        let assets = world.resource(asset_cache());
-        let gpu = GpuKey.get(assets);
+        let gpu = world.resource(gpu());
         let texture = Texture::new_with_data(
             gpu,
             &wgpu::TextureDescriptor {
@@ -368,8 +364,7 @@ impl wit::client_sampler::Host for Bindings {
         desc: wit::client_sampler::Descriptor,
     ) -> anyhow::Result<wit::client_sampler::Handle> {
         let world = self.world_mut();
-        let assets = world.resource(asset_cache());
-        let gpu = GpuKey.get(assets);
+        let gpu = world.resource(gpu());
         let sampler = gpu.device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: desc.address_mode_u.from_bindgen(),
             address_mode_v: desc.address_mode_v.from_bindgen(),

@@ -7,7 +7,7 @@ use ambient_core::{
 };
 use ambient_ecs::{Component, ECSError, World};
 use ambient_gpu::{
-    gpu::{Gpu, GpuKey},
+    gpu::Gpu,
     mesh_buffer::MeshBuffer,
     sampler::SamplerKey,
     shader_module::{BindGroupDesc, DEPTH_FORMAT},
@@ -162,7 +162,6 @@ pub fn globals_layout() -> BindGroupDesc<'static> {
 }
 
 pub(crate) struct ForwardGlobals {
-    gpu: Arc<Gpu>,
     buffer: wgpu::Buffer,
     shadow_cameras_buffer: wgpu::Buffer,
     shadow_sampler: wgpu::Sampler,
@@ -175,7 +174,7 @@ pub(crate) struct ForwardGlobals {
 
 impl ForwardGlobals {
     pub fn new(
-        gpu: Arc<Gpu>,
+        gpu: &Gpu,
         layout: Arc<wgpu::BindGroupLayout>,
         shadow_cascades: u32,
         scene: Component<()>,
@@ -212,14 +211,13 @@ impl ForwardGlobals {
             buffer,
             shadow_cameras_buffer,
             shadow_sampler,
-            dummy_shadow_texture: create_dummy_shadow_texture(gpu.clone()).create_view(
+            dummy_shadow_texture: create_dummy_shadow_texture(gpu).create_view(
                 &wgpu::TextureViewDescriptor {
                     aspect: wgpu::TextureAspect::DepthOnly,
                     ..Default::default()
                 },
             ),
             params,
-            gpu,
             scene,
             start_time: ambient_sys::time::Instant::now(),
             layout,
@@ -228,89 +226,80 @@ impl ForwardGlobals {
 
     pub fn create_bind_group(
         &self,
+        gpu: &Gpu,
         assets: &AssetCache,
         shadow_texture: Option<&TextureView>,
         solids_frame: &RenderTarget,
         mesh_buffer: &MeshBuffer,
     ) -> BindGroup {
-        // tracing::info!("shadow_texture: {}", shadow_texture.is_some());
-
         let skins = SkinsBufferKey.get(assets);
         let skins = skins.lock();
-        self.gpu
-            .device
-            .create_bind_group(&wgpu::BindGroupDescriptor {
-                layout: &self.layout,
-                entries: &[
-                    wgpu::BindGroupEntry {
-                        binding: 0,
-                        resource: wgpu::BindingResource::Sampler(
-                            &SamplerKey::LINEAR_CLAMP_TO_EDGE.get(assets),
-                        ),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 1,
-                        resource: wgpu::BindingResource::Buffer(
-                            self.buffer.as_entire_buffer_binding(),
-                        ),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 2,
-                        resource: wgpu::BindingResource::Buffer(
-                            self.shadow_cameras_buffer.as_entire_buffer_binding(),
-                        ),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 3,
-                        resource: wgpu::BindingResource::Sampler(&self.shadow_sampler),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 4,
-                        resource: wgpu::BindingResource::TextureView(
-                            shadow_texture.unwrap_or(&self.dummy_shadow_texture),
-                        ),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 5,
-                        resource: wgpu::BindingResource::TextureView(
-                            &solids_frame.color_buffer_view,
-                        ),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 6,
-                        resource: wgpu::BindingResource::TextureView(
-                            &solids_frame.depth_buffer_view,
-                        ),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 7,
-                        resource: wgpu::BindingResource::TextureView(
-                            &solids_frame.normals_quat_buffer_view,
-                        ),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 8 + MESH_METADATA_BINDING,
-                        resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding(),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 8 + MESH_BASE_BINDING,
-                        resource: mesh_buffer.base_buffer.buffer().as_entire_binding(),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 8 + MESH_SKIN_BINDING,
-                        resource: mesh_buffer.skinned_buffer.buffer().as_entire_binding(),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 8 + SKINS_BINDING,
-                        resource: skins.buffer.buffer().as_entire_binding(),
-                    },
-                ],
-                label: Some("ForwardGlobals"),
-            })
+        gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &self.layout,
+            entries: &[
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::Sampler(
+                        &SamplerKey::LINEAR_CLAMP_TO_EDGE.get(assets),
+                    ),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: wgpu::BindingResource::Buffer(self.buffer.as_entire_buffer_binding()),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: wgpu::BindingResource::Buffer(
+                        self.shadow_cameras_buffer.as_entire_buffer_binding(),
+                    ),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 3,
+                    resource: wgpu::BindingResource::Sampler(&self.shadow_sampler),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 4,
+                    resource: wgpu::BindingResource::TextureView(
+                        shadow_texture.unwrap_or(&self.dummy_shadow_texture),
+                    ),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 5,
+                    resource: wgpu::BindingResource::TextureView(&solids_frame.color_buffer_view),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 6,
+                    resource: wgpu::BindingResource::TextureView(&solids_frame.depth_buffer_view),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 7,
+                    resource: wgpu::BindingResource::TextureView(
+                        &solids_frame.normals_quat_buffer_view,
+                    ),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 8 + MESH_METADATA_BINDING,
+                    resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 8 + MESH_BASE_BINDING,
+                    resource: mesh_buffer.base_buffer.buffer().as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 8 + MESH_SKIN_BINDING,
+                    resource: mesh_buffer.skinned_buffer.buffer().as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 8 + SKINS_BINDING,
+                    resource: skins.buffer.buffer().as_entire_binding(),
+                },
+            ],
+            label: Some("ForwardGlobals"),
+        })
     }
 
     #[tracing::instrument(level = "debug", skip_all, fields(scene = ?self.scene, user = ?world.resource_opt(local_user_id())))]
-    pub fn update(&mut self, world: &World, shadow_cameras: &[ShadowCameraData]) {
+    pub fn update(&mut self, gpu: &Gpu, world: &World, shadow_cameras: &[ShadowCameraData]) {
         let mut p = &mut self.params;
         if let Some(id) = get_active_camera(world, self.scene, world.resource_opt(local_user_id()))
         {
@@ -361,10 +350,9 @@ impl ForwardGlobals {
         self.params.time = ambient_sys::time::Instant::now()
             .duration_since(self.start_time)
             .as_secs_f32();
-        self.gpu
-            .queue
+        gpu.queue
             .write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[self.params]));
-        self.gpu.queue.write_buffer(
+        gpu.queue.write_buffer(
             &self.shadow_cameras_buffer,
             0,
             bytemuck::cast_slice(shadow_cameras),
@@ -372,7 +360,7 @@ impl ForwardGlobals {
     }
 }
 
-fn create_dummy_shadow_texture(gpu: Arc<Gpu>) -> Arc<Texture> {
+fn create_dummy_shadow_texture(gpu: &Gpu) -> Arc<Texture> {
     Arc::new(Texture::new(
         gpu,
         &wgpu::TextureDescriptor {
@@ -393,8 +381,6 @@ fn create_dummy_shadow_texture(gpu: Arc<Gpu>) -> Arc<Texture> {
 }
 
 pub struct ShadowAndUIGlobals {
-    assets: AssetCache,
-    gpu: Arc<Gpu>,
     layout: Arc<BindGroupLayout>,
     shadow_cameras_buffer: Buffer,
     shadow_sampler: Sampler,
@@ -404,9 +390,7 @@ pub struct ShadowAndUIGlobals {
     bind_group: Option<BindGroup>,
 }
 impl ShadowAndUIGlobals {
-    pub fn new(assets: AssetCache, layout: Arc<wgpu::BindGroupLayout>) -> Self {
-        let gpu = GpuKey.get(&assets);
-
+    pub fn new(gpu: &Gpu, layout: Arc<wgpu::BindGroupLayout>) -> Self {
         let buffer = gpu.device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("ShadowGlobals.buffer"),
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
@@ -433,104 +417,102 @@ impl ShadowAndUIGlobals {
             ..Default::default()
         });
 
-        let shadow_texture = create_dummy_shadow_texture(gpu.clone());
-        let dummy_prev_frame = RenderTarget::new(gpu.clone(), UVec2::ONE, None);
+        let shadow_texture = create_dummy_shadow_texture(gpu);
+        let dummy_prev_frame = RenderTarget::new(gpu, UVec2::ONE, None);
         let shadow_view = shadow_texture.create_view(&wgpu::TextureViewDescriptor {
             aspect: wgpu::TextureAspect::DepthOnly,
             ..Default::default()
         });
 
         Self {
-            gpu,
             layout,
             buffer,
             shadow_cameras_buffer,
             shadow_sampler,
             shadow_view,
             dummy_prev_frame,
-            assets,
             bind_group: None,
         }
     }
 
-    pub fn create_bind_group(&mut self, mesh_buffer: &MeshBuffer) -> &BindGroup {
-        let skins = SkinsBufferKey.get(&self.assets);
+    pub fn create_bind_group(
+        &mut self,
+        gpu: &Gpu,
+        assets: &AssetCache,
+        mesh_buffer: &MeshBuffer,
+    ) -> &BindGroup {
+        let skins = SkinsBufferKey.get(assets);
         let skins = skins.lock();
 
-        let bind_group = self
-            .gpu
-            .device
-            .create_bind_group(&wgpu::BindGroupDescriptor {
-                layout: &self.layout,
-                entries: &[
-                    wgpu::BindGroupEntry {
-                        binding: 0,
-                        resource: wgpu::BindingResource::Sampler(
-                            &SamplerKey::LINEAR_CLAMP_TO_EDGE.get(&self.assets),
-                        ),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 1,
-                        resource: wgpu::BindingResource::Buffer(
-                            self.buffer.as_entire_buffer_binding(),
-                        ),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 2,
-                        resource: wgpu::BindingResource::Buffer(
-                            self.shadow_cameras_buffer.as_entire_buffer_binding(),
-                        ),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 3,
-                        resource: wgpu::BindingResource::Sampler(&self.shadow_sampler),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 4,
-                        resource: wgpu::BindingResource::TextureView(&self.shadow_view),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 5,
-                        resource: wgpu::BindingResource::TextureView(
-                            &self.dummy_prev_frame.color_buffer_view,
-                        ),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 6,
-                        resource: wgpu::BindingResource::TextureView(
-                            &self.dummy_prev_frame.depth_buffer_view,
-                        ),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 7,
-                        resource: wgpu::BindingResource::TextureView(
-                            &self.dummy_prev_frame.normals_quat_buffer_view,
-                        ),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 8 + MESH_METADATA_BINDING,
-                        resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding(),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 8 + MESH_BASE_BINDING,
-                        resource: mesh_buffer.base_buffer.buffer().as_entire_binding(),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 8 + MESH_SKIN_BINDING,
-                        resource: mesh_buffer.skinned_buffer.buffer().as_entire_binding(),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 8 + SKINS_BINDING,
-                        resource: skins.buffer.buffer().as_entire_binding(),
-                    },
-                ],
-                label: Some("ShadowGlobals.bind_group"),
-            });
+        let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &self.layout,
+            entries: &[
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::Sampler(
+                        &SamplerKey::LINEAR_CLAMP_TO_EDGE.get(assets),
+                    ),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: wgpu::BindingResource::Buffer(self.buffer.as_entire_buffer_binding()),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: wgpu::BindingResource::Buffer(
+                        self.shadow_cameras_buffer.as_entire_buffer_binding(),
+                    ),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 3,
+                    resource: wgpu::BindingResource::Sampler(&self.shadow_sampler),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 4,
+                    resource: wgpu::BindingResource::TextureView(&self.shadow_view),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 5,
+                    resource: wgpu::BindingResource::TextureView(
+                        &self.dummy_prev_frame.color_buffer_view,
+                    ),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 6,
+                    resource: wgpu::BindingResource::TextureView(
+                        &self.dummy_prev_frame.depth_buffer_view,
+                    ),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 7,
+                    resource: wgpu::BindingResource::TextureView(
+                        &self.dummy_prev_frame.normals_quat_buffer_view,
+                    ),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 8 + MESH_METADATA_BINDING,
+                    resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 8 + MESH_BASE_BINDING,
+                    resource: mesh_buffer.base_buffer.buffer().as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 8 + MESH_SKIN_BINDING,
+                    resource: mesh_buffer.skinned_buffer.buffer().as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 8 + SKINS_BINDING,
+                    resource: skins.buffer.buffer().as_entire_binding(),
+                },
+            ],
+            label: Some("ShadowGlobals.bind_group"),
+        });
 
         self.bind_group.insert(bind_group)
     }
 
-    pub fn update(&self, world: &World, scene: Component<()>, projection_view: Mat4) {
+    pub fn update(&self, gpu: &Gpu, world: &World, scene: Component<()>, projection_view: Mat4) {
         let mut params = GlobalParams {
             projection_view,
             camera_position: projection_view
@@ -543,8 +525,7 @@ impl ShadowAndUIGlobals {
             params.forward_camera_position =
                 get_world_position(world, id).unwrap_or_default().extend(1.);
         }
-        self.gpu
-            .queue
+        gpu.queue
             .write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[params]));
     }
 }

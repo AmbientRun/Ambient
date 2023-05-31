@@ -104,12 +104,17 @@ impl FlatMaterialKey {
 }
 impl SyncAssetKey<SharedMaterial> for FlatMaterialKey {
     fn load(&self, assets: AssetCache) -> SharedMaterial {
-        SharedMaterial::new(FlatMaterial::new(&assets, self.color, self.transparent))
+        let gpu = GpuKey.get(&assets);
+        SharedMaterial::new(FlatMaterial::new(
+            &gpu,
+            &assets,
+            self.color,
+            self.transparent,
+        ))
     }
 }
 
 pub struct FlatMaterial {
-    gpu: Arc<Gpu>,
     id: String,
     buffer: wgpu::Buffer,
     bind_group: wgpu::BindGroup,
@@ -117,8 +122,7 @@ pub struct FlatMaterial {
     transparent: Option<bool>,
 }
 impl FlatMaterial {
-    pub fn new(assets: &AssetCache, color: Vec4, transparent: Option<bool>) -> Self {
-        let gpu = GpuKey.get(assets);
+    pub fn new(gpu: &Gpu, assets: &AssetCache, color: Vec4, transparent: Option<bool>) -> Self {
         let layout = get_material_layout().get(assets);
 
         let buffer = gpu
@@ -140,15 +144,13 @@ impl FlatMaterial {
                 label: Some("FlatMaterial.bind_group"),
             }),
             buffer,
-            gpu: gpu.clone(),
             _color: color,
             transparent,
         }
     }
 
-    pub fn update_color(&self, color: Vec4) {
-        self.gpu
-            .queue
+    pub fn update_color(&self, gpu: &Gpu, color: Vec4) {
+        gpu.queue
             .write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[color]));
     }
 }

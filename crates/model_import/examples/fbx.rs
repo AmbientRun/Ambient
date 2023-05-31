@@ -2,6 +2,7 @@ use ambient_app::{App, AppBuilder};
 use ambient_core::{
     asset_cache,
     camera::{active_camera, far},
+    gpu,
     hierarchy::dump_world_hierarchy_to_tmp_file,
     main_scene,
     transform::*,
@@ -16,6 +17,7 @@ use glam::*;
 
 async fn init(app: &mut App) {
     let world = &mut app.world;
+    let gpu = world.resource(gpu()).clone();
     let assets = world.resource(asset_cache()).clone();
 
     Quad.el().with(scale(), Vec3::ONE * 30.).spawn_static(world);
@@ -31,7 +33,7 @@ async fn init(app: &mut App) {
     .unwrap();
     dump_world_hierarchy_to_tmp_file(&model.0);
 
-    let id = model.spawn(world, &Default::default());
+    let id = model.spawn(&gpu, world, &Default::default());
     {
         let mut scope = world.resource(gizmos()).scope(line_hash!());
         for line in bones_to_lines(world, id) {
@@ -39,11 +41,14 @@ async fn init(app: &mut App) {
         }
     }
 
-    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .with(active_camera(), 0.)
-        .with(main_scene(), ())
-        .with(far(), 2000.)
-        .spawn(world);
+    ambient_cameras::spherical::new(
+        vec3(0., 0., 0.),
+        SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.),
+    )
+    .with(active_camera(), 0.)
+    .with(main_scene(), ())
+    .with(far(), 2000.)
+    .spawn(world);
 }
 
 fn main() {

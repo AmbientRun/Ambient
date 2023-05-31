@@ -53,7 +53,6 @@ pub struct GridMaterialKey {
 #[derive(Debug)]
 #[allow(dead_code)]
 pub struct GridMaterial {
-    gpu: Arc<Gpu>,
     id: String,
     buffer: wgpu::Buffer,
     bind_group: wgpu::BindGroup,
@@ -61,13 +60,13 @@ pub struct GridMaterial {
 
 impl SyncAssetKey<SharedMaterial> for GridMaterialKey {
     fn load(&self, assets: AssetCache) -> SharedMaterial {
-        SharedMaterial::new(GridMaterial::new(assets, *self))
+        let gpu = GpuKey.get(&assets);
+        SharedMaterial::new(GridMaterial::new(&gpu, &assets, *self))
     }
 }
 impl GridMaterial {
-    pub fn new(assets: AssetCache, params: GridMaterialKey) -> Self {
-        let gpu = GpuKey.get(&assets);
-        let layout = grid_shader_layout().get(&assets);
+    pub fn new(gpu: &Gpu, assets: &AssetCache, params: GridMaterialKey) -> Self {
+        let layout = grid_shader_layout().get(assets);
         let buffer = gpu.device.create_buffer_init(&BufferInitDescriptor {
             label: Some("FlatMaterial.buffer"),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
@@ -81,7 +80,6 @@ impl GridMaterial {
                 label: Some("GridMaterial.bind_group"),
             }),
             buffer,
-            gpu: gpu.clone(),
         }
     }
 }

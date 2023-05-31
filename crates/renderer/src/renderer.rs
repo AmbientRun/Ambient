@@ -50,6 +50,7 @@ struct RendererResourcesKey;
 
 impl SyncAssetKey<RendererResources> for RendererResourcesKey {
     fn load(&self, assets: AssetCache) -> RendererResources {
+        let gpu = GpuKey.get(&assets);
         let primitives = get_common_layout().get(&assets);
 
         let globals_layout = BindGroupDesc {
@@ -74,7 +75,7 @@ impl SyncAssetKey<RendererResources> for RendererResourcesKey {
             mesh_meta_layout,
             globals_layout,
             primitives_layout: primitives,
-            collect: Arc::new(RendererCollect::new(&assets)),
+            collect: Arc::new(RendererCollect::new(&gpu, &assets)),
         }
     }
 }
@@ -151,6 +152,7 @@ pub type PostSubmitFunc = Box<dyn FnOnce() + Send + Send>;
 pub trait SubRenderer: std::fmt::Debug + Send + Sync {
     fn render<'a>(
         &'a mut self,
+        gpu: &Gpu,
         world: &World,
         mesh_buffer: &MeshBuffer,
         encoder: &mut wgpu::CommandEncoder,
@@ -161,7 +163,6 @@ pub trait SubRenderer: std::fmt::Debug + Send + Sync {
 }
 
 pub struct Renderer {
-    gpu: Arc<Gpu>,
     pub config: RendererConfig,
     pub shader_debug_params: ShaderDebugParams,
     mesh_meta_layout: Arc<BindGroupLayout>,
@@ -180,17 +181,15 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub fn new(_: &mut World, assets: AssetCache, config: RendererConfig) -> Self {
-        let gpu = GpuKey.get(&assets);
-
-        let renderer_resources = RendererResourcesKey.get(&assets);
+    pub fn new(gpu: &Gpu, assets: &AssetCache, config: RendererConfig) -> Self {
+        let renderer_resources = RendererResourcesKey.get(assets);
 
         // Need atleast one for array<Camera, SIZE> to be valid
         let shadow_cascades = config.shadow_cascades;
 
         let shadows = if config.shadows {
             Some(ShadowsRenderer::new(
-                assets.clone(),
+                gpu,
                 renderer_resources.clone(),
                 config.clone(),
             ))
@@ -201,54 +200,55 @@ impl Renderer {
         let normals_format = to_linear_format(gpu.swapchain_format()).into();
 
         Self {
-            culling: Culling::new(&assets, config.clone()),
+            culling: Culling::new(gpu, assets, config.clone()),
             forward_globals: ForwardGlobals::new(
-                gpu.clone(),
+                gpu,
                 renderer_resources.globals_layout.clone(),
                 shadow_cascades,
                 config.scene,
             ),
-            forward_collect_state: RendererCollectState::new(&assets),
+            forward_collect_state: RendererCollectState::new(gpu),
             shadows,
             overlays: OverlayRenderer::new(
-                assets.clone(),
+                assets,
                 config.clone(),
                 OverlayConfig {
                     fs_main: FSMain::Forward,
-                    gpu: gpu.clone(),
                     targets: vec![Some(gpu.swapchain_format().into())],
                     resources: renderer_resources.clone(),
                 },
             ),
-            forward: TreeRenderer::new(TreeRendererConfig {
-                gpu: gpu.clone(),
-                assets: assets.clone(),
-                renderer_config: config.clone(),
-                targets: vec![Some(gpu.swapchain_format().into()), Some(normals_format)],
-                filter: ArchetypeFilter::new().incl(config.scene),
-                renderer_resources: renderer_resources.clone(),
-                fs_main: FSMain::Forward,
-                opaque_only: true,
-                depth_stencil: true,
-                cull_mode: Some(wgpu::Face::Back),
-                depth_bias: Default::default(),
-            }),
-            transparent: TransparentRenderer::new(TransparentRendererConfig {
-                gpu: gpu.clone(),
-                assets: assets.clone(),
-                renderer_config: config.clone(),
-                targets: vec![Some(wgpu::ColorTargetState {
-                    format: gpu.swapchain_format(),
-                    blend: Some(wgpu::BlendState::ALPHA_BLENDING),
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-                filter: ArchetypeFilter::new().incl(config.scene),
-                renderer_resources: renderer_resources.clone(),
-                fs_main: FSMain::Forward,
-                render_opaque: false,
-            }),
+            forward: TreeRenderer::new(
+                gpu,
+                TreeRendererConfig {
+                    renderer_config: config.clone(),
+                    targets: vec![Some(gpu.swapchain_format().into()), Some(normals_format)],
+                    filter: ArchetypeFilter::new().incl(config.scene),
+                    renderer_resources: renderer_resources.clone(),
+                    fs_main: FSMain::Forward,
+                    opaque_only: true,
+                    depth_stencil: true,
+                    cull_mode: Some(wgpu::Face::Back),
+                    depth_bias: Default::default(),
+                },
+            ),
+            transparent: TransparentRenderer::new(
+                gpu,
+                TransparentRendererConfig {
+                    renderer_config: config.clone(),
+                    targets: vec![Some(wgpu::ColorTargetState {
+                        format: gpu.swapchain_format(),
+                        blend: Some(wgpu::BlendState::ALPHA_BLENDING),
+                        write_mask: wgpu::ColorWrites::ALL,
+                    })],
+                    filter: ArchetypeFilter::new().incl(config.scene),
+                    renderer_resources: renderer_resources.clone(),
+                    fs_main: FSMain::Forward,
+                    render_opaque: false,
+                },
+            ),
             solids_frame: RenderTarget::new(
-                gpu.clone(),
+                gpu,
                 uvec2(1, 1),
                 Some(
                     wgpu::TextureUsages::RENDER_ATTACHMENT
@@ -257,7 +257,8 @@ impl Renderer {
                 ),
             ),
             outlines: Outlines::new(
-                &assets,
+                gpu,
+                assets,
                 OutlinesConfig {
                     scene: config.scene,
                     renderer_resources: renderer_resources.clone(),
@@ -267,7 +268,6 @@ impl Renderer {
             mesh_meta_layout: renderer_resources.mesh_meta_layout,
             config,
             shader_debug_params: Default::default(),
-            gpu,
             post_forward: Default::default(),
             post_transparent: Default::default(),
         }
@@ -275,9 +275,10 @@ impl Renderer {
 
     pub fn render(
         &mut self,
+        gpu: &Gpu,
         world: &mut World,
         encoder: &mut wgpu::CommandEncoder,
-        post_submit: &mut Vec<Box<dyn FnOnce() + Send + Send>>,
+        post_submit: &mut Vec<PostSubmitFunc>,
         target: RendererTarget,
         clear: Option<Color>,
     ) {
@@ -287,7 +288,7 @@ impl Renderer {
         if let RendererTarget::Target(target) = &target {
             if self.solids_frame.color_buffer.size != target.color_buffer.size {
                 self.solids_frame = RenderTarget::new(
-                    self.gpu.clone(),
+                    gpu,
                     uvec2(
                         target.color_buffer.size.width,
                         target.color_buffer.size.height,
@@ -301,7 +302,8 @@ impl Renderer {
             }
         }
 
-        let mesh_buffer_h = MeshBufferKey.get(world.resource(asset_cache()));
+        let assets = world.resource(asset_cache()).clone();
+        let mesh_buffer_h = MeshBufferKey.get(&assets);
         let mesh_buffer = mesh_buffer_h.lock();
 
         // let mesh_data_bind_group = create_mesh_data_bind_group(world, &self.resources_layout, &mesh_buffer);
@@ -313,7 +315,7 @@ impl Renderer {
         let entities_bind_group = {
             let gpu_world_h = world.resource(gpu_world()).clone();
             let gpu_world = gpu_world_h.lock();
-            gpu_world.create_bind_group(true)
+            gpu_world.create_bind_group(gpu, true)
         };
 
         let main_camera = Camera::get_active(
@@ -324,29 +326,37 @@ impl Renderer {
         .unwrap_or_default();
         {
             ambient_profiling::scope!("Update");
-            self.culling.run(encoder, world);
+            self.culling.run(gpu, encoder, world);
 
-            self.forward_collect_state.set_camera(0);
-            self.forward.update(world);
-            self.overlays.update(world);
+            self.forward_collect_state.set_camera(gpu, 0);
+            self.forward.update(gpu, &assets, world);
+            self.overlays.update(gpu, &assets, world);
             self.forward.run_collect(
+                gpu,
+                &assets,
                 encoder,
                 post_submit,
                 &mesh_meta_bind_group,
                 &entities_bind_group,
                 &mut self.forward_collect_state,
             );
-            self.transparent
-                .update(world, &mesh_buffer, main_camera.projection_view());
+            self.transparent.update(
+                gpu,
+                &assets,
+                world,
+                &mesh_buffer,
+                main_camera.projection_view(),
+            );
         }
 
         if let Some(shadows) = &mut self.shadows {
-            shadows.update(world);
+            shadows.update(gpu, &assets, world);
         }
 
         self.forward_globals.params.debug_params = self.shader_debug_params;
         tracing::debug!("Updating forward globals");
         self.forward_globals.update(
+            gpu,
             world,
             &self
                 .shadows
@@ -354,9 +364,9 @@ impl Renderer {
                 .map(|x| x.get_cameras())
                 .unwrap_or_default(),
         );
-        let assets = world.resource(asset_cache()).clone();
 
         let forward_globals_bind_group = self.forward_globals.create_bind_group(
+            gpu,
             &assets,
             self.shadows.as_ref().map(|x| &x.shadow_view),
             &self.solids_frame,
@@ -370,7 +380,14 @@ impl Renderer {
         };
 
         if let Some(shadows) = &mut self.shadows {
-            shadows.render(&mesh_buffer, encoder, &bind_groups, post_submit);
+            shadows.render(
+                gpu,
+                &assets,
+                &mesh_buffer,
+                encoder,
+                &bind_groups,
+                post_submit,
+            );
         }
 
         {
@@ -432,6 +449,7 @@ impl Renderer {
 
         if let Some(post_forward) = &mut self.post_forward {
             post_forward.render(
+                gpu,
                 world,
                 &mesh_buffer,
                 encoder,
@@ -499,6 +517,7 @@ impl Renderer {
 
         if let Some(post_transparent) = &mut self.post_transparent {
             post_transparent.render(
+                gpu,
                 world,
                 &mesh_buffer,
                 encoder,
@@ -509,6 +528,8 @@ impl Renderer {
         }
 
         self.outlines.render(
+            gpu,
+            &assets,
             world,
             encoder,
             post_submit,

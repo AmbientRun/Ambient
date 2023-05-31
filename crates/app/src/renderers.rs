@@ -22,8 +22,8 @@ use winit::{
 };
 
 components!("app_renderers", {
-    ui_renderer: Arc<Mutex<UiRenderer >>,
-    main_renderer: Arc<Mutex<MainRenderer >>,
+    ui_renderer: Arc<Mutex<UiRenderer>>,
+    main_renderer: Arc<Mutex<MainRenderer>>,
 });
 
 pub fn systems() -> SystemGroup<Event<'static, ()>> {
@@ -31,35 +31,37 @@ pub fn systems() -> SystemGroup<Event<'static, ()>> {
         "app_renderers",
         vec![
             query(ui_renderer()).to_system(|q, world, qs, event| {
+                let gpu = world.resource(gpu()).clone();
                 for (_, ui_render) in q.collect_cloned(world, qs) {
                     let mut ui_render = ui_render.lock();
                     match &event {
                         Event::WindowEvent {
                             event: WindowEvent::Resized(size),
                             ..
-                        } => ui_render.resize(size),
+                        } => ui_render.resize(&gpu, size),
                         Event::WindowEvent {
                             event: WindowEvent::ScaleFactorChanged { new_inner_size, .. },
                             ..
                         } => {
-                            ui_render.resize(new_inner_size);
+                            ui_render.resize(&gpu, new_inner_size);
                         }
                         _ => {}
                     }
                     let cleared = matches!(event, Event::MainEventsCleared);
                     if cleared {
-                        ui_render.render(world);
+                        ui_render.render(&gpu, world);
                     }
                 }
             }),
             query(main_renderer()).to_system(|q, world, qs, event| {
+                let gpu = world.resource(gpu()).clone();
                 for (_, main_renderer) in q.collect_cloned(world, qs) {
                     let mut main_renderer = main_renderer.lock();
                     match event {
                         Event::WindowEvent {
                             event: WindowEvent::Resized(size),
                             ..
-                        } => main_renderer.resize(size),
+                        } => main_renderer.resize(&gpu, size),
                         Event::MainEventsCleared => {
                             main_renderer.run(world, &FrameEvent);
                         }
@@ -72,7 +74,6 @@ pub fn systems() -> SystemGroup<Event<'static, ()>> {
 }
 
 pub struct MainRenderer {
-    gpu: Arc<Gpu>,
     main: Option<Renderer>,
     ui: Option<Renderer>,
     blit: Arc<Blitter>,
@@ -81,16 +82,15 @@ pub struct MainRenderer {
 }
 
 impl MainRenderer {
-    pub fn new(world: &mut World, ui: bool, main: bool) -> Self {
-        let gpu = world.resource(gpu()).clone();
-        let assets = world.resource(asset_cache()).clone();
+    pub fn new(gpu: &Gpu, world: &mut World, ui: bool, main: bool) -> Self {
         world
             .add_component(world.resource_entity(), renderer_stats(), "".to_string())
             .unwrap();
+        let assets = world.resource(asset_cache());
         let wind_size = *world.resource(ambient_core::window::window_physical_size());
 
         tracing::debug!("Creating render target");
-        let render_target = RenderTarget::new(gpu.clone(), wind_size, None);
+        let render_target = RenderTarget::new(gpu, wind_size, None);
 
         tracing::debug!("Creating self");
 
@@ -108,8 +108,8 @@ impl MainRenderer {
             main: if main {
                 tracing::debug!("Creating renderer");
                 let mut renderer = Renderer::new(
-                    world,
-                    world.resource(asset_cache()).clone(),
+                    gpu,
+                    assets,
                     RendererConfig {
                         scene: main_scene(),
                         shadows: true,
@@ -118,15 +118,15 @@ impl MainRenderer {
                 );
 
                 tracing::debug!("Creating gizmo renderer");
-                renderer.post_transparent = Some(Box::new(GizmoRenderer::new(&assets)));
+                renderer.post_transparent = Some(Box::new(GizmoRenderer::new(gpu, assets)));
                 Some(renderer)
             } else {
                 None
             },
             ui: if ui {
                 Some(Renderer::new(
-                    world,
-                    world.resource(asset_cache()).clone(),
+                    gpu,
+                    assets,
                     RendererConfig {
                         scene: ui_scene(),
                         shadows: false,
@@ -141,18 +141,16 @@ impl MainRenderer {
                 min_filter: FilterMode::Nearest,
                 gamma_correction,
             }
-            .get(&world.resource(asset_cache()).clone()),
+            .get(assets),
             render_target,
-            gpu,
             size: wind_size,
         }
     }
-    fn resize(&mut self, size: &PhysicalSize<u32>) {
+    fn resize(&mut self, gpu: &Gpu, size: &PhysicalSize<u32>) {
         self.size = uvec2(size.width, size.height);
 
         if size.width > 0 && size.height > 0 {
-            self.render_target =
-                RenderTarget::new(self.gpu.clone(), uvec2(size.width, size.height), None);
+            self.render_target = RenderTarget::new(gpu, uvec2(size.width, size.height), None);
         }
     }
 
@@ -194,10 +192,9 @@ impl std::fmt::Debug for MainRenderer {
 
 impl System for MainRenderer {
     fn run(&mut self, world: &mut World, _: &FrameEvent) {
-        // tracing::info!("MainRenderer");
         ambient_profiling::scope!("Renderers.run");
-        let mut encoder = self
-            .gpu
+        let gpu = world.resource(gpu()).clone();
+        let mut encoder = gpu
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         let mut post_submit = Vec::new();
@@ -205,6 +202,7 @@ impl System for MainRenderer {
         if let Some(main) = &mut self.main {
             ambient_profiling::scope!("Main");
             main.render(
+                &gpu,
                 world,
                 &mut encoder,
                 &mut post_submit,
@@ -217,6 +215,7 @@ impl System for MainRenderer {
             // tracing::info!("Drawing UI");
             ambient_profiling::scope!("UI");
             ui.render(
+                &gpu,
                 world,
                 &mut encoder,
                 &mut post_submit,
@@ -229,7 +228,7 @@ impl System for MainRenderer {
             );
         }
 
-        if let Some(surface) = &self.gpu.surface {
+        if let Some(surface) = &gpu.surface {
             if self.size.x > 0 && self.size.y > 0 {
                 let frame = {
                     ambient_profiling::scope!("Get swapchain texture");
@@ -238,7 +237,7 @@ impl System for MainRenderer {
                         // Reconfigure the surface if lost
                         Err(wgpu::SurfaceError::Lost) => {
                             tracing::warn!("Surface lost");
-                            self.gpu.resize(PhysicalSize {
+                            gpu.resize(PhysicalSize {
                                 width: self.size.x,
                                 height: self.size.y,
                             });
@@ -257,6 +256,7 @@ impl System for MainRenderer {
                     .texture
                     .create_view(&wgpu::TextureViewDescriptor::default());
                 self.blit.run(
+                    &gpu,
                     &mut encoder,
                     &self.render_target.color_buffer_view,
                     &frame_view,
@@ -264,7 +264,7 @@ impl System for MainRenderer {
 
                 {
                     ambient_profiling::scope!("Submit");
-                    self.gpu.queue.submit(Some(encoder.finish()));
+                    gpu.queue.submit(Some(encoder.finish()));
                 }
                 {
                     ambient_profiling::scope!("Present");
@@ -272,12 +272,12 @@ impl System for MainRenderer {
                 }
             } else {
                 ambient_profiling::scope!("Submit");
-                self.gpu.queue.submit(Some(encoder.finish()));
+                gpu.queue.submit(Some(encoder.finish()));
             }
         } else {
             {
                 ambient_profiling::scope!("Submit");
-                self.gpu.queue.submit(Some(encoder.finish()));
+                gpu.queue.submit(Some(encoder.finish()));
             }
         }
 
@@ -292,7 +292,6 @@ impl System for MainRenderer {
 }
 
 pub struct UiRenderer {
-    gpu: Arc<Gpu>,
     ui_renderer: Renderer,
     depth_buffer_view: Arc<TextureView>,
     normals_view: Arc<TextureView>,
@@ -300,16 +299,17 @@ pub struct UiRenderer {
 
 impl UiRenderer {
     pub fn new(world: &mut World) -> Self {
+        let assets = world.resource(asset_cache());
         let gpu = world.resource(gpu()).clone();
         let size = *world.resource(window_physical_size());
 
         let depth_buffer = Arc::new(Self::create_depth_buffer(
-            gpu.clone(),
+            &gpu,
             &PhysicalSize::new(size.x, size.y),
         ));
 
         let normals = Arc::new(Texture::new(
-            gpu.clone(),
+            &gpu,
             &wgpu::TextureDescriptor {
                 label: Some("RenderTarget.depth_buffer"),
                 size: wgpu::Extent3d {
@@ -327,26 +327,24 @@ impl UiRenderer {
             },
         ));
 
-        let assets = world.resource(asset_cache()).clone();
         let mut ui_renderer = Renderer::new(
-            world,
-            world.resource(asset_cache()).clone(),
+            &gpu,
+            assets,
             RendererConfig {
                 scene: ui_scene(),
                 shadows: false,
                 ..Default::default()
             },
         );
-        ui_renderer.post_transparent = Some(Box::new(GizmoRenderer::new(&assets)));
+        ui_renderer.post_transparent = Some(Box::new(GizmoRenderer::new(&gpu, assets)));
         Self {
             ui_renderer,
             depth_buffer_view: Arc::new(depth_buffer.create_view(&Default::default())),
-            gpu,
             normals_view: Arc::new(normals.create_view(&Default::default())),
         }
     }
 
-    fn create_depth_buffer(gpu: Arc<Gpu>, size: &PhysicalSize<u32>) -> Texture {
+    fn create_depth_buffer(gpu: &Gpu, size: &PhysicalSize<u32>) -> Texture {
         Texture::new(
             gpu,
             &wgpu::TextureDescriptor {
@@ -368,14 +366,13 @@ impl UiRenderer {
         )
     }
 
-    fn resize(&mut self, size: &PhysicalSize<u32>) {
-        let depth_buffer = Arc::new(Self::create_depth_buffer(self.gpu.clone(), size));
+    fn resize(&mut self, gpu: &Gpu, size: &PhysicalSize<u32>) {
+        let depth_buffer = Arc::new(Self::create_depth_buffer(gpu, size));
         self.depth_buffer_view = Arc::new(depth_buffer.create_view(&Default::default()));
     }
 
-    fn render(&mut self, world: &mut World) {
+    fn render(&mut self, gpu: &Gpu, world: &mut World) {
         let _span = info_span!("UIRender.render").entered();
-        let gpu = world.resource(gpu()).clone();
         let mut encoder = gpu
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
@@ -399,6 +396,7 @@ impl UiRenderer {
         tracing::info!("Drawing UI");
 
         self.ui_renderer.render(
+            gpu,
             world,
             &mut encoder,
             &mut post_submit,

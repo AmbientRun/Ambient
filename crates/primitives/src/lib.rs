@@ -236,7 +236,6 @@ pub fn systems() -> SystemGroup {
                         outer_radius,
                         slices,
                         loops,
-                        ..Default::default()
                     };
                     let data = torus_data(world.resource(asset_cache()), &mesh);
                     extend(world, id, data);

@@ -23,7 +23,7 @@ impl SyncAssetKey<Arc<Texture>> for PixelTextureKey {
     fn load(&self, assets: AssetCache) -> Arc<Texture> {
         let gpu = GpuKey.get(&assets);
         Arc::new(Texture::new_single_color_texture_array(
-            gpu,
+            &gpu,
             self.colors.clone(),
         ))
     }
@@ -61,7 +61,7 @@ impl SyncAssetKey<Arc<Texture>> for DefaultNormalMapKey {
     fn load(&self, assets: AssetCache) -> Arc<Texture> {
         let gpu = GpuKey.get(&assets);
         Arc::new(Texture::new_single_color_texture_array(
-            gpu,
+            &gpu,
             vec![uvec4(128, 128, 255, 0)],
         ))
     }

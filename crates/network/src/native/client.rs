@@ -25,12 +25,12 @@ use parking_lot::Mutex;
 use quinn::{ClientConfig, Connection, Endpoint, TransportConfig};
 use rand::Rng;
 use rustls::Certificate;
-use tokio::net::ToSocketAddrs;
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::Arc,
     time::Duration,
 };
+use tokio::net::ToSocketAddrs;
 
 #[derive(Debug, Clone)]
 pub struct ResolvedAddr {
@@ -47,7 +47,7 @@ impl ResolvedAddr {
         let host = host.to_string();
         let host_name = if host.contains(':') {
             host.split(':').next().unwrap().to_string()
-        }else {
+        } else {
             host
         };
         Ok(Self { host_name, addr })
@@ -89,7 +89,7 @@ impl ElementComponent for GameClientView {
         let gpu = hooks.world.resource(gpu()).clone();
 
         hooks.provide_context(|| {
-            GameClientRenderTarget(Arc::new(RenderTarget::new(gpu.clone(), uvec2(1, 1), None)))
+            GameClientRenderTarget(Arc::new(RenderTarget::new(&gpu, uvec2(1, 1), None)))
         });
         let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
 
@@ -98,6 +98,7 @@ impl ElementComponent for GameClientView {
             let (systems, resources) = systems_and_resources();
 
             ClientGameState::new(
+                &gpu,
                 world,
                 assets.clone(),
                 user_id.clone(),
@@ -146,7 +147,7 @@ impl ElementComponent for GameClientView {
                 }
 
                 // tracing::info!("Drawing game state");
-                game_state.on_frame(&render_target.0);
+                game_state.on_frame(&gpu, &render_target.0);
             });
         }
 
@@ -371,7 +372,9 @@ async fn open_connection(
         create_client_endpoint_random_port(cert).context("Failed to create client endpoint")?;
 
     log::debug!("Got endpoint");
-    let conn = endpoint.connect(server_addr.addr, &server_addr.host_name)?.await?;
+    let conn = endpoint
+        .connect(server_addr.addr, &server_addr.host_name)?
+        .await?;
 
     log::debug!("Got connection");
     Ok(conn)

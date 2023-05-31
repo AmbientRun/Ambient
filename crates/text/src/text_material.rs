@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ambient_gpu::{
-    gpu::{Gpu, GpuKey},
+    gpu::Gpu,
     shader_module::{BindGroupDesc, ShaderModule},
     texture::TextureView, sampler::SamplerKey,
 };
@@ -53,25 +53,21 @@ pub fn get_text_shader(assets: &AssetCache, config: &RendererConfig) -> Arc<Rend
 }
 
 pub struct TextMaterial {
-    _gpu: Arc<Gpu>,
     id: String,
     bind_group: wgpu::BindGroup,
 }
 impl TextMaterial {
-    pub fn new(assets: AssetCache, font_atlas: Arc<TextureView>) -> Self {
-        let gpu = GpuKey.get(&assets);
-
+    pub fn new(gpu: &Gpu, assets: &AssetCache, font_atlas: Arc<TextureView>) -> Self {
         Self {
             id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
-                layout: &get_text_layout().get(&assets),
+                layout: &get_text_layout().get(assets),
                 entries: &[
                     wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(&font_atlas) },
-                    wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&SamplerKey::LINEAR_CLAMP_TO_EDGE.get(&assets)) },
+                    wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&SamplerKey::LINEAR_CLAMP_TO_EDGE.get(assets)) },
                 ],
                 label: Some("TextMaterial.bind_group"),
             }),
-            _gpu: gpu.clone(),
         }
     }
 }

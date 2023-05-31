@@ -13,6 +13,7 @@ use ambient_core::{
     },
 };
 use ambient_ecs::{query, ComponentDesc, Entity, EntityId, World};
+use ambient_gpu::gpu::Gpu;
 use ambient_renderer::{
     cast_shadows, color, gpu_primitives_lod, gpu_primitives_mesh,
     lod::cpu_lod_visible,
@@ -124,11 +125,12 @@ impl Model {
         self.0.resource_opt(model_skins())
     }
 
-    pub fn spawn(&self, world: &mut World, opts: &ModelSpawnOpts) -> EntityId {
-        self.batch_spawn(world, opts, 1).pop().unwrap()
+    pub fn spawn(&self, gpu: &Gpu, world: &mut World, opts: &ModelSpawnOpts) -> EntityId {
+        self.batch_spawn(gpu, world, opts, 1).pop().unwrap()
     }
     pub fn batch_spawn(
         &self,
+        gpu: &Gpu,
         world: &mut World,
         opts: &ModelSpawnOpts,
         count: usize,
@@ -217,6 +219,7 @@ impl Model {
 
             for node_id in &self.roots() {
                 let childs = self.spawn_subtree(
+                    gpu,
                     world,
                     *node_id,
                     transform_roots.clone(),
@@ -312,6 +315,7 @@ impl Model {
     #[allow(clippy::too_many_arguments)]
     fn spawn_subtree(
         &self,
+        gpu: &Gpu,
         world: &mut World,
         id: EntityId,
         parent_ids: Vec<EntityId>,
@@ -347,7 +351,7 @@ impl Model {
         if let Ok(skin_ix) = self.0.get(id, model_skin_ix()) {
             let skin = self.skins().unwrap()[skin_ix].clone();
             for entity in &entities {
-                let skin_buffer = skins_buffer.create(skin.inverse_bind_matrices.len() as u32);
+                let skin_buffer = skins_buffer.create(gpu, skin.inverse_bind_matrices.len() as u32);
                 world.set(*entity, skinning::skin(), skin_buffer).unwrap();
             }
         }
@@ -367,6 +371,7 @@ impl Model {
         if self.0.has_component(id, children()) {
             for c in self.0.get_ref(id, children()).unwrap().iter() {
                 self.spawn_subtree(
+                    gpu,
                     world,
                     *c,
                     entities.clone(),

@@ -2,9 +2,10 @@ use std::{borrow::Cow, sync::Arc};
 
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use glam::Vec4;
+use wgpu::util::DeviceExt;
 use wgpu::{
-    util::DeviceExt, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType,
-    BufferBindingType, ShaderStages, TextureViewDimension,
+    BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages,
+    TextureViewDimension,
 };
 
 use super::{
@@ -18,16 +19,16 @@ pub struct FillerKey {
 }
 impl SyncAssetKey<Arc<Filler>> for FillerKey {
     fn load(&self, assets: AssetCache) -> Arc<Filler> {
-        Arc::new(Filler::new(GpuKey.get(&assets), self.format))
+        let gpu = GpuKey.get(&assets);
+        Arc::new(Filler::new(&gpu, self.format))
     }
 }
 
 pub struct Filler {
-    gpu: Arc<Gpu>,
     pipeline: wgpu::ComputePipeline,
 }
 impl Filler {
-    pub fn new(gpu: Arc<Gpu>, format: wgpu::TextureFormat) -> Self {
+    pub fn new(gpu: &Gpu, format: wgpu::TextureFormat) -> Self {
         let shader = format!(
             "
 
@@ -98,20 +99,20 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {{
                     module: &shader,
                     entry_point: "main",
                 });
-        Self { gpu, pipeline }
+        Self { pipeline }
     }
-    pub fn run(&self, target: &wgpu::TextureView, size: wgpu::Extent3d, color: Vec4) {
-        let mut encoder = self
-            .gpu
+    pub fn run(&self, gpu: &Gpu, target: &wgpu::TextureView, size: wgpu::Extent3d, color: Vec4) {
+        let mut encoder = gpu
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: Some("Filler.run"),
             });
-        self.run_with_encoder(&mut encoder, target, size, color);
-        self.gpu.queue.submit(Some(encoder.finish()));
+        self.run_with_encoder(gpu, &mut encoder, target, size, color);
+        gpu.queue.submit(Some(encoder.finish()));
     }
     pub fn run_with_encoder(
         &self,
+        gpu: &Gpu,
         encoder: &mut wgpu::CommandEncoder,
         target: &wgpu::TextureView,
         size: wgpu::Extent3d,
@@ -124,8 +125,7 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {{
         }
 
         let params = FillParams { color };
-        let param_buffer = self
-            .gpu
+        let param_buffer = gpu
             .device
             .create_buffer_init(&wgpu::util::BufferInitDescriptor {
                 label: Some("Filler params"),
@@ -134,23 +134,20 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {{
             });
 
         let bind_group_layout = self.pipeline.get_bind_group_layout(0);
-        let bind_group = self
-            .gpu
-            .device
-            .create_bind_group(&wgpu::BindGroupDescriptor {
-                label: Some("Filler"),
-                layout: &bind_group_layout,
-                entries: &[
-                    wgpu::BindGroupEntry {
-                        binding: 0,
-                        resource: wgpu::BindingResource::TextureView(target),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 1,
-                        resource: param_buffer.as_entire_binding(),
-                    },
-                ],
-            });
+        let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("Filler"),
+            layout: &bind_group_layout,
+            entries: &[
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::TextureView(target),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: param_buffer.as_entire_binding(),
+                },
+            ],
+        });
 
         let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
             label: Some("Filler"),

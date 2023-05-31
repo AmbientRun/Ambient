@@ -21,7 +21,7 @@ use ambient_element::{
 };
 use ambient_gpu::{
     fill::FillerKey,
-    gpu::GpuKey,
+    gpu::{Gpu, GpuKey},
     mesh_buffer::GpuMesh,
     std_assets::PixelTextureKey,
     texture::{Texture, TextureReader},
@@ -151,7 +151,9 @@ pub fn terrain_gpu_to_cpu_system() -> SystemGroup {
                 .excl(terrain_state())
                 .to_system(|q, world, qs, _| {
                     for (id, (state,)) in q.collect_cloned(world, qs) {
-                        let state = state.to_gpu(world.resource(asset_cache()));
+                        let asset_cache = world.resource(asset_cache());
+                        let gpu = GpuKey.get(asset_cache);
+                        let state = state.to_gpu(&gpu, asset_cache);
                         world.add_component(id, terrain_state(), state.clone()).ok();
                     }
                 }),
@@ -165,13 +167,15 @@ pub fn terrain_gpu_to_cpu_system() -> SystemGroup {
 
                     let async_run = world.resource(async_run()).clone();
                     let runtime = world.resource(runtime()).clone();
+                    let asset_cache = world.resource(asset_cache()).clone();
                     for id in to_update {
                         world.set(id, terrain_cell_needs_cpu_download(), false).ok();
                         if let Ok(terrain) = world.get_ref(id, terrain_state()) {
-                            let terrain = terrain.reader();
+                            let gpu = GpuKey.get(&asset_cache);
+                            let terrain = terrain.reader(&gpu);
                             let async_run = async_run.clone();
                             runtime.spawn(async move {
-                                let terrain = Arc::new(terrain.read().await.unwrap());
+                                let terrain = Arc::new(terrain.read(&gpu).await.unwrap());
                                 async_run.run(move |world| {
                                     log_result!(world.set(id, terrain_state_cpu(), terrain));
                                     log_result!(world.add_component(
@@ -594,11 +598,9 @@ pub struct TerrainState {
     pub normalmap: Arc<Texture>,
 }
 impl TerrainState {
-    pub fn new_empty(assets: &AssetCache, size: TerrainSize) -> Self {
-        let gpu = GpuKey.get(assets);
-
+    pub fn new_empty(gpu: &Gpu, assets: &AssetCache, size: TerrainSize) -> Self {
         let heightmap = Arc::new(Texture::new(
-            gpu.clone(),
+            gpu,
             &wgpu::TextureDescriptor {
                 size: size.heightmap_extent(),
                 mip_level_count: 1,
@@ -610,7 +612,7 @@ impl TerrainState {
                     | wgpu::TextureUsages::COPY_SRC
                     | wgpu::TextureUsages::STORAGE_BINDING,
                 label: Some("heightmap"),
-                view_formats: &[]
+                view_formats: &[],
             },
         ));
 
@@ -628,7 +630,7 @@ impl TerrainState {
                     | wgpu::TextureUsages::STORAGE_BINDING
                     | wgpu::TextureUsages::RENDER_ATTACHMENT,
                 label: Some("normalmap"),
-                view_formats: &[]
+                view_formats: &[],
             },
         ));
         FillerKey {
@@ -636,6 +638,7 @@ impl TerrainState {
         }
         .get(assets)
         .run(
+            gpu,
             &normalmap.create_view(&wgpu::TextureViewDescriptor {
                 base_mip_level: 0,
                 mip_level_count: Some(1),
@@ -644,7 +647,7 @@ impl TerrainState {
             normalmap.size,
             vec4(0., 0., 1., 0.),
         );
-        normalmap.generate_mipmaps(assets);
+        normalmap.generate_mipmaps(gpu, assets);
 
         Self {
             id: friendly_id(),
@@ -653,14 +656,14 @@ impl TerrainState {
             normalmap,
         }
     }
-    pub async fn to_cpu(&self) -> Option<TerrainStateCpu> {
-        self.reader().read().await
+    pub async fn to_cpu(&self, gpu: &Gpu) -> Option<TerrainStateCpu> {
+        self.reader(gpu).read(gpu).await
     }
-    pub fn reader(&self) -> TerrainStateReader {
+    pub fn reader(&self, gpu: &Gpu) -> TerrainStateReader {
         TerrainStateReader {
             size: self.size.clone(),
-            heightmap: self.heightmap.reader(),
-            normalmap: self.normalmap.reader(),
+            heightmap: self.heightmap.reader(gpu),
+            normalmap: self.normalmap.reader(gpu),
         }
     }
 }
@@ -671,11 +674,19 @@ pub struct TerrainStateReader {
     normalmap: TextureReader,
 }
 impl TerrainStateReader {
-    pub async fn read(&self) -> Option<TerrainStateCpu> {
+    pub async fn read(&self, gpu: &Gpu) -> Option<TerrainStateCpu> {
         Some(TerrainStateCpu {
             size: self.size.clone(),
-            heightmap: self.heightmap.read_array_f32().await?.remove_axis(Axis(3)),
-            normalmap: self.normalmap.read_array_f32().await?.remove_axis(Axis(0)),
+            heightmap: self
+                .heightmap
+                .read_array_f32(gpu)
+                .await?
+                .remove_axis(Axis(3)),
+            normalmap: self
+                .normalmap
+                .read_array_f32(gpu)
+                .await?
+                .remove_axis(Axis(0)),
         })
     }
 }
@@ -704,10 +715,10 @@ impl TerrainStateCpu {
         self.heightmap.shape()
     }
 
-    pub fn to_gpu(&self, assets: &AssetCache) -> TerrainState {
-        let state = TerrainState::new_empty(assets, self.size.clone());
-        state.heightmap.write_array(&self.heightmap);
-        state.normalmap.write_array(&self.normalmap);
+    pub fn to_gpu(&self, gpu: &Gpu, assets: &AssetCache) -> TerrainState {
+        let state = TerrainState::new_empty(gpu, assets, self.size.clone());
+        state.heightmap.write_array(gpu, &self.heightmap);
+        state.normalmap.write_array(gpu, &self.normalmap);
         state
     }
     pub fn texel_from_world_offset(&self, offset: Vec2) -> IVec2 {
@@ -845,6 +856,7 @@ pub struct Terrain {
 impl ElementComponent for Terrain {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let assets = hooks.world.resource(asset_cache()).clone();
+        let gpu = GpuKey.get(&assets);
 
         let (material_def, set_material_def) = hooks.use_state_with(|world| {
             world
@@ -916,7 +928,8 @@ impl ElementComponent for Terrain {
             ),
             |_, (_, _, material_def, _)| {
                 SharedMaterial::new(TerrainMaterial::new(
-                    assets.clone(),
+                    &gpu,
+                    &assets,
                     TerrainMaterialParams {
                         heightmap_position,
                         lod_factor,

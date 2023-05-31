@@ -1,11 +1,12 @@
 use std::{borrow::Cow, sync::Arc};
 
-use ambient_core::{asset_cache, mesh, transform::*, ui_scene};
+use ambient_core::{asset_cache, mesh, transform::*, ui_scene, gpu};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_gpu::{
+    sampler::SamplerKey,
     std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},
     texture::TextureView,
-    texture_loaders::{TextureFromBytes, TextureFromUrl}, sampler::SamplerKey,
+    texture_loaders::{TextureFromBytes, TextureFromUrl},
 };
 use ambient_meshes::UIRectMeshKey;
 use ambient_renderer::{
@@ -33,10 +34,12 @@ impl ElementComponent for Image {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Image { texture } = *self;
         let assets = hooks.world.resource(asset_cache()).clone();
+        let gpu = hooks.world.resource(gpu()).clone();
         let texture_id = texture.as_ref().map(|x| x.texture.id);
         let mat = hooks.use_memo_with(texture_id, move |_, _| {
             texture.map(|texture| {
                 SharedMaterial::new(PbrMaterial::new(
+                    &gpu,
                     &assets,
                     PbrMaterialConfig {
                         source: "Image".to_string(),
