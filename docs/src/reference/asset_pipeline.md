@@ -36,6 +36,32 @@ The following will load `.glb` and `.fbx` files in the folder or any of the sub-
 }
 ```
 
+#### Different pipelines for different files
+
+You can use the `sources` attribute to set up different configurations for different files:
+
+```json
+[
+    {
+        "pipeline": {
+            "type": "Models",
+            "collider": {
+                "type": "FromModel"
+            },
+        },
+        "sources": ["physical/*.glb"]
+    },
+    {
+        "pipeline": {
+            "type": "Models",
+        },
+        "sources": ["ghosts/*.glb"]
+    }
+]
+```
+
+`sources` accepts a list of glob patterns, so you can target a single file, or use a pattern to select all files in a directory (`*.glb`) or sub-tree (`**/test.glb`).
+
 #### A more complex model example
 
 The following will filter to just files that contain `table`, scale it down, and override materials for the `wood` material.
