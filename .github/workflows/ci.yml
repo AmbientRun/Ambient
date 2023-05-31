@@ -52,6 +52,9 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           prefix-key: clippy-web
+          workspaces: |
+            .
+            web
       - name: Run clippy
         working-directory: web
         run: cargo clippy --workspace
