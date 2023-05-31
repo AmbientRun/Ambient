@@ -125,10 +125,19 @@ impl Executor {
         uid
     }
 
-    pub fn unregister_callback(&self, event_name: &str, uid: u128) {
+    /// Returns true if the callback was removed
+    pub fn unregister_callback(&self, event_name: &str, uid: u128) -> bool {
         if let Some(entry) = self.incoming_callbacks.borrow_mut().on.get_mut(event_name) {
-            entry.remove(&uid);
+            if entry.remove(&uid).is_some() {
+                return true;
+            }
         }
+        if let Some(entry) = self.current_callbacks.borrow_mut().on.get_mut(event_name) {
+            if entry.remove(&uid).is_some() {
+                return true;
+            }
+        }
+        false
     }
 
     pub fn spawn(&self, fut: EventFuture) {
