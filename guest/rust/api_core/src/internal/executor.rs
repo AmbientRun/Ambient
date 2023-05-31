@@ -32,6 +32,7 @@ pub(crate) struct Executor {
     incoming: RefCell<Vec<Pin<Box<dyn Future<Output = ResultEmpty>>>>>,
     current_callbacks: RefCell<Callbacks>,
     incoming_callbacks: RefCell<Callbacks>,
+    callbacks_to_remove: RefCell<Vec<(String, u128)>>,
     frame_state: RefCell<FrameState>,
 }
 // WebAssembly, at time of writing, is single-threaded. This is a convenient little lie
@@ -47,6 +48,7 @@ impl Executor {
             incoming: RefCell::new(Default::default()),
             current_callbacks: RefCell::new(Default::default()),
             incoming_callbacks: RefCell::new(Default::default()),
+            callbacks_to_remove: RefCell::new(Default::default()),
             frame_state: RefCell::new(Default::default()),
         }
     }
@@ -80,6 +82,19 @@ impl Executor {
             if let Some(callbacks) = callbacks.on.get_mut(&message_name) {
                 for callback in callbacks.values_mut() {
                     callback(&source, &message_data).unwrap();
+                }
+            }
+        }
+
+        {
+            let to_remove = self
+                .callbacks_to_remove
+                .borrow_mut()
+                .drain(..)
+                .collect::<Vec<_>>();
+            for (event, id) in to_remove {
+                if let Some(event) = self.current_callbacks.borrow_mut().on.get_mut(&event) {
+                    event.remove(&id);
                 }
             }
         }
@@ -125,19 +140,15 @@ impl Executor {
         uid
     }
 
-    /// Returns true if the callback was removed
-    pub fn unregister_callback(&self, event_name: &str, uid: u128) -> bool {
+    pub fn unregister_callback(&self, event_name: &str, uid: u128) {
         if let Some(entry) = self.incoming_callbacks.borrow_mut().on.get_mut(event_name) {
             if entry.remove(&uid).is_some() {
-                return true;
+                return;
             }
         }
-        if let Some(entry) = self.current_callbacks.borrow_mut().on.get_mut(event_name) {
-            if entry.remove(&uid).is_some() {
-                return true;
-            }
-        }
-        false
+        self.callbacks_to_remove
+            .borrow_mut()
+            .push((event_name.to_string(), uid));
     }
 
     pub fn spawn(&self, fut: EventFuture) {

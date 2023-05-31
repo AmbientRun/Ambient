@@ -186,7 +186,7 @@ pub struct Listener(String, u128);
 impl Listener {
     /// Stops listening.
     pub fn stop(self) {
-        assert!(EXECUTOR.unregister_callback(&self.0, self.1));
+        EXECUTOR.unregister_callback(&self.0, self.1);
     }
 }
 
