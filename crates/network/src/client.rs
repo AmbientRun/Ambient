@@ -63,7 +63,7 @@ pub trait ClientConnection: 'static + Send + Sync {
 impl ClientConnection for quinn::Connection {
     fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>> {
         Box::pin(async move {
-            let (mut send, recv) = self.open_bi().await?;
+            let (mut send, mut recv) = self.open_bi().await?;
 
             send.write_u32(id).await?;
             send.write_all(&data).await?;
@@ -101,7 +101,7 @@ impl ClientConnection for quinn::Connection {
 impl ClientConnection for ConnectionKind {
     fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>> {
         Box::pin(async move {
-            let (mut send, recv) = self.open_bi().await?;
+            let (mut send, mut recv) = self.open_bi().await?;
 
             send.write_u32(id).await?;
             send.write_all(&data).await?;
