@@ -80,10 +80,11 @@ pub fn start(
     let public_host = cli
         .host()
         .and_then(|h| h.public_host.clone())
-        .and_then(|| local_ip_address::local_ip().ok())
+        .and_then(|_| local_ip_address::local_ip().ok())
+        .map(|v| v.to_string())
         .unwrap_or_else(|| "localhost".to_string());
 
-    /// TODO: use bound socket address
+    // TODO: use bound socket address
     log::info!("Created server, running at {public_host}:{port}");
     let http_interface_port = cli
         .host()
