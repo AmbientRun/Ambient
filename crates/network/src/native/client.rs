@@ -241,7 +241,6 @@ impl ElementComponent for GameClientView {
     }
 }
 
-#[tracing::instrument(name = "client", level = "info", skip(conn))]
 async fn handle_connection(
     game_client: GameClient,
     conn: quinn::Connection,

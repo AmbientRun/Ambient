@@ -38,7 +38,6 @@ fn add_webpki_roots(roots: &mut rustls::RootCertStore) {
     }));
 }
 
-#[tracing::instrument(level = "info")]
 fn load_root_certs() -> rustls::RootCertStore {
     #[cfg(any(feature = "tls-native-roots", feature = "tls-webpki-roots"))]
     {
