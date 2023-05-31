@@ -31,6 +31,10 @@ jobs:
         uses: taiki-e/install-action@v2
         with:
           tool: protoc@3.21.12
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: clippy
       - name: Run clippy
         uses: actions-rs/cargo@v1
         with:
@@ -44,6 +48,10 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           target: wasm32-unknown-unknown
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: clippy-web
       - name: Run clippy
         working-directory: web
         run: cargo clippy --workspace
