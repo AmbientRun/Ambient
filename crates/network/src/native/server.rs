@@ -234,7 +234,7 @@ async fn resolve_connection(
     let protocol_str = std::str::from_utf8(&protocol);
     let server_name = handshake_data.server_name;
 
-    tracing::info!(
+    tracing::trace!(
         ?protocol,
         ?protocol_str,
         ?server_name,
@@ -259,13 +259,7 @@ async fn resolve_connection(
         )
         .await
     } else if protocol == b"h3" {
-        handle_h3_connection(
-            conn.into(),
-            state.clone(),
-            world_stream_filter,
-            content_base_url,
-        )
-        .await
+        handle_h3_connection(conn, state.clone(), world_stream_filter, content_base_url).await
     } else {
         tracing::error!(
             local_ip=?conn.local_ip(),
@@ -286,7 +280,7 @@ async fn handle_quinn_connection(
     world_stream_filter: WorldStreamFilter,
     content_base_url: AbsAssetUrl,
 ) -> anyhow::Result<()> {
-    tracing::info!("Handling server connection");
+    tracing::debug!("Handling server connection");
     let (diffs_tx, diffs_rx) = flume::unbounded();
 
     let server_info = {
@@ -308,9 +302,7 @@ async fn handle_quinn_connection(
 
     let mut server = proto::server::ServerState::default();
 
-    tracing::info!("Accepting request stream from client");
     let mut request_recv = FramedRecvStream::new(conn.accept_uni().await?);
-    tracing::info!("Opening control stream");
     let mut push_send = FramedSendStream::new(conn.open_uni().await?);
 
     let diffs_rx = diffs_rx.into_stream();
@@ -509,8 +501,6 @@ fn create_server(server_addr: SocketAddr, crypto: &Crypto) -> anyhow::Result<End
 
     let transport = Arc::new(transport);
     server_conf.transport = transport.clone();
-
-    tracing::info!(?server_addr, ?server_conf, "Creating server endpoint");
 
     let mut endpoint = Endpoint::server(server_conf, server_addr)?;
 

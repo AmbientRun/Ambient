@@ -51,8 +51,6 @@ impl ClientState {
     ) -> anyhow::Result<()> {
         match (frame, &self) {
             (ServerPush::ServerInfo(server_info), Self::Connecting(_user_id)) => {
-                tracing::info!(?server_info, "Received server info");
-
                 let state = state.lock();
                 ContentBaseUrlKey.insert(&state.assets, server_info.content_base_url.clone());
                 tracing::debug!(?server_info.external_components, "Adding external components");

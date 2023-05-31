@@ -114,7 +114,7 @@ impl ElementComponent for GameClientView {
         // Subscribe to window close events
         hooks.use_runtime_message::<messages::WindowClose>({
             move |_, _| {
-                tracing::info!("User closed the window");
+                tracing::debug!("User closed the window");
                 control_tx.send(Control::Disconnect).ok();
             }
         });
@@ -161,7 +161,7 @@ impl ElementComponent for GameClientView {
                     .await
                     .with_context(|| format!("Failed to connect to endpoint: {server_addr:?}"))?;
 
-                tracing::info!("Connected to the server");
+                tracing::debug!("Connected to the server");
 
                 // Create a handle for the game client
                 let game_client = GameClient::new(
@@ -194,8 +194,6 @@ impl ElementComponent for GameClientView {
                     control_rx,
                 )
                 .await?;
-
-                tracing::info!("finished handling connection");
 
                 Ok(()) as anyhow::Result<()>
             };

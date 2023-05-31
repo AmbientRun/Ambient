@@ -42,7 +42,6 @@ pub fn start(
     metadata: &ambient_build::Metadata,
     crypto: Crypto,
 ) -> u16 {
-    log::info!("Creating server");
     let host_cli = cli.host().unwrap();
     let quic_interface_port = host_cli.quic_interface_port;
     let proxy_settings = (!host_cli.no_proxy).then(|| {
@@ -57,6 +56,7 @@ pub fn start(
             project_id: manifest.project.id.to_string(),
         }
     });
+
     let server = runtime.block_on(async move {
         if let Some(port) = quic_interface_port {
             GameServer::new_with_port(port, false, proxy_settings, &crypto)
@@ -75,6 +75,7 @@ pub fn start(
             .unwrap()
         }
     });
+
     let port = server.port;
 
     log::info!("Host: {:#?}", cli.host());
