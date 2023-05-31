@@ -25,7 +25,7 @@ use physxx::{
     PxVisualizationParameter,
 };
 
-pub use ambient_ecs::generated::components::core::physics::visualizing;
+pub use ambient_ecs::generated::components::core::physics::visualize_collider;
 
 components!("physics", {
     @[Networked]
@@ -34,7 +34,7 @@ components!("physics", {
     shape_primitives: Vec<GizmoPrimitive>,
 });
 
-pub fn visualize_collider(world: &mut World, entity: EntityId, enabled: bool) -> Option<()> {
+pub fn run_visualize_collider(world: &mut World, entity: EntityId, enabled: bool) -> Option<()> {
     let actor = world.get_ref(entity, rigid_actor()).ok()?;
     let scene = actor.get_scene()?;
     for shape in world
@@ -54,9 +54,11 @@ pub fn visualize_collider(world: &mut World, entity: EntityId, enabled: bool) ->
     }
 
     if enabled {
-        world.add_component(entity, visualizing(), ()).unwrap();
+        world
+            .add_component(entity, visualize_collider(), ())
+            .unwrap();
     } else {
-        world.remove_component(entity, visualizing()).ok();
+        world.remove_component(entity, visualize_collider()).ok();
     }
     Some(())
 }
@@ -76,26 +78,26 @@ pub fn server_systems() -> SystemGroup {
         "visualization/server",
         vec![
             // This is needed as duplicating an object does not carry over the physx flags, but
-            // the object is still recognized as visualizing
-            query((visualizing(), collider_shapes().changed())).to_system_with_name(
+            // the object is still recognized as visualize_collider
+            query((visualize_collider(), collider_shapes().changed())).to_system_with_name(
                 "visualization/ensure_visualization",
                 |q, w, qs, _| {
                     for id in q.collect_ids(w, qs) {
-                        visualize_collider(w, id, true);
+                        run_visualize_collider(w, id, true);
                     }
                 },
             ),
-            query((visualizing(), collider_shapes()))
+            query((visualize_collider(), collider_shapes()))
                 .spawned()
                 .to_system_with_name(
                     "visualization/ensure_visualization_spawned",
                     |q, w, qs, _| {
                         for id in q.collect_ids(w, qs) {
-                            visualize_collider(w, id, true);
+                            run_visualize_collider(w, id, true);
                         }
                     },
                 ),
-            query(visualizing()).despawned().to_system_with_name(
+            query(visualize_collider()).despawned().to_system_with_name(
                 "visualization/despawned",
                 |q, w, qs, _| {
                     ambient_profiling::scope!("server_shape_visualize_remove");
@@ -105,40 +107,43 @@ pub fn server_systems() -> SystemGroup {
                     }
 
                     for id in ids {
-                        tracing::info!("Removing visualizing from {id:?}");
+                        tracing::info!("Removing visualize_collider from {id:?}");
                         w.remove_component(id, shape_primitives()).ok();
                     }
                 },
             ),
-            query(visualizing()).to_system_with_name("visualization/shapes", |q, w, qs, _| {
-                ambient_profiling::scope!("server_shape_visualize");
-                let mut primitives = Vec::new();
+            query(visualize_collider()).to_system_with_name(
+                "visualization/shapes",
+                |q, w, qs, _| {
+                    ambient_profiling::scope!("server_shape_visualize");
+                    let mut primitives = Vec::new();
 
-                for (id, ()) in q.iter(w, qs) {
-                    let ltw = get_world_transform(w, id).unwrap_or_default();
+                    for (id, ()) in q.iter(w, qs) {
+                        let ltw = get_world_transform(w, id).unwrap_or_default();
 
-                    let mut current = Vec::new();
+                        let mut current = Vec::new();
 
-                    let (_, _, pos) = ltw.to_scale_rotation_translation();
+                        let (_, _, pos) = ltw.to_scale_rotation_translation();
 
-                    current.push(GizmoPrimitive::sphere(pos, 0.15).with_color(Vec3::X));
+                        current.push(GizmoPrimitive::sphere(pos, 0.15).with_color(Vec3::X));
 
-                    if let Ok(shape) = w.get_ref(id, physics_shape()) {
-                        let actor = shape.get_actor().unwrap();
-                        current.push(
-                            GizmoPrimitive::sphere(actor.get_global_pose().translation(), 0.1)
-                                .with_color(Vec3::Y),
-                        );
+                        if let Ok(shape) = w.get_ref(id, physics_shape()) {
+                            let actor = shape.get_actor().unwrap();
+                            current.push(
+                                GizmoPrimitive::sphere(actor.get_global_pose().translation(), 0.1)
+                                    .with_color(Vec3::Y),
+                            );
+                        }
+
+                        primitives.push((id, current))
                     }
 
-                    primitives.push((id, current))
-                }
-
-                for (id, p) in primitives {
-                    w.add_component(id, shape_primitives(), p)
-                        .expect("Invalid component");
-                }
-            }),
+                    for (id, p) in primitives {
+                        w.add_component(id, shape_primitives(), p)
+                            .expect("Invalid component");
+                    }
+                },
+            ),
             Box::new(FnSystem::new(|world, _| {
                 let mut render_buffer = PxRenderBuffer::default();
                 for scene in [main_physics_scene(), picking_scene(), trigger_areas_scene()] {

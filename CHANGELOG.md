@@ -50,6 +50,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 - Locally-broadcasted messages can now choose to include the originating module in the broadcast; this is an additional boolean parameter to `ModuleMessage::send_local_broadcast` and `message::Target::LocalBroadcast`.
 - `screen_to_world_direction` and `clip_space_ray` renamed. See [#410](https://github.com/AmbientRun/Ambient/issues/410)
+- Rename `visualizing` to `visualize_collider`
 
 #### Non-breaking
 

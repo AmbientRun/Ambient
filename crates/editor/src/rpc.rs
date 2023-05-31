@@ -1,9 +1,11 @@
 use ambient_ecs::{ArchetypeFilter, Entity, EntityId};
 use ambient_intent::server_push_intent;
 use ambient_network::server::RpcArgs as ServerRpcArgs;
-use ambient_physics::visualization::{visualize_collider, visualizing};
+use ambient_physics::visualization::{run_visualize_collider, visualize_collider};
 use ambient_physics::{
-    helpers::{convert_rigid_dynamic_to_static, convert_rigid_static_to_dynamic, unweld_multi, weld_multi},
+    helpers::{
+        convert_rigid_dynamic_to_static, convert_rigid_static_to_dynamic, unweld_multi, weld_multi,
+    },
     intersection::{intersect_frustum, raycast_filtered, rpc_pick, RaycastFilter},
 };
 use ambient_rpc::RpcRegistry;
@@ -52,15 +54,21 @@ pub fn register_server_rpcs(reg: &mut RpcRegistry<ServerRpcArgs>) {
 pub async fn rpc_select(args: ServerRpcArgs, (method, mode): (SelectMethod, SelectMode)) {
     let entities = {
         let mut state = args.state.lock();
-        let world = unwrap_log_err!(state.get_player_world_mut(&args.user_id).context("No player world"));
+        let world = unwrap_log_err!(state
+            .get_player_world_mut(&args.user_id)
+            .context("No player world"));
         match method {
-            SelectMethod::Frustum(frustum) => {
-                intersect_frustum(world, &frustum).into_iter().filter(|id| world.has_component(*id, selectable())).collect()
-            }
+            SelectMethod::Frustum(frustum) => intersect_frustum(world, &frustum)
+                .into_iter()
+                .filter(|id| world.has_component(*id, selectable()))
+                .collect(),
             SelectMethod::Ray(ray) => {
                 if let Some((entity, _)) = raycast_filtered(
                     world,
-                    RaycastFilter { entities: Some(ArchetypeFilter::new().incl(selectable())), collider_type: None },
+                    RaycastFilter {
+                        entities: Some(ArchetypeFilter::new().incl(selectable())),
+                        collider_type: None,
+                    },
                     ray,
                 ) {
                     Selection::new([entity])
@@ -73,44 +81,63 @@ pub async fn rpc_select(args: ServerRpcArgs, (method, mode): (SelectMethod, Sele
     };
 
     let collapse_id = format!("{entities:?} {mode:?}");
-    server_push_intent(args.state, intent_select(), (entities, mode), args.user_id.clone(), Some(collapse_id)).await;
+    server_push_intent(
+        args.state,
+        intent_select(),
+        (entities, mode),
+        args.user_id.clone(),
+        Some(collapse_id),
+    )
+    .await;
 }
 
 pub async fn rpc_weld(args: ServerRpcArgs, entities: Vec<EntityId>) {
     let mut state = args.state.lock();
-    let world = unwrap_log_err!(state.get_player_world_mut(&args.user_id).context("No player world"));
+    let world = unwrap_log_err!(state
+        .get_player_world_mut(&args.user_id)
+        .context("No player world"));
     weld_multi(world, entities);
 }
 
 pub async fn rpc_unweld(args: ServerRpcArgs, entities: Vec<EntityId>) {
     let mut state = args.state.lock();
-    let world = unwrap_log_err!(state.get_player_world_mut(&args.user_id).context("No player world"));
+    let world = unwrap_log_err!(state
+        .get_player_world_mut(&args.user_id)
+        .context("No player world"));
     unweld_multi(world, entities);
 }
 
 pub async fn rpc_freeze(args: ServerRpcArgs, entities: Vec<EntityId>) {
     let mut state = args.state.lock();
-    let world = unwrap_log_err!(state.get_player_world_mut(&args.user_id).context("No player world"));
+    let world = unwrap_log_err!(state
+        .get_player_world_mut(&args.user_id)
+        .context("No player world"));
     for entity in entities {
         convert_rigid_dynamic_to_static(world, entity);
     }
 }
 pub async fn rpc_unfreeze(args: ServerRpcArgs, entities: Vec<EntityId>) {
     let mut state = args.state.lock();
-    let world = unwrap_log_err!(state.get_player_world_mut(&args.user_id).context("No player world"));
+    let world = unwrap_log_err!(state
+        .get_player_world_mut(&args.user_id)
+        .context("No player world"));
     for entity in entities {
         convert_rigid_static_to_dynamic(world, entity);
     }
 }
 pub async fn rpc_toggle_visualize_colliders(args: ServerRpcArgs, entities: Vec<EntityId>) {
     let mut state = args.state.lock();
-    let world = unwrap_log_err!(state.get_player_world_mut(&args.user_id).context("No player world"));
+    let world = unwrap_log_err!(state
+        .get_player_world_mut(&args.user_id)
+        .context("No player world"));
 
-    let enabled = entities.iter().any(|&v| world.has_component(v, visualizing()));
+    let enabled = entities
+        .iter()
+        .any(|&v| world.has_component(v, visualize_collider()));
 
     if !entities.is_empty() {
         for entity in entities {
-            visualize_collider(world, entity, !enabled);
+            run_visualize_collider(world, entity, !enabled);
         }
     }
 }
