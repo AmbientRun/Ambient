@@ -1,3 +1,4 @@
+use crate::shared::internal::module_name;
 use ambient_ecs::{components, Debuggable, EntityId, Resource, World};
 
 components!("wasm::message", {
@@ -73,7 +74,7 @@ pub(super) fn run(
             Ok(state) => super::run(world, module_id, state, &source, &name, &data),
             Err(_) => {
                 let module_name = world
-                    .get_cloned(module_id, ambient_core::name())
+                    .get_cloned(module_id, module_name())
                     .unwrap_or_default();
 
                 world.resource(messenger()).as_ref()(

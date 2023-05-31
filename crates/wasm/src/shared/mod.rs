@@ -41,6 +41,8 @@ mod internal {
         @[Networked, Store, Debuggable]
         module_enabled: bool,
         @[Networked, Store, Debuggable]
+        module_name: String,
+        @[Networked, Store, Debuggable]
         module_errors: ModuleErrors,
         @[Networked, Debuggable, Description["The ID of the module on the \"other side\" of this module, if available. (e.g. serverside module to clientside module)."]]
         remote_paired_id: EntityId,
@@ -56,7 +58,7 @@ pub use internal::{
     module_state, module_state_maker, remote_paired_id,
 };
 
-use self::message::Source;
+use self::{internal::module_name, message::Source};
 use crate::shared::message::{RuntimeMessageExt, Target};
 
 pub fn init_all_components() {
@@ -209,11 +211,16 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
 
     let async_run = world.resource(async_run()).clone();
     let component_bytecode = component_bytecode.to_vec();
+    let name = world
+        .get_ref(module_id, module_name())
+        .map(|x| x.clone())
+        .unwrap_or_else(|_| "Unknown".to_string());
 
     // Spawn the module on another thread to ensure that it does not block the main thread during compilation.
     std::thread::spawn(move || {
         let result = run_and_catch_panics(|| {
-            module_state_maker(module::ModuleStateArgs {
+            log::info!("Loading module: {}", name);
+            let res = module_state_maker(module::ModuleStateArgs {
                 component_bytecode: &component_bytecode,
                 stdout_output: Box::new({
                     let messenger = messenger.clone();
@@ -225,7 +232,9 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
                     messenger(world, module_id, MessageType::Stderr, msg);
                 }),
                 id: module_id,
-            })
+            });
+            log::info!("Done loading module: {}", name);
+            res
         });
 
         async_run.run(move |world| {
@@ -240,7 +249,7 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
 
                     world.add_component(module_id, module_state(), sms).unwrap();
 
-                    // Run the initial startup event.
+                    log::info!("Running startup event for module: {}", name);
                     messages::ModuleLoad::new()
                         .run(world, Some(module_id))
                         .unwrap();
@@ -340,7 +349,11 @@ pub fn spawn_module(
     enabled: bool,
 ) -> EntityId {
     Entity::new()
-        .with(ambient_core::name(), name.to_string())
+        .with(
+            ambient_core::name(),
+            format!("Wasm module: {}", name.to_string()),
+        )
+        .with(module_name(), name.to_string())
         .with(ambient_core::description(), description)
         .with_default(module())
         .with(module_enabled(), enabled)
@@ -349,7 +362,7 @@ pub fn spawn_module(
 }
 
 pub fn get_module_name(world: &World, id: EntityId) -> Identifier {
-    Identifier::new(world.get_cloned(id, ambient_core::name()).unwrap()).unwrap()
+    Identifier::new(world.get_cloned(id, module_name()).unwrap()).unwrap()
 }
 
 fn run_and_catch_panics<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, String> {
