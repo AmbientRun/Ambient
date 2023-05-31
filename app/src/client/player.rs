@@ -6,16 +6,21 @@ use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{player_prev_raw_input, player_raw_input, PlayerRawInput};
 use ambient_network::client::game_client;
 use ambient_shared_types::VirtualKeyCode;
+use glam::Vec2;
 
 pub fn systems_final() -> SystemGroup {
     SystemGroup::new(
         "player/client_systems_final",
-        vec![query_mut((player_prev_raw_input(), player_raw_input()), ()).to_system(|q, world, qs, _| {
-            for (_, (prev, input), ()) in q.iter(world, qs) {
-                input.mouse_delta = glam::Vec2::ZERO;
-                *prev = input.clone();
-            }
-        })],
+        vec![
+            query_mut((player_prev_raw_input(), player_raw_input()), ()).to_system(
+                |q, world, qs, _| {
+                    for (_, (prev, input), ()) in q.iter(world, qs) {
+                        input.mouse_delta = glam::Vec2::ZERO;
+                        *prev = input.clone();
+                    }
+                },
+            ),
+        ],
     )
 }
 
@@ -29,7 +34,11 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
         set_has_focus(event.focused);
     });
 
-    fn process_input(ui_world: &World, has_focus: bool, processor: impl Fn(&mut PlayerRawInput)) {
+    fn process_input(
+        ui_world: &World,
+        has_focus: bool,
+        processor: impl Fn(&mut PlayerRawInput, Vec2),
+    ) {
         if !has_focus {
             return;
         }
@@ -38,13 +47,14 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
             return;
         };
         gc.with_physics_world(|w| {
+            let mouse_pos = *w.resource(cursor_position());
             let input = w.resource_mut(player_raw_input());
-            processor(input);
+            processor(input, mouse_pos);
         });
     }
 
     hooks.use_runtime_message::<messages::WindowKeyboardInput>(move |world, event| {
-        process_input(world, has_focus, |input| {
+        process_input(world, has_focus, |input, _| {
             if let Some(keycode) = event.keycode.as_deref() {
                 let keycode = VirtualKeyCode::from_str(keycode).unwrap();
                 if event.pressed {
@@ -57,7 +67,7 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
     });
 
     hooks.use_runtime_message::<messages::WindowMouseInput>(move |world, event| {
-        process_input(world, has_focus, |input| {
+        process_input(world, has_focus, |input, _| {
             if event.pressed {
                 input.mouse_buttons.insert(event.button.into());
             } else {
@@ -67,14 +77,14 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
     });
 
     hooks.use_runtime_message::<messages::WindowMouseMotion>(move |world, msg| {
-        process_input(world, has_focus, |input| {
-            input.mouse_position = *world.resource(cursor_position());
+        process_input(world, has_focus, |input, mouse_pos| {
+            input.mouse_position = mouse_pos;
             input.mouse_delta += msg.delta;
         });
     });
 
     hooks.use_runtime_message::<messages::WindowMouseWheel>(move |world, event| {
-        process_input(world, has_focus, |input| {
+        process_input(world, has_focus, |input, _| {
             let delta = event.delta;
             input.mouse_wheel += match event.pixels {
                 false => delta.y * PIXELS_PER_LINE,
