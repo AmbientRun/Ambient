@@ -218,4 +218,8 @@ jobs:
         with:
           cache-group: "main"
       - name: Check that new-project works
-        run: cargo run -- new guest/rust/examples/basics/ci_test_project && cd guest/rust/examples/basics/ci_test_project && cargo check
+        run: |
+          mkdir tmp 
+          cargo run -- new /tmp/ci_test_project
+          cd /tmp/ci_test_project
+          cargo check
