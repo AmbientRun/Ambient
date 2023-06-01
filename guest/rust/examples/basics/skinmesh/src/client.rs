@@ -47,12 +47,10 @@ pub async fn main() {
                 AnimationAction {
                     clip_url: &asset::url(START.1).unwrap(),
                     looping: true,
-                    weight: 1.,
                 },
                 AnimationAction {
                     clip_url: &asset::url(END.1).unwrap(),
                     looping: true,
-                    weight: 0.,
                 },
             ],
             apply_base_pose: false,

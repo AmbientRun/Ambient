@@ -47,7 +47,6 @@ pub async fn main() {
                 AnimationAction {
                     clip_url,
                     looping: true,
-                    weight: 1.,
                 },
             ],
             apply_base_pose: false,

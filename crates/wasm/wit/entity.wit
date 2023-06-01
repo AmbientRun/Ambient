@@ -11,8 +11,6 @@ default interface entity {
         // will be relaxed later
         /// Whether or not this action should loop
         looping: bool,
-        /// How strongly this action applies to the final blend [0-1]
-        weight: float32,
     }
 
     /// Controls the animations for an entity.
