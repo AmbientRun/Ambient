@@ -1,6 +1,6 @@
-use ambient_core::{asset_cache, hierarchy::children, time};
+use ambient_core::{asset_cache, dtime, hierarchy::children, time};
 use ambient_ecs::{
-    components, query, Debuggable, EntityId, MakeDefault, Networked, Store, SystemGroup, World,
+    components, query, query_mut, Debuggable, EntityId, MakeDefault, Networked, Store, SystemGroup,
 };
 use ambient_model::{animation_binder, model, model_from_url, ModelFromUrl};
 use ambient_std::{
@@ -110,7 +110,6 @@ pub struct AnimationAction {
     pub clip: AnimationClipRef,
     pub time: AnimationActionTime,
     pub looping: bool,
-    pub weight: f32,
 }
 
 fn anim_time(
@@ -172,6 +171,15 @@ impl AnimationAction {
         }
         Ok(())
     }
+
+    pub fn start(&mut self, speed: f32) {
+        self.time = AnimationActionTime::Offset {
+            start_time: SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap(),
+            speed,
+        };
+    }
 }
 
 #[derive(Debug, Default, Display, Clone, PartialEq, Serialize, Deserialize)]
@@ -199,7 +207,6 @@ impl AnimationController {
                     speed,
                 },
                 looping: true,
-                weight: 1.0,
             }],
             apply_base_pose: true,
         }
@@ -208,6 +215,10 @@ impl AnimationController {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum AnimationActionStack {
+    Start {
+        action_index: u32,
+        speed: f32,
+    },
     Sample {
         action_index: u32,
     },
@@ -226,61 +237,10 @@ pub enum AnimationActionStack {
         weight: f32,
         mask: u32,
     },
-}
-
-fn setup_controller(world: &mut World, id: EntityId, controller: &AnimationController) {
-    if !world.has_component(id, animation_binder_mask()) {
-        world
-            .add_component(id, animation_binder_mask(), vec![])
-            .unwrap();
-    }
-
-    if !world.has_component(id, animation_binder_weights()) {
-        world
-            .add_component(id, animation_binder_weights(), vec![])
-            .unwrap();
-    }
-
-    let mut stack = vec![];
-    let mut weight = 0.0;
-    for (index, action) in controller.actions.iter().enumerate() {
-        if action.weight == 0.0 {
-            continue;
-        }
-
-        weight += action.weight;
-
-        match action.time {
-            AnimationActionTime::Absolute { time } => {
-                stack.push(AnimationActionStack::SampleAbsolute {
-                    action_index: index as u32,
-                    time_absolute: time,
-                });
-            }
-            AnimationActionTime::Offset { .. } => {
-                stack.push(AnimationActionStack::Sample {
-                    action_index: index as u32,
-                });
-            }
-            AnimationActionTime::Percentage { percentage } => {
-                stack.push(AnimationActionStack::SamplePercentage {
-                    action_index: index as u32,
-                    time_percentage: percentage,
-                });
-            }
-        }
-
-        if stack.len() > 1 {
-            let p = action.weight / weight;
-            stack.push(AnimationActionStack::Interpolate { weight: p });
-        }
-    }
-
-    if !world.has_component(id, animation_stack()) {
-        world.add_component(id, animation_stack(), stack).unwrap();
-    } else {
-        world.set(id, animation_stack(), stack).unwrap();
-    }
+    Transition {
+        weight: f32,
+        duration: f32,
+    },
 }
 
 pub fn animation_systems() -> SystemGroup {
@@ -325,7 +285,28 @@ pub fn animation_systems() -> SystemGroup {
                                 }
                             }
                         }
-                        setup_controller(world, id, &ctrlr);
+                        if !world.has_component(id, animation_binder_mask()) {
+                            world
+                                .add_component(id, animation_binder_mask(), vec![])
+                                .unwrap();
+                        }
+
+                        if !world.has_component(id, animation_binder_weights()) {
+                            world
+                                .add_component(id, animation_binder_weights(), vec![])
+                                .unwrap();
+                        }
+
+                        if !world.has_component(id, animation_stack()) && !ctrlr.actions.is_empty()
+                        {
+                            world
+                                .add_component(
+                                    id,
+                                    animation_stack(),
+                                    vec![AnimationActionStack::Sample { action_index: 0 }],
+                                )
+                                .unwrap();
+                        }
                     }
                 }),
             // This exists mostly because some FBX animations have pre-rotations, and to apply them to
@@ -344,38 +325,96 @@ pub fn animation_systems() -> SystemGroup {
                     }
                 }
             }),
-            query((
-                animation_controller(),
-                animation_stack(),
-                animation_binder(),
-                animation_binder_mask(),
-                animation_binder_weights(),
-            ))
+            query_mut(
+                (animation_stack(), animation_controller()),
+                (
+                    animation_binder(),
+                    animation_binder_mask(),
+                    animation_binder_weights(),
+                ),
+            )
             .excl(animation_errors())
-            .to_system(|q, world, qs, _| {
+            .to_system(|q, world, mut qs, _| {
                 let assets = world.resource(asset_cache()).clone();
                 let time = *world.resource(time());
+                let delta_time = *world.resource(dtime());
                 let mut in_error = Vec::new();
 
                 let mut buffers = Vec::new();
                 let mut samples = Vec::new();
                 let mut entity_weight_index: HashMap<EntityId, usize> = HashMap::new();
                 let mut results = Vec::new();
-                for (id, (controller, stack, binder, binder_mask, binder_weights)) in
-                    q.iter(world, qs)
-                {
-                    let retarget = world
-                        .get(id, animation_retargeting())
-                        .unwrap_or(AnimationRetargeting::None);
-                    let model = world
+
+                let mut optional_components: HashMap<
+                    EntityId,
+                    (
+                        Option<AnimationRetargeting>,
+                        Option<TypedAssetUrl<ModelAssetType>>,
+                    ),
+                > = HashMap::new();
+
+                if let Some(qs) = &mut qs {
+                    for (id, ..) in q.iter(world, Some(*qs)) {
+                        optional_components.insert(id, (None, None));
+                    }
+                }
+
+                for (&id, (retarget, model)) in optional_components.iter_mut() {
+                    *retarget = world.get(id, animation_retargeting()).ok();
+                    *model = world
                         .get_ref(id, model_from_url())
                         .ok()
                         .and_then(|def| TypedAssetUrl::parse(def).ok());
+                }
+
+                for (id, (stack, controller), (binder, binder_mask, binder_weights)) in
+                    q.iter(world, qs)
+                {
+                    let (retarget, model) =
+                        optional_components.get(&id).cloned().unwrap_or_default();
+                    let retarget = retarget.unwrap_or(AnimationRetargeting::None);
                     entity_weight_index.clear();
                     samples.clear();
-                    for operation in stack.iter() {
+
+                    let mut completed = None;
+                    type AnimationBuffer =
+                        HashMap<(EntityId, u32, Option<Vec3Field>), AnimationOutput>;
+
+                    let mut current_transition: Option<(AnimationBuffer, f32)> = None;
+                    for (op_index, operation) in stack.iter_mut().enumerate() {
                         match operation {
-                            &AnimationActionStack::Sample { action_index } => {
+                            &mut AnimationActionStack::Start {
+                                action_index,
+                                speed,
+                            } => {
+                                let mut tracks =
+                                    buffers.pop().unwrap_or_else(|| HashMap::with_capacity(128));
+                                tracks.clear();
+                                if let Some(action) =
+                                    controller.actions.get_mut(action_index as usize)
+                                {
+                                    action.start(speed);
+
+                                    if let Err(err) = action.sample_tracks(
+                                        &time,
+                                        &action.time,
+                                        &assets,
+                                        retarget,
+                                        model.clone(),
+                                        binder,
+                                        &mut tracks,
+                                    ) {
+                                        in_error.push((id, err));
+                                        break;
+                                    }
+                                } else {
+                                    in_error.push((id, "Missing Blend Action".to_owned()));
+                                    break;
+                                }
+                                samples.push(tracks);
+                                *operation = AnimationActionStack::Sample { action_index };
+                            }
+                            &mut AnimationActionStack::Sample { action_index } => {
                                 let mut tracks =
                                     buffers.pop().unwrap_or_else(|| HashMap::with_capacity(128));
                                 tracks.clear();
@@ -399,7 +438,7 @@ pub fn animation_systems() -> SystemGroup {
                                 }
                                 samples.push(tracks);
                             }
-                            &AnimationActionStack::SampleAbsolute {
+                            &mut AnimationActionStack::SampleAbsolute {
                                 action_index,
                                 time_absolute,
                             } => {
@@ -428,7 +467,7 @@ pub fn animation_systems() -> SystemGroup {
                                 }
                                 samples.push(tracks);
                             }
-                            &AnimationActionStack::SamplePercentage {
+                            &mut AnimationActionStack::SamplePercentage {
                                 action_index,
                                 time_percentage,
                             } => {
@@ -457,7 +496,7 @@ pub fn animation_systems() -> SystemGroup {
                                 }
                                 samples.push(tracks);
                             }
-                            &AnimationActionStack::Interpolate { weight } => {
+                            &mut AnimationActionStack::Interpolate { weight } => {
                                 let rhs = samples.pop();
                                 let lhs = samples.pop();
 
@@ -479,7 +518,7 @@ pub fn animation_systems() -> SystemGroup {
                                     }
                                 }
                             }
-                            &AnimationActionStack::Blend { weight, mask } => {
+                            &mut AnimationActionStack::Blend { weight, mask } => {
                                 if entity_weight_index.is_empty() {
                                     for (index, key) in binder_mask.iter().enumerate() {
                                         if let Some(entity) = binder.get(key) {
@@ -519,11 +558,58 @@ pub fn animation_systems() -> SystemGroup {
                                     }
                                 }
                             }
+                            AnimationActionStack::Transition { weight, duration } => {
+                                if *duration > 0.0 {
+                                    *weight += delta_time / *duration;
+                                } else {
+                                    *weight = 1.0;
+                                }
+
+                                if *weight >= 1.0 {
+                                    buffers.append(&mut samples);
+                                    completed = Some(op_index + 1);
+                                } else {
+                                    if let Some(mut rhs) = samples.pop() {
+                                        if let Some((mut lhs, t)) = current_transition.take() {
+                                            for (key, target) in rhs.drain() {
+                                                if let Some(source) = lhs.get_mut(&key) {
+                                                    *source = source.mix(target, t);
+                                                } else {
+                                                    lhs.insert(key, target);
+                                                }
+                                            }
+                                            buffers.push(rhs);
+                                            current_transition = Some((lhs, *weight));
+                                        } else {
+                                            current_transition = Some((rhs, *weight));
+                                        }
+                                    } else {
+                                        in_error.push((id, "Invalid blend stack".to_owned()));
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
 
-                    if let Some(result) = samples.pop() {
-                        results.push(result);
+                    if let Some(count) = completed {
+                        stack.drain(0..count);
+                    }
+
+                    if let Some(mut rhs) = samples.pop() {
+                        if let Some((mut lhs, t)) = current_transition.take() {
+                            for (key, target) in rhs.drain() {
+                                if let Some(source) = lhs.get_mut(&key) {
+                                    *source = source.mix(target, t);
+                                } else {
+                                    lhs.insert(key, target);
+                                }
+                            }
+                            buffers.push(rhs);
+                            results.push(lhs);
+                        } else {
+                            results.push(rhs);
+                        }
                     } else {
                         in_error.push((id, "Invalid blend stack".to_owned()));
                     }

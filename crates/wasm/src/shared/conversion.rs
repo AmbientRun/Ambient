@@ -303,7 +303,6 @@ impl FromBindgen for wit::entity::AnimationAction {
                 speed: 1.0,
             },
             looping: self.looping,
-            weight: self.weight,
         }
     }
 }
@@ -322,6 +321,12 @@ impl FromBindgen for wit::entity::AnimationActionStack {
     type Item = animation::AnimationActionStack;
     fn from_bindgen(self) -> Self::Item {
         match self {
+            wit::entity::AnimationActionStack::Start(start) => {
+                animation::AnimationActionStack::Start {
+                    action_index: start.action_index,
+                    speed: start.speed,
+                }
+            }
             wit::entity::AnimationActionStack::Interpolate(weight) => {
                 animation::AnimationActionStack::Interpolate { weight }
             }
@@ -344,6 +349,12 @@ impl FromBindgen for wit::entity::AnimationActionStack {
                 animation::AnimationActionStack::SamplePercentage {
                     action_index: sample.action_index,
                     time_percentage: sample.time_percentage,
+                }
+            }
+            wit::entity::AnimationActionStack::Transition(transition) => {
+                animation::AnimationActionStack::Transition {
+                    weight: transition.weight,
+                    duration: transition.duration,
                 }
             }
         }

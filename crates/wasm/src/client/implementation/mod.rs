@@ -46,8 +46,14 @@ impl wit::entity::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         stack: Vec<wit::entity::AnimationActionStack>,
+        transition_duration: f32,
     ) -> anyhow::Result<()> {
-        shared::implementation::entity::set_animation_action_stack(self.world_mut(), entity, stack)
+        shared::implementation::entity::set_animation_action_stack(
+            self.world_mut(),
+            entity,
+            stack,
+            transition_duration,
+        )
     }
 
     fn set_animation_binder_mask(
@@ -84,6 +90,22 @@ impl wit::entity::Host for Bindings {
         entity: wit::types::EntityId,
     ) -> anyhow::Result<Vec<String>> {
         shared::implementation::entity::get_animation_binder_mask(self.world_mut(), entity)
+    }
+
+    fn play_animation_action_index(
+        &mut self,
+        entity: wit::types::EntityId,
+        index: u32,
+        speed: f32,
+        transition_duration: f32,
+    ) -> anyhow::Result<()> {
+        shared::implementation::entity::play_animation_action_index(
+            self.world_mut(),
+            entity,
+            index,
+            speed,
+            transition_duration,
+        )
     }
 
     fn get_transforms_relative_to(
@@ -243,16 +265,12 @@ impl wit::asset::Host for Bindings {
     }
 }
 
-
 impl wit::world_audio::Host for Bindings {
     fn set_listener(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
         shared::implementation::world_audio::set_listener(self.world_mut(), entity)
     }
 
-    fn set_emitter(
-        &mut self,
-        entity: wit::types::EntityId,
-    ) -> anyhow::Result<()> {
+    fn set_emitter(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
         shared::implementation::world_audio::set_emitter(self.world_mut(), entity)
     }
     fn play_sound_on_entity(
@@ -260,6 +278,6 @@ impl wit::world_audio::Host for Bindings {
         sound: String,
         emitter: wit::types::EntityId,
     ) -> anyhow::Result<()> {
-        shared::implementation::world_audio::play_sound_on_entity(self.world_mut(),sound, emitter)
+        shared::implementation::world_audio::play_sound_on_entity(self.world_mut(), sound, emitter)
     }
 }

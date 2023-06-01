@@ -45,8 +45,14 @@ impl wit::entity::Host for Bindings {
         &mut self,
         entity: wit::types::EntityId,
         stack: Vec<wit::entity::AnimationActionStack>,
+        transition_duration: f32,
     ) -> anyhow::Result<()> {
-        shared::implementation::entity::set_animation_action_stack(self.world_mut(), entity, stack)
+        shared::implementation::entity::set_animation_action_stack(
+            self.world_mut(),
+            entity,
+            stack,
+            transition_duration,
+        )
     }
 
     fn set_animation_binder_mask(
@@ -68,6 +74,22 @@ impl wit::entity::Host for Bindings {
             entity,
             index,
             mask,
+        )
+    }
+
+    fn play_animation_action_index(
+        &mut self,
+        entity: wit::types::EntityId,
+        index: u32,
+        speed: f32,
+        transition_duration: f32,
+    ) -> anyhow::Result<()> {
+        shared::implementation::entity::play_animation_action_index(
+            self.world_mut(),
+            entity,
+            index,
+            speed,
+            transition_duration,
         )
     }
 
@@ -247,10 +269,7 @@ impl wit::world_audio::Host for Bindings {
         shared::implementation::world_audio::set_listener(self.world_mut(), entity)
     }
 
-    fn set_emitter(
-        &mut self,
-        entity: wit::types::EntityId,
-    ) -> anyhow::Result<()> {
+    fn set_emitter(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
         shared::implementation::world_audio::set_emitter(self.world_mut(), entity)
     }
     fn play_sound_on_entity(

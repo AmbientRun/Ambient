@@ -59,8 +59,7 @@ pub async fn main() {
         },
     );
 
-    entity::set_animation_action_stack(unit_id, &[entity::AnimationActionStack::Sample(0)]);
-    // Required for animation blend stack
+    // Required for animation blend operation
     entity::set_animation_binder_mask(unit_id, &SKELETON);
     entity::set_animation_binder_weights(unit_id, LOWER_BODY_MASK_INDEX, &LOWER_BODY_MASK);
 
@@ -79,43 +78,63 @@ pub async fn main() {
 #[element_component]
 fn App(hooks: &mut Hooks, unit: EntityId, durations: [f32; 2]) -> Element {
     let (blend, set_blend) = hooks.use_state(0.0f32);
-    let (weight, set_weight) = hooks.use_state(0.0f32);
+    let (weight, set_weight) = hooks.use_state(1.0f32);
     let (time, set_time) = hooks.use_state(0.0f32);
+    let (duration, set_duration) = hooks.use_state(0.2f32);
 
-    hooks.use_effect((blend, weight, time), move |_, &(w, i, t)| {
+    let (speed, set_speed) = hooks.use_state(1.0f32);
+
+    hooks.use_effect((blend, weight, time, speed), move |_, &(w, i, t, s)| {
             use entity::AnimationActionStack::*;
+            const FIRST_ANIMATION: u32 = 0;
+            const SECOND_ANIMATION: u32 = 1;
 
-            let s0 = if t == 0.0 {
-                Sample(0)
+            if w == 0.0 && t == 0.0 {
+                if i == 0.0 {
+                    entity::play_animation_action_index(unit, FIRST_ANIMATION, s, duration);
+                } else if i == 1.0 {
+                    entity::play_animation_action_index(unit, SECOND_ANIMATION, s, duration);
+                } else {
+                    entity::set_animation_action_stack(unit, &[Sample(FIRST_ANIMATION), Sample(SECOND_ANIMATION), Interpolate(i)], duration);
+                }
             } else {
-                let time_absolute = durations[0] * t;
-                SampleAbsolute(entity::AnimationSampleAbsolute {
-                    action_index: 0,
-                    time_absolute,
-                })
-            };
+                let s0 = if t == 0.0 {
+                    Sample(FIRST_ANIMATION)
+                } else {
+                    let time_absolute = durations[0] * t;
+                    SampleAbsolute(entity::AnimationSampleAbsolute {
+                        action_index: FIRST_ANIMATION,
+                        time_absolute,
+                    })
+                };
 
-            // Alternatively SamplePercentage
-            let s1 = if t == 0.0 {
-                Sample(1)
-            } else {
-                SamplePercentage(entity::AnimationSamplePercentage {
-                    action_index: 1,
-                    time_percentage: t,
-                })
-            };
+                // Alternatively SamplePercentage
+                let s1 = if t == 0.0 {
+                    Sample(SECOND_ANIMATION)
+                } else {
+                    SamplePercentage(entity::AnimationSamplePercentage {
+                        action_index: SECOND_ANIMATION,
+                        time_percentage: t,
+                    })
+                };
 
-            if w != 0.0 {
-                entity::set_animation_action_stack(unit, &[s0, s1, Blend(entity::AnimationStackBlend {
-                    weight: w,
-                    mask: LOWER_BODY_MASK_INDEX,
-                })]);
-            } else {
-                entity::set_animation_action_stack(unit, &[s0, s1, Interpolate(i)]);
+                if w != 0.0 {
+                    entity::set_animation_action_stack(unit, &[s0, s1, Blend(entity::AnimationStackBlend {
+                        weight: w,
+                        mask: LOWER_BODY_MASK_INDEX,
+                    })], duration);
+                } else {
+                    entity::set_animation_action_stack(unit, &[s0, s1, Interpolate(i)], duration);
+                }
             }
+
         |_| {}
     });
 
+
+    let set_animation_weight = set_weight.clone();
+    let set_animation_time = set_time.clone();
+    let set_animation_blend = set_blend.clone();
 
     FocusRoot::el([
         FlowColumn::el([
@@ -176,6 +195,57 @@ fn App(hooks: &mut Hooks, unit: EntityId, durations: [f32; 2]) -> Element {
                     suffix: None,
                 }
                 .el(),
+            ])
+            .with(space_between_items(), 4.0)
+            .with_background(vec4(0., 0., 0., 0.9))
+            .with_padding_even(10.),
+            FlowRow::el([
+                Text::el("Speed"),
+                Slider {
+                    value: speed,
+                    on_change: Some(cb(move |speed| {
+                        set_speed(speed);
+                    })),
+                    min: 0.1,
+                    max: 5.0,
+                    width: 100.,
+                    logarithmic: false,
+                    round: Some(2),
+                    suffix: None,
+                }
+                .el(),
+            ])
+            .with(space_between_items(), 4.0)
+            .with_background(vec4(0., 0., 0., 0.9))
+            .with_padding_even(10.),
+            FlowRow::el([
+                Text::el("Transition Duration"),
+                Slider {
+                    value: duration,
+                    on_change: Some(cb(move |duration| {
+                        set_duration(duration);
+                    })),
+                    min: 0.1,
+                    max: 2.,
+                    width: 100.,
+                    logarithmic: false,
+                    round: Some(2),
+                    suffix: None,
+                }
+                .el(),
+                Button::new("Swap Animation", move |_| {
+                    set_animation_time(0.0);
+                    set_animation_blend(0.0);
+
+                    if weight > 0.0 {
+                        set_animation_weight(0.0);
+                    } else {
+                        set_animation_weight(1.0);
+                    }
+                })
+                .hotkey(VirtualKeyCode::Space)
+                .el(),
+
             ])
             .with(space_between_items(), 4.0)
             .with_background(vec4(0., 0., 0., 0.9))

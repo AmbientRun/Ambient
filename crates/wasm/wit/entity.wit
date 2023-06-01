@@ -49,8 +49,30 @@ default interface entity {
         mask: u32,
     }
 
+
+    /// Variant of animation action stack that marks a transition from one stack to another,
+    /// Anything before this operation will be removed once the transition is completed.
+    record animation-stack-transition {
+        /// Blend weight [0, 1]
+        weight: float32,
+        /// Duration in seconds
+        duration: float32,
+    }
+
+
+    /// Variant of animation action stack that resets the start to current time and samples the animation.
+    // After it has started this action transform into a Sample operation.
+    record animation-stack-start {
+        /// Index into animation controller actions
+        action-index: u32,
+        /// Duration in seconds
+        speed: float32,
+    }
+
     /// Animation blend stack
     variant animation-action-stack {
+        /// Resets the start of the action to now and transform this operation to Sample
+        start(animation-stack-start),
         /// Sample action at current time
         sample(u32),
         /// Sample action at time percentage
@@ -61,14 +83,17 @@ default interface entity {
         interpolate(float32),
         /// Blend the two samples on top of the stack with the binder mask weights index
         blend(animation-stack-blend),
+        /// Transition to a new set of operations following this operation
+        transition(animation-stack-transition),
     }
 
 
-    set-animation-action-stack: func(entity: entity-id, stack: list<animation-action-stack>)
+    set-animation-action-stack: func(entity: entity-id, stack: list<animation-action-stack>, transition-duration: float32)
     set-animation-binder-mask: func(entity: entity-id, mask: list<string>)
     get-animation-binder-mask: func(entity: entity-id) -> list<string>
     set-animation-binder-weights: func(entity: entity-id, index: u32, mask: list<float32>)
     get-animation-binder-mask-entities: func(entity: entity-id) -> list<entity-id>
+    play-animation-action-index: func(entity: entity-id, index: u32, speed: float32, transition-duration: float32)
 
     get-transforms-relative-to: func(entities: list<entity-id>, origin: entity-id) -> list<mat4>
 

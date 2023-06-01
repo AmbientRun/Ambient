@@ -40,9 +40,9 @@ pub fn set_animation_controller(entity: EntityId, controller: AnimationControlle
     wit::entity::set_animation_controller(entity.into_bindgen(), controller)
 }
 
-/// Set the animation blend stack for `entity`.
-pub fn set_animation_action_stack(entity: EntityId, stack: &[AnimationActionStack]) {
-    wit::entity::set_animation_action_stack(entity.into_bindgen(), stack)
+/// Set the animation blend stack for `entity` optionally linearly transitioning for 'transition_duration' seconds.
+pub fn set_animation_action_stack(entity: EntityId, stack: &[AnimationActionStack], transition_duration: f32) {
+    wit::entity::set_animation_action_stack(entity.into_bindgen(), stack, transition_duration)
 }
 
 /// Set the animation blend stack binder mask for blending weight masks. See `set_animation_binder_weights`.
@@ -65,6 +65,13 @@ pub fn set_animation_binder_weights(entity: EntityId, index: u32, mask: &[f32]) 
 pub fn get_animation_binder_mask_entities(entity: EntityId) -> Vec<EntityId> {
     wit::entity::get_animation_binder_mask_entities(entity.into_bindgen()).from_bindgen()
 }
+
+
+/// Transitions the animation stack to an action by index over `transition_duration` in seconds.
+pub fn play_animation_action_index(entity: EntityId, index: u32, speed: f32, transition_duration: f32) {
+    wit::entity::play_animation_action_index(entity.into_bindgen(), index, speed, transition_duration)
+}
+
 
 /// Unconverted bindgen transforms
 pub struct RawTransforms {

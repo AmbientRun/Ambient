@@ -58,7 +58,23 @@ pub fn set_animation_action_stack(
     world: &mut World,
     entity: wit::types::EntityId,
     stack: Vec<wit::entity::AnimationActionStack>,
+    transition_duration: f32,
 ) -> anyhow::Result<()> {
+    if let Ok(current) = world.get_mut(entity.from_bindgen(), animation_stack()) {
+        if !current.is_empty() && transition_duration > 0.0 {
+            use ambient_animation::AnimationActionStack::*;
+            current.push(Transition {
+                weight: 0.0,
+                duration: transition_duration,
+            });
+        } else {
+            current.clear();
+        }
+
+        current.extend(stack.into_iter().map(|x| x.from_bindgen()));
+        return Ok(());
+    }
+
     Ok(world.add_component(
         entity.from_bindgen(),
         animation_stack(),
@@ -143,6 +159,43 @@ pub fn get_animation_binder_mask(
         return Ok(mask);
     }
     Ok(Vec::new())
+}
+
+pub fn play_animation_action_index(
+    world: &mut World,
+    entity: wit::types::EntityId,
+    index: u32,
+    speed: f32,
+    transition_duration: f32,
+) -> anyhow::Result<()> {
+    let entity_id = entity.from_bindgen();
+
+    use ambient_animation::AnimationActionStack::*;
+    if let Ok(stack) = world.get_mut(entity_id, animation_stack()) {
+        if transition_duration <= 0.0 {
+            stack.clear();
+        } else if !stack.is_empty() {
+            stack.push(Transition {
+                weight: 0.0,
+                duration: transition_duration,
+            });
+        }
+
+        stack.push(Start {
+            action_index: index,
+            speed,
+        });
+    } else {
+        world.add_component(
+            entity_id,
+            animation_stack(),
+            vec![Sample {
+                action_index: index,
+            }],
+        )?;
+    }
+
+    Ok(())
 }
 
 pub fn get_transforms_relative_to(
