@@ -41,7 +41,7 @@ pub fn start(
     manifest: &ambient_project::Manifest,
     metadata: &ambient_build::Metadata,
     crypto: Crypto,
-) -> u16 {
+) -> SocketAddr {
     let host_cli = cli.host().unwrap();
     let quic_interface_port = host_cli.quic_interface_port;
     let proxy_settings = (!host_cli.no_proxy).then(|| {
@@ -76,23 +76,16 @@ pub fn start(
         }
     });
 
-    let port = server.port;
+    let addr = server.local_addr();
 
-    log::info!("Host: {:#?}", cli.host());
-    let public_host = cli
-        .host()
-        .and_then(|h| h.public_host.clone())
-        .and_then(|_| local_ip_address::local_ip().ok())
-        .map(|v| v.to_string())
-        .unwrap_or_else(|| "localhost".to_string());
-
-    // TODO: use bound socket address
-    log::info!("Created server, running at {public_host}:{port}");
+    tracing::info!("Created server, running at {addr}");
     let http_interface_port = cli
         .host()
         .unwrap()
         .http_interface_port
         .unwrap_or(HTTP_INTERFACE_PORT);
+
+    let public_host = addr.ip();
 
     // here the key is inserted into the asset cache
     if let Ok(Some(project_path_fs)) = project_path.to_file_path() {
@@ -176,7 +169,8 @@ pub fn start(
             )
             .await;
     });
-    port
+
+    addr
 }
 
 fn systems(_world: &mut World) -> SystemGroup {

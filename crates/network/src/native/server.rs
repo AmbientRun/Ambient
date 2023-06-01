@@ -212,6 +212,13 @@ impl GameServer {
         tracing::debug!("[{}] GameServer finished shutting down", self.port);
         state
     }
+
+    /// Returns the local socket address of the endpoint
+    pub fn local_addr(&self) -> SocketAddr {
+        self.endpoint
+            .local_addr()
+            .expect("Failed go get socket address for endpoint")
+    }
 }
 
 async fn resolve_connection(
