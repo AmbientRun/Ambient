@@ -107,20 +107,22 @@ pub fn get_animation_binder_mask_entities(
         .context("missing animation_binder")?;
 
     if let Ok(mask) = world.get_ref(entity_id, animation_binder_mask()) {
-        Ok(mask
-            .iter()
-            .map(|x| binder.get(x).unwrap_or(&EntityId::null()).into_bindgen())
-            .collect())
-    } else {
-        let mut mask: Vec<String> = binder.keys().cloned().collect();
-        mask.sort();
-        let result = mask
-            .iter()
-            .map(|x| binder.get(x).unwrap_or(&EntityId::null()).into_bindgen())
-            .collect();
-        world.add_component(entity_id, animation_binder_mask(), mask)?;
-        Ok(result)
+        if !mask.is_empty() {
+            return Ok(mask
+                .iter()
+                .map(|x| binder.get(x).unwrap_or(&EntityId::null()).into_bindgen())
+                .collect())
+        }
     }
+
+    let mut mask: Vec<String> = binder.keys().cloned().collect();
+    mask.sort();
+    let result = mask
+        .iter()
+        .map(|x| binder.get(x).unwrap_or(&EntityId::null()).into_bindgen())
+        .collect();
+    world.add_component(entity_id, animation_binder_mask(), mask)?;
+    Ok(result)
 }
 
 pub fn get_animation_binder_mask(
@@ -129,7 +131,9 @@ pub fn get_animation_binder_mask(
 ) -> anyhow::Result<Vec<String>> {
     let entity_id = entity.from_bindgen();
     if let Ok(mask) = world.get_ref(entity_id, animation_binder_mask()) {
-        return Ok(mask.clone());
+        if !mask.is_empty() {
+            return Ok(mask.clone());
+        }
     }
 
     if let Ok(binder) = world.get_ref(entity_id, animation_binder()) {
