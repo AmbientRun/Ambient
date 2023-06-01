@@ -191,9 +191,11 @@ fn main() -> anyhow::Result<()> {
     }
 
     // If new: create project, immediately exit
-    if let Commands::New { name, .. } = &cli.command {
+    if let Commands::New { name, api_path, .. } = &cli.command {
         if let Some(path) = &project_path.fs_path {
-            if let Err(err) = cli::new_project::new_project(path, name.as_deref()) {
+            if let Err(err) =
+                cli::new_project::new_project(path, name.as_deref(), api_path.as_deref())
+            {
                 eprintln!("Failed to create project: {err:?}");
             }
         } else {
