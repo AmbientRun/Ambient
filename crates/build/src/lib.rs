@@ -5,7 +5,7 @@ use std::{
 
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_physics::physx::{Physics, PhysicsKey};
-use ambient_project::Manifest as ProjectManifest;
+use ambient_project::{Manifest as ProjectManifest, Version};
 use ambient_std::{asset_url::AbsAssetUrl, path::path_to_unix_string};
 use anyhow::Context;
 use futures::FutureExt;
@@ -17,6 +17,7 @@ pub mod pipelines;
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub struct Metadata {
+    ambient_version: Version,
     client_component_paths: Vec<String>,
     server_component_paths: Vec<String>,
 }
@@ -185,6 +186,7 @@ async fn store_manifest(manifest: &ProjectManifest, build_path: &Path) -> anyhow
 
 async fn store_metadata(build_path: &Path) -> anyhow::Result<Metadata> {
     let metadata = Metadata {
+        ambient_version: Version::new_from_str(env!("CARGO_PKG_VERSION")).expect("Failed to parse CARGO_PKG_VERSION"),
         client_component_paths: get_component_paths("client", build_path),
         server_component_paths: get_component_paths("server", build_path),
     };
