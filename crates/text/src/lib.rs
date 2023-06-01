@@ -417,6 +417,7 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                                             vec![primitives().desc(), mesh().desc()],
                                         )
                                         .unwrap();
+                                    world.add_component(id, primitives(), vec![]).unwrap();
                                 }
                                 let mut data = Entity::new();
                                 if use_gpu && !vertices.is_empty() {
