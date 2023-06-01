@@ -59,12 +59,18 @@ pub fn start(
 
     let server = runtime.block_on(async move {
         if let Some(port) = quic_interface_port {
-            GameServer::new_with_port(port, false, proxy_settings, &crypto)
-                .await
-                .context("failed to create game server with port")
-                .unwrap()
+            GameServer::new_with_port(
+                SocketAddr::new(host_cli.bind_address, port),
+                false,
+                proxy_settings,
+                &crypto,
+            )
+            .await
+            .context("failed to create game server with port")
+            .unwrap()
         } else {
             GameServer::new_with_port_in_range(
+                host_cli.bind_address,
                 QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10),
                 false,
                 proxy_settings,

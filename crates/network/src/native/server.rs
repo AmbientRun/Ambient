@@ -53,31 +53,30 @@ pub struct Crypto {
 /// Quinn and Webtransport game server
 pub struct GameServer {
     endpoint: Endpoint,
-    pub port: u16,
     /// Shuts down the server if there are no players
     pub use_inactivity_shutdown: bool,
     proxy_settings: Option<ProxySettings>,
 }
+
 impl GameServer {
     pub async fn new_with_port(
-        port: u16,
+        server_addr: SocketAddr,
         use_inactivity_shutdown: bool,
         proxy_settings: Option<ProxySettings>,
         crypto: &Crypto,
     ) -> anyhow::Result<Self> {
-        let server_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
-
         let endpoint = create_server(server_addr, crypto)?;
 
-        tracing::debug!("GameServer listening on port {}", port);
+        tracing::debug!("GameServer listening on port {}", server_addr.port());
         Ok(Self {
             endpoint,
-            port,
             use_inactivity_shutdown,
             proxy_settings,
         })
     }
+
     pub async fn new_with_port_in_range(
+        bind_addr: IpAddr,
         port_range: Range<u16>,
         use_inactivity_shutdown: bool,
         proxy_settings: Option<ProxySettings>,
@@ -85,7 +84,7 @@ impl GameServer {
     ) -> anyhow::Result<Self> {
         for port in port_range {
             match Self::new_with_port(
-                port,
+                SocketAddr::new(bind_addr, port),
                 use_inactivity_shutdown,
                 proxy_settings.clone(),
                 crypto,
@@ -102,6 +101,7 @@ impl GameServer {
         }
         anyhow::bail!("Failed to create server")
     }
+
     #[tracing::instrument(level = "trace", skip_all)]
     pub async fn run(
         self,
@@ -162,7 +162,9 @@ impl GameServer {
         }
 
         loop {
-            tracing::trace_span!("Listening for incoming connections");
+            let addr = endpoint.local_addr().unwrap();
+
+            tracing::trace_span!("Listening for incoming connections", ?addr,);
             tokio::select! {
                 Some(conn) = endpoint.accept() => {
                     let fut = resolve_connection(conn, state.clone(), world_stream_filter.clone(), ServerBaseUrlKey.get(&assets));
@@ -187,7 +189,7 @@ impl GameServer {
                 _ = inactivity_interval.tick(), if self.use_inactivity_shutdown => {
                     if state.lock().player_count() == 0 {
                         if Instant::now().duration_since(last_active).as_secs_f32() > 2. * 60. {
-                            tracing::info!("[{}] Shutting down due to inactivity", self.port);
+                            tracing::info!("Shutting down due to inactivity");
                             break;
                         }
                     } else {
@@ -200,7 +202,7 @@ impl GameServer {
                 }
             }
         }
-        tracing::debug!("[{}] GameServer shutting down", self.port);
+        tracing::debug!("GameServer shutting down");
         {
             let mut state = state.lock();
             let create_shutdown_systems = state.create_shutdown_systems.clone();
@@ -209,7 +211,7 @@ impl GameServer {
                 sys.run(&mut instance.world, &ShutdownEvent);
             }
         }
-        tracing::debug!("[{}] GameServer finished shutting down", self.port);
+        tracing::debug!("GameServer finished shutting down");
         state
     }
 
