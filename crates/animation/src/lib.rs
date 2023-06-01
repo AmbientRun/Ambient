@@ -172,14 +172,6 @@ impl AnimationAction {
         Ok(())
     }
 
-    pub fn start(&mut self, speed: f32) {
-        self.time = AnimationActionTime::Offset {
-            start_time: SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap(),
-            speed,
-        };
-    }
 }
 
 #[derive(Debug, Default, Display, Clone, PartialEq, Serialize, Deserialize)]
@@ -393,7 +385,10 @@ pub fn animation_systems() -> SystemGroup {
                                 if let Some(action) =
                                     controller.actions.get_mut(action_index as usize)
                                 {
-                                    action.start(speed);
+                                    action.time = AnimationActionTime::Offset {
+                                        start_time: time,
+                                        speed,
+                                    };
 
                                     if let Err(err) = action.sample_tracks(
                                         &time,
