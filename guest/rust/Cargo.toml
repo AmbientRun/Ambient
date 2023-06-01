@@ -1,5 +1,48 @@
 [workspace]
-members = ["api", "api_core", "api_core/api_macros", "examples/*/*"]
+members = [
+    "api",
+    "api_core",
+    "api_core/api_macros",
+    # Basics
+    "examples/basics/asset_loading",
+    "examples/basics/async",
+    "examples/basics/clientside",
+    "examples/basics/decals",
+    "examples/basics/first_person_camera",
+    "examples/basics/fog",
+    "examples/basics/image",
+    "examples/basics/input",
+    "examples/basics/messaging",
+    "examples/basics/multiplayer",
+    "examples/basics/physics",
+    "examples/basics/primitives",
+    "examples/basics/procedural_generation",
+    "examples/basics/raw_text",
+    "examples/basics/samplers",
+    "examples/basics/screen_ray",
+    "examples/basics/skin_tracking",
+    "examples/basics/skinmesh",
+    "examples/basics/sun",
+    "examples/basics/third_person_camera",
+    "examples/basics/transparency",
+    # UI
+    "examples/ui/auto_editor",
+    "examples/ui/button",
+    "examples/ui/counter",
+    "examples/ui/dock_layout",
+    "examples/ui/editors",
+    "examples/ui/flow_layout",
+    "examples/ui/rect",
+    "examples/ui/screens",
+    "examples/ui/slider",
+    "examples/ui/text",
+    "examples/ui/todo",
+    # Games
+    "examples/games/minigolf",
+    "examples/games/music_sequencer",
+    "examples/games/pong",
+    "examples/games/tictactoe",
+]
 
 [workspace.package]
 rust-version = "1.67.0"
