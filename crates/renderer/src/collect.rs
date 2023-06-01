@@ -3,7 +3,7 @@ use std::sync::Arc;
 use ambient_core::gpu_ecs::{GpuWorldShaderModuleKey, ENTITIES_BIND_GROUP};
 use ambient_ecs::{EntityId, World};
 use ambient_gpu::{
-    gpu::{Gpu, GpuKey},
+    gpu::Gpu,
     multi_buffer::TypedMultiBuffer,
     shader_module::{BindGroupDesc, ComputePipeline, Shader, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
@@ -304,7 +304,7 @@ impl RendererCollect {
             );
             let counts_res = output.counts_cpu.clone();
             let runtime = RuntimeKey.get(assets);
-            let post_submit_gpu = GpuKey.get(assets);
+            let post_submit_gpu = ambient_gpu::gpu::GpuKey.get(assets);
             _post_submit.push(Box::new(move || {
                 runtime.spawn(async move {
                     if let Ok(res) = staging.read(&post_submit_gpu, .., false).await {

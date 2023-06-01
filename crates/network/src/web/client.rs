@@ -61,7 +61,7 @@ impl ElementComponent for GameClientView {
         let gpu = hooks.world.resource(gpu()).clone();
 
         hooks.provide_context(|| {
-            GameClientRenderTarget(Arc::new(RenderTarget::new(gpu.clone(), uvec2(1, 1), None)))
+            GameClientRenderTarget(Arc::new(RenderTarget::new(&gpu, uvec2(1, 1), None)))
         });
         let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
 
@@ -70,6 +70,7 @@ impl ElementComponent for GameClientView {
             let (systems, resources) = systems_and_resources();
 
             ClientGameState::new(
+                &gpu,
                 world,
                 assets.clone(),
                 user_id.clone(),
@@ -193,6 +194,8 @@ fn run_game_logic(
 ) {
     let world_event_reader = Mutex::new(hooks.world.resource(world_events()).reader());
 
+    let gpu = hooks.world.resource(gpu()).clone();
+
     hooks.use_frame(move |app_world| {
         let mut game_state = game_state.lock();
 
@@ -208,7 +211,7 @@ fn run_game_logic(
         }
 
         tracing::info!("Drawing game state");
-        game_state.on_frame(&render_target.0);
+        game_state.on_frame(&gpu, &render_target.0);
     });
 }
 

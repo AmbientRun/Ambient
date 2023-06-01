@@ -616,8 +616,8 @@ dependencies = [
 
 [[package]]
 name = "ambient_proxy"
-version = "0.3.0"
-source = "git+https://github.com/AmbientRun/AmbientProxy?branch=update-quinn#49fe0158dd543a47e63c71b1ee3ee81d38c77f3e"
+version = "0.3.3"
+source = "git+https://github.com/AmbientRun/AmbientProxy#b6f26f7fd8f0907224d97b46d4e8df838feedd19"
 dependencies = [
  "anyhow",
  "bincode",
@@ -629,6 +629,7 @@ dependencies = [
  "quinn",
  "reqwest",
  "rustls",
+ "rustls-pemfile",
  "serde",
  "thiserror",
  "tokio",
@@ -1189,6 +1190,12 @@ name = "base-x"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4cbbc9d0964165b47557570cce6c952866c2678457aca742aafc9fb771d30270"
+
+[[package]]
+name = "base64"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8"
 
 [[package]]
 name = "base64"
@@ -4328,7 +4335,7 @@ version = "0.11.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cde824a14b7c14f85caff81225f411faacc04a2013f41670f41443742b1c1c55"
 dependencies = [
- "base64 0.21.0",
+ "base64 0.21.1",
  "bytes",
  "encoding_rs",
  "futures-core",
@@ -4462,7 +4469,7 @@ version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d194b56d58803a43635bdc398cd17e383d6f71f9182b9a192c127ca42494a59b"
 dependencies = [
- "base64 0.21.0",
+ "base64 0.21.1",
 ]
 
 [[package]]

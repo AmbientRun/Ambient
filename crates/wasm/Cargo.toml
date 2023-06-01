@@ -53,11 +53,8 @@ tokio = { workspace = true }
 winit = { workspace = true }
 wgpu = { workspace = true }
 ulid = { workspace = true }
-<<<<<<< HEAD
 tracing = { workspace = true }
-=======
 wit-component = { workspace = true }
->>>>>>> 230aadae (wip: mock out wasm)
 
 wasmtime = { workspace = true, optional = true }
 wasmtime-wasi = { workspace = true, optional = true }
