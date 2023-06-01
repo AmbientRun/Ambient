@@ -70,8 +70,6 @@ default interface entity {
     set-animation-binder-weights: func(entity: entity-id, index: u32, mask: list<float32>)
     get-animation-binder-mask-entities: func(entity: entity-id) -> list<entity-id>
 
-    set-animation-blend: func(entity: entity-id, weights: list<float32>, time: list<float32>, absolute-time: bool)
-
     get-transforms-relative-to: func(entities: list<entity-id>, origin: entity-id) -> list<mat4>
 
     spawn: func(data: entity-data) -> entity-id

@@ -2,7 +2,6 @@ use std::collections::HashSet;
 
 use ambient_animation::{
     animation_binder_mask, animation_binder_weights, animation_controller, animation_stack,
-    AnimationActionTime,
 };
 use ambient_core::transform::{local_to_world, translation};
 use ambient_ecs::{query as ecs_query, with_component_registry, EntityId, World};
@@ -53,30 +52,6 @@ pub fn set_animation_controller(
         animation_controller(),
         controller.from_bindgen(),
     )?)
-}
-
-pub fn set_animation_blend(
-    world: &mut World,
-    entity: wit::types::EntityId,
-    weights: &[f32],
-    times: &[f32],
-    absolute_time: bool,
-) -> anyhow::Result<()> {
-    let controller = world.get_mut(entity.from_bindgen(), animation_controller())?;
-    for (action, weight) in controller.actions.iter_mut().zip(weights.iter()) {
-        action.weight = *weight;
-    }
-
-    if absolute_time {
-        for (action, time) in controller.actions.iter_mut().zip(times.iter()) {
-            action.time = AnimationActionTime::Absolute { time: *time };
-        }
-    } else {
-        for (action, time) in controller.actions.iter_mut().zip(times.iter()) {
-            action.time = AnimationActionTime::Percentage { percentage: *time }
-        }
-    }
-    Ok(())
 }
 
 pub fn set_animation_action_stack(

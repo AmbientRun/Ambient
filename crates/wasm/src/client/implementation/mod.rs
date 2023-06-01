@@ -42,22 +42,6 @@ impl wit::entity::Host for Bindings {
         )
     }
 
-    fn set_animation_blend(
-        &mut self,
-        entity: wit::types::EntityId,
-        weights: Vec<f32>,
-        times: Vec<f32>,
-        absolute_time: bool,
-    ) -> anyhow::Result<()> {
-        shared::implementation::entity::set_animation_blend(
-            self.world_mut(),
-            entity,
-            &weights,
-            &times,
-            absolute_time,
-        )
-    }
-
     fn set_animation_action_stack(
         &mut self,
         entity: wit::types::EntityId,
