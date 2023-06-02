@@ -20,6 +20,8 @@ pub enum Commands {
         project_args: ProjectCli,
         #[arg(short, long)]
         name: Option<String>,
+        #[arg(long)]
+        api_path: Option<String>,
     },
     /// Builds and runs the project locally
     Run {

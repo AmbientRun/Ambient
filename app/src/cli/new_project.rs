@@ -4,7 +4,11 @@ use ambient_project::Identifier;
 use anyhow::Context;
 use convert_case::Casing;
 
-pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Result<()> {
+pub(crate) fn new_project(
+    project_path: &Path,
+    name: Option<&str>,
+    api_path: Option<&str>,
+) -> anyhow::Result<()> {
     // Build the identifier.
     let project_path = if let Some(name) = name {
         project_path.join(name)
@@ -64,7 +68,9 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
                 format!("ambient_api = \"{}\"", env!("CARGO_PKG_VERSION")),
                 #[cfg(not(feature = "production"))]
                 {
-                    if let Some(rev) = git_revision() {
+                    if let Some(api_path) = api_path {
+                        format!("ambient_api = {{ path = {:?} }}", api_path)
+                    } else if let Some(rev) = git_revision() {
                         format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}", rev)
                     } else {
                         format!("ambient_api = \"{}\"", env!("CARGO_PKG_VERSION"))
@@ -74,12 +80,11 @@ pub(crate) fn new_project(project_path: &Path, name: Option<&str>) -> anyhow::Re
             ),
         };
 
-        let mut template_cargo_toml = include_str!("new_project_template/Cargo.toml")
-            .replace("{{id}}", id.as_ref())
-            .replace(
-                "ambient_api = { path = \"../../../../guest/rust/api\" }",
-                &replacement,
-            );
+        let template_cargo_toml = include_str!("new_project_template/Cargo.toml");
+        let mut template_cargo_toml = template_cargo_toml.replace("{{id}}", id.as_ref()).replace(
+            "ambient_api = { path = \"../../../../guest/rust/api\" }",
+            &replacement,
+        );
 
         if in_ambient_examples {
             template_cargo_toml = template_cargo_toml.replace(
