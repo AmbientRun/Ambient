@@ -87,6 +87,7 @@ assimp = ["ambient_model_import/russimp"]
 tracing = ["tracing-tree", "tracing-subscriber", "tracing-log"]
 tls-native-roots = ["ambient_network/tls-native-roots"]
 tls-webpki-roots = ["ambient_network/tls-webpki-roots"]
+hotload-includes = ["ambient_app/hotload-includes", "ambient_decals/hotload-includes"]
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 axum = { workspace = true }
