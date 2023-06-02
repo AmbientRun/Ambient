@@ -296,9 +296,28 @@ fn main() -> anyhow::Result<()> {
         }
     } else if let Some(host) = &cli.host() {
         let crypto = if let (Some(cert_file), Some(key_file)) = (&host.cert, &host.key) {
-            let cert = std::fs::read(cert_file).context("Failed to read certificate file")?;
-            let key = std::fs::read(key_file).context("Failed to read certificate key")?;
-            ambient_network::native::server::Crypto { cert, key }
+            let raw_cert = std::fs::read(cert_file).context("Failed to read certificate file")?;
+            let cert_chain = if raw_cert.starts_with(b"-----BEGIN CERTIFICATE-----") {
+                rustls_pemfile::certs(&mut raw_cert.as_slice()).context("Failed to parse certificate file")?
+            } else {
+                vec![raw_cert]
+            };
+            let raw_key = std::fs::read(key_file).context("Failed to read certificate key")?;
+            let key = if raw_key.starts_with(b"-----BEGIN ") {
+                rustls_pemfile::read_all(&mut raw_key.as_slice())
+                    .context("Failed to parse certificate key")?
+                    .into_iter()
+                    .find_map(|item| match item {
+                        rustls_pemfile::Item::RSAKey(key) => Some(key),
+                        rustls_pemfile::Item::PKCS8Key(key) => Some(key),
+                        rustls_pemfile::Item::ECKey(key) => Some(key),
+                        _ => None,
+                    })
+                    .ok_or_else(|| anyhow::anyhow!("No private key found"))?
+            } else {
+                raw_key
+            };
+            ambient_network::native::server::Crypto { cert_chain, key }
         } else {
             #[cfg(feature = "no_bundled_certs")]
             {
@@ -308,7 +327,7 @@ fn main() -> anyhow::Result<()> {
             {
                 tracing::info!("Using bundled certificate and key");
                 ambient_network::native::server::Crypto {
-                    cert: CERT.to_vec(),
+                    cert_chain: vec![CERT.to_vec()],
                     key: CERT_KEY.to_vec(),
                 }
             }

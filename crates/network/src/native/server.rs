@@ -43,7 +43,7 @@ use crate::{
 
 #[derive(Debug, Clone)]
 pub struct Crypto {
-    pub cert: Vec<u8>,
+    pub cert_chain: Vec<Vec<u8>>,
     pub key: Vec<u8>,
 }
 
@@ -426,7 +426,7 @@ fn create_server(server_addr: SocketAddr, crypto: &Crypto) -> anyhow::Result<End
         .unwrap()
         .with_no_client_auth()
         .with_single_cert(
-            vec![Certificate(crypto.cert.clone())],
+            crypto.cert_chain.iter().cloned().map(Certificate).collect(),
             PrivateKey(crypto.key.clone()),
         )?;
 
@@ -462,7 +462,6 @@ fn create_server(server_addr: SocketAddr, crypto: &Crypto) -> anyhow::Result<End
 
     // Create client config for the server endpoint for proxying and hole punching
     let mut roots = load_root_certs();
-    roots.add(&Certificate(crypto.cert.clone())).unwrap();
 
     // add proxy test cert if provided
     if let Ok(test_ca_cert_path) = std::env::var("AMBIENT_PROXY_TEST_CA_CERT") {

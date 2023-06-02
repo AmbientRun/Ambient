@@ -158,6 +158,7 @@ dependencies = [
  "local-ip-address",
  "log",
  "parking_lot",
+ "rustls-pemfile",
  "rusty-hook",
  "serde",
  "serde_json",
