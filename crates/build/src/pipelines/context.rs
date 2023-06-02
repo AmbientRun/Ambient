@@ -41,11 +41,11 @@ impl PipelineCtx {
             .as_directory()
     }
     pub fn pipeline_path(&self) -> RelativePathBuf {
-        tracing::info!(in_root=?self.process_ctx.in_root, file_path=?self.pipeline_file.path(), "pipeline_path");
+        tracing::info!(in_root=?self.process_ctx.in_root, file_path=?self.pipeline_file.decoded_path(), "pipeline_path");
         let path = self
             .process_ctx
             .in_root
-            .relative_path(self.pipeline_file.path());
+            .relative_path(self.pipeline_file.decoded_path());
 
         tracing::debug!("Root path");
 
@@ -124,7 +124,7 @@ impl PipelineCtx {
                 if sources_filter.is_empty() {
                     true
                 } else {
-                    let path = self.in_root().relative_path(file.path());
+                    let path = self.in_root().relative_path(file.decoded_path());
                     for pat in &sources_filter {
                         if pat.matches(path.as_str()) {
                             return true;
@@ -134,7 +134,7 @@ impl PipelineCtx {
                 }
             })
             .filter(|f| {
-                let path = self.in_root().relative_path(f.path());
+                let path = self.in_root().relative_path(f.decoded_path());
                 opt_filter
                     .as_ref()
                     .map(|p| p.matches(path.as_str()))
@@ -154,7 +154,7 @@ impl PipelineCtx {
                 let res = tokio::spawn({
                     let ctx = ctx.clone();
                     let file = file.clone();
-                    let file_path = ctx.in_root().relative_path(file.path());
+                    let file_path = ctx.in_root().relative_path(file.decoded_path());
                     async move {
                         let _permit = semaphore.acquire().await;
                         (ctx.process_ctx.on_status)(format!(
@@ -181,7 +181,7 @@ impl PipelineCtx {
                     format!(
                         "In pipeline {}, at file {}",
                         ctx.pipeline_path(),
-                        ctx.in_root().relative_path(file.path())
+                        ctx.in_root().relative_path(file.decoded_path())
                     )
                 });
                 let err = match res {
@@ -203,7 +203,7 @@ impl PipelineCtx {
             .files
             .0
             .iter()
-            .find(|x| x.path() == url.path())
+            .find(|x| x.decoded_path() == url.decoded_path())
             .with_context(|| format!("No such file: {url}"))
     }
 }

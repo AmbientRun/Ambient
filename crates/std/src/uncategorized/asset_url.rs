@@ -6,7 +6,6 @@ use std::{
 
 use anyhow::Context;
 use convert_case::{Case, Casing};
-use percent_encoding::percent_decode_str;
 use rand::seq::SliceRandom;
 use relative_path::{RelativePath, RelativePathBuf};
 use serde::{
@@ -175,23 +174,24 @@ impl AbsAssetUrl {
     pub fn join(&self, path: impl AsRef<str>) -> Result<Self, ParseError> {
         Ok(AbsAssetUrl(self.0.join(path.as_ref())?))
     }
-    /// Returns the decoded path
-    pub fn path(&self) -> RelativePathBuf {
+
+    /// Returns the url path
+    pub fn decoded_path(&self) -> RelativePathBuf {
         RelativePathBuf::from(
-            self.0
-                .to_file_path()
-                .expect("Invalid file path")
-                .to_str()
-                .expect("Non UTF-8 path"),
+            &percent_encoding::percent_decode_str(self.0.path())
+                .decode_utf8()
+                .expect("Invalid UTF-8"),
         )
     }
 
     pub fn set_path(&mut self, path: impl AsRef<str>) {
         self.0.set_path(path.as_ref());
     }
+
     pub fn relative_path(&self, to: impl AsRef<RelativePath>) -> RelativePathBuf {
-        self.path().relative(to)
+        self.decoded_path().relative(to)
     }
+
     pub fn is_directory(&self) -> bool {
         self.0.path().ends_with('/')
     }
@@ -200,7 +200,7 @@ impl AbsAssetUrl {
     pub fn as_directory(&self) -> Self {
         let mut res = self.clone();
         if !res.is_directory() {
-            res.set_path(&format!("{}/", res.path()));
+            res.set_path(&format!("{}/", res.decoded_path()));
         }
         res
     }
@@ -209,7 +209,7 @@ impl AbsAssetUrl {
     pub fn as_file(&self) -> Self {
         let mut res = self.clone();
         if res.is_directory() {
-            res.set_path(&res.path().as_str()[0..(res.path().as_str().len() - 1)]);
+            res.set_path(&res.decoded_path().as_str()[0..(res.decoded_path().as_str().len() - 1)]);
         }
         res
     }

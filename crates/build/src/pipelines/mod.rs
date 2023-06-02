@@ -106,11 +106,11 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
         .map(|(pipeline_file, pipeline)| {
             let root = pipeline_file.join(".").unwrap();
             let ctx = PipelineCtx {
-                files: ctx.files.sub_directory(root.path().as_str()),
+                files: ctx.files.sub_directory(root.decoded_path().as_str()),
                 process_ctx: ctx.clone(),
                 pipeline: Arc::new(pipeline.clone()),
                 pipeline_file,
-                root_path: ctx.in_root.relative_path(root.path()),
+                root_path: ctx.in_root.relative_path(root.decoded_path()),
             };
             tokio::spawn(async move { pipeline.process(ctx).await })
         })
@@ -163,13 +163,15 @@ impl FileCollection {
     }
     pub fn find_file(&self, glob_pattern: impl AsRef<str>) -> Option<&AbsAssetUrl> {
         let pattern = glob::Pattern::new(glob_pattern.as_ref()).unwrap();
-        self.0.iter().find(|f| pattern.matches(f.path().as_str()))
+        self.0
+            .iter()
+            .find(|f| pattern.matches(f.decoded_path().as_str()))
     }
     pub fn sub_directory(&self, path: &str) -> Self {
         Self(Arc::new(
             self.0
                 .iter()
-                .filter(|url| url.path().starts_with(path))
+                .filter(|url| url.decoded_path().starts_with(path))
                 .cloned()
                 .collect(),
         ))

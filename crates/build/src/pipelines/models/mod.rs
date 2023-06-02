@@ -210,7 +210,7 @@ fn create_texture_resolver(ctx: &PipelineCtx) -> TextureResolver {
                 .files
                 .0
                 .iter()
-                .find(|file| file.path().as_str().contains(&filename))
+                .find(|file| file.decoded_path().as_str().contains(&filename))
             {
                 match download_image(&ctx.process_ctx.assets, file).await {
                     Ok(img) => Some(img.into_rgba8()),
