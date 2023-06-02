@@ -210,7 +210,6 @@ fn run_game_logic(
                 .add_event(event.clone());
         }
 
-        tracing::info!("Drawing game state");
         game_state.on_frame(&gpu, &render_target.0);
     });
 }

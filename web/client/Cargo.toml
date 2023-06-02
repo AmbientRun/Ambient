@@ -28,6 +28,9 @@ ambient_audio = { workspace = true }
 ambient_world_audio = { workspace = true }
 ambient_network = { workspace = true }
 ambient_wasm = { workspace = true }
+ambient_ecs_editor = { workspace = true }
+ambient_layout = { workspace = true }
+ambient_debugger = { workspace = true }
 
 url = { workspace = true }
 anyhow = { workspace = true }

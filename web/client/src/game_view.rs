@@ -1,11 +1,16 @@
+use std::sync::Arc;
+
 use ambient_core::window::{
     cursor_position, window_logical_size, window_physical_size, window_scale_factor,
 };
+use ambient_debugger::Debugger;
 use ambient_ecs::EntityId;
+use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::client::{GameClient, GameClientRenderTarget, GameClientWorld};
 use ambient_ui_native::{
-    docking, padding, Borders, Button, Dock, Docking, FlowColumn, MeasureSize, UIExt, STREET,
+    cb, docking, padding, Borders, Button, Dock, Docking, FlowColumn, MeasureSize, ScrollArea,
+    ScrollAreaSizing, UIExt, STREET,
 };
 use glam::{uvec2, vec4, Vec2};
 
@@ -63,24 +68,24 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                     .style(ambient_ui_native::ButtonStyle::Flat)
                     .toggled(show_ecs)
                     .el(),
-                    // if show_ecs {
-                    //     ScrollArea::el(
-                    //         ScrollAreaSizing::FitChildrenWidth,
-                    //         ECSEditor {
-                    //             world: Arc::new(InspectableAsyncWorld(cb({
-                    //                 let state = state.clone();
-                    //                 move |res| {
-                    //                     let state = state.game_state.lock();
-                    //                     res(&state.world)
-                    //                 }
-                    //             }))),
-                    //         }
-                    //         .el()
-                    //         .memoize_subtree(state.uid),
-                    //     )
-                    // } else {
-                    //     Element::new()
-                    // },
+                    if show_ecs {
+                        ScrollArea::el(
+                            ScrollAreaSizing::FitChildrenWidth,
+                            ECSEditor {
+                                world: Arc::new(InspectableAsyncWorld(cb({
+                                    let state = state.clone();
+                                    move |res| {
+                                        let state = state.game_state.lock();
+                                        res(&state.world)
+                                    }
+                                }))),
+                            }
+                            .el()
+                            .memoize_subtree(state.uid),
+                        )
+                    } else {
+                        Element::new()
+                    },
                 ])
                 .with(docking(), Docking::Left)
                 .with_background(vec4(0., 0., 1., 1.))
@@ -90,24 +95,24 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
         } else {
             Element::new()
         },
-        // if show_debug {
-        //     Debugger {
-        //         get_state: cb(move |cb| {
-        //             let mut game_state = state.game_state.lock();
-        //             let game_state = &mut *game_state;
-        //             cb(
-        //                 &mut game_state.renderer,
-        //                 &render_target.0,
-        //                 &mut game_state.world,
-        //             );
-        //         }),
-        //     }
-        //     .el()
-        //     .with(docking(), ambient_layout::Docking::Bottom)
-        //     .with(padding(), Borders::even(STREET).into())
-        // } else {
-        //     Element::new()
-        // },
+        if show_debug {
+            Debugger {
+                get_state: cb(move |cb| {
+                    let mut game_state = state.game_state.lock();
+                    let game_state = &mut *game_state;
+                    cb(
+                        &mut game_state.renderer,
+                        &render_target.0,
+                        &mut game_state.world,
+                    );
+                }),
+            }
+            .el()
+            .with(docking(), ambient_layout::Docking::Bottom)
+            .with(padding(), Borders::even(STREET).into())
+        } else {
+            Element::new()
+        },
         if show_debug {
             Dock::el([GameClientWorld.el()])
                 .with_background(vec4(0.2, 0.2, 0.2, 1.))
