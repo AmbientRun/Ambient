@@ -55,6 +55,7 @@ impl Pipeline {
             PipelineConfig::Materials(config) => materials::pipeline(&ctx, config.clone()).await,
             PipelineConfig::Audio(config) => audio::pipeline(&ctx, config.clone()).await,
         };
+
         for asset in &mut assets {
             asset.tags.extend(self.tags.clone());
             for i in 0..asset.categories.len() {
@@ -68,7 +69,7 @@ impl Pipeline {
 }
 
 pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
-    log::info!("Processing pipeline with out_root={}", ctx.out_root);
+    tracing::info!(?ctx.out_root,"Processing pipeline");
 
     #[derive(Debug, Clone, Deserialize)]
     #[serde(untagged)]
@@ -135,7 +136,21 @@ pub struct ProcessCtx {
     pub on_status: Arc<dyn Fn(String) -> BoxFuture<'static, ()> + Sync + Send>,
     pub on_error: Arc<dyn Fn(anyhow::Error) -> BoxFuture<'static, ()> + Sync + Send>,
 }
-#[derive(Clone)]
+
+impl std::fmt::Debug for ProcessCtx {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ProcessCtx")
+            .field("assets", &self.assets)
+            .field("files", &self.files)
+            .field("input_file_filter", &self.input_file_filter)
+            .field("package_name", &self.package_name)
+            .field("in_root", &self.in_root)
+            .field("out_root", &self.out_root)
+            .finish_non_exhaustive()
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct FileCollection(pub Arc<Vec<AbsAssetUrl>>);
 impl FileCollection {
     pub fn has_input_file(&self, url: &AbsAssetUrl) -> bool {

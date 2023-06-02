@@ -49,6 +49,7 @@ pub async fn build(
     path: PathBuf,
     manifest: &ProjectManifest,
     optimize: bool,
+    clean_build: bool,
 ) -> Metadata {
     tracing::info!(
         ?path,
@@ -69,11 +70,25 @@ pub async fn build(
 
     tracing::info!(?build_path, ?assets_path);
 
-    std::fs::create_dir_all(&build_path).unwrap();
+    if clean_build {
+        tracing::info!("Removing build directory: {build_path:?}");
+        tokio::fs::remove_dir_all(&build_path)
+            .await
+            .context("Failed to clean build directory")
+            .unwrap();
+    }
+
+    tokio::fs::create_dir_all(&build_path)
+        .await
+        .context("Failed to create build directory")
+        .unwrap();
+
     build_assets(physics, &assets_path, &build_path).await;
+
     build_rust_if_available(&path, manifest, &build_path, optimize)
         .await
         .unwrap();
+
     store_manifest(manifest, &build_path).await.unwrap();
     store_metadata(&build_path).await.unwrap()
 }
@@ -119,6 +134,9 @@ async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
             async {}.boxed()
         }),
     };
+
+    tracing::debug!("Created pipeline context: {ctx:#?}");
+
     ProcessCtxKey.insert(&ctx.assets, ctx.clone());
     pipelines::process_pipelines(&ctx).await;
 }

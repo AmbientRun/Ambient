@@ -85,12 +85,30 @@
         "cmd": [
             "cargo",
             "run",
+            "--features",
+            "tracing",
             "--",
             "build",
+            "--clean",
             "./guest/rust/examples/breaking basics/with space"
         ],
         "env": {
-            "RUST_LOG": "ambient_build=info,info"
+            "RUST_LOG": "ambient_build=debug, info"
+        }
+    },
+    "example-assets": {
+        "cmd": [
+            "cargo",
+            "run",
+            "--features",
+            "tracing",
+            "--",
+            "build",
+            "--clean",
+            "./guest/rust/examples/basics/asset_loading/"
+        ],
+        "env": {
+            "RUST_LOG": "ambient_build=debug, info"
         }
     }
 }

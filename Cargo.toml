@@ -15,7 +15,12 @@ tracing = "0.1.35"
 # tracing-tree = { version = "0.2" }
 # https://github.com/davidbarsky/tracing-tree/pull/56#issuecomment-1489148431
 tracing-tree = { git = "https://github.com/TmLev/tracing-tree" }
-tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.16", features = [
+    "env-filter",
+    "time",
+    "local-time",
+    "parking_lot",
+] }
 tracing-log = { version = "0.1" }
 wgpu = { version = "0.16.0", features = ["serde", "trace", "replay"] }
 winit = { version = "0.28.1", features = ["serde"] }
@@ -153,6 +158,7 @@ scopeguard = "1.0"
 rustls-native-certs = "0.6.2"
 webpki-roots = "0.23.0"
 mikktspace = { git = "https://github.com/gltf-rs/mikktspace" }
+time = { version = "0.3", features = ["macros"] }
 
 #
 # WASM dependencies. Should be able to move off these once this all begins to stabilise a little.

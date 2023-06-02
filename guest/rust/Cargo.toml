@@ -25,6 +25,7 @@ members = [
     "examples/basics/sun",
     "examples/basics/third_person_camera",
     "examples/basics/transparency",
+    "examples/breaking basics/with space/",
     # UI
     "examples/ui/auto_editor",
     "examples/ui/button",

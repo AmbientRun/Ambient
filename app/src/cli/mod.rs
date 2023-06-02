@@ -123,6 +123,9 @@ pub struct ProjectCli {
     /// Avoid building the project
     #[arg(long)]
     pub no_build: bool,
+    #[arg(long)]
+    /// Perform a clean build
+    pub clean_build: bool,
 }
 #[derive(Args, Clone, Debug)]
 pub struct HostCli {
