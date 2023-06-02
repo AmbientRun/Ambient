@@ -69,7 +69,8 @@ impl Pipeline {
 }
 
 pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
-    tracing::info!(?ctx.out_root,"Processing pipeline");
+    tracing::info!(?ctx.out_root, 
+        "Processing pipeline");
 
     #[derive(Debug, Clone, Deserialize)]
     #[serde(untagged)]

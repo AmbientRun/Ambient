@@ -47,9 +47,15 @@ impl PipelineCtx {
             .in_root
             .relative_path(self.pipeline_file.path());
 
+        tracing::debug!("Root path");
+
         if let Some(fragment) = self.pipeline_file.0.fragment() {
-            path.join(fragment)
+            let path = path.join(fragment);
+
+            tracing::debug!("Got pipeline path with fragment {:?}", path);
+            path
         } else {
+            tracing::info!("Got pipeline path {:?}", path);
             path
         }
     }

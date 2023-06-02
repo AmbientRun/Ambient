@@ -109,13 +109,11 @@ fn setup_logging() -> anyhow::Result<()> {
             //         .with_indent_lines(true)
             //         .with_bracketed_fields(true), // .with_timer(tracing_tree::time::Uptime::from(std::time::Instant::now())),
             // )
-            .with(
-                tracing_subscriber::fmt::Layer::new()
-                    .with_timer(tracing_subscriber::fmt::time::LocalTime::new(
-                        time::macros::format_description!("[hour]:[minute]:[second]"),
-                    ))
-                    .pretty(),
-            )
+            .with(tracing_subscriber::fmt::Layer::new().with_timer(
+                tracing_subscriber::fmt::time::LocalTime::new(time::macros::format_description!(
+                    "[hour]:[minute]:[second]"
+                )),
+            ))
             .try_init()?;
 
         Ok(())
