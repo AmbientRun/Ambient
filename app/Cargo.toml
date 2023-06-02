@@ -63,6 +63,7 @@ glam = { workspace = true }
 local-ip-address = { workspace = true }
 log = { workspace = true }
 parking_lot = { workspace = true }
+rustls-pemfile = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
