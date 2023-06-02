@@ -69,7 +69,6 @@ pub(crate) fn new_project(
                 #[cfg(not(feature = "production"))]
                 {
                     if let Some(api_path) = api_path {
-                        eprintln!("Using api path: {api_path}");
                         format!("ambient_api = {{ path = {:?} }}", api_path)
                     } else if let Some(rev) = git_revision() {
                         format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}", rev)
@@ -82,16 +81,10 @@ pub(crate) fn new_project(
         };
 
         let template_cargo_toml = include_str!("new_project_template/Cargo.toml");
-        eprintln!(
-            "in_ambient_examples: {}, replacement: {},\ntemplate: {}",
-            in_ambient_examples, replacement, template_cargo_toml
-        );
         let mut template_cargo_toml = template_cargo_toml.replace("{{id}}", id.as_ref()).replace(
             "ambient_api = { path = \"../../../../guest/rust/api\" }",
             &replacement,
         );
-
-        eprintln!("template: {}", template_cargo_toml);
 
         if in_ambient_examples {
             template_cargo_toml = template_cargo_toml.replace(
@@ -102,8 +95,6 @@ pub(crate) fn new_project(
 
         template_cargo_toml
     };
-
-    eprintln!("cargo.toml: {}", cargo_toml);
 
     macro_rules! include_template {
         ($path:expr) => {
