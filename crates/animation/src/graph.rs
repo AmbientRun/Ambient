@@ -3,15 +3,17 @@ use std::{
     time::Duration,
 };
 
-use ambient_core::{asset_cache, async_ecs::async_run, runtime, time};
+use ambient_core::{
+    asset_cache, async_ecs::async_run, hierarchy::despawn_recursive, runtime, time,
+};
 use ambient_ecs::{
     children, components,
     generated::components::core::animation::{
         animation_graph, apply_animation_graph, blend, clip_duration, freeze_at_percentage,
-        freeze_at_time, looping, mask_bind_ids, mask_weights, play_clip_from_url, speed,
+        freeze_at_time, looping, mask_bind_ids, mask_weights, play_clip_from_url, ref_count, speed,
         start_time,
     },
-    query, Debuggable, EntityId, Networked, Store, SystemGroup, World,
+    parent, query, Debuggable, EntityId, Networked, Store, SystemGroup, World,
 };
 use ambient_model::animation_binder;
 use ambient_std::{
@@ -239,6 +241,16 @@ pub fn animation_graph_systems() -> SystemGroup {
                     apply_animation_outputs_to_entity(world, binder, outputs);
                 }
             }),
+            // Cleanup
+            query(ref_count().changed())
+                .excl(parent())
+                .to_system(|q, world, qs, _| {
+                    for (id, count) in q.collect_cloned(world, qs) {
+                        if count == 0 {
+                            despawn_recursive(world, id);
+                        }
+                    }
+                }),
         ],
     )
 }

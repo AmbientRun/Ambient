@@ -5,6 +5,7 @@ use ambient_api::{
         prefab::prefab_from_url, primitives::quad,
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    element::to_owned,
     entity::{add_component, AnimationAction, AnimationController},
     prelude::*,
 };
@@ -50,8 +51,8 @@ pub async fn main() {
         asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap(),
         true,
     );
-    let blend = BlendNode::new(capoeira, robot, 0.);
-    let anim_graph = AnimationGraph::new(blend);
+    let blend = BlendNode::new(&capoeira, &robot, 0.);
+    let anim_graph = AnimationGraph::new(blend.clone());
     add_component(unit_id, apply_animation_graph(), anim_graph.0);
 
     println!("Robot duration: {} sec", robot.clip_duration().await);
@@ -97,66 +98,72 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_graph: AnimationGraph) -> 
     // let (weight, set_weight) = hooks.use_state(0.0f32);
     // let (time, set_time) = hooks.use_state(0.0f32);
 
-    hooks.use_effect((masked), move |_, &(masked)| {
-        if masked {
-            blend_node.set_mask(vec![
-                ("Hips".to_string(), 0.),
-                ("LeftFoot".to_string(), 0.),
-                ("LeftLeg".to_string(), 0.),
-                ("LeftToeBase".to_string(), 0.),
-                ("LeftUpLeg".to_string(), 0.),
-                ("RightFoot".to_string(), 0.),
-                ("RightLeg".to_string(), 0.),
-                ("RightToeBase".to_string(), 0.),
-                ("RightUpLeg".to_string(), 0.),
-            ]);
-        } else {
-            blend_node.set_mask(vec![]);
-        }
-        |_| {}
-    });
+    {
+        to_owned!(blend_node);
+        hooks.use_effect((masked), move |_, &(masked)| {
+            if masked {
+                blend_node.set_mask(vec![
+                    ("Hips".to_string(), 0.),
+                    ("LeftFoot".to_string(), 0.),
+                    ("LeftLeg".to_string(), 0.),
+                    ("LeftToeBase".to_string(), 0.),
+                    ("LeftUpLeg".to_string(), 0.),
+                    ("RightFoot".to_string(), 0.),
+                    ("RightLeg".to_string(), 0.),
+                    ("RightToeBase".to_string(), 0.),
+                    ("RightUpLeg".to_string(), 0.),
+                ]);
+            } else {
+                blend_node.set_mask(vec![]);
+            }
+            |_| {}
+        });
+    }
 
-    hooks.use_effect((blend), move |_, &(blend)| {
-        use entity::AnimationActionStack::*;
+    {
+        to_owned!(blend_node);
+        hooks.use_effect((blend), move |_, &(blend)| {
+            use entity::AnimationActionStack::*;
 
-        // let s0 = if t == 0.0 {
-        //     Sample(0)
-        // } else {
-        //     let time_absolute = durations[0] * t;
-        //     SampleAbsolute(entity::AnimationSampleAbsolute {
-        //         action_index: 0,
-        //         time_absolute,
-        //     })
-        // };
+            // let s0 = if t == 0.0 {
+            //     Sample(0)
+            // } else {
+            //     let time_absolute = durations[0] * t;
+            //     SampleAbsolute(entity::AnimationSampleAbsolute {
+            //         action_index: 0,
+            //         time_absolute,
+            //     })
+            // };
 
-        // // Alternatively SamplePercentage
-        // let s1 = if t == 0.0 {
-        //     Sample(1)
-        // } else {
-        //     SamplePercentage(entity::AnimationSamplePercentage {
-        //         action_index: 1,
-        //         time_percentage: t,
-        //     })
-        // };
+            // // Alternatively SamplePercentage
+            // let s1 = if t == 0.0 {
+            //     Sample(1)
+            // } else {
+            //     SamplePercentage(entity::AnimationSamplePercentage {
+            //         action_index: 1,
+            //         time_percentage: t,
+            //     })
+            // };
 
-        // if w != 0.0 {
-        //     entity::set_animation_action_stack(
-        //         unit,
-        //         &[
-        //             s0,
-        //             s1,
-        //             Blend(entity::AnimationStackBlend {
-        //                 weight: w,
-        //                 mask: LOWER_BODY_MASK_INDEX,
-        //             }),
-        //         ],
-        //     );
-        // } else {
-        //     entity::set_animation_action_stack(unit, &[s0, s1, Interpolate(i)]);
-        // }
-        blend_node.set_weight(blend);
-        |_| {}
-    });
+            // if w != 0.0 {
+            //     entity::set_animation_action_stack(
+            //         unit,
+            //         &[
+            //             s0,
+            //             s1,
+            //             Blend(entity::AnimationStackBlend {
+            //                 weight: w,
+            //                 mask: LOWER_BODY_MASK_INDEX,
+            //             }),
+            //         ],
+            //     );
+            // } else {
+            //     entity::set_animation_action_stack(unit, &[s0, s1, Interpolate(i)]);
+            // }
+            blend_node.set_weight(blend);
+            |_| {}
+        });
+    }
 
     FocusRoot::el([FlowColumn::el([
         // FlowRow::el([
@@ -218,7 +225,7 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_graph: AnimationGraph) -> 
             })
             .el(),
             Button::new("Play blend animation", move |_| {
-                anim_graph.set_root(blend_node);
+                anim_graph.set_root(blend_node.clone());
             })
             .el(),
             Button::new("Freeze animation", move |_| {
