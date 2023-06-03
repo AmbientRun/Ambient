@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use ambient_api::global::time;
 use ambient_api::{entity::synchronized_resources, messages::Frame, prelude::*};
 
 mod common;

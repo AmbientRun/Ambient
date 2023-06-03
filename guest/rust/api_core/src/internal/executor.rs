@@ -1,10 +1,9 @@
 use std::{
-    cell::{Ref, RefCell},
+    cell::RefCell,
     collections::HashMap,
     future::Future,
     pin::Pin,
     task::{Context, Poll, RawWaker, RawWakerVTable, Waker},
-    time::Duration,
 };
 
 use once_cell::sync::Lazy;

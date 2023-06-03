@@ -7,7 +7,6 @@ use crate::{
 };
 
 /// The time, relative to Jan 1, 1970.
-/// This can be used to time how long something takes.
 pub fn time() -> Duration {
     entity::get_component(entity::resources(), components::core::app::time()).unwrap()
 }

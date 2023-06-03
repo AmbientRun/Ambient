@@ -6,6 +6,7 @@ use crate::{
     },
     concepts::{make_player_camera_state, make_player_state},
 };
+use ambient_api::global::time;
 use ambient_api::{
     components::core::{
         app::main_scene,
@@ -271,6 +272,8 @@ pub fn main() {
         messages::Bonk::new(msg.ids[0]).send_client_broadcast_reliable();
     });
 
+    let start_time = time();
+
     // Update player ball each frame.
     query((
         player_ball(),
@@ -309,7 +312,7 @@ pub fn main() {
             };
 
             let force_multiplier = {
-                let mut mul = time() % 2.0;
+                let mut mul = (time() - start_time).as_secs_f32() % 2.0;
                 if mul > 1.0 {
                     mul = 1.0 - (mul - 1.0);
                 }

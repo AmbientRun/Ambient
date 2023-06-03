@@ -6,10 +6,7 @@ use crate::{
         app::name,
         ecs::{children, parent},
     },
-    entity::{
-        add_component, despawn_recursive, get_component, remove_component, remove_components,
-        set_component,
-    },
+    entity::{add_component, despawn_recursive, get_component, set_component},
     prelude::{block_until, Entity, EntityId},
 };
 
