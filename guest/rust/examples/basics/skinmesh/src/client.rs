@@ -1,5 +1,5 @@
 use ambient_api::{
-    animation::{AnimationGraph, AnimationNode},
+    animation::{AnimationGraph, BlendNode, PlayClipFromUrlNode},
     components::core::{
         animation::apply_animation_graph, camera::aspect_ratio_from_window,
         prefab::prefab_from_url, primitives::quad,
@@ -42,10 +42,16 @@ pub async fn main() {
         .with(name(), "Peasant".to_string())
         .spawn();
 
-    let anim_graph = AnimationGraph::new(AnimationNode::new_play_clip_from_url(
-        asset::url(START.1).unwrap(),
+    let capoeira = PlayClipFromUrlNode::new(
+        asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
         true,
-    ));
+    );
+    let robot = PlayClipFromUrlNode::new(
+        asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap(),
+        true,
+    );
+    let blend = BlendNode::new(capoeira, robot, 0.);
+    let anim_graph = AnimationGraph::new(blend);
     add_component(unit_id, apply_animation_graph(), anim_graph.0);
 
     // entity::set_animation_controller(
@@ -79,78 +85,79 @@ pub async fn main() {
     asset::block_until_animations_are_loaded(assets).await;
     let clips = asset::get_animation_asset_metadata(assets);
 
-    App::el(unit_id, [clips[0].duration, clips[1].duration]).spawn_interactive()
+    App::el(blend).spawn_interactive()
 }
 
 #[element_component]
-fn App(hooks: &mut Hooks, unit: EntityId, durations: [f32; 2]) -> Element {
+fn App(hooks: &mut Hooks, blend_node: BlendNode) -> Element {
     let (blend, set_blend) = hooks.use_state(0.0f32);
-    let (weight, set_weight) = hooks.use_state(0.0f32);
-    let (time, set_time) = hooks.use_state(0.0f32);
+    // let (weight, set_weight) = hooks.use_state(0.0f32);
+    // let (time, set_time) = hooks.use_state(0.0f32);
 
-    hooks.use_effect((blend, weight, time), move |_, &(w, i, t)| {
+    hooks.use_effect((blend), move |_, &(blend)| {
         use entity::AnimationActionStack::*;
 
-        let s0 = if t == 0.0 {
-            Sample(0)
-        } else {
-            let time_absolute = durations[0] * t;
-            SampleAbsolute(entity::AnimationSampleAbsolute {
-                action_index: 0,
-                time_absolute,
-            })
-        };
+        // let s0 = if t == 0.0 {
+        //     Sample(0)
+        // } else {
+        //     let time_absolute = durations[0] * t;
+        //     SampleAbsolute(entity::AnimationSampleAbsolute {
+        //         action_index: 0,
+        //         time_absolute,
+        //     })
+        // };
 
-        // Alternatively SamplePercentage
-        let s1 = if t == 0.0 {
-            Sample(1)
-        } else {
-            SamplePercentage(entity::AnimationSamplePercentage {
-                action_index: 1,
-                time_percentage: t,
-            })
-        };
+        // // Alternatively SamplePercentage
+        // let s1 = if t == 0.0 {
+        //     Sample(1)
+        // } else {
+        //     SamplePercentage(entity::AnimationSamplePercentage {
+        //         action_index: 1,
+        //         time_percentage: t,
+        //     })
+        // };
 
-        if w != 0.0 {
-            entity::set_animation_action_stack(
-                unit,
-                &[
-                    s0,
-                    s1,
-                    Blend(entity::AnimationStackBlend {
-                        weight: w,
-                        mask: LOWER_BODY_MASK_INDEX,
-                    }),
-                ],
-            );
-        } else {
-            entity::set_animation_action_stack(unit, &[s0, s1, Interpolate(i)]);
-        }
+        // if w != 0.0 {
+        //     entity::set_animation_action_stack(
+        //         unit,
+        //         &[
+        //             s0,
+        //             s1,
+        //             Blend(entity::AnimationStackBlend {
+        //                 weight: w,
+        //                 mask: LOWER_BODY_MASK_INDEX,
+        //             }),
+        //         ],
+        //     );
+        // } else {
+        //     entity::set_animation_action_stack(unit, &[s0, s1, Interpolate(i)]);
+        // }
+        blend_node.set_weight(blend);
         |_| {}
     });
 
     FocusRoot::el([FlowColumn::el([
-        FlowRow::el([
-            Text::el(START.0),
-            Slider {
-                value: weight,
-                on_change: Some(cb(move |weight| {
-                    set_weight(weight);
-                })),
-                min: 0.,
-                max: 1.,
-                width: 100.,
-                logarithmic: false,
-                round: Some(2),
-                suffix: None,
-            }
-            .el(),
-            Text::el(END.0),
-            Text::el(" (interpolate)"),
-        ])
-        .with(space_between_items(), 4.0)
-        .with_background(vec4(0., 0., 0., 0.9))
-        .with_padding_even(10.),
+        // FlowRow::el([
+        //     Text::el(START.0),
+        //     Slider {
+        //         value: weight,
+        //         on_change: Some(cb(move |weight| {
+        //             set_weight(weight);
+        //         })),
+        //         min: 0.,
+        //         max: 1.,
+        //         width: 100.,
+        //         logarithmic: false,
+        //         round: Some(2),
+        //         suffix: None,
+        //     }
+        //     .el(),
+        //     Text::el(END.0),
+        //     Text::el(" (interpolate)"),
+        // ])
+        // .with(space_between_items(), 4.0)
+        // .with_background(vec4(0., 0., 0., 0.9))
+        // .with_padding_even(10.),
         FlowRow::el([
             Text::el(START.0),
             Slider {
@@ -172,25 +179,25 @@ fn App(hooks: &mut Hooks, unit: EntityId, durations: [f32; 2]) -> Element {
         .with(space_between_items(), 4.0)
         .with_background(vec4(0., 0., 0., 0.9))
         .with_padding_even(10.),
-        FlowRow::el([
-            Text::el("Time"),
-            Slider {
-                value: time,
-                on_change: Some(cb(move |time| {
-                    set_time(time);
-                })),
-                min: 0.,
-                max: 1.,
-                width: 100.,
-                logarithmic: false,
-                round: Some(2),
-                suffix: None,
-            }
-            .el(),
-        ])
-        .with(space_between_items(), 4.0)
-        .with_background(vec4(0., 0., 0., 0.9))
-        .with_padding_even(10.),
+        // FlowRow::el([
+        //     Text::el("Time"),
+        //     Slider {
+        //         value: time,
+        //         on_change: Some(cb(move |time| {
+        //             set_time(time);
+        //         })),
+        //         min: 0.,
+        //         max: 1.,
+        //         width: 100.,
+        //         logarithmic: false,
+        //         round: Some(2),
+        //         suffix: None,
+        //     }
+        //     .el(),
+        // ])
+        // .with(space_between_items(), 4.0)
+        // .with_background(vec4(0., 0., 0., 0.9))
+        // .with_padding_even(10.),
     ])])
 }
 
