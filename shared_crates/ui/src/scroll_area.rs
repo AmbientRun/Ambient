@@ -98,7 +98,7 @@ pub fn ScrollArea(
         }
         ScrollAreaSizing::MaxScrollDown(_) => {
             Element::new()
-            .init(translation(), vec3(0., 0., -0.001))
+            // .init(translation(), vec3(0., 0., -0.001))
             .init_default(local_to_world())
             .init_default(local_to_parent())
             .init_default(mesh_to_world())
@@ -126,16 +126,16 @@ pub fn ScrollArea(
                     .with(width(), res.x as f32)
                     .with(height(), res.y as f32-400.0)
                     .with_default(local_to_parent())
-                    .with_default(local_to_world())
-                    .with(background_color(), vec4(0.0, 0.0, 1.0, 1.0))
+                    // .with_default(local_to_world())
+                    .with(background_color(), vec4(0.0, 0.0, 0.0, 1.0))
                     .with(translation(), vec3(0.0, 400.0, 0.0)),
 
                     Flow(vec![inner]).el()
                         // .with(background_color(), vec4(0.0, 0.6, 0.6, 1.0))
                         // .with_default(fit_horizontal_children())
-                        .with_default(local_to_parent())
-                        .with_default(local_to_world())
-                        .with(translation(), vec3(0., scroll, 0.001)),
+                        // .with_default(local_to_parent())
+                        // .with_default(local_to_world())
+                        .with(translation(), vec3(0., scroll, 0.1)),
                     // MeasureSize::el(
                         // Flow(vec![inner]).el()
                         //     .with_default(fit_horizontal_children())
