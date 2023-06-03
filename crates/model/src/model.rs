@@ -451,6 +451,17 @@ impl Model {
             AABB::unions(&aabbs).unwrap_or(AABB::ZERO),
         );
     }
+    /// Builds the base pose of this model
+    pub fn build_base_pose(&self) -> HashMap<String, Entity> {
+        query(animation_bind_id())
+            .iter(&self.0, None)
+            .map(|(id, bind_id)| {
+                let mut ed = Entity::new();
+                self.build_transform(id, &mut ed, None, true);
+                (bind_id.clone(), ed)
+            })
+            .collect()
+    }
 
     /// Applies the base pose of this model to the loaded model in  the world
     pub fn apply_base_pose(&self, world: &mut World, id: EntityId) {

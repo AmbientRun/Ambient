@@ -9,17 +9,21 @@ use ambient_core::{
 use ambient_ecs::{
     children, components,
     generated::components::core::animation::{
-        animation_graph, apply_animation_graph, blend, clip_duration, freeze_at_percentage,
-        freeze_at_time, looping, mask_bind_ids, mask_weights, play_clip_from_url, ref_count,
-        retarget_animation_scaled, retarget_model_from_url, speed, start_time,
+        animation_graph, apply_animation_graph, apply_base_pose, blend, clip_duration,
+        freeze_at_percentage, freeze_at_time, looping, mask_bind_ids, mask_weights,
+        play_clip_from_url, ref_count, retarget_animation_scaled, retarget_model_from_url, speed,
+        start_time,
     },
-    parent, query, Debuggable, EntityId, Networked, Store, SystemGroup, World,
+    parent, query, ComponentDesc, Debuggable, EntityId, Networked, Store, SystemGroup, World,
 };
-use ambient_model::animation_binder;
+use ambient_model::{animation_binder, ModelFromUrl};
 use ambient_std::{
-    asset_cache::AsyncAssetKeyExt,
+    asset_cache::{AssetCache, AsyncAssetKeyExt},
     asset_url::{AbsAssetUrl, AnimationAssetType, ModelAssetType, TypedAssetUrl},
 };
+use anyhow::Context;
+use glam::{Quat, Vec3};
+use itertools::Itertools;
 
 use crate::{
     animation_errors, animation_retargeting, AnimationClipFromUrl,
@@ -32,6 +36,7 @@ components!("animation", {
     animation_output: HashMap<AnimationOutputKey, AnimationOutput>,
     @[Debuggable]
     mask: HashMap<String, f32>,
+    cached_base_pose: HashMap<AnimationOutputKey, AnimationOutput>,
 });
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -91,7 +96,7 @@ fn sample_animation_node_inner(
             }
             time * speed as f64
         };
-        Ok(clip
+        let mut output: HashMap<AnimationOutputKey, AnimationOutput> = clip
             .tracks
             .iter()
             .map(|track| {
@@ -103,7 +108,15 @@ fn sample_animation_node_inner(
                 };
                 (key, value)
             })
-            .collect())
+            .collect();
+        if let Ok(base_pose) = world.get_ref(node, cached_base_pose()) {
+            for (key, value) in base_pose.into_iter() {
+                if !output.contains_key(&key) {
+                    output.insert(key.clone(), value.clone());
+                }
+            }
+        }
+        Ok(output)
     } else if let Ok(blend_weight) = world.get_cloned(node, blend()) {
         let children = world.get_cloned(node, children())?;
         if children.len() != 2 {
@@ -205,6 +218,16 @@ pub fn animation_graph_systems() -> SystemGroup {
                     });
                 }
             }),
+            query(play_clip_from_url().changed())
+                .incl(apply_base_pose())
+                .to_system(|q, world, qs, _| {
+                    for (id, (url)) in q.collect_cloned(world, qs) {
+                        if let Ok(base_pose) = build_base_pose(world.resource(asset_cache()), &url)
+                        {
+                            world.add_component(id, cached_base_pose(), base_pose);
+                        }
+                    }
+                }),
             query(mask_bind_ids().changed())
                 .optional_changed(mask_weights())
                 .to_system(|q, world, qs, _| {
@@ -272,4 +295,47 @@ pub fn animation_graph_systems() -> SystemGroup {
                 }),
         ],
     )
+}
+
+fn build_base_pose(
+    assets: &AssetCache,
+    clip_url: &str,
+) -> anyhow::Result<HashMap<AnimationOutputKey, AnimationOutput>> {
+    let clip_url = TypedAssetUrl::<AnimationAssetType>::parse(clip_url)?;
+    let model_url = clip_url
+        .model_crate()
+        .context("Failed to get model crate")?
+        .model();
+    if let Some(Ok(model)) = ModelFromUrl(model_url).peek(assets) {
+        Ok(model
+            .build_base_pose()
+            .into_iter()
+            .flat_map(|(bind_id, entity)| {
+                entity.into_iter().map(move |entry| {
+                    let desc: ComponentDesc = (*entry).clone();
+                    let output = if let Some(value) = entry.try_downcast_ref::<Vec3>() {
+                        AnimationOutput::Vec3 {
+                            component: desc.try_into().unwrap(),
+                            value: *value,
+                        }
+                    } else if let Some(value) = entry.try_downcast_ref::<Quat>() {
+                        AnimationOutput::Quat {
+                            component: desc.try_into().unwrap(),
+                            value: *value,
+                        }
+                    } else {
+                        todo!()
+                    };
+                    let key = AnimationOutputKey {
+                        target: AnimationTarget::BinderId(bind_id.clone()),
+                        component: desc.index(),
+                        field: None,
+                    };
+                    (key, output)
+                })
+            })
+            .collect())
+    } else {
+        anyhow::bail!("No anim yet")
+    }
 }

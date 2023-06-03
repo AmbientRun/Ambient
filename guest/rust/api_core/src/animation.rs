@@ -3,8 +3,8 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     components::core::{
         animation::{
-            animation_graph, blend, clip_duration, freeze_at_percentage, freeze_at_time,
-            mask_bind_ids, mask_weights, ref_count, retarget_animation_scaled,
+            animation_graph, apply_base_pose, blend, clip_duration, freeze_at_percentage,
+            freeze_at_time, mask_bind_ids, mask_weights, ref_count, retarget_animation_scaled,
             retarget_model_from_url, start_time,
         },
         app::name,
@@ -112,6 +112,14 @@ impl PlayClipFromUrlNode {
     /// Returns None if the duration hasn't been loaded yet
     pub fn peek_clip_duration(&self) -> Option<f32> {
         get_component(self.0 .0, clip_duration())
+    }
+    /// If true, the base pose from the model of the animation clip will be applied to the animation
+    pub fn apply_base_pose(&self, value: bool) {
+        if value {
+            add_component(self.0 .0, apply_base_pose(), ());
+        } else {
+            remove_component(self.0 .0, apply_base_pose());
+        }
     }
     /// Returns the duration of this clip. This is async because it needs to wait for the clip to load before the duration can be returned.
     pub async fn clip_duration(&self) -> f32 {
