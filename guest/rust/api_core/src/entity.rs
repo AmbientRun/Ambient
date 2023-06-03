@@ -9,11 +9,6 @@ use crate::{
     prelude::block_until,
 };
 
-pub use wit::entity::{
-    AnimationAction, AnimationActionStack, AnimationController, AnimationSampleAbsolute,
-    AnimationSamplePercentage, AnimationStackBlend,
-};
-
 /// Spawns an entity containing the `components`.
 ///
 /// Returns `spawned_entity_uid`.
@@ -48,41 +43,6 @@ pub fn despawn_recursive(entity: EntityId) {
             }
         }
     }
-}
-/// Set the animation (controller) for `entity`.
-pub fn set_animation_controller(entity: EntityId, controller: AnimationController) {
-    wit::entity::set_animation_controller(entity.into_bindgen(), controller)
-}
-
-/// Set the animation (controller) weights (optional) and times (optional) for `entity`.
-pub fn set_animation_blend(entity: EntityId, weights: &[f32], times: &[f32], absolute_time: bool) {
-    wit::entity::set_animation_blend(entity.into_bindgen(), weights, times, absolute_time)
-}
-
-/// Set the animation blend stack for `entity`. Requires `set_animation_binder_mask` and `set_animation_binder_weights` to be set as well even if empty to add the components to the entity.
-pub fn set_animation_action_stack(entity: EntityId, stack: &[AnimationActionStack]) {
-    wit::entity::set_animation_action_stack(entity.into_bindgen(), stack)
-}
-
-/// Set the animation blend stack binder mask for blending weight masks. See `set_animation_binder_weights`.
-pub fn set_animation_binder_mask(entity: EntityId, mask: &[&str]) {
-    wit::entity::set_animation_binder_mask(entity.into_bindgen(), mask)
-}
-
-/// Get the animation blend stack binder mask for blending weight masks. See `set_animation_binder_weights`.
-/// Also sets and retrieves the full the binder mask all if animation_binder_mask is not set.
-pub fn get_animation_binder_mask(entity: EntityId) -> Vec<String> {
-    wit::entity::get_animation_binder_mask(entity.into_bindgen())
-}
-
-/// Set the animation blend stack binder weights. The backing vector will resize to fit the mask.
-pub fn set_animation_binder_weights(entity: EntityId, index: u32, mask: &[f32]) {
-    wit::entity::set_animation_binder_weights(entity.into_bindgen(), index, mask)
-}
-
-/// Gets the associated entities of the binder mask
-pub fn get_animation_binder_mask_entities(entity: EntityId) -> Vec<EntityId> {
-    wit::entity::get_animation_binder_mask_entities(entity.into_bindgen()).from_bindgen()
 }
 
 /// Unconverted bindgen transforms

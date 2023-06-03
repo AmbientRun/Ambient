@@ -1,13 +1,8 @@
 use std::collections::HashSet;
 
-use ambient_animation::{
-    animation_binder_mask, animation_binder_weights, animation_controller, animation_stack,
-    AnimationActionTime,
-};
 use ambient_core::transform::{local_to_world, translation};
 use ambient_ecs::{query as ecs_query, with_component_registry, EntityId, World};
 
-use ambient_model::animation_binder;
 use ambient_network::ServerWorldExt;
 
 use anyhow::Context;
@@ -41,129 +36,6 @@ pub fn despawn(
     Ok(world
         .despawn(id)
         .map(|e| convert_entity_data_to_components(&e)))
-}
-
-pub fn set_animation_controller(
-    world: &mut World,
-    entity: wit::types::EntityId,
-    controller: wit::entity::AnimationController,
-) -> anyhow::Result<()> {
-    Ok(world.add_component(
-        entity.from_bindgen(),
-        animation_controller(),
-        controller.from_bindgen(),
-    )?)
-}
-
-pub fn set_animation_blend(
-    world: &mut World,
-    entity: wit::types::EntityId,
-    weights: &[f32],
-    times: &[f32],
-    absolute_time: bool,
-) -> anyhow::Result<()> {
-    let controller = world.get_mut(entity.from_bindgen(), animation_controller())?;
-    for (action, weight) in controller.actions.iter_mut().zip(weights.iter()) {
-        action.weight = *weight;
-    }
-
-    if absolute_time {
-        for (action, time) in controller.actions.iter_mut().zip(times.iter()) {
-            action.time = AnimationActionTime::Absolute { time: *time };
-        }
-    } else {
-        for (action, time) in controller.actions.iter_mut().zip(times.iter()) {
-            action.time = AnimationActionTime::Percentage { percentage: *time }
-        }
-    }
-    Ok(())
-}
-
-pub fn set_animation_action_stack(
-    world: &mut World,
-    entity: wit::types::EntityId,
-    stack: Vec<wit::entity::AnimationActionStack>,
-) -> anyhow::Result<()> {
-    Ok(world.add_component(
-        entity.from_bindgen(),
-        animation_stack(),
-        stack.into_iter().map(|x| x.from_bindgen()).collect(),
-    )?)
-}
-
-pub fn set_animation_binder_mask(
-    world: &mut World,
-    entity: wit::types::EntityId,
-    mask: Vec<String>,
-) -> anyhow::Result<()> {
-    Ok(world.add_component(entity.from_bindgen(), animation_binder_mask(), mask)?)
-}
-
-pub fn set_animation_binder_weights(
-    world: &mut World,
-    entity: wit::types::EntityId,
-    index: u32,
-    mask: Vec<f32>,
-) -> anyhow::Result<()> {
-    let entity_id = entity.from_bindgen();
-    let index = index as usize;
-
-    if let Ok(weights) = world.get_mut(entity_id, animation_binder_weights()) {
-        if weights.len() <= index {
-            weights.resize(index + 1, Vec::default());
-        }
-        weights[index] = mask;
-        Ok(())
-    } else {
-        let mut weights = vec![Vec::default(); index + 1];
-        weights[index] = mask;
-        Ok(world.add_component(entity.from_bindgen(), animation_binder_weights(), weights)?)
-    }
-}
-
-pub fn get_animation_binder_mask_entities(
-    world: &mut World,
-    entity: wit::types::EntityId,
-) -> anyhow::Result<Vec<wit::types::EntityId>> {
-    let entity_id = entity.from_bindgen();
-
-    let binder: &std::collections::HashMap<String, EntityId> = world
-        .get_ref(entity_id, animation_binder())
-        .context("missing animation_binder")?;
-
-    if let Ok(mask) = world.get_ref(entity_id, animation_binder_mask()) {
-        Ok(mask
-            .iter()
-            .map(|x| binder.get(x).unwrap_or(&EntityId::null()).into_bindgen())
-            .collect())
-    } else {
-        let mut mask: Vec<String> = binder.keys().cloned().collect();
-        mask.sort();
-        let result = mask
-            .iter()
-            .map(|x| binder.get(x).unwrap_or(&EntityId::null()).into_bindgen())
-            .collect();
-        world.add_component(entity_id, animation_binder_mask(), mask)?;
-        Ok(result)
-    }
-}
-
-pub fn get_animation_binder_mask(
-    world: &mut World,
-    entity: wit::types::EntityId,
-) -> anyhow::Result<Vec<String>> {
-    let entity_id = entity.from_bindgen();
-    if let Ok(mask) = world.get_ref(entity_id, animation_binder_mask()) {
-        return Ok(mask.clone());
-    }
-
-    if let Ok(binder) = world.get_ref(entity_id, animation_binder()) {
-        let mut mask: Vec<String> = binder.keys().cloned().collect();
-        mask.sort();
-        world.add_component(entity_id, animation_binder_mask(), mask.clone())?;
-        return Ok(mask);
-    }
-    Ok(Vec::new())
 }
 
 pub fn get_transforms_relative_to(

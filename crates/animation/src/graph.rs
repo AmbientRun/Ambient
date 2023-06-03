@@ -14,7 +14,7 @@ use ambient_ecs::{
         play_clip_from_url, ref_count, retarget_animation_scaled, retarget_model_from_url, speed,
         start_time,
     },
-    parent, query, ComponentDesc, Debuggable, EntityId, Networked, Store, SystemGroup, World,
+    parent, query, ComponentDesc, Debuggable, EntityId, SystemGroup, World,
 };
 use ambient_model::{animation_binder, ModelFromUrl};
 use ambient_std::{
@@ -23,12 +23,10 @@ use ambient_std::{
 };
 use anyhow::Context;
 use glam::{Quat, Vec3};
-use itertools::Itertools;
 
 use crate::{
-    animation_errors, animation_retargeting, AnimationClipFromUrl,
-    AnimationClipRetargetedFromModel, AnimationOutput, AnimationRetargeting, AnimationTarget,
-    AnimationTrackInterpolator, Vec3Field,
+    animation_errors, AnimationClipFromUrl, AnimationClipRetargetedFromModel, AnimationOutput,
+    AnimationRetargeting, AnimationTarget, AnimationTrackInterpolator, Vec3Field,
 };
 
 components!("animation", {
@@ -221,10 +219,10 @@ pub fn animation_graph_systems() -> SystemGroup {
             query(play_clip_from_url().changed())
                 .incl(apply_base_pose())
                 .to_system(|q, world, qs, _| {
-                    for (id, (url)) in q.collect_cloned(world, qs) {
+                    for (id, url) in q.collect_cloned(world, qs) {
                         if let Ok(base_pose) = build_base_pose(world.resource(asset_cache()), &url)
                         {
-                            world.add_component(id, cached_base_pose(), base_pose);
+                            world.add_component(id, cached_base_pose(), base_pose).ok();
                         }
                     }
                 }),
@@ -240,7 +238,7 @@ pub fn animation_graph_systems() -> SystemGroup {
                                 mask_weights.get(i).map(|x| *x).unwrap_or(0.),
                             );
                         }
-                        world.add_component(id, mask(), mask_map);
+                        world.add_component(id, mask(), mask_map).ok();
                     }
                 }),
             query((animation_graph(), children())).to_system(|q, world, qs, _| {
@@ -268,16 +266,18 @@ pub fn animation_graph_systems() -> SystemGroup {
                         &retarget_model,
                         &mut errors,
                     );
-                    world.add_component(id, animation_output(), output);
+                    world.add_component(id, animation_output(), output).ok();
                     if errors.len() > 0 {
-                        world.add_component(id, animation_errors(), errors.join("\n"));
+                        world
+                            .add_component(id, animation_errors(), errors.join("\n"))
+                            .ok();
                     } else if world.has_component(id, animation_errors()) {
-                        world.remove_component(id, animation_errors());
+                        world.remove_component(id, animation_errors()).ok();
                     }
                 }
             }),
             query((apply_animation_graph(), animation_binder())).to_system(|q, world, qs, _| {
-                for (id, (anim_graph_id, binder)) in q.iter(world, qs) {
+                for (_, (anim_graph_id, binder)) in q.iter(world, qs) {
                     if let Ok(outputs) = world.get_ref(*anim_graph_id, animation_output()) {
                         apply_animation_outputs_to_entity(world, binder, outputs);
                     }

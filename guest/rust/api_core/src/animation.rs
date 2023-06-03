@@ -114,6 +114,15 @@ impl PlayClipFromUrlNode {
         get_component(self.0 .0, clip_duration())
     }
     /// If true, the base pose from the model of the animation clip will be applied to the animation
+    ///
+    /// Some animations will only work if the base pose of the character is the same as
+    /// the animations base pose, so we apply the pose from the animations model to make sure they
+    /// correspond
+    ///
+    /// This exists mostly because some FBX animations have pre-rotations, and to apply them to
+    /// character models which don't have the same pre-rotations we need to make sure they're up to sync
+    ///
+    /// I.e. this is mostly relevant for retargeting
     pub fn apply_base_pose(&self, value: bool) {
         if value {
             add_component(self.0 .0, apply_base_pose(), ());

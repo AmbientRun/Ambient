@@ -6,7 +6,7 @@ use ambient_api::{
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     element::to_owned,
-    entity::{add_component, AnimationAction, AnimationController},
+    entity::add_component,
     prelude::*,
 };
 
@@ -57,30 +57,6 @@ pub async fn main() {
 
     println!("Robot duration: {} sec", robot.clip_duration().await);
 
-    // entity::set_animation_controller(
-    //     unit_id,
-    //     AnimationController {
-    //         actions: &[
-    //             AnimationAction {
-    //                 clip_url: &asset::url(START.1).unwrap(),
-    //                 looping: true,
-    //                 weight: 1.,
-    //             },
-    //             AnimationAction {
-    //                 clip_url: &asset::url(END.1).unwrap(),
-    //                 looping: true,
-    //                 weight: 0.,
-    //             },
-    //         ],
-    //         apply_base_pose: false,
-    //     },
-    // );
-
-    // entity::set_animation_action_stack(unit_id, &[entity::AnimationActionStack::Sample(0)]);
-    // // Required for animation blend stack
-    // entity::set_animation_binder_mask(unit_id, &SKELETON);
-    // entity::set_animation_binder_weights(unit_id, LOWER_BODY_MASK_INDEX, &LOWER_BODY_MASK);
-
     let start_url = asset::url(START.1).unwrap();
     let end_url = asset::url(END.1).unwrap();
     let assets: &[&str] = &[&start_url, &end_url];
@@ -95,8 +71,6 @@ pub async fn main() {
 fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_graph: AnimationGraph) -> Element {
     let (blend, set_blend) = hooks.use_state(0.0f32);
     let (masked, set_masked) = hooks.use_state(false);
-    // let (weight, set_weight) = hooks.use_state(0.0f32);
-    // let (time, set_time) = hooks.use_state(0.0f32);
 
     {
         to_owned!(blend_node);
@@ -123,70 +97,12 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_graph: AnimationGraph) -> 
     {
         to_owned!(blend_node);
         hooks.use_effect((blend), move |_, &(blend)| {
-            use entity::AnimationActionStack::*;
-
-            // let s0 = if t == 0.0 {
-            //     Sample(0)
-            // } else {
-            //     let time_absolute = durations[0] * t;
-            //     SampleAbsolute(entity::AnimationSampleAbsolute {
-            //         action_index: 0,
-            //         time_absolute,
-            //     })
-            // };
-
-            // // Alternatively SamplePercentage
-            // let s1 = if t == 0.0 {
-            //     Sample(1)
-            // } else {
-            //     SamplePercentage(entity::AnimationSamplePercentage {
-            //         action_index: 1,
-            //         time_percentage: t,
-            //     })
-            // };
-
-            // if w != 0.0 {
-            //     entity::set_animation_action_stack(
-            //         unit,
-            //         &[
-            //             s0,
-            //             s1,
-            //             Blend(entity::AnimationStackBlend {
-            //                 weight: w,
-            //                 mask: LOWER_BODY_MASK_INDEX,
-            //             }),
-            //         ],
-            //     );
-            // } else {
-            //     entity::set_animation_action_stack(unit, &[s0, s1, Interpolate(i)]);
-            // }
             blend_node.set_weight(blend);
             |_| {}
         });
     }
 
     FocusRoot::el([FlowColumn::el([
-        // FlowRow::el([
-        //     Text::el(START.0),
-        //     Slider {
-        //         value: weight,
-        //         on_change: Some(cb(move |weight| {
-        //             set_weight(weight);
-        //         })),
-        //         min: 0.,
-        //         max: 1.,
-        //         width: 100.,
-        //         logarithmic: false,
-        //         round: Some(2),
-        //         suffix: None,
-        //     }
-        //     .el(),
-        //     Text::el(END.0),
-        //     Text::el(" (interpolate)"),
-        // ])
-        // .with(space_between_items(), 4.0)
-        // .with_background(vec4(0., 0., 0., 0.9))
-        // .with_padding_even(10.),
         FlowRow::el([
             Text::el(START.0),
             Slider {
@@ -239,25 +155,6 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_graph: AnimationGraph) -> 
             })
             .el(),
         ]),
-        // FlowRow::el([
-        //     Text::el("Time"),
-        //     Slider {
-        //         value: time,
-        //         on_change: Some(cb(move |time| {
-        //             set_time(time);
-        //         })),
-        //         min: 0.,
-        //         max: 1.,
-        //         width: 100.,
-        //         logarithmic: false,
-        //         round: Some(2),
-        //         suffix: None,
-        //     }
-        //     .el(),
-        // ])
-        // .with(space_between_items(), 4.0)
-        // .with_background(vec4(0., 0., 0., 0.9))
-        // .with_padding_even(10.),
     ])])
 }
 

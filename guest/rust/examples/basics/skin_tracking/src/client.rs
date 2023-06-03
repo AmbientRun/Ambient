@@ -3,7 +3,6 @@ use ambient_api::{
         camera::aspect_ratio_from_window, prefab::prefab_from_url, primitives::quad,
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
-    entity::{AnimationAction, AnimationController},
     prelude::*,
 };
 
@@ -43,21 +42,17 @@ pub async fn main() {
     entity::set_animation_controller(
         unit_id,
         AnimationController {
-            actions: &[
-                AnimationAction {
-                    clip_url,
-                    looping: true,
-                    weight: 1.,
-                },
-            ],
+            actions: &[AnimationAction {
+                clip_url,
+                looping: true,
+                weight: 1.,
+            }],
             apply_base_pose: false,
         },
     );
 
-
     // NOTE: Work around since the animations components are not exposed in ECS yet
     sleep(2.0).await;
-
 
     BoneTracker::add_system();
     BoneTracker::setup(unit_id);
@@ -65,12 +60,7 @@ pub async fn main() {
 }
 
 #[element_component]
-fn BoneSelect(
-    hooks: &mut Hooks,
-    name: String,
-    unit_id: EntityId,
-    index: usize,
-) -> Element {
+fn BoneSelect(hooks: &mut Hooks, name: String, unit_id: EntityId, index: usize) -> Element {
     let (selected, set_selected) = hooks.use_state(false);
 
     BoneTracker::set_enabled_by_index(unit_id, index, selected);
@@ -94,23 +84,15 @@ fn BoneTracker(_hooks: &mut Hooks, unit_id: EntityId) -> Element {
     let items: Vec<Element> = bones
         .iter()
         .enumerate()
-        .map(|(index, name)| {
-            BoneSelect::el(
-                name.clone(),
-                unit_id,
-                index,
-            )
-        })
+        .map(|(index, name)| BoneSelect::el(name.clone(), unit_id, index))
         .collect();
 
-    FocusRoot::el([
-        ScrollArea::el(
-            ScrollAreaSizing::FitChildrenWidth,
-            FlowColumn::el(items)
-                .with_padding_even(STREET)
-                .with(space_between_items(), 10.),
-        )
-    ])
+    FocusRoot::el([ScrollArea::el(
+        ScrollAreaSizing::FitChildrenWidth,
+        FlowColumn::el(items)
+            .with_padding_even(STREET)
+            .with(space_between_items(), 10.),
+    )])
 }
 
 const BONE_TRACKER_MIN_DISPLACEMENT: f32 = 0.1;
