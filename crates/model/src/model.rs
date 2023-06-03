@@ -463,31 +463,6 @@ impl Model {
             .collect()
     }
 
-    /// Applies the base pose of this model to the loaded model in  the world
-    pub fn apply_base_pose(&self, world: &mut World, id: EntityId) {
-        if let Ok(bindings) = world.get_ref(id, animation_binder()).cloned() {
-            for (node, bind_id) in query(animation_bind_id()).iter(&self.0, None) {
-                if let Some(target) = bindings.get(bind_id) {
-                    self.apply_transform_to_entity(node, world, *target, true);
-                }
-            }
-        }
-    }
-
-    fn apply_transform_to_entity(
-        &self,
-        source_entity: EntityId,
-        world: &mut World,
-        id: EntityId,
-        rotation_only: bool,
-    ) {
-        let mut ed = Entity::new();
-        let mut remove = Vec::new();
-        self.build_transform(source_entity, &mut ed, Some(&mut remove), rotation_only);
-        world.remove_components(id, remove).ok();
-        world.add_components(id, ed).ok();
-    }
-
     fn build_transform(
         &self,
         node: EntityId,
