@@ -38,14 +38,13 @@ impl AnimationGraph {
 pub struct AnimationNode(pub EntityId);
 impl AnimationNode {
     /// tmp
-    pub fn new_play_clip_from_url(url: impl Into<String>) -> Self {
+    pub fn new_play_clip_from_url(url: impl Into<String>, looping: bool) -> Self {
+        use crate::components::core::animation;
         Self(
             Entity::new()
-                .with(
-                    crate::components::core::animation::play_clip_from_url(),
-                    url.into(),
-                )
+                .with(animation::play_clip_from_url(), url.into())
                 .with(name(), "Play clip from url".to_string())
+                .with(animation::looping(), looping)
                 .spawn(),
         )
     }

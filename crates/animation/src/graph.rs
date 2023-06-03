@@ -1,11 +1,17 @@
-use std::collections::{hash_map::Entry, HashMap};
+use std::{
+    collections::{hash_map::Entry, HashMap},
+    time::Duration,
+};
 
 use ambient_core::{asset_cache, time};
 use ambient_ecs::{
     children, components,
-    generated::components::core::animation::{animation_graph, blend, play_clip_from_url},
+    generated::components::core::animation::{
+        animation_graph, apply_animation_graph, blend, looping, play_clip_from_url,
+    },
     query, Debuggable, EntityId, Networked, Store, SystemGroup, World,
 };
+use ambient_model::animation_binder;
 use ambient_std::{
     asset_cache::AsyncAssetKeyExt,
     asset_url::{AnimationAssetType, ModelAssetType, TypedAssetUrl},
@@ -31,7 +37,7 @@ pub struct AnimationOutputKey {
 fn sample_animation_node(
     world: &World,
     node: EntityId,
-    time: f32,
+    mut time: f64,
     retargeting: AnimationRetargeting,
     model: &Option<TypedAssetUrl<ModelAssetType>>,
 ) -> anyhow::Result<HashMap<AnimationOutputKey, AnimationOutput>> {
@@ -46,11 +52,14 @@ fn sample_animation_node(
             Some(value) => value?,
             None => return Ok(Default::default()),
         };
+        if world.get(node, looping()).unwrap_or(false) {
+            time = time % clip.duration() as f64;
+        }
         Ok(clip
             .tracks
             .iter()
             .map(|track| {
-                let value = AnimationTrackInterpolator::new().value(track, time);
+                let value = AnimationTrackInterpolator::new().value(track, time as f32);
                 let key = AnimationOutputKey {
                     target: track.target.clone(),
                     component: track.outputs.component().index(),
@@ -83,12 +92,51 @@ fn sample_animation_node(
     }
 }
 
+fn apply_animation_outputs_to_entity(
+    world: &mut World,
+    binder: HashMap<String, EntityId>,
+    outputs: HashMap<AnimationOutputKey, AnimationOutput>,
+) {
+    for (key, value) in outputs.into_iter() {
+        let target = match &key.target {
+            AnimationTarget::BinderId(id) => match binder.get(id) {
+                Some(id) => *id,
+                None => {
+                    continue;
+                }
+            },
+            AnimationTarget::Entity(id) => *id,
+        };
+        match value {
+            AnimationOutput::Vec3 { component, value } => {
+                world.set(target, component, value).ok();
+            }
+            AnimationOutput::Quat { component, value } => {
+                world.set(target, component, value).ok();
+            }
+            AnimationOutput::Vec3Field {
+                component,
+                field,
+                value,
+            } => {
+                if let Ok(d) = world.get_mut(target, component) {
+                    match field {
+                        Vec3Field::X => d.x = value,
+                        Vec3Field::Y => d.y = value,
+                        Vec3Field::Z => d.z = value,
+                    }
+                }
+            }
+        }
+    }
+}
+
 pub fn animation_graph_systems() -> SystemGroup {
     SystemGroup::new(
         "animation_graph_systems",
         vec![
             query((animation_graph(), children())).to_system(|q, world, qs, _| {
-                let time = world.resource(time()).as_secs_f32();
+                let time = world.resource(time()).as_secs_f64();
                 for (id, (_, children)) in q.collect_cloned(world, qs) {
                     let output = sample_animation_node(
                         world,
@@ -105,6 +153,12 @@ pub fn animation_graph_systems() -> SystemGroup {
                             log::error!("Animation graph error: {:?}", err)
                         }
                     }
+                }
+            }),
+            query((apply_animation_graph(), animation_binder())).to_system(|q, world, qs, _| {
+                for (id, (anim_graph_id, binder)) in q.collect_cloned(world, qs) {
+                    let outputs = world.get_cloned(anim_graph_id, animation_output()).unwrap();
+                    apply_animation_outputs_to_entity(world, binder, outputs);
                 }
             }),
         ],

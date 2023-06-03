@@ -1,10 +1,11 @@
 use ambient_api::{
     animation::{AnimationGraph, AnimationNode},
     components::core::{
-        camera::aspect_ratio_from_window, prefab::prefab_from_url, primitives::quad,
+        animation::apply_animation_graph, camera::aspect_ratio_from_window,
+        prefab::prefab_from_url, primitives::quad,
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
-    entity::{AnimationAction, AnimationController},
+    entity::{add_component, AnimationAction, AnimationController},
     prelude::*,
 };
 
@@ -43,31 +44,33 @@ pub async fn main() {
 
     let anim_graph = AnimationGraph::new(AnimationNode::new_play_clip_from_url(
         asset::url(START.1).unwrap(),
+        true,
     ));
+    add_component(unit_id, apply_animation_graph(), anim_graph.0);
 
-    entity::set_animation_controller(
-        unit_id,
-        AnimationController {
-            actions: &[
-                AnimationAction {
-                    clip_url: &asset::url(START.1).unwrap(),
-                    looping: true,
-                    weight: 1.,
-                },
-                AnimationAction {
-                    clip_url: &asset::url(END.1).unwrap(),
-                    looping: true,
-                    weight: 0.,
-                },
-            ],
-            apply_base_pose: false,
-        },
-    );
+    // entity::set_animation_controller(
+    //     unit_id,
+    //     AnimationController {
+    //         actions: &[
+    //             AnimationAction {
+    //                 clip_url: &asset::url(START.1).unwrap(),
+    //                 looping: true,
+    //                 weight: 1.,
+    //             },
+    //             AnimationAction {
+    //                 clip_url: &asset::url(END.1).unwrap(),
+    //                 looping: true,
+    //                 weight: 0.,
+    //             },
+    //         ],
+    //         apply_base_pose: false,
+    //     },
+    // );
 
-    entity::set_animation_action_stack(unit_id, &[entity::AnimationActionStack::Sample(0)]);
-    // Required for animation blend stack
-    entity::set_animation_binder_mask(unit_id, &SKELETON);
-    entity::set_animation_binder_weights(unit_id, LOWER_BODY_MASK_INDEX, &LOWER_BODY_MASK);
+    // entity::set_animation_action_stack(unit_id, &[entity::AnimationActionStack::Sample(0)]);
+    // // Required for animation blend stack
+    // entity::set_animation_binder_mask(unit_id, &SKELETON);
+    // entity::set_animation_binder_weights(unit_id, LOWER_BODY_MASK_INDEX, &LOWER_BODY_MASK);
 
     let start_url = asset::url(START.1).unwrap();
     let end_url = asset::url(END.1).unwrap();

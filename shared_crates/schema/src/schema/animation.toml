@@ -9,6 +9,12 @@ name = "Animation graph"
 description = "This is the root of an animation graph. The child will be treated as the root node."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
+[components."core::animation::apply_animation_graph"]
+type = "EntityId"
+name = "Apply animation graph"
+description = "Apply the designated animation graph to this entity and its sub-tree."
+attributes = ["MaybeResource", "Debuggable", "Networked"]
+
 [components."core::animation::play_clip_from_url"]
 type = "String"
 name = "Play clip from url"
