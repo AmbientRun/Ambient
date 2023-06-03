@@ -52,7 +52,7 @@ pub async fn main() {
         true,
     );
     let blend = BlendNode::new(&capoeira, &robot, 0.);
-    let anim_graph = AnimationGraph::new(blend.clone());
+    let anim_graph = AnimationGraph::new(&blend);
     add_component(unit_id, apply_animation_graph(), anim_graph.0);
 
     println!("Robot duration: {} sec", robot.clip_duration().await);

@@ -138,9 +138,9 @@ fn sample_animation_node_inner(
 }
 
 fn apply_animation_outputs_to_entity(
-    world: &mut World,
-    binder: HashMap<String, EntityId>,
-    outputs: HashMap<AnimationOutputKey, AnimationOutput>,
+    world: &World,
+    binder: &HashMap<String, EntityId>,
+    outputs: &HashMap<AnimationOutputKey, AnimationOutput>,
 ) {
     for (key, value) in outputs.into_iter() {
         let target = match &key.target {
@@ -154,21 +154,25 @@ fn apply_animation_outputs_to_entity(
         };
         match value {
             AnimationOutput::Vec3 { component, value } => {
-                world.set(target, component, value).ok();
+                if let Ok(v) = world.get_mut_unsafe(target, *component) {
+                    *v = *value;
+                }
             }
             AnimationOutput::Quat { component, value } => {
-                world.set(target, component, value).ok();
+                if let Ok(v) = world.get_mut_unsafe(target, *component) {
+                    *v = *value;
+                }
             }
             AnimationOutput::Vec3Field {
                 component,
                 field,
                 value,
             } => {
-                if let Ok(d) = world.get_mut(target, component) {
+                if let Ok(d) = world.get_mut_unsafe(target, *component) {
                     match field {
-                        Vec3Field::X => d.x = value,
-                        Vec3Field::Y => d.y = value,
-                        Vec3Field::Z => d.z = value,
+                        Vec3Field::X => d.x = *value,
+                        Vec3Field::Y => d.y = *value,
+                        Vec3Field::Z => d.z = *value,
                     }
                 }
             }
@@ -236,9 +240,10 @@ pub fn animation_graph_systems() -> SystemGroup {
                 }
             }),
             query((apply_animation_graph(), animation_binder())).to_system(|q, world, qs, _| {
-                for (id, (anim_graph_id, binder)) in q.collect_cloned(world, qs) {
-                    let outputs = world.get_cloned(anim_graph_id, animation_output()).unwrap();
-                    apply_animation_outputs_to_entity(world, binder, outputs);
+                for (id, (anim_graph_id, binder)) in q.iter(world, qs) {
+                    if let Ok(outputs) = world.get_ref(*anim_graph_id, animation_output()) {
+                        apply_animation_outputs_to_entity(world, binder, outputs);
+                    }
                 }
             }),
             // Cleanup

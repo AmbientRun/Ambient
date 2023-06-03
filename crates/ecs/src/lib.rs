@@ -335,7 +335,7 @@ impl World {
     ) -> Result<&mut T, ECSError> {
         self.get_mut_unsafe(entity_id, component)
     }
-    pub(crate) fn get_mut_unsafe<T: ComponentValue>(
+    pub fn get_mut_unsafe<T: ComponentValue>(
         &self,
         entity_id: EntityId,
         component: Component<T>,
