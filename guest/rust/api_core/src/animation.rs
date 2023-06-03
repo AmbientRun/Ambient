@@ -4,7 +4,8 @@ use crate::{
     components::core::{
         animation::{
             animation_graph, blend, clip_duration, freeze_at_percentage, freeze_at_time,
-            mask_bind_ids, mask_weights, ref_count, start_time,
+            mask_bind_ids, mask_weights, ref_count, retarget_animation_scaled,
+            retarget_model_from_url, start_time,
         },
         app::name,
         ecs::{children, parent},
@@ -47,6 +48,26 @@ impl AnimationGraph {
         let new_root: &AnimationNode = new_root.as_ref();
         add_component(self.0, children(), vec![new_root.0]);
         add_component(new_root.0, parent(), self.0);
+    }
+    /// tmp
+    pub fn set_retargeting(&self, retargeting: AnimationRetargeting) {
+        match retargeting {
+            AnimationRetargeting::None => {
+                remove_component(self.0, retarget_model_from_url());
+                return;
+            }
+            AnimationRetargeting::Skeleton { model_url } => {
+                remove_component(self.0, retarget_animation_scaled());
+                add_component(self.0, retarget_model_from_url(), model_url);
+            }
+            AnimationRetargeting::AnimationScaled {
+                normalize_hip,
+                model_url,
+            } => {
+                add_component(self.0, retarget_animation_scaled(), normalize_hip);
+                add_component(self.0, retarget_model_from_url(), model_url);
+            }
+        }
     }
 }
 /// tmp
@@ -153,5 +174,31 @@ impl BlendNode {
 impl AsRef<AnimationNode> for BlendNode {
     fn as_ref(&self) -> &AnimationNode {
         &self.0
+    }
+}
+
+/// tmp
+#[derive(Debug, Clone)]
+pub enum AnimationRetargeting {
+    /// Bone Translation comes from the animation data, unchanged.
+    None,
+    /// Bone Translation comes from the Target Skeleton's bind pose.
+    Skeleton {
+        /// tmp
+        model_url: String,
+    },
+    /// Bone translation comes from the animation data, but is scaled by the Skeleton's proportions.
+    /// This is the ratio between the bone length of the Target Skeleton (the skeleton the animation
+    /// is being played on), and the Source Skeleton (the skeleton the animation was authored for).
+    AnimationScaled {
+        /// Rotates the Hips bone based on the difference between the rotation the animation models root and the retarget animations root
+        normalize_hip: bool,
+        /// tmp
+        model_url: String,
+    },
+}
+impl Default for AnimationRetargeting {
+    fn default() -> Self {
+        Self::None
     }
 }

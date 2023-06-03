@@ -10,8 +10,8 @@ use ambient_ecs::{
     children, components,
     generated::components::core::animation::{
         animation_graph, apply_animation_graph, blend, clip_duration, freeze_at_percentage,
-        freeze_at_time, looping, mask_bind_ids, mask_weights, play_clip_from_url, ref_count, speed,
-        start_time,
+        freeze_at_time, looping, mask_bind_ids, mask_weights, play_clip_from_url, ref_count,
+        retarget_animation_scaled, retarget_model_from_url, speed, start_time,
     },
     parent, query, Debuggable, EntityId, Networked, Store, SystemGroup, World,
 };
@@ -22,8 +22,9 @@ use ambient_std::{
 };
 
 use crate::{
-    animation_errors, AnimationClipFromUrl, AnimationClipRetargetedFromModel, AnimationOutput,
-    AnimationRetargeting, AnimationTarget, AnimationTrackInterpolator, Vec3Field,
+    animation_errors, animation_retargeting, AnimationClipFromUrl,
+    AnimationClipRetargetedFromModel, AnimationOutput, AnimationRetargeting, AnimationTarget,
+    AnimationTrackInterpolator, Vec3Field,
 };
 
 components!("animation", {
@@ -222,13 +223,26 @@ pub fn animation_graph_systems() -> SystemGroup {
             query((animation_graph(), children())).to_system(|q, world, qs, _| {
                 let time = world.resource(time()).clone();
                 for (id, (_, children)) in q.collect_cloned(world, qs) {
+                    let retarget_model = world
+                        .get_cloned(id, retarget_model_from_url())
+                        .ok()
+                        .and_then(|x| TypedAssetUrl::parse(x).ok());
+                    let retarget_animation_scaled = world.get(id, retarget_animation_scaled()).ok();
                     let mut errors = Default::default();
                     let output = sample_animation_node(
                         world,
                         children[0],
                         time,
-                        AnimationRetargeting::None,
-                        &None,
+                        if retarget_model.is_some() {
+                            if let Some(hip) = retarget_animation_scaled {
+                                AnimationRetargeting::AnimationScaled { normalize_hip: hip }
+                            } else {
+                                AnimationRetargeting::Skeleton
+                            }
+                        } else {
+                            AnimationRetargeting::None
+                        },
+                        &retarget_model,
                         &mut errors,
                     );
                     world.add_component(id, animation_output(), output);

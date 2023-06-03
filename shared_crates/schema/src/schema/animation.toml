@@ -80,3 +80,16 @@ type = "U32"
 name = "Ref count"
 description = "Animation ref count."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
+
+[components."core::animation::retarget_model_from_url"]
+type = "String"
+name = "Retarget Model from URL"
+description = "Retarget the animation using the model at the given url."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::animation::retarget_animation_scaled"]
+type = "Bool"
+name = "Retarget animation scaled"
+description = "Retarget animation scaled. True means normalize hip."
+attributes = ["Debuggable", "Networked", "Store"]
+
