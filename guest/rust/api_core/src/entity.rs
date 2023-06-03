@@ -187,7 +187,7 @@ pub fn remove_components(entity: EntityId, components: &[&dyn UntypedComponent])
     wit::component::remove_components(entity.into_bindgen(), &components)
 }
 
-/// Mutates the component `name` for `entity` using the passed in `mutator`, and returns its value.
+/// Mutates the component `component` for `entity` using the passed in `mutator`, and returns its value.
 ///
 /// This will not set the component if the value is the same, which will prevent change events from
 /// being unnecessarily fired.
@@ -205,7 +205,7 @@ pub fn mutate_component<T: SupportedValue + SupportedValue + Clone + PartialEq>(
     Some(value)
 }
 
-/// Mutates the component `name` for `entity` using the passed in `mutator`, or sets it
+/// Mutates the component `component` for `entity` using the passed in `mutator`, or sets it
 /// to `default` if it doesn't exist, and returns its value.
 ///
 /// This will not set the component if the value is the same, which will prevent change events from
