@@ -23,7 +23,7 @@
             },
             "args": [
                 "run",
-                "guest/rust/examples/ui/auto_editor",
+                "guest/rust/examples/basics/skinmesh",
             ],
             "cwd": "${workspaceFolder}",
             "sourceLanguages": [

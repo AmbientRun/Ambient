@@ -1,4 +1,5 @@
 use crate::{
+    components::core::ecs::children,
     global::{EntityId, Vec3},
     internal::{
         component::{Component, Entity, SupportedValue, UntypedComponent},
@@ -8,7 +9,10 @@ use crate::{
     prelude::block_until,
 };
 
-pub use wit::entity::{AnimationAction, AnimationController, AnimationActionStack, AnimationSampleAbsolute, AnimationSamplePercentage, AnimationStackBlend};
+pub use wit::entity::{
+    AnimationAction, AnimationActionStack, AnimationController, AnimationSampleAbsolute,
+    AnimationSamplePercentage, AnimationStackBlend,
+};
 
 /// Spawns an entity containing the `components`.
 ///
@@ -34,6 +38,16 @@ pub async fn wait_for_component<T: SupportedValue>(entity: EntityId, component: 
 /// Returns the data of the despawned entity, if it existed.
 pub fn despawn(entity: EntityId) -> Option<Entity> {
     wit::entity::despawn(entity.into_bindgen()).from_bindgen()
+}
+/// Despawns `entity` and all of its children.
+pub fn despawn_recursive(entity: EntityId) {
+    if let Some(res) = despawn(entity) {
+        if let Some(children) = res.get_ref(children()) {
+            for c in children {
+                despawn_recursive(c);
+            }
+        }
+    }
 }
 /// Set the animation (controller) for `entity`.
 pub fn set_animation_controller(entity: EntityId, controller: AnimationController) {
@@ -77,7 +91,6 @@ pub struct RawTransforms {
 }
 
 impl RawTransforms {
-
     /// Convert transforms into a list of Mat4
     pub fn into_mat4(self) -> Vec<glam::Mat4> {
         self.transforms.from_bindgen()
@@ -94,10 +107,9 @@ impl RawTransforms {
 pub fn get_transforms_relative_to(list: &[EntityId], origin: EntityId) -> RawTransforms {
     let entities: Vec<wit::types::EntityId> = list.iter().map(|x| x.into_bindgen()).collect();
     RawTransforms {
-        transforms: wit::entity::get_transforms_relative_to(&entities, origin.into_bindgen())
+        transforms: wit::entity::get_transforms_relative_to(&entities, origin.into_bindgen()),
     }
 }
-
 
 /// Checks if the `entity` exists.
 pub fn exists(entity: EntityId) -> bool {

@@ -10,9 +10,11 @@ use ambient_std::{
 use ambient_sys::time::SystemTime;
 use convert_case::{Case, Casing};
 use derive_more::Display;
+use graph::animation_graph_systems;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
+mod graph;
 mod resources;
 mod retargeting;
 
@@ -45,6 +47,11 @@ components!("animation", {
     @[Debuggable, Networked, Store]
     animation_binder_weights: Vec<Vec<f32>>,
 });
+
+pub fn init_all_components() {
+    init_components();
+    graph::init_components();
+}
 
 // Running
 
@@ -561,6 +568,7 @@ pub fn animation_systems() -> SystemGroup {
                     world.add_component(id, animation_errors(), err).unwrap();
                 }
             }),
+            Box::new(animation_graph_systems()),
         ],
     )
 }

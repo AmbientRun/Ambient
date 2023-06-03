@@ -1,0 +1,40 @@
+
+[components."core::animation"]
+name = "Animation"
+description = "Components relating to animations"
+
+[components."core::animation::animation_graph"]
+type = "Empty"
+name = "Animation graph"
+description = "This is the root of an animation graph. The child will be treated as the root node."
+attributes = ["MaybeResource", "Debuggable", "Networked"]
+
+[components."core::animation::play_clip_from_url"]
+type = "String"
+name = "Play clip from url"
+description = "Make this entity a 'play animation clip' node. The value is the url to the clip we'd like to play."
+attributes = ["MaybeResource", "Debuggable", "Networked"]
+
+[components."core::animation::looping"]
+type = "Bool"
+name = "Looping"
+description = "When this is true, the animation clip will repeat infinitely."
+attributes = ["MaybeResource", "Debuggable", "Networked"]
+
+[components."core::animation::start_time"]
+type = "F32"
+name = "Start time"
+description = "Start time of an animation node."
+attributes = ["MaybeResource", "Debuggable", "Networked"]
+
+[components."core::animation::blend"]
+type = "F32"
+name = "Blend"
+description = "Blend two animations together. The values is the blend weight. Use `children` to set the animations. Blend 0 means we only sample from the first animation, 1 means only the second one, and values in between blend between them."
+attributes = ["MaybeResource", "Debuggable", "Networked"]
+
+[components."core::animation::sample_percentage"]
+type = "F32"
+name = "Sample percentage"
+description = "Sample the input animation at a certain percentage of the animation track length."
+attributes = ["MaybeResource", "Debuggable", "Networked"]

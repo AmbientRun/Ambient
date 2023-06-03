@@ -61,7 +61,7 @@ pub fn init_all_components() {
     ambient_ecs::init_components();
     ambient_core::init_all_components();
     ambient_element::init_components();
-    ambient_animation::init_components();
+    ambient_animation::init_all_components();
     ambient_gizmos::init_components();
     ambient_cameras::init_all_components();
     init_components();

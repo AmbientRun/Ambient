@@ -192,6 +192,7 @@ dependencies = [
  "derive_more",
  "glam 0.24.0",
  "itertools",
+ "log",
  "ordered-float",
  "serde",
 ]
