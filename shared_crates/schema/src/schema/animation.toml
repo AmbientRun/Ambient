@@ -27,6 +27,12 @@ name = "Looping"
 description = "When this is true, the animation clip will repeat infinitely."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
+[components."core::animation::clip_duration"]
+type = "F32"
+name = "Clip duration"
+description = "The clip duration is loaded from the clip, and then applied to the entity."
+attributes = ["MaybeResource", "Debuggable", "Networked"]
+
 [components."core::animation::start_time"]
 type = "F32"
 name = "Start time"

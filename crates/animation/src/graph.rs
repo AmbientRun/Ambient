@@ -3,23 +3,23 @@ use std::{
     time::Duration,
 };
 
-use ambient_core::{asset_cache, time};
+use ambient_core::{asset_cache, async_ecs::async_run, runtime, time};
 use ambient_ecs::{
     children, components,
     generated::components::core::animation::{
-        animation_graph, apply_animation_graph, blend, looping, play_clip_from_url,
+        animation_graph, apply_animation_graph, blend, clip_duration, looping, play_clip_from_url,
     },
     query, Debuggable, EntityId, Networked, Store, SystemGroup, World,
 };
 use ambient_model::animation_binder;
 use ambient_std::{
     asset_cache::AsyncAssetKeyExt,
-    asset_url::{AnimationAssetType, ModelAssetType, TypedAssetUrl},
+    asset_url::{AbsAssetUrl, AnimationAssetType, ModelAssetType, TypedAssetUrl},
 };
 
 use crate::{
-    AnimationClipRetargetedFromModel, AnimationOutput, AnimationRetargeting, AnimationTarget,
-    AnimationTrackInterpolator, Vec3Field,
+    AnimationClipFromUrl, AnimationClipRetargetedFromModel, AnimationOutput, AnimationRetargeting,
+    AnimationTarget, AnimationTrackInterpolator, Vec3Field,
 };
 
 components!("animation", {
@@ -135,6 +135,26 @@ pub fn animation_graph_systems() -> SystemGroup {
     SystemGroup::new(
         "animation_graph_systems",
         vec![
+            query(play_clip_from_url().changed()).to_system(|q, world, qs, _| {
+                // Set clip_duration for all play_clip_from_url nodes
+                let runtime = world.resource(runtime()).clone();
+                for (id, url) in q.collect_cloned(world, qs) {
+                    let async_run = world.resource(async_run()).clone();
+                    let assets = world.resource(asset_cache()).clone();
+                    let url = match AbsAssetUrl::parse(url) {
+                        Ok(val) => val,
+                        Err(_) => continue,
+                    };
+                    runtime.spawn(async move {
+                        if let Ok(clip) = AnimationClipFromUrl::new(url, true).get(&assets).await {
+                            let duration = clip.duration();
+                            async_run.run(move |world| {
+                                world.add_component(id, clip_duration(), duration).ok();
+                            });
+                        }
+                    });
+                }
+            }),
             query((animation_graph(), children())).to_system(|q, world, qs, _| {
                 let time = world.resource(time()).as_secs_f64();
                 for (id, (_, children)) in q.collect_cloned(world, qs) {

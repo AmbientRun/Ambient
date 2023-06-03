@@ -1,11 +1,13 @@
+use std::{cell::RefCell, rc::Rc};
+
 use crate::{
     components::core::{
-        animation::{animation_graph, blend},
+        animation::{animation_graph, blend, clip_duration},
         app::name,
         ecs::{children, parent},
     },
     entity::{add_component, despawn_recursive, get_component, set_component},
-    prelude::{Entity, EntityId},
+    prelude::{block_until, Entity, EntityId},
 };
 
 /// tmp
@@ -53,6 +55,27 @@ impl PlayClipFromUrlNode {
                 .with(animation::looping(), looping)
                 .spawn(),
         )
+    }
+    /// Returns None if the duration hasn't been loaded yet
+    pub fn peek_clip_duration(&self) -> Option<f32> {
+        get_component(self.0, clip_duration())
+    }
+    /// Returns the duration of this clip. This is async because it needs to wait for the clip to load before the duration can be returned.
+    pub async fn clip_duration(&self) -> f32 {
+        let res = Rc::new(RefCell::new(0.));
+        {
+            let res = res.clone();
+            block_until(move || match self.peek_clip_duration() {
+                Some(val) => {
+                    *res.borrow_mut() = val;
+                    true
+                }
+                None => false,
+            })
+            .await;
+        }
+        let val: f32 = *res.borrow();
+        val
     }
 }
 impl From<PlayClipFromUrlNode> for AnimationNode {
