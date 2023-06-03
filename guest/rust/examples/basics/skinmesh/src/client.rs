@@ -207,32 +207,50 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_graph: AnimationGraph) -> 
             }
             .el(),
         ]),
-        Button::new("Play animation", move |_| {
-            let robot = PlayClipFromUrlNode::new(
-                asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap(),
-                false,
-            );
-            anim_graph.replace_root(robot);
-        })
-        .el(), // FlowRow::el([
-               //     Text::el("Time"),
-               //     Slider {
-               //         value: time,
-               //         on_change: Some(cb(move |time| {
-               //             set_time(time);
-               //         })),
-               //         min: 0.,
-               //         max: 1.,
-               //         width: 100.,
-               //         logarithmic: false,
-               //         round: Some(2),
-               //         suffix: None,
-               //     }
-               //     .el(),
-               // ])
-               // .with(space_between_items(), 4.0)
-               // .with_background(vec4(0., 0., 0., 0.9))
-               // .with_padding_even(10.),
+        FlowRow::el([
+            Button::new("Play single animation", move |_| {
+                let robot = PlayClipFromUrlNode::new(
+                    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
+                        .unwrap(),
+                    false,
+                );
+                anim_graph.set_root(robot);
+            })
+            .el(),
+            Button::new("Play blend animation", move |_| {
+                anim_graph.set_root(blend_node);
+            })
+            .el(),
+            Button::new("Freeze animation", move |_| {
+                let robot = PlayClipFromUrlNode::new(
+                    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
+                        .unwrap(),
+                    false,
+                );
+                robot.freeze_at_percentage(0.5);
+                anim_graph.set_root(robot);
+            })
+            .el(),
+        ]),
+        // FlowRow::el([
+        //     Text::el("Time"),
+        //     Slider {
+        //         value: time,
+        //         on_change: Some(cb(move |time| {
+        //             set_time(time);
+        //         })),
+        //         min: 0.,
+        //         max: 1.,
+        //         width: 100.,
+        //         logarithmic: false,
+        //         round: Some(2),
+        //         suffix: None,
+        //     }
+        //     .el(),
+        // ])
+        // .with(space_between_items(), 4.0)
+        // .with_background(vec4(0., 0., 0., 0.9))
+        // .with_padding_even(10.),
     ])])
 }
 

@@ -3,7 +3,8 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     components::core::{
         animation::{
-            animation_graph, blend, clip_duration, mask_bind_ids, mask_weights, start_time,
+            animation_graph, blend, clip_duration, freeze_at_percentage, freeze_at_time,
+            mask_bind_ids, mask_weights, start_time,
         },
         app::name,
         ecs::{children, parent},
@@ -28,13 +29,8 @@ impl AnimationGraph {
         Self(graph)
     }
     /// tmp
-    pub fn replace_root(&self, new_root: impl Into<AnimationNode>) {
+    pub fn set_root(&self, new_root: impl Into<AnimationNode>) {
         let new_root: AnimationNode = new_root.into();
-        if let Some(childs) = get_component(self.0, children()) {
-            for c in childs {
-                despawn_recursive(c);
-            }
-        }
         add_component(self.0, children(), vec![new_root.0]);
         add_component(new_root.0, parent(), self.0);
     }
@@ -58,6 +54,14 @@ impl PlayClipFromUrlNode {
                 .with(start_time(), time())
                 .spawn(),
         )
+    }
+    /// Freeze the animation at time
+    pub fn freeze_at_time(&self, time: f32) {
+        add_component(self.0, freeze_at_time(), time);
+    }
+    /// Freeze the animation at time = percentage * duration
+    pub fn freeze_at_percentage(&self, percentage: f32) {
+        add_component(self.0, freeze_at_percentage(), percentage);
     }
     /// Returns None if the duration hasn't been loaded yet
     pub fn peek_clip_duration(&self) -> Option<f32> {

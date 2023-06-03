@@ -39,6 +39,18 @@ name = "Start time"
 description = "Start time of an animation node."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
+[components."core::animation::freeze_at_percentage"]
+type = "F32"
+name = "Freeze at percentage"
+description = "Sample the input animation at a certain percentage of the animation track length."
+attributes = ["MaybeResource", "Debuggable", "Networked"]
+
+[components."core::animation::freeze_at_time"]
+type = "F32"
+name = "Freeze at time"
+description = "Sample the input animation at a certain time (in seconds)."
+attributes = ["MaybeResource", "Debuggable", "Networked"]
+
 [components."core::animation::clip_duration"]
 type = "F32"
 name = "Clip duration"
@@ -61,10 +73,4 @@ attributes = ["MaybeResource", "Debuggable", "Networked"]
 type = { type = "Vec", element_type = "F32" }
 name = "Mask weights"
 description = "Weights for each bind id in `mask_bind_ids`."
-attributes = ["MaybeResource", "Debuggable", "Networked"]
-
-[components."core::animation::sample_percentage"]
-type = "F32"
-name = "Sample percentage"
-description = "Sample the input animation at a certain percentage of the animation track length."
 attributes = ["MaybeResource", "Debuggable", "Networked"]

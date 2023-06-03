@@ -7,8 +7,9 @@ use ambient_core::{asset_cache, async_ecs::async_run, runtime, time};
 use ambient_ecs::{
     children, components,
     generated::components::core::animation::{
-        animation_graph, apply_animation_graph, blend, clip_duration, looping, mask_bind_ids,
-        mask_weights, play_clip_from_url, start_time,
+        animation_graph, apply_animation_graph, blend, clip_duration, freeze_at_percentage,
+        freeze_at_time, looping, mask_bind_ids, mask_weights, play_clip_from_url, speed,
+        start_time,
     },
     query, Debuggable, EntityId, Networked, Store, SystemGroup, World,
 };
@@ -72,13 +73,21 @@ fn sample_animation_node_inner(
             Some(value) => value?,
             None => return Ok(Default::default()),
         };
-        let mut time = match world.get_cloned(node, start_time()) {
-            Ok(st) => (time - st).as_secs_f64(),
-            Err(_) => time.as_secs_f64(),
+        let time = if let Ok(freeze_at_time) = world.get(node, freeze_at_time()) {
+            freeze_at_time as f64
+        } else if let Ok(freeze_at_percentage) = world.get(node, freeze_at_percentage()) {
+            (freeze_at_percentage * clip.duration()) as f64
+        } else {
+            let mut time = match world.get_cloned(node, start_time()) {
+                Ok(st) => (time - st).as_secs_f64(),
+                Err(_) => time.as_secs_f64(),
+            };
+            let speed = world.get_cloned(node, speed()).unwrap_or(1.);
+            if world.get(node, looping()).unwrap_or(false) {
+                time = time % clip.duration() as f64;
+            }
+            time * speed as f64
         };
-        if world.get(node, looping()).unwrap_or(false) {
-            time = time % clip.duration() as f64;
-        }
         Ok(clip
             .tracks
             .iter()
