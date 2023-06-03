@@ -6,7 +6,7 @@ use ambient_guest_bridge::{
         ecs::children,
         rect::{background_color, border_radius},
         layout::{fit_horizontal_children, fit_horizontal_parent, layout_width_to_children, width, height},
-        transform::translation,
+        transform::{translation, local_to_world, local_to_parent, mesh_to_world},
     },
     messages,
 };
@@ -97,28 +97,57 @@ pub fn ScrollArea(
                 .with_default(layout_width_to_children())
         }
         ScrollAreaSizing::MaxScrollDown(_) => {
-            UIBase
-                .el()
+            Element::new()
+            .init(translation(), vec3(0., 0., -0.001))
+            .init_default(local_to_world())
+            .init_default(local_to_parent())
+            .init_default(mesh_to_world())
+            // Rectangle::el()
+                // .with_default(local_to_world())
+                // .with_default(local_to_parent())
+                // .with_default(mesh_to_world())
+                // .with(translation(), vec3(0., 0., 0.0))
+                .with(width(), res.x as f32)
+                .with(height(), 400.)
                 .init_default(children())
                 .children(vec![
                     // TODO: For some reason it didn't work to set the translation on self.0 directly, so had to introduce a Flow in between
-                    MeasureSize::el(
-                        Flow(vec![inner]).el()
-                            .with_default(fit_horizontal_children())
-                            .with(translation(), vec3(0., scroll, 0.)),
-                        cb(move |size| {
-                            set_inner_size(size);
-                        }),
-                    ),
                     Rectangle::el()
                         .with(width(), 10.)
                         .with(height(), bar_height)
                         .with(border_radius(), Vec4::ONE * 4.0)
-                        .with(background_color(), vec4(0.2, 0.2, 0.2, 0.8))
-                        .with(translation(), vec3(res.x as f32-10.0, offset, 0.))
+                        .with(background_color(), vec4(0.6, 0.6, 0.6, 0.6))
+                        .with_default(local_to_parent())
+                        .with_default(local_to_world())
+                        .with(translation(), vec3(res.x as f32-10.0, offset, 0.)),
+
+                    // blocking rectangle, covers the scroll area
+                    Rectangle::el()
+                    .with(width(), res.x as f32)
+                    .with(height(), res.y as f32-400.0)
+                    .with_default(local_to_parent())
+                    .with_default(local_to_world())
+                    .with(background_color(), vec4(0.0, 0.0, 1.0, 1.0))
+                    .with(translation(), vec3(0.0, 400.0, 0.0)),
+
+                    Flow(vec![inner]).el()
+                        // .with(background_color(), vec4(0.0, 0.6, 0.6, 1.0))
+                        // .with_default(fit_horizontal_children())
+                        .with_default(local_to_parent())
+                        .with_default(local_to_world())
+                        .with(translation(), vec3(0., scroll, 0.001)),
+                    // MeasureSize::el(
+                        // Flow(vec![inner]).el()
+                        //     .with_default(fit_horizontal_children())
+                        //     .with_default(local_to_parent())
+                        //     .with(translation(), vec3(0., scroll, 0.)),
+                    //     cb(move |size| {
+                    //         set_inner_size(size);
+                    //     }),
+                    // ),
                 ])
                 .with_default(layout_width_to_children())
-                .with(width(), inner_size.x)
+                // .with(width(), 300.0)
         }
     }
 }

@@ -26,10 +26,15 @@ fn App(_hooks: &mut Hooks) -> Element {
     .with_padding_even(STREET)
     .with(space_between_items(), 10.);
 
-    ScrollArea::el(
-        ScrollAreaSizing::MaxScrollDown(100.0),
-        e
-    )
+    FlowColumn::el([
+        Text::el("First element in FlowColumn; \n\nThe ScrollArea below should clip the height."),
+        ScrollArea::el(
+            ScrollAreaSizing::MaxScrollDown(100.0),
+            e
+        ),
+        Text::el("Second element in FlowColumn; \n\nThe ScrollArea above should clip the height."),
+        Rectangle::el().with(width(), 100.).with(height(), 100.).with(background_color(), vec4(1., 0., 0., 1.)),
+    ])
 }
 
 #[main]
