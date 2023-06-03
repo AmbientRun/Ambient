@@ -9,7 +9,7 @@ use crate::{
         app::name,
         ecs::{children, parent},
     },
-    entity::{add_component, despawn_recursive, get_component, set_component},
+    entity::{add_component, despawn_recursive, get_component, remove_component, set_component},
     prelude::{block_until, time, Entity, EntityId},
 };
 
@@ -29,7 +29,18 @@ impl AnimationGraph {
         Self(graph)
     }
     /// tmp
+    pub fn root(&self) -> Option<AnimationNode> {
+        if let Some(children) = get_component(self.0, children()) {
+            children.get(0).map(|x| AnimationNode(*x))
+        } else {
+            None
+        }
+    }
+    /// tmp
     pub fn set_root(&self, new_root: impl Into<AnimationNode>) {
+        if let Some(root) = self.root() {
+            remove_component(root.0, parent());
+        }
         let new_root: AnimationNode = new_root.into();
         add_component(self.0, children(), vec![new_root.0]);
         add_component(new_root.0, parent(), self.0);
