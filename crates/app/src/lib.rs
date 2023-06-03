@@ -186,10 +186,6 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         .with(procedural_storage(), ProceduralStorage::new())
 }
 
-pub fn get_time_since_app_start(world: &World) -> Duration {
-    *world.resource(time()) - *world.resource(app_start_time())
-}
-
 pub struct AppBuilder {
     pub event_loop: Option<EventLoop<()>>,
     pub asset_cache: Option<AssetCache>,

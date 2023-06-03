@@ -1,5 +1,6 @@
 use std::{any::Any, collections::HashSet, sync::Arc};
 
+use ambient_core::time;
 use ambient_ecs::{EntityId, World};
 use data_encoding::BASE64;
 use parking_lot::RwLock;
@@ -220,11 +221,8 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindi
     ) -> anyhow::Result<()> {
         self.store.data_mut().bindings.set_world(world);
 
-        let time = ambient_app::get_time_since_app_start(world).as_secs_f32();
-
         let result = self.guest_bindings.guest().call_exec(
             &mut self.store,
-            time,
             match message_source {
                 Source::Runtime => wit::guest::SourceParam::Runtime,
                 Source::Server => wit::guest::SourceParam::Server,

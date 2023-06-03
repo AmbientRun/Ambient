@@ -27,16 +27,22 @@ name = "Looping"
 description = "When this is true, the animation clip will repeat infinitely."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
-[components."core::animation::clip_duration"]
+[components."core::animation::speed"]
 type = "F32"
-name = "Clip duration"
-description = "The clip duration is loaded from the clip, and then applied to the entity."
+name = "Speed"
+description = "Animation playback speed. Default is 1, higher values speeds up the animation."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
 [components."core::animation::start_time"]
 type = "F32"
 name = "Start time"
 description = "Start time of an animation node."
+attributes = ["MaybeResource", "Debuggable", "Networked"]
+
+[components."core::animation::clip_duration"]
+type = "F32"
+name = "Clip duration"
+description = "The clip duration is loaded from the clip, and then applied to the entity."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
 [components."core::animation::blend"]

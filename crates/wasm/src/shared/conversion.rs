@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use ambient_animation as animation;
 use ambient_ecs::EntityId;
 use ambient_shared_types::{
@@ -205,6 +207,22 @@ impl FromBindgen for wit::types::Ray {
             origin: self.origin.from_bindgen(),
             dir: self.dir.from_bindgen(),
         }
+    }
+}
+
+impl IntoBindgen for Duration {
+    type Item = wit::types::Duration;
+    fn into_bindgen(self) -> Self::Item {
+        wit::types::Duration {
+            seconds: self.as_secs(),
+            nanoseconds: self.subsec_nanos(),
+        }
+    }
+}
+impl FromBindgen for wit::types::Duration {
+    type Item = Duration;
+    fn from_bindgen(self) -> Self::Item {
+        Duration::new(self.seconds, self.nanoseconds)
     }
 }
 

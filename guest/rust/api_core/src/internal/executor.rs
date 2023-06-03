@@ -4,6 +4,7 @@ use std::{
     future::Future,
     pin::Pin,
     task::{Context, Poll, RawWaker, RawWakerVTable, Waker},
+    time::Duration,
 };
 
 use once_cell::sync::Lazy;
@@ -33,7 +34,6 @@ pub(crate) struct Executor {
     current_callbacks: RefCell<Callbacks>,
     incoming_callbacks: RefCell<Callbacks>,
     callbacks_to_remove: RefCell<Vec<(String, u128)>>,
-    frame_state: RefCell<FrameState>,
 }
 // WebAssembly, at time of writing, is single-threaded. This is a convenient little lie
 // to make it easy to use this in a global context.
@@ -49,19 +49,10 @@ impl Executor {
             current_callbacks: RefCell::new(Default::default()),
             incoming_callbacks: RefCell::new(Default::default()),
             callbacks_to_remove: RefCell::new(Default::default()),
-            frame_state: RefCell::new(Default::default()),
         }
     }
 
-    pub fn execute(
-        &self,
-        frame_state: FrameState,
-        source: wit::guest::Source,
-        message_name: String,
-        message_data: Vec<u8>,
-    ) {
-        *self.frame_state.borrow_mut() = frame_state;
-
+    pub fn execute(&self, source: wit::guest::Source, message_name: String, message_data: Vec<u8>) {
         // Load all pending callbacks.
         {
             let mut incoming = self.incoming_callbacks.borrow_mut();
@@ -125,10 +116,6 @@ impl Executor {
         }
     }
 
-    pub fn frame_state(&self) -> Ref<'_, FrameState> {
-        self.frame_state.borrow()
-    }
-
     pub fn register_callback(&self, event_name: String, callback: EventCallbackFn) -> u128 {
         let uid = random::<u128>();
         self.incoming_callbacks
@@ -153,20 +140,6 @@ impl Executor {
 
     pub fn spawn(&self, fut: EventFuture) {
         self.incoming.borrow_mut().push(fut);
-    }
-}
-
-#[derive(Default)]
-pub struct FrameState {
-    time: f32,
-}
-impl FrameState {
-    pub fn new(time: f32) -> Self {
-        Self { time }
-    }
-
-    pub fn time(&self) -> f32 {
-        self.time
     }
 }
 

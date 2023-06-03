@@ -12,6 +12,7 @@ use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 use itertools::Itertools;
 use paste::paste;
 use slotmap::Key;
+use std::time::Duration;
 
 use crate::shared::bindings::QueryStateMap;
 

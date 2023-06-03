@@ -19,6 +19,7 @@ pub fn tree_to_token_stream(
             Context::Host => {
                 let namespace_path = IdentifierPath(ns.path.split_first().unwrap().1).to_string();
                 quote! {
+                    use std::time::Duration;
                     use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
                     use crate::{EntityId, Debuggable, Networked, Store, Resource, MaybeResource, Name, Description};
                     use ambient_shared_types::{ProceduralMeshHandle, ProceduralTextureHandle, ProceduralSamplerHandle, ProceduralMaterialHandle};
@@ -223,6 +224,7 @@ fn convert_primitive_type_to_rust_type(
         "Uvec2" => Some(quote! {#fully_qualified_prefix UVec2}),
         "Uvec3" => Some(quote! {#fully_qualified_prefix UVec3}),
         "Uvec4" => Some(quote! {#fully_qualified_prefix UVec4}),
+        "Duration" => Some(quote! {#fully_qualified_prefix Duration}),
         "ProceduralMeshHandle" => Some(quote! {#fully_qualified_prefix ProceduralMeshHandle}),
         "ProceduralTextureHandle" => Some(quote! {#fully_qualified_prefix ProceduralTextureHandle}),
         "ProceduralSamplerHandle" => Some(quote! {#fully_qualified_prefix ProceduralSamplerHandle}),

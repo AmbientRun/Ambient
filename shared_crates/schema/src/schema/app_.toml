@@ -17,6 +17,12 @@ How long the previous tick took in seconds.
 Also known as frametime."""
 attributes = ["Debuggable", "Resource"]
 
+[components."core::app::time"]
+type = "Duration"
+name = "Time"
+description = "Absolute time since epoch (Jan 1, 1970)."
+attributes = ["Debuggable", "Resource"]
+
 [components."core::app::element"]
 type = "String"
 name = "Element"

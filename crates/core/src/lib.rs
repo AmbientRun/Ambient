@@ -26,7 +26,7 @@ pub mod window;
 
 pub use ambient_ecs::generated::components::core::app::{
     description, dtime, main_scene, map_seed, name, project_name, selectable, snap_to_ground, tags,
-    ui_scene,
+    time, ui_scene,
 };
 
 components!("app", {
@@ -48,8 +48,6 @@ components!("app", {
     @[Debuggable, Networked, Store]
     game_mode: GameMode,
 
-    @[Resource, Debuggable]
-    time: Duration,
     @[Resource, Debuggable]
     app_start_time: Duration,
     @[Resource, Debuggable]

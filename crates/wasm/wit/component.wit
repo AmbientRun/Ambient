@@ -3,7 +3,7 @@
 //
 // To work around this, we just give it its own interface and have functions that use it in the same interface.
 default interface component {
-    use pkg.types.{entity-id, mat4, quat, vec2, vec3, vec4, uvec2, uvec3, uvec4}
+    use pkg.types.{entity-id, mat4, quat, vec2, vec3, vec4, uvec2, uvec3, uvec4, duration}
     use pkg.client-mesh.{handle as procedural-mesh-handle}
     use pkg.client-texture.{handle as procedural-texture-handle}
     use pkg.client-sampler.{handle as procedural-sampler-handle}
@@ -28,6 +28,7 @@ default interface component {
         type-uvec2(list<uvec2>),
         type-uvec3(list<uvec3>),
         type-uvec4(list<uvec4>),
+        type-duration(list<duration>),
         type-procedural-mesh-handle(list<procedural-mesh-handle>),
         type-procedural-texture-handle(list<procedural-texture-handle>),
         type-procedural-sampler-handle(list<procedural-sampler-handle>),
@@ -53,6 +54,7 @@ default interface component {
         type-uvec2(option<uvec2>),
         type-uvec3(option<uvec3>),
         type-uvec4(option<uvec4>),
+        type-duration(option<duration>),
         type-procedural-mesh-handle(option<procedural-mesh-handle>),
         type-procedural-texture-handle(option<procedural-texture-handle>),
         type-procedural-sampler-handle(option<procedural-sampler-handle>),
@@ -78,6 +80,7 @@ default interface component {
         type-uvec2(uvec2),
         type-uvec3(uvec3),
         type-uvec4(uvec4),
+        type-duration(duration),
         type-procedural-mesh-handle(procedural-mesh-handle),
         type-procedural-texture-handle(procedural-texture-handle),
         type-procedural-sampler-handle(procedural-sampler-handle),

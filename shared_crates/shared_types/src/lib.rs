@@ -23,6 +23,7 @@ macro_rules! primitive_component_definitions {
             (Uvec2, UVec2),
             (Uvec3, UVec3),
             (Uvec4, UVec4),
+            (Duration, Duration),
             (ProceduralMeshHandle, ProceduralMeshHandle),
             (ProceduralTextureHandle, ProceduralTextureHandle),
             (ProceduralSamplerHandle, ProceduralSamplerHandle),
