@@ -217,6 +217,8 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static>
             .with_default(align_vertical_center()),
         ])
         .with(space_between_items(), STREET),
+        1080.0,
+        2160.0
     ))
     .el()
 }

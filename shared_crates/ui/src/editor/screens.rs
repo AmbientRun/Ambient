@@ -97,6 +97,8 @@ fn EditorScreen<T: Debug + Clone + Sync + Send + 'static + Editor>(
             .with_default(align_vertical_center()),
         ])
         .with(space_between_items(), STREET),
+        1080.0,
+        2160.0
     ))
     .el()
 }

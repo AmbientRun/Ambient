@@ -1,17 +1,21 @@
 //! Defines a scroll area.
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
+    // app::{ui_scene, window_logical_size, window_physical_size},
     components::{
         ecs::children,
-        layout::{fit_horizontal_children, fit_horizontal_parent, layout_width_to_children, width},
+        rect::{background_color, border_radius},
+        layout::{fit_horizontal_children, fit_horizontal_parent, layout_width_to_children, width, height},
         transform::translation,
     },
     messages,
 };
-use glam::{vec3, Vec2};
+use glam::{vec3, Vec2, vec4, Vec4};
 
 use crate::{
+    use_window_logical_resolution,
     layout::{Flow, MeasureSize},
+    Rectangle,
     UIBase,
 };
 use ambient_cb::cb;
@@ -33,27 +37,52 @@ pub fn ScrollArea(
     sizing: ScrollAreaSizing,
     /// The child element
     inner: Element,
+    /// Container height for the inner element
+    container_height: f32,
+    /// Maximum scroll down
+    // TODO: This should be calculated from the size of the inner element
+    max_scroll_down: f32,
 ) -> Element {
     let (scroll, set_scroll) = hooks.use_state(0.);
     let (inner_size, set_inner_size) = hooks.use_state(Vec2::ZERO);
+    let res = use_window_logical_resolution(hooks);
+
+    // TODO: This should be calculated from the size of the inner element
+    let container_height = res.y as f32;
+    let height_limit = -max_scroll_down;
+
     hooks.use_runtime_message::<messages::WindowMouseWheel>(move |_world, event| {
         let delta = event.delta;
-        set_scroll(scroll + if event.pixels { delta.y } else { delta.y * 20. });
+        let s = scroll + if event.pixels { delta.y } else { delta.y * 20. };
+        set_scroll(s.clamp(height_limit, 0.0));
     });
     match sizing {
         ScrollAreaSizing::FitChildrenWidth => {
+            let flow = Flow(vec![inner]).el()
+            .with_default(fit_horizontal_children())
+            .with(translation(), vec3(0., scroll, 0.));
+            let bar_height = container_height * container_height / (container_height + max_scroll_down);
+            let scroll_portion = -scroll / max_scroll_down;
+            let offset = scroll_portion * (container_height - bar_height);
             UIBase
                 .el()
                 .init_default(children())
                 .children(vec![
                     // TODO: For some reason it didn't work to set the translation on self.0 directly, so had to introduce a Flow in between
                     MeasureSize::el(
-                        Flow(vec![inner]).el().with_default(fit_horizontal_children()).with(translation(), vec3(0., scroll, 0.)),
+                        flow,
                         cb(move |size| {
                             set_inner_size(size);
                         }),
                     ),
+                    Rectangle::el()
+                    .with(width(), 10.)
+                    .with(height(), bar_height)
+                    .with(border_radius(), Vec4::ONE * 4.0)
+                    .with(background_color(), vec4(0.2, 0.2, 0.2, 0.8))
+                    .with(translation(), vec3(res.x as f32-10.0, offset, 0.))
                 ])
+                .with_default(layout_width_to_children())
                 .with(width(), inner_size.x)
         }
         ScrollAreaSizing::FitParentWidth => {
