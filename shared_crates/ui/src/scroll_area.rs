@@ -27,6 +27,8 @@ pub enum ScrollAreaSizing {
     FitChildrenWidth,
     /// Assumes the width from the parent and propagates it to the children
     FitParentWidth,
+    /// Fit to children width, height is screen and assign a max scroll down
+    MaxScrollDown(f32),
 }
 
 /// A scroll area that can be used to scroll its child.
@@ -36,41 +38,40 @@ pub fn ScrollArea(
     /// The scroll area sizing
     sizing: ScrollAreaSizing,
     /// The child element
-    inner: Element,
-    /// Container height for the inner element
-    container_height: f32,
-    /// Maximum scroll down
-    // TODO: This should be calculated from the size of the inner element
-    max_scroll_down: f32,
+    inner: Element
 ) -> Element {
     let (scroll, set_scroll) = hooks.use_state(0.);
     let (inner_size, set_inner_size) = hooks.use_state(Vec2::ZERO);
     let res = use_window_logical_resolution(hooks);
-
+    let max_scroll_down = match sizing {
+        ScrollAreaSizing::MaxScrollDown(v) => v,
+        _ => 1080.0,
+    };
     // TODO: This should be calculated from the size of the inner element
     let container_height = res.y as f32;
     let height_limit = -max_scroll_down;
-
-    hooks.use_runtime_message::<messages::WindowMouseWheel>(move |_world, event| {
+    let bar_height = container_height * container_height / (container_height + max_scroll_down);
+    let scroll_portion = -scroll / max_scroll_down;
+    let offset = scroll_portion * (container_height - bar_height);
+    hooks.use_runtime_message::<messages::WindowMouseWheel>({
+        let set_scroll = set_scroll.clone();
+        move |_world, event| {
         let delta = event.delta;
         let s = scroll + if event.pixels { delta.y } else { delta.y * 20. };
         set_scroll(s.clamp(height_limit, 0.0));
-    });
+    }});
+
     match sizing {
         ScrollAreaSizing::FitChildrenWidth => {
-            let flow = Flow(vec![inner]).el()
-            .with_default(fit_horizontal_children())
-            .with(translation(), vec3(0., scroll, 0.));
-            let bar_height = container_height * container_height / (container_height + max_scroll_down);
-            let scroll_portion = -scroll / max_scroll_down;
-            let offset = scroll_portion * (container_height - bar_height);
             UIBase
                 .el()
                 .init_default(children())
                 .children(vec![
                     // TODO: For some reason it didn't work to set the translation on self.0 directly, so had to introduce a Flow in between
                     MeasureSize::el(
-                        flow,
+                        Flow(vec![inner]).el()
+                        .with_default(fit_horizontal_children())
+                        .with(translation(), vec3(0., scroll, 0.)),
                         cb(move |size| {
                             set_inner_size(size);
                         }),
@@ -94,6 +95,30 @@ pub fn ScrollArea(
                     Flow(vec![inner]).el().with_default(fit_horizontal_parent()).with(translation(), vec3(0., scroll, 0.)),
                 ])
                 .with_default(layout_width_to_children())
+        }
+        ScrollAreaSizing::MaxScrollDown(_) => {
+            UIBase
+                .el()
+                .init_default(children())
+                .children(vec![
+                    // TODO: For some reason it didn't work to set the translation on self.0 directly, so had to introduce a Flow in between
+                    MeasureSize::el(
+                        Flow(vec![inner]).el()
+                            .with_default(fit_horizontal_children())
+                            .with(translation(), vec3(0., scroll, 0.)),
+                        cb(move |size| {
+                            set_inner_size(size);
+                        }),
+                    ),
+                    Rectangle::el()
+                        .with(width(), 10.)
+                        .with(height(), bar_height)
+                        .with(border_radius(), Vec4::ONE * 4.0)
+                        .with(background_color(), vec4(0.2, 0.2, 0.2, 0.8))
+                        .with(translation(), vec3(res.x as f32-10.0, offset, 0.))
+                ])
+                .with_default(layout_width_to_children())
+                .with(width(), inner_size.x)
         }
     }
 }

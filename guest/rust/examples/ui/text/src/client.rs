@@ -27,10 +27,8 @@ fn App(_hooks: &mut Hooks) -> Element {
     .with(space_between_items(), 10.);
 
     ScrollArea::el(
-        ScrollAreaSizing::FitChildrenWidth,
-        e,
-        600.0,
-        400.0,
+        ScrollAreaSizing::MaxScrollDown(100.0),
+        e
     )
 }
 
