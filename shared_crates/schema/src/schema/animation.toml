@@ -34,7 +34,7 @@ description = "Animation playback speed. Default is 1, higher values speeds up t
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
 [components."core::animation::start_time"]
-type = "F32"
+type = "Duration"
 name = "Start time"
 description = "Start time of an animation node."
 attributes = ["MaybeResource", "Debuggable", "Networked"]

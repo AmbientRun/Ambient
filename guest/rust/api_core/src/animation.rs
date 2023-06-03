@@ -2,12 +2,14 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     components::core::{
-        animation::{animation_graph, blend, clip_duration, mask_bind_ids, mask_weights},
+        animation::{
+            animation_graph, blend, clip_duration, mask_bind_ids, mask_weights, start_time,
+        },
         app::name,
         ecs::{children, parent},
     },
     entity::{add_component, despawn_recursive, get_component, set_component},
-    prelude::{block_until, Entity, EntityId},
+    prelude::{block_until, time, Entity, EntityId},
 };
 
 /// tmp
@@ -53,6 +55,7 @@ impl PlayClipFromUrlNode {
                 .with(animation::play_clip_from_url(), url.into())
                 .with(name(), "Play clip from url".to_string())
                 .with(animation::looping(), looping)
+                .with(start_time(), time())
                 .spawn(),
         )
     }

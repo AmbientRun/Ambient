@@ -87,11 +87,11 @@ pub async fn main() {
     asset::block_until_animations_are_loaded(assets).await;
     let clips = asset::get_animation_asset_metadata(assets);
 
-    App::el(blend).spawn_interactive()
+    App::el(blend, anim_graph).spawn_interactive()
 }
 
 #[element_component]
-fn App(hooks: &mut Hooks, blend_node: BlendNode) -> Element {
+fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_graph: AnimationGraph) -> Element {
     let (blend, set_blend) = hooks.use_state(0.0f32);
     let (masked, set_masked) = hooks.use_state(false);
     // let (weight, set_weight) = hooks.use_state(0.0f32);
@@ -207,25 +207,32 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode) -> Element {
             }
             .el(),
         ]),
-        // FlowRow::el([
-        //     Text::el("Time"),
-        //     Slider {
-        //         value: time,
-        //         on_change: Some(cb(move |time| {
-        //             set_time(time);
-        //         })),
-        //         min: 0.,
-        //         max: 1.,
-        //         width: 100.,
-        //         logarithmic: false,
-        //         round: Some(2),
-        //         suffix: None,
-        //     }
-        //     .el(),
-        // ])
-        // .with(space_between_items(), 4.0)
-        // .with_background(vec4(0., 0., 0., 0.9))
-        // .with_padding_even(10.),
+        Button::new("Play animation", move |_| {
+            let robot = PlayClipFromUrlNode::new(
+                asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap(),
+                false,
+            );
+            anim_graph.replace_root(robot);
+        })
+        .el(), // FlowRow::el([
+               //     Text::el("Time"),
+               //     Slider {
+               //         value: time,
+               //         on_change: Some(cb(move |time| {
+               //             set_time(time);
+               //         })),
+               //         min: 0.,
+               //         max: 1.,
+               //         width: 100.,
+               //         logarithmic: false,
+               //         round: Some(2),
+               //         suffix: None,
+               //     }
+               //     .el(),
+               // ])
+               // .with(space_between_items(), 4.0)
+               // .with_background(vec4(0., 0., 0., 0.9))
+               // .with_padding_even(10.),
     ])])
 }
 

@@ -8,7 +8,7 @@ use ambient_ecs::{
     children, components,
     generated::components::core::animation::{
         animation_graph, apply_animation_graph, blend, clip_duration, looping, mask_bind_ids,
-        mask_weights, play_clip_from_url,
+        mask_weights, play_clip_from_url, start_time,
     },
     query, Debuggable, EntityId, Networked, Store, SystemGroup, World,
 };
@@ -40,7 +40,7 @@ pub struct AnimationOutputKey {
 fn sample_animation_node(
     world: &World,
     node: EntityId,
-    mut time: f64,
+    time: Duration,
     retargeting: AnimationRetargeting,
     model: &Option<TypedAssetUrl<ModelAssetType>>,
     errors: &mut Vec<String>,
@@ -56,7 +56,7 @@ fn sample_animation_node(
 fn sample_animation_node_inner(
     world: &World,
     node: EntityId,
-    mut time: f64,
+    time: Duration,
     retargeting: AnimationRetargeting,
     model: &Option<TypedAssetUrl<ModelAssetType>>,
     errors: &mut Vec<String>,
@@ -71,6 +71,10 @@ fn sample_animation_node_inner(
         let clip = match clip {
             Some(value) => value?,
             None => return Ok(Default::default()),
+        };
+        let mut time = match world.get_cloned(node, start_time()) {
+            Ok(st) => (time - st).as_secs_f64(),
+            Err(_) => time.as_secs_f64(),
         };
         if world.get(node, looping()).unwrap_or(false) {
             time = time % clip.duration() as f64;
@@ -201,7 +205,7 @@ pub fn animation_graph_systems() -> SystemGroup {
                     }
                 }),
             query((animation_graph(), children())).to_system(|q, world, qs, _| {
-                let time = world.resource(time()).as_secs_f64();
+                let time = world.resource(time()).clone();
                 for (id, (_, children)) in q.collect_cloned(world, qs) {
                     let mut errors = Default::default();
                     let output = sample_animation_node(
