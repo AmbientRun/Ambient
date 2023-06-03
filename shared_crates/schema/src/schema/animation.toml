@@ -45,6 +45,18 @@ name = "Blend"
 description = "Blend two animations together. The values is the blend weight. Use `children` to set the animations. Blend 0 means we only sample from the first animation, 1 means only the second one, and values in between blend between them."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
+[components."core::animation::mask_bind_ids"]
+type = { type = "Vec", element_type = "String" }
+name = "Mask bind ids"
+description = "List of bind ids that will be masked."
+attributes = ["MaybeResource", "Debuggable", "Networked"]
+
+[components."core::animation::mask_weights"]
+type = { type = "Vec", element_type = "F32" }
+name = "Mask weights"
+description = "Weights for each bind id in `mask_bind_ids`."
+attributes = ["MaybeResource", "Debuggable", "Networked"]
+
 [components."core::animation::sample_percentage"]
 type = "F32"
 name = "Sample percentage"

@@ -7,7 +7,8 @@ use ambient_core::{asset_cache, async_ecs::async_run, runtime, time};
 use ambient_ecs::{
     children, components,
     generated::components::core::animation::{
-        animation_graph, apply_animation_graph, blend, clip_duration, looping, play_clip_from_url,
+        animation_graph, apply_animation_graph, blend, clip_duration, looping, mask_bind_ids,
+        mask_weights, play_clip_from_url,
     },
     query, Debuggable, EntityId, Networked, Store, SystemGroup, World,
 };
@@ -18,13 +19,15 @@ use ambient_std::{
 };
 
 use crate::{
-    AnimationClipFromUrl, AnimationClipRetargetedFromModel, AnimationOutput, AnimationRetargeting,
-    AnimationTarget, AnimationTrackInterpolator, Vec3Field,
+    animation_errors, AnimationClipFromUrl, AnimationClipRetargetedFromModel, AnimationOutput,
+    AnimationRetargeting, AnimationTarget, AnimationTrackInterpolator, Vec3Field,
 };
 
 components!("animation", {
     @[Debuggable]
     animation_output: HashMap<AnimationOutputKey, AnimationOutput>,
+    @[Debuggable]
+    mask: HashMap<String, f32>,
 });
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -40,6 +43,23 @@ fn sample_animation_node(
     mut time: f64,
     retargeting: AnimationRetargeting,
     model: &Option<TypedAssetUrl<ModelAssetType>>,
+    errors: &mut Vec<String>,
+) -> HashMap<AnimationOutputKey, AnimationOutput> {
+    match sample_animation_node_inner(world, node, time, retargeting, model, errors) {
+        Ok(val) => val,
+        Err(err) => {
+            errors.push(format!("Node {}: {:?}", node, err));
+            Default::default()
+        }
+    }
+}
+fn sample_animation_node_inner(
+    world: &World,
+    node: EntityId,
+    mut time: f64,
+    retargeting: AnimationRetargeting,
+    model: &Option<TypedAssetUrl<ModelAssetType>>,
+    errors: &mut Vec<String>,
 ) -> anyhow::Result<HashMap<AnimationOutputKey, AnimationOutput>> {
     if let Ok(url) = world.get_cloned(node, play_clip_from_url()) {
         let clip = AnimationClipRetargetedFromModel {
@@ -73,11 +93,21 @@ fn sample_animation_node(
         if children.len() != 2 {
             anyhow::bail!("Animation blend node needs to have exactly two children");
         }
-        let mut output = sample_animation_node(world, children[0], time, retargeting, model)?;
-        let right = sample_animation_node(world, children[1], time, retargeting, model)?;
+        let mut output =
+            sample_animation_node(world, children[0], time, retargeting, model, errors);
+        let right = sample_animation_node(world, children[1], time, retargeting, model, errors);
+        let mask = world.get_cloned(node, mask()).ok();
         for (key, value) in right.into_iter() {
-            match output.entry(key) {
+            match output.entry(key.clone()) {
                 Entry::Occupied(mut o) => {
+                    let mut blend_weight = blend_weight;
+                    if let Some(mask) = &mask {
+                        if let AnimationTarget::BinderId(bind_id) = &key.target {
+                            if let Some(weight) = mask.get(bind_id) {
+                                blend_weight = *weight;
+                            }
+                        }
+                    }
                     let left = o.get_mut();
                     *left = left.mix(value, blend_weight);
                 }
@@ -155,23 +185,38 @@ pub fn animation_graph_systems() -> SystemGroup {
                     });
                 }
             }),
+            query(mask_bind_ids().changed())
+                .optional_changed(mask_weights())
+                .to_system(|q, world, qs, _| {
+                    for (id, bind_ids) in q.collect_cloned(world, qs) {
+                        let mut mask_map = HashMap::new();
+                        let mask_weights = world.get_cloned(id, mask_weights()).unwrap_or_default();
+                        for (i, bind_id) in bind_ids.iter().enumerate() {
+                            mask_map.insert(
+                                bind_id.clone(),
+                                mask_weights.get(i).map(|x| *x).unwrap_or(0.),
+                            );
+                        }
+                        world.add_component(id, mask(), mask_map);
+                    }
+                }),
             query((animation_graph(), children())).to_system(|q, world, qs, _| {
                 let time = world.resource(time()).as_secs_f64();
                 for (id, (_, children)) in q.collect_cloned(world, qs) {
+                    let mut errors = Default::default();
                     let output = sample_animation_node(
                         world,
                         children[0],
                         time,
                         AnimationRetargeting::None,
                         &None,
+                        &mut errors,
                     );
-                    match output {
-                        Ok(output) => {
-                            world.add_component(id, animation_output(), output);
-                        }
-                        Err(err) => {
-                            log::error!("Animation graph error: {:?}", err)
-                        }
+                    world.add_component(id, animation_output(), output);
+                    if errors.len() > 0 {
+                        world.add_component(id, animation_errors(), errors.join("\n"));
+                    } else if world.has_component(id, animation_errors()) {
+                        world.remove_component(id, animation_errors());
                     }
                 }
             }),

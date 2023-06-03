@@ -93,8 +93,28 @@ pub async fn main() {
 #[element_component]
 fn App(hooks: &mut Hooks, blend_node: BlendNode) -> Element {
     let (blend, set_blend) = hooks.use_state(0.0f32);
+    let (masked, set_masked) = hooks.use_state(false);
     // let (weight, set_weight) = hooks.use_state(0.0f32);
     // let (time, set_time) = hooks.use_state(0.0f32);
+
+    hooks.use_effect((masked), move |_, &(masked)| {
+        if masked {
+            blend_node.set_mask(vec![
+                ("Hips".to_string(), 0.),
+                ("LeftFoot".to_string(), 0.),
+                ("LeftLeg".to_string(), 0.),
+                ("LeftToeBase".to_string(), 0.),
+                ("LeftUpLeg".to_string(), 0.),
+                ("RightFoot".to_string(), 0.),
+                ("RightLeg".to_string(), 0.),
+                ("RightToeBase".to_string(), 0.),
+                ("RightUpLeg".to_string(), 0.),
+            ]);
+        } else {
+            blend_node.set_mask(vec![]);
+        }
+        |_| {}
+    });
 
     hooks.use_effect((blend), move |_, &(blend)| {
         use entity::AnimationActionStack::*;
@@ -164,9 +184,7 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode) -> Element {
             Text::el(START.0),
             Slider {
                 value: blend,
-                on_change: Some(cb(move |blend| {
-                    set_blend(blend);
-                })),
+                on_change: Some(set_blend),
                 min: 0.,
                 max: 1.,
                 width: 100.,
@@ -181,6 +199,14 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode) -> Element {
         .with(space_between_items(), 4.0)
         .with_background(vec4(0., 0., 0., 0.9))
         .with_padding_even(10.),
+        FlowRow::el([
+            Text::el("Masked"),
+            Checkbox {
+                value: masked,
+                on_change: set_masked,
+            }
+            .el(),
+        ]),
         // FlowRow::el([
         //     Text::el("Time"),
         //     Slider {
@@ -202,6 +228,19 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode) -> Element {
         // .with_padding_even(10.),
     ])])
 }
+
+const LOWER_BODY_MASK_IDS: [&str; 9] = [
+    // Lower body for convenience
+    "Hips",
+    "LeftFoot",
+    "LeftLeg",
+    "LeftToeBase",
+    "LeftUpLeg",
+    "RightFoot",
+    "RightLeg",
+    "RightToeBase",
+    "RightUpLeg",
+];
 
 const LOWER_BODY_MASK_INDEX: u32 = 0;
 const LOWER_BODY_MASK: [f32; 9] = [1.0; 9];

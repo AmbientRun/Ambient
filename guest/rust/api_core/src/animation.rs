@@ -2,11 +2,14 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     components::core::{
-        animation::{animation_graph, blend, clip_duration},
+        animation::{animation_graph, blend, clip_duration, mask_bind_ids, mask_weights},
         app::name,
         ecs::{children, parent},
     },
-    entity::{add_component, despawn_recursive, get_component, set_component},
+    entity::{
+        add_component, despawn_recursive, get_component, remove_component, remove_components,
+        set_component,
+    },
     prelude::{block_until, Entity, EntityId},
 };
 
@@ -109,6 +112,12 @@ impl BlendNode {
     /// tmp
     pub fn set_weight(&self, weight: f32) {
         set_component(self.0, blend(), weight);
+    }
+    /// Sets the mask to a list of (bind_id, weights)
+    pub fn set_mask(&self, weights: Vec<(String, f32)>) {
+        let (bind_ids, weights): (Vec<_>, Vec<_>) = weights.into_iter().unzip();
+        add_component(self.0, mask_bind_ids(), bind_ids);
+        add_component(self.0, mask_weights(), weights);
     }
 }
 impl From<BlendNode> for AnimationNode {
