@@ -1,0 +1,40 @@
+[project]
+id = "forest"
+name = "A forest"
+version = "0.0.1"
+
+[components]
+rotating_sun = { type = "Bool", name = "Rotating sun", description = "Whether or not rotate the sun automatically" }
+tile_seed = { type = "I32", name = "Tile seed", description = "The seed of the tile" }
+tile_x = { type = "I32", name = "Tile x", description = "The x index of the tile" }
+tile_y = { type = "I32", name = "Tile y", description = "The y index of the tile" }
+tile_size = { type = "F32", name = "Tile seed", description = "The size of the tree" }
+tree_seed = { type = "I32", name = "Tree seed", description = "The seed of the tree" }
+tree_trunk_radius = { type = "F32", name = "Tree trunk radius", description = "The radius of the trunk" }
+tree_trunk_height = { type = "F32", name = "Tree trunk height", description = "The height of the trunk" }
+tree_trunk_segments = { type = "U32", name = "Tree trunk segments", description = "The number of segments of the trunk" }
+tree_branch_length = { type = "F32", name = "Tree branches lenght", description = "The lenght of the branches" }
+tree_branch_angle = { type = "F32", name = "Tree branches angle", description = "The angle of the branches" }
+tree_branch_segments = { type = "U32", name = "Tree branch segments", description = "The number of segments of the branches" }
+tree_foliage_radius = { type = "F32", name = "Tree foliage radius", description = "The radius of the foliage" }
+tree_foliage_density = { type = "U32", name = "Tree foliage density", description = "The number of foliage" }
+tree_foliage_segments = { type = "U32", name = "Tree foliage segments", description = "The number of segments of the foliage" }
+
+
+[concepts.tile.components]
+tile_seed = 123
+tile_size = 1.0
+tile_x = 0
+tile_y = 0
+
+[concepts.tree.components]
+tree_seed = 123
+tree_trunk_radius = 3.0
+tree_trunk_height = 15.0
+tree_trunk_segments = 8
+tree_branch_length = 1.0
+tree_branch_angle = 1.0
+tree_branch_segments = 3
+tree_foliage_radius = 2.0
+tree_foliage_density = 5
+tree_foliage_segments = 5
