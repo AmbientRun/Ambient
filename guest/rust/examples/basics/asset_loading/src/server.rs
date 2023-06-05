@@ -30,7 +30,7 @@ pub async fn main() {
         entity::set_component(
             cube_id,
             rotation(),
-            Quat::from_axis_angle(Vec3::X, time().sin()),
+            Quat::from_axis_angle(Vec3::X, time().as_secs_f64().sin() as f32),
         );
     });
 }

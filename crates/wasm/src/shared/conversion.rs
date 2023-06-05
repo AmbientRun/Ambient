@@ -1,12 +1,11 @@
-use ambient_animation as animation;
+use std::time::Duration;
+
 use ambient_ecs::EntityId;
 use ambient_shared_types::{
     procedural_storage_handle_definitions, ProceduralMaterialHandle, ProceduralMeshHandle,
     ProceduralSamplerHandle, ProceduralTextureHandle,
 };
-use ambient_std::asset_url::TypedAssetUrl;
 use ambient_std::shapes::Ray;
-use ambient_sys::time::SystemTime;
 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 use paste::paste;
 use ulid::Ulid;
@@ -208,6 +207,22 @@ impl FromBindgen for wit::types::Ray {
     }
 }
 
+impl IntoBindgen for Duration {
+    type Item = wit::types::Duration;
+    fn into_bindgen(self) -> Self::Item {
+        wit::types::Duration {
+            seconds: self.as_secs(),
+            nanoseconds: self.subsec_nanos(),
+        }
+    }
+}
+impl FromBindgen for wit::types::Duration {
+    type Item = Duration;
+    fn from_bindgen(self) -> Self::Item {
+        Duration::new(self.seconds, self.nanoseconds)
+    }
+}
+
 macro_rules! bindgen_passthrough {
     ($type:ty) => {
         impl IntoBindgen for $type {
@@ -286,67 +301,6 @@ where
     type Item = Vec<T::Item>;
     fn from_bindgen(self) -> Self::Item {
         self.iter().map(|i| i.clone().from_bindgen()).collect()
-    }
-}
-
-impl FromBindgen for wit::entity::AnimationAction {
-    type Item = animation::AnimationAction;
-    fn from_bindgen(self) -> Self::Item {
-        animation::AnimationAction {
-            clip: animation::AnimationClipRef::FromModelAsset(
-                TypedAssetUrl::parse(self.clip_url).unwrap(),
-            ),
-            time: animation::AnimationActionTime::Offset {
-                start_time: SystemTime::now()
-                    .duration_since(SystemTime::UNIX_EPOCH)
-                    .unwrap(),
-                speed: 1.0,
-            },
-            looping: self.looping,
-            weight: self.weight,
-        }
-    }
-}
-
-impl FromBindgen for wit::entity::AnimationController {
-    type Item = animation::AnimationController;
-    fn from_bindgen(self) -> Self::Item {
-        animation::AnimationController {
-            actions: self.actions.into_iter().map(|s| s.from_bindgen()).collect(),
-            apply_base_pose: self.apply_base_pose,
-        }
-    }
-}
-
-impl FromBindgen for wit::entity::AnimationActionStack {
-    type Item = animation::AnimationActionStack;
-    fn from_bindgen(self) -> Self::Item {
-        match self {
-            wit::entity::AnimationActionStack::Interpolate(weight) => {
-                animation::AnimationActionStack::Interpolate { weight }
-            }
-            wit::entity::AnimationActionStack::Blend(blend) => {
-                animation::AnimationActionStack::Blend {
-                    weight: blend.weight,
-                    mask: blend.mask,
-                }
-            }
-            wit::entity::AnimationActionStack::Sample(action_index) => {
-                animation::AnimationActionStack::Sample { action_index }
-            }
-            wit::entity::AnimationActionStack::SampleAbsolute(sample) => {
-                animation::AnimationActionStack::SampleAbsolute {
-                    action_index: sample.action_index,
-                    time_absolute: sample.time_absolute,
-                }
-            }
-            wit::entity::AnimationActionStack::SamplePercentage(sample) => {
-                animation::AnimationActionStack::SamplePercentage {
-                    action_index: sample.action_index,
-                    time_percentage: sample.time_percentage,
-                }
-            }
-        }
     }
 }
 

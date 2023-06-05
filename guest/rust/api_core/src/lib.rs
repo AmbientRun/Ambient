@@ -31,6 +31,9 @@ pub mod player;
 /// Helpful imports that almost all Ambient projects will use.
 pub mod prelude;
 
+/// Animation functions
+pub mod animation;
+
 /// Internal implementation details.
 mod internal;
 

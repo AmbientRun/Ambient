@@ -54,8 +54,6 @@ pub use ambient_ecs::generated::components::core::model::{
 components!("model", {
     @[Networked, Store]
     animation_binder: HashMap<String, EntityId>,
-    @[Debuggable, Networked, Store]
-    animation_bind_id: String,
 
     model: Arc<Model>,
 

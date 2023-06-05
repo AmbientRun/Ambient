@@ -1,4 +1,4 @@
-use std::{future::Future, task::Poll};
+use std::{future::Future, task::Poll, time::Duration};
 
 use crate::{
     components, entity,
@@ -6,10 +6,9 @@ use crate::{
     internal::executor::EXECUTOR,
 };
 
-/// The time, relative to when the application started, in seconds.
-/// This can be used to time how long something takes.
-pub fn time() -> f32 {
-    EXECUTOR.frame_state().time()
+/// The time, relative to Jan 1, 1970.
+pub fn time() -> Duration {
+    entity::get_component(entity::resources(), components::core::app::abs_time()).unwrap()
 }
 
 /// The length of the previous frame, in seconds.
@@ -71,6 +70,6 @@ pub async fn block_until(condition: impl Fn() -> bool) {
 ///
 /// This must be used with `.await` in either an `async fn` or an `async` block.
 pub async fn sleep(seconds: f32) {
-    let target_time = time() + seconds;
+    let target_time = time() + Duration::from_secs_f32(seconds);
     block_until(|| time() > target_time).await
 }

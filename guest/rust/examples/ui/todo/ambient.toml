@@ -18,7 +18,7 @@ description = "Item in the todo list."
 attributes = ["Networked", "Debuggable"]
 
 [components.todo_time]
-type = "U32"
+type = "Duration"
 name = "Todo time"
 description = "The time the todo was created."
 attributes = ["Networked", "Debuggable"]

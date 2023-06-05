@@ -23,3 +23,4 @@ derive_more = { workspace = true }
 convert_case = { workspace = true }
 itertools = { workspace = true }
 anyhow = { workspace = true }
+log = { workspace = true }

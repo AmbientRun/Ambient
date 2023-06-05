@@ -1,17 +1,14 @@
 use ambient_api::{
+    animation::{get_bone_by_bind_id, AnimationPlayer, BindId, BlendNode, PlayClipFromUrlNode},
     components::core::{
-        camera::aspect_ratio_from_window, prefab::prefab_from_url, primitives::quad,
+        animation::apply_animation_player, camera::aspect_ratio_from_window, model::model_loaded,
+        prefab::prefab_from_url, primitives::quad, transform::reset_scale,
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
-    entity::{AnimationAction, AnimationController},
+    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
+    element::to_owned,
+    entity::{add_child, add_component, wait_for_component},
     prelude::*,
 };
-
-const END: (&str, &str) = (
-    "Robot Hip Hop Dance",
-    "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
-);
-const START: (&str, &str) = ("Capoeira", "assets/Capoeira.fbx/animations/mixamo.com.anim");
 
 #[main]
 pub async fn main() {
@@ -40,206 +37,111 @@ pub async fn main() {
         .with(name(), "Peasant".to_string())
         .spawn();
 
-    entity::set_animation_controller(
-        unit_id,
-        AnimationController {
-            actions: &[
-                AnimationAction {
-                    clip_url: &asset::url(START.1).unwrap(),
-                    looping: true,
-                    weight: 1.,
-                },
-                AnimationAction {
-                    clip_url: &asset::url(END.1).unwrap(),
-                    looping: true,
-                    weight: 0.,
-                },
-            ],
-            apply_base_pose: false,
-        },
+    let capoeira = PlayClipFromUrlNode::new(
+        asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
     );
+    let robot = PlayClipFromUrlNode::new(
+        asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let blend = BlendNode::new(&capoeira, &robot, 0.);
+    let anim_player = AnimationPlayer::new(&blend);
+    add_component(unit_id, apply_animation_player(), anim_player.0);
 
-    entity::set_animation_action_stack(unit_id, &[entity::AnimationActionStack::Sample(0)]);
-    // Required for animation blend stack
-    entity::set_animation_binder_mask(unit_id, &SKELETON);
-    entity::set_animation_binder_weights(unit_id, LOWER_BODY_MASK_INDEX, &LOWER_BODY_MASK);
+    println!("Robot duration: {} sec", robot.clip_duration().await);
 
-    let start_url = asset::url(START.1).unwrap();
-    let end_url = asset::url(END.1).unwrap();
-    let assets: &[&str] = &[&start_url, &end_url];
+    wait_for_component(unit_id, model_loaded()).await;
 
-    asset::block_until_animations_are_loaded(assets).await;
-    let clips = asset::get_animation_asset_metadata(assets);
+    // This demonstrates how to attach an entity to a bone
+    let left_foot = get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
+    let ball = Entity::new()
+        .with_merge(make_transformable())
+        .with_merge(make_sphere())
+        .with(scale(), vec3(0.3, 0.3, 0.3))
+        .with(color(), vec4(0.0, 1.0, 0.0, 1.0))
+        .with_default(local_to_parent())
+        .with_default(reset_scale())
+        .spawn();
+    add_child(left_foot, ball);
 
-    App::el(unit_id, [clips[0].duration, clips[1].duration]).spawn_interactive()
+    App::el(blend, anim_player).spawn_interactive()
 }
-
-
 
 #[element_component]
-fn App(hooks: &mut Hooks, unit: EntityId, durations: [f32; 2]) -> Element {
+fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -> Element {
     let (blend, set_blend) = hooks.use_state(0.0f32);
-    let (weight, set_weight) = hooks.use_state(0.0f32);
-    let (time, set_time) = hooks.use_state(0.0f32);
+    let (masked, set_masked) = hooks.use_state(false);
 
-    hooks.use_effect((blend, weight, time), move |_, &(w, i, t)| {
-            use entity::AnimationActionStack::*;
-
-            let s0 = if t == 0.0 {
-                Sample(0)
+    {
+        to_owned!(blend_node);
+        hooks.use_effect(masked, move |_, &masked| {
+            if masked {
+                blend_node.set_mask_humanoid_lower_body(0.);
             } else {
-                let time_absolute = durations[0] * t;
-                SampleAbsolute(entity::AnimationSampleAbsolute {
-                    action_index: 0,
-                    time_absolute,
-                })
-            };
-
-            // Alternatively SamplePercentage
-            let s1 = if t == 0.0 {
-                Sample(1)
-            } else {
-                SamplePercentage(entity::AnimationSamplePercentage {
-                    action_index: 1,
-                    time_percentage: t,
-                })
-            };
-
-            if w != 0.0 {
-                entity::set_animation_action_stack(unit, &[s0, s1, Blend(entity::AnimationStackBlend {
-                    weight: w,
-                    mask: LOWER_BODY_MASK_INDEX,
-                })]);
-            } else {
-                entity::set_animation_action_stack(unit, &[s0, s1, Interpolate(i)]);
+                blend_node.set_mask(vec![]);
             }
-        |_| {}
-    });
+            |_| {}
+        });
+    }
 
+    {
+        to_owned!(blend_node);
+        hooks.use_effect(blend, move |_, &blend| {
+            blend_node.set_weight(blend);
+            |_| {}
+        });
+    }
 
-    FocusRoot::el([
-        FlowColumn::el([
-            FlowRow::el([
-                Text::el(START.0),
-                Slider {
-                    value: weight,
-                    on_change: Some(cb(move |weight| {
-                        set_weight(weight);
-                    })),
-                    min: 0.,
-                    max: 1.,
-                    width: 100.,
-                    logarithmic: false,
-                    round: Some(2),
-                    suffix: None,
-                }
-                .el(),
-                Text::el(END.0),
-                Text::el(" (interpolate)"),
-            ])
-            .with(space_between_items(), 4.0)
-            .with_background(vec4(0., 0., 0., 0.9))
-            .with_padding_even(10.),
-            FlowRow::el([
-                Text::el(START.0),
-                Slider {
-                    value: blend,
-                    on_change: Some(cb(move |blend| {
-                        set_blend(blend);
-                    })),
-                    min: 0.,
-                    max: 1.,
-                    width: 100.,
-                    logarithmic: false,
-                    round: Some(2),
-                    suffix: None,
-                }
-                .el(),
-                Text::el(END.0),
-                Text::el(" (blend lower body)"),
-            ])
-            .with(space_between_items(), 4.0)
-            .with_background(vec4(0., 0., 0., 0.9))
-            .with_padding_even(10.),
-            FlowRow::el([
-                Text::el("Time"),
-                Slider {
-                    value: time,
-                    on_change: Some(cb(move |time| {
-                        set_time(time);
-                    })),
-                    min: 0.,
-                    max: 1.,
-                    width: 100.,
-                    logarithmic: false,
-                    round: Some(2),
-                    suffix: None,
-                }
-                .el(),
-            ])
-            .with(space_between_items(), 4.0)
-            .with_background(vec4(0., 0., 0., 0.9))
-            .with_padding_even(10.),
+    FocusRoot::el([FlowColumn::el([
+        FlowRow::el([
+            Text::el("Capeira"),
+            Slider {
+                value: blend,
+                on_change: Some(set_blend),
+                min: 0.,
+                max: 1.,
+                width: 100.,
+                logarithmic: false,
+                round: Some(2),
+                suffix: None,
+            }
+            .el(),
+            Text::el("Robot"),
         ])
-    ])
+        .with(space_between_items(), 4.0)
+        .with_background(vec4(0., 0., 0., 0.9))
+        .with_padding_even(10.),
+        FlowRow::el([
+            Text::el("Masked"),
+            Checkbox {
+                value: masked,
+                on_change: set_masked,
+            }
+            .el(),
+        ]),
+        FlowRow::el([
+            Button::new("Play single animation", move |_| {
+                let robot = PlayClipFromUrlNode::new(
+                    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
+                        .unwrap(),
+                );
+                robot.looping(false);
+                anim_player.play(robot);
+            })
+            .el(),
+            Button::new("Play blend animation", move |_| {
+                anim_player.play(blend_node.clone());
+            })
+            .el(),
+            Button::new("Freeze animation", move |_| {
+                let robot = PlayClipFromUrlNode::new(
+                    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
+                        .unwrap(),
+                );
+                robot.looping(false);
+                robot.freeze_at_percentage(0.5);
+                anim_player.play(robot);
+            })
+            .el(),
+        ]),
+    ])])
 }
-
-const LOWER_BODY_MASK_INDEX: u32 = 0;
-const LOWER_BODY_MASK: [f32; 9] = [1.0; 9];
-const SKELETON: [&str; 52] = [
-    // Lower body for convenience
-    "Hips",
-    "LeftFoot",
-    "LeftLeg",
-    "LeftToeBase",
-    "LeftUpLeg",
-    "RightFoot",
-    "RightLeg",
-    "RightToeBase",
-    "RightUpLeg",
-
-    // Upper
-    "Head",
-    "LeftArm",
-    "LeftForeArm",
-    "LeftHand",
-    "LeftHandIndex1",
-    "LeftHandIndex2",
-    "LeftHandIndex3",
-    "LeftHandMiddle1",
-    "LeftHandMiddle2",
-    "LeftHandMiddle3",
-    "LeftHandPinky1",
-    "LeftHandPinky2",
-    "LeftHandPinky3",
-    "LeftHandRing1",
-    "LeftHandRing2",
-    "LeftHandRing3",
-    "LeftHandThumb1",
-    "LeftHandThumb2",
-    "LeftHandThumb3",
-    "LeftShoulder",
-    "Neck",
-    "RightArm",
-    "RightForeArm",
-    "RightHand",
-    "RightHandIndex1",
-    "RightHandIndex2",
-    "RightHandIndex3",
-    "RightHandMiddle1",
-    "RightHandMiddle2",
-    "RightHandMiddle3",
-    "RightHandPinky1",
-    "RightHandPinky2",
-    "RightHandPinky3",
-    "RightHandRing1",
-    "RightHandRing2",
-    "RightHandRing3",
-    "RightHandThumb1",
-    "RightHandThumb2",
-    "RightHandThumb3",
-    "RightShoulder",
-    "Spine",
-    "Spine1",
-    "Spine2",
-];

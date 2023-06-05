@@ -1,16 +1,16 @@
-use std::{future::Future, sync::Arc, time::Duration};
+use std::{future::Future, sync::Arc};
 
 use ambient_cameras::assets_camera_systems;
 pub use ambient_core::gpu;
 use ambient_core::{
-    app_start_time, asset_cache,
+    asset_cache,
     async_ecs::async_ecs_systems,
     bounding::bounding_systems,
     camera::camera_systems,
     frame_index,
     gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
     hierarchy::dump_world_hierarchy_to_tmp_file,
-    name, remove_at_time_system, runtime, time,
+    name, refcount_system, remove_at_time_system, runtime,
     transform::TransformSystem,
     window::{
         cursor_position, get_window_sizes, window_logical_size, window_physical_size,
@@ -61,7 +61,7 @@ pub fn init_all_components() {
     ambient_ecs::init_components();
     ambient_core::init_all_components();
     ambient_element::init_components();
-    ambient_animation::init_components();
+    ambient_animation::init_all_components();
     ambient_gizmos::init_components();
     ambient_cameras::init_all_components();
     init_components();
@@ -96,6 +96,7 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
             Box::new(TimeResourcesSystem::new()),
             Box::new(async_ecs_systems()),
             remove_at_time_system(),
+            refcount_system(),
             Box::new(WorldEventsSystem),
             if full {
                 Box::new(ambient_input::picking::frame_systems())
@@ -161,7 +162,7 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         .with(frame_index(), 0_usize)
         .with(ambient_core::window::cursor_position(), Vec2::ZERO)
         .with(ambient_core::app_start_time(), current_time)
-        .with(ambient_core::time(), current_time)
+        .with(ambient_core::abs_time(), current_time)
         .with(ambient_core::dtime(), 0.)
         .with(
             gpu_world(),
@@ -184,10 +185,6 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         )
         .with(ambient_core::window::window_ctl(), resources.ctl_tx)
         .with(procedural_storage(), ProceduralStorage::new())
-}
-
-pub fn get_time_since_app_start(world: &World) -> Duration {
-    *world.resource(time()) - *world.resource(app_start_time())
 }
 
 pub struct AppBuilder {

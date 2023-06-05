@@ -9,5 +9,5 @@ default interface guest {
     }
 
     init: func()
-    exec: func(time: float32, message-source: source, message-name: string, message-data: list<u8>)
+    exec: func(message-source: source, message-name: string, message-data: list<u8>)
 }

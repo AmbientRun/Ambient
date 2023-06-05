@@ -20,7 +20,6 @@ members = [
     "examples/basics/raw_text",
     "examples/basics/samplers",
     "examples/basics/screen_ray",
-    "examples/basics/skin_tracking",
     "examples/basics/skinmesh",
     "examples/basics/sun",
     "examples/basics/third_person_camera",

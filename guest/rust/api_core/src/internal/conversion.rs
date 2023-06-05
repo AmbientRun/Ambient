@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::{
     global::{
         Mat4, ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
@@ -163,6 +165,22 @@ impl FromBindgen for wit::types::Mat4 {
             self.z.from_bindgen(),
             self.w.from_bindgen(),
         )
+    }
+}
+
+impl IntoBindgen for Duration {
+    type Item = wit::types::Duration;
+    fn into_bindgen(self) -> Self::Item {
+        wit::types::Duration {
+            seconds: self.as_secs(),
+            nanoseconds: self.subsec_nanos(),
+        }
+    }
+}
+impl FromBindgen for wit::types::Duration {
+    type Item = Duration;
+    fn from_bindgen(self) -> Self::Item {
+        Duration::new(self.seconds, self.nanoseconds)
     }
 }
 

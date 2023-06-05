@@ -12,7 +12,9 @@ use ambient_core::{
         translation,
     },
 };
-use ambient_ecs::{query, ComponentDesc, Entity, EntityId, World};
+use ambient_ecs::{
+    generated::components::core::animation::bind_id, query, ComponentDesc, Entity, EntityId, World,
+};
 use ambient_gpu::gpu::Gpu;
 use ambient_renderer::{
     cast_shadows, color, gpu_primitives_lod, gpu_primitives_mesh,
@@ -32,8 +34,8 @@ use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    animation_bind_id, animation_binder, is_model_node, model_animatable, model_loaded,
-    model_skin_ix, model_skins, pbr_renderer_primitives_from_url,
+    animation_binder, is_model_node, model_animatable, model_loaded, model_skin_ix, model_skins,
+    pbr_renderer_primitives_from_url,
 };
 
 #[derive(Default)]
@@ -255,7 +257,7 @@ impl Model {
                         .into_iter()
                         .filter_map(|(id, entity)| {
                             self.0
-                                .get_ref(id, animation_bind_id())
+                                .get_ref(id, bind_id())
                                 .ok()
                                 .map(|bid| (bid.clone(), entity))
                         })
@@ -411,10 +413,10 @@ impl Model {
             .iter(&self.0, None)
             .find_map(|x| if x.1 == node_name { Some(x.0) } else { None })
     }
-    pub fn get_entity_id_by_bind_id(&self, bind_id: &str) -> Option<EntityId> {
-        query(animation_bind_id())
+    pub fn get_entity_id_by_bind_id(&self, bid: &str) -> Option<EntityId> {
+        query(bind_id())
             .iter(&self.0, None)
-            .find_map(|x| if x.1 == bind_id { Some(x.0) } else { None })
+            .find_map(|x| if x.1 == bid { Some(x.0) } else { None })
     }
     /// Remove matrices that doesn't need to be there for when the model is stored on disk
     pub fn remove_non_storage_matrices(&mut self) {
@@ -451,30 +453,16 @@ impl Model {
             AABB::unions(&aabbs).unwrap_or(AABB::ZERO),
         );
     }
-
-    /// Applies the base pose of this model to the loaded model in  the world
-    pub fn apply_base_pose(&self, world: &mut World, id: EntityId) {
-        if let Ok(bindings) = world.get_ref(id, animation_binder()).cloned() {
-            for (node, bind_id) in query(animation_bind_id()).iter(&self.0, None) {
-                if let Some(target) = bindings.get(bind_id) {
-                    self.apply_transform_to_entity(node, world, *target, true);
-                }
-            }
-        }
-    }
-
-    fn apply_transform_to_entity(
-        &self,
-        source_entity: EntityId,
-        world: &mut World,
-        id: EntityId,
-        rotation_only: bool,
-    ) {
-        let mut ed = Entity::new();
-        let mut remove = Vec::new();
-        self.build_transform(source_entity, &mut ed, Some(&mut remove), rotation_only);
-        world.remove_components(id, remove).ok();
-        world.add_components(id, ed).ok();
+    /// Builds the base pose of this model
+    pub fn build_base_pose(&self) -> HashMap<String, Entity> {
+        query(bind_id())
+            .iter(&self.0, None)
+            .map(|(id, bind_id)| {
+                let mut ed = Entity::new();
+                self.build_transform(id, &mut ed, None, true);
+                (bind_id.clone(), ed)
+            })
+            .collect()
     }
 
     fn build_transform(
