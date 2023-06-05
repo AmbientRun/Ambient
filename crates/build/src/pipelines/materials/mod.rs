@@ -107,16 +107,16 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
                     .relative_path(
                         mat.source
                             .clone()
-                            .map(|x| x.path())
+                            .map(|x| x.decoded_path())
                             .unwrap_or_else(|| ctx.pipeline_path()),
                     )
                     .join("decal");
                 let out_model_url = ctx.out_root().join(&model_path).unwrap();
                 let mut model_crate = ModelCrate::new();
                 let decal_path = out_model_url
-                    .path()
+                    .decoded_path()
                     .join("prefabs")
-                    .relative(mat_url.path());
+                    .relative(mat_url.decoded_path());
                 model_crate.create_prefab(
                     Entity::new()
                         .with(decal(), decal_path.into())
@@ -370,7 +370,7 @@ impl AsyncAssetKey<AssetResult<Arc<AbsAssetUrl>>> for PipeImage {
         } else {
             None
         };
-        let path = ctx.in_root.relative_path(self.source.path());
+        let path = ctx.in_root.relative_path(self.source.decoded_path());
         let mut data = Cursor::new(Vec::new());
         tokio::task::block_in_place(|| {
             if let Some(transform) = &self.transform {

@@ -80,5 +80,35 @@
     },
     "launch-chrome": {
         "cmd": "./scripts/launch_chrome.sh"
+    },
+    "example-with-space": {
+        "cmd": [
+            "cargo",
+            "run",
+            "--features",
+            "tracing",
+            "--",
+            "run",
+            "--clean-build",
+            "./guest/rust/examples/breaking basics/with space"
+        ],
+        "env": {
+            "RUST_LOG": "ambient_build=debug,ambient_std=trace,info"
+        }
+    },
+    "example-assets": {
+        "cmd": [
+            "cargo",
+            "run",
+            "--features",
+            "tracing",
+            "--",
+            "run",
+            "--clean-build",
+            "./guest/rust/examples/basics/asset_loading/"
+        ],
+        "env": {
+            "RUST_LOG": "ambient_build=debug,ambient_std=trace,info"
+        }
     }
 }

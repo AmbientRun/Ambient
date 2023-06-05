@@ -26,9 +26,9 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
         |file| {
             file.extension() == Some("json".to_string())
                 && file
-                    .path()
+                    .decoded_path()
                     .to_string()
-                    .contains(&format!("_{}_", file.path().file_stem().unwrap()))
+                    .contains(&format!("_{}_", file.decoded_path().file_stem().unwrap()))
         },
         move |ctx, file| {
             let config = config.clone();
@@ -58,7 +58,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                     &ctx.out_root()
                         .join(
                             ctx.in_root()
-                                .relative_path(&file.path().join("0").join("material")),
+                                .relative_path(&file.decoded_path().join("0").join("material")),
                         )
                         .unwrap()
                         .as_directory(),
@@ -71,8 +71,10 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                     let id = asset_id_from_url(&file.push(i.to_string()).unwrap());
                     let mut asset_crate = pipeline.produce_crate(ctx.assets()).await.unwrap();
 
-                    let out_model_path =
-                        ctx.in_root().relative_path(file.path()).join(i.to_string());
+                    let out_model_path = ctx
+                        .in_root()
+                        .relative_path(file.decoded_path())
+                        .join(i.to_string());
                     config
                         .apply(&ctx, &mut asset_crate, &out_model_path)
                         .await?;
@@ -145,7 +147,11 @@ pub async fn object_pipelines_from_quixel_json(
         let config = config.clone();
         let ending = ending.to_string();
         async move {
-            let pattern = format!("{}**/*{}", in_root_url.as_directory().path(), ending);
+            let pattern = format!(
+                "{}**/*{}",
+                in_root_url.as_directory().decoded_path(),
+                ending
+            );
             let file = ctx.files.find_file_res(&pattern)?.clone();
             Ok(AssetUrl::from(
                 PipeImage::new(file)
@@ -189,7 +195,7 @@ pub async fn object_pipelines_from_quixel_json(
                 ctx.assets(),
                 ctx.files.find_file_res(format!(
                     "{}**/*_LOD5.fbx",
-                    in_root_url.as_directory().path()
+                    in_root_url.as_directory().decoded_path()
                 ))?,
             )
             .await?;
@@ -207,7 +213,7 @@ pub async fn object_pipelines_from_quixel_json(
                                     .files
                                     .find_file_res(format!(
                                         "{}**/*_LOD{i}.fbx",
-                                        in_root_url.as_directory().path()
+                                        in_root_url.as_directory().decoded_path()
                                     ))?
                                     .clone(),
                                 normalize: true,

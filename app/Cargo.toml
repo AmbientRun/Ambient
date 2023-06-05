@@ -50,6 +50,7 @@ ambient_shared_types = { path = "../shared_crates/shared_types", features = [
 tracing-tree = { workspace = true, optional = true }
 tracing-subscriber = { workspace = true, optional = true }
 tracing-log = { workspace = true, optional = true }
+time = { workspace = true }
 
 anyhow = { workspace = true }
 bincode = { workspace = true }

@@ -25,7 +25,9 @@ ambient_renderer = { path = "../renderer" }
 ambient_procedurals = { path = "../procedurals" }
 
 ambient_project = { path = "../../shared_crates/project" }
-ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] }
+ambient_shared_types = { path = "../../shared_crates/shared_types", features = [
+    "native",
+] }
 
 physxx = { path = "../../libs/physxx" }
 
@@ -55,6 +57,7 @@ tokio = { workspace = true }
 winit = { workspace = true }
 wgpu = { workspace = true }
 ulid = { workspace = true }
+tracing = { workspace = true }
 
 wasmtime = { workspace = true }
 wasmtime-wasi = { workspace = true }
@@ -63,6 +66,7 @@ wasi-cap-std-sync = { workspace = true }
 wit-component = { workspace = true }
 
 [target.'cfg(windows)'.build-dependencies]
+tracing = { workspace = true }
 dunce = "1.0"
 
 [build-dependencies]
