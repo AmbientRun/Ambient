@@ -48,9 +48,11 @@ pub(crate) async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     let start_time = Instant::now();
 
     // Get tests.
-    let tests = parse_tests_from_manifest()?;
+    let tests = tokio::spawn(parse_tests_from_manifest());
 
     run("Build ambient", build_package, &["ambient"], true).await?;
+
+    let tests = tests.await??;
 
     // Filter tests.
     let tests = if let Some(prefix) = &gi.prefix {
@@ -104,9 +106,12 @@ struct Manifest {
     tests: Vec<String>,
 }
 
-fn parse_tests_from_manifest() -> anyhow::Result<Vec<String>> {
+async fn parse_tests_from_manifest() -> anyhow::Result<Vec<String>> {
     let manifest_path = PathBuf::from(TEST_BASE_PATH).join(TEST_MANIFEST);
-    let manifest = std::fs::read_to_string(&manifest_path)?;
+    let manifest = tokio::fs::read_to_string(&manifest_path)
+        .await
+        .context("Failed to read test manifest")?;
+
     let manifest: Manifest = toml::from_str(&manifest)?;
     log::info!(
         "Read manifest from '{}', parsed {} tests",
@@ -151,7 +156,12 @@ fn update_tests(i: usize, name: &str) -> (&'static str, Vec<String>) {
         "--http-interface-port".to_string(),
         http_port,
         "golden-image-update".to_string(),
-        // Todo: See notes on --wait-seconds from above.
+        // Todo: Ideally this waiting should be unnecessary, because
+        // we only care about rendering the first frame of the test,
+        // no matter how long it takes to start the test. Being able
+        // to stall the renderer before everything has been loaded
+        // eliminates the need for timeouts and reduces test
+        // flakiness.
         "--timeout-seconds".to_string(),
         "30.0".to_string(),
     ];

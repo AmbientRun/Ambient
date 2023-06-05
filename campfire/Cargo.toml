@@ -22,10 +22,11 @@ cargo_toml = "0.15"
 guppy = "0.15"
 indicatif = "0.17.3"
 tokio = { version = "1.0", features = [
+    "fs",
+    "macros",
+    "parking_lot",
     "process",
     "rt",
-    "parking_lot",
-    "macros",
 ] }
 futures = "0.3"
 num_cpus = "1.15.0"
