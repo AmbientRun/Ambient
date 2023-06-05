@@ -162,7 +162,7 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         .with(frame_index(), 0_usize)
         .with(ambient_core::window::cursor_position(), Vec2::ZERO)
         .with(ambient_core::app_start_time(), current_time)
-        .with(ambient_core::time(), current_time)
+        .with(ambient_core::abs_time(), current_time)
         .with(ambient_core::dtime(), 0.)
         .with(
             gpu_world(),

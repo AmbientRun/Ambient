@@ -1,4 +1,3 @@
-use ambient_api::global::time;
 use ambient_api::{
     components::core::{
         app::main_scene,

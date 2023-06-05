@@ -8,7 +8,7 @@ use crate::{
 
 /// The time, relative to Jan 1, 1970.
 pub fn time() -> Duration {
-    entity::get_component(entity::resources(), components::core::app::time()).unwrap()
+    entity::get_component(entity::resources(), components::core::app::abs_time()).unwrap()
 }
 
 /// The length of the previous frame, in seconds.

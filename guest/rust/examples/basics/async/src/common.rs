@@ -1,4 +1,3 @@
-use ambient_api::global::time;
 use ambient_api::prelude::*;
 
 pub async fn main() {

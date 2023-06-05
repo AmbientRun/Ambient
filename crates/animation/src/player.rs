@@ -3,7 +3,7 @@ use std::{
     time::Duration,
 };
 
-use ambient_core::{asset_cache, async_ecs::async_run, runtime, time};
+use ambient_core::{abs_time, asset_cache, async_ecs::async_run, runtime};
 use ambient_ecs::{
     children, components,
     generated::components::core::animation::{
@@ -242,7 +242,7 @@ pub fn animation_player_systems() -> SystemGroup {
                     }
                 }),
             query((animation_player(), children())).to_system(|q, world, qs, _| {
-                let time = world.resource(time()).clone();
+                let time = world.resource(abs_time()).clone();
                 for (id, (_, children)) in q.collect_cloned(world, qs) {
                     let retarget_model = world
                         .get_cloned(id, retarget_model_from_url())

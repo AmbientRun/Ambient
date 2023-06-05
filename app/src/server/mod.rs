@@ -1,6 +1,6 @@
 use std::{collections::HashMap, net::SocketAddr, path::Path, sync::Arc};
 
-use ambient_core::{app_start_time, asset_cache, dtime, name, no_sync, project_name, time};
+use ambient_core::{abs_time, app_start_time, asset_cache, dtime, name, no_sync, project_name};
 use ambient_ecs::{
     dont_store, world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup,
     World, WorldEventsSystem, WorldStreamCompEvent,
@@ -234,7 +234,7 @@ fn create_resources(assets: AssetCache) -> Entity {
     let now = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap();
-    server_resources.set(time(), now);
+    server_resources.set(abs_time(), now);
     server_resources.set(app_start_time(), now);
     server_resources.set(dtime(), 1. / 60.);
 

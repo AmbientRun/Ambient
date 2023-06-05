@@ -6,7 +6,6 @@ use crate::{
     },
     concepts::{make_player_camera_state, make_player_state},
 };
-use ambient_api::global::time;
 use ambient_api::{
     components::core::{
         app::main_scene,

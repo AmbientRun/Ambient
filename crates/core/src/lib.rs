@@ -26,8 +26,8 @@ pub mod transform;
 pub mod window;
 
 pub use ambient_ecs::generated::components::core::app::{
-    description, dtime, main_scene, map_seed, name, project_name, ref_count, selectable,
-    snap_to_ground, tags, time, ui_scene,
+    abs_time, description, dtime, main_scene, map_seed, name, project_name, ref_count, selectable,
+    snap_to_ground, tags, ui_scene,
 };
 
 components!("app", {
@@ -85,7 +85,7 @@ impl SyncAssetKey<Arc<winit::window::Window>> for WindowKey {}
 
 pub fn remove_at_time_system() -> DynSystem {
     query((remove_at_time(),)).to_system(|q, world, qs, _| {
-        let time = *world.resource(self::time());
+        let time = *world.resource(self::abs_time());
         for (id, (remove_at_time,)) in q.collect_cloned(world, qs) {
             if time >= remove_at_time {
                 world.despawn(id);
@@ -151,7 +151,7 @@ impl System for TimeResourcesSystem {
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap();
         world
-            .set(world.resource_entity(), self::time(), time)
+            .set(world.resource_entity(), self::abs_time(), time)
             .unwrap();
         world
             .set(world.resource_entity(), self::dtime(), dtime)
