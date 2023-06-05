@@ -1,5 +1,3 @@
-use std::{cell::RefCell, rc::Rc};
-
 use crate::{
     components::core::{
         animation::{
@@ -12,8 +10,9 @@ use crate::{
     },
     entity::{
         add_component, despawn, get_component, mutate_component, remove_component, set_component,
+        wait_for_component,
     },
-    prelude::{block_until, time, Entity, EntityId},
+    prelude::{time, Entity, EntityId},
 };
 
 /// This plays animations, and can handle blending and masking of animations together to create
@@ -145,24 +144,19 @@ impl PlayClipFromUrlNode {
     }
     /// Returns the duration of this clip. This is async because it needs to wait for the clip to load before the duration can be returned.
     pub async fn clip_duration(&self) -> f32 {
-        let res = Rc::new(RefCell::new(0.));
-        {
-            let res = res.clone();
-            block_until(move || match self.peek_clip_duration() {
-                Some(val) => {
-                    *res.borrow_mut() = val;
-                    true
-                }
-                None => false,
-            })
-            .await;
-        }
-        let val: f32 = *res.borrow();
-        val
+        wait_for_component(self.0 .0, clip_duration())
+            .await
+            .unwrap_or_default()
     }
     /// Returns None if the clip hasn't been loaded yet
     pub fn peek_bind_ids(&self) -> Option<Vec<String>> {
         get_component(self.0 .0, bind_ids())
+    }
+    /// Returns the bind ids of this clip. This is async because it needs to wait for the clip to load before the bind ids can be returned.
+    pub async fn bind_ids(&self) -> Vec<String> {
+        wait_for_component(self.0 .0, bind_ids())
+            .await
+            .unwrap_or_default()
     }
     /// Wait until the clip has been loaded
     pub async fn wait_until_loaded(&self) {

@@ -19,7 +19,9 @@ async fn main() {
     let mut is_playing = true;
 
     let url_from_server =
-        entity::wait_for_component(entity::synchronized_resources(), track_audio_url()).await;
+        entity::wait_for_component(entity::synchronized_resources(), track_audio_url())
+            .await
+            .unwrap();
     println!("url_from_server: {:?}", &url_from_server);
 
     // this is just to demo that you can load a sound from a url from the server

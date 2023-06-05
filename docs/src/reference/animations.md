@@ -1,11 +1,11 @@
 # Animations
 
-See the [skinmesh example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/skinmesh) for a complete example.
+See the [skinmesh example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/skinmesh) for a full runable example.
 
 ## Animation assets
 
-To work with animations, you'll usually need some animation clips to work with. A good way to get started is
-by going to [Mixamo](https://www.mixamo.com/#/) and download some characters and animation clips there.
+To work with animations, you'll need some animation clips to work with. A good way to get started is
+by going to [Mixamo](https://www.mixamo.com/#/) and download some characters and animations there.
 
 Put your models and animations in your `assets` folder in your project, and make sure you have a `pipeline.json`
 which can process models and animations, for instance something like this:
@@ -18,25 +18,28 @@ which can process models and animations, for instance something like this:
 }
 ```
 
-By running `ambient build` you can build the animations. You can browse the `build/assets` folder to see what
+### Finding the clip urls
+
+By running `ambient build` you build the assets. You can browse the `build/assets` folder to see what
 the build command produced.
+
+If we look at the [skinmesh example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/skinmesh), you can see that we have an animation called `assets/Capoeira.fbx`. If you build this project,
+you'll see that it produces a file called `build/assets/Capoeira.fbx/animations/mixamo.com.anim`. If you
+remove the `build/` part of that, you will have the animation clip url; i.e. `assets/Capoeira.fbx/animations/mixamo.com.anim`.
 
 ## Animation player
 
 To play animations, you'll need an `AnimationPlayer`. The animation player plays a graph of animations nodes;
-currently the two nodes that exist are PlayClipFromUrlNode and BlendNode. Here's a basic example:
+currently the two nodes that exist are `PlayClipFromUrlNode` and `BlendNode`. Here's an example of how to set
+it up to play a single animation:
 
 ```rust
 let clip = PlayClipFromUrlNode::new(
     asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
 );
 let player = AnimationPlayer::new(&clip);
-```
 
-To find out what the clip url is, you can look in your `build/assets/` folder.
-
-You then need to also apply the animation to a model, for instance:
-```rust
+// Let's load a character model to apply the animation to.
 Entity::new()
     .with_merge(make_transformable())
     .with(
@@ -51,7 +54,7 @@ The same animation player can be attached to multiple models.
 
 ### Blending animations together
 
-You can also blend two animations together:
+To blend two animations together you can use the `BlendNode`:
 
 ```rust
 let capoeira = PlayClipFromUrlNode::new(
@@ -68,8 +71,8 @@ This will blend capoeira (30%) and robot (70%) together, to form one output anim
 
 ### Masked blending
 
-You might want to mask blending as well, to for instance play one animation for the torso,
-and one for the lower body:
+It's quite common two want to play one animation for the torso and another for the lower
+body of a character model. To achieve this we use masking:
 
 ```rust
 let capoeira = PlayClipFromUrlNode::new(
@@ -84,6 +87,12 @@ let anim_player = AnimationPlayer::new(&blend);
 ```
 
 This will play the capoeira at the upper body, and the robot dance for the lower body.
+
+The value you pass in is the masked blend weight. In the previous example, we saw that a blend
+weight of 0.3 would play 30% of the capoeira animation. The same concept can be applied _per-bone_
+instead. So for instance, setting `BlendNode::new(&capoeira, &robot, 0.3)` and then
+`blend.set_mask_humanoid_lower_body(0.9)` means that all bones play capoeira 30%, except for the
+lower body which plays it 90%.
 
 ### Attaching things to a skeleton
 
@@ -102,6 +111,8 @@ let ball = Entity::new()
     .spawn();
 add_child(left_foot, ball);
 ```
+
+This will spawn a ball and attach it to the left foot of the character.
 
 ### Pre-loading animations
 
