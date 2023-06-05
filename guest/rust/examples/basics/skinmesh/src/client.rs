@@ -40,11 +40,9 @@ pub async fn main() {
 
     let capoeira = PlayClipFromUrlNode::new(
         asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
-        true,
     );
     let robot = PlayClipFromUrlNode::new(
         asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap(),
-        true,
     );
     let blend = BlendNode::new(&capoeira, &robot, 0.);
     let anim_player = AnimationPlayer::new(&blend);
@@ -129,8 +127,8 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
                 let robot = PlayClipFromUrlNode::new(
                     asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
                         .unwrap(),
-                    false,
                 );
+                robot.looping(false);
                 anim_player.play(robot);
             })
             .el(),
@@ -142,8 +140,8 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
                 let robot = PlayClipFromUrlNode::new(
                     asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
                         .unwrap(),
-                    false,
                 );
+                robot.looping(false);
                 robot.freeze_at_percentage(0.5);
                 anim_player.play(robot);
             })
