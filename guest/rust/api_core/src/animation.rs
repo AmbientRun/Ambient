@@ -19,7 +19,7 @@ use crate::{
 #[derive(Debug, Clone, Copy)]
 pub struct AnimationPlayer(pub EntityId);
 impl AnimationPlayer {
-    /// tmp
+    /// Create a new animation player, with `root` as the currently playing node
     pub fn new(root: impl AsRef<AnimationNode>) -> Self {
         let root: &AnimationNode = root.as_ref();
         let player = Entity::new()
@@ -30,7 +30,6 @@ impl AnimationPlayer {
         add_component(root.0, parent(), player);
         Self(player)
     }
-    /// tmp
     fn root(&self) -> Option<EntityId> {
         if let Some(children) = get_component(self.0, children()) {
             children.get(0).map(|x| *x)
@@ -38,7 +37,7 @@ impl AnimationPlayer {
             None
         }
     }
-    /// tmp
+    /// Replaces the current root node of the animation player with a new node
     pub fn play(&self, node: impl AsRef<AnimationNode>) {
         if let Some(root) = self.root() {
             remove_component(root, parent());
@@ -47,7 +46,7 @@ impl AnimationPlayer {
         add_component(self.0, children(), vec![new_root.0]);
         add_component(new_root.0, parent(), self.0);
     }
-    /// tmp
+    /// Set up retargeting
     pub fn set_retargeting(&self, retargeting: AnimationRetargeting) {
         match retargeting {
             AnimationRetargeting::None => {
@@ -68,7 +67,8 @@ impl AnimationPlayer {
         }
     }
 }
-/// tmp
+
+/// An animation node. Used in the animation player. It keeps an internal ref count.
 #[derive(Debug)]
 pub struct AnimationNode(pub EntityId);
 impl Clone for AnimationNode {
@@ -83,11 +83,12 @@ impl Drop for AnimationNode {
     }
 }
 
-/// tmp
+/// Play clip from url animation node.
+/// This is an animation node which can be plugged into an animation player or other animation nodes.
 #[derive(Debug)]
 pub struct PlayClipFromUrlNode(pub AnimationNode);
 impl PlayClipFromUrlNode {
-    /// tmp
+    /// Create a new node.
     pub fn new(url: impl Into<String>, looping: bool) -> Self {
         use crate::components::core::animation;
         let node = Entity::new()
@@ -156,11 +157,16 @@ impl AsRef<AnimationNode> for PlayClipFromUrlNode {
     }
 }
 
-/// tmp
+/// Blend animation node.
+/// This is an animation node which can be plugged into an animation player or other animation nodes.
 #[derive(Debug, Clone)]
 pub struct BlendNode(pub AnimationNode);
 impl BlendNode {
-    /// tmp
+    /// Create a new blend animation node.
+    ///
+    /// If the weight is 0, only the left animation will play.
+    /// If the weight is 1, only the right animation will play.
+    /// Values in between blend between the two animations.
     pub fn new(
         left: impl AsRef<AnimationNode>,
         right: impl AsRef<AnimationNode>,
@@ -179,11 +185,18 @@ impl BlendNode {
         add_component(right.0, parent(), node);
         Self(AnimationNode(node))
     }
-    /// tmp
+    /// Set the weight of this blend node.
+    ///
+    /// If the weight is 0, only the left animation will play.
+    /// If the weight is 1, only the right animation will play.
+    /// Values in between blend between the two animations.
     pub fn set_weight(&self, weight: f32) {
         set_component(self.0 .0, blend(), weight);
     }
-    /// Sets the mask to a list of (bind_id, weights)
+    /// Sets the mask of this blend node.
+    ///
+    /// For example `blend_node.set_mask(vec![("LeftLeg".to_string(), 1.)])` means
+    /// that the LeftLeg is always controlled by the right animation.
     pub fn set_mask(&self, weights: Vec<(String, f32)>) {
         let (bind_ids, weights): (Vec<_>, Vec<_>) = weights.into_iter().unzip();
         add_component(self.0 .0, mask_bind_ids(), bind_ids);
@@ -214,14 +227,14 @@ impl AsRef<AnimationNode> for BlendNode {
     }
 }
 
-/// tmp
+/// Animation retargeting configuration.
 #[derive(Debug, Clone)]
 pub enum AnimationRetargeting {
     /// Bone Translation comes from the animation data, unchanged.
     None,
     /// Bone Translation comes from the Target Skeleton's bind pose.
     Skeleton {
-        /// tmp
+        /// Model url which the animation will be retargeted to.
         model_url: String,
     },
     /// Bone translation comes from the animation data, but is scaled by the Skeleton's proportions.
@@ -230,7 +243,7 @@ pub enum AnimationRetargeting {
     AnimationScaled {
         /// Rotates the Hips bone based on the difference between the rotation the animation models root and the retarget animations root
         normalize_hip: bool,
-        /// tmp
+        /// Model url which the animation will be retargeted to.
         model_url: String,
     },
 }
@@ -243,7 +256,6 @@ impl Default for AnimationRetargeting {
 /// Get the bone entity from the bind_id; for example "LeftFoot"
 pub fn get_bone_by_bind_id(entity: EntityId, bind_id: impl AsRef<str>) -> Option<EntityId> {
     if let Some(bid) = get_component(entity, crate::components::core::animation::bind_id()) {
-        println!("Found bid: {:?}", bid);
         if &bid == bind_id.as_ref() {
             return Some(entity);
         }
