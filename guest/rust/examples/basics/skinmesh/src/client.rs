@@ -1,5 +1,5 @@
 use ambient_api::{
-    animation::{get_bone_by_bind_id, AnimationPlayer, BlendNode, PlayClipFromUrlNode},
+    animation::{get_bone_by_bind_id, AnimationPlayer, BindId, BlendNode, PlayClipFromUrlNode},
     components::core::{
         animation::apply_animation_player, camera::aspect_ratio_from_window, model::model_loaded,
         prefab::prefab_from_url, primitives::quad,
@@ -54,7 +54,7 @@ pub async fn main() {
 
     wait_for_component(unit_id, model_loaded()).await;
 
-    let left_leg = get_bone_by_bind_id(unit_id, "LeftFoot").unwrap();
+    let left_leg = get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
     let ball = Entity::new()
         .with_merge(make_transformable())
         .with_merge(make_sphere())

@@ -196,26 +196,29 @@ impl BlendNode {
     ///
     /// For example `blend_node.set_mask(vec![("LeftLeg".to_string(), 1.)])` means
     /// that the LeftLeg is always controlled by the right animation.
-    pub fn set_mask(&self, weights: Vec<(String, f32)>) {
-        let (bind_ids, weights): (Vec<_>, Vec<_>) = weights.into_iter().unzip();
+    pub fn set_mask(&self, weights: Vec<(BindId, f32)>) {
+        let (bind_ids, weights): (Vec<_>, Vec<_>) = weights
+            .into_iter()
+            .map(|(a, b)| (a.as_str().to_string(), b))
+            .unzip();
         add_component(self.0 .0, mask_bind_ids(), bind_ids);
         add_component(self.0 .0, mask_weights(), weights);
     }
     /// Sets a mask value to all bones of a humanoids lower body
     pub fn set_mask_humanoid_lower_body(&self, weight: f32) {
         self.set_mask(
-            HUMANOID_LOWER_BODY
+            BindId::HUMANOID_LOWER_BODY
                 .iter()
-                .map(|x| (x.to_string(), weight))
+                .map(|x| ((*x).clone(), weight))
                 .collect(),
         );
     }
     /// Sets a mask value to all bones of a humanoids upper body
     pub fn set_mask_humanoid_upper_body(&self, weight: f32) {
         self.set_mask(
-            HUMANOID_UPPER_BODY
+            BindId::HUMANOID_UPPER_BODY
                 .iter()
-                .map(|x| (x.to_string(), weight))
+                .map(|x| ((*x).clone(), weight))
                 .collect(),
         );
     }
@@ -253,15 +256,15 @@ impl Default for AnimationRetargeting {
 }
 
 /// Get the bone entity from the bind_id; for example "LeftFoot"
-pub fn get_bone_by_bind_id(entity: EntityId, bind_id: impl AsRef<str>) -> Option<EntityId> {
+pub fn get_bone_by_bind_id(entity: EntityId, bind_id: &BindId) -> Option<EntityId> {
     if let Some(bid) = get_component(entity, crate::components::core::animation::bind_id()) {
-        if bid == bind_id.as_ref() {
+        if bid == bind_id.as_str() {
             return Some(entity);
         }
     }
     if let Some(childs) = get_component(entity, children()) {
         for c in childs {
-            if let Some(bid) = get_bone_by_bind_id(c, bind_id.as_ref()) {
+            if let Some(bid) = get_bone_by_bind_id(c, bind_id) {
                 return Some(bid);
             }
         }
@@ -269,120 +272,235 @@ pub fn get_bone_by_bind_id(entity: EntityId, bind_id: impl AsRef<str>) -> Option
     None
 }
 
-/// Bind-ids for a humanoid's lower body
-pub const HUMANOID_LOWER_BODY: [&str; 9] = [
-    "Hips",
-    "LeftFoot",
-    "LeftLeg",
-    "LeftToeBase",
-    "LeftUpLeg",
-    "RightFoot",
-    "RightLeg",
-    "RightToeBase",
-    "RightUpLeg",
-];
-
-/// Bind-ids for a humanoid's upper body
-pub const HUMANOID_UPPER_BODY: [&str; 43] = [
-    "Head",
-    "LeftArm",
-    "LeftForeArm",
-    "LeftHand",
-    "LeftHandIndex1",
-    "LeftHandIndex2",
-    "LeftHandIndex3",
-    "LeftHandMiddle1",
-    "LeftHandMiddle2",
-    "LeftHandMiddle3",
-    "LeftHandPinky1",
-    "LeftHandPinky2",
-    "LeftHandPinky3",
-    "LeftHandRing1",
-    "LeftHandRing2",
-    "LeftHandRing3",
-    "LeftHandThumb1",
-    "LeftHandThumb2",
-    "LeftHandThumb3",
-    "LeftShoulder",
-    "Neck",
-    "RightArm",
-    "RightForeArm",
-    "RightHand",
-    "RightHandIndex1",
-    "RightHandIndex2",
-    "RightHandIndex3",
-    "RightHandMiddle1",
-    "RightHandMiddle2",
-    "RightHandMiddle3",
-    "RightHandPinky1",
-    "RightHandPinky2",
-    "RightHandPinky3",
-    "RightHandRing1",
-    "RightHandRing2",
-    "RightHandRing3",
-    "RightHandThumb1",
-    "RightHandThumb2",
-    "RightHandThumb3",
-    "RightShoulder",
-    "Spine",
-    "Spine1",
-    "Spine2",
-];
-
-/// Bind-ids for a humanoid
-pub const HUMANOID_SKELETON: [&str; 52] = [
+/// Valid bind ids
+#[derive(Debug, Clone)]
+pub enum BindId {
     // Lower body for convenience
-    "Hips",
-    "LeftFoot",
-    "LeftLeg",
-    "LeftToeBase",
-    "LeftUpLeg",
-    "RightFoot",
-    "RightLeg",
-    "RightToeBase",
-    "RightUpLeg",
+    /// Hips
+    Hips,
+    /// LeftFoot
+    LeftFoot,
+    /// LeftLeg
+    LeftLeg,
+    /// LeftToeBase
+    LeftToeBase,
+    /// LeftUpLeg
+    LeftUpLeg,
+    /// RightFoot
+    RightFoot,
+    /// RightLeg
+    RightLeg,
+    /// RightToeBase
+    RightToeBase,
+    /// RightUpLeg
+    RightUpLeg,
     // Upper
-    "Head",
-    "LeftArm",
-    "LeftForeArm",
-    "LeftHand",
-    "LeftHandIndex1",
-    "LeftHandIndex2",
-    "LeftHandIndex3",
-    "LeftHandMiddle1",
-    "LeftHandMiddle2",
-    "LeftHandMiddle3",
-    "LeftHandPinky1",
-    "LeftHandPinky2",
-    "LeftHandPinky3",
-    "LeftHandRing1",
-    "LeftHandRing2",
-    "LeftHandRing3",
-    "LeftHandThumb1",
-    "LeftHandThumb2",
-    "LeftHandThumb3",
-    "LeftShoulder",
-    "Neck",
-    "RightArm",
-    "RightForeArm",
-    "RightHand",
-    "RightHandIndex1",
-    "RightHandIndex2",
-    "RightHandIndex3",
-    "RightHandMiddle1",
-    "RightHandMiddle2",
-    "RightHandMiddle3",
-    "RightHandPinky1",
-    "RightHandPinky2",
-    "RightHandPinky3",
-    "RightHandRing1",
-    "RightHandRing2",
-    "RightHandRing3",
-    "RightHandThumb1",
-    "RightHandThumb2",
-    "RightHandThumb3",
-    "RightShoulder",
-    "Spine",
-    "Spine1",
-    "Spine2",
-];
+    /// Head
+    Head,
+    /// LeftArm
+    LeftArm,
+    /// LeftForeArm
+    LeftForeArm,
+    /// LeftHand
+    LeftHand,
+    /// LeftHandIndex1
+    LeftHandIndex1,
+    /// LeftHandIndex2
+    LeftHandIndex2,
+    /// LeftHandIndex3
+    LeftHandIndex3,
+    /// LeftHandMiddle1
+    LeftHandMiddle1,
+    /// LeftHandMiddle2
+    LeftHandMiddle2,
+    /// LeftHandMiddle3
+    LeftHandMiddle3,
+    /// LeftHandPinky1
+    LeftHandPinky1,
+    /// LeftHandPinky2
+    LeftHandPinky2,
+    /// LeftHandPinky3
+    LeftHandPinky3,
+    /// LeftHandRing1
+    LeftHandRing1,
+    /// LeftHandRing2
+    LeftHandRing2,
+    /// LeftHandRing3
+    LeftHandRing3,
+    /// LeftHandThumb1
+    LeftHandThumb1,
+    /// LeftHandThumb2
+    LeftHandThumb2,
+    /// LeftHandThumb3
+    LeftHandThumb3,
+    /// LeftShoulder
+    LeftShoulder,
+    /// Neck
+    Neck,
+    /// RightArm
+    RightArm,
+    /// RightForeArm
+    RightForeArm,
+    /// RightHand
+    RightHand,
+    /// RightHandIndex1
+    RightHandIndex1,
+    /// RightHandIndex2
+    RightHandIndex2,
+    /// RightHandIndex3
+    RightHandIndex3,
+    /// RightHandMiddle1
+    RightHandMiddle1,
+    /// RightHandMiddle2
+    RightHandMiddle2,
+    /// RightHandMiddle3
+    RightHandMiddle3,
+    /// RightHandPinky1
+    RightHandPinky1,
+    /// RightHandPinky2
+    RightHandPinky2,
+    /// RightHandPinky3
+    RightHandPinky3,
+    /// RightHandRing1
+    RightHandRing1,
+    /// RightHandRing2
+    RightHandRing2,
+    /// RightHandRing3
+    RightHandRing3,
+    /// RightHandThumb1
+    RightHandThumb1,
+    /// RightHandThumb2
+    RightHandThumb2,
+    /// RightHandThumb3
+    RightHandThumb3,
+    /// RightShoulder
+    RightShoulder,
+    /// Spine
+    Spine,
+    /// Spine1
+    Spine1,
+    /// Spine2
+    Spine2,
+
+    /// Custom bind id
+    Custom(String),
+}
+impl BindId {
+    /// Get a string representation of this bind id
+    pub fn as_str(&self) -> &str {
+        match self {
+            BindId::Hips => "Hips",
+            BindId::LeftFoot => "LeftFoot",
+            BindId::LeftLeg => "LeftLeg",
+            BindId::LeftToeBase => "LeftToeBase",
+            BindId::LeftUpLeg => "LeftUpLeg",
+            BindId::RightFoot => "RightFoot",
+            BindId::RightLeg => "RightLeg",
+            BindId::RightToeBase => "RightToeBase",
+            BindId::RightUpLeg => "RightUpLeg",
+            BindId::Head => "Head",
+            BindId::LeftArm => "LeftArm",
+            BindId::LeftForeArm => "LeftForeArm",
+            BindId::LeftHand => "LeftHand",
+            BindId::LeftHandIndex1 => "LeftHandIndex1",
+            BindId::LeftHandIndex2 => "LeftHandIndex2",
+            BindId::LeftHandIndex3 => "LeftHandIndex3",
+            BindId::LeftHandMiddle1 => "LeftHandMiddle1",
+            BindId::LeftHandMiddle2 => "LeftHandMiddle2",
+            BindId::LeftHandMiddle3 => "LeftHandMiddle3",
+            BindId::LeftHandPinky1 => "LeftHandPinky1",
+            BindId::LeftHandPinky2 => "LeftHandPinky2",
+            BindId::LeftHandPinky3 => "LeftHandPinky3",
+            BindId::LeftHandRing1 => "LeftHandRing1",
+            BindId::LeftHandRing2 => "LeftHandRing2",
+            BindId::LeftHandRing3 => "LeftHandRing3",
+            BindId::LeftHandThumb1 => "LeftHandThumb1",
+            BindId::LeftHandThumb2 => "LeftHandThumb2",
+            BindId::LeftHandThumb3 => "LeftHandThumb3",
+            BindId::LeftShoulder => "LeftShoulder",
+            BindId::Neck => "Neck",
+            BindId::RightArm => "RightArm",
+            BindId::RightForeArm => "RightForeArm",
+            BindId::RightHand => "RightHand",
+            BindId::RightHandIndex1 => "RightHandIndex1",
+            BindId::RightHandIndex2 => "RightHandIndex2",
+            BindId::RightHandIndex3 => "RightHandIndex3",
+            BindId::RightHandMiddle1 => "RightHandMiddle1",
+            BindId::RightHandMiddle2 => "RightHandMiddle2",
+            BindId::RightHandMiddle3 => "RightHandMiddle3",
+            BindId::RightHandPinky1 => "RightHandPinky1",
+            BindId::RightHandPinky2 => "RightHandPinky2",
+            BindId::RightHandPinky3 => "RightHandPinky3",
+            BindId::RightHandRing1 => "RightHandRing1",
+            BindId::RightHandRing2 => "RightHandRing2",
+            BindId::RightHandRing3 => "RightHandRing3",
+            BindId::RightHandThumb1 => "RightHandThumb1",
+            BindId::RightHandThumb2 => "RightHandThumb2",
+            BindId::RightHandThumb3 => "RightHandThumb3",
+            BindId::RightShoulder => "RightShoulder",
+            BindId::Spine => "Spine",
+            BindId::Spine1 => "Spine1",
+            BindId::Spine2 => "Spine2",
+            BindId::Custom(string) => string,
+        }
+    }
+    /// Bind-ids for a humanoid's lower body
+    pub const HUMANOID_LOWER_BODY: [BindId; 9] = [
+        BindId::Hips,
+        BindId::LeftFoot,
+        BindId::LeftLeg,
+        BindId::LeftToeBase,
+        BindId::LeftUpLeg,
+        BindId::RightFoot,
+        BindId::RightLeg,
+        BindId::RightToeBase,
+        BindId::RightUpLeg,
+    ];
+
+    /// Bind-ids for a humanoid's upper body
+    pub const HUMANOID_UPPER_BODY: [BindId; 43] = [
+        BindId::Head,
+        BindId::LeftArm,
+        BindId::LeftForeArm,
+        BindId::LeftHand,
+        BindId::LeftHandIndex1,
+        BindId::LeftHandIndex2,
+        BindId::LeftHandIndex3,
+        BindId::LeftHandMiddle1,
+        BindId::LeftHandMiddle2,
+        BindId::LeftHandMiddle3,
+        BindId::LeftHandPinky1,
+        BindId::LeftHandPinky2,
+        BindId::LeftHandPinky3,
+        BindId::LeftHandRing1,
+        BindId::LeftHandRing2,
+        BindId::LeftHandRing3,
+        BindId::LeftHandThumb1,
+        BindId::LeftHandThumb2,
+        BindId::LeftHandThumb3,
+        BindId::LeftShoulder,
+        BindId::Neck,
+        BindId::RightArm,
+        BindId::RightForeArm,
+        BindId::RightHand,
+        BindId::RightHandIndex1,
+        BindId::RightHandIndex2,
+        BindId::RightHandIndex3,
+        BindId::RightHandMiddle1,
+        BindId::RightHandMiddle2,
+        BindId::RightHandMiddle3,
+        BindId::RightHandPinky1,
+        BindId::RightHandPinky2,
+        BindId::RightHandPinky3,
+        BindId::RightHandRing1,
+        BindId::RightHandRing2,
+        BindId::RightHandRing3,
+        BindId::RightHandThumb1,
+        BindId::RightHandThumb2,
+        BindId::RightHandThumb3,
+        BindId::RightShoulder,
+        BindId::Spine,
+        BindId::Spine1,
+        BindId::Spine2,
+    ];
+}
