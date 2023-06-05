@@ -1,16 +1,16 @@
-use std::{future::Future, sync::Arc, time::Duration};
+use std::{future::Future, sync::Arc};
 
 use ambient_cameras::assets_camera_systems;
 pub use ambient_core::gpu;
 use ambient_core::{
-    app_start_time, asset_cache,
+    asset_cache,
     async_ecs::async_ecs_systems,
     bounding::bounding_systems,
     camera::camera_systems,
     frame_index,
     gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
     hierarchy::dump_world_hierarchy_to_tmp_file,
-    name, refcount_system, remove_at_time_system, runtime, time,
+    name, refcount_system, remove_at_time_system, runtime,
     transform::TransformSystem,
     window::{
         cursor_position, get_window_sizes, window_logical_size, window_physical_size,

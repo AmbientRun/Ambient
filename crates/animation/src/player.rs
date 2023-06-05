@@ -66,7 +66,7 @@ fn sample_animation_node_inner(
     model: &Option<TypedAssetUrl<ModelAssetType>>,
     errors: &mut Vec<String>,
 ) -> anyhow::Result<HashMap<AnimationOutputKey, AnimationOutput>> {
-    if let Ok(url) = world.get_cloned(node, play_clip_from_url()) {
+    if let Ok(url) = world.get_ref(node, play_clip_from_url()) {
         let clip = AnimationClipRetargetedFromModel {
             clip: TypedAssetUrl::<AnimationAssetType>::parse(url)?,
             translation_retargeting: retargeting,
@@ -82,11 +82,11 @@ fn sample_animation_node_inner(
         } else if let Ok(freeze_at_percentage) = world.get(node, freeze_at_percentage()) {
             (freeze_at_percentage * clip.duration()) as f64
         } else {
-            let mut time = match world.get_cloned(node, start_time()) {
+            let mut time = match world.get(node, start_time()) {
                 Ok(st) => (time - st).as_secs_f64(),
                 Err(_) => time.as_secs_f64(),
             };
-            let speed = world.get_cloned(node, speed()).unwrap_or(1.);
+            let speed = world.get(node, speed()).unwrap_or(1.);
             if world.get(node, looping()).unwrap_or(false) {
                 time = time % clip.duration() as f64;
             }
@@ -113,15 +113,15 @@ fn sample_animation_node_inner(
             }
         }
         Ok(output)
-    } else if let Ok(blend_weight) = world.get_cloned(node, blend()) {
-        let children = world.get_cloned(node, children())?;
+    } else if let Ok(blend_weight) = world.get(node, blend()) {
+        let children = world.get_ref(node, children())?;
         if children.len() != 2 {
             anyhow::bail!("Animation blend node needs to have exactly two children");
         }
         let mut output =
             sample_animation_node(world, children[0], time, retargeting, model, errors);
         let right = sample_animation_node(world, children[1], time, retargeting, model, errors);
-        let mask = world.get_cloned(node, mask()).ok();
+        let mask = world.get_ref(node, mask()).ok();
         for (key, value) in right.into_iter() {
             match output.entry(key.clone()) {
                 Entry::Occupied(mut o) => {

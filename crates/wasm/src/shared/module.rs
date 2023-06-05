@@ -1,6 +1,5 @@
 use std::{any::Any, collections::HashSet, sync::Arc};
 
-use ambient_core::time;
 use ambient_ecs::{EntityId, World};
 use data_encoding::BASE64;
 use parking_lot::RwLock;
