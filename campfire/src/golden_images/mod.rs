@@ -162,7 +162,7 @@ fn update_tests(i: usize, name: &str) -> (&'static str, Vec<String>) {
         // to stall the renderer before everything has been loaded
         // eliminates the need for timeouts and reduces test
         // flakiness.
-        "--timeout-seconds".to_string(),
+        "--wait-seconds".to_string(),
         "30.0".to_string(),
     ];
 
