@@ -1,12 +1,13 @@
 use ambient_api::{
-    animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
+    animation::{get_bone_by_bind_id, AnimationPlayer, BlendNode, PlayClipFromUrlNode},
     components::core::{
-        animation::apply_animation_player, camera::aspect_ratio_from_window,
+        animation::apply_animation_player, camera::aspect_ratio_from_window, model::model_loaded,
         prefab::prefab_from_url, primitives::quad,
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     element::to_owned,
-    entity::add_component,
+    entity::{add_component, get_component, set_component, wait_for_component},
+    messages::Frame,
     prelude::*,
 };
 
@@ -50,6 +51,23 @@ pub async fn main() {
     add_component(unit_id, apply_animation_player(), anim_player.0);
 
     println!("Robot duration: {} sec", robot.clip_duration().await);
+
+    wait_for_component(unit_id, model_loaded()).await;
+
+    let left_leg = get_bone_by_bind_id(unit_id, "LeftFoot").unwrap();
+    let ball = Entity::new()
+        .with_merge(make_transformable())
+        .with_merge(make_sphere())
+        .with(scale(), vec3(0.3, 0.3, 0.3))
+        .with(color(), vec4(0.0, 1.0, 0.0, 1.0))
+        .with(translation(), Vec3::ZERO)
+        .spawn();
+    Frame::subscribe(move |_| {
+        let (_, _, pos) = get_component(left_leg, local_to_world())
+            .unwrap()
+            .to_scale_rotation_translation();
+        set_component(ball, translation(), pos);
+    });
 
     App::el(blend, anim_player).spawn_interactive()
 }

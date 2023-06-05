@@ -99,3 +99,8 @@ name = "Apply base pose"
 description = "Apply the base pose to this clip."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::animation::bind_id"]
+type = "String"
+name = "Bind id"
+description = "Animation bind id."
+attributes = ["Debuggable", "Networked", "Store"]

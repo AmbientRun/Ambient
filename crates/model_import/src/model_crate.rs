@@ -8,11 +8,12 @@ use ambient_core::{
     transform::{local_to_parent, local_to_world, mesh_to_local, TransformSystem},
 };
 use ambient_ecs::{
-    query, query_mut, Component, ComponentValue, Entity, EntityId, FrameEvent, System, World,
+    generated::components::core::animation::bind_id, query, query_mut, Component, ComponentValue,
+    Entity, EntityId, FrameEvent, System, World,
 };
 use ambient_model::{
-    animation_bind_id, model_from_url, model_skin_ix, model_skins,
-    pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl,
+    model_from_url, model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model,
+    PbrRenderPrimitiveFromUrl,
 };
 use ambient_physics::{
     collider::{
@@ -564,7 +565,7 @@ impl ModelCrate {
         let world = self.model_world_mut();
         for (id, name) in query(name()).collect_cloned(world, None) {
             world
-                .add_component(id, animation_bind_id(), animation_bind_id_from_name(&name))
+                .add_component(id, bind_id(), animation_bind_id_from_name(&name))
                 .unwrap();
         }
     }

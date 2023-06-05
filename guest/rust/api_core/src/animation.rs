@@ -14,7 +14,8 @@ use crate::{
     prelude::{block_until, time, Entity, EntityId},
 };
 
-/// tmp
+/// This plays animations, and can handle blending and masking of animations together to create
+/// complex effects. A single animation player can be attached to multiple entities in the scene.
 #[derive(Debug, Clone, Copy)]
 pub struct AnimationPlayer(pub EntityId);
 impl AnimationPlayer {
@@ -237,6 +238,24 @@ impl Default for AnimationRetargeting {
     fn default() -> Self {
         Self::None
     }
+}
+
+/// Get the bone entity from the bind_id; for example "LeftFoot"
+pub fn get_bone_by_bind_id(entity: EntityId, bind_id: impl AsRef<str>) -> Option<EntityId> {
+    if let Some(bid) = get_component(entity, crate::components::core::animation::bind_id()) {
+        println!("Found bid: {:?}", bid);
+        if &bid == bind_id.as_ref() {
+            return Some(entity);
+        }
+    }
+    if let Some(childs) = get_component(entity, children()) {
+        for c in childs {
+            if let Some(bid) = get_bone_by_bind_id(c, bind_id.as_ref()) {
+                return Some(bid);
+            }
+        }
+    }
+    None
 }
 
 /// Bind-ids for a humanoid's lower body
