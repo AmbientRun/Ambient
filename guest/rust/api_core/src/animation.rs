@@ -106,10 +106,6 @@ impl PlayClipFromUrlNode {
     pub fn freeze_at_percentage(&self, percentage: f32) {
         add_component(self.0 .0, freeze_at_percentage(), percentage);
     }
-    /// Returns None if the duration hasn't been loaded yet
-    pub fn peek_clip_duration(&self) -> Option<f32> {
-        get_component(self.0 .0, clip_duration())
-    }
     /// If true, the base pose from the model of the animation clip will be applied to the animation
     ///
     /// Some animations will only work if the base pose of the character is the same as
@@ -127,6 +123,10 @@ impl PlayClipFromUrlNode {
             remove_component(self.0 .0, apply_base_pose());
         }
     }
+    /// Returns None if the duration hasn't been loaded yet
+    pub fn peek_clip_duration(&self) -> Option<f32> {
+        get_component(self.0 .0, clip_duration())
+    }
     /// Returns the duration of this clip. This is async because it needs to wait for the clip to load before the duration can be returned.
     pub async fn clip_duration(&self) -> f32 {
         let res = Rc::new(RefCell::new(0.));
@@ -143,6 +143,10 @@ impl PlayClipFromUrlNode {
         }
         let val: f32 = *res.borrow();
         val
+    }
+    /// Wait until the clip has been loaded
+    pub async fn wait_until_loaded(&self) {
+        self.clip_duration().await;
     }
 }
 impl AsRef<AnimationNode> for PlayClipFromUrlNode {

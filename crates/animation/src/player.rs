@@ -202,15 +202,17 @@ pub fn animation_player_systems() -> SystemGroup {
                     let assets = world.resource(asset_cache()).clone();
                     let url = match AbsAssetUrl::parse(url) {
                         Ok(val) => val,
-                        Err(_) => continue,
+                        Err(_) => {
+                            world.add_component(id, clip_duration(), 0.).ok();
+                            continue;
+                        }
                     };
                     runtime.spawn(async move {
-                        if let Ok(clip) = AnimationClipFromUrl::new(url, true).get(&assets).await {
-                            let duration = clip.duration();
-                            async_run.run(move |world| {
-                                world.add_component(id, clip_duration(), duration).ok();
-                            });
-                        }
+                        let clip = AnimationClipFromUrl::new(url, true).get(&assets).await;
+                        let duration = clip.map(|clip| clip.duration()).unwrap_or(0.);
+                        async_run.run(move |world| {
+                            world.add_component(id, clip_duration(), duration).ok();
+                        });
                     });
                 }
             }),

@@ -10,12 +10,6 @@ use ambient_api::{
     prelude::*,
 };
 
-const END: (&str, &str) = (
-    "Robot Hip Hop Dance",
-    "assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
-);
-const START: (&str, &str) = ("Capoeira", "assets/Capoeira.fbx/animations/mixamo.com.anim");
-
 #[main]
 pub async fn main() {
     Entity::new()
@@ -57,13 +51,6 @@ pub async fn main() {
 
     println!("Robot duration: {} sec", robot.clip_duration().await);
 
-    let start_url = asset::url(START.1).unwrap();
-    let end_url = asset::url(END.1).unwrap();
-    let assets: &[&str] = &[&start_url, &end_url];
-
-    asset::block_until_animations_are_loaded(assets).await;
-    let clips = asset::get_animation_asset_metadata(assets);
-
     App::el(blend, anim_player).spawn_interactive()
 }
 
@@ -104,7 +91,7 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
 
     FocusRoot::el([FlowColumn::el([
         FlowRow::el([
-            Text::el(START.0),
+            Text::el("Capeira"),
             Slider {
                 value: blend,
                 on_change: Some(set_blend),
@@ -116,7 +103,7 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
                 suffix: None,
             }
             .el(),
-            Text::el(END.0),
+            Text::el("Robot"),
             Text::el(" (blend lower body)"),
         ])
         .with(space_between_items(), 4.0)
