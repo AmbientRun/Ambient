@@ -32,7 +32,7 @@ impl AnimationPlayer {
     }
     fn root(&self) -> Option<EntityId> {
         if let Some(children) = get_component(self.0, children()) {
-            children.get(0).map(|x| *x)
+            children.get(0).copied()
         } else {
             None
         }
@@ -51,7 +51,6 @@ impl AnimationPlayer {
         match retargeting {
             AnimationRetargeting::None => {
                 remove_component(self.0, retarget_model_from_url());
-                return;
             }
             AnimationRetargeting::Skeleton { model_url } => {
                 remove_component(self.0, retarget_animation_scaled());
@@ -74,7 +73,7 @@ pub struct AnimationNode(pub EntityId);
 impl Clone for AnimationNode {
     fn clone(&self) -> Self {
         mutate_component(self.0, ref_count(), |x| *x += 1);
-        Self(self.0.clone())
+        Self(self.0)
     }
 }
 impl Drop for AnimationNode {
@@ -256,7 +255,7 @@ impl Default for AnimationRetargeting {
 /// Get the bone entity from the bind_id; for example "LeftFoot"
 pub fn get_bone_by_bind_id(entity: EntityId, bind_id: impl AsRef<str>) -> Option<EntityId> {
     if let Some(bid) = get_component(entity, crate::components::core::animation::bind_id()) {
-        if &bid == bind_id.as_ref() {
+        if bid == bind_id.as_ref() {
             return Some(entity);
         }
     }
@@ -331,7 +330,7 @@ pub const HUMANOID_UPPER_BODY: [&str; 43] = [
 ];
 
 /// Bind-ids for a humanoid
-const HUMANOID_SKELETON: [&str; 52] = [
+pub const HUMANOID_SKELETON: [&str; 52] = [
     // Lower body for convenience
     "Hips",
     "LeftFoot",
