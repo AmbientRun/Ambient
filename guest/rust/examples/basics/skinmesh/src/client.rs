@@ -1,7 +1,7 @@
 use ambient_api::{
-    animation::{AnimationGraph, BlendNode, PlayClipFromUrlNode},
+    animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
     components::core::{
-        animation::apply_animation_graph, camera::aspect_ratio_from_window,
+        animation::apply_animation_player, camera::aspect_ratio_from_window,
         prefab::prefab_from_url, primitives::quad,
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
@@ -52,8 +52,8 @@ pub async fn main() {
         true,
     );
     let blend = BlendNode::new(&capoeira, &robot, 0.);
-    let anim_graph = AnimationGraph::new(&blend);
-    add_component(unit_id, apply_animation_graph(), anim_graph.0);
+    let anim_player = AnimationPlayer::new(&blend);
+    add_component(unit_id, apply_animation_player(), anim_player.0);
 
     println!("Robot duration: {} sec", robot.clip_duration().await);
 
@@ -64,11 +64,11 @@ pub async fn main() {
     asset::block_until_animations_are_loaded(assets).await;
     let clips = asset::get_animation_asset_metadata(assets);
 
-    App::el(blend, anim_graph).spawn_interactive()
+    App::el(blend, anim_player).spawn_interactive()
 }
 
 #[element_component]
-fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_graph: AnimationGraph) -> Element {
+fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -> Element {
     let (blend, set_blend) = hooks.use_state(0.0f32);
     let (masked, set_masked) = hooks.use_state(false);
 
@@ -137,11 +137,11 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_graph: AnimationGraph) -> 
                         .unwrap(),
                     false,
                 );
-                anim_graph.set_root(robot);
+                anim_player.set_root(robot);
             })
             .el(),
             Button::new("Play blend animation", move |_| {
-                anim_graph.set_root(blend_node.clone());
+                anim_player.set_root(blend_node.clone());
             })
             .el(),
             Button::new("Freeze animation", move |_| {
@@ -151,7 +151,7 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_graph: AnimationGraph) -> 
                     false,
                 );
                 robot.freeze_at_percentage(0.5);
-                anim_graph.set_root(robot);
+                anim_player.set_root(robot);
             })
             .el(),
         ]),

@@ -9,8 +9,8 @@ use ambient_core::{
 use ambient_ecs::{
     children, components,
     generated::components::core::animation::{
-        animation_graph, apply_animation_graph, apply_base_pose, blend, clip_duration,
-        freeze_at_percentage, freeze_at_time, looping, mask_bind_ids, mask_weights,
+        animation_errors, animation_player, apply_animation_player, apply_base_pose, blend,
+        clip_duration, freeze_at_percentage, freeze_at_time, looping, mask_bind_ids, mask_weights,
         play_clip_from_url, ref_count, retarget_animation_scaled, retarget_model_from_url, speed,
         start_time,
     },
@@ -25,8 +25,8 @@ use anyhow::Context;
 use glam::{Quat, Vec3};
 
 use crate::{
-    animation_errors, AnimationClipFromUrl, AnimationClipRetargetedFromModel, AnimationOutput,
-    AnimationRetargeting, AnimationTarget, AnimationTrackInterpolator, Vec3Field,
+    AnimationClipFromUrl, AnimationClipRetargetedFromModel, AnimationOutput, AnimationRetargeting,
+    AnimationTarget, AnimationTrackInterpolator, Vec3Field,
 };
 
 components!("animation", {
@@ -35,6 +35,7 @@ components!("animation", {
     @[Debuggable]
     mask: HashMap<String, f32>,
     cached_base_pose: HashMap<AnimationOutputKey, AnimationOutput>,
+
 });
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -192,9 +193,9 @@ fn apply_animation_outputs_to_entity(
     }
 }
 
-pub fn animation_graph_systems() -> SystemGroup {
+pub fn animation_player_systems() -> SystemGroup {
     SystemGroup::new(
-        "animation_graph_systems",
+        "animation_player_systems",
         vec![
             query(play_clip_from_url().changed()).to_system(|q, world, qs, _| {
                 // Set clip_duration for all play_clip_from_url nodes
@@ -241,7 +242,7 @@ pub fn animation_graph_systems() -> SystemGroup {
                         world.add_component(id, mask(), mask_map).ok();
                     }
                 }),
-            query((animation_graph(), children())).to_system(|q, world, qs, _| {
+            query((animation_player(), children())).to_system(|q, world, qs, _| {
                 let time = world.resource(time()).clone();
                 for (id, (_, children)) in q.collect_cloned(world, qs) {
                     let retarget_model = world
@@ -268,17 +269,15 @@ pub fn animation_graph_systems() -> SystemGroup {
                     );
                     world.add_component(id, animation_output(), output).ok();
                     if errors.len() > 0 {
-                        world
-                            .add_component(id, animation_errors(), errors.join("\n"))
-                            .ok();
+                        world.add_component(id, animation_errors(), errors).ok();
                     } else if world.has_component(id, animation_errors()) {
                         world.remove_component(id, animation_errors()).ok();
                     }
                 }
             }),
-            query((apply_animation_graph(), animation_binder())).to_system(|q, world, qs, _| {
-                for (_, (anim_graph_id, binder)) in q.iter(world, qs) {
-                    if let Ok(outputs) = world.get_ref(*anim_graph_id, animation_output()) {
+            query((apply_animation_player(), animation_binder())).to_system(|q, world, qs, _| {
+                for (_, (anim_player_id, binder)) in q.iter(world, qs) {
+                    if let Ok(outputs) = world.get_ref(*anim_player_id, animation_output()) {
                         apply_animation_outputs_to_entity(world, binder, outputs);
                     }
                 }

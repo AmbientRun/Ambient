@@ -1,29 +1,20 @@
 use ambient_ecs::{components, Debuggable, Networked, Store, SystemGroup};
 use convert_case::{Case, Casing};
-use graph::animation_graph_systems;
+use player::animation_player_systems;
 
-mod graph;
+mod player;
 mod resources;
 mod retargeting;
 
 pub use resources::*;
 pub use retargeting::*;
 
-components!("animation", {
-    @[Debuggable, Networked, Store]
-    animation_errors: String,
-});
-
 pub fn init_all_components() {
-    init_components();
-    graph::init_components();
+    player::init_components();
 }
 
 pub fn animation_systems() -> SystemGroup {
-    SystemGroup::new(
-        "animation_systems",
-        vec![Box::new(animation_graph_systems())],
-    )
+    animation_player_systems()
 }
 
 pub fn animation_bind_id_from_name(name: &str) -> String {

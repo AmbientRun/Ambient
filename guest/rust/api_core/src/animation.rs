@@ -3,34 +3,31 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     components::core::{
         animation::{
-            animation_graph, apply_base_pose, blend, clip_duration, freeze_at_percentage,
+            animation_player, apply_base_pose, blend, clip_duration, freeze_at_percentage,
             freeze_at_time, mask_bind_ids, mask_weights, ref_count, retarget_animation_scaled,
             retarget_model_from_url, start_time,
         },
         app::name,
         ecs::{children, parent},
     },
-    entity::{
-        add_component, despawn_recursive, get_component, mutate_component, remove_component,
-        set_component,
-    },
+    entity::{add_component, get_component, mutate_component, remove_component, set_component},
     prelude::{block_until, time, Entity, EntityId},
 };
 
 /// tmp
 #[derive(Debug, Clone, Copy)]
-pub struct AnimationGraph(pub EntityId);
-impl AnimationGraph {
+pub struct AnimationPlayer(pub EntityId);
+impl AnimationPlayer {
     /// tmp
     pub fn new(root: impl AsRef<AnimationNode>) -> Self {
         let root: &AnimationNode = root.as_ref();
-        let graph = Entity::new()
-            .with_default(animation_graph())
+        let player = Entity::new()
+            .with_default(animation_player())
             .with(children(), vec![root.0])
-            .with(name(), "Animation graph".to_string())
+            .with(name(), "Animation player".to_string())
             .spawn();
-        add_component(root.0, parent(), graph);
-        Self(graph)
+        add_component(root.0, parent(), player);
+        Self(player)
     }
     /// tmp
     fn root(&self) -> Option<EntityId> {
@@ -41,11 +38,11 @@ impl AnimationGraph {
         }
     }
     /// tmp
-    pub fn set_root(&self, new_root: impl AsRef<AnimationNode>) {
+    pub fn play(&self, node: impl AsRef<AnimationNode>) {
         if let Some(root) = self.root() {
             remove_component(root, parent());
         }
-        let new_root: &AnimationNode = new_root.as_ref();
+        let new_root: &AnimationNode = node.as_ref();
         add_component(self.0, children(), vec![new_root.0]);
         add_component(new_root.0, parent(), self.0);
     }
