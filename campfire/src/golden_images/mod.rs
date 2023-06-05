@@ -4,9 +4,17 @@
 
 use anyhow::{bail, Context};
 use clap::Parser;
+use futures::{stream, StreamExt, TryStreamExt};
+use indicatif::HumanDuration;
 use itertools::Itertools;
 use serde::Deserialize;
-use std::{path::PathBuf, process::Command, time::Instant};
+use std::{
+    borrow::Cow,
+    path::PathBuf,
+    process::Output,
+    time::{Duration, Instant},
+};
+use tokio::process::Command;
 
 mod failure;
 use failure::*;
@@ -36,15 +44,13 @@ enum Mode {
     Check,
 }
 
-const TEST_NAME_PLACEHOLDER: &str = "{test}";
-const QUIC_INTERFACE_PORT_PLACEHOLDER: &str = "{quic-port}";
-const HTTP_INTERFACE_PORT_PLACEHOLDER: &str = "{http-port}";
-
-pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
+pub(crate) async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     let start_time = Instant::now();
 
     // Get tests.
     let tests = parse_tests_from_manifest()?;
+
+    run("Build ambient", build_package, &["ambient"], true).await?;
 
     // Filter tests.
     let tests = if let Some(prefix) = &gi.prefix {
@@ -61,89 +67,30 @@ pub(crate) fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     } else {
         tests
     };
+
     if tests.is_empty() {
         bail!("Nothing to do!");
     }
 
     // Build tests.
-    run(
-        "Building",
-        &[
-            "run",
-            "--release",
-            "--",
-            "build",
-            "--release",
-            TEST_NAME_PLACEHOLDER,
-        ],
-        &tests,
-        true,
-    )?;
+    run("Building", build_tests, &tests, true).await?;
 
     match gi.mode {
         Mode::Update => {
-            run(
-                "Updating",
-                &[
-                    "run",
-                    "--release",
-                    "--",
-                    "run",
-                    "--release",
-                    TEST_NAME_PLACEHOLDER,
-                    "--headless",
-                    "--no-proxy",
-                    "--quic-interface-port",
-                    QUIC_INTERFACE_PORT_PLACEHOLDER,
-                    "--http-interface-port",
-                    HTTP_INTERFACE_PORT_PLACEHOLDER,
-                    "golden-image-update",
-                    // Todo: Ideally this waiting should be unnecessary, because
-                    // we only care about rendering the first frame of the test,
-                    // no matter how long it takes to start the test. Being able
-                    // to stall the renderer before everything has been loaded
-                    // eliminates the need for timeouts and reduces test
-                    // flakiness.
-                    "--wait-seconds",
-                    "5.0",
-                ],
-                &tests,
-                true,
-            )?;
+            run("Updating", update_tests, &tests, true).await?;
         }
         Mode::Check => {
-            run(
-                "Checking",
-                &[
-                    "run",
-                    "--release",
-                    "--",
-                    "run",
-                    "--release",
-                    TEST_NAME_PLACEHOLDER,
-                    "--headless",
-                    "--no-proxy",
-                    "--quic-interface-port",
-                    QUIC_INTERFACE_PORT_PLACEHOLDER,
-                    "--http-interface-port",
-                    HTTP_INTERFACE_PORT_PLACEHOLDER,
-                    "golden-image-check",
-                    // Todo: See notes on --wait-seconds from above.
-                    "--timeout-seconds",
-                    "30.0",
-                ],
-                &tests,
-                true,
-            )
-            .context(
-                "Checking failed, possible causes:\n \
+            run("Checking", check_tests, &tests[..], true)
+                .await
+                .context(
+                    "Checking failed, possible causes:\n \
                 - Missing golden image: consider running `cargo cf golden-images update` first.\n \
                 - Golden image differs: investigate if the difference was intentional.\n",
-            )?;
+                )?;
         }
     }
 
-    log::info!(
+    println!(
         "Running {} golden image tests took {:.03} seconds",
         tests.len(),
         start_time.elapsed().as_secs_f64()
@@ -169,55 +116,133 @@ fn parse_tests_from_manifest() -> anyhow::Result<Vec<String>> {
     Ok(manifest.tests)
 }
 
-fn run(command: &str, args: &[&str], tests: &[String], parallel: bool) -> anyhow::Result<()> {
-    use rayon::prelude::*;
+fn build_package(_i: usize, name: &str) -> (&'static str, Vec<String>) {
+    let args = vec![
+        "build".to_string(),
+        "--release".to_string(),
+        "--package".to_string(),
+        name.to_string(),
+    ];
 
-    // Run.
-    let pool = rayon::ThreadPoolBuilder::new()
-        .num_threads(if parallel { 0 } else { 1 })
-        .build()?;
-    let outputs = pool.install(|| {
-        let pb = Progress::new(tests.len());
-        pb.println(format!(
-            "{command} {} tests across {} CPUs",
-            tests.len(),
-            if parallel { num_cpus::get() } else { 1 }
-        ));
-        let mut outputs = vec![];
-        tests
-            .into_par_iter()
-            .enumerate()
-            .map(|(test_index, test)| {
-                let start_time = Instant::now();
-                let args = args
-                    .iter()
-                    .map(|&arg| {
-                        let arg = match arg {
-                            TEST_NAME_PLACEHOLDER => format!("{TEST_BASE_PATH}/{test}"),
-                            QUIC_INTERFACE_PORT_PLACEHOLDER => format!("{}", 9000 + test_index),
-                            HTTP_INTERFACE_PORT_PLACEHOLDER => format!("{}", 10000 + test_index),
-                            _ => arg.to_string(),
-                        };
-                        if arg == TEST_NAME_PLACEHOLDER {
-                            format!("{TEST_BASE_PATH}/{test}")
-                        } else {
-                            arg.to_string()
-                        }
-                    })
-                    .collect_vec();
-                let output = Command::new("cargo").args(&args).output().unwrap();
-                pb.println_and_inc(format!(
-                    "{} | {:.03}s | cargo {}",
-                    status_emoji(output.status.success()),
-                    start_time.elapsed().as_secs_f64(),
-                    args.join(" "),
-                ));
-                (test.to_string(), output)
-            })
-            .collect_into_vec(&mut outputs);
-        pb.finish();
-        outputs
-    });
+    ("cargo", args)
+}
+
+fn build_tests(_i: usize, name: &str) -> (&'static str, Vec<String>) {
+    let test_path = format!("{TEST_BASE_PATH}/{name}");
+
+    let args = ["build".to_string(), "--release".to_string(), test_path];
+
+    ("./target/release/ambient", args.to_vec())
+}
+
+fn update_tests(i: usize, name: &str) -> (&'static str, Vec<String>) {
+    let test_path = format!("{TEST_BASE_PATH}/{name}");
+    let quic_port = (9000 + i as u16).to_string();
+    let http_port = (10000 + i as u16).to_string();
+
+    let args = vec![
+        "run".to_string(),
+        "--release".to_string(),
+        test_path,
+        "--headless".to_string(),
+        "--no-proxy".to_string(),
+        "--quic-interface-port".to_string(),
+        quic_port,
+        "--http-interface-port".to_string(),
+        http_port,
+        "golden-image-update".to_string(),
+        // Todo: See notes on --wait-seconds from above.
+        "--timeout-seconds".to_string(),
+        "30.0".to_string(),
+    ];
+
+    ("./target/release/ambient", args)
+}
+
+fn check_tests(i: usize, name: &str) -> (&'static str, Vec<String>) {
+    let test_path = format!("{TEST_BASE_PATH}/{name}");
+    let quic_port = (9000 + i as u16).to_string();
+    let http_port = (10000 + i as u16).to_string();
+
+    let args = [
+        "run".to_string(),
+        "--release".to_string(),
+        test_path,
+        "--headless".to_string(),
+        "--no-proxy".to_string(),
+        "--quic-interface-port".to_string(),
+        quic_port,
+        "--http-interface-port".to_string(),
+        http_port,
+        "golden-image-check".to_string(),
+        // Todo: See notes on --wait-seconds from above.
+        "--timeout-seconds".to_string(),
+        "30.0".to_string(),
+    ];
+
+    ("./target/release/ambient", args.to_vec())
+}
+
+async fn run<S: AsRef<str>>(
+    name: impl Into<Cow<'static, str>>,
+    runner: impl Fn(usize, &str) -> (&'static str, Vec<String>),
+    tests: &[S],
+    parallel: bool,
+) -> anyhow::Result<()> {
+    let name = name.into();
+    let concurrency = if parallel { num_cpus::get() } else { 1 };
+
+    println!("{name} {} tests across {concurrency} CPUs", tests.len(),);
+    let pb = Progress::new(name, tests.len() as _);
+
+    pb.enable_steady_tick(Duration::from_millis(100));
+
+    let outputs: Vec<_> = stream::iter(tests)
+        .enumerate()
+        .map(|(i, test_name)| {
+            let test_name = test_name.as_ref();
+
+            pb.set_in_flight(test_name);
+            let start_time = Instant::now();
+
+            let (cmd, args) = runner(i, test_name);
+
+            async move {
+                let sh_cmd = [cmd].into_iter().chain(args.iter().map(|v| &**v)).join(" ");
+
+                let output = Command::new(cmd)
+                    .args(args)
+                    .kill_on_drop(true)
+                    .output()
+                    .await
+                    .context("Failed to spawn test")?;
+
+                let dur = start_time.elapsed();
+
+                Ok((test_name, sh_cmd, dur, output)) as anyhow::Result<_>
+            }
+        })
+        .buffer_unordered(concurrency)
+        // Handle the progress bar
+        .map_ok(
+            |(test_name, cmd, dur, output): (&str, _, Duration, Output)| {
+                let dur = HumanDuration(dur);
+
+                pb.remove_in_flight(test_name);
+
+                let status = status_emoji(output.status.success());
+
+                pb.println(format_args!("{status:>4} | {dur:#} | {cmd}"));
+                pb.inc();
+
+                (test_name, output)
+            },
+        )
+        .try_collect()
+        .await
+        .context("Failed to spawn test command")?;
+
+    pb.finish();
 
     // Collect failures.
     let failures = outputs
@@ -226,10 +251,11 @@ fn run(command: &str, args: &[&str], tests: &[String], parallel: bool) -> anyhow
             if output.status.success() {
                 None
             } else {
-                Some(Failure::from_output(test, &output))
+                Some(Failure::from_output(test.to_owned(), &output))
             }
         })
         .collect_vec();
+
     if !failures.is_empty() {
         for failure in &failures {
             failure.log();
