@@ -285,8 +285,10 @@ impl AbsAssetUrl {
         &self,
         assets: &AssetCache,
     ) -> anyhow::Result<T> {
-        let content = self.download_bytes(assets).await?;
-        Ok(toml::from_str(std::str::from_utf8(&content)?)?)
+        let content = self.download_string(assets).await?;
+        let de = toml::de::Deserializer::new(&content);
+        let res = serde_path_to_error::deserialize(de)?;
+        Ok(res)
     }
 }
 
