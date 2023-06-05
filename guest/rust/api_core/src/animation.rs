@@ -188,6 +188,24 @@ impl BlendNode {
         add_component(self.0 .0, mask_bind_ids(), bind_ids);
         add_component(self.0 .0, mask_weights(), weights);
     }
+    /// Sets a mask value to all bones of a humanoids lower body
+    pub fn set_mask_humanoid_lower_body(&self, weight: f32) {
+        self.set_mask(
+            HUMANOID_LOWER_BODY
+                .iter()
+                .map(|x| (x.to_string(), weight))
+                .collect(),
+        );
+    }
+    /// Sets a mask value to all bones of a humanoids upper body
+    pub fn set_mask_humanoid_upper_body(&self, weight: f32) {
+        self.set_mask(
+            HUMANOID_UPPER_BODY
+                .iter()
+                .map(|x| (x.to_string(), weight))
+                .collect(),
+        );
+    }
 }
 impl AsRef<AnimationNode> for BlendNode {
     fn as_ref(&self) -> &AnimationNode {
@@ -220,3 +238,121 @@ impl Default for AnimationRetargeting {
         Self::None
     }
 }
+
+/// Bind-ids for a humanoid's lower body
+pub const HUMANOID_LOWER_BODY: [&str; 9] = [
+    "Hips",
+    "LeftFoot",
+    "LeftLeg",
+    "LeftToeBase",
+    "LeftUpLeg",
+    "RightFoot",
+    "RightLeg",
+    "RightToeBase",
+    "RightUpLeg",
+];
+
+/// Bind-ids for a humanoid's upper body
+pub const HUMANOID_UPPER_BODY: [&str; 43] = [
+    "Head",
+    "LeftArm",
+    "LeftForeArm",
+    "LeftHand",
+    "LeftHandIndex1",
+    "LeftHandIndex2",
+    "LeftHandIndex3",
+    "LeftHandMiddle1",
+    "LeftHandMiddle2",
+    "LeftHandMiddle3",
+    "LeftHandPinky1",
+    "LeftHandPinky2",
+    "LeftHandPinky3",
+    "LeftHandRing1",
+    "LeftHandRing2",
+    "LeftHandRing3",
+    "LeftHandThumb1",
+    "LeftHandThumb2",
+    "LeftHandThumb3",
+    "LeftShoulder",
+    "Neck",
+    "RightArm",
+    "RightForeArm",
+    "RightHand",
+    "RightHandIndex1",
+    "RightHandIndex2",
+    "RightHandIndex3",
+    "RightHandMiddle1",
+    "RightHandMiddle2",
+    "RightHandMiddle3",
+    "RightHandPinky1",
+    "RightHandPinky2",
+    "RightHandPinky3",
+    "RightHandRing1",
+    "RightHandRing2",
+    "RightHandRing3",
+    "RightHandThumb1",
+    "RightHandThumb2",
+    "RightHandThumb3",
+    "RightShoulder",
+    "Spine",
+    "Spine1",
+    "Spine2",
+];
+
+/// Bind-ids for a humanoid
+const HUMANOID_SKELETON: [&str; 52] = [
+    // Lower body for convenience
+    "Hips",
+    "LeftFoot",
+    "LeftLeg",
+    "LeftToeBase",
+    "LeftUpLeg",
+    "RightFoot",
+    "RightLeg",
+    "RightToeBase",
+    "RightUpLeg",
+    // Upper
+    "Head",
+    "LeftArm",
+    "LeftForeArm",
+    "LeftHand",
+    "LeftHandIndex1",
+    "LeftHandIndex2",
+    "LeftHandIndex3",
+    "LeftHandMiddle1",
+    "LeftHandMiddle2",
+    "LeftHandMiddle3",
+    "LeftHandPinky1",
+    "LeftHandPinky2",
+    "LeftHandPinky3",
+    "LeftHandRing1",
+    "LeftHandRing2",
+    "LeftHandRing3",
+    "LeftHandThumb1",
+    "LeftHandThumb2",
+    "LeftHandThumb3",
+    "LeftShoulder",
+    "Neck",
+    "RightArm",
+    "RightForeArm",
+    "RightHand",
+    "RightHandIndex1",
+    "RightHandIndex2",
+    "RightHandIndex3",
+    "RightHandMiddle1",
+    "RightHandMiddle2",
+    "RightHandMiddle3",
+    "RightHandPinky1",
+    "RightHandPinky2",
+    "RightHandPinky3",
+    "RightHandRing1",
+    "RightHandRing2",
+    "RightHandRing3",
+    "RightHandThumb1",
+    "RightHandThumb2",
+    "RightHandThumb3",
+    "RightShoulder",
+    "Spine",
+    "Spine1",
+    "Spine2",
+];

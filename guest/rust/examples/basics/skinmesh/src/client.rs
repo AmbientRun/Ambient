@@ -61,19 +61,9 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
 
     {
         to_owned!(blend_node);
-        hooks.use_effect((masked), move |_, &(masked)| {
+        hooks.use_effect(masked, move |_, &masked| {
             if masked {
-                blend_node.set_mask(vec![
-                    ("Hips".to_string(), 0.),
-                    ("LeftFoot".to_string(), 0.),
-                    ("LeftLeg".to_string(), 0.),
-                    ("LeftToeBase".to_string(), 0.),
-                    ("LeftUpLeg".to_string(), 0.),
-                    ("RightFoot".to_string(), 0.),
-                    ("RightLeg".to_string(), 0.),
-                    ("RightToeBase".to_string(), 0.),
-                    ("RightUpLeg".to_string(), 0.),
-                ]);
+                blend_node.set_mask_humanoid_lower_body(0.);
             } else {
                 blend_node.set_mask(vec![]);
             }
@@ -83,7 +73,7 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
 
     {
         to_owned!(blend_node);
-        hooks.use_effect((blend), move |_, &(blend)| {
+        hooks.use_effect(blend, move |_, &blend| {
             blend_node.set_weight(blend);
             |_| {}
         });
@@ -104,7 +94,6 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
             }
             .el(),
             Text::el("Robot"),
-            Text::el(" (blend lower body)"),
         ])
         .with(space_between_items(), 4.0)
         .with_background(vec4(0., 0., 0., 0.9))
@@ -144,75 +133,3 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
         ]),
     ])])
 }
-
-const LOWER_BODY_MASK_IDS: [&str; 9] = [
-    // Lower body for convenience
-    "Hips",
-    "LeftFoot",
-    "LeftLeg",
-    "LeftToeBase",
-    "LeftUpLeg",
-    "RightFoot",
-    "RightLeg",
-    "RightToeBase",
-    "RightUpLeg",
-];
-
-const LOWER_BODY_MASK_INDEX: u32 = 0;
-const LOWER_BODY_MASK: [f32; 9] = [1.0; 9];
-const SKELETON: [&str; 52] = [
-    // Lower body for convenience
-    "Hips",
-    "LeftFoot",
-    "LeftLeg",
-    "LeftToeBase",
-    "LeftUpLeg",
-    "RightFoot",
-    "RightLeg",
-    "RightToeBase",
-    "RightUpLeg",
-    // Upper
-    "Head",
-    "LeftArm",
-    "LeftForeArm",
-    "LeftHand",
-    "LeftHandIndex1",
-    "LeftHandIndex2",
-    "LeftHandIndex3",
-    "LeftHandMiddle1",
-    "LeftHandMiddle2",
-    "LeftHandMiddle3",
-    "LeftHandPinky1",
-    "LeftHandPinky2",
-    "LeftHandPinky3",
-    "LeftHandRing1",
-    "LeftHandRing2",
-    "LeftHandRing3",
-    "LeftHandThumb1",
-    "LeftHandThumb2",
-    "LeftHandThumb3",
-    "LeftShoulder",
-    "Neck",
-    "RightArm",
-    "RightForeArm",
-    "RightHand",
-    "RightHandIndex1",
-    "RightHandIndex2",
-    "RightHandIndex3",
-    "RightHandMiddle1",
-    "RightHandMiddle2",
-    "RightHandMiddle3",
-    "RightHandPinky1",
-    "RightHandPinky2",
-    "RightHandPinky3",
-    "RightHandRing1",
-    "RightHandRing2",
-    "RightHandRing3",
-    "RightHandThumb1",
-    "RightHandThumb2",
-    "RightHandThumb3",
-    "RightShoulder",
-    "Spine",
-    "Spine1",
-    "Spine2",
-];
