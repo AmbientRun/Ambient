@@ -36,6 +36,7 @@ fn setup_logging() -> anyhow::Result<()> {
         (
             LevelFilter::Warn,
             &[
+                "ambient_build",
                 "ambient_gpu",
                 "ambient_model",
                 "ambient_physics",
@@ -77,11 +78,11 @@ fn setup_logging() -> anyhow::Result<()> {
 
         let mut filter = tracing_subscriber::filter::Targets::new()
             .with_default(tracing::metadata::LevelFilter::DEBUG);
-        // for (level, modules) in MODULES {
-        //     for &module in *modules {
-        //         filter = filter.with_target(module, level.as_trace());
-        //     }
-        // }
+        for (level, modules) in MODULES {
+            for &module in *modules {
+                filter = filter.with_target(module, level.as_trace());
+            }
+        }
 
         // BLOCKING: pending https://github.com/tokio-rs/tracing/issues/2507
         // let modules: Vec<_> = MODULES.iter().flat_map(|&(level, modules)| modules.iter().map(move |&v| format!("{v}={level}"))).collect();
@@ -310,7 +311,8 @@ fn main() -> anyhow::Result<()> {
         let crypto = if let (Some(cert_file), Some(key_file)) = (&host.cert, &host.key) {
             let raw_cert = std::fs::read(cert_file).context("Failed to read certificate file")?;
             let cert_chain = if raw_cert.starts_with(b"-----BEGIN CERTIFICATE-----") {
-                rustls_pemfile::certs(&mut raw_cert.as_slice()).context("Failed to parse certificate file")?
+                rustls_pemfile::certs(&mut raw_cert.as_slice())
+                    .context("Failed to parse certificate file")?
             } else {
                 vec![raw_cert]
             };
