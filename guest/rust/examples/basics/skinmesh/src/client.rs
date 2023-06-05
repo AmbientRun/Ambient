@@ -137,11 +137,11 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
                         .unwrap(),
                     false,
                 );
-                anim_player.set_root(robot);
+                anim_player.play(robot);
             })
             .el(),
             Button::new("Play blend animation", move |_| {
-                anim_player.set_root(blend_node.clone());
+                anim_player.play(blend_node.clone());
             })
             .el(),
             Button::new("Freeze animation", move |_| {
@@ -151,7 +151,7 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
                     false,
                 );
                 robot.freeze_at_percentage(0.5);
-                anim_player.set_root(robot);
+                anim_player.play(robot);
             })
             .el(),
         ]),

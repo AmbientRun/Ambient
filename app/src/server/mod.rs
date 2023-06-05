@@ -190,6 +190,7 @@ fn systems(_world: &mut World) -> SystemGroup {
             Box::new(ambient_physics::physx::sync_ecs_physics()),
             Box::new(ambient_core::transform::TransformSystem::new()),
             ambient_core::remove_at_time_system(),
+            ambient_core::refcount_system(),
             Box::new(WorldEventsSystem),
             Box::new(ambient_core::camera::camera_systems()),
             Box::new(ambient_physics::server_systems()),

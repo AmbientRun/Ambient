@@ -4,10 +4,10 @@ use crate::{
     components::core::{
         animation::{
             animation_player, apply_base_pose, blend, clip_duration, freeze_at_percentage,
-            freeze_at_time, mask_bind_ids, mask_weights, ref_count, retarget_animation_scaled,
+            freeze_at_time, mask_bind_ids, mask_weights, retarget_animation_scaled,
             retarget_model_from_url, start_time,
         },
-        app::name,
+        app::{name, ref_count},
         ecs::{children, parent},
     },
     entity::{add_component, get_component, mutate_component, remove_component, set_component},

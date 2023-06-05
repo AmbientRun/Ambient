@@ -3,11 +3,12 @@ extern crate lazy_static;
 
 use ambient_sys::{task::RuntimeHandle, time::Instant, time::SystemTime};
 use chrono::{DateTime, Utc};
+use hierarchy::despawn_recursive;
 use std::{sync::Arc, time::Duration};
 
 use ambient_ecs::{
-    components, query, Debuggable, Description, DynSystem, FrameEvent, Name, Networked, Resource,
-    Store, System, World,
+    components, parent, query, Debuggable, Description, DynSystem, FrameEvent, Name, Networked,
+    Resource, Store, System, World,
 };
 use ambient_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
@@ -25,8 +26,8 @@ pub mod transform;
 pub mod window;
 
 pub use ambient_ecs::generated::components::core::app::{
-    description, dtime, main_scene, map_seed, name, project_name, selectable, snap_to_ground, tags,
-    time, ui_scene,
+    description, dtime, main_scene, map_seed, name, project_name, ref_count, selectable,
+    snap_to_ground, tags, time, ui_scene,
 };
 
 components!("app", {
@@ -91,6 +92,17 @@ pub fn remove_at_time_system() -> DynSystem {
             }
         }
     })
+}
+pub fn refcount_system() -> DynSystem {
+    query(ref_count().changed())
+        .excl(parent())
+        .to_system(|q, world, qs, _| {
+            for (id, count) in q.collect_cloned(world, qs) {
+                if count == 0 {
+                    despawn_recursive(world, id);
+                }
+            }
+        })
 }
 
 #[derive(Debug)]

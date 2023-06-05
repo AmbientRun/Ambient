@@ -10,7 +10,7 @@ use ambient_core::{
     frame_index,
     gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
     hierarchy::dump_world_hierarchy_to_tmp_file,
-    name, remove_at_time_system, runtime, time,
+    name, refcount_system, remove_at_time_system, runtime, time,
     transform::TransformSystem,
     window::{
         cursor_position, get_window_sizes, window_logical_size, window_physical_size,
@@ -96,6 +96,7 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
             Box::new(TimeResourcesSystem::new()),
             Box::new(async_ecs_systems()),
             remove_at_time_system(),
+            refcount_system(),
             Box::new(WorldEventsSystem),
             if full {
                 Box::new(ambient_input::picking::frame_systems())

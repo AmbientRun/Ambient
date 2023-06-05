@@ -114,3 +114,9 @@ description = """
 The DPI/pixel scale factor of the window.
 On standard displays, this is 1, but it can be higher on high-DPI displays like Apple Retina displays."""
 attributes = ["MaybeResource", "Debuggable", "Networked"]
+
+[components."core::app::ref_count"]
+type = "U32"
+name = "Ref count"
+description = "Ref counted enity. If this entity doesn't have a `parent` component, and the the ref count reaches 0, it will be removed together with all it's children recursively."
+attributes = ["MaybeResource", "Debuggable", "Networked"]

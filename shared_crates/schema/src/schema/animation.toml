@@ -81,12 +81,6 @@ name = "Mask weights"
 description = "Weights for each bind id in `mask_bind_ids`."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
-[components."core::animation::ref_count"]
-type = "U32"
-name = "Ref count"
-description = "Animation ref count."
-attributes = ["MaybeResource", "Debuggable", "Networked"]
-
 [components."core::animation::retarget_model_from_url"]
 type = "String"
 name = "Retarget Model from URL"
