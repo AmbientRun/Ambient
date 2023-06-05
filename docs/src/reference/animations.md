@@ -1,46 +1,112 @@
 # Animations
 
-There are multiple ways to work with animations, but the most common is to load animations from model files.
-
-## Animations from model files
-
-To get started with animations from model files (`.glb` and `.fbx` are supported), follow these steps;
-
-1. Download an animation file and put it in a folder in the project, for instance `assets/Capoeira.fbx`.
-   [Mixamo](https://www.mixamo.com/#/) is a great place to find animations for characters (as well as models for characters).
-2. Add a `pipeline.json` in the `assets` folder, with the following content:
-    ```json
-    {
-        "pipeline": {
-            "type": "Models"
-        }
-    }
-    ```
-3. Run `ambient build`; this will process the animation file and put the output in the `build` folder.
-4. Take a look in the `build` folder to find the name of the animations in the file; for instance `"assets/Capoeira.fbx/animations/mixamo.com.anim"`.
-   `mixamo.com` is the name of the animation inside of the `Capoeira.fbx` file; you can also find that by opening the file in Blender. For fbx files
-   the name may contain some extra metadata, so it may look something like `Armature|mixamo.com|Layer0`.
-5. Load a character model and add the animation to it with the following code;
-    ```rust
-    let unit_id = Entity::new()
-        .with_merge(make_transformable())
-        .with(
-            prefab_from_url(),
-            asset::url("assets/Peasant Man.fbx").unwrap(),
-        )
-        .spawn();
-
-    entity::set_animation_controller(
-        unit_id,
-        AnimationController {
-            actions: &[AnimationAction {
-                clip_url: &asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
-                looping: true,
-                weight: 1.,
-            }],
-            apply_base_pose: false,
-        },
-    );
-    ```
-
 See the [skinmesh example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/skinmesh) for a complete example.
+
+## Animation assets
+
+To work with animations, you'll usually need some animation clips to work with. A good way to get started is
+by going to [Mixamo](https://www.mixamo.com/#/) and download some characters and animation clips there.
+
+Put your models and animations in your `assets` folder in your project, and make sure you have a `pipeline.json`
+which can process models and animations, for instance something like this:
+
+```json
+{
+    "pipeline": {
+        "type": "Models"
+    }
+}
+```
+
+By running `ambient build` you can build the animations. You can browse the `build/assets` folder to see what
+the build command produced.
+
+## Animation player
+
+To play animations, you'll need an `AnimationPlayer`. The animation player plays a graph of animations nodes;
+currently the two nodes that exist are PlayClipFromUrlNode and BlendNode. Here's a basic example:
+
+```rust
+let clip = PlayClipFromUrlNode::new(
+    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
+);
+let player = AnimationPlayer::new(&clip);
+```
+
+To find out what the clip url is, you can look in your `build/assets/` folder.
+
+You then need to also apply the animation to a model, for instance:
+```rust
+Entity::new()
+    .with_merge(make_transformable())
+    .with(
+        prefab_from_url(),
+        asset::url("assets/Peasant Man.fbx").unwrap(),
+    )
+    .with(apply_animation_player(), player.0)
+    .spawn();
+```
+
+The same animation player can be attached to multiple models.
+
+### Blending animations together
+
+You can also blend two animations together:
+
+```rust
+let capoeira = PlayClipFromUrlNode::new(
+    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
+);
+let robot = PlayClipFromUrlNode::new(
+    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap(),
+);
+let blend = BlendNode::new(&capoeira, &robot, 0.3);
+let anim_player = AnimationPlayer::new(&blend);
+```
+
+This will blend capoeira (30%) and robot (70%) together, to form one output animation.
+
+### Masked blending
+
+You might want to mask blending as well, to for instance play one animation for the torso,
+and one for the lower body:
+
+```rust
+let capoeira = PlayClipFromUrlNode::new(
+    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
+);
+let robot = PlayClipFromUrlNode::new(
+    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap(),
+);
+let blend = BlendNode::new(&capoeira, &robot, 0.);
+blend.set_mask_humanoid_lower_body(1.);
+let anim_player = AnimationPlayer::new(&blend);
+```
+
+This will play the capoeira at the upper body, and the robot dance for the lower body.
+
+### Attaching things to a skeleton
+
+You can also attach things to a skeleton:
+
+```rust
+let left_foot = get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
+let ball = Entity::new()
+    .with_merge(make_transformable())
+    .with_merge(make_sphere())
+    .with(parent(), left_foot)
+    .with_default(local_to_parent())
+    // Without reset_scale, the ball would take the scale of the
+    // bone we're attaching it to
+    .with_default(reset_scale())
+    .spawn();
+add_child(left_foot, ball);
+```
+
+### Animation nodes lifetimes and ownership
+
+The animation player and nodes all live in the ECS, and the `AnimationPlayer` and `PlayClipFromUrlNode` etc.
+are all simple wrappers around an `EntityId`. To remove an animation player, call `player.despawn()` on it.
+
+The animation nodes are ref counted, so the will survive as long as they are either being played by an
+animation player, or as long as you have a reference to them in your code (i.e. you have an `PlayClipFromUrlNode`).
