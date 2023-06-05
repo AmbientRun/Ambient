@@ -116,6 +116,11 @@ capoeira.wait_until_loaded().await;
 
 The clip will remain loaded as long as the object survives.
 
+### Retargeting
+
+It's possible to play an animation that was made for one character on another character. To make
+it look right, you might need to use retargeting though. Try setting retargeting on the `PlayClipFromUrlNode`.
+
 ### Animation nodes lifetimes and ownership
 
 The animation player and nodes all live in the ECS, and the `AnimationPlayer` and `PlayClipFromUrlNode` etc.
