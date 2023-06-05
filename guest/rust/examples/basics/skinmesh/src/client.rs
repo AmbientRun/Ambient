@@ -2,12 +2,11 @@ use ambient_api::{
     animation::{get_bone_by_bind_id, AnimationPlayer, BindId, BlendNode, PlayClipFromUrlNode},
     components::core::{
         animation::apply_animation_player, camera::aspect_ratio_from_window, model::model_loaded,
-        prefab::prefab_from_url, primitives::quad,
+        prefab::prefab_from_url, primitives::quad, transform::reset_scale,
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     element::to_owned,
-    entity::{add_component, get_component, set_component, wait_for_component},
-    messages::Frame,
+    entity::{add_child, add_component, wait_for_component},
     prelude::*,
 };
 
@@ -52,20 +51,17 @@ pub async fn main() {
 
     wait_for_component(unit_id, model_loaded()).await;
 
-    let left_leg = get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
+    // This demonstrates how to attach an entity to a bone
+    let left_foot = get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
     let ball = Entity::new()
         .with_merge(make_transformable())
         .with_merge(make_sphere())
         .with(scale(), vec3(0.3, 0.3, 0.3))
         .with(color(), vec4(0.0, 1.0, 0.0, 1.0))
-        .with(translation(), Vec3::ZERO)
+        .with_default(local_to_parent())
+        .with_default(reset_scale())
         .spawn();
-    Frame::subscribe(move |_| {
-        let (_, _, pos) = get_component(left_leg, local_to_world())
-            .unwrap()
-            .to_scale_rotation_translation();
-        set_component(ball, translation(), pos);
-    });
+    add_child(left_foot, ball);
 
     App::el(blend, anim_player).spawn_interactive()
 }

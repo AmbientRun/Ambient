@@ -1,10 +1,10 @@
 use crate::{
-    components::core::ecs::children,
+    components::core::ecs::{children, parent},
     global::{EntityId, Vec3},
     internal::{
         component::{Component, Entity, SupportedValue, UntypedComponent},
         conversion::{FromBindgen, IntoBindgen},
-        wit,
+        wit::{self},
     },
     prelude::block_until,
 };
@@ -195,6 +195,26 @@ pub fn mutate_component_with_default<T: SupportedValue + SupportedValue + Clone 
         set_component(entity, component, default.clone());
         default
     }
+}
+
+/// Adds `child` as a child to `entity`.
+pub fn add_child(entity: EntityId, child: EntityId) {
+    if has_component(entity, children()) {
+        mutate_component(entity, children(), |children| children.push(child));
+    } else {
+        add_component(entity, children(), vec![child]);
+    }
+    add_component(child, parent(), entity);
+}
+
+/// Removes `child` as a child to `entity`.
+pub fn remove_child(entity: EntityId, child: EntityId) {
+    if has_component(entity, children()) {
+        mutate_component(entity, children(), |children| {
+            children.retain(|x| *x != child)
+        });
+    }
+    remove_component(child, parent());
 }
 
 /// Gets the resource entity. The components of this entity contain global state for this ECS world.

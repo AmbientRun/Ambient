@@ -10,7 +10,9 @@ use crate::{
         app::{name, ref_count},
         ecs::{children, parent},
     },
-    entity::{add_component, get_component, mutate_component, remove_component, set_component},
+    entity::{
+        add_component, despawn, get_component, mutate_component, remove_component, set_component,
+    },
     prelude::{block_until, time, Entity, EntityId},
 };
 
@@ -37,11 +39,14 @@ impl AnimationPlayer {
             None
         }
     }
-    /// Replaces the current root node of the animation player with a new node
-    pub fn play(&self, node: impl AsRef<AnimationNode>) {
+    fn free_root(&self) {
         if let Some(root) = self.root() {
             remove_component(root, parent());
         }
+    }
+    /// Replaces the current root node of the animation player with a new node
+    pub fn play(&self, node: impl AsRef<AnimationNode>) {
+        self.free_root();
         let new_root: &AnimationNode = node.as_ref();
         add_component(self.0, children(), vec![new_root.0]);
         add_component(new_root.0, parent(), self.0);
@@ -64,6 +69,12 @@ impl AnimationPlayer {
                 add_component(self.0, retarget_model_from_url(), model_url);
             }
         }
+    }
+    /// Despawn this animation player.
+    /// Note that dropping this player won't despawn it automatically; only call this method will despawn it.
+    pub fn despawn(self) {
+        self.free_root();
+        despawn(self.0);
     }
 }
 
