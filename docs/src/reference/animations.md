@@ -103,6 +103,19 @@ let ball = Entity::new()
 add_child(left_foot, ball);
 ```
 
+### Pre-loading animations
+
+The easiest way to pre-load animations is by simply creating `PlayClipFromUrlNode` nodes and waiting for them to load:
+
+```rust
+let capoeira = PlayClipFromUrlNode::new(
+    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
+);
+capoeira.wait_until_loaded().await;
+```
+
+The clip will remain loaded as long as the object survives.
+
 ### Animation nodes lifetimes and ownership
 
 The animation player and nodes all live in the ECS, and the `AnimationPlayer` and `PlayClipFromUrlNode` etc.

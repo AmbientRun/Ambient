@@ -51,25 +51,6 @@ impl AnimationPlayer {
         add_component(self.0, children(), vec![new_root.0]);
         add_component(new_root.0, parent(), self.0);
     }
-    /// Set up retargeting
-    pub fn set_retargeting(&self, retargeting: AnimationRetargeting) {
-        match retargeting {
-            AnimationRetargeting::None => {
-                remove_component(self.0, retarget_model_from_url());
-            }
-            AnimationRetargeting::Skeleton { model_url } => {
-                remove_component(self.0, retarget_animation_scaled());
-                add_component(self.0, retarget_model_from_url(), model_url);
-            }
-            AnimationRetargeting::AnimationScaled {
-                normalize_hip,
-                model_url,
-            } => {
-                add_component(self.0, retarget_animation_scaled(), normalize_hip);
-                add_component(self.0, retarget_model_from_url(), model_url);
-            }
-        }
-    }
     /// Despawn this animation player.
     /// Note that dropping this player won't despawn it automatically; only call this method will despawn it.
     pub fn despawn(self) {
@@ -121,6 +102,25 @@ impl PlayClipFromUrlNode {
     /// Freeze the animation at time = percentage * duration
     pub fn freeze_at_percentage(&self, percentage: f32) {
         add_component(self.0 .0, freeze_at_percentage(), percentage);
+    }
+    /// Set up retargeting
+    pub fn set_retargeting(&self, retargeting: AnimationRetargeting) {
+        match retargeting {
+            AnimationRetargeting::None => {
+                remove_component(self.0 .0, retarget_model_from_url());
+            }
+            AnimationRetargeting::Skeleton { model_url } => {
+                remove_component(self.0 .0, retarget_animation_scaled());
+                add_component(self.0 .0, retarget_model_from_url(), model_url);
+            }
+            AnimationRetargeting::AnimationScaled {
+                normalize_hip,
+                model_url,
+            } => {
+                add_component(self.0 .0, retarget_animation_scaled(), normalize_hip);
+                add_component(self.0 .0, retarget_model_from_url(), model_url);
+            }
+        }
     }
     /// If true, the base pose from the model of the animation clip will be applied to the animation
     ///

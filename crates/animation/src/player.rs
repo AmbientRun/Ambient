@@ -1,5 +1,6 @@
 use std::{
     collections::{hash_map::Entry, HashMap},
+    sync::Arc,
     time::Duration,
 };
 
@@ -22,8 +23,8 @@ use anyhow::Context;
 use glam::{Quat, Vec3};
 
 use crate::{
-    AnimationClipFromUrl, AnimationClipRetargetedFromModel, AnimationOutput, AnimationRetargeting,
-    AnimationTarget, AnimationTrackInterpolator, Vec3Field,
+    AnimationClip, AnimationClipFromUrl, AnimationClipRetargetedFromModel, AnimationOutput,
+    AnimationRetargeting, AnimationTarget, AnimationTrackInterpolator, Vec3Field,
 };
 
 components!("animation", {
@@ -32,7 +33,7 @@ components!("animation", {
     @[Debuggable]
     mask: HashMap<String, f32>,
     cached_base_pose: HashMap<AnimationOutputKey, AnimationOutput>,
-
+    play_clip: Arc<AnimationClip>,
 });
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -46,11 +47,9 @@ fn sample_animation_node(
     world: &World,
     node: EntityId,
     time: Duration,
-    retargeting: AnimationRetargeting,
-    model: &Option<TypedAssetUrl<ModelAssetType>>,
     errors: &mut Vec<String>,
 ) -> HashMap<AnimationOutputKey, AnimationOutput> {
-    match sample_animation_node_inner(world, node, time, retargeting, model, errors) {
+    match sample_animation_node_inner(world, node, time, errors) {
         Ok(val) => val,
         Err(err) => {
             errors.push(format!("Node {}: {:?}", node, err));
@@ -62,20 +61,12 @@ fn sample_animation_node_inner(
     world: &World,
     node: EntityId,
     time: Duration,
-    retargeting: AnimationRetargeting,
-    model: &Option<TypedAssetUrl<ModelAssetType>>,
     errors: &mut Vec<String>,
 ) -> anyhow::Result<HashMap<AnimationOutputKey, AnimationOutput>> {
     if let Ok(url) = world.get_ref(node, play_clip_from_url()) {
-        let clip = AnimationClipRetargetedFromModel {
-            clip: TypedAssetUrl::<AnimationAssetType>::parse(url)?,
-            translation_retargeting: retargeting,
-            retarget_model: model.clone(),
-        }
-        .peek(world.resource(asset_cache()));
-        let clip = match clip {
-            Some(value) => value?,
-            None => return Ok(Default::default()),
+        let clip = match world.get_ref(node, play_clip()) {
+            Ok(clip) => clip,
+            Err(err) => return Ok(Default::default()),
         };
         let time = if let Ok(freeze_at_time) = world.get(node, freeze_at_time()) {
             freeze_at_time as f64
@@ -118,9 +109,8 @@ fn sample_animation_node_inner(
         if children.len() != 2 {
             anyhow::bail!("Animation blend node needs to have exactly two children");
         }
-        let mut output =
-            sample_animation_node(world, children[0], time, retargeting, model, errors);
-        let right = sample_animation_node(world, children[1], time, retargeting, model, errors);
+        let mut output = sample_animation_node(world, children[0], time, errors);
+        let right = sample_animation_node(world, children[1], time, errors);
         let mask = world.get_ref(node, mask()).ok();
         for (key, value) in right.into_iter() {
             match output.entry(key.clone()) {
@@ -195,23 +185,46 @@ pub fn animation_player_systems() -> SystemGroup {
         "animation_player_systems",
         vec![
             query(play_clip_from_url().changed()).to_system(|q, world, qs, _| {
-                // Set clip_duration for all play_clip_from_url nodes
                 let runtime = world.resource(runtime()).clone();
                 for (id, url) in q.collect_cloned(world, qs) {
                     let async_run = world.resource(async_run()).clone();
                     let assets = world.resource(asset_cache()).clone();
-                    let url = match AbsAssetUrl::parse(url) {
+                    let url = match TypedAssetUrl::<AnimationAssetType>::parse(url) {
                         Ok(val) => val,
                         Err(_) => {
                             world.add_component(id, clip_duration(), 0.).ok();
                             continue;
                         }
                     };
+                    let retarget_model = world
+                        .get_cloned(id, retarget_model_from_url())
+                        .ok()
+                        .and_then(|x| TypedAssetUrl::parse(x).ok());
+                    let retarget_animation_scaled = world.get(id, retarget_animation_scaled()).ok();
+
+                    let retargeting = if retarget_model.is_some() {
+                        if let Some(hip) = retarget_animation_scaled {
+                            AnimationRetargeting::AnimationScaled { normalize_hip: hip }
+                        } else {
+                            AnimationRetargeting::Skeleton
+                        }
+                    } else {
+                        AnimationRetargeting::None
+                    };
                     runtime.spawn(async move {
-                        let clip = AnimationClipFromUrl::new(url, true).get(&assets).await;
-                        let duration = clip.map(|clip| clip.duration()).unwrap_or(0.);
+                        let clip = AnimationClipRetargetedFromModel {
+                            clip: url,
+                            translation_retargeting: retargeting,
+                            retarget_model: retarget_model,
+                        }
+                        .get(&assets)
+                        .await;
+                        let duration = clip.as_ref().map(|clip| clip.duration()).unwrap_or(0.);
                         async_run.run(move |world| {
                             world.add_component(id, clip_duration(), duration).ok();
+                            if let Ok(clip) = clip {
+                                world.add_component(id, play_clip(), clip).ok();
+                            }
                         });
                     });
                 }
@@ -244,28 +257,8 @@ pub fn animation_player_systems() -> SystemGroup {
             query((animation_player(), children())).to_system(|q, world, qs, _| {
                 let time = world.resource(abs_time()).clone();
                 for (id, (_, children)) in q.collect_cloned(world, qs) {
-                    let retarget_model = world
-                        .get_cloned(id, retarget_model_from_url())
-                        .ok()
-                        .and_then(|x| TypedAssetUrl::parse(x).ok());
-                    let retarget_animation_scaled = world.get(id, retarget_animation_scaled()).ok();
                     let mut errors = Default::default();
-                    let output = sample_animation_node(
-                        world,
-                        children[0],
-                        time,
-                        if retarget_model.is_some() {
-                            if let Some(hip) = retarget_animation_scaled {
-                                AnimationRetargeting::AnimationScaled { normalize_hip: hip }
-                            } else {
-                                AnimationRetargeting::Skeleton
-                            }
-                        } else {
-                            AnimationRetargeting::None
-                        },
-                        &retarget_model,
-                        &mut errors,
-                    );
+                    let output = sample_animation_node(world, children[0], time, &mut errors);
                     world.add_component(id, animation_output(), output).ok();
                     if errors.len() > 0 {
                         world.add_component(id, animation_errors(), errors).ok();
