@@ -41,21 +41,14 @@ impl PipelineCtx {
             .as_directory()
     }
     pub fn pipeline_path(&self) -> RelativePathBuf {
-        tracing::info!(in_root=?self.process_ctx.in_root, file_path=?self.pipeline_file.decoded_path(), "pipeline_path");
         let path = self
             .process_ctx
             .in_root
             .relative_path(self.pipeline_file.decoded_path());
 
-        tracing::debug!("Root path");
-
         if let Some(fragment) = self.pipeline_file.0.fragment() {
-            let path = path.join(fragment);
-
-            tracing::debug!("Got pipeline path with fragment {:?}", path);
-            path
+            path.join(fragment)
         } else {
-            tracing::info!("Got pipeline path {:?}", path);
             path
         }
     }

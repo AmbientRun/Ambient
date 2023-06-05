@@ -68,8 +68,6 @@ pub async fn build(
     let build_path = path.join("build");
     let assets_path = path.join("assets");
 
-    tracing::info!(?build_path, ?assets_path);
-
     if clean_build {
         tracing::info!("Removing build directory: {build_path:?}");
         tokio::fs::remove_dir_all(&build_path)
@@ -94,8 +92,6 @@ pub async fn build(
 }
 
 async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
-    tracing::info!(?assets_path, ?build_path, "Building assets");
-
     let files = WalkDir::new(assets_path)
         .into_iter()
         .filter_map(|e| e.ok())
@@ -134,8 +130,6 @@ async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
             async {}.boxed()
         }),
     };
-
-    tracing::debug!("Created pipeline context: {ctx:#?}");
 
     ProcessCtxKey.insert(&ctx.assets, ctx.clone());
     pipelines::process_pipelines(&ctx).await;
@@ -211,7 +205,9 @@ async fn store_manifest(manifest: &ProjectManifest, build_path: &Path) -> anyhow
 
 async fn store_metadata(build_path: &Path) -> anyhow::Result<Metadata> {
     let metadata = Metadata {
-        ambient_version: Version::new_from_str(env!("CARGO_PKG_VERSION")).expect("Failed to parse CARGO_PKG_VERSION"),
+        ambient_version: Version::new_from_str(env!("CARGO_PKG_VERSION"))
+            .expect("Failed to parse CARGO_PKG_VERSION"),
+
         client_component_paths: get_component_paths("client", build_path),
         server_component_paths: get_component_paths("server", build_path),
     };
