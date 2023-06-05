@@ -14,7 +14,9 @@ use components::{grid_side_length, grid_x, grid_y};
 #[main]
 pub async fn main() {
     let side_length =
-        entity::wait_for_component(entity::synchronized_resources(), grid_side_length()).await;
+        entity::wait_for_component(entity::synchronized_resources(), grid_side_length())
+            .await
+            .unwrap();
 
     let id = Entity::new()
         .with_merge(make_perspective_infinite_reverse_camera())

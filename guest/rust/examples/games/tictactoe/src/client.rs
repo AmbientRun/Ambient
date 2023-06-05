@@ -10,8 +10,9 @@ mod constants;
 
 #[main]
 async fn main() {
-    let cells =
-        entity::wait_for_component(entity::synchronized_resources(), components::cells()).await;
+    let cells = entity::wait_for_component(entity::synchronized_resources(), components::cells())
+        .await
+        .unwrap();
 
     ambient_api::messages::Frame::subscribe(move |_| {
         process_input();
