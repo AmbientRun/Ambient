@@ -8,23 +8,24 @@ use ambient_core::{abs_time, asset_cache, async_ecs::async_run, runtime};
 use ambient_ecs::{
     children, components,
     generated::components::core::animation::{
-        animation_errors, animation_player, apply_animation_player, apply_base_pose, blend,
-        clip_duration, freeze_at_percentage, freeze_at_time, looping, mask_bind_ids, mask_weights,
-        play_clip_from_url, retarget_animation_scaled, retarget_model_from_url, speed, start_time,
+        animation_errors, animation_player, apply_animation_player, apply_base_pose, bind_ids,
+        blend, clip_duration, freeze_at_percentage, freeze_at_time, looping, mask_bind_ids,
+        mask_weights, play_clip_from_url, retarget_animation_scaled, retarget_model_from_url,
+        speed, start_time,
     },
     query, ComponentDesc, Debuggable, EntityId, SystemGroup, World,
 };
 use ambient_model::{animation_binder, ModelFromUrl};
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt},
-    asset_url::{AbsAssetUrl, AnimationAssetType, ModelAssetType, TypedAssetUrl},
+    asset_url::{AnimationAssetType, TypedAssetUrl},
 };
 use anyhow::Context;
 use glam::{Quat, Vec3};
 
 use crate::{
-    AnimationClip, AnimationClipFromUrl, AnimationClipRetargetedFromModel, AnimationOutput,
-    AnimationRetargeting, AnimationTarget, AnimationTrackInterpolator, Vec3Field,
+    AnimationClip, AnimationClipRetargetedFromModel, AnimationOutput, AnimationRetargeting,
+    AnimationTarget, AnimationTrackInterpolator, Vec3Field,
 };
 
 components!("animation", {
@@ -63,10 +64,10 @@ fn sample_animation_node_inner(
     time: Duration,
     errors: &mut Vec<String>,
 ) -> anyhow::Result<HashMap<AnimationOutputKey, AnimationOutput>> {
-    if let Ok(url) = world.get_ref(node, play_clip_from_url()) {
+    if let Ok(_) = world.get_ref(node, play_clip_from_url()) {
         let clip = match world.get_ref(node, play_clip()) {
             Ok(clip) => clip,
-            Err(err) => return Ok(Default::default()),
+            Err(_) => return Ok(Default::default()),
         };
         let time = if let Ok(freeze_at_time) = world.get(node, freeze_at_time()) {
             freeze_at_time as f64
@@ -220,8 +221,21 @@ pub fn animation_player_systems() -> SystemGroup {
                         .get(&assets)
                         .await;
                         let duration = clip.as_ref().map(|clip| clip.duration()).unwrap_or(0.);
+                        let binders = clip
+                            .as_ref()
+                            .map(|clip| {
+                                clip.tracks
+                                    .iter()
+                                    .filter_map(|x| match &x.target {
+                                        AnimationTarget::BinderId(binder) => Some(binder.clone()),
+                                        AnimationTarget::Entity(_entity) => None,
+                                    })
+                                    .collect::<Vec<_>>()
+                            })
+                            .unwrap_or_default();
                         async_run.run(move |world| {
                             world.add_component(id, clip_duration(), duration).ok();
+                            world.add_component(id, bind_ids(), binders).ok();
                             if let Ok(clip) = clip {
                                 world.add_component(id, play_clip(), clip).ok();
                             }

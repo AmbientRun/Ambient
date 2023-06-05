@@ -105,7 +105,7 @@ add_child(left_foot, ball);
 
 ### Pre-loading animations
 
-The easiest way to pre-load animations is by simply creating `PlayClipFromUrlNode` nodes and waiting for them to load:
+You can pre-load animations is by simply creating `PlayClipFromUrlNode` nodes and waiting for them to load:
 
 ```rust
 let capoeira = PlayClipFromUrlNode::new(

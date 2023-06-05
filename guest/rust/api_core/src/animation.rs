@@ -3,9 +3,9 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     components::core::{
         animation::{
-            animation_player, apply_base_pose, blend, clip_duration, freeze_at_percentage,
-            freeze_at_time, looping, mask_bind_ids, mask_weights, retarget_animation_scaled,
-            retarget_model_from_url, start_time,
+            animation_player, apply_base_pose, bind_ids, blend, clip_duration,
+            freeze_at_percentage, freeze_at_time, looping, mask_bind_ids, mask_weights,
+            retarget_animation_scaled, retarget_model_from_url, start_time,
         },
         app::{name, ref_count},
         ecs::{children, parent},
@@ -159,6 +159,10 @@ impl PlayClipFromUrlNode {
         }
         let val: f32 = *res.borrow();
         val
+    }
+    /// Returns None if the clip hasn't been loaded yet
+    pub fn peek_bind_ids(&self) -> Option<Vec<String>> {
+        get_component(self.0 .0, bind_ids())
     }
     /// Wait until the clip has been loaded
     pub async fn wait_until_loaded(&self) {

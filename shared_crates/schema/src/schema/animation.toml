@@ -104,3 +104,9 @@ type = "String"
 name = "Bind id"
 description = "Animation bind id."
 attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::animation::bind_ids"]
+type = { type = "Vec", element_type = "String" }
+name = "Bind ids"
+description = "Animation bind ids."
+attributes = ["Debuggable", "Networked", "Store"]
