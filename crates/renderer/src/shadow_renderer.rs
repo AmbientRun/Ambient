@@ -211,6 +211,7 @@ impl ShadowsRenderer {
                     globals,
                     ..*bind_groups
                 },
+                cascade.dynamic_target.texture.size,
             );
             {
                 ambient_profiling::scope!("Drop render pass");
