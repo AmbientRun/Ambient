@@ -439,8 +439,12 @@ impl Renderer {
                 wgpu::IndexFormat::Uint32,
             );
 
-            self.forward
-                .render(&mut render_pass, &self.forward_collect_state, &bind_groups);
+            self.forward.render(
+                &mut render_pass,
+                &self.forward_collect_state,
+                &bind_groups,
+                target.size(),
+            );
             {
                 ambient_profiling::scope!("Drop render pass");
                 drop(render_pass);
@@ -507,7 +511,8 @@ impl Renderer {
                 wgpu::IndexFormat::Uint32,
             );
 
-            self.transparent.render(&mut render_pass, &bind_groups);
+            self.transparent
+                .render(&mut render_pass, &bind_groups, target.size());
 
             {
                 ambient_profiling::scope!("Drop render pass");

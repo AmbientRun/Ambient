@@ -3,9 +3,8 @@ use std::sync::Arc;
 use ambient_core::{
     gpu_components,
     gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
-    hierarchy::children,
 };
-use ambient_ecs::{query, ArchetypeFilter, Component, SystemGroup, World};
+use ambient_ecs::{copy_component_recursive, ArchetypeFilter, Component, SystemGroup, World};
 use ambient_gpu::{
     gpu::Gpu,
     mesh_buffer::MeshBuffer,
@@ -184,8 +183,12 @@ impl Outlines {
                 wgpu::IndexFormat::Uint32,
             );
 
-            self.renderer
-                .render(&mut render_pass, &self.collect_state, bind_groups);
+            self.renderer.render(
+                &mut render_pass,
+                &self.collect_state,
+                bind_groups,
+                target.size(),
+            );
             {
                 ambient_profiling::scope!("Drop render pass");
                 drop(render_pass);
@@ -224,39 +227,7 @@ impl Outlines {
 }
 
 pub fn systems() -> SystemGroup {
-    SystemGroup::new(
-        "outlines",
-        vec![
-            query((outline_recursive().changed(),)).to_system(|q, world, qs, _| {
-                for (id, (val,)) in q.collect_cloned(world, qs) {
-                    world.add_component(id, outline(), val).ok();
-                }
-            }),
-            query((outline_recursive(),))
-                .despawned()
-                .to_system(|q, world, qs, _| {
-                    for (id, _) in q.collect_cloned(world, qs) {
-                        world.remove_component(id, outline()).ok();
-                    }
-                }),
-            query((outline_recursive(), children().changed())).to_system(|q, world, qs, _| {
-                for (_, (val, childs)) in q.collect_cloned(world, qs) {
-                    for c in childs {
-                        world.add_component(c, outline_recursive(), val).ok();
-                    }
-                }
-            }),
-            query((outline_recursive(), children()))
-                .despawned()
-                .to_system(|q, world, qs, _| {
-                    for (_, (_, childs)) in q.collect_cloned(world, qs) {
-                        for c in childs {
-                            world.remove_component(c, outline_recursive()).ok();
-                        }
-                    }
-                }),
-        ],
-    )
+    copy_component_recursive("outlines", outline_recursive(), outline())
 }
 
 pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {

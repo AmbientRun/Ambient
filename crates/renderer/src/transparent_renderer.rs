@@ -17,7 +17,9 @@ use super::{
     double_sided, get_gpu_primitive_id, primitives, FSMain, RendererResources, RendererShader,
     SharedMaterial,
 };
-use crate::{bind_groups::BindGroups, is_transparent, transparency_group, RendererConfig};
+use crate::{
+    bind_groups::BindGroups, is_transparent, scissors, transparency_group, RendererConfig,
+};
 
 pub struct TransparentRendererConfig {
     pub renderer_config: RendererConfig,
@@ -100,6 +102,7 @@ impl TransparentRenderer {
                             .double_sided()
                             .unwrap_or(primitive_shader.double_sided),
                     );
+                    let scissors = world.get(id, scissors()).ok();
                     let depth_write_enabled = primitive
                         .material
                         .depth_write_enabled()
@@ -128,6 +131,7 @@ impl TransparentRenderer {
                                 .transparency_group()
                                 .unwrap_or(primitive_shader.transparency_group),
                         ),
+                        scissors,
                     });
                 }
             }
@@ -193,6 +197,7 @@ impl TransparentRenderer {
         &'a self,
         render_pass: &mut wgpu::RenderPass<'a>,
         bind_groups: &BindGroups<'a>,
+        render_target_size: wgpu::Extent3d,
     ) {
         let mut is_bound = false;
         // TODO: keep track of the state to avoid state switches (same pipeline multiple times etc.)
@@ -217,6 +222,16 @@ impl TransparentRenderer {
                     &[],
                 );
                 // entry.shader.pipeline.bind(render_pass, MATERIAL_BIND_GROUP, entry.material.bind());
+                if let Some(scissors) = entry.scissors {
+                    render_pass.set_scissor_rect(scissors.x, scissors.y, scissors.z, scissors.w);
+                } else {
+                    render_pass.set_scissor_rect(
+                        0,
+                        0,
+                        render_target_size.width,
+                        render_target_size.height,
+                    );
+                }
 
                 render_pass.draw_indexed(
                     metadata.index_offset..(metadata.index_offset + metadata.index_count),
@@ -255,6 +270,7 @@ struct TransparentPrimitive {
     material: SharedMaterial,
     mesh_metadata: MeshMetadata,
     transparency_group: i32,
+    scissors: Option<UVec4>,
 }
 struct ShaderNode {
     pipeline: GraphicsPipeline,

@@ -122,3 +122,17 @@ type = "String"
 name = "Decal material from URL"
 description = "Load a Decal material from the URL and attach it to this entity."
 attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rendering::scissors"]
+type = "Uvec4"
+name = "Scissors"
+description = "Apply a scissors test to this entity (anything outside the rect will be hidden)."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rendering::scissors_recursive"]
+type = "Uvec4"
+name = "Scissors (recursive)"
+description = """
+If attached, this entity and all of its children will be rendered with an scissor with the rect specified.
+You do not need to attach `scissors` if you have attached `scissors_recursive`."""
+attributes = ["Debuggable", "Networked", "Store"]

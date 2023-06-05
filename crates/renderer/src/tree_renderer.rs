@@ -10,7 +10,7 @@ use ambient_gpu::{
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
 use ambient_std::asset_cache::AssetCache;
-use glam::{uvec2, UVec2};
+use glam::{uvec2, UVec2, UVec4};
 use itertools::Itertools;
 use wgpu::DepthBiasState;
 
@@ -18,7 +18,7 @@ use super::{
     double_sided, lod::cpu_lod_visible, primitives, CollectPrimitive, DrawIndexedIndirect, FSMain,
     PrimitiveIndex, RendererCollectState, RendererResources, RendererShader, SharedMaterial,
 };
-use crate::{bind_groups::BindGroups, is_transparent, PostSubmitFunc, RendererConfig};
+use crate::{bind_groups::BindGroups, is_transparent, scissors, PostSubmitFunc, RendererConfig};
 
 pub struct TreeRendererConfig {
     pub renderer_config: RendererConfig,
@@ -267,7 +267,9 @@ impl TreeRenderer {
             let double_sided = world
                 .get(id, double_sided())
                 .unwrap_or(material.double_sided().unwrap_or(shader.double_sided));
+            let scissors = world.get(id, scissors()).ok();
             let shader_id = format!("{}-{}", shader.id, double_sided);
+            let material_id = format!("{}-{:?}", material.id(), scissors);
             let node = self
                 .tree
                 .entry(shader_id.clone())
@@ -275,23 +277,20 @@ impl TreeRenderer {
 
             let mat = node
                 .tree
-                .entry(material.id().to_string())
+                .entry(material_id.clone())
                 .or_insert_with(|| MaterialNode {
                     material_index: self.material_indices.acquire_index(),
                     primitives_subbuffer: self.primitives.create_buffer(gpu, None),
                     material: material.clone(),
                     primitives: Vec::new(),
+                    scissors,
                 });
             self.primitives_lookup.insert(
                 (id, primitive_index),
-                (
-                    shader_id.clone(),
-                    material.id().to_string(),
-                    mat.primitives.len(),
-                ),
+                (shader_id.clone(), material_id.clone(), mat.primitives.len()),
             );
             mat.primitives.push((id, primitive_index));
-            Some((shader_id, material.id().to_string()))
+            Some((shader_id, material_id))
         } else {
             None
         }
@@ -340,6 +339,7 @@ impl TreeRenderer {
         render_pass: &mut wgpu::RenderPass<'a>,
         collect_state: &'a RendererCollectState,
         bind_groups: &BindGroups<'a>,
+        render_target_size: wgpu::Extent3d,
     ) {
         let primitives_bind_group = if let Some(primitives_bind_group) = &self.primitives_bind_group
         {
@@ -373,6 +373,16 @@ impl TreeRenderer {
                 let material = &mat.material;
 
                 render_pass.set_bind_group(bind_groups.len() as _, material.bind_group(), &[]);
+                if let Some(scissors) = mat.scissors {
+                    render_pass.set_scissor_rect(scissors.x, scissors.y, scissors.z, scissors.w);
+                } else {
+                    render_pass.set_scissor_rect(
+                        0,
+                        0,
+                        render_target_size.width,
+                        render_target_size.height,
+                    );
+                }
 
                 let offset = self
                     .primitives
@@ -494,6 +504,7 @@ struct MaterialNode {
     primitives_subbuffer: SubBufferId,
     material: SharedMaterial,
     primitives: Vec<(EntityId, PrimitiveIndex)>,
+    scissors: Option<UVec4>,
 }
 
 struct MaterialIndices {

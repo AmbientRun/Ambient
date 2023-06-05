@@ -11,12 +11,14 @@ use ambient_core::{
     transform::get_world_rotation,
 };
 use ambient_ecs::{
-    components, query_mut, Debuggable, Entity, EntityId, Resource, SystemGroup, World,
+    components, copy_component_recursive, query_mut, Debuggable, Entity, EntityId, Resource,
+    SystemGroup, World,
 };
 use ambient_gpu::{
+    gpu::Gpu,
     mesh_buffer::GpuMesh,
     shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule},
-    wgsl_utils::wgsl_interpolate, gpu::Gpu,
+    wgsl_utils::wgsl_interpolate,
 };
 use ambient_std::{asset_cache::*, asset_url::AbsAssetUrl, cb, include_file, Cb};
 use derive_more::*;
@@ -58,7 +60,8 @@ pub const MAX_PRIMITIVE_COUNT: usize = 16;
 
 pub use ambient_ecs::generated::components::core::rendering::{
     cast_shadows, color, double_sided, fog_color, fog_density, fog_height_falloff, light_ambient,
-    light_diffuse, overlay, pbr_material_from_url, sun, transparency_group,
+    light_diffuse, overlay, pbr_material_from_url, scissors, scissors_recursive, sun,
+    transparency_group,
 };
 
 components!("rendering", {
@@ -94,6 +97,11 @@ pub fn systems() -> SystemGroup {
     SystemGroup::new(
         "renderer",
         vec![
+            Box::new(copy_component_recursive(
+                "scissors",
+                scissors_recursive(),
+                scissors(),
+            )),
             query(pbr_material_from_url().changed()).to_system(|q, world, qs, _| {
                 for (id, url) in q.collect_cloned(world, qs) {
                     let url = match AbsAssetUrl::parse(url) {
