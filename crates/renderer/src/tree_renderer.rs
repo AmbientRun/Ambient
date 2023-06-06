@@ -18,7 +18,10 @@ use super::{
     double_sided, lod::cpu_lod_visible, primitives, CollectPrimitive, DrawIndexedIndirect, FSMain,
     PrimitiveIndex, RendererCollectState, RendererResources, RendererShader, SharedMaterial,
 };
-use crate::{bind_groups::BindGroups, is_transparent, scissors, PostSubmitFunc, RendererConfig};
+use crate::{
+    bind_groups::BindGroups, is_transparent, scissors, set_scissors_safe, PostSubmitFunc,
+    RendererConfig,
+};
 
 pub struct TreeRendererConfig {
     pub renderer_config: RendererConfig,
@@ -373,16 +376,7 @@ impl TreeRenderer {
                 let material = &mat.material;
 
                 render_pass.set_bind_group(bind_groups.len() as _, material.bind_group(), &[]);
-                if let Some(scissors) = mat.scissors {
-                    render_pass.set_scissor_rect(scissors.x, scissors.y, scissors.z, scissors.w);
-                } else {
-                    render_pass.set_scissor_rect(
-                        0,
-                        0,
-                        render_target_size.width,
-                        render_target_size.height,
-                    );
-                }
+                set_scissors_safe(render_pass, render_target_size, mat.scissors);
 
                 let offset = self
                     .primitives

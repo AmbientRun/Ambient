@@ -18,7 +18,8 @@ use super::{
     SharedMaterial,
 };
 use crate::{
-    bind_groups::BindGroups, is_transparent, scissors, transparency_group, RendererConfig,
+    bind_groups::BindGroups, is_transparent, scissors, set_scissors_safe, transparency_group,
+    RendererConfig,
 };
 
 pub struct TransparentRendererConfig {
@@ -222,16 +223,7 @@ impl TransparentRenderer {
                     &[],
                 );
                 // entry.shader.pipeline.bind(render_pass, MATERIAL_BIND_GROUP, entry.material.bind());
-                if let Some(scissors) = entry.scissors {
-                    render_pass.set_scissor_rect(scissors.x, scissors.y, scissors.z, scissors.w);
-                } else {
-                    render_pass.set_scissor_rect(
-                        0,
-                        0,
-                        render_target_size.width,
-                        render_target_size.height,
-                    );
-                }
+                set_scissors_safe(render_pass, render_target_size, entry.scissors);
 
                 render_pass.draw_indexed(
                     metadata.index_offset..(metadata.index_offset + metadata.index_count),
