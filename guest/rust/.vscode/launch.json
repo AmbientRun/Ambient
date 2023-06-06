@@ -158,6 +158,19 @@
             "cwd": "${workspaceFolder}/examples/basics/primitives"
         },
         {
+            "name": "basics/procedural_generation",
+            "type": "lldb",
+            "request": "launch",
+            "program": "ambient",
+            "args": [
+                "run"
+            ],
+            "initCommands": [
+                "settings set plugin.jit-loader.gdb.enable on"
+            ],
+            "cwd": "${workspaceFolder}/examples/basics/procedural_generation"
+        },
+        {
             "name": "basics/raw_text",
             "type": "lldb",
             "request": "launch",
@@ -169,6 +182,19 @@
                 "settings set plugin.jit-loader.gdb.enable on"
             ],
             "cwd": "${workspaceFolder}/examples/basics/raw_text"
+        },
+        {
+            "name": "basics/samplers",
+            "type": "lldb",
+            "request": "launch",
+            "program": "ambient",
+            "args": [
+                "run"
+            ],
+            "initCommands": [
+                "settings set plugin.jit-loader.gdb.enable on"
+            ],
+            "cwd": "${workspaceFolder}/examples/basics/samplers"
         },
         {
             "name": "basics/screen_ray",
@@ -288,6 +314,19 @@
             "cwd": "${workspaceFolder}/examples/games/tictactoe"
         },
         {
+            "name": "ui/auto_editor",
+            "type": "lldb",
+            "request": "launch",
+            "program": "ambient",
+            "args": [
+                "run"
+            ],
+            "initCommands": [
+                "settings set plugin.jit-loader.gdb.enable on"
+            ],
+            "cwd": "${workspaceFolder}/examples/ui/auto_editor"
+        },
+        {
             "name": "ui/button",
             "type": "lldb",
             "request": "launch",
@@ -351,6 +390,19 @@
                 "settings set plugin.jit-loader.gdb.enable on"
             ],
             "cwd": "${workspaceFolder}/examples/ui/flow_layout"
+        },
+        {
+            "name": "ui/image",
+            "type": "lldb",
+            "request": "launch",
+            "program": "ambient",
+            "args": [
+                "run"
+            ],
+            "initCommands": [
+                "settings set plugin.jit-loader.gdb.enable on"
+            ],
+            "cwd": "${workspaceFolder}/examples/ui/image"
         },
         {
             "name": "ui/rect",

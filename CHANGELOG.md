@@ -44,6 +44,8 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 #### Other
 
+- Added a new `ImageFromUrl` ui component, which can load images from assets or urls. It also supports rounded corners, borders and a fallback background color. See the [image example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/ui/image/src/client.rs) for more details.
+
 #### Examples
 
 ### Changed

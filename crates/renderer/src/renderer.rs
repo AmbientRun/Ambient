@@ -512,7 +512,7 @@ impl Renderer {
             );
 
             self.transparent
-                .render(&mut render_pass, &bind_groups, target.size());
+                .render(world, &mut render_pass, &bind_groups, target.size());
 
             {
                 ambient_profiling::scope!("Drop render pass");

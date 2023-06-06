@@ -37,7 +37,7 @@ use ambient_guest_bridge::{
     components::{
         app::{ui_scene, window_logical_size, window_physical_size},
         layout::{gpu_ui_size, height, margin, mesh_to_local_from_size, padding, width},
-        rect::{background_color, rect},
+        rect::{background_color, background_url, rect},
         transform::{
             local_to_parent, local_to_world, mesh_to_local, mesh_to_world, scale, translation,
         },
@@ -129,6 +129,19 @@ pub fn with_rect(element: Element) -> Element {
         .init(scale(), Vec3::ONE)
         .init(mesh_to_local_from_size(), ())
         .init(ui_scene(), ())
+}
+
+/// Show an image loaded from a url
+#[element_component]
+pub fn ImageFromUrl(
+    _: &mut Hooks,
+    /// Url to load the image from
+    url: String,
+) -> Element {
+    Rectangle
+        .el()
+        .with(background_color(), Vec4::ZERO)
+        .with(background_url(), url)
 }
 
 /// A simple UI line. Use components like `line_from`, `line_to`, `line_width`, `background_color`, `border_color`, `border_radius` and `border_thickness`

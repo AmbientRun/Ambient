@@ -249,7 +249,7 @@ pub struct GpuRenderPrimitive {
 }
 
 #[derive(Clone, Debug, Deref, DerefMut)]
-pub struct SharedMaterial(Arc<dyn Material + 'static>);
+pub struct SharedMaterial(pub Arc<dyn Material + 'static>);
 
 impl<T: Material + 'static> From<Arc<T>> for SharedMaterial {
     fn from(v: Arc<T>) -> Self {
@@ -499,4 +499,21 @@ fn is_transparent(
 ) -> bool {
     world.get(id, transparency_group()).is_ok()
         || material.transparent().unwrap_or(shader.transparent)
+}
+
+/// wgpu will throw an exception if the scissor value is outside the viewport
+pub(crate) fn set_scissors_safe(
+    render_pass: &mut wgpu::RenderPass,
+    render_target_size: wgpu::Extent3d,
+    scissors: Option<UVec4>,
+) {
+    if let Some(scissors) = scissors {
+        let left = scissors.x.clamp(0, render_target_size.width);
+        let top = scissors.y.clamp(0, render_target_size.height);
+        let right = (left + scissors.z).clamp(0, render_target_size.width);
+        let bottom = (top + scissors.w).clamp(0, render_target_size.height);
+        render_pass.set_scissor_rect(left, top, right - left, bottom - top);
+    } else {
+        render_pass.set_scissor_rect(0, 0, render_target_size.width, render_target_size.height);
+    }
 }
