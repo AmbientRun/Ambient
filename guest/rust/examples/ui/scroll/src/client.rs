@@ -32,6 +32,8 @@ fn App(hooks: &mut Hooks) -> Element {
             ])
         }.el()
     ])
+    .with_padding_even(STREET)
+    .with(space_between_items(), 10.)
 }
 
 #[main]

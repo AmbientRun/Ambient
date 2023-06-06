@@ -117,48 +117,28 @@ pub fn ScrollBoxView(
                 return;
             }
             if let Some(id) = *id.lock() {
-                // *pos.lock() = Some(world.get(id, translation()).unwrap());
-                // println!("pos: {:?}", pos);
                 let pos = world.get(id, translation()).unwrap();
                 set_canvas_offset(vec2( pos.x, -pos.y));
-                // let sci = (vec4(0., 0., 150., 150.) * ratio).as_uvec4() +
-                // uvec4(0, (*pos.lock()).unwrap().y as u32, 0, 0);
-                // if let Some(container_id) = *container_id.lock() {
-                //     println!("sci added: {:?}", sci);
-                //     world.add_component(container_id, scissors_recursive(), sci).unwrap();
-                // }
             }
             set_f(f + 1);
         }
     });
 
-
     let canvas = Rectangle
         .el()
         .with(width(), min_width)
         .with(height(), min_height)
-        .with(background_color(), vec4(0.1, 0.4, 0.2, 0.4))
-        // .with_default(local_to_parent())
-        // .with_default(local_to_world())
+        .with(background_color(), vec4(0.1, 0.9, 0.1, 0.4))
         .on_spawned({
             to_owned![id];
             move |world, new_id, _| {
             *id.lock() = Some(new_id);
-            // let pos = world.get(new_id, translation()).unwrap();
-            // let sci = (vec4(0., 0., 150., 150.) * ratio).as_uvec4() +
-            // uvec4(0, pos.y as u32, 0, 0);
-            // if let Some(container_id) = *container_id.lock() {
-            //     println!("sci added: {:?}", sci);
-            //     world.add_component(container_id, scissors_recursive(), sci).unwrap();
-            // }
-            // world.add_component(new_id, scissors_recursive(), sci);
         }})
         .init_default(children())
         .children(vec![
             Flow(vec![inner]).el()
                 .with_default(fit_horizontal_children())
                 .with(scissors_recursive(), {
-                    println!("canvas offset: {:?}", canvas_offset);
                     (vec4(
                         canvas_offset.x,
                         -canvas_offset.y,
@@ -175,8 +155,7 @@ pub fn ScrollBoxView(
             .with(background_color(), vec4(0.6, 0.6, 0.6, 1.0))
             .with_default(local_to_parent())
             .with_default(local_to_world())
-            .with(translation(), vec3(min_width+200.0, -offset, 0.)),
-
+            .with(translation(), vec3(min_width+5.0, -offset, 0.)),
         ]);
     canvas
 }
