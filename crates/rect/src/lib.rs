@@ -35,11 +35,11 @@ use ambient_std::{
 };
 use async_trait::async_trait;
 use glam::{uvec4, vec4, Quat, UVec3, UVec4, Vec3, Vec4};
-use wgpu::{BindGroup, BindGroupLayoutEntry};
+use wgpu::{BindGroup, BindGroupLayoutEntry, Extent3d};
 
 pub use ambient_ecs::generated::components::core::rect::{
     background_color, background_url, border_color, border_radius, border_thickness, line_from,
-    line_to, line_width, rect,
+    line_to, line_width, rect, size_from_background_image,
 };
 
 #[repr(C)]
@@ -167,12 +167,35 @@ pub fn systems() -> SystemGroup {
                             },
                             background: world.get_cloned(id, background_url()).ok(),
                         };
+                        let resize = world.has_component(id, size_from_background_image());
                         runtime.spawn(async move {
                             let mat = mat_key.get(&assets).await;
                             match mat {
                                 Ok(mat) => {
                                     async_run.run(move |world| {
-                                        world.add_component(id, material(), (*mat).clone()).ok();
+                                        world
+                                            .add_component(
+                                                id,
+                                                material(),
+                                                SharedMaterial(mat.clone()),
+                                            )
+                                            .ok();
+                                        if resize {
+                                            world
+                                                .add_components(
+                                                    id,
+                                                    Entity::new()
+                                                        .with(
+                                                            width(),
+                                                            mat.background_size.width as f32,
+                                                        )
+                                                        .with(
+                                                            height(),
+                                                            mat.background_size.height as f32,
+                                                        ),
+                                                )
+                                                .ok();
+                                        }
                                     });
                                 }
                                 Err(err) => {
@@ -254,8 +277,8 @@ struct RectMaterialKey {
     pub background: Option<String>,
 }
 #[async_trait]
-impl AsyncAssetKey<AssetResult<Arc<SharedMaterial>>> for RectMaterialKey {
-    async fn load(self, assets: AssetCache) -> AssetResult<Arc<SharedMaterial>> {
+impl AsyncAssetKey<AssetResult<Arc<RectMaterial>>> for RectMaterialKey {
+    async fn load(self, assets: AssetCache) -> AssetResult<Arc<RectMaterial>> {
         let gpu = GpuKey.get(&assets);
         let error_color = PixelTextureKey {
             colors: vec![uvec4(255, 0, 0, 255)],
@@ -285,12 +308,12 @@ impl AsyncAssetKey<AssetResult<Arc<SharedMaterial>>> for RectMaterialKey {
             }
             .get(&assets),
         };
-        Ok(Arc::new(SharedMaterial::new(RectMaterial::new(
+        Ok(Arc::new(RectMaterial::new(
             &gpu,
             &assets,
             self.params,
             &background,
-        ))))
+        )))
     }
 }
 
@@ -308,6 +331,7 @@ pub struct RectMaterial {
     id: String,
     bind_group: wgpu::BindGroup,
     transparent: Option<bool>,
+    background_size: Extent3d,
 }
 impl RectMaterial {
     pub fn new(
@@ -351,6 +375,7 @@ impl RectMaterial {
                 label: Some("RectMaterial.bind_group"),
             }),
             transparent: Some(true),
+            background_size: background.size,
         }
     }
 }

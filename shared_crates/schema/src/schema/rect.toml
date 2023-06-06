@@ -58,3 +58,9 @@ type = "Empty"
 name = "Rect"
 description = "If attached to an entity, the entity will be converted to a UI rectangle, with optionally rounded corners and borders."
 attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rect::size_from_background_image"]
+type = "Empty"
+name = "Size from background image"
+description = "Resize this rect based on the size of the background image."
+attributes = ["Debuggable", "Networked", "Store"]
