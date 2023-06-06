@@ -17,6 +17,7 @@ tests = [
     "ui/dock_layout",
     "ui/editors",
     "ui/flow_layout",
+    "ui/image",
     "ui/rect",
     "ui/screens",
     "ui/slider",

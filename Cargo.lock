@@ -1186,8 +1186,10 @@ dependencies = [
  "ambient_meshes",
  "ambient_renderer",
  "ambient_std",
+ "async-trait",
  "bytemuck",
  "glam 0.24.0",
+ "log",
  "wgpu 0.16.0",
 ]
 

@@ -20,3 +20,5 @@ ambient_layout = { path = "../layout" , version = "0.3.0-dev" }
 glam = { workspace = true }
 wgpu = { workspace = true }
 bytemuck = { workspace = true }
+async-trait = { workspace = true }
+log = { workspace = true }

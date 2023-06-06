@@ -249,7 +249,7 @@ pub struct GpuRenderPrimitive {
 }
 
 #[derive(Clone, Debug, Deref, DerefMut)]
-pub struct SharedMaterial(Arc<dyn Material + 'static>);
+pub struct SharedMaterial(pub Arc<dyn Material + 'static>);
 
 impl<T: Material + 'static> From<Arc<T>> for SharedMaterial {
     fn from(v: Arc<T>) -> Self {
