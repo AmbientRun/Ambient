@@ -9,6 +9,12 @@ name = "Background color"
 description = "Background color of an entity with a `rect` component."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::rect::background_url"]
+type = "String"
+name = "Background url"
+description = "Url to an image asset."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::rect::border_color"]
 type = "Vec4"
 name = "Border color"

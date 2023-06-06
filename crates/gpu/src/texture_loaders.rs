@@ -40,15 +40,20 @@ impl AsyncAssetKey<Result<Arc<image::RgbaImage>, AssetError>> for Rgba8ImageFrom
 async fn image_from_url(assets: AssetCache, url: AbsAssetUrl) -> Result<DynamicImage, AssetError> {
     let data = BytesFromUrl::new(url.clone(), true).get(&assets).await?;
 
-    let extension = url.extension().context("No extension")?;
-    Ok(
-        task::block_in_place(move || -> anyhow::Result<DynamicImage> {
-            let format = ImageFormat::from_extension(extension).context("Invalid extension")?;
-            Ok(image::io::Reader::with_format(Cursor::new(&*data), format).decode()?)
-        })
-        .with_context(|| format!("Failed to load image {url}"))
-        .unwrap(),
-    )
+    Ok(task::block_in_place({
+            let url = url.clone();
+            move || -> anyhow::Result<DynamicImage> {
+                if let Some(extension) = url.extension() {
+                    let format = ImageFormat::from_extension(extension).context("Invalid extension")?;
+                    Ok(image::io::Reader::with_format(Cursor::new(&*data), format).decode()?)
+                } else {
+                    Ok(image::io::Reader::new(Cursor::new(&*data))
+                        .with_guessed_format()
+                        .with_context(|| format!("Failed to guess format, and couldn't find an extension of image with url {}", url))?
+                        .decode()?)
+                }
+        }})
+        .with_context(|| format!("Failed to load image {url}"))?)
 }
 
 #[derive(Debug, Clone)]

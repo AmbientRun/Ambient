@@ -31,6 +31,7 @@ members = [
     "examples/ui/dock_layout",
     "examples/ui/editors",
     "examples/ui/flow_layout",
+    "examples/ui/image",
     "examples/ui/rect",
     "examples/ui/screens",
     "examples/ui/slider",
