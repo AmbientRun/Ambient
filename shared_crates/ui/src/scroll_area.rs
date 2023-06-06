@@ -4,14 +4,14 @@ use ambient_guest_bridge::{
     components::{
         app::{window_scale_factor},
         rect::{background_color, border_radius},
-        ecs::{children, parent},
+        ecs::{children},
         layout::{fit_horizontal_children, fit_horizontal_parent, layout_width_to_children, width, height},
         transform::{translation, local_to_world, local_to_parent},
         rendering::{scissors_recursive}
     },
     messages,
 };
-use glam::{vec3, vec2, Vec3, Vec2, vec4, uvec4, Vec4, Mat4};
+use glam::{vec3, vec2, Vec2, vec4, Vec4};
 
 use crate::{
     layout::{Flow, MeasureSize},
@@ -87,13 +87,11 @@ pub fn ScrollBoxView(
     inner: Element,
 ) -> Element {
     let (scroll, set_scroll) = hooks.use_state(0.);
-    let (inner_size, set_inner_size) = hooks.use_state(Vec2::ZERO);
-    let (ratio, set_ratio) = hooks.use_state_with(|world| {
+    let (ratio, _set_ratio) = hooks.use_state_with(|world| {
         let r = world.resource(window_scale_factor()).clone();
         r as f32
     });
-
-    hooks.use_runtime_message::<messages::WindowMouseWheel>(move |world, event| {
+    hooks.use_runtime_message::<messages::WindowMouseWheel>(move |_world, event| {
         let delta = event.delta;
         let mouse_pos = scroll + if event.pixels { delta.y } else { delta.y * 20. };
         set_scroll(mouse_pos.clamp(-scroll_height, 0.));
@@ -101,37 +99,28 @@ pub fn ScrollBoxView(
 
     let bar_height = min_height / (min_height + scroll_height) * min_height;
     let offset = scroll / scroll_height * (min_height - bar_height);
-
     let id = hooks.use_ref_with(|_| None);
-    // let container_id = hooks.use_ref_with(|_| None);
-    // let pos = hooks.use_ref_with(|_| None);
-    let (f, set_f) = hooks.use_state(0_u32);
     let (canvas_offset, set_canvas_offset) = hooks.use_state(Vec2::ZERO);
 
     hooks.use_frame({
         to_owned![id];
         move |world| {
-            // TODO: for some reason, the first frame is not correct for translation
-            // when the canvas is in another flow
-            if f >= 2 {
-                return;
-            }
             if let Some(id) = *id.lock() {
                 let pos = world.get(id, translation()).unwrap();
                 set_canvas_offset(vec2( pos.x, -pos.y));
             }
-            set_f(f + 1);
         }
     });
 
-    let canvas = Rectangle
+    let canvas =
+        UIBase
         .el()
         .with(width(), min_width)
         .with(height(), min_height)
-        .with(background_color(), vec4(0.1, 0.9, 0.1, 0.4))
+        // .with(background_color(), vec4(0.1, 0.6, 0.1, 0.4))
         .on_spawned({
             to_owned![id];
-            move |world, new_id, _| {
+            move |_world, new_id, _| {
             *id.lock() = Some(new_id);
         }})
         .init_default(children())
