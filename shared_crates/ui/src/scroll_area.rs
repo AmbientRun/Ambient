@@ -12,7 +12,7 @@ use ambient_guest_bridge::{
     },
     messages,
 };
-use glam::{vec2, Vec2, vec3, Vec3, vec4, Vec4};
+use glam::{vec2, Vec2, vec3, Vec3, vec4, Vec4, Mat4, uvec4};
 
 use crate::{
     layout::{Flow, MeasureSize},
@@ -117,9 +117,9 @@ pub fn ScrollBoxView(
             if let Some(id) = *id.lock() {
                 let number = world.get(id, mouse_over()).unwrap_or(0);
                 *mouse_over_count.lock() = number;
-                // println!("mouse over: {}", number);
-                let pos = world.get(id, translation()).unwrap();
-                set_canvas_offset(vec2( pos.x, -pos.y));
+                let canvas_local_to_world = world.get(id, local_to_world()).unwrap();
+                let (_, _, pos_world) = Mat4::to_scale_rotation_translation(&canvas_local_to_world);
+                set_canvas_offset(vec2( pos_world.x, pos_world.y));
             }
         }
     });
@@ -141,12 +141,31 @@ pub fn ScrollBoxView(
             Flow(vec![inner]).el()
                 .with_default(fit_horizontal_children())
                 .with(scissors_recursive(), {
-                    (vec4(
-                        canvas_offset.x,
-                        -canvas_offset.y,
-                        min_width,
-                        min_height,
-                    ) * ratio).as_uvec4()
+                    let (y, h) = if canvas_offset.y > 0.0 {
+                        ((canvas_offset.y * ratio) as u32,( min_height * ratio) as u32)
+                    } else {
+                        let h_check = ((min_height + canvas_offset.y) * ratio) as u32;
+                        // h <= 0.0 will panic
+                        if h_check != 0 {
+                            (0, h_check)
+                        } else {
+                            (0, 1)
+                        }
+                    };
+
+                    let (x, w) = if canvas_offset.x > 0.0 {
+                        ((canvas_offset.x * ratio) as u32, (min_width * ratio) as u32)
+                    } else {
+                        let w_check = ((min_width + canvas_offset.x) * ratio) as u32;
+                        // w <= 0.0 will panic
+                        if w_check != 0 {
+                            (0, w_check)
+                        } else {
+                            (0, 1)
+                        }
+                    };
+                    // println!("x: {}, y: {}, w: {}, h: {}", x, y, w, h);
+                    uvec4(x, y, w, h)
                 })
                 .with(translation(), vec3(0., scroll, 0.)),
 
