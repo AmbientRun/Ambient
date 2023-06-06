@@ -223,6 +223,7 @@ impl TransparentRenderer {
                 );
                 // entry.shader.pipeline.bind(render_pass, MATERIAL_BIND_GROUP, entry.material.bind());
                 if let Some(scissors) = entry.scissors {
+                    // println!("scissors in transparent: {:?}", scissors);
                     render_pass.set_scissor_rect(scissors.x, scissors.y, scissors.z, scissors.w);
                 } else {
                     render_pass.set_scissor_rect(

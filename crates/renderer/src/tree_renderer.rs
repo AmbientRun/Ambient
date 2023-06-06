@@ -374,6 +374,7 @@ impl TreeRenderer {
 
                 render_pass.set_bind_group(bind_groups.len() as _, material.bind_group(), &[]);
                 if let Some(scissors) = mat.scissors {
+                    // println!("scissors in tree renderer: {:?}", scissors);
                     render_pass.set_scissor_rect(scissors.x, scissors.y, scissors.z, scissors.w);
                 } else {
                     render_pass.set_scissor_rect(
