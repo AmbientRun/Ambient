@@ -103,7 +103,6 @@ impl TransparentRenderer {
                             .double_sided()
                             .unwrap_or(primitive_shader.double_sided),
                     );
-                    let scissors = world.get(id, scissors()).ok();
                     let depth_write_enabled = primitive
                         .material
                         .depth_write_enabled()
@@ -132,7 +131,6 @@ impl TransparentRenderer {
                                 .transparency_group()
                                 .unwrap_or(primitive_shader.transparency_group),
                         ),
-                        scissors,
                     });
                 }
             }
@@ -196,6 +194,7 @@ impl TransparentRenderer {
     #[ambient_profiling::function]
     pub fn render<'a>(
         &'a self,
+        world: &World,
         render_pass: &mut wgpu::RenderPass<'a>,
         bind_groups: &BindGroups<'a>,
         render_target_size: wgpu::Extent3d,
@@ -223,7 +222,11 @@ impl TransparentRenderer {
                     &[],
                 );
                 // entry.shader.pipeline.bind(render_pass, MATERIAL_BIND_GROUP, entry.material.bind());
-                set_scissors_safe(render_pass, render_target_size, entry.scissors);
+                set_scissors_safe(
+                    render_pass,
+                    render_target_size,
+                    world.get(entry.id, scissors()).ok(),
+                );
 
                 render_pass.draw_indexed(
                     metadata.index_offset..(metadata.index_offset + metadata.index_count),
@@ -262,7 +265,6 @@ struct TransparentPrimitive {
     material: SharedMaterial,
     mesh_metadata: MeshMetadata,
     transparency_group: i32,
-    scissors: Option<UVec4>,
 }
 struct ShaderNode {
     pipeline: GraphicsPipeline,

@@ -96,6 +96,9 @@ impl TreeRenderer {
 
         for (id, (primitives,)) in query((primitives().changed(),))
             .optional_changed(cpu_lod_visible())
+            // TODO: This is not the fastest way to handle scissor changes; essentially the entire entity will be
+            // taken out of the renderer and then reinserted every time the scissors change.
+            .optional_changed(scissors())
             .filter(&self.config.filter)
             .iter(world, Some(&mut spawn_qs))
         {
