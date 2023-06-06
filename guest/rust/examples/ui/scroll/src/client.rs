@@ -2,6 +2,9 @@ use ambient_api::prelude::*;
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
+    let size_info = hooks.use_query(window_logical_size());
+    let x = size_info[0].1.x as f32;
+    let y = size_info[0].1.y as f32;
     let f = FlowColumn::el([
         FlowColumn::el([
             Text::el("ScrollBoxView")
@@ -62,9 +65,9 @@ fn App(hooks: &mut Hooks) -> Element {
     .with(space_between_items(), 10.);
 
     ScrollBoxView {
-        min_width: 800.0,
-        min_height: 600.0,
-        scroll_height: 300.0,
+        min_width: x,
+        min_height: y,
+        scroll_height: y/2.0,
         inner: f
     }.el()
 }
