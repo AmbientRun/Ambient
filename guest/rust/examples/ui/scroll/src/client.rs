@@ -2,7 +2,6 @@ use ambient_api::prelude::*;
 
 #[element_component]
 fn App(hooks: &mut Hooks) -> Element {
-    let ratio = hooks.use_query(window_scale_factor());
     FlowColumn::el([
         Text::el("ScrollBoxView")
         .header_style(),

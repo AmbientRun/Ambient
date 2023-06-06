@@ -5,13 +5,14 @@ use ambient_guest_bridge::{
         app::{window_scale_factor},
         rect::{background_color, border_radius},
         ecs::{children},
+        input::{mouse_over, mouse_pickable_max, mouse_pickable_min},
         layout::{fit_horizontal_children, fit_horizontal_parent, layout_width_to_children, width, height},
         transform::{translation, local_to_world, local_to_parent},
         rendering::{scissors_recursive}
     },
     messages,
 };
-use glam::{vec3, vec2, Vec2, vec4, Vec4};
+use glam::{vec2, Vec2, vec3, Vec3, vec4, Vec4};
 
 use crate::{
     layout::{Flow, MeasureSize},
@@ -91,10 +92,18 @@ pub fn ScrollBoxView(
         let r = world.resource(window_scale_factor()).clone();
         r as f32
     });
-    hooks.use_runtime_message::<messages::WindowMouseWheel>(move |_world, event| {
-        let delta = event.delta;
-        let mouse_pos = scroll + if event.pixels { delta.y } else { delta.y * 20. };
-        set_scroll(mouse_pos.clamp(-scroll_height, 0.));
+
+    let mouse_over_count = hooks.use_ref_with(|_| 0);
+    hooks.use_runtime_message::<messages::WindowMouseWheel>({
+        to_owned![mouse_over_count];
+        move |_world, event| {
+            if *mouse_over_count.lock() == 0 {
+                return;
+            };
+            let delta = event.delta;
+            let mouse_pos = scroll + if event.pixels { delta.y } else { delta.y * 20. };
+            set_scroll(mouse_pos.clamp(-scroll_height, 0.));
+        }
     });
 
     let bar_height = min_height / (min_height + scroll_height) * min_height;
@@ -103,9 +112,12 @@ pub fn ScrollBoxView(
     let (canvas_offset, set_canvas_offset) = hooks.use_state(Vec2::ZERO);
 
     hooks.use_frame({
-        to_owned![id];
+        to_owned![id, mouse_over_count];
         move |world| {
             if let Some(id) = *id.lock() {
+                let number = world.get(id, mouse_over()).unwrap_or(0);
+                *mouse_over_count.lock() = number;
+                // println!("mouse over: {}", number);
                 let pos = world.get(id, translation()).unwrap();
                 set_canvas_offset(vec2( pos.x, -pos.y));
             }
@@ -117,6 +129,7 @@ pub fn ScrollBoxView(
         .el()
         .with(width(), min_width)
         .with(height(), min_height)
+        .init(mouse_pickable_min(), Vec3::ZERO).init(mouse_pickable_max(), Vec3::ZERO)
         // .with(background_color(), vec4(0.1, 0.6, 0.1, 0.4))
         .on_spawned({
             to_owned![id];
@@ -144,7 +157,7 @@ pub fn ScrollBoxView(
             .with(background_color(), vec4(0.6, 0.6, 0.6, 1.0))
             .with_default(local_to_parent())
             .with_default(local_to_world())
-            .with(translation(), vec3(min_width+5.0, -offset, 0.)),
+            .with(translation(), vec3(min_width-5.0, -offset, 0.)),
         ]);
     canvas
 }
