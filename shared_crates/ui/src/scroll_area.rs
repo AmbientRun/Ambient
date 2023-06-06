@@ -1,18 +1,21 @@
 //! Defines a scroll area.
-use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_element::{to_owned, element_component, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::{
-        ecs::children,
-        layout::{fit_horizontal_children, fit_horizontal_parent, layout_width_to_children, width},
-        transform::translation,
+        app::{window_scale_factor},
+        rect::{background_color, border_radius},
+        ecs::{children, parent},
+        layout::{fit_horizontal_children, fit_horizontal_parent, layout_width_to_children, width, height},
+        transform::{translation, local_to_world, local_to_parent},
+        rendering::{scissors_recursive}
     },
     messages,
 };
-use glam::{vec3, Vec2};
+use glam::{vec3, Vec3, Vec2, vec4, uvec4, Vec4, Mat4};
 
 use crate::{
     layout::{Flow, MeasureSize},
-    UIBase,
+    UIBase, Rectangle,
 };
 use ambient_cb::cb;
 
@@ -67,4 +70,95 @@ pub fn ScrollArea(
                 .with_default(layout_width_to_children())
         }
     }
+}
+
+
+/// A scroll box view that can be used to scroll its child with a scroll bar.
+#[element_component]
+pub fn ScrollBoxView(
+    hooks: &mut Hooks,
+    /// Width of the scroll area
+    min_width: f32,
+    /// Height of the scroll area
+    min_height: f32,
+    /// Distance of scrolling in y axis
+    scroll_height: f32,
+    /// The child element
+    inner: Element,
+) -> Element {
+    let (scroll, set_scroll) = hooks.use_state(0.);
+    let (inner_size, set_inner_size) = hooks.use_state(Vec2::ZERO);
+    let (ratio, set_ratio) = hooks.use_state_with(|world| {
+        let r = world.resource(window_scale_factor()).clone();
+        r as f32
+    });
+
+    hooks.use_runtime_message::<messages::WindowMouseWheel>(move |world, event| {
+        let delta = event.delta;
+        let mouse_pos = scroll + if event.pixels { delta.y } else { delta.y * 20. };
+        set_scroll(mouse_pos.clamp(-scroll_height, 0.));
+    });
+
+    let bar_height = min_height / (min_height + scroll_height) * min_height;
+    let offset = scroll / scroll_height * (min_height - bar_height);
+
+    let id = hooks.use_ref_with(|_| None);
+    let container_id = hooks.use_ref_with(|_| None);
+    let pos = hooks.use_ref_with(|_| None);
+    let (f, set_f) = hooks.use_state(0_u32);
+
+    hooks.use_frame({
+        to_owned![id, pos, container_id];
+        move |world| {
+            // TODO: for some reason, the first frame is not correct for translation
+            // when the canvas is in another flow
+            if f >= 2 {
+                return;
+            }
+            if let Some(id) = *id.lock() {
+                *pos.lock() = Some(world.get(id, translation()).unwrap());
+                // pos = Some(p);
+                println!("pos: {:?}", pos);
+                let sci = (vec4(0., 0., 150., 150.) * ratio).as_uvec4() +
+                uvec4(0, (*pos.lock()).unwrap().y as u32, 0, 0);
+                if let Some(container_id) = *container_id.lock() {
+                    println!("sci added: {:?}", sci);
+                    world.add_component(container_id, scissors_recursive(), sci).unwrap();
+                }
+            }
+            set_f(f + 1);
+        }
+    });
+
+
+    let canvas = Rectangle
+        .el()
+        .with(width(), 150.0)
+        .with(height(), 150.0)
+        .with(background_color(), vec4(0.1, 0.4, 0.2, 0.4))
+        // .with_default(local_to_parent())
+        // .with_default(local_to_world())
+        .on_spawned(move |world, new_id, _| {
+            *id.lock() = Some(new_id);
+        })
+        .init_default(children())
+        .children(vec![
+            Flow(vec![inner]).el()
+                .with_default(fit_horizontal_children())
+                .on_spawned(move |world, new_id, _| {
+                    *container_id.lock() = Some(new_id);
+                })
+                .with(translation(), vec3(0., scroll, 0.)),
+
+            Rectangle::el()
+            .with(width(), 5.)
+            .with(height(), bar_height)
+            .with(border_radius(), Vec4::ONE * 4.0)
+            .with(background_color(), vec4(0.6, 0.6, 0.6, 1.0))
+            .with_default(local_to_parent())
+            .with_default(local_to_world())
+            .with(translation(), vec3(min_width+5.0, -offset, 0.)),
+
+        ]);
+    canvas
 }
