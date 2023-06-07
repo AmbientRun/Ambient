@@ -27,9 +27,11 @@ the server and the client have a world of their own (green and blue boxes in the
 
 ![Server client architecture](server_client.png)
 
-The server's world is then automatically replicated to all clients' worlds. The clients can
-have then add aditional entities and/or components to their local world. Typically, you'll
-have game state on the server, and visual effects or other client-local state on the clients.
+The server's world is automatically replicated to all clients' worlds. The clients can
+add additional entities and/or components to their local world. Typically, you'll
+have game state on the server (for instance `{ unit: "orc", level: 10 }`), and visual
+effects or other client-local state on the clients (for instance, spawn fireworks when
+the orc levels up).
 
 The replication is one way though; any changes you make to your client world will _not_ be replicated
 to the server. To communicate from the client to the server you will typically use
