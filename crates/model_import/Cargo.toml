@@ -44,6 +44,7 @@ indexmap = { workspace = true }
 log = { workspace = true }
 relative-path = { workspace = true }
 russimp = { workspace = true, optional = true}
+convert_case = { workspace = true }
 
 [dev-dependencies]
 ambient_app = { path = "../app" }
