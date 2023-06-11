@@ -18,6 +18,7 @@ use model_crate::{ModelCrate, ModelNodeRef};
 use relative_path::RelativePathBuf;
 use serde::{Deserialize, Serialize};
 
+pub(crate) mod animation_bind_id;
 pub mod assimp;
 pub mod fbx;
 pub mod gltf;

@@ -22,6 +22,7 @@ use ambient_std::{
 };
 use anyhow::Context;
 use glam::{Quat, Vec3};
+use itertools::Itertools;
 
 use crate::{
     AnimationClip, AnimationClipRetargetedFromModel, AnimationOutput, AnimationRetargeting,
@@ -30,14 +31,26 @@ use crate::{
 
 components!("animation", {
     @[Debuggable]
-    animation_output: HashMap<AnimationOutputKey, AnimationOutput>,
+    animation_output: AnimationOutputs,
     @[Debuggable]
     mask: HashMap<String, f32>,
     cached_base_pose: HashMap<AnimationOutputKey, AnimationOutput>,
     play_clip: Arc<AnimationClip>,
 });
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Clone)]
+pub struct AnimationOutputs(HashMap<AnimationOutputKey, AnimationOutput>);
+impl std::fmt::Debug for AnimationOutputs {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut map = f.debug_map();
+        for (key, value) in self.0.iter().sorted_by_key(|x| x.0) {
+            map.entry(key, value);
+        }
+        map.finish()
+    }
+}
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct AnimationOutputKey {
     target: AnimationTarget,
     component: u32,
@@ -273,7 +286,9 @@ pub fn animation_player_systems() -> SystemGroup {
                 for (id, (_, children)) in q.collect_cloned(world, qs) {
                     let mut errors = Default::default();
                     let output = sample_animation_node(world, children[0], time, &mut errors);
-                    world.add_component(id, animation_output(), output).ok();
+                    world
+                        .add_component(id, animation_output(), AnimationOutputs(output))
+                        .ok();
                     if errors.len() > 0 {
                         world.add_component(id, animation_errors(), errors).ok();
                     } else if world.has_component(id, animation_errors()) {
@@ -284,7 +299,7 @@ pub fn animation_player_systems() -> SystemGroup {
             query((apply_animation_player(), animation_binder())).to_system(|q, world, qs, _| {
                 for (_, (anim_player_id, binder)) in q.iter(world, qs) {
                     if let Ok(outputs) = world.get_ref(*anim_player_id, animation_output()) {
-                        apply_animation_outputs_to_entity(world, binder, outputs);
+                        apply_animation_outputs_to_entity(world, binder, &outputs.0);
                     }
                 }
             }),

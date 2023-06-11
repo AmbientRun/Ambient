@@ -1,4 +1,5 @@
 use std::{
+    cell::RefCell,
     collections::HashMap,
     io::{Cursor, Read, Seek},
     sync::Arc,
@@ -29,7 +30,11 @@ use self::{
     mesh::{FbxCluster, FbxGeometry, FbxSkin},
     model::FbxModel,
 };
-use crate::{model_crate::ModelCrate, TextureResolver};
+use crate::{
+    animation_bind_id::{BindIdNodeFuncs, BindIdReg},
+    model_crate::ModelCrate,
+    TextureResolver,
+};
 
 mod animation;
 mod material;
@@ -60,6 +65,11 @@ pub async fn import_from_fbx_reader(
 
             let mut n_meshes = HashMap::new();
 
+            let bind_ids = BindIdReg::<i64, FbxModel>::new(BindIdNodeFuncs {
+                node_to_id: |node| node.id,
+                node_name: |node| Some(&node.node_name),
+            });
+
             for (id, geo) in doc.geometries.iter() {
                 let meshes = geo.to_cpu_meshes(&doc.skins, &doc.clusters);
                 n_meshes.insert(*id, meshes.len());
@@ -67,7 +77,9 @@ pub async fn import_from_fbx_reader(
                     asset_crate.meshes.insert(format!("{id}_{index}"), mesh);
                 }
             }
-            let animations = animation::get_animations(&doc);
+            let bind_ids = RefCell::new(bind_ids);
+            let animations = animation::get_animations(&doc, &bind_ids);
+            let mut bind_ids = bind_ids.into_inner();
             for (id, clip) in animations {
                 asset_crate.animations.insert(id, clip);
             }
@@ -99,7 +111,14 @@ pub async fn import_from_fbx_reader(
             let mut world = World::new("fbx_reader");
             let mut entities = HashMap::new();
             for model in doc.models.values() {
-                model.create_model_nodes(&doc, &mut world, &mut entities, asset_crate, &n_meshes);
+                model.create_model_nodes(
+                    &doc,
+                    &mut world,
+                    &mut entities,
+                    asset_crate,
+                    &n_meshes,
+                    &mut bind_ids,
+                );
             }
             for model in doc.models.values() {
                 let id = *entities.get(&model.id).unwrap();
