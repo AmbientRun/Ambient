@@ -2,7 +2,9 @@ use std::{collections::HashMap, sync::Arc};
 
 #[cfg(feature = "guest")]
 use ambient_guest_bridge::ecs::UntypedComponent;
-use ambient_guest_bridge::ecs::{Component, ComponentDesc, ComponentValue, Entity, EntityId, World};
+use ambient_guest_bridge::ecs::{
+    Component, ComponentDesc, ComponentValue, Entity, EntityId, World,
+};
 
 use crate::ElementComponent;
 
@@ -40,8 +42,16 @@ impl ElementConfig {
         }
     }
     pub(crate) fn get_element_key(&self, short: bool) -> String {
-        let name = if let Some(element) = &self.part { element.as_ref().element_component_name() } else { "Entity" };
-        let name = if short { name.split("::").last().unwrap() } else { name };
+        let name = if let Some(element) = &self.part {
+            element.as_ref().element_component_name()
+        } else {
+            "Entity"
+        };
+        let name = if short {
+            name.split("::").last().unwrap()
+        } else {
+            name
+        };
         if !self.key.is_empty() {
             format!("{}_{}", name, self.key)
         } else if !name.is_empty() {
@@ -54,15 +64,28 @@ impl ElementConfig {
 
 #[derive(Clone)]
 #[allow(clippy::type_complexity)]
-pub(crate) struct ElementComponents(pub(crate) HashMap<usize, Arc<dyn Fn(&World, &mut Entity) + Sync + Send>>);
+pub(crate) struct ElementComponents(
+    pub(crate) HashMap<usize, Arc<dyn Fn(&World, &mut Entity) + Sync + Send>>,
+);
 impl ElementComponents {
     pub fn new() -> Self {
         Self(HashMap::new())
     }
-    pub fn set<T: ComponentValue + Clone + Sync + Send + 'static>(&mut self, component: Component<T>, value: T) {
-        self.set_writer(component, Arc::new(move |_, ed| ed.set(component, value.clone())));
+    pub fn set<T: ComponentValue + Clone + Sync + Send + 'static>(
+        &mut self,
+        component: Component<T>,
+        value: T,
+    ) {
+        self.set_writer(
+            component,
+            Arc::new(move |_, ed| ed.set(component, value.clone())),
+        );
     }
-    pub fn set_writer(&mut self, component: impl Into<ComponentDesc>, writer: Arc<dyn Fn(&World, &mut Entity) + Sync + Send>) {
+    pub fn set_writer(
+        &mut self,
+        component: impl Into<ComponentDesc>,
+        writer: Arc<dyn Fn(&World, &mut Entity) + Sync + Send>,
+    ) {
         self.0.insert(component.into().index() as _, writer);
     }
     pub fn remove<T: ComponentValue + Clone>(&mut self, component: Component<T>) {

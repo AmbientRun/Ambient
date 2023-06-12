@@ -47,7 +47,9 @@ use std::{any::Any, sync::Arc};
 
 #[cfg(feature = "native")]
 use ambient_guest_bridge::ecs::{components, SystemGroup};
-use ambient_guest_bridge::ecs::{Component, ComponentDesc, ComponentValue, Entity, EntityId, World};
+use ambient_guest_bridge::ecs::{
+    Component, ComponentDesc, ComponentValue, Entity, EntityId, World,
+};
 use as_any::AsAny;
 use dyn_clonable::clonable;
 #[cfg(feature = "native")]
@@ -129,7 +131,10 @@ pub struct Element {
 impl Element {
     /// Creates a new [Element] with no children.
     pub fn new() -> Self {
-        Self { config: ElementConfig::new(), children: Vec::new() }
+        Self {
+            config: ElementConfig::new(),
+            children: Vec::new(),
+        }
     }
     /// Creates a new [Element] from the given component.
     pub fn from_element_component(part: Box<dyn ElementComponent>) -> Self {
@@ -142,29 +147,46 @@ impl Element {
         vec![self]
     }
     /// Adds the given `component` with `value` to the element.
-    pub fn with<T: ComponentValue + Sync + Send + Clone + 'static>(mut self, component: Component<T>, value: T) -> Self {
+    pub fn with<T: ComponentValue + Sync + Send + Clone + 'static>(
+        mut self,
+        component: Component<T>,
+        value: T,
+    ) -> Self {
         self.config.components.set(component, value);
         self
     }
     /// Adds the given `component` with the default value for the component's type to the element.
-    pub fn with_default<T: ComponentValue + Sync + Send + Clone + Default + 'static>(mut self, component: Component<T>) -> Self {
+    pub fn with_default<T: ComponentValue + Sync + Send + Clone + Default + 'static>(
+        mut self,
+        component: Component<T>,
+    ) -> Self {
         self.config.components.set(component, T::default());
         self
     }
     /// Sets the given `component` to `value` on the element during initialization only.
-    pub fn init<T: ComponentValue + Sync + Send + Clone + 'static>(mut self, component: Component<T>, value: T) -> Self {
+    pub fn init<T: ComponentValue + Sync + Send + Clone + 'static>(
+        mut self,
+        component: Component<T>,
+        value: T,
+    ) -> Self {
         self.config.init_components.set(component, value);
         self
     }
     /// Calls [Self::init] with the default value for the component's type.
-    pub fn init_default<T: ComponentValue + Sync + Send + Clone + Default + 'static>(self, component: Component<T>) -> Self {
+    pub fn init_default<T: ComponentValue + Sync + Send + Clone + Default + 'static>(
+        self,
+        component: Component<T>,
+    ) -> Self {
         self.init(component, T::default())
     }
     #[cfg(feature = "native")]
     /// Extends the element with all of the values from the given [Entity].
     pub fn extend(mut self, entity_data: Entity) -> Self {
         for unit in entity_data.into_iter() {
-            self.config.components.set_writer(unit.desc(), Arc::new(move |_, ed| ed.set_entry(unit.clone())));
+            self.config.components.set_writer(
+                unit.desc(),
+                Arc::new(move |_, ed| ed.set_entry(unit.clone())),
+            );
         }
         self
     }
@@ -172,7 +194,10 @@ impl Element {
     #[cfg(feature = "native")]
     pub fn init_extend(mut self, entity_data: Entity) -> Self {
         for unit in entity_data.into_iter() {
-            self.config.init_components.set_writer(unit.desc(), Arc::new(move |_, ed| ed.set_entry(unit.clone())));
+            self.config.init_components.set_writer(
+                unit.desc(),
+                Arc::new(move |_, ed| ed.set_entry(unit.clone())),
+            );
         }
         self
     }
@@ -192,22 +217,34 @@ impl Element {
         self
     }
     /// Set the function used to spawn the element.
-    pub fn spawner<F: Fn(&mut World, Entity) -> EntityId + Sync + Send + 'static>(mut self, handler: F) -> Self {
+    pub fn spawner<F: Fn(&mut World, Entity) -> EntityId + Sync + Send + 'static>(
+        mut self,
+        handler: F,
+    ) -> Self {
         self.config.spawner = Arc::new(handler);
         self
     }
     /// Set the function used to despawn the element.
-    pub fn despawner<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(mut self, handler: F) -> Self {
+    pub fn despawner<F: Fn(&mut World, EntityId) + Sync + Send + 'static>(
+        mut self,
+        handler: F,
+    ) -> Self {
         self.config.despawner = Arc::new(handler);
         self
     }
     /// Set the callback to call when the element is spawned.
-    pub fn on_spawned<F: Fn(&mut World, EntityId, &str) + Sync + Send + 'static>(mut self, handler: F) -> Self {
+    pub fn on_spawned<F: Fn(&mut World, EntityId, &str) + Sync + Send + 'static>(
+        mut self,
+        handler: F,
+    ) -> Self {
         self.config.on_spawned = Some(Arc::new(handler));
         self
     }
     /// Set the callback to call when the element is despawned.
-    pub fn on_despawn<F: Fn(&mut World, EntityId, &str) + Sync + Send + 'static>(mut self, handler: F) -> Self {
+    pub fn on_despawn<F: Fn(&mut World, EntityId, &str) + Sync + Send + 'static>(
+        mut self,
+        handler: F,
+    ) -> Self {
         self.config.on_despawn = Some(Arc::new(handler));
         self
     }
@@ -226,7 +263,8 @@ impl Element {
     /// Returns true if the element has the given `component`.
     pub fn has_component(&self, component: impl Into<ComponentDesc>) -> bool {
         let index = component.into().index() as usize;
-        self.config.components.0.contains_key(&index) || self.config.init_components.0.contains_key(&index)
+        self.config.components.0.contains_key(&index)
+            || self.config.init_components.0.contains_key(&index)
     }
     /// This spawns the element tree as a number of entities, but they won't react to changes. Returns the root entity
     #[cfg(feature = "native")]
@@ -238,7 +276,10 @@ impl Element {
     #[cfg(feature = "native")]
     pub fn spawn_interactive(self, world: &mut World) -> EntityId {
         let tree = self.spawn_tree(world);
-        let entity = Entity::new().with(self::element_tree(), ShareableElementTree(Arc::new(Mutex::new(tree))));
+        let entity = Entity::new().with(
+            self::element_tree(),
+            ShareableElementTree(Arc::new(Mutex::new(tree))),
+        );
         world.spawn(entity)
     }
     /// This spawns the elemet tree and returns it. The tree won't be automatically updated, but can manually be updated
@@ -307,7 +348,12 @@ macro_rules! define_el_function_for_vec_element_newtype {
 
 #[cfg(feature = "native")]
 /// Render the given tree underneath `id`.
-pub fn render_parented_with_component(world: &mut World, id: EntityId, handle: Component<ShareableElementTree>, mut element: Element) {
+pub fn render_parented_with_component(
+    world: &mut World,
+    id: EntityId,
+    handle: Component<ShareableElementTree>,
+    mut element: Element,
+) {
     use ambient_core::{
         hierarchy::{children, parent},
         transform::{local_to_parent, local_to_world},
@@ -345,7 +391,9 @@ pub fn render_parented_with_component(world: &mut World, id: EntityId, handle: C
             }
         }
         if !world.has_component(id, local_to_world()) {
-            world.add_component(id, local_to_world(), Default::default()).unwrap();
+            world
+                .add_component(id, local_to_world(), Default::default())
+                .unwrap();
         }
     }
 }

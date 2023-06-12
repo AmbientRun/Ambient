@@ -41,7 +41,10 @@ use quote::{quote, ToTokens};
 /// }
 /// ```
 #[proc_macro_attribute]
-pub fn element_component(input: proc_macro::TokenStream, item: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn element_component(
+    input: proc_macro::TokenStream,
+    item: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
     do_derive_element_component(input.into(), item.into()).into()
 }
 
@@ -132,9 +135,16 @@ fn do_derive_element_component(input: TokenStream, item: TokenStream) -> TokenSt
     // dirty check to ensure the first arguments is &mut hooks
     fn check_type_is_mut_ref(ty: &syn::Type, ident: &str) {
         if let syn::Type::Reference(tr) = ty {
-            assert!(tr.mutability.is_some(), "expected {ty:?} to be a mutable reference");
+            assert!(
+                tr.mutability.is_some(),
+                "expected {ty:?} to be a mutable reference"
+            );
             if let syn::Type::Path(path) = tr.elem.as_ref() {
-                assert_eq!(path.path.segments.last().unwrap().ident, ident, "expected the last segment of the path to equal {ident}");
+                assert_eq!(
+                    path.path.segments.last().unwrap().ident,
+                    ident,
+                    "expected the last segment of the path to equal {ident}"
+                );
             } else {
                 panic!("expected {tr:?} to be a mutable reference to a path");
             }
@@ -170,9 +180,16 @@ fn do_derive_element_component(input: TokenStream, item: TokenStream) -> TokenSt
         }
     };
     let (props_names_braced, struct_unpack) = if !props.is_empty() {
-        let props_names = props.iter().flat_map(get_pat_type).map(|p| p.pat.as_ref()).collect_vec();
+        let props_names = props
+            .iter()
+            .flat_map(get_pat_type)
+            .map(|p| p.pat.as_ref())
+            .collect_vec();
         let braced = quote! { { #(#props_names),* }  };
-        (Some(braced.clone()), Some(quote! { let Self #braced = *self; }))
+        (
+            Some(braced.clone()),
+            Some(quote! { let Self #braced = *self; }),
+        )
     } else {
         (None, None)
     };
@@ -271,7 +288,10 @@ mod test {
             }
         };
 
-        assert_eq!(super::do_derive_element_component(quote! {without_el}, input).to_string(), output.to_string());
+        assert_eq!(
+            super::do_derive_element_component(quote! {without_el}, input).to_string(),
+            output.to_string()
+        );
     }
 
     #[test]
@@ -306,7 +326,10 @@ mod test {
             }
         };
 
-        assert_eq!(super::do_derive_element_component(TokenStream::new(), input).to_string(), output.to_string());
+        assert_eq!(
+            super::do_derive_element_component(TokenStream::new(), input).to_string(),
+            output.to_string()
+        );
     }
 
     #[test]
@@ -345,11 +368,16 @@ mod test {
             }
         };
 
-        assert_eq!(super::do_derive_element_component(quote! {}, input).to_string(), output.to_string());
+        assert_eq!(
+            super::do_derive_element_component(quote! {}, input).to_string(),
+            output.to_string()
+        );
     }
 
     #[test]
-    #[should_panic(expected = "your function signature uses destructuring; this macro only supports identifiers at present")]
+    #[should_panic(
+        expected = "your function signature uses destructuring; this macro only supports identifiers at present"
+    )]
     fn test_single_arg_component_with_destructuring() {
         let input = quote! {
             pub fn FancyText(
@@ -412,7 +440,10 @@ mod test {
             }
         };
 
-        assert_eq!(super::do_derive_element_component(TokenStream::new(), input).to_string(), output.to_string());
+        assert_eq!(
+            super::do_derive_element_component(TokenStream::new(), input).to_string(),
+            output.to_string()
+        );
     }
 
     #[test]
@@ -444,7 +475,10 @@ mod test {
             }
         };
 
-        assert_eq!(super::do_derive_element_component(quote! {without_el}, input).to_string(), output.to_string());
+        assert_eq!(
+            super::do_derive_element_component(quote! {without_el}, input).to_string(),
+            output.to_string()
+        );
     }
 
     #[test]
@@ -484,6 +518,9 @@ mod test {
             }
         };
 
-        assert_eq!(super::do_derive_element_component(TokenStream::new(), input).to_string(), output.to_string());
+        assert_eq!(
+            super::do_derive_element_component(TokenStream::new(), input).to_string(),
+            output.to_string()
+        );
     }
 }

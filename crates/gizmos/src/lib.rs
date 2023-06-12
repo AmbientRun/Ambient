@@ -15,9 +15,27 @@ components!("gizmos", {
 
 #[derive(Debug, Copy, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum GizmoPrimitive {
-    Sphere { origin: Vec3, radius: f32, color: Vec3, border_width: f32 },
-    Line { start: Vec3, end: Vec3, radius: f32, color: Vec3 },
-    Rect { origin: Vec3, extents: Vec2, corner: f32, inner_corner: f32, normal: Vec3, thickness: f32, color: Vec3 },
+    Sphere {
+        origin: Vec3,
+        radius: f32,
+        color: Vec3,
+        border_width: f32,
+    },
+    Line {
+        start: Vec3,
+        end: Vec3,
+        radius: f32,
+        color: Vec3,
+    },
+    Rect {
+        origin: Vec3,
+        extents: Vec2,
+        corner: f32,
+        inner_corner: f32,
+        normal: Vec3,
+        thickness: f32,
+        color: Vec3,
+    },
 }
 impl From<Line> for GizmoPrimitive {
     fn from(line: Line) -> Self {
@@ -30,42 +48,106 @@ pub const DEFAULT_RADIUS: f32 = 0.2;
 
 impl GizmoPrimitive {
     pub fn sphere(origin: Vec3, radius: f32) -> Self {
-        Self::Sphere { origin, radius, color: Vec3::ONE, border_width: radius }
+        Self::Sphere {
+            origin,
+            radius,
+            color: Vec3::ONE,
+            border_width: radius,
+        }
     }
 
     pub fn torus(origin: Vec3, radius: f32, width: f32) -> Self {
-        Self::Sphere { origin, radius, color: Vec3::ONE, border_width: width }
+        Self::Sphere {
+            origin,
+            radius,
+            color: Vec3::ONE,
+            border_width: width,
+        }
     }
 
     pub fn rect(origin: Vec3, extents: Vec2, corner_radius: f32, normal: Vec3) -> Self {
-        Self::Rect { origin, extents, thickness: extents.max_element(), color: Vec3::ONE, corner: corner_radius, normal, inner_corner: 0. }
+        Self::Rect {
+            origin,
+            extents,
+            thickness: extents.max_element(),
+            color: Vec3::ONE,
+            corner: corner_radius,
+            normal,
+            inner_corner: 0.,
+        }
     }
 
-    pub fn wire_rect(origin: Vec3, extents: Vec2, corner_radius: f32, inner_corner_radius: f32, thickness: f32, normal: Vec3) -> Self {
-        Self::Rect { origin, thickness, color: Vec3::ONE, corner: corner_radius, inner_corner: inner_corner_radius, normal, extents }
+    pub fn wire_rect(
+        origin: Vec3,
+        extents: Vec2,
+        corner_radius: f32,
+        inner_corner_radius: f32,
+        thickness: f32,
+        normal: Vec3,
+    ) -> Self {
+        Self::Rect {
+            origin,
+            thickness,
+            color: Vec3::ONE,
+            corner: corner_radius,
+            inner_corner: inner_corner_radius,
+            normal,
+            extents,
+        }
     }
 
     pub fn line(start: Vec3, end: Vec3, radius: f32) -> Self {
-        Self::Line { start, end, radius, color: Vec3::ONE }
+        Self::Line {
+            start,
+            end,
+            radius,
+            color: Vec3::ONE,
+        }
     }
 
     pub fn ray(origin: Vec3, dir: Vec3, radius: f32) -> Self {
-        Self::Line { start: origin, end: origin + dir, radius, color: Vec3::ONE }
+        Self::Line {
+            start: origin,
+            end: origin + dir,
+            radius,
+            color: Vec3::ONE,
+        }
     }
 
     pub fn transform(self, t: Mat4) -> Self {
         let scale = t.transform_vector3(Vec3::X).length();
         match self {
-            Self::Sphere { origin, radius, color, border_width } => {
-                Self::Sphere { origin: t.transform_point3(origin), radius: radius * scale, border_width: border_width * scale, color }
-            }
-            Self::Line { start, end, radius, color } => Self::Line {
+            Self::Sphere {
+                origin,
+                radius,
+                color,
+                border_width,
+            } => Self::Sphere {
+                origin: t.transform_point3(origin),
+                radius: radius * scale,
+                border_width: border_width * scale,
+                color,
+            },
+            Self::Line {
+                start,
+                end,
+                radius,
+                color,
+            } => Self::Line {
                 start: t.transform_point3(start),
                 end: t.transform_point3(end),
                 radius: t.transform_vector3(Vec3::X * radius).length(),
                 color,
             },
-            Self::Rect { origin, extents, corner, inner_corner, normal, thickness, color } => Self::Rect {
+            Self::Rect {
+                origin,
+                extents,
+                corner,
+                inner_corner,
+                normal,
+                thickness,
+                color,
+            } => Self::Rect {
                 origin: t.transform_point3(origin),
                 extents: extents * scale,
                 corner,
@@ -79,21 +161,89 @@ impl GizmoPrimitive {
 
     pub fn with_color(self, color: Vec3) -> Self {
         match self {
-            Self::Sphere { origin, radius, color: _, border_width } => Self::Sphere { origin, radius, color, border_width },
-            Self::Line { start, end, radius, color: _ } => Self::Line { start, end, radius, color },
-            Self::Rect { origin, extents, corner, inner_corner, normal, thickness, color: _ } => {
-                Self::Rect { origin, extents, corner, inner_corner, normal, thickness, color }
-            }
+            Self::Sphere {
+                origin,
+                radius,
+                color: _,
+                border_width,
+            } => Self::Sphere {
+                origin,
+                radius,
+                color,
+                border_width,
+            },
+            Self::Line {
+                start,
+                end,
+                radius,
+                color: _,
+            } => Self::Line {
+                start,
+                end,
+                radius,
+                color,
+            },
+            Self::Rect {
+                origin,
+                extents,
+                corner,
+                inner_corner,
+                normal,
+                thickness,
+                color: _,
+            } => Self::Rect {
+                origin,
+                extents,
+                corner,
+                inner_corner,
+                normal,
+                thickness,
+                color,
+            },
         }
     }
 
     pub fn with_size(self, size: f32) -> Self {
         match self {
-            Self::Sphere { origin, radius: _, color, border_width } => Self::Sphere { origin, radius: size, color, border_width },
-            Self::Line { start, end, radius: _, color } => Self::Line { start, end, radius: size, color },
-            Self::Rect { origin, extents, corner, inner_corner, normal, thickness, color } => {
-                Self::Rect { origin, extents: extents.normalize_or_zero() * size, corner, inner_corner, normal, thickness, color }
-            }
+            Self::Sphere {
+                origin,
+                radius: _,
+                color,
+                border_width,
+            } => Self::Sphere {
+                origin,
+                radius: size,
+                color,
+                border_width,
+            },
+            Self::Line {
+                start,
+                end,
+                radius: _,
+                color,
+            } => Self::Line {
+                start,
+                end,
+                radius: size,
+                color,
+            },
+            Self::Rect {
+                origin,
+                extents,
+                corner,
+                inner_corner,
+                normal,
+                thickness,
+                color,
+            } => Self::Rect {
+                origin,
+                extents: extents.normalize_or_zero() * size,
+                corner,
+                inner_corner,
+                normal,
+                thickness,
+                color,
+            },
         }
     }
 }
@@ -108,7 +258,12 @@ pub struct Cuboid {
 
 impl Cuboid {
     pub fn new(origin: Vec3, extents: Vec3, color: Vec3, thickness: f32) -> Self {
-        Self { origin, extents, color, thickness }
+        Self {
+            origin,
+            extents,
+            color,
+            thickness,
+        }
     }
 }
 
@@ -119,11 +274,17 @@ pub struct Gizmos {
 
 impl Gizmos {
     pub fn new() -> Self {
-        Self { scopes: DashMap::new() }
+        Self {
+            scopes: DashMap::new(),
+        }
     }
 
     pub fn scope(&self, scope: u64) -> RefMut<u64, GizmoScope> {
-        let scope = self.scopes.entry(scope).and_modify(|s| s.clear()).or_default();
+        let scope = self
+            .scopes
+            .entry(scope)
+            .and_modify(|s| s.clear())
+            .or_default();
         scope
     }
 

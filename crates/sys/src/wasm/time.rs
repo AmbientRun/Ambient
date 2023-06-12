@@ -87,7 +87,9 @@ impl SystemTime {
     }
 
     pub fn duration_since(&self, earlier: Self) -> Result<Duration, SystemTimeError> {
-        Ok(Duration::from_nanos(((*self.0 - *earlier.0).max(0.0) * 1e6) as _))
+        Ok(Duration::from_nanos(
+            ((*self.0 - *earlier.0).max(0.0) * 1e6) as _,
+        ))
     }
 }
 
@@ -118,7 +120,9 @@ impl Interval {
     }
 
     pub fn new_at(start: Instant, period: Duration) -> Self {
-        Self { inner: timer::Interval::new_at(&get_global_timers().expect("No timers"), start, period) }
+        Self {
+            inner: timer::Interval::new_at(&get_global_timers().expect("No timers"), start, period),
+        }
     }
 
     pub async fn tick(&mut self) -> Instant {

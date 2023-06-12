@@ -81,7 +81,11 @@ pub fn angle_lerp(a0: f32, a1: f32, t: f32) -> f32 {
     a0 + angle_shortest_dist(a0, a1) * t
 }
 
-pub fn angle_to_position(self_position: glam::Vec2, self_forward: glam::Vec2, other_position: glam::Vec2) -> f32 {
+pub fn angle_to_position(
+    self_position: glam::Vec2,
+    self_forward: glam::Vec2,
+    other_position: glam::Vec2,
+) -> f32 {
     let delta = other_position - self_position;
     if delta.length() == 0.0 {
         0.0
@@ -117,7 +121,10 @@ impl From<SphericalCoords> for glam::Vec3 {
 }
 
 pub fn cdf_sample<T>(vector: &[T], weight: fn(usize, &T) -> f32) -> usize {
-    let total_weight = vector.iter().enumerate().fold(0., |p, (i, x)| p + weight(i, x));
+    let total_weight = vector
+        .iter()
+        .enumerate()
+        .fold(0., |p, (i, x)| p + weight(i, x));
     let mut culm = 0.;
     let x = rand::random::<f32>();
     for (i, v) in vector.iter().enumerate() {

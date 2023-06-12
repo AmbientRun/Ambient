@@ -23,7 +23,10 @@ pub struct FreeCamera {
 }
 
 pub fn new(position: glam::Vec3, orientation: glam::Vec2) -> Entity {
-    let free = FreeCamera { orientation, ..Default::default() };
+    let free = FreeCamera {
+        orientation,
+        ..Default::default()
+    };
     Entity::new()
         .with_default(local_to_world())
         .with_default(inv_local_to_world())
@@ -43,23 +46,47 @@ pub fn new(position: glam::Vec3, orientation: glam::Vec2) -> Entity {
 pub fn free_camera_system() -> SystemGroup<Event<'static, ()>> {
     SystemGroup::new(
         "free_camera_system",
-        vec![query_mut((free_camera(), translation(), rotation(), camera_movement_speed(), far()), ()).to_system(|q, world, qs, event| {
+        vec![query_mut(
+            (
+                free_camera(),
+                translation(),
+                rotation(),
+                camera_movement_speed(),
+                far(),
+            ),
+            (),
+        )
+        .to_system(|q, world, qs, event| {
             for (_, (free_camera, translation, rotation, speed, far), ()) in q.iter(world, qs) {
                 match event {
-                    Event::DeviceEvent { event: DeviceEvent::MouseMotion { delta }, .. } => {
+                    Event::DeviceEvent {
+                        event: DeviceEvent::MouseMotion { delta },
+                        ..
+                    } => {
                         let speed = 0.01;
                         free_camera.orientation += vec2(delta.0 as f32, delta.1 as f32) * speed;
                     }
-                    Event::WindowEvent { event: WindowEvent::KeyboardInput { input, .. }, .. } => {
+                    Event::WindowEvent {
+                        event: WindowEvent::KeyboardInput { input, .. },
+                        ..
+                    } => {
                         let is_pressed = input.state == ElementState::Pressed;
                         if let Some(keycode) = input.virtual_keycode {
                             match keycode {
                                 VirtualKeyCode::E => free_camera.is_up_pressed = is_pressed,
                                 VirtualKeyCode::Q => free_camera.is_down_pressed = is_pressed,
-                                VirtualKeyCode::W | VirtualKeyCode::Up => free_camera.is_forward_pressed = is_pressed,
-                                VirtualKeyCode::A | VirtualKeyCode::Left => free_camera.is_left_pressed = is_pressed,
-                                VirtualKeyCode::S | VirtualKeyCode::Down => free_camera.is_backward_pressed = is_pressed,
-                                VirtualKeyCode::D | VirtualKeyCode::Right => free_camera.is_right_pressed = is_pressed,
+                                VirtualKeyCode::W | VirtualKeyCode::Up => {
+                                    free_camera.is_forward_pressed = is_pressed
+                                }
+                                VirtualKeyCode::A | VirtualKeyCode::Left => {
+                                    free_camera.is_left_pressed = is_pressed
+                                }
+                                VirtualKeyCode::S | VirtualKeyCode::Down => {
+                                    free_camera.is_backward_pressed = is_pressed
+                                }
+                                VirtualKeyCode::D | VirtualKeyCode::Right => {
+                                    free_camera.is_right_pressed = is_pressed
+                                }
                                 VirtualKeyCode::R => *speed *= 2.0,
                                 VirtualKeyCode::F => *speed /= 2.0,
                                 VirtualKeyCode::T => *far *= 2.0,
@@ -90,8 +117,8 @@ pub fn free_camera_system() -> SystemGroup<Event<'static, ()>> {
                         }
                         *translation += velocity * (*speed);
 
-                        *rotation =
-                            glam::Quat::from_rotation_z(free_camera.orientation.x) * glam::Quat::from_rotation_x(free_camera.orientation.y);
+                        *rotation = glam::Quat::from_rotation_z(free_camera.orientation.x)
+                            * glam::Quat::from_rotation_x(free_camera.orientation.y);
                         // *rotation = glam::Quat::from_rotation_z(free_camera.orientation.x)
                         //     * glam::Quat::from_rotation_y(free_camera.orientation.y);
                     }

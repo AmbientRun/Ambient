@@ -2,7 +2,9 @@ use ambient_core::{
     name,
     transform::{euler_rotation, scale, translation},
 };
-use ambient_ecs::{AttributeConstructor, Component, ComponentAttribute, ComponentEntry, ComponentValue};
+use ambient_ecs::{
+    AttributeConstructor, Component, ComponentAttribute, ComponentEntry, ComponentValue,
+};
 use ambient_element::Element;
 use ambient_renderer::{cast_shadows, color, overlay};
 use ambient_std::cb;
@@ -27,7 +29,9 @@ impl ComponentEntryEditor {
 
 impl std::fmt::Debug for ComponentEntryEditor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ComponentEntryEditor").field("entry", &self.entry).finish()
+        f.debug_struct("ComponentEntryEditor")
+            .field("entry", &self.entry)
+            .finish()
     }
 }
 
@@ -50,7 +54,11 @@ pub struct Editable {
 impl Editable {
     /// Create an editor for this component entry
     pub fn edit(&self, entry: ComponentEntry) -> ComponentEntryEditor {
-        ComponentEntryEditor { entry, edit: self.edit, view: self.view }
+        ComponentEntryEditor {
+            entry,
+            edit: self.edit,
+            view: self.view,
+        }
     }
 }
 
@@ -67,8 +75,12 @@ where
                 let desc = entry.desc();
                 T::editor(
                     entry.into_inner(),
-                    cb(move |v| (on_change)(ComponentEntryEditor { entry: ComponentEntry::from_raw_parts(desc, v), ..editor }))
-                        as ChangeCb<T>,
+                    cb(move |v| {
+                        (on_change)(ComponentEntryEditor {
+                            entry: ComponentEntry::from_raw_parts(desc, v),
+                            ..editor
+                        })
+                    }) as ChangeCb<T>,
                     opts,
                 )
             },

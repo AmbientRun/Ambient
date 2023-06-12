@@ -11,18 +11,24 @@ pub fn systems() -> SystemGroup {
 }
 
 pub fn initialize(world: &mut World) -> anyhow::Result<()> {
-    let messenger = Arc::new(|world: &World, id: EntityId, type_: MessageType, message: &str| {
-        let name = get_module_name(world, id);
-        let (prefix, level) = match type_ {
-            MessageType::Info => ("info", log::Level::Info),
-            MessageType::Warn => ("warn", log::Level::Warn),
-            MessageType::Error => ("error", log::Level::Error),
-            MessageType::Stdout => ("stdout", log::Level::Info),
-            MessageType::Stderr => ("stderr", log::Level::Info),
-        };
+    let messenger = Arc::new(
+        |world: &World, id: EntityId, type_: MessageType, message: &str| {
+            let name = get_module_name(world, id);
+            let (prefix, level) = match type_ {
+                MessageType::Info => ("info", log::Level::Info),
+                MessageType::Warn => ("warn", log::Level::Warn),
+                MessageType::Error => ("error", log::Level::Error),
+                MessageType::Stdout => ("stdout", log::Level::Info),
+                MessageType::Stderr => ("stderr", log::Level::Info),
+            };
 
-        log::log!(level, "[{name}] {prefix}: {}", message.strip_suffix('\n').unwrap_or(message));
-    });
+            log::log!(
+                level,
+                "[{name}] {prefix}: {}",
+                message.strip_suffix('\n').unwrap_or(message)
+            );
+        },
+    );
 
     let (tx, rx): (Sender<AudioMessage>, Receiver<AudioMessage>) = flume::unbounded();
 
@@ -34,7 +40,7 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                 AudioMessage::Spatial(source) => {
                     let sound = stream.mixer().play(source);
                     sound.wait();
-                },
+                }
                 AudioMessage::Track(t, looping, amp, url, uid) => {
                     let gain = Arc::new(Mutex::new(amp));
                     let gain_clone = gain.clone();
@@ -44,7 +50,12 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                         false => stream.mixer().play(t.decode().gain(gain_clone)),
                     };
                     sound.wait();
-                    let sound_info = SoundInfo { url, looping, gain, id: sound.id };
+                    let sound_info = SoundInfo {
+                        url,
+                        looping,
+                        gain,
+                        id: sound.id,
+                    };
                     sound_info_lib.insert(uid, sound_info);
                 }
                 AudioMessage::UpdateVolume(target_url, amp) => {

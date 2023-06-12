@@ -1,7 +1,9 @@
 use std::fmt::Debug;
 
 use ambient_cb::{cb, Cb};
-use ambient_element::{element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_element::{
+    element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks,
+};
 use ambient_guest_bridge::components::layout::{align_vertical_center, space_between_items};
 
 use super::{ChangeCb, Editor, EditorOpts};
@@ -31,7 +33,13 @@ pub struct OffscreenEditor<T> {
 
 impl<T: Debug + Clone + Sync + Send + 'static + Editor> ElementComponent for OffscreenEditor<T> {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> Element {
-        let Self { title, value, on_confirm, editor, opts } = *self;
+        let Self {
+            title,
+            value,
+            on_confirm,
+            editor,
+            opts,
+        } = *self;
 
         let (screen, set_screen) = hooks.use_state(None);
 
@@ -87,10 +95,18 @@ fn EditorScreen<T: Debug + Clone + Sync + Send + 'static + Editor>(
         ScrollAreaSizing::FitParentWidth,
         FlowColumn::el([
             Text::el(title).header_style(),
-            editor(value.clone(), if edit { Some(set_value.clone()) } else { None }, opts),
+            editor(
+                value.clone(),
+                if edit { Some(set_value.clone()) } else { None },
+                opts,
+            ),
             FlowRow(vec![
-                Button::new_once("Ok", move |_| on_confirm(value)).style(ButtonStyle::Primary).el(),
-                Button::new_once("Cancel", move |_| on_cancel()).style(ButtonStyle::Flat).el(),
+                Button::new_once("Ok", move |_| on_confirm(value))
+                    .style(ButtonStyle::Primary)
+                    .el(),
+                Button::new_once("Cancel", move |_| on_cancel())
+                    .style(ButtonStyle::Flat)
+                    .el(),
             ])
             .el()
             .with(space_between_items(), STREET)

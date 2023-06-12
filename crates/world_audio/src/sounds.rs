@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use ambient_audio::{
-    hrtf::HrtfLib, track::TrackDecodeStream,
-    Attenuation, AudioEmitter, AudioListener, AudioMixer, Sound, SoundId, Source, Spatial
+    hrtf::HrtfLib, track::TrackDecodeStream, Attenuation, AudioEmitter, AudioListener, AudioMixer,
+    Sound, SoundId, Source, Spatial,
 };
 use ambient_ecs::{components, query, EntityId, Resource, World};
 use ambient_element::ElementComponentExt;
@@ -40,7 +40,11 @@ pub enum AudioMessage {
         u32,
     ),
     Spatial(
-        Spatial<TrackDecodeStream, Arc<parking_lot::lock_api::Mutex<RawMutex, AudioListener>>, Arc<parking_lot::lock_api::Mutex<RawMutex, AudioEmitter>>>
+        Spatial<
+            TrackDecodeStream,
+            Arc<parking_lot::lock_api::Mutex<RawMutex, AudioListener>>,
+            Arc<parking_lot::lock_api::Mutex<RawMutex, AudioEmitter>>,
+        >,
     ),
     UpdateVolume(AbsAssetUrl, f32),
     Stop(AbsAssetUrl),

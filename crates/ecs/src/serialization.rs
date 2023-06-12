@@ -7,7 +7,9 @@ use serde::{
     Deserialize, Deserializer, Serialize, Serializer,
 };
 
-use crate::{dont_store, query, DeserEntityDataWithWarnings, Entity, EntityId, Serializable, World};
+use crate::{
+    dont_store, query, DeserEntityDataWithWarnings, Entity, EntityId, Serializable, World,
+};
 
 impl Serialize for World {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
@@ -26,7 +28,13 @@ struct SerWorldEntity<'a> {
 }
 impl<'a> Serialize for SerWorldEntity<'a> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let comps = self.world.get_components(self.id).unwrap().into_iter().filter(|x| x.has_attribute::<Serializable>()).collect_vec();
+        let comps = self
+            .world
+            .get_components(self.id)
+            .unwrap()
+            .into_iter()
+            .filter(|x| x.has_attribute::<Serializable>())
+            .collect_vec();
 
         let mut entity = serializer.serialize_map(Some(comps.len()))?;
         for comp in comps {
@@ -94,11 +102,21 @@ impl<'de> Deserialize<'de> for DeserWorldWithWarnings {
             where
                 V: MapAccess<'de>,
             {
-                let mut res =
-                    DeserWorldWithWarnings { world: World::new_with_config_internal("deserialized", false), warnings: Default::default() };
-                while let Some((id, entity)) = map.next_entry::<EntityId, DeserEntityDataWithWarnings>()? {
+                let mut res = DeserWorldWithWarnings {
+                    world: World::new_with_config_internal("deserialized", false),
+                    warnings: Default::default(),
+                };
+                while let Some((id, entity)) =
+                    map.next_entry::<EntityId, DeserEntityDataWithWarnings>()?
+                {
                     res.world.spawn_with_id(id, entity.entity);
-                    res.warnings.warnings.extend(entity.warnings.warnings.into_iter().map(|(_, key, err)| (id, key, err)));
+                    res.warnings.warnings.extend(
+                        entity
+                            .warnings
+                            .warnings
+                            .into_iter()
+                            .map(|(_, key, err)| (id, key, err)),
+                    );
                 }
                 Ok(res)
             }
@@ -159,10 +177,17 @@ mod test {
     pub fn test_serialize_world() {
         init();
         let mut world = World::new("test");
-        let id = Entity::new().with(ser_test3(), "hi".to_string()).spawn(&mut world);
+        let id = Entity::new()
+            .with(ser_test3(), "hi".to_string())
+            .spawn(&mut world);
 
         let ser = serde_json::to_string(&world).unwrap();
-        assert_eq!(&ser, &format!("{{\"AQAAAAAAAAAAAAAAAAAAAA\":{{}},\"{id}\":{{\"core::test::ser_test3\":\"hi\"}}}}"));
+        assert_eq!(
+            &ser,
+            &format!(
+                "{{\"AQAAAAAAAAAAAAAAAAAAAA\":{{}},\"{id}\":{{\"core::test::ser_test3\":\"hi\"}}}}"
+            )
+        );
 
         let deser: DeserWorldWithWarnings = serde_json::from_str(&ser).unwrap();
         assert_eq!(deser.world.get_ref(id, ser_test3()).unwrap(), "hi");
@@ -177,7 +202,10 @@ mod test {
         let mut world = World::new("test");
         world.add_resource(ser_test3(), "hi".to_string());
         let ser = serde_json::to_string(&world).unwrap();
-        assert_eq!(&ser, r#"{"AQAAAAAAAAAAAAAAAAAAAA":{"core::test::ser_test3":"hi"}}"#);
+        assert_eq!(
+            &ser,
+            r#"{"AQAAAAAAAAAAAAAAAAAAAA":{"core::test::ser_test3":"hi"}}"#
+        );
         let deser: World = serde_json::from_str(&ser).unwrap();
         assert_eq!(deser.resource(ser_test3()), "hi");
     }
@@ -198,10 +226,22 @@ mod test {
         let source = r#"{"AQAAAAAAAAAAAAAAAAAAAA":{},"L9wH6h4qgcNBfRv2Rv2FIQ":{"core::test::ser_test3":{"bad":3},"missing":{"hi":5},"core::test::ser_test4":"hello"}}"#;
 
         let deser: DeserWorldWithWarnings = serde_json::from_str(source).unwrap();
-        assert_eq!(deser.world.get_ref(EntityId::from_str("L9wH6h4qgcNBfRv2Rv2FIQ").unwrap(), ser_test4()).unwrap(), "hello");
+        assert_eq!(
+            deser
+                .world
+                .get_ref(
+                    EntityId::from_str("L9wH6h4qgcNBfRv2Rv2FIQ").unwrap(),
+                    ser_test4()
+                )
+                .unwrap(),
+            "hello"
+        );
         assert_eq!(deser.warnings.warnings.len(), 2);
         let ser = serde_json::to_string(&deser.world).unwrap();
-        assert_eq!(&ser, r#"{"AQAAAAAAAAAAAAAAAAAAAA":{},"L9wH6h4qgcNBfRv2Rv2FIQ":{"core::test::ser_test4":"hello"}}"#);
+        assert_eq!(
+            &ser,
+            r#"{"AQAAAAAAAAAAAAAAAAAAAA":{},"L9wH6h4qgcNBfRv2Rv2FIQ":{"core::test::ser_test4":"hello"}}"#
+        );
 
         assert!(serde_json::from_str::<World>(source).is_err());
     }

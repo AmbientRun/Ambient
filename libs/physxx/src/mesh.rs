@@ -1,7 +1,8 @@
 use glam::Vec3;
 
 use crate::{
-    AsPxPtr, PxConvexMeshCookingResult, PxCookingRef, PxDefaultMemoryInputData, PxDefaultMemoryOutputStream, PxPhysicsRef, PxReferenceCounted
+    AsPxPtr, PxConvexMeshCookingResult, PxCookingRef, PxDefaultMemoryInputData,
+    PxDefaultMemoryOutputStream, PxPhysicsRef, PxReferenceCounted,
 };
 
 bitflags! {
@@ -34,7 +35,11 @@ impl PxConvexMesh {
             Self(mesh)
         }
     }
-    pub fn from_desc(physics: PxPhysicsRef, cooking: PxCookingRef, desc: PxConvexMeshDesc) -> Result<Self, PxConvexMeshCookingResult> {
+    pub fn from_desc(
+        physics: PxPhysicsRef,
+        cooking: PxCookingRef,
+        desc: PxConvexMeshDesc,
+    ) -> Result<Self, PxConvexMeshCookingResult> {
         let stream = PxDefaultMemoryOutputStream::new();
         let mut res = PxConvexMeshCookingResult::Success;
         if !cooking.cook_convex_mesh(&desc, &stream, &mut res) {

@@ -17,8 +17,16 @@ pub struct PxRaycastHit {
 impl PxRaycastHit {
     pub(crate) fn from_px(hit: &physx_sys::PxRaycastHit) -> Self {
         Self {
-            actor: if !hit.actor.is_null() { Some(PxRigidActorRef(hit.actor)) } else { None },
-            shape: if !hit.shape.is_null() { Some(PxShape::from_ptr(hit.shape)) } else { None },
+            actor: if !hit.actor.is_null() {
+                Some(PxRigidActorRef(hit.actor))
+            } else {
+                None
+            },
+            shape: if !hit.shape.is_null() {
+                Some(PxShape::from_ptr(hit.shape))
+            } else {
+                None
+            },
             face_index: hit.faceIndex,
             flags: PxHitFlags::from_bits(hit.flags.mBits as u32).unwrap(),
             position: to_glam_vec3(&hit.position),
@@ -57,17 +65,24 @@ pub fn raycast(
     max_hits: u32,
 ) -> Vec<PxRaycastHit> {
     unsafe {
-        let mut hits: Vec<_> = (0..max_hits).map(|_| physx_sys::PxRaycastHit_new()).collect();
+        let mut hits: Vec<_> = (0..max_hits)
+            .map(|_| physx_sys::PxRaycastHit_new())
+            .collect();
         let n_hits = physx_sys::PxGeometryQuery_raycast_mut(
             &to_physx_vec3(origin) as *const physx_sys::PxVec3,
             &to_physx_vec3(unit_dir) as *const physx_sys::PxVec3,
             geom.as_geometry_ptr(),
             &pose.0 as *const physx_sys::PxTransform,
             max_dist,
-            physx_sys::PxHitFlags { mBits: hit_flags.bits as u16 },
+            physx_sys::PxHitFlags {
+                mBits: hit_flags.bits as u16,
+            },
             max_hits,
             hits.as_mut_ptr() as _,
         );
-        hits.into_iter().take(n_hits as usize).map(|hit| PxRaycastHit::from_px(&hit)).collect()
+        hits.into_iter()
+            .take(n_hits as usize)
+            .map(|hit| PxRaycastHit::from_px(&hit))
+            .collect()
     }
 }

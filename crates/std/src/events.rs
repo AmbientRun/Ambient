@@ -8,7 +8,10 @@ pub struct EventDispatcher<T: ?Sized> {
 
 impl<T: ?Sized> EventDispatcher<T> {
     pub fn new() -> Self {
-        Self { handlers: HashSet::new(), created_timestamp: Instant::now() }
+        Self {
+            handlers: HashSet::new(),
+            created_timestamp: Instant::now(),
+        }
     }
     pub fn new_with(handler: Arc<T>) -> Self {
         let mut s = Self::new();
@@ -34,7 +37,10 @@ impl<T: ?Sized> Default for EventDispatcher<T> {
 
 impl<T: ?Sized> Clone for EventDispatcher<T> {
     fn clone(&self) -> Self {
-        Self { handlers: self.handlers.clone(), created_timestamp: self.created_timestamp }
+        Self {
+            handlers: self.handlers.clone(),
+            created_timestamp: self.created_timestamp,
+        }
     }
 }
 

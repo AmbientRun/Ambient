@@ -7,12 +7,18 @@ use glam::*;
 async fn init(app: &mut App) {
     let world = &mut app.world;
 
-    world.resource(gizmos()).scope(line_hash!()).draw(GizmoPrimitive::sphere(vec3(0., 0., 0.), 1.));
+    world
+        .resource(gizmos())
+        .scope(line_hash!())
+        .draw(GizmoPrimitive::sphere(vec3(0., 0., 0.), 1.));
 
-    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .with(active_camera(), 0.)
-        .with(main_scene(), ())
-        .spawn(world);
+    ambient_cameras::spherical::new(
+        vec3(0., 0., 0.),
+        SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.),
+    )
+    .with(active_camera(), 0.)
+    .with(main_scene(), ())
+    .spawn(world);
 }
 
 fn main() {

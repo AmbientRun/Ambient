@@ -13,12 +13,17 @@ pub struct Cuboid {
 
 impl FromIterator<AABB> for AABB {
     fn from_iter<T: IntoIterator<Item = AABB>>(iter: T) -> Self {
-        iter.into_iter().reduce(|acc, v| acc.union(&v)).unwrap_or_default()
+        iter.into_iter()
+            .reduce(|acc, v| acc.union(&v))
+            .unwrap_or_default()
     }
 }
 
 impl Cuboid {
-    pub const ZERO: AABB = AABB { min: Vec3::ZERO, max: Vec3::ZERO };
+    pub const ZERO: AABB = AABB {
+        min: Vec3::ZERO,
+        max: Vec3::ZERO,
+    };
 
     pub fn unions(cubes: &[Self]) -> Option<Self> {
         if !cubes.is_empty() {
@@ -66,7 +71,10 @@ impl Cuboid {
     }
 
     pub fn to_sphere(&self) -> Sphere {
-        Sphere { center: self.center(), radius: self.radius() }
+        Sphere {
+            center: self.center(),
+            radius: self.radius(),
+        }
     }
 
     pub fn center(&self) -> Vec3 {
@@ -97,11 +105,17 @@ impl Cuboid {
     }
 
     pub fn translate(&self, pos: Vec3) -> Self {
-        Self { min: self.min + pos, max: self.max + pos }
+        Self {
+            min: self.min + pos,
+            max: self.max + pos,
+        }
     }
 
     pub fn union(&self, other: &AABB) -> Self {
-        Self { min: self.min.min(other.min), max: self.max.max(other.max) }
+        Self {
+            min: self.min.min(other.min),
+            max: self.max.max(other.max),
+        }
     }
 
     pub fn intersect_aabb(&self, other: &AABB) -> bool {
@@ -134,11 +148,17 @@ impl Sphere {
     pub fn transform(&self, mat: &Mat4) -> Self {
         let (scale, _, _) = mat.to_scale_rotation_translation();
         let scale = scale.x.max(scale.y.max(scale.z));
-        Self { center: mat.project_point3(self.center), radius: self.radius * scale }
+        Self {
+            center: mat.project_point3(self.center),
+            radius: self.radius * scale,
+        }
     }
 
     pub fn to_aabb(&self) -> AABB {
-        AABB { min: self.center - self.radius, max: self.center + self.radius }
+        AABB {
+            min: self.center - self.radius,
+            max: self.center + self.radius,
+        }
     }
 }
 
@@ -148,10 +168,15 @@ pub struct BoundingBox {
 }
 impl BoundingBox {
     pub fn transform(&self, mat: &Mat4) -> Self {
-        Self { points: self.points.iter().map(|&p| mat.project_point3(p)).collect() }
+        Self {
+            points: self.points.iter().map(|&p| mat.project_point3(p)).collect(),
+        }
     }
     pub fn to_aabb(&self) -> AABB {
-        let mut aabb = AABB { min: self.points[0], max: self.points[0] };
+        let mut aabb = AABB {
+            min: self.points[0],
+            max: self.points[0],
+        };
         for p in self.points.iter().skip(1) {
             aabb.min.x = aabb.min.x.min(p.x);
             aabb.min.y = aabb.min.y.min(p.y);
@@ -172,14 +197,27 @@ impl BoundingBox {
                 max_dist = dist;
             }
         }
-        Sphere { center, radius: max_dist }
+        Sphere {
+            center,
+            radius: max_dist,
+        }
     }
 }
 
 macro_rules! impl_plane {
     ($t:ident, $vec3:ident, $f32:ident) => {
         #[repr(C)]
-        #[derive(Debug, Clone, Copy, Default, PartialEq, bytemuck::Pod, bytemuck::Zeroable, serde::Serialize, serde::Deserialize)]
+        #[derive(
+            Debug,
+            Clone,
+            Copy,
+            Default,
+            PartialEq,
+            bytemuck::Pod,
+            bytemuck::Zeroable,
+            serde::Serialize,
+            serde::Deserialize,
+        )]
         pub struct $t {
             pub normal: $vec3,
             pub distance: $f32,
@@ -217,7 +255,10 @@ macro_rules! impl_plane {
                 self.distance = -self.distance;
             }
             pub fn flipped(&self) -> Self {
-                Self { normal: -self.normal, distance: -self.distance }
+                Self {
+                    normal: -self.normal,
+                    distance: -self.distance,
+                }
             }
         }
     };
@@ -257,7 +298,17 @@ impl Frustum {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Default, PartialEq, bytemuck::Pod, bytemuck::Zeroable, serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    Default,
+    PartialEq,
+    bytemuck::Pod,
+    bytemuck::Zeroable,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct Ray {
     pub origin: Vec3,
     pub dir: Vec3,
@@ -268,7 +319,10 @@ impl Ray {
         Self { origin, dir }
     }
     pub fn transform(&self, transform: Mat4) -> Self {
-        Self { origin: transform.project_point3(self.origin), dir: transform.transform_vector3(self.dir) }
+        Self {
+            origin: transform.project_point3(self.origin),
+            dir: transform.transform_vector3(self.dir),
+        }
     }
 }
 
@@ -320,15 +374,23 @@ mod tests {
     use super::*;
     #[test]
     fn test_ray_plane_intersection() {
-        let plane = Plane::from_points(vec3(0., 0., 1.), vec3(1., 0., 1.), vec3(0., 1., 1.)).unwrap();
-        let ray = Ray { origin: Vec3::Z * 10., dir: -Vec3::Z };
+        let plane =
+            Plane::from_points(vec3(0., 0., 1.), vec3(1., 0., 1.), vec3(0., 1., 1.)).unwrap();
+        let ray = Ray {
+            origin: Vec3::Z * 10.,
+            dir: -Vec3::Z,
+        };
         assert_eq!(plane.ray_intersect(ray), Some(9.));
     }
 
     #[test]
     fn test_ray_plane_intersection2() {
-        let plane = Plane::from_points(vec3(0., 0., 1.), vec3(1., 0., 1.), vec3(0., 1., 1.)).unwrap();
-        let ray = Ray { origin: vec3(1., 1., 2.), dir: (-Vec3::ONE).normalize() };
+        let plane =
+            Plane::from_points(vec3(0., 0., 1.), vec3(1., 0., 1.), vec3(0., 1., 1.)).unwrap();
+        let ray = Ray {
+            origin: vec3(1., 1., 2.),
+            dir: (-Vec3::ONE).normalize(),
+        };
         let hit = plane.ray_intersect(ray).unwrap();
         let p = ray.origin + ray.dir * hit;
         assert_eq!(p, Vec3::Z);
@@ -336,11 +398,23 @@ mod tests {
 
     #[test]
     fn test_ray_aabb_intersection() {
-        let ray = Ray { origin: vec3(500., 500., -1.), dir: Vec3::Z };
-        let aabb = AABB { min: Vec3::ZERO, max: vec3(200., 200., 0.01) };
+        let ray = Ray {
+            origin: vec3(500., 500., -1.),
+            dir: Vec3::Z,
+        };
+        let aabb = AABB {
+            min: Vec3::ZERO,
+            max: vec3(200., 200., 0.01),
+        };
         let transform = Mat4::from_translation(vec3(400., 400., 0.));
         let transformed_ray = ray.transform(transform.inverse());
-        assert_eq!(transformed_ray, Ray { origin: vec3(100., 100., -1.), dir: Vec3::Z });
+        assert_eq!(
+            transformed_ray,
+            Ray {
+                origin: vec3(100., 100., -1.),
+                dir: Vec3::Z
+            }
+        );
         assert_eq!(aabb.ray_intersect(transformed_ray).unwrap(), 1.);
     }
 }

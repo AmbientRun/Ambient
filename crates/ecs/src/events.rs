@@ -15,7 +15,10 @@ impl<T> FramedEvents<T> {
         Self::new_with_history_size(Self::HISTORY_SIZE)
     }
     pub fn new_with_history_size(history_size: usize) -> Self {
-        Self { events: (0..history_size).map(|_| Vec::new()).collect(), frame: 0 }
+        Self {
+            events: (0..history_size).map(|_| Vec::new()).collect(),
+            frame: 0,
+        }
     }
     fn current_events_mut(&mut self) -> &mut Vec<T> {
         self.events_mut(self.frame)
@@ -74,14 +77,22 @@ pub struct FramedEventsReader<T> {
 }
 impl<T> FramedEventsReader<T> {
     pub fn new() -> Self {
-        Self { frame: 0, index: 0, _type: PhantomData }
+        Self {
+            frame: 0,
+            index: 0,
+            _type: PhantomData,
+        }
     }
     pub fn move_to_end(&mut self, events: &FramedEvents<T>) {
         self.frame = events.frame;
         self.index = events.current_events().len();
     }
     pub fn iter<'a>(&mut self, events: &'a FramedEvents<T>) -> FramedEventsIterator<'a, T> {
-        let it = FramedEventsIterator { frame: self.frame, index: self.index, events };
+        let it = FramedEventsIterator {
+            frame: self.frame,
+            index: self.index,
+            events,
+        };
         self.move_to_end(events);
         it
     }
@@ -113,7 +124,10 @@ impl<'a, T> Iterator for FramedEventsIterator<'a, T> {
 
         let buf = self.events.events(self.frame);
         if let Some(event) = buf.get(self.index) {
-            let event_id = DBEventId { frame: self.frame, index: self.index };
+            let event_id = DBEventId {
+                frame: self.frame,
+                index: self.index,
+            };
             self.index += 1;
             Some((event_id, event))
         } else {
@@ -141,7 +155,10 @@ fn test_events() {
 
     events.add_event("b");
     events.add_event("c");
-    assert_eq!(&reader.iter(&events).map(|x| *x.1).collect_vec(), &["b", "c"]);
+    assert_eq!(
+        &reader.iter(&events).map(|x| *x.1).collect_vec(),
+        &["b", "c"]
+    );
     assert_eq!(reader.iter(&events).count(), 0);
 
     events.next_frame();

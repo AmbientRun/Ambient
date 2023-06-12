@@ -53,7 +53,10 @@ impl<T> SparseVec<T> {
         self.0.iter_mut()
     }
     pub fn into_iter_enumerate(self) -> impl Iterator<Item = (usize, T)> {
-        self.0.into_iter().enumerate().filter_map(|(i, x)| x.map(|x| (i, x)))
+        self.0
+            .into_iter()
+            .enumerate()
+            .filter_map(|(i, x)| x.map(|x| (i, x)))
     }
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         self.0.iter().filter_map(|x| match x {

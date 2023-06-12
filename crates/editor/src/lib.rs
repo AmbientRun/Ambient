@@ -19,7 +19,9 @@ pub fn init_all_components() {
 
 pub const GRID_SIZE: f32 = 1.0;
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Default, serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Default, serde::Serialize, serde::Deserialize,
+)]
 pub struct Selection {
     pub entities: Vec<EntityId>,
 }
@@ -42,7 +44,9 @@ impl FromIterator<EntityId> for Selection {
 
 impl Selection {
     pub fn new(entities: impl Into<Vec<EntityId>>) -> Selection {
-        Self { entities: entities.into() }
+        Self {
+            entities: entities.into(),
+        }
     }
 
     pub fn iter(&self) -> Cloned<std::slice::Iter<EntityId>> {

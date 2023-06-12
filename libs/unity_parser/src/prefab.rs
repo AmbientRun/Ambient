@@ -19,14 +19,24 @@ impl PrefabFile {
         let objects = docs
             .iter()
             .map(|doc| {
-                let (_, id) = doc["unity_object"].as_str().unwrap().split_once('&').unwrap();
+                let (_, id) = doc["unity_object"]
+                    .as_str()
+                    .unwrap()
+                    .split_once('&')
+                    .unwrap();
                 Ok((id.parse().unwrap(), PrefabObject::from_yaml(doc)?))
             })
             .collect::<anyhow::Result<HashMap<_, _>>>()?;
         Ok(Self { objects })
     }
     pub fn get_prefab(&self) -> Option<&Prefab> {
-        self.objects.values().find_map(|x| if let PrefabObject::Prefab(x) = x { Some(x) } else { None })
+        self.objects.values().find_map(|x| {
+            if let PrefabObject::Prefab(x) = x {
+                Some(x)
+            } else {
+                None
+            }
+        })
     }
     pub fn get_root_game_object_ids(&self) -> Vec<i64> {
         if let Some(prefab) = self.get_prefab() {
@@ -46,7 +56,16 @@ impl PrefabFile {
         }
     }
     pub fn get_root_game_objects(&self) -> Vec<&GameObject> {
-        self.get_root_game_object_ids().iter().map(|id| self.objects.get(id).unwrap().as_object::<GameObject>().unwrap()).collect()
+        self.get_root_game_object_ids()
+            .iter()
+            .map(|id| {
+                self.objects
+                    .get(id)
+                    .unwrap()
+                    .as_object::<GameObject>()
+                    .unwrap()
+            })
+            .collect()
     }
     pub fn dump(&self) -> String {
         let root_ids = self.get_root_game_object_ids();
@@ -83,13 +102,19 @@ impl PrefabObject {
         if yaml["Prefab"].as_hash().is_some() {
             Ok(Self::Prefab(Prefab::from_yaml(&yaml["Prefab"])?))
         } else if yaml["GameObject"].as_hash().is_some() {
-            Ok(Self::GameObject(GameObject::from_yaml(&yaml["GameObject"])?))
+            Ok(Self::GameObject(GameObject::from_yaml(
+                &yaml["GameObject"],
+            )?))
         } else if yaml["LODGroup"].as_hash().is_some() {
             Ok(Self::LODGroup(LODGroup::from_yaml(&yaml["LODGroup"])?))
         } else if yaml["MeshRenderer"].as_hash().is_some() {
-            Ok(Self::MeshRenderer(MeshRenderer::from_yaml(&yaml["MeshRenderer"])?))
+            Ok(Self::MeshRenderer(MeshRenderer::from_yaml(
+                &yaml["MeshRenderer"],
+            )?))
         } else if yaml["MeshFilter"].as_hash().is_some() {
-            Ok(Self::MeshFilter(MeshFilter::from_yaml(&yaml["MeshFilter"])?))
+            Ok(Self::MeshFilter(MeshFilter::from_yaml(
+                &yaml["MeshFilter"],
+            )?))
         } else if yaml["Transform"].as_hash().is_some() {
             Ok(Self::Transform(Transform::from_yaml(&yaml["Transform"])?))
         } else {
@@ -110,7 +135,10 @@ impl PrefabObject {
             PrefabObject::Transform(o) => o.dump(prefab, dump_game_obj),
             PrefabObject::Unimplemented => {
                 let mut out = yaml_rust::yaml::Hash::new();
-                out.insert(Yaml::String("not_implemented".to_string()), Yaml::String("yet".to_string()));
+                out.insert(
+                    Yaml::String("not_implemented".to_string()),
+                    Yaml::String("yet".to_string()),
+                );
                 out
             }
         }
@@ -138,8 +166,19 @@ impl LODGroup {
     }
     pub fn dump(&self, prefab: &PrefabFile) -> yaml_rust::yaml::Hash {
         let mut out = yaml_rust::yaml::Hash::new();
-        out.insert(Yaml::String("type".to_string()), Yaml::String("LODGroup".to_string()));
-        out.insert(Yaml::String("lods".to_string()), Yaml::Array(self.lods.iter().map(|lod| Yaml::Hash(lod.dump(prefab))).collect()));
+        out.insert(
+            Yaml::String("type".to_string()),
+            Yaml::String("LODGroup".to_string()),
+        );
+        out.insert(
+            Yaml::String("lods".to_string()),
+            Yaml::Array(
+                self.lods
+                    .iter()
+                    .map(|lod| Yaml::Hash(lod.dump(prefab)))
+                    .collect(),
+            ),
+        );
         out
     }
 }
@@ -161,16 +200,28 @@ impl UnityLod {
     fn from_yaml(yaml: &Yaml) -> anyhow::Result<Self> {
         Ok(Self {
             renderer: UnityRef::from_yaml(&yaml["renderers"][0]["renderer"])?,
-            screen_relative_height: yaml["screenRelativeHeight"].as_float().context("screenRelativeHeight not a float")? as f32,
+            screen_relative_height: yaml["screenRelativeHeight"]
+                .as_float()
+                .context("screenRelativeHeight not a float")?
+                as f32,
         })
     }
     pub fn get_renderer<'a>(&self, prefab: &'a PrefabFile) -> Option<&'a MeshRenderer> {
-        prefab.objects.get(&self.renderer.file_id).and_then(|o| o.as_object::<MeshRenderer>())
+        prefab
+            .objects
+            .get(&self.renderer.file_id)
+            .and_then(|o| o.as_object::<MeshRenderer>())
     }
     pub fn dump(&self, _prefab: &PrefabFile) -> yaml_rust::yaml::Hash {
         let mut out = yaml_rust::yaml::Hash::new();
-        out.insert(Yaml::String("type".to_string()), Yaml::String("UnityLod".to_string()));
-        out.insert(Yaml::String("renderer".to_string()), Yaml::Integer(self.renderer.file_id));
+        out.insert(
+            Yaml::String("type".to_string()),
+            Yaml::String("UnityLod".to_string()),
+        );
+        out.insert(
+            Yaml::String("renderer".to_string()),
+            Yaml::Integer(self.renderer.file_id),
+        );
         out
     }
 }
@@ -181,11 +232,16 @@ pub struct Prefab {
 }
 impl Prefab {
     fn from_yaml(yaml: &Yaml) -> anyhow::Result<Self> {
-        Ok(Self { root_game_object: UnityRef::from_yaml(&yaml["m_RootGameObject"])? })
+        Ok(Self {
+            root_game_object: UnityRef::from_yaml(&yaml["m_RootGameObject"])?,
+        })
     }
     pub fn dump(&self, _prefab: &PrefabFile) -> yaml_rust::yaml::Hash {
         let mut out = yaml_rust::yaml::Hash::new();
-        out.insert(Yaml::String("type".to_string()), Yaml::String("Prefab".to_string()));
+        out.insert(
+            Yaml::String("type".to_string()),
+            Yaml::String("Prefab".to_string()),
+        );
         out
     }
 }
@@ -213,7 +269,10 @@ impl GameObject {
                 .iter()
                 .map(|comp| UnityRef::from_yaml(&comp["component"]))
                 .collect::<anyhow::Result<Vec<UnityRef>>>()?,
-            name: yaml["m_Name"].as_str().context("GameObject missing m_Name")?.to_string(),
+            name: yaml["m_Name"]
+                .as_str()
+                .context("GameObject missing m_Name")?
+                .to_string(),
         })
     }
     pub fn get_component<'a, T: GetObject>(&self, prefab: &'a PrefabFile) -> Option<&'a T> {
@@ -228,11 +287,22 @@ impl GameObject {
     }
     pub fn dump(&self, prefab: &PrefabFile) -> yaml_rust::yaml::Hash {
         let mut out = yaml_rust::yaml::Hash::new();
-        out.insert(Yaml::String("type".to_string()), Yaml::String("GameObject".to_string()));
-        out.insert(Yaml::String("name".to_string()), Yaml::String(self.name.clone()));
+        out.insert(
+            Yaml::String("type".to_string()),
+            Yaml::String("GameObject".to_string()),
+        );
+        out.insert(
+            Yaml::String("name".to_string()),
+            Yaml::String(self.name.clone()),
+        );
         out.insert(
             Yaml::String("components".to_string()),
-            Yaml::Array(self.components.iter().map(|c| Yaml::Hash(c.dump(prefab, false))).collect()),
+            Yaml::Array(
+                self.components
+                    .iter()
+                    .map(|c| Yaml::Hash(c.dump(prefab, false)))
+                    .collect(),
+            ),
         );
         if let Some(transform) = self.get_component::<Transform>(prefab) {
             out.insert(
@@ -242,8 +312,19 @@ impl GameObject {
                         .children
                         .iter()
                         .map(|c| {
-                            let obj = &prefab.objects.get(&c.file_id).unwrap().as_object::<Transform>().unwrap().game_object;
-                            let obj = prefab.objects.get(&obj.file_id).unwrap().as_object::<GameObject>().unwrap();
+                            let obj = &prefab
+                                .objects
+                                .get(&c.file_id)
+                                .unwrap()
+                                .as_object::<Transform>()
+                                .unwrap()
+                                .game_object;
+                            let obj = prefab
+                                .objects
+                                .get(&obj.file_id)
+                                .unwrap()
+                                .as_object::<GameObject>()
+                                .unwrap();
                             Yaml::Hash(obj.dump(prefab))
                         })
                         .collect(),
@@ -281,11 +362,17 @@ impl MeshRenderer {
         })
     }
     pub fn get_game_object<'a>(&self, prefab: &'a PrefabFile) -> Option<&'a GameObject> {
-        prefab.objects.get(&self.game_object.file_id).and_then(|x| x.as_object::<GameObject>())
+        prefab
+            .objects
+            .get(&self.game_object.file_id)
+            .and_then(|x| x.as_object::<GameObject>())
     }
     pub fn dump(&self, _prefab: &PrefabFile) -> yaml_rust::yaml::Hash {
         let mut out = yaml_rust::yaml::Hash::new();
-        out.insert(Yaml::String("type".to_string()), Yaml::String("MeshRenderer".to_string()));
+        out.insert(
+            Yaml::String("type".to_string()),
+            Yaml::String("MeshRenderer".to_string()),
+        );
         out
     }
 }
@@ -305,11 +392,16 @@ pub struct MeshFilter {
 }
 impl MeshFilter {
     fn from_yaml(yaml: &Yaml) -> anyhow::Result<Self> {
-        Ok(Self { mesh: UnityRef::from_yaml(&yaml["m_Mesh"])? })
+        Ok(Self {
+            mesh: UnityRef::from_yaml(&yaml["m_Mesh"])?,
+        })
     }
     pub fn dump(&self, _prefab: &PrefabFile) -> yaml_rust::yaml::Hash {
         let mut out = yaml_rust::yaml::Hash::new();
-        out.insert(Yaml::String("type".to_string()), Yaml::String("MeshFilter".to_string()));
+        out.insert(
+            Yaml::String("type".to_string()),
+            Yaml::String("MeshFilter".to_string()),
+        );
         out
     }
 }
@@ -349,22 +441,47 @@ impl Transform {
         })
     }
     pub fn absolute_transform(&self, prefab: &PrefabFile) -> Mat4 {
-        let mat = Mat4::from_scale_rotation_translation(self.local_scale, self.local_rotation, self.local_position);
+        let mat = Mat4::from_scale_rotation_translation(
+            self.local_scale,
+            self.local_rotation,
+            self.local_position,
+        );
         if self.father.file_id == 0 {
             mat
         } else {
-            let parent = prefab.objects.get(&self.father.file_id).unwrap().as_object::<Transform>().unwrap().absolute_transform(prefab);
+            let parent = prefab
+                .objects
+                .get(&self.father.file_id)
+                .unwrap()
+                .as_object::<Transform>()
+                .unwrap()
+                .absolute_transform(prefab);
             parent * mat
         }
     }
     pub fn dump(&self, prefab: &PrefabFile, dump_game_obj: bool) -> yaml_rust::yaml::Hash {
         let mut out = yaml_rust::yaml::Hash::new();
-        out.insert(Yaml::String("type".to_string()), Yaml::String("Transform".to_string()));
-        out.insert(Yaml::String("local_rotation".to_string()), Yaml::String(format!("{}", self.local_rotation)));
-        out.insert(Yaml::String("local_position".to_string()), Yaml::String(format!("{}", self.local_position)));
-        out.insert(Yaml::String("local_scale".to_string()), Yaml::String(format!("{}", self.local_scale)));
+        out.insert(
+            Yaml::String("type".to_string()),
+            Yaml::String("Transform".to_string()),
+        );
+        out.insert(
+            Yaml::String("local_rotation".to_string()),
+            Yaml::String(format!("{}", self.local_rotation)),
+        );
+        out.insert(
+            Yaml::String("local_position".to_string()),
+            Yaml::String(format!("{}", self.local_position)),
+        );
+        out.insert(
+            Yaml::String("local_scale".to_string()),
+            Yaml::String(format!("{}", self.local_scale)),
+        );
         if dump_game_obj {
-            out.insert(Yaml::String("game_object".to_string()), Yaml::Hash(self.game_object.dump(prefab, true)));
+            out.insert(
+                Yaml::String("game_object".to_string()),
+                Yaml::Hash(self.game_object.dump(prefab, true)),
+            );
         }
         out
     }

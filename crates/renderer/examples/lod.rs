@@ -21,7 +21,9 @@ use ambient_renderer::{
     lod::{gpu_lod, lod_cutoffs, LodCutoffs},
     primitives, RenderPrimitive,
 };
-use ambient_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, math::SphericalCoords, shapes::AABB};
+use ambient_std::{
+    asset_cache::SyncAssetKeyExt, cb, color::Color, math::SphericalCoords, shapes::AABB,
+};
 use glam::*;
 
 async fn init(app: &mut App) {
@@ -35,18 +37,38 @@ async fn init(app: &mut App) {
     let (prims, lods): (Vec<_>, Vec<_>) = (0..LODS)
         .map(|i| {
             let detail = LODS - i;
-            let mesh = SphereMeshKey(UVSphereMesh { radius: 1.0, sectors: 3 * detail + 2, stacks: detail + 2 }).get(&assets);
+            let mesh = SphereMeshKey(UVSphereMesh {
+                radius: 1.0,
+                sectors: 3 * detail + 2,
+                stacks: detail + 2,
+            })
+            .get(&assets);
             let f = i as f32 / LODS as f32;
 
-            let material = FlatMaterialKey::new(Color::hsl(f * 360.0, 1.0, 0.5).as_linear_rgba_f32().into(), Some(false)).get(&assets);
+            let material = FlatMaterialKey::new(
+                Color::hsl(f * 360.0, 1.0, 0.5).as_linear_rgba_f32().into(),
+                Some(false),
+            )
+            .get(&assets);
 
-            (RenderPrimitive { mesh, material, shader: cb(get_flat_shader), lod: i }, 1. / lod_step.powi(i as i32))
+            (
+                RenderPrimitive {
+                    mesh,
+                    material,
+                    shader: cb(get_flat_shader),
+                    lod: i,
+                },
+                1. / lod_step.powi(i as i32),
+            )
         })
         .unzip();
 
     log::info!("Lod levels: {lods:?}");
 
-    let aabb = AABB { min: -Vec3::ONE, max: Vec3::ONE };
+    let aabb = AABB {
+        min: -Vec3::ONE,
+        max: Vec3::ONE,
+    };
     Entity::new()
         .with_default(local_to_world())
         .with_default(mesh_to_world())
@@ -63,10 +85,13 @@ async fn init(app: &mut App) {
         .with_default(gpu_lod())
         .spawn(world);
 
-    ambient_cameras::spherical::new(vec3(0., 0., 0.), SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.))
-        .with(active_camera(), 0.)
-        .with(main_scene(), ())
-        .spawn(world);
+    ambient_cameras::spherical::new(
+        vec3(0., 0., 0.),
+        SphericalCoords::new(std::f32::consts::PI / 4., std::f32::consts::PI / 4., 5.),
+    )
+    .with(active_camera(), 0.)
+    .with(main_scene(), ())
+    .spawn(world);
 }
 
 fn main() {

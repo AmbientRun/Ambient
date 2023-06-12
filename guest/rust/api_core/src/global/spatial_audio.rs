@@ -1,9 +1,6 @@
 use crate::{
-    global::{EntityId},
-    internal::{
-        conversion::{IntoBindgen},
-        wit,
-    },
+    global::EntityId,
+    internal::{conversion::IntoBindgen, wit},
 };
 
 /// Sets the entity that will be used as the listener for positional audio.

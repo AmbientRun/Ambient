@@ -31,8 +31,12 @@ impl FpsCounter {
         self.slowest_frame = self.slowest_frame.max(frame_duration);
         self.active_time += frame_duration;
         if self.n_frames > 100 || duration.as_secs_f32() > 1. {
-            let res =
-                Some(FpsSample { n_frames: self.n_frames, duration, slowest_frame: self.slowest_frame, active_time: self.active_time });
+            let res = Some(FpsSample {
+                n_frames: self.n_frames,
+                duration,
+                slowest_frame: self.slowest_frame,
+                active_time: self.active_time,
+            });
             self.start_time = Instant::now();
             self.n_frames = 0;
             self.slowest_frame = Duration::ZERO;
@@ -73,10 +77,21 @@ impl FpsSample {
     }
     pub fn dump_short(&self) -> String {
         let fps = self.fps();
-        let fps = if fps > 1. { format!("{fps:.0}") } else { format!("{fps:.2}") };
-        format!("{fps} fps/{:.1} ms max", self.slowest_frame.as_secs_f64() * 1000.)
+        let fps = if fps > 1. {
+            format!("{fps:.0}")
+        } else {
+            format!("{fps:.2}")
+        };
+        format!(
+            "{fps} fps/{:.1} ms max",
+            self.slowest_frame.as_secs_f64() * 1000.
+        )
     }
     pub fn dump_server(&self) -> String {
-        format!("{:.1}%/{:.1} ms max", self.activity_perc(1000. / 60.), self.slowest_frame.as_secs_f64() * 1000.)
+        format!(
+            "{:.1}%/{:.1} ms max",
+            self.activity_perc(1000. / 60.),
+            self.slowest_frame.as_secs_f64() * 1000.
+        )
     }
 }

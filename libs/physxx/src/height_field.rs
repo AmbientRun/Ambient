@@ -50,9 +50,17 @@ impl PxHeightFieldSample {
     }
     pub fn set_tesselation(&mut self, value: bool) {
         if value {
-            unsafe { physx_sys::PxHeightFieldSample_setTessFlag_mut(&mut self.0 as *mut physx_sys::PxHeightFieldSample) }
+            unsafe {
+                physx_sys::PxHeightFieldSample_setTessFlag_mut(
+                    &mut self.0 as *mut physx_sys::PxHeightFieldSample,
+                )
+            }
         } else {
-            unsafe { physx_sys::PxHeightFieldSample_clearTessFlag_mut(&mut self.0 as *mut physx_sys::PxHeightFieldSample) }
+            unsafe {
+                physx_sys::PxHeightFieldSample_clearTessFlag_mut(
+                    &mut self.0 as *mut physx_sys::PxHeightFieldSample,
+                )
+            }
         }
     }
 }

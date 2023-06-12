@@ -327,14 +327,9 @@ impl TransformSystem {
                                 - scaling * scaling_pivot;
                             let t = o + r * p;
 
-                            *transform = Mat4::from_scale_rotation_translation(
-                                    scaling,
-                                    r,
-                                    t,
-                                );
+                            *transform = Mat4::from_scale_rotation_translation(scaling, r, t);
                         }
                     }),
-
                     query_mut(
                         local_to_world(),
                         (
@@ -386,11 +381,7 @@ impl TransformSystem {
                                 - scaling * scaling_pivot;
                             let t = o + r * p;
 
-                            *transform = Mat4::from_scale_rotation_translation(
-                                    scaling,
-                                    r,
-                                    t,
-                                );
+                            *transform = Mat4::from_scale_rotation_translation(scaling, r, t);
                         }
                     }),
                 ],

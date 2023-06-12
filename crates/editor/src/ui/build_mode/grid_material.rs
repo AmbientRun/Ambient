@@ -23,7 +23,11 @@ fn grid_shader_layout() -> BindGroupDesc<'static> {
         entries: vec![wgpu::BindGroupLayoutEntry {
             binding: 0,
             visibility: wgpu::ShaderStages::FRAGMENT,
-            ty: wgpu::BindingType::Buffer { ty: wgpu::BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
             count: None,
         }],
         label: MATERIAL_BIND_GROUP.into(),
@@ -35,7 +39,8 @@ impl SyncAssetKey<Arc<MaterialShader>> for GridShaderKey {
         Arc::new(MaterialShader {
             id: "grid_material_shader".to_string(),
             shader: Arc::new(
-                ShaderModule::new("GridMaterial", include_file!("grid_material.wgsl")).with_binding_desc(grid_shader_layout()),
+                ShaderModule::new("GridMaterial", include_file!("grid_material.wgsl"))
+                    .with_binding_desc(grid_shader_layout()),
             ),
         })
     }
@@ -76,7 +81,10 @@ impl GridMaterial {
             id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
                 layout: &layout,
-                entries: &[wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::Buffer(buffer.as_entire_buffer_binding()) }],
+                entries: &[wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::Buffer(buffer.as_entire_buffer_binding()),
+                }],
                 label: Some("GridMaterial.bind_group"),
             }),
             buffer,

@@ -3,15 +3,16 @@ use ambient_api::{
         app::main_scene,
         camera::aspect_ratio_from_window,
         primitives::{
-            torus_inner_radius, torus_loops, torus_outer_radius, torus_slices,
             capsule_half_height, capsule_latitudes, capsule_longitudes, capsule_radius,
             capsule_rings, cube, quad, sphere_radius, sphere_sectors, sphere_stacks,
+            torus_inner_radius, torus_loops, torus_outer_radius, torus_slices,
         },
         rendering::color,
         transform::{lookat_target, scale, translation},
     },
     concepts::{
-        make_torus, make_capsule, make_perspective_infinite_reverse_camera, make_sphere, make_transformable,
+        make_capsule, make_perspective_infinite_reverse_camera, make_sphere, make_torus,
+        make_transformable,
     },
     prelude::*,
 };

@@ -1,15 +1,20 @@
-use ambient_ecs::{query, Component, ComponentValue, Entity, EntityId, IndexField, IndexKey, World};
+use ambient_ecs::{
+    query, Component, ComponentValue, Entity, EntityId, IndexField, IndexKey, World,
+};
 use ambient_network::server::SharedServerState;
 use ambient_std::friendly_id;
 use chrono::Utc;
 
 use crate::{
-    intent, intent_applied, intent_id, intent_index, intent_index_applied, intent_index_reverted, intent_registry, intent_reverted,
-    intent_timestamp, intent_user_id,
+    intent, intent_applied, intent_id, intent_index, intent_index_applied, intent_index_reverted,
+    intent_registry, intent_reverted, intent_timestamp, intent_user_id,
 };
 
 fn despawn_reverted_intents(world: &mut World, user_id: &str) {
-    for (id, u) in query(intent_user_id()).incl(intent_reverted()).collect_cloned(world, None) {
+    for (id, u) in query(intent_user_id())
+        .incl(intent_reverted())
+        .collect_cloned(world, None)
+    {
         if u == user_id {
             world.despawn(id);
         }
@@ -17,7 +22,11 @@ fn despawn_reverted_intents(world: &mut World, user_id: &str) {
 }
 
 /// Pushes and applied the intent
-pub fn push_intent(state: SharedServerState, user_id: String, mut data: Entity) -> ambient_ecs::EntityId {
+pub fn push_intent(
+    state: SharedServerState,
+    user_id: String,
+    mut data: Entity,
+) -> ambient_ecs::EntityId {
     let (reg, id, intent) = {
         let mut guard = state.lock();
         let world = guard.get_player_world_mut(&user_id).unwrap();
@@ -37,7 +46,11 @@ pub fn push_intent(state: SharedServerState, user_id: String, mut data: Entity) 
     id
 }
 
-pub fn create_intent<T: ComponentValue>(intent_arg: Component<T>, arg: T, collapse_id: Option<String>) -> Entity {
+pub fn create_intent<T: ComponentValue>(
+    intent_arg: Component<T>,
+    arg: T,
+    collapse_id: Option<String>,
+) -> Entity {
     Entity::new()
         .with(intent(), intent_arg.index())
         .with(intent_timestamp(), Utc::now())
@@ -102,7 +115,9 @@ pub async fn redo_intent(state: SharedServerState, user_id: &str) -> Option<Enti
 
         let intent = world.get(id, intent()).expect("Not an intent");
 
-        world.remove_components(id, vec![intent_reverted().desc(), intent_applied().desc()]).unwrap();
+        world
+            .remove_components(id, vec![intent_reverted().desc(), intent_applied().desc()])
+            .unwrap();
 
         let reg = world.resource(intent_registry()).clone();
         (reg, id, intent)
@@ -116,21 +131,51 @@ pub async fn redo_intent(state: SharedServerState, user_id: &str) -> Option<Enti
 // Internal
 
 pub(crate) fn get_head_intent(world: &World, user_id: &str) -> Option<EntityId> {
-    let start = IndexKey::min(vec![IndexField::exact(intent_user_id(), user_id.to_string()), IndexField::Min]);
-    let end = IndexKey::max(vec![IndexField::exact(intent_user_id(), user_id.to_string()), IndexField::Max]);
-    world.resource(intent_index()).range(start..end).last().map(|x| x.id().unwrap())
+    let start = IndexKey::min(vec![
+        IndexField::exact(intent_user_id(), user_id.to_string()),
+        IndexField::Min,
+    ]);
+    let end = IndexKey::max(vec![
+        IndexField::exact(intent_user_id(), user_id.to_string()),
+        IndexField::Max,
+    ]);
+    world
+        .resource(intent_index())
+        .range(start..end)
+        .last()
+        .map(|x| x.id().unwrap())
 }
 
 pub(crate) fn get_tail_revert_intent(world: &World, user_id: &str) -> Option<EntityId> {
-    let start = IndexKey::min(vec![IndexField::exact(intent_user_id(), user_id.to_string()), IndexField::Min]);
-    let end = IndexKey::max(vec![IndexField::exact(intent_user_id(), user_id.to_string()), IndexField::Max]);
-    world.resource(intent_index_reverted()).range(start..end).next().map(|x| x.id().unwrap())
+    let start = IndexKey::min(vec![
+        IndexField::exact(intent_user_id(), user_id.to_string()),
+        IndexField::Min,
+    ]);
+    let end = IndexKey::max(vec![
+        IndexField::exact(intent_user_id(), user_id.to_string()),
+        IndexField::Max,
+    ]);
+    world
+        .resource(intent_index_reverted())
+        .range(start..end)
+        .next()
+        .map(|x| x.id().unwrap())
 }
 
 pub(crate) fn get_head_applied_intent(world: &World, user_id: &str) -> Option<EntityId> {
-    let start = IndexKey::min(vec![IndexField::exact(intent_user_id(), user_id.to_string()), IndexField::Min]);
-    let end = IndexKey::max(vec![IndexField::exact(intent_user_id(), user_id.to_string()), IndexField::Max]);
-    let head = world.resource(intent_index_applied()).range(start..end).last().map(|x| x.id().unwrap());
+    let start = IndexKey::min(vec![
+        IndexField::exact(intent_user_id(), user_id.to_string()),
+        IndexField::Min,
+    ]);
+    let end = IndexKey::max(vec![
+        IndexField::exact(intent_user_id(), user_id.to_string()),
+        IndexField::Max,
+    ]);
+    let head = world
+        .resource(intent_index_applied())
+        .range(start..end)
+        .last()
+        .map(|x| x.id().unwrap());
     if let Some(head) = head {
         assert!(world.exists(head));
     }

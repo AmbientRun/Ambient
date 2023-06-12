@@ -8,7 +8,8 @@ use ambient_network::{
 };
 use ambient_std::{cb, Cb};
 use ambient_ui_native::{
-    fit_horizontal, space_between_items, Button, ButtonStyle, DialogScreen, Fit, FlowColumn, FlowRow, ScrollArea, ScrollAreaSizing, STREET,
+    fit_horizontal, space_between_items, Button, ButtonStyle, DialogScreen, Fit, FlowColumn,
+    FlowRow, ScrollArea, ScrollAreaSizing, STREET,
 };
 use itertools::Itertools;
 use std::sync::Arc;
@@ -37,7 +38,13 @@ impl ElementComponent for EntityBrowser {
                     )
                 })
                 .collect_vec();
-            let all_tags = entities.iter().flat_map(|entity| &entity.2).sorted().dedup().cloned().collect_vec();
+            let all_tags = entities
+                .iter()
+                .flat_map(|entity| &entity.2)
+                .sorted()
+                .dedup()
+                .cloned()
+                .collect_vec();
             set_entities(entities);
             set_all_tags(all_tags);
             |_| {}
@@ -71,10 +78,20 @@ impl ElementComponent for EntityBrowser {
             FlowColumn(
                 entities
                     .into_iter()
-                    .filter(|entity| if let Some(selected_tag) = &selected_tag { entity.2.contains(selected_tag) } else { true })
+                    .filter(|entity| {
+                        if let Some(selected_tag) = &selected_tag {
+                            entity.2.contains(selected_tag)
+                        } else {
+                            true
+                        }
+                    })
                     .take(100)
                     .map(move |(entity, name, tags)| {
-                        Button::new(format!("{entity} {name} {tags:?}"), closure!(clone on_select, |_| on_select.0(entity))).el()
+                        Button::new(
+                            format!("{entity} {name} {tags:?}"),
+                            closure!(clone on_select, |_| on_select.0(entity)),
+                        )
+                        .el()
                     })
                     .collect_vec(),
             )
@@ -106,7 +123,9 @@ impl ElementComponent for EntityBrowserScreen {
                         })
                         .style(ButtonStyle::Primary)
                         .el(),
-                        Button::new("Advanced", move |_| set_advanced(!advanced)).toggled(advanced).el(),
+                        Button::new("Advanced", move |_| set_advanced(!advanced))
+                            .toggled(advanced)
+                            .el(),
                     ])
                     .with(space_between_items(), STREET),
                     if advanced {

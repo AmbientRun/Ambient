@@ -3,7 +3,8 @@ use std::ffi::c_void;
 use num_traits::FromPrimitive;
 
 use crate::{
-    AsPxBase, PxBaseRef, PxGeometry, PxGeometryHolder, PxGeometryType, PxMaterial, PxPhysicsRef, PxRigidActorRef, PxTransform, PxUserData,
+    AsPxBase, PxBaseRef, PxGeometry, PxGeometryHolder, PxGeometryType, PxMaterial, PxPhysicsRef,
+    PxRigidActorRef, PxTransform, PxUserData,
 };
 
 bitflags! {
@@ -30,7 +31,10 @@ impl PxShape {
         is_exclusive: Option<bool>,
         shape_flags: Option<PxShapeFlag>,
     ) -> Self {
-        let mats = materials.iter().map(|x| x.0).collect::<Vec<*mut physx_sys::PxMaterial>>();
+        let mats = materials
+            .iter()
+            .map(|x| x.0)
+            .collect::<Vec<*mut physx_sys::PxMaterial>>();
         Self(
             unsafe {
                 physx_sys::PxPhysics_createShape_mut_1(
@@ -39,7 +43,9 @@ impl PxShape {
                     mats.as_ptr() as *const *mut physx_sys::PxMaterial,
                     materials.len() as u16,
                     is_exclusive.unwrap_or(false),
-                    physx_sys::PxShapeFlags { mBits: shape_flags.unwrap_or_default().bits },
+                    physx_sys::PxShapeFlags {
+                        mBits: shape_flags.unwrap_or_default().bits,
+                    },
                 )
             },
             0,
@@ -67,7 +73,9 @@ impl PxShape {
         PxTransform(unsafe { physx_sys::PxShape_getLocalPose(self.0) })
     }
     pub fn set_local_pose(&self, pose: &PxTransform) {
-        unsafe { physx_sys::PxShape_setLocalPose_mut(self.0, &pose.0 as *const physx_sys::PxTransform) }
+        unsafe {
+            physx_sys::PxShape_setLocalPose_mut(self.0, &pose.0 as *const physx_sys::PxTransform)
+        }
     }
     pub fn get_global_pose(&self, actor: PxRigidActorRef) -> PxTransform {
         PxTransform(unsafe { physx_sys::PxShapeExt_getGlobalPose_mut(self.0, actor.0) })
@@ -89,7 +97,9 @@ impl PxShape {
         unsafe { physx_sys::PxShape_setFlag_mut(self.0, flag.bits as u32, value) }
     }
     pub fn set_flags(&self, flags: PxShapeFlag) {
-        unsafe { physx_sys::PxShape_setFlags_mut(self.0, physx_sys::PxShapeFlags { mBits: flags.bits }) }
+        unsafe {
+            physx_sys::PxShape_setFlags_mut(self.0, physx_sys::PxShapeFlags { mBits: flags.bits })
+        }
     }
     pub fn get_contact_offset(&self) -> f32 {
         unsafe { physx_sys::PxShape_getContactOffset(self.0) }

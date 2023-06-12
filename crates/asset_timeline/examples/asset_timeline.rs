@@ -98,7 +98,11 @@ async fn init(app: &mut App) {
                 load_asset_no_keepalive(world);
             })
             .el(),
-            Button::new("Load and abort asset (no keepalive)", load_and_abort_asset_no_keepalive).el(),
+            Button::new(
+                "Load and abort asset (no keepalive)",
+                load_and_abort_asset_no_keepalive,
+            )
+            .el(),
             LocalAssetTimelineVisualizer.el(),
         ])
         .el()])

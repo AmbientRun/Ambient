@@ -1,10 +1,13 @@
 use std::{
-    fmt::{self, Debug}, hash::{BuildHasher, Hasher}, str::FromStr
+    fmt::{self, Debug},
+    hash::{BuildHasher, Hasher},
+    str::FromStr,
 };
 
 use data_encoding::BASE64URL_NOPAD;
 use serde::{
-    de::{self, Visitor}, Deserialize, Deserializer, Serialize, Serializer
+    de::{self, Visitor},
+    Deserialize, Deserializer, Serialize, Serializer,
 };
 
 #[derive(Clone, Copy, Eq, PartialEq, Hash, PartialOrd, Ord)]
@@ -31,7 +34,10 @@ impl EntityId {
     }
     pub fn to_u64s(&self) -> (u64, u64) {
         let bytes: [u8; 16] = self.0.to_le_bytes();
-        (u64::from_le_bytes(bytes[0..8].try_into().unwrap()), u64::from_le_bytes(bytes[8..].try_into().unwrap()))
+        (
+            u64::from_le_bytes(bytes[0..8].try_into().unwrap()),
+            u64::from_le_bytes(bytes[8..].try_into().unwrap()),
+        )
     }
     pub fn to_base64(&self) -> String {
         BASE64URL_NOPAD.encode(&self.0.to_le_bytes())
@@ -111,7 +117,10 @@ fn test_entity_id_bytes() {
 fn test_entity_id_serialization() {
     for _ in 0..100 {
         let id = EntityId::new();
-        assert_eq!(id, serde_json::from_str(&serde_json::to_string(&id).unwrap()).unwrap());
+        assert_eq!(
+            id,
+            serde_json::from_str(&serde_json::to_string(&id).unwrap()).unwrap()
+        );
     }
 }
 
@@ -179,6 +188,10 @@ pub struct EntityLocation {
 }
 impl EntityLocation {
     pub(crate) fn empty() -> Self {
-        Self { archetype: 0, index: 0, gen: -2 }
+        Self {
+            archetype: 0,
+            index: 0,
+            gen: -2,
+        }
     }
 }

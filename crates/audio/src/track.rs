@@ -3,7 +3,10 @@ use std::sync::Arc;
 use derive_more::From;
 
 use crate::{
-    error::Result, vorbis::{VorbisDecodeStream, VorbisTrack}, wav::{WavDecodeStream, WavTrack}, Source
+    error::Result,
+    vorbis::{VorbisDecodeStream, VorbisTrack},
+    wav::{WavDecodeStream, WavTrack},
+    Source,
 };
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]

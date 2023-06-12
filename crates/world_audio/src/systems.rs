@@ -1,6 +1,6 @@
 use std::{io::Cursor, sync::Arc};
 
-use ambient_audio::{hrtf::HrtfLib};
+use ambient_audio::hrtf::HrtfLib;
 use ambient_core::transform::local_to_world;
 use ambient_ecs::{query, SystemGroup, World};
 use glam::{vec4, Mat4};
@@ -11,15 +11,21 @@ use crate::{audio_emitter, audio_listener, hrtf_lib};
 ///
 /// TODO: customizer IR sphere selection
 pub fn setup_audio(world: &mut World) -> anyhow::Result<()> {
-    let hrtf = Arc::new(HrtfLib::load(Cursor::new(include_bytes!("../IRC_1002_C.bin")))?);
+    let hrtf = Arc::new(HrtfLib::load(Cursor::new(include_bytes!(
+        "../IRC_1002_C.bin"
+    )))?);
     world.add_resource(hrtf_lib(), hrtf);
     Ok(())
 }
 
 /// This translates elements RHS Z-up coordinate system to the HRIR sphere LHS Y-up
 /// https://github.com/mrDIMAS/hrir_sphere_builder/blob/e52a10ece678a2b80a0978f7cf23f3ad9cce41c3/src/hrtf_builder.cpp#L155-L162
-pub const Y_UP_LHS: Mat4 =
-    Mat4::from_cols(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
+pub const Y_UP_LHS: Mat4 = Mat4::from_cols(
+    vec4(1.0, 0.0, 0.0, 0.0),
+    vec4(0.0, 0.0, 1.0, 0.0),
+    vec4(0.0, 1.0, 0.0, 0.0),
+    vec4(0.0, 0.0, 0.0, 1.0),
+);
 
 pub fn spatial_audio_systems() -> SystemGroup {
     SystemGroup::new(
@@ -33,12 +39,15 @@ pub fn spatial_audio_systems() -> SystemGroup {
                     emitter.pos = pos;
                 }
             }),
-            query((audio_listener(), local_to_world())).to_system_with_name("update_audio_listener", |q, world, qs, _| {
-                for (_, (listener, &ltw)) in q.iter(world, qs) {
-                    let mut listener = listener.lock();
-                    listener.transform = Y_UP_LHS * ltw;
-                }
-            }),
+            query((audio_listener(), local_to_world())).to_system_with_name(
+                "update_audio_listener",
+                |q, world, qs, _| {
+                    for (_, (listener, &ltw)) in q.iter(world, qs) {
+                        let mut listener = listener.lock();
+                        listener.transform = Y_UP_LHS * ltw;
+                    }
+                },
+            ),
         ],
     )
 }

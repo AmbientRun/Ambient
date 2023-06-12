@@ -65,7 +65,13 @@ fn rerender_child() {
     let mut tree = ElementTree::new(&mut world, Element::from(Root { child_id: 0 }));
     assert_eq!(2, world.len() - start_n_entities);
     assert_eq!(4, tree.n_instances());
-    assert_eq!(1, world.get_ref(tree.root_entity().unwrap(), children()).unwrap().len());
+    assert_eq!(
+        1,
+        world
+            .get_ref(tree.root_entity().unwrap(), children())
+            .unwrap()
+            .len()
+    );
 
     tree.migrate_root(&mut world, Element::from(Root { child_id: 1 }));
     assert_eq!(2, world.len() - start_n_entities);
@@ -82,7 +88,14 @@ fn parent_components_should_stay_after_child_rerenders() {
     #[element_component]
     fn Child(hooks: &mut Hooks) -> Element {
         let (state, set_state) = hooks.use_state(9);
-        hooks.world.add_component(hooks.world.resource_entity(), element_cb(), Arc::new(move || set_state(10))).unwrap();
+        hooks
+            .world
+            .add_component(
+                hooks.world.resource_entity(),
+                element_cb(),
+                Arc::new(move || set_state(10)),
+            )
+            .unwrap();
         Element::new().with(prop_b(), state as u32)
     }
 
@@ -135,10 +148,12 @@ fn remove_element_renderer() {
 fn on_spawned() {
     #[element_component]
     fn Root(_: &mut Hooks) -> Element {
-        Element::new().init_default(prop_a()).on_spawned(|world, ent, _| {
-            // Should be possible to access components in on_spawned
-            world.get(ent, prop_a()).unwrap();
-        })
+        Element::new()
+            .init_default(prop_a())
+            .on_spawned(|world, ent, _| {
+                // Should be possible to access components in on_spawned
+                world.get(ent, prop_a()).unwrap();
+            })
     }
 
     let mut world = initialize();

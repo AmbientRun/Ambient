@@ -56,11 +56,19 @@ pub fn parse_duration(mut s: &str) -> Result<Duration, DurationParseError> {
     let mut dur = Duration::ZERO;
     while let Some((kind, head, tail)) = tok(s) {
         match (kind, num) {
-            (TokenKind::Integral, None) => num = Some(head.parse().map_err(|_| DurationParseError::MalformedIntegral(head.to_string()))?),
+            (TokenKind::Integral, None) => {
+                num = Some(
+                    head.parse()
+                        .map_err(|_| DurationParseError::MalformedIntegral(head.to_string()))?,
+                )
+            }
             (TokenKind::Integral, Some(_)) => return Err(DurationParseError::DoubleIntegral),
-            (TokenKind::Identifier, None) => return Err(DurationParseError::MissingIntegral(head.to_string())),
+            (TokenKind::Identifier, None) => {
+                return Err(DurationParseError::MissingIntegral(head.to_string()))
+            }
             (TokenKind::Identifier, Some(n)) => {
-                let scale = DurationScale::parse(head).ok_or_else(|| DurationParseError::MalformedSuffix(head.to_string()))?;
+                let scale = DurationScale::parse(head)
+                    .ok_or_else(|| DurationParseError::MalformedSuffix(head.to_string()))?;
                 dur += scale.to_duration(n);
                 num = None;
             }
@@ -85,17 +93,23 @@ enum TokenKind {
     WhiteSpace,
 }
 
-fn consume_integral(iter: &mut impl PeekingNext<Item = (usize, char)>) -> Option<(TokenKind, usize)> {
+fn consume_integral(
+    iter: &mut impl PeekingNext<Item = (usize, char)>,
+) -> Option<(TokenKind, usize)> {
     iter.peeking_take_while(|(_, c)| c.is_ascii_digit() || *c == ',' || *c == '.')
         .last()
         .map(|(i, c)| (TokenKind::Integral, i + c.len_utf8()))
 }
 
 fn consume_ident(iter: &mut impl PeekingNext<Item = (usize, char)>) -> Option<(TokenKind, usize)> {
-    iter.peeking_take_while(|(_, c)| c.is_alphabetic()).last().map(|(i, c)| (TokenKind::Identifier, i + c.len_utf8()))
+    iter.peeking_take_while(|(_, c)| c.is_alphabetic())
+        .last()
+        .map(|(i, c)| (TokenKind::Identifier, i + c.len_utf8()))
 }
 
-fn consume_whitespace(iter: &mut impl PeekingNext<Item = (usize, char)>) -> Option<(TokenKind, usize)> {
+fn consume_whitespace(
+    iter: &mut impl PeekingNext<Item = (usize, char)>,
+) -> Option<(TokenKind, usize)> {
     iter.peeking_take_while(|(_, c)| c.is_whitespace() || matches!(*c, ',' | '.' | ':'))
         .last()
         .map(|(i, c)| (TokenKind::WhiteSpace, i + c.len_utf8()))
@@ -103,7 +117,9 @@ fn consume_whitespace(iter: &mut impl PeekingNext<Item = (usize, char)>) -> Opti
 
 fn tok(s: &str) -> Option<(TokenKind, &str, &str)> {
     let mut iter = s.char_indices();
-    let tok = consume_integral(&mut iter).or_else(|| consume_ident(&mut iter)).or_else(|| consume_whitespace(&mut iter));
+    let tok = consume_integral(&mut iter)
+        .or_else(|| consume_ident(&mut iter))
+        .or_else(|| consume_whitespace(&mut iter));
 
     if let Some((kind, tok)) = tok {
         let (head, tail) = s.split_at(tok);
@@ -121,7 +137,12 @@ mod test {
     fn parse_duration() {
         let input = ["", "1s", "4m", "5m2s"];
         let output = input.into_iter().map(super::parse_duration).collect_vec();
-        let expected = [Ok(Duration::ZERO), Ok(Duration::from_secs(1)), Ok(Duration::from_secs(240)), Ok(Duration::from_secs(302))];
+        let expected = [
+            Ok(Duration::ZERO),
+            Ok(Duration::from_secs(1)),
+            Ok(Duration::from_secs(240)),
+            Ok(Duration::from_secs(302)),
+        ];
         assert_eq!(output, expected);
     }
 }

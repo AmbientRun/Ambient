@@ -48,7 +48,11 @@ impl PxFoundationRef {
         unsafe { Self(physx_sys::physx_create_foundation()) }
     }
     pub fn get() -> Self {
-        unsafe { Self(physx_sys::PxPhysics_getFoundation_mut(PxPhysicsRef::get().0)) }
+        unsafe {
+            Self(physx_sys::PxPhysics_getFoundation_mut(
+                PxPhysicsRef::get().0,
+            ))
+        }
     }
     pub fn release(self) {
         unsafe { physx_sys::PxFoundation_release_mut(self.0) }
@@ -64,11 +68,25 @@ pub struct PxPhysicsRef(*mut physx_sys::PxPhysics);
 impl PxPhysicsRef {
     pub fn new(foundation: &PxFoundationRef) -> Self {
         Self(unsafe {
-            physx_sys::phys_PxCreatePhysics(PX_PHYSICS_VERSION, foundation.0, &physx_sys::PxTolerancesScale_new(), true, null_mut())
+            physx_sys::phys_PxCreatePhysics(
+                PX_PHYSICS_VERSION,
+                foundation.0,
+                &physx_sys::PxTolerancesScale_new(),
+                true,
+                null_mut(),
+            )
         })
     }
     pub fn new_with_pvd(foundation: &PxFoundationRef, pvd: &PxPvdRef) -> Self {
-        Self(unsafe { physx_sys::phys_PxCreatePhysics(PX_PHYSICS_VERSION, foundation.0, &physx_sys::PxTolerancesScale_new(), true, pvd.0) })
+        Self(unsafe {
+            physx_sys::phys_PxCreatePhysics(
+                PX_PHYSICS_VERSION,
+                foundation.0,
+                &physx_sys::PxTolerancesScale_new(),
+                true,
+                pvd.0,
+            )
+        })
     }
     pub fn get() -> Self {
         Self(unsafe { physx_sys::phys_PxGetPhysics() })
@@ -108,8 +126,20 @@ unsafe impl Send for PxDefaultCpuDispatcherRef {}
 #[derive(Debug)]
 pub struct PxMaterial(*mut physx_sys::PxMaterial);
 impl PxMaterial {
-    pub fn new(physics: PxPhysicsRef, static_friction: f32, dynamic_friction: f32, restitution: f32) -> Self {
-        Self(unsafe { physx_sys::PxPhysics_createMaterial_mut(physics.0, static_friction, dynamic_friction, restitution) })
+    pub fn new(
+        physics: PxPhysicsRef,
+        static_friction: f32,
+        dynamic_friction: f32,
+        restitution: f32,
+    ) -> Self {
+        Self(unsafe {
+            physx_sys::PxPhysics_createMaterial_mut(
+                physics.0,
+                static_friction,
+                dynamic_friction,
+                restitution,
+            )
+        })
     }
     pub(crate) fn from_ptr(ptr: *mut physx_sys::PxMaterial) -> Self {
         let mut s = Self(ptr);
@@ -142,7 +172,9 @@ unsafe impl Send for PxMaterial {}
 pub struct PxAggregateRef(*mut physx_sys::PxAggregate);
 impl PxAggregateRef {
     pub fn new(physics: &PxPhysicsRef, max_size: u32, self_collisions: bool) -> Self {
-        Self(unsafe { physx_sys::PxPhysics_createAggregate_mut(physics.0, max_size, self_collisions) })
+        Self(unsafe {
+            physx_sys::PxPhysics_createAggregate_mut(physics.0, max_size, self_collisions)
+        })
     }
     pub fn add_actor(&mut self, actor: &dyn AsPxActor) -> bool {
         unsafe { physx_sys::PxAggregate_addActor_mut(self.0, actor.as_actor().0, null_mut()) }

@@ -17,7 +17,13 @@ impl PxPvdRef {
         Self(unsafe { physx_sys::phys_PxCreatePvd(foundation.0) })
     }
     pub fn connect(&self, transport: &PxPvdTransportRef, flags: PxPvdInstrumentationFlags) -> bool {
-        unsafe { physx_sys::PxPvd_connect_mut(self.0, transport.0, physx_sys::PxPvdInstrumentationFlags { mBits: flags as _ }) }
+        unsafe {
+            physx_sys::PxPvd_connect_mut(
+                self.0,
+                transport.0,
+                physx_sys::PxPvdInstrumentationFlags { mBits: flags as _ },
+            )
+        }
     }
     pub fn release(self) {
         unsafe {
@@ -36,7 +42,13 @@ impl PxPvdTransportRef {
     }
     pub fn new_default_socket_localhost(port: i32, timeout_in_ms: u32) -> Self {
         let oshost = unsafe { CStr::from_bytes_with_nul_unchecked(b"localhost\0") };
-        Self(unsafe { physx_sys::phys_PxDefaultPvdSocketTransportCreate(oshost.as_ptr() as _, port, timeout_in_ms) })
+        Self(unsafe {
+            physx_sys::phys_PxDefaultPvdSocketTransportCreate(
+                oshost.as_ptr() as _,
+                port,
+                timeout_in_ms,
+            )
+        })
     }
     pub fn release(self) {
         unsafe { physx_sys::PxPvdTransport_release_mut(self.0) }
@@ -60,7 +72,14 @@ impl PxPvdSceneClientRef {
         unsafe { physx_sys::PxPvdSceneClient_setScenePvdFlag_mut(self.0, flag.bits, value) }
     }
     pub fn set_scene_pvd_flags(&mut self, flags: PxPvdSceneFlag) {
-        unsafe { physx_sys::PxPvdSceneClient_setScenePvdFlags_mut(self.0, physx_sys::PxPvdSceneFlags { mBits: flags.bits as u8 }) }
+        unsafe {
+            physx_sys::PxPvdSceneClient_setScenePvdFlags_mut(
+                self.0,
+                physx_sys::PxPvdSceneFlags {
+                    mBits: flags.bits as u8,
+                },
+            )
+        }
     }
 }
 unsafe impl Sync for PxPvdSceneClientRef {}

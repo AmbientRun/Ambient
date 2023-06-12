@@ -22,7 +22,13 @@ pub fn init_all_components() {
 }
 
 pub fn assets_camera_systems() -> SystemGroup<Event<'static, ()>> {
-    SystemGroup::new("assets_camera_systems", vec![Box::new(free_camera_system()), Box::new(spherical_camera_system())])
+    SystemGroup::new(
+        "assets_camera_systems",
+        vec![
+            Box::new(free_camera_system()),
+            Box::new(spherical_camera_system()),
+        ],
+    )
 }
 
 #[element_component]
@@ -37,7 +43,15 @@ pub fn UICamera(_: &mut Hooks) -> Element {
         .init(orthographic_right(), 100.)
         .init(orthographic_top(), 0.)
         .init(orthographic_bottom(), 100.)
-        .init(orthographic_rect(), OrthographicRect { left: 0.0, right: 100., top: 0., bottom: 100. })
+        .init(
+            orthographic_rect(),
+            OrthographicRect {
+                left: 0.0,
+                right: 100.,
+                top: 0.,
+                bottom: 100.,
+            },
+        )
         .init_default(projection())
         .init_default(projection_view())
         .init_default(translation())
@@ -81,6 +95,13 @@ pub fn FreeCamera(_: &mut Hooks, position: Vec3, rotation: Quat) -> Element {
 }
 
 #[element_component]
-pub fn FittedOrthographicCamera(_: &mut Hooks, eye: Vec3, lookat: Vec3, up: Vec3, fit: BoundingBox, aspect: f32) -> Element {
+pub fn FittedOrthographicCamera(
+    _: &mut Hooks,
+    eye: Vec3,
+    lookat: Vec3,
+    up: Vec3,
+    fit: BoundingBox,
+    aspect: f32,
+) -> Element {
     Element::new().extend(Camera::fitted_ortographic(eye, lookat, up, fit, aspect).to_entity_data())
 }

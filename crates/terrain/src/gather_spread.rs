@@ -6,7 +6,13 @@ use glam::{ivec2, IVec2, UVec2};
 
 use crate::{get_terrain_cell, terrain_state};
 
-pub fn gather_terrain_cells(world: &World, encoder: &mut wgpu::CommandEncoder, terrain_map: &Texture, top_left_cell: IVec2, cells: UVec2) {
+pub fn gather_terrain_cells(
+    world: &World,
+    encoder: &mut wgpu::CommandEncoder,
+    terrain_map: &Texture,
+    top_left_cell: IVec2,
+    cells: UVec2,
+) {
     for y in 0..cells.y as i32 {
         for x in 0..cells.x as i32 {
             if let Some(id) = get_terrain_cell(world, top_left_cell + ivec2(x, y)) {

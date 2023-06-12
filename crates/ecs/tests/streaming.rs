@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
-use ambient_ecs::{components, ArchetypeFilter, Entity, Query, World, WorldDiff, WorldStream, WorldStreamFilter};
+use ambient_ecs::{
+    components, ArchetypeFilter, Entity, Query, World, WorldDiff, WorldStream, WorldStreamFilter,
+};
 use itertools::Itertools;
 
 components!("test", {
@@ -45,9 +47,14 @@ fn streaming() {
     init();
     let mut source = World::new_with_config("streaming_src", true);
     source.init_shape_change_tracking();
-    source.add_component(source.resource_entity(), no_sync(), ()).ok();
+    source
+        .add_component(source.resource_entity(), no_sync(), ())
+        .ok();
     let mut dest = World::new("streaming_dst");
-    let mut stream = WorldStream::new(WorldStreamFilter::new(ArchetypeFilter::new().excl(no_sync()), Arc::new(|_, _| true)));
+    let mut stream = WorldStream::new(WorldStreamFilter::new(
+        ArchetypeFilter::new().excl(no_sync()),
+        Arc::new(|_, _| true),
+    ));
 
     let x = Entity::new().with(a(), 1.).spawn(&mut source);
     let diff = stream.next_diff(&source);

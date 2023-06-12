@@ -12,55 +12,78 @@ pub struct NormalmapFromHeightmapCompute {
 }
 impl NormalmapFromHeightmapCompute {
     pub fn new(gpu: &Gpu) -> Self {
-        let shader = gpu.device.create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: Some("NormalmapFromHeightmapCompute.shader"),
-            source: wgpu::ShaderSource::Wgsl(Cow::Owned([wgsl_terrain_preprocess(include_file!("normalmap.wgsl"))].join("\n"))),
-        });
+        let shader = gpu
+            .device
+            .create_shader_module(wgpu::ShaderModuleDescriptor {
+                label: Some("NormalmapFromHeightmapCompute.shader"),
+                source: wgpu::ShaderSource::Wgsl(Cow::Owned(
+                    [wgsl_terrain_preprocess(include_file!("normalmap.wgsl"))].join("\n"),
+                )),
+            });
 
-        let pipeline = gpu.device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
-            label: None,
-            layout: Some(&gpu.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: None,
-                bind_group_layouts: &[&gpu.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        let pipeline =
+            gpu.device
+                .create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
                     label: None,
-                    entries: &[
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 0,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::StorageTexture {
-                                access: wgpu::StorageTextureAccess::ReadOnly,
-                                format: wgpu::TextureFormat::R32Float,
-                                view_dimension: wgpu::TextureViewDimension::D2Array,
-                            },
-                            count: None,
+                    layout: Some(&gpu.device.create_pipeline_layout(
+                        &wgpu::PipelineLayoutDescriptor {
+                            label: None,
+                            bind_group_layouts: &[&gpu.device.create_bind_group_layout(
+                                &wgpu::BindGroupLayoutDescriptor {
+                                    label: None,
+                                    entries: &[
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 0,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::StorageTexture {
+                                                access: wgpu::StorageTextureAccess::ReadOnly,
+                                                format: wgpu::TextureFormat::R32Float,
+                                                view_dimension: wgpu::TextureViewDimension::D2Array,
+                                            },
+                                            count: None,
+                                        },
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 1,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::StorageTexture {
+                                                access: wgpu::StorageTextureAccess::WriteOnly,
+                                                format: wgpu::TextureFormat::Rgba32Float,
+                                                view_dimension: wgpu::TextureViewDimension::D2,
+                                            },
+                                            count: None,
+                                        },
+                                    ],
+                                },
+                            )],
+                            push_constant_ranges: &[],
                         },
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 1,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::StorageTexture {
-                                access: wgpu::StorageTextureAccess::WriteOnly,
-                                format: wgpu::TextureFormat::Rgba32Float,
-                                view_dimension: wgpu::TextureViewDimension::D2,
-                            },
-                            count: None,
-                        },
-                    ],
-                })],
-                push_constant_ranges: &[],
-            })),
-            module: &shader,
-            entry_point: "main",
-        });
+                    )),
+                    module: &shader,
+                    entry_point: "main",
+                });
         Self { pipeline }
     }
-    pub fn run(&self, gpu: &Gpu, encoder: &mut wgpu::CommandEncoder, heightmap: &TextureView, normalmap: &TextureView, size: UVec2) {
+    pub fn run(
+        &self,
+        gpu: &Gpu,
+        encoder: &mut wgpu::CommandEncoder,
+        heightmap: &TextureView,
+        normalmap: &TextureView,
+        size: UVec2,
+    ) {
         let bind_group_layout = self.pipeline.get_bind_group_layout(0);
         let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: None,
             layout: &bind_group_layout,
             entries: &[
-                wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(heightmap) },
-                wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::TextureView(normalmap) },
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::TextureView(heightmap),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: wgpu::BindingResource::TextureView(normalmap),
+                },
             ],
         });
 

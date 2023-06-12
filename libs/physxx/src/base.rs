@@ -1,5 +1,8 @@
 use crate::{
-    AsPxJoint, AsPxRigidActor, AsPxRigidBody, PxAggregateRef, PxArticulationLinkRef, PxConstraintRef, PxConvexMesh, PxFixedJointRef, PxHeightField, PxJointRef, PxMaterial, PxRevoluteJointRef, PxRigidActorRef, PxRigidBodyRef, PxRigidDynamicRef, PxRigidStaticRef, PxShape
+    AsPxJoint, AsPxRigidActor, AsPxRigidBody, PxAggregateRef, PxArticulationLinkRef,
+    PxConstraintRef, PxConvexMesh, PxFixedJointRef, PxHeightField, PxJointRef, PxMaterial,
+    PxRevoluteJointRef, PxRigidActorRef, PxRigidBodyRef, PxRigidDynamicRef, PxRigidStaticRef,
+    PxShape,
 };
 
 pub trait AsPxBase: Sync + Send {
@@ -98,35 +101,87 @@ impl PxAny {
     pub(crate) fn from_obj(obj: *mut physx_sys::PxBase) -> Self {
         unsafe {
             match physx_sys::PxBase_getConcreteType(obj) as u32 {
-                physx_sys::PxConcreteType::eAGGREGATE => PxAny::PxAggregate(PxAggregateRef(obj as _)),
-                physx_sys::PxConcreteType::eARTICULATION => panic!("PhysX object type is not supported"),
-                physx_sys::PxConcreteType::eARTICULATION_JOINT => panic!("PhysX object type is not supported"),
-                physx_sys::PxConcreteType::eARTICULATION_JOINT_REDUCED_COORDINATE => panic!("PhysX object type is not supported"),
-                physx_sys::PxConcreteType::eARTICULATION_LINK => PxAny::PxArticulationLink(PxArticulationLinkRef(obj as _)),
-                physx_sys::PxConcreteType::eARTICULATION_REDUCED_COORDINATE => panic!("PhysX object type is not supported"),
-                physx_sys::PxConcreteType::eBVH_STRUCTURE => panic!("PhysX object type is not supported"),
-                physx_sys::PxConcreteType::eCONSTRAINT => PxAny::PxConstraint(PxConstraintRef(obj as _)),
-                physx_sys::PxConcreteType::eCONVEX_MESH => PxAny::PxConvexMesh(PxConvexMesh::from_ptr(obj as _)),
-                physx_sys::PxConcreteType::eFIRST_USER_EXTENSION => panic!("PhysX object type is not supported"),
-                physx_sys::PxConcreteType::eFIRST_VEHICLE_EXTENSION => panic!("PhysX object type is not supported"),
-                physx_sys::PxConcreteType::eHEIGHTFIELD => PxAny::PxHeightField(PxHeightField::from_ptr(obj as _)),
-                physx_sys::PxConcreteType::eMATERIAL => PxAny::PxMaterial(PxMaterial::from_ptr(obj as _)),
-                physx_sys::PxConcreteType::ePHYSX_CORE_COUNT => panic!("PhysX object type is not supported"),
-                physx_sys::PxConcreteType::ePRUNING_STRUCTURE => panic!("PhysX object type is not supported"),
-                physx_sys::PxConcreteType::eRIGID_DYNAMIC => PxAny::PxRigidDynamic(PxRigidDynamicRef(obj as _)),
-                physx_sys::PxConcreteType::eRIGID_STATIC => PxAny::PxRigidStatic(PxRigidStaticRef(obj as _)),
+                physx_sys::PxConcreteType::eAGGREGATE => {
+                    PxAny::PxAggregate(PxAggregateRef(obj as _))
+                }
+                physx_sys::PxConcreteType::eARTICULATION => {
+                    panic!("PhysX object type is not supported")
+                }
+                physx_sys::PxConcreteType::eARTICULATION_JOINT => {
+                    panic!("PhysX object type is not supported")
+                }
+                physx_sys::PxConcreteType::eARTICULATION_JOINT_REDUCED_COORDINATE => {
+                    panic!("PhysX object type is not supported")
+                }
+                physx_sys::PxConcreteType::eARTICULATION_LINK => {
+                    PxAny::PxArticulationLink(PxArticulationLinkRef(obj as _))
+                }
+                physx_sys::PxConcreteType::eARTICULATION_REDUCED_COORDINATE => {
+                    panic!("PhysX object type is not supported")
+                }
+                physx_sys::PxConcreteType::eBVH_STRUCTURE => {
+                    panic!("PhysX object type is not supported")
+                }
+                physx_sys::PxConcreteType::eCONSTRAINT => {
+                    PxAny::PxConstraint(PxConstraintRef(obj as _))
+                }
+                physx_sys::PxConcreteType::eCONVEX_MESH => {
+                    PxAny::PxConvexMesh(PxConvexMesh::from_ptr(obj as _))
+                }
+                physx_sys::PxConcreteType::eFIRST_USER_EXTENSION => {
+                    panic!("PhysX object type is not supported")
+                }
+                physx_sys::PxConcreteType::eFIRST_VEHICLE_EXTENSION => {
+                    panic!("PhysX object type is not supported")
+                }
+                physx_sys::PxConcreteType::eHEIGHTFIELD => {
+                    PxAny::PxHeightField(PxHeightField::from_ptr(obj as _))
+                }
+                physx_sys::PxConcreteType::eMATERIAL => {
+                    PxAny::PxMaterial(PxMaterial::from_ptr(obj as _))
+                }
+                physx_sys::PxConcreteType::ePHYSX_CORE_COUNT => {
+                    panic!("PhysX object type is not supported")
+                }
+                physx_sys::PxConcreteType::ePRUNING_STRUCTURE => {
+                    panic!("PhysX object type is not supported")
+                }
+                physx_sys::PxConcreteType::eRIGID_DYNAMIC => {
+                    PxAny::PxRigidDynamic(PxRigidDynamicRef(obj as _))
+                }
+                physx_sys::PxConcreteType::eRIGID_STATIC => {
+                    PxAny::PxRigidStatic(PxRigidStaticRef(obj as _))
+                }
                 physx_sys::PxConcreteType::eSHAPE => PxAny::PxShape(PxShape::from_ptr(obj as _)),
-                physx_sys::PxConcreteType::eTRIANGLE_MESH_BVH33 => panic!("PhysX object type is not supported"),
-                physx_sys::PxConcreteType::eTRIANGLE_MESH_BVH34 => panic!("PhysX object type is not supported"),
+                physx_sys::PxConcreteType::eTRIANGLE_MESH_BVH33 => {
+                    panic!("PhysX object type is not supported")
+                }
+                physx_sys::PxConcreteType::eTRIANGLE_MESH_BVH34 => {
+                    panic!("PhysX object type is not supported")
+                }
 
-                physx_sys::PxJointConcreteType::eCONTACT => panic!("PhysX object type is not supported"),
+                physx_sys::PxJointConcreteType::eCONTACT => {
+                    panic!("PhysX object type is not supported")
+                }
                 physx_sys::PxJointConcreteType::eD6 => panic!("PhysX object type is not supported"),
-                physx_sys::PxJointConcreteType::eDISTANCE => panic!("PhysX object type is not supported"),
-                physx_sys::PxJointConcreteType::eFIXED => PxAny::PxFixedJoint(PxFixedJointRef(obj as _)),
-                physx_sys::PxJointConcreteType::eLast => panic!("PhysX object type is not supported"),
-                physx_sys::PxJointConcreteType::ePRISMATIC => panic!("PhysX object type is not supported"),
-                physx_sys::PxJointConcreteType::eREVOLUTE => PxAny::PxRevoluteJoint(PxRevoluteJointRef(obj as _)),
-                physx_sys::PxJointConcreteType::eSPHERICAL => panic!("PhysX object type is not supported"),
+                physx_sys::PxJointConcreteType::eDISTANCE => {
+                    panic!("PhysX object type is not supported")
+                }
+                physx_sys::PxJointConcreteType::eFIXED => {
+                    PxAny::PxFixedJoint(PxFixedJointRef(obj as _))
+                }
+                physx_sys::PxJointConcreteType::eLast => {
+                    panic!("PhysX object type is not supported")
+                }
+                physx_sys::PxJointConcreteType::ePRISMATIC => {
+                    panic!("PhysX object type is not supported")
+                }
+                physx_sys::PxJointConcreteType::eREVOLUTE => {
+                    PxAny::PxRevoluteJoint(PxRevoluteJointRef(obj as _))
+                }
+                physx_sys::PxJointConcreteType::eSPHERICAL => {
+                    panic!("PhysX object type is not supported")
+                }
 
                 _ => panic!("Unknown type"),
             }
