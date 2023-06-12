@@ -17,7 +17,8 @@ use async_trait::async_trait;
 use itertools::Itertools;
 
 use crate::{
-    BoxModelKey, NaturalElement, NaturalElementWGSL, NaturalEntity, NATURALS_MAX_ENTITIES, OLD_CONTENT_SERVER_URL, WORKGROUP_SIZE,
+    BoxModelKey, NaturalElement, NaturalElementWGSL, NaturalEntity, NATURALS_MAX_ENTITIES,
+    OLD_CONTENT_SERVER_URL, WORKGROUP_SIZE,
 };
 
 #[derive(Debug, Clone)]
@@ -25,7 +26,8 @@ pub struct NaturalsPipelineKey;
 #[async_trait]
 impl AsyncAssetKey<Arc<NaturalsPipeline>> for NaturalsPipelineKey {
     async fn load(self, assets: AssetCache) -> Arc<NaturalsPipeline> {
-        Arc::new(NaturalsPipeline::new(assets).await)
+        let gpu = GpuKey.get(&assets);
+        Arc::new(NaturalsPipeline::new(&gpu, &assets).await)
     }
     fn keepalive(&self) -> AssetKeepalive {
         AssetKeepalive::Forever
@@ -33,7 +35,6 @@ impl AsyncAssetKey<Arc<NaturalsPipeline>> for NaturalsPipelineKey {
 }
 
 pub struct NaturalsPipeline {
-    gpu: Arc<Gpu>,
     pipeline: wgpu::ComputePipeline,
     blue_noise: Arc<Texture>,
     cluster_noise: Arc<Texture>,
@@ -41,126 +42,153 @@ pub struct NaturalsPipeline {
     default_sampler: Arc<wgpu::Sampler>,
 }
 impl NaturalsPipeline {
-    pub async fn new(assets: AssetCache) -> Self {
-        let gpu = GpuKey.get(&assets);
-
-        let pipeline = gpu.device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
-            label: Some("Naturals"),
-            layout: Some(&gpu.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: None,
-                bind_group_layouts: &[&gpu.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                    label: None,
-                    entries: &[
-                        // Heightmap
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 0,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Texture {
-                                sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                                view_dimension: wgpu::TextureViewDimension::D2Array,
-                                multisampled: false,
-                            },
-                            count: None,
+    pub async fn new(gpu: &Gpu, assets: &AssetCache) -> Self {
+        let pipeline =
+            gpu.device
+                .create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
+                    label: Some("Naturals"),
+                    layout: Some(&gpu.device.create_pipeline_layout(
+                        &wgpu::PipelineLayoutDescriptor {
+                            label: None,
+                            bind_group_layouts: &[&gpu.device.create_bind_group_layout(
+                                &wgpu::BindGroupLayoutDescriptor {
+                                    label: None,
+                                    entries: &[
+                                        // Heightmap
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 0,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::Texture {
+                                                sample_type: wgpu::TextureSampleType::Float {
+                                                    filterable: true,
+                                                },
+                                                view_dimension: wgpu::TextureViewDimension::D2Array,
+                                                multisampled: false,
+                                            },
+                                            count: None,
+                                        },
+                                        // Normalmap
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 1,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::Texture {
+                                                sample_type: wgpu::TextureSampleType::Float {
+                                                    filterable: true,
+                                                },
+                                                view_dimension: wgpu::TextureViewDimension::D2,
+                                                multisampled: false,
+                                            },
+                                            count: None,
+                                        },
+                                        // Heightmap sampler
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 2,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::Sampler(
+                                                wgpu::SamplerBindingType::Filtering,
+                                            ),
+                                            count: None,
+                                        },
+                                        // Output entities
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 3,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::Buffer {
+                                                ty: wgpu::BufferBindingType::Storage {
+                                                    read_only: false,
+                                                },
+                                                has_dynamic_offset: false,
+                                                min_binding_size: None,
+                                            },
+                                            count: None,
+                                        },
+                                        // Output counts
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 4,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::Buffer {
+                                                ty: wgpu::BufferBindingType::Storage {
+                                                    read_only: false,
+                                                },
+                                                has_dynamic_offset: false,
+                                                min_binding_size: None,
+                                            },
+                                            count: None,
+                                        },
+                                        // Blue noise
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 5,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::Texture {
+                                                sample_type: wgpu::TextureSampleType::Float {
+                                                    filterable: false,
+                                                },
+                                                view_dimension: wgpu::TextureViewDimension::D2,
+                                                multisampled: false,
+                                            },
+                                            count: None,
+                                        },
+                                        // Cluster noise
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 6,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::Texture {
+                                                sample_type: wgpu::TextureSampleType::Float {
+                                                    filterable: true,
+                                                },
+                                                view_dimension: wgpu::TextureViewDimension::D2,
+                                                multisampled: false,
+                                            },
+                                            count: None,
+                                        },
+                                        // Natural elements
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 7,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::Buffer {
+                                                ty: wgpu::BufferBindingType::Storage {
+                                                    read_only: true,
+                                                },
+                                                has_dynamic_offset: false,
+                                                min_binding_size: None,
+                                            },
+                                            count: None,
+                                        },
+                                        // Default sampler
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 8,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::Sampler(
+                                                wgpu::SamplerBindingType::Filtering,
+                                            ),
+                                            count: None,
+                                        },
+                                    ],
+                                },
+                            )],
+                            push_constant_ranges: &[],
                         },
-                        // Normalmap
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 1,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Texture {
-                                sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                                view_dimension: wgpu::TextureViewDimension::D2,
-                                multisampled: false,
-                            },
-                            count: None,
-                        },
-                        // Heightmap sampler
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 2,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-                            count: None,
-                        },
-                        // Output entities
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 3,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Storage { read_only: false },
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                        // Output counts
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 4,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Storage { read_only: false },
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                        // Blue noise
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 5,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Texture {
-                                sample_type: wgpu::TextureSampleType::Float { filterable: false },
-                                view_dimension: wgpu::TextureViewDimension::D2,
-                                multisampled: false,
-                            },
-                            count: None,
-                        },
-                        // Cluster noise
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 6,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Texture {
-                                sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                                view_dimension: wgpu::TextureViewDimension::D2,
-                                multisampled: false,
-                            },
-                            count: None,
-                        },
-                        // Natural elements
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 7,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Storage { read_only: true },
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                        // Default sampler
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 8,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-                            count: None,
-                        },
-                    ],
-                })],
-                push_constant_ranges: &[],
-            })),
-            module: &gpu.device.create_shader_module(wgpu::ShaderModuleDescriptor {
-                label: Some("Naturals.shader"),
-                source: wgpu::ShaderSource::Wgsl(Cow::Owned(
-                    [
-                        &wgsl_interpolate(),
-                        &wgsl_terrain_preprocess(include_file!("naturals.wgsl"))
-                            .replace("NATURALS_MAX_ENTITIES", &NATURALS_MAX_ENTITIES.to_string())
-                            .replace("WORKGROUP_SIZE", &WORKGROUP_SIZE.to_string()),
-                    ]
-                    .into_iter()
-                    .join("\n"),
-                )),
-            }),
-            entry_point: "main",
-        });
+                    )),
+                    module: &gpu
+                        .device
+                        .create_shader_module(wgpu::ShaderModuleDescriptor {
+                            label: Some("Naturals.shader"),
+                            source: wgpu::ShaderSource::Wgsl(Cow::Owned(
+                                [
+                                    &wgsl_interpolate(),
+                                    &wgsl_terrain_preprocess(include_file!("naturals.wgsl"))
+                                        .replace(
+                                            "NATURALS_MAX_ENTITIES",
+                                            &NATURALS_MAX_ENTITIES.to_string(),
+                                        )
+                                        .replace("WORKGROUP_SIZE", &WORKGROUP_SIZE.to_string()),
+                                ]
+                                .into_iter()
+                                .join("\n"),
+                            )),
+                        }),
+                    entry_point: "main",
+                });
         Self {
             pipeline,
             blue_noise: TextureFromUrl {
@@ -168,7 +196,7 @@ impl NaturalsPipeline {
                     .unwrap(),
                 format: wgpu::TextureFormat::Rgba8Unorm,
             }
-            .get(&assets)
+            .get(assets)
             .await
             .unwrap(),
             cluster_noise: TextureFromUrl {
@@ -179,7 +207,7 @@ impl NaturalsPipeline {
                 .unwrap(),
                 format: wgpu::TextureFormat::Rgba8Unorm,
             }
-            .get(&assets)
+            .get(assets)
             .await
             .unwrap(),
 
@@ -202,24 +230,24 @@ impl NaturalsPipeline {
                 mipmap_filter: wgpu::FilterMode::Linear,
                 ..Default::default()
             })),
-            gpu,
         }
     }
     pub async fn run(
         &self,
+        gpu: &Gpu,
         elements: &[(NaturalElement, BoxModelKey)],
         grid_size: f32,
         terrain_state: &TerrainState,
     ) -> Vec<NaturalEntity> {
         let out_count_staging = TypedBuffer::<u32>::new(
-            self.gpu.clone(),
+            gpu,
             "Naturals.out_count_staging",
             1,
             1,
             wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
         );
         let out_entities_staging = TypedBuffer::<NaturalEntity>::new(
-            self.gpu.clone(),
+            gpu,
             "Naturals.out_entities_staging",
             NATURALS_MAX_ENTITIES as u64,
             NATURALS_MAX_ENTITIES as u64,
@@ -228,68 +256,111 @@ impl NaturalsPipeline {
 
         {
             let natural_elements = TypedBuffer::<NaturalElementWGSL>::new_init(
-                self.gpu.clone(),
+                gpu,
                 "Naturals.elements",
                 wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
-                &elements.iter().map(|(el, _)| NaturalElementWGSL::from(el.clone())).collect_vec(),
+                &elements
+                    .iter()
+                    .map(|(el, _)| NaturalElementWGSL::from(el.clone()))
+                    .collect_vec(),
             );
 
             let out_count_buffer = TypedBuffer::<u32>::new(
-                self.gpu.clone(),
+                gpu,
                 "Naturals.out_count",
                 1,
                 1,
-                wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::COPY_DST,
+                wgpu::BufferUsages::STORAGE
+                    | wgpu::BufferUsages::COPY_SRC
+                    | wgpu::BufferUsages::COPY_DST,
             );
             let out_entities_buffer = TypedBuffer::<NaturalEntity>::new(
-                self.gpu.clone(),
+                gpu,
                 "Naturals.out_entities",
                 NATURALS_MAX_ENTITIES as u64,
                 NATURALS_MAX_ENTITIES as u64,
-                wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::COPY_DST,
+                wgpu::BufferUsages::STORAGE
+                    | wgpu::BufferUsages::COPY_SRC
+                    | wgpu::BufferUsages::COPY_DST,
             );
 
             let bind_group_layout = self.pipeline.get_bind_group_layout(0);
-            let bind_group = self.gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
                 label: None,
                 layout: &bind_group_layout,
                 entries: &[
                     wgpu::BindGroupEntry {
                         binding: 0,
-                        resource: wgpu::BindingResource::TextureView(&terrain_state.heightmap.create_view(&Default::default())),
+                        resource: wgpu::BindingResource::TextureView(
+                            &terrain_state.heightmap.create_view(&Default::default()),
+                        ),
                     },
                     wgpu::BindGroupEntry {
                         binding: 1,
-                        resource: wgpu::BindingResource::TextureView(&terrain_state.normalmap.create_view(&Default::default())),
+                        resource: wgpu::BindingResource::TextureView(
+                            &terrain_state.normalmap.create_view(&Default::default()),
+                        ),
                     },
-                    wgpu::BindGroupEntry { binding: 2, resource: wgpu::BindingResource::Sampler(&self.heightmap_sampler) },
-                    wgpu::BindGroupEntry { binding: 3, resource: out_entities_buffer.buffer().as_entire_binding() },
-                    wgpu::BindGroupEntry { binding: 4, resource: out_count_buffer.buffer().as_entire_binding() },
+                    wgpu::BindGroupEntry {
+                        binding: 2,
+                        resource: wgpu::BindingResource::Sampler(&self.heightmap_sampler),
+                    },
+                    wgpu::BindGroupEntry {
+                        binding: 3,
+                        resource: out_entities_buffer.buffer().as_entire_binding(),
+                    },
+                    wgpu::BindGroupEntry {
+                        binding: 4,
+                        resource: out_count_buffer.buffer().as_entire_binding(),
+                    },
                     wgpu::BindGroupEntry {
                         binding: 5,
-                        resource: wgpu::BindingResource::TextureView(&self.blue_noise.create_view(&Default::default())),
+                        resource: wgpu::BindingResource::TextureView(
+                            &self.blue_noise.create_view(&Default::default()),
+                        ),
                     },
                     wgpu::BindGroupEntry {
                         binding: 6,
-                        resource: wgpu::BindingResource::TextureView(&self.cluster_noise.create_view(&Default::default())),
+                        resource: wgpu::BindingResource::TextureView(
+                            &self.cluster_noise.create_view(&Default::default()),
+                        ),
                     },
-                    wgpu::BindGroupEntry { binding: 7, resource: natural_elements.buffer().as_entire_binding() },
-                    wgpu::BindGroupEntry { binding: 8, resource: wgpu::BindingResource::Sampler(&self.default_sampler) },
+                    wgpu::BindGroupEntry {
+                        binding: 7,
+                        resource: natural_elements.buffer().as_entire_binding(),
+                    },
+                    wgpu::BindGroupEntry {
+                        binding: 8,
+                        resource: wgpu::BindingResource::Sampler(&self.default_sampler),
+                    },
                 ],
             });
 
             let size = TerrainSize::default();
             let cells = (size.texture_size() as f32 / grid_size) as u32;
 
-            let mut encoder = self.gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+            let mut encoder = gpu
+                .device
+                .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
             {
-                let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
+                let mut cpass =
+                    encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: None });
                 cpass.set_pipeline(&self.pipeline);
                 cpass.set_bind_group(0, &bind_group, &[]);
-                cpass.dispatch_workgroups((cells as f32 / WORKGROUP_SIZE as f32).ceil() as u32, cells, 1);
+                cpass.dispatch_workgroups(
+                    (cells as f32 / WORKGROUP_SIZE as f32).ceil() as u32,
+                    cells,
+                    1,
+                );
             }
-            encoder.copy_buffer_to_buffer(out_count_buffer.buffer(), 0, out_count_staging.buffer(), 0, 4);
+            encoder.copy_buffer_to_buffer(
+                out_count_buffer.buffer(),
+                0,
+                out_count_staging.buffer(),
+                0,
+                4,
+            );
             encoder.copy_buffer_to_buffer(
                 out_entities_buffer.buffer(),
                 0,
@@ -298,13 +369,22 @@ impl NaturalsPipeline {
                 NATURALS_MAX_ENTITIES as u64 * 4 * 4,
             );
 
-            self.gpu.queue.submit(Some(encoder.finish()));
+            gpu.queue.submit(Some(encoder.finish()));
         }
 
-        let count = out_count_staging.read(.., false).await.unwrap().to_vec()[0].min(NATURALS_MAX_ENTITIES);
+        let count = out_count_staging
+            .read(gpu, .., false)
+            .await
+            .unwrap()
+            .to_vec()[0]
+            .min(NATURALS_MAX_ENTITIES);
 
         if count > 0 {
-            out_entities_staging.read(0..count as u64, false).await.unwrap().to_vec()
+            out_entities_staging
+                .read(gpu, 0..count as u64, false)
+                .await
+                .unwrap()
+                .to_vec()
         } else {
             Vec::new()
         }

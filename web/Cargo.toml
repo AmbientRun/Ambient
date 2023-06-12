@@ -21,7 +21,15 @@ ambient_ui_native = { path = "../crates/ui_native" }
 ambient_cameras = { path = "../crates/cameras/" }
 ambient_renderer = { path = "../crates/renderer/" }
 ambient_element = { path = "../shared_crates/element/" }
+ambient_network = { path = "../crates/network/" }
+ambient_rpc = { path = "../crates/rpc/" }
+ambient_world_audio = { path = "../crates/world_audio" }
+ambient_wasm = { path = "../crates/wasm" }
+ambient_layout = { path = "../crates/layout" }
+ambient_ecs_editor = { path = "../crates/ecs_editor" }
+ambient_debugger = { path = "../crates/debugger" }
 
+url = "2.3"
 anyhow = "1.0"
 glam = { version = "0.24", features = ["rand", "bytemuck"] }
 futures = "0.3"
@@ -29,8 +37,8 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["time"] }
 
 # Web specific
-wasm-bindgen = "0.2"
-wasm-bindgen-futures = "0.4"
+wasm-bindgen = { version = "0.2" }
+wasm-bindgen-futures = { version = "0.4" }
 tracing-web = "0.1"
 time = { version = "0.3", features = ["wasm-bindgen"] }
 chrono = { version = "0.4", default-features = false, features = [
@@ -40,7 +48,7 @@ chrono = { version = "0.4", default-features = false, features = [
 ] }
 
 getrandom = { version = "0.2.8", features = ["js"] }
-web-sys = { version = "0.3.61", features = [
+web-sys = { version = "0.3", features = [
     "CanvasRenderingContext2d",
     "Document",
     "Element",
@@ -49,4 +57,4 @@ web-sys = { version = "0.3.61", features = [
     "Performance",
     "Window",
 ] }
-js-sys = { version = "0.3.61" }
+js-sys = { version = "0.3" }

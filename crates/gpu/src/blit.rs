@@ -19,19 +19,17 @@ pub struct BlitterKey {
 
 impl SyncAssetKey<Arc<Blitter>> for BlitterKey {
     fn load(&self, assets: AssetCache) -> Arc<Blitter> {
-        Arc::new(Blitter::new(&assets, self))
+        let gpu = GpuKey.get(&assets);
+        Arc::new(Blitter::new(&gpu, &assets, self))
     }
 }
 
 pub struct Blitter {
     pipeline: wgpu::RenderPipeline,
     sampler: wgpu::Sampler,
-    gpu: Arc<Gpu>,
 }
 impl Blitter {
-    pub fn new(assets: &AssetCache, conf: &BlitterKey) -> Self {
-        let gpu = GpuKey.get(assets);
-
+    pub fn new(gpu: &Gpu, assets: &AssetCache, conf: &BlitterKey) -> Self {
         log::debug!("Creating blitter: {conf:#?}");
         let colorspace = if let Some(gamma) = conf.gamma_correction {
             let inv_gamma = 1.0 / gamma;
@@ -117,38 +115,32 @@ impl Blitter {
             ..Default::default()
         });
 
-        Self {
-            pipeline,
-            sampler,
-            gpu,
-        }
+        Self { pipeline, sampler }
     }
 
     pub fn run(
         &self,
+        gpu: &Gpu,
         encoder: &mut wgpu::CommandEncoder,
         source: &wgpu::TextureView,
         target: &wgpu::TextureView,
     ) {
         let bind_group_layout = self.pipeline.get_bind_group_layout(0);
 
-        let bind_group = self
-            .gpu
-            .device
-            .create_bind_group(&wgpu::BindGroupDescriptor {
-                layout: &bind_group_layout,
-                entries: &[
-                    wgpu::BindGroupEntry {
-                        binding: 0,
-                        resource: wgpu::BindingResource::TextureView(source),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 1,
-                        resource: wgpu::BindingResource::Sampler(&self.sampler),
-                    },
-                ],
-                label: None,
-            });
+        let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &bind_group_layout,
+            entries: &[
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::TextureView(source),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: wgpu::BindingResource::Sampler(&self.sampler),
+                },
+            ],
+            label: None,
+        });
 
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: None,

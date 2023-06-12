@@ -1,4 +1,9 @@
 {
   "rust-analyzer.cargo.target": "wasm32-wasi",
-  "rust-analyzer.cargo.features": ["client", "server"]
+  "rust-analyzer.cargo.features": [
+    "client",
+    "server"
+  ],
+  "editor.detectIndentation": false,
+  "editor.tabSize": 4,
 }

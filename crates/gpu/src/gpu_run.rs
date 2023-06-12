@@ -8,7 +8,7 @@ use itertools::Itertools;
 use wgpu::{BindGroup, BindGroupLayoutEntry, BufferUsages, ShaderStages};
 
 use crate::{
-    gpu::{GpuKey, WgslType},
+    gpu::{Gpu, WgslType},
     shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
 };
@@ -98,25 +98,28 @@ impl GpuRun {
         .unwrap()
     }
 
-    pub async fn run<In: WgslType, Out: WgslType>(self, assets: &AssetCache, input: In) -> Out {
+    pub async fn run<In: WgslType, Out: WgslType>(
+        self,
+        gpu: &Gpu,
+        assets: &AssetCache,
+        input: In,
+    ) -> Out {
         let shader = self.into_shader::<In, Out>(assets);
 
-        let gpu = GpuKey.get(assets);
-
         let in_buffer = TypedBuffer::new_init(
-            gpu.clone(),
+            gpu,
             "GpuRun.in",
             BufferUsages::COPY_DST | BufferUsages::STORAGE,
             &[input],
         );
         let out_buffer = TypedBuffer::new_init(
-            gpu.clone(),
+            gpu,
             "GpuRun.out",
             BufferUsages::STORAGE | BufferUsages::COPY_SRC,
             &[Out::zeroed(); 1],
         );
 
-        let pipeline = shader.to_compute_pipeline(&GpuKey.get(assets), "main");
+        let pipeline = shader.to_compute_pipeline(gpu, "main");
 
         let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("GpuRun"),
@@ -156,7 +159,7 @@ impl GpuRun {
         // Only one
 
         out_buffer
-            .read(.., true)
+            .read(gpu, .., true)
             .await
             .expect("Failed to map buffer")[0]
     }
@@ -176,10 +179,10 @@ mod test {
         use crate::gpu::Gpu;
         let gpu = Arc::new(Gpu::new(None).await);
         let assets = AssetCache::new(tokio::runtime::Handle::current());
-        GpuKey.insert(&assets, gpu);
+        GpuKey.insert(&assets, gpu.clone());
         let input = Vec4::ONE;
         let res: Vec2 = GpuRun::new("TestGpuRun", "return (input * 3.).xy;")
-            .run(&assets, input)
+            .run(&gpu, &assets, input)
             .await;
         assert_eq!(res, (input * 3.).xy());
     }

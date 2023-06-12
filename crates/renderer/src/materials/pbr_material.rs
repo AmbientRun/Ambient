@@ -146,7 +146,6 @@ pub struct PbrMaterialConfig {
 }
 
 pub struct PbrMaterial {
-    gpu: Arc<Gpu>,
     id: String,
     pub config: PbrMaterialConfig,
     buffer: wgpu::Buffer,
@@ -154,8 +153,7 @@ pub struct PbrMaterial {
 }
 
 impl PbrMaterial {
-    pub fn new(assets: &AssetCache, config: PbrMaterialConfig) -> Self {
-        let gpu = GpuKey.get(assets);
+    pub fn new(gpu: &Gpu, assets: &AssetCache, config: PbrMaterialConfig) -> Self {
         let layout = get_material_layout().get(assets);
 
         let buffer = gpu
@@ -197,20 +195,20 @@ impl PbrMaterial {
                 label: Some("PbrMaterial.bind_group"),
             }),
             buffer,
-            gpu: gpu.clone(),
             config,
         }
     }
-    pub fn base_color_from_file(assets: &AssetCache, url: &str) -> Self {
+    pub fn base_color_from_file(gpu: &Gpu, assets: &AssetCache, url: &str) -> Self {
         let texture = Arc::new(
             Arc::new(Texture::from_file(
-                GpuKey.get(assets),
+                gpu,
                 url,
                 wgpu::TextureFormat::Rgba8UnormSrgb,
             ))
             .create_view(&wgpu::TextureViewDescriptor::default()),
         );
         PbrMaterial::new(
+            gpu,
             assets,
             PbrMaterialConfig {
                 source: url.to_string(),
@@ -226,9 +224,8 @@ impl PbrMaterial {
             },
         )
     }
-    pub fn upload_params(&self) {
-        self.gpu
-            .queue
+    pub fn upload_params(&self, gpu: &Gpu) {
+        gpu.queue
             .write_buffer(&self.buffer, 0, bytemuck::cast_slice(&[self.config.params]));
     }
     pub fn gpu_size(&self) -> u64 {
@@ -314,6 +311,8 @@ pub struct PbrMaterialDesc {
     pub metallic: f32,
     #[serde(default)]
     pub roughness: f32,
+
+    pub sampler: Option<SamplerKey>,
 }
 impl PbrMaterialDesc {
     pub fn resolve(&self, base_url: &AbsAssetUrl) -> anyhow::Result<Self> {
@@ -349,6 +348,7 @@ impl PbrMaterialDesc {
             double_sided: self.double_sided,
             metallic: self.metallic,
             roughness: self.roughness,
+            sampler: self.sampler,
         })
     }
     pub fn relative_path_from(&self, base_url: &AbsAssetUrl) -> Self {
@@ -380,6 +380,7 @@ impl PbrMaterialDesc {
             double_sided: self.double_sided,
             metallic: self.metallic,
             roughness: self.roughness,
+            sampler: self.sampler,
         }
     }
 }
@@ -441,7 +442,11 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialDesc {
             PixelTextureViewKey::white().get(&assets)
         };
 
-        let sampler = SamplerKey::LINEAR_CLAMP_TO_EDGE.get(&assets);
+        let sampler = if let Some(sampler) = self.sampler {
+            sampler.get(&assets)
+        } else {
+            SamplerKey::LINEAR_CLAMP_TO_EDGE.get(&assets)
+        };
 
         let params = PbrMaterialParams {
             base_color_factor: self.base_color_factor.unwrap_or(Vec4::ONE),
@@ -456,7 +461,9 @@ impl AsyncAssetKey<Result<Arc<PbrMaterial>, AssetError>> for PbrMaterialDesc {
             .name
             .or(self.base_color.map(|x| x.to_string()))
             .unwrap_or_default();
+        let gpu = GpuKey.get(&assets);
         Ok(Arc::new(PbrMaterial::new(
+            &gpu,
             &assets,
             PbrMaterialConfig {
                 source: self.source.unwrap_or_default(),

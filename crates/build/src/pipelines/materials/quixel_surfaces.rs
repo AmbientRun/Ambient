@@ -21,9 +21,9 @@ pub async fn pipeline(ctx: &PipelineCtx, _config: MaterialsPipeline) -> Vec<OutA
         |file| {
             file.extension() == Some("json".to_string())
                 && file
-                    .path()
+                    .decoded_path()
                     .to_string()
-                    .contains(&format!("_{}_", file.path().file_stem().unwrap()))
+                    .contains(&format!("_{}_", file.decoded_path().file_stem().unwrap()))
         },
         move |ctx, file| async move {
             let mut res = Vec::new();
@@ -49,7 +49,10 @@ pub async fn pipeline(ctx: &PipelineCtx, _config: MaterialsPipeline) -> Vec<OutA
                 .to_string();
 
             let model_crate_url = ctx
-                .write_model_crate(&asset_crate, &ctx.in_root().relative_path(file.path()))
+                .write_model_crate(
+                    &asset_crate,
+                    &ctx.in_root().relative_path(file.decoded_path()),
+                )
                 .await;
 
             res.push(OutAsset {

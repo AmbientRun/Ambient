@@ -20,6 +20,7 @@ ambient_math = { path = "../../libs/math", version = "0.3.0-dev" }
 anyhow = { workspace = true }
 tracing = { workspace = true }
 ulid = { workspace = true }
+mikktspace = { workspace = true }
 
 wgpu = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }

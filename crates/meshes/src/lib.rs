@@ -7,9 +7,9 @@ pub mod torus;
 pub mod uvsphere;
 use std::sync::Arc;
 
-use ambient_gpu::mesh_buffer::GpuMesh;
+use ambient_gpu::{gpu::GpuKey, mesh_buffer::GpuMesh};
 use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKey},
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     mesh::{generate_tangents, Mesh, MeshBuilder},
 };
 pub use capsule::*;
@@ -23,7 +23,8 @@ pub use uvsphere::*;
 pub struct QuadMeshKey;
 impl SyncAssetKey<Arc<GpuMesh>> for QuadMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
-        GpuMesh::from_mesh(&assets, &Mesh::from(QuadMesh::default()))
+        let gpu = GpuKey.get(&assets);
+        GpuMesh::from_mesh(&gpu, &assets, &Mesh::from(QuadMesh::default()))
     }
 }
 /// Same as [QuadMeshKey], but unit-sized (e.g. length alongside axes is 1.0 at most)
@@ -31,7 +32,9 @@ impl SyncAssetKey<Arc<GpuMesh>> for QuadMeshKey {
 pub struct UnitQuadMeshKey;
 impl SyncAssetKey<Arc<GpuMesh>> for UnitQuadMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
+        let gpu = GpuKey.get(&assets);
         GpuMesh::from_mesh(
+            &gpu,
             &assets,
             &Mesh::from(QuadMesh::from_position_size(-Vec2::ONE * 0.5, Vec2::ONE)),
         )
@@ -42,7 +45,8 @@ impl SyncAssetKey<Arc<GpuMesh>> for UnitQuadMeshKey {
 pub struct CubeMeshKey;
 impl SyncAssetKey<Arc<GpuMesh>> for CubeMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
-        GpuMesh::from_mesh(&assets, &Mesh::from(CubeMesh::default()))
+        let gpu = GpuKey.get(&assets);
+        GpuMesh::from_mesh(&gpu, &assets, &Mesh::from(CubeMesh::default()))
     }
 }
 /// Same as [CubeMeshKey], but unit-sized (e.g. length alongside axes is 1.0 at most)
@@ -50,7 +54,9 @@ impl SyncAssetKey<Arc<GpuMesh>> for CubeMeshKey {
 pub struct UnitCubeMeshKey;
 impl SyncAssetKey<Arc<GpuMesh>> for UnitCubeMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
+        let gpu = GpuKey.get(&assets);
         GpuMesh::from_mesh(
+            &gpu,
             &assets,
             &Mesh::from(CubeMesh {
                 position: -Vec3::ONE * 0.5,
@@ -65,7 +71,8 @@ impl SyncAssetKey<Arc<GpuMesh>> for UnitCubeMeshKey {
 pub struct SphereMeshKey(pub UVSphereMesh);
 impl SyncAssetKey<Arc<GpuMesh>> for SphereMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
-        GpuMesh::from_mesh(&assets, &Mesh::from(self.0))
+        let gpu = GpuKey.get(&assets);
+        GpuMesh::from_mesh(&gpu, &assets, &Mesh::from(self.0))
     }
 }
 
@@ -73,7 +80,8 @@ impl SyncAssetKey<Arc<GpuMesh>> for SphereMeshKey {
 pub struct TorusMeshKey(pub TorusMesh);
 impl SyncAssetKey<Arc<GpuMesh>> for TorusMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
-        GpuMesh::from_mesh(&assets, &Mesh::from(self.0))
+        let gpu = GpuKey.get(&assets);
+        GpuMesh::from_mesh(&gpu, &assets, &Mesh::from(self.0))
     }
 }
 
@@ -81,7 +89,8 @@ impl SyncAssetKey<Arc<GpuMesh>> for TorusMeshKey {
 pub struct CapsuleMeshKey(pub CapsuleMesh);
 impl SyncAssetKey<Arc<GpuMesh>> for CapsuleMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
-        GpuMesh::from_mesh(&assets, &Mesh::from(self.0))
+        let gpu = GpuKey.get(&assets);
+        GpuMesh::from_mesh(&gpu, &assets, &Mesh::from(self.0))
     }
 }
 
@@ -92,7 +101,8 @@ impl SyncAssetKey<Arc<GpuMesh>> for UIRectMeshKey {
         let mut quad = QuadMesh::from_position_size(Vec2::ZERO, Vec2::ONE);
         quad.flip_uvs = true;
         let mesh = Mesh::from(quad);
-        GpuMesh::from_mesh(&assets, &mesh)
+        let gpu = GpuKey.get(&assets);
+        GpuMesh::from_mesh(&gpu, &assets, &mesh)
     }
 }
 
@@ -100,7 +110,8 @@ impl SyncAssetKey<Arc<GpuMesh>> for UIRectMeshKey {
 pub struct GridMeshKey(pub GridMesh);
 impl SyncAssetKey<Arc<GpuMesh>> for GridMeshKey {
     fn load(&self, assets: AssetCache) -> Arc<GpuMesh> {
-        GpuMesh::from_mesh(&assets, &Mesh::from(self.0.clone()))
+        let gpu = GpuKey.get(&assets);
+        GpuMesh::from_mesh(&gpu, &assets, &Mesh::from(self.0.clone()))
     }
 }
 
@@ -193,7 +204,7 @@ impl From<QuadMesh> for Mesh {
             ]
         };
         let indices = vec![0, 1, 2, 1, 3, 2];
-        let tangents = generate_tangents(&positions, &texcoords, &indices);
+        let tangents = generate_tangents(&positions, &texcoords, &normals, &indices);
 
         MeshBuilder {
             positions,

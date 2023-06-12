@@ -7,7 +7,9 @@
 # User Guide
 
 - [Installing](user/installing.md)
-- [Running](user/running.md)
+- [Setting up your IDE](user/setting_up_ide.md)
+- [Overview](user/overview.md)
+- [Getting started](user/getting_started.md)
 - [API](user/api.md)
 - [Debugging](user/debugging.md)
 - [Profiling](user/profiling.md)
@@ -24,6 +26,7 @@
 - [Audio](reference/audio.md)
 - [UI](reference/ui.md)
 - [Terminology](reference/terminology.md)
+- [Certificates](reference/certificates.md)
 - [Common pitfalls](reference/common_pitfalls.md)
 
 # Community

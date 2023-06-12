@@ -4,9 +4,12 @@ pub(crate) mod implementation;
 mod module;
 
 pub mod build;
+#[cfg(feature = "wit")]
 pub mod conversion;
 pub mod host_guest_state;
 pub mod message;
+
+#[cfg(feature = "wit")]
 pub mod wit;
 
 use std::sync::Arc;
@@ -16,7 +19,7 @@ use ambient_ecs::{
     dont_despawn_on_unload, generated::messages, query, world_events, Entity, EntityId, FnSystem,
     Message, SystemGroup, World, WorldEventReader,
 };
-use ambient_physics::{collider_loads, collisions};
+
 use ambient_project::Identifier;
 use itertools::Itertools;
 pub use module::*;
@@ -41,6 +44,8 @@ mod internal {
         @[Networked, Store, Debuggable]
         module_enabled: bool,
         @[Networked, Store, Debuggable]
+        module_name: String,
+        @[Networked, Store, Debuggable]
         module_errors: ModuleErrors,
         @[Networked, Debuggable, Description["The ID of the module on the \"other side\" of this module, if available. (e.g. serverside module to clientside module)."]]
         remote_paired_id: EntityId,
@@ -51,12 +56,13 @@ mod internal {
         module_state_maker: Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<ModuleState> + Sync + Send>,
     });
 }
+
 pub use internal::{
     client_bytecode_from_url, messenger, module, module_bytecode, module_enabled, module_errors,
     module_state, module_state_maker, remote_paired_id,
 };
 
-use self::message::Source;
+use self::{internal::module_name, message::Source};
 use crate::shared::message::{RuntimeMessageExt, Target};
 
 pub fn init_all_components() {
@@ -125,35 +131,6 @@ pub fn systems() -> SystemGroup {
                     .unwrap();
             })),
             Box::new(FnSystem::new(move |world, _| {
-                ambient_profiling::scope!("WASM module collision event");
-                // trigger collision event
-                let collisions = match world.resource_opt(collisions()) {
-                    Some(collisions) => collisions.lock().clone(),
-                    None => return,
-                };
-                for (a, b) in collisions.into_iter() {
-                    ambient_ecs::generated::messages::Collision::new(vec![a, b])
-                        .run(world, None)
-                        .unwrap();
-                }
-            })),
-            Box::new(FnSystem::new(move |world, _| {
-                ambient_profiling::scope!("WASM module collider loads");
-                // trigger collider loads
-                let collider_loads = match world.resource_opt(collider_loads()) {
-                    Some(collider_loads) => collider_loads.clone(),
-                    None => return,
-                };
-
-                if collider_loads.is_empty() {
-                    return;
-                }
-
-                ambient_ecs::generated::messages::ColliderLoads::new(collider_loads)
-                    .run(world, None)
-                    .unwrap();
-            })),
-            Box::new(FnSystem::new(move |world, _| {
                 ambient_profiling::scope!("WASM module pending messages");
 
                 let pending_messages =
@@ -167,6 +144,7 @@ pub fn systems() -> SystemGroup {
     )
 }
 
+#[cfg(feature = "wit")]
 pub fn initialize<Bindings: bindings::BindingsBound + 'static>(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
@@ -209,11 +187,16 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
 
     let async_run = world.resource(async_run()).clone();
     let component_bytecode = component_bytecode.to_vec();
+    let name = world
+        .get_ref(module_id, module_name())
+        .map(|x| x.clone())
+        .unwrap_or_else(|_| "Unknown".to_string());
 
     // Spawn the module on another thread to ensure that it does not block the main thread during compilation.
     std::thread::spawn(move || {
         let result = run_and_catch_panics(|| {
-            module_state_maker(module::ModuleStateArgs {
+            log::info!("Loading module: {}", name);
+            let res = module_state_maker(module::ModuleStateArgs {
                 component_bytecode: &component_bytecode,
                 stdout_output: Box::new({
                     let messenger = messenger.clone();
@@ -225,7 +208,9 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
                     messenger(world, module_id, MessageType::Stderr, msg);
                 }),
                 id: module_id,
-            })
+            });
+            log::info!("Done loading module: {}", name);
+            res
         });
 
         async_run.run(move |world| {
@@ -240,7 +225,7 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
 
                     world.add_component(module_id, module_state(), sms).unwrap();
 
-                    // Run the initial startup event.
+                    log::info!("Running startup event for module: {}", name);
                     messages::ModuleLoad::new()
                         .run(world, Some(module_id))
                         .unwrap();
@@ -340,7 +325,11 @@ pub fn spawn_module(
     enabled: bool,
 ) -> EntityId {
     Entity::new()
-        .with(ambient_core::name(), name.to_string())
+        .with(
+            ambient_core::name(),
+            format!("Wasm module: {}", name.to_string()),
+        )
+        .with(module_name(), name.to_string())
         .with(ambient_core::description(), description)
         .with_default(module())
         .with(module_enabled(), enabled)
@@ -349,7 +338,7 @@ pub fn spawn_module(
 }
 
 pub fn get_module_name(world: &World, id: EntityId) -> Identifier {
-    Identifier::new(world.get_cloned(id, ambient_core::name()).unwrap()).unwrap()
+    Identifier::new(world.get_cloned(id, module_name()).unwrap()).unwrap()
 }
 
 fn run_and_catch_panics<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, String> {

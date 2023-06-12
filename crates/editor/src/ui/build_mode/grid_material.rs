@@ -23,7 +23,11 @@ fn grid_shader_layout() -> BindGroupDesc<'static> {
         entries: vec![wgpu::BindGroupLayoutEntry {
             binding: 0,
             visibility: wgpu::ShaderStages::FRAGMENT,
-            ty: wgpu::BindingType::Buffer { ty: wgpu::BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
             count: None,
         }],
         label: MATERIAL_BIND_GROUP.into(),
@@ -35,7 +39,8 @@ impl SyncAssetKey<Arc<MaterialShader>> for GridShaderKey {
         Arc::new(MaterialShader {
             id: "grid_material_shader".to_string(),
             shader: Arc::new(
-                ShaderModule::new("GridMaterial", include_file!("grid_material.wgsl")).with_binding_desc(grid_shader_layout()),
+                ShaderModule::new("GridMaterial", include_file!("grid_material.wgsl"))
+                    .with_binding_desc(grid_shader_layout()),
             ),
         })
     }
@@ -53,7 +58,6 @@ pub struct GridMaterialKey {
 #[derive(Debug)]
 #[allow(dead_code)]
 pub struct GridMaterial {
-    gpu: Arc<Gpu>,
     id: String,
     buffer: wgpu::Buffer,
     bind_group: wgpu::BindGroup,
@@ -61,13 +65,13 @@ pub struct GridMaterial {
 
 impl SyncAssetKey<SharedMaterial> for GridMaterialKey {
     fn load(&self, assets: AssetCache) -> SharedMaterial {
-        SharedMaterial::new(GridMaterial::new(assets, *self))
+        let gpu = GpuKey.get(&assets);
+        SharedMaterial::new(GridMaterial::new(&gpu, &assets, *self))
     }
 }
 impl GridMaterial {
-    pub fn new(assets: AssetCache, params: GridMaterialKey) -> Self {
-        let gpu = GpuKey.get(&assets);
-        let layout = grid_shader_layout().get(&assets);
+    pub fn new(gpu: &Gpu, assets: &AssetCache, params: GridMaterialKey) -> Self {
+        let layout = grid_shader_layout().get(assets);
         let buffer = gpu.device.create_buffer_init(&BufferInitDescriptor {
             label: Some("FlatMaterial.buffer"),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
@@ -77,11 +81,13 @@ impl GridMaterial {
             id: friendly_id(),
             bind_group: gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
                 layout: &layout,
-                entries: &[wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::Buffer(buffer.as_entire_buffer_binding()) }],
+                entries: &[wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::Buffer(buffer.as_entire_buffer_binding()),
+                }],
                 label: Some("GridMaterial.bind_group"),
             }),
             buffer,
-            gpu: gpu.clone(),
         }
     }
 }

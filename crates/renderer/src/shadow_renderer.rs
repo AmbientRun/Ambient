@@ -3,12 +3,12 @@ use std::sync::Arc;
 use ambient_core::{camera::Camera, main_scene, player::local_user_id, transform::*};
 use ambient_ecs::{ArchetypeFilter, World};
 use ambient_gpu::{
-    gpu::GpuKey,
+    gpu::Gpu,
     mesh_buffer::MeshBuffer,
     shader_module::DEPTH_FORMAT,
     texture::{Texture, TextureView},
 };
-use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_std::asset_cache::AssetCache;
 use bytemuck::{Pod, Zeroable};
 use glam::{Mat4, Vec3};
 use itertools::Itertools;
@@ -39,15 +39,9 @@ impl std::fmt::Debug for ShadowsRenderer {
 }
 
 impl ShadowsRenderer {
-    pub fn new(
-        assets: AssetCache,
-        renderer_resources: RendererResources,
-        config: RendererConfig,
-    ) -> Self {
-        let gpu = GpuKey.get(&assets);
-
+    pub fn new(gpu: &Gpu, renderer_resources: RendererResources, config: RendererConfig) -> Self {
         let shadow_texture = Arc::new(Texture::new(
-            gpu.clone(),
+            gpu,
             &wgpu::TextureDescriptor {
                 label: Some("Renderer.shadow_texture"),
                 size: wgpu::Extent3d {
@@ -72,25 +66,26 @@ impl ShadowsRenderer {
         });
 
         Self {
-            renderer: TreeRenderer::new(TreeRendererConfig {
+            renderer: TreeRenderer::new(
                 gpu,
-                assets: assets.clone(),
-                renderer_config: config.clone(),
-                targets: vec![],
-                filter: ArchetypeFilter::new()
-                    .incl(main_scene())
-                    .incl(cast_shadows()),
-                renderer_resources: renderer_resources.clone(),
-                fs_main: FSMain::Shadow,
-                opaque_only: false,
-                depth_stencil: true,
-                cull_mode: Some(wgpu::Face::Back),
-                depth_bias: DepthBiasState {
-                    constant: -2,
-                    slope_scale: -1.5,
-                    clamp: 0.0,
+                TreeRendererConfig {
+                    renderer_config: config.clone(),
+                    targets: vec![],
+                    filter: ArchetypeFilter::new()
+                        .incl(main_scene())
+                        .incl(cast_shadows()),
+                    renderer_resources: renderer_resources.clone(),
+                    fs_main: FSMain::Shadow,
+                    opaque_only: false,
+                    depth_stencil: true,
+                    cull_mode: Some(wgpu::Face::Back),
+                    depth_bias: DepthBiasState {
+                        constant: -2,
+                        slope_scale: -1.5,
+                        clamp: 0.0,
+                    },
                 },
-            }),
+            ),
             cascades: (0..config.shadow_cascades)
                 .map(|i| ShadowCascade {
                     dynamic_target: shadow_texture.create_view(&wgpu::TextureViewDescriptor {
@@ -104,11 +99,11 @@ impl ShadowsRenderer {
                         array_layer_count: Some(1),
                     }),
                     globals: ShadowAndUIGlobals::new(
-                        assets.clone(),
+                        gpu,
                         renderer_resources.globals_layout.clone(),
                     ),
                     camera: Camera::default(),
-                    collect_state: RendererCollectState::new(&assets),
+                    collect_state: RendererCollectState::new(gpu),
                 })
                 .collect_vec(),
             shadow_texture,
@@ -124,7 +119,7 @@ impl ShadowsRenderer {
     }
 
     #[ambient_profiling::function]
-    pub fn update(&mut self, world: &mut World) {
+    pub fn update(&mut self, gpu: &Gpu, assets: &AssetCache, world: &mut World) {
         let main_camera =
             Camera::get_active(world, main_scene(), world.resource_opt(local_user_id()))
                 .unwrap_or_default();
@@ -135,7 +130,7 @@ impl ShadowsRenderer {
             default_sun_direction()
         };
 
-        self.renderer.update(world);
+        self.renderer.update(gpu, assets, world);
 
         for (i, cascade) in self.cascades.iter_mut().enumerate() {
             ambient_profiling::scope!("Shadow cascade update");
@@ -147,9 +142,9 @@ impl ShadowsRenderer {
             );
             cascade
                 .globals
-                .update(world, main_scene(), new_camera.projection_view());
+                .update(gpu, world, main_scene(), new_camera.projection_view());
             cascade.camera = new_camera;
-            cascade.collect_state.set_camera(i as u32 + 1);
+            cascade.collect_state.set_camera(gpu, i as u32 + 1);
         }
     }
 
@@ -171,6 +166,8 @@ impl ShadowsRenderer {
 impl ShadowsRenderer {
     pub fn render<'a>(
         &'a mut self,
+        gpu: &Gpu,
+        assets: &AssetCache,
         mesh_buffer: &MeshBuffer,
         encoder: &mut wgpu::CommandEncoder,
         bind_groups: &BindGroups<'a>,
@@ -179,6 +176,8 @@ impl ShadowsRenderer {
         for (i, cascade) in self.cascades.iter_mut().enumerate() {
             ambient_profiling::scope!("Shadow dynamic render");
             self.renderer.run_collect(
+                gpu,
+                assets,
                 encoder,
                 post_submit,
                 bind_groups.mesh_meta,
@@ -199,7 +198,7 @@ impl ShadowsRenderer {
                 }),
             });
 
-            let globals = cascade.globals.create_bind_group(mesh_buffer);
+            let globals = cascade.globals.create_bind_group(gpu, assets, mesh_buffer);
 
             render_pass.set_index_buffer(
                 mesh_buffer.index_buffer.buffer().slice(..),
@@ -212,6 +211,7 @@ impl ShadowsRenderer {
                     globals,
                     ..*bind_groups
                 },
+                cascade.dynamic_target.texture.size,
             );
             {
                 ambient_profiling::scope!("Drop render pass");

@@ -1,13 +1,12 @@
 use std::{sync::Arc, time::Duration};
 
-use ambient_animation::animation_errors;
 use ambient_core::{
     name, runtime, snap_to_ground, tags,
     transform::{scale, translation},
 };
 use ambient_ecs::{
-    with_component_registry, Component, ComponentDesc, ComponentEntry, ComponentValue, Entity,
-    EntityId, PrimitiveComponentType, World,
+    generated::components::core::animation::animation_errors, with_component_registry, Component,
+    ComponentDesc, ComponentEntry, ComponentValue, Entity, EntityId, PrimitiveComponentType, World,
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_intent::client_push_intent;
@@ -326,13 +325,16 @@ fn EntityComponentsEditor(
                     Button::new(
                         FlowRow::el([Text::el(format!(
                             "Animation errors:\n{}",
-                            anim_error.split(": ").join(":\n")
+                            anim_error
+                                .iter()
+                                .map(|x| x.split(": ").join(":\n"))
+                                .join("\n")
                         ))
                         .error_text_style()]),
                         move |_| {
                             arboard::Clipboard::new()
                                 .unwrap()
-                                .set_text(anim_error.clone())
+                                .set_text(anim_error.join("\n"))
                                 .ok();
                         },
                     )

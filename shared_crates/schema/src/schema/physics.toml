@@ -154,8 +154,8 @@ name = "Unit yaw"
 description = "The yaw of a character/unit."
 attributes = ["debuggable", "networked", "store"]
 
-[components.visualizing]
+[components.visualize-collider]
 type = "empty"
-name = "Visualizing"
-description = "If attached, the physics state of this object will be rendered for debugging purposes."
+name = "Visualize collider"
+description = "If attached, the collider will be rendered."
 attributes = ["debuggable", "networked"]

@@ -4,7 +4,7 @@ use std::sync::{
 };
 
 use ambient_core::{
-    asset_cache, gpu_components,
+    asset_cache, gpu, gpu_components,
     gpu_ecs::{GpuComponentFormat, GpuWorldSyncEvent, MappedComponentToGpuSystem},
     transform::{inv_local_to_world, local_to_world},
 };
@@ -49,7 +49,7 @@ pub struct SkinsBufferKey;
 impl SyncAssetKey<Arc<Mutex<SkinsBuffer>>> for SkinsBufferKey {
     fn load(&self, assets: AssetCache) -> Arc<Mutex<SkinsBuffer>> {
         let gpu = GpuKey.get(&assets);
-        Arc::new(Mutex::new(SkinsBuffer::new(gpu)))
+        Arc::new(Mutex::new(SkinsBuffer::new(&gpu)))
     }
 }
 
@@ -59,7 +59,7 @@ pub struct SkinsBuffer {
     pub buffer: TypedBuffer<Mat4>,
 }
 impl SkinsBuffer {
-    fn new(gpu: Arc<Gpu>) -> Self {
+    fn new(gpu: &Gpu) -> Self {
         Self {
             buffer: TypedBuffer::new(
                 gpu,
@@ -72,13 +72,15 @@ impl SkinsBuffer {
             ),
         }
     }
-    pub fn create(&mut self, size: u32) -> Skin {
+    pub fn create(&mut self, gpu: &Gpu, size: u32) -> Skin {
         let skin = Skin(Arc::new(AtomicU32::new(self.buffer.len() as u32)));
-        self.buffer.resize(self.buffer.len() + size as u64, true);
+        self.buffer
+            .resize(gpu, self.buffer.len() + size as u64, true);
         skin
     }
-    pub fn update(&self, skin: &Skin, joint_matrices: &[Mat4]) {
-        self.buffer.write(skin.get_offset() as u64, joint_matrices);
+    pub fn update(&self, gpu: &Gpu, skin: &Skin, joint_matrices: &[Mat4]) {
+        self.buffer
+            .write(gpu, skin.get_offset() as u64, joint_matrices);
     }
 }
 
@@ -92,7 +94,9 @@ pub fn skinning_systems() -> SystemGroup {
             skin(),
         ))
         .to_system(|q, world, qs, _| {
-            let skins_h = SkinsBufferKey.get(world.resource(asset_cache()));
+            let assets = world.resource(asset_cache());
+            let gpu = world.resource(gpu());
+            let skins_h = SkinsBufferKey.get(assets);
             let skins = skins_h.lock();
             let mut commands = Commands::new();
             for (id, (&inv_local_to_world, inverse_bind_matrices, joints, skin)) in
@@ -109,7 +113,7 @@ pub fn skinning_systems() -> SystemGroup {
                                 .unwrap_or(&glam::Mat4::IDENTITY)
                     })
                     .collect_vec();
-                skins.update(skin, &joint_matrices);
+                skins.update(gpu, skin, &joint_matrices);
                 commands.set(id, self::joint_matrices(), joint_matrices);
             }
             commands.apply(world).unwrap();

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, net::SocketAddr, path::Path, sync::Arc};
 
-use ambient_core::{app_start_time, asset_cache, dtime, name, no_sync, project_name, time};
+use ambient_core::{abs_time, app_start_time, asset_cache, dtime, name, no_sync, project_name};
 use ambient_ecs::{
     dont_store, world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup,
     World, WorldEventsSystem, WorldStreamCompEvent,
@@ -41,8 +41,7 @@ pub fn start(
     manifest: &ambient_project::Manifest,
     metadata: &ambient_build::Metadata,
     crypto: Crypto,
-) -> u16 {
-    log::info!("Creating server");
+) -> SocketAddr {
     let host_cli = cli.host().unwrap();
     let quic_interface_port = host_cli.quic_interface_port;
     let proxy_settings = (!host_cli.no_proxy).then(|| {
@@ -57,14 +56,21 @@ pub fn start(
             project_id: manifest.project.id.to_string(),
         }
     });
+
     let server = runtime.block_on(async move {
         if let Some(port) = quic_interface_port {
-            GameServer::new_with_port(port, false, proxy_settings, &crypto)
-                .await
-                .context("failed to create game server with port")
-                .unwrap()
+            GameServer::new_with_port(
+                SocketAddr::new(host_cli.bind_address, port),
+                false,
+                proxy_settings,
+                &crypto,
+            )
+            .await
+            .context("failed to create game server with port")
+            .unwrap()
         } else {
             GameServer::new_with_port_in_range(
+                host_cli.bind_address,
                 QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10),
                 false,
                 proxy_settings,
@@ -75,19 +81,17 @@ pub fn start(
             .unwrap()
         }
     });
-    let port = server.port;
 
-    let public_host = cli
-        .host()
-        .and_then(|h| h.public_host.clone())
-        .or_else(|| local_ip_address::local_ip().ok().map(|x| x.to_string()))
-        .unwrap_or("localhost".to_string());
-    log::info!("Created server, running at {public_host}:{port}");
+    let addr = server.local_addr();
+
+    tracing::info!("Created server, running at {addr}");
     let http_interface_port = cli
         .host()
         .unwrap()
         .http_interface_port
         .unwrap_or(HTTP_INTERFACE_PORT);
+
+    let public_host = addr.ip();
 
     // here the key is inserted into the asset cache
     if let Ok(Some(project_path_fs)) = project_path.to_file_path() {
@@ -171,7 +175,8 @@ pub fn start(
             )
             .await;
     });
-    port
+
+    addr
 }
 
 fn systems(_world: &mut World) -> SystemGroup {
@@ -187,6 +192,7 @@ fn systems(_world: &mut World) -> SystemGroup {
             Box::new(ambient_physics::physx::sync_ecs_physics()),
             Box::new(ambient_core::transform::TransformSystem::new()),
             ambient_core::remove_at_time_system(),
+            ambient_core::refcount_system(),
             Box::new(WorldEventsSystem),
             Box::new(ambient_core::camera::camera_systems()),
             Box::new(ambient_physics::server_systems()),
@@ -230,7 +236,7 @@ fn create_resources(assets: AssetCache) -> Entity {
     let now = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap();
-    server_resources.set(time(), now);
+    server_resources.set(abs_time(), now);
     server_resources.set(app_start_time(), now);
     server_resources.set(dtime(), 1. / 60.);
 

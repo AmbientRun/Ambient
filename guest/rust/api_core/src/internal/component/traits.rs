@@ -11,6 +11,7 @@ use crate::{
 };
 use ambient_shared_types::primitive_component_definitions;
 use glam::{UVec2, UVec3, UVec4};
+use std::time::Duration;
 
 #[doc(hidden)]
 pub fn get_component<T>(id: &str) -> Component<T> {

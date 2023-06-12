@@ -10,7 +10,7 @@ use ambient_gpu::{
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
 use ambient_std::asset_cache::AssetCache;
-use glam::{uvec2, UVec2};
+use glam::{uvec2, UVec2, UVec4};
 use itertools::Itertools;
 use wgpu::DepthBiasState;
 
@@ -18,12 +18,13 @@ use super::{
     double_sided, lod::cpu_lod_visible, primitives, CollectPrimitive, DrawIndexedIndirect, FSMain,
     PrimitiveIndex, RendererCollectState, RendererResources, RendererShader, SharedMaterial,
 };
-use crate::{bind_groups::BindGroups, is_transparent, RendererConfig};
+use crate::{
+    bind_groups::BindGroups, is_transparent, scissors, set_scissors_safe, PostSubmitFunc,
+    RendererConfig,
+};
 
 pub struct TreeRendererConfig {
-    pub gpu: Arc<Gpu>,
     pub renderer_config: RendererConfig,
-    pub assets: AssetCache,
     pub filter: ArchetypeFilter,
     pub targets: Vec<Option<wgpu::ColorTargetState>>,
     pub renderer_resources: RendererResources,
@@ -48,7 +49,7 @@ pub struct TreeRenderer {
     material_indices: MaterialIndices,
 }
 impl TreeRenderer {
-    pub fn new(config: TreeRendererConfig) -> Self {
+    pub fn new(gpu: &Gpu, config: TreeRendererConfig) -> Self {
         Self {
             tree: HashMap::new(),
             entity_primitive_count: HashMap::new(),
@@ -57,7 +58,7 @@ impl TreeRenderer {
 
             primitives_bind_group: None,
             primitives: TypedMultiBuffer::new(
-                config.gpu.clone(),
+                gpu,
                 "TreeRenderer.primitives",
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
@@ -87,7 +88,7 @@ impl TreeRenderer {
         })
     }
     #[ambient_profiling::function]
-    pub fn update(&mut self, world: &mut World) {
+    pub fn update(&mut self, gpu: &Gpu, assets: &AssetCache, world: &mut World) {
         tracing::debug!("Updating TreeRenderer");
         let mut to_update = HashSet::new();
         let mut spawn_qs = std::mem::replace(&mut self.spawn_qs, QueryState::new());
@@ -95,6 +96,9 @@ impl TreeRenderer {
 
         for (id, (primitives,)) in query((primitives().changed(),))
             .optional_changed(cpu_lod_visible())
+            // TODO: This is not the fastest way to handle scissor changes; essentially the entire entity will be
+            // taken out of the renderer and then reinserted every time the scissors change.
+            .optional_changed(scissors())
             .filter(&self.config.filter)
             .iter(world, Some(&mut spawn_qs))
         {
@@ -106,9 +110,9 @@ impl TreeRenderer {
                 }
             }
             for (primitive_index, primitive) in primitives.iter().enumerate() {
-                let primitive_shader =
-                    (primitive.shader)(&self.config.assets, &self.config.renderer_config);
+                let primitive_shader = (primitive.shader)(assets, &self.config.renderer_config);
                 if let Some(update) = self.insert(
+                    gpu,
                     world,
                     id,
                     primitive_index,
@@ -139,7 +143,7 @@ impl TreeRenderer {
 
         self.spawn_qs = spawn_qs;
         self.despawn_qs = despawn_qs;
-        self.clean_empty();
+        self.clean_empty(gpu);
         for (_, id) in self.loc_changed_reader.iter(world.loc_changed()) {
             if let Ok(primitives) = world.get_ref(*id, primitives()) {
                 for primivite_index in 0..primitives.len() {
@@ -152,13 +156,11 @@ impl TreeRenderer {
             }
         }
 
-        let mut encoder =
-            self.config
-                .gpu
-                .device
-                .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                    label: Some("TreeRenderer.update"),
-                });
+        let mut encoder = gpu
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: Some("TreeRenderer.update"),
+            });
         let mut primitives_to_write = Vec::new();
         for (shader_id, material_id) in to_update.into_iter() {
             if let Some(shader) = self.tree.get(&shader_id) {
@@ -177,6 +179,7 @@ impl TreeRenderer {
                         .collect_vec();
                     self.primitives
                         .resize_buffer_with_encoder(
+                            gpu,
                             &mut encoder,
                             mat.primitives_subbuffer,
                             primitives.len() as u64,
@@ -187,22 +190,24 @@ impl TreeRenderer {
             }
         }
 
-        self.config.gpu.queue.submit(Some(encoder.finish()));
+        gpu.queue.submit(Some(encoder.finish()));
         for (subbuffer, primitives) in primitives_to_write.into_iter() {
-            self.primitives.write(subbuffer, 0, &primitives).unwrap();
+            self.primitives
+                .write(gpu, subbuffer, 0, &primitives)
+                .unwrap();
         }
 
         for node in self.tree.values_mut() {
             for mat in node.tree.values_mut() {
                 // TODO: Materials can be shared between many renderers, so this should be moved
                 // somewhere where it's done just once for all of them
-                mat.material.update(world);
+                mat.material.update(gpu, world);
             }
         }
 
         self.primitives_bind_group = if self.primitives.total_len() > 0 {
             Some(Self::create_primitives_bind_group(
-                &self.config.gpu,
+                gpu,
                 &self.config.renderer_resources.primitives_layout,
                 self.primitives.buffer(),
             ))
@@ -212,8 +217,10 @@ impl TreeRenderer {
     }
     pub fn run_collect(
         &self,
+        gpu: &Gpu,
+        assets: &AssetCache,
         encoder: &mut wgpu::CommandEncoder,
-        post_submit: &mut Vec<Box<dyn FnOnce() + Send + Send>>,
+        post_submit: &mut Vec<PostSubmitFunc>,
         resources_bind_group: &wgpu::BindGroup,
         entities_bind_group: &wgpu::BindGroup,
         collect_state: &mut RendererCollectState,
@@ -236,6 +243,8 @@ impl TreeRenderer {
         }
 
         self.config.renderer_resources.collect.run(
+            gpu,
+            assets,
             encoder,
             post_submit,
             resources_bind_group,
@@ -249,6 +258,7 @@ impl TreeRenderer {
 
     fn insert(
         &mut self,
+        gpu: &Gpu,
         world: &World,
         id: EntityId,
         primitive_index: usize,
@@ -263,31 +273,30 @@ impl TreeRenderer {
             let double_sided = world
                 .get(id, double_sided())
                 .unwrap_or(material.double_sided().unwrap_or(shader.double_sided));
+            let scissors = world.get(id, scissors()).ok();
             let shader_id = format!("{}-{}", shader.id, double_sided);
+            let material_id = format!("{}-{:?}", material.id(), scissors);
             let node = self
                 .tree
                 .entry(shader_id.clone())
-                .or_insert_with(|| ShaderNode::new(config, shader.clone(), double_sided));
+                .or_insert_with(|| ShaderNode::new(gpu, config, shader.clone(), double_sided));
 
             let mat = node
                 .tree
-                .entry(material.id().to_string())
+                .entry(material_id.clone())
                 .or_insert_with(|| MaterialNode {
                     material_index: self.material_indices.acquire_index(),
-                    primitives_subbuffer: self.primitives.create_buffer(None),
+                    primitives_subbuffer: self.primitives.create_buffer(gpu, None),
                     material: material.clone(),
                     primitives: Vec::new(),
+                    scissors,
                 });
             self.primitives_lookup.insert(
                 (id, primitive_index),
-                (
-                    shader_id.clone(),
-                    material.id().to_string(),
-                    mat.primitives.len(),
-                ),
+                (shader_id.clone(), material_id.clone(), mat.primitives.len()),
             );
             mat.primitives.push((id, primitive_index));
-            Some((shader_id, material.id().to_string()))
+            Some((shader_id, material_id))
         } else {
             None
         }
@@ -315,13 +324,13 @@ impl TreeRenderer {
             None
         }
     }
-    fn clean_empty(&mut self) {
+    fn clean_empty(&mut self, gpu: &Gpu) {
         for node in self.tree.values_mut() {
             node.tree.retain(|_, mat| {
                 let to_remove = mat.primitives.is_empty();
                 if to_remove {
                     self.primitives
-                        .remove_buffer(mat.primitives_subbuffer)
+                        .remove_buffer(gpu, mat.primitives_subbuffer)
                         .unwrap();
                     self.material_indices.release_index(mat.material_index);
                 }
@@ -336,6 +345,7 @@ impl TreeRenderer {
         render_pass: &mut wgpu::RenderPass<'a>,
         collect_state: &'a RendererCollectState,
         bind_groups: &BindGroups<'a>,
+        render_target_size: wgpu::Extent3d,
     ) {
         let primitives_bind_group = if let Some(primitives_bind_group) = &self.primitives_bind_group
         {
@@ -344,7 +354,7 @@ impl TreeRenderer {
             return; // Nothing to render
         };
 
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "unknown"))]
         let counts = collect_state.counts_cpu.lock().clone();
 
         let mut is_bound = false;
@@ -369,12 +379,25 @@ impl TreeRenderer {
                 let material = &mat.material;
 
                 render_pass.set_bind_group(bind_groups.len() as _, material.bind_group(), &[]);
+                set_scissors_safe(render_pass, render_target_size, mat.scissors);
 
                 let offset = self
                     .primitives
                     .buffer_offset(mat.primitives_subbuffer)
                     .unwrap();
-                #[cfg(not(target_os = "macos"))]
+
+                // TODO: enable conditionally as multi draw indirect may not be supported on
+                // windows or linux on some hardware
+                //
+                // https://github.com/AmbientRun/Ambient/issues/191
+
+                // wgpu errors states that `MULTI_DRAW_INDEXED_INDIRECT_COUNT` must be
+                // enabled, despite it being enabled in the `Device` and device acquiring
+                // succeding.
+                //
+                // This is due to an unconditional panic
+                // https://github.com/gfx-rs/wgpu/blob/4478c52debcab1b88b80756b197dc10ece90dec9/wgpu/src/backend/web.rs#L3053
+                #[cfg(all(not(target_os = "macos"), not(target_os = "unknown")))]
                 {
                     render_pass.multi_draw_indexed_indirect_count(
                         collect_state.commands.buffer(),
@@ -384,7 +407,7 @@ impl TreeRenderer {
                         mat.primitives.len() as u32,
                     );
                 }
-                #[cfg(target_os = "macos")]
+                #[cfg(any(target_os = "macos", target_os = "unknown"))]
                 {
                     if let Some(count) = counts.get(mat.material_index as usize) {
                         for i in 0..*count {
@@ -418,12 +441,11 @@ struct ShaderNode {
 }
 impl ShaderNode {
     pub fn new(
+        gpu: &Gpu,
         config: &TreeRendererConfig,
         shader: Arc<RendererShader>,
         double_sided: bool,
     ) -> Self {
-        let gpu = config.gpu.clone();
-
         let mut pipeline_info = GraphicsPipelineInfo {
             vs_main: &shader.vs_main,
             fs_main: shader.get_fs_main_name(config.fs_main),
@@ -439,7 +461,7 @@ impl ShaderNode {
                 .with_depth_bias(config.depth_bias);
         }
 
-        let pipeline = shader.shader.to_pipeline(&gpu, pipeline_info);
+        let pipeline = shader.shader.to_pipeline(gpu, pipeline_info);
 
         Self {
             pipeline,
@@ -491,6 +513,7 @@ struct MaterialNode {
     primitives_subbuffer: SubBufferId,
     material: SharedMaterial,
     primitives: Vec<(EntityId, PrimitiveIndex)>,
+    scissors: Option<UVec4>,
 }
 
 struct MaterialIndices {

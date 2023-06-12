@@ -1,5 +1,5 @@
 use std::{
-    cell::{Ref, RefCell},
+    cell::RefCell,
     collections::HashMap,
     future::Future,
     pin::Pin,
@@ -32,7 +32,7 @@ pub(crate) struct Executor {
     incoming: RefCell<Vec<Pin<Box<dyn Future<Output = ResultEmpty>>>>>,
     current_callbacks: RefCell<Callbacks>,
     incoming_callbacks: RefCell<Callbacks>,
-    frame_state: RefCell<FrameState>,
+    callbacks_to_remove: RefCell<Vec<(String, u128)>>,
 }
 // WebAssembly, at time of writing, is single-threaded. This is a convenient little lie
 // to make it easy to use this in a global context.
@@ -47,19 +47,11 @@ impl Executor {
             incoming: RefCell::new(Default::default()),
             current_callbacks: RefCell::new(Default::default()),
             incoming_callbacks: RefCell::new(Default::default()),
-            frame_state: RefCell::new(Default::default()),
+            callbacks_to_remove: RefCell::new(Default::default()),
         }
     }
 
-    pub fn execute(
-        &self,
-        frame_state: FrameState,
-        source: wit::guest::Source,
-        message_name: String,
-        message_data: Vec<u8>,
-    ) {
-        *self.frame_state.borrow_mut() = frame_state;
-
+    pub fn execute(&self, source: wit::guest::Source, message_name: String, message_data: Vec<u8>) {
         // Load all pending callbacks.
         {
             let mut incoming = self.incoming_callbacks.borrow_mut();
@@ -80,6 +72,19 @@ impl Executor {
             if let Some(callbacks) = callbacks.on.get_mut(&message_name) {
                 for callback in callbacks.values_mut() {
                     callback(&source, &message_data).unwrap();
+                }
+            }
+        }
+
+        {
+            let to_remove = self
+                .callbacks_to_remove
+                .borrow_mut()
+                .drain(..)
+                .collect::<Vec<_>>();
+            for (event, id) in to_remove {
+                if let Some(event) = self.current_callbacks.borrow_mut().on.get_mut(&event) {
+                    event.remove(&id);
                 }
             }
         }
@@ -110,10 +115,6 @@ impl Executor {
         }
     }
 
-    pub fn frame_state(&self) -> Ref<'_, FrameState> {
-        self.frame_state.borrow()
-    }
-
     pub fn register_callback(&self, event_name: String, callback: EventCallbackFn) -> u128 {
         let uid = random::<u128>();
         self.incoming_callbacks
@@ -127,26 +128,17 @@ impl Executor {
 
     pub fn unregister_callback(&self, event_name: &str, uid: u128) {
         if let Some(entry) = self.incoming_callbacks.borrow_mut().on.get_mut(event_name) {
-            entry.remove(&uid);
+            if entry.remove(&uid).is_some() {
+                return;
+            }
         }
+        self.callbacks_to_remove
+            .borrow_mut()
+            .push((event_name.to_string(), uid));
     }
 
     pub fn spawn(&self, fut: EventFuture) {
         self.incoming.borrow_mut().push(fut);
-    }
-}
-
-#[derive(Default)]
-pub struct FrameState {
-    time: f32,
-}
-impl FrameState {
-    pub fn new(time: f32) -> Self {
-        Self { time }
-    }
-
-    pub fn time(&self) -> f32 {
-        self.time
     }
 }
 

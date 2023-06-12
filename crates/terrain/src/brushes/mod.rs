@@ -198,7 +198,7 @@ impl TerrainBrush {
             normals: Arc::new(NormalmapFromHeightmapCompute::new(&gpu)),
             frame: Arc::new(AtomicI32::new(0)),
             intermediate_heightmap: Arc::new(Texture::new(
-                gpu.clone(),
+                &gpu,
                 &wgpu::TextureDescriptor {
                     label: Some("Terrain brush heightmap"),
                     size: wgpu::Extent3d {
@@ -214,11 +214,11 @@ impl TerrainBrush {
                         | wgpu::TextureUsages::COPY_DST
                         | wgpu::TextureUsages::COPY_SRC
                         | wgpu::TextureUsages::STORAGE_BINDING,
-                    view_formats: &[]
+                    view_formats: &[],
                 },
             )),
             intermediate_normalmap: Arc::new(Texture::new(
-                gpu.clone(),
+                &gpu,
                 &wgpu::TextureDescriptor {
                     label: Some("Terrain brush normalmap"),
                     size: wgpu::Extent3d {
@@ -234,7 +234,7 @@ impl TerrainBrush {
                         | wgpu::TextureUsages::COPY_DST
                         | wgpu::TextureUsages::COPY_SRC
                         | wgpu::TextureUsages::STORAGE_BINDING,
-                    view_formats: &[]
+                    view_formats: &[],
                 },
             )),
         }

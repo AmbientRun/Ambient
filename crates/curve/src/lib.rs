@@ -24,7 +24,12 @@ where
     f32: Mul<T, Output = T>,
 {
     pub fn new_looping(points: Vec<CurvePoint<T>>, end: f32) -> Self {
-        Self { points, start: None, end: Some(end), looping: true }
+        Self {
+            points,
+            start: None,
+            end: Some(end),
+            looping: true,
+        }
     }
     pub fn sample(&self, input: f32) -> Option<T> {
         if self.points.is_empty() {
@@ -51,7 +56,13 @@ where
             if right == 0 {
                 // We're before the first point
                 if self.looping {
-                    Some(interpolate(input, last.input - end, first.input, last.output, first.output))
+                    Some(interpolate(
+                        input,
+                        last.input - end,
+                        first.input,
+                        last.output,
+                        first.output,
+                    ))
                 } else {
                     Some(self.points[0].output)
                 }
@@ -69,7 +80,13 @@ where
         } else {
             // We're past the last point
             if self.looping {
-                Some(interpolate(input, last.input, end + first.input, last.output, first.output))
+                Some(interpolate(
+                    input,
+                    last.input,
+                    end + first.input,
+                    last.output,
+                    first.output,
+                ))
             } else {
                 Some(self.points.last().unwrap().output)
             }
@@ -81,8 +98,17 @@ where
 fn test() {
     use ambient_std::math::Round100;
     use glam::{vec3, Vec3};
-    assert_eq!(Curve::new_looping(vec![CurvePoint::new(5., Vec3::X)], 24.).sample(0.).unwrap().round100(), Vec3::X);
-    let b = Curve::new_looping(vec![CurvePoint::new(6., Vec3::X), CurvePoint::new(18., Vec3::Y)], 24.);
+    assert_eq!(
+        Curve::new_looping(vec![CurvePoint::new(5., Vec3::X)], 24.)
+            .sample(0.)
+            .unwrap()
+            .round100(),
+        Vec3::X
+    );
+    let b = Curve::new_looping(
+        vec![CurvePoint::new(6., Vec3::X), CurvePoint::new(18., Vec3::Y)],
+        24.,
+    );
     assert_eq!(b.sample(0.).unwrap().round100(), vec3(0.5, 0.5, 0.));
     assert_eq!(b.sample(3.).unwrap().round100(), vec3(0.75, 0.25, 0.));
     assert_eq!(b.sample(6.).unwrap().round100(), vec3(1., 0., 0.));
@@ -91,6 +117,12 @@ fn test() {
     assert_eq!(b.sample(21.).unwrap().round100(), vec3(0.25, 0.75, 0.));
     assert_eq!(b.sample(24.).unwrap().round100(), vec3(0.5, 0.5, 0.));
 
-    assert_eq!(b.sample(-24. * 40. + 12.).unwrap().round100(), vec3(0.5, 0.5, 0.));
-    assert_eq!(b.sample(24. * 40. + 12.).unwrap().round100(), vec3(0.5, 0.5, 0.));
+    assert_eq!(
+        b.sample(-24. * 40. + 12.).unwrap().round100(),
+        vec3(0.5, 0.5, 0.)
+    );
+    assert_eq!(
+        b.sample(24. * 40. + 12.).unwrap().round100(),
+        vec3(0.5, 0.5, 0.)
+    );
 }

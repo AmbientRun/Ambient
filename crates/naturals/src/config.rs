@@ -15,7 +15,11 @@ fn true_value() -> bool {
     true
 }
 fn white_value() -> RGB {
-    RGB { r: 1., g: 1., b: 1. }
+    RGB {
+        r: 1.,
+        g: 1.,
+        b: 1.,
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, ElementEditor)]
@@ -182,8 +186,12 @@ pub enum NaturalsPreset {
 
 pub fn get_default_natural_layers(preset: NaturalsPreset) -> Vec<NaturalLayer> {
     match preset {
-        NaturalsPreset::Mountains => serde_json::from_str(&include_file!("mountains.json")).unwrap(),
+        NaturalsPreset::Mountains => {
+            serde_json::from_str(&include_file!("mountains.json")).unwrap()
+        }
         NaturalsPreset::Desert => serde_json::from_str(&include_file!("desert.json")).unwrap(),
-        NaturalsPreset::LowPerformanceMode => serde_json::from_str(&include_file!("low_performance.json")).unwrap(),
+        NaturalsPreset::LowPerformanceMode => {
+            serde_json::from_str(&include_file!("low_performance.json")).unwrap()
+        }
     }
 }

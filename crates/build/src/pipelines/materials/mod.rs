@@ -5,6 +5,7 @@ use ambient_asset_cache::{
 };
 use ambient_decals::decal;
 use ambient_ecs::Entity;
+use ambient_gpu::sampler::SamplerKey;
 use ambient_model_import::{
     model_crate::{cap_texture_size, ModelCrate},
     ModelTextureSize,
@@ -106,16 +107,16 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
                     .relative_path(
                         mat.source
                             .clone()
-                            .map(|x| x.path())
+                            .map(|x| x.decoded_path())
                             .unwrap_or_else(|| ctx.pipeline_path()),
                     )
                     .join("decal");
                 let out_model_url = ctx.out_root().join(&model_path).unwrap();
                 let mut model_crate = ModelCrate::new();
                 let decal_path = out_model_url
-                    .path()
+                    .decoded_path()
                     .join("prefabs")
-                    .relative(mat_url.path());
+                    .relative(mat_url.decoded_path());
                 model_crate.create_prefab(
                     Entity::new()
                         .with(decal(), decal_path.into())
@@ -189,6 +190,9 @@ pub struct PipelinePbrMaterial {
     pub specular: Option<AssetUrl>,
     /// The non-PBR specular exponent of this material. If specified alongside `specular`, it will be translated to a PBR equivalent.
     pub specular_exponent: Option<f32>,
+
+    /// The sampler used by every texture in this material. Defaults to a sampler with `Linear` min/mag/mip filter modes and `ClampToEdge` wrap modes across uvw-coordinates.
+    pub sampler: Option<SamplerKey>,
 }
 impl PipelinePbrMaterial {
     pub async fn to_mat(
@@ -257,6 +261,7 @@ impl PipelinePbrMaterial {
             double_sided: self.double_sided,
             metallic: self.metallic.unwrap_or(1.),
             roughness: self.roughness.unwrap_or(1.),
+            sampler: self.sampler,
         }
         .relative_path_from(out_root))
     }
@@ -365,7 +370,7 @@ impl AsyncAssetKey<AssetResult<Arc<AbsAssetUrl>>> for PipeImage {
         } else {
             None
         };
-        let path = ctx.in_root.relative_path(self.source.path());
+        let path = ctx.in_root.relative_path(self.source.decoded_path());
         let mut data = Cursor::new(Vec::new());
         tokio::task::block_in_place(|| {
             if let Some(transform) = &self.transform {

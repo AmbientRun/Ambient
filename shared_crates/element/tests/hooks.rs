@@ -185,17 +185,33 @@ fn use_effect() {
     }
 
     let mut world = initialize();
-    let mut tree = Inner { value: "Test".to_string() }.el().spawn_tree(&mut world);
+    let mut tree = Inner {
+        value: "Test".to_string(),
+    }
+    .el()
+    .spawn_tree(&mut world);
     tree.update(&mut world);
     assert_eq!(1, *world.resource(counter()));
     assert_eq!(1, *world.resource(n_renders()));
 
-    tree.migrate_root(&mut world, Inner { value: "Test".to_string() }.el());
+    tree.migrate_root(
+        &mut world,
+        Inner {
+            value: "Test".to_string(),
+        }
+        .el(),
+    );
     tree.update(&mut world);
     assert_eq!(1, *world.resource(counter()));
     assert_eq!(1, *world.resource(n_renders()));
 
-    tree.migrate_root(&mut world, Inner { value: "Hello".to_string() }.el());
+    tree.migrate_root(
+        &mut world,
+        Inner {
+            value: "Hello".to_string(),
+        }
+        .el(),
+    );
     tree.update(&mut world);
     assert_eq!(1, *world.resource(counter()));
     assert_eq!(2, *world.resource(n_renders()));

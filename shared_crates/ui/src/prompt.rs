@@ -76,7 +76,12 @@ impl Alert {
         on_cancel: Option<Cb<dyn Fn(&mut World) + Sync + Send>>,
     ) -> Self {
         assert!(on_ok.is_some() || on_cancel.is_some());
-        Self { title: title.into(), set_screen, on_ok, on_cancel }
+        Self {
+            title: title.into(),
+            set_screen,
+            on_ok,
+            on_cancel,
+        }
     }
 }
 
@@ -97,7 +102,9 @@ pub fn Prompt(
     DialogScreen(
         FlowColumn::el([
             Text::el(title).header_style(),
-            TextEditor::new(value.clone(), set_value).placeholder(placeholder.or(Some("Enter value".to_string()))).el(),
+            TextEditor::new(value.clone(), set_value)
+                .placeholder(placeholder.or(Some("Enter value".to_string())))
+                .el(),
             FlowRow::el([
                 Button::new("Ok", move |world| {
                     on_ok(world, value.clone());
@@ -229,6 +236,13 @@ impl<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static> EditorPrompt<T
         set_screen: Cb<dyn Fn(Option<Element>) + Sync + Send>,
         on_ok: impl Fn(&mut World, T) + Sync + Send + 'static,
     ) -> Self {
-        Self { title: title.into(), value, set_screen, on_ok: cb(on_ok), on_cancel: None, validator: None }
+        Self {
+            title: title.into(),
+            value,
+            set_screen,
+            on_ok: cb(on_ok),
+            on_cancel: None,
+            validator: None,
+        }
     }
 }

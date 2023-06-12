@@ -4,8 +4,9 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id, to_byte_unit, Cb};
+use ambient_sys::task::{PlatformBoxFuture, RuntimeHandle};
 use ambient_ui_native::{Image, MeasureSize};
-use bytes::{BufMut, Bytes, BytesMut};
+use bytes::Bytes;
 use futures::future::BoxFuture;
 use glam::UVec2;
 use parking_lot::Mutex;
@@ -14,14 +15,12 @@ use std::{
     collections::HashMap,
     fmt::{Debug, Display},
     future::Future,
-    pin::Pin,
     sync::Arc,
 };
-use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
 
 use crate::{
-    client_connection::ConnectionKind, client_game_state::ClientGameState, log_network_result,
-    proto::client::SharedClientState, server, NetworkError, MAX_FRAME_SIZE, RPC_BISTREAM_ID,
+    client_game_state::ClientGameState, log_network_result, proto::client::SharedClientState,
+    server, NetworkError, RPC_BISTREAM_ID,
 };
 
 components!("network::client", {
@@ -38,11 +37,23 @@ components!("network::client", {
     client_network_stats: NetworkStats,
 });
 
-pub type DynSend = Pin<Box<dyn AsyncWrite + Send + Sync>>;
-pub type DynRecv = Pin<Box<dyn AsyncRead + Send + Sync>>;
+#[cfg(not(target_os = "unknown"))]
+pub type PlatformSendStream = quinn::SendStream;
+#[cfg(not(target_os = "unknown"))]
+pub type PlatformRecvStream = quinn::RecvStream;
 
-type BiStreamHandler = Arc<dyn Fn(&mut World, AssetCache, DynSend, DynRecv) + Sync + Send>;
-type UniStreamHandler = Arc<dyn Fn(&mut World, AssetCache, DynRecv) + Sync + Send>;
+#[cfg(target_os = "unknown")]
+pub type PlatformSendStream = crate::webtransport::SendStream;
+#[cfg(target_os = "unknown")]
+pub type PlatformRecvStream = crate::webtransport::RecvStream;
+
+type BiStreamHandler = Arc<
+    dyn Fn(&mut World, AssetCache, PlatformSendStream, PlatformRecvStream) -> PlatformBoxFuture<()>
+        + Sync
+        + Send,
+>;
+type UniStreamHandler =
+    Arc<dyn Fn(&mut World, AssetCache, PlatformRecvStream) -> PlatformBoxFuture<()> + Sync + Send>;
 type DatagramHandler = Arc<dyn Fn(&mut World, AssetCache, Bytes) + Sync + Send>;
 
 pub type BiStreamHandlers = HashMap<u32, (&'static str, BiStreamHandler)>;
@@ -57,83 +68,11 @@ pub trait ClientConnection: 'static + Send + Sync {
     fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>>;
     /// Performs a unidirectional request without waiting for a response.
     fn request_uni(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>>;
-    fn send_datagram(&self, id: u32, data: Bytes) -> Result<(), NetworkError>;
+    fn send_datagram(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>>;
 }
 
-impl ClientConnection for quinn::Connection {
-    fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>> {
-        Box::pin(async move {
-            let (mut send, recv) = self.open_bi().await?;
-
-            send.write_u32(id).await?;
-            send.write_all(&data).await?;
-
-            drop(send);
-
-            let buf = recv.read_to_end(MAX_FRAME_SIZE).await?.into();
-
-            Ok(buf)
-        })
-    }
-
-    fn request_uni(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>> {
-        Box::pin(async move {
-            let mut send = self.open_uni().await?;
-
-            send.write_u32(id).await?;
-            send.write_all(&data).await?;
-
-            Ok(())
-        })
-    }
-
-    fn send_datagram(&self, id: u32, data: Bytes) -> Result<(), NetworkError> {
-        let mut bytes = BytesMut::with_capacity(4 + data.len());
-        bytes.put_u32(id);
-        bytes.put(data);
-
-        self.send_datagram(bytes.freeze())?;
-
-        Ok(())
-    }
-}
-
-impl ClientConnection for ConnectionKind {
-    fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>> {
-        Box::pin(async move {
-            let (mut send, recv) = self.open_bi().await?;
-
-            send.write_u32(id).await?;
-            send.write_all(&data).await?;
-
-            drop(send);
-
-            let buf = recv.read_to_end(MAX_FRAME_SIZE).await?.into();
-
-            Ok(buf)
-        })
-    }
-
-    fn request_uni(&self, id: u32, data: Bytes) -> BoxFuture<Result<(), NetworkError>> {
-        Box::pin(async move {
-            let mut send = self.open_uni().await?;
-
-            send.write_u32(id).await?;
-            send.write_all(&data).await?;
-
-            Ok(())
-        })
-    }
-
-    fn send_datagram(&self, id: u32, data: Bytes) -> Result<(), NetworkError> {
-        let mut bytes = BytesMut::with_capacity(4 + data.len());
-        bytes.put_u32(id);
-        bytes.put(data);
-
-        self.send_datagram(bytes.freeze())?;
-
-        Ok(())
-    }
+pub(crate) enum Control {
+    Disconnect,
 }
 
 #[derive(Clone)]
@@ -194,7 +133,7 @@ impl GameClient {
         L: Future<Output = Resp> + Send,
     >(
         &self,
-        runtime: &tokio::runtime::Handle,
+        runtime: &RuntimeHandle,
         func: F,
     ) -> Cb<impl Fn(Req)> {
         let runtime = runtime.clone();
@@ -259,8 +198,10 @@ pub type LoadedFunc = Cb<dyn Fn(GameClient) -> anyhow::Result<CleanupFunc> + Sen
 pub fn GameClientWorld(hooks: &mut Hooks) -> Element {
     let (render_target, set_render_target) =
         hooks.consume_context::<GameClientRenderTarget>().unwrap();
+
     let gpu = hooks.world.resource(gpu()).clone();
     let scale_factor = *hooks.world.resource(window_scale_factor());
+
     MeasureSize::el(
         Image {
             texture: Some(Arc::new(
@@ -273,7 +214,7 @@ pub fn GameClientWorld(hooks: &mut Hooks) -> Element {
         .el(),
         cb(move |size| {
             set_render_target(GameClientRenderTarget(Arc::new(RenderTarget::new(
-                gpu.clone(),
+                &gpu,
                 (size * scale_factor as f32).as_uvec2().max(UVec2::ONE),
                 None,
             ))))

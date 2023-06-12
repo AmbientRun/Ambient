@@ -1,5 +1,5 @@
 pub mod deploy_proto {
-    tonic::include_proto!("ambient.run.deploy");
+    include!("../proto/ambient.run.deploy.rs");
 }
 
 use std::{path::Path, str::FromStr};

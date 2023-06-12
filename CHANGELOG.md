@@ -40,7 +40,11 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 <!-- - **Client**: The client can now **run on the web**. -->
 
+- The animation system has been reworked; see the [animation documentation](https://ambientrun.github.io/Ambient/reference/animations.html) for details.
+
 #### Other
+
+- Added a new `ImageFromUrl` ui component, which can load images from assets or urls. It also supports rounded corners, borders and a fallback background color. See the [image example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/ui/image/src/client.rs) for more details.
 
 #### Examples
 
@@ -50,7 +54,8 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 - Locally-broadcasted messages can now choose to include the originating module in the broadcast; this is an additional boolean parameter to `ModuleMessage::send_local_broadcast` and `message::Target::LocalBroadcast`.
 - `screen_to_world_direction` and `clip_space_ray` renamed. See [#410](https://github.com/AmbientRun/Ambient/issues/410)
-- `type = { type = "Vec3" }` is no longer valid syntax in `ambient.toml`. Only `type = "Vec3"` and `type = { type = "Vec", element_type = "Vec3" }` are valid.
+- `type = { type = "Vec3" }` is no longer valid syntax in `ambient.toml`. Only `type = "Vec3"` and `type = { type = "Vec", element-type = "Vec3" }` are valid.
+- Rename `visualizing` to `visualize_collider`
 
 #### Non-breaking
 

@@ -26,7 +26,9 @@ fn parse_inline_string_inner(inline: &str, res: &mut Vec<Inline>) {
         if !start.is_empty() {
             res.push(Inline::text(start));
         }
-        let (field, end) = end.split_once('}').expect("Missing end bracket in inline string");
+        let (field, end) = end
+            .split_once('}')
+            .expect("Missing end bracket in inline string");
         res.push(Inline::field(field));
         parse_inline_string_inner(end, res);
     } else if !inline.is_empty() {
@@ -40,15 +42,39 @@ mod tests {
     fn test_inline_string() {
         assert_eq!(parse_inline_string(""), vec![vec![]]);
         assert_eq!(parse_inline_string("Hi"), vec![vec![Inline::text("Hi")]]);
-        assert_eq!(parse_inline_string("Hi {test}"), vec![vec![Inline::text("Hi "), Inline::field("test")]]);
-        assert_eq!(parse_inline_string("{test} hi"), vec![vec![Inline::field("test"), Inline::text(" hi")]]);
-        assert_eq!(parse_inline_string("{test}"), vec![vec![Inline::field("test")]]);
-        assert_eq!(parse_inline_string("Hi {test} hello"), vec![vec![Inline::text("Hi "), Inline::field("test"), Inline::text(" hello")]]);
+        assert_eq!(
+            parse_inline_string("Hi {test}"),
+            vec![vec![Inline::text("Hi "), Inline::field("test")]]
+        );
+        assert_eq!(
+            parse_inline_string("{test} hi"),
+            vec![vec![Inline::field("test"), Inline::text(" hi")]]
+        );
+        assert_eq!(
+            parse_inline_string("{test}"),
+            vec![vec![Inline::field("test")]]
+        );
+        assert_eq!(
+            parse_inline_string("Hi {test} hello"),
+            vec![vec![
+                Inline::text("Hi "),
+                Inline::field("test"),
+                Inline::text(" hello")
+            ]]
+        );
         assert_eq!(
             parse_inline_string("Hi {test} hello {oh}"),
-            vec![vec![Inline::text("Hi "), Inline::field("test"), Inline::text(" hello "), Inline::field("oh")]]
+            vec![vec![
+                Inline::text("Hi "),
+                Inline::field("test"),
+                Inline::text(" hello "),
+                Inline::field("oh")
+            ]]
         );
 
-        assert_eq!(parse_inline_string("Hi\ntest"), vec![vec![Inline::text("Hi")], vec![Inline::text("test")]]);
+        assert_eq!(
+            parse_inline_string("Hi\ntest"),
+            vec![vec![Inline::text("Hi")], vec![Inline::text("test")]]
+        );
     }
 }

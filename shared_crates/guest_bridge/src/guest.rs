@@ -31,29 +31,56 @@ pub mod ecs {
         pub fn exists(&self, entity_id: EntityId) -> bool {
             api::entity::exists(entity_id)
         }
-        pub fn set<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>, value: T) -> Result<(), ECSError> {
+        pub fn set<T: ComponentValue>(
+            &self,
+            entity_id: EntityId,
+            component: Component<T>,
+            value: T,
+        ) -> Result<(), ECSError> {
             // TODO: set_component needs to return errors
             api::entity::set_component(entity_id, component, value);
             Ok(())
         }
-        pub fn add_component<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>, value: T) -> Result<(), ECSError> {
+        pub fn add_component<T: ComponentValue>(
+            &self,
+            entity_id: EntityId,
+            component: Component<T>,
+            value: T,
+        ) -> Result<(), ECSError> {
             // TODO: add_component needs to return errors
             api::entity::add_component(entity_id, component, value);
             Ok(())
         }
-        pub fn add_components(&self, entity_id: EntityId, components: Entity) -> Result<(), ECSError> {
+        pub fn add_components(
+            &self,
+            entity_id: EntityId,
+            components: Entity,
+        ) -> Result<(), ECSError> {
             // TODO: add_components needs to return errors
             api::entity::add_components(entity_id, components);
             Ok(())
         }
-        pub fn get<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> Result<T, ECSError> {
-            api::entity::get_component(entity_id, component).ok_or_else(|| ECSError::EntityDoesntHaveComponent)
+        pub fn get<T: ComponentValue>(
+            &self,
+            entity_id: EntityId,
+            component: Component<T>,
+        ) -> Result<T, ECSError> {
+            api::entity::get_component(entity_id, component)
+                .ok_or_else(|| ECSError::EntityDoesntHaveComponent)
         }
         // TODO: This should actually return &T
-        pub fn get_ref<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> Result<T, ECSError> {
+        pub fn get_ref<T: ComponentValue>(
+            &self,
+            entity_id: EntityId,
+            component: Component<T>,
+        ) -> Result<T, ECSError> {
             self.get(entity_id, component)
         }
-        pub fn has_component<T: ComponentValue>(&self, entity_id: EntityId, component: Component<T>) -> bool {
+        pub fn has_component<T: ComponentValue>(
+            &self,
+            entity_id: EntityId,
+            component: Component<T>,
+        ) -> bool {
             api::entity::has_component(entity_id, component)
         }
         pub fn resource<T: ComponentValue>(&self, component: Component<T>) -> T {

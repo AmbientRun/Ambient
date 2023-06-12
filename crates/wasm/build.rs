@@ -34,14 +34,17 @@ fn main() {
         .collect::<Result<_, _>>()
         .unwrap();
 
+    eprintln!("Assembling guest files");
     for guest_path in std::fs::read_dir("../../guest/")
         .unwrap()
         .filter_map(Result::ok)
         .map(|de| de.path())
         .filter(|de| de.is_dir())
     {
+        eprintln!("Reading file in guest path: {guest_path:?}");
         // HACK: Build wit files ahead of time so that we don't need to use a macro in the guest code.
         if guest_path.file_name().unwrap_or_default() == "rust" {
+            eprintln!("Reading rust wit");
             use wit_bindgen_core::{wit_parser::Resolve, Files};
 
             let mut generator = wit_bindgen_rust::Opts::default().build();
@@ -53,6 +56,7 @@ fn main() {
             generator.generate(&resolve, world, &mut files);
 
             for (filename, contents) in files.iter() {
+                eprintln!("Writing file: {filename:?}");
                 std::fs::write(
                     guest_path
                         .join("api_core")

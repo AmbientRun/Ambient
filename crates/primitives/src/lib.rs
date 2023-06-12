@@ -230,13 +230,13 @@ pub fn systems() -> SystemGroup {
             .incl(torus())
             .spawned()
             .to_system(|q, world, qs, _| {
-                for (id, (inner_radius, outer_radius, loops, slices)) in q.collect_cloned(world, qs) {
+                for (id, (inner_radius, outer_radius, loops, slices)) in q.collect_cloned(world, qs)
+                {
                     let mesh = TorusMesh {
                         inner_radius,
                         outer_radius,
                         slices,
                         loops,
-                        ..Default::default()
                     };
                     let data = torus_data(world.resource(asset_cache()), &mesh);
                     extend(world, id, data);

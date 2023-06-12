@@ -1,10 +1,16 @@
 use std::{
-    cmp::Ordering, collections::{btree_set::Range, BTreeSet, HashMap}, fmt::Debug, ops::RangeBounds
+    cmp::Ordering,
+    collections::{btree_set::Range, BTreeSet, HashMap},
+    fmt::Debug,
+    ops::RangeBounds,
 };
 
 use itertools::Itertools;
 
-use crate::{ArchetypeFilter, Component, ComponentDesc, ComponentEntry, ComponentValue, EntityId, FnSystem, Query, SystemGroup, World};
+use crate::{
+    ArchetypeFilter, Component, ComponentDesc, ComponentEntry, ComponentValue, EntityId, FnSystem,
+    Query, SystemGroup, World,
+};
 
 #[derive(Clone)]
 pub struct IndexColumns {
@@ -14,17 +20,24 @@ pub struct IndexColumns {
 
 impl Debug for IndexColumns {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("IndexColumns").field("comparators", &self.comparators.len()).field("components", &self.components).finish()
+        f.debug_struct("IndexColumns")
+            .field("comparators", &self.comparators.len())
+            .field("components", &self.components)
+            .finish()
     }
 }
 
 impl IndexColumns {
     pub fn new() -> Self {
-        Self { comparators: Default::default(), components: Default::default() }
+        Self {
+            comparators: Default::default(),
+            components: Default::default(),
+        }
     }
 
     pub fn add_column<T: ComponentValue + Ord>(mut self, component: Component<T>) -> Self {
-        self.comparators.push(|a, b| a.downcast_ref::<T>().cmp(b.downcast_ref::<T>()));
+        self.comparators
+            .push(|a, b| a.downcast_ref::<T>().cmp(b.downcast_ref::<T>()));
         self.components.push(component.desc());
         self
     }
@@ -44,7 +57,10 @@ impl IndexColumns {
             })
             .collect::<Option<Vec<_>>>()?;
 
-        Some(IndexKey { fields, id: IndexIdField::Exact(entity) })
+        Some(IndexKey {
+            fields,
+            id: IndexIdField::Exact(entity),
+        })
     }
 }
 
@@ -60,14 +76,23 @@ pub struct Index {
 
 impl Index {
     pub fn new(columns: IndexColumns) -> Self {
-        Self { columns, index: Default::default(), ids_to_keys: Default::default() }
+        Self {
+            columns,
+            index: Default::default(),
+            ids_to_keys: Default::default(),
+        }
     }
     pub fn insert_entity(&mut self, world: &World, id: EntityId) {
         assert!(!id.is_null());
         self.insert(self.columns.key_from_entity(world, id));
     }
     pub fn insert(&mut self, key: IndexKey) {
-        self.ids_to_keys.insert(key.id.id().expect("Must use IndexKey::exact when inserting"), key.clone());
+        self.ids_to_keys.insert(
+            key.id
+                .id()
+                .expect("Must use IndexKey::exact when inserting"),
+            key.clone(),
+        );
         self.index.insert(key);
     }
 
@@ -89,7 +114,9 @@ impl Index {
 }
 impl std::fmt::Display for Index {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Index").field("columns", &self.columns).finish()
+        f.debug_struct("Index")
+            .field("columns", &self.columns)
+            .finish()
     }
 }
 
@@ -109,13 +136,22 @@ pub struct IndexKey {
 
 impl IndexKey {
     pub fn min(fields: Vec<IndexField>) -> Self {
-        Self { fields, id: IndexIdField::Min }
+        Self {
+            fields,
+            id: IndexIdField::Min,
+        }
     }
     pub fn max(fields: Vec<IndexField>) -> Self {
-        Self { fields, id: IndexIdField::Max }
+        Self {
+            fields,
+            id: IndexIdField::Max,
+        }
     }
     pub fn exact(fields: Vec<IndexField>, id: EntityId) -> Self {
-        Self { fields, id: IndexIdField::Exact(id) }
+        Self {
+            fields,
+            id: IndexIdField::Exact(id),
+        }
     }
     pub fn id(&self) -> Option<EntityId> {
         self.id.id()
@@ -157,12 +193,17 @@ pub struct IndexFieldValue {
 }
 impl IndexFieldValue {
     pub fn new<T: ComponentValue + Ord>(component: Component<T>, value: T) -> Self {
-        Self { comparator: |a, b| a.downcast_ref::<T>().cmp(b.downcast_ref::<T>()), value: ComponentEntry::new(component, value) }
+        Self {
+            comparator: |a, b| a.downcast_ref::<T>().cmp(b.downcast_ref::<T>()),
+            value: ComponentEntry::new(component, value),
+        }
     }
 }
 impl Debug for IndexFieldValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("IndexFieldValue").field("value", &self.value).finish()
+        f.debug_struct("IndexFieldValue")
+            .field("value", &self.value)
+            .finish()
     }
 }
 impl PartialEq for IndexFieldValue {
@@ -183,7 +224,11 @@ impl Ord for IndexFieldValue {
 }
 
 /// Creates and maintains an ECS Index as a resource on the world
-pub fn index_system(mut filter: ArchetypeFilter, columns: IndexColumns, index_resource: Component<Index>) -> SystemGroup {
+pub fn index_system(
+    mut filter: ArchetypeFilter,
+    columns: IndexColumns,
+    index_resource: Component<Index>,
+) -> SystemGroup {
     for &c in &columns.components {
         filter = filter.incl_ref(c);
     }
@@ -196,34 +241,44 @@ pub fn index_system(mut filter: ArchetypeFilter, columns: IndexColumns, index_re
                     world.add_resource(index_resource, Index::new(columns.clone()));
                 }
             })),
-            Query::new(filter.clone()).spawned().to_system(move |q, world, qs, _| {
-                let keys = {
-                    let index = world.resource(index_resource);
-                    q.iter(world, Some(qs)).map(|x| index.columns.key_from_entity(world, x.id())).collect_vec()
-                };
-                let index = world.resource_mut(index_resource);
-                for key in keys {
-                    index.insert(key);
-                }
-            }),
-            Query::new(filter.clone()).despawned().to_system(move |q, world, qs, _| {
-                let ids = q.iter(world, Some(qs)).map(|x| x.id()).collect_vec();
-                let index = world.resource_mut(index_resource);
-                for id in ids {
-                    index.remove(id);
-                }
-            }),
-            Query::any_changed(components).filter(&filter).to_system(move |q, world, qs, _| {
-                let keys = {
-                    let index = world.resource(index_resource);
-                    q.iter(world, Some(qs)).map(|x| index.columns.key_from_entity(world, x.id())).collect_vec()
-                };
-                let index = world.resource_mut(index_resource);
-                for key in keys {
-                    index.remove(key.id().unwrap());
-                    index.insert(key);
-                }
-            }),
+            Query::new(filter.clone())
+                .spawned()
+                .to_system(move |q, world, qs, _| {
+                    let keys = {
+                        let index = world.resource(index_resource);
+                        q.iter(world, Some(qs))
+                            .map(|x| index.columns.key_from_entity(world, x.id()))
+                            .collect_vec()
+                    };
+                    let index = world.resource_mut(index_resource);
+                    for key in keys {
+                        index.insert(key);
+                    }
+                }),
+            Query::new(filter.clone())
+                .despawned()
+                .to_system(move |q, world, qs, _| {
+                    let ids = q.iter(world, Some(qs)).map(|x| x.id()).collect_vec();
+                    let index = world.resource_mut(index_resource);
+                    for id in ids {
+                        index.remove(id);
+                    }
+                }),
+            Query::any_changed(components)
+                .filter(&filter)
+                .to_system(move |q, world, qs, _| {
+                    let keys = {
+                        let index = world.resource(index_resource);
+                        q.iter(world, Some(qs))
+                            .map(|x| index.columns.key_from_entity(world, x.id()))
+                            .collect_vec()
+                    };
+                    let index = world.resource_mut(index_resource);
+                    for key in keys {
+                        index.remove(key.id().unwrap());
+                        index.insert(key);
+                    }
+                }),
         ],
     )
 }

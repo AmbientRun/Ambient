@@ -3,11 +3,12 @@ extern crate lazy_static;
 
 use ambient_sys::{task::RuntimeHandle, time::Instant, time::SystemTime};
 use chrono::{DateTime, Utc};
+use hierarchy::despawn_recursive;
 use std::{sync::Arc, time::Duration};
 
 use ambient_ecs::{
-    components, query, Debuggable, Description, DynSystem, FrameEvent, Name, Networked, Resource,
-    Store, System, World,
+    components, parent, query, Debuggable, Description, DynSystem, FrameEvent, Name, Networked,
+    Resource, Store, System, World,
 };
 use ambient_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
@@ -25,8 +26,8 @@ pub mod transform;
 pub mod window;
 
 pub use ambient_ecs::generated::components::core::app::{
-    description, dtime, main_scene, map_seed, name, project_name, selectable, snap_to_ground, tags,
-    ui_scene,
+    abs_time, description, dtime, main_scene, map_seed, name, project_name, ref_count, selectable,
+    snap_to_ground, tags, ui_scene,
 };
 
 components!("app", {
@@ -48,8 +49,6 @@ components!("app", {
     @[Debuggable, Networked, Store]
     game_mode: GameMode,
 
-    @[Resource, Debuggable]
-    time: Duration,
     @[Resource, Debuggable]
     app_start_time: Duration,
     @[Resource, Debuggable]
@@ -86,13 +85,24 @@ impl SyncAssetKey<Arc<winit::window::Window>> for WindowKey {}
 
 pub fn remove_at_time_system() -> DynSystem {
     query((remove_at_time(),)).to_system(|q, world, qs, _| {
-        let time = *world.resource(self::time());
+        let time = *world.resource(self::abs_time());
         for (id, (remove_at_time,)) in q.collect_cloned(world, qs) {
             if time >= remove_at_time {
                 world.despawn(id);
             }
         }
     })
+}
+pub fn refcount_system() -> DynSystem {
+    query(ref_count().changed())
+        .excl(parent())
+        .to_system(|q, world, qs, _| {
+            for (id, count) in q.collect_cloned(world, qs) {
+                if count == 0 {
+                    despawn_recursive(world, id);
+                }
+            }
+        })
 }
 
 #[derive(Debug)]
@@ -141,7 +151,7 @@ impl System for TimeResourcesSystem {
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap();
         world
-            .set(world.resource_entity(), self::time(), time)
+            .set(world.resource_entity(), self::abs_time(), time)
             .unwrap();
         world
             .set(world.resource_entity(), self::dtime(), dtime)

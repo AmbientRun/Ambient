@@ -12,7 +12,9 @@ pub struct Clock {
 impl Clock {
     // Creates and starts a new clock
     pub fn new() -> Self {
-        Clock { start: Instant::now() }
+        Clock {
+            start: Instant::now(),
+        }
     }
 
     // Returns the elapsed time
@@ -43,17 +45,26 @@ pub struct Timeout {
 
 impl Default for Timeout {
     fn default() -> Self {
-        Self { timeout: Default::default(), start: Instant::now() }
+        Self {
+            timeout: Default::default(),
+            start: Instant::now(),
+        }
     }
 }
 
 impl Timeout {
     pub fn new(timeout: Duration) -> Self {
-        Self { timeout, start: Instant::now() }
+        Self {
+            timeout,
+            start: Instant::now(),
+        }
     }
 
     pub fn empty() -> Self {
-        Self { timeout: Duration::ZERO, start: Instant::now() }
+        Self {
+            timeout: Duration::ZERO,
+            start: Instant::now(),
+        }
     }
 
     pub fn set_duration(&mut self, timeout: Duration) -> &mut Self {
@@ -162,7 +173,10 @@ pub struct TimedScope<F: FnOnce(Duration)> {
 
 impl<F: FnOnce(Duration)> TimedScope<F> {
     pub fn new(func: F) -> Self {
-        TimedScope { func: Some(func), clock: Clock::new() }
+        TimedScope {
+            func: Some(func),
+            clock: Clock::new(),
+        }
     }
 }
 

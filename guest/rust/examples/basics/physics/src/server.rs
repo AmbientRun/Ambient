@@ -4,7 +4,7 @@ use ambient_api::{
         camera::aspect_ratio_from_window,
         physics::{
             angular_velocity, cube_collider, dynamic, linear_velocity, physics_controlled,
-            visualizing,
+            visualize_collider,
         },
         prefab::prefab_from_url,
         primitives::cube,
@@ -28,7 +28,7 @@ pub async fn main() {
     let cube = Entity::new()
         .with_merge(make_transformable())
         .with_default(cube())
-        .with_default(visualizing())
+        .with_default(visualize_collider())
         .with_default(physics_controlled())
         .with_default(cast_shadows())
         .with_default(linear_velocity())

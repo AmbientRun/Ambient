@@ -29,9 +29,9 @@ pub async fn pipeline(ctx: &PipelineCtx, config: AudioPipeline) -> Vec<OutAsset>
         move |ctx, file| async move {
             let contents = file.download_bytes(ctx.assets()).await?;
 
-            let filename = file.path().file_name().unwrap().to_string();
+            let filename = file.decoded_path().file_name().unwrap().to_string();
 
-            let rel_path = ctx.in_root().relative_path(file.path());
+            let rel_path = ctx.in_root().relative_path(file.decoded_path());
 
             let content_url = match file.extension().as_deref() {
                 Some("wav") => {

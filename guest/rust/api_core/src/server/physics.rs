@@ -214,21 +214,12 @@ pub fn move_character(
 }
 
 /// Set character controller position
-pub fn set_character_position(
-    entity: EntityId,
-    position: Vec3,
-) {
-    wit::server_physics::set_character_position(
-        entity.into_bindgen(),
-        position.into_bindgen(),
-    );
+pub fn set_character_position(entity: EntityId, position: Vec3) {
+    wit::server_physics::set_character_position(entity.into_bindgen(), position.into_bindgen());
 }
 
 /// Set character controller foot position
-pub fn set_character_foot_position(
-    entity: EntityId,
-    position: Vec3,
-) {
+pub fn set_character_foot_position(entity: EntityId, position: Vec3) {
     wit::server_physics::set_character_foot_position(
         entity.into_bindgen(),
         position.into_bindgen(),

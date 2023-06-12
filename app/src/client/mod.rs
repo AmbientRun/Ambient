@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc, time::Duration};
 use ambient_app::{fps_stats, window_title, AppBuilder};
 use ambient_cameras::UICamera;
 use ambient_core::{
-    runtime,
+    gpu, runtime,
     window::{
         cursor_position, window_ctl, window_logical_size, window_physical_size,
         window_scale_factor, ExitStatus, WindowCtl,
@@ -20,8 +20,8 @@ use ambient_network::{
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_sys::time::Instant;
 use ambient_ui_native::{
-    Button, Dock, FlowColumn, FocusRoot, MeasureSize, ScrollArea, ScrollAreaSizing, StylesExt,
-    Text, UIExt, WindowSized, STREET,
+    Button, Dock, FlowColumn, FocusRoot, MeasureSize, ScrollArea, ScrollAreaSizing, UIExt,
+    WindowSized, STREET,
 };
 use glam::{uvec2, vec4, Vec2};
 
@@ -150,9 +150,6 @@ fn MainApp(
                     log::info!("Disconnecting client");
                 }))
             }),
-            error_view: cb(move |error| {
-                Dock(vec![Text::el("Error").header_style(), Text::el(error)]).el()
-            }),
             systems_and_resources: cb(|| {
                 let mut resources = Entity::new();
 
@@ -218,6 +215,7 @@ fn GoldenImageTest(
         GoldenImageCommand::Update { wait_seconds } => {
             hooks.use_spawn(move |world| {
                 let window_ctl = world.resource(window_ctl()).clone();
+                let gpu = world.resource(gpu()).clone();
                 world.resource(runtime()).spawn(async move {
                     // Wait until image is sufficiently converged.
                     tokio::time::sleep(Duration::from_secs_f32(wait_seconds)).await;
@@ -227,8 +225,8 @@ fn GoldenImageTest(
                     let new = render_target
                         .0
                         .color_buffer
-                        .reader()
-                        .read_image()
+                        .reader(&gpu)
+                        .read_image(&gpu)
                         .await
                         .unwrap()
                         .into_rgba8();
@@ -260,6 +258,7 @@ fn GoldenImageTest(
             // need for window_ctl().
             hooks.use_effect(render_target.0.color_buffer.id, move |world, _| {
                 let window_ctl = world.resource(window_ctl()).clone();
+                let gpu = world.resource(gpu()).clone();
                 let start_time = Instant::now();
                 let task = world.resource(runtime()).spawn(async move {
                     let mut interval = ambient_sys::time::interval(Duration::from_secs_f32(0.25));
@@ -271,8 +270,8 @@ fn GoldenImageTest(
                         let new = render_target
                             .0
                             .color_buffer
-                            .reader()
-                            .read_image()
+                            .reader(&gpu)
+                            .read_image(&gpu)
                             .await
                             .unwrap()
                             .into_rgba8();

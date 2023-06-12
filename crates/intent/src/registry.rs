@@ -1,6 +1,8 @@
 use std::{collections::HashMap, fmt::Debug, marker::Send};
 
-use ambient_ecs::{ArchetypeFilter, Component, ComponentValue, Entity, EntityId, IndexExt, SystemGroup, World};
+use ambient_ecs::{
+    ArchetypeFilter, Component, ComponentValue, Entity, EntityId, IndexExt, SystemGroup, World,
+};
 use ambient_network::{
     assert_networked,
     server::{ServerState, SharedServerState},
@@ -10,8 +12,9 @@ use parking_lot::MutexGuard;
 use tracing::info_span;
 
 use crate::{
-    common_intent_systems, intent, intent_applied, intent_failed, intent_id, intent_id_index, intent_index, intent_index_applied,
-    intent_index_reverted, intent_reverted, intent_success, logic::get_head_applied_intent,
+    common_intent_systems, intent, intent_applied, intent_failed, intent_id, intent_id_index,
+    intent_index, intent_index_applied, intent_index_reverted, intent_reverted, intent_success,
+    logic::get_head_applied_intent,
 };
 
 pub struct IntentContext<'a> {
@@ -20,8 +23,16 @@ pub struct IntentContext<'a> {
 }
 
 impl<'a> IntentContext<'a> {
-    fn from_guard(guard: &'a mut MutexGuard<'_, ServerState>, user_id: &'a str) -> IntentContext<'a> {
-        IntentContext { world: guard.get_player_world_mut(user_id).expect("Missing player world"), user_id }
+    fn from_guard(
+        guard: &'a mut MutexGuard<'_, ServerState>,
+        user_id: &'a str,
+    ) -> IntentContext<'a> {
+        IntentContext {
+            world: guard
+                .get_player_world_mut(user_id)
+                .expect("Missing player world"),
+            user_id,
+        }
     }
 }
 
@@ -81,11 +92,17 @@ pub struct IntentHandler<Arg: ComponentValue, RevertState: ComponentValue, Apply
     merge: Merge,
 }
 
-impl<'a, Arg, RevertState, Apply, Revert, Merge> Handler<'a> for IntentHandler<Arg, RevertState, Apply, Revert, Merge>
+impl<'a, Arg, RevertState, Apply, Revert, Merge> Handler<'a>
+    for IntentHandler<Arg, RevertState, Apply, Revert, Merge>
 where
-    Apply: for<'x> Fn(IntentContext<'_>, Arg) -> anyhow::Result<RevertState> + Send + Sync + 'static,
-    Revert: for<'x> Fn(IntentContext<'_>, RevertState) -> anyhow::Result<()> + Send + Sync + 'static,
-    Merge: for<'x> Fn(&Arg, &RevertState, &Arg, &RevertState) -> (Arg, RevertState) + Send + Sync + 'static,
+    Apply:
+        for<'x> Fn(IntentContext<'_>, Arg) -> anyhow::Result<RevertState> + Send + Sync + 'static,
+    Revert:
+        for<'x> Fn(IntentContext<'_>, RevertState) -> anyhow::Result<()> + Send + Sync + 'static,
+    Merge: for<'x> Fn(&Arg, &RevertState, &Arg, &RevertState) -> (Arg, RevertState)
+        + Send
+        + Sync
+        + 'static,
     //
     Arg: ComponentValue,
     RevertState: ComponentValue + Debug,
@@ -95,13 +112,23 @@ where
     }
 
     fn apply(&'a self, mut ctx: IntentContext<'a>, id: EntityId) {
-        let arg = ctx.world.get_ref(id, self.intent).expect("Intent is missing intent arg").clone();
+        let arg = ctx
+            .world
+            .get_ref(id, self.intent)
+            .expect("Intent is missing intent arg")
+            .clone();
         let head = get_head_applied_intent(ctx.world, ctx.user_id);
         let intent_arg = *ctx.world.get_ref(id, intent()).unwrap();
         if let Some(head) = head {
             assert!(ctx.world.exists(head), "Head does not exist");
         }
-        let result = (self.apply)(IntentContext { world: ctx.world, user_id: ctx.user_id }, arg);
+        let result = (self.apply)(
+            IntentContext {
+                world: ctx.world,
+                user_id: ctx.user_id,
+            },
+            arg,
+        );
         let world = &mut ctx.world;
         if world.has_component(id, intent_applied()) {
             panic!("Intent applied twice");
@@ -124,7 +151,9 @@ where
                 world
                     .add_components(
                         id,
-                        Entity::new().with(intent_applied(), format!("failed: {err:#}")).with(intent_failed(), format!("{err:#}")),
+                        Entity::new()
+                            .with(intent_applied(), format!("failed: {err:#}"))
+                            .with(intent_failed(), format!("{err:#}")),
                     )
                     .unwrap();
             }
@@ -139,25 +168,64 @@ where
             // let s = String::from_utf8_lossy(&s);
             // tracing::info!("Head:\n{s}");
 
-            if world.has_component(head, intent_success()) && world.get(head, intent()).unwrap() == intent_arg && head_id == iid {
+            if world.has_component(head, intent_success())
+                && world.get(head, intent()).unwrap() == intent_arg
+                && head_id == iid
+            {
                 self.merge(&mut ctx, head, id);
 
                 let world = &mut ctx.world;
                 world.despawn(head).unwrap();
 
-                world.sync_index(intent_id_index(), head, ArchetypeFilter::new().excl(intent_reverted()));
-                world.sync_index(intent_index(), head, ArchetypeFilter::new().excl(intent_reverted()));
-                world.sync_index(intent_index_reverted(), head, ArchetypeFilter::new().incl(intent_reverted()));
-                world.sync_index(intent_index_applied(), head, ArchetypeFilter::new().incl(intent_applied()).excl(intent_reverted()));
+                world.sync_index(
+                    intent_id_index(),
+                    head,
+                    ArchetypeFilter::new().excl(intent_reverted()),
+                );
+                world.sync_index(
+                    intent_index(),
+                    head,
+                    ArchetypeFilter::new().excl(intent_reverted()),
+                );
+                world.sync_index(
+                    intent_index_reverted(),
+                    head,
+                    ArchetypeFilter::new().incl(intent_reverted()),
+                );
+                world.sync_index(
+                    intent_index_applied(),
+                    head,
+                    ArchetypeFilter::new()
+                        .incl(intent_applied())
+                        .excl(intent_reverted()),
+                );
             }
         }
 
         let world = &mut ctx.world;
         // Update the indices
-        world.sync_index(intent_id_index(), id, ArchetypeFilter::new().excl(intent_reverted()));
-        world.sync_index(intent_index(), id, ArchetypeFilter::new().excl(intent_reverted()));
-        world.sync_index(intent_index_reverted(), id, ArchetypeFilter::new().incl(intent_reverted()));
-        world.sync_index(intent_index_applied(), id, ArchetypeFilter::new().incl(intent_applied()).excl(intent_reverted()));
+        world.sync_index(
+            intent_id_index(),
+            id,
+            ArchetypeFilter::new().excl(intent_reverted()),
+        );
+        world.sync_index(
+            intent_index(),
+            id,
+            ArchetypeFilter::new().excl(intent_reverted()),
+        );
+        world.sync_index(
+            intent_index_reverted(),
+            id,
+            ArchetypeFilter::new().incl(intent_reverted()),
+        );
+        world.sync_index(
+            intent_index_applied(),
+            id,
+            ArchetypeFilter::new()
+                .incl(intent_applied())
+                .excl(intent_reverted()),
+        );
     }
 
     fn revert(&'a self, mut ctx: IntentContext<'a>, id: EntityId) {
@@ -165,7 +233,13 @@ where
 
         // Undoing a failed intent is always a success
         let result = if let Ok(revert_state) = world.get_cloned(id, self.intent_revert) {
-            (self.revert)(IntentContext { world: ctx.world, user_id: ctx.user_id }, revert_state)
+            (self.revert)(
+                IntentContext {
+                    world: ctx.world,
+                    user_id: ctx.user_id,
+                },
+                revert_state,
+            )
         } else {
             Ok(())
         };
@@ -174,29 +248,60 @@ where
         let world = &mut ctx.world;
         match result {
             Ok(()) => {
-                world.add_components(id, Entity::new().with(intent_reverted(), ())).unwrap();
+                world
+                    .add_components(id, Entity::new().with(intent_reverted(), ()))
+                    .unwrap();
             }
             Err(err) => {
                 tracing::error!("Failed to revert intent: {name} {err:?}");
-                world.add_components(id, Entity::new().with(intent_reverted(), ()).with(intent_failed(), format!("{err:#}"))).unwrap();
+                world
+                    .add_components(
+                        id,
+                        Entity::new()
+                            .with(intent_reverted(), ())
+                            .with(intent_failed(), format!("{err:#}")),
+                    )
+                    .unwrap();
             }
         }
 
         // Update the indices
-        world.sync_index(intent_id_index(), id, ArchetypeFilter::new().excl(intent_reverted()));
-        world.sync_index(intent_index(), id, ArchetypeFilter::new().excl(intent_reverted()));
-        world.sync_index(intent_index_reverted(), id, ArchetypeFilter::new().incl(intent_reverted()));
-        world.sync_index(intent_index_applied(), id, ArchetypeFilter::new().incl(intent_applied()).excl(intent_reverted()));
+        world.sync_index(
+            intent_id_index(),
+            id,
+            ArchetypeFilter::new().excl(intent_reverted()),
+        );
+        world.sync_index(
+            intent_index(),
+            id,
+            ArchetypeFilter::new().excl(intent_reverted()),
+        );
+        world.sync_index(
+            intent_index_reverted(),
+            id,
+            ArchetypeFilter::new().incl(intent_reverted()),
+        );
+        world.sync_index(
+            intent_index_applied(),
+            id,
+            ArchetypeFilter::new()
+                .incl(intent_applied())
+                .excl(intent_reverted()),
+        );
     }
 
     fn merge(&self, ctx: &mut IntentContext<'_>, a: EntityId, b: EntityId) {
         let _span = info_span!("merge_intent", self.name).entered();
         let world = &mut ctx.world;
         let old_arg = world.get_ref(a, self.intent).expect("Missing old intent");
-        let old_state = world.get_ref(a, self.intent_revert).expect("Old intent not applied");
+        let old_state = world
+            .get_ref(a, self.intent_revert)
+            .expect("Old intent not applied");
 
         let new_arg = world.get_ref(b, self.intent).expect("Missing new intent");
-        let new_state = world.get_ref(b, self.intent_revert).expect("New intent not applied");
+        let new_state = world
+            .get_ref(b, self.intent_revert)
+            .expect("New intent not applied");
 
         let (arg, state) = { (self.merge)(old_arg, old_state, new_arg, new_state) };
 
@@ -223,7 +328,9 @@ impl Debug for IntentRegistry {
 
 impl IntentRegistry {
     pub fn new() -> Self {
-        Self { handlers: HashMap::new() }
+        Self {
+            handlers: HashMap::new(),
+        }
     }
 
     /// Register a new intent.
@@ -259,16 +366,32 @@ impl IntentRegistry {
         revert: Revert,
         merge: Merge,
     ) where
-        Apply: for<'x> Fn(IntentContext<'_>, Arg) -> anyhow::Result<RevertState> + Send + Sync + 'static,
-        Revert: for<'x> Fn(IntentContext<'_>, RevertState) -> anyhow::Result<()> + Send + Sync + 'static,
-        Merge: for<'x> Fn(&Arg, &RevertState, &Arg, &RevertState) -> (Arg, RevertState) + Send + Sync + 'static,
+        Apply: for<'x> Fn(IntentContext<'_>, Arg) -> anyhow::Result<RevertState>
+            + Send
+            + Sync
+            + 'static,
+        Revert: for<'x> Fn(IntentContext<'_>, RevertState) -> anyhow::Result<()>
+            + Send
+            + Sync
+            + 'static,
+        Merge: for<'x> Fn(&Arg, &RevertState, &Arg, &RevertState) -> (Arg, RevertState)
+            + Send
+            + Sync
+            + 'static,
         //
         Arg: ComponentValue,
         RevertState: ComponentValue + Debug,
     {
         let name = intent.path();
         assert_networked(intent.desc());
-        let handler = IntentHandler { name, intent, intent_revert, apply, revert, merge };
+        let handler = IntentHandler {
+            name,
+            intent,
+            intent_revert,
+            apply,
+            revert,
+            merge,
+        };
 
         self.handlers.insert(intent.index(), Box::new(handler));
     }
@@ -277,7 +400,13 @@ impl IntentRegistry {
         Some(self.handlers.get(&intent)?.name().to_string())
     }
 
-    pub fn apply_intent(&self, state: SharedServerState, intent_arg: u32, user_id: &str, id: EntityId) {
+    pub fn apply_intent(
+        &self,
+        state: SharedServerState,
+        intent_arg: u32,
+        user_id: &str,
+        id: EntityId,
+    ) {
         let mut guard = state.lock();
         let ctx = IntentContext::from_guard(&mut guard, user_id);
 
@@ -290,7 +419,10 @@ impl IntentRegistry {
         }
 
         // Check if it is possible to collapse the intents
-        let handler = self.handlers.get(&intent_arg).expect("No handler for intent");
+        let handler = self
+            .handlers
+            .get(&intent_arg)
+            .expect("No handler for intent");
 
         handler.apply(ctx, id);
 
@@ -302,11 +434,20 @@ impl IntentRegistry {
     /// Reverts an intent
     ///
     /// Intent must be previously applied
-    pub fn revert_intent(&self, state: SharedServerState, intent_arg: u32, user_id: &str, id: EntityId) {
+    pub fn revert_intent(
+        &self,
+        state: SharedServerState,
+        intent_arg: u32,
+        user_id: &str,
+        id: EntityId,
+    ) {
         let mut guard = state.lock();
         let ctx = IntentContext::from_guard(&mut guard, user_id);
 
-        let handler = self.handlers.get(&intent_arg).expect("No handler for intent");
+        let handler = self
+            .handlers
+            .get(&intent_arg)
+            .expect("No handler for intent");
 
         handler.revert(ctx, id)
 

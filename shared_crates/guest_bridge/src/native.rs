@@ -19,11 +19,16 @@ pub mod window {
     use ambient_shared_types::CursorIcon;
 
     pub fn set_cursor(world: &World, cursor: CursorIcon) {
-        world.resource(window_ctl()).send(WindowCtl::SetCursorIcon(cursor.into())).ok();
+        world
+            .resource(window_ctl())
+            .send(WindowCtl::SetCursorIcon(cursor.into()))
+            .ok();
     }
     #[cfg(not(target_os = "unknown"))]
     pub fn get_clipboard() -> Option<String> {
-        arboard::Clipboard::new().ok().and_then(|mut x| x.get_text().ok())
+        arboard::Clipboard::new()
+            .ok()
+            .and_then(|mut x| x.get_text().ok())
     }
     #[cfg(target_os = "unknown")]
     pub fn get_clipboard() -> Option<String> {

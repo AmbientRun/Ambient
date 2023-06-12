@@ -11,15 +11,22 @@ use std::sync::Arc;
 #[element_component]
 fn ECSEditorUIWorld(hooks: &mut Hooks) -> Element {
     let async_run = hooks.world.resource(async_run()).clone();
-    ECSEditor { world: Arc::new(InspectableAsyncWorld(cb(move |cb| async_run.run(move |world| cb(world))))) }.el()
+    ECSEditor {
+        world: Arc::new(InspectableAsyncWorld(cb(move |cb| {
+            async_run.run(move |world| cb(world))
+        }))),
+    }
+    .el()
 }
 
 fn init(world: &mut World) {
     Group(vec![
         UICamera.el(),
-        FocusRoot(vec![
-            WindowSized(vec![ScrollArea::el(ScrollAreaSizing::FitChildrenWidth, ECSEditorUIWorld.el().memoize_subtree(""))]).el()
-        ])
+        FocusRoot(vec![WindowSized(vec![ScrollArea::el(
+            ScrollAreaSizing::FitChildrenWidth,
+            ECSEditorUIWorld.el().memoize_subtree(""),
+        )])
+        .el()])
         .el(),
     ])
     .el()

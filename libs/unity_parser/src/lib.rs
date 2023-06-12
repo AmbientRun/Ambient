@@ -25,14 +25,24 @@ impl UnityRef {
         self.guid.is_some()
     }
     pub fn dump(&self, prefab: &prefab::PrefabFile, dump_game_obj: bool) -> yaml_rust::yaml::Hash {
-        let mut out = prefab.objects.get(&self.file_id).unwrap().dump(prefab, dump_game_obj);
+        let mut out = prefab
+            .objects
+            .get(&self.file_id)
+            .unwrap()
+            .dump(prefab, dump_game_obj);
         out.insert(Yaml::String("id".to_string()), Yaml::Integer(self.file_id));
         out
     }
 }
 impl std::fmt::Display for UnityRef {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}_{}_{:?}", self.file_id, self.guid.as_ref().map(|x| x as &str).unwrap_or(""), self.type_.unwrap_or_default())
+        write!(
+            f,
+            "{}_{}_{:?}",
+            self.file_id,
+            self.guid.as_ref().map(|x| x as &str).unwrap_or(""),
+            self.type_.unwrap_or_default()
+        )
     }
 }
 
@@ -64,8 +74,10 @@ impl YamlExt for Yaml {
 }
 
 pub fn parse_unity_yaml(data: &str) -> anyhow::Result<Vec<Yaml>> {
-    let data =
-        data.replace("!u!", "unity_object: ").replacen("unity_object: ", "!u!", 1).replace("--- unity_object: ", "---\nunity_object: ");
+    let data = data
+        .replace("!u!", "unity_object: ")
+        .replacen("unity_object: ", "!u!", 1)
+        .replace("--- unity_object: ", "---\nunity_object: ");
     let docs = YamlLoader::load_from_str(&data).context("Bad yaml")?;
     Ok(docs)
 }

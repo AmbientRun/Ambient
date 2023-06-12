@@ -3,7 +3,7 @@ use std::{fmt::Debug, sync::Arc};
 use ambient_core::{asset_cache, camera::Camera, main_scene, player::local_user_id};
 use ambient_ecs::World;
 use ambient_gpu::{
-    gpu::{Gpu, GpuKey},
+    gpu::Gpu,
     mesh_buffer::{GpuMesh, MeshBuffer},
     shader_module::{BindGroupDesc, GraphicsPipeline, GraphicsPipelineInfo, Shader, ShaderModule},
     typed_buffer::TypedBuffer,
@@ -56,7 +56,6 @@ fn get_gizmos_layout() -> BindGroupDesc<'static> {
 }
 
 pub struct GizmoRenderer {
-    gpu: Arc<Gpu>,
     quad: Arc<GpuMesh>,
     pipeline: OnceCell<GraphicsPipeline>,
     buffer: TypedBuffer<Gizmo>,
@@ -70,10 +69,9 @@ impl Debug for GizmoRenderer {
 }
 
 impl GizmoRenderer {
-    pub fn new(assets: &AssetCache) -> Self {
-        let gpu = GpuKey.get(assets);
+    pub fn new(gpu: &Gpu, assets: &AssetCache) -> Self {
         let buffer = TypedBuffer::new(
-            gpu.clone(),
+            gpu,
             "Gizmo Buffer",
             128,
             0,
@@ -83,7 +81,6 @@ impl GizmoRenderer {
         let layout = get_gizmos_layout().get(assets);
 
         Self {
-            gpu,
             quad: QuadMeshKey.get(assets),
             pipeline: OnceCell::new(),
             buffer,
@@ -97,6 +94,7 @@ impl SubRenderer for GizmoRenderer {
     #[ambient_profiling::function]
     fn render<'a>(
         &'a mut self,
+        gpu: &Gpu,
         world: &World,
         mesh_buffer: &MeshBuffer,
         encoder: &mut wgpu::CommandEncoder,
@@ -125,7 +123,6 @@ impl SubRenderer for GizmoRenderer {
         }
 
         let assets = world.resource(asset_cache());
-        let gpu = &self.gpu;
         let pipeline = self.pipeline.get_or_init(|| {
             let layout = get_gizmos_layout();
 
@@ -155,7 +152,7 @@ impl SubRenderer for GizmoRenderer {
             )
         });
 
-        self.buffer.fill(primitives, |_| {
+        self.buffer.fill(gpu, primitives, |_| {
             log::debug!("Resizing bind group for gizmos");
         });
 

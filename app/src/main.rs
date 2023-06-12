@@ -105,10 +105,16 @@ fn setup_logging() -> anyhow::Result<()> {
             .with(filter)
             .with(env_filter)
             //
-            .with(
-                tracing_tree::HierarchicalLayer::new(4).with_indent_lines(true), // .with_timer(tracing_tree::time::Uptime::from(std::time::Instant::now())),
-            )
-            // .with(tracing_subscriber::fmt::Layer::new().pretty())
+            // .with(
+            //     tracing_tree::HierarchicalLayer::new(4)
+            //         .with_indent_lines(true)
+            //         .with_bracketed_fields(true), // .with_timer(tracing_tree::time::Uptime::from(std::time::Instant::now())),
+            // )
+            .with(tracing_subscriber::fmt::Layer::new().with_timer(
+                tracing_subscriber::fmt::time::LocalTime::new(time::macros::format_description!(
+                    "[hour]:[minute]:[second]"
+                )),
+            ))
             .try_init()?;
 
         Ok(())
@@ -184,16 +190,20 @@ fn main() -> anyhow::Result<()> {
 
     let cli = Cli::parse();
 
-    let project_path: ProjectPath = cli.project().and_then(|p| p.path.clone()).try_into()?;
+    let project = cli.project();
+
+    let project_path: ProjectPath = project.and_then(|p| p.path.clone()).try_into()?;
     if project_path.is_remote() {
         // project path is a URL, so let's use it as the content base URL
         ContentBaseUrlKey.insert(&assets, project_path.url.push("build/")?);
     }
 
     // If new: create project, immediately exit
-    if let Commands::New { name, .. } = &cli.command {
+    if let Commands::New { name, api_path, .. } = &cli.command {
         if let Some(path) = &project_path.fs_path {
-            if let Err(err) = cli::new_project::new_project(path, name.as_deref()) {
+            if let Err(err) =
+                cli::new_project::new_project(path, name.as_deref(), api_path.as_deref())
+            {
                 eprintln!("Failed to create project: {err:?}");
             }
         } else {
@@ -203,8 +213,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     // If a project was specified, assume that assets need to be built
-    let manifest = cli
-        .project()
+    let manifest = project
         .map(|_| {
             if let Some(path) = &project_path.fs_path {
                 // load manifest from file
@@ -218,18 +227,20 @@ fn main() -> anyhow::Result<()> {
                 let manifest_data = runtime
                     .block_on(manifest_url.download_string(&assets))
                     .context("Failed to download ambient.toml.")?;
-                anyhow::Ok(
-                    ambient_project::Manifest::parse(&manifest_data)
-                        .context("Failed to parse downloaded ambient.toml.")?,
-                )
+                Ok(ambient_project::Manifest::parse(&manifest_data)
+                    .context("Failed to parse downloaded ambient.toml.")?)
             }
         })
         .transpose()?;
 
     let metadata = if let Some(manifest) = manifest.as_ref() {
-        if !cli.project().unwrap().no_build && project_path.is_local() {
+        let project = project.unwrap();
+
+        if !project.no_build && project_path.is_local() {
             let project_name = manifest.project.name.as_deref().unwrap_or("project");
-            log::info!("Building {}", project_name);
+
+            tracing::info!("Building project {:?}", project_name);
+
             let metadata = runtime.block_on(ambient_build::build(
                 PhysicsKey.get(&assets),
                 &assets,
@@ -238,15 +249,17 @@ fn main() -> anyhow::Result<()> {
                     .clone()
                     .expect("should be present as it's already checked above"),
                 manifest,
-                cli.project().map(|p| p.release).unwrap_or(false),
+                project.release,
+                project.clean_build,
             ));
-            log::info!("Done building {}", project_name);
+
             Some(metadata)
         } else {
             let metadata_url = project_path.push("build/metadata.toml");
             let metadata_data = runtime
                 .block_on(metadata_url.download_string(&assets))
                 .context("Failed to load build/metadata.toml.")?;
+
             Some(ambient_build::Metadata::parse(&metadata_data)?)
         }
     } else {
@@ -296,9 +309,29 @@ fn main() -> anyhow::Result<()> {
         }
     } else if let Some(host) = &cli.host() {
         let crypto = if let (Some(cert_file), Some(key_file)) = (&host.cert, &host.key) {
-            let cert = std::fs::read(cert_file).context("Failed to read certificate file")?;
-            let key = std::fs::read(key_file).context("Failed to read certificate key")?;
-            ambient_network::native::server::Crypto { cert, key }
+            let raw_cert = std::fs::read(cert_file).context("Failed to read certificate file")?;
+            let cert_chain = if raw_cert.starts_with(b"-----BEGIN CERTIFICATE-----") {
+                rustls_pemfile::certs(&mut raw_cert.as_slice())
+                    .context("Failed to parse certificate file")?
+            } else {
+                vec![raw_cert]
+            };
+            let raw_key = std::fs::read(key_file).context("Failed to read certificate key")?;
+            let key = if raw_key.starts_with(b"-----BEGIN ") {
+                rustls_pemfile::read_all(&mut raw_key.as_slice())
+                    .context("Failed to parse certificate key")?
+                    .into_iter()
+                    .find_map(|item| match item {
+                        rustls_pemfile::Item::RSAKey(key) => Some(key),
+                        rustls_pemfile::Item::PKCS8Key(key) => Some(key),
+                        rustls_pemfile::Item::ECKey(key) => Some(key),
+                        _ => None,
+                    })
+                    .ok_or_else(|| anyhow::anyhow!("No private key found"))?
+            } else {
+                raw_key
+            };
+            ambient_network::native::server::Crypto { cert_chain, key }
         } else {
             #[cfg(feature = "no_bundled_certs")]
             {
@@ -308,13 +341,13 @@ fn main() -> anyhow::Result<()> {
             {
                 tracing::info!("Using bundled certificate and key");
                 ambient_network::native::server::Crypto {
-                    cert: CERT.to_vec(),
+                    cert_chain: vec![CERT.to_vec()],
                     key: CERT_KEY.to_vec(),
                 }
             }
         };
 
-        let port = server::start(
+        let addr = server::start(
             &runtime,
             assets.clone(),
             cli.clone(),
@@ -323,7 +356,7 @@ fn main() -> anyhow::Result<()> {
             metadata.as_ref().expect("no build metadata"),
             crypto,
         );
-        ResolvedAddr::localhost_with_port(port)
+        ResolvedAddr::localhost_with_port(addr.port())
     } else {
         unreachable!()
     };

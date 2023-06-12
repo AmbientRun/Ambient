@@ -1,15 +1,22 @@
+use ambient_core::async_ecs::async_run;
 use ambient_ecs::World;
 use ambient_network::{
-    client::{bi_stream_handlers, datagram_handlers, uni_stream_handlers, DynRecv, DynSend},
-    log_network_result, WASM_BISTREAM_ID, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
+    client::{
+        bi_stream_handlers, datagram_handlers, uni_stream_handlers, PlatformRecvStream,
+        PlatformSendStream,
+    },
+    log_network_result, unwrap_log_network_err, WASM_BISTREAM_ID, WASM_DATAGRAM_ID,
+    WASM_UNISTREAM_ID,
 };
 use ambient_std::asset_cache::AssetCache;
 
+use ambient_sys::task::PlatformBoxFuture;
+use anyhow::Context;
 use bytes::Bytes;
 
-use std::sync::Arc;
+use std::{pin::Pin, sync::Arc};
 
-use crate::shared::implementation::message;
+use crate::shared::implementation::message::{self, process_network_message, read_unistream};
 
 pub fn initialize(world: &mut World) {
     world.resource_mut(datagram_handlers()).insert(
@@ -35,12 +42,33 @@ fn on_datagram(world: &mut World, _asset_cache: AssetCache, bytes: Bytes) {
 fn on_bistream(
     _world: &mut World,
     _asset_cache: AssetCache,
-    _send_stream: DynSend,
-    _recv_stream: DynRecv,
-) {
+    _send_stream: PlatformSendStream,
+    _recv_stream: PlatformRecvStream,
+) -> PlatformBoxFuture<()> {
     unimplemented!("Bistreams are not supported");
 }
 
-fn on_unistream(world: &mut World, _asset_cache: AssetCache, recv_stream: DynRecv) {
-    message::on_unistream(world, None, recv_stream)
+fn on_unistream(
+    world: &mut World,
+    _asset_cache: AssetCache,
+    mut recv_stream: PlatformRecvStream,
+) -> PlatformBoxFuture<()> {
+    // Reads an incoming unistream and dispatches to WASM
+    let async_run = world.resource(async_run()).clone();
+    PlatformBoxFuture::new(async move {
+        let (remote_module_id, name, data) =
+            unwrap_log_network_err!(read_unistream(Pin::new(&mut recv_stream))
+                .await
+                .context("Failed to read uni stream"));
+
+        async_run.run(move |world| {
+            log_network_result!(process_network_message(
+                world,
+                None,
+                remote_module_id,
+                name,
+                data
+            ));
+        });
+    })
 }

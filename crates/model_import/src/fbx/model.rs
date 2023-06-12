@@ -9,7 +9,7 @@ use ambient_core::{
         mesh_to_local, rotation, scale, translation,
     },
 };
-use ambient_ecs::{Entity, EntityId, World};
+use ambient_ecs::{generated::components::core::animation::bind_id, Entity, EntityId, World};
 use ambient_model::{model_skin_ix, pbr_renderer_primitives_from_url, PbrRenderPrimitiveFromUrl};
 use ambient_renderer::double_sided;
 use fbxcel::tree::v7400::NodeHandle;
@@ -17,7 +17,7 @@ use glam::{vec3, EulerRot, Mat4, Quat, Vec3};
 use itertools::Itertools;
 
 use super::FbxDoc;
-use crate::{dotdot_path, model_crate::ModelCrate};
+use crate::{animation_bind_id::BindIdReg, dotdot_path, model_crate::ModelCrate};
 
 #[derive(Debug)]
 pub struct FbxModel {
@@ -132,19 +132,33 @@ impl FbxModel {
             || self.scaling_offset.is_some()
             || self.scaling_pivot.is_some()
     }
-    pub fn create_model_nodes(
+    pub(crate) fn create_model_nodes(
         &self,
         doc: &FbxDoc,
         world: &mut World,
         entities: &mut HashMap<i64, EntityId>,
         asset_crate: &ModelCrate,
         n_meshes: &HashMap<i64, usize>,
+        bind_ids: &mut BindIdReg<i64, FbxModel>,
     ) {
         let mut out_node = Entity::new()
             .with(name(), self.node_name.to_string())
+            .with(bind_id(), bind_ids.get(&self))
             .with_default(children());
         if self.double_sided {
             out_node.set(double_sided(), true);
+        }
+        if self.is_complex_transform() {
+            out_node.set(fbx_complex_transform(), ());
+            out_node.set(fbx_rotation_offset(), Vec3::ZERO);
+            out_node.set(fbx_rotation_pivot(), Vec3::ZERO);
+            out_node.set(fbx_pre_rotation(), Quat::IDENTITY);
+            out_node.set(fbx_post_rotation(), Quat::IDENTITY);
+            out_node.set(fbx_scaling_offset(), Vec3::ZERO);
+            out_node.set(fbx_scaling_pivot(), Vec3::ZERO);
+            out_node.set(translation(), Vec3::ZERO);
+            out_node.set(rotation(), Quat::IDENTITY);
+            out_node.set(scale(), Vec3::ONE);
         }
 
         if let Some(value) = self.rotation_offset {
@@ -170,9 +184,6 @@ impl FbxModel {
         }
         if let Some(value) = self.scaling_pivot {
             out_node.set(fbx_scaling_pivot(), value);
-        }
-        if self.is_complex_transform() {
-            out_node.set(fbx_complex_transform(), ());
         }
 
         // Need to give these values since they might be animated

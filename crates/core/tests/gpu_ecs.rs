@@ -4,13 +4,15 @@
 use std::sync::Arc;
 
 use ambient_core::{
-    gpu_components,
+    gpu, gpu_components,
     gpu_ecs::{
-        ComponentToGpuSystem, GpuComponentFormat, GpuWorld, GpuWorldShaderModuleKey, GpuWorldSyncEvent, GpuWorldUpdater,
-        ENTITIES_BIND_GROUP,
+        ComponentToGpuSystem, GpuComponentFormat, GpuWorld, GpuWorldShaderModuleKey,
+        GpuWorldSyncEvent, GpuWorldUpdater, ENTITIES_BIND_GROUP,
     },
 };
-use ambient_ecs::{components, ArchetypeFilter, Component, Entity, EntityId, System, SystemGroup, World};
+use ambient_ecs::{
+    components, ArchetypeFilter, Component, Entity, EntityId, System, SystemGroup, World,
+};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     gpu_run::GpuRun,
@@ -50,41 +52,71 @@ impl TestCommon {
 
         let assets = AssetCache::new(tokio::runtime::Handle::current());
         GpuKey.insert(&assets, gpu.clone());
-        let gpu_world = Arc::new(Mutex::new(GpuWorld::new(assets.clone())));
+        let gpu_world = Arc::new(Mutex::new(GpuWorld::new(&gpu, assets.clone())));
         let sync = SystemGroup::new(
             "sync",
             vec![
-                Box::new(ComponentToGpuSystem::new(GpuComponentFormat::Vec4, carrot(), gpu_components::carrot())),
-                Box::new(ComponentToGpuSystem::new(GpuComponentFormat::Vec4, tomato(), gpu_components::tomato())),
+                Box::new(ComponentToGpuSystem::new(
+                    GpuComponentFormat::Vec4,
+                    carrot(),
+                    gpu_components::carrot(),
+                )),
+                Box::new(ComponentToGpuSystem::new(
+                    GpuComponentFormat::Vec4,
+                    tomato(),
+                    gpu_components::tomato(),
+                )),
             ],
         );
-        world.add_component(world.resource_entity(), ambient_core::gpu_ecs::gpu_world(), gpu_world.clone()).unwrap();
-        world.add_component(world.resource_entity(), ambient_core::gpu(), gpu).unwrap();
+        world
+            .add_component(
+                world.resource_entity(),
+                ambient_core::gpu_ecs::gpu_world(),
+                gpu_world.clone(),
+            )
+            .unwrap();
+        world
+            .add_component(world.resource_entity(), ambient_core::gpu(), gpu)
+            .unwrap();
 
-        Self { world, gpu_world, sync, assets }
+        Self {
+            world,
+            gpu_world,
+            sync,
+            assets,
+        }
     }
     fn update(&mut self) {
-        self.gpu_world.lock().update(&self.world);
+        let gpu = self.world.resource(gpu()).clone();
+        self.gpu_world.lock().update(&gpu, &self.world);
         self.sync.run(&mut self.world, &GpuWorldSyncEvent);
     }
     async fn get_gpu_component(&self, id: EntityId, component: Component<Vec4>) -> Vec4 {
+        let gpu = self.world.resource(gpu()).clone();
         let loc = self.world.entity_loc(id).unwrap();
         let loc = vec4(loc.archetype as f32, loc.index as f32, 0., 0.);
 
         let module = GpuWorldShaderModuleKey { read_only: true }.get(&self.assets);
-        let bind_group = self.gpu_world.lock().create_bind_group(true);
-        GpuRun::new("gpu_ecs", format!("return get_entity_{}(vec2<u32>(u32(input.x), u32(input.y)));", component.path_last()))
-            .add_module(module)
-            .add_bind_group(ENTITIES_BIND_GROUP, bind_group)
-            .run(&self.assets, loc)
-            .await
+        let bind_group = self.gpu_world.lock().create_bind_group(&gpu, true);
+        GpuRun::new(
+            "gpu_ecs",
+            format!(
+                "return get_entity_{}(vec2<u32>(u32(input.x), u32(input.y)));",
+                component.path_last()
+            ),
+        )
+        .add_module(module)
+        .add_bind_group(ENTITIES_BIND_GROUP, bind_group)
+        .run(&gpu, &self.assets, loc)
+        .await
     }
     async fn set_gpu_component(&self, id: EntityId, component: Component<Vec4>, value: f32) {
+        let gpu = self.world.resource(gpu()).clone();
         let loc = self.world.entity_loc(id).unwrap();
 
         let input = vec4(loc.archetype as f32, loc.index as f32, value, 0.);
         let module = GpuWorldShaderModuleKey { read_only: false }.get(&self.assets);
-        let bind_group = self.gpu_world.lock().create_bind_group(false);
+        let bind_group = self.gpu_world.lock().create_bind_group(&gpu, false);
         let _res: Vec4 = GpuRun::new(
             "gpu_ecs",
             format!(
@@ -94,7 +126,7 @@ impl TestCommon {
         )
         .add_module(module)
         .add_bind_group(ENTITIES_BIND_GROUP, bind_group)
-        .run(&self.assets, input)
+        .run(&gpu,&self.assets, input)
         .await;
     }
 
@@ -116,10 +148,14 @@ fn two_entities() {
     rt.block_on(async {
         let mut test = TestCommon::new().await;
 
-        let a = Entity::new().with(carrot(), vec4(7., 7., 3., 7.)).spawn(&mut test.world);
+        let a = Entity::new()
+            .with(carrot(), vec4(7., 7., 3., 7.))
+            .spawn(&mut test.world);
         test.update();
 
-        let b = Entity::new().with(tomato(), vec4(1., 1., 3., 1.)).spawn(&mut test.world);
+        let b = Entity::new()
+            .with(tomato(), vec4(1., 1., 3., 1.))
+            .spawn(&mut test.world);
         test.update();
         test.assert_gpu_cpu_components_eq(a, carrot()).await;
         test.assert_gpu_cpu_components_eq(b, tomato()).await;
@@ -132,9 +168,13 @@ async fn gpu_ecs() {
     tracing_subscriber::fmt::try_init().ok();
     let mut test = TestCommon::new().await;
 
-    let _ignored = Entity::new().with(cpu_banana(), vec4(7., 7., 3., 7.)).spawn(&mut test.world);
+    let _ignored = Entity::new()
+        .with(cpu_banana(), vec4(7., 7., 3., 7.))
+        .spawn(&mut test.world);
 
-    let a = Entity::new().with(carrot(), vec4(7., 7., 3., 7.)).spawn(&mut test.world);
+    let a = Entity::new()
+        .with(carrot(), vec4(7., 7., 3., 7.))
+        .spawn(&mut test.world);
 
     test.update();
     test.assert_gpu_cpu_components_eq(a, carrot()).await;
@@ -143,11 +183,15 @@ async fn gpu_ecs() {
     test.update();
     test.assert_gpu_cpu_components_eq(a, carrot()).await;
 
-    test.world.add_component(a, cpu_banana(), vec4(0., 1., 2., 3.)).unwrap();
+    test.world
+        .add_component(a, cpu_banana(), vec4(0., 1., 2., 3.))
+        .unwrap();
     test.update();
     test.assert_gpu_cpu_components_eq(a, carrot()).await;
 
-    let b = Entity::new().with(tomato(), vec4(1., 1., 3., 1.)).spawn(&mut test.world);
+    let b = Entity::new()
+        .with(tomato(), vec4(1., 1., 3., 1.))
+        .spawn(&mut test.world);
     test.update();
     test.assert_gpu_cpu_components_eq(a, carrot()).await;
     test.assert_gpu_cpu_components_eq(b, tomato()).await;
@@ -163,11 +207,19 @@ async fn gpu_update_with_gpu_run() {
     tracing_subscriber::fmt::try_init().ok();
     let mut test = TestCommon::new().await;
 
-    let a = Entity::new().with(carrot(), vec4(7., 7., 3., 7.)).spawn(&mut test.world);
+    let a = Entity::new()
+        .with(carrot(), vec4(7., 7., 3., 7.))
+        .spawn(&mut test.world);
     test.update();
-    assert_eq!(test.get_gpu_component(a, carrot()).await, vec4(7., 7., 3., 7.));
+    assert_eq!(
+        test.get_gpu_component(a, carrot()).await,
+        vec4(7., 7., 3., 7.)
+    );
     test.set_gpu_component(a, carrot(), 1.).await;
-    assert_eq!(test.get_gpu_component(a, carrot()).await, vec4(1., 1., 1., 1.));
+    assert_eq!(
+        test.get_gpu_component(a, carrot()).await,
+        vec4(1., 1., 1., 1.)
+    );
 }
 
 #[tokio::test]
@@ -175,11 +227,17 @@ async fn gpu_update_with_gpu_ecs_update() {
     let _guard = SERIAL_TEST.lock();
     tracing_subscriber::fmt::try_init().ok();
     let mut test = TestCommon::new().await;
-
-    let a = Entity::new().with(carrot(), vec4(7., 7., 3., 7.)).spawn(&mut test.world);
+    let gpu = test.world.resource(gpu()).clone();
+    let a = Entity::new()
+        .with(carrot(), vec4(7., 7., 3., 7.))
+        .spawn(&mut test.world);
     test.update();
-    assert_eq!(test.get_gpu_component(a, carrot()).await, vec4(7., 7., 3., 7.));
+    assert_eq!(
+        test.get_gpu_component(a, carrot()).await,
+        vec4(7., 7., 3., 7.)
+    );
     let mut update = GpuWorldUpdater::new(
+        &gpu,
         test.assets.clone(),
         "test".to_string(),
         ArchetypeFilter::new().incl(carrot()),
@@ -187,6 +245,9 @@ async fn gpu_update_with_gpu_ecs_update() {
         &[],
         "set_entity_carrot(entity_loc, vec4<f32>(1.));".to_string(),
     );
-    update.run(&test.world, &[]);
-    assert_eq!(test.get_gpu_component(a, carrot()).await, vec4(1., 1., 1., 1.));
+    update.run(&gpu, &test.world, &[]);
+    assert_eq!(
+        test.get_gpu_component(a, carrot()).await,
+        vec4(1., 1., 1., 1.)
+    );
 }

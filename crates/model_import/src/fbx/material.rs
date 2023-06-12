@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use ambient_gpu::sampler::SamplerKey;
 use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
 use ambient_std::asset_url::AssetUrl;
 use fbxcel::tree::v7400::NodeHandle;
@@ -190,6 +191,12 @@ impl FbxMaterial {
                 .get(SPECULAR_COLOR_KEY)
                 .map(|_| 1.)
                 .unwrap_or(0.8),
+
+            // TODO: Each FBX texture knows its sampler modes, but Ambient's
+            // current material model assumes a single sampler for all textures
+            // in a material. Revisit once the renderer supports arbitrary
+            // texture-sampler pairs.
+            sampler: Some(SamplerKey::LINEAR_CLAMP_TO_EDGE),
         }
     }
 }

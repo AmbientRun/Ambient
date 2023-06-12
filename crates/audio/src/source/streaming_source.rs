@@ -42,7 +42,7 @@ where
 
     #[inline]
     fn sample_count(&self) -> Option<u64> {
-        eprintln!("Iter: {}", self.iter.len());
+        // eprintln!("Iter: {}", self.iter.len());
         Some(self.iter.len().try_into().unwrap())
     }
 }

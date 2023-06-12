@@ -9,6 +9,12 @@ name = "Background color"
 description = "Background color of an entity with a `rect` component."
 attributes = ["debuggable", "networked", "store"]
 
+[components.background-url]
+type = "string"
+name = "Background URL"
+description = "URL to an image asset."
+attributes = ["debuggable", "networked", "store"]
+
 [components.border-color]
 type = "vec4"
 name = "Border color"
@@ -51,4 +57,10 @@ attributes = ["debuggable", "networked", "store"]
 type = "empty"
 name = "Rect"
 description = "If attached to an entity, the entity will be converted to a UI rectangle, with optionally rounded corners and borders."
+attributes = ["debuggable", "networked", "store"]
+
+[components.size-from-background-image]
+type = "empty"
+name = "Size from background image"
+description = "Resize this rect based on the size of the background image."
 attributes = ["debuggable", "networked", "store"]

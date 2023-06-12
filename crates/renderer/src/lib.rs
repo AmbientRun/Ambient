@@ -11,9 +11,11 @@ use ambient_core::{
     transform::get_world_rotation,
 };
 use ambient_ecs::{
-    components, query_mut, Debuggable, Entity, EntityId, Resource, SystemGroup, World,
+    components, copy_component_recursive, query_mut, Debuggable, Entity, EntityId, Resource,
+    SystemGroup, World,
 };
 use ambient_gpu::{
+    gpu::Gpu,
     mesh_buffer::GpuMesh,
     shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule},
     wgsl_utils::wgsl_interpolate,
@@ -58,7 +60,8 @@ pub const MAX_PRIMITIVE_COUNT: usize = 16;
 
 pub use ambient_ecs::generated::components::core::rendering::{
     cast_shadows, color, double_sided, fog_color, fog_density, fog_height_falloff, light_ambient,
-    light_diffuse, overlay, pbr_material_from_url, sun, transparency_group,
+    light_diffuse, overlay, pbr_material_from_url, scissors, scissors_recursive, sun,
+    transparency_group,
 };
 
 components!("rendering", {
@@ -94,6 +97,11 @@ pub fn systems() -> SystemGroup {
     SystemGroup::new(
         "renderer",
         vec![
+            Box::new(copy_component_recursive(
+                "scissors",
+                scissors_recursive(),
+                scissors(),
+            )),
             query(pbr_material_from_url().changed()).to_system(|q, world, qs, _| {
                 for (id, url) in q.collect_cloned(world, qs) {
                     let url = match AbsAssetUrl::parse(url) {
@@ -241,7 +249,7 @@ pub struct GpuRenderPrimitive {
 }
 
 #[derive(Clone, Debug, Deref, DerefMut)]
-pub struct SharedMaterial(Arc<dyn Material + 'static>);
+pub struct SharedMaterial(pub Arc<dyn Material + 'static>);
 
 impl<T: Material + 'static> From<Arc<T>> for SharedMaterial {
     fn from(v: Arc<T>) -> Self {
@@ -398,7 +406,7 @@ pub trait Material: Debug + Sync + Send + DowncastSync {
         self.id()
     }
 
-    fn update(&self, _: &World) {}
+    fn update(&self, _: &Gpu, _: &World) {}
 
     fn bind_group(&self) -> &wgpu::BindGroup;
 
@@ -491,4 +499,21 @@ fn is_transparent(
 ) -> bool {
     world.get(id, transparency_group()).is_ok()
         || material.transparent().unwrap_or(shader.transparent)
+}
+
+/// wgpu will throw an exception if the scissor value is outside the viewport
+pub(crate) fn set_scissors_safe(
+    render_pass: &mut wgpu::RenderPass,
+    render_target_size: wgpu::Extent3d,
+    scissors: Option<UVec4>,
+) {
+    if let Some(scissors) = scissors {
+        let left = scissors.x.clamp(0, render_target_size.width);
+        let top = scissors.y.clamp(0, render_target_size.height);
+        let right = (left + scissors.z).clamp(0, render_target_size.width);
+        let bottom = (top + scissors.w).clamp(0, render_target_size.height);
+        render_pass.set_scissor_rect(left, top, right - left, bottom - top);
+    } else {
+        render_pass.set_scissor_rect(0, 0, render_target_size.width, render_target_size.height);
+    }
 }

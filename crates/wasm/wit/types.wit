@@ -54,6 +54,11 @@ default interface types {
         w: vec4,
     }
 
+    record duration {
+        seconds: u64,
+        nanoseconds: u32,
+    }
+
     record ray {
         origin: vec3,
         dir: vec3,

@@ -10,7 +10,10 @@ pub type AsyncEcsAction = Box<dyn FnOnce(&mut World) + Sync + Send>;
 
 #[derive(Clone)]
 #[allow(clippy::type_complexity)]
-pub struct AsyncRun(flume::Sender<AsyncEcsAction>, Option<flume::Receiver<AsyncEcsAction>>);
+pub struct AsyncRun(
+    flume::Sender<AsyncEcsAction>,
+    Option<flume::Receiver<AsyncEcsAction>>,
+);
 impl AsyncRun {
     fn new() -> Self {
         let (tx, rx) = flume::unbounded();

@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{net::IpAddr, path::PathBuf};
 
 use clap::{Args, Parser, Subcommand};
 
@@ -20,6 +20,8 @@ pub enum Commands {
         project_args: ProjectCli,
         #[arg(short, long)]
         name: Option<String>,
+        #[arg(long)]
+        api_path: Option<String>,
     },
     /// Builds and runs the project locally
     Run {
@@ -121,9 +123,14 @@ pub struct ProjectCli {
     /// Avoid building the project
     #[arg(long)]
     pub no_build: bool,
+    #[arg(long)]
+    /// Perform a clean build
+    pub clean_build: bool,
 }
 #[derive(Args, Clone, Debug)]
 pub struct HostCli {
+    #[arg(long, default_value = "0.0.0.0")]
+    pub bind_address: IpAddr,
     /// Provide a public address or IP to the instance, which will allow users to connect to this instance over the internet
     ///
     /// Defaults to localhost

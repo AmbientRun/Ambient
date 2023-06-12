@@ -6,7 +6,9 @@ use ambient_std::{
     download_asset::{AssetError, AssetsCacheOnDisk, BytesFromUrl, BytesFromUrlCachedPath},
 };
 use async_trait::async_trait;
-use physxx::{PxConvexMesh, PxDefaultFileInputData, PxDefaultMemoryInputData, PxPhysicsRef, PxTriangleMesh};
+use physxx::{
+    PxConvexMesh, PxDefaultFileInputData, PxDefaultMemoryInputData, PxPhysicsRef, PxTriangleMesh,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::rc_asset::PxRcAsset;
@@ -33,9 +35,19 @@ impl PhysxGeometryFromUrl {
 impl AsyncAssetKey<Result<Arc<PhysxGeometry>, AssetError>> for PhysxGeometryFromUrl {
     async fn load(self, assets: AssetCache) -> Result<Arc<PhysxGeometry>, AssetError> {
         if self.0.extension().unwrap_or_default().to_lowercase() == PHYSX_TRIANGLE_MESH_EXTENSION {
-            Ok(Arc::new(PhysxGeometry::TriangleMesh(PhysxTriangleMeshFromUrl(self.0.unwrap_abs().into()).get(&assets).await?.0)))
+            Ok(Arc::new(PhysxGeometry::TriangleMesh(
+                PhysxTriangleMeshFromUrl(self.0.unwrap_abs().into())
+                    .get(&assets)
+                    .await?
+                    .0,
+            )))
         } else {
-            Ok(Arc::new(PhysxGeometry::ConvexMesh(PhysxConvexMeshFromUrl(self.0.unwrap_abs().into()).get(&assets).await?.0)))
+            Ok(Arc::new(PhysxGeometry::ConvexMesh(
+                PhysxConvexMeshFromUrl(self.0.unwrap_abs().into())
+                    .get(&assets)
+                    .await?
+                    .0,
+            )))
         }
     }
 }
@@ -52,14 +64,23 @@ impl PhysxTriangleMeshFromUrl {
 impl AsyncAssetKey<Result<PxRcAsset<PxTriangleMesh>, AssetError>> for PhysxTriangleMeshFromUrl {
     async fn load(self, assets: AssetCache) -> Result<PxRcAsset<PxTriangleMesh>, AssetError> {
         if AssetsCacheOnDisk.get(&assets) {
-            let file = BytesFromUrlCachedPath { url: self.0.unwrap_abs() }.get(&assets).await?;
+            let file = BytesFromUrlCachedPath {
+                url: self.0.unwrap_abs(),
+            }
+            .get(&assets)
+            .await?;
             tokio::task::block_in_place(|| {
                 let mem = PxDefaultFileInputData::new(&*file);
                 let mesh = PxTriangleMesh::new(PxPhysicsRef::get(), &mem);
                 Ok(PxRcAsset(mesh))
             })
         } else {
-            let data = BytesFromUrl { url: self.0.unwrap_abs(), cache_on_disk: false }.get(&assets).await?;
+            let data = BytesFromUrl {
+                url: self.0.unwrap_abs(),
+                cache_on_disk: false,
+            }
+            .get(&assets)
+            .await?;
             tokio::task::block_in_place(|| {
                 let mem = PxDefaultMemoryInputData::new((*data).clone());
                 let mesh = PxTriangleMesh::new(PxPhysicsRef::get(), &mem);
@@ -87,14 +108,23 @@ impl PhysxConvexMeshFromUrl {
 impl AsyncAssetKey<Result<PxRcAsset<PxConvexMesh>, AssetError>> for PhysxConvexMeshFromUrl {
     async fn load(self, assets: AssetCache) -> Result<PxRcAsset<PxConvexMesh>, AssetError> {
         if AssetsCacheOnDisk.get(&assets) {
-            let file = BytesFromUrlCachedPath { url: self.0.unwrap_abs() }.get(&assets).await?;
+            let file = BytesFromUrlCachedPath {
+                url: self.0.unwrap_abs(),
+            }
+            .get(&assets)
+            .await?;
             tokio::task::block_in_place(|| {
                 let mem = PxDefaultFileInputData::new(&*file);
                 let mesh = PxConvexMesh::new(PxPhysicsRef::get(), &mem);
                 Ok(PxRcAsset(mesh))
             })
         } else {
-            let data = BytesFromUrl { url: self.0.unwrap_abs(), cache_on_disk: false }.get(&assets).await?;
+            let data = BytesFromUrl {
+                url: self.0.unwrap_abs(),
+                cache_on_disk: false,
+            }
+            .get(&assets)
+            .await?;
             tokio::task::block_in_place(|| {
                 let mem = PxDefaultMemoryInputData::new((*data).clone());
                 let mesh = PxConvexMesh::new(PxPhysicsRef::get(), &mem);

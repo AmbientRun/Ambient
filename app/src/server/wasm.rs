@@ -2,10 +2,11 @@ use std::{collections::HashMap, sync::Arc};
 
 use ambient_ecs::{EntityId, SystemGroup, World};
 use ambient_project::Identifier;
-use ambient_std::{asset_url::AbsAssetUrl, asset_cache::AssetCache};
+use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{
-    client_bytecode_from_url, get_module_name, module_bytecode, remote_paired_id, spawn_module, MessageType, ModuleBytecode,
+    client_bytecode_from_url, get_module_name, module_bytecode, remote_paired_id, spawn_module,
+    MessageType, ModuleBytecode,
 };
 use anyhow::Context;
 
@@ -13,19 +14,31 @@ pub fn systems() -> SystemGroup {
     ambient_wasm::server::systems()
 }
 
-pub async fn initialize(world: &mut World, assets: AssetCache, project_path: AbsAssetUrl, manifest: &ambient_project::Manifest, build_metadata: &ambient_build::Metadata) -> anyhow::Result<()> {
-    let messenger = Arc::new(|world: &World, id: EntityId, type_: MessageType, message: &str| {
-        let name = get_module_name(world, id);
-        let (prefix, level) = match type_ {
-            MessageType::Info => ("info", log::Level::Info),
-            MessageType::Warn => ("warn", log::Level::Warn),
-            MessageType::Error => ("error", log::Level::Error),
-            MessageType::Stdout => ("stdout", log::Level::Info),
-            MessageType::Stderr => ("stderr", log::Level::Info),
-        };
+pub async fn initialize(
+    world: &mut World,
+    assets: AssetCache,
+    project_path: AbsAssetUrl,
+    manifest: &ambient_project::Manifest,
+    build_metadata: &ambient_build::Metadata,
+) -> anyhow::Result<()> {
+    let messenger = Arc::new(
+        |world: &World, id: EntityId, type_: MessageType, message: &str| {
+            let name = get_module_name(world, id);
+            let (prefix, level) = match type_ {
+                MessageType::Info => ("info", log::Level::Info),
+                MessageType::Warn => ("warn", log::Level::Warn),
+                MessageType::Error => ("error", log::Level::Error),
+                MessageType::Stdout => ("stdout", log::Level::Info),
+                MessageType::Stderr => ("stderr", log::Level::Info),
+            };
 
-        log::log!(level, "[{name}] {prefix}: {}", message.strip_suffix('\n').unwrap_or(message));
-    });
+            log::log!(
+                level,
+                "[{name}] {prefix}: {}",
+                message.strip_suffix('\n').unwrap_or(message)
+            );
+        },
+    );
 
     ambient_wasm::server::initialize(world, messenger)?;
 
@@ -38,11 +51,19 @@ pub async fn initialize(world: &mut World, assets: AssetCache, project_path: Abs
         let is_sole_module = wasm_component_paths.len() == 1;
         for path in wasm_component_paths {
             let component_url = build_dir.push(path).unwrap();
-            let name =
-                Identifier::new(component_url.file_stem().context("no file stem for {path:?}")?).map_err(anyhow::Error::msg)?;
+            let name = Identifier::new(
+                component_url
+                    .file_stem()
+                    .context("no file stem for {path:?}")?,
+            )
+            .map_err(anyhow::Error::msg)?;
 
             let description = manifest.project.description.clone().unwrap_or_default();
-            let description = if is_sole_module { description } else { format!("{description} ({name})") };
+            let description = if is_sole_module {
+                description
+            } else {
+                format!("{description} ({name})")
+            };
 
             let id = spawn_module(world, &name, description, true);
             modules_to_entity_ids.insert(

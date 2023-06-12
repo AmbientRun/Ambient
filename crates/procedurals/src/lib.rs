@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync::Arc};
 use ambient_core::{
     asset_cache,
     bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
-    main_scene,
+    gpu, main_scene,
     transform::{local_to_world, mesh_to_world},
 };
 use ambient_ecs::{
@@ -35,12 +35,13 @@ pub fn client_systems() -> SystemGroup {
         vec![
             query(procedural_mesh().changed()).to_system(|query, world, query_state, _| {
                 let assets = world.resource(asset_cache()).clone();
+                let gpu = world.resource(gpu()).clone();
                 for (id, mesh_handle) in query.collect_cloned(world, query_state) {
                     let (gpu_mesh, mesh_aabb) = {
                         let storage = world.resource(procedural_storage());
                         let mesh = storage.meshes.get(mesh_handle);
                         let mesh_aabb = mesh.aabb();
-                        let gpu_mesh = GpuMesh::from_mesh(&assets, mesh);
+                        let gpu_mesh = GpuMesh::from_mesh(&gpu, &assets, mesh);
                         (gpu_mesh, mesh_aabb)
                     };
                     world
@@ -63,10 +64,11 @@ pub fn client_systems() -> SystemGroup {
             }),
             query(procedural_material().changed()).to_system(|query, world, query_state, _| {
                 let assets = world.resource(asset_cache()).clone();
+                let gpu = world.resource(gpu()).clone();
                 for (id, material_handle) in query.collect_cloned(world, query_state) {
                     let storage = world.resource(procedural_storage());
                     let material = storage.materials.get(material_handle).clone();
-                    let material = PbrMaterial::new(&assets, material);
+                    let material = PbrMaterial::new(&gpu, &assets, material);
                     let material = SharedMaterial::new(material);
                     world
                         .add_components(

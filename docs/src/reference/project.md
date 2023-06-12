@@ -86,6 +86,7 @@ A `ComponentType` is either:
   - `Vec2`: a 2-element 32-bit floating point vector
   - `Vec3`: a 3-element 32-bit floating point vector
   - `Vec4`: a 4-element 32-bit floating point vector
+  - `Duration`: A time span. Often used as a timestamp, in which case it designates the duration since Jan 1, 1970.
 
 - a contained type of the form `{ type = "Vec", element_type = ComponentType }` or `{ type = "Option", element_type = ComponentType }`
   - Note that `Vec` and `Option` are the only supported container types, and `element_type` must be a primitive `ComponentType` (that is, you cannot have nested contained types).

@@ -8,27 +8,66 @@ use itertools::Itertools;
 use ordered_float::OrderedFloat;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum AnimationOutput {
-    Vec3 { component: Component<glam::Vec3>, value: glam::Vec3 },
-    Quat { component: Component<glam::Quat>, value: glam::Quat },
-    Vec3Field { component: Component<glam::Vec3>, field: Vec3Field, value: f32 },
+    Vec3 {
+        component: Component<glam::Vec3>,
+        value: glam::Vec3,
+    },
+    Quat {
+        component: Component<glam::Quat>,
+        value: glam::Quat,
+    },
+    Vec3Field {
+        component: Component<glam::Vec3>,
+        field: Vec3Field,
+        value: f32,
+    },
 }
 impl AnimationOutput {
     pub fn mix(&self, value: AnimationOutput, p: f32) -> Self {
         match (self, value) {
-            (AnimationOutput::Vec3 { value: left, .. }, AnimationOutput::Vec3 { value: right, component }) => {
-                AnimationOutput::Vec3 { component, value: left.lerp(right, p) }
-            }
+            (
+                AnimationOutput::Vec3 { value: left, .. },
+                AnimationOutput::Vec3 {
+                    value: right,
+                    component,
+                },
+            ) => AnimationOutput::Vec3 {
+                component,
+                value: left.lerp(right, p),
+            },
 
-            (AnimationOutput::Quat { value: left, .. }, AnimationOutput::Quat { value: right, component }) => {
+            (
+                AnimationOutput::Quat { value: left, .. },
+                AnimationOutput::Quat {
+                    value: right,
+                    component,
+                },
+            ) => {
                 let d = left.dot(right);
-                AnimationOutput::Quat { component, value: if d >= 0. { left.slerp(right, p) } else { left.neg().slerp(right, p) } }
+                AnimationOutput::Quat {
+                    component,
+                    value: if d >= 0. {
+                        left.slerp(right, p)
+                    } else {
+                        left.neg().slerp(right, p)
+                    },
+                }
             }
 
-            (AnimationOutput::Vec3Field { value: left, .. }, AnimationOutput::Vec3Field { value: right, field, component }) => {
-                AnimationOutput::Vec3Field { component, field, value: mix(*left, right, p) }
-            }
+            (
+                AnimationOutput::Vec3Field { value: left, .. },
+                AnimationOutput::Vec3Field {
+                    value: right,
+                    field,
+                    component,
+                },
+            ) => AnimationOutput::Vec3Field {
+                component,
+                field,
+                value: mix(*left, right, p),
+            },
 
             _ => unreachable!(),
         }
@@ -46,7 +85,7 @@ impl AnimationOutput {
         }
     }
 }
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Vec3Field {
     X,
     Y,
@@ -54,9 +93,19 @@ pub enum Vec3Field {
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum AnimationOutputs {
-    Vec3 { component: Component<glam::Vec3>, data: Vec<glam::Vec3> },
-    Quat { component: Component<glam::Quat>, data: Vec<glam::Quat> },
-    Vec3Field { component: Component<glam::Vec3>, field: Vec3Field, data: Vec<f32> },
+    Vec3 {
+        component: Component<glam::Vec3>,
+        data: Vec<glam::Vec3>,
+    },
+    Quat {
+        component: Component<glam::Quat>,
+        data: Vec<glam::Quat>,
+    },
+    Vec3Field {
+        component: Component<glam::Vec3>,
+        field: Vec3Field,
+        data: Vec<f32>,
+    },
 }
 impl AnimationOutputs {
     pub fn component(&self) -> ComponentDesc {
@@ -80,16 +129,28 @@ impl AnimationOutputs {
     }
     pub fn value(&self, index: usize) -> AnimationOutput {
         match self {
-            AnimationOutputs::Vec3 { data, component } => AnimationOutput::Vec3 { component: *component, value: data[index] },
-            AnimationOutputs::Quat { data, component } => AnimationOutput::Quat { component: *component, value: data[index] },
-            AnimationOutputs::Vec3Field { data, component, field } => {
-                AnimationOutput::Vec3Field { component: *component, field: *field, value: data[index] }
-            }
+            AnimationOutputs::Vec3 { data, component } => AnimationOutput::Vec3 {
+                component: *component,
+                value: data[index],
+            },
+            AnimationOutputs::Quat { data, component } => AnimationOutput::Quat {
+                component: *component,
+                value: data[index],
+            },
+            AnimationOutputs::Vec3Field {
+                data,
+                component,
+                field,
+            } => AnimationOutput::Vec3Field {
+                component: *component,
+                field: *field,
+                value: data[index],
+            },
         }
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum AnimationTarget {
     BinderId(String),
     Entity(EntityId),
@@ -158,7 +219,9 @@ impl AnimationTrackInterpolator {
         if time < track.inputs[self.current_index] {
             self.current_index = 0;
         }
-        while self.current_index + 1 < track.inputs.len() && track.inputs[self.current_index + 1] < time {
+        while self.current_index + 1 < track.inputs.len()
+            && track.inputs[self.current_index + 1] < time
+        {
             self.current_index += 1;
         }
         let left = track.outputs.value(self.current_index);
@@ -186,8 +249,18 @@ pub struct AnimationClip {
 }
 impl AnimationClip {
     pub fn from_tracks(tracks: Vec<AnimationTrack>) -> Self {
-        let end = tracks.iter().map(|x| ordered_float::OrderedFloat::from(x.duration())).max().unwrap().into();
-        Self { id: "".to_string(), tracks, start: 0., end }
+        let end = tracks
+            .iter()
+            .map(|x| ordered_float::OrderedFloat::from(x.duration()))
+            .max()
+            .unwrap()
+            .into();
+        Self {
+            id: "".to_string(),
+            tracks,
+            start: 0.,
+            end,
+        }
     }
     pub fn duration(&self) -> f32 {
         self.end - self.start
@@ -199,13 +272,19 @@ impl AnimationClip {
         let mut scale_tracks = HashMap::new();
         for track in self.tracks.iter() {
             if track.outputs.component() == euler_rotation() {
-                let res_tracks = euler_rotation_tracks.entry(track.target.clone()).or_insert_with(HashMap::new);
+                let res_tracks = euler_rotation_tracks
+                    .entry(track.target.clone())
+                    .or_insert_with(HashMap::new);
                 res_tracks.insert(track.outputs.field().unwrap(), track.clone());
             } else if track.outputs.component() == translation() {
-                let res_tracks = translation_tracks.entry(track.target.clone()).or_insert_with(HashMap::new);
+                let res_tracks = translation_tracks
+                    .entry(track.target.clone())
+                    .or_insert_with(HashMap::new);
                 res_tracks.insert(track.outputs.field().unwrap(), track.clone());
             } else if track.outputs.component() == scale() {
-                let res_tracks = scale_tracks.entry(track.target.clone()).or_insert_with(HashMap::new);
+                let res_tracks = scale_tracks
+                    .entry(track.target.clone())
+                    .or_insert_with(HashMap::new);
                 res_tracks.insert(track.outputs.field().unwrap(), track.clone());
             } else {
                 panic!("merge_field_tracks is only supported for clips with euler_rotation, translation and scale properties");
@@ -225,7 +304,14 @@ impl AnimationClip {
     }
     pub fn map_outputs(&self, map: impl Fn(&AnimationOutputs) -> AnimationOutputs) -> Self {
         Self {
-            tracks: self.tracks.iter().map(|track| AnimationTrack { outputs: map(&track.outputs), ..(track.clone()) }).collect(),
+            tracks: self
+                .tracks
+                .iter()
+                .map(|track| AnimationTrack {
+                    outputs: map(&track.outputs),
+                    ..(track.clone())
+                })
+                .collect(),
             ..(self.clone())
         }
     }
@@ -255,19 +341,38 @@ fn merge_vec3_tracks(
     let mut outputs = Vec::new();
     for &input in inputs.iter() {
         if let Some(x) = &x {
-            val.x = AnimationTrackInterpolator::new().value(x, input).as_field_value().unwrap();
+            val.x = AnimationTrackInterpolator::new()
+                .value(x, input)
+                .as_field_value()
+                .unwrap();
         }
         if let Some(y) = &y {
-            val.y = AnimationTrackInterpolator::new().value(y, input).as_field_value().unwrap();
+            val.y = AnimationTrackInterpolator::new()
+                .value(y, input)
+                .as_field_value()
+                .unwrap();
         }
         if let Some(z) = &z {
-            val.z = AnimationTrackInterpolator::new().value(z, input).as_field_value().unwrap();
+            val.z = AnimationTrackInterpolator::new()
+                .value(z, input)
+                .as_field_value()
+                .unwrap();
         }
         outputs.push(val);
     }
-    AnimationTrack { target, inputs, outputs: AnimationOutputs::Vec3 { component, data: outputs } }
+    AnimationTrack {
+        target,
+        inputs,
+        outputs: AnimationOutputs::Vec3 {
+            component,
+            data: outputs,
+        },
+    }
 }
-fn merge_rotation_tracks(target: AnimationTarget, tracks: HashMap<Vec3Field, AnimationTrack>) -> AnimationTrack {
+fn merge_rotation_tracks(
+    target: AnimationTarget,
+    tracks: HashMap<Vec3Field, AnimationTrack>,
+) -> AnimationTrack {
     let inputs = merge_track_inputs(tracks.values());
     let x = tracks.get(&Vec3Field::X);
     let y = tracks.get(&Vec3Field::Y);
@@ -276,16 +381,32 @@ fn merge_rotation_tracks(target: AnimationTarget, tracks: HashMap<Vec3Field, Ani
     let mut outputs = Vec::new();
     for &input in inputs.iter() {
         if let Some(x) = &x {
-            euler_rot.x = AnimationTrackInterpolator::new().value(x, input).as_field_value().unwrap();
+            euler_rot.x = AnimationTrackInterpolator::new()
+                .value(x, input)
+                .as_field_value()
+                .unwrap();
         }
         if let Some(y) = &y {
-            euler_rot.y = AnimationTrackInterpolator::new().value(y, input).as_field_value().unwrap();
+            euler_rot.y = AnimationTrackInterpolator::new()
+                .value(y, input)
+                .as_field_value()
+                .unwrap();
         }
         if let Some(z) = &z {
-            euler_rot.z = AnimationTrackInterpolator::new().value(z, input).as_field_value().unwrap();
+            euler_rot.z = AnimationTrackInterpolator::new()
+                .value(z, input)
+                .as_field_value()
+                .unwrap();
         }
         let quat = Quat::from_euler(EulerRot::ZYX, euler_rot.z, euler_rot.y, euler_rot.x);
         outputs.push(quat);
     }
-    AnimationTrack { target, inputs, outputs: AnimationOutputs::Quat { component: rotation(), data: outputs } }
+    AnimationTrack {
+        target,
+        inputs,
+        outputs: AnimationOutputs::Quat {
+            component: rotation(),
+            data: outputs,
+        },
+    }
 }

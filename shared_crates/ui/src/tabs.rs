@@ -21,9 +21,15 @@ pub struct TabBar<T: ToString + PartialEq + Clone + Debug + Sync + Send + 'stati
     /// The callback to call when a tab is selected. Called with the tab value.
     pub on_change: Cb<dyn Fn(T) + Sync + Send>,
 }
-impl<T: ToString + PartialEq + Clone + Debug + Sync + Send + 'static> ElementComponent for TabBar<T> {
+impl<T: ToString + PartialEq + Clone + Debug + Sync + Send + 'static> ElementComponent
+    for TabBar<T>
+{
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        let Self { tabs, value, on_change } = *self;
+        let Self {
+            tabs,
+            value,
+            on_change,
+        } = *self;
         FlowRow(
             tabs.into_iter()
                 .map(|tab| {
@@ -50,23 +56,42 @@ pub struct Tabs<T: ToString + PartialEq + Default + Clone + Debug + Sync + Send 
 impl<T: ToString + PartialEq + Default + Clone + Debug + Sync + Send + 'static> Tabs<T> {
     /// Creates a new `Tabs` with no tabs.
     pub fn new() -> Self {
-        Self { tabs: Default::default() }
+        Self {
+            tabs: Default::default(),
+        }
     }
 
     /// Adds a tab to the `Tabs`. The callback is called when the tab is selected, and should return the content of the tab.
-    pub fn with_tab(mut self, tab: T, callback: impl Fn() -> Element + Sync + Send + 'static) -> Self {
+    pub fn with_tab(
+        mut self,
+        tab: T,
+        callback: impl Fn() -> Element + Sync + Send + 'static,
+    ) -> Self {
         self.tabs.push((tab, cb(callback)));
         self
     }
 }
-impl<T: ToString + PartialEq + Default + ComponentValue + Clone + Debug + Sync + Send + 'static> ElementComponent for Tabs<T> {
+impl<
+        T: ToString + PartialEq + Default + ComponentValue + Clone + Debug + Sync + Send + 'static,
+    > ElementComponent for Tabs<T>
+{
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (value, set_value) = hooks.use_state(T::default());
-        let selected_tab = self.tabs.iter().find(|it| it.0 == value).map(|it| it.1.clone()).unwrap_or(cb(Element::new));
+        let selected_tab = self
+            .tabs
+            .iter()
+            .find(|it| it.0 == value)
+            .map(|it| it.1.clone())
+            .unwrap_or(cb(Element::new));
         let key = value.to_string();
 
         FlowColumn::el([
-            TabBar { tabs: self.tabs.iter().map(|it| it.0.clone()).collect(), value, on_change: cb(move |value| set_value(value)) }.el(),
+            TabBar {
+                tabs: self.tabs.iter().map(|it| it.0.clone()).collect(),
+                value,
+                on_change: cb(move |value| set_value(value)),
+            }
+            .el(),
             selected_tab().key(key),
         ])
         .with(space_between_items(), STREET)

@@ -5,7 +5,7 @@ use std::{
 
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_physics::physx::{Physics, PhysicsKey};
-use ambient_project::Manifest as ProjectManifest;
+use ambient_project::{Manifest as ProjectManifest, Version};
 use ambient_std::{asset_url::AbsAssetUrl, path::path_to_unix_string};
 use anyhow::Context;
 use futures::FutureExt;
@@ -17,6 +17,7 @@ pub mod pipelines;
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub struct Metadata {
+    ambient_version: Version,
     client_component_paths: Vec<String>,
     server_component_paths: Vec<String>,
 }
@@ -48,8 +49,10 @@ pub async fn build(
     path: PathBuf,
     manifest: &ProjectManifest,
     optimize: bool,
+    clean_build: bool,
 ) -> Metadata {
-    log::info!(
+    tracing::info!(
+        ?path,
         "Building project `{}` ({})",
         manifest.project.id,
         manifest
@@ -65,11 +68,25 @@ pub async fn build(
     let build_path = path.join("build");
     let assets_path = path.join("assets");
 
-    std::fs::create_dir_all(&build_path).unwrap();
+    if clean_build {
+        tracing::info!("Removing build directory: {build_path:?}");
+        tokio::fs::remove_dir_all(&build_path)
+            .await
+            .context("Failed to clean build directory")
+            .unwrap();
+    }
+
+    tokio::fs::create_dir_all(&build_path)
+        .await
+        .context("Failed to create build directory")
+        .unwrap();
+
     build_assets(physics, &assets_path, &build_path).await;
+
     build_rust_if_available(&path, manifest, &build_path, optimize)
         .await
         .unwrap();
+
     store_manifest(manifest, &build_path).await.unwrap();
     store_metadata(&build_path).await.unwrap()
 }
@@ -81,7 +98,9 @@ async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
         .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
         .map(|x| AbsAssetUrl::from_file_path(x.into_path()))
         .collect_vec();
+
     let assets = AssetCache::new_with_config(tokio::runtime::Handle::current(), None);
+
     PhysicsKey.insert(&assets, physics);
     let ctx = ProcessCtx {
         assets: assets.clone(),
@@ -111,6 +130,7 @@ async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
             async {}.boxed()
         }),
     };
+
     ProcessCtxKey.insert(&ctx.assets, ctx.clone());
     pipelines::process_pipelines(&ctx).await;
 }
@@ -185,6 +205,9 @@ async fn store_manifest(manifest: &ProjectManifest, build_path: &Path) -> anyhow
 
 async fn store_metadata(build_path: &Path) -> anyhow::Result<Metadata> {
     let metadata = Metadata {
+        ambient_version: Version::new_from_str(env!("CARGO_PKG_VERSION"))
+            .expect("Failed to parse CARGO_PKG_VERSION"),
+
         client_component_paths: get_component_paths("client", build_path),
         server_component_paths: get_component_paths("server", build_path),
     };

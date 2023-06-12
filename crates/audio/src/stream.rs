@@ -1,13 +1,15 @@
 use std::ops::AddAssign;
 
 use cpal::{
-    traits::{DeviceTrait, HostTrait, StreamTrait}, OutputCallbackInfo, Sample
+    traits::{DeviceTrait, HostTrait, StreamTrait},
+    OutputCallbackInfo, Sample,
 };
 use itertools::Itertools;
 use slotmap::new_key_type;
 
 use crate::{
-    error::{Error, Result}, AudioMixer, ChannelCount, Frame, SampleRate, Source, WeakAudioMixer
+    error::{Error, Result},
+    AudioMixer, ChannelCount, Frame, SampleRate, Source, WeakAudioMixer,
 };
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

@@ -1,3 +1,4 @@
+use crate::shared::internal::module_name;
 use ambient_ecs::{components, Debuggable, EntityId, Resource, World};
 
 components!("wasm::message", {
@@ -73,7 +74,7 @@ pub(super) fn run(
             Ok(state) => super::run(world, module_id, state, &source, &name, &data),
             Err(_) => {
                 let module_name = world
-                    .get_cloned(module_id, ambient_core::name())
+                    .get_cloned(module_id, module_name())
                     .unwrap_or_default();
 
                 world.resource(messenger()).as_ref()(
@@ -94,7 +95,7 @@ impl<T: ambient_ecs::RuntimeMessage> RuntimeMessageExt for T {
             world,
             SerializedMessage {
                 target: module_id
-                    .map(|id| Target::Module(id))
+                    .map(Target::Module)
                     .unwrap_or(Target::All { include_self: true }),
                 source: Source::Runtime,
                 name: T::id().to_string(),

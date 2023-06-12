@@ -4,8 +4,9 @@ use ambient_app::{gpu, App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
 use ambient_ecs::Entity;
 use ambient_gpu::{
+    sampler::SamplerKey,
     std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},
-    texture::Texture, sampler::SamplerKey,
+    texture::Texture,
 };
 use ambient_meshes::CubeMeshKey;
 use ambient_renderer::{
@@ -23,13 +24,14 @@ async fn init(app: &mut App) {
 
     let texture = Arc::new(
         Arc::new(Texture::from_file(
-            gpu,
+            &gpu,
             "assets/checkerboard.png",
             wgpu::TextureFormat::Rgba8UnormSrgb,
         ))
         .create_view(&wgpu::TextureViewDescriptor::default()),
     );
     let mat = SharedMaterial::new(PbrMaterial::new(
+        &gpu,
         &assets,
         PbrMaterialConfig {
             source: "".to_string(),

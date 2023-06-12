@@ -4,6 +4,7 @@ use ambient_core::{
     asset_cache,
     async_ecs::{async_run, AsyncRun},
     bounding::{local_bounding_aabb, world_bounding_aabb, world_bounding_sphere},
+    gpu,
     hierarchy::{children, despawn_recursive},
     main_scene, runtime,
     transform::{get_world_position, inv_local_to_world, local_to_world, mesh_to_world},
@@ -53,8 +54,6 @@ pub use ambient_ecs::generated::components::core::model::{
 components!("model", {
     @[Networked, Store]
     animation_binder: HashMap<String, EntityId>,
-    @[Debuggable, Networked, Store]
-    animation_bind_id: String,
 
     model: Arc<Model>,
 
@@ -171,7 +170,9 @@ async fn internal_spawn_models_from_defs(
             match model {
                 Ok(model) => {
                     tracing::info!("Spawning model: {:?} for {ids:?}", model.name());
+                    let gpu = world.resource(gpu()).clone();
                     model.batch_spawn(
+                        &gpu,
                         world,
                         &ModelSpawnOpts {
                             root: ModelSpawnRoot::AttachTo(ids),

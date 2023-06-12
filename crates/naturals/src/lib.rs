@@ -10,6 +10,7 @@ use ambient_core::{
     transform::{local_to_world, translation},
 };
 use ambient_ecs::{components, query, Entity, EntityId, FnSystem, SystemGroup};
+use ambient_gpu::gpu::GpuKey;
 use ambient_model::{Model, ModelFromUrl, ModelSpawnOpts, ModelSpawnRoot};
 use ambient_renderer::color;
 use ambient_std::{
@@ -45,7 +46,8 @@ pub fn init_world_resources() -> Entity {
 const NATURALS_MAX_ENTITIES: u32 = 1_000_000;
 const WORKGROUP_SIZE: u32 = 32;
 const MAX_CONCURRENT: usize = 3;
-pub(crate) static OLD_CONTENT_SERVER_URL: &str = "https://fra1.digitaloceanspaces.com/dims-content/";
+pub(crate) static OLD_CONTENT_SERVER_URL: &str =
+    "https://fra1.digitaloceanspaces.com/dims-content/";
 
 #[derive(Debug)]
 struct NaturalsSemaphore;
@@ -127,15 +129,36 @@ pub struct NaturalCurveWGSL {
 impl From<NaturalCurve> for NaturalCurveWGSL {
     fn from(curve: NaturalCurve) -> Self {
         match curve {
-            NaturalCurve::Constant { value } => Self { kind: 0, params: vec4(value, 0., 0., 0.), _padding: Default::default() },
-            NaturalCurve::Interpolate { x0, x1, y0, y1 } => Self { kind: 1, params: vec4(x0, x1, y0, y1), _padding: Default::default() },
-            NaturalCurve::InterpolateClamped { x0, x1, y0, y1 } => {
-                Self { kind: 2, params: vec4(x0, x1, y0, y1), _padding: Default::default() }
-            }
-            NaturalCurve::SmoothStep { x0, x1, y0, y1 } => Self { kind: 3, params: vec4(x0, x1, y0, y1), _padding: Default::default() },
-            NaturalCurve::BellCurve { center, width, y0, y1 } => {
-                Self { kind: 4, params: vec4(center, width, y0, y1), _padding: Default::default() }
-            }
+            NaturalCurve::Constant { value } => Self {
+                kind: 0,
+                params: vec4(value, 0., 0., 0.),
+                _padding: Default::default(),
+            },
+            NaturalCurve::Interpolate { x0, x1, y0, y1 } => Self {
+                kind: 1,
+                params: vec4(x0, x1, y0, y1),
+                _padding: Default::default(),
+            },
+            NaturalCurve::InterpolateClamped { x0, x1, y0, y1 } => Self {
+                kind: 2,
+                params: vec4(x0, x1, y0, y1),
+                _padding: Default::default(),
+            },
+            NaturalCurve::SmoothStep { x0, x1, y0, y1 } => Self {
+                kind: 3,
+                params: vec4(x0, x1, y0, y1),
+                _padding: Default::default(),
+            },
+            NaturalCurve::BellCurve {
+                center,
+                width,
+                y0,
+                y1,
+            } => Self {
+                kind: 4,
+                params: vec4(center, width, y0, y1),
+                _padding: Default::default(),
+            },
         }
     }
 }
@@ -162,7 +185,9 @@ async fn update_natural_layer(
                         .0
                         .iter()
                         .filter_map(|url| {
-                            let model = Box::new(ModelFromUrl(url.join("../models/main.json").ok()?.into())) as BoxModelKey;
+                            let model = Box::new(ModelFromUrl(
+                                url.join("../models/main.json").ok()?.into(),
+                            )) as BoxModelKey;
                             Some((element.clone(), model))
                         })
                         .collect_vec()
@@ -177,7 +202,10 @@ async fn update_natural_layer(
     let semaphore = NaturalsSemaphore.get(&assets);
     let permit = semaphore.acquire().await;
 
-    let entities = naturals.run(&elements, layer.grid_size, &terrain_state).await;
+    let gpu = GpuKey.get(&assets);
+    let entities = naturals
+        .run(&gpu, &elements, layer.grid_size, &terrain_state)
+        .await;
 
     drop(permit); // This permit is only to make sure we don't use too much GPU memory
 
@@ -187,12 +215,19 @@ async fn update_natural_layer(
         entities_by_element[entity.element as usize].push(entity);
     }
 
-    for ((element, model_def), entities) in elements.into_iter().zip(entities_by_element.into_iter()) {
+    for ((element, model_def), entities) in
+        elements.into_iter().zip(entities_by_element.into_iter())
+    {
         let assets = assets.clone();
+        let gpu = GpuKey.get(&assets);
         let async_run = async_run.clone();
         tokio::spawn(async move {
             let model_key = model_def.key();
-            let model = if !entities.is_empty() { model_def.get(&assets).await.map(Some) } else { Ok(None) };
+            let model = if !entities.is_empty() {
+                model_def.get(&assets).await.map(Some)
+            } else {
+                Ok(None)
+            };
             match model {
                 Ok(model) => {
                     async_run.run(move |world| {
@@ -204,6 +239,7 @@ async fn update_natural_layer(
                             let missing = entities.len() as i32 - existing.len() as i32;
                             if missing > 0 {
                                 let ids = model.batch_spawn(
+                                    &gpu,
                                     world,
                                     &ModelSpawnOpts {
                                         root: ModelSpawnRoot::Spawn,
@@ -230,7 +266,12 @@ async fn update_natural_layer(
                                     local_to_world(),
                                     Mat4::from_scale_rotation_translation(
                                         Vec3::ONE * ent.scale,
-                                        Quat::from_euler(EulerRot::XYZ, ent.rotation.x, ent.rotation.y, ent.rotation.z),
+                                        Quat::from_euler(
+                                            EulerRot::XYZ,
+                                            ent.rotation.x,
+                                            ent.rotation.y,
+                                            ent.rotation.z,
+                                        ),
                                         terrain_cell_position + ent.position,
                                     ),
                                 )
@@ -238,13 +279,17 @@ async fn update_natural_layer(
                         }
                         let ents = world.get_mut(terrain_cell_id, natural_entities()).unwrap();
                         ents.insert(model_key, existing);
-                        *world.get_mut(terrain_cell_id, natural_layers_in_progress()).unwrap() -= 1;
+                        *world
+                            .get_mut(terrain_cell_id, natural_layers_in_progress())
+                            .unwrap() -= 1;
                     });
                 }
                 Err(err) => {
                     tracing::warn!("Failed to load asset {}: {:#}", model_key, err);
                     async_run.run(move |world| {
-                        *world.get_mut(terrain_cell_id, natural_layers_in_progress()).unwrap() -= 1;
+                        *world
+                            .get_mut(terrain_cell_id, natural_layers_in_progress())
+                            .unwrap() -= 1;
                     });
                 }
             }
@@ -256,18 +301,21 @@ pub fn client_systems() -> SystemGroup {
     SystemGroup::new(
         "dims/naturals/client_systems",
         vec![
-            query(()).incl(terrain_state()).excl(natural_entities()).to_system(|q, world, qs, _| {
-                for (id, _) in q.collect_cloned(world, qs) {
-                    log_result!(world.add_components(
-                        id,
-                        Entity::new()
-                            .with(terrain_cell_nature_conf_hash(), 0u64)
-                            .with(terrain_cell_nature_version(), -1)
-                            .with_default(natural_layers_in_progress())
-                            .with_default(natural_entities()),
-                    ));
-                }
-            }),
+            query(())
+                .incl(terrain_state())
+                .excl(natural_entities())
+                .to_system(|q, world, qs, _| {
+                    for (id, _) in q.collect_cloned(world, qs) {
+                        log_result!(world.add_components(
+                            id,
+                            Entity::new()
+                                .with(terrain_cell_nature_conf_hash(), 0u64)
+                                .with(terrain_cell_nature_version(), -1)
+                                .with_default(natural_layers_in_progress())
+                                .with_default(natural_entities()),
+                        ));
+                    }
+                }),
             Box::new(FnSystem::new(|world, _| {
                 let layers = world
                     .persisted_resource(natural_layers())
@@ -276,7 +324,14 @@ pub fn client_systems() -> SystemGroup {
                 let layers = layers
                     .into_iter()
                     .filter_map(|layer| {
-                        let res = NaturalLayer { elements: layer.elements.into_iter().filter(|e| e.enabled).collect_vec(), ..layer };
+                        let res = NaturalLayer {
+                            elements: layer
+                                .elements
+                                .into_iter()
+                                .filter(|e| e.enabled)
+                                .collect_vec(),
+                            ..layer
+                        };
                         if !res.elements.is_empty() {
                             Some(res)
                         } else {
@@ -293,15 +348,13 @@ pub fn client_systems() -> SystemGroup {
                     natural_layers_in_progress(),
                 ))
                 .iter(world, None)
-                .filter_map(
-                    |(id, (hash, version, nature_version, in_progress))| {
-                        if *in_progress == 0 && (*version != *nature_version || *hash != layers_hash) {
-                            Some(id)
-                        } else {
-                            None
-                        }
-                    },
-                )
+                .filter_map(|(id, (hash, version, nature_version, in_progress))| {
+                    if *in_progress == 0 && (*version != *nature_version || *hash != layers_hash) {
+                        Some(id)
+                    } else {
+                        None
+                    }
+                })
                 .collect_vec();
 
                 let terrain_cell_id = match updatable.choose(&mut rand::thread_rng()) {
@@ -309,39 +362,78 @@ pub fn client_systems() -> SystemGroup {
                     None => return,
                 };
 
-                world.set(terrain_cell_id, terrain_cell_nature_conf_hash(), layers_hash).unwrap();
+                world
+                    .set(
+                        terrain_cell_id,
+                        terrain_cell_nature_conf_hash(),
+                        layers_hash,
+                    )
+                    .unwrap();
                 let version = world.get(terrain_cell_id, terrain_cell_version()).unwrap();
-                world.set(terrain_cell_id, terrain_cell_nature_version(), version).unwrap();
+                world
+                    .set(terrain_cell_id, terrain_cell_nature_version(), version)
+                    .unwrap();
 
                 let valid_models = layers
                     .iter()
-                    .flat_map(|layer| layer.elements.iter().flat_map(|element| element.models.iter().flat_map(|models| models.0.clone())))
+                    .flat_map(|layer| {
+                        layer.elements.iter().flat_map(|element| {
+                            element.models.iter().flat_map(|models| models.0.clone())
+                        })
+                    })
                     .map(|x| x.to_string())
                     .collect::<HashSet<String>>();
 
-                let state = world.get_ref(terrain_cell_id, terrain_state()).unwrap().clone();
+                let state = world
+                    .get_ref(terrain_cell_id, terrain_state())
+                    .unwrap()
+                    .clone();
                 let cell_pos = *world.get_ref(terrain_cell_id, translation()).unwrap();
 
                 for layer in layers.into_iter() {
                     if layer.grid_size <= 0.05 || layer.grid_size >= 1000. {
                         continue;
                     }
-                    *world.get_mut(terrain_cell_id, natural_layers_in_progress()).unwrap() +=
-                        layer.elements.iter().flat_map(|el| el.models.iter().map(|model| model.0.len())).sum::<usize>();
+                    *world
+                        .get_mut(terrain_cell_id, natural_layers_in_progress())
+                        .unwrap() += layer
+                        .elements
+                        .iter()
+                        .flat_map(|el| el.models.iter().map(|model| model.0.len()))
+                        .sum::<usize>();
                     let async_run = world.resource(async_run()).clone();
                     let assets = world.resource(asset_cache()).clone();
                     let state = state.clone();
                     world.resource(runtime()).spawn(async move {
-                        update_natural_layer(assets, async_run, state, terrain_cell_id, cell_pos, layer).await;
+                        update_natural_layer(
+                            assets,
+                            async_run,
+                            state,
+                            terrain_cell_id,
+                            cell_pos,
+                            layer,
+                        )
+                        .await;
                     });
                 }
 
                 // Clean out invalid models
                 let to_remove = {
                     let ents = world.get_mut(terrain_cell_id, natural_entities()).unwrap();
-                    let models_to_remove =
-                        ents.keys().filter_map(|key| if !valid_models.contains(key) { Some(key.to_string()) } else { None }).collect_vec();
-                    let entities = models_to_remove.iter().flat_map(|key| ents.get(key).unwrap().clone()).collect_vec();
+                    let models_to_remove = ents
+                        .keys()
+                        .filter_map(|key| {
+                            if !valid_models.contains(key) {
+                                Some(key.to_string())
+                            } else {
+                                None
+                            }
+                        })
+                        .collect_vec();
+                    let entities = models_to_remove
+                        .iter()
+                        .flat_map(|key| ents.get(key).unwrap().clone())
+                        .collect_vec();
                     for key in models_to_remove.iter() {
                         ents.remove(key);
                     }

@@ -1,5 +1,7 @@
 use crate::{
-    articulation::PxArticulationCacheFlags, AsArticulationBase, AsArticulationJointBase, PxArticulationAxis, PxArticulationDriveType, PxArticulationFlag, PxArticulationJointType, PxArticulationLinkRef, PxArticulationMotion, PxPhysicsRef
+    articulation::PxArticulationCacheFlags, AsArticulationBase, AsArticulationJointBase,
+    PxArticulationAxis, PxArticulationDriveType, PxArticulationFlag, PxArticulationJointType,
+    PxArticulationLinkRef, PxArticulationMotion, PxPhysicsRef,
 };
 
 #[derive(Clone, Copy)]
@@ -10,8 +12,11 @@ impl PxArticulationRef {
     }
     pub fn get_articulation_links(&self) -> Vec<PxArticulationLinkRef> {
         unsafe {
-            let capacity = physx_sys::PxArticulationBase_getNbLinks(self.0 as *const physx_sys::PxArticulationBase);
-            let mut buffer: Vec<*mut physx_sys::PxArticulationLink> = Vec::with_capacity(capacity as usize);
+            let capacity = physx_sys::PxArticulationBase_getNbLinks(
+                self.0 as *const physx_sys::PxArticulationBase,
+            );
+            let mut buffer: Vec<*mut physx_sys::PxArticulationLink> =
+                Vec::with_capacity(capacity as usize);
             let len = physx_sys::PxArticulationBase_getLinks(
                 self.0 as *const physx_sys::PxArticulationBase,
                 buffer.as_mut_ptr() as *mut *mut _,
@@ -23,7 +28,13 @@ impl PxArticulationRef {
         }
     }
     pub fn set_flag(&mut self, flag: PxArticulationFlag, value: bool) {
-        unsafe { physx_sys::PxArticulationReducedCoordinate_setArticulationFlag_mut(self.0, flag.into(), value) }
+        unsafe {
+            physx_sys::PxArticulationReducedCoordinate_setArticulationFlag_mut(
+                self.0,
+                flag.into(),
+                value,
+            )
+        }
     }
     pub fn release(&mut self) {
         unsafe { physx_sys::PxArticulationReducedCoordinate_release_mut(self.0) }
@@ -41,17 +52,40 @@ unsafe impl Send for PxArticulationRef {}
 pub struct PxArticulationJointRef(*mut physx_sys::PxArticulationJointReducedCoordinate);
 impl PxArticulationJointRef {
     pub fn set_joint_type(&mut self, joint_type: PxArticulationJointType) {
-        unsafe { physx_sys::PxArticulationJointReducedCoordinate_setJointType_mut(self.0, joint_type as u32) }
+        unsafe {
+            physx_sys::PxArticulationJointReducedCoordinate_setJointType_mut(
+                self.0,
+                joint_type as u32,
+            )
+        }
     }
     pub fn set_motion(&mut self, axis: PxArticulationAxis, motion: PxArticulationMotion) {
-        unsafe { physx_sys::PxArticulationJointReducedCoordinate_setMotion_mut(self.0, axis as u32, motion as u32) }
+        unsafe {
+            physx_sys::PxArticulationJointReducedCoordinate_setMotion_mut(
+                self.0,
+                axis as u32,
+                motion as u32,
+            )
+        }
     }
     pub fn set_limit(&self, axis: PxArticulationAxis, min: f32, max: f32) {
         unsafe {
-            physx_sys::PxArticulationJointReducedCoordinate_setLimit_mut(self.0, axis as u32, min, max);
+            physx_sys::PxArticulationJointReducedCoordinate_setLimit_mut(
+                self.0,
+                axis as u32,
+                min,
+                max,
+            );
         }
     }
-    pub fn set_drive(&self, axis: PxArticulationAxis, stiffness: f32, damping: f32, max_force: f32, drive_type: PxArticulationDriveType) {
+    pub fn set_drive(
+        &self,
+        axis: PxArticulationAxis,
+        stiffness: f32,
+        damping: f32,
+        max_force: f32,
+        drive_type: PxArticulationDriveType,
+    ) {
         unsafe {
             physx_sys::PxArticulationJointReducedCoordinate_setDrive_mut(
                 self.0,
@@ -64,16 +98,35 @@ impl PxArticulationJointRef {
         }
     }
     pub fn get_drive_target(&self, axis: PxArticulationAxis) -> f32 {
-        unsafe { physx_sys::PxArticulationJointReducedCoordinate_getDriveTarget_mut(self.0, axis as u32) }
+        unsafe {
+            physx_sys::PxArticulationJointReducedCoordinate_getDriveTarget_mut(self.0, axis as u32)
+        }
     }
     pub fn set_drive_target(&mut self, axis: PxArticulationAxis, rot: f32) {
-        unsafe { physx_sys::PxArticulationJointReducedCoordinate_setDriveTarget_mut(self.0, axis as u32, rot) };
+        unsafe {
+            physx_sys::PxArticulationJointReducedCoordinate_setDriveTarget_mut(
+                self.0,
+                axis as u32,
+                rot,
+            )
+        };
     }
     pub fn get_drive_velocity(&self, axis: PxArticulationAxis) -> f32 {
-        unsafe { physx_sys::PxArticulationJointReducedCoordinate_getDriveVelocity_mut(self.0, axis as u32) }
+        unsafe {
+            physx_sys::PxArticulationJointReducedCoordinate_getDriveVelocity_mut(
+                self.0,
+                axis as u32,
+            )
+        }
     }
     pub fn set_drive_velocity(&mut self, axis: PxArticulationAxis, target_velocity: f32) {
-        unsafe { physx_sys::PxArticulationJointReducedCoordinate_setDriveVelocity_mut(self.0, axis as u32, target_velocity) };
+        unsafe {
+            physx_sys::PxArticulationJointReducedCoordinate_setDriveVelocity_mut(
+                self.0,
+                axis as u32,
+                target_velocity,
+            )
+        };
     }
 }
 impl AsArticulationJointBase for PxArticulationJointRef {
@@ -92,14 +145,22 @@ pub struct PxArticulationCacheRef {
 }
 impl PxArticulationCacheRef {
     pub fn new(articulation: PxArticulationRef) -> Self {
-        Self { cache: unsafe { physx_sys::PxArticulationReducedCoordinate_createCache(articulation.0) }, articulation, dof_starts: [0; 64] }
+        Self {
+            cache: unsafe {
+                physx_sys::PxArticulationReducedCoordinate_createCache(articulation.0)
+            },
+            articulation,
+            dof_starts: [0; 64],
+        }
     }
     pub fn copy_internal_state_to_cache(&self, flags: PxArticulationCacheFlags) {
         unsafe {
             physx_sys::PxArticulationReducedCoordinate_copyInternalStateToCache(
                 self.articulation.0,
                 self.cache,
-                physx_sys::PxArticulationCacheFlags { mBits: flags.bits() },
+                physx_sys::PxArticulationCacheFlags {
+                    mBits: flags.bits(),
+                },
             )
         }
     }
@@ -128,7 +189,9 @@ impl PxArticulationCacheRef {
     //     &ptr_to_slice!(jointPosition, self)[offset..offset + dofs]
     // }
     pub fn release(&mut self) {
-        unsafe { physx_sys::PxArticulationReducedCoordinate_releaseCache(self.articulation.0, self.cache) }
+        unsafe {
+            physx_sys::PxArticulationReducedCoordinate_releaseCache(self.articulation.0, self.cache)
+        }
     }
 }
 unsafe impl Sync for PxArticulationCacheRef {}

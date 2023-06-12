@@ -20,6 +20,7 @@ pub mod spatial_audio;
 pub use ambient_shared_types::{CursorIcon, ModifiersState, MouseButton, VirtualKeyCode};
 pub use futures::{Future, FutureExt};
 pub use glam::{f32::*, u32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
+pub use std::time::Duration;
 pub use ulid::Ulid;
 
 /// In Rust, functions that can fail are expected to return a [Result] type.

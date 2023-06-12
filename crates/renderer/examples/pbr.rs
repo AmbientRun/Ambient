@@ -1,7 +1,10 @@
 use ambient_app::{App, AppBuilder};
-use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
+use ambient_core::{asset_cache, camera::active_camera, gpu, main_scene, transform::*};
 use ambient_ecs::{query_mut, Entity};
-use ambient_gpu::{std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey}, sampler::SamplerKey};
+use ambient_gpu::{
+    sampler::SamplerKey,
+    std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},
+};
 use ambient_meshes::{CubeMeshKey, SphereMeshKey};
 use ambient_renderer::{
     color, gpu_primitives_lod, gpu_primitives_mesh,
@@ -14,12 +17,14 @@ use glam::*;
 
 async fn init(app: &mut App) {
     let world = &mut app.world;
+    let gpu = world.resource(gpu()).clone();
     let assets = world.resource(asset_cache()).clone();
     let size = 5;
 
     for x in 0..size {
         for y in 0..size {
             let mat = SharedMaterial::new(PbrMaterial::new(
+                &gpu,
                 &assets,
                 PbrMaterialConfig {
                     source: "".to_string(),

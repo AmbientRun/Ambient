@@ -21,14 +21,21 @@ pub fn initialize() -> World {
     init_components();
 
     let mut world = World::new("initialize");
-    world.add_component(world.resource_entity(), counter(), 0).unwrap();
-    world.add_component(world.resource_entity(), n_renders(), 0).unwrap();
+    world
+        .add_component(world.resource_entity(), counter(), 0)
+        .unwrap();
+    world
+        .add_component(world.resource_entity(), n_renders(), 0)
+        .unwrap();
     world
 }
 
 #[allow(dead_code)]
 pub fn run_triggers(world: &mut World) {
-    let triggers = query_mut((), (trigger(),)).iter(world, None).map(|x| x.2 .0.clone()).collect_vec();
+    let triggers = query_mut((), (trigger(),))
+        .iter(world, None)
+        .map(|x| x.2 .0.clone())
+        .collect_vec();
     for trigger in triggers.into_iter() {
         (*trigger)(world);
     }

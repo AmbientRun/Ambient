@@ -16,8 +16,11 @@ async fn init(app: &mut App) {
         world,
         Image {
             texture: Some(Arc::new(
-                Arc::new(Texture::new_single_color_texture(world.resource(gpu()).clone(), uvec4(255, 200, 200, 255)))
-                    .create_view(&Default::default()),
+                Arc::new(Texture::new_single_color_texture(
+                    &world.resource(gpu()),
+                    uvec4(255, 200, 200, 255),
+                ))
+                .create_view(&Default::default()),
             )),
         }
         .el()

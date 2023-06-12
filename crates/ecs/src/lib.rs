@@ -35,6 +35,7 @@ mod component_ser;
 mod component_traits;
 mod entity;
 mod events;
+mod helpers;
 mod index;
 mod location;
 mod primitive_component;
@@ -50,6 +51,7 @@ pub use component_registry::*;
 pub use component_ser::*;
 pub use entity::*;
 pub use events::*;
+pub use helpers::*;
 pub use index::*;
 pub use location::*;
 pub use primitive_component::*;
@@ -335,7 +337,7 @@ impl World {
     ) -> Result<&mut T, ECSError> {
         self.get_mut_unsafe(entity_id, component)
     }
-    pub(crate) fn get_mut_unsafe<T: ComponentValue>(
+    pub fn get_mut_unsafe<T: ComponentValue>(
         &self,
         entity_id: EntityId,
         component: Component<T>,

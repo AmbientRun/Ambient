@@ -1,10 +1,13 @@
 use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 
+use crate::gpu::Gpu;
+
 use super::blit::BlitterKey;
 
 // From: https://github.com/gfx-rs/wgpu/blob/master/wgpu/examples/mipmap/main.rs
 
 pub fn generate_mipmaps(
+    gpu: &Gpu,
     assets: &AssetCache,
     encoder: &mut wgpu::CommandEncoder,
     texture: &wgpu::Texture,
@@ -35,6 +38,6 @@ pub fn generate_mipmaps(
         .collect::<Vec<_>>();
 
     for target_mip in 1..mip_count as usize {
-        blitter.run(encoder, &views[target_mip - 1], &views[target_mip]);
+        blitter.run(gpu, encoder, &views[target_mip - 1], &views[target_mip]);
     }
 }

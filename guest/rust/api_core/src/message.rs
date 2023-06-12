@@ -25,15 +25,15 @@ pub enum Source {
 }
 impl Source {
     /// Is this message from the runtime?
-    pub fn runtime(self) -> bool {
+    pub fn runtime(&self) -> bool {
         matches!(self, Source::Runtime)
     }
 
     #[cfg(feature = "server")]
     /// The user that sent this message, if any.
-    pub fn client_user_id(self) -> Option<String> {
+    pub fn client_user_id(&self) -> Option<String> {
         if let Source::Client { user_id } = self {
-            Some(user_id)
+            Some(user_id.clone())
         } else {
             None
         }
@@ -41,16 +41,16 @@ impl Source {
 
     #[cfg(feature = "server")]
     /// The entity ID of the player that sent this message, if any.
-    pub fn client_entity_id(self) -> Option<EntityId> {
+    pub fn client_entity_id(&self) -> Option<EntityId> {
         let Some(user_id) = self.client_user_id() else { return None; };
         let Some(player_id) = crate::player::get_by_user_id(&user_id) else { return None; };
         Some(player_id)
     }
 
     /// The module on this side that sent this message, if any.
-    pub fn local(self) -> Option<EntityId> {
+    pub fn local(&self) -> Option<EntityId> {
         match self {
-            Source::Local(id) => Some(id),
+            Source::Local(id) => Some(*id),
             _ => None,
         }
     }

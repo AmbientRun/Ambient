@@ -1,20 +1,25 @@
 use std::ptr::null_mut;
 
 use glam::Vec3;
-use physx_sys::{create_overlap_buffer, create_raycast_buffer, create_sweep_buffer, delete_overlap_callback, delete_raycast_callback};
+use physx_sys::{
+    create_overlap_buffer, create_raycast_buffer, create_sweep_buffer, delete_overlap_callback,
+    delete_raycast_callback,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    sweep::PxSweepHit, to_glam_vec3, to_physx_vec3, AsArticulationBase, AsPxActor, PxActorRef, PxAggregateRef, PxCollectionRef,
-    PxConstraintRef, PxDefaultCpuDispatcherRef, PxGeometry, PxHitFlags, PxPhysicsRef, PxPvdSceneClientRef, PxRaycastHit, PxRigidActorRef,
-    PxShape, PxTransform,
+    sweep::PxSweepHit, to_glam_vec3, to_physx_vec3, AsArticulationBase, AsPxActor, PxActorRef,
+    PxAggregateRef, PxCollectionRef, PxConstraintRef, PxDefaultCpuDispatcherRef, PxGeometry,
+    PxHitFlags, PxPhysicsRef, PxPvdSceneClientRef, PxRaycastHit, PxRigidActorRef, PxShape,
+    PxTransform,
 };
 
 pub struct PxSceneDesc(physx_sys::PxSceneDesc);
 impl PxSceneDesc {
     pub fn new(physics: PxPhysicsRef) -> Self {
         Self(unsafe {
-            let mut scene_desc = physx_sys::PxSceneDesc_new(physx_sys::PxPhysics_getTolerancesScale(physics.0));
+            let mut scene_desc =
+                physx_sys::PxSceneDesc_new(physx_sys::PxPhysics_getTolerancesScale(physics.0));
 
             scene_desc.filterShader = physx_sys::get_default_simulation_filter_shader();
             scene_desc.solverType = physx_sys::PxSolverType::eTGS;
@@ -31,12 +36,23 @@ impl PxSceneDesc {
     pub fn set_cpu_dispatcher(&mut self, dispatcher: &PxDefaultCpuDispatcherRef) {
         self.0.cpuDispatcher = dispatcher.0 as *mut physx_sys::PxCpuDispatcher;
     }
-    pub fn set_filter_shader(&mut self, shader: physx_sys::SimulationFilterShader, call_default_filter_shader_first: bool) {
+    pub fn set_filter_shader(
+        &mut self,
+        shader: physx_sys::SimulationFilterShader,
+        call_default_filter_shader_first: bool,
+    ) {
         unsafe {
-            physx_sys::enable_custom_filter_shader(&mut self.0, shader, call_default_filter_shader_first as u32);
+            physx_sys::enable_custom_filter_shader(
+                &mut self.0,
+                shader,
+                call_default_filter_shader_first as u32,
+            );
         }
     }
-    pub fn set_simulation_event_callbacks<C: FnMut(&PxContactPairHeader)>(&mut self, callbacks: PxSimulationEventCallback<C>) {
+    pub fn set_simulation_event_callbacks<C: FnMut(&PxContactPairHeader)>(
+        &mut self,
+        callbacks: PxSimulationEventCallback<C>,
+    ) {
         unsafe {
             unsafe extern "C" fn collision_callback_trampoline<C: FnMut(&PxContactPairHeader)>(
                 user_data: *mut std::ffi::c_void,
@@ -45,7 +61,8 @@ impl PxSceneDesc {
                 _nb_pairs: u32,
             ) {
                 let mut cb: Box<C> = Box::from_raw(user_data as _);
-                let pair_header_flags = PxContactPairHeaderFlag::from_bits((*pair_header).flags.mBits).unwrap();
+                let pair_header_flags =
+                    PxContactPairHeaderFlag::from_bits((*pair_header).flags.mBits).unwrap();
                 cb(&PxContactPairHeader {
                     actors: [
                         if pair_header_flags.contains(PxContactPairHeaderFlag::REMOVED_ACTOR_0) {
@@ -62,7 +79,9 @@ impl PxSceneDesc {
                 });
                 Box::into_raw(cb);
             }
-            let mut cbs = physx_sys::SimulationEventCallbackInfo { ..Default::default() };
+            let mut cbs = physx_sys::SimulationEventCallbackInfo {
+                ..Default::default()
+            };
             if let Some(cb) = callbacks.collision_callback {
                 cbs.collision_callback = Some(collision_callback_trampoline::<C>);
                 cbs.collision_user_data = Box::into_raw(cb) as _;
@@ -207,9 +226,17 @@ impl PxSceneRef {
             physx_sys::PxScene_addArticulation_mut(self.0, articulation.as_articulation_base_ptr());
         }
     }
-    pub fn remove_articulation(&self, articulation: &dyn AsArticulationBase, wake_on_lost_touch: bool) {
+    pub fn remove_articulation(
+        &self,
+        articulation: &dyn AsArticulationBase,
+        wake_on_lost_touch: bool,
+    ) {
         unsafe {
-            physx_sys::PxScene_removeArticulation_mut(self.0, articulation.as_articulation_base_ptr(), wake_on_lost_touch);
+            physx_sys::PxScene_removeArticulation_mut(
+                self.0,
+                articulation.as_articulation_base_ptr(),
+                wake_on_lost_touch,
+            );
         }
     }
 
@@ -221,7 +248,9 @@ impl PxSceneRef {
 
     pub fn get_actors(&self, types: PxActorTypeFlag) -> Vec<PxActorRef> {
         unsafe {
-            let types = physx_sys::PxActorTypeFlags { mBits: types.bits as u16 };
+            let types = physx_sys::PxActorTypeFlags {
+                mBits: types.bits as u16,
+            };
             let count = physx_sys::PxScene_getNbActors(self.0, types);
             let mut buffer: Vec<*mut physx_sys::PxActor> = Vec::with_capacity(count as usize);
             physx_sys::PxScene_getActors(self.0, types, buffer.as_mut_ptr() as _, count, 0);
@@ -282,7 +311,9 @@ impl PxSceneRef {
                 &to_physx_vec3(unit_dir),
                 distance,
                 hit_call.0,
-                physx_sys::PxHitFlags { mBits: hit_flags.unwrap_or(PxHitFlag::DEFAULT).bits as u16 },
+                physx_sys::PxHitFlags {
+                    mBits: hit_flags.unwrap_or(PxHitFlag::DEFAULT).bits as u16,
+                },
                 &filter_data.0,
                 null_mut(),
                 null_mut(),
@@ -290,7 +321,14 @@ impl PxSceneRef {
         }
     }
 
-    pub fn sweep(&self, geom: &dyn PxGeometry, pose: &PxTransform, dir: Vec3, max_dist: f32, filter: PxQueryFilterData) -> PxSweepCallback {
+    pub fn sweep(
+        &self,
+        geom: &dyn PxGeometry,
+        pose: &PxTransform,
+        dir: Vec3,
+        max_dist: f32,
+        filter: PxQueryFilterData,
+    ) -> PxSweepCallback {
         let hit = PxSweepCallback::new(100);
 
         unsafe {
@@ -301,7 +339,9 @@ impl PxSceneRef {
                 &to_physx_vec3(dir),
                 max_dist,
                 hit.0,
-                physx_sys::PxHitFlags { mBits: (PxHitFlags::POSITION | PxHitFlags::DEFAULT).bits() as u16 },
+                physx_sys::PxHitFlags {
+                    mBits: (PxHitFlags::POSITION | PxHitFlags::DEFAULT).bits() as u16,
+                },
                 &filter.0,
                 null_mut(),
                 null_mut(),
@@ -318,7 +358,16 @@ impl PxSceneRef {
         hit_call: &mut PxOverlapCallback,
         filter_data: &PxQueryFilterData,
     ) -> bool {
-        unsafe { physx_sys::PxScene_overlap(self.0, geometry.as_geometry_ptr(), &pose.0, hit_call.0, &filter_data.0, null_mut()) }
+        unsafe {
+            physx_sys::PxScene_overlap(
+                self.0,
+                geometry.as_geometry_ptr(),
+                &pose.0,
+                hit_call.0,
+                &filter_data.0,
+                null_mut(),
+            )
+        }
     }
     pub fn get_render_buffer(&self) -> PxRenderBuffer {
         unsafe {
@@ -333,10 +382,21 @@ impl PxSceneRef {
                 physx_sys::PxRenderBuffer_getNbLines(buf) as usize,
             );
             PxRenderBuffer {
-                points: points.iter().map(|p| PxDebugPoint { pos: to_glam_vec3(&p.pos), color: p.color }).collect(),
+                points: points
+                    .iter()
+                    .map(|p| PxDebugPoint {
+                        pos: to_glam_vec3(&p.pos),
+                        color: p.color,
+                    })
+                    .collect(),
                 lines: lines
                     .iter()
-                    .map(|p| PxDebugLine { pos0: to_glam_vec3(&p.pos0), color0: p.color0, pos1: to_glam_vec3(&p.pos1), color1: p.color1 })
+                    .map(|p| PxDebugLine {
+                        pos0: to_glam_vec3(&p.pos0),
+                        color0: p.color0,
+                        pos1: to_glam_vec3(&p.pos1),
+                        color1: p.color1,
+                    })
                     .collect(),
             }
         }
@@ -401,11 +461,19 @@ impl PxSweepCallback {
         }
     }
     pub fn touches(&self) -> Vec<PxSweepHit> {
-        self.1.iter().take(unsafe { (*self.0).nbTouches as usize }).copied().map(Into::into).collect()
+        self.1
+            .iter()
+            .take(unsafe { (*self.0).nbTouches as usize })
+            .copied()
+            .map(Into::into)
+            .collect()
     }
 }
 
-pub struct PxRaycastCallback(*mut physx_sys::PxRaycastCallback, Vec<physx_sys::PxRaycastHit>);
+pub struct PxRaycastCallback(
+    *mut physx_sys::PxRaycastCallback,
+    Vec<physx_sys::PxRaycastHit>,
+);
 impl PxRaycastCallback {
     pub fn new(max_nb_touches: usize) -> Self {
         let mut s = unsafe {
@@ -431,7 +499,11 @@ impl PxRaycastCallback {
         }
     }
     pub fn touches(&self) -> Vec<PxRaycastHit> {
-        self.1.iter().take(unsafe { (*self.0).nbTouches as usize }).map(PxRaycastHit::from_px).collect()
+        self.1
+            .iter()
+            .take(unsafe { (*self.0).nbTouches as usize })
+            .map(PxRaycastHit::from_px)
+            .collect()
     }
 }
 impl Drop for PxRaycastCallback {
@@ -442,7 +514,10 @@ impl Drop for PxRaycastCallback {
     }
 }
 
-pub struct PxOverlapCallback(*mut physx_sys::PxOverlapCallback, Vec<physx_sys::PxOverlapHit>);
+pub struct PxOverlapCallback(
+    *mut physx_sys::PxOverlapCallback,
+    Vec<physx_sys::PxOverlapHit>,
+);
 impl PxOverlapCallback {
     pub fn new(max_nb_touches: usize) -> Self {
         let mut s = unsafe {
@@ -468,7 +543,11 @@ impl PxOverlapCallback {
         }
     }
     pub fn touches(&self) -> Vec<PxOverlapHit> {
-        self.1.iter().take(unsafe { (*self.0).nbTouches as usize }).map(PxOverlapHit::from_px).collect()
+        self.1
+            .iter()
+            .take(unsafe { (*self.0).nbTouches as usize })
+            .map(PxOverlapHit::from_px)
+            .collect()
     }
 }
 impl Drop for PxOverlapCallback {
@@ -487,7 +566,11 @@ pub struct PxOverlapHit {
 }
 impl PxOverlapHit {
     pub(crate) fn from_px(hit: &physx_sys::PxOverlapHit) -> Self {
-        Self { actor: PxRigidActorRef(hit.actor), shape: PxShape::from_ptr(hit.shape), face_index: hit.faceIndex }
+        Self {
+            actor: PxRigidActorRef(hit.actor),
+            shape: PxShape::from_ptr(hit.shape),
+            face_index: hit.faceIndex,
+        }
     }
 }
 

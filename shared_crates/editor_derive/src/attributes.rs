@@ -1,6 +1,8 @@
 use proc_macro2::Span;
 use quote::ToTokens;
-use syn::{Attribute, Lit, LitBool, LitFloat, LitInt, LitStr, Meta, MetaList, MetaNameValue, NestedMeta};
+use syn::{
+    Attribute, Lit, LitBool, LitFloat, LitInt, LitStr, Meta, MetaList, MetaNameValue, NestedMeta,
+};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum InlineType {
@@ -22,9 +24,13 @@ pub struct OuterAttributes {
     pub inline: Option<InlineType>,
 }
 
-fn get_editor_meta(attrs: &[Attribute]) -> impl Iterator<Item = Result<Vec<NestedMeta>, syn::Error>> + '_ {
+fn get_editor_meta(
+    attrs: &[Attribute],
+) -> impl Iterator<Item = Result<Vec<NestedMeta>, syn::Error>> + '_ {
     attrs.iter().flat_map(|attr| match attr.parse_meta() {
-        Ok(Meta::List(MetaList { path, nested, .. })) if path.is_ident("editor") => Some(Ok(nested.into_iter().collect())),
+        Ok(Meta::List(MetaList { path, nested, .. })) if path.is_ident("editor") => {
+            Some(Ok(nested.into_iter().collect()))
+        }
         Err(e) => Some(Err(e)),
         _ => None,
     })
@@ -67,7 +73,9 @@ impl EditorAttrs {
                             "hidden" => res.hidden = true,
                             "slider" => res.slider = true,
                             "prompt" => res.prompt = Some(None),
-                            "logarithmic" => res.logarithmic = Lit::Bool(LitBool::new(true, Span::call_site())),
+                            "logarithmic" => {
+                                res.logarithmic = Lit::Bool(LitBool::new(true, Span::call_site()))
+                            }
                             _ => panic!("Unrecognized attribute: {attr}"),
                         }
                     }

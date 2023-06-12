@@ -1,11 +1,12 @@
 use std::{borrow::Cow, sync::Arc};
 
-use ambient_core::{asset_cache, mesh, transform::*, ui_scene};
+use ambient_core::{asset_cache, gpu, mesh, transform::*, ui_scene};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_gpu::{
+    sampler::SamplerKey,
     std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},
     texture::TextureView,
-    texture_loaders::{TextureFromBytes, TextureFromUrl}, sampler::SamplerKey,
+    texture_loaders::TextureFromBytes,
 };
 use ambient_meshes::UIRectMeshKey;
 use ambient_renderer::{
@@ -17,7 +18,6 @@ use ambient_renderer::{
 };
 use ambient_std::{
     asset_cache::{AsyncAssetKeyExt, SyncAssetKeyExt},
-    asset_url::AbsAssetUrl,
     cb, CowStr,
 };
 use glam::*;
@@ -33,10 +33,12 @@ impl ElementComponent for Image {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Image { texture } = *self;
         let assets = hooks.world.resource(asset_cache()).clone();
+        let gpu = hooks.world.resource(gpu()).clone();
         let texture_id = texture.as_ref().map(|x| x.texture.id);
         let mat = hooks.use_memo_with(texture_id, move |_, _| {
             texture.map(|texture| {
                 SharedMaterial::new(PbrMaterial::new(
+                    &gpu,
                     &assets,
                     PbrMaterialConfig {
                         source: "Image".to_string(),
@@ -94,34 +96,6 @@ impl ElementComponent for ImageFromBytes {
                         .get(&assets)
                         .await
                         .map(|x| Arc::new(x.create_view(&Default::default())))
-                }
-            })
-            .and_then(Result::ok);
-
-        Image { texture }.el()
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct ImageFromUrl {
-    pub url: String,
-}
-
-impl ElementComponent for ImageFromUrl {
-    fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let ImageFromUrl { url } = *self;
-
-        let texture = hooks
-            .use_async(|w| {
-                let assets = w.resource(asset_cache()).clone();
-                async move {
-                    TextureFromUrl {
-                        url: AbsAssetUrl::parse(url)?,
-                        format: wgpu::TextureFormat::Rgba8UnormSrgb,
-                    }
-                    .get(&assets)
-                    .await
-                    .map(|x| Arc::new(x.create_view(&Default::default())))
                 }
             })
             .and_then(Result::ok);

@@ -55,6 +55,7 @@ impl Pipeline {
             PipelineConfig::Materials(config) => materials::pipeline(&ctx, config.clone()).await,
             PipelineConfig::Audio(config) => audio::pipeline(&ctx, config.clone()).await,
         };
+
         for asset in &mut assets {
             asset.tags.extend(self.tags.clone());
             for i in 0..asset.categories.len() {
@@ -68,7 +69,8 @@ impl Pipeline {
 }
 
 pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
-    log::info!("Processing pipeline with out_root={}", ctx.out_root);
+    tracing::info!(?ctx.out_root, 
+        "Processing pipeline");
 
     #[derive(Debug, Clone, Deserialize)]
     #[serde(untagged)]
@@ -104,11 +106,11 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> Vec<OutAsset> {
         .map(|(pipeline_file, pipeline)| {
             let root = pipeline_file.join(".").unwrap();
             let ctx = PipelineCtx {
-                files: ctx.files.sub_directory(root.path().as_str()),
+                files: ctx.files.sub_directory(root.decoded_path().as_str()),
                 process_ctx: ctx.clone(),
                 pipeline: Arc::new(pipeline.clone()),
                 pipeline_file,
-                root_path: ctx.in_root.relative_path(root.path()),
+                root_path: ctx.in_root.relative_path(root.decoded_path()),
             };
             tokio::spawn(async move { pipeline.process(ctx).await })
         })
@@ -135,7 +137,21 @@ pub struct ProcessCtx {
     pub on_status: Arc<dyn Fn(String) -> BoxFuture<'static, ()> + Sync + Send>,
     pub on_error: Arc<dyn Fn(anyhow::Error) -> BoxFuture<'static, ()> + Sync + Send>,
 }
-#[derive(Clone)]
+
+impl std::fmt::Debug for ProcessCtx {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ProcessCtx")
+            .field("assets", &self.assets)
+            .field("files", &self.files)
+            .field("input_file_filter", &self.input_file_filter)
+            .field("package_name", &self.package_name)
+            .field("in_root", &self.in_root)
+            .field("out_root", &self.out_root)
+            .finish_non_exhaustive()
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct FileCollection(pub Arc<Vec<AbsAssetUrl>>);
 impl FileCollection {
     pub fn has_input_file(&self, url: &AbsAssetUrl) -> bool {
@@ -147,13 +163,15 @@ impl FileCollection {
     }
     pub fn find_file(&self, glob_pattern: impl AsRef<str>) -> Option<&AbsAssetUrl> {
         let pattern = glob::Pattern::new(glob_pattern.as_ref()).unwrap();
-        self.0.iter().find(|f| pattern.matches(f.path().as_str()))
+        self.0
+            .iter()
+            .find(|f| pattern.matches(f.decoded_path().as_str()))
     }
     pub fn sub_directory(&self, path: &str) -> Self {
         Self(Arc::new(
             self.0
                 .iter()
-                .filter(|url| url.path().starts_with(path))
+                .filter(|url| url.decoded_path().starts_with(path))
                 .cloned()
                 .collect(),
         ))

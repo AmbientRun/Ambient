@@ -3,26 +3,22 @@ use std::sync::Arc;
 use ambient_core::{
     gpu_components,
     gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
-    hierarchy::children,
 };
-use ambient_ecs::{query, ArchetypeFilter, Component, SystemGroup, World};
+use ambient_ecs::{copy_component_recursive, ArchetypeFilter, Component, SystemGroup, World};
 use ambient_gpu::{
-    gpu::{Gpu, GpuKey},
+    gpu::Gpu,
     mesh_buffer::MeshBuffer,
     shader_module::{BindGroupDesc, GraphicsPipeline, GraphicsPipelineInfo, Shader},
     texture::Texture,
 };
-use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt},
-    include_file,
-};
+use ambient_std::{asset_cache::AssetCache, include_file};
 use wgpu::{BindGroupLayoutEntry, BindingType, PrimitiveTopology, ShaderStages};
 
 use super::{
     FSMain, RendererCollectState, RendererResources, RendererTarget, ShaderModule, TreeRenderer,
     TreeRendererConfig,
 };
-use crate::{bind_groups::BindGroups, RendererConfig};
+use crate::{bind_groups::BindGroups, PostSubmitFunc, RendererConfig};
 
 pub use ambient_ecs::generated::components::core::rendering::{outline, outline_recursive};
 
@@ -41,7 +37,6 @@ pub struct Outlines {
     renderer: TreeRenderer,
     collect_state: RendererCollectState,
     _config: OutlinesConfig,
-    gpu: Arc<Gpu>,
 }
 
 const OUTLINES_BIND_GROUP: &str = "OUTLINES_BIND_GROUP";
@@ -64,12 +59,11 @@ fn get_outlines_layout() -> BindGroupDesc<'static> {
 
 impl Outlines {
     pub fn new(
+        gpu: &Gpu,
         assets: &AssetCache,
         config: OutlinesConfig,
         renderer_config: RendererConfig,
     ) -> Self {
-        let gpu = GpuKey.get(assets);
-
         let shader = Shader::new(
             assets,
             "Outlines",
@@ -80,7 +74,7 @@ impl Outlines {
         .unwrap();
 
         let pipeline = shader.to_pipeline(
-            &gpu,
+            gpu,
             GraphicsPipelineInfo {
                 targets: &[Some(gpu.swapchain_format().into())],
                 topology: PrimitiveTopology::TriangleStrip,
@@ -90,7 +84,7 @@ impl Outlines {
 
         Self {
             outlines: Self::create_outline_texture(
-                gpu.clone(),
+                gpu,
                 wgpu::Extent3d {
                     width: 1,
                     height: 1,
@@ -98,32 +92,32 @@ impl Outlines {
                 },
             ),
             pipeline,
-            collect_state: RendererCollectState::new(assets),
-            renderer: TreeRenderer::new(TreeRendererConfig {
-                gpu: gpu.clone(),
-                assets: assets.clone(),
-                renderer_config,
-                targets: vec![Some(wgpu::ColorTargetState {
-                    format: Outlines::FORMAT,
-                    blend: Some(wgpu::BlendState::ALPHA_BLENDING),
-                    write_mask: wgpu::ColorWrites::all(),
-                })],
-                filter: ArchetypeFilter::new().incl(config.scene).incl(outline()),
-                renderer_resources: config.renderer_resources.clone(),
-                fs_main: FSMain::Outline,
-                opaque_only: false,
-                depth_stencil: false,
-                cull_mode: Some(wgpu::Face::Back),
-                depth_bias: Default::default(),
-            }),
+            collect_state: RendererCollectState::new(gpu),
+            renderer: TreeRenderer::new(
+                gpu,
+                TreeRendererConfig {
+                    renderer_config,
+                    targets: vec![Some(wgpu::ColorTargetState {
+                        format: Outlines::FORMAT,
+                        blend: Some(wgpu::BlendState::ALPHA_BLENDING),
+                        write_mask: wgpu::ColorWrites::all(),
+                    })],
+                    filter: ArchetypeFilter::new().incl(config.scene).incl(outline()),
+                    renderer_resources: config.renderer_resources.clone(),
+                    fs_main: FSMain::Outline,
+                    opaque_only: false,
+                    depth_stencil: false,
+                    cull_mode: Some(wgpu::Face::Back),
+                    depth_bias: Default::default(),
+                },
+            ),
             _config: config,
-            gpu,
         }
     }
 
     pub const FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba32Float;
 
-    fn create_outline_texture(gpu: Arc<Gpu>, size: wgpu::Extent3d) -> Arc<Texture> {
+    fn create_outline_texture(gpu: &Gpu, size: wgpu::Extent3d) -> Arc<Texture> {
         Arc::new(Texture::new(
             gpu,
             &wgpu::TextureDescriptor {
@@ -142,9 +136,11 @@ impl Outlines {
 
     pub fn render(
         &mut self,
+        gpu: &Gpu,
+        assets: &AssetCache,
         world: &mut World,
         encoder: &mut wgpu::CommandEncoder,
-        post_submit: &mut Vec<Box<dyn FnOnce() + Send + Send>>,
+        post_submit: &mut Vec<PostSubmitFunc>,
         target: &RendererTarget,
         bind_groups: &BindGroups,
         mesh_buffer: &MeshBuffer,
@@ -152,13 +148,15 @@ impl Outlines {
         let bind_group_layout = self.pipeline.pipeline().get_bind_group_layout(0);
 
         if self.outlines.size != target.size() {
-            self.outlines = Self::create_outline_texture(self.gpu.clone(), target.size());
+            self.outlines = Self::create_outline_texture(gpu, target.size());
         }
         let outlines = self.outlines.create_view(&Default::default());
 
-        self.collect_state.set_camera(0);
-        self.renderer.update(world);
+        self.collect_state.set_camera(gpu, 0);
+        self.renderer.update(gpu, assets, world);
         self.renderer.run_collect(
+            gpu,
+            assets,
             encoder,
             post_submit,
             bind_groups.mesh_meta,
@@ -185,25 +183,26 @@ impl Outlines {
                 wgpu::IndexFormat::Uint32,
             );
 
-            self.renderer
-                .render(&mut render_pass, &self.collect_state, bind_groups);
+            self.renderer.render(
+                &mut render_pass,
+                &self.collect_state,
+                bind_groups,
+                target.size(),
+            );
             {
                 ambient_profiling::scope!("Drop render pass");
                 drop(render_pass);
             }
         }
 
-        let bind_group = self
-            .gpu
-            .device
-            .create_bind_group(&wgpu::BindGroupDescriptor {
-                layout: &bind_group_layout,
-                entries: &[wgpu::BindGroupEntry {
-                    binding: 0,
-                    resource: wgpu::BindingResource::TextureView(&outlines),
-                }],
-                label: None,
-            });
+        let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &bind_group_layout,
+            entries: &[wgpu::BindGroupEntry {
+                binding: 0,
+                resource: wgpu::BindingResource::TextureView(&outlines),
+            }],
+            label: None,
+        });
 
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: None,
@@ -228,39 +227,7 @@ impl Outlines {
 }
 
 pub fn systems() -> SystemGroup {
-    SystemGroup::new(
-        "outlines",
-        vec![
-            query((outline_recursive().changed(),)).to_system(|q, world, qs, _| {
-                for (id, (val,)) in q.collect_cloned(world, qs) {
-                    world.add_component(id, outline(), val).ok();
-                }
-            }),
-            query((outline_recursive(),))
-                .despawned()
-                .to_system(|q, world, qs, _| {
-                    for (id, _) in q.collect_cloned(world, qs) {
-                        world.remove_component(id, outline()).ok();
-                    }
-                }),
-            query((outline_recursive(), children().changed())).to_system(|q, world, qs, _| {
-                for (_, (val, childs)) in q.collect_cloned(world, qs) {
-                    for c in childs {
-                        world.add_component(c, outline_recursive(), val).ok();
-                    }
-                }
-            }),
-            query((outline_recursive(), children()))
-                .despawned()
-                .to_system(|q, world, qs, _| {
-                    for (_, (_, childs)) in q.collect_cloned(world, qs) {
-                        for c in childs {
-                            world.remove_component(c, outline_recursive()).ok();
-                        }
-                    }
-                }),
-        ],
-    )
+    copy_component_recursive("outlines", outline_recursive(), outline())
 }
 
 pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {

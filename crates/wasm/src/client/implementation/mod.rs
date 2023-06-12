@@ -30,78 +30,6 @@ impl wit::entity::Host for Bindings {
         )
     }
 
-    fn set_animation_controller(
-        &mut self,
-        entity: wit::types::EntityId,
-        animation_controller: wit::entity::AnimationController,
-    ) -> anyhow::Result<()> {
-        shared::implementation::entity::set_animation_controller(
-            self.world_mut(),
-            entity,
-            animation_controller,
-        )
-    }
-
-    fn set_animation_blend(
-        &mut self,
-        entity: wit::types::EntityId,
-        weights: Vec<f32>,
-        times: Vec<f32>,
-        absolute_time: bool,
-    ) -> anyhow::Result<()> {
-        shared::implementation::entity::set_animation_blend(
-            self.world_mut(),
-            entity,
-            &weights,
-            &times,
-            absolute_time,
-        )
-    }
-
-    fn set_animation_action_stack(
-        &mut self,
-        entity: wit::types::EntityId,
-        stack: Vec<wit::entity::AnimationActionStack>,
-    ) -> anyhow::Result<()> {
-        shared::implementation::entity::set_animation_action_stack(self.world_mut(), entity, stack)
-    }
-
-    fn set_animation_binder_mask(
-        &mut self,
-        entity: wit::types::EntityId,
-        mask: Vec<String>,
-    ) -> anyhow::Result<()> {
-        shared::implementation::entity::set_animation_binder_mask(self.world_mut(), entity, mask)
-    }
-
-    fn set_animation_binder_weights(
-        &mut self,
-        entity: wit::types::EntityId,
-        index: u32,
-        mask: Vec<f32>,
-    ) -> anyhow::Result<()> {
-        shared::implementation::entity::set_animation_binder_weights(
-            self.world_mut(),
-            entity,
-            index,
-            mask,
-        )
-    }
-
-    fn get_animation_binder_mask_entities(
-        &mut self,
-        entity: wit::types::EntityId,
-    ) -> anyhow::Result<Vec<wit::types::EntityId>> {
-        shared::implementation::entity::get_animation_binder_mask_entities(self.world_mut(), entity)
-    }
-
-    fn get_animation_binder_mask(
-        &mut self,
-        entity: wit::types::EntityId,
-    ) -> anyhow::Result<Vec<String>> {
-        shared::implementation::entity::get_animation_binder_mask(self.world_mut(), entity)
-    }
-
     fn get_transforms_relative_to(
         &mut self,
         list: Vec<wit::types::EntityId>,
@@ -243,32 +171,14 @@ impl wit::asset::Host for Bindings {
     fn url(&mut self, path: String) -> anyhow::Result<Result<String, wit::asset::UrlError>> {
         shared::implementation::asset::url(self.world(), path, true)
     }
-
-    fn get_animation_asset_status(
-        &mut self,
-        clip_url: String,
-    ) -> anyhow::Result<wit::asset::AssetCacheStatus> {
-        shared::implementation::asset::get_animation_asset_status(self.world_mut(), &clip_url)
-    }
-
-    fn get_animation_asset_metadata(
-        &mut self,
-        clip_urls: Vec<String>,
-    ) -> anyhow::Result<Vec<wit::asset::AnimationAssetMetadata>> {
-        shared::implementation::asset::get_animation_asset_metadata(self.world_mut(), &clip_urls)
-    }
 }
-
 
 impl wit::world_audio::Host for Bindings {
     fn set_listener(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
         shared::implementation::world_audio::set_listener(self.world_mut(), entity)
     }
 
-    fn set_emitter(
-        &mut self,
-        entity: wit::types::EntityId,
-    ) -> anyhow::Result<()> {
+    fn set_emitter(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
         shared::implementation::world_audio::set_emitter(self.world_mut(), entity)
     }
     fn play_sound_on_entity(
@@ -276,6 +186,6 @@ impl wit::world_audio::Host for Bindings {
         sound: String,
         emitter: wit::types::EntityId,
     ) -> anyhow::Result<()> {
-        shared::implementation::world_audio::play_sound_on_entity(self.world_mut(),sound, emitter)
+        shared::implementation::world_audio::play_sound_on_entity(self.world_mut(), sound, emitter)
     }
 }

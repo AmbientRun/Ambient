@@ -1,17 +1,17 @@
 use std::iter::once;
 
 use ambient_core::{
-    asset_cache,
+    asset_cache, gpu,
     transform::{mesh_to_local, rotation, translation},
     ui_scene,
 };
 use ambient_element::{Element, ElementComponent, ElementComponentExt};
 use ambient_gpu::{self, mesh_buffer::MeshBufferKey};
 use ambient_renderer::{
-    color, flat_material::get_flat_shader_unlit, gpu_primitives_lod, gpu_primitives_mesh, material, materials::flat_material::FlatMaterial,
-    primitives, renderer_shader, SharedMaterial,
+    color, flat_material::get_flat_shader_unlit, gpu_primitives_lod, gpu_primitives_mesh, material,
+    materials::flat_material::FlatMaterial, primitives, renderer_shader, SharedMaterial,
 };
-use ambient_std::{asset_cache::SyncAssetKeyExt, cb, mesh::{MeshBuilder}};
+use ambient_std::{asset_cache::SyncAssetKeyExt, cb, mesh::MeshBuilder};
 use glam::{vec2, vec3, Quat, Vec2, Vec3, Vec4};
 use itertools::Itertools;
 
@@ -26,7 +26,10 @@ pub struct GraphStyle {
 
 impl Default for GraphStyle {
     fn default() -> Self {
-        Self { width: 4.0, color: Vec4::X }
+        Self {
+            width: 4.0,
+            color: Vec4::X,
+        }
     }
 }
 
@@ -88,14 +91,22 @@ impl GraphScale {
 
 impl Default for GraphScaleKind {
     fn default() -> Self {
-        Self::Dynamic { spacing: 32.0, snap: true }
+        Self::Dynamic {
+            spacing: 32.0,
+            snap: true,
+        }
     }
 }
 
 impl GraphScaleKind {
     fn to_scale(&self, screen_size: f32, min: f32, max: f32) -> GraphScale {
-        let get_spacing =
-            |spacing| (-9..).map(move |n| 10.0_f32.powi(n)).flat_map(|m| [m, 2.0 * m, 5.0 * m]).find(|&v| v >= spacing).unwrap();
+        let get_spacing = |spacing| {
+            (-9..)
+                .map(move |n| 10.0_f32.powi(n))
+                .flat_map(|m| [m, 2.0 * m, 5.0 * m])
+                .find(|&v| v >= spacing)
+                .unwrap()
+        };
         let (min, max, spacing) = match *self {
             GraphScaleKind::Fixed { count } => {
                 let span = (max - min).abs();
@@ -107,7 +118,14 @@ impl GraphScaleKind {
                 let span = (max - min).abs();
                 let spacing = get_spacing(span * spacing / screen_size);
 
-                let (min, max) = if snap { ((min / spacing).floor() * spacing, (max / spacing).ceil() * spacing) } else { (min, max) };
+                let (min, max) = if snap {
+                    (
+                        (min / spacing).floor() * spacing,
+                        (max / spacing).ceil() * spacing,
+                    )
+                } else {
+                    (min, max)
+                };
 
                 (min, max, spacing)
             }
@@ -120,7 +138,14 @@ impl GraphScaleKind {
 
         let tick_count = (span / spacing) as u32;
 
-        GraphScale { screen_size, spacing, min, max, offset, tick_count }
+        GraphScale {
+            screen_size,
+            spacing,
+            min,
+            max,
+            offset,
+            tick_count,
+        }
     }
 }
 
@@ -128,7 +153,10 @@ impl Default for Graph {
     fn default() -> Self {
         Self {
             points: Default::default(),
-            guide_style: GraphStyle { width: 2.0, color: Vec4::ONE },
+            guide_style: GraphStyle {
+                width: 2.0,
+                color: Vec4::ONE,
+            },
             style: Default::default(),
             width: 161.8,
             height: 100.0,
@@ -144,9 +172,23 @@ impl Default for Graph {
 impl ElementComponent for Graph {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
         let assets = hooks.world.resource(asset_cache());
-        let Self { points, guide_style, style, width, height, max_value, x_scale, y_scale, x_bounds, y_bounds } = *self;
+        let gpu = hooks.world.resource(gpu());
+        let Self {
+            points,
+            guide_style,
+            style,
+            width,
+            height,
+            max_value,
+            x_scale,
+            y_scale,
+            x_bounds,
+            y_bounds,
+        } = *self;
 
-        let points = points.into_iter().filter(|v| v.x.is_normal() && v.y.is_normal() && v.x.abs() < max_value && v.y.abs() < max_value);
+        let points = points.into_iter().filter(|v| {
+            v.x.is_normal() && v.y.is_normal() && v.x.abs() < max_value && v.y.abs() < max_value
+        });
 
         let point_count = points.clone().count();
 
@@ -155,8 +197,12 @@ impl ElementComponent for Graph {
 
         // points.clone().minmax_by_key(|v| v.x)
 
-        let x_bounds = x_bounds.or_else(|| points.clone().map(|v| v.x).minmax().into_option()).unwrap_or((-1.0, 1.0));
-        let y_bounds = y_bounds.or_else(|| points.clone().map(|v| v.y).minmax().into_option()).unwrap_or((-1.0, 1.0));
+        let x_bounds = x_bounds
+            .or_else(|| points.clone().map(|v| v.x).minmax().into_option())
+            .unwrap_or((-1.0, 1.0));
+        let y_bounds = y_bounds
+            .or_else(|| points.clone().map(|v| v.y).minmax().into_option())
+            .unwrap_or((-1.0, 1.0));
 
         let left = vec2(x_bounds.0, y_bounds.0);
         let right = vec2(x_bounds.1, y_bounds.1);
@@ -204,17 +250,41 @@ impl ElementComponent for Graph {
 
         debug_assert_eq!(points.len(), point_count * 2);
 
-        let indices =
-            (0..point_count.saturating_sub(1) as u32).map(|i| i * 2).flat_map(|i| [i, 1 + i, 2 + i, 1 + i, 3 + i, 2 + i]).collect_vec();
+        let indices = (0..point_count.saturating_sub(1) as u32)
+            .map(|i| i * 2)
+            .flat_map(|i| [i, 1 + i, 2 + i, 1 + i, 3 + i, 2 + i])
+            .collect_vec();
 
-        let mesh = MeshBuilder { positions: points, indices, ..MeshBuilder::default() }.build().expect("Invalid graph mesh");
+        let mesh = MeshBuilder {
+            positions: points,
+            indices,
+            ..MeshBuilder::default()
+        }
+        .build()
+        .expect("Invalid graph mesh");
 
-        let mesh = mesh_buffer.insert(&mesh);
+        let mesh = mesh_buffer.insert(gpu, &mesh);
 
         let origin = to_screen_space(Vec2::ZERO) * size;
         let guides = vec![
-            Guide { style: guide_style, len: width, scale: x_scale, dir: Vec2::X, align: vec2(0.0, -origin.y), show_0: false }.el(),
-            Guide { style: guide_style, len: height, scale: y_scale, dir: -Vec2::Y, align: vec2(0.0, -height), show_0: false }.el(),
+            Guide {
+                style: guide_style,
+                len: width,
+                scale: x_scale,
+                dir: Vec2::X,
+                align: vec2(0.0, -origin.y),
+                show_0: false,
+            }
+            .el(),
+            Guide {
+                style: guide_style,
+                len: height,
+                scale: y_scale,
+                dir: -Vec2::Y,
+                align: vec2(0.0, -height),
+                show_0: false,
+            }
+            .el(),
         ];
 
         Element::from(UIBase)
@@ -228,7 +298,10 @@ impl ElementComponent for Graph {
             .init(crate::height(), height)
             .init(crate::scale(), Vec3::ONE)
             .init(renderer_shader(), cb(get_flat_shader_unlit))
-            .init(material(), SharedMaterial::new(FlatMaterial::new(assets, style.color, None)))
+            .init(
+                material(),
+                SharedMaterial::new(FlatMaterial::new(gpu, assets, style.color, None)),
+            )
             .init(color(), Vec4::ONE)
             .init(ui_scene(), ())
             .with(ambient_core::mesh(), mesh)
@@ -247,7 +320,15 @@ struct Guide {
 
 impl ElementComponent for Guide {
     fn render(self: Box<Self>, _: &mut ambient_element::Hooks) -> Element {
-        let Self { style, scale, len, dir, align, show_0, .. } = *self;
+        let Self {
+            style,
+            scale,
+            len,
+            dir,
+            align,
+            show_0,
+            ..
+        } = *self;
 
         let rot = Quat::from_rotation_arc(Vec3::X, dir.extend(0.0));
 
@@ -255,7 +336,9 @@ impl ElementComponent for Guide {
         let screen_offset = scale.offset / scale.span() * scale.screen_size;
         let ticks = (0..=scale.tick_count)
             .map(|i| {
-                let val = (-scale.offset as f64 + scale.min as f64 + i as f64 * scale.spacing as f64) as f32;
+                let val = (-scale.offset as f64
+                    + scale.min as f64
+                    + i as f64 * scale.spacing as f64) as f32;
                 (i, val)
             })
             .filter(|&(i, v)| ((show_0) || Some(i) != scale.ticks_to_orig()) && v >= scale.min)
@@ -264,7 +347,14 @@ impl ElementComponent for Guide {
 
                 let pos = Vec2::X * (f - screen_offset);
 
-                Tick { style, height: style.width * 4.0, pos, text_rot, val }.el()
+                Tick {
+                    style,
+                    height: style.width * 4.0,
+                    pos,
+                    text_rot,
+                    val,
+                }
+                .el()
             })
             .chain([])
             .collect_vec();
@@ -294,7 +384,13 @@ struct Tick {
 
 impl ElementComponent for Tick {
     fn render(self: Box<Self>, _: &mut ambient_element::Hooks) -> Element {
-        let Self { style, height, pos, text_rot, val } = *self;
+        let Self {
+            style,
+            height,
+            pos,
+            text_rot,
+            val,
+        } = *self;
         Rectangle
             .el()
             .with(width(), self.style.width)

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, io::Cursor, path::PathBuf, sync::Arc};
 
-use ambient_animation::{animation_bind_id_from_name, AnimationClip};
+use ambient_animation::AnimationClip;
 use ambient_core::{
     bounding::local_bounding_aabb,
     hierarchy::children,
@@ -11,8 +11,8 @@ use ambient_ecs::{
     query, query_mut, Component, ComponentValue, Entity, EntityId, FrameEvent, System, World,
 };
 use ambient_model::{
-    animation_bind_id, model_from_url, model_skin_ix, model_skins,
-    pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl,
+    model_from_url, model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model,
+    PbrRenderPrimitiveFromUrl,
 };
 use ambient_physics::{
     collider::{
@@ -560,19 +560,10 @@ impl ModelCrate {
     pub fn update_transforms(&mut self) {
         TransformSystem::new().run(self.model_world_mut(), &FrameEvent);
     }
-    pub fn create_animation_bind_ids(&mut self) {
-        let world = self.model_world_mut();
-        for (id, name) in query(name()).collect_cloned(world, None) {
-            world
-                .add_component(id, animation_bind_id(), animation_bind_id_from_name(&name))
-                .unwrap();
-        }
-    }
     pub fn finalize_model(&mut self) {
         self.update_transforms();
         self.update_node_primitive_aabbs_from_cpu_meshes();
         self.model_mut().update_model_aabb();
-        self.create_animation_bind_ids();
         self.model_mut().remove_non_storage_matrices();
     }
 

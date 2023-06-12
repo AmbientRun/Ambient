@@ -46,7 +46,10 @@ impl ElementComponent for Two {
     fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
         Element::from(UIBase)
             .init_default(children())
-            .children(vec![self.first.with(translation(), vec3(100., 0., 0.)), self.second.with(translation(), vec3(0., 100., 0.))])
+            .children(vec![
+                self.first.with(translation(), vec3(100., 0., 0.)),
+                self.second.with(translation(), vec3(0., 100., 0.)),
+            ])
     }
 }
 
@@ -68,7 +71,11 @@ impl ElementComponent for Example {
         eprintln!("Render example {count}");
         if count < 5 {
             Two {
-                first: UIBase.el().with(width(), 150.).with(height(), 30.).with_background(Color::rgba(0.5, 1., 0.5, 1.).into()),
+                first: UIBase
+                    .el()
+                    .with(width(), 150.)
+                    .with(height(), 30.)
+                    .with_background(Color::rgba(0.5, 1., 0.5, 1.).into()),
                 second: FlowColumn(vec![
                     InputTest.el(),
                     Text::el(format!("You clicked {count} times")),
@@ -83,7 +90,11 @@ impl ElementComponent for Example {
                     //     set_count(count + 1);
                     // }))
                     WobbleRect.into(),
-                    UIBase.el().with(width(), 250.).with(height(), 60.).with_background(Color::rgba(0.1, 0.1, 1.0, 1.).into()),
+                    UIBase
+                        .el()
+                        .with(width(), 250.)
+                        .with(height(), 60.)
+                        .with_background(Color::rgba(0.1, 0.1, 1.0, 1.).into()),
                     ContextUser.into(),
                 ])
                 .into(),

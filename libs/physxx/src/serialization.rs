@@ -11,13 +11,39 @@ impl PxSerializationRegistryRef {
     pub fn complete(&self, collection: PxCollectionRef) {
         self.complete_full(collection, None, false)
     }
-    pub fn complete_full(&self, collection: PxCollectionRef, except_for: Option<PxCollectionRef>, follow_joints: bool) {
-        unsafe { physx_sys::PxSerialization_complete_mut(collection.0, self.0, except_for.map_or(null_mut(), |x| x.0), follow_joints) }
+    pub fn complete_full(
+        &self,
+        collection: PxCollectionRef,
+        except_for: Option<PxCollectionRef>,
+        follow_joints: bool,
+    ) {
+        unsafe {
+            physx_sys::PxSerialization_complete_mut(
+                collection.0,
+                self.0,
+                except_for.map_or(null_mut(), |x| x.0),
+                follow_joints,
+            )
+        }
     }
-    pub fn is_serializable(&self, collection: PxCollectionRef, external_reference: Option<PxCollectionRef>) -> bool {
-        unsafe { physx_sys::PxSerialization_isSerializable_mut(collection.0, self.0, external_reference.map_or(null_mut(), |x| x.0)) }
+    pub fn is_serializable(
+        &self,
+        collection: PxCollectionRef,
+        external_reference: Option<PxCollectionRef>,
+    ) -> bool {
+        unsafe {
+            physx_sys::PxSerialization_isSerializable_mut(
+                collection.0,
+                self.0,
+                external_reference.map_or(null_mut(), |x| x.0),
+            )
+        }
     }
-    pub fn serialize_collection_to_xml(&self, out_stream: &PxDefaultMemoryOutputStream, collection: PxCollectionRef) -> bool {
+    pub fn serialize_collection_to_xml(
+        &self,
+        out_stream: &PxDefaultMemoryOutputStream,
+        collection: PxCollectionRef,
+    ) -> bool {
         unsafe {
             physx_sys::PxSerialization_serializeCollectionToXml_mut(
                 out_stream.0 as *mut physx_sys::PxOutputStream,
@@ -46,7 +72,11 @@ impl PxSerializationRegistryRef {
             )
         }
     }
-    pub fn create_collection_from_xml(&self, input_data: &PxDefaultMemoryInputData, cooking: &PxCookingRef) -> Option<PxCollectionRef> {
+    pub fn create_collection_from_xml(
+        &self,
+        input_data: &PxDefaultMemoryInputData,
+        cooking: &PxCookingRef,
+    ) -> Option<PxCollectionRef> {
         unsafe {
             let res = physx_sys::PxSerialization_createCollectionFromXml_mut(
                 input_data.0 as *mut physx_sys::PxInputData,
@@ -142,7 +172,12 @@ impl AsPxPtr<*mut physx_sys::PxOutputStream> for PxDefaultMemoryOutputStream {
 pub struct PxDefaultMemoryInputData(pub(crate) *mut physx_sys::PxDefaultMemoryInputData, Vec<u8>);
 impl PxDefaultMemoryInputData {
     pub fn new(mut data: Vec<u8>) -> Self {
-        Self(unsafe { physx_sys::PxDefaultMemoryInputData_new_alloc(data.as_mut_ptr(), data.len() as u32) }, data)
+        Self(
+            unsafe {
+                physx_sys::PxDefaultMemoryInputData_new_alloc(data.as_mut_ptr(), data.len() as u32)
+            },
+            data,
+        )
     }
 }
 impl Drop for PxDefaultMemoryInputData {

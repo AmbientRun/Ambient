@@ -6,7 +6,6 @@ use std::{
 
 use anyhow::Context;
 use convert_case::{Case, Casing};
-use percent_encoding::percent_decode_str;
 use rand::seq::SliceRandom;
 use relative_path::{RelativePath, RelativePathBuf};
 use serde::{
@@ -135,7 +134,12 @@ impl AbsAssetUrl {
     }
 
     pub fn file_stem(&self) -> Option<&str> {
-        let last = self.0.path().rsplit('/').next().expect("There should be at least one element");
+        let last = self
+            .0
+            .path()
+            .rsplit('/')
+            .next()
+            .expect("There should be at least one element");
         if last.is_empty() {
             None
         } else {
@@ -170,32 +174,42 @@ impl AbsAssetUrl {
     pub fn join(&self, path: impl AsRef<str>) -> Result<Self, ParseError> {
         Ok(AbsAssetUrl(self.0.join(path.as_ref())?))
     }
-    /// Returns the decoded path
-    pub fn path(&self) -> RelativePathBuf {
-        RelativePathBuf::from(&percent_decode_str(self.0.path()).decode_utf8().unwrap())
+
+    /// Returns the url path
+    pub fn decoded_path(&self) -> RelativePathBuf {
+        RelativePathBuf::from(
+            &percent_encoding::percent_decode_str(self.0.path())
+                .decode_utf8()
+                .expect("Invalid UTF-8"),
+        )
     }
+
     pub fn set_path(&mut self, path: impl AsRef<str>) {
         self.0.set_path(path.as_ref());
     }
-    pub fn relative_path(&self, path: impl AsRef<RelativePath>) -> RelativePathBuf {
-        RelativePathBuf::from(self.0.path()).relative(path)
+
+    pub fn relative_path(&self, to: impl AsRef<RelativePath>) -> RelativePathBuf {
+        self.decoded_path().relative(to)
     }
+
     pub fn is_directory(&self) -> bool {
         self.0.path().ends_with('/')
     }
+
     /// Ensures that this url ends with `/`, which is interpreted as a "directory" by the Url package
     pub fn as_directory(&self) -> Self {
         let mut res = self.clone();
         if !res.is_directory() {
-            res.set_path(&format!("{}/", res.path()));
+            res.set_path(&format!("{}/", res.decoded_path()));
         }
         res
     }
+
     /// Ensures that this url doesn't end with `/`, which is interpreted as a "directory" by the Url package
     pub fn as_file(&self) -> Self {
         let mut res = self.clone();
         if res.is_directory() {
-            res.set_path(&res.path().as_str()[0..(res.path().as_str().len() - 1)]);
+            res.set_path(&res.decoded_path().as_str()[0..(res.decoded_path().as_str().len() - 1)]);
         }
         res
     }
@@ -323,7 +337,12 @@ fn test_abs_asset_url() {
         "http://t.c/hello"
     );
 
-    assert_eq!(AbsAssetUrl::parse("http://t.c/a/b/c.png").unwrap().last_dir_name(), Some("b"));
+    assert_eq!(
+        AbsAssetUrl::parse("http://t.c/a/b/c.png")
+            .unwrap()
+            .last_dir_name(),
+        Some("b")
+    );
     assert_eq!(
         AbsAssetUrl::parse("http://t.c/a/b/c.png")
             .unwrap()
@@ -331,9 +350,24 @@ fn test_abs_asset_url() {
         Some("b")
     );
 
-    assert_eq!(AbsAssetUrl::parse("http://t.c/a/").unwrap().file_stem(), None);
-    assert_eq!(AbsAssetUrl::parse("http://t.c/a/b").unwrap().file_stem().as_deref(), Some("b"));
-    assert_eq!(AbsAssetUrl::parse("http://t.c/a/b/c.png").unwrap().file_stem().as_deref(), Some("c"));
+    assert_eq!(
+        AbsAssetUrl::parse("http://t.c/a/").unwrap().file_stem(),
+        None
+    );
+    assert_eq!(
+        AbsAssetUrl::parse("http://t.c/a/b")
+            .unwrap()
+            .file_stem()
+            .as_deref(),
+        Some("b")
+    );
+    assert_eq!(
+        AbsAssetUrl::parse("http://t.c/a/b/c.png")
+            .unwrap()
+            .file_stem()
+            .as_deref(),
+        Some("c")
+    );
 }
 
 #[test]

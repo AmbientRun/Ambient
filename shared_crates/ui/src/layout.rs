@@ -7,14 +7,17 @@ use crate::{use_window_logical_resolution, UIBase, UIExt};
 use ambient_cb::Cb;
 use ambient_color::Color;
 use ambient_element::{
-    define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent, ElementComponentExt, Hooks,
+    define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent,
+    ElementComponentExt, Hooks,
 };
 use ambient_guest_bridge::components::{
     ecs::children,
     layout::{
-        align_horizontal_begin, align_horizontal_center, align_vertical_begin, align_vertical_center, fit_horizontal_children,
-        fit_horizontal_none, fit_horizontal_parent, fit_vertical_children, fit_vertical_none, fit_vertical_parent, height, is_book_file,
-        layout_bookcase, layout_dock, layout_flow, orientation_horizontal, orientation_vertical, width,
+        align_horizontal_begin, align_horizontal_center, align_vertical_begin,
+        align_vertical_center, fit_horizontal_children, fit_horizontal_none, fit_horizontal_parent,
+        fit_vertical_children, fit_vertical_none, fit_vertical_parent, height, is_book_file,
+        layout_bookcase, layout_dock, layout_flow, orientation_horizontal, orientation_vertical,
+        width,
     },
     transform::{local_to_parent, translation},
 };
@@ -28,7 +31,11 @@ define_el_function_for_vec_element_newtype!(WindowSized);
 impl ElementComponent for WindowSized {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let res = use_window_logical_resolution(hooks);
-        Dock(self.0).el().with(width(), res.x as _).with(height(), res.y as _).remove(local_to_parent())
+        Dock(self.0)
+            .el()
+            .with(width(), res.x as _)
+            .with(height(), res.y as _)
+            .remove(local_to_parent())
     }
 }
 
@@ -43,7 +50,10 @@ pub struct Dock(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(Dock);
 impl ElementComponent for Dock {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Element::from(UIBase).init_default(layout_dock()).init_default(children()).children(self.0)
+        Element::from(UIBase)
+            .init_default(layout_dock())
+            .init_default(children())
+            .children(self.0)
     }
 }
 
@@ -56,7 +66,10 @@ pub struct Flow(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(Flow);
 impl ElementComponent for Flow {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Element::from(UIBase).init_default(layout_flow()).init_default(children()).children(self.0)
+        Element::from(UIBase)
+            .init_default(layout_flow())
+            .init_default(children())
+            .children(self.0)
     }
 }
 
@@ -83,7 +96,9 @@ pub struct BookFile {
 }
 impl ElementComponent for BookFile {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Element::from(UIBase).init_default(is_book_file()).children(vec![self.container, self.book])
+        Element::from(UIBase)
+            .init_default(is_book_file())
+            .children(vec![self.container, self.book])
     }
 }
 
@@ -173,7 +188,10 @@ pub fn FixedGrid(
             .map(|(i, item)| {
                 let x = i % items_horizontal;
                 let y = i / items_horizontal;
-                item.with(translation(), vec3(x as f32 * item_stride.x, y as f32 * item_stride.y, 0.))
+                item.with(
+                    translation(),
+                    vec3(x as f32 * item_stride.x, y as f32 * item_stride.y, 0.),
+                )
             })
             .collect_vec(),
     )
@@ -211,10 +229,16 @@ pub fn Separator(
     /// Whether the separator is vertical or horizontal.
     vertical: bool,
 ) -> Element {
-    let el = Flow(vec![]).el().with_background(Color::rgba(0., 0., 0., 0.8).into());
+    let el = Flow(vec![])
+        .el()
+        .with_background(Color::rgba(0., 0., 0., 0.8).into());
     if vertical {
-        el.with(width(), 1.).with_default(fit_horizontal_none()).with_default(fit_vertical_parent())
+        el.with(width(), 1.)
+            .with_default(fit_horizontal_none())
+            .with_default(fit_vertical_parent())
     } else {
-        el.with(height(), 1.).with_default(fit_horizontal_parent()).with_default(fit_vertical_none())
+        el.with(height(), 1.)
+            .with_default(fit_horizontal_parent())
+            .with_default(fit_vertical_none())
     }
 }

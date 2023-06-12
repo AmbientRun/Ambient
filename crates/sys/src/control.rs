@@ -27,12 +27,17 @@ pub struct ControlRegistration<T> {
 
 impl<T> ControlRegistration<T> {
     fn new() -> Self {
-        Self { inner: Arc::new(InnerState::new()) }
+        Self {
+            inner: Arc::new(InnerState::new()),
+        }
     }
 
     /// Take control of this future
     pub fn control<F>(self, fut: F) -> ControlledFuture<F, T> {
-        ControlledFuture { fut, state: self.inner }
+        ControlledFuture {
+            fut,
+            state: self.inner,
+        }
     }
 }
 
@@ -44,7 +49,12 @@ impl<T> Default for ControlRegistration<T> {
 
 impl<T> InnerState<T> {
     fn new() -> Self {
-        Self { waker: Mutex::new(None), res: Mutex::new(None), woken: AtomicBool::new(false), aborted: AtomicBool::new(false) }
+        Self {
+            waker: Mutex::new(None),
+            res: Mutex::new(None),
+            woken: AtomicBool::new(false),
+            aborted: AtomicBool::new(false),
+        }
     }
 
     fn wake(&self) {
@@ -140,8 +150,16 @@ impl<T> ControlHandle<T> {
 impl<T> Future for ControlHandle<T> {
     type Output = Result<T, JoinError>;
 
-    fn poll(self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> std::task::Poll<Self::Output> {
-        if self.state.woken.compare_exchange(true, false, Ordering::Release, Ordering::Relaxed).is_ok() {
+    fn poll(
+        self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<Self::Output> {
+        if self
+            .state
+            .woken
+            .compare_exchange(true, false, Ordering::Release, Ordering::Relaxed)
+            .is_ok()
+        {
             eprintln!("Future completed");
 
             let value = self.state.res.lock().take().unwrap();
@@ -162,7 +180,12 @@ where
 {
     let reg = ControlRegistration::new();
 
-    (ControlHandle { state: reg.inner.clone() }, reg.control(fut))
+    (
+        ControlHandle {
+            state: reg.inner.clone(),
+        },
+        reg.control(fut),
+    )
 }
 
 /// Obtain a control handle and a permit which allows you to associate and control a future with
@@ -173,5 +196,10 @@ where
 {
     let reg = ControlRegistration::new();
 
-    (ControlHandle { state: reg.inner.clone() }, reg)
+    (
+        ControlHandle {
+            state: reg.inner.clone(),
+        },
+        reg,
+    )
 }

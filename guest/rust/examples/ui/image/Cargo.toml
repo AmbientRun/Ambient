@@ -1,5 +1,5 @@
 [package]
-name = "skin_tracking"
+name = "image"
 
 edition = "2021"
 publish = false
@@ -10,7 +10,7 @@ version = { workspace = true }
 ambient_api = { workspace = true }
 
 [[bin]]
-name = "client_skin_tracking"
+name = "image_client"
 path = "src/client.rs"
 required-features = ["client"]
 

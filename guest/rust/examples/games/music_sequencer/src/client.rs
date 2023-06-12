@@ -1,3 +1,6 @@
+use std::time::Duration;
+
+use ambient_api::global::time;
 use ambient_api::{entity::synchronized_resources, messages::Frame, prelude::*};
 
 mod common;
@@ -17,7 +20,7 @@ pub fn main() {
         }
 
         let now = time();
-        if now - last_note_time > seconds_per_note(bpm) {
+        if now - last_note_time > Duration::from_secs_f32(seconds_per_note(bpm)) {
             last_note_time = now;
             cursor = (cursor + 1) % common::NOTE_COUNT;
             tree.migrate_root(&mut World, App::el(cursor));

@@ -8,6 +8,7 @@ use ambient_shared_types::{
 };
 use anyhow::Context as AnyhowContext;
 use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+use std::time::Duration;
 
 pub type EntityId = u128;
 
@@ -182,6 +183,7 @@ impl PrimitiveValue {
             PrimitiveType::Uvec4 => Self::Uvec4(UVec4::from_array(as_array(v, |v| {
                 Ok(as_integer(v)? as u32)
             })?)),
+            PrimitiveType::Duration => return Ok(None),
             PrimitiveType::ProceduralMeshHandle => return Ok(None),
             PrimitiveType::ProceduralTextureHandle => return Ok(None),
             PrimitiveType::ProceduralSamplerHandle => return Ok(None),

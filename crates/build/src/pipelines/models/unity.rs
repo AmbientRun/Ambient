@@ -6,6 +6,7 @@ use ambient_core::{
     transform::{get_world_transform, mesh_to_local, rotation, scale, translation},
 };
 use ambient_ecs::{Entity, EntityId, World};
+use ambient_gpu::sampler::SamplerKey;
 use ambient_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
 use ambient_model_import::{
     dotdot_path,
@@ -54,7 +55,7 @@ pub async fn pipeline(
             .iter()
             .cloned()
             .filter_map(|file| {
-                if let Some(base_path) = file.path().as_str().strip_suffix(".meta") {
+                if let Some(base_path) = file.decoded_path().as_str().strip_suffix(".meta") {
                     let base_path = base_path.to_string();
                     let mut base_file = file.clone();
                     base_file.set_path(base_path);
@@ -104,7 +105,7 @@ pub async fn pipeline(
                     )
                     .unwrap();
 
-                    let out_model_path = ctx.in_root().relative_path(file.path());
+                    let out_model_path = ctx.in_root().relative_path(file.decoded_path());
                     let out_model_url =
                         ctx.out_root().push(&out_model_path).unwrap().as_directory();
 
@@ -130,7 +131,7 @@ pub async fn pipeline(
                         id: asset_id_from_url(&file),
                         type_: AssetType::Prefab,
                         hidden: false,
-                        name: file.path().file_name().unwrap().to_string(),
+                        name: file.decoded_path().file_name().unwrap().to_string(),
                         tags: Default::default(),
                         categories: Default::default(),
                         preview: OutAssetPreview::FromModel {
@@ -155,7 +156,7 @@ pub async fn pipeline(
                 async move {
                     let mut res = Vec::new();
 
-                    let out_path = ctx.in_root().relative_path(file.path());
+                    let out_path = ctx.in_root().relative_path(file.decoded_path());
                     let out_root = ctx.out_root().push(&out_path).unwrap();
 
                     let pipeline = ModelImportPipeline::new()
@@ -165,7 +166,7 @@ pub async fn pipeline(
                             force_assimp: config.force_assimp,
                         })
                         .add_step(ModelImportTransform::SetName {
-                            name: file.path().file_name().unwrap().to_string(),
+                            name: file.decoded_path().file_name().unwrap().to_string(),
                         })
                         .add_step(ModelImportTransform::Transform(ModelTransform::Center))
                         .add_step(ModelImportTransform::CreatePrefab)
@@ -193,7 +194,7 @@ pub async fn pipeline(
                         id: asset_id_from_url(&file),
                         type_: AssetType::Prefab,
                         hidden: false,
-                        name: file.path().file_name().unwrap().to_string(),
+                        name: file.decoded_path().file_name().unwrap().to_string(),
                         tags: Default::default(),
                         categories: Default::default(),
                         preview: OutAssetPreview::FromModel {
@@ -349,7 +350,7 @@ impl UnityMaterials {
                     let out_image_path = self
                         .ctx
                         .in_root()
-                        .relative_path(file.path())
+                        .relative_path(file.decoded_path())
                         .prejoin("materials")
                         .with_extension("png");
                     let ctx = self.ctx.clone();
@@ -388,6 +389,7 @@ impl UnityMaterials {
                 double_sided: Some(true), // TODO: Double sided is configured in the shader in unity, so hard to know. Maybe make user configureable
                 metallic: 1.,
                 roughness: 1.,
+                sampler: Some(SamplerKey::LINEAR_CLAMP_TO_EDGE),
             };
             self.materials.insert(name.to_string(), mat.clone());
             Ok(mat)

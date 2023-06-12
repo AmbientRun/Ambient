@@ -32,7 +32,11 @@ ambient_renderer = { path = "../crates/renderer" }
 ambient_rpc = { path = "../crates/rpc" }
 ambient_layout = { path = "../crates/layout" }
 ambient_text = { path = "../crates/text" }
-ambient_wasm = { path = "../crates/wasm" }
+ambient_wasm = { path = "../crates/wasm", features = [
+    "native",
+    "wit",
+    "physics",
+] }
 ambient_std = { path = "../crates/std" }
 ambient_ui_native = { path = "../crates/ui_native" }
 ambient_world_audio = { path = "../crates/world_audio" }
@@ -50,6 +54,7 @@ ambient_shared_types = { path = "../shared_crates/shared_types", features = [
 tracing-tree = { workspace = true, optional = true }
 tracing-subscriber = { workspace = true, optional = true }
 tracing-log = { workspace = true, optional = true }
+time = { workspace = true }
 
 anyhow = { workspace = true }
 bincode = { workspace = true }
@@ -60,9 +65,9 @@ env_logger = { workspace = true }
 futures = { workspace = true }
 flume = { workspace = true }
 glam = { workspace = true }
-local-ip-address = { workspace = true }
 log = { workspace = true }
 parking_lot = { workspace = true }
+rustls-pemfile = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
@@ -87,6 +92,7 @@ assimp = ["ambient_model_import/russimp"]
 tracing = ["tracing-tree", "tracing-subscriber", "tracing-log"]
 tls-native-roots = ["ambient_network/tls-native-roots"]
 tls-webpki-roots = ["ambient_network/tls-webpki-roots"]
+hotload-includes = ["ambient_app/hotload-includes", "ambient_decals/hotload-includes"]
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 axum = { workspace = true }

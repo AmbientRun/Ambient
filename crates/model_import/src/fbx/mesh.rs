@@ -390,8 +390,12 @@ impl FbxGeometry {
                     (Vec::new(), Vec::new())
                 };
 
-                if tangents.is_empty() && !texcoords.is_empty() && !texcoords[0].is_empty() {
-                    tangents = generate_tangents(&positions, &texcoords[0], &indices);
+                if tangents.is_empty()
+                    && !texcoords.is_empty()
+                    && !texcoords[0].is_empty()
+                    && !normals.is_empty()
+                {
+                    tangents = generate_tangents(&positions, &texcoords[0], &normals, &indices);
                 }
 
                 Some(

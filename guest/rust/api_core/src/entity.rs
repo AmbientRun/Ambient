@@ -1,14 +1,13 @@
 use crate::{
+    components::core::ecs::{children, parent},
     global::{EntityId, Vec3},
     internal::{
         component::{Component, Entity, SupportedValue, UntypedComponent},
         conversion::{FromBindgen, IntoBindgen},
-        wit,
+        wit::{self},
     },
     prelude::block_until,
 };
-
-pub use wit::entity::{AnimationAction, AnimationController, AnimationActionStack, AnimationSampleAbsolute, AnimationSamplePercentage, AnimationStackBlend};
 
 /// Spawns an entity containing the `components`.
 ///
@@ -21,12 +20,13 @@ pub fn spawn(components: &Entity) -> EntityId {
         .from_bindgen()
 }
 
-/// Waits until `id` has the `component`. Note that this may never resolve if the entity
-/// does not complete spawning, or the id in question refers to an entity that does
-/// not exist.
-pub async fn wait_for_component<T: SupportedValue>(entity: EntityId, component: Component<T>) -> T {
-    block_until(move || has_component(entity, component)).await;
-    get_component(entity, component).unwrap()
+/// Waits until `id` has the `component`. If the entity was deleted the method returns None.
+pub async fn wait_for_component<T: SupportedValue>(
+    entity: EntityId,
+    component: Component<T>,
+) -> Option<T> {
+    block_until(move || !exists(entity) || has_component(entity, component)).await;
+    get_component(entity, component)
 }
 
 /// Despawns `entity` from the world. `entity` will not work with any other functions afterwards.
@@ -35,40 +35,15 @@ pub async fn wait_for_component<T: SupportedValue>(entity: EntityId, component: 
 pub fn despawn(entity: EntityId) -> Option<Entity> {
     wit::entity::despawn(entity.into_bindgen()).from_bindgen()
 }
-/// Set the animation (controller) for `entity`.
-pub fn set_animation_controller(entity: EntityId, controller: AnimationController) {
-    wit::entity::set_animation_controller(entity.into_bindgen(), controller)
-}
-
-/// Set the animation (controller) weights (optional) and times (optional) for `entity`.
-pub fn set_animation_blend(entity: EntityId, weights: &[f32], times: &[f32], absolute_time: bool) {
-    wit::entity::set_animation_blend(entity.into_bindgen(), weights, times, absolute_time)
-}
-
-/// Set the animation blend stack for `entity`. Requires `set_animation_binder_mask` and `set_animation_binder_weights` to be set as well even if empty to add the components to the entity.
-pub fn set_animation_action_stack(entity: EntityId, stack: &[AnimationActionStack]) {
-    wit::entity::set_animation_action_stack(entity.into_bindgen(), stack)
-}
-
-/// Set the animation blend stack binder mask for blending weight masks. See `set_animation_binder_weights`.
-pub fn set_animation_binder_mask(entity: EntityId, mask: &[&str]) {
-    wit::entity::set_animation_binder_mask(entity.into_bindgen(), mask)
-}
-
-/// Get the animation blend stack binder mask for blending weight masks. See `set_animation_binder_weights`.
-/// Also sets and retrieves the full the binder mask all if animation_binder_mask is not set.
-pub fn get_animation_binder_mask(entity: EntityId) -> Vec<String> {
-    wit::entity::get_animation_binder_mask(entity.into_bindgen())
-}
-
-/// Set the animation blend stack binder weights. The backing vector will resize to fit the mask.
-pub fn set_animation_binder_weights(entity: EntityId, index: u32, mask: &[f32]) {
-    wit::entity::set_animation_binder_weights(entity.into_bindgen(), index, mask)
-}
-
-/// Gets the associated entities of the binder mask
-pub fn get_animation_binder_mask_entities(entity: EntityId) -> Vec<EntityId> {
-    wit::entity::get_animation_binder_mask_entities(entity.into_bindgen()).from_bindgen()
+/// Despawns `entity` and all of its children.
+pub fn despawn_recursive(entity: EntityId) {
+    if let Some(res) = despawn(entity) {
+        if let Some(children) = res.get_ref(children()) {
+            for c in children {
+                despawn_recursive(c);
+            }
+        }
+    }
 }
 
 /// Unconverted bindgen transforms
@@ -77,7 +52,6 @@ pub struct RawTransforms {
 }
 
 impl RawTransforms {
-
     /// Convert transforms into a list of Mat4
     pub fn into_mat4(self) -> Vec<glam::Mat4> {
         self.transforms.from_bindgen()
@@ -94,10 +68,9 @@ impl RawTransforms {
 pub fn get_transforms_relative_to(list: &[EntityId], origin: EntityId) -> RawTransforms {
     let entities: Vec<wit::types::EntityId> = list.iter().map(|x| x.into_bindgen()).collect();
     RawTransforms {
-        transforms: wit::entity::get_transforms_relative_to(&entities, origin.into_bindgen())
+        transforms: wit::entity::get_transforms_relative_to(&entities, origin.into_bindgen()),
     }
 }
-
 
 /// Checks if the `entity` exists.
 pub fn exists(entity: EntityId) -> bool {
@@ -187,7 +160,7 @@ pub fn remove_components(entity: EntityId, components: &[&dyn UntypedComponent])
     wit::component::remove_components(entity.into_bindgen(), &components)
 }
 
-/// Mutates the component `name` for `entity` using the passed in `mutator`, and returns its value.
+/// Mutates the component `component` for `entity` using the passed in `mutator`, and returns its value.
 ///
 /// This will not set the component if the value is the same, which will prevent change events from
 /// being unnecessarily fired.
@@ -205,7 +178,7 @@ pub fn mutate_component<T: SupportedValue + SupportedValue + Clone + PartialEq>(
     Some(value)
 }
 
-/// Mutates the component `name` for `entity` using the passed in `mutator`, or sets it
+/// Mutates the component `component` for `entity` using the passed in `mutator`, or sets it
 /// to `default` if it doesn't exist, and returns its value.
 ///
 /// This will not set the component if the value is the same, which will prevent change events from
@@ -223,6 +196,26 @@ pub fn mutate_component_with_default<T: SupportedValue + SupportedValue + Clone 
         set_component(entity, component, default.clone());
         default
     }
+}
+
+/// Adds `child` as a child to `entity`.
+pub fn add_child(entity: EntityId, child: EntityId) {
+    if has_component(entity, children()) {
+        mutate_component(entity, children(), |children| children.push(child));
+    } else {
+        add_component(entity, children(), vec![child]);
+    }
+    add_component(child, parent(), entity);
+}
+
+/// Removes `child` as a child to `entity`.
+pub fn remove_child(entity: EntityId, child: EntityId) {
+    if has_component(entity, children()) {
+        mutate_component(entity, children(), |children| {
+            children.retain(|x| *x != child)
+        });
+    }
+    remove_component(child, parent());
 }
 
 /// Gets the resource entity. The components of this entity contain global state for this ECS world.

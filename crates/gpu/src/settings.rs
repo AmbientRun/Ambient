@@ -51,7 +51,7 @@ impl Settings {
 
         let settings_dir = project_dirs.config_dir();
         if !settings_dir.exists() {
-            std::fs::create_dir_all(&settings_dir).with_context(|| {
+            std::fs::create_dir_all(settings_dir).with_context(|| {
                 format!(
                     "Creating {APPLICATION} settings directory at {}",
                     settings_dir.display()
@@ -70,7 +70,7 @@ impl Settings {
             Settings::default()
         };
 
-        std::fs::write(&settings_path, &toml::to_string(&settings)?)
+        std::fs::write(&settings_path, toml::to_string(&settings)?)
             .with_context(|| format!("Writing {FILE_NAME}"))?;
 
         Ok(settings)

@@ -20,11 +20,7 @@ use wgpu::util::DeviceExt;
 
 use crate::shader_module::DEPTH_FORMAT;
 
-use super::{
-    fill::FillerKey,
-    gpu::{Gpu, GpuKey},
-    mipmap::generate_mipmaps,
-};
+use super::{fill::FillerKey, gpu::Gpu, mipmap::generate_mipmaps};
 
 static TEXTURE_ALIVE_COUNT: AtomicU32 = AtomicU32::new(0);
 static TEXTURE_ID_COUNT: AtomicU32 = AtomicU32::new(0);
@@ -32,7 +28,6 @@ static TEXTURES_TOTAL_SIZE: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Debug)]
 pub struct Texture {
-    pub gpu: Arc<Gpu>,
     pub id: u32,
     pub label: Option<String>,
     pub handle: wgpu::Texture,
@@ -65,7 +60,7 @@ impl Texture {
         size_in_bytes
     }
 
-    pub fn new(gpu: Arc<Gpu>, descriptor: &wgpu::TextureDescriptor) -> Self {
+    pub fn new(gpu: &Gpu, descriptor: &wgpu::TextureDescriptor) -> Self {
         TEXTURE_ALIVE_COUNT.fetch_add(1, Ordering::SeqCst);
         let id = TEXTURE_ID_COUNT.fetch_add(1, Ordering::SeqCst);
         let size_in_bytes = Self::size_in_bytes_from_desc(descriptor);
@@ -79,10 +74,9 @@ impl Texture {
             sample_count: descriptor.sample_count,
             mip_level_count: descriptor.mip_level_count,
             handle: gpu.device.create_texture(descriptor),
-            gpu,
         }
     }
-    pub fn new_with_data(gpu: Arc<Gpu>, descriptor: &wgpu::TextureDescriptor, data: &[u8]) -> Self {
+    pub fn new_with_data(gpu: &Gpu, descriptor: &wgpu::TextureDescriptor, data: &[u8]) -> Self {
         TEXTURE_ALIVE_COUNT.fetch_add(1, Ordering::SeqCst);
         let id = TEXTURE_ID_COUNT.fetch_add(1, Ordering::SeqCst);
         let size_in_bytes = Self::size_in_bytes_from_desc(descriptor);
@@ -98,11 +92,10 @@ impl Texture {
             handle: gpu
                 .device
                 .create_texture_with_data(&gpu.queue, descriptor, data),
-            gpu,
         }
     }
     pub fn from_file<P: AsRef<Path> + std::fmt::Debug>(
-        gpu: Arc<Gpu>,
+        gpu: &Gpu,
         path: P,
         format: wgpu::TextureFormat,
     ) -> Self {
@@ -115,26 +108,26 @@ impl Texture {
         )
     }
     pub fn from_image_mipmapped(
+        gpu: &Gpu,
         assets: &AssetCache,
         image: DynamicImage,
         format: wgpu::TextureFormat,
         label: wgpu::Label,
     ) -> Self {
-        Self::from_rgba8_image_mipmapped(assets, &image.to_rgba8(), format, label)
+        Self::from_rgba8_image_mipmapped(gpu, assets, &image.to_rgba8(), format, label)
     }
     pub fn from_rgba8_image_mipmapped(
+        gpu: &Gpu,
         assets: &AssetCache,
         image: &image::RgbaImage,
         format: wgpu::TextureFormat,
         label: wgpu::Label,
     ) -> Self {
-        let gpu = GpuKey.get(assets);
-
         let size_max = image.width().max(image.height());
         let mip_levels = size_max.ilog2().max(1);
 
         let texture = Self::new(
-            gpu.clone(),
+            gpu,
             &wgpu::TextureDescriptor {
                 size: wgpu::Extent3d {
                     width: image.width(),
@@ -152,13 +145,14 @@ impl Texture {
                 view_formats: &[],
             },
         );
-        texture.write(image.as_raw());
+        texture.write(gpu, image.as_raw());
         let mut encoder = gpu
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: Some("Texture.from_image_mipmapped"),
             });
         generate_mipmaps(
+            gpu,
             assets,
             &mut encoder,
             &texture.handle,
@@ -170,7 +164,7 @@ impl Texture {
         texture
     }
     pub fn from_image(
-        gpu: Arc<Gpu>,
+        gpu: &Gpu,
         image: DynamicImage,
         format: wgpu::TextureFormat,
         label: wgpu::Label,
@@ -198,12 +192,12 @@ impl Texture {
     }
     /// This will automatically resize the images to the largest size if they're not the same size
     pub fn array_rgba8_mipmapped(
+        gpu: &Gpu,
         assets: &AssetCache,
         label: Option<&str>,
         mut data: Vec<RgbaImage>,
         format: wgpu::TextureFormat,
     ) -> Self {
-        let gpu = GpuKey.get(assets);
         let layers = data.len();
 
         let min_size = data
@@ -231,7 +225,7 @@ impl Texture {
         let mip_levels = size_max.ilog2();
 
         let texture = Self::new(
-            gpu.clone(),
+            gpu,
             &wgpu::TextureDescriptor {
                 size: wgpu::Extent3d {
                     width: data[0].width(),
@@ -250,7 +244,7 @@ impl Texture {
             },
         );
         for (layer, img) in data.into_iter().enumerate() {
-            texture.gpu.queue.write_texture(
+            gpu.queue.write_texture(
                 wgpu::ImageCopyTexture {
                     texture: &texture.handle,
                     mip_level: 0,
@@ -284,6 +278,7 @@ impl Texture {
             });
         for layer in 0..layers {
             generate_mipmaps(
+                gpu,
                 assets,
                 &mut encoder,
                 &texture.handle,
@@ -297,6 +292,7 @@ impl Texture {
     }
 
     pub fn array_from_files<P: AsRef<Path> + std::fmt::Debug>(
+        gpu: &Gpu,
         assets: &AssetCache,
         paths: Vec<P>,
         format: wgpu::TextureFormat,
@@ -313,10 +309,10 @@ impl Texture {
             .collect_vec();
 
         let name = paths.iter().map(|x| format!("{x:?}")).join(", ");
-        Self::array_rgba8_mipmapped(assets, Some(&name), imgs, format)
+        Self::array_rgba8_mipmapped(gpu, assets, Some(&name), imgs, format)
     }
 
-    pub fn from_array2(gpu: Arc<Gpu>, data: &Array2<f32>) -> Self {
+    pub fn from_array2(gpu: &Gpu, data: &Array2<f32>) -> Self {
         Self::new_with_data(
             gpu,
             &wgpu::TextureDescriptor {
@@ -337,13 +333,13 @@ impl Texture {
         )
     }
 
-    pub fn write_array2(&self, data: &Array2<f32>) {
+    pub fn write_array2(&self, gpu: &Gpu, data: &Array2<f32>) {
         let size = wgpu::Extent3d {
             width: data.shape()[0] as u32,
             height: data.shape()[1] as u32,
             depth_or_array_layers: 1,
         };
-        self.gpu.queue.write_texture(
+        gpu.queue.write_texture(
             wgpu::ImageCopyTexture {
                 texture: &self.handle,
                 mip_level: 0,
@@ -360,11 +356,11 @@ impl Texture {
         );
     }
 
-    pub fn write_array<A: Pod, D: Dimension>(&self, data: &Array<A, D>) {
-        self.write(bytemuck::cast_slice(data.as_slice().unwrap()));
+    pub fn write_array<A: Pod, D: Dimension>(&self, gpu: &Gpu, data: &Array<A, D>) {
+        self.write(gpu, bytemuck::cast_slice(data.as_slice().unwrap()));
     }
-    pub fn write(&self, data: &[u8]) {
-        self.gpu.queue.write_texture(
+    pub fn write(&self, gpu: &Gpu, data: &[u8]) {
+        gpu.queue.write_texture(
             wgpu::ImageCopyTexture {
                 texture: &self.handle,
                 mip_level: 0,
@@ -381,23 +377,25 @@ impl Texture {
         );
     }
 
-    pub fn reader(&self) -> TextureReader {
-        let mut encoder = self
-            .gpu
+    pub fn reader(&self, gpu: &Gpu) -> TextureReader {
+        let mut encoder = gpu
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-        let reader = self.reader_with_encoder(&mut encoder);
-        self.gpu.queue.submit(Some(encoder.finish()));
+        let reader = self.reader_with_encoder(gpu, &mut encoder);
+        gpu.queue.submit(Some(encoder.finish()));
         reader
     }
-    pub fn reader_with_encoder(&self, encoder: &mut wgpu::CommandEncoder) -> TextureReader {
-        let reader =
-            TextureReader::new(self.gpu.clone(), self.size, self.sample_count, self.format);
+    pub fn reader_with_encoder(
+        &self,
+        gpu: &Gpu,
+        encoder: &mut wgpu::CommandEncoder,
+    ) -> TextureReader {
+        let reader = TextureReader::new(gpu, self.size, self.sample_count, self.format);
         reader.copy_texture_with_encoder(&self.handle, encoder);
         reader
     }
 
-    pub fn new_single_color_texture(gpu: Arc<Gpu>, color: UVec4) -> Self {
+    pub fn new_single_color_texture(gpu: &Gpu, color: UVec4) -> Self {
         Self::new_with_data(
             gpu,
             &wgpu::TextureDescriptor {
@@ -418,7 +416,7 @@ impl Texture {
         )
     }
 
-    pub fn new_single_color_texture_array(gpu: Arc<Gpu>, colors: Vec<UVec4>) -> Self {
+    pub fn new_single_color_texture_array(gpu: &Gpu, colors: Vec<UVec4>) -> Self {
         Self::new_with_data(
             gpu,
             &wgpu::TextureDescriptor {
@@ -445,24 +443,25 @@ impl Texture {
             ),
         )
     }
-    pub fn generate_mipmaps(&self, assets: &AssetCache) {
-        let mut encoder = self
-            .gpu
+    pub fn generate_mipmaps(&self, gpu: &Gpu, assets: &AssetCache) {
+        let mut encoder = gpu
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: Some("Texture.generate_mipmaps"),
             });
-        self.generate_mipmaps_with_encoder(assets, &mut encoder);
-        self.gpu.queue.submit(Some(encoder.finish()));
+        self.generate_mipmaps_with_encoder(gpu, assets, &mut encoder);
+        gpu.queue.submit(Some(encoder.finish()));
     }
 
     pub fn generate_mipmaps_with_encoder(
         &self,
+        gpu: &Gpu,
         assets: &AssetCache,
         encoder: &mut wgpu::CommandEncoder,
     ) {
         for l in 0..self.size.depth_or_array_layers {
             generate_mipmaps(
+                gpu,
                 assets,
                 encoder,
                 &self.handle,
@@ -472,12 +471,13 @@ impl Texture {
             );
         }
     }
-    pub fn fill(&self, assets: &AssetCache, color: Vec4) {
+    pub fn fill(&self, gpu: &Gpu, assets: &AssetCache, color: Vec4) {
         FillerKey {
             format: self.format,
         }
         .get(assets)
         .run(
+            gpu,
             &self.handle.create_view(&Default::default()),
             self.size,
             color,
@@ -514,7 +514,6 @@ impl Deref for TextureView {
 }
 
 pub struct TextureReader {
-    gpu: Arc<Gpu>,
     staging_output_buffer: wgpu::Buffer,
     buffer_dimensions: WgpuBufferDimensions,
     base_size: wgpu::Extent3d,
@@ -524,7 +523,7 @@ pub struct TextureReader {
 }
 impl TextureReader {
     pub fn new(
-        gpu: Arc<Gpu>,
+        gpu: &Gpu,
         base_size: wgpu::Extent3d,
         sample_count: u32,
         format: wgpu::TextureFormat,
@@ -548,16 +547,14 @@ impl TextureReader {
             size,
             _sample_count: sample_count,
             format,
-            gpu,
         }
     }
-    pub fn copy_texture(&self, texture: &wgpu::Texture) {
-        let mut encoder = self
-            .gpu
+    pub fn copy_texture(&self, gpu: &Gpu, texture: &wgpu::Texture) {
+        let mut encoder = gpu
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
         self.copy_texture_with_encoder(texture, &mut encoder);
-        self.gpu.queue.submit(Some(encoder.finish()));
+        gpu.queue.submit(Some(encoder.finish()));
     }
     pub fn copy_texture_with_encoder(
         &self,
@@ -584,15 +581,15 @@ impl TextureReader {
     }
 
     /// Reads the whole texture async
-    pub async fn read(&self) -> Option<Vec<u8>> {
+    pub async fn read(&self, gpu: &Gpu) -> Option<Vec<u8>> {
         let buffer_slice = self.staging_output_buffer.slice(..);
         let (tx, buffer_future) = tokio::sync::oneshot::channel();
         buffer_slice.map_async(wgpu::MapMode::Read, |v| {
             tx.send(v).ok();
         });
 
-        if !self.gpu.will_be_polled {
-            self.gpu.device.poll(wgpu::Maintain::Wait);
+        if !gpu.will_be_polled {
+            gpu.device.poll(wgpu::Maintain::Wait);
         }
 
         if let Ok(()) = buffer_future.await.unwrap() {
@@ -620,8 +617,8 @@ impl TextureReader {
         }
     }
 
-    pub async fn read_array_f32(&self) -> Option<Array4<f32>> {
-        if let Some(bytes) = self.read().await {
+    pub async fn read_array_f32(&self, gpu: &Gpu) -> Option<Array4<f32>> {
+        if let Some(bytes) = self.read(gpu).await {
             let mut numbers = vec![
                 0.;
                 self.size.width as usize
@@ -646,13 +643,13 @@ impl TextureReader {
             None
         }
     }
-    pub async fn read_image(&self) -> Option<DynamicImage> {
-        self.read_images()
+    pub async fn read_image(&self, gpu: &Gpu) -> Option<DynamicImage> {
+        self.read_images(gpu)
             .await
             .map(|mut images| images.pop().unwrap())
     }
-    pub async fn read_png(&self) -> Option<Vec<u8>> {
-        self.read_image().await.and_then(|image| {
+    pub async fn read_png(&self, gpu: &Gpu) -> Option<Vec<u8>> {
+        self.read_image(gpu).await.and_then(|image| {
             let mut data = Cursor::new(Vec::new());
             image
                 .write_to(&mut data, image::ImageOutputFormat::Png)
@@ -660,9 +657,9 @@ impl TextureReader {
             Some(data.into_inner())
         })
     }
-    pub async fn read_images(&self) -> Option<Vec<DynamicImage>> {
+    pub async fn read_images(&self, gpu: &Gpu) -> Option<Vec<DynamicImage>> {
         if self.format == wgpu::TextureFormat::R32Float {
-            let array = self.read_array_f32().await?;
+            let array = self.read_array_f32(gpu).await?;
             Some(
                 (0..self.size.depth_or_array_layers as usize)
                     .map(|layer| {
@@ -690,7 +687,7 @@ impl TextureReader {
                     .collect_vec(),
             )
         } else if self.format == wgpu::TextureFormat::Rgba8UnormSrgb {
-            let data = self.read().await?;
+            let data = self.read(gpu).await?;
             Some(
                 data.chunks((self.size.width * self.size.height * 4) as usize)
                     .map(|chunk_data| {
@@ -705,7 +702,7 @@ impl TextureReader {
                     .collect_vec(),
             )
         } else if self.format == wgpu::TextureFormat::Bgra8UnormSrgb {
-            let data = self.read().await?;
+            let data = self.read(gpu).await?;
             Some(
                 data.chunks((self.size.width * self.size.height * 4) as usize)
                     .map(|chunk_data| {
@@ -727,12 +724,12 @@ impl TextureReader {
             unimplemented!("{:?}", self.format)
         }
     }
-    pub async fn write_to_file(&self, path: impl AsRef<Path>) {
-        let image = self.read_image().await.unwrap().into_rgba8();
+    pub async fn write_to_file(&self, gpu: &Gpu, path: impl AsRef<Path>) {
+        let image = self.read_image(gpu).await.unwrap().into_rgba8();
         image.save(path).unwrap();
     }
-    pub async fn write_to_files(&self, path: &str) {
-        let images = self.read_images().await.unwrap();
+    pub async fn write_to_files(&self, gpu: &Gpu, path: &str) {
+        let images = self.read_images(gpu).await.unwrap();
         for (i, image) in images.into_iter().enumerate() {
             image.save(&format!("{path}_{i}.png")).unwrap();
         }
@@ -820,7 +817,7 @@ mod tests {
         use std::sync::Arc;
         let gpu = Arc::new(Gpu::new(None).await);
         let tex = Texture::new_with_data(
-            gpu,
+            &gpu,
             &wgpu::TextureDescriptor {
                 size: wgpu::Extent3d {
                     width: 1,
@@ -837,6 +834,6 @@ mod tests {
             },
             bytemuck::cast_slice(&[255, 255, 255, 255]),
         );
-        tex.reader().read_image().await.unwrap();
+        tex.reader(&gpu).read_image(&gpu).await.unwrap();
     }
 }

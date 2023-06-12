@@ -1,17 +1,19 @@
+use ambient_core::{async_ecs::async_run, runtime};
 use ambient_ecs::World;
 use ambient_network::{
-    client::{DynRecv, DynSend},
     log_network_result,
     server::{bi_stream_handlers, datagram_handlers, uni_stream_handlers, SharedServerState},
-    WASM_BISTREAM_ID, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
+    unwrap_log_network_err, DynRecv, DynSend, WASM_BISTREAM_ID, WASM_DATAGRAM_ID,
+    WASM_UNISTREAM_ID,
 };
 use ambient_std::asset_cache::AssetCache;
 
+use anyhow::Context;
 use bytes::Bytes;
 
 use std::sync::Arc;
 
-use crate::shared::implementation::message;
+use crate::shared::implementation::message::{self, process_network_message, read_unistream};
 
 pub fn initialize(world: &mut World) {
     world.resource_mut(datagram_handlers()).insert(
@@ -57,7 +59,7 @@ fn on_unistream(
     state: SharedServerState,
     _asset_cache: AssetCache,
     user_id: &str,
-    recv_stream: DynRecv,
+    mut recv_stream: DynRecv,
 ) {
     let mut state = state.lock();
     let Some(world) = state.get_player_world_mut(user_id) else {
@@ -65,5 +67,23 @@ fn on_unistream(
         return;
     };
 
-    message::on_unistream(world, Some(user_id.to_owned()), recv_stream)
+    // Reads an incoming unistream and dispatches to WASM
+    let async_run = world.resource(async_run()).clone();
+    let user_id = user_id.to_owned();
+    world.resource(runtime()).spawn(async move {
+        let (remote_module_id, name, data) =
+            unwrap_log_network_err!(read_unistream(recv_stream.as_mut())
+                .await
+                .context("Failed to read uni stream"));
+
+        async_run.run(move |world| {
+            log_network_result!(process_network_message(
+                world,
+                Some(user_id),
+                remote_module_id,
+                name,
+                data
+            ));
+        });
+    });
 }
