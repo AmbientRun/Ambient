@@ -11,11 +11,16 @@ use thiserror::Error;
 #[allow(clippy::type_complexity)]
 #[derive(Clone)]
 pub struct RpcRegistry<Args> {
-    registry: HashMap<String, Arc<dyn Fn(Args, &[u8]) -> BoxFuture<Result<Vec<u8>, RpcError>> + Send + Sync>>,
+    registry: HashMap<
+        String,
+        Arc<dyn Fn(Args, &[u8]) -> BoxFuture<Result<Vec<u8>, RpcError>> + Send + Sync>,
+    >,
 }
 impl<Args: Send + 'static> RpcRegistry<Args> {
     pub fn new() -> Self {
-        Self { registry: HashMap::new() }
+        Self {
+            registry: HashMap::new(),
+        }
     }
     pub fn register<
         Req: Serialize + DeserializeOwned + Send + 'static,
@@ -108,6 +113,7 @@ pub enum RpcError {
 }
 
 #[cfg(test)]
+#[cfg(not(target_os = "unknown"))]
 mod tests {
     use crate::RpcRegistry;
 

@@ -279,6 +279,27 @@ impl<'a> Hooks<'a> {
         }
     }
 
+    /// Spawns the provided future as a task.
+    ///
+    /// The task is aborted when this [Element](crate::Element) is removed.
+    #[cfg(target_os = "unknown")]
+    #[cfg(feature = "native")]
+    #[tracing::instrument(level = "debug", skip_all)]
+    pub fn use_local_task<Fut: Future<Output = ()> + 'static>(
+        &mut self,
+        task: impl FnOnce(&mut World) -> Fut + Send + Sync + 'static,
+    ) {
+        if let Some(ref mut on_spawn) = self.on_spawn {
+            let spawn = Box::new(move |w: &mut World| {
+                let task = task(w);
+                let task = w.resource(runtime()).spawn_local(task);
+                Box::new(move |_: &mut World| task.abort())
+                    as Box<dyn FnOnce(&mut World) + Sync + Send>
+            });
+
+            on_spawn.push(spawn)
+        }
+    }
     /// Use a value provided by a future.
     ///
     /// Returns `None` until the future completes.

@@ -1,4 +1,6 @@
-use std::future::Future;
+use std::{future::Future, pin::Pin, task::Poll};
+
+use futures::FutureExt;
 
 use crate::control::{control_future, ControlHandle};
 
@@ -61,5 +63,27 @@ impl RuntimeHandle {
         R: 'static + Send,
     {
         self.spawn(async move { f() })
+    }
+}
+
+pub struct PlatformBoxFutureImpl<T>(Pin<Box<dyn Future<Output = T>>>);
+
+impl<T> PlatformBoxFutureImpl<T> {
+    pub fn from_boxed(fut: Pin<Box<dyn Future<Output = T>>>) -> Self {
+        Self(fut)
+    }
+
+    #[inline]
+    pub fn into_local(self) -> Pin<Box<dyn Future<Output = T>>> {
+        self.0
+    }
+}
+
+impl<T> Future for PlatformBoxFutureImpl<T> {
+    type Output = T;
+
+    #[inline]
+    fn poll(mut self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Self::Output> {
+        self.0.poll_unpin(cx)
     }
 }

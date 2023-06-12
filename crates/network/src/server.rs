@@ -1,9 +1,8 @@
 use std::{collections::HashMap, fmt::Debug, sync::Arc, time::Duration};
 
 use crate::{
-    client::{ClientConnection, DynRecv, DynSend},
-    proto::server::Player,
-    NetworkError, RPC_BISTREAM_ID,
+    client::ClientConnection, proto::server::Player, DynRecv, DynSend, NetworkError,
+    RPC_BISTREAM_ID,
 };
 use ambient_core::{
     name,
@@ -103,7 +102,7 @@ pub fn register_rpc_bi_stream_handler(
                 let state = state;
                 let user_id = user_id.to_string();
                 let rpc_registry = rpc_registry.clone();
-                tokio::spawn(async move {
+                ambient_sys::task::spawn(async move {
                     let try_block = || async {
                         let mut buf = Vec::new();
                         recv.take(1024 * 1024 * 1024).read_to_end(&mut buf).await?;

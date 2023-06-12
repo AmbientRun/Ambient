@@ -90,6 +90,8 @@ impl Gpu {
         let features =
             wgpu::Features::MULTI_DRAW_INDIRECT | wgpu::Features::MULTI_DRAW_INDIRECT_COUNT;
 
+        tracing::info!("Using features: {features:#?}");
+
         let (device, queue) = adapter
             .request_device(
                 &wgpu::DeviceDescriptor {
@@ -129,6 +131,7 @@ impl Gpu {
         } else {
             None
         };
+
         tracing::debug!("Swapchain present mode: {swapchain_mode:?}");
 
         if let (Some(window), Some(surface), Some(mode), Some(format)) =
