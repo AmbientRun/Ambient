@@ -5,6 +5,7 @@ package ambient.run.deploy;
 message DeployAssetRequest {
   string path = 1;
   bytes content = 2;
+  uint64 totalSize = 3;
 }
 
 message DeployAssetsResponse {

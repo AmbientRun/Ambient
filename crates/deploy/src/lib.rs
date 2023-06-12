@@ -15,17 +15,28 @@ use walkdir::WalkDir;
 
 use deploy_proto::{deployer_client::DeployerClient, DeployAssetRequest, DeployAssetsResponse};
 
-async fn asset_from_file_path(
+const CHUNK_SIZE: usize = 1024 * 1024 * 3;
+
+async fn asset_requests_from_file_path(
     base_path: impl AsRef<Path>,
     file_path: impl AsRef<Path>,
-) -> anyhow::Result<DeployAssetRequest> {
+) -> anyhow::Result<Vec<DeployAssetRequest>> {
     let path = file_path
         .as_ref()
         .strip_prefix(base_path)?
         .to_string_lossy()
         .to_string();
     let content = ambient_sys::fs::read(file_path.as_ref()).await?;
-    Ok(DeployAssetRequest { path, content })
+    let total_size = content.len() as u64;
+
+    Ok(content
+        .chunks(CHUNK_SIZE)
+        .map(|chunk| DeployAssetRequest {
+            path: path.clone(),
+            total_size,
+            content: chunk.to_vec(),
+        })
+        .collect())
 }
 
 /// This takes the path to an Ambient project and deploys it. An Ambient project is expected to
@@ -101,13 +112,23 @@ pub async fn deploy(
         .map(|x| x.into_path());
 
     // create a separate task for reading files
-    let (tx, rx) = flume::unbounded::<DeployAssetRequest>();
+    let (tx, rx) = flume::bounded::<DeployAssetRequest>(16);
     let base_path = path.as_ref().to_owned();
     let handle = runtime.spawn(async move {
         for file_path in file_paths {
-            let asset = asset_from_file_path(&base_path, file_path).await?;
-            log::debug!("Deploying asset {} {}B", asset.path, asset.content.len());
-            tx.send(asset)?;
+            let requests = asset_requests_from_file_path(&base_path, file_path).await?;
+            let count = requests.len();
+            for (idx, request) in requests.into_iter().enumerate() {
+                log::debug!(
+                    "Deploying asset {} {}B/{}B ({}/{})",
+                    request.path,
+                    request.content.len(),
+                    request.total_size,
+                    idx + 1,
+                    count
+                );
+                tx.send_async(request).await?;
+            }
         }
         anyhow::Ok(())
     });
