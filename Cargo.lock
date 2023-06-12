@@ -385,6 +385,7 @@ dependencies = [
  "relative-path",
  "serde",
  "serde_json",
+ "serde_path_to_error",
  "slugify",
  "symphonia",
  "tokio",

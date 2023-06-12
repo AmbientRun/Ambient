@@ -14,6 +14,7 @@ use self::{audio::AudioPipeline, materials::MaterialsPipeline, models::ModelsPip
 pub mod audio;
 pub mod context;
 pub mod materials;
+pub mod migrate;
 pub mod models;
 pub mod out_asset;
 
