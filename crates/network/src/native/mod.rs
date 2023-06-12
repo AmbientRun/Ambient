@@ -2,11 +2,14 @@
 //!
 //! This included quinn server+client and webtransport server using `h3`
 pub mod client;
+pub mod client_connection;
+pub mod common;
 pub mod server;
+mod webtransport;
 
 #[cfg(feature = "tls-native-roots")]
 fn add_native_roots(roots: &mut rustls::RootCertStore) {
-    tracing::info!("Loading native root certificates");
+    tracing::debug!("Loading native root certificates");
     match rustls_native_certs::load_native_certs() {
         Ok(certs) => {
             for cert in certs {
@@ -25,7 +28,7 @@ fn add_native_roots(roots: &mut rustls::RootCertStore) {
 
 #[cfg(feature = "tls-webpki-roots")]
 fn add_webpki_roots(roots: &mut rustls::RootCertStore) {
-    tracing::info!("Loading webpki root certificates");
+    tracing::debug!("Loading webpki root certificates");
     roots.add_server_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.0.iter().map(|ta| {
         rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
             ta.subject,
@@ -35,7 +38,6 @@ fn add_webpki_roots(roots: &mut rustls::RootCertStore) {
     }));
 }
 
-#[tracing::instrument(level = "info")]
 fn load_root_certs() -> rustls::RootCertStore {
     #[cfg(any(feature = "tls-native-roots", feature = "tls-webpki-roots"))]
     {

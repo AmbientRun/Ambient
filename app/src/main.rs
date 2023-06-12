@@ -347,7 +347,7 @@ fn main() -> anyhow::Result<()> {
             }
         };
 
-        let port = server::start(
+        let addr = server::start(
             &runtime,
             assets.clone(),
             cli.clone(),
@@ -356,7 +356,7 @@ fn main() -> anyhow::Result<()> {
             metadata.as_ref().expect("no build metadata"),
             crypto,
         );
-        ResolvedAddr::localhost_with_port(port)
+        ResolvedAddr::localhost_with_port(addr.port())
     } else {
         unreachable!()
     };

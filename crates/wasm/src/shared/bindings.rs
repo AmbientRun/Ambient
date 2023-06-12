@@ -2,8 +2,6 @@ use std::collections::HashSet;
 
 use ambient_ecs::{EntityId, PrimitiveComponent, Query, QueryState, World};
 
-use super::wit;
-
 pub type QueryStateMap =
     slotmap::SlotMap<slotmap::DefaultKey, (Query, QueryState, Vec<PrimitiveComponent>)>;
 
@@ -14,29 +12,30 @@ pub struct BindingsBase {
     pub query_states: QueryStateMap,
 }
 
+#[cfg(feature = "wit")]
 pub trait BindingsBound:
     // Shared
-    wit::types::Host
-    + wit::asset::Host
-    + wit::component::Host
-    + wit::entity::Host
-    + wit::message::Host
-    + wit::player::Host
-    + wit::world_audio::Host
+    super::wit::types::Host
+    + super::wit::asset::Host
+    + super::wit::component::Host
+    + super::wit::entity::Host
+    + super::wit::message::Host
+    + super::wit::player::Host
+    + super::wit::world_audio::Host
     // Client
-    + wit::client_audio::Host
-    + wit::client_message::Host
-    + wit::client_player::Host
-    + wit::client_input::Host
-    + wit::client_camera::Host
-    + wit::client_window::Host
-    + wit::client_mesh::Host
-    + wit::client_texture::Host
-    + wit::client_sampler::Host
-    + wit::client_material::Host
+    + super::wit::client_audio::Host
+    + super::wit::client_message::Host
+    + super::wit::client_player::Host
+    + super::wit::client_input::Host
+    + super::wit::client_camera::Host
+    + super::wit::client_window::Host
+    + super::wit::client_mesh::Host
+    + super::wit::client_texture::Host
+    + super::wit::client_sampler::Host
+    + super::wit::client_material::Host
     // Server
-    + wit::server_message::Host
-    + wit::server_physics::Host
+    + super::wit::server_message::Host
+    + super::wit::server_physics::Host
     + Clone
     + Sync
     + Send
@@ -55,6 +54,7 @@ impl Default for WorldRef {
         Self::new()
     }
 }
+
 impl WorldRef {
     const fn new() -> Self {
         WorldRef(std::ptr::null_mut())
@@ -72,5 +72,7 @@ impl WorldRef {
         self.0 = std::ptr::null_mut();
     }
 }
+
+/// TODO: safety
 unsafe impl Send for WorldRef {}
 unsafe impl Sync for WorldRef {}

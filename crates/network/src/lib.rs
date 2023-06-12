@@ -1,8 +1,9 @@
 use ambient_ecs::{
     query, Component, ComponentValue, EntityId, Networked, Serializable, Store, World,
 };
-use std::io::ErrorKind;
+use std::{io::ErrorKind, pin::Pin};
 use stream::FrameError;
+use tokio::io::{AsyncRead, AsyncWrite};
 
 use ambient_rpc::RpcError;
 use ambient_std::log_error;
@@ -13,16 +14,27 @@ pub use ambient_ecs::generated::components::core::network::{
 };
 
 pub type AsyncMutex<T> = tokio::sync::Mutex<T>;
+
+pub mod bytes_ext;
 pub mod client;
-pub mod client_connection;
 pub mod client_game_state;
 pub mod codec;
 pub mod hooks;
-pub mod native;
 pub mod proto;
 pub mod rpc;
 pub mod server;
 pub mod stream;
+
+#[cfg(not(target_os = "unknown"))]
+pub mod native;
+#[cfg(target_os = "unknown")]
+pub(crate) mod webtransport;
+
+#[cfg(target_os = "unknown")]
+pub mod web;
+
+pub type DynSend = Pin<Box<dyn AsyncWrite + Send + Sync>>;
+pub type DynRecv = Pin<Box<dyn AsyncRead + Send + Sync>>;
 
 pub const RPC_BISTREAM_ID: u32 = 2;
 
@@ -131,19 +143,33 @@ pub enum NetworkError {
     #[error("IO Error")]
     IOError(#[from] std::io::Error),
     #[error("Quinn connection failed")]
+    #[cfg(not(target_os = "unknown"))]
     ConnectionError(#[from] quinn::ConnectionError),
     #[error(transparent)]
+    #[cfg(not(target_os = "unknown"))]
     ReadToEndError(#[from] quinn::ReadToEndError),
     #[error(transparent)]
+    #[cfg(not(target_os = "unknown"))]
     WriteError(#[from] quinn::WriteError),
     #[error(transparent)]
+    #[cfg(not(target_os = "unknown"))]
     SendDatagramError(#[from] quinn::SendDatagramError),
     #[error(transparent)]
     RpcError(#[from] RpcError),
     #[error(transparent)]
+    #[cfg(not(target_os = "unknown"))]
     ProxyError(#[from] ambient_proxy::Error),
     #[error("Bad frame")]
     FrameError(#[from] FrameError),
+    #[error("Frame or stream exceeds maximum allowed size")]
+    FrameTooLarge,
+}
+
+#[cfg(not(target_os = "unknown"))]
+impl From<h3::Error> for NetworkError {
+    fn from(value: h3::Error) -> Self {
+        Self::IOError(std::io::Error::new(ErrorKind::Other, value))
+    }
 }
 
 impl NetworkError {
@@ -156,6 +182,7 @@ impl NetworkError {
             Self::ConnectionClosed => true,
             // The connection was closed automatically,
             // for example by dropping the [`quinn::Connection`]
+            #[cfg(not(target_os = "unknown"))]
             Self::ConnectionError(quinn::ConnectionError::ConnectionClosed(
                 quinn::ConnectionClose { error_code, .. },
             )) if u64::from(*error_code) == 0 => true,
@@ -182,6 +209,7 @@ macro_rules! log_network_result {
     };
 }
 
+#[cfg(not(target_os = "unknown"))]
 pub fn log_network_error(err: &anyhow::Error) {
     if let Some(quinn::WriteError::ConnectionLost(err)) = err.downcast_ref::<quinn::WriteError>() {
         log::info!("Connection lost: {:#}", err);
@@ -192,6 +220,11 @@ pub fn log_network_error(err: &anyhow::Error) {
     } else {
         log_error(err);
     }
+}
+
+#[cfg(target_os = "unknown")]
+pub fn log_network_error(err: &anyhow::Error) {
+    log_error(err);
 }
 
 #[macro_export]

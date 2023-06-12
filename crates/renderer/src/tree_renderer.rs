@@ -354,7 +354,7 @@ impl TreeRenderer {
             return; // Nothing to render
         };
 
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "unknown"))]
         let counts = collect_state.counts_cpu.lock().clone();
 
         let mut is_bound = false;
@@ -385,7 +385,19 @@ impl TreeRenderer {
                     .primitives
                     .buffer_offset(mat.primitives_subbuffer)
                     .unwrap();
-                #[cfg(not(target_os = "macos"))]
+
+                // TODO: enable conditionally as multi draw indirect may not be supported on
+                // windows or linux on some hardware
+                //
+                // https://github.com/AmbientRun/Ambient/issues/191
+
+                // wgpu errors states that `MULTI_DRAW_INDEXED_INDIRECT_COUNT` must be
+                // enabled, despite it being enabled in the `Device` and device acquiring
+                // succeding.
+                //
+                // This is due to an unconditional panic
+                // https://github.com/gfx-rs/wgpu/blob/4478c52debcab1b88b80756b197dc10ece90dec9/wgpu/src/backend/web.rs#L3053
+                #[cfg(all(not(target_os = "macos"), not(target_os = "unknown")))]
                 {
                     render_pass.multi_draw_indexed_indirect_count(
                         collect_state.commands.buffer(),
@@ -395,7 +407,7 @@ impl TreeRenderer {
                         mat.primitives.len() as u32,
                     );
                 }
-                #[cfg(target_os = "macos")]
+                #[cfg(any(target_os = "macos", target_os = "unknown"))]
                 {
                     if let Some(count) = counts.get(mat.material_index as usize) {
                         for i in 0..*count {

@@ -16,9 +16,12 @@
     "check-tests": {
         "cmd": "cargo check --workspace --tests --examples"
     },
-    "run": {
+    "serve": {
         "cmd": "npm run start",
         "cwd": "www",
+        "components": {
+            "qf": false
+        },
         "env": {
             "RUST_LOG": "info"
         }

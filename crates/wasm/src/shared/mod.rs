@@ -4,9 +4,12 @@ pub(crate) mod implementation;
 mod module;
 
 pub mod build;
+#[cfg(feature = "wit")]
 pub mod conversion;
 pub mod host_guest_state;
 pub mod message;
+
+#[cfg(feature = "wit")]
 pub mod wit;
 
 use std::sync::Arc;
@@ -16,7 +19,7 @@ use ambient_ecs::{
     dont_despawn_on_unload, generated::messages, query, world_events, Entity, EntityId, FnSystem,
     Message, SystemGroup, World, WorldEventReader,
 };
-use ambient_physics::{collider_loads, collisions};
+
 use ambient_project::Identifier;
 use itertools::Itertools;
 pub use module::*;
@@ -53,6 +56,7 @@ mod internal {
         module_state_maker: Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<ModuleState> + Sync + Send>,
     });
 }
+
 pub use internal::{
     client_bytecode_from_url, messenger, module, module_bytecode, module_enabled, module_errors,
     module_state, module_state_maker, remote_paired_id,
@@ -127,35 +131,6 @@ pub fn systems() -> SystemGroup {
                     .unwrap();
             })),
             Box::new(FnSystem::new(move |world, _| {
-                ambient_profiling::scope!("WASM module collision event");
-                // trigger collision event
-                let collisions = match world.resource_opt(collisions()) {
-                    Some(collisions) => collisions.lock().clone(),
-                    None => return,
-                };
-                for (a, b) in collisions.into_iter() {
-                    ambient_ecs::generated::messages::Collision::new(vec![a, b])
-                        .run(world, None)
-                        .unwrap();
-                }
-            })),
-            Box::new(FnSystem::new(move |world, _| {
-                ambient_profiling::scope!("WASM module collider loads");
-                // trigger collider loads
-                let collider_loads = match world.resource_opt(collider_loads()) {
-                    Some(collider_loads) => collider_loads.clone(),
-                    None => return,
-                };
-
-                if collider_loads.is_empty() {
-                    return;
-                }
-
-                ambient_ecs::generated::messages::ColliderLoads::new(collider_loads)
-                    .run(world, None)
-                    .unwrap();
-            })),
-            Box::new(FnSystem::new(move |world, _| {
                 ambient_profiling::scope!("WASM module pending messages");
 
                 let pending_messages =
@@ -169,6 +144,7 @@ pub fn systems() -> SystemGroup {
     )
 }
 
+#[cfg(feature = "wit")]
 pub fn initialize<Bindings: bindings::BindingsBound + 'static>(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
