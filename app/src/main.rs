@@ -14,7 +14,7 @@ mod shared;
 
 use ambient_physics::physx::PhysicsKey;
 use anyhow::{bail, Context};
-use cli::{Cli, Commands};
+use cli::{AssetCommand, Cli, Commands};
 use log::LevelFilter;
 use server::QUIC_INTERFACE_PORT;
 
@@ -177,14 +177,16 @@ impl TryFrom<Option<String>> for ProjectPath {
     }
 }
 
-fn main() -> anyhow::Result<()> {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     setup_logging()?;
 
     shared::components::init()?;
-    let runtime = tokio::runtime::Builder::new_multi_thread()
-        .enable_all()
-        .build()?;
-    let assets = AssetCache::new(runtime.handle().clone());
+    // let runtime = tokio::runtime::Builder::new_multi_thread()
+    //     .enable_all()
+    //     .build()?;
+    let runtime = tokio::runtime::Handle::current();
+    let assets = AssetCache::new(runtime.clone());
     PhysicsKey.get(&assets); // Load physics
     AssetsCacheOnDisk.insert(&assets, false); // Disable disk caching for now; see https://github.com/AmbientRun/Ambient/issues/81
 
@@ -212,26 +214,42 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
+    if let Commands::Assets { command } = &cli.command {
+        match command {
+            AssetCommand::MigratePipelinesToml { pipeline } => {
+                ambient_build::migrate::toml::migrate_pipeline(pipeline)
+                    .await
+                    .context("Failed to migrate pipelines")?;
+            }
+        }
+
+        return Ok(());
+    }
+
     // If a project was specified, assume that assets need to be built
-    let manifest = project
-        .map(|_| {
+    let manifest = match project {
+        Some(project) => {
             if let Some(path) = &project_path.fs_path {
                 // load manifest from file
-                anyhow::Ok(
+                Some(
                     ambient_project::Manifest::from_file(path.join("ambient.toml"))
                         .context("Failed to read ambient.toml.")?,
                 )
             } else {
                 // project_path is a URL, so download the pre-build manifest (with resolved imports)
                 let manifest_url = project_path.url.push("build/ambient.toml").unwrap();
-                let manifest_data = runtime
-                    .block_on(manifest_url.download_string(&assets))
+                let manifest_data = manifest_url
+                    .download_string(&assets)
+                    .await
                     .context("Failed to download ambient.toml.")?;
-                Ok(ambient_project::Manifest::parse(&manifest_data)
-                    .context("Failed to parse downloaded ambient.toml.")?)
+
+                let manifest = ambient_project::Manifest::parse(&manifest_data)
+                    .context("Failed to parse downloaded ambient.toml.")?;
+                Some(manifest)
             }
-        })
-        .transpose()?;
+        }
+        None => None,
+    };
 
     let metadata = if let Some(manifest) = manifest.as_ref() {
         let project = project.unwrap();
@@ -241,25 +259,26 @@ fn main() -> anyhow::Result<()> {
 
             tracing::info!("Building project {:?}", project_name);
 
-            let metadata = runtime
-                .block_on(ambient_build::build(
-                    PhysicsKey.get(&assets),
-                    &assets,
-                    project_path
-                        .fs_path
-                        .clone()
-                        .expect("should be present as it's already checked above"),
-                    manifest,
-                    project.release,
-                    project.clean_build,
-                ))
-                .context("Failed to build project")?;
-     
+            let metadata = ambient_build::build(
+                PhysicsKey.get(&assets),
+                &assets,
+                project_path
+                    .fs_path
+                    .clone()
+                    .expect("should be present as it's already checked above"),
+                manifest,
+                project.release,
+                project.clean_build,
+            )
+            .await
+            .context("Failed to build project")?;
+
             Some(metadata)
         } else {
             let metadata_url = project_path.push("build/metadata.toml");
-            let metadata_data = runtime
-                .block_on(metadata_url.download_string(&assets))
+            let metadata_data = metadata_url
+                .download_string(&assets)
+                .await
                 .context("Failed to load build/metadata.toml.")?;
 
             Some(ambient_build::Metadata::parse(&metadata_data)?)
@@ -305,7 +324,7 @@ fn main() -> anyhow::Result<()> {
             if !host.contains(':') {
                 host = format!("{host}:{QUIC_INTERFACE_PORT}");
             }
-            runtime.block_on(ResolvedAddr::lookup_host(&host))?
+            ResolvedAddr::lookup_host(&host).await?
         } else {
             ResolvedAddr::localhost_with_port(QUIC_INTERFACE_PORT)
         }
@@ -357,29 +376,29 @@ fn main() -> anyhow::Result<()> {
             manifest.as_ref().expect("no manifest"),
             metadata.as_ref().expect("no build metadata"),
             crypto,
-        );
+        )
+        .await;
+
         ResolvedAddr::localhost_with_port(addr.port())
     } else {
         unreachable!()
     };
 
     // Time to join!
-    let handle = runtime.handle().clone();
+
     if let Some(run) = cli.run() {
         // If we have run parameters, start a client and join a server
-        let exit_status =
-            runtime.block_on(client::run(assets, server_addr, run, project_path.fs_path));
+        let exit_status = client::run(assets, server_addr, run, project_path.fs_path).await;
         if exit_status == ExitStatus::FAILURE {
             bail!("client::run failed with {exit_status:?}");
         }
     } else {
         // Otherwise, wait for the Ctrl+C signal
-        handle.block_on(async move {
-            match tokio::signal::ctrl_c().await {
-                Ok(()) => {}
-                Err(err) => log::error!("Unable to listen for shutdown signal: {}", err),
-            }
-        });
+        match tokio::signal::ctrl_c().await {
+            Ok(()) => {}
+            Err(err) => log::error!("Unable to listen for shutdown signal: {}", err),
+        }
     }
+
     Ok(())
 }

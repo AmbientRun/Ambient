@@ -14,7 +14,6 @@ use self::{audio::AudioPipeline, materials::MaterialsPipeline, models::ModelsPip
 pub mod audio;
 pub mod context;
 pub mod materials;
-pub mod migrate;
 pub mod models;
 pub mod out_asset;
 
@@ -69,14 +68,14 @@ impl Pipeline {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct PipelineSchema {
+    pipelines: Vec<Pipeline>,
+}
+
 pub async fn process_pipelines(ctx: &ProcessCtx) -> anyhow::Result<Vec<OutAsset>> {
     tracing::info!(?ctx.out_root, "Processing pipeline");
-
-    #[derive(Debug, Clone, Deserialize)]
-    #[serde(deny_unknown_fields)]
-    struct PipelineSchema {
-        pipelines: Vec<Pipeline>,
-    }
 
     futures::stream::iter(ctx.files.0.iter())
         .filter_map(|file| async move {

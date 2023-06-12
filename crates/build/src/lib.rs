@@ -13,6 +13,7 @@ use itertools::Itertools;
 use pipelines::{FileCollection, ProcessCtx, ProcessCtxKey};
 use walkdir::WalkDir;
 
+pub mod migrate;
 pub mod pipelines;
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
