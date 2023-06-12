@@ -1,5 +1,5 @@
 [hooks]
-pre-commit = "cargo fmt"
+pre-commit = "cargo fmt --check"
 # Pre-push settings are currently disabled while we agree on what settings to use
 # pre-push = "cargo clippy --workspace -- -Adeprecated"
 
