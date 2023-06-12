@@ -11,13 +11,13 @@ use crate::{NetworkError, MAX_FRAME_SIZE};
 
 /// Transport agnostic framed reader
 #[pin_project]
-pub struct RecvStream<T, S> {
+pub struct FramedRecvStream<T, S> {
     #[pin]
     read: FramedRead<S, LengthDelimitedCodec>,
     _marker: PhantomData<T>,
 }
 
-impl<T, S> RecvStream<T, S>
+impl<T, S> FramedRecvStream<T, S>
 where
     S: AsyncRead,
     T: serde::de::DeserializeOwned,
@@ -32,7 +32,7 @@ where
     }
 }
 
-impl<T, S> Stream for RecvStream<T, S>
+impl<T, S> Stream for FramedRecvStream<T, S>
 where
     S: AsyncRead,
     T: serde::de::DeserializeOwned,
@@ -49,7 +49,8 @@ where
 
         match bytes {
             Some(v) => Poll::Ready(Some(
-                bincode::deserialize(&v).map_err(|e| FrameError::Payload(e, type_name::<T>())),
+                bincode::deserialize(&v)
+                    .map_err(|e| FrameError::DeserializePayload(e, type_name::<T>())),
             )),
             None => Poll::Ready(None),
         }
@@ -58,13 +59,13 @@ where
 
 /// Transport agnostic framed writer
 #[pin_project]
-pub struct SendStream<T, S> {
+pub struct FramedSendStream<T, S> {
     #[pin]
     write: FramedWrite<S, LengthDelimitedCodec>,
     _marker: PhantomData<T>,
 }
 
-impl<T, S> SendStream<T, S>
+impl<T, S> FramedSendStream<T, S>
 where
     S: AsyncWrite,
     T: serde::Serialize,
@@ -86,7 +87,7 @@ where
     }
 }
 
-impl<T, S> Sink<&'_ T> for SendStream<T, S>
+impl<T, S> Sink<&'_ T> for FramedSendStream<T, S>
 where
     S: AsyncWrite,
     T: serde::Serialize,
@@ -106,7 +107,7 @@ where
         let p = self.project();
 
         let bytes = bincode::serialize(item)
-            .map_err(|e| FrameError::Payload(e, type_name::<T>()))?
+            .map_err(|e| FrameError::SerializePayload(e, type_name::<T>()))?
             .into();
         p.write.start_send(bytes)?;
 
@@ -132,7 +133,7 @@ where
     }
 }
 
-impl<T, S> Sink<T> for SendStream<T, S>
+impl<T, S> Sink<T> for FramedSendStream<T, S>
 where
     S: AsyncWrite,
     T: serde::Serialize,
@@ -167,8 +168,10 @@ where
 
 #[derive(Error, Debug)]
 pub enum FrameError {
-    #[error("Failed to serialize or deserialize payload of type {1}")]
-    Payload(#[source] bincode::Error, &'static str),
+    #[error("Failed to serialize payload of type {1}")]
+    SerializePayload(#[source] bincode::Error, &'static str),
+    #[error("Failed to deserialize payload of type {1}")]
+    DeserializePayload(#[source] bincode::Error, &'static str),
     #[error("Invalid frame")]
     Io(#[from] std::io::Error),
 }

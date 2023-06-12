@@ -95,7 +95,7 @@ impl<T: ambient_ecs::RuntimeMessage> RuntimeMessageExt for T {
             world,
             SerializedMessage {
                 target: module_id
-                    .map(|id| Target::Module(id))
+                    .map(Target::Module)
                     .unwrap_or(Target::All { include_self: true }),
                 source: Source::Runtime,
                 name: T::id().to_string(),

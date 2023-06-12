@@ -32,7 +32,11 @@ ambient_renderer = { path = "../crates/renderer" }
 ambient_rpc = { path = "../crates/rpc" }
 ambient_layout = { path = "../crates/layout" }
 ambient_text = { path = "../crates/text" }
-ambient_wasm = { path = "../crates/wasm" }
+ambient_wasm = { path = "../crates/wasm", features = [
+    "native",
+    "wit",
+    "physics",
+] }
 ambient_std = { path = "../crates/std" }
 ambient_ui_native = { path = "../crates/ui_native" }
 ambient_world_audio = { path = "../crates/world_audio" }
@@ -61,7 +65,6 @@ env_logger = { workspace = true }
 futures = { workspace = true }
 flume = { workspace = true }
 glam = { workspace = true }
-local-ip-address = { workspace = true }
 log = { workspace = true }
 parking_lot = { workspace = true }
 rustls-pemfile = { workspace = true }

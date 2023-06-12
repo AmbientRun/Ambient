@@ -7,13 +7,13 @@ use ambient_std::{asset_cache::SyncAssetKeyExt, asset_url::ContentBaseUrlKey};
 use anyhow::{bail, Context};
 use bytes::{Buf, Bytes};
 use parking_lot::Mutex;
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
+use tokio::io::AsyncReadExt;
 use tracing::debug_span;
 
 use crate::{
     client::{
         bi_stream_handlers, client_network_stats, datagram_handlers, uni_stream_handlers,
-        NetworkStats,
+        NetworkStats, PlatformRecvStream, PlatformSendStream,
     },
     client_game_state::ClientGameState,
     proto::*,
@@ -51,8 +51,6 @@ impl ClientState {
     ) -> anyhow::Result<()> {
         match (frame, &self) {
             (ServerPush::ServerInfo(server_info), Self::Connecting(_user_id)) => {
-                tracing::info!(?server_info, "Received server info");
-
                 let state = state.lock();
                 ContentBaseUrlKey.insert(&state.assets, server_info.content_base_url.clone());
                 tracing::debug!(?server_info.external_components, "Adding external components");
@@ -73,6 +71,7 @@ impl ClientState {
         }
     }
 
+    #[cfg(not(target_os = "unknown"))]
     pub fn process_client_stats(&mut self, state: &SharedClientState, stats: NetworkStats) {
         let mut gs = state.lock();
         tracing::debug!(?stats, "Client network stats");
@@ -107,16 +106,12 @@ impl ConnectedClient {
 
     /// Processes a server initiated bidirectional stream
     #[tracing::instrument(level = "debug", skip(send, recv))]
-    pub async fn process_bi<R, S>(
+    pub async fn process_bi(
         &mut self,
         state: &SharedClientState,
-        send: S,
-        mut recv: R,
-    ) -> anyhow::Result<()>
-    where
-        R: 'static + Send + Sync + Unpin + AsyncRead,
-        S: 'static + Send + Sync + Unpin + AsyncWrite,
-    {
+        send: PlatformSendStream,
+        mut recv: PlatformRecvStream,
+    ) -> anyhow::Result<()> {
         let id = recv.read_u32().await?;
 
         let mut gs = state.lock();
@@ -131,21 +126,18 @@ impl ConnectedClient {
             .clone();
 
         let _span = debug_span!("handle_bi", name, id).entered();
-        handler(world, assets, Box::pin(send), Box::pin(recv));
+        handler(world, assets, send, recv);
 
         Ok(())
     }
 
     /// Processes a server initiated unidirectional stream
     #[tracing::instrument(level = "debug", skip(recv))]
-    pub async fn process_uni<R>(
+    pub async fn process_uni(
         &mut self,
         state: &SharedClientState,
-        mut recv: R,
-    ) -> anyhow::Result<()>
-    where
-        R: 'static + Send + Sync + Unpin + AsyncRead,
-    {
+        mut recv: PlatformRecvStream,
+    ) -> anyhow::Result<()> {
         let id = recv.read_u32().await?;
 
         let mut gs = state.lock();
@@ -160,7 +152,7 @@ impl ConnectedClient {
             .clone();
 
         let _span = debug_span!("handle_uni", name, id).entered();
-        handler(world, assets, Box::pin(recv));
+        handler(world, assets, recv);
 
         Ok(())
     }
