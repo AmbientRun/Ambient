@@ -28,6 +28,7 @@ members = [
     "examples/ui/auto_editor",
     "examples/ui/button",
     "examples/ui/counter",
+    "examples/ui/clock",
     "examples/ui/dock_layout",
     "examples/ui/editors",
     "examples/ui/flow_layout",

@@ -92,13 +92,23 @@ pub fn systems() -> SystemGroup {
             ))
             .to_system(|q, world, qs, _| {
                 for (id, (from, to, line_width)) in q.collect_cloned(world, qs) {
+                    // we need to handle the 180 degree rotation case
                     let dir = (to - from).normalize();
+                    // no need to compare y
+                    // it can be problematic even when it's not equal but closer than 0.001
+                    // see:
+                    // https://docs.rs/glam/latest/glam/f32/struct.Quat.html#method.from_rotation_arc
+                    let rot = if from.x >= to.x {
+                        Quat::from_rotation_arc(-Vec3::X, dir)
+                    } else {
+                        Quat::from_rotation_arc(Vec3::X, dir)
+                    };
                     world
                         .add_components(
                             id,
                             Entity::new()
                                 .with(translation(), (from + to) / 2.)
-                                .with(rotation(), Quat::from_rotation_arc(Vec3::X, dir))
+                                .with(rotation(), rot)
                                 .with_default(rect())
                                 .with(width(), (from - to).length())
                                 .with(height(), line_width),

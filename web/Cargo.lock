@@ -86,10 +86,10 @@ dependencies = [
  "ambient_sys",
  "anyhow",
  "async-trait",
- "convert_case 0.6.0",
  "derive_more",
  "glam",
  "itertools",
+ "log",
  "ordered-float 3.6.0",
  "serde",
 ]
@@ -558,8 +558,10 @@ dependencies = [
  "ambient_meshes",
  "ambient_renderer",
  "ambient_std",
+ "async-trait",
  "bytemuck",
  "glam",
+ "log",
  "wgpu",
 ]
 
