@@ -22,6 +22,3 @@ walkdir = { workspace = true }
 prost = "0.11"
 tokio-stream = "0.1"
 tonic = { version = "0.9", features = ["gzip", "tls", "tls-roots"] }
-
-[build-dependencies]
-tonic-build = "0.9"
