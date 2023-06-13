@@ -149,7 +149,7 @@ fn test_git_revision() {
         Some("9f244c3".to_string())
     );
     assert_eq!(
-        git_revision("0.3.0-dev-g9f244c3"),
+        git_revision("git-0.3.0-dev-g9f244c3"),
         Some("9f244c3".to_string())
     );
 }
