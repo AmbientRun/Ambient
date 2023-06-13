@@ -223,6 +223,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v3
       - name: Download ambient executable
         uses: actions/download-artifact@v3
         id: download
@@ -232,6 +233,6 @@ jobs:
       - name: Check that new-project works
         run: |
           mkdir tmp
-          ./ambient new /tmp/ci_test_project
+          ./ambient new --api-path $(pwd)/guest/rust/api /tmp/ci_test_project
           cd /tmp/ci_test_project
           cargo check
