@@ -228,15 +228,10 @@ jobs:
         id: download
         with:
           name: ambient-${{ matrix.os }}
-      - run: ls
-      - run: pwd
-      - run: echo ${{steps.download.outputs.download-path}}
-      - run: ls ${{steps.download.outputs.download-path}}
-      - run: ls ambient-${{ matrix.os }}
-      - run: chmod a+x ambient-${{ matrix.os }}/ambient
+      - run: chmod a+x ambient
       - name: Check that new-project works
         run: |
           mkdir tmp
-          ambient-${{ matrix.os }}/ambient new --api-path $(pwd)/guest/rust/api /tmp/ci_test_project
+          ./ambient new --api-path $(pwd)/guest/rust/api /tmp/ci_test_project
           cd /tmp/ci_test_project
           cargo check
