@@ -4,8 +4,8 @@ use ambient_gpu::{gpu::Gpu, texture::TextureView, wgsl_utils::wgsl_interpolate};
 use ambient_std::include_file;
 use glam::{UVec2, Vec2};
 use wgpu::{
-    util::DeviceExt, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, BufferBindingType, ShaderStages, TextureFormat,
-    TextureViewDimension,
+    util::DeviceExt, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType,
+    BufferBindingType, ShaderStages, TextureFormat, TextureViewDimension,
 };
 
 use super::BrushWGSL;
@@ -40,53 +40,69 @@ pub struct FlattenBrush {
 }
 impl FlattenBrush {
     pub fn new(gpu: &Gpu) -> Self {
-        let shader =
-            [&wgsl_interpolate() as &str, &include_file!("brush.wgsl"), &wgsl_terrain_preprocess(include_file!("flatten.wgsl"))].join("\n");
-        let shader = gpu.device.create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: Some("FlattenBrush.shader"),
-            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(&shader)),
-        });
+        let shader = [
+            &wgsl_interpolate() as &str,
+            &include_file!("brush.wgsl"),
+            &wgsl_terrain_preprocess(include_file!("flatten.wgsl")),
+        ]
+        .join("\n");
+        let shader = gpu
+            .device
+            .create_shader_module(wgpu::ShaderModuleDescriptor {
+                label: Some("FlattenBrush.shader"),
+                source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(&shader)),
+            });
 
-        let pipeline = gpu.device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
-            label: None,
-            layout: Some(&gpu.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: None,
-                bind_group_layouts: &[&gpu.device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+        let pipeline =
+            gpu.device
+                .create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
                     label: None,
-                    entries: &[
-                        BindGroupLayoutEntry {
-                            binding: 0,
-                            visibility: ShaderStages::COMPUTE,
-                            ty: BindingType::StorageTexture {
-                                access: wgpu::StorageTextureAccess::ReadWrite,
-                                format: TextureFormat::R32Float,
-                                view_dimension: TextureViewDimension::D2Array,
-                            },
-                            count: None,
+                    layout: Some(&gpu.device.create_pipeline_layout(
+                        &wgpu::PipelineLayoutDescriptor {
+                            label: None,
+                            bind_group_layouts: &[&gpu.device.create_bind_group_layout(
+                                &BindGroupLayoutDescriptor {
+                                    label: None,
+                                    entries: &[
+                                        BindGroupLayoutEntry {
+                                            binding: 0,
+                                            visibility: ShaderStages::COMPUTE,
+                                            ty: BindingType::StorageTexture {
+                                                access: wgpu::StorageTextureAccess::ReadWrite,
+                                                format: TextureFormat::R32Float,
+                                                view_dimension: TextureViewDimension::D2Array,
+                                            },
+                                            count: None,
+                                        },
+                                        BindGroupLayoutEntry {
+                                            binding: 1,
+                                            visibility: ShaderStages::COMPUTE,
+                                            ty: BindingType::Buffer {
+                                                ty: BufferBindingType::Uniform,
+                                                has_dynamic_offset: false,
+                                                min_binding_size: None,
+                                            },
+                                            count: None,
+                                        },
+                                        BindGroupLayoutEntry {
+                                            binding: 2,
+                                            visibility: ShaderStages::COMPUTE,
+                                            ty: BindingType::StorageTexture {
+                                                access: wgpu::StorageTextureAccess::ReadOnly,
+                                                format: TextureFormat::R32Float,
+                                                view_dimension: TextureViewDimension::D2Array,
+                                            },
+                                            count: None,
+                                        },
+                                    ],
+                                },
+                            )],
+                            push_constant_ranges: &[],
                         },
-                        BindGroupLayoutEntry {
-                            binding: 1,
-                            visibility: ShaderStages::COMPUTE,
-                            ty: BindingType::Buffer { ty: BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
-                            count: None,
-                        },
-                        BindGroupLayoutEntry {
-                            binding: 2,
-                            visibility: ShaderStages::COMPUTE,
-                            ty: BindingType::StorageTexture {
-                                access: wgpu::StorageTextureAccess::ReadOnly,
-                                format: TextureFormat::R32Float,
-                                view_dimension: TextureViewDimension::D2Array,
-                            },
-                            count: None,
-                        },
-                    ],
-                })],
-                push_constant_ranges: &[],
-            })),
-            module: &shader,
-            entry_point: "main",
-        });
+                    )),
+                    module: &shader,
+                    entry_point: "main",
+                });
         Self { pipeline }
     }
     pub fn run(
@@ -98,20 +114,31 @@ impl FlattenBrush {
         size: UVec2,
         params: &FlattenBrushParams,
     ) {
-        let param_buffer = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Flatten Parameter Buffer"),
-            contents: bytemuck::bytes_of(params),
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-        });
+        let param_buffer = gpu
+            .device
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("Flatten Parameter Buffer"),
+                contents: bytemuck::bytes_of(params),
+                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            });
 
         let bind_group_layout = self.pipeline.get_bind_group_layout(0);
         let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: None,
             layout: &bind_group_layout,
             entries: &[
-                wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(heightmap) },
-                wgpu::BindGroupEntry { binding: 1, resource: param_buffer.as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 2, resource: wgpu::BindingResource::TextureView(start_heightmap) },
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::TextureView(heightmap),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: param_buffer.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: wgpu::BindingResource::TextureView(start_heightmap),
+                },
             ],
         });
 

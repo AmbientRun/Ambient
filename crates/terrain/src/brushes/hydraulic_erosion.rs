@@ -27,12 +27,21 @@ pub struct HydraulicErosionConfig {
 }
 impl Default for HydraulicErosionConfig {
     fn default() -> Self {
-        Self { params: Default::default(), drop_radius: 3, drops_per_m2: 0.01, seed: 0, brush_position: Vec2::ZERO, brush_radius: 100. }
+        Self {
+            params: Default::default(),
+            drop_radius: 3,
+            drops_per_m2: 0.01,
+            seed: 0,
+            brush_position: Vec2::ZERO,
+            brush_radius: 100.,
+        }
     }
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, ElementEditor, bytemuck::Pod, bytemuck::Zeroable)]
+#[derive(
+    Clone, Copy, Debug, Serialize, Deserialize, ElementEditor, bytemuck::Pod, bytemuck::Zeroable,
+)]
 pub struct HydraulicErosionParams {
     #[editor(hidden)]
     pub heightmap_size: IVec2,
@@ -88,85 +97,110 @@ pub struct HydraulicErosionCompute {
 }
 impl HydraulicErosionCompute {
     pub fn new(gpu: &Gpu) -> Self {
-        let shader = gpu.device.create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: Some("HydraulicErosionCompute.shader"),
-            source: wgpu::ShaderSource::Wgsl(Cow::Owned(wgsl_terrain_preprocess(include_file!("hydraulic_erosion.wgsl")))),
-        });
+        let shader = gpu
+            .device
+            .create_shader_module(wgpu::ShaderModuleDescriptor {
+                label: Some("HydraulicErosionCompute.shader"),
+                source: wgpu::ShaderSource::Wgsl(Cow::Owned(wgsl_terrain_preprocess(
+                    include_file!("hydraulic_erosion.wgsl"),
+                ))),
+            });
 
-        let pipeline = gpu.device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
-            label: None,
-            layout: Some(&gpu.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: None,
-                bind_group_layouts: &[&gpu.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        let pipeline =
+            gpu.device
+                .create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
                     label: None,
-                    entries: &[
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 0,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::StorageTexture {
-                                access: wgpu::StorageTextureAccess::ReadWrite,
-                                format: wgpu::TextureFormat::R32Float,
-                                view_dimension: wgpu::TextureViewDimension::D2Array,
-                            },
-                            count: None,
+                    layout: Some(&gpu.device.create_pipeline_layout(
+                        &wgpu::PipelineLayoutDescriptor {
+                            label: None,
+                            bind_group_layouts: &[&gpu.device.create_bind_group_layout(
+                                &wgpu::BindGroupLayoutDescriptor {
+                                    label: None,
+                                    entries: &[
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 0,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::StorageTexture {
+                                                access: wgpu::StorageTextureAccess::ReadWrite,
+                                                format: wgpu::TextureFormat::R32Float,
+                                                view_dimension: wgpu::TextureViewDimension::D2Array,
+                                            },
+                                            count: None,
+                                        },
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 1,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::Buffer {
+                                                ty: wgpu::BufferBindingType::Uniform,
+                                                has_dynamic_offset: false,
+                                                min_binding_size: None,
+                                            },
+                                            count: None,
+                                        },
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 2,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::Buffer {
+                                                ty: wgpu::BufferBindingType::Storage {
+                                                    read_only: true,
+                                                },
+                                                has_dynamic_offset: false,
+                                                min_binding_size: None,
+                                            },
+                                            count: None,
+                                        },
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 3,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::Buffer {
+                                                ty: wgpu::BufferBindingType::Storage {
+                                                    read_only: true,
+                                                },
+                                                has_dynamic_offset: false,
+                                                min_binding_size: None,
+                                            },
+                                            count: None,
+                                        },
+                                        wgpu::BindGroupLayoutEntry {
+                                            binding: 4,
+                                            visibility: wgpu::ShaderStages::COMPUTE,
+                                            ty: wgpu::BindingType::Buffer {
+                                                ty: wgpu::BufferBindingType::Storage {
+                                                    read_only: true,
+                                                },
+                                                has_dynamic_offset: false,
+                                                min_binding_size: None,
+                                            },
+                                            count: None,
+                                        },
+                                    ],
+                                },
+                            )],
+                            push_constant_ranges: &[],
                         },
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 1,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Uniform,
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 2,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Storage { read_only: true },
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 3,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Storage { read_only: true },
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                        wgpu::BindGroupLayoutEntry {
-                            binding: 4,
-                            visibility: wgpu::ShaderStages::COMPUTE,
-                            ty: wgpu::BindingType::Buffer {
-                                ty: wgpu::BufferBindingType::Storage { read_only: true },
-                                has_dynamic_offset: false,
-                                min_binding_size: None,
-                            },
-                            count: None,
-                        },
-                    ],
-                })],
-                push_constant_ranges: &[],
-            })),
-            module: &shader,
-            entry_point: "main",
-        });
+                    )),
+                    module: &shader,
+                    entry_point: "main",
+                });
         Self { pipeline }
     }
-    pub fn run(&self, gpu: &Gpu, encoder: &mut wgpu::CommandEncoder, texture: &TextureView, size: UVec2, config: &HydraulicErosionConfig) {
+    pub fn run(
+        &self,
+        gpu: &Gpu,
+        encoder: &mut wgpu::CommandEncoder,
+        texture: &TextureView,
+        size: UVec2,
+        config: &HydraulicErosionConfig,
+    ) {
         let drops = (((size.x * size.y) as f32 * config.drops_per_m2) as usize).max(1);
 
-        let param_buffer = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Simulation Parameter Buffer"),
-            contents: bytemuck::cast_slice(&[config.params]),
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-        });
+        let param_buffer = gpu
+            .device
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("Simulation Parameter Buffer"),
+                contents: bytemuck::cast_slice(&[config.params]),
+                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            });
 
         // Create brush
         let mut brush_positions = Vec::new();
@@ -197,32 +231,53 @@ impl HydraulicErosionCompute {
             })
             .collect_vec();
 
-        let brush_positions = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Simulation Parameter Buffer"),
-            contents: bytemuck::cast_slice(&brush_positions),
-            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
-        });
-        let brush_weights = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Simulation Parameter Buffer"),
-            contents: bytemuck::cast_slice(&brush_weights),
-            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
-        });
-        let random_positions = gpu.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Simulation Parameter Buffer"),
-            contents: bytemuck::cast_slice(&random_positions),
-            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
-        });
+        let brush_positions = gpu
+            .device
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("Simulation Parameter Buffer"),
+                contents: bytemuck::cast_slice(&brush_positions),
+                usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+            });
+        let brush_weights = gpu
+            .device
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("Simulation Parameter Buffer"),
+                contents: bytemuck::cast_slice(&brush_weights),
+                usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+            });
+        let random_positions = gpu
+            .device
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("Simulation Parameter Buffer"),
+                contents: bytemuck::cast_slice(&random_positions),
+                usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+            });
 
         let bind_group_layout = self.pipeline.get_bind_group_layout(0);
         let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: None,
             layout: &bind_group_layout,
             entries: &[
-                wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(texture) },
-                wgpu::BindGroupEntry { binding: 1, resource: param_buffer.as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 2, resource: random_positions.as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 3, resource: brush_positions.as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 4, resource: brush_weights.as_entire_binding() },
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::TextureView(texture),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: param_buffer.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: random_positions.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 3,
+                    resource: brush_positions.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 4,
+                    resource: brush_weights.as_entire_binding(),
+                },
             ],
         });
 

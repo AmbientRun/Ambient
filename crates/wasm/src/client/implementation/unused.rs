@@ -112,7 +112,6 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 
-
     fn set_character_position(
         &mut self,
         _entity: wit::types::EntityId,
@@ -121,7 +120,6 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 
-
     fn set_character_foot_position(
         &mut self,
         _entity: wit::types::EntityId,
@@ -129,7 +127,6 @@ impl wit::server_physics::Host for Bindings {
     ) -> anyhow::Result<()> {
         unsupported()
     }
-
 }
 impl wit::server_message::Host for Bindings {
     fn send(

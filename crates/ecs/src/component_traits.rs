@@ -7,8 +7,14 @@ use super::*;
 use crate::ComponentEntry;
 
 /// ExComponentValues support serilization, cloning, debug
-pub trait ExComponentValue: ComponentValue + Serialize + DeserializeOwned + Clone + std::fmt::Debug {}
-impl<T: ComponentValue + Serialize + DeserializeOwned + Clone + std::fmt::Debug> ExComponentValue for T {}
+pub trait ExComponentValue:
+    ComponentValue + Serialize + DeserializeOwned + Clone + std::fmt::Debug
+{
+}
+impl<T: ComponentValue + Serialize + DeserializeOwned + Clone + std::fmt::Debug> ExComponentValue
+    for T
+{
+}
 
 impl_downcast!(ComponentValueBase);
 
@@ -52,7 +58,8 @@ pub trait IComponentBuffer: Send + Sync {
     fn as_any(&self) -> &dyn Any;
     fn as_mut_any(&mut self) -> &mut dyn Any;
 
-    fn write_to_world(self: Box<Self>, world: &mut World, entity: EntityId) -> Result<(), ECSError>;
+    fn write_to_world(self: Box<Self>, world: &mut World, entity: EntityId)
+        -> Result<(), ECSError>;
     fn clone_boxed(&self) -> Box<dyn IComponentBuffer>;
     fn clone_value_boxed(&self, index: usize) -> ComponentEntry;
     fn pop(&mut self) -> ComponentEntry;
@@ -67,10 +74,16 @@ pub struct ComponentBuffer<T: ComponentValue> {
 
 impl<T: ComponentValue> ComponentBuffer<T> {
     pub fn new(component: crate::Component<T>) -> Self {
-        Self { component, data: Vec::new() }
+        Self {
+            component,
+            data: Vec::new(),
+        }
     }
     pub fn new_with_value(component: crate::Component<T>, value: T) -> Self {
-        Self { component, data: vec![value] }
+        Self {
+            component,
+            data: vec![value],
+        }
     }
 }
 
@@ -84,7 +97,10 @@ impl<T: ComponentValue + Clone> IComponentBuffer for ComponentBuffer<T> {
     }
 
     fn append(&mut self, mut buffer: Box<dyn IComponentBuffer>) {
-        let b = buffer.as_mut_any().downcast_mut::<ComponentBuffer<T>>().unwrap();
+        let b = buffer
+            .as_mut_any()
+            .downcast_mut::<ComponentBuffer<T>>()
+            .unwrap();
         self.data.append(&mut b.data);
     }
 
@@ -119,7 +135,11 @@ impl<T: ComponentValue + Clone> IComponentBuffer for ComponentBuffer<T> {
         self
     }
 
-    fn write_to_world(mut self: Box<Self>, world: &mut World, entity: EntityId) -> Result<(), ECSError> {
+    fn write_to_world(
+        mut self: Box<Self>,
+        world: &mut World,
+        entity: EntityId,
+    ) -> Result<(), ECSError> {
         world.set(entity, self.component, self.data.pop().unwrap())?;
         Ok(())
     }

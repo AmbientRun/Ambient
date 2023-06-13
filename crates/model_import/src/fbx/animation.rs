@@ -1,20 +1,24 @@
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap};
 
 use ambient_animation::{
-    animation_bind_id_from_name, AnimationClip, AnimationOutputs, AnimationTarget, AnimationTrack,
-    Vec3Field,
+    AnimationClip, AnimationOutputs, AnimationTarget, AnimationTrack, Vec3Field,
 };
 use ambient_core::transform::{euler_rotation, scale, translation};
 use fbxcel::tree::v7400::NodeHandle;
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
 
-use super::FbxDoc;
+use crate::animation_bind_id::BindIdReg;
+
+use super::{model::FbxModel, FbxDoc};
 
 // From: https://help.autodesk.com/view/FBX/2015/ENU/?guid=__cpp_ref_class_fbx_anim_curve_html
 const FBX_TIME: f32 = 46186158000.;
 
-pub fn get_animations(doc: &FbxDoc) -> HashMap<String, AnimationClip> {
+pub(crate) fn get_animations(
+    doc: &FbxDoc,
+    bind_ids: &RefCell<BindIdReg<i64, FbxModel>>,
+) -> HashMap<String, AnimationClip> {
     doc.animation_stacks
         .values()
         .map(|stack| {
@@ -34,10 +38,9 @@ pub fn get_animations(doc: &FbxDoc) -> HashMap<String, AnimationClip> {
                                     .map(|(field, curve_id)| {
                                         let curve = doc.animation_curves.get(curve_id).unwrap();
                                         let node = doc.models.get(output_id).unwrap();
+                                        let mut bind_ids = bind_ids.borrow_mut();
                                         let track = AnimationTrack {
-                                            target: AnimationTarget::BinderId(
-                                                animation_bind_id_from_name(&node.node_name),
-                                            ),
+                                            target: AnimationTarget::BinderId(bind_ids.get(&node)),
                                             inputs: curve
                                                 .key_time
                                                 .iter()

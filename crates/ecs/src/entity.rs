@@ -13,7 +13,10 @@ use serde::{
 };
 
 use super::{with_component_registry, Component, ComponentValue, ECSError, EntityId, World};
-use crate::{ComponentAttribute, ComponentDesc, ComponentEntry, ComponentSet, ECSDeserializationWarnings, Serializable};
+use crate::{
+    ComponentAttribute, ComponentDesc, ComponentEntry, ComponentSet, ECSDeserializationWarnings,
+    Serializable,
+};
 
 #[derive(Clone)]
 pub struct Entity {
@@ -22,7 +25,10 @@ pub struct Entity {
 }
 impl Entity {
     pub fn new() -> Self {
-        Self { content: SparseVec::new(), active_components: ComponentSet::new() }
+        Self {
+            content: SparseVec::new(),
+            active_components: ComponentSet::new(),
+        }
     }
     pub fn get<T: Copy + ComponentValue>(&self, component: Component<T>) -> Option<T> {
         self.get_ref(component).copied()
@@ -60,7 +66,8 @@ impl Entity {
 
     pub fn set<T: ComponentValue>(&mut self, component: Component<T>, value: T) {
         let index = component.index() as _;
-        self.content.set(index, ComponentEntry::new(component, value));
+        self.content
+            .set(index, ComponentEntry::new(component, value));
         self.active_components.insert(component.desc());
     }
 
@@ -69,7 +76,11 @@ impl Entity {
         self
     }
 
-    pub fn with_opt<T: ComponentValue>(mut self, component: Component<T>, value: Option<T>) -> Self {
+    pub fn with_opt<T: ComponentValue>(
+        mut self,
+        component: Component<T>,
+        value: Option<T>,
+    ) -> Self {
         if let Some(value) = value {
             self.set(component, value);
         }
@@ -87,7 +98,10 @@ impl Entity {
         self
     }
 
-    pub fn with_default_if_empty<T: Default + ComponentValue>(mut self, component: Component<T>) -> Self {
+    pub fn with_default_if_empty<T: Default + ComponentValue>(
+        mut self,
+        component: Component<T>,
+    ) -> Self {
         if !self.contains(component) {
             self.set(component, T::default());
         }
@@ -191,7 +205,11 @@ impl Entity {
     pub fn assert_all<A: ComponentAttribute>(&self, attribute: A) {
         for comp in self.components() {
             if !comp.has_attribute::<A>() {
-                panic!("Component {} does not have attribute {}", comp.type_name(), attribute.type_name());
+                panic!(
+                    "Component {} does not have attribute {}",
+                    comp.type_name(),
+                    attribute.type_name()
+                );
             }
         }
     }
@@ -213,13 +231,18 @@ impl Debug for Entity {
 
 impl Serialize for Entity {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let len = self.content.iter().filter(|v| v.has_attribute::<Serializable>()).count();
+        let len = self
+            .content
+            .iter()
+            .filter(|v| v.has_attribute::<Serializable>())
+            .count();
 
         let mut map = serializer.serialize_map(Some(len))?;
         for entry in self.content.iter() {
             if let Some(ser) = entry.attribute::<Serializable>() {
                 let value = ser.serialize(entry);
-                map.serialize_entry(&entry.desc().path(), &value).expect("Bincode does not support #[serde(flatten)]");
+                map.serialize_entry(&entry.desc().path(), &value)
+                    .expect("Bincode does not support #[serde(flatten)]");
             }
         }
         map.end()
@@ -249,9 +272,9 @@ impl<'de> Deserialize<'de> for Entity {
                     let desc = with_component_registry(|r| r.get_by_path(&key))
                         .ok_or_else(|| de::Error::custom(format!("No such component: {key}")))?;
 
-                    let ser = desc
-                        .attribute::<Serializable>()
-                        .ok_or_else(|| de::Error::custom(format!("Component {desc:?} is not deserializable")))?;
+                    let ser = desc.attribute::<Serializable>().ok_or_else(|| {
+                        de::Error::custom(format!("Component {desc:?} is not deserializable"))
+                    })?;
 
                     let value = map.next_value_seed(ser.deserializer(desc))?;
 
@@ -293,19 +316,25 @@ impl<'de> Deserialize<'de> for DeserEntityDataWithWarnings {
                         Some(desc) => desc,
 
                         None => {
-                            self.warnings.push((EntityId::null(), key.clone(), format!("No such component: {key}")));
+                            self.warnings.push((
+                                EntityId::null(),
+                                key.clone(),
+                                format!("No such component: {key}"),
+                            ));
                             continue;
                         }
                     };
 
-                    let ser: Result<_, V::Error> = desc
-                        .attribute::<Serializable>()
-                        .ok_or_else(|| de::Error::custom(format!("Component {desc:?} is not deserializable")));
+                    let ser: Result<_, V::Error> =
+                        desc.attribute::<Serializable>().ok_or_else(|| {
+                            de::Error::custom(format!("Component {desc:?} is not deserializable"))
+                        });
 
                     let ser = match ser {
                         Ok(v) => v,
                         Err(err) => {
-                            self.warnings.push((EntityId::null(), key, format!("{err:?}")));
+                            self.warnings
+                                .push((EntityId::null(), key, format!("{err:?}")));
                             continue;
                         }
                     };
@@ -314,7 +343,8 @@ impl<'de> Deserialize<'de> for DeserEntityDataWithWarnings {
                     let value = match value {
                         Ok(v) => v,
                         Err(err) => {
-                            self.warnings.push((EntityId::null(), key, format!("{err:?}")));
+                            self.warnings
+                                .push((EntityId::null(), key, format!("{err:?}")));
                             continue;
                         }
                     };
@@ -322,11 +352,16 @@ impl<'de> Deserialize<'de> for DeserEntityDataWithWarnings {
                     res.set_entry(value);
                 }
 
-                Ok(DeserEntityDataWithWarnings { entity: res, warnings: self.warnings })
+                Ok(DeserEntityDataWithWarnings {
+                    entity: res,
+                    warnings: self.warnings,
+                })
             }
         }
 
-        deserializer.deserialize_map(EntityDataVisitor { warnings: Default::default() })
+        deserializer.deserialize_map(EntityDataVisitor {
+            warnings: Default::default(),
+        })
     }
 }
 

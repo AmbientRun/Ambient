@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use itertools::Itertools;
 
-use super::{define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt, Hooks};
+use super::{
+    define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt,
+    Hooks,
+};
 
 /// Wraps the inner [Element].
 /// This is useful for introducing an intermediate component node in a tree.
@@ -25,12 +28,23 @@ impl ElementComponent for Group {
 }
 impl<T: ElementComponent + Clone + 'static> ElementComponent for Vec<T> {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Group(self.into_iter().map(|part| Element::from(part)).collect_vec()).into()
+        Group(
+            self.into_iter()
+                .map(|part| Element::from(part))
+                .collect_vec(),
+        )
+        .into()
     }
 }
 impl<T: ElementComponent + Clone + 'static> ElementComponent for HashMap<String, T> {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Group(self.into_iter().sorted_by_key(|x| x.0.clone()).map(|(key, part)| Element::from(part).key(key)).collect_vec()).into()
+        Group(
+            self.into_iter()
+                .sorted_by_key(|x| x.0.clone())
+                .map(|(key, part)| Element::from(part).key(key))
+                .collect_vec(),
+        )
+        .into()
     }
 }
 

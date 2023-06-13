@@ -3,7 +3,10 @@ use std::ptr::null_mut;
 use glam::{DVec3, Vec3};
 use physx_sys::PxControllerCollisionFlag::*;
 
-use crate::{to_glam_vec3, to_glam_vec3_f64, to_physx_vec3, to_physx_vec3_f64, PxMaterial, PxRigidDynamicRef, PxSceneRef};
+use crate::{
+    to_glam_vec3, to_glam_vec3_f64, to_physx_vec3, to_physx_vec3_f64, PxMaterial,
+    PxRigidDynamicRef, PxSceneRef,
+};
 
 #[derive(Clone, Copy)]
 pub struct PxControllerManagerRef(*mut physx_sys::PxControllerManager);
@@ -13,10 +16,14 @@ impl PxControllerManagerRef {
     }
     pub fn create_controller(&self, desc: &PxControllerDesc) -> PxControllerRef {
         let obj = desc.to_physx();
-        PxControllerRef(unsafe { physx_sys::PxControllerManager_createController_mut(self.0, obj.as_ptr()) })
+        PxControllerRef(unsafe {
+            physx_sys::PxControllerManager_createController_mut(self.0, obj.as_ptr())
+        })
     }
     pub fn create_obstacle_context(&self) -> PxObstacleContext {
-        PxObstacleContext(unsafe { physx_sys::PxControllerManager_createObstacleContext_mut(self.0) })
+        PxObstacleContext(unsafe {
+            physx_sys::PxControllerManager_createObstacleContext_mut(self.0)
+        })
     }
     pub fn release(&mut self) {
         unsafe { physx_sys::PxControllerManager_release_mut(self.0) }
@@ -120,7 +127,9 @@ impl PxControllerDescRef {
 impl Drop for PxControllerDescRef {
     fn drop(&mut self) {
         match self {
-            PxControllerDescRef::Capsule(p) => unsafe { physx_sys::PxCapsuleControllerDesc_delete(*p) },
+            PxControllerDescRef::Capsule(p) => unsafe {
+                physx_sys::PxCapsuleControllerDesc_delete(*p)
+            },
         }
     }
 }

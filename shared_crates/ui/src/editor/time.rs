@@ -14,7 +14,18 @@ use crate::{layout::FlowRow, text::Text};
 
 use super::{ChangeCb, Editor, EditorOpts, TextEditor};
 
-#[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 /// A duration that can be edited.
 pub struct EditableDuration {
     dur: Duration,
@@ -36,7 +47,11 @@ impl EditableDuration {
 
 impl From<Duration> for EditableDuration {
     fn from(v: Duration) -> Self {
-        Self { dur: v, input: format!("{}s", v.as_secs()), valid: true }
+        Self {
+            dur: v,
+            input: format!("{}s", v.as_secs()),
+            valid: true,
+        }
     }
 }
 
@@ -56,7 +71,11 @@ impl From<String> for EditableDuration {
     fn from(s: String) -> Self {
         let dur = parse_duration(&s);
         let valid = dur.is_ok();
-        Self { dur: dur.unwrap_or_default(), valid, input: s }
+        Self {
+            dur: dur.unwrap_or_default(),
+            valid,
+            input: s,
+        }
     }
 }
 
@@ -71,23 +90,38 @@ pub struct DurationEditor {
 
 impl DurationEditor {
     /// Create a new [DurationEditor].
-    pub fn new(value: EditableDuration, on_change: Cb<dyn Fn(EditableDuration) + Sync + Send>) -> Self {
+    pub fn new(
+        value: EditableDuration,
+        on_change: Cb<dyn Fn(EditableDuration) + Sync + Send>,
+    ) -> Self {
         Self { value, on_change }
     }
 }
 
 impl ElementComponent for DurationEditor {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        let Self { value: EditableDuration { input, dur, valid }, on_change } = *self;
-        let input = TextEditor::new(input, cb(move |upd: String| on_change(EditableDuration::from(upd)))).el();
+        let Self {
+            value: EditableDuration { input, dur, valid },
+            on_change,
+        } = *self;
+        let input = TextEditor::new(
+            input,
+            cb(move |upd: String| on_change(EditableDuration::from(upd))),
+        )
+        .el();
         let value = Text::el(format!("{dur:#?}"));
 
         if valid {
-            FlowRow(vec![input, value]).el().with(space_between_items(), 10.0)
-        } else {
-            FlowRow(vec![input, Text::el("invalid duration").with(color(), vec4(1.0, 0.0, 0.0, 1.0))])
+            FlowRow(vec![input, value])
                 .el()
                 .with(space_between_items(), 10.0)
+        } else {
+            FlowRow(vec![
+                input,
+                Text::el("invalid duration").with(color(), vec4(1.0, 0.0, 0.0, 1.0)),
+            ])
+            .el()
+            .with(space_between_items(), 10.0)
         }
     }
 }
@@ -115,6 +149,10 @@ impl ElementComponent for SystemTimeEditor {
 }
 impl Editor for SystemTime {
     fn editor(self, _: ChangeCb<Self>, _: EditorOpts) -> Element {
-        SystemTimeEditor { value: self, on_change: None }.el()
+        SystemTimeEditor {
+            value: self,
+            on_change: None,
+        }
+        .el()
     }
 }

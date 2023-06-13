@@ -35,7 +35,14 @@ impl ElementComponent for SelectArea {
         hooks.use_spawn(move |_| {
             move |w| {
                 w.resource(runtime()).spawn(async move {
-                    log_network_result!(client.rpc(rpc_select, (SelectMethod::Manual(Default::default()), SelectMode::Clear)).await);
+                    log_network_result!(
+                        client
+                            .rpc(
+                                rpc_select,
+                                (SelectMethod::Manual(Default::default()), SelectMode::Clear)
+                            )
+                            .await
+                    );
                 });
             }
         });
@@ -75,7 +82,13 @@ impl ElementComponent for SelectArea {
                         let frustum = {
                             let state = game_client.game_state.lock();
                             let get_corner = |p, z| {
-                                let clip_pos = interpolate(p, Vec2::ZERO, screen_size, vec2(-1., 1.), vec2(1., -1.));
+                                let clip_pos = interpolate(
+                                    p,
+                                    Vec2::ZERO,
+                                    screen_size,
+                                    vec2(-1., 1.),
+                                    vec2(1., -1.),
+                                );
                                 state.clip_to_world_space(clip_pos.extend(z))
                             };
                             [
@@ -91,7 +104,11 @@ impl ElementComponent for SelectArea {
                             ]
                         };
                         world.resource(runtime()).clone().spawn(async move {
-                            log_network_result!(game_client.rpc(rpc_select, (SelectMethod::Frustum(frustum), select_mode)).await);
+                            log_network_result!(
+                                game_client
+                                    .rpc(rpc_select, (SelectMethod::Frustum(frustum), select_mode))
+                                    .await
+                            );
                         });
                         return;
                     }
@@ -99,13 +116,23 @@ impl ElementComponent for SelectArea {
 
                 let ray = {
                     let state = game_client.game_state.lock();
-                    let p = interpolate(mouse_pos, Vec2::ZERO, screen_size, vec2(-1., 1.), vec2(1., -1.));
+                    let p = interpolate(
+                        mouse_pos,
+                        Vec2::ZERO,
+                        screen_size,
+                        vec2(-1., 1.),
+                        vec2(1., -1.),
+                    );
                     state.screen_ray(p)
                 };
 
                 let game_client = game_client.clone();
                 world.resource(runtime()).clone().spawn(async move {
-                    log_network_result!(game_client.rpc(rpc_select, (SelectMethod::Ray(ray), select_mode)).await);
+                    log_network_result!(
+                        game_client
+                            .rpc(rpc_select, (SelectMethod::Ray(ray), select_mode))
+                            .await
+                    );
                 });
             }
         });
@@ -113,17 +140,19 @@ impl ElementComponent for SelectArea {
         UIBase
             .el()
             .with_clickarea()
-            .on_mouse_down(closure!(clone set_dragging, clone is_clicking, |world, id, button| {
-                if button != ambient_shared_types::MouseButton::Left {
-                    return;
-                }
+            .on_mouse_down(
+                closure!(clone set_dragging, clone is_clicking, |world, id, button| {
+                    if button != ambient_shared_types::MouseButton::Left {
+                        return;
+                    }
 
-                let area_offset = get_world_position(world, id).unwrap().xy();
-                set_dragging(Some(*world.resource(cursor_position())));
-                set_area_offset(area_offset);
-                tracing::info!("Set is_clicking to true");
-                *is_clicking.lock() = true;
-            }))
+                    let area_offset = get_world_position(world, id).unwrap().xy();
+                    set_dragging(Some(*world.resource(cursor_position())));
+                    set_area_offset(area_offset);
+                    tracing::info!("Set is_clicking to true");
+                    *is_clicking.lock() = true;
+                }),
+            )
             .el()
             .children(vec![if let Some(dragging) = dragging {
                 let min_x = dragging.x.min(mouse_pos.x);
@@ -133,7 +162,10 @@ impl ElementComponent for SelectArea {
                 UIBase
                     .el()
                     .with_background(Color::rgba(0., 0., 1., 0.3).into())
-                    .with(translation(), vec3(min_x, min_y, -0.05) - area_offset.extend(0.))
+                    .with(
+                        translation(),
+                        vec3(min_x, min_y, -0.05) - area_offset.extend(0.),
+                    )
                     .with(width(), max_x - min_x)
                     .with(height(), max_y - min_y)
             } else {

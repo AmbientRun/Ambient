@@ -1,6 +1,8 @@
 use ambient_core::{asset_cache, async_ecs::async_run, runtime, session_start};
 use ambient_ecs::{components, query, SystemGroup};
-use ambient_intent::{intent_applied, intent_reverted, intent_timestamp, use_old_state, IntentRegistry};
+use ambient_intent::{
+    intent_applied, intent_reverted, intent_timestamp, use_old_state, IntentRegistry,
+};
 use ambient_std::asset_cache::AsyncAssetKeyExt;
 use itertools::Itertools;
 
@@ -33,11 +35,16 @@ pub fn terrain_intent_client_system() -> SystemGroup {
             .excl(stroke_client_applied())
             .spawned()
             .to_system(|q, world, qs, _| {
-                let mut strokes =
-                    q.collect_cloned(world, qs).into_iter().filter(|(_, (stroke, _ts))| stroke.cells_exist(world)).collect_vec();
+                let mut strokes = q
+                    .collect_cloned(world, qs)
+                    .into_iter()
+                    .filter(|(_, (stroke, _ts))| stroke.cells_exist(world))
+                    .collect_vec();
                 if !strokes.is_empty() {
                     for (id, _) in &strokes {
-                        world.add_component(*id, stroke_client_applied(), ()).unwrap();
+                        world
+                            .add_component(*id, stroke_client_applied(), ())
+                            .unwrap();
                     }
                     let session_start = *world.resource(session_start());
                     strokes.retain(|(_, (_, ts))| *ts > session_start);

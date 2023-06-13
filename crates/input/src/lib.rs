@@ -1,10 +1,16 @@
 use std::collections::HashSet;
 
-use ambient_ecs::{components, generated::messages, world_events, Debuggable, Entity, Resource, System, SystemGroup, WorldEventsExt};
+use ambient_ecs::{
+    components, generated::messages, world_events, Debuggable, Entity, Resource, System,
+    SystemGroup, WorldEventsExt,
+};
 use glam::{vec2, Vec2};
 use serde::{Deserialize, Serialize};
 use winit::event::ModifiersState;
-pub use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, MouseScrollDelta, VirtualKeyCode, WindowEvent};
+pub use winit::event::{
+    DeviceEvent, ElementState, Event, KeyboardInput, MouseButton, MouseScrollDelta, VirtualKeyCode,
+    WindowEvent,
+};
 
 pub mod picking;
 
@@ -36,7 +42,9 @@ pub fn event_systems() -> SystemGroup<Event<'static, ()>> {
 }
 
 pub fn resources() -> Entity {
-    Entity::new().with_default(player_raw_input()).with_default(player_prev_raw_input())
+    Entity::new()
+        .with_default(player_raw_input())
+        .with_default(player_prev_raw_input())
 }
 
 #[derive(Debug)]
@@ -47,7 +55,10 @@ pub struct InputSystem {
 
 impl InputSystem {
     pub fn new() -> Self {
-        Self { modifiers: ModifiersState::empty(), is_focused: true }
+        Self {
+            modifiers: ModifiersState::empty(),
+            is_focused: true,
+        }
     }
 }
 
@@ -57,56 +68,80 @@ impl System<Event<'static, ()>> for InputSystem {
             Event::WindowEvent { event, .. } => match event {
                 &WindowEvent::Focused(focused) => {
                     self.is_focused = focused;
-                    world.resource_mut(world_events()).add_message(messages::WindowFocusChange::new(focused));
+                    world
+                        .resource_mut(world_events())
+                        .add_message(messages::WindowFocusChange::new(focused));
                 }
                 WindowEvent::ReceivedCharacter(c) => {
-                    world.resource_mut(world_events()).add_message(messages::WindowKeyboardCharacter::new(c.to_string()));
+                    world
+                        .resource_mut(world_events())
+                        .add_message(messages::WindowKeyboardCharacter::new(c.to_string()));
                 }
 
                 WindowEvent::ModifiersChanged(mods) => {
                     self.modifiers = *mods;
-                    world.resource_mut(world_events()).add_message(messages::WindowKeyboardModifiersChange::new(mods.bits()));
+                    world
+                        .resource_mut(world_events())
+                        .add_message(messages::WindowKeyboardModifiersChange::new(mods.bits()));
                 }
 
                 WindowEvent::CloseRequested => {
-                    world.resource_mut(world_events()).add_message(messages::WindowClose::new());
+                    world
+                        .resource_mut(world_events())
+                        .add_message(messages::WindowClose::new());
                 }
 
                 WindowEvent::KeyboardInput { input, .. } => {
-                    let keycode = input.virtual_keycode.map(|key| ambient_shared_types::VirtualKeyCode::from(key).to_string());
+                    let keycode = input
+                        .virtual_keycode
+                        .map(|key| ambient_shared_types::VirtualKeyCode::from(key).to_string());
                     let modifiers = self.modifiers.bits();
                     let pressed = match input.state {
                         ElementState::Pressed => true,
                         ElementState::Released => false,
                     };
-                    world.resource_mut(world_events()).add_message(messages::WindowKeyboardInput::new(keycode, modifiers, pressed));
+                    world.resource_mut(world_events()).add_message(
+                        messages::WindowKeyboardInput::new(keycode, modifiers, pressed),
+                    );
                 }
 
                 WindowEvent::MouseInput { state, button, .. } => {
-                    world.resource_mut(world_events()).add_message(messages::WindowMouseInput::new(
-                        ambient_shared_types::MouseButton::from(*button),
-                        match state {
-                            ElementState::Pressed => true,
-                            ElementState::Released => false,
-                        },
-                    ));
+                    world.resource_mut(world_events()).add_message(
+                        messages::WindowMouseInput::new(
+                            ambient_shared_types::MouseButton::from(*button),
+                            match state {
+                                ElementState::Pressed => true,
+                                ElementState::Released => false,
+                            },
+                        ),
+                    );
                 }
 
                 WindowEvent::MouseWheel { delta, .. } => {
-                    world.resource_mut(world_events()).add_message(messages::WindowMouseWheel::new(
-                        match *delta {
-                            MouseScrollDelta::LineDelta(x, y) => vec2(x, y),
-                            MouseScrollDelta::PixelDelta(p) => vec2(p.x as f32, p.y as f32),
-                        },
-                        matches!(delta, MouseScrollDelta::PixelDelta(..)),
-                    ));
+                    world.resource_mut(world_events()).add_message(
+                        messages::WindowMouseWheel::new(
+                            match *delta {
+                                MouseScrollDelta::LineDelta(x, y) => vec2(x, y),
+                                MouseScrollDelta::PixelDelta(p) => vec2(p.x as f32, p.y as f32),
+                            },
+                            matches!(delta, MouseScrollDelta::PixelDelta(..)),
+                        ),
+                    );
                 }
 
                 _ => {}
             },
 
-            Event::DeviceEvent { event: DeviceEvent::MouseMotion { delta }, .. } => {
-                world.resource_mut(world_events()).add_message(messages::WindowMouseMotion::new(vec2(delta.0 as f32, delta.1 as f32)));
+            Event::DeviceEvent {
+                event: DeviceEvent::MouseMotion { delta },
+                ..
+            } => {
+                world
+                    .resource_mut(world_events())
+                    .add_message(messages::WindowMouseMotion::new(vec2(
+                        delta.0 as f32,
+                        delta.1 as f32,
+                    )));
             }
             _ => {}
         }

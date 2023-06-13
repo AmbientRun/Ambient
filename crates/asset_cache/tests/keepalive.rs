@@ -63,7 +63,10 @@ async fn keepalive_again() {
 
     // Keepalive is still active
     sleep(Duration::from_secs(4)).await;
-    assert_eq!(TestAssetKey.is_loaded(&assets), Some(asset.upgrade().unwrap()));
+    assert_eq!(
+        TestAssetKey.is_loaded(&assets),
+        Some(asset.upgrade().unwrap())
+    );
 }
 
 #[derive(PartialEq, Eq, Debug)]

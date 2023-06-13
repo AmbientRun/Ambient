@@ -1,15 +1,13 @@
 use std::sync::Arc;
 
-use ambient_animation::{
-    animation_bind_id_from_name, AnimationClip, AnimationOutputs, AnimationTarget, AnimationTrack,
-};
+use ambient_animation::{AnimationClip, AnimationOutputs, AnimationTarget, AnimationTrack};
 use ambient_core::{
     bounding::local_bounding_aabb,
     hierarchy::{children, parent},
     name,
     transform::{local_to_parent, local_to_world, rotation, scale, translation},
 };
-use ambient_ecs::{Entity, World};
+use ambient_ecs::{generated::components::core::animation::bind_id, Entity, World};
 use ambient_gpu::sampler::SamplerKey;
 use ambient_model::{
     model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelSkin,
@@ -29,7 +27,11 @@ use itertools::Itertools;
 use relative_path::RelativePathBuf;
 
 use self::gltf_import::GltfImport;
-use crate::{dotdot_path, model_crate::ModelCrate};
+use crate::{
+    animation_bind_id::{BindIdNodeFuncs, BindIdReg},
+    dotdot_path,
+    model_crate::ModelCrate,
+};
 
 mod gltf_import;
 
@@ -51,6 +53,10 @@ pub async fn import(
         name.map(|x| format!("{}_", x.replace("/", "-").replace("\\", "-")))
             .unwrap_or_default()
     };
+    let mut bind_ids = BindIdReg::<usize, gltf::scene::Node<'_>>::new(BindIdNodeFuncs {
+        node_to_id: |node| node.index(),
+        node_name: |node| node.name(),
+    });
 
     let mut meshes = import
         .document
@@ -149,9 +155,7 @@ pub async fn import(
             .channels()
             .map(|channel| {
                 let reader = channel.reader(|buffer| Some(&import.buffers[buffer.index()]));
-                let target = AnimationTarget::BinderId(animation_bind_id_from_name(
-                    channel.target().node().name().unwrap_or(""),
-                ));
+                let target = AnimationTarget::BinderId(bind_ids.get(&channel.target().node()));
                 let inputs = reader.read_inputs().unwrap().collect();
                 match reader.read_outputs() {
                     Some(ReadOutputs::Translations(data)) => AnimationTrack {
@@ -314,7 +318,8 @@ pub async fn import(
                 .with(translation(), Vec3::from_slice(&trans))
                 .with(rotation(), Quat::from_slice(&rot))
                 .with(scale(), Vec3::from_slice(&scal))
-                .with_default(local_to_world());
+                .with_default(local_to_world())
+                .with(bind_id(), bind_ids.get(&node));
 
             if let Some(node_name) = node.name() {
                 ed.set(name(), node_name.to_string());

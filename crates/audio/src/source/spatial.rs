@@ -3,7 +3,9 @@ use std::{ops::Deref, time::Duration};
 use glam::Vec3;
 
 use crate::{
-    hrtf::{Hrtf, HrtfContext, HrtfLib}, value::Value, AudioEmitter, AudioListener, Frame, Source, MAX_ANGULAR_SPEED, MAX_SPEED
+    hrtf::{Hrtf, HrtfContext, HrtfLib},
+    value::Value,
+    AudioEmitter, AudioListener, Frame, Source, MAX_ANGULAR_SPEED, MAX_SPEED,
 };
 
 #[derive(Debug)]

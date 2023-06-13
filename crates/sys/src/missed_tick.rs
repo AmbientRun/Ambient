@@ -240,7 +240,9 @@ impl MissedTickBehavior {
                             //
                             // If it did fail, there's not a good way to pass
                             // the error along to the user, so we just panic.
-                            .expect("too much time has elapsed since the interval was supposed to tick"),
+                            .expect(
+                                "too much time has elapsed since the interval was supposed to tick",
+                            ),
                     )
             }
         }

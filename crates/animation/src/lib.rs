@@ -1,5 +1,4 @@
 use ambient_ecs::SystemGroup;
-use convert_case::{Case, Casing};
 use player::animation_player_systems;
 
 mod player;
@@ -15,43 +14,6 @@ pub fn init_all_components() {
 
 pub fn animation_systems() -> SystemGroup {
     animation_player_systems()
-}
-
-pub fn animation_bind_id_from_name(name: &str) -> String {
-    let name = if let Some((_a, b)) = name.split_once(':') {
-        b.to_string()
-    } else {
-        name.to_string()
-    };
-    fn normalize_name(value: &str) -> String {
-        if let Some(index) = value.strip_prefix("Thumb") {
-            return format!("HandThumb{index}");
-        } else if let Some(index) = value.strip_prefix("Index") {
-            return format!("HandIndex{index}");
-        } else if let Some(index) = value.strip_prefix("Middle") {
-            return format!("HandMiddle{index}");
-        } else if let Some(index) = value.strip_prefix("Ring") {
-            return format!("HandRing{index}");
-        } else if let Some(index) = value.strip_prefix("Pinky") {
-            return format!("HandPinky{index}");
-        }
-        match value {
-            "Knee" => "Leg".to_string(),
-            _ => value.to_string(),
-        }
-    }
-    if let Some(sub) = name.strip_prefix("L_") {
-        format!("Left{}", normalize_name(&sub.to_case(Case::Pascal)))
-    } else if let Some(sub) = name.strip_prefix("R_") {
-        format!("Right{}", normalize_name(&sub.to_case(Case::Pascal)))
-    } else {
-        let name = name.to_case(Case::Pascal);
-        if name.contains("Armature") {
-            "Armature".to_string()
-        } else {
-            name
-        }
-    }
 }
 
 #[test]

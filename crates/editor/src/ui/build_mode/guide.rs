@@ -9,7 +9,8 @@ use ambient_element::{Element, ElementComponent};
 use ambient_meshes::QuadMeshKey;
 use ambient_network::client::GameClient;
 use ambient_renderer::{
-    color, double_sided, gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, SharedMaterial, StandardShaderKey,
+    color, double_sided, gpu_primitives_lod, gpu_primitives_mesh, material, primitives,
+    renderer_shader, SharedMaterial, StandardShaderKey,
 };
 use ambient_std::{asset_cache::SyncAssetKeyExt, cb, shapes::AABB};
 use glam::{vec2, vec3, vec4, EulerRot, Mat4, Quat, Vec2, Vec3};
@@ -23,7 +24,10 @@ const LINE_WIDTH: f32 = 0.1;
 fn spawn_entity(world: &mut World, mat: SharedMaterial) -> EntityId {
     let assets = world.resource(asset_cache());
 
-    let aabb = AABB { min: vec3(-1., -1., 0.), max: vec3(1., 1., 0.) };
+    let aabb = AABB {
+        min: vec3(-1., -1., 0.),
+        max: vec3(1., 1., 0.),
+    };
 
     Entity::new()
         .with(mesh(), QuadMeshKey.get(assets))
@@ -42,8 +46,12 @@ fn spawn_entity(world: &mut World, mat: SharedMaterial) -> EntityId {
         .with(
             renderer_shader(),
             cb(|assets, config| {
-                StandardShaderKey { material_shader: GridShaderKey.get(assets), lit: false, shadow_cascades: config.shadow_cascades }
-                    .get(assets)
+                StandardShaderKey {
+                    material_shader: GridShaderKey.get(assets),
+                    lit: false,
+                    shadow_cascades: config.shadow_cascades,
+                }
+                .get(assets)
             }),
         )
         .spawn(world)
@@ -89,8 +97,12 @@ impl ElementComponent for GridGuide {
             let mut state = game_client.game_state.lock();
             let _euler = rotation.to_euler(EulerRot::YXZ);
 
-            let transform = Mat4::from_scale_rotation_translation(Vec3::splat(BLUEBOARD_SIZE), rotation, point);
-            state.world.set(entity, local_to_world(), transform).expect("Entity was despawned");
+            let transform =
+                Mat4::from_scale_rotation_translation(Vec3::splat(BLUEBOARD_SIZE), rotation, point);
+            state
+                .world
+                .set(entity, local_to_world(), transform)
+                .expect("Entity was despawned");
 
             |_| {}
         });
@@ -116,7 +128,13 @@ impl ElementComponent for AxisGuide {
             let mut state = game_client.game_state.lock();
             let assets = world.resource(asset_cache());
 
-            let mat = GridMaterialKey { major: vec2(0.0, 0.2), minor: vec2(0.0, 2.0), line_width: 0.2, size: BLUEBOARD_SIZE }.get(assets);
+            let mat = GridMaterialKey {
+                major: vec2(0.0, 0.2),
+                minor: vec2(0.0, 2.0),
+                line_width: 0.2,
+                size: BLUEBOARD_SIZE,
+            }
+            .get(assets);
 
             spawn_entity(&mut state.world, mat)
         });
@@ -149,9 +167,16 @@ impl ElementComponent for AxisGuide {
 
         let billboard = Quat::from_rotation_arc(tangent, to_camera);
 
-        let transform = Mat4::from_scale_rotation_translation(vec3(LINE_WIDTH, BLUEBOARD_SIZE, BLUEBOARD_SIZE), billboard * rot, point);
+        let transform = Mat4::from_scale_rotation_translation(
+            vec3(LINE_WIDTH, BLUEBOARD_SIZE, BLUEBOARD_SIZE),
+            billboard * rot,
+            point,
+        );
 
-        state.world.set(entity, local_to_world(), transform).expect("Entity was despawned");
+        state
+            .world
+            .set(entity, local_to_world(), transform)
+            .expect("Entity was despawned");
 
         Element::new()
     }

@@ -41,13 +41,20 @@ async fn load_asset_async() {
 async fn load_aborted() {
     let assets = AssetCache::new(runtime::Handle::current());
 
-    let asset = timeout(Duration::from_millis(200), TestAssetKey { name: "foo".into() }.get(&assets)).await;
+    let asset = timeout(
+        Duration::from_millis(200),
+        TestAssetKey { name: "foo".into() }.get(&assets),
+    )
+    .await;
 
     assert!(asset.is_err());
 
     let a = TestAssetKey { name: "foo".into() }.get(&assets).await;
 
-    let b = TestAssetKey { name: "foo".into() }.get(&assets).now_or_never().unwrap();
+    let b = TestAssetKey { name: "foo".into() }
+        .get(&assets)
+        .now_or_never()
+        .unwrap();
     assert_eq!(&*b, &TestAsset { name: "foo".into() });
     assert!(Arc::ptr_eq(&a, &b));
 }
@@ -80,7 +87,10 @@ async fn peek() {
 
     sleep(Duration::from_secs(2)).await;
 
-    assert_eq!(key.peek(&assets).as_deref(), Some(&TestAsset { name: "foo".into() }));
+    assert_eq!(
+        key.peek(&assets).as_deref(),
+        Some(&TestAsset { name: "foo".into() })
+    );
 }
 
 #[tokio::test]
@@ -155,7 +165,10 @@ async fn get_in_blocking() {
 
     let asset = tokio::task::spawn_blocking(move || {
         for _ in 0..100 {
-            let asset = TestAssetKey { name: "foo".into() }.in_background().get(&assets).now_or_never();
+            let asset = TestAssetKey { name: "foo".into() }
+                .in_background()
+                .get(&assets)
+                .now_or_never();
             if let Some(asset) = asset {
                 return asset;
             }

@@ -85,7 +85,7 @@ impl AnimationOutput {
         }
     }
 }
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Vec3Field {
     X,
     Y,
@@ -150,7 +150,7 @@ impl AnimationOutputs {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum AnimationTarget {
     BinderId(String),
     Entity(EntityId),

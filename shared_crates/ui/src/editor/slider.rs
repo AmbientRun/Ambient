@@ -49,23 +49,48 @@ pub struct Slider {
 impl Slider {
     /// Creates a new slider.
     pub fn new(value: f32, on_change: impl Fn(f32) + Sync + Send + 'static) -> Self {
-        Self { value, on_change: Some(cb(on_change)), min: 0., max: 1., width: 100., logarithmic: false, round: None, suffix: None }
+        Self {
+            value,
+            on_change: Some(cb(on_change)),
+            min: 0.,
+            max: 1.,
+            width: 100.,
+            logarithmic: false,
+            round: None,
+            suffix: None,
+        }
     }
     #[cfg(feature = "guest")]
     /// Creates a new slider that edits a component on an entity.
-    pub fn new_for_entity_component(hooks: &mut Hooks, entity: EntityId, component: ambient_guest_bridge::ecs::Component<f32>) -> Self {
+    pub fn new_for_entity_component(
+        hooks: &mut Hooks,
+        entity: EntityId,
+        component: ambient_guest_bridge::ecs::Component<f32>,
+    ) -> Self {
         use ambient_guest_bridge::api::entity;
         let rerender = hooks.use_rerender_signal();
-        Self::new(entity::get_component(entity, component).unwrap_or_default(), move |value| {
-            entity::set_component(entity, component, value);
-            rerender();
-        })
+        Self::new(
+            entity::get_component(entity, component).unwrap_or_default(),
+            move |value| {
+                entity::set_component(entity, component, value);
+                rerender();
+            },
+        )
     }
 }
 
 impl ElementComponent for Slider {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let Slider { value, min, max, width: slider_width, logarithmic, round, suffix, .. } = *self;
+        let Slider {
+            value,
+            min,
+            max,
+            width: slider_width,
+            logarithmic,
+            round,
+            suffix,
+            ..
+        } = *self;
         const THUMB_WIDTH: f32 = 12.;
         const SLIDER_HEIGHT: f32 = 12.;
 
@@ -97,19 +122,26 @@ impl ElementComponent for Slider {
         let block_id = hooks.use_ref_with(|_| EntityId::null());
         let is_moveable = self.on_change.is_some();
         // Sets the value with some sanitization
-        let on_change_raw =
-            self.on_change.map(|f| -> Cb<dyn Fn(f32) + Sync + Send> { cb(move |value: f32| f(cleanup_value(value, min, max, round))) });
+        let on_change_raw = self.on_change.map(|f| -> Cb<dyn Fn(f32) + Sync + Send> {
+            cb(move |value: f32| f(cleanup_value(value, min, max, round)))
+        });
         // Sets the value after converting from [0-1] to the value range
-        let on_change_factor =
-            on_change_raw.clone().map(|f| cb(move |p: f32| f(if logarithmic { p.powf(E) } else { p } * (max - min) + min)));
+        let on_change_factor = on_change_raw.clone().map(|f| {
+            cb(move |p: f32| f(if logarithmic { p.powf(E) } else { p } * (max - min) + min))
+        });
 
         // f(x) = p ^ e
         // f'(f(x)) = x
         // f'(y) = y ^ (1/e)
         // (p ^ e) ^ (1/e) = p ^ (e / e) = p ^ 1 = p
         let p = interpolate(value, min, max, 0., 1.);
-        let block_left_offset = if logarithmic { p.powf(1. / E) } else { p } * (slider_width - THUMB_WIDTH);
-        let block_left_offset = if block_left_offset.is_nan() || block_left_offset.is_infinite() { 0. } else { block_left_offset };
+        let block_left_offset =
+            if logarithmic { p.powf(1. / E) } else { p } * (slider_width - THUMB_WIDTH);
+        let block_left_offset = if block_left_offset.is_nan() || block_left_offset.is_infinite() {
+            0.
+        } else {
+            block_left_offset
+        };
 
         let dragging = hooks.use_ref_with(|_| false);
         hooks.use_runtime_message::<messages::WindowMouseInput>({
@@ -127,10 +159,19 @@ impl ElementComponent for Slider {
                 if let Some(on_change_factor) = &on_change_factor {
                     if *dragging.lock() {
                         let block_id = *block_id.lock();
-                        let (_, _, block_position) = world.get(block_id, local_to_world()).unwrap().to_scale_rotation_translation();
+                        let (_, _, block_position) = world
+                            .get(block_id, local_to_world())
+                            .unwrap()
+                            .to_scale_rotation_translation();
                         let block_width = world.get(block_id, width()).unwrap_or_default();
                         let position = world.resource(cursor_position());
-                        on_change_factor(interpolate_clamped(position.x, block_position.x, block_position.x + block_width, 0., 1.));
+                        on_change_factor(interpolate_clamped(
+                            position.x,
+                            block_position.x,
+                            block_position.x + block_width,
+                            0.,
+                            1.,
+                        ));
                     }
                 }
             }
@@ -172,8 +213,15 @@ impl ElementComponent for Slider {
         };
 
         FlowRow::el([
-            UIBase.el().with(width(), slider_width).with(height(), SLIDER_HEIGHT).children(vec![rectangle, thumb]),
-            FlowRow::el([f32::edit_or_view(value, on_change_raw, EditorOpts::default()), suffix.map(Text::el).unwrap_or_default()]),
+            UIBase
+                .el()
+                .with(width(), slider_width)
+                .with(height(), SLIDER_HEIGHT)
+                .children(vec![rectangle, thumb]),
+            FlowRow::el([
+                f32::edit_or_view(value, on_change_raw, EditorOpts::default()),
+                suffix.map(Text::el).unwrap_or_default(),
+            ]),
         ])
         .with(space_between_items(), STREET)
     }
@@ -199,10 +247,20 @@ pub struct IntegerSlider {
 }
 impl ElementComponent for IntegerSlider {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        let Self { value, on_change, min, max, width, logarithmic, suffix } = *self;
+        let Self {
+            value,
+            on_change,
+            min,
+            max,
+            width,
+            logarithmic,
+            suffix,
+        } = *self;
         Slider {
             value: value as f32,
-            on_change: on_change.map(|on_change| -> Cb<dyn Fn(f32) + Sync + Send> { cb(move |value: f32| on_change(value as i32)) }),
+            on_change: on_change.map(|on_change| -> Cb<dyn Fn(f32) + Sync + Send> {
+                cb(move |value: f32| on_change(value as i32))
+            }),
             min: min as f32,
             max: max as f32,
             width,

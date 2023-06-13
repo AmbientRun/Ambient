@@ -37,7 +37,9 @@ struct Waiter {
 
 impl Waiter {
     fn take_woken(&self) -> bool {
-        self.woken.compare_exchange(true, false, Ordering::Acquire, Ordering::Relaxed).is_ok()
+        self.woken
+            .compare_exchange(true, false, Ordering::Acquire, Ordering::Relaxed)
+            .is_ok()
     }
 
     fn wake(&self) {
@@ -79,7 +81,10 @@ impl TimerStore {
     fn new_timer(&self, deadline: Instant) -> (TimerKey, Arc<Waiter>) {
         let waiter = Arc::new(Waiter::default());
 
-        let timer = Timer { deadline, waiter: waiter.clone() };
+        let timer = Timer {
+            deadline,
+            waiter: waiter.clone(),
+        };
 
         let mut guard = self.inner.lock();
         let key = guard.timers.insert(timer);
@@ -161,7 +166,9 @@ impl TimerWheel {
             });
         }
 
-        TimerWheelUpdate { waiter: &self.timers.waiter }
+        TimerWheelUpdate {
+            waiter: &self.timers.waiter,
+        }
     }
 
     pub fn timers(&self) -> &Arc<TimerStore> {
@@ -176,7 +183,10 @@ pub struct TimerWheelUpdate<'a> {
 impl<'a> Future for TimerWheelUpdate<'a> {
     type Output = ();
 
-    fn poll(self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> std::task::Poll<Self::Output> {
+    fn poll(
+        self: Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<Self::Output> {
         if self.waiter.take_woken() {
             Poll::Ready(())
         } else {
@@ -198,13 +208,21 @@ pub struct Sleep {
 impl Sleep {
     pub fn new_at(timers: &Arc<TimerStore>, deadline: Instant) -> Self {
         let (key, waiter) = timers.new_timer(deadline);
-        Self { key, timers: Arc::downgrade(timers), waiter }
+        Self {
+            key,
+            timers: Arc::downgrade(timers),
+            waiter,
+        }
     }
 
     pub fn new(timers: &Arc<TimerStore>, dur: Duration) -> Self {
         let deadline = Instant::now() + dur;
         let (key, waiter) = timers.new_timer(deadline);
-        Self { key, timers: Arc::downgrade(timers), waiter }
+        Self {
+            key,
+            timers: Arc::downgrade(timers),
+            waiter,
+        }
     }
 
     /// Resets the sleep future to a new deadline even if expired
@@ -247,7 +265,12 @@ impl Interval {
     }
 
     pub fn new_at(timers: &Arc<TimerStore>, deadline: Instant, period: Duration) -> Self {
-        Self { fut: Sleep::new_at(timers, deadline), deadline, period, behavior: Default::default() }
+        Self {
+            fut: Sleep::new_at(timers, deadline),
+            deadline,
+            period,
+            behavior: Default::default(),
+        }
     }
 
     pub async fn tick(&mut self) -> Instant {
@@ -262,7 +285,10 @@ impl Interval {
 impl Stream for Interval {
     type Item = Instant;
 
-    fn poll_next(mut self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Option<Self::Item>> {
+    fn poll_next(
+        mut self: Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> Poll<Option<Self::Item>> {
         // Wait for the next deadline
         ready!(self.fut.poll_unpin(cx));
 
@@ -314,7 +340,11 @@ mod test {
         assert_dur(interval.tick(), Duration::from_millis(500)).await;
         // assert_dur(interval.tick(), Duration::from_millis(500)).await;
 
-        assert_dur(sleep(Duration::from_millis(1250)), Duration::from_millis(1250)).await;
+        assert_dur(
+            sleep(Duration::from_millis(1250)),
+            Duration::from_millis(1250),
+        )
+        .await;
 
         assert_dur(interval.tick(), Duration::ZERO).await;
 
@@ -336,7 +366,11 @@ mod test {
         assert_dur(interval.tick(), Duration::from_millis(500)).await;
         // assert_dur(interval.tick(), Duration::from_millis(500)).await;
 
-        assert_dur(sleep(Duration::from_millis(1250)), Duration::from_millis(1250)).await;
+        assert_dur(
+            sleep(Duration::from_millis(1250)),
+            Duration::from_millis(1250),
+        )
+        .await;
 
         // Resolves immediately, now 750 ms behind
         assert_dur(interval.tick(), Duration::ZERO).await;

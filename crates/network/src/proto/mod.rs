@@ -21,6 +21,7 @@ pub enum ServerPush {
     Disconnect,
 }
 
+#[cfg(not(target_os = "unknown"))]
 pub(crate) const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Miscellaneous information about the server that needs to be sent to the client during the handshake.

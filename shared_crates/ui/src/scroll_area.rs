@@ -52,7 +52,10 @@ pub fn ScrollArea(
                 .children(vec![
                     // TODO: For some reason it didn't work to set the translation on self.0 directly, so had to introduce a Flow in between
                     MeasureSize::el(
-                        Flow(vec![inner]).el().with_default(fit_horizontal_children()).with(translation(), vec3(0., scroll, 0.)),
+                        Flow(vec![inner])
+                            .el()
+                            .with_default(fit_horizontal_children())
+                            .with(translation(), vec3(0., scroll, 0.)),
                         cb(move |size| {
                             set_inner_size(size);
                         }),
@@ -66,7 +69,10 @@ pub fn ScrollArea(
                 .init_default(children())
                 .children(vec![
                     // TODO: For some reason it didn't work to set the translation on self.0 directly, so had to introduce a Flow in between
-                    Flow(vec![inner]).el().with_default(fit_horizontal_parent()).with(translation(), vec3(0., scroll, 0.)),
+                    Flow(vec![inner])
+                        .el()
+                        .with_default(fit_horizontal_parent())
+                        .with(translation(), vec3(0., scroll, 0.)),
                 ])
                 .with_default(layout_width_to_children())
         }

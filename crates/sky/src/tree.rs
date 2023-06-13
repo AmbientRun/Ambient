@@ -52,7 +52,12 @@ pub struct OctreeInfo {
 impl OctreeInfo {
     pub fn build(self) -> Octree {
         Octree {
-            nodes: vec![Node { density: 0., origin: self.origin, half_size: self.half_size, ..Default::default() }],
+            nodes: vec![Node {
+                density: 0.,
+                origin: self.origin,
+                half_size: self.half_size,
+                ..Default::default()
+            }],
             max_depth: self.max_depth,
             free: NodeIndex::default(),
             count: 1,
@@ -64,7 +69,13 @@ impl OctreeInfo {
 
 impl Default for OctreeInfo {
     fn default() -> Self {
-        Self { max_depth: 10, half_size: 100., generator: Arc::new(Perlin::new()), origin: Vec3::ZERO, scale: 0.1 }
+        Self {
+            max_depth: 10,
+            half_size: 100.,
+            generator: Arc::new(Perlin::new()),
+            origin: Vec3::ZERO,
+            scale: 0.1,
+        }
     }
 }
 
@@ -130,12 +141,21 @@ impl Octree {
             let leftmost = node.origin - Vec3::splat(new_size);
 
             for (i, c) in children.iter_mut().enumerate() {
-                let off = vec3((i & 1 != 0) as u32 as f32 * size, (i & 2 != 0) as u32 as f32 * size, (i & 4 != 0) as u32 as f32 * size);
+                let off = vec3(
+                    (i & 1 != 0) as u32 as f32 * size,
+                    (i & 2 != 0) as u32 as f32 * size,
+                    (i & 4 != 0) as u32 as f32 * size,
+                );
                 let pos = leftmost + off;
 
                 let density = self.generator.get(pos * self.scale);
                 max_d = max_d.max(density);
-                let node = Node { density, origin: pos, half_size: new_size, ..Default::default() };
+                let node = Node {
+                    density,
+                    origin: pos,
+                    half_size: new_size,
+                    ..Default::default()
+                };
 
                 *c = self.insert(node);
             }
@@ -149,7 +169,14 @@ impl Octree {
 
     /// Update topotracingy by splitting or merging nodes
     /// `desired_size` desired radial size of the voxel
-    pub fn update_topo(&mut self, index: NodeIndex, depth: u32, desired_size: f32, fov: f32, pos: Vec3) -> (f32, u32) {
+    pub fn update_topo(
+        &mut self,
+        index: NodeIndex,
+        depth: u32,
+        desired_size: f32,
+        fov: f32,
+        pos: Vec3,
+    ) -> (f32, u32) {
         let max_depth = self.max_depth;
         let node = self.node_mut(index);
 
@@ -204,7 +231,10 @@ impl Octree {
 
     pub fn raycast(&self, ray: &Ray, d_threshold: f32) -> Option<RayIntersect> {
         let distance = self.raycast_inner(NodeIndex::root(), ray, d_threshold)?;
-        Some(RayIntersect { point: ray.origin + ray.dir * distance, distance })
+        Some(RayIntersect {
+            point: ray.origin + ray.dir * distance,
+            distance,
+        })
     }
 
     fn raycast_inner(&self, index: NodeIndex, ray: &Ray, d_threshold: f32) -> Option<f32> {
@@ -223,7 +253,13 @@ impl Octree {
             node.children()
                 .unwrap()
                 .iter()
-                .flat_map(|c| Some((c, self.raycast_inner(*c, ray, d_threshold).and_then(|v| NotNan::new(v).ok())?)))
+                .flat_map(|c| {
+                    Some((
+                        c,
+                        self.raycast_inner(*c, ray, d_threshold)
+                            .and_then(|v| NotNan::new(v).ok())?,
+                    ))
+                })
                 .min_by_key(|(_, v)| *v)
                 .map(|(_, v)| *v)
         }
@@ -255,7 +291,10 @@ impl Octree {
     }
 
     pub fn gizmos(&self, d_threshold: f32) -> Gizmos {
-        Gizmos { query: self.query(|_, _| true), d_threshold }
+        Gizmos {
+            query: self.query(|_, _| true),
+            d_threshold,
+        }
     }
 }
 
@@ -267,7 +306,11 @@ pub struct TreeQuery<'a, F> {
 
 impl<'a, F> TreeQuery<'a, F> {
     pub fn new(tree: &'a Octree, accept: F) -> Self {
-        Self { tree, stack: vec![NodeIndex::root()], accept }
+        Self {
+            tree,
+            stack: vec![NodeIndex::root()],
+            accept,
+        }
     }
 }
 
@@ -317,7 +360,13 @@ impl<'a> Iterator for Gizmos<'a> {
             let (_, node) = self.query.next()?;
             if node.is_leaf() && node.density > self.d_threshold {
                 return Some(
-                    Cuboid::new(node.origin, Vec3::splat(node.half_size), Vec3::ONE * (1. - node.density), node.density).into_iter(),
+                    Cuboid::new(
+                        node.origin,
+                        Vec3::splat(node.half_size),
+                        Vec3::ONE * (1. - node.density),
+                        node.density,
+                    )
+                    .into_iter(),
                 );
             }
         }
@@ -420,7 +469,9 @@ impl IntoIterator for RayIntersect {
     type Item = GizmoPrimitive;
 
     fn into_iter(self) -> Self::IntoIter {
-        [GizmoPrimitive::sphere(self.point, DEFAULT_RADIUS).with_color(Color::hsl(self.distance / 100., 1., 0.5).into())].into_iter()
+        [GizmoPrimitive::sphere(self.point, DEFAULT_RADIUS)
+            .with_color(Color::hsl(self.distance / 100., 1., 0.5).into())]
+        .into_iter()
     }
 }
 

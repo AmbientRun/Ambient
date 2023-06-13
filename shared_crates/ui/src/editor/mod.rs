@@ -33,7 +33,9 @@ pub struct EditorOpts {
 
 impl Default for EditorOpts {
     fn default() -> Self {
-        Self { enum_can_change_type: true }
+        Self {
+            enum_can_change_type: true,
+        }
     }
 }
 
@@ -70,7 +72,11 @@ pub trait Editor {
 
 impl<T: Editor + 'static> Editor for Box<T> {
     fn editor(self, on_change: ChangeCb<Self>, opts: EditorOpts) -> Element {
-        T::editor(*self, cb(move |new_value| (on_change)(Box::new(new_value))), opts)
+        T::editor(
+            *self,
+            cb(move |new_value| (on_change)(Box::new(new_value))),
+            opts,
+        )
     }
 }
 
@@ -79,7 +85,11 @@ where
     T: 'static + Send + Sync + Clone + Editor,
 {
     fn editor(self, on_change: ChangeCb<Self>, opts: EditorOpts) -> Element {
-        T::editor(self.deref().clone(), cb(move |v: T| on_change(Arc::new(v))) as Cb<dyn Fn(T) + Sync + Send>, opts)
+        T::editor(
+            self.deref().clone(),
+            cb(move |v: T| on_change(Arc::new(v))) as Cb<dyn Fn(T) + Sync + Send>,
+            opts,
+        )
     }
 }
 

@@ -1,11 +1,15 @@
 use std::{
-    any::{Any, TypeId}, fmt::Debug, mem::{self, ManuallyDrop, MaybeUninit}
+    any::{Any, TypeId},
+    fmt::Debug,
+    mem::{self, ManuallyDrop, MaybeUninit},
 };
 
 use parking_lot::{MappedRwLockReadGuard, MappedRwLockWriteGuard};
 
 use crate::{
-    component_traits::{ComponentBuffer, IComponentBuffer}, get_external_attributes, get_external_attributes_init, AttributeStore, Component, ComponentDesc, ComponentValue
+    component_traits::{ComponentBuffer, IComponentBuffer},
+    get_external_attributes, get_external_attributes_init, AttributeStore, Component,
+    ComponentDesc, ComponentValue,
 };
 
 pub(crate) type ErasedHolder = ManuallyDrop<Box<ComponentHolder<()>>>;
@@ -53,7 +57,11 @@ impl<T: Clone + ComponentValue> ComponentVTable<T> {
     ///
     /// Must be hydrated by ComponentRegistry
     pub const fn construct_external() -> Self {
-        Self::construct_inner(None, |desc| get_external_attributes(desc.index()), |desc| get_external_attributes_init(desc.index()))
+        Self::construct_inner(
+            None,
+            |desc| get_external_attributes(desc.index()),
+            |desc| get_external_attributes_init(desc.index()),
+        )
     }
 
     /// Creates a new vtable of `T` without any additional bounds
@@ -71,7 +79,10 @@ impl<T: Clone + ComponentValue> ComponentVTable<T> {
             ComponentHolder::construct::<T>(holder.desc, T::clone(object))
         }
 
-        fn impl_downcast_cloned<T: Clone + ComponentValue>(holder: &ComponentHolder<T>, dst: *mut MaybeUninit<T>) {
+        fn impl_downcast_cloned<T: Clone + ComponentValue>(
+            holder: &ComponentHolder<T>,
+            dst: *mut MaybeUninit<T>,
+        ) {
             let object = T::clone(&holder.object);
             // Write into the destination
             unsafe {
@@ -92,7 +103,9 @@ impl<T: Clone + ComponentValue> ComponentVTable<T> {
             &holder.object
         }
 
-        fn impl_create_buffer<T: ComponentValue + Clone>(desc: ComponentDesc) -> Box<dyn IComponentBuffer> {
+        fn impl_create_buffer<T: ComponentValue + Clone>(
+            desc: ComponentDesc,
+        ) -> Box<dyn IComponentBuffer> {
             Box::new(ComponentBuffer::new(Component::<T>::new(desc)))
         }
 
@@ -176,7 +189,10 @@ impl Debug for ComponentEntry {
                 .field("value", self.as_debug())
                 .finish()
         } else {
-            f.debug_tuple("ComponentEntry").field(&self.path()).field(self.as_debug()).finish()
+            f.debug_tuple("ComponentEntry")
+                .field(&self.path())
+                .field(self.as_debug())
+                .finish()
         }
     }
 }
@@ -284,7 +300,10 @@ impl ComponentEntry {
     pub fn try_downcast_cloned<T: 'static>(&self) -> Option<T> {
         if self.is::<T>() {
             let mut dst = MaybeUninit::uninit();
-            (self.desc().vtable.impl_downcast_cloned)(&self.inner, &mut dst as *mut MaybeUninit<T> as *mut MaybeUninit<()>);
+            (self.desc().vtable.impl_downcast_cloned)(
+                &self.inner,
+                &mut dst as *mut MaybeUninit<T> as *mut MaybeUninit<()>,
+            );
 
             Some(unsafe { dst.assume_init() })
         } else {
@@ -321,7 +340,10 @@ impl ComponentHolder<()> {
     /// The vtable must be of the type `T`
     ///
     /// T **must** be 'static + Send + Sync to be coerced to `ComponentHolder<()>`
-    pub(crate) fn construct<T: 'static + Send + Sync>(desc: ComponentDesc, object: T) -> ErasedHolder {
+    pub(crate) fn construct<T: 'static + Send + Sync>(
+        desc: ComponentDesc,
+        object: T,
+    ) -> ErasedHolder {
         debug_assert_eq!(
             (desc.vtable.get_type_id)(),
             TypeId::of::<T>(),
@@ -336,7 +358,8 @@ impl ComponentHolder<()> {
         //
         // This is equivalent to an unsized coercion from Box<ComponentHolder> to
         // Box<ComponentHolder<dyn ComponentValue>>;
-        let value = unsafe { mem::transmute::<Box<ComponentHolder<T>>, Box<ComponentHolder<()>>>(value) };
+        let value =
+            unsafe { mem::transmute::<Box<ComponentHolder<T>>, Box<ComponentHolder<()>>>(value) };
         // Signify that the caller needs to take special care when destructuring this
         ManuallyDrop::new(value)
     }

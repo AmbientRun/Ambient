@@ -12,7 +12,9 @@ use crate::Serializable;
 impl Serialize for ComponentEntry {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let mut map = serializer.serialize_tuple(2)?;
-        let ser = self.attribute::<Serializable>().expect("Component is not serializable");
+        let ser = self
+            .attribute::<Serializable>()
+            .expect("Component is not serializable");
 
         map.serialize_element(&self.desc())?;
         map.serialize_element(&ser.serialize(self))?;
@@ -39,11 +41,16 @@ impl<'de> Deserialize<'de> for ComponentEntry {
             where
                 V: SeqAccess<'de>,
             {
-                let desc: ComponentDesc = seq.next_element()?.ok_or_else(|| de::Error::invalid_length(0, &self))?;
+                let desc: ComponentDesc = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(0, &self))?;
 
-                let ser = *desc.attribute::<Serializable>().expect("Component is not serializable");
+                let ser = *desc
+                    .attribute::<Serializable>()
+                    .expect("Component is not serializable");
 
-                seq.next_element_seed(ser.deserializer(desc))?.ok_or_else(|| de::Error::invalid_length(0, &self))
+                seq.next_element_seed(ser.deserializer(desc))?
+                    .ok_or_else(|| de::Error::invalid_length(0, &self))
             }
         }
 
@@ -96,7 +103,10 @@ mod test {
         let ser = serde_json::to_string(&source).unwrap();
         assert_eq!(&ser, "[\"core::test::ser_test\",\"hello\"]");
         let deser: ComponentEntry = serde_json::from_str(&ser).unwrap();
-        assert_eq!(source.downcast_ref::<String>(), deser.downcast_ref::<String>());
+        assert_eq!(
+            source.downcast_ref::<String>(),
+            deser.downcast_ref::<String>()
+        );
     }
 
     #[test]
@@ -105,6 +115,9 @@ mod test {
         let source = ComponentEntry::new(ser_test(), "hello".to_string());
         let value = source.desc().to_json(&source).unwrap();
         let deser: ComponentEntry = source.desc().from_json(&value).unwrap();
-        assert_eq!(source.downcast_ref::<String>(), deser.downcast_ref::<String>());
+        assert_eq!(
+            source.downcast_ref::<String>(),
+            deser.downcast_ref::<String>()
+        );
     }
 }

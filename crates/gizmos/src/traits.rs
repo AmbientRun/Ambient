@@ -105,11 +105,17 @@ where
     type Size = WithSize<I::IntoIter>;
 
     fn with_color(self, color: Vec3) -> Self::Color {
-        WithColor { p: self.into_iter(), color }
+        WithColor {
+            p: self.into_iter(),
+            color,
+        }
     }
 
     fn with_size(self, size: f32) -> Self::Size {
-        WithSize { p: self.into_iter(), size }
+        WithSize {
+            p: self.into_iter(),
+            size,
+        }
     }
 }
 
@@ -135,14 +141,67 @@ impl IntoIterator for Cuboid {
     type IntoIter = std::array::IntoIter<GizmoPrimitive, 6>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let Self { extents, origin, color, thickness } = self;
+        let Self {
+            extents,
+            origin,
+            color,
+            thickness,
+        } = self;
         [
-            GizmoPrimitive::wire_rect(origin + Vec3::X * extents.x, extents.zy(), 0., 0.1, thickness, Vec3::X).with_color(color),
-            GizmoPrimitive::wire_rect(origin - Vec3::X * extents.x, extents.zy(), 0., 0.1, thickness, -Vec3::X).with_color(color),
-            GizmoPrimitive::wire_rect(origin + Vec3::Y * extents.y, extents.xz(), 0., 0.1, thickness, Vec3::Y).with_color(color),
-            GizmoPrimitive::wire_rect(origin - Vec3::Y * extents.y, extents.xz(), 0., 0.1, thickness, -Vec3::Y).with_color(color),
-            GizmoPrimitive::wire_rect(origin + Vec3::Z * extents.z, extents.xy(), 0., 0.1, thickness, Vec3::Z).with_color(color),
-            GizmoPrimitive::wire_rect(origin - Vec3::Z * extents.z, extents.xy(), 0., 0.1, thickness, -Vec3::Z).with_color(color),
+            GizmoPrimitive::wire_rect(
+                origin + Vec3::X * extents.x,
+                extents.zy(),
+                0.,
+                0.1,
+                thickness,
+                Vec3::X,
+            )
+            .with_color(color),
+            GizmoPrimitive::wire_rect(
+                origin - Vec3::X * extents.x,
+                extents.zy(),
+                0.,
+                0.1,
+                thickness,
+                -Vec3::X,
+            )
+            .with_color(color),
+            GizmoPrimitive::wire_rect(
+                origin + Vec3::Y * extents.y,
+                extents.xz(),
+                0.,
+                0.1,
+                thickness,
+                Vec3::Y,
+            )
+            .with_color(color),
+            GizmoPrimitive::wire_rect(
+                origin - Vec3::Y * extents.y,
+                extents.xz(),
+                0.,
+                0.1,
+                thickness,
+                -Vec3::Y,
+            )
+            .with_color(color),
+            GizmoPrimitive::wire_rect(
+                origin + Vec3::Z * extents.z,
+                extents.xy(),
+                0.,
+                0.1,
+                thickness,
+                Vec3::Z,
+            )
+            .with_color(color),
+            GizmoPrimitive::wire_rect(
+                origin - Vec3::Z * extents.z,
+                extents.xy(),
+                0.,
+                0.1,
+                thickness,
+                -Vec3::Z,
+            )
+            .with_color(color),
         ]
         .into_iter()
     }

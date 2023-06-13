@@ -65,18 +65,53 @@ fn set_on_the_outside() {
     let mut world = initialize();
     let el = Test.el();
     let mut tree = el.clone().spawn_tree(&mut world);
-    assert_eq!(5, query(prop_b()).iter(&world, None).next().map(|(_, x)| *x).unwrap());
+    assert_eq!(
+        5,
+        query(prop_b())
+            .iter(&world, None)
+            .next()
+            .map(|(_, x)| *x)
+            .unwrap()
+    );
     tree.update(&mut world);
 
     let el = el.with(prop_b(), 7);
     tree.migrate_root(&mut world, el.clone());
-    assert_eq!(7, query(prop_b()).iter(&world, None).next().map(|(_, x)| *x).unwrap());
+    assert_eq!(
+        7,
+        query(prop_b())
+            .iter(&world, None)
+            .next()
+            .map(|(_, x)| *x)
+            .unwrap()
+    );
     tree.update(&mut world);
-    assert_eq!(7, query(prop_b()).iter(&world, None).next().map(|(_, x)| *x).unwrap());
+    assert_eq!(
+        7,
+        query(prop_b())
+            .iter(&world, None)
+            .next()
+            .map(|(_, x)| *x)
+            .unwrap()
+    );
 
     let el = el.with(prop_b(), 8);
     tree.migrate_root(&mut world, el);
-    assert_eq!(8, query(prop_b()).iter(&world, None).next().map(|(_, x)| *x).unwrap());
+    assert_eq!(
+        8,
+        query(prop_b())
+            .iter(&world, None)
+            .next()
+            .map(|(_, x)| *x)
+            .unwrap()
+    );
     tree.update(&mut world);
-    assert_eq!(8, query(prop_b()).iter(&world, None).next().map(|(_, x)| *x).unwrap());
+    assert_eq!(
+        8,
+        query(prop_b())
+            .iter(&world, None)
+            .next()
+            .map(|(_, x)| *x)
+            .unwrap()
+    );
 }

@@ -4,8 +4,8 @@ mod registry;
 use std::{fmt::Debug, sync::Arc};
 
 use ambient_ecs::{
-    components, index_system, query, ArchetypeFilter, Component, ComponentValue, Debuggable, Entity, EntityId, Index, IndexColumns,
-    Networked, QueryState, Resource, Store, SystemGroup,
+    components, index_system, query, ArchetypeFilter, Component, ComponentValue, Debuggable,
+    Entity, EntityId, Index, IndexColumns, Networked, QueryState, Resource, Store, SystemGroup,
 };
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_network::{
@@ -137,17 +137,25 @@ pub fn common_intent_systems() -> SystemGroup {
             )),
             Box::new(index_system(
                 ArchetypeFilter::new().excl(intent_reverted()),
-                IndexColumns::new().add_column(intent_user_id()).add_column(intent_timestamp()),
+                IndexColumns::new()
+                    .add_column(intent_user_id())
+                    .add_column(intent_timestamp()),
                 intent_index(),
             )),
             Box::new(index_system(
                 ArchetypeFilter::new().incl(intent_reverted()),
-                IndexColumns::new().add_column(intent_user_id()).add_column(intent_timestamp()),
+                IndexColumns::new()
+                    .add_column(intent_user_id())
+                    .add_column(intent_timestamp()),
                 intent_index_reverted(),
             )),
             Box::new(index_system(
-                ArchetypeFilter::new().excl(intent_reverted()).incl(intent_applied()),
-                IndexColumns::new().add_column(intent_user_id()).add_column(intent_timestamp()),
+                ArchetypeFilter::new()
+                    .excl(intent_reverted())
+                    .incl(intent_applied()),
+                IndexColumns::new()
+                    .add_column(intent_user_id())
+                    .add_column(intent_timestamp()),
                 intent_index_applied(),
             )),
         ],
@@ -159,10 +167,25 @@ pub struct IntentHistoryVisualizer;
 impl ElementComponent for IntentHistoryVisualizer {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let (intents, set_intents) = hooks.use_state(Vec::new());
-        use_remote_world_system(hooks, query(()).incl(intent_user_id()), move |q, world, qs, _| {
-            set_intents(q.iter(world, qs).sorted_by_key(|(id, _)| world.get(*id, intent_timestamp()).ok()).map(|(id, _)| id).collect());
-        });
-        FlowColumn::el(intents.into_iter().map(|intent| IntentVisualizer { id: intent }.el()).collect_vec()).floating_panel()
+        use_remote_world_system(
+            hooks,
+            query(()).incl(intent_user_id()),
+            move |q, world, qs, _| {
+                set_intents(
+                    q.iter(world, qs)
+                        .sorted_by_key(|(id, _)| world.get(*id, intent_timestamp()).ok())
+                        .map(|(id, _)| id)
+                        .collect(),
+                );
+            },
+        );
+        FlowColumn::el(
+            intents
+                .into_iter()
+                .map(|intent| IntentVisualizer { id: intent }.el())
+                .collect_vec(),
+        )
+        .floating_panel()
     }
 }
 
@@ -194,6 +217,11 @@ impl ElementComponent for IntentVisualizer {
 }
 
 /// Helper functions for collapsing absolute state intents
-pub fn use_old_state<T: Clone + Debug, U: Clone + Debug>(_old_arg: &T, old_state: &U, new_arg: &T, _new_state: &U) -> (T, U) {
+pub fn use_old_state<T: Clone + Debug, U: Clone + Debug>(
+    _old_arg: &T,
+    old_state: &U,
+    new_arg: &T,
+    _new_state: &U,
+) -> (T, U) {
     (new_arg.clone(), old_state.clone())
 }

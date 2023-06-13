@@ -175,7 +175,14 @@ pub fn TextEditor(
         .iter()
         .map(|value| {
             Text.el()
-                .with(text(), if password { value.chars().map(|_| '*').collect() } else { value.to_string() })
+                .with(
+                    text(),
+                    if password {
+                        value.chars().map(|_| '*').collect()
+                    } else {
+                        value.to_string()
+                    },
+                )
                 .with(color(), vec4(0.9, 0.9, 0.9, 1.))
         })
         .collect_vec()
@@ -189,7 +196,9 @@ pub fn TextEditor(
             FlowRow::el([Cursor.el(), b])
         }
     } else if value.is_empty() && !focused && placeholder.is_some() {
-        Text.el().with(text(), placeholder.unwrap()).with(color(), vec4(1., 1., 1., 0.2))
+        Text.el()
+            .with(text(), placeholder.unwrap())
+            .with(color(), vec4(1., 1., 1., 0.2))
     } else {
         FlowRow::el([a, b])
     }
@@ -211,7 +220,14 @@ pub fn TextEditor(
 impl TextEditor {
     /// Create a new text editor.
     pub fn new(value: String, on_change: Cb<dyn Fn(String) + Sync + Send>) -> Self {
-        Self { value, on_change, on_submit: None, password: false, placeholder: None, auto_focus: false }
+        Self {
+            value,
+            on_change,
+            on_submit: None,
+            password: false,
+            placeholder: None,
+            auto_focus: false,
+        }
     }
     /// Set the `on_submit` callback.
     pub fn on_submit(mut self, on_submit: impl Fn(String) + Sync + Send + 'static) -> Self {
@@ -245,7 +261,11 @@ fn CursorInner(hooks: &mut Hooks, render_time: Instant) -> Element {
     hooks.use_frame(move |_| rerender());
     let delta = (Instant::now().duration_since(render_time).as_secs_f32() * 2.) as u32;
     if delta % 2 == 0 {
-        UIBase.el().children(vec![Rectangle.el().with(width(), 2.).with(height(), 13.).with(translation(), vec3(1., 0., 0.))])
+        UIBase.el().children(vec![Rectangle
+            .el()
+            .with(width(), 2.)
+            .with(height(), 13.)
+            .with(translation(), vec3(1., 0., 0.))])
     } else {
         Element::new()
     }
@@ -253,7 +273,9 @@ fn CursorInner(hooks: &mut Hooks, render_time: Instant) -> Element {
 
 impl Editor for String {
     fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, _: EditorOpts) -> Element {
-        TextEditor::new(self, on_change).placeholder(Some("Empty")).el()
+        TextEditor::new(self, on_change)
+            .placeholder(Some("Empty"))
+            .el()
     }
 
     fn view(self, _opts: EditorOpts) -> Element {

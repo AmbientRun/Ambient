@@ -1,5 +1,6 @@
 use std::{
-    sync::atomic::{AtomicBool, Ordering::SeqCst}, task::Waker
+    sync::atomic::{AtomicBool, Ordering::SeqCst},
+    task::Waker,
 };
 
 use parking_lot::Mutex;

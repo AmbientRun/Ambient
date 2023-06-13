@@ -6,16 +6,20 @@ use anyhow::{bail, Context};
 use glam::{vec3, Mat4, Vec3};
 use itertools::Itertools;
 use physxx::{
-    AsPxActor, AsPxRigidActor, PxActor, PxActorRef, PxActorTypeFlag, PxBase, PxBoxGeometry, PxConvexMeshGeometry, PxForceMode, PxJoint,
-    PxMeshScale, PxOverlapCallback, PxPhysicsRef, PxQueryFilterData, PxQueryFlag, PxRevoluteJointRef, PxRigidActor, PxRigidActorRef,
-    PxRigidBody, PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef, PxSceneRef, PxShape, PxSphereGeometry, PxTransform,
-    PxTriangleMeshGeometry, PxUserData,
+    AsPxActor, AsPxRigidActor, PxActor, PxActorRef, PxActorTypeFlag, PxBase, PxBoxGeometry,
+    PxConvexMeshGeometry, PxForceMode, PxJoint, PxMeshScale, PxOverlapCallback, PxPhysicsRef,
+    PxQueryFilterData, PxQueryFlag, PxRevoluteJointRef, PxRigidActor, PxRigidActorRef, PxRigidBody,
+    PxRigidBodyFlag, PxRigidDynamicRef, PxRigidStaticRef, PxSceneRef, PxShape, PxSphereGeometry,
+    PxTransform, PxTriangleMeshGeometry, PxUserData,
 };
 
 use crate::{
     collider::{collider_shapes_convex, collider_type, kinematic},
     main_physics_scene,
-    physx::{physics, physics_controlled, physics_shape, revolute_joint, rigid_actor, rigid_dynamic, rigid_static},
+    physx::{
+        physics, physics_controlled, physics_shape, revolute_joint, rigid_actor, rigid_dynamic,
+        rigid_static,
+    },
     unit_mass, unit_velocity, ColliderScene, PxActorUserData, PxShapeUserData,
 };
 
@@ -34,7 +38,9 @@ pub fn convert_rigid_static_dynamic(world: &mut World, id: EntityId, to_dynamic:
             return;
         }
     };
-    if (to_dynamic && old_actor.to_rigid_dynamic().is_some()) || (!to_dynamic && old_actor.to_rigid_static().is_some()) {
+    if (to_dynamic && old_actor.to_rigid_dynamic().is_some())
+        || (!to_dynamic && old_actor.to_rigid_static().is_some())
+    {
         return;
     }
     let shapes = old_actor.get_shapes();
@@ -51,7 +57,12 @@ pub fn convert_rigid_static_dynamic(world: &mut World, id: EntityId, to_dynamic:
     } else {
         PxRigidStaticRef::new(physics.physics, &old_actor.get_global_pose()).as_rigid_actor()
     };
-    new_actor.as_actor().set_user_data(old_actor.as_actor().get_user_data::<PxActorUserData>().unwrap());
+    new_actor.as_actor().set_user_data(
+        old_actor
+            .as_actor()
+            .get_user_data::<PxActorUserData>()
+            .unwrap(),
+    );
     for shape in shapes {
         old_actor.detach_shape(&shape, false);
         new_actor.attach_shape(&shape);
@@ -69,7 +80,11 @@ pub fn convert_rigid_static_dynamic(world: &mut World, id: EntityId, to_dynamic:
     old_actor.release();
     if let Some(actor) = new_actor.to_rigid_dynamic() {
         if !is_kinematic {
-            let densities = actor.get_shapes().iter().map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density).collect_vec();
+            let densities = actor
+                .get_shapes()
+                .iter()
+                .map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density)
+                .collect_vec();
             actor.update_mass_and_inertia(densities, None, None);
         }
     }
@@ -79,7 +94,9 @@ pub fn convert_rigid_static_dynamic(world: &mut World, id: EntityId, to_dynamic:
 
 pub fn update_physics_controlled(world: &mut World, actor: PxRigidActorRef) {
     let is_physics_controlled = match actor.to_rigid_dynamic() {
-        Some(body) => !body.get_rigid_body_flags().contains(PxRigidBodyFlag::KINEMATIC),
+        Some(body) => !body
+            .get_rigid_body_flags()
+            .contains(PxRigidBodyFlag::KINEMATIC),
         _ => false,
     };
     for shape in actor.get_shapes() {
@@ -116,7 +133,12 @@ pub fn get_linear_velocity(world: &World, id: EntityId) -> Result<Vec3, ECSError
     let v = if let Ok(body) = world.get_ref(id, rigid_dynamic()) {
         body.get_linear_velocity()
     } else if let Ok(shape) = world.get_ref(id, physics_shape()) {
-        shape.get_actor().unwrap().to_rigid_dynamic().map(|b| b.get_linear_velocity()).unwrap_or_default()
+        shape
+            .get_actor()
+            .unwrap()
+            .to_rigid_dynamic()
+            .map(|b| b.get_linear_velocity())
+            .unwrap_or_default()
     } else {
         Vec3::ZERO
     };
@@ -132,7 +154,13 @@ pub fn get_shapes(world: &World, id: EntityId) -> impl Iterator<Item = PxShape> 
         // Shapes attached to the actor
         .flat_map(|v| v.get_shapes().into_iter())
         // Convex shapes used for sweeping
-        .chain(world.get_ref(id, collider_shapes_convex()).into_iter().flatten().cloned())
+        .chain(
+            world
+                .get_ref(id, collider_shapes_convex())
+                .into_iter()
+                .flatten()
+                .cloned(),
+        )
 }
 
 pub fn scale_shape(shape: PxShape, scale: Vec3) {
@@ -150,19 +178,41 @@ pub fn scale_shape(shape: PxShape, scale: Vec3) {
 
     if let Some(geo) = geo.as_convex_mesh() {
         let mesh = geo.mesh();
-        let new_geo = PxConvexMeshGeometry::new(&mesh, Some(PxMeshScale::from_scale((size).abs())), Some(geo.flags()));
+        let new_geo = PxConvexMeshGeometry::new(
+            &mesh,
+            Some(PxMeshScale::from_scale((size).abs())),
+            Some(geo.flags()),
+        );
         if new_geo.is_valid() {
             shape.set_geometry(&new_geo);
         } else {
-            tracing::error!(?scale, ?size, ?base_scale, ?base_rot, ?base_pos, "scale_shape: Invalid convex geometry");
+            tracing::error!(
+                ?scale,
+                ?size,
+                ?base_scale,
+                ?base_rot,
+                ?base_pos,
+                "scale_shape: Invalid convex geometry"
+            );
         }
     } else if let Some(geo) = geo.as_triangle_mesh() {
         let mesh = geo.mesh();
-        let new_geo = PxTriangleMeshGeometry::new(&mesh, Some(PxMeshScale::from_scale(size)), Some(geo.flags()));
+        let new_geo = PxTriangleMeshGeometry::new(
+            &mesh,
+            Some(PxMeshScale::from_scale(size)),
+            Some(geo.flags()),
+        );
         if new_geo.is_valid() {
             shape.set_geometry(&new_geo);
         } else {
-            tracing::error!(?scale, ?size, ?base_scale, ?base_rot, ?base_pos, "scale_shape: Invalid triangle geometry");
+            tracing::error!(
+                ?scale,
+                ?size,
+                ?base_scale,
+                ?base_rot,
+                ?base_pos,
+                "scale_shape: Invalid triangle geometry"
+            );
         }
     } else if let Some(_geo) = geo.as_sphere() {
         let new_geo = PxSphereGeometry::new((size).x);
@@ -186,7 +236,8 @@ pub fn update_actor_entity_transforms(world: &mut World, actor: PxRigidActorRef)
             if entity_shape == &shape {
                 let global_pose = actor.get_global_pose().to_mat4();
                 let shape_pose = shape.get_local_pose().to_mat4();
-                let (_, new_rot, new_pos) = (global_pose * shape_pose).to_scale_rotation_translation();
+                let (_, new_rot, new_pos) =
+                    (global_pose * shape_pose).to_scale_rotation_translation();
 
                 world.set(entity, translation(), new_pos).unwrap();
                 world.set(entity, rotation(), new_rot).unwrap();
@@ -195,21 +246,37 @@ pub fn update_actor_entity_transforms(world: &mut World, actor: PxRigidActorRef)
     }
 }
 
-pub fn create_revolute_joint(world: &mut World, id0: EntityId, transform1: Mat4, id1: EntityId, transform0: Mat4) -> anyhow::Result<()> {
+pub fn create_revolute_joint(
+    world: &mut World,
+    id0: EntityId,
+    transform1: Mat4,
+    id1: EntityId,
+    transform0: Mat4,
+) -> anyhow::Result<()> {
     let actor0 = get_actor(world, id0).and_then(|x| x.to_rigid_actor());
     let actor1 = get_actor(world, id1).and_then(|x| x.to_rigid_actor());
     if actor0.is_none() && actor1.is_none() {
         anyhow::bail!("Neither entity has a rigid actor");
     }
-    if !actor0.map(|x| x.to_rigid_dynamic().is_some()).unwrap_or_default()
-        && !actor1.map(|x| x.to_rigid_dynamic().is_some()).unwrap_or_default()
+    if !actor0
+        .map(|x| x.to_rigid_dynamic().is_some())
+        .unwrap_or_default()
+        && !actor1
+            .map(|x| x.to_rigid_dynamic().is_some())
+            .unwrap_or_default()
     {
         anyhow::bail!("At least one actor has to be dynamic");
     }
     let (_, rot0, pos0) = transform0.to_scale_rotation_translation();
     let (_, rot1, pos1) = transform1.to_scale_rotation_translation();
 
-    let joint = PxRevoluteJointRef::new(PxPhysicsRef::get(), actor0, &PxTransform::new(pos0, rot0), actor1, &PxTransform::new(pos1, rot1));
+    let joint = PxRevoluteJointRef::new(
+        PxPhysicsRef::get(),
+        actor0,
+        &PxTransform::new(pos0, rot0),
+        actor1,
+        &PxTransform::new(pos1, rot1),
+    );
     world.add_component(id0, revolute_joint(), joint).ok();
     world.add_component(id1, revolute_joint(), joint).ok();
     Ok(())
@@ -230,7 +297,12 @@ pub fn get_entity_revolute_joint(world: &World, id: EntityId) -> Option<PxRevolu
 pub fn weld_multi(world: &mut World, selected: Vec<EntityId>) {
     let mut selected = selected
         .into_iter()
-        .filter(|id| matches!(world.get(*id, collider_type()).map(|x| x.scene()), Ok(ColliderScene::Physics)))
+        .filter(|id| {
+            matches!(
+                world.get(*id, collider_type()).map(|x| x.scene()),
+                Ok(ColliderScene::Physics)
+            )
+        })
         .collect_vec();
     if selected.len() <= 1 {
         return;
@@ -257,7 +329,9 @@ pub fn weld_two(world: &mut World, first: EntityId, second: EntityId) {
     for constraint in first_actor.get_constraints() {
         let joint = constraint.get_external_reference().to_joint().unwrap();
         let (a0, a1) = joint.get_actors();
-        if (a0 == Some(first_actor) && a1 == Some(second_actor)) || (a1 == Some(first_actor) && a0 == Some(second_actor)) {
+        if (a0 == Some(first_actor) && a1 == Some(second_actor))
+            || (a1 == Some(first_actor) && a0 == Some(second_actor))
+        {
             return;
         }
     }
@@ -279,7 +353,8 @@ pub fn weld_two(world: &mut World, first: EntityId, second: EntityId) {
         let (a0, a1) = joint.get_actors();
         let can_have_joint = |other: &Option<PxRigidActorRef>| {
             if let Some(other) = other {
-                (first_actor.to_rigid_dynamic().is_some() || other.to_rigid_dynamic().is_some()) && &first_actor != other
+                (first_actor.to_rigid_dynamic().is_some() || other.to_rigid_dynamic().is_some())
+                    && &first_actor != other
             } else {
                 true
             }
@@ -322,7 +397,9 @@ pub fn weld_two(world: &mut World, first: EntityId, second: EntityId) {
             joint.release();
         }
     }
-    second_actor.as_actor().remove_user_data::<PxActorUserData>();
+    second_actor
+        .as_actor()
+        .remove_user_data::<PxActorUserData>();
     second_actor.release();
     scene.fetch_results(true);
     for (shape, new_local_pose) in shapes.into_iter() {
@@ -336,7 +413,11 @@ pub fn weld_two(world: &mut World, first: EntityId, second: EntityId) {
         }
     }
     if let Some(first) = first_actor.to_rigid_body() {
-        let densities = first.get_shapes().iter().map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density).collect_vec();
+        let densities = first
+            .get_shapes()
+            .iter()
+            .map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density)
+            .collect_vec();
         first.update_mass_and_inertia(densities, None, None);
     }
     update_physics_controlled(world, first_actor);
@@ -345,7 +426,12 @@ pub fn weld_two(world: &mut World, first: EntityId, second: EntityId) {
 pub fn unweld_multi(world: &World, selected: Vec<EntityId>) {
     let mut selected = selected
         .into_iter()
-        .filter(|id| matches!(world.get(*id, collider_type()).map(|x| x.scene()), Ok(ColliderScene::Physics)))
+        .filter(|id| {
+            matches!(
+                world.get(*id, collider_type()).map(|x| x.scene()),
+                Ok(ColliderScene::Physics)
+            )
+        })
         .collect_vec();
     if selected.len() <= 1 {
         return;
@@ -386,7 +472,9 @@ pub fn unweld_two(world: &World, first: EntityId, second: EntityId) {
     } else {
         PxRigidStaticRef::new(physics.physics, &first_actor.get_global_pose()).as_rigid_actor()
     };
-    second_actor.as_actor().set_user_data(first_actor.as_actor().get_user_data::<PxActorUserData>());
+    second_actor
+        .as_actor()
+        .set_user_data(first_actor.as_actor().get_user_data::<PxActorUserData>());
     for shape in second_shapes {
         if !second_actor.attach_shape(&shape) {
             panic!("Failed to attach shape");
@@ -395,12 +483,20 @@ pub fn unweld_two(world: &World, first: EntityId, second: EntityId) {
     scene.add_actor(&second_actor);
 
     if let Some(first) = first_actor.to_rigid_body() {
-        let densities = first.get_shapes().iter().map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density).collect_vec();
+        let densities = first
+            .get_shapes()
+            .iter()
+            .map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density)
+            .collect_vec();
         first.update_mass_and_inertia(densities, None, None);
     }
 
     if let Some(second) = second_actor.to_rigid_body() {
-        let densities = second.get_shapes().iter().map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density).collect_vec();
+        let densities = second
+            .get_shapes()
+            .iter()
+            .map(|shape| shape.get_user_data::<PxShapeUserData>().unwrap().density)
+            .collect_vec();
         second.update_mass_and_inertia(densities, None, None);
     }
 }
@@ -433,14 +529,25 @@ impl PhysicsObjectCollection {
         filter_data.set_flags(PxQueryFlag::DYNAMIC);
         let sphere = PxSphereGeometry::new(radius);
         let mut res = Self::default();
-        if scene.overlap(&sphere, PxTransform::from_translation(position), &mut hit_call, &filter_data) {
+        if scene.overlap(
+            &sphere,
+            PxTransform::from_translation(position),
+            &mut hit_call,
+            &filter_data,
+        ) {
             let actors: HashSet<_> = hit_call.touches().iter().map(|hit| hit.actor).collect();
             res.actors = actors.into_iter().collect();
         }
         res.units = query((translation(),))
             .incl(unit_velocity())
             .iter(world, None)
-            .filter_map(|(id, (&pos,))| if (pos - position).length() <= radius { Some(id) } else { None })
+            .filter_map(|(id, (&pos,))| {
+                if (pos - position).length() <= radius {
+                    Some(id)
+                } else {
+                    None
+                }
+            })
             .collect();
         res
     }
@@ -450,7 +557,10 @@ impl PhysicsObjectCollection {
                 let pose = actor.get_global_pose();
                 let force = get_force(pose.translation());
                 // Kinematic actors can't have force applied to them: https://github.com/OurMachinery/themachinery-public/issues/494
-                if !actor.get_rigid_body_flags().contains(PxRigidBodyFlag::KINEMATIC) {
+                if !actor
+                    .get_rigid_body_flags()
+                    .contains(PxRigidBodyFlag::KINEMATIC)
+                {
                     actor.add_force(force, Some(PxForceMode::Force), Some(true));
                 }
             }
@@ -463,7 +573,13 @@ impl PhysicsObjectCollection {
             *world.get_mut(id, unit_velocity()).unwrap() += a * (1. / 60.);
         }
     }
-    pub fn add_radial_impulse(&self, world: &mut World, center: Vec3, force: f32, falloff_radius: Option<f32>) {
+    pub fn add_radial_impulse(
+        &self,
+        world: &mut World,
+        center: Vec3,
+        force: f32,
+        falloff_radius: Option<f32>,
+    ) {
         let get_force = |pos: Vec3| {
             let mut delta = pos - center;
             if delta.length() == 0. {
@@ -479,31 +595,52 @@ impl PhysicsObjectCollection {
     }
 }
 
-pub fn add_force(world: &World, id: EntityId, force: Vec3, mode: Option<PxForceMode>) -> anyhow::Result<()> {
+pub fn add_force(
+    world: &World,
+    id: EntityId,
+    force: Vec3,
+    mode: Option<PxForceMode>,
+) -> anyhow::Result<()> {
     let shape = world.get_ref(id, physics_shape())?;
     let actor = shape.get_actor().context("No actor for shape")?;
     let actor = actor.to_rigid_dynamic().context("Not a rigid dynamic")?;
     // Kinematic actors can't have force applied to them: https://github.com/OurMachinery/themachinery-public/issues/494
-    if actor.get_rigid_body_flags().contains(PxRigidBodyFlag::KINEMATIC) {
+    if actor
+        .get_rigid_body_flags()
+        .contains(PxRigidBodyFlag::KINEMATIC)
+    {
         bail!("Can't apply force to kinematic actor");
     }
     actor.add_force(force, mode, Some(true));
     Ok(())
 }
 
-pub fn add_force_at_position(world: &World, id: EntityId, force: Vec3, position: Vec3, mode: Option<PxForceMode>) -> anyhow::Result<()> {
+pub fn add_force_at_position(
+    world: &World,
+    id: EntityId,
+    force: Vec3,
+    position: Vec3,
+    mode: Option<PxForceMode>,
+) -> anyhow::Result<()> {
     let shape = world.get_ref(id, physics_shape())?;
     let actor = shape.get_actor().context("No actor for shape")?;
     let actor = actor.to_rigid_dynamic().context("Not a rigid dynamic")?;
     // Kinematic actors can't have force applied to them: https://github.com/OurMachinery/themachinery-public/issues/494
-    if actor.get_rigid_body_flags().contains(PxRigidBodyFlag::KINEMATIC) {
+    if actor
+        .get_rigid_body_flags()
+        .contains(PxRigidBodyFlag::KINEMATIC)
+    {
         bail!("Can't apply force to kinematic actor");
     }
     actor.add_force_at_pos(force, position, mode, Some(true));
     Ok(())
 }
 
-pub fn get_velocity_at_position(world: &World, id: EntityId, position: Vec3) -> anyhow::Result<Vec3> {
+pub fn get_velocity_at_position(
+    world: &World,
+    id: EntityId,
+    position: Vec3,
+) -> anyhow::Result<Vec3> {
     let shape = world.get_ref(id, physics_shape())?;
     let actor = shape.get_actor().context("No actor for shape")?;
     let actor = actor.to_rigid_dynamic().context("Not a rigid dynamic")?;
@@ -514,7 +651,14 @@ pub fn random_position_in_actor(world: &World, id: EntityId) -> Option<Vec3> {
     if world.get_ref(id, physics_shape()).is_ok() {
         // TODO: Do this for real
         let pos = get_world_position(world, id).ok()?;
-        return Some(pos + vec3(rand::random::<f32>(), rand::random::<f32>(), rand::random::<f32>()) * 2. - 1.);
+        return Some(
+            pos + vec3(
+                rand::random::<f32>(),
+                rand::random::<f32>(),
+                rand::random::<f32>(),
+            ) * 2.
+                - 1.,
+        );
     }
     None
 }

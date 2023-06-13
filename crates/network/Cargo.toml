@@ -21,9 +21,12 @@ ambient_ui_native = { path = "../ui_native", version = "0.3.0-dev" }
 ambient_renderer = { path = "../renderer", version = "0.3.0-dev" }
 ambient_element = { path = "../../shared_crates/element", version = "0.3.0-dev" }
 ambient_app = { path = "../app", version = "0.3.0-dev" }
-ambient_proxy = "0.3.3"
 ambient_world_audio = { path = "../world_audio", version = "0.3.0-dev" }
 
+
+rustls-native-certs = { workspace = true, optional = true }
+
+url = { workspace = true }
 itertools = { workspace = true }
 dashmap = { workspace = true }
 serde = { workspace = true }
@@ -46,19 +49,48 @@ once_cell = { workspace = true }
 byteorder = { workspace = true }
 colored = { workspace = true }
 enum_dispatch = { workspace = true }
-pin-project = "1.0"
+pin-project = { workspace = true }
 uuid = { workspace = true }
 scopeguard = { workspace = true }
-rustls-native-certs = { workspace = true, optional = true }
+tokio = { workspace = true, features = ["macros", "io-util"] }
+tokio-util = { version = "0.7", features = ["codec"] }
+
 webpki-roots = { workspace = true, optional = true }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
+tokio = { workspace = true, features = ["io-util"] }
 async-trait = { workspace = true }
+
+
 quinn = { workspace = true }
 rustls = { workspace = true }
-tokio-util = "0.7"
-tokio = { workspace = true }
+h3 = { workspace = true }
+h3-quinn = { workspace = true }
+h3-webtransport = { workspace = true }
+http = { workspace = true }
+ambient_proxy = { version = "0.3.3", git = "https://github.com/AmbientRun/AmbientProxy" }
+
+[target.'cfg(target_os = "unknown")'.dependencies]
+web-sys = { workspace = true, features = [
+    "WebSocket",
+    "WebTransport",
+    "WritableStream",
+    "ReadableStream",
+    "ReadableStreamDefaultReader",
+    "ReadableStreamReadResult",
+    "WebTransportSendStream",
+    "WritableStreamDefaultWriter",
+    "WebTransportDatagramDuplexStream",
+    "WebTransportCloseInfo",
+    "WebTransportBidirectionalStream",
+    "WebTransportReceiveStream",
+] }
+wasm-bindgen = { workspace = true }
+wasm-bindgen-futures = { workspace = true }
+js-sys = { workspace = true }
+
 
 [features]
+
 tls-webpki-roots = ["dep:webpki-roots"]
 tls-native-roots = ["dep:rustls-native-certs"]

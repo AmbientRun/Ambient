@@ -17,12 +17,17 @@ impl ModelImporter {
     }
     pub fn from_yaml(doc: &Yaml) -> anyhow::Result<Self> {
         let model_importer = &doc["ModelImporter"];
-        let id_to_name = if let Some(internal_id_to_name_table) = model_importer["internalIDToNameTable"].as_vec() {
+        let id_to_name = if let Some(internal_id_to_name_table) =
+            model_importer["internalIDToNameTable"].as_vec()
+        {
             internal_id_to_name_table
                 .iter()
                 .map(|entry| {
                     let first = entry["first"].as_hash().unwrap().values().next().unwrap();
-                    (first.as_i64().unwrap(), entry["second"].as_str().unwrap().to_string())
+                    (
+                        first.as_i64().unwrap(),
+                        entry["second"].as_str().unwrap().to_string(),
+                    )
                 })
                 .collect::<HashMap<i64, String>>()
         } else {
@@ -33,6 +38,12 @@ impl ModelImporter {
                 .map(|(key, value)| (key.as_i64().unwrap(), value.as_str().unwrap().to_string()))
                 .collect::<HashMap<i64, String>>()
         };
-        Ok(Self { id_to_name, use_file_scale: model_importer["meshes"]["useFileScale"].as_i64().context("Can't read useFileScale")? != 0 })
+        Ok(Self {
+            id_to_name,
+            use_file_scale: model_importer["meshes"]["useFileScale"]
+                .as_i64()
+                .context("Can't read useFileScale")?
+                != 0,
+        })
     }
 }

@@ -3,7 +3,9 @@ use std::{ffi::c_void, ptr::null_mut};
 use glam::Vec3;
 use serde::{Deserialize, Serialize};
 
-use crate::{to_glam_vec3, AsPxBase, PxBaseRef, PxPhysicsRef, PxRigidActorRef, PxTransform, PxUserData};
+use crate::{
+    to_glam_vec3, AsPxBase, PxBaseRef, PxPhysicsRef, PxRigidActorRef, PxTransform, PxUserData,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PxConstraintRef(pub(crate) *mut physx_sys::PxConstraint);
@@ -11,7 +13,10 @@ impl PxConstraintRef {
     pub fn get_external_reference(&self) -> PxBaseRef {
         unsafe {
             let mut type_id: u32 = 0;
-            PxBaseRef(physx_sys::PxConstraint_getExternalReference_mut(self.0, &mut type_id as *mut u32) as _)
+            PxBaseRef(physx_sys::PxConstraint_getExternalReference_mut(
+                self.0,
+                &mut type_id as *mut u32,
+            ) as _)
         }
     }
     pub fn get_actors(&self) -> (PxRigidActorRef, PxRigidActorRef) {
@@ -29,7 +34,11 @@ impl PxConstraintRef {
         unsafe {
             let mut l = physx_sys::PxVec3_new();
             let mut a = physx_sys::PxVec3_new();
-            physx_sys::PxConstraint_getForce(self.0, &mut l as *mut physx_sys::PxVec3, &mut a as *mut physx_sys::PxVec3);
+            physx_sys::PxConstraint_getForce(
+                self.0,
+                &mut l as *mut physx_sys::PxVec3,
+                &mut a as *mut physx_sys::PxVec3,
+            );
             *linear = to_glam_vec3(&l);
             *angular = to_glam_vec3(&a);
         }
@@ -87,10 +96,20 @@ impl<T: AsPxJoint> PxJoint for T {
         PxConstraintRef(unsafe { physx_sys::PxJoint_getConstraint(self.as_joint().0) })
     }
     fn get_constraint_flags(&self) -> PxConstraintFlags {
-        PxConstraintFlags::from_bits(unsafe { physx_sys::PxJoint_getConstraintFlags(self.as_joint().0) }.mBits as u32).unwrap()
+        PxConstraintFlags::from_bits(
+            unsafe { physx_sys::PxJoint_getConstraintFlags(self.as_joint().0) }.mBits as u32,
+        )
+        .unwrap()
     }
     fn set_constraint_flags(&self, flags: PxConstraintFlags) {
-        unsafe { physx_sys::PxJoint_setConstraintFlags_mut(self.as_joint().0, physx_sys::PxConstraintFlags { mBits: flags.bits as u16 }) }
+        unsafe {
+            physx_sys::PxJoint_setConstraintFlags_mut(
+                self.as_joint().0,
+                physx_sys::PxConstraintFlags {
+                    mBits: flags.bits as u16,
+                },
+            )
+        }
     }
     fn set_constraint_flag(&self, flag: PxConstraintFlags, value: bool) {
         unsafe { physx_sys::PxJoint_setConstraintFlag_mut(self.as_joint().0, flag.bits, value) }
@@ -106,8 +125,16 @@ impl<T: AsPxJoint> PxJoint for T {
             let mut actor0 = null_mut() as *mut physx_sys::PxRigidActor;
             let mut actor1 = null_mut() as *mut physx_sys::PxRigidActor;
             physx_sys::PxJoint_getActors(self.as_joint().0, &mut actor0 as _, &mut actor1 as _);
-            let a0 = if actor0.is_null() { None } else { Some(PxRigidActorRef(actor0)) };
-            let a1 = if actor1.is_null() { None } else { Some(PxRigidActorRef(actor1)) };
+            let a0 = if actor0.is_null() {
+                None
+            } else {
+                Some(PxRigidActorRef(actor0))
+            };
+            let a1 = if actor1.is_null() {
+                None
+            } else {
+                Some(PxRigidActorRef(actor1))
+            };
             (a0, a1)
         }
     }
@@ -215,15 +242,25 @@ impl PxRevoluteJointRef {
         unsafe { physx_sys::PxRevoluteJoint_setDriveVelocity_mut(self.0, velocity, autoawake) }
     }
     pub fn get_revolute_flags(&self) -> PxRevoluteJointFlag {
-        PxRevoluteJointFlag::from_bits(unsafe { physx_sys::PxRevoluteJoint_getRevoluteJointFlags(self.0) }.mBits as u32).unwrap()
+        PxRevoluteJointFlag::from_bits(
+            unsafe { physx_sys::PxRevoluteJoint_getRevoluteJointFlags(self.0) }.mBits as u32,
+        )
+        .unwrap()
     }
     pub fn set_revolute_flags(&self, flags: PxRevoluteJointFlag) {
         unsafe {
-            physx_sys::PxRevoluteJoint_setRevoluteJointFlags_mut(self.0, physx_sys::PxRevoluteJointFlags { mBits: flags.bits() as _ })
+            physx_sys::PxRevoluteJoint_setRevoluteJointFlags_mut(
+                self.0,
+                physx_sys::PxRevoluteJointFlags {
+                    mBits: flags.bits() as _,
+                },
+            )
         }
     }
     pub fn set_revolute_flag(&self, flag: PxRevoluteJointFlag, value: bool) {
-        unsafe { physx_sys::PxRevoluteJoint_setRevoluteJointFlag_mut(self.0, flag.bits() as _, value) }
+        unsafe {
+            physx_sys::PxRevoluteJoint_setRevoluteJointFlag_mut(self.0, flag.bits() as _, value)
+        }
     }
     pub fn get_limit(&self) -> PxJointAngularLimitPair {
         PxJointAngularLimitPair::from_physx(unsafe { physx_sys::PxRevoluteJoint_getLimit(self.0) })
@@ -257,7 +294,9 @@ pub struct PxJointAngularLimitPair {
 }
 impl PxJointAngularLimitPair {
     pub fn new(lower_limit: f32, upper_limit: f32, contact_dist: f32) -> Self {
-        Self::from_physx(unsafe { physx_sys::PxJointAngularLimitPair_new(lower_limit, upper_limit, contact_dist) })
+        Self::from_physx(unsafe {
+            physx_sys::PxJointAngularLimitPair_new(lower_limit, upper_limit, contact_dist)
+        })
     }
     fn from_physx(limit: physx_sys::PxJointAngularLimitPair) -> Self {
         Self {

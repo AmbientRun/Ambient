@@ -13,7 +13,9 @@ pub struct Throbber;
 impl ElementComponent for Throbber {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
         let (index, set_index) = hooks.use_state(0);
-        hooks.use_interval_deps(Duration::from_secs_f32(0.1), false, index, move |_| set_index(index + 1));
+        hooks.use_interval_deps(Duration::from_secs_f32(0.1), false, index, move |_| {
+            set_index(index + 1)
+        });
         let s = match index % 4 {
             0 => "-",
             1 => "\\",

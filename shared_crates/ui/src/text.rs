@@ -58,6 +58,13 @@ pub fn FontAwesomeIcon(
     /// Whether the icon should be solid or not.
     solid: bool,
 ) -> Element {
-    Text::el(char::from_u32(icon).unwrap().to_string())
-        .with(font_family(), if solid { "FontAwesomeSolid" } else { "FontAwesome" }.to_string())
+    Text::el(char::from_u32(icon).unwrap().to_string()).with(
+        font_family(),
+        if solid {
+            "FontAwesomeSolid"
+        } else {
+            "FontAwesome"
+        }
+        .to_string(),
+    )
 }

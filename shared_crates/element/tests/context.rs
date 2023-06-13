@@ -81,7 +81,10 @@ fn two_contexts() {
     pub struct Root;
     impl ElementComponent for Root {
         fn render(self: Box<Self>, _hooks: &mut Hooks) -> Element {
-            Element::new().children(vec![ContextRoot { value: 2 }.el(), ContextRoot { value: 3 }.el()])
+            Element::new().children(vec![
+                ContextRoot { value: 2 }.el(),
+                ContextRoot { value: 3 }.el(),
+            ])
         }
     }
 

@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{net::IpAddr, path::PathBuf};
 
 use clap::{Args, Parser, Subcommand};
 
@@ -129,6 +129,8 @@ pub struct ProjectCli {
 }
 #[derive(Args, Clone, Debug)]
 pub struct HostCli {
+    #[arg(long, default_value = "0.0.0.0")]
+    pub bind_address: IpAddr,
     /// Provide a public address or IP to the instance, which will allow users to connect to this instance over the internet
     ///
     /// Defaults to localhost

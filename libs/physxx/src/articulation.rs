@@ -1,6 +1,9 @@
 use std::ptr::null_mut;
 
-use crate::{AsPxActor, AsPxBase, AsPxRigidActor, AsPxRigidBody, PxActorRef, PxBaseRef, PxRigidActorRef, PxRigidBodyRef, PxTransform};
+use crate::{
+    AsPxActor, AsPxBase, AsPxRigidActor, AsPxRigidBody, PxActorRef, PxBaseRef, PxRigidActorRef,
+    PxRigidBodyRef, PxTransform,
+};
 
 pub trait AsArticulationBase {
     fn as_articulation_base_ptr(&self) -> *mut physx_sys::PxArticulationBase;
@@ -12,14 +15,22 @@ pub trait AsArticulationJointBase {
 
 pub trait PxArticulationBase {
     fn wake_up(&self);
-    fn set_solver_iteration_counts(&self, min_position_iterations: u32, min_velocity_iterations: u32);
+    fn set_solver_iteration_counts(
+        &self,
+        min_position_iterations: u32,
+        min_velocity_iterations: u32,
+    );
     fn get_solver_iteration_counts(&self) -> (u32, u32);
 }
 impl<T: AsArticulationBase> PxArticulationBase for T {
     fn wake_up(&self) {
         unsafe { physx_sys::PxArticulationBase_wakeUp_mut(self.as_articulation_base_ptr()) }
     }
-    fn set_solver_iteration_counts(&self, min_position_iterations: u32, min_velocity_iterations: u32) {
+    fn set_solver_iteration_counts(
+        &self,
+        min_position_iterations: u32,
+        min_velocity_iterations: u32,
+    ) {
         unsafe {
             physx_sys::PxArticulationBase_setSolverIterationCounts_mut(
                 self.as_articulation_base_ptr(),
@@ -31,7 +42,13 @@ impl<T: AsArticulationBase> PxArticulationBase for T {
     fn get_solver_iteration_counts(&self) -> (u32, u32) {
         let mut p = 0u32;
         let mut v = 0u32;
-        unsafe { physx_sys::PxArticulationBase_getSolverIterationCounts(self.as_articulation_base_ptr(), &mut p, &mut v) }
+        unsafe {
+            physx_sys::PxArticulationBase_getSolverIterationCounts(
+                self.as_articulation_base_ptr(),
+                &mut p,
+                &mut v,
+            )
+        }
         (p, v)
     }
 }
@@ -44,18 +61,32 @@ pub trait PxArticulationJointBase {
 }
 impl<T: AsArticulationJointBase> PxArticulationJointBase for T {
     fn get_parent_pose(&self) -> PxTransform {
-        let t = unsafe { physx_sys::PxArticulationJointBase_getParentPose(self.as_articulation_joint_base_ptr()) };
+        let t = unsafe {
+            physx_sys::PxArticulationJointBase_getParentPose(self.as_articulation_joint_base_ptr())
+        };
         PxTransform(t)
     }
     fn get_child_pose(&self) -> PxTransform {
-        let t = unsafe { physx_sys::PxArticulationJointBase_getChildPose(self.as_articulation_joint_base_ptr()) };
+        let t = unsafe {
+            physx_sys::PxArticulationJointBase_getChildPose(self.as_articulation_joint_base_ptr())
+        };
         PxTransform(t)
     }
     fn set_parent_pose(&self, pose: &PxTransform) {
-        unsafe { physx_sys::PxArticulationJointBase_setParentPose_mut(self.as_articulation_joint_base_ptr(), &pose.0) }
+        unsafe {
+            physx_sys::PxArticulationJointBase_setParentPose_mut(
+                self.as_articulation_joint_base_ptr(),
+                &pose.0,
+            )
+        }
     }
     fn set_child_pose(&self, pose: &PxTransform) {
-        unsafe { physx_sys::PxArticulationJointBase_setChildPose_mut(self.as_articulation_joint_base_ptr(), &pose.0) }
+        unsafe {
+            physx_sys::PxArticulationJointBase_setChildPose_mut(
+                self.as_articulation_joint_base_ptr(),
+                &pose.0,
+            )
+        }
     }
 }
 pub struct PxArticulationJointBaseRef(*mut physx_sys::PxArticulationJointBase);
@@ -63,7 +94,11 @@ pub struct PxArticulationJointBaseRef(*mut physx_sys::PxArticulationJointBase);
 #[derive(Debug, Clone, Copy)]
 pub struct PxArticulationLinkRef(pub(crate) *mut physx_sys::PxArticulationLink);
 impl PxArticulationLinkRef {
-    pub fn new(articulation: &dyn AsArticulationBase, parent: Option<&PxArticulationLinkRef>, pose: &PxTransform) -> Self {
+    pub fn new(
+        articulation: &dyn AsArticulationBase,
+        parent: Option<&PxArticulationLinkRef>,
+        pose: &PxTransform,
+    ) -> Self {
         Self(unsafe {
             physx_sys::PxArticulationBase_createLink_mut(
                 articulation.as_articulation_base_ptr(),
@@ -73,7 +108,9 @@ impl PxArticulationLinkRef {
         })
     }
     pub fn get_inbound_joint(&self) -> PxArticulationJointBaseRef {
-        PxArticulationJointBaseRef(unsafe { physx_sys::PxArticulationLink_getInboundJoint(self.0) as _ })
+        PxArticulationJointBaseRef(unsafe {
+            physx_sys::PxArticulationLink_getInboundJoint(self.0) as _
+        })
     }
     pub fn get_link_index(&self) -> u32 {
         unsafe { physx_sys::PxArticulationLink_getLinkIndex(self.0) }

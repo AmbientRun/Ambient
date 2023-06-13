@@ -1,5 +1,5 @@
 use std::{
-    net::{IpAddr, Ipv4Addr, SocketAddr},
+    net::{IpAddr, SocketAddr},
     ops::Range,
     sync::Arc,
     time::Duration,
@@ -18,17 +18,19 @@ use ambient_std::{
     log_result,
 };
 use ambient_sys::time::Instant;
+use anyhow::Context;
 use colored::Colorize;
-use futures::StreamExt;
+use futures::{SinkExt, StreamExt};
 use parking_lot::{Mutex, RwLock};
-use quinn::{ClientConfig, Endpoint, ServerConfig, TransportConfig};
+use quinn::{ClientConfig, Connecting, Endpoint, ServerConfig, TransportConfig};
 use rustls::{Certificate, PrivateKey};
 use tokio::time::{interval, MissedTickBehavior};
 use uuid::Uuid;
 
 use crate::{
-    client_connection::ConnectionKind,
-    native::load_root_certs,
+    native::{
+        client_connection::ConnectionKind, load_root_certs, webtransport::handle_h3_connection,
+    },
     proto::{
         self,
         server::{handle_diffs, ConnectionData},
@@ -38,7 +40,8 @@ use crate::{
         server_stats, ForkingEvent, ProxySettings, ServerState, SharedServerState, ShutdownEvent,
         WorldInstance, MAIN_INSTANCE_ID,
     },
-    stream, ServerWorldExt,
+    stream::{FramedRecvStream, FramedSendStream},
+    ServerWorldExt,
 };
 
 #[derive(Debug, Clone)]
@@ -50,31 +53,30 @@ pub struct Crypto {
 /// Quinn and Webtransport game server
 pub struct GameServer {
     endpoint: Endpoint,
-    pub port: u16,
     /// Shuts down the server if there are no players
     pub use_inactivity_shutdown: bool,
     proxy_settings: Option<ProxySettings>,
 }
+
 impl GameServer {
     pub async fn new_with_port(
-        port: u16,
+        server_addr: SocketAddr,
         use_inactivity_shutdown: bool,
         proxy_settings: Option<ProxySettings>,
         crypto: &Crypto,
     ) -> anyhow::Result<Self> {
-        let server_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
-
         let endpoint = create_server(server_addr, crypto)?;
 
-        tracing::debug!("GameServer listening on port {}", port);
+        tracing::debug!("GameServer listening on port {}", server_addr.port());
         Ok(Self {
             endpoint,
-            port,
             use_inactivity_shutdown,
             proxy_settings,
         })
     }
+
     pub async fn new_with_port_in_range(
+        bind_addr: IpAddr,
         port_range: Range<u16>,
         use_inactivity_shutdown: bool,
         proxy_settings: Option<ProxySettings>,
@@ -82,7 +84,7 @@ impl GameServer {
     ) -> anyhow::Result<Self> {
         for port in port_range {
             match Self::new_with_port(
-                port,
+                SocketAddr::new(bind_addr, port),
                 use_inactivity_shutdown,
                 proxy_settings.clone(),
                 crypto,
@@ -99,6 +101,7 @@ impl GameServer {
         }
         anyhow::bail!("Failed to create server")
     }
+
     #[tracing::instrument(level = "trace", skip_all)]
     pub async fn run(
         self,
@@ -113,6 +116,7 @@ impl GameServer {
             proxy_settings,
             ..
         } = self;
+
         let assets = world.resource(asset_cache()).clone();
         let world_stream_filter =
             WorldStreamFilter::new(ArchetypeFilter::new().excl(no_sync()), is_sync_component);
@@ -158,22 +162,12 @@ impl GameServer {
         }
 
         loop {
-            tracing::trace_span!("Listening for incoming connections");
+            let addr = endpoint.local_addr().unwrap();
+
+            tracing::trace_span!("Listening for incoming connections", ?addr,);
             tokio::select! {
                 Some(conn) = endpoint.accept() => {
-                    tracing::debug!("Received connection");
-
-                    let conn = match conn.await {
-                        Ok(v) => v,
-                        Err(e) => {
-                            tracing::error!("Failed to accept incoming connection. {e}");
-                            continue;
-                        }
-                    };
-
-
-                    tracing::debug!("Accepted connection");
-                    let fut = handle_quinn_connection(conn.into(), state.clone(), world_stream_filter.clone(), ServerBaseUrlKey.get(&assets));
+                    let fut = resolve_connection(conn, state.clone(), world_stream_filter.clone(), ServerBaseUrlKey.get(&assets));
                     tokio::spawn(async move {  log_result!(fut.await) });
                 }
                 _ = sim_interval.tick() => {
@@ -195,7 +189,7 @@ impl GameServer {
                 _ = inactivity_interval.tick(), if self.use_inactivity_shutdown => {
                     if state.lock().player_count() == 0 {
                         if Instant::now().duration_since(last_active).as_secs_f32() > 2. * 60. {
-                            tracing::info!("[{}] Shutting down due to inactivity", self.port);
+                            tracing::info!("Shutting down due to inactivity");
                             break;
                         }
                     } else {
@@ -208,7 +202,7 @@ impl GameServer {
                 }
             }
         }
-        tracing::debug!("[{}] GameServer shutting down", self.port);
+        tracing::debug!("GameServer shutting down");
         {
             let mut state = state.lock();
             let create_shutdown_systems = state.create_shutdown_systems.clone();
@@ -217,8 +211,73 @@ impl GameServer {
                 sys.run(&mut instance.world, &ShutdownEvent);
             }
         }
-        tracing::debug!("[{}] GameServer finished shutting down", self.port);
+        tracing::debug!("GameServer finished shutting down");
         state
+    }
+
+    /// Returns the local socket address of the endpoint
+    pub fn local_addr(&self) -> SocketAddr {
+        self.endpoint
+            .local_addr()
+            .expect("Failed go get socket address for endpoint")
+    }
+}
+
+async fn resolve_connection(
+    mut conn: Connecting,
+    state: SharedServerState,
+    world_stream_filter: WorldStreamFilter,
+    content_base_url: AbsAssetUrl,
+) -> anyhow::Result<()> {
+    tracing::debug!("Received connection");
+
+    let handshake_data = conn
+        .handshake_data()
+        .await
+        .context("Failed to acquire handshake data")?
+        .downcast::<quinn::crypto::rustls::HandshakeData>()
+        .ok()
+        .context("Failed to downcast handshake data")?;
+
+    let protocol = handshake_data.protocol.context("Missing protocol")?;
+    let protocol_str = std::str::from_utf8(&protocol);
+    let server_name = handshake_data.server_name;
+
+    tracing::trace!(
+        ?protocol,
+        ?protocol_str,
+        ?server_name,
+        "Received handshake data"
+    );
+
+    let conn = match conn.await {
+        Ok(v) => v,
+        Err(e) => {
+            tracing::error!("Failed to accept incoming connection. {e}");
+            return Ok(());
+        }
+    };
+
+    tracing::debug!("Accepted connection");
+    if protocol == b"ambient-02" {
+        handle_quinn_connection(
+            conn.into(),
+            state.clone(),
+            world_stream_filter.clone(),
+            content_base_url,
+        )
+        .await
+    } else if protocol == b"h3" {
+        handle_h3_connection(conn, state.clone(), world_stream_filter, content_base_url).await
+    } else {
+        tracing::error!(
+            local_ip=?conn.local_ip(),
+            "Client connected using unsupported protocol: {:?}",
+            protocol
+        );
+
+        conn.close(0u32.into(), b"Unsupported protocol");
+        Ok(())
     }
 }
 
@@ -230,7 +289,7 @@ async fn handle_quinn_connection(
     world_stream_filter: WorldStreamFilter,
     content_base_url: AbsAssetUrl,
 ) -> anyhow::Result<()> {
-    tracing::info!("Handling server connection");
+    tracing::debug!("Handling server connection");
     let (diffs_tx, diffs_rx) = flume::unbounded();
 
     let server_info = {
@@ -252,14 +311,10 @@ async fn handle_quinn_connection(
 
     let mut server = proto::server::ServerState::default();
 
-    tracing::info!("Accepting request stream from client");
-    let mut request_recv = stream::RecvStream::new(conn.accept_uni().await?);
-    tracing::info!("Opening control stream");
-    let mut push_send = stream::SendStream::new(conn.open_uni().await?);
+    let mut request_recv = FramedRecvStream::new(conn.accept_uni().await?);
+    let mut push_send = FramedSendStream::new(conn.open_uni().await?);
 
     let diffs_rx = diffs_rx.into_stream();
-
-    use futures::SinkExt;
 
     // Send who we are
     push_send.send(ServerPush::ServerInfo(server_info)).await?;
@@ -285,7 +340,7 @@ async fn handle_quinn_connection(
     tracing::debug!("Performing additional on connect tracingic after the fact");
 
     tokio::spawn(handle_diffs(
-        stream::SendStream::new(conn.open_uni().await?),
+        FramedSendStream::new(conn.open_uni().await?),
         diffs_rx,
     ));
 
@@ -456,8 +511,6 @@ fn create_server(server_addr: SocketAddr, crypto: &Crypto) -> anyhow::Result<End
     let transport = Arc::new(transport);
     server_conf.transport = transport.clone();
 
-    tracing::info!(?server_addr, ?server_conf, "Creating server endpoint");
-
     let mut endpoint = Endpoint::server(server_conf, server_addr)?;
 
     // Create client config for the server endpoint for proxying and hole punching
@@ -473,9 +526,7 @@ fn create_server(server_addr: SocketAddr, crypto: &Crypto) -> anyhow::Result<End
         .with_safe_defaults()
         .with_root_certificates(roots)
         .with_no_client_auth();
-    crypto.alpn_protocols = vec![
-        b"ambient-proxy-03".to_vec(),
-    ];
+    crypto.alpn_protocols = vec![b"ambient-proxy-03".to_vec()];
 
     let mut client_config = ClientConfig::new(Arc::new(crypto));
     client_config.transport_config(transport);

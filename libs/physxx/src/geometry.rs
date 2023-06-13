@@ -3,7 +3,10 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 use physx_sys::PxGeometryQuery_computePenetration_mut;
 
-use crate::{to_glam_quat, to_glam_vec3, to_physx_quat, to_physx_vec3, PxConvexMesh, PxHeightField, PxTransform, PxTriangleMesh};
+use crate::{
+    to_glam_quat, to_glam_vec3, to_physx_quat, to_physx_vec3, PxConvexMesh, PxHeightField,
+    PxTransform, PxTriangleMesh,
+};
 
 #[repr(i32)]
 #[derive(Debug, FromPrimitive, PartialEq, Eq)]
@@ -23,7 +26,9 @@ pub trait PxGeometry {
     fn as_geometry_ptr(&self) -> *const physx_sys::PxGeometry;
 
     fn get_type(&self) -> PxGeometryType {
-        unsafe { PxGeometryType::from_i32(physx_sys::PxGeometry_getType(self.as_geometry_ptr())).unwrap() }
+        unsafe {
+            PxGeometryType::from_i32(physx_sys::PxGeometry_getType(self.as_geometry_ptr())).unwrap()
+        }
     }
 }
 
@@ -98,7 +103,9 @@ impl PxMeshScale {
         PxMeshScale(unsafe { physx_sys::PxMeshScale_new_2(&to_physx_vec3(scale)) })
     }
     pub fn from_scale_rotation(scale: Vec3, rotation: Quat) -> Self {
-        PxMeshScale(unsafe { physx_sys::PxMeshScale_new_3(&to_physx_vec3(scale), &to_physx_quat(rotation)) })
+        PxMeshScale(unsafe {
+            physx_sys::PxMeshScale_new_3(&to_physx_vec3(scale), &to_physx_quat(rotation))
+        })
     }
     pub fn scale(&self) -> Vec3 {
         to_glam_vec3(&self.0.scale)
@@ -117,11 +124,21 @@ bitflags! {
 #[derive(Clone)]
 pub struct PxConvexMeshGeometry(physx_sys::PxConvexMeshGeometry);
 impl PxConvexMeshGeometry {
-    pub fn new(mesh: &PxConvexMesh, scaling: Option<PxMeshScale>, flags: Option<PxConvexMeshGeometryFlag>) -> Self {
+    pub fn new(
+        mesh: &PxConvexMesh,
+        scaling: Option<PxMeshScale>,
+        flags: Option<PxConvexMeshGeometryFlag>,
+    ) -> Self {
         let scaling = scaling.unwrap_or_else(PxMeshScale::identity);
         let flags = flags.unwrap_or(PxConvexMeshGeometryFlag::empty());
         Self(unsafe {
-            physx_sys::PxConvexMeshGeometry_new_1(mesh.0, &scaling.0 as _, physx_sys::PxConvexMeshGeometryFlags { mBits: flags.bits as u8 })
+            physx_sys::PxConvexMeshGeometry_new_1(
+                mesh.0,
+                &scaling.0 as _,
+                physx_sys::PxConvexMeshGeometryFlags {
+                    mBits: flags.bits as u8,
+                },
+            )
         })
     }
     pub fn scale(&self) -> PxMeshScale {
@@ -152,11 +169,21 @@ bitflags! {
 #[derive(Clone)]
 pub struct PxTriangleMeshGeometry(physx_sys::PxTriangleMeshGeometry);
 impl PxTriangleMeshGeometry {
-    pub fn new(mesh: &PxTriangleMesh, scaling: Option<PxMeshScale>, flags: Option<PxMeshGeometryFlag>) -> Self {
+    pub fn new(
+        mesh: &PxTriangleMesh,
+        scaling: Option<PxMeshScale>,
+        flags: Option<PxMeshGeometryFlag>,
+    ) -> Self {
         let scaling = scaling.unwrap_or_else(PxMeshScale::identity);
         let flags = flags.unwrap_or(PxMeshGeometryFlag::empty());
         Self(unsafe {
-            physx_sys::PxTriangleMeshGeometry_new_1(mesh.0, &scaling.0 as _, physx_sys::PxMeshGeometryFlags { mBits: flags.bits as u8 })
+            physx_sys::PxTriangleMeshGeometry_new_1(
+                mesh.0,
+                &scaling.0 as _,
+                physx_sys::PxMeshGeometryFlags {
+                    mBits: flags.bits as u8,
+                },
+            )
         })
     }
     pub fn scale(&self) -> PxMeshScale {
@@ -180,7 +207,12 @@ impl PxGeometry for PxTriangleMeshGeometry {
 
 pub struct PxHeightFieldGeometry(physx_sys::PxHeightFieldGeometry);
 impl PxHeightFieldGeometry {
-    pub fn new(height_field: &mut PxHeightField, height_scale: f32, row_scale: f32, column_scale: f32) -> Self {
+    pub fn new(
+        height_field: &mut PxHeightField,
+        height_scale: f32,
+        row_scale: f32,
+        column_scale: f32,
+    ) -> Self {
         Self(unsafe {
             physx_sys::PxHeightFieldGeometry_new_1(
                 height_field.0,
@@ -210,19 +242,31 @@ impl PxGeometryHolder {
         if self.get_type() != PxGeometryType::SPHERE {
             return None;
         }
-        unsafe { Some(PxSphereGeometry(*physx_sys::PxGeometryHolder_sphere(&self.0))) }
+        unsafe {
+            Some(PxSphereGeometry(*physx_sys::PxGeometryHolder_sphere(
+                &self.0,
+            )))
+        }
     }
     pub fn as_convex_mesh(&self) -> Option<PxConvexMeshGeometry> {
         if self.get_type() != PxGeometryType::ConvexMesh {
             return None;
         }
-        unsafe { Some(PxConvexMeshGeometry(*physx_sys::PxGeometryHolder_convexMesh(&self.0))) }
+        unsafe {
+            Some(PxConvexMeshGeometry(
+                *physx_sys::PxGeometryHolder_convexMesh(&self.0),
+            ))
+        }
     }
     pub fn as_triangle_mesh(&self) -> Option<PxTriangleMeshGeometry> {
         if self.get_type() != PxGeometryType::TRIANGLEMESH {
             return None;
         }
-        unsafe { Some(PxTriangleMeshGeometry(*physx_sys::PxGeometryHolder_triangleMesh(&self.0))) }
+        unsafe {
+            Some(PxTriangleMeshGeometry(
+                *physx_sys::PxGeometryHolder_triangleMesh(&self.0),
+            ))
+        }
     }
 }
 impl PxGeometry for PxGeometryHolder {
@@ -255,7 +299,10 @@ pub fn compute_penetration(
             geom1.as_geometry_ptr(),
             &pose1.0 as *const _,
         ) {
-            Some(GeometryIntersection { dir: to_glam_vec3(&dir), depth })
+            Some(GeometryIntersection {
+                dir: to_glam_vec3(&dir),
+                depth,
+            })
         } else {
             None
         }

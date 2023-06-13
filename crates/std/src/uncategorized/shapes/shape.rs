@@ -28,7 +28,9 @@ impl<T: Shape> TransformedShape<T> {
 
 impl<T: Shape> Shape for TransformedShape<T> {
     fn support(&self, dir: Vec3) -> Vec3 {
-        let p = self.shape.support(self.transform.inverse().transform_vector3(dir).normalize());
+        let p = self
+            .shape
+            .support(self.transform.inverse().transform_vector3(dir).normalize());
         self.transform.transform_point3(p)
     }
 }

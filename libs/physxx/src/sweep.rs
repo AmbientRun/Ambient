@@ -1,6 +1,8 @@
 use glam::Vec3;
 
-use crate::{to_glam_vec3, to_physx_vec3, PxGeometry, PxHitFlags, PxRigidActorRef, PxShape, PxTransform};
+use crate::{
+    to_glam_vec3, to_physx_vec3, PxGeometry, PxHitFlags, PxRigidActorRef, PxShape, PxTransform,
+};
 
 #[derive(Debug, Clone)]
 pub struct PxSweepHit {
@@ -16,8 +18,16 @@ pub struct PxSweepHit {
 impl From<physx_sys::PxSweepHit> for PxSweepHit {
     fn from(hit: physx_sys::PxSweepHit) -> Self {
         Self {
-            actor: if !hit.actor.is_null() { Some(PxRigidActorRef(hit.actor)) } else { None },
-            shape: if !hit.shape.is_null() { Some(PxShape::from_ptr(hit.shape)) } else { None },
+            actor: if !hit.actor.is_null() {
+                Some(PxRigidActorRef(hit.actor))
+            } else {
+                None
+            },
+            shape: if !hit.shape.is_null() {
+                Some(PxShape::from_ptr(hit.shape))
+            } else {
+                None
+            },
             face_index: hit.faceIndex,
             flags: PxHitFlags::from_bits(hit.flags.mBits as _).expect("Invalid bits"),
             position: to_glam_vec3(&hit.position),
@@ -52,7 +62,9 @@ impl SweepConfig<'_> {
                 self.dst_geom.as_geometry_ptr(),
                 &self.dst_pose.0 as *const _,
                 &mut out as *mut _,
-                physx_sys::PxHitFlags { mBits: self.flags.bits() as _ },
+                physx_sys::PxHitFlags {
+                    mBits: self.flags.bits() as _,
+                },
                 self.inflation,
             );
             if hit {

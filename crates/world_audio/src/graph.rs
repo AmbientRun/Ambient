@@ -32,10 +32,18 @@ impl Default for AudioNode {
 impl AudioNode {
     /// Builds the adapter into a proper source.
     /// If the graph can not immediately be built, it returns None
-    pub fn try_build(self, assets: &AssetCache, _seed: AudioSeed) -> Result<Option<Box<dyn Source>>> {
+    pub fn try_build(
+        self,
+        assets: &AssetCache,
+        _seed: AudioSeed,
+    ) -> Result<Option<Box<dyn Source>>> {
         match self {
             AudioNode::Vorbis { url } => {
-                let track = VorbisFromUrl { url: AbsAssetUrl::parse(url).unwrap() }.peek(assets).transpose()?;
+                let track = VorbisFromUrl {
+                    url: AbsAssetUrl::parse(url).unwrap(),
+                }
+                .peek(assets)
+                .transpose()?;
                 match track {
                     Some(track) => Ok(Some(Box::new(track.decode()))),
                     None => Ok(None),
@@ -54,7 +62,9 @@ pub struct AudioSeed {
 
 impl AudioSeed {
     pub fn new() -> Self {
-        Self { rng_seed: thread_rng().gen() }
+        Self {
+            rng_seed: thread_rng().gen(),
+        }
     }
 }
 

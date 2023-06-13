@@ -55,7 +55,11 @@ impl HslRepresentation {
         };
         let lightness_match = lightness - chroma / 2.0;
 
-        [r_temp + lightness_match, g_temp + lightness_match, b_temp + lightness_match]
+        [
+            r_temp + lightness_match,
+            g_temp + lightness_match,
+            b_temp + lightness_match,
+        ]
     }
 
     /// converts a color in sRGB space to HLS space
@@ -76,7 +80,11 @@ impl HslRepresentation {
             60.0 * (4.0 + (red - green) / chroma)
         };
         let hue = if hue < 0.0 { 360.0 + hue } else { hue };
-        let saturation = if lightness <= 0.0 || lightness >= 1.0 { 0.0 } else { (x_max - lightness) / lightness.min(1.0 - lightness) };
+        let saturation = if lightness <= 0.0 || lightness >= 1.0 {
+            0.0
+        } else {
+            (x_max - lightness) / lightness.min(1.0 - lightness)
+        };
 
         (hue, saturation, lightness)
     }
@@ -91,10 +99,15 @@ mod test {
         let u8max: f32 = u8::max_value() as f32;
         for color in 0..u8::max_value() {
             let color01 = color as f32 / u8max;
-            let color_roundtrip = color01.linear_to_nonlinear_srgb().nonlinear_to_linear_srgb();
+            let color_roundtrip = color01
+                .linear_to_nonlinear_srgb()
+                .nonlinear_to_linear_srgb();
             // roundtrip is not perfect due to numeric precision, even with f64
             // so ensure the error is at least ready for u8 (where sRGB is used)
-            assert_eq!((color01 * u8max).round() as u8, (color_roundtrip * u8max).round() as u8);
+            assert_eq!(
+                (color01 * u8max).round() as u8,
+                (color_roundtrip * u8max).round() as u8
+            );
         }
     }
 
@@ -149,36 +162,42 @@ mod test {
         // "truth" from https://en.wikipedia.org/wiki/HSL_and_HSV#Examples
 
         // black
-        let (hue, saturation, lightness) = HslRepresentation::nonlinear_srgb_to_hsl([0.0, 0.0, 0.0]);
+        let (hue, saturation, lightness) =
+            HslRepresentation::nonlinear_srgb_to_hsl([0.0, 0.0, 0.0]);
         assert_eq!(hue.round() as u32, 0);
         assert_eq!((saturation * 100.0).round() as u32, 0);
         assert_eq!((lightness * 100.0).round() as u32, 0);
 
         // white
-        let (hue, saturation, lightness) = HslRepresentation::nonlinear_srgb_to_hsl([1.0, 1.0, 1.0]);
+        let (hue, saturation, lightness) =
+            HslRepresentation::nonlinear_srgb_to_hsl([1.0, 1.0, 1.0]);
         assert_eq!(hue.round() as u32, 0);
         assert_eq!((saturation * 100.0).round() as u32, 0);
         assert_eq!((lightness * 100.0).round() as u32, 100);
 
-        let (hue, saturation, lightness) = HslRepresentation::nonlinear_srgb_to_hsl([0.75, 0.25, 0.75]);
+        let (hue, saturation, lightness) =
+            HslRepresentation::nonlinear_srgb_to_hsl([0.75, 0.25, 0.75]);
         assert_eq!(hue.round() as u32, 300);
         assert_eq!((saturation * 100.0).round() as u32, 50);
         assert_eq!((lightness * 100.0).round() as u32, 50);
 
         // a red
-        let (hue, saturation, lightness) = HslRepresentation::nonlinear_srgb_to_hsl([0.704, 0.187, 0.897]);
+        let (hue, saturation, lightness) =
+            HslRepresentation::nonlinear_srgb_to_hsl([0.704, 0.187, 0.897]);
         assert_eq!(hue.round() as u32, 284);
         assert_eq!((saturation * 100.0).round() as u32, 78);
         assert_eq!((lightness * 100.0).round() as u32, 54);
 
         // a green
-        let (hue, saturation, lightness) = HslRepresentation::nonlinear_srgb_to_hsl([0.099, 0.795, 0.591]);
+        let (hue, saturation, lightness) =
+            HslRepresentation::nonlinear_srgb_to_hsl([0.099, 0.795, 0.591]);
         assert_eq!(hue.round() as u32, 162);
         assert_eq!((saturation * 100.0).round() as u32, 78);
         assert_eq!((lightness * 100.0).round() as u32, 45);
 
         // a blue
-        let (hue, saturation, lightness) = HslRepresentation::nonlinear_srgb_to_hsl([0.255, 0.104, 0.918]);
+        let (hue, saturation, lightness) =
+            HslRepresentation::nonlinear_srgb_to_hsl([0.255, 0.104, 0.918]);
         assert_eq!(hue.round() as u32, 251);
         assert_eq!((saturation * 100.0).round() as u32, 83);
         assert_eq!((lightness * 100.0).round() as u32, 51);

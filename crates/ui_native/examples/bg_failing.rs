@@ -27,7 +27,11 @@ impl ElementComponent for Example {
 
         // After 5 seconds, on rerender, this component crashes the app
         FlowColumn(vec![
-            Image { texture: Some(texture) }.el().with_background(Color::rgba(1.0, 1.0, 0.0, 1.0).into()),
+            Image {
+                texture: Some(texture),
+            }
+            .el()
+            .with_background(Color::rgba(1.0, 1.0, 0.0, 1.0).into()),
             Text::el("Hello, World!").with_background(Color::rgba(0.5, 0.0, 1.0, 1.0).into()),
         ])
         .el()
