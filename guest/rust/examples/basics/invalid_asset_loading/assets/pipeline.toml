@@ -1,0 +1,7 @@
+[[pipelines]]
+
+[pipelines.pipeline]
+type = "Models"
+
+[pipelines.pipeline.collider]
+type = "FromModel"

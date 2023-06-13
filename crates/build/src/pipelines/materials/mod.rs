@@ -33,6 +33,10 @@ use crate::pipelines::download_image;
 
 pub mod quixel_surfaces;
 
+fn is_false(value: &bool) -> bool {
+    !*value
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[allow(clippy::large_enum_variant)]
@@ -51,6 +55,7 @@ pub struct MaterialsPipeline {
     pub importer: Box<MaterialsImporter>,
     /// Whether or not decal prefabs should be created for each of these materials.
     #[serde(default)]
+    #[serde(skip_serializing_if = "is_false")]
     pub output_decals: bool,
 }
 
@@ -100,6 +105,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
         }
         MaterialsImporter::Quixel => quixel_surfaces::pipeline(ctx, config.clone()).await,
     };
+
     if config.output_decals {
         let mut res = materials.clone();
         for mat in materials {

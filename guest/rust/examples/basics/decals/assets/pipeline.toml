@@ -1,0 +1,10 @@
+[[pipelines]]
+
+[pipelines.pipeline]
+type = "Materials"
+output_decals = false
+
+[pipelines.pipeline.importer]
+type = "Single"
+name = "checkerboard"
+base_color = "checkerboard.png"

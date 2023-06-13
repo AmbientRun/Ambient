@@ -1,0 +1,4 @@
+[[pipelines]]
+
+[pipelines.pipeline]
+type = "Models"

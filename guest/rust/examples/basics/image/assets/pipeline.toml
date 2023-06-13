@@ -1,0 +1,9 @@
+[[pipelines]]
+
+[pipelines.pipeline]
+type = "Materials"
+
+[pipelines.pipeline.importer]
+type = "Single"
+name = "squirrel"
+base_color = "squirrel.png"
