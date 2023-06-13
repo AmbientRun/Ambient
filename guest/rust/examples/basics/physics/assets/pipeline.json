@@ -1,15 +1,16 @@
 [
     {
         "pipeline": {
-          "type": "Models",
-          "collider": {
-            "type": "FromModel"
-          }
+            "type": "Models",
+            "collider": {
+                "type": "FromModel"
+            }
         }
     },
     {
         "pipeline": {
-          "type": "Audio"
+            "type": "Audio",
+            "convert": true
         }
     }
 ]

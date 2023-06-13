@@ -72,35 +72,35 @@ pub struct ModelsPipeline {
     /// The importer to use to process models.
     #[serde(default)]
     #[serde(skip_serializing_if = "ModelImporter::is_regular")]
-    importer: ModelImporter,
+    pub(crate) importer: ModelImporter,
     /// Use assimp as the importer.
     /// This will support more file formats, but is less well-integrated. Off by default.
     #[serde(default)]
     #[serde(skip_serializing_if = "is_false")]
-    force_assimp: bool,
+    pub(crate) force_assimp: bool,
     #[serde(default)]
     #[serde(skip_serializing_if = "Collider::is_none")]
     /// The physics collider to use for this mesh.
-    collider: Collider,
+    pub(crate) collider: Collider,
     /// If a collider is present, this controls how it will interact with other colliders.
     #[serde(default)]
     #[serde(skip_serializing_if = "is_default")]
-    collider_type: ColliderType,
+    pub(crate) collider_type: ColliderType,
     /// Whether or not this mesh should have its texture sizes capped.
-    cap_texture_sizes: Option<ModelTextureSize>,
+    pub(crate) cap_texture_sizes: Option<ModelTextureSize>,
     /// Treats all assets in the pipeline as variations, and outputs a single asset which is a collection of all assets.
     /// Most useful for grass and other entities whose individual identity is not important.
     #[serde(default)]
     #[serde(skip_serializing_if = "is_false")]
-    collection_of_variants: bool,
+    pub(crate) collection_of_variants: bool,
     /// Output prefabs that can be spawned. On by default.
     #[serde(default = "true_value")]
     #[serde(skip_serializing_if = "is_true")]
-    output_prefabs: bool,
+    pub(crate) output_prefabs: bool,
     /// Output the animations that belonged to this model.
     #[serde(default = "true_value")]
     #[serde(skip_serializing_if = "is_true")]
-    output_animations: bool,
+    pub(crate) output_animations: bool,
     /// If specified, these components will be added to the prefabs produced by `output_prefabs`.
     ///
     /// This is a great way to specify additional information about your prefab that can be used by gameplay logic.
@@ -108,18 +108,18 @@ pub struct ModelsPipeline {
     /// replaced by this prefab being reloaded.
     #[serde(default)]
     #[serde(skip_serializing_if = "Entity::is_empty")]
-    prefab_components: Entity,
+    pub(crate) prefab_components: Entity,
     /// If specified, a list of overrides to use for the materials for the mesh.
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    material_overrides: Vec<MaterialOverride>,
+    pub(crate) material_overrides: Vec<MaterialOverride>,
     /// If specified, a list of transformations to apply to this model. This can be used
     /// to correct coordinate space differences between your asset source and the runtime.
     ///
     /// These will be applied in sequence.
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    transforms: Vec<ModelTransform>,
+    pub(crate) transforms: Vec<ModelTransform>,
 }
 impl ModelsPipeline {
     async fn apply(
@@ -185,7 +185,7 @@ pub struct MaterialOverride {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(tag = "type")]
+#[serde(deny_unknown_fields)]
 pub enum ModelImporter {
     #[default]
     /// The default importer is sufficient for the majority of needs.

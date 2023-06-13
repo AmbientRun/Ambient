@@ -10,3 +10,4 @@ type = "FromModel"
 
 [pipelines.pipeline]
 type = "Audio"
+convert = true

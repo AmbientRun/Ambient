@@ -101,5 +101,18 @@
         "env": {
             "RUST_LOG": "info"
         }
+    },
+    "migrate-pipelines-toml": {
+        "cmd": [
+            "cargo",
+            "run",
+            "--",
+            "assets",
+            "guest/rust/examples/basics/asset_loading",
+            "migrate-pipelines-toml"
+        ],
+        "env": {
+            "RUST_LOG": "ambient_build=info"
+        }
     }
 }
