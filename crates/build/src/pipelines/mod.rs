@@ -80,10 +80,10 @@ fn get_pipelines(
     ctx: &ProcessCtx,
 ) -> impl Stream<Item = anyhow::Result<(&AbsAssetUrl, PipelineSchema)>> {
     stream::iter(ctx.files.0.iter())
-        .filter(|file| ready(file.decoded_path().ends_with("pipeline.json")))
+        .filter(|file| ready(file.decoded_path().ends_with("pipeline.toml")))
         .then(move |file| async move {
             let schema = file
-                .download_json::<PipelineSchema>(&ctx.assets)
+                .download_toml::<PipelineSchema>(&ctx.assets)
                 .await
                 .with_context(|| format!("Failed to read pipeline {:?}", file.0.path()))?;
 

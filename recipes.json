@@ -11,6 +11,9 @@
     "third-person-camera": {
         "cmd": "cargo run --features tracing -- run ./guest/rust/examples/basics/third_person_camera"
     },
+    "asset-loading": {
+        "cmd": "cargo run --features tracing -- run ./guest/rust/examples/basics/asset_loading"
+    },
     "serve-primitives": {
         "cmd": "cargo run --features tracing -- serve ./guest/rust/examples/basics/primitives/"
     },
