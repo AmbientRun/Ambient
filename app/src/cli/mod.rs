@@ -74,6 +74,7 @@ pub enum Commands {
     Assets {
         #[command(subcommand)]
         command: AssetCommand,
+        path: PathBuf,
     },
 }
 
@@ -81,7 +82,7 @@ pub enum Commands {
 pub enum AssetCommand {
     /// Migrate json pipelines to toml
     #[command(name = "migrate-pipelines-toml")]
-    MigratePipelinesToml { pipeline: PathBuf },
+    MigratePipelinesToml,
 }
 
 #[derive(Subcommand, Clone, Copy, Debug)]

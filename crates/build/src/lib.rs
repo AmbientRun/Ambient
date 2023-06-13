@@ -37,6 +37,11 @@ impl Metadata {
     }
 }
 
+pub fn register_from_manifest(manifest: &ProjectManifest) {
+    ambient_ecs::ComponentRegistry::get_mut()
+        .add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
+}
+
 /// This takes the path to an Ambient project and builds it. An Ambient project is expected to
 /// have the following structure:
 ///
@@ -60,8 +65,7 @@ pub async fn build(
 
     tracing::info!("Building project `{}` ({})", manifest.ember.id, name);
 
-    ambient_ecs::ComponentRegistry::get_mut()
-        .add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
+    register_from_manifest(manifest);
 
     let build_path = path.join("build");
     let assets_path = path.join("assets");
@@ -88,17 +92,20 @@ pub async fn build(
     store_metadata(&build_path).await
 }
 
+fn get_asset_files(assets_path: &Path) -> impl Iterator<Item = PathBuf> {
+    WalkDir::new(assets_path)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
+        .map(|x| x.into_path())
+}
+
 async fn build_assets(
     physics: Physics,
     assets_path: &Path,
     build_path: &Path,
 ) -> anyhow::Result<()> {
-    let files = WalkDir::new(assets_path)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
-        .map(|x| AbsAssetUrl::from_file_path(x.into_path()))
-        .collect_vec();
+    let files = get_asset_files(assets_path).map(Into::into).collect_vec();
 
     let assets = AssetCache::new_with_config(tokio::runtime::Handle::current(), None);
 

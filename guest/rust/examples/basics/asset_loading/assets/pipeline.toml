@@ -1,0 +1,7 @@
+[[pipelines]]
+
+[pipelines.pipeline]
+type = "Models"
+
+[pipelines.pipeline.prefab_components]
+"asset_loading::is_the_best" = false

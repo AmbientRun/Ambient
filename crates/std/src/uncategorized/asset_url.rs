@@ -52,11 +52,13 @@ impl std::fmt::Debug for AbsAssetUrl {
         write!(f, "{}", self.0.as_str())
     }
 }
+
 impl std::fmt::Display for AbsAssetUrl {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0.as_str())
     }
 }
+
 impl AbsAssetUrl {
     /// This will also resolve relative local paths
     pub fn parse(url: impl AsRef<str>) -> anyhow::Result<Self> {

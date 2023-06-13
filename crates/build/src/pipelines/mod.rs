@@ -4,7 +4,7 @@ use ambient_asset_cache::SyncAssetKey;
 use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use anyhow::Context;
 use context::PipelineCtx;
-use futures::{future::BoxFuture, StreamExt, TryStreamExt};
+use futures::{future::{BoxFuture, ready}, Stream, StreamExt, TryStreamExt, stream};
 use image::ImageFormat;
 use out_asset::{OutAsset, OutAssetContent, OutAssetPreview};
 use serde::{Deserialize, Serialize};
@@ -32,7 +32,6 @@ pub enum PipelineConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
 pub struct Pipeline {
     /// The type of pipeline to use.
     pub pipeline: PipelineConfig,
@@ -40,12 +39,15 @@ pub struct Pipeline {
     /// This is a list of glob patterns for accepted files.
     /// All files are accepted if this is empty.
     #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub sources: Vec<String>,
     /// Tags to apply to the output resources.
     #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub tags: Vec<String>,
     /// Categories to apply to the output resources.
     #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub categories: Vec<Vec<String>>,
 }
 impl Pipeline {
@@ -71,30 +73,30 @@ impl Pipeline {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct PipelineSchema {
-    pipelines: Vec<Pipeline>,
+    pub(crate) pipelines: Vec<Pipeline>,
+}
+
+fn get_pipelines(
+    ctx: &ProcessCtx,
+) -> impl Stream<Item = anyhow::Result<(&AbsAssetUrl, PipelineSchema)>> {
+    stream::iter(ctx.files.0.iter())
+        .filter(|file| ready(file.decoded_path().ends_with("pipeline.json")))
+        .then(move |file| async move {
+            let schema = file
+                .download_json::<PipelineSchema>(&ctx.assets)
+                .await
+                .with_context(|| format!("Failed to read pipeline {:?}", file.0.path()))?;
+
+            Ok((file, schema))
+        }) 
 }
 
 pub async fn process_pipelines(ctx: &ProcessCtx) -> anyhow::Result<Vec<OutAsset>> {
     tracing::info!(?ctx.out_root, "Processing pipeline");
 
-    futures::stream::iter(ctx.files.0.iter())
-        .filter_map(|file| async move {
-            if file.0.path().ends_with("pipeline.json") {
-                let res = file
-                    .download_json::<PipelineSchema>(&ctx.assets)
-                    .await
-                    .with_context(|| format!("Failed to read pipeline {:?}", file.0.path()));
-
-                match res {
-                    Ok(schema) => Some(Ok((file, schema.pipelines))),
-                    Err(err) => Some(Err(err)),
-                }
-            } else {
-                None
-            }
-        })
+    get_pipelines(ctx)
         .map_ok(|(file, pipelines)| {
-            futures::stream::iter(pipelines.into_iter().enumerate().map(|(i, pipeline)| {
+            futures::stream::iter(pipelines.pipelines.into_iter().enumerate().map(|(i, pipeline)| {
                 let mut file = file.clone();
                 file.0.set_fragment(Some(&i.to_string()));
                 Ok((file, pipeline)) as anyhow::Result<_>

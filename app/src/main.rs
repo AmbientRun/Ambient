@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use ambient_core::window::ExitStatus;
 use ambient_network::native::client::ResolvedAddr;
 use ambient_std::{
@@ -127,6 +129,24 @@ struct ProjectPath {
 }
 
 impl ProjectPath {
+    fn new_local(path: impl Into<PathBuf>) -> anyhow::Result<Self> {
+        let path = path.into();
+        let current_dir = std::env::current_dir().context("Error getting current directory")?;
+        let path = if path.is_absolute() {
+            path
+        } else {
+            ambient_std::path::normalize(&current_dir.join(path))
+        };
+
+        if path.exists() && !path.is_dir() {
+            anyhow::bail!("Project path {path:?} exists and is not a directory.");
+        }
+        let url = AbsAssetUrl::from_directory_path(path);
+        let fs_path = url.to_file_path().ok().flatten();
+
+        Ok(Self { url, fs_path })
+    }
+
     fn is_local(&self) -> bool {
         self.fs_path.is_some()
     }
@@ -152,28 +172,37 @@ impl TryFrom<Option<String>> for ProjectPath {
                 let url = AbsAssetUrl::parse(project_path)?;
                 Ok(Self { url, fs_path: None })
             }
-            Some(project_path) => {
-                let project_path = std::path::PathBuf::from(project_path);
-                let current_dir = std::env::current_dir()?;
-                let project_path = if project_path.is_absolute() {
-                    project_path
-                } else {
-                    ambient_std::path::normalize(&current_dir.join(project_path))
-                };
-
-                if project_path.exists() && !project_path.is_dir() {
-                    anyhow::bail!("Project path {project_path:?} exists and is not a directory.");
-                }
-                let url = AbsAssetUrl::from_directory_path(project_path);
-                let fs_path = url.to_file_path().ok().flatten();
-                Ok(Self { url, fs_path })
-            }
+            Some(project_path) => Self::new_local(project_path),
             None => {
                 let url = AbsAssetUrl::from_directory_path(std::env::current_dir()?);
                 let fs_path = url.to_file_path().ok().flatten();
                 Ok(Self { url, fs_path })
             }
         }
+    }
+}
+
+async fn load_manifest(
+    assets: &AssetCache,
+    path: &ProjectPath,
+) -> anyhow::Result<ambient_project::Manifest> {
+    if let Some(path) = &path.fs_path {
+        // load manifest from file
+        Ok(
+            ambient_project::Manifest::from_file(path.join("ambient.toml"))
+                .context("Failed to read ambient.toml.")?,
+        )
+    } else {
+        // path is a URL, so download the pre-build manifest (with resolved imports)
+        let manifest_url = path.url.push("build/ambient.toml").unwrap();
+        let manifest_data = manifest_url
+            .download_string(&assets)
+            .await
+            .context("Failed to download ambient.toml.")?;
+
+        let manifest = ambient_project::Manifest::parse(&manifest_data)
+            .context("Failed to parse downloaded ambient.toml.")?;
+        Ok(manifest)
     }
 }
 
@@ -214,10 +243,13 @@ async fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    if let Commands::Assets { command } = &cli.command {
+    if let Commands::Assets { command, path } = &cli.command {
+        let path = ProjectPath::new_local(path.clone())?;
+        let manifest = load_manifest(&assets, &path).await?;
+
         match command {
-            AssetCommand::MigratePipelinesToml { pipeline } => {
-                ambient_build::migrate::toml::migrate_pipeline(pipeline)
+            AssetCommand::MigratePipelinesToml => {
+                ambient_build::migrate::toml::process(&manifest, path.fs_path.unwrap())
                     .await
                     .context("Failed to migrate pipelines")?;
             }
@@ -228,26 +260,7 @@ async fn main() -> anyhow::Result<()> {
 
     // If a project was specified, assume that assets need to be built
     let manifest = match project {
-        Some(project) => {
-            if let Some(path) = &project_path.fs_path {
-                // load manifest from file
-                Some(
-                    ambient_project::Manifest::from_file(path.join("ambient.toml"))
-                        .context("Failed to read ambient.toml.")?,
-                )
-            } else {
-                // project_path is a URL, so download the pre-build manifest (with resolved imports)
-                let manifest_url = project_path.url.push("build/ambient.toml").unwrap();
-                let manifest_data = manifest_url
-                    .download_string(&assets)
-                    .await
-                    .context("Failed to download ambient.toml.")?;
-
-                let manifest = ambient_project::Manifest::parse(&manifest_data)
-                    .context("Failed to parse downloaded ambient.toml.")?;
-                Some(manifest)
-            }
-        }
+        Some(_) => Some(load_manifest(&assets, &project_path).await?),
         None => None,
     };
 
@@ -305,7 +318,7 @@ async fn main() -> anyhow::Result<()> {
             anyhow::bail!("Can only deploy a local project");
         };
         let manifest = manifest.as_ref().expect("no manifest");
-        let response = runtime.block_on(ambient_deploy::deploy(
+        let response = ambient_deploy::deploy(
             &runtime,
             api_server
                 .clone()
@@ -313,7 +326,8 @@ async fn main() -> anyhow::Result<()> {
             auth_token,
             project_fs_path,
             manifest,
-        ))?;
+        )
+        .await?;
         log::info!("Version {} deployed successfully", response.id);
         return Ok(());
     }
