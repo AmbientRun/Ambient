@@ -143,8 +143,17 @@ fn run_ambient(args: &[&str], release: bool) -> anyhow::Result<()> {
 fn all_examples() -> anyhow::Result<Vec<PathBuf>> {
     let mut examples = Vec::new();
 
-    for guest in all_directories_in(Path::new("guest"))? {
-        for category_path in all_directories_in(&guest.join("examples"))? {
+    for guest in all_directories_in(Path::new("guest")).context("Failed to find guest directory")? {
+        let examples_path = guest.join("examples");
+        let dirs = match all_directories_in(&examples_path) {
+            Ok(v) => v,
+            Err(e) => {
+                log::warn!("Failed to query examples directory at {examples_path:?}: {e}");
+                continue;
+            }
+        };
+
+        for category_path in dirs {
             for example_path in all_directories_in(&category_path)? {
                 examples.push(example_path);
             }
