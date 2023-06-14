@@ -177,7 +177,7 @@ jobs:
       - name: Download ambient executable
         uses: actions/download-artifact@v3
         with:
-          name: ambient-${{ matrix.os }}
+          name: ambient-ubuntu-latest
       - run: chmod a+x ambient
       - name: Install run (headless) dependencies
         run: |
