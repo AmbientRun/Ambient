@@ -17,7 +17,7 @@
 
 # Reference Guide
 
-- [Getting content for your game](reference/getting_content.md)
+- [Getting content](reference/getting_content.md)
 - [Runtime](reference/runtime.md)
 - [Project](reference/project.md)
 - [ECS](reference/ecs.md)
