@@ -29,6 +29,7 @@
 - [Terminology](reference/terminology.md)
 - [Certificates](reference/certificates.md)
 - [Common pitfalls](reference/common_pitfalls.md)
+- [FAQ](reference/faq.md)
 
 # Community
 
