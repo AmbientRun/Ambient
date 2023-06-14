@@ -17,6 +17,7 @@
 
 # Reference Guide
 
+- [Getting content for your game](reference/getting_content.md)
 - [Runtime](reference/runtime.md)
 - [Project](reference/project.md)
 - [ECS](reference/ecs.md)
@@ -27,7 +28,6 @@
 - [Audio](reference/audio.md)
 - [UI](reference/ui.md)
 - [Terminology](reference/terminology.md)
-- [Certificates](reference/certificates.md)
 - [Common pitfalls](reference/common_pitfalls.md)
 - [FAQ](reference/faq.md)
 
