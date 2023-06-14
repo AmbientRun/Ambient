@@ -12,7 +12,7 @@ use crate::{
         audio::AudioPipeline,
         materials::{MaterialsImporter, MaterialsPipeline},
         models::{Collider, ModelsPipeline},
-        Pipeline, PipelineConfig, PipelineSchema,
+        Pipeline, PipelineProcessor, PipelineSchema,
     },
     register_from_manifest,
 };
@@ -291,7 +291,7 @@ impl From<json_pipeline::ModelsPipeline> for ModelsPipeline {
     }
 }
 
-impl From<json_pipeline::PipelineConfig> for PipelineConfig {
+impl From<json_pipeline::PipelineConfig> for PipelineProcessor {
     fn from(value: json_pipeline::PipelineConfig) -> Self {
         match value {
             json_pipeline::PipelineConfig::Models(v) => Self::Models(v.into()),
@@ -304,7 +304,7 @@ impl From<json_pipeline::PipelineConfig> for PipelineConfig {
 impl From<json_pipeline::Pipeline> for Pipeline {
     fn from(value: json_pipeline::Pipeline) -> Self {
         Self {
-            pipeline: value.pipeline.into(),
+            processor: value.pipeline.into(),
             sources: value.sources,
             tags: value.tags,
             categories: value.categories,

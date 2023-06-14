@@ -19,7 +19,8 @@ pub mod out_asset;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
-pub enum PipelineConfig {
+/// Desrcibes how the pipeline assets should be processed.
+pub enum PipelineProcessor {
     /// The models asset pipeline.
     /// Will import models (including constituent materials and animations) and generate prefabs for them by default.
     Models(ModelsPipeline),
@@ -32,9 +33,11 @@ pub enum PipelineConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Describes a single complete pipeline such as which processor to use, input file filtering, and output tagging.
 pub struct Pipeline {
     /// The type of pipeline to use.
-    pub pipeline: PipelineConfig,
+    #[serde(flatten)]
+    pub processor: PipelineProcessor,
     /// Filter the sources used to feed this pipeline.
     /// This is a list of glob patterns for accepted files.
     /// All files are accepted if this is empty.
@@ -50,12 +53,13 @@ pub struct Pipeline {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub categories: Vec<Vec<String>>,
 }
+
 impl Pipeline {
     pub async fn process(&self, ctx: PipelineCtx) -> Vec<OutAsset> {
-        let mut assets = match &self.pipeline {
-            PipelineConfig::Models(config) => models::pipeline(&ctx, config.clone()).await,
-            PipelineConfig::Materials(config) => materials::pipeline(&ctx, config.clone()).await,
-            PipelineConfig::Audio(config) => audio::pipeline(&ctx, config.clone()).await,
+        let mut assets = match &self.processor {
+            PipelineProcessor::Models(config) => models::pipeline(&ctx, config.clone()).await,
+            PipelineProcessor::Materials(config) => materials::pipeline(&ctx, config.clone()).await,
+            PipelineProcessor::Audio(config) => audio::pipeline(&ctx, config.clone()).await,
         };
 
         for asset in &mut assets {
@@ -72,6 +76,9 @@ impl Pipeline {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+/// The outermost structure of the pipeline.toml file.
+///
+/// Is a struct of arrays of pipelines as toml does not support top-level arrays
 pub(crate) struct PipelineSchema {
     pub(crate) pipelines: Vec<Pipeline>,
 }
@@ -132,15 +139,15 @@ impl SyncAssetKey<ProcessCtx> for ProcessCtxKey {}
 
 #[derive(Clone)]
 pub struct ProcessCtx {
-    pub assets: AssetCache,
-    pub files: FileCollection,
-    pub input_file_filter: Option<String>,
-    pub package_name: String,
-    pub in_root: AbsAssetUrl,
-    pub out_root: AbsAssetUrl,
-    pub write_file: Arc<dyn Fn(String, Vec<u8>) -> BoxFuture<'static, AbsAssetUrl> + Sync + Send>,
-    pub on_status: Arc<dyn Fn(String) -> BoxFuture<'static, ()> + Sync + Send>,
-    pub on_error: Arc<dyn Fn(anyhow::Error) -> BoxFuture<'static, ()> + Sync + Send>,
+    pub(crate) assets: AssetCache,
+    pub(crate) files: FileCollection,
+    pub(crate) input_file_filter: Option<String>,
+    pub(crate) package_name: String,
+    pub(crate) in_root: AbsAssetUrl,
+    pub(crate) out_root: AbsAssetUrl,
+    pub(crate) write_file: Arc<dyn Fn(String, Vec<u8>) -> BoxFuture<'static, AbsAssetUrl> + Sync + Send>,
+    pub(crate) on_status: Arc<dyn Fn(String) -> BoxFuture<'static, ()> + Sync + Send>,
+    pub(crate) on_error: Arc<dyn Fn(anyhow::Error) -> BoxFuture<'static, ()> + Sync + Send>,
 }
 
 impl std::fmt::Debug for ProcessCtx {
@@ -157,7 +164,7 @@ impl std::fmt::Debug for ProcessCtx {
 }
 
 #[derive(Debug, Clone)]
-pub struct FileCollection(pub Arc<Vec<AbsAssetUrl>>);
+pub(crate) struct FileCollection(pub Arc<Vec<AbsAssetUrl>>);
 impl FileCollection {
     pub fn has_input_file(&self, url: &AbsAssetUrl) -> bool {
         self.0.iter().any(|x| x == url)

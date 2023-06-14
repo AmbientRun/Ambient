@@ -1,12 +1,8 @@
 [[pipelines]]
-
-[pipelines.pipeline]
 type = "Models"
 
-[pipelines.pipeline.collider]
+[pipelines.collider]
 type = "FromModel"
 
 [[pipelines]]
-
-[pipelines.pipeline]
 type = "Audio"

@@ -1,7 +1,6 @@
 [[pipelines]]
-
-[pipelines.pipeline]
 type = "Models"
+sources = ["Cube.glb"]
 
-[pipelines.pipeline.prefab_components]
+[pipelines.prefab_components]
 "asset_loading::is_the_best" = false

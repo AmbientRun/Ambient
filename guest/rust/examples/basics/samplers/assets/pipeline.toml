@@ -1,19 +1,17 @@
 [[pipelines]]
 sources = ["quad-nearest.glb"]
-
-[pipelines.pipeline]
 type = "Models"
 
-[[pipelines.pipeline.material_overrides]]
+[[pipelines.material_overrides]]
 
-[pipelines.pipeline.material_overrides.filter]
+[pipelines.material_overrides.filter]
 type = "ByName"
 name = "Material"
 
-[pipelines.pipeline.material_overrides.material]
+[pipelines.material_overrides.material]
 base_color = "checkerboard.png"
 
-[pipelines.pipeline.material_overrides.material.sampler]
+[pipelines.material_overrides.material.sampler]
 address_mode_u = "clamp-to-edge"
 address_mode_v = "clamp-to-edge"
 address_mode_w = "clamp-to-edge"
@@ -23,20 +21,18 @@ mipmap_filter = "nearest"
 
 [[pipelines]]
 sources = ["quad-linear.glb"]
-
-[pipelines.pipeline]
 type = "Models"
 
-[[pipelines.pipeline.material_overrides]]
+[[pipelines.material_overrides]]
 
-[pipelines.pipeline.material_overrides.filter]
+[pipelines.material_overrides.filter]
 type = "ByName"
 name = "Material"
 
-[pipelines.pipeline.material_overrides.material]
+[pipelines.material_overrides.material]
 base_color = "checkerboard.png"
 
-[pipelines.pipeline.material_overrides.material.sampler]
+[pipelines.material_overrides.material.sampler]
 address_mode_u = "clamp-to-edge"
 address_mode_v = "clamp-to-edge"
 address_mode_w = "clamp-to-edge"
