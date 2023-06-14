@@ -92,53 +92,6 @@ jobs:
       - name: Display target directory content
         run: tree --du -h target
 
-  golden-image-tests:
-    # Note: we must use a newer Ubuntu for golden image tests, because older
-    # llvmpipe versions can randomly fail.
-    runs-on: ubuntu-latest
-    env:
-      RUST_LOG: ambient_gpu=info
-    steps:
-      - name: Free up disk space
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-      - run: rustup target add --toolchain stable wasm32-wasi
-      - name: Install build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y tree libasound2-dev libglib2.0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-            libcairo-dev libgtk2.0-dev libsoup2.4-dev libgtk-3-dev libwebkit2gtk-4.0-dev xorg-dev ninja-build libxcb-render0-dev
-      - name: Install run (headless) dependencies
-        run: |
-          sudo add-apt-repository ppa:oibaf/graphics-drivers -y
-          sudo apt-get update
-          sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
-
-      - name: Rust cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          prefix-key: golden-images
-          cache-on-failure: true
-          workspaces: |
-            .
-            guest/rust
-      - name: Build Ambient
-        run: cargo build --release
-      - name: Run golden image tests
-        run: cargo cf golden-images check
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: screenshots
-          path: |
-            guest/rust/examples/*/*/screenshot.png
-            guest/rust/examples/*/*/fail_screenshot.png
-
   build-api-and-doc:
     runs-on: ubuntu-20.04
 
@@ -187,7 +140,9 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ambient-${{ matrix.os }}
-          path: target/release/ambient*
+          path: |
+            target/release/ambient
+            target/release/ambient.exe
 
   build-guest-rust:
     strategy:
@@ -208,6 +163,38 @@ jobs:
       - name: Build guest/rust
         run: cd guest/rust && cargo build --workspace
 
+  golden-image-tests:
+    needs: build
+    # Note: we must use a newer Ubuntu for golden image tests, because older
+    # llvmpipe versions can randomly fail.
+    runs-on: ubuntu-latest
+    env:
+      RUST_LOG: ambient_gpu=info
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - run: rustup target add --toolchain stable wasm32-wasi
+      - name: Download ambient executable
+        uses: actions/download-artifact@v3
+        with:
+          name: ambient-${{ matrix.os }}
+      - run: chmod a+x ambient
+      - name: Install run (headless) dependencies
+        run: |
+          sudo add-apt-repository ppa:oibaf/graphics-drivers -y
+          sudo apt-get update
+          sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
+
+      - name: Run golden image tests
+        run: cargo cf golden-images --ambient-path=./ambient check
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: screenshots
+          path: |
+            guest/rust/examples/*/*/screenshot.png
+            guest/rust/examples/*/*/fail_screenshot.png
+
   test-new-project-works:
     needs: build
     strategy:
@@ -225,7 +212,6 @@ jobs:
       - uses: actions/checkout@v3
       - name: Download ambient executable
         uses: actions/download-artifact@v3
-        id: download
         with:
           name: ambient-${{ matrix.os }}
       - run: chmod a+x ambient
