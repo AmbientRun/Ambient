@@ -31,6 +31,10 @@ pub struct GoldenImages {
     #[arg(long)]
     prefix: Option<String>,
 
+    /// Path to the ambient executable
+    #[arg(long)]
+    ambient_path: Option<String>,
+
     /// Selects testing mode
     #[command(subcommand)]
     mode: Mode,
@@ -50,7 +54,15 @@ pub(crate) async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     // Get tests.
     let tests = tokio::spawn(parse_tests_from_manifest());
 
-    run("Build ambient", build_package, &["ambient"], true).await?;
+    if gi.ambient_path.is_none() {
+        run("Build ambient", "", build_package, &["ambient"], true).await?;
+    }
+
+    let ambient_path = gi
+        .ambient_path
+        .as_ref()
+        .map(|x| x as &str)
+        .unwrap_or("./target/release/ambient");
 
     let tests = tests.await??;
 
@@ -75,14 +87,14 @@ pub(crate) async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     }
 
     // Build tests.
-    run("Building", build_tests, &tests, true).await?;
+    run("Building", ambient_path, build_tests, &tests, true).await?;
 
     match gi.mode {
         Mode::Update => {
-            run("Updating", update_tests, &tests, true).await?;
+            run("Updating", ambient_path, update_tests, &tests, true).await?;
         }
         Mode::Check => {
-            run("Checking", check_tests, &tests[..], true)
+            run("Checking", ambient_path, check_tests, &tests[..], true)
                 .await
                 .context(
                     "Checking failed, possible causes:\n \
@@ -121,7 +133,7 @@ async fn parse_tests_from_manifest() -> anyhow::Result<Vec<String>> {
     Ok(manifest.tests)
 }
 
-fn build_package(_i: usize, name: &str) -> (&'static str, Vec<String>) {
+fn build_package(_i: usize, _: &str, name: &str) -> (String, Vec<String>) {
     let args = vec![
         "build".to_string(),
         "--release".to_string(),
@@ -129,18 +141,18 @@ fn build_package(_i: usize, name: &str) -> (&'static str, Vec<String>) {
         name.to_string(),
     ];
 
-    ("cargo", args)
+    ("cargo".to_string(), args)
 }
 
-fn build_tests(_i: usize, name: &str) -> (&'static str, Vec<String>) {
+fn build_tests(_i: usize, ambient_path: &str, name: &str) -> (String, Vec<String>) {
     let test_path = format!("{TEST_BASE_PATH}/{name}");
 
     let args = ["build".to_string(), "--release".to_string(), test_path];
 
-    ("./target/release/ambient", args.to_vec())
+    (ambient_path.to_string(), args.to_vec())
 }
 
-fn update_tests(i: usize, name: &str) -> (&'static str, Vec<String>) {
+fn update_tests(i: usize, ambient_path: &str, name: &str) -> (String, Vec<String>) {
     let test_path = format!("{TEST_BASE_PATH}/{name}");
     let quic_port = (9000 + i as u16).to_string();
     let http_port = (10000 + i as u16).to_string();
@@ -166,10 +178,10 @@ fn update_tests(i: usize, name: &str) -> (&'static str, Vec<String>) {
         "30.0".to_string(),
     ];
 
-    ("./target/release/ambient", args)
+    (ambient_path.to_string(), args)
 }
 
-fn check_tests(i: usize, name: &str) -> (&'static str, Vec<String>) {
+fn check_tests(i: usize, ambient_path: &str, name: &str) -> (String, Vec<String>) {
     let test_path = format!("{TEST_BASE_PATH}/{name}");
     let quic_port = (9000 + i as u16).to_string();
     let http_port = (10000 + i as u16).to_string();
@@ -190,12 +202,13 @@ fn check_tests(i: usize, name: &str) -> (&'static str, Vec<String>) {
         "30.0".to_string(),
     ];
 
-    ("./target/release/ambient", args.to_vec())
+    (ambient_path.to_string(), args.to_vec())
 }
 
 async fn run<S: AsRef<str>>(
     name: impl Into<Cow<'static, str>>,
-    runner: impl Fn(usize, &str) -> (&'static str, Vec<String>),
+    ambient_path: &str,
+    runner: impl Fn(usize, &str, &str) -> (String, Vec<String>),
     tests: &[S],
     parallel: bool,
 ) -> anyhow::Result<()> {
@@ -215,10 +228,13 @@ async fn run<S: AsRef<str>>(
             pb.set_in_flight(test_name);
             let start_time = Instant::now();
 
-            let (cmd, args) = runner(i, test_name);
+            let (cmd, args) = runner(i, ambient_path, test_name);
 
             async move {
-                let sh_cmd = [cmd].into_iter().chain(args.iter().map(|v| &**v)).join(" ");
+                let sh_cmd = [&cmd as &str]
+                    .into_iter()
+                    .chain(args.iter().map(|v| &**v))
+                    .join(" ");
 
                 let output = Command::new(cmd)
                     .args(args)
