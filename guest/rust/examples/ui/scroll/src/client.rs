@@ -1,26 +1,38 @@
 use ambient_api::prelude::*;
 
 #[element_component]
-fn App(hooks: &mut Hooks) -> Element {
+fn App(_hooks: &mut Hooks) -> Element {
     WindowSized::el(vec![ScrollArea::el(
         ScrollAreaSizing::FitParentWidth,
         FlowColumn::el([
             Text::el("1 Test Test Test").header_style(),
             Text::el("2 Test Test Test").header_style(),
             Text::el("3 Test Test Test").header_style(),
-            // ScrollArea::el(
-            //     ScrollAreaSizing::FitChildrenWidth,
-            //     FlowColumn::el([
-            //         Text::el("ScrollAreaSizing::FitChildrenWidth"),
-            //         Text::el("ScrollAreaSizing::FitChildrenWidth"),
-            //         Text::el("ScrollAreaSizing::FitChildrenWidth"),
-            //         Text::el("ScrollAreaSizing::FitChildrenWidth"),
-            //         Text::el("ScrollAreaSizing::FitChildrenWidth"),
-            //         Text::el("ScrollAreaSizing::FitChildrenWidth"),
-            //         Text::el("ScrollAreaSizing::FitChildrenWidth"),
-            //         Text::el("ScrollAreaSizing::FitChildrenWidth"),
-            //     ]),
-            // ),
+            UIBase::el()
+                .with(height(), 100.) // specified height
+                .with(width(), 300.) // specified width
+                // .with(background_color(), vec4(0., 0., 0.3, 0.6))
+                .children(vec![ScrollArea::el(
+                    ScrollAreaSizing::FitChildrenWidth,
+                    FlowColumn::el([
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                        Text::el("ScrollAreaSizing::FitChildrenWidth"),
+                    ]),
+                )]),
             Text::el("4 Test Test Test").header_style(),
             Text::el("5 Test Test Test").header_style(),
             Text::el("6 Test Test Test").header_style(),

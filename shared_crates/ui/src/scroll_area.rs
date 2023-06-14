@@ -1,5 +1,5 @@
 //! Defines a scroll area.
-use ambient_element::{element_component, to_owned, Element, ElementComponentExt, Group, Hooks};
+use ambient_element::{element_component, to_owned, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::{
         app::window_scale_factor,
@@ -42,8 +42,6 @@ pub fn ScrollArea(
     inner: Element,
 ) -> Element {
     let (scroll, set_scroll) = hooks.use_state(0.);
-    let (_inner_size, set_inner_size) = hooks.use_state(Vec2::ZERO);
-    let (_outer_size, _set_outer_size) = hooks.use_state(Vec2::ZERO);
     let (ratio, _set_ratio) = hooks.use_state_with(|world| {
         let r = world.resource(window_scale_factor()).clone();
         r as f32
@@ -64,19 +62,16 @@ pub fn ScrollArea(
         move |world| {
             if let Some(id) = *id.lock() {
                 let number = world.get(id, mouse_over()).unwrap_or(0);
+                // println!("scrollarea mouse over {} count: {:?}", id, number);
                 *mouse_over_count.lock() = number;
                 let canvas_local_to_world = world.get(id, local_to_world()).unwrap();
                 let (_, _, pos_world) = Mat4::to_scale_rotation_translation(&canvas_local_to_world);
                 set_canvas_offset(vec2(pos_world.x, pos_world.y));
 
                 let p = world.get(id, parent());
-                // println!("scrollarea id {:?} ", id);
-                // println!("scrollarea parent id {:?}", parent_id);
                 if let Ok(parent_id) = p {
-                    // let parent_id = p.unwrap();
                     let w = world.get(parent_id, width());
                     let h = world.get(parent_id, height());
-                    // println!("parent id {:?} w: {:?}", parent_id, w);
                     if let Ok(w) = w {
                         set_min_width(w);
                     } else {
@@ -87,13 +82,6 @@ pub fn ScrollArea(
                     } else {
                         println!("no height");
                     }
-
-                    // let canvas_w = world.get(id, width());
-                    // let canvas_h = world.get(id, height());
-                    // println!("canvas id {:?} w: {:?} h {:?}", id, canvas_w, canvas_h);
-                } else {
-                    // scroll area is in root
-                    // use WindowSized
                 }
             }
         }
@@ -113,12 +101,12 @@ pub fn ScrollArea(
     });
     match sizing {
         ScrollAreaSizing::FitChildrenWidth => {
-            let canvas = UIBase
-                .el()
+            let canvas = UIBase::el()
+                // Rectangle::el()
+                // .with(background_color(), vec4(0.0, 0.3, 0.0, 0.6))
                 .init_default(children())
                 .init(mouse_pickable_min(), Vec3::ZERO)
                 .init(mouse_pickable_max(), Vec3::ZERO)
-                .with(background_color(), vec4(0.3, 0.0, 0.2, 1.0))
                 .children(vec![
                     // TODO: For some reason it didn't work to set the translation on self.0 directly
                     // so had to introduce a Flow in between
@@ -159,10 +147,26 @@ pub fn ScrollArea(
                             })
                             .with(translation(), vec3(0., scroll, 0.)),
                         cb(move |size| {
-                            // println!("messured inner size: {:?}", size);
-                            set_inner_size(size);
+                            println!("messured inner size: {:?}", size);
+                            if size.y - min_height > 0.0 {
+                                set_scroll_height(size.y - min_height);
+                            } else {
+                                set_scroll_height(0.0);
+                            }
                         }),
                     ),
+                    if scroll_height > 0.0 {
+                        Rectangle::el()
+                            .with(width(), 5.)
+                            .with(height(), bar_height)
+                            .with(border_radius(), Vec4::ONE * 4.0)
+                            .with(background_color(), vec4(0.6, 0.6, 0.6, 1.0))
+                            .with_default(local_to_parent())
+                            .with_default(local_to_world())
+                            .with(translation(), vec3(min_width - 5.0, -offset, 0.1))
+                    } else {
+                        UIBase.el()
+                    },
                 ])
                 .on_spawned({
                     to_owned![id];
@@ -172,19 +176,11 @@ pub fn ScrollArea(
                 })
                 .with(height(), min_height)
                 .with(width(), min_width);
-            let scroll_bar = Rectangle::el()
-                .with(width(), 5.)
-                .with(height(), bar_height)
-                .with(border_radius(), Vec4::ONE * 4.0)
-                .with(background_color(), vec4(0.6, 0.6, 0.6, 1.0))
-                .with_default(local_to_parent())
-                .with_default(local_to_world())
-                .with(translation(), vec3(min_width - 5.0, -offset, 0.1));
-            Group::el([canvas, scroll_bar])
+            canvas
         }
         ScrollAreaSizing::FitParentWidth => {
-            let canvas = UIBase
-                .el()
+            let canvas = UIBase::el()
+                // .with(background_color(), vec4(0.3, 0.0, 0.0, 0.6))
                 .on_spawned({
                     to_owned![id];
                     move |_world, canvas_id, _| {
@@ -241,8 +237,6 @@ pub fn ScrollArea(
                             })
                             .with(translation(), vec3(0., scroll, 0.)),
                         cb(move |size| {
-                            // println!("messured inner size: {:?}", size);
-                            set_inner_size(size);
                             if size.y - min_height > 0.0 {
                                 set_scroll_height(size.y - min_height);
                             } else {
