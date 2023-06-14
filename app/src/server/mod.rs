@@ -1,4 +1,9 @@
-use std::{collections::HashMap, net::SocketAddr, path::Path, sync::Arc};
+use std::{
+    collections::HashMap,
+    net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr},
+    path::Path,
+    sync::Arc,
+};
 
 use ambient_core::{abs_time, app_start_time, asset_cache, dtime, name, no_sync, project_name};
 use ambient_ecs::{
@@ -27,7 +32,7 @@ use axum::{
 use tower_http::{cors::CorsLayer, services::ServeDir};
 
 use crate::{
-    cli::{Cli, Commands},
+    cli::{Cli, Commands, HostCli},
     shared,
 };
 
@@ -91,7 +96,23 @@ pub fn start(
         .http_interface_port
         .unwrap_or(HTTP_INTERFACE_PORT);
 
-    let public_host = addr.ip();
+    let public_host = match (cli.host().as_ref(), addr.ip()) {
+        // use public_host if specified in cli
+        (
+            Some(&HostCli {
+                public_host: Some(host),
+                ..
+            }),
+            _,
+        ) => host.clone(),
+
+        // if the bind address is not specified (0.0.0.0, ::0) then use localhost
+        (_, IpAddr::V4(Ipv4Addr::UNSPECIFIED)) => IpAddr::V4(Ipv4Addr::LOCALHOST).to_string(),
+        (_, IpAddr::V6(Ipv6Addr::UNSPECIFIED)) => IpAddr::V6(Ipv6Addr::LOCALHOST).to_string(),
+
+        // otherwise use the address that the server is binding to
+        (_, addr) => addr.to_string(),
+    };
 
     // here the key is inserted into the asset cache
     if let Ok(Some(project_path_fs)) = project_path.to_file_path() {
