@@ -4,7 +4,10 @@ use ambient_asset_cache::SyncAssetKey;
 use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use anyhow::Context;
 use context::PipelineCtx;
-use futures::{future::{BoxFuture, ready}, Stream, StreamExt, TryStreamExt, stream};
+use futures::{
+    future::{ready, BoxFuture},
+    stream, Stream, StreamExt, TryStreamExt,
+};
 use image::ImageFormat;
 use out_asset::{OutAsset, OutAssetContent, OutAssetPreview};
 use serde::{Deserialize, Serialize};
@@ -95,7 +98,7 @@ fn get_pipelines(
                 .with_context(|| format!("Failed to read pipeline {:?}", file.0.path()))?;
 
             Ok((file, schema))
-        }) 
+        })
 }
 
 pub async fn process_pipelines(ctx: &ProcessCtx) -> anyhow::Result<Vec<OutAsset>> {
@@ -103,11 +106,13 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> anyhow::Result<Vec<OutAsset>
 
     get_pipelines(ctx)
         .map_ok(|(file, pipelines)| {
-            futures::stream::iter(pipelines.pipelines.into_iter().enumerate().map(|(i, pipeline)| {
-                let mut file = file.clone();
-                file.0.set_fragment(Some(&i.to_string()));
-                Ok((file, pipeline)) as anyhow::Result<_>
-            }))
+            futures::stream::iter(pipelines.pipelines.into_iter().enumerate().map(
+                |(i, pipeline)| {
+                    let mut file = file.clone();
+                    file.0.set_fragment(Some(&i.to_string()));
+                    Ok((file, pipeline)) as anyhow::Result<_>
+                },
+            ))
         })
         .try_flatten()
         .map_ok(|(pipeline_file, pipeline): (AbsAssetUrl, Pipeline)| {
@@ -145,7 +150,8 @@ pub struct ProcessCtx {
     pub(crate) package_name: String,
     pub(crate) in_root: AbsAssetUrl,
     pub(crate) out_root: AbsAssetUrl,
-    pub(crate) write_file: Arc<dyn Fn(String, Vec<u8>) -> BoxFuture<'static, AbsAssetUrl> + Sync + Send>,
+    pub(crate) write_file:
+        Arc<dyn Fn(String, Vec<u8>) -> BoxFuture<'static, AbsAssetUrl> + Sync + Send>,
     pub(crate) on_status: Arc<dyn Fn(String) -> BoxFuture<'static, ()> + Sync + Send>,
     pub(crate) on_error: Arc<dyn Fn(anyhow::Error) -> BoxFuture<'static, ()> + Sync + Send>,
 }
