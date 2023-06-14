@@ -10,6 +10,7 @@
 - [Setting up your IDE](user/setting_up_ide.md)
 - [Overview](user/overview.md)
 - [Getting started](user/getting_started.md)
+- [Running examples](user/running_examples.md)
 - [API](user/api.md)
 - [Debugging](user/debugging.md)
 - [Profiling](user/profiling.md)

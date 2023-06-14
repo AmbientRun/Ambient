@@ -1,11 +1,5 @@
 # API
 
-The Ambient API is what developers use to interact with Ambient. It offers full access to Ambient's ECS, gameplay behavior, and more.
-
-The easiest way to get started is by looking at some of the [examples](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples), which detail individual aspects of Ambient and its API. These can be combined to produce more complex functionality.
-
-Opening the `guest/rust` folder in VS Code or another Cargo/Rust-aware IDE will give you auto-completion and other related functionality.
-
 ## Reference documentation
 
 The full API reference for Ambient can be found on [docs.rs](https://docs.rs/ambient_api).
