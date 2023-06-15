@@ -274,7 +274,10 @@ fn main() -> anyhow::Result<()> {
     // If this is just a deploy then deploy and exit
     #[cfg(feature = "deploy")]
     if let Commands::Deploy {
-        token, api_server, ..
+        token,
+        api_server,
+        force_upload,
+        ..
     } = &cli.command
     {
         let Some(auth_token) = token else {
@@ -292,6 +295,7 @@ fn main() -> anyhow::Result<()> {
             auth_token,
             project_fs_path,
             manifest,
+            *force_upload,
         ))?;
         log::info!("Version {} deployed successfully", version_id);
         return Ok(());
