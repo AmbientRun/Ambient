@@ -23,7 +23,7 @@ pub mod asset_content {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DeployAssetRequest {
     #[prost(string, tag = "1")]
-    pub project_id: ::prost::alloc::string::String,
+    pub ember_id: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "2")]
     pub content: ::core::option::Option<AssetContent>,
 }

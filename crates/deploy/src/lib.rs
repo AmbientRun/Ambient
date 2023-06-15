@@ -37,7 +37,7 @@ async fn asset_requests_from_file_path(
     Ok(content
         .chunks(CHUNK_SIZE)
         .map(|chunk| DeployAssetRequest {
-            project_id: ember_id.as_ref().into(),
+            ember_id: ember_id.as_ref().into(),
             content: Some(AssetContent {
                 path: path.clone(),
                 total_size,
@@ -47,7 +47,7 @@ async fn asset_requests_from_file_path(
         .collect())
 }
 
-/// This takes the path to an Ambient project and deploys it. An Ambient project is expected to
+/// This takes the path to an Ambient ember and deploys it. An Ambient ember is expected to
 /// be already built.
 pub async fn deploy(
     runtime: &tokio::runtime::Runtime,
@@ -58,7 +58,7 @@ pub async fn deploy(
 ) -> anyhow::Result<String> {
     let ember_id = manifest.ember.id.to_string();
     log::info!(
-        "Deploying project `{}` ({})",
+        "Deploying ember `{}` ({})",
         ember_id,
         manifest
             .ember

@@ -12,7 +12,7 @@ message AssetContent {
 }
 
 message DeployAssetRequest {
-  string projectId = 1;
+  string emberId = 1;
   AssetContent content = 2;
 }
 
