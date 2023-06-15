@@ -5,6 +5,7 @@ pub mod deploy_proto {
 use std::{path::Path, str::FromStr};
 
 use ambient_project::Manifest;
+use tokio_stream::StreamExt;
 use tonic::{
     codegen::{CompressionEncoding, InterceptedService},
     metadata::MetadataValue,
@@ -13,11 +14,15 @@ use tonic::{
 };
 use walkdir::WalkDir;
 
-use deploy_proto::{deployer_client::DeployerClient, DeployAssetRequest, DeployAssetsResponse};
+use deploy_proto::{
+    asset_content::ContentDescription, deploy_asset_response::Message,
+    deployer_client::DeployerClient, AssetContent, DeployAssetRequest, VersionDeployed,
+};
 
-const CHUNK_SIZE: usize = 1024 * 1024 * 3;
+const CHUNK_SIZE: usize = 1024 * 1024 * 3; // 3MB
 
 async fn asset_requests_from_file_path(
+    project_id: impl AsRef<str>,
     base_path: impl AsRef<Path>,
     file_path: impl AsRef<Path>,
 ) -> anyhow::Result<Vec<DeployAssetRequest>> {
@@ -32,9 +37,12 @@ async fn asset_requests_from_file_path(
     Ok(content
         .chunks(CHUNK_SIZE)
         .map(|chunk| DeployAssetRequest {
-            path: path.clone(),
-            total_size,
-            content: chunk.to_vec(),
+            project_id: project_id.as_ref().into(),
+            content: Some(AssetContent {
+                path: path.clone(),
+                total_size,
+                content_description: Some(ContentDescription::Chunk(chunk.to_vec())),
+            }),
         })
         .collect())
 }
@@ -47,10 +55,11 @@ pub async fn deploy(
     auth_token: &str,
     path: impl AsRef<Path>,
     manifest: &Manifest,
-) -> anyhow::Result<DeployAssetsResponse> {
+) -> anyhow::Result<String> {
+    let project_id = manifest.project.id.to_string();
     log::info!(
         "Deploying project `{}` ({})",
-        manifest.project.id,
+        project_id,
         manifest
             .project
             .name
@@ -115,17 +124,20 @@ pub async fn deploy(
     let (tx, rx) = flume::bounded::<DeployAssetRequest>(16);
     let base_path = path.as_ref().to_owned();
     let handle = runtime.spawn(async move {
-        for file_path in file_paths {
-            let requests = asset_requests_from_file_path(&base_path, file_path).await?;
+        for (file_idx, file_path) in file_paths.into_iter().enumerate() {
+            let requests = asset_requests_from_file_path(&project_id, &base_path, file_path).await?;
             let count = requests.len();
             for (idx, request) in requests.into_iter().enumerate() {
+                let Some(content) = request.content.as_ref() else { unreachable!() };
+                let Some(ContentDescription::Chunk(chunk)) = content.content_description.as_ref() else { unreachable!() };
                 log::debug!(
-                    "Deploying asset {} {}B/{}B ({}/{})",
-                    request.path,
-                    request.content.len(),
-                    request.total_size,
+                    "Deploying asset #{} chunk {}/{} {} {}B/{}B",
+                    file_idx,
                     idx + 1,
-                    count
+                    count,
+                    content.path,
+                    chunk.len(),
+                    content.total_size,
                 );
                 tx.send_async(request).await?;
             }
@@ -134,9 +146,40 @@ pub async fn deploy(
     });
 
     let response = client.deploy_assets(rx.into_stream()).await?;
+    let mut response_stream = response.into_inner();
+    let mut version = None;
+    while let Some(resp) = response_stream.next().await {
+        match resp {
+            Ok(resp) => {
+                log::debug!("Deployed asset {:?}", resp);
+                match resp.message {
+                    Some(Message::Finished(VersionDeployed { id })) => {
+                        if version.is_some() {
+                            log::warn!("Received multiple version deployed messages");
+                        }
+                        version = Some(id);
+                    }
+                    Some(Message::Error(err)) => {
+                        log::error!("Received error message: {:?}", err);
+                        handle.abort();
+                    }
+                    Some(Message::MissingPath(path)) => {
+                        // this shouldn't happen as we don't send MD5 hashes (used for differential uploads)
+                        log::warn!("Received missing path message for asset: {:?}", path);
+                    }
+                    None => {
+                        log::warn!("Received empty message");
+                    }
+                }
+            }
+            Err(err) => {
+                log::error!("Failed to deploy asset: {:?}", err);
+            }
+        }
+    }
 
     // wait for the file reading task to finish to handle any errors
     handle.await??;
 
-    Ok(response.into_inner())
+    version.ok_or_else(|| anyhow::anyhow!("No version returned from deploy"))
 }

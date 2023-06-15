@@ -2,16 +2,32 @@ syntax = "proto3";
 
 package ambient.run.deploy;
 
-message DeployAssetRequest {
+message AssetContent {
   string path = 1;
-  bytes content = 2;
-  uint64 totalSize = 3;
+  uint64 totalSize = 2;
+  oneof contentDescription {
+    bytes md5 = 3;
+    bytes chunk = 4;
+  }
 }
 
-message DeployAssetsResponse {
+message DeployAssetRequest {
+  string projectId = 1;
+  AssetContent content = 2;
+}
+
+message VersionDeployed {
   string id = 1;
 }
 
+message DeployAssetResponse {
+  oneof message {
+    VersionDeployed finished = 1;
+    string error = 2;
+    string missingPath = 3;
+  }
+}
+
 service Deployer {
-  rpc DeployAssets(stream DeployAssetRequest) returns (DeployAssetsResponse) {}
+  rpc DeployAssets(stream DeployAssetRequest) returns (stream DeployAssetResponse) {}
 }

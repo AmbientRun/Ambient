@@ -1,18 +1,56 @@
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct DeployAssetRequest {
+pub struct AssetContent {
     #[prost(string, tag = "1")]
     pub path: ::prost::alloc::string::String,
-    #[prost(bytes = "vec", tag = "2")]
-    pub content: ::prost::alloc::vec::Vec<u8>,
-    #[prost(uint64, tag = "3")]
+    #[prost(uint64, tag = "2")]
     pub total_size: u64,
+    #[prost(oneof = "asset_content::ContentDescription", tags = "3, 4")]
+    pub content_description: ::core::option::Option<asset_content::ContentDescription>,
+}
+/// Nested message and enum types in `AssetContent`.
+pub mod asset_content {
+    #[allow(clippy::derive_partial_eq_without_eq)]
+    #[derive(Clone, PartialEq, ::prost::Oneof)]
+    pub enum ContentDescription {
+        #[prost(bytes, tag = "3")]
+        Md5(::prost::alloc::vec::Vec<u8>),
+        #[prost(bytes, tag = "4")]
+        Chunk(::prost::alloc::vec::Vec<u8>),
+    }
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct DeployAssetsResponse {
+pub struct DeployAssetRequest {
+    #[prost(string, tag = "1")]
+    pub project_id: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "2")]
+    pub content: ::core::option::Option<AssetContent>,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct VersionDeployed {
     #[prost(string, tag = "1")]
     pub id: ::prost::alloc::string::String,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct DeployAssetResponse {
+    #[prost(oneof = "deploy_asset_response::Message", tags = "1, 2, 3")]
+    pub message: ::core::option::Option<deploy_asset_response::Message>,
+}
+/// Nested message and enum types in `DeployAssetResponse`.
+pub mod deploy_asset_response {
+    #[allow(clippy::derive_partial_eq_without_eq)]
+    #[derive(Clone, PartialEq, ::prost::Oneof)]
+    pub enum Message {
+        #[prost(message, tag = "1")]
+        Finished(super::VersionDeployed),
+        #[prost(string, tag = "2")]
+        Error(::prost::alloc::string::String),
+        #[prost(string, tag = "3")]
+        MissingPath(::prost::alloc::string::String),
+    }
 }
 /// Generated client implementations.
 pub mod deployer_client {
@@ -105,7 +143,7 @@ pub mod deployer_client {
                 Message = super::DeployAssetRequest,
             >,
         ) -> std::result::Result<
-            tonic::Response<super::DeployAssetsResponse>,
+            tonic::Response<tonic::codec::Streaming<super::DeployAssetResponse>>,
             tonic::Status,
         > {
             self.inner
@@ -124,7 +162,7 @@ pub mod deployer_client {
             let mut req = request.into_streaming_request();
             req.extensions_mut()
                 .insert(GrpcMethod::new("ambient.run.deploy.Deployer", "DeployAssets"));
-            self.inner.client_streaming(req, path, codec).await
+            self.inner.streaming(req, path, codec).await
         }
     }
 }
