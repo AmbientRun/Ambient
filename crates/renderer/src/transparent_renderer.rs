@@ -223,11 +223,13 @@ impl TransparentRenderer {
                 );
                 // entry.shader.pipeline.bind(render_pass, MATERIAL_BIND_GROUP, entry.material.bind());
 
-                set_scissors_safe(
+                if !set_scissors_safe(
                     render_pass,
                     render_target_size,
                     world.get(entry.id, scissors()).ok(),
-                );
+                ) {
+                    continue;
+                }
 
                 render_pass.draw_indexed(
                     metadata.index_offset..(metadata.index_offset + metadata.index_count),
