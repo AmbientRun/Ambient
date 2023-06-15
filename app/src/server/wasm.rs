@@ -58,7 +58,7 @@ pub async fn initialize(
             )
             .map_err(anyhow::Error::msg)?;
 
-            let description = manifest.project.description.clone().unwrap_or_default();
+            let description = manifest.ember.description.clone().unwrap_or_default();
             let description = if is_sole_module {
                 description
             } else {

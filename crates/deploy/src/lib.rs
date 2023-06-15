@@ -39,12 +39,12 @@ pub async fn deploy(
 ) -> anyhow::Result<DeployAssetsResponse> {
     log::info!(
         "Deploying project `{}` ({})",
-        manifest.project.id,
+        manifest.ember.id,
         manifest
-            .project
+            .ember
             .name
             .as_deref()
-            .unwrap_or_else(|| manifest.project.id.as_ref())
+            .unwrap_or_else(|| manifest.ember.id.as_ref())
     );
 
     // set up TLS config if needed

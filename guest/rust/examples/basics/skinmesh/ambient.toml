@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "skinmesh"
 sname = "Skinmesh"
 version = "0.0.1"

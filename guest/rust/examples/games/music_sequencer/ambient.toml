@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "music_sequencer"
 name = "Music sequencer"
 version = "0.0.1"

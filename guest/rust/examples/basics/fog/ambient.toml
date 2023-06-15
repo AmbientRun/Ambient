@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "fog"
 name = "Fog"
 version = "0.0.1"

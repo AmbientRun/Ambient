@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "third_person_camera"
 name = "Third person camera"
 version = "0.0.1"

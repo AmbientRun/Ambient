@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "decals"
 name = "Decals"
 version = "0.0.1"

@@ -58,7 +58,7 @@ pub fn start(
                 .unwrap_or("http://proxy.ambient.run/proxy".to_string()),
             project_path: project_path.clone(),
             pre_cache_assets: host_cli.proxy_pre_cache_assets,
-            project_id: manifest.project.id.to_string(),
+            project_id: manifest.ember.id.to_string(),
         }
     });
 
@@ -141,7 +141,7 @@ pub fn start(
 
         // Keep track of the project name
         let name = manifest
-            .project
+            .ember
             .name
             .clone()
             .unwrap_or_else(|| "Ambient".into());
