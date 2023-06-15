@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "player"
 name = "Player"
 description = "Components that are attached to player entities."

@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "animation"
 name = "Animation"
 description = "Components relating to animations."

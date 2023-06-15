@@ -2,13 +2,21 @@ use std::path::PathBuf;
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 use crate::{Component, Concept, Enum, Identifier, ItemPathBuf, Message, Version};
+
+#[derive(Error, Debug, PartialEq)]
+pub enum ManifestParseError {
+    #[error("manifest was not valid TOML")]
+    TomlError(#[from] toml::de::Error),
+    #[error("manifest contains a project section; projects have been renamed to embers")]
+    ProjectRenamedToEmberError,
+}
 
 #[derive(Deserialize, Clone, Debug, Default, PartialEq, Serialize)]
 pub struct Manifest {
     #[serde(default)]
-    #[serde(alias = "project")]
     pub ember: Ember,
     #[serde(default)]
     pub build: Build,
@@ -28,13 +36,13 @@ pub struct Manifest {
     pub dependencies: IndexMap<ItemPathBuf, Dependency>,
 }
 impl Manifest {
-    pub fn parse(manifest: &str) -> Result<Self, toml::de::Error> {
-        let parsed_manifest = toml::from_str(manifest)?;
+    pub fn parse(manifest: &str) -> Result<Self, ManifestParseError> {
         let raw = toml::from_str::<toml::Table>(manifest)?;
         if raw.contains_key("project") {
-            log::warn!("The `project` key is deprecated. Please use `ember` instead.");
+            return Err(ManifestParseError::ProjectRenamedToEmberError);
         }
-        Ok(parsed_manifest)
+
+        Ok(toml::from_str(manifest)?)
     }
 }
 
@@ -84,7 +92,7 @@ mod tests {
 
     use crate::{
         Build, BuildRust, Component, ComponentType, Concept, ContainerType, Dependency, Ember,
-        Enum, Identifier, ItemPathBuf, Manifest, Version, VersionSuffix,
+        Enum, Identifier, ItemPathBuf, Manifest, ManifestParseError, Version, VersionSuffix,
     };
 
     fn i(s: &str) -> Identifier {
@@ -119,7 +127,7 @@ mod tests {
     }
 
     #[test]
-    fn can_parse_minimal_legacy_toml() {
+    fn will_fail_on_legacy_project_toml() {
         const TOML: &str = r#"
         [project]
         id = "test"
@@ -129,15 +137,7 @@ mod tests {
 
         assert_eq!(
             Manifest::parse(TOML),
-            Ok(Manifest {
-                ember: Ember {
-                    id: Identifier::new("test").unwrap(),
-                    name: Some("Test".to_string()),
-                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
-                    ..Default::default()
-                },
-                ..Default::default()
-            })
+            Err(ManifestParseError::ProjectRenamedToEmberError)
         )
     }
 

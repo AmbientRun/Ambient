@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "camera"
 name = "Camera"
 description = "Camera matrices, types, parameters, and more."

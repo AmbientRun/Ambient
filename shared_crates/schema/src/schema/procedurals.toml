@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "procedurals"
 name = "Procedurals"
 description = "Procedural asset functionality and related."

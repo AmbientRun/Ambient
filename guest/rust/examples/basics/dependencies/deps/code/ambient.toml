@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "deps-code"
 organization = "ambient"
 name = "Dependencies (Code)"

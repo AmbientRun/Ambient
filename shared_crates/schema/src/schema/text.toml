@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "text"
 name = "Text"
 description = "Text rendering."

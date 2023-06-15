@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "input"
 name = "Input"
 description = "Mouse, keyboard and controller input."

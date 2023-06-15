@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "rendering"
 name = "Rendering"
 description = "Rendering-related state, including global rendering parameters and per-entity state."

@@ -143,7 +143,7 @@ impl Semantic {
         file_provider: &dyn FileProvider,
         is_ambient: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
-        let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
+        let manifest = Manifest::parse(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename:?}"))?;
 
         let id = manifest.ember.id.clone();
@@ -163,12 +163,12 @@ impl Semantic {
         file_provider: &dyn FileProvider,
         is_ambient: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
-        let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
+        let manifest = Manifest::parse(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename:?}"))?;
 
         if manifest.ember.organization.is_none() {
             anyhow::bail!(
-                "file `{:?}` has no organization, which is required for a top-level ember",
+                "file {:?} has no organization, which is required for a top-level ember",
                 file_provider.full_path(filename)
             );
         }
@@ -176,7 +176,7 @@ impl Semantic {
         // Create an organization scope if necessary
         let organization_key = manifest.ember.organization.as_ref().with_context(|| {
             format!(
-                "file `{:?}` has no organization, which is required for a top-level ember",
+                "file {:?} has no organization, which is required for a top-level ember",
                 file_provider.full_path(filename)
             )
         })?;
