@@ -8,7 +8,7 @@ use anyhow::Context;
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
 pub struct Manifest {
     #[serde(default)]
-    pub project: Project,
+    pub ember: Ember,
     #[serde(default)]
     pub build: Build,
     #[serde(default)]
@@ -32,30 +32,30 @@ impl Manifest {
     }
 
     pub fn project_path(&self) -> IdentifierPathBuf {
-        self.project
+        self.ember
             .organization
             .iter()
-            .chain(std::iter::once(&self.project.id))
+            .chain(std::iter::once(&self.ember.id))
             .cloned()
             .collect()
     }
 
     fn resolve_imports(&mut self, directory: impl AsRef<Path>) -> anyhow::Result<()> {
         let mut new_includes = vec![];
-        for include in &self.project.includes {
+        for include in &self.ember.includes {
             let manifest = Manifest::from_file(directory.as_ref().join(include))?;
-            new_includes.extend(manifest.project.includes);
+            new_includes.extend(manifest.ember.includes);
             self.components.extend(manifest.components);
             self.concepts.extend(manifest.concepts);
             self.messages.extend(manifest.messages);
         }
-        self.project.includes.extend(new_includes);
+        self.ember.includes.extend(new_includes);
         Ok(())
     }
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
-pub struct Project {
+pub struct Ember {
     pub id: Identifier,
     pub name: Option<String>,
     pub version: Version,
@@ -135,14 +135,14 @@ mod tests {
     use std::collections::BTreeMap;
 
     use crate::{
-        Build, BuildRust, Component, ComponentType, Concept, Identifier, IdentifierPathBuf,
-        Manifest, Namespace, Project, Version, VersionSuffix,
+        Build, BuildRust, Component, ComponentType, Concept, Ember, Identifier, IdentifierPathBuf,
+        Manifest, Namespace, Version, VersionSuffix,
     };
 
     #[test]
     fn can_parse_tictactoe_toml() {
         const TOML: &str = r#"
-        [project]
+        [ember]
         id = "tictactoe"
         name = "Tic Tac Toe"
         version = "0.0.1"
@@ -160,7 +160,7 @@ mod tests {
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
-                project: Project {
+                ember: Ember {
                     id: Identifier::new("tictactoe").unwrap(),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
@@ -206,7 +206,7 @@ mod tests {
     #[test]
     fn can_parse_rust_build_settings() {
         const TOML: &str = r#"
-        [project]
+        [ember]
         id = "tictactoe"
         name = "Tic Tac Toe"
         version = "0.0.1"
@@ -218,7 +218,7 @@ mod tests {
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
-                project: Project {
+                ember: Ember {
                     id: Identifier::new("tictactoe").unwrap(),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
@@ -242,7 +242,7 @@ mod tests {
     #[test]
     fn can_parse_manifest_with_namespaces() {
         const TOML: &str = r#"
-        [project]
+        [ember]
         id = "tictactoe"
         name = "Tic Tac Toe"
         version = "0.0.1"
@@ -257,7 +257,7 @@ mod tests {
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
-                project: Project {
+                ember: Ember {
                     id: Identifier::new("tictactoe").unwrap(),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
@@ -311,7 +311,7 @@ mod tests {
         use toml::Value;
 
         const TOML: &str = r#"
-        [project]
+        [ember]
         id = "my_project"
         name = "My Project"
         version = "0.0.1"
@@ -330,7 +330,7 @@ mod tests {
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
-                project: Project {
+                ember: Ember {
                     id: Identifier::new("my_project").unwrap(),
                     name: Some("My Project".to_string()),
                     version: Version::new(0, 0, 1, VersionSuffix::Final),

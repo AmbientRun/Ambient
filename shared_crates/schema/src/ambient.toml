@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "runtime_components"
 name = "Runtime Components"
 version = "0.3.0-dev"

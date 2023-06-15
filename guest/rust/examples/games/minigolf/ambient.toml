@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "minigolf"
 name = "Minigolf"
 version = "0.0.1"

@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "flow_layout"
 name = "Flow Layout"
 version = "0.0.1"

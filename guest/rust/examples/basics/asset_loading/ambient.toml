@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "asset_loading"
 name = "Asset Loading"
 version = "0.0.1"

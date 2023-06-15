@@ -54,12 +54,12 @@ pub async fn build(
     tracing::info!(
         ?path,
         "Building project `{}` ({})",
-        manifest.project.id,
+        manifest.ember.id,
         manifest
-            .project
+            .ember
             .name
             .as_deref()
-            .unwrap_or_else(|| manifest.project.id.as_ref())
+            .unwrap_or_else(|| manifest.ember.id.as_ref())
     );
 
     ambient_ecs::ComponentRegistry::get_mut()
@@ -148,17 +148,17 @@ async fn build_rust_if_available(
 
     let toml = cargo_toml::Manifest::from_str(&tokio::fs::read_to_string(&cargo_toml_path).await?)?;
     match toml.package {
-        Some(package) if package.name == manifest.project.id.as_ref() => {}
+        Some(package) if package.name == manifest.ember.id.as_ref() => {}
         Some(package) => {
             anyhow::bail!(
                 "The name of the package in the Cargo.toml ({}) does not match the project's ID ({})",
                 package.name,
-                manifest.project.id
+                manifest.ember.id
             );
         }
         None => anyhow::bail!(
             "No [package] present in Cargo.toml for project {}",
-            manifest.project.id.as_ref()
+            manifest.ember.id.as_ref()
         ),
     }
 
@@ -167,7 +167,7 @@ async fn build_rust_if_available(
     for feature in &manifest.build.rust.feature_multibuild {
         for (path, bytecode) in rustc.build(
             project_path,
-            manifest.project.id.as_ref(),
+            manifest.ember.id.as_ref(),
             optimize,
             &[feature],
         )? {
