@@ -30,7 +30,7 @@ use crate::{
     shared,
 };
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
-use ambient_layout::{docking, padding, Borders};
+use ambient_layout::{docking, padding, width, Borders};
 
 pub mod player;
 mod wasm;
@@ -371,7 +371,7 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     Dock::el([
         if show_debug {
             MeasureSize::el(
-                FlowColumn::el([
+                Dock::el([
                     Button::new(if show_ecs { "\u{f137}" } else { "\u{f138}" }, move |_| {
                         set_show_ecs(!show_ecs)
                     })
@@ -380,7 +380,7 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                     .el(),
                     if show_ecs {
                         ScrollArea::el(
-                            ScrollAreaSizing::FitChildrenWidth,
+                            ScrollAreaSizing::FitParentWidth,
                             ECSEditor {
                                 world: Arc::new(InspectableAsyncWorld(cb({
                                     let state = state.clone();
@@ -397,6 +397,7 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                         Element::new()
                     },
                 ])
+                .with(width(), 500.)
                 .with(docking(), ambient_layout::Docking::Left)
                 .with_background(vec4(0., 0., 0., 1.))
                 .with(padding(), Borders::even(STREET).into()),

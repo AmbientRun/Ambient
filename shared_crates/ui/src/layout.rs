@@ -19,9 +19,9 @@ use ambient_guest_bridge::components::{
         layout_bookcase, layout_dock, layout_flow, orientation_horizontal, orientation_vertical,
         width,
     },
-    transform::{local_to_parent, translation},
+    transform::{local_to_parent, local_to_world, translation},
 };
-use glam::{vec2, vec3, Vec2};
+use glam::{vec2, vec3, Mat4, Vec2, Vec3};
 use itertools::Itertools;
 
 #[derive(Debug, Clone)]
@@ -216,6 +216,30 @@ pub fn MeasureSize(
             if current != next {
                 on_change(next);
                 set_current(next);
+            }
+        }
+    });
+    inner.on_spawned(move |_, id, _| set_id(Some(id)))
+}
+
+/// Measures the absolute position of its inner element and calls the callback when it changes.
+#[element_component]
+pub fn MeasureAbsolutePosition(
+    hooks: &mut Hooks,
+    /// The element to measure.
+    inner: Element,
+    /// The callback to call when the absolute position changes.
+    on_change: Cb<dyn Fn(Vec3) + Sync + Send + 'static>,
+) -> Element {
+    let (id, set_id) = hooks.use_state(None);
+    let (current, set_current) = hooks.use_state(Vec3::ZERO);
+    hooks.use_frame(move |world| {
+        if let Some(id) = id {
+            let ltw = world.get(id, local_to_world()).unwrap();
+            let (_, _, abs_pos) = Mat4::to_scale_rotation_translation(&ltw);
+            if current != abs_pos {
+                on_change(abs_pos);
+                set_current(abs_pos);
             }
         }
     });
