@@ -21,7 +21,12 @@ pub struct Manifest {
 }
 impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, toml::de::Error> {
-        toml::from_str(manifest)
+        let parsed_manifest = toml::from_str(manifest)?;
+        let raw = toml::from_str::<toml::Table>(manifest)?;
+        if raw.contains_key("project") {
+            log::warn!("The `project` key is deprecated. Please use `ember` instead.");
+        }
+        Ok(parsed_manifest)
     }
     pub fn from_file(path: impl AsRef<Path>) -> anyhow::Result<Self> {
         let mut res = Self::parse(
