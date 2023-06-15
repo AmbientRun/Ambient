@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "raw-text"
 organization = "ambient"
 name = "Raw Text"

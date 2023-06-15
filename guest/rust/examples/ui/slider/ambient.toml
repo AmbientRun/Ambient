@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "slider"
 organization = "ambient"
 name = "Slider"

@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "physics"
 organization = "ambient"
 name = "Physics"

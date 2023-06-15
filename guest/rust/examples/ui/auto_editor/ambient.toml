@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "auto-editor"
 organization = "ambient"
 name = "Auto editor"

@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "tictactoe"
 organization = "ambient"
 name = "Tic Tac Toe"

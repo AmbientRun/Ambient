@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "music-sequencer"
 organization = "ambient"
 name = "Music sequencer"

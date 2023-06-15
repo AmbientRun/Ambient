@@ -30,16 +30,16 @@ using [wasm-tools](https://github.com/bytecodealliance/wasm-tools) and a bundled
 
 `Identifier`s are snake-case ASCII identifiers (as a string), and `IdentifierPath`s are a double-colon-separated list of `Identifier`s. For example, `my_project` is an `Identifier`, and `my_project::my_component` is an `IdentifierPath`.
 
-### Project / `[project]`
+### Ember / `[ember]`
 
-The project section contains metadata about the project itself, such as its name and version.
+The ember section contains metadata about the ember itself, such as its name and version.
 
 | Property      | Type         | Description                                                                                   |
 | ------------- | ------------ | --------------------------------------------------------------------------------------------- |
-| `id`          | `Identifier` | _Required_. The project's snake-cased ID.                                                     |
-| `name`        | `String`     | _Required_. A human-readable name for the project.                                            |
-| `description` | `String`     | _Required_. A human-readable description of the project.                                      |
-| `version`     | `String`     | _Required_. The project's version, in `(major, minor, patch)` format. Semantically versioned. |
+| `id`          | `Identifier` | _Required_. The ember's snake-cased ID.                                                     |
+| `name`        | `String`     | _Required_. A human-readable name for the ember.                                            |
+| `description` | `String`     | _Required_. A human-readable description of the ember.                                      |
+| `version`     | `String`     | _Required_. The ember's version, in `(major, minor, patch)` format. Semantically versioned. |
 
 ### Build / `[build]`
 

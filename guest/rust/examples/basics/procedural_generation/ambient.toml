@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "procedural-generation"
 organization = "ambient"
 name = "Procedural generation"

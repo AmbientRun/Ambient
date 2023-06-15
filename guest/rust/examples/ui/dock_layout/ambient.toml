@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "dock-layout"
 organization = "ambient"
 name = "Dock Layout"

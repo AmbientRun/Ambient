@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "image-quad"
 organization = "ambient"
 name = "Image"

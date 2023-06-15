@@ -1,7 +1,7 @@
-[project]
+[ember]
 id = "screen-ray"
 organization = "ambient"
-name = "screen-ray"
+name = "Screen Ray"
 version = "0.0.1"
 
 [messages.input.fields]

@@ -11,20 +11,20 @@ fn App(hooks: &mut Hooks) -> Element {
     let (now, set_now) = hooks.use_state(time());
     let (x, set_x) = hooks.use_state(size_info[0].1.x as f32 / 2.);
     let (y, set_y) = hooks.use_state(size_info[0].1.y as f32 / 2. - second_r);
-    let (phase, set_phase) = hooks.use_state(PI/30.);
-    hooks.use_frame(move |_world|{
+    let (phase, set_phase) = hooks.use_state(PI / 30.);
+    hooks.use_frame(move |_world| {
         let latest = time();
         if latest - now > Duration::from_secs_f32(1.0) {
             set_now(latest);
             set_phase({
-                if phase + PI/30.0 > PI*2.0 {
-                    phase + PI/30.0 - PI*2.0
+                if phase + PI / 30.0 > PI * 2.0 {
+                    phase + PI / 30.0 - PI * 2.0
                 } else {
-                    phase + PI/30.0
+                    phase + PI / 30.0
                 }
             });
-            set_x(center_x + second_r*(phase.sin()));
-            set_y(center_y - second_r*(phase.cos()));
+            set_x(center_x + second_r * (phase.sin()));
+            set_y(center_y - second_r * (phase.cos()));
             println!("x: {}, y: {}", x, y);
         }
     });
@@ -33,12 +33,13 @@ fn App(hooks: &mut Hooks) -> Element {
             .el()
             .with(width(), clock_r * 2.)
             .with(height(), clock_r * 2.)
-            .with(translation(), vec3(center_x-clock_r, center_y-clock_r, 0.01))
+            .with(
+                translation(),
+                vec3(center_x - clock_r, center_y - clock_r, 0.01),
+            )
             .with(border_color(), vec4(0.5, 0.5, 0.5, 1.))
             .with(border_thickness(), 4.)
             .with(border_radius(), Vec4::ONE * clock_r),
-
-
         Line.el()
             .with(line_from(), vec3(center_x, center_y, 0.0))
             .with(line_to(), vec3(x, y, 0.0))

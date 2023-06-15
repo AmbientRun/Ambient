@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "screens"
 organization = "ambient"
 name = "Screens"

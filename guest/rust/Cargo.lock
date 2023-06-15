@@ -181,6 +181,7 @@ version = "0.3.0-dev"
 dependencies = [
  "anyhow",
  "indexmap",
+ "log",
  "proc-macro2",
  "quote",
  "serde",
@@ -1501,6 +1502,13 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
  "ambient_friendly_id",
+]
+
+[[package]]
+name = "scroll"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
 ]
 
 [[package]]

@@ -3,7 +3,7 @@ id = "core"
 organization = "ambient"
 description = "Contains all core components for the Ambient runtime."
 name = "Core Components"
-version = "0.2.1"
+version = "0.3.0-dev"
 includes = [
     "schema/animation.toml",
     "schema/app_.toml",

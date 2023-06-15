@@ -13,7 +13,7 @@ pub(crate) fn guest_context() -> Context {
 #[test]
 fn can_generate_components_from_manifest_in_global_namespace() {
     let manifest = indoc::indoc! {r#"
-        [project]
+        [ember]
         id = "runtime_components"
         name = "Runtime Components"
         version = "0.0.1"
@@ -99,7 +99,7 @@ fn can_generate_components_from_manifest_in_global_namespace() {
 #[test]
 fn can_accept_no_components() {
     let manifest = indoc::indoc! {r#"
-        [project]
+        [ember]
         id = "my_project"
         name = "My Project"
         version = "0.0.1"
@@ -134,7 +134,7 @@ fn can_accept_no_components() {
 #[test]
 fn can_generate_components_from_manifest() {
     let manifest = indoc::indoc! {r#"
-        [project]
+        [ember]
         id = "my_project"
         name = "My Project"
         version = "0.0.1"
@@ -191,7 +191,7 @@ fn can_generate_components_from_manifest() {
 #[test]
 fn can_generate_components_from_manifest_with_org() {
     let manifest = indoc::indoc! {r#"
-        [project]
+        [ember]
         id = "my_project"
         name = "My Project"
         version = "0.0.1"
@@ -236,7 +236,7 @@ fn can_generate_components_from_manifest_with_org() {
 #[test]
 fn can_generate_components_with_documented_namespace_from_manifest() {
     let manifest = indoc::indoc! {r#"
-        [project]
+        [ember]
         id = "my_project"
         name = "My Project"
         version = "0.0.1"
@@ -284,7 +284,7 @@ fn can_generate_components_with_documented_namespace_from_manifest() {
 #[test]
 fn will_error_on_undocumented_namespace() {
     let manifest = indoc::indoc! {r#"
-        [project]
+        [ember]
         id = "my_project"
         name = "My Project"
         version = "0.0.1"
@@ -309,7 +309,7 @@ fn will_error_on_undocumented_namespace() {
 #[test]
 fn can_generate_concepts_with_all_supported_types() {
     let manifest = indoc::indoc! {r#"
-        [project]
+        [ember]
         id = "my_project"
         name = "My Project"
         version = "0.0.1"
@@ -546,7 +546,7 @@ fn can_generate_concepts_with_all_supported_types() {
 #[test]
 fn can_extend_with_multiple_concepts() {
     let manifest = indoc::indoc! {r#"
-        [project]
+        [ember]
         id = "my_project"
         name = "My Project"
         version = "0.0.1"
@@ -662,7 +662,7 @@ fn can_extend_with_multiple_concepts() {
 #[test]
 fn can_generate_concepts() {
     let manifest = indoc::indoc! {r#"
-        [project]
+        [ember]
         id = "my_project"
         name = "My Project"
         version = "0.0.1"
@@ -879,7 +879,7 @@ fn can_generate_concepts() {
 #[test]
 fn can_generate_concepts_with_documented_namespace_from_manifest() {
     let manifest = indoc::indoc! {r#"
-        [project]
+        [ember]
         id = "my_project"
         name = "My Project"
         version = "0.0.1"
@@ -1003,7 +1003,7 @@ fn can_generate_concepts_with_documented_namespace_from_manifest() {
 #[test]
 fn can_generate_message() {
     let manifest = indoc::indoc! {r#"
-        [project]
+        [ember]
         id = "my_project"
         name = "My Project"
         version = "0.0.1"
@@ -1081,7 +1081,7 @@ fn can_generate_message() {
 #[test]
 fn can_generate_runtime_message() {
     let manifest = indoc::indoc! {r#"
-        [project]
+        [ember]
         id = "my_project"
         name = "My Project"
         version = "0.0.1"

@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "third-person-camera"
 organization = "ambient"
 name = "Third person camera"

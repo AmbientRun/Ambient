@@ -35,6 +35,7 @@ members = [
     "examples/ui/image",
     "examples/ui/rect",
     "examples/ui/screens",
+    "examples/ui/scroll",
     "examples/ui/slider",
     "examples/ui/text",
     "examples/ui/todo",

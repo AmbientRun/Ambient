@@ -379,7 +379,10 @@ impl TreeRenderer {
                 let material = &mat.material;
 
                 render_pass.set_bind_group(bind_groups.len() as _, material.bind_group(), &[]);
-                set_scissors_safe(render_pass, render_target_size, mat.scissors);
+
+                if !set_scissors_safe(render_pass, render_target_size, mat.scissors) {
+                    continue;
+                }
 
                 let offset = self
                     .primitives

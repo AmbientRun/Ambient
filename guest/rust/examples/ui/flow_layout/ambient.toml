@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "flow-layout"
 organization = "ambient"
 name = "Flow Layout"

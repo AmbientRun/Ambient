@@ -5,10 +5,11 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Component, Concept, Enum, Identifier, ItemPathBuf, Message, Version};
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
+#[derive(Deserialize, Clone, Debug, Default, PartialEq, Serialize)]
 pub struct Manifest {
     #[serde(default)]
-    pub project: Project,
+    #[serde(alias = "project")]
+    pub ember: Ember,
     #[serde(default)]
     pub build: Build,
     #[serde(default)]
@@ -28,12 +29,17 @@ pub struct Manifest {
 }
 impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, toml::de::Error> {
-        toml::from_str(manifest)
+        let parsed_manifest = toml::from_str(manifest)?;
+        let raw = toml::from_str::<toml::Table>(manifest)?;
+        if raw.contains_key("project") {
+            log::warn!("The `project` key is deprecated. Please use `ember` instead.");
+        }
+        Ok(parsed_manifest)
     }
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
-pub struct Project {
+pub struct Ember {
     pub id: Identifier,
     pub organization: Option<Identifier>,
     pub name: Option<String>,
@@ -77,8 +83,8 @@ mod tests {
     use indexmap::IndexMap;
 
     use crate::{
-        Build, BuildRust, Component, ComponentType, Concept, ContainerType, Dependency, Enum,
-        Identifier, ItemPathBuf, Manifest, Project, Version, VersionSuffix,
+        Build, BuildRust, Component, ComponentType, Concept, ContainerType, Dependency, Ember,
+        Enum, Identifier, ItemPathBuf, Manifest, Version, VersionSuffix,
     };
 
     fn i(s: &str) -> Identifier {
@@ -90,9 +96,55 @@ mod tests {
     }
 
     #[test]
-    fn can_parse_tictactoe_toml() {
+    fn can_parse_minimal_toml() {
+        const TOML: &str = r#"
+        [ember]
+        id = "test"
+        name = "Test"
+        version = "0.0.1"
+        "#;
+
+        assert_eq!(
+            Manifest::parse(TOML),
+            Ok(Manifest {
+                ember: Ember {
+                    id: Identifier::new("test").unwrap(),
+                    name: Some("Test".to_string()),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+        );
+    }
+
+    #[test]
+    fn can_parse_minimal_legacy_toml() {
         const TOML: &str = r#"
         [project]
+        id = "test"
+        name = "Test"
+        version = "0.0.1"
+        "#;
+
+        assert_eq!(
+            Manifest::parse(TOML),
+            Ok(Manifest {
+                ember: Ember {
+                    id: Identifier::new("test").unwrap(),
+                    name: Some("Test".to_string()),
+                    version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+        )
+    }
+
+    #[test]
+    fn can_parse_tictactoe_toml() {
+        const TOML: &str = r#"
+        [ember]
         id = "tictactoe"
         name = "Tic Tac Toe"
         version = "0.0.1"
@@ -110,7 +162,7 @@ mod tests {
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
-                project: Project {
+                ember: Ember {
                     id: i("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
@@ -155,7 +207,7 @@ mod tests {
     #[test]
     fn can_parse_rust_build_settings() {
         const TOML: &str = r#"
-        [project]
+        [ember]
         id = "tictactoe"
         name = "Tic Tac Toe"
         version = "0.0.1"
@@ -167,7 +219,7 @@ mod tests {
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
-                project: Project {
+                ember: Ember {
                     id: i("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
@@ -195,7 +247,7 @@ mod tests {
         use toml::Value;
 
         const TOML: &str = r#"
-        [project]
+        [ember]
         id = "my-project"
         name = "My Project"
         version = "0.0.1"
@@ -221,7 +273,7 @@ mod tests {
         assert_eq!(
             manifest,
             Manifest {
-                project: Project {
+                ember: Ember {
                     id: i("my-project"),
                     name: Some("My Project".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
@@ -343,7 +395,7 @@ mod tests {
     #[test]
     fn can_parse_enums() {
         const TOML: &str = r#"
-        [project]
+        [ember]
         id = "tictactoe"
         name = "Tic Tac Toe"
         version = "0.0.1"
@@ -356,7 +408,7 @@ mod tests {
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
-                project: Project {
+                ember: Ember {
                     id: i("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
@@ -385,7 +437,7 @@ mod tests {
     #[test]
     fn can_parse_container_types() {
         const TOML: &str = r#"
-        [project]
+        [ember]
         id = "test"
         name = "Test"
         version = "0.0.1"
@@ -400,7 +452,7 @@ mod tests {
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
-                project: Project {
+                ember: Ember {
                     id: i("test"),
                     name: Some("Test".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
@@ -466,7 +518,7 @@ mod tests {
     #[test]
     fn can_parse_dependencies() {
         const TOML: &str = r#"
-        [project]
+        [ember]
         id = "dependencies"
         organization = "ambient"
         name = "dependencies"
@@ -481,7 +533,7 @@ mod tests {
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
-                project: Project {
+                ember: Ember {
                     id: i("dependencies"),
                     name: Some("dependencies".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),

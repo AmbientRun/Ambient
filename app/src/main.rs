@@ -237,7 +237,7 @@ fn main() -> anyhow::Result<()> {
         let project = project.unwrap();
 
         if !project.no_build && project_path.is_local() {
-            let project_name = manifest.project.name.as_deref().unwrap_or("project");
+            let project_name = manifest.ember.name.as_deref().unwrap_or("project");
 
             tracing::info!("Building project {:?}", project_name);
 

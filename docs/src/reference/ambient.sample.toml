@@ -1,14 +1,14 @@
 #
-# The project section describes all project metadata.
+# The ember section describes all ember metadata.
 #
-[project]
+[ember]
 # This must be a snake-cased name.
 id = "my_cool_project"
 # This name is human-readable and can contain anything.
 name = "My Cool Project"
 # This description is human-readable and can contain anything.
 description = "A sample project that's the coolest thing ever."
-# Projects are expected to use (major, minor, patch) semantic versioning.
+# Embers are expected to use (major, minor, patch) semantic versioning.
 # Other formats are not accepted. This requirement may be relaxed later.
 version = "0.0.1"
 

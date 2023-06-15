@@ -146,7 +146,7 @@ impl Semantic {
         let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename:?}"))?;
 
-        let id = manifest.project.id.clone();
+        let id = manifest.ember.id.clone();
         self.add_scope_from_manifest(
             Some(parent_scope),
             file_provider,
@@ -166,17 +166,17 @@ impl Semantic {
         let manifest: Manifest = toml::from_str(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename:?}"))?;
 
-        if manifest.project.organization.is_none() {
+        if manifest.ember.organization.is_none() {
             anyhow::bail!(
-                "file `{:?}` has no organization, which is required for a top-level package",
+                "file `{:?}` has no organization, which is required for a top-level ember",
                 file_provider.full_path(filename)
             );
         }
 
         // Create an organization scope if necessary
-        let organization_key = manifest.project.organization.as_ref().with_context(|| {
+        let organization_key = manifest.ember.organization.as_ref().with_context(|| {
             format!(
-                "file `{:?}` has no organization, which is required for a top-level package",
+                "file `{:?}` has no organization, which is required for a top-level ember",
                 file_provider.full_path(filename)
             )
         })?;
@@ -201,7 +201,7 @@ impl Semantic {
             });
 
         // Check that this scope hasn't already been created for this organization
-        let scope_id = manifest.project.id.clone();
+        let scope_id = manifest.ember.id.clone();
         if let Some((existing_path, existing_scope_id)) =
             self.items.get(organization_id)?.scopes.get(&scope_id)
         {
@@ -257,7 +257,7 @@ impl Semantic {
         });
         let scope_id = self.items.add(scope);
 
-        for include in &manifest.project.includes {
+        for include in &manifest.ember.includes {
             let child_scope_id =
                 self.add_file_at_non_toplevel(scope_id, include, file_provider, is_ambient)?;
             let id = self.items.get(child_scope_id)?.data().id.clone();

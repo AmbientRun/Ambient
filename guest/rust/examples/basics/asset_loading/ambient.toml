@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "asset-loading"
 organization = "ambient"
 name = "Asset Loading"

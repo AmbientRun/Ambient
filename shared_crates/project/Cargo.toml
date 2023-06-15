@@ -17,6 +17,7 @@ toml = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
 indexmap = { workspace = true }
+log = { workspace = true }
 
 [dev-dependencies]
 paste = { workspace = true }

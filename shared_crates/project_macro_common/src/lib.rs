@@ -35,7 +35,7 @@ impl ManifestSource {
                 let manifest = Manifest::from_file(file_path)?;
                 let mut file_paths = vec![file_path.to_str().unwrap().to_string()];
                 let dir = file_path.parent().unwrap();
-                for include in &manifest.project.includes {
+                for include in &manifest.ember.includes {
                     let path = dir.join(include);
                     let file_path = path.to_str().unwrap().to_string();
                     file_paths.push(file_path);
