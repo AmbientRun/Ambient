@@ -222,6 +222,7 @@ impl TransparentRenderer {
                     &[],
                 );
                 // entry.shader.pipeline.bind(render_pass, MATERIAL_BIND_GROUP, entry.material.bind());
+
                 set_scissors_safe(
                     render_pass,
                     render_target_size,
