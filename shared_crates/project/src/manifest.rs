@@ -5,9 +5,10 @@ use serde::{Deserialize, Serialize};
 use crate::{Component, Concept, Identifier, IdentifierPathBuf, Message, Version};
 use anyhow::Context;
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
+#[derive(Deserialize, Clone, Debug, Default, PartialEq, Serialize)]
 pub struct Manifest {
     #[serde(default)]
+    #[serde(alias = "project")]
     pub ember: Ember,
     #[serde(default)]
     pub build: Build,
@@ -138,6 +139,52 @@ mod tests {
         Build, BuildRust, Component, ComponentType, Concept, Ember, Identifier, IdentifierPathBuf,
         Manifest, Namespace, Version, VersionSuffix,
     };
+
+    #[test]
+    fn can_parse_minimal_toml() {
+        const TOML: &str = r#"
+        [ember]
+        id = "test"
+        name = "Test"
+        version = "0.0.1"
+        "#;
+
+        assert_eq!(
+            Manifest::parse(TOML),
+            Ok(Manifest {
+                ember: Ember {
+                    id: Identifier::new("test").unwrap(),
+                    name: Some("Test".to_string()),
+                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+        )
+    }
+
+    #[test]
+    fn can_parse_minimal_legacy_toml() {
+        const TOML: &str = r#"
+        [project]
+        id = "test"
+        name = "Test"
+        version = "0.0.1"
+        "#;
+
+        assert_eq!(
+            Manifest::parse(TOML),
+            Ok(Manifest {
+                ember: Ember {
+                    id: Identifier::new("test").unwrap(),
+                    name: Some("Test".to_string()),
+                    version: Version::new(0, 0, 1, VersionSuffix::Final),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+        )
+    }
 
     #[test]
     fn can_parse_tictactoe_toml() {
