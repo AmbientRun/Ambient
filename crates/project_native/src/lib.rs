@@ -13,10 +13,10 @@ pub fn all_defined_components(
         vec![]
     } else {
         manifest
-            .project
+            .ember
             .organization
             .iter()
-            .chain(std::iter::once(&manifest.project.id))
+            .chain(std::iter::once(&manifest.ember.id))
             .cloned()
             .collect()
     };

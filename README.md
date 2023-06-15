@@ -60,6 +60,8 @@ For alternative installation options, go to the [documentation on installing](ht
 
 Each example in the [examples](./guest/rust/examples/) directory can be run with Ambient as both client and server:
 
+_(Note that ambient needs to match the version that the examples were built for, see ["Running examples"](https://ambientrun.github.io/Ambient/user/running_examples.html) in the docs)_
+
 ```
 ambient run guest/rust/examples/games/tictactoe
 ```

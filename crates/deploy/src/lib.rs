@@ -22,7 +22,7 @@ use deploy_proto::{
 const CHUNK_SIZE: usize = 1024 * 1024 * 3; // 3MB
 
 async fn asset_requests_from_file_path(
-    project_id: impl AsRef<str>,
+    ember_id: impl AsRef<str>,
     base_path: impl AsRef<Path>,
     file_path: impl AsRef<Path>,
 ) -> anyhow::Result<Vec<DeployAssetRequest>> {
@@ -37,7 +37,7 @@ async fn asset_requests_from_file_path(
     Ok(content
         .chunks(CHUNK_SIZE)
         .map(|chunk| DeployAssetRequest {
-            project_id: project_id.as_ref().into(),
+            project_id: ember_id.as_ref().into(),
             content: Some(AssetContent {
                 path: path.clone(),
                 total_size,
@@ -56,15 +56,15 @@ pub async fn deploy(
     path: impl AsRef<Path>,
     manifest: &Manifest,
 ) -> anyhow::Result<String> {
-    let project_id = manifest.project.id.to_string();
+    let ember_id = manifest.ember.id.to_string();
     log::info!(
         "Deploying project `{}` ({})",
-        project_id,
+        ember_id,
         manifest
-            .project
+            .ember
             .name
             .as_deref()
-            .unwrap_or_else(|| manifest.project.id.as_ref())
+            .unwrap_or_else(|| manifest.ember.id.as_ref())
     );
 
     // set up TLS config if needed
@@ -125,7 +125,7 @@ pub async fn deploy(
     let base_path = path.as_ref().to_owned();
     let handle = runtime.spawn(async move {
         for (file_idx, file_path) in file_paths.into_iter().enumerate() {
-            let requests = asset_requests_from_file_path(&project_id, &base_path, file_path).await?;
+            let requests = asset_requests_from_file_path(&ember_id, &base_path, file_path).await?;
             let count = requests.len();
             for (idx, request) in requests.into_iter().enumerate() {
                 let Some(content) = request.content.as_ref() else { unreachable!() };

@@ -50,7 +50,7 @@ mod tests {
     use quote::quote;
 
     const AMBIENT_TOML: &str = r#"
-    [project]
+    [ember]
     name = "Test Project"
     id = "test_project"
     version = "0.0.1"

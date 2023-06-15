@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "rect"
 name = "Rect"
 version = "0.0.1"
