@@ -100,10 +100,23 @@ pub fn ScrollArea(
                 let flow = Flow(vec![inner])
                     .el()
                     .with(scissors_recursive(), {
-                        let y = (canvas_offset.y * ratio) as u32;
-                        let h = (outer_size.y * ratio) as u32;
-                        let x = (canvas_offset.x * ratio) as u32;
-                        let w = (outer_size.x * ratio) as u32;
+                        let (y, h) = if canvas_offset.y > 0.0 {
+                            (
+                                (canvas_offset.y * ratio) as u32,
+                                (outer_size.y * ratio) as u32,
+                            )
+                        } else {
+                            (0, ((outer_size.y + canvas_offset.y) * ratio) as u32)
+                        };
+
+                        let (x, w) = if canvas_offset.x > 0.0 {
+                            (
+                                (canvas_offset.x * ratio) as u32,
+                                (outer_size.x * ratio) as u32,
+                            )
+                        } else {
+                            (0, ((outer_size.x + canvas_offset.x) * ratio) as u32)
+                        };
                         uvec4(x, y, w, h)
                     })
                     .on_spawned({
