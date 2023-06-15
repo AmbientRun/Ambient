@@ -3,7 +3,7 @@ use ambient_element::{element_component, to_owned, Element, ElementComponentExt,
 use ambient_guest_bridge::{
     components::{
         app::window_scale_factor,
-        ecs::{children, parent},
+        ecs::children,
         input::{mouse_over, mouse_pickable_max, mouse_pickable_min},
         layout::{
             fit_horizontal_children, fit_horizontal_parent, fit_vertical_children, height,
@@ -66,16 +66,14 @@ pub fn ScrollArea(
                 let canvas_local_to_world = world.get(id, local_to_world()).unwrap();
                 let (_, _, pos_world) = Mat4::to_scale_rotation_translation(&canvas_local_to_world);
                 set_canvas_offset(vec2(pos_world.x, pos_world.y));
-                let p = world.get(id, parent());
-                if let Ok(parent_id) = p {
-                    let w = world.get(parent_id, width());
-                    let h = world.get(parent_id, height());
-                    if let Ok(w) = w {
-                        set_outer_width(w);
-                    }
-                    if let Ok(h) = h {
-                        set_outer_height(h);
-                    }
+                let w = world.get(id, width());
+                let h = world.get(id, height());
+                // outer size is mainly for the scroll bar
+                if let Ok(w) = w {
+                    set_outer_width(w);
+                }
+                if let Ok(h) = h {
+                    set_outer_height(h);
                 }
             }
         }
@@ -99,8 +97,6 @@ pub fn ScrollArea(
                 *id.lock() = Some(canvas_id);
             }
         })
-        .with(height(), outer_height)
-        .with(width(), outer_width)
         .init(mouse_pickable_min(), Vec3::ZERO)
         .init(mouse_pickable_max(), Vec3::ZERO)
         .init_default(children())

@@ -8,30 +8,29 @@ fn App(_hooks: &mut Hooks) -> Element {
             Text::el("1 ScrollAreaSizing::FitParentWidth").header_style(),
             Text::el("2 ScrollAreaSizing::FitParentWidth").header_style(),
             Text::el("3 ScrollAreaSizing::FitParentWidth").header_style(),
-            UIBase::el()
-                .with(height(), 100.) // specified height
-                .with(width(), 300.) // specified width
-                .children(vec![ScrollArea::el(
-                    ScrollAreaSizing::FitChildrenWidth,
-                    FlowColumn::el([
-                        Text::el("1 ScrollAreaSizing::FitChildrenWidth"),
-                        Text::el("2 ScrollAreaSizing::FitChildrenWidth"),
-                        Text::el("3 ScrollAreaSizing::FitChildrenWidth"),
-                        Text::el("4 ScrollAreaSizing::FitChildrenWidth"),
-                        Text::el("5 ScrollAreaSizing::FitChildrenWidth"),
-                        Text::el("6 ScrollAreaSizing::FitChildrenWidth"),
-                        Text::el("7 ScrollAreaSizing::FitChildrenWidth"),
-                        Text::el("8 ScrollAreaSizing::FitChildrenWidth"),
-                        Text::el("9 ScrollAreaSizing::FitChildrenWidth"),
-                        Text::el("10 ScrollAreaSizing::FitChildrenWidth"),
-                        Text::el("11 ScrollAreaSizing::FitChildrenWidth"),
-                        Text::el("12 ScrollAreaSizing::FitChildrenWidth"),
-                        Text::el("12 ScrollAreaSizing::FitChildrenWidth"),
-                        Text::el("13 ScrollAreaSizing::FitChildrenWidth"),
-                        Text::el("14 ScrollAreaSizing::FitChildrenWidth"),
-                        Text::el("15 ScrollAreaSizing::FitChildrenWidth"),
-                    ]),
-                )]),
+            ScrollArea::el(
+                ScrollAreaSizing::FitChildrenWidth,
+                FlowColumn::el([
+                    Text::el("1 ScrollAreaSizing::FitChildrenWidth"),
+                    Text::el("2 ScrollAreaSizing::FitChildrenWidth"),
+                    Text::el("3 ScrollAreaSizing::FitChildrenWidth"),
+                    Text::el("4 ScrollAreaSizing::FitChildrenWidth"),
+                    Text::el("5 ScrollAreaSizing::FitChildrenWidth"),
+                    Text::el("6 ScrollAreaSizing::FitChildrenWidth"),
+                    Text::el("7 ScrollAreaSizing::FitChildrenWidth"),
+                    Text::el("8 ScrollAreaSizing::FitChildrenWidth"),
+                    Text::el("9 ScrollAreaSizing::FitChildrenWidth"),
+                    Text::el("10 ScrollAreaSizing::FitChildrenWidth"),
+                    Text::el("11 ScrollAreaSizing::FitChildrenWidth"),
+                    Text::el("12 ScrollAreaSizing::FitChildrenWidth"),
+                    Text::el("12 ScrollAreaSizing::FitChildrenWidth"),
+                    Text::el("13 ScrollAreaSizing::FitChildrenWidth"),
+                    Text::el("14 ScrollAreaSizing::FitChildrenWidth"),
+                    Text::el("15 ScrollAreaSizing::FitChildrenWidth"),
+                ]),
+            )
+            .with(height(), 100.) // specified height
+            .with(width(), 300.), // specified width,
             Text::el("4 ScrollAreaSizing::FitParentWidth").header_style(),
             Text::el("5 ScrollAreaSizing::FitParentWidth").header_style(),
             Text::el("6 ScrollAreaSizing::FitParentWidth").header_style(),
