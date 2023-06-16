@@ -1,3 +1,4 @@
+use ambient_gpu::sampler::SamplerKey;
 use ambient_std::asset_url::{AbsAssetUrl, AssetUrl};
 use glam::Vec4;
 use serde::{Deserialize, Serialize};
@@ -71,29 +72,7 @@ pub struct PipelinePbrMaterial {
     pub specular_exponent: Option<f32>,
 
     /// The sampler used by every texture in this material. Defaults to a sampler with `Linear` min/mag/mip filter modes and `ClampToEdge` wrap modes across uvw-coordinates.
-    pub sampler: Option<SamplerDesc>,
-}
-
-/// Describes a sampler
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
-pub struct SamplerDesc {
-    pub address_mode_u: wgpu::AddressMode,
-    pub address_mode_v: wgpu::AddressMode,
-    pub address_mode_w: wgpu::AddressMode,
-    pub mag_filter: wgpu::FilterMode,
-    pub min_filter: wgpu::FilterMode,
-    pub mipmap_filter: wgpu::FilterMode,
-}
-
-impl SamplerDesc {
-    pub const LINEAR_CLAMP_TO_EDGE: Self = Self {
-        address_mode_u: wgpu::AddressMode::ClampToEdge,
-        address_mode_v: wgpu::AddressMode::ClampToEdge,
-        address_mode_w: wgpu::AddressMode::ClampToEdge,
-        mag_filter: wgpu::FilterMode::Linear,
-        min_filter: wgpu::FilterMode::Linear,
-        mipmap_filter: wgpu::FilterMode::Linear,
-    };
+    pub sampler: Option<SamplerKey>,
 }
 
 // Quixel

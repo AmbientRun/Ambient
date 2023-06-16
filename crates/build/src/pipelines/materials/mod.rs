@@ -5,7 +5,6 @@ use ambient_asset_cache::{
 };
 use ambient_decals::decal;
 use ambient_ecs::Entity;
-use ambient_gpu::sampler::SamplerKey;
 use ambient_model_import::{
     model_crate::{cap_texture_size, ModelCrate},
     ModelTextureSize,
@@ -200,7 +199,7 @@ pub async fn to_mat(
         double_sided: pipeline.double_sided,
         metallic: pipeline.metallic.unwrap_or(1.),
         roughness: pipeline.roughness.unwrap_or(1.),
-        sampler: pipeline.sampler.map(SamplerKey),
+        sampler: pipeline.sampler,
     }
     .relative_path_from(out_root))
 }

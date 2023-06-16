@@ -13,7 +13,6 @@ repository = "https://github.com/AmbientRun/Ambient"
 [dependencies]
 ambient_sys = { path = "../sys", version = "0.3.0-dev" }
 ambient_std = { path = "../std", version = "0.3.0-dev" }
-ambient_pipeline_types = { path = "../pipeline_types", version = "0.3.0-dev" }
 
 aho-corasick = { workspace = true }
 bytemuck = { workspace = true }

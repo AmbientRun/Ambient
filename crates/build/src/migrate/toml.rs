@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use ambient_pipeline_types::{
     audio::AudioPipeline,
     materials::{MaterialsImporter, MaterialsPipeline},
+    models::{Collider, ModelsPipeline},
 };
 use ambient_project::Manifest;
 use anyhow::Context;
@@ -12,10 +13,7 @@ use itertools::Itertools;
 use crate::{
     get_asset_files,
     migrate::toml::json_pipeline::PipelineOneOrMany,
-    pipelines::{
-        models::{Collider, ModelsPipeline},
-        Pipeline, PipelineProcessor, PipelineSchema,
-    },
+    pipelines::{Pipeline, PipelineProcessor, PipelineSchema},
     register_from_manifest,
 };
 
@@ -81,10 +79,11 @@ mod json_pipeline {
     use ambient_ecs::Entity;
     use ambient_model_import::{ModelTextureSize, ModelTransform};
     use ambient_physics::collider::ColliderType;
-    use ambient_pipeline_types::materials::PipelinePbrMaterial;
+    use ambient_pipeline_types::{
+        materials::PipelinePbrMaterial,
+        models::{MaterialOverride, ModelImporter},
+    };
     use serde::{Deserialize, Serialize};
-
-    use crate::pipelines::models::{MaterialOverride, ModelImporter};
 
     fn true_value() -> bool {
         true

@@ -1,7 +1,9 @@
 use std::{collections::HashSet, sync::Arc};
 
 use ambient_asset_cache::SyncAssetKey;
-use ambient_pipeline_types::{audio::AudioPipeline, materials::MaterialsPipeline};
+use ambient_pipeline_types::{
+    audio::AudioPipeline, materials::MaterialsPipeline, models::ModelsPipeline,
+};
 use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use anyhow::Context;
 use context::PipelineCtx;
@@ -12,8 +14,6 @@ use futures::{
 use image::ImageFormat;
 use out_asset::{OutAsset, OutAssetContent, OutAssetPreview};
 use serde::{Deserialize, Serialize};
-
-use self::models::ModelsPipeline;
 
 pub mod audio;
 pub mod context;

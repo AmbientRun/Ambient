@@ -716,7 +716,6 @@ name = "ambient_gpu"
 version = "0.3.0-dev"
 dependencies = [
  "aho-corasick 0.7.20",
- "ambient_pipeline_types",
  "ambient_std",
  "ambient_sys",
  "anyhow",
@@ -1029,6 +1028,10 @@ dependencies = [
 name = "ambient_pipeline_types"
 version = "0.3.0-dev"
 dependencies = [
+ "ambient_ecs",
+ "ambient_gpu",
+ "ambient_model_import",
+ "ambient_physics",
  "ambient_std",
  "glam 0.24.0",
  "serde",
