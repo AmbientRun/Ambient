@@ -60,12 +60,15 @@ pub fn ScrollArea(
     let (canvas_offset, set_canvas_offset) = hooks.use_state(Vec3::ZERO);
 
     hooks.use_frame({
-        to_owned![id, mouse_over_count];
+        to_owned![id, mouse_over_count, scroll, set_scroll, scroll_height];
         move |world| {
             if let Some(id) = *id.lock() {
                 let number = world.get(id, mouse_over()).unwrap_or(0);
                 *mouse_over_count.lock() = number;
             }
+            if scroll_height <= 0.0 && scroll != 0.0 {
+                set_scroll(0.0);
+            };
         }
     });
     hooks.use_runtime_message::<messages::WindowMouseWheel>({
@@ -131,7 +134,6 @@ pub fn ScrollArea(
                         .with_default(fit_vertical_children())
                         .with_default(fit_horizontal_parent())
                         .with(width(), outer_size.x),
-
                     ScrollAreaSizing::FitChildrenWidth => flow
                         .with_default(fit_vertical_children())
                         .with_default(fit_horizontal_children()),
