@@ -522,6 +522,7 @@ pub struct QuixelId {
     pub resolution: String,
     pub name: String,
 }
+
 impl QuixelId {
     /// Parses a quixel id from something like "Props_Storage_vijncb3_2K_3d_ms"
     pub fn from_full(full: &str) -> Option<Self> {

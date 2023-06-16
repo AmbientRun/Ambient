@@ -21,6 +21,7 @@ ambient_project_native = { path = "../project_native" }
 ambient_rustc = { path = "../rustc" }
 ambient_decals = { path = "../decals" }
 ambient_wasm = { path = "../wasm" }
+ambient_pipeline_types = { path = "../pipeline_types" }
 
 ambient_project = { path = "../../shared_crates/project" }
 

@@ -442,6 +442,7 @@ pub enum AssetUrl {
     Absolute(AbsAssetUrl),
     Relative(RelativePathBuf),
 }
+
 impl AssetUrl {
     pub fn parse(url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
         match Url::parse(url_or_relative_path.as_ref()) {

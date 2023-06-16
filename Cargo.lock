@@ -360,6 +360,7 @@ dependencies = [
  "ambient_model",
  "ambient_model_import",
  "ambient_physics",
+ "ambient_pipeline_types",
  "ambient_project",
  "ambient_project_native",
  "ambient_renderer",
@@ -715,6 +716,7 @@ name = "ambient_gpu"
 version = "0.3.0-dev"
 dependencies = [
  "aho-corasick 0.7.20",
+ "ambient_pipeline_types",
  "ambient_std",
  "ambient_sys",
  "anyhow",
@@ -1021,6 +1023,16 @@ dependencies = [
  "serde_json",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "ambient_pipeline_types"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_std",
+ "glam 0.24.0",
+ "serde",
+ "wgpu 0.16.1",
 ]
 
 [[package]]

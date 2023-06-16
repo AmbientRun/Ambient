@@ -6,6 +6,7 @@ use ambient_model_import::{
     model_crate::ModelCrate, MaterialFilter, ModelTextureSize, ModelTransform, TextureResolver,
 };
 use ambient_physics::collider::{collider_type, ColliderType};
+use ambient_pipeline_types::materials::PipelinePbrMaterial;
 use ambient_std::asset_url::AssetType;
 use futures::FutureExt;
 use relative_path::RelativePath;
@@ -14,7 +15,6 @@ use serde::{Deserialize, Serialize};
 use super::{
     context::PipelineCtx,
     download_image,
-    materials::PipelinePbrMaterial,
     out_asset::{asset_id_from_url, OutAsset, OutAssetContent, OutAssetPreview},
 };
 
@@ -132,15 +132,14 @@ impl ModelsPipeline {
             transform.apply(model_crate);
         }
         for mat in &self.material_overrides {
-            let material = mat
-                .material
-                .to_mat(
-                    ctx,
-                    &ctx.in_root(),
-                    &ctx.out_root()
-                        .push(out_model_path.as_ref().join("materials"))?,
-                )
-                .await?;
+            let material = super::materials::to_mat(
+                &mat.material,
+                ctx,
+                &ctx.in_root(),
+                &ctx.out_root()
+                    .push(out_model_path.as_ref().join("materials"))?,
+            )
+            .await?;
             model_crate.override_material(&mat.filter, material);
         }
         if let Some(max_size) = self.cap_texture_sizes {

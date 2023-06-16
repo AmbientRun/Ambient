@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use ambient_model_import::{dotdot_path, model_crate::ModelCrate};
+use ambient_pipeline_types::materials::MaterialsPipeline;
 use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
 use ambient_std::{
     asset_cache::AssetCache,
@@ -10,9 +11,8 @@ use convert_case::{Case, Casing};
 use futures::future::join_all;
 use itertools::Itertools;
 
-use super::{
-    super::{models::quixel::QuixelId, OutAsset, OutAssetContent, OutAssetPreview, PipelineCtx},
-    MaterialsPipeline,
+use super::super::{
+    models::quixel::QuixelId, OutAsset, OutAssetContent, OutAssetPreview, PipelineCtx,
 };
 use crate::pipelines::out_asset::asset_id_from_url;
 

@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 
+use ambient_pipeline_types::materials::{MaterialsImporter, MaterialsPipeline};
 use ambient_project::Manifest;
 use anyhow::Context;
 use futures::{future::ready, stream, StreamExt, TryStreamExt};
@@ -10,7 +11,6 @@ use crate::{
     migrate::toml::json_pipeline::PipelineOneOrMany,
     pipelines::{
         audio::AudioPipeline,
-        materials::{MaterialsImporter, MaterialsPipeline},
         models::{Collider, ModelsPipeline},
         Pipeline, PipelineProcessor, PipelineSchema,
     },
@@ -79,12 +79,10 @@ mod json_pipeline {
     use ambient_ecs::Entity;
     use ambient_model_import::{ModelTextureSize, ModelTransform};
     use ambient_physics::collider::ColliderType;
+    use ambient_pipeline_types::materials::PipelinePbrMaterial;
     use serde::{Deserialize, Serialize};
 
-    use crate::pipelines::{
-        materials::PipelinePbrMaterial,
-        models::{MaterialOverride, ModelImporter},
-    };
+    use crate::pipelines::models::{MaterialOverride, ModelImporter};
 
     fn true_value() -> bool {
         true
