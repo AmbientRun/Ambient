@@ -87,20 +87,36 @@ pub async fn deploy(
     let mut client = create_client(api_server, auth_token).await?;
 
     // collect all files to deploy (everything in the build directory)
-    let asset_path_to_file_path: HashMap<_, _> = WalkDir::new(path.as_ref().join("build"))
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
-        .map(|x| {
-            let file_path = x.into_path();
-            let path = file_path
-                .strip_prefix(&base_path)
-                .expect("file path should be in base path")
-                .to_string_lossy()
-                .to_string();
-            (path, file_path)
-        })
-        .collect();
+    let asset_path_to_file_path: Option<HashMap<String, PathBuf>> =
+        WalkDir::new(path.as_ref().join("build"))
+            .into_iter()
+            .filter_map(|e| e.ok())
+            .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
+            .map(|x| {
+                let file_path = x.into_path();
+                let path = file_path
+                    .strip_prefix(&base_path)
+                    .expect("file path should be in base path")
+                    .to_str();
+                if let Some(path) = path {
+                    if path.chars().any(|c| c == '\n' || c == '\r') {
+                        log::error!(
+                            "Path contains Line Feed or Carriage Return character: {:?}",
+                            file_path
+                        );
+                        None
+                    } else {
+                        Some((path.into(), file_path))
+                    }
+                } else {
+                    log::error!("Non-UTF-8 path: {:?}", file_path);
+                    None
+                }
+            })
+            .collect();
+    let Some(asset_path_to_file_path) = asset_path_to_file_path else {
+        anyhow::bail!("Can only deploy files with UTF-8 paths that don't have newline characters");
+    };
     log::debug!("Found {} files to deploy", asset_path_to_file_path.len());
 
     // create a separate task for reading files
