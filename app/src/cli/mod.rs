@@ -48,6 +48,9 @@ pub enum Commands {
         /// Authentication token
         #[arg(short, long)]
         token: Option<String>,
+        /// Don't use differential upload and upload all assets
+        #[arg(long)]
+        force_upload: bool,
     },
     /// Builds and runs the project in server-only mode
     Serve {

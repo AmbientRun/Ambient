@@ -15,4 +15,4 @@ roughness = 0.5
 metallic = 0.0
 
 [pipelines.prefab_components]
-"asset_loading::is_the_best" = false
+"ambient_example_asset_loading::is_the_best" = false
