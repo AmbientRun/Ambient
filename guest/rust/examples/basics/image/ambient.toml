@@ -2,3 +2,6 @@
 id = "image_quad"
 name = "Image"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/image"
+type = "Game"
+categories = ["Example"]

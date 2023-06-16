@@ -2,6 +2,9 @@
 id = "music_sequencer"
 name = "Music sequencer"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/music_sequencer"
+type = "Game"
+categories = ["Example"]
 
 [messages.click]
 description = "Select or deselect a note."

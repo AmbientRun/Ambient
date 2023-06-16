@@ -2,6 +2,9 @@
 id = "first_person_camera"
 name = "First person camera"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/first_person_camera"
+type = "Game"
+categories = ["Example"]
 
 [components]
 player_head_ref = { type = "EntityId", name = "Player head ref", description = "The player's head.", attributes = [

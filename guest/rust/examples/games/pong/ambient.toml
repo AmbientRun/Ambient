@@ -2,6 +2,9 @@
 id = "pong"
 name = "Pong"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/pong"
+type = "Game"
+categories = ["Example"]
 
 [components]
 player_movement_direction = { type = "F32", name = "Player Movement Direction", description = "Direction of player movement" }

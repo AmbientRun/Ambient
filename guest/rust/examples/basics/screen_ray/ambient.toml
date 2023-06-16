@@ -2,6 +2,9 @@
 id = "screen_ray"
 name = "screen_ray"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/screen_ray"
+type = "Game"
+categories = ["Example"]
 
 [messages.input.fields]
 ray_origin = { type = "Vec3" }

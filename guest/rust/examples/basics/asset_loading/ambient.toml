@@ -2,6 +2,9 @@
 id = "asset_loading"
 name = "Asset Loading"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/asset_loading"
+type = "Game"
+categories = ["Example"]
 
 [components.is_the_best]
 type = "Bool"

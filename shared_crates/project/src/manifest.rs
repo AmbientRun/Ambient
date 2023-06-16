@@ -66,6 +66,7 @@ pub struct Ember {
     pub name: Option<String>,
     pub version: Version,
     pub description: Option<String>,
+    pub repository: Option<String>,
     #[serde(default)]
     pub authors: Vec<String>,
     #[serde(default, rename = "type")]

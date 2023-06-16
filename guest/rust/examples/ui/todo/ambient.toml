@@ -2,6 +2,9 @@
 id = "todo"
 name = "todo"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/todo"
+type = "Game"
+categories = ["Example"]
 
 [messages.new_item]
 description = "Add a new todo item"

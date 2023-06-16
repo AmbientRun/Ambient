@@ -2,6 +2,9 @@
 id = "skinmesh"
 sname = "Skinmesh"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/skinmesh"
+type = "Game"
+categories = ["Example"]
 
 [messages]
 set_controller = { name = "Set controller", description = "Sets the animation controller.", fields = { value = { type = "U32" } } }
