@@ -274,7 +274,10 @@ fn main() -> anyhow::Result<()> {
     // If this is just a deploy then deploy and exit
     #[cfg(feature = "deploy")]
     if let Commands::Deploy {
-        token, api_server, ..
+        token,
+        api_server,
+        force_upload,
+        ..
     } = &cli.command
     {
         let Some(auth_token) = token else {
@@ -284,7 +287,7 @@ fn main() -> anyhow::Result<()> {
             anyhow::bail!("Can only deploy a local project");
         };
         let manifest = manifest.as_ref().expect("no manifest");
-        let response = runtime.block_on(ambient_deploy::deploy(
+        let version_id = runtime.block_on(ambient_deploy::deploy(
             &runtime,
             api_server
                 .clone()
@@ -292,8 +295,9 @@ fn main() -> anyhow::Result<()> {
             auth_token,
             project_fs_path,
             manifest,
+            *force_upload,
         ))?;
-        log::info!("Version {} deployed successfully", response.id);
+        log::info!("Version {} deployed successfully", version_id);
         return Ok(());
     }
 
