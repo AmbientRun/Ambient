@@ -1,5 +1,5 @@
 [ember]
-id = "screen_ray"
+id = "ambient_example_screen_ray"
 name = "screen_ray"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/screen_ray"

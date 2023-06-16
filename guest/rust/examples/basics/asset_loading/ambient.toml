@@ -1,5 +1,5 @@
 [ember]
-id = "asset_loading"
+id = "ambient_example_asset_loading"
 name = "Asset Loading"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/asset_loading"

@@ -1,5 +1,5 @@
 [ember]
-id = "physics"
+id = "ambient_example_physics"
 name = "Physics"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/physics"

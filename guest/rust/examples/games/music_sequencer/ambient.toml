@@ -1,5 +1,5 @@
 [ember]
-id = "music_sequencer"
+id = "ambient_example_music_sequencer"
 name = "Music sequencer"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/music_sequencer"

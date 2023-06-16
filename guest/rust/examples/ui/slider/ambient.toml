@@ -1,5 +1,5 @@
 [ember]
-id = "slider"
+id = "ambient_example_slider"
 name = "Slider"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/slider"

@@ -1,5 +1,5 @@
 [ember]
-id = "dock_layout"
+id = "ambient_example_dock_layout"
 name = "Dock Layout"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/dock_layout"
