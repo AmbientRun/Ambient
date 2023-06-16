@@ -40,7 +40,6 @@ impl MeshBuilder {
         }
 
         Ok(Mesh {
-            id: crate::ulid(),
             positions: self.positions,
             colors: self.colors,
             normals: self.normals,
@@ -130,9 +129,8 @@ pub fn flip_winding(indices: &mut [u32]) {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Mesh {
-    id: ulid::Ulid,
     positions: Vec<Vec3>,
     colors: Vec<Vec4>,
     normals: Vec<Vec3>,
@@ -142,12 +140,6 @@ pub struct Mesh {
     joint_weights: Vec<Vec4>,
     indices: Vec<u32>,
     aabb: AABB,
-}
-
-impl std::fmt::Debug for Mesh {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!("{:?}", self.id))
-    }
 }
 
 impl Mesh {
