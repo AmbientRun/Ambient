@@ -68,9 +68,32 @@ pub struct Ember {
     pub description: Option<String>,
     #[serde(default)]
     pub authors: Vec<String>,
+    #[serde(default, rename = "type")]
+    pub type_: EmberType,
+    #[serde(default)]
+    pub categories: Vec<Category>,
     pub organization: Option<Identifier>,
     #[serde(default)]
     pub includes: Vec<String>,
+}
+
+#[derive(Deserialize, Clone, Debug, PartialEq, Serialize, Default)]
+pub enum EmberType {
+    #[default]
+    Game,
+    Mod,
+}
+
+#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
+pub enum Category {
+    Example,
+    Fps,
+    Survival,
+    Simulation,
+    Multiplayer,
+    Strategy,
+    Sports,
+    Racing,
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
@@ -216,10 +239,7 @@ mod tests {
                     id: Identifier::new("tictactoe").unwrap(),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
-                    description: None,
-                    authors: vec![],
-                    organization: None,
-                    includes: Default::default(),
+                    ..Default::default()
                 },
                 build: Build {
                     rust: BuildRust {
@@ -274,10 +294,7 @@ mod tests {
                     id: Identifier::new("tictactoe").unwrap(),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
-                    description: None,
-                    authors: vec![],
-                    organization: None,
-                    includes: Default::default(),
+                    ..Default::default()
                 },
                 build: Build {
                     rust: BuildRust {
@@ -313,10 +330,7 @@ mod tests {
                     id: Identifier::new("tictactoe").unwrap(),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
-                    description: None,
-                    authors: vec![],
-                    organization: None,
-                    includes: Default::default(),
+                    ..Default::default()
                 },
                 build: Build {
                     rust: BuildRust {
@@ -386,10 +400,7 @@ mod tests {
                     id: Identifier::new("my_project").unwrap(),
                     name: Some("My Project".to_string()),
                     version: Version::new(0, 0, 1, VersionSuffix::Final),
-                    description: None,
-                    authors: vec![],
-                    organization: None,
-                    includes: Default::default(),
+                    ..Default::default()
                 },
                 build: Build {
                     rust: BuildRust {
