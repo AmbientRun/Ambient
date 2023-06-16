@@ -35,6 +35,18 @@ async fn asset_requests_from_file_path(
     let content = ambient_sys::fs::read(file_path.as_ref()).await?;
     let total_size = content.len() as u64;
 
+    // handle empty file
+    if content.is_empty() {
+        return Ok(vec![DeployAssetRequest {
+            ember_id: ember_id.as_ref().into(),
+            contents: vec![AssetContent {
+                path: asset_path.as_ref().into(),
+                total_size,
+                content_description: Some(ContentDescription::Chunk(content)),
+            }],
+        }]);
+    }
+
     // using single AssetContent per chunk because gRPC message has to be <4MB
     Ok(content
         .chunks(CHUNK_SIZE)
