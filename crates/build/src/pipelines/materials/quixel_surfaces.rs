@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ambient_model_import::{dotdot_path, model_crate::ModelCrate};
-use ambient_pipeline_types::materials::MaterialsPipeline;
+use ambient_pipeline_types::materials::{MaterialsPipeline, QuixelSurfaceDef};
 use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
 use ambient_std::{
     asset_cache::AssetCache,
@@ -30,12 +30,11 @@ pub async fn pipeline(ctx: &PipelineCtx, _config: MaterialsPipeline) -> Vec<OutA
             let quixel_id = QuixelId::from_full(file.last_dir_name().unwrap()).unwrap();
             let quixel_json: serde_json::Value = file.download_json(ctx.assets()).await.unwrap();
             let in_root_url = file.join(".").unwrap();
-            let surface =
-                QuixelSurfaceDef::from_quixel_json(&ctx, &quixel_id, &quixel_json, &in_root_url);
+            let surface = from_quixel_json(&ctx, &quixel_id, &quixel_json, &in_root_url);
+
             let mut asset_crate = ModelCrate::new();
-            surface
-                .write_to_asset_crate(ctx.assets(), &mut asset_crate)
-                .await;
+
+            write_to_asset_crate(&surface, ctx.assets(), &mut asset_crate).await;
 
             let tags = quixel_json["tags"]
                 .as_array()
@@ -82,6 +81,7 @@ pub async fn pipeline(ctx: &PipelineCtx, _config: MaterialsPipeline) -> Vec<OutA
     )
     .await
 }
+
 async fn download_image(assets: &AssetCache, url: Option<AbsAssetUrl>) -> Option<image::RgbaImage> {
     if let Some(url) = url {
         Some(super::download_image(assets, &url).await.ok()?.into_rgba8())
@@ -90,91 +90,93 @@ async fn download_image(assets: &AssetCache, url: Option<AbsAssetUrl>) -> Option
     }
 }
 
-#[derive(Clone, Debug, Default)]
-pub struct QuixelSurfaceDef {
-    pub albedo: Option<AbsAssetUrl>,
-    pub ao: Option<AbsAssetUrl>,
-    pub normal: Option<AbsAssetUrl>,
-    pub opacity: Option<AbsAssetUrl>,
-}
-impl QuixelSurfaceDef {
-    async fn write_to_asset_crate(&self, assets: &AssetCache, asset_crate: &mut ModelCrate) {
-        let mut images = join_all(
-            [
-                download_image(assets, self.albedo.clone()),
-                download_image(assets, self.ao.clone()),
-                download_image(assets, self.normal.clone()),
-                download_image(assets, self.opacity.clone()),
-            ]
-            .into_iter(),
-        )
-        .await;
-        let mut albedo = images.remove(0);
-        let ao = images.remove(0);
-        let normal = images.remove(0);
-        let opacity = images.remove(0);
-        let transparent = Some(opacity.is_some());
-        if let (Some(albedo), Some(ao)) = (&mut albedo, &ao) {
-            // Pre-multiply AO
-            for (b, ao) in albedo.pixels_mut().zip(ao.pixels()) {
-                b[0] = ((ao[0] as f32 / 255.) * b[0] as f32) as u8;
-                b[1] = ((ao[0] as f32 / 255.) * b[1] as f32) as u8;
-                b[2] = ((ao[0] as f32 / 255.) * b[2] as f32) as u8;
-            }
+async fn write_to_asset_crate(
+    surface: &QuixelSurfaceDef,
+    assets: &AssetCache,
+    asset_crate: &mut ModelCrate,
+) {
+    let mut images = join_all(
+        [
+            download_image(assets, surface.albedo.clone()),
+            download_image(assets, surface.ao.clone()),
+            download_image(assets, surface.normal.clone()),
+            download_image(assets, surface.opacity.clone()),
+        ]
+        .into_iter(),
+    )
+    .await;
+
+    let mut albedo = images.remove(0);
+    let ao = images.remove(0);
+    let normal = images.remove(0);
+    let opacity = images.remove(0);
+    let transparent = Some(opacity.is_some());
+
+    if let (Some(albedo), Some(ao)) = (&mut albedo, &ao) {
+        // Pre-multiply AO
+        for (b, ao) in albedo.pixels_mut().zip(ao.pixels()) {
+            b[0] = ((ao[0] as f32 / 255.) * b[0] as f32) as u8;
+            b[1] = ((ao[0] as f32 / 255.) * b[1] as f32) as u8;
+            b[2] = ((ao[0] as f32 / 255.) * b[2] as f32) as u8;
         }
-        if let (Some(albedo), Some(opacity)) = (&mut albedo, &opacity) {
-            for (b, op) in albedo.pixels_mut().zip(opacity.pixels()) {
-                b[3] = op[0];
-            }
-        }
-        let mat = PbrMaterialDesc {
-            transparent,
-            base_color: albedo
-                .map(|albedo| asset_crate.images.insert("base_color", albedo).path)
-                .map(|x| dotdot_path(x).into()),
-            normalmap: normal
-                .map(|normal| asset_crate.images.insert("normalmap", normal).path)
-                .map(|x| dotdot_path(x).into()),
-            ..Default::default()
-        };
-        asset_crate.materials.insert(ModelCrate::MAIN, mat);
     }
-    fn from_quixel_json(
-        ctx: &PipelineCtx,
-        qid: &QuixelId,
-        json: &serde_json::Value,
-        in_root_url: &AbsAssetUrl,
-    ) -> Self {
-        let mut res = Self::default();
-        let target_resolution = match &qid.resolution as &str {
-            "1K" => "1024x",
-            "2K" => "2048x",
-            "4K" => "4096x",
-            "8K" => "8192x",
-            _ => panic!("Unsupported resolution: {:?}", qid.resolution),
-        };
-        if let Some(components) = json["components"].as_array() {
-            for comp in components {
-                let comp_type = comp["type"].as_str().unwrap();
-                for uri in comp["uris"].as_array().unwrap() {
-                    for resolution in uri["resolutions"].as_array().unwrap() {
-                        if resolution["resolution"]
-                            .as_str()
-                            .unwrap()
-                            .starts_with(target_resolution)
-                        {
-                            for format in resolution["formats"].as_array().unwrap() {
-                                if format["mimeType"].as_str().unwrap() == "image/jpeg" {
-                                    if let Ok(url) = ctx.get_downloadable_url(
-                                        &in_root_url.push(format["uri"].as_str().unwrap()).unwrap(),
-                                    ) {
-                                        match comp_type {
-                                            "albedo" => res.albedo = Some(url.clone()),
-                                            "ao" => res.ao = Some(url.clone()),
-                                            "normal" => res.normal = Some(url.clone()),
-                                            "opacity" => res.opacity = Some(url.clone()),
-                                            _ => {}
-                                        }
+
+    if let (Some(albedo), Some(opacity)) = (&mut albedo, &opacity) {
+        for (b, op) in albedo.pixels_mut().zip(opacity.pixels()) {
+            b[3] = op[0];
+        }
+    }
+
+    let mat = PbrMaterialDesc {
+        transparent,
+        base_color: albedo
+            .map(|albedo| asset_crate.images.insert("base_color", albedo).path)
+            .map(|x| dotdot_path(x).into()),
+        normalmap: normal
+            .map(|normal| asset_crate.images.insert("normalmap", normal).path)
+            .map(|x| dotdot_path(x).into()),
+        ..Default::default()
+    };
+
+    asset_crate.materials.insert(ModelCrate::MAIN, mat);
+}
+fn from_quixel_json(
+    ctx: &PipelineCtx,
+    qid: &QuixelId,
+    json: &serde_json::Value,
+    in_root_url: &AbsAssetUrl,
+) -> QuixelSurfaceDef {
+    let mut res = QuixelSurfaceDef::default();
+
+    let target_resolution = match &qid.resolution as &str {
+        "1K" => "1024x",
+        "2K" => "2048x",
+        "4K" => "4096x",
+        "8K" => "8192x",
+        _ => panic!("Unsupported resolution: {:?}", qid.resolution),
+    };
+
+    if let Some(components) = json["components"].as_array() {
+        for comp in components {
+            let comp_type = comp["type"].as_str().unwrap();
+            for uri in comp["uris"].as_array().unwrap() {
+                for resolution in uri["resolutions"].as_array().unwrap() {
+                    if resolution["resolution"]
+                        .as_str()
+                        .unwrap()
+                        .starts_with(target_resolution)
+                    {
+                        for format in resolution["formats"].as_array().unwrap() {
+                            if format["mimeType"].as_str().unwrap() == "image/jpeg" {
+                                if let Ok(url) = ctx.get_downloadable_url(
+                                    &in_root_url.push(format["uri"].as_str().unwrap()).unwrap(),
+                                ) {
+                                    match comp_type {
+                                        "albedo" => res.albedo = Some(url.clone()),
+                                        "ao" => res.ao = Some(url.clone()),
+                                        "normal" => res.normal = Some(url.clone()),
+                                        "opacity" => res.opacity = Some(url.clone()),
+                                        _ => {}
                                     }
                                 }
                             }
@@ -182,28 +184,29 @@ impl QuixelSurfaceDef {
                     }
                 }
             }
-        } else {
-            for map in json["maps"].as_array().unwrap() {
-                if map["mimeType"].as_str().unwrap() == "image/jpeg"
-                    && map["resolution"]
-                        .as_str()
-                        .unwrap()
-                        .starts_with(target_resolution)
+        }
+    } else {
+        for map in json["maps"].as_array().unwrap() {
+            if map["mimeType"].as_str().unwrap() == "image/jpeg"
+                && map["resolution"]
+                    .as_str()
+                    .unwrap()
+                    .starts_with(target_resolution)
+            {
+                if let Ok(url) = ctx
+                    .get_downloadable_url(&in_root_url.push(map["uri"].as_str().unwrap()).unwrap())
                 {
-                    if let Ok(url) = ctx.get_downloadable_url(
-                        &in_root_url.push(map["uri"].as_str().unwrap()).unwrap(),
-                    ) {
-                        match map["type"].as_str().unwrap() {
-                            "albedo" => res.albedo = Some(url.clone()),
-                            "ao" => res.ao = Some(url.clone()),
-                            "normal" => res.normal = Some(url.clone()),
-                            "opacity" => res.opacity = Some(url.clone()),
-                            _ => {}
-                        }
+                    match map["type"].as_str().unwrap() {
+                        "albedo" => res.albedo = Some(url.clone()),
+                        "ao" => res.ao = Some(url.clone()),
+                        "normal" => res.normal = Some(url.clone()),
+                        "opacity" => res.opacity = Some(url.clone()),
+                        _ => {}
                     }
                 }
             }
         }
-        res
     }
+
+    res
 }

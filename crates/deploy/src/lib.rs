@@ -31,7 +31,7 @@ async fn asset_from_file_path(
 /// This takes the path to an Ambient project and deploys it. An Ambient project is expected to
 /// be already built.
 pub async fn deploy(
-    runtime: &tokio::runtime::Runtime,
+    runtime: &tokio::runtime::Handle,
     api_server: String,
     auth_token: &str,
     path: impl AsRef<Path>,

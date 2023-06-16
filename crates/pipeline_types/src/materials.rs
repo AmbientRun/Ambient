@@ -1,4 +1,4 @@
-use ambient_std::asset_url::AssetUrl;
+use ambient_std::asset_url::{AbsAssetUrl, AssetUrl};
 use glam::Vec4;
 use serde::{Deserialize, Serialize};
 
@@ -96,4 +96,15 @@ impl SamplerDesc {
         min_filter: wgpu::FilterMode::Linear,
         mipmap_filter: wgpu::FilterMode::Linear,
     };
+}
+
+// Quixel
+
+/// Imports a quixel-style surface definition
+#[derive(Clone, Debug, Default)]
+pub struct QuixelSurfaceDef {
+    pub albedo: Option<AbsAssetUrl>,
+    pub ao: Option<AbsAssetUrl>,
+    pub normal: Option<AbsAssetUrl>,
+    pub opacity: Option<AbsAssetUrl>,
 }
