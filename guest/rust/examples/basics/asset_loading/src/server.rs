@@ -22,7 +22,7 @@ pub async fn main() {
         .with(lookat_target(), vec3(0., 0., 0.))
         .spawn();
 
-    let sun = Entity::new()
+    Entity::new()
         .with_merge(make_transformable())
         .with_default(sun())
         .with(rotation(), Quat::from_rotation_y(-1.))
