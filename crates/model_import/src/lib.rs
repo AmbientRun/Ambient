@@ -435,7 +435,7 @@ impl Default for ModelTextureSize {
 //     }
 // }
 
-pub const MODEL_EXTENSIONS: &[&str] = &["glb", "fbx", "obj"];
+pub const MODEL_EXTENSIONS: &[&str] = &["glb", "fbx", "obj", "x"];
 
 /// ../[path]
 pub fn dotdot_path(path: impl Into<RelativePathBuf>) -> RelativePathBuf {
