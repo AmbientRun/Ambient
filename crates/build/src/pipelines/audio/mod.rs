@@ -1,7 +1,7 @@
+use ambient_pipeline_types::audio::AudioPipeline;
 use ambient_std::asset_url::AssetType;
 use ambient_world_audio::AudioNode;
 use anyhow::Context;
-use serde::{Deserialize, Serialize};
 use tracing::{info_span, Instrument};
 
 use super::{
@@ -10,19 +10,6 @@ use super::{
 };
 
 pub const SOUND_GRAPH_EXTENSION: &str = "sgr";
-
-fn is_false(value: &bool) -> bool {
-    !*value
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct AudioPipeline {
-    /// Whether or not the audio should be converted to Ogg Vorbis.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "is_false")]
-    pub convert: bool,
-}
 
 pub async fn pipeline(ctx: &PipelineCtx, config: AudioPipeline) -> Vec<OutAsset> {
     ctx.process_files(

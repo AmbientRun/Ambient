@@ -2,9 +2,7 @@ use ambient_std::asset_url::{AbsAssetUrl, AssetUrl};
 use glam::Vec4;
 use serde::{Deserialize, Serialize};
 
-fn is_false(value: &bool) -> bool {
-    !*value
-}
+use crate::is_false;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]

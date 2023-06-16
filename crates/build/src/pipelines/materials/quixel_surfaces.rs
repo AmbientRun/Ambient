@@ -42,6 +42,7 @@ pub async fn pipeline(ctx: &PipelineCtx, _config: MaterialsPipeline) -> Vec<OutA
                 .iter()
                 .map(|x| x.as_str().unwrap().to_string().to_case(Case::Title))
                 .collect_vec();
+
             let pack_name = quixel_json["semanticTags"]["name"]
                 .as_str()
                 .unwrap()

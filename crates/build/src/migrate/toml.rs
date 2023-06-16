@@ -1,6 +1,9 @@
 use std::path::{Path, PathBuf};
 
-use ambient_pipeline_types::materials::{MaterialsImporter, MaterialsPipeline};
+use ambient_pipeline_types::{
+    audio::AudioPipeline,
+    materials::{MaterialsImporter, MaterialsPipeline},
+};
 use ambient_project::Manifest;
 use anyhow::Context;
 use futures::{future::ready, stream, StreamExt, TryStreamExt};
@@ -10,7 +13,6 @@ use crate::{
     get_asset_files,
     migrate::toml::json_pipeline::PipelineOneOrMany,
     pipelines::{
-        audio::AudioPipeline,
         models::{Collider, ModelsPipeline},
         Pipeline, PipelineProcessor, PipelineSchema,
     },

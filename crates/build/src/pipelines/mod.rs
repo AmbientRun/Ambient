@@ -1,7 +1,7 @@
 use std::{collections::HashSet, sync::Arc};
 
 use ambient_asset_cache::SyncAssetKey;
-use ambient_pipeline_types::materials::MaterialsPipeline;
+use ambient_pipeline_types::{audio::AudioPipeline, materials::MaterialsPipeline};
 use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use anyhow::Context;
 use context::PipelineCtx;
@@ -13,7 +13,7 @@ use image::ImageFormat;
 use out_asset::{OutAsset, OutAssetContent, OutAssetPreview};
 use serde::{Deserialize, Serialize};
 
-use self::{audio::AudioPipeline, models::ModelsPipeline};
+use self::models::ModelsPipeline;
 
 pub mod audio;
 pub mod context;
@@ -74,15 +74,16 @@ impl Pipeline {
                 }
             }
         }
+
         assets
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
 /// The outermost structure of the pipeline.toml file.
 ///
 /// Is a struct of arrays of pipelines as toml does not support top-level arrays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct PipelineSchema {
     pub(crate) pipelines: Vec<Pipeline>,
 }
