@@ -73,6 +73,19 @@ pub enum Commands {
         /// The server to connect to; defaults to localhost
         host: Option<String>,
     },
+    /// Asset manipulation and migration
+    Assets {
+        #[command(subcommand)]
+        command: AssetCommand,
+        path: PathBuf,
+    },
+}
+
+#[derive(Subcommand, Clone, Debug)]
+pub enum AssetCommand {
+    /// Migrate json pipelines to toml
+    #[command(name = "migrate-pipelines-toml")]
+    MigratePipelinesToml,
 }
 
 #[derive(Subcommand, Clone, Copy, Debug)]
@@ -180,6 +193,7 @@ impl Cli {
             Commands::Serve { .. } => None,
             Commands::View { .. } => None,
             Commands::Join { run_args, .. } => Some(run_args),
+            Commands::Assets { .. } => None,
         }
     }
     /// Extract project-relevant state only
@@ -193,6 +207,7 @@ impl Cli {
             Commands::Serve { project_args, .. } => Some(project_args),
             Commands::View { project_args, .. } => Some(project_args),
             Commands::Join { .. } => None,
+            Commands::Assets { .. } => None,
         }
     }
     /// Extract host-relevant state only
@@ -206,6 +221,7 @@ impl Cli {
             Commands::Serve { host_args, .. } => Some(host_args),
             Commands::View { .. } => None,
             Commands::Join { .. } => None,
+            Commands::Assets { .. } => None,
         }
     }
 }

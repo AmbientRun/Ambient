@@ -64,7 +64,7 @@ async fn asset_requests_from_file_path(
 /// This takes the path to an Ambient ember and deploys it. An Ambient ember is expected to
 /// be already built.
 pub async fn deploy(
-    runtime: &tokio::runtime::Runtime,
+    runtime: &tokio::runtime::Handle,
     api_server: String,
     auth_token: &str,
     path: impl AsRef<Path>,

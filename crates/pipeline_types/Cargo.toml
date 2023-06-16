@@ -1,0 +1,17 @@
+[package]
+name = "ambient_pipeline_types"
+version.workspace = true
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ambient_std = { path = "../std", version = "0.3.0-dev" }
+ambient_ecs = { path = "../ecs", version = "0.3.0-dev" }
+ambient_model_import = { path = "../model_import", version = "0.3.0-dev" }
+ambient_gpu = { path = "../gpu", version = "0.3.0-dev" }
+ambient_physics = { path = "../physics", version = "0.3.0-dev" }
+
+serde.workspace = true
+glam.workspace = true
+wgpu.workspace = true

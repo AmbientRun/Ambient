@@ -5,12 +5,14 @@ use ambient_asset_cache::{
 };
 use ambient_decals::decal;
 use ambient_ecs::Entity;
-use ambient_gpu::sampler::SamplerKey;
 use ambient_model_import::{
     model_crate::{cap_texture_size, ModelCrate},
     ModelTextureSize,
 };
 use ambient_physics::collider::{collider, collider_type};
+use ambient_pipeline_types::materials::{
+    MaterialsImporter, MaterialsPipeline, PipelinePbrMaterial,
+};
 use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
 use ambient_std::{
     asset_url::{AbsAssetUrl, AssetType, AssetUrl},
@@ -20,9 +22,8 @@ use anyhow::Context;
 use async_trait::async_trait;
 use dyn_clonable::*;
 use futures::{future::BoxFuture, FutureExt};
-use glam::{Vec3, Vec4};
+use glam::Vec3;
 use image::{ImageOutputFormat, RgbaImage};
-use serde::{Deserialize, Serialize};
 
 use super::{
     context::PipelineCtx,
@@ -32,25 +33,6 @@ use super::{
 use crate::pipelines::download_image;
 
 pub mod quixel_surfaces;
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-#[allow(clippy::large_enum_variant)]
-pub enum MaterialsImporter {
-    /// Import a single material, as specified.
-    /// All of its dependent assets (URLs, etc) will be resolved during the build process.
-    Single(PipelinePbrMaterial),
-    /// Import Quixel materials.
-    Quixel,
-}
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MaterialsPipeline {
-    /// The importer to use for materials.
-    pub importer: Box<MaterialsImporter>,
-    /// Whether or not decal prefabs should be created for each of these materials.
-    #[serde(default)]
-    pub output_decals: bool,
-}
 
 pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAsset> {
     let materials = match *config.importer.clone() {
@@ -64,7 +46,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
                     .to_string();
 
                 let mat_out_url = ctx.out_root().join(ctx.pipeline_path())?.as_directory();
-                let material = mat.to_mat(&ctx, &ctx.in_root(), &mat_out_url).await?;
+                let material = to_mat(&mat, &ctx, &ctx.in_root(), &mat_out_url).await?;
                 let base_color_url = material
                     .base_color
                     .clone()
@@ -98,6 +80,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
         }
         MaterialsImporter::Quixel => quixel_surfaces::pipeline(ctx, config.clone()).await,
     };
+
     if config.output_decals {
         let mut res = materials.clone();
         for mat in materials {
@@ -152,119 +135,73 @@ pub async fn pipeline(ctx: &PipelineCtx, config: MaterialsPipeline) -> Vec<OutAs
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
-pub struct PipelinePbrMaterial {
-    /// The name of the material.
-    pub name: Option<String>,
-    /// Where the material came from.
-    pub source: Option<String>,
-
-    /// The base color map (i.e. texture) of this material.
-    pub base_color: Option<AssetUrl>,
-    /// The opacity map of this material.
-    pub opacity: Option<AssetUrl>,
-    /// The normal map of this material.
-    pub normalmap: Option<AssetUrl>,
-    /// The metallic roughness map of this material.
-    pub metallic_roughness: Option<AssetUrl>,
-
-    /// The color that this material should be multiplied by. Defaults to white for PBR.
-    pub base_color_factor: Option<Vec4>,
-    /// The emissive factor of this material (i.e. the color that it emits). Defaults to black for PBR.
-    pub emissive_factor: Option<Vec4>,
-    /// Whether or not this material is transparent. Defaults to false for PBR.
-    pub transparent: Option<bool>,
-    /// The opacity level (between 0 and 1) at which this material will not be rendered.
-    /// If the opacity map at a point has an opacity lower than this, that point will not be rendered.
-    /// Defaults to 0.5 for PBR.
-    pub alpha_cutoff: Option<f32>,
-    /// Whether or not this material is double-sided. Defaults to false for PBR.
-    pub double_sided: Option<bool>,
-    /// The metallic coefficient of this material. Defaults to 1 for PBR.
-    pub metallic: Option<f32>,
-    /// The roughness coefficient of this material. Defaults to 1 for PBR.
-    pub roughness: Option<f32>,
-
-    // Non-PBR properties that get translated to PBR.
-    /// The non-PBR specular map of this material. If specified, it will be translated to a PBR equivalent.
-    pub specular: Option<AssetUrl>,
-    /// The non-PBR specular exponent of this material. If specified alongside `specular`, it will be translated to a PBR equivalent.
-    pub specular_exponent: Option<f32>,
-
-    /// The sampler used by every texture in this material. Defaults to a sampler with `Linear` min/mag/mip filter modes and `ClampToEdge` wrap modes across uvw-coordinates.
-    pub sampler: Option<SamplerKey>,
-}
-impl PipelinePbrMaterial {
-    pub async fn to_mat(
-        &self,
-        ctx: &PipelineCtx,
-        source_root: &AbsAssetUrl,
-        out_root: &AbsAssetUrl,
-    ) -> anyhow::Result<PbrMaterialDesc> {
-        let pipe_image =
-            |path: &Option<AssetUrl>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
-                let source_root = source_root.clone();
-                let path = path.clone();
-                let ctx = ctx.clone();
-                async move {
-                    if let Some(path) = path {
-                        Ok(Some(AssetUrl::from(
-                            PipeImage::resolve(&ctx, path.resolve(&source_root).unwrap())
-                                .get(ctx.assets())
-                                .await?,
-                        )))
-                    } else {
-                        Ok(None)
-                    }
-                }
-                .boxed()
-            };
-        Ok(PbrMaterialDesc {
-            name: self.name.clone(),
-            source: self.source.clone(),
-            base_color: pipe_image(&self.base_color).await?,
-            opacity: pipe_image(&self.opacity).await?,
-            normalmap: pipe_image(&self.normalmap).await?,
-            metallic_roughness: if let Some(url) = &self.metallic_roughness {
-                Some(
-                    PipeImage::resolve(ctx, url.resolve(source_root).unwrap())
+pub async fn to_mat(
+    pipeline: &PipelinePbrMaterial,
+    ctx: &PipelineCtx,
+    source_root: &AbsAssetUrl,
+    out_root: &AbsAssetUrl,
+) -> anyhow::Result<PbrMaterialDesc> {
+    let pipe_image = |path: &Option<AssetUrl>| -> BoxFuture<'_, anyhow::Result<Option<AssetUrl>>> {
+        let source_root = source_root.clone();
+        let path = path.clone();
+        let ctx = ctx.clone();
+        async move {
+            if let Some(path) = path {
+                Ok(Some(AssetUrl::from(
+                    PipeImage::resolve(&ctx, path.resolve(&source_root).unwrap())
                         .get(ctx.assets())
-                        .await?
-                        .into(),
-                )
-            } else if let Some(specular) = &self.specular {
-                let specular_exponent = self.specular_exponent.unwrap_or(1.);
-                Some(
-                    PipeImage::resolve(ctx, specular.resolve(source_root).unwrap())
-                        .transform("mr_from_s", move |image, _| {
-                            for p in image.pixels_mut() {
-                                let specular =
-                                    1. - (1. - p[1] as f32 / 255.).powf(specular_exponent);
-                                p[0] = (specular * 255.) as u8;
-                                p[1] = ((1. - specular) * 255.) as u8;
-                                p[2] = 0;
-                                p[3] = 255;
-                            }
-                        })
-                        .get(ctx.assets())
-                        .await?
-                        .into(),
-                )
+                        .await?,
+                )))
             } else {
-                None
-            },
-
-            base_color_factor: self.base_color_factor,
-            emissive_factor: self.emissive_factor,
-            transparent: self.transparent,
-            alpha_cutoff: self.alpha_cutoff,
-            double_sided: self.double_sided,
-            metallic: self.metallic.unwrap_or(1.),
-            roughness: self.roughness.unwrap_or(1.),
-            sampler: self.sampler,
+                Ok(None)
+            }
         }
-        .relative_path_from(out_root))
+        .boxed()
+    };
+    Ok(PbrMaterialDesc {
+        name: pipeline.name.clone(),
+        source: pipeline.source.clone(),
+        base_color: pipe_image(&pipeline.base_color).await?,
+        opacity: pipe_image(&pipeline.opacity).await?,
+        normalmap: pipe_image(&pipeline.normalmap).await?,
+        metallic_roughness: if let Some(url) = &pipeline.metallic_roughness {
+            Some(
+                PipeImage::resolve(ctx, url.resolve(source_root).unwrap())
+                    .get(ctx.assets())
+                    .await?
+                    .into(),
+            )
+        } else if let Some(specular) = &pipeline.specular {
+            let specular_exponent = pipeline.specular_exponent.unwrap_or(1.);
+            Some(
+                PipeImage::resolve(ctx, specular.resolve(source_root).unwrap())
+                    .transform("mr_from_s", move |image, _| {
+                        for p in image.pixels_mut() {
+                            let specular = 1. - (1. - p[1] as f32 / 255.).powf(specular_exponent);
+                            p[0] = (specular * 255.) as u8;
+                            p[1] = ((1. - specular) * 255.) as u8;
+                            p[2] = 0;
+                            p[3] = 255;
+                        }
+                    })
+                    .get(ctx.assets())
+                    .await?
+                    .into(),
+            )
+        } else {
+            None
+        },
+
+        base_color_factor: pipeline.base_color_factor,
+        emissive_factor: pipeline.emissive_factor,
+        transparent: pipeline.transparent,
+        alpha_cutoff: pipeline.alpha_cutoff,
+        double_sided: pipeline.double_sided,
+        metallic: pipeline.metallic.unwrap_or(1.),
+        roughness: pipeline.roughness.unwrap_or(1.),
+        sampler: pipeline.sampler,
     }
+    .relative_path_from(out_root))
 }
 
 #[clonable]
@@ -272,10 +209,12 @@ pub trait ImageTransformer: std::fmt::Debug + Clone + Sync + Send {
     fn transform(&self, image: &mut RgbaImage, second_image: Option<&RgbaImage>);
     fn name(&self) -> &str;
 }
+
 pub struct FnImageTransformer<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static> {
     func: Arc<F>,
     name: &'static str,
 }
+
 impl<F: Fn(&mut RgbaImage, Option<&RgbaImage>) + Sync + Send + 'static> FnImageTransformer<F> {
     pub fn new_boxed(name: &'static str, func: F) -> Box<dyn ImageTransformer> {
         Box::new(Self {
@@ -321,6 +260,7 @@ pub struct PipeImage {
     transform: Option<Box<dyn ImageTransformer>>,
     cap_texture_sizes: Option<ModelTextureSize>,
 }
+
 impl PipeImage {
     pub fn resolve(ctx: &PipelineCtx, source: AbsAssetUrl) -> Self {
         Self::new(ctx.get_downloadable_url(&source).unwrap().clone())

@@ -75,9 +75,8 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                         .in_root()
                         .relative_path(file.decoded_path())
                         .join(i.to_string());
-                    config
-                        .apply(&ctx, &mut asset_crate, &out_model_path)
-                        .await?;
+
+                    super::apply(&config, &ctx, &mut asset_crate, &out_model_path).await?;
 
                     let model_crate_url =
                         ctx.write_model_crate(&asset_crate, &out_model_path).await;
@@ -522,6 +521,7 @@ pub struct QuixelId {
     pub resolution: String,
     pub name: String,
 }
+
 impl QuixelId {
     /// Parses a quixel id from something like "Props_Storage_vijncb3_2K_3d_ms"
     pub fn from_full(full: &str) -> Option<Self> {

@@ -52,11 +52,13 @@ impl std::fmt::Debug for AbsAssetUrl {
         write!(f, "{}", self.0.as_str())
     }
 }
+
 impl std::fmt::Display for AbsAssetUrl {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0.as_str())
     }
 }
+
 impl AbsAssetUrl {
     /// This will also resolve relative local paths
     pub fn parse(url: impl AsRef<str>) -> anyhow::Result<Self> {
@@ -269,7 +271,9 @@ impl AbsAssetUrl {
             let content: Vec<u8> = ambient_sys::fs::read(path)
                 .await
                 .context(format!("Failed to read file at: {:}", self.0))?;
-            Ok(serde_json::from_slice(&content)?)
+            let de = &mut serde_json::de::Deserializer::from_slice(&content);
+            let res = serde_path_to_error::deserialize(de)?;
+            Ok(res)
         } else {
             Ok(
                 download(assets, self.to_download_raw_url(assets)?, |resp| async {
@@ -283,8 +287,10 @@ impl AbsAssetUrl {
         &self,
         assets: &AssetCache,
     ) -> anyhow::Result<T> {
-        let content = self.download_bytes(assets).await?;
-        Ok(toml::from_str(std::str::from_utf8(&content)?)?)
+        let content = self.download_string(assets).await?;
+        let de = toml::de::Deserializer::new(&content);
+        let res = serde_path_to_error::deserialize(de)?;
+        Ok(res)
     }
 }
 
@@ -436,6 +442,7 @@ pub enum AssetUrl {
     Absolute(AbsAssetUrl),
     Relative(RelativePathBuf),
 }
+
 impl AssetUrl {
     pub fn parse(url_or_relative_path: impl AsRef<str>) -> Result<Self, url::ParseError> {
         match Url::parse(url_or_relative_path.as_ref()) {

@@ -15,12 +15,12 @@ use super::{out_asset::OutAsset, FileCollection, Pipeline, ProcessCtx};
 
 #[derive(Clone)]
 pub struct PipelineCtx {
-    pub process_ctx: ProcessCtx,
-    pub files: FileCollection,
-    pub pipeline_file: AbsAssetUrl,
-    pub root_path: RelativePathBuf,
+    pub(crate) process_ctx: ProcessCtx,
+    pub(crate) files: FileCollection,
+    pub(crate) pipeline_file: AbsAssetUrl,
+    pub(crate) root_path: RelativePathBuf,
 
-    pub pipeline: Arc<Pipeline>,
+    pub(crate) pipeline: Arc<Pipeline>,
 }
 impl PipelineCtx {
     pub fn assets(&self) -> &AssetCache {

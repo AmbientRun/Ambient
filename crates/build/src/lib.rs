@@ -13,6 +13,7 @@ use itertools::Itertools;
 use pipelines::{FileCollection, ProcessCtx, ProcessCtxKey};
 use walkdir::WalkDir;
 
+pub mod migrate;
 pub mod pipelines;
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
@@ -36,6 +37,11 @@ impl Metadata {
     }
 }
 
+pub fn register_from_manifest(manifest: &ProjectManifest) {
+    ambient_ecs::ComponentRegistry::get_mut()
+        .add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
+}
+
 /// This takes the path to an Ambient project and builds it. An Ambient project is expected to
 /// have the following structure:
 ///
@@ -50,20 +56,16 @@ pub async fn build(
     manifest: &ProjectManifest,
     optimize: bool,
     clean_build: bool,
-) -> Metadata {
-    tracing::info!(
-        ?path,
-        "Building project `{}` ({})",
-        manifest.ember.id,
-        manifest
-            .ember
-            .name
-            .as_deref()
-            .unwrap_or_else(|| manifest.ember.id.as_ref())
-    );
+) -> anyhow::Result<Metadata> {
+    let name = manifest
+        .ember
+        .name
+        .as_deref()
+        .unwrap_or_else(|| manifest.ember.id.as_ref());
 
-    ambient_ecs::ComponentRegistry::get_mut()
-        .add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
+    tracing::info!("Building project `{}` ({})", manifest.ember.id, name);
+
+    register_from_manifest(manifest);
 
     let build_path = path.join("build");
     let assets_path = path.join("assets");
@@ -78,26 +80,32 @@ pub async fn build(
 
     tokio::fs::create_dir_all(&build_path)
         .await
-        .context("Failed to create build directory")
-        .unwrap();
+        .context("Failed to create build directory")?;
 
-    build_assets(physics, &assets_path, &build_path).await;
+    build_assets(physics, &assets_path, &build_path).await?;
 
     build_rust_if_available(&path, manifest, &build_path, optimize)
         .await
-        .unwrap();
+        .with_context(|| format!("Failed to build rust {build_path:?}"))?;
 
-    store_manifest(manifest, &build_path).await.unwrap();
-    store_metadata(&build_path).await.unwrap()
+    store_manifest(manifest, &build_path).await?;
+    store_metadata(&build_path).await
 }
 
-async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
-    let files = WalkDir::new(assets_path)
+fn get_asset_files(assets_path: &Path) -> impl Iterator<Item = PathBuf> {
+    WalkDir::new(assets_path)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
-        .map(|x| AbsAssetUrl::from_file_path(x.into_path()))
-        .collect_vec();
+        .map(|x| x.into_path())
+}
+
+async fn build_assets(
+    physics: Physics,
+    assets_path: &Path,
+    build_path: &Path,
+) -> anyhow::Result<()> {
+    let files = get_asset_files(assets_path).map(Into::into).collect_vec();
 
     let assets = AssetCache::new_with_config(tokio::runtime::Handle::current(), None);
 
@@ -132,7 +140,12 @@ async fn build_assets(physics: Physics, assets_path: &Path, build_path: &Path) {
     };
 
     ProcessCtxKey.insert(&ctx.assets, ctx.clone());
-    pipelines::process_pipelines(&ctx).await;
+
+    pipelines::process_pipelines(&ctx)
+        .await
+        .with_context(|| format!("Failed to proccess pipelines for {assets_path:?}"))?;
+
+    Ok(())
 }
 
 async fn build_rust_if_available(
