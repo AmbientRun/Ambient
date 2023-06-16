@@ -4,6 +4,7 @@ use ambient_pipeline_types::{
     audio::AudioPipeline,
     materials::{MaterialsImporter, MaterialsPipeline},
     models::{Collider, ModelsPipeline},
+    pipeline::{Pipeline, PipelineProcessor},
 };
 use ambient_project::Manifest;
 use anyhow::Context;
@@ -11,9 +12,7 @@ use futures::{future::ready, stream, StreamExt, TryStreamExt};
 use itertools::Itertools;
 
 use crate::{
-    get_asset_files,
-    migrate::toml::json_pipeline::PipelineOneOrMany,
-    pipelines::{Pipeline, PipelineProcessor, PipelineSchema},
+    get_asset_files, migrate::toml::json_pipeline::PipelineOneOrMany, pipelines::PipelineSchema,
     register_from_manifest,
 };
 

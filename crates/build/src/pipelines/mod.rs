@@ -2,7 +2,8 @@ use std::{collections::HashSet, sync::Arc};
 
 use ambient_asset_cache::SyncAssetKey;
 use ambient_pipeline_types::{
-    audio::AudioPipeline, materials::MaterialsPipeline, models::ModelsPipeline,
+    models::ModelsPipeline,
+    pipeline::{Pipeline, PipelineProcessor},
 };
 use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use anyhow::Context;
@@ -21,62 +22,23 @@ pub mod materials;
 pub mod models;
 pub mod out_asset;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-/// Desrcibes how the pipeline assets should be processed.
-pub enum PipelineProcessor {
-    /// The models asset pipeline.
-    /// Will import models (including constituent materials and animations) and generate prefabs for them by default.
-    Models(ModelsPipeline),
-    /// The materials asset pipeline.
-    /// Will import specific materials without needing to be part of a model.
-    Materials(MaterialsPipeline),
-    /// The audio asset pipeline.
-    /// Will import supported audio file formats and produce Ogg Vorbis or WAV files to be used by the runtime.
-    Audio(AudioPipeline),
-}
+pub async fn process_pipeline(pipeline: &Pipeline, ctx: PipelineCtx) -> Vec<OutAsset> {
+    let mut assets = match &pipeline.processor {
+        PipelineProcessor::Models(config) => models::pipeline(&ctx, config.clone()).await,
+        PipelineProcessor::Materials(config) => materials::pipeline(&ctx, config.clone()).await,
+        PipelineProcessor::Audio(config) => audio::pipeline(&ctx, config.clone()).await,
+    };
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-/// Describes a single complete pipeline such as which processor to use, input file filtering, and output tagging.
-pub struct Pipeline {
-    /// The type of pipeline to use.
-    #[serde(flatten)]
-    pub processor: PipelineProcessor,
-    /// Filter the sources used to feed this pipeline.
-    /// This is a list of glob patterns for accepted files.
-    /// All files are accepted if this is empty.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub sources: Vec<String>,
-    /// Tags to apply to the output resources.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub tags: Vec<String>,
-    /// Categories to apply to the output resources.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub categories: Vec<Vec<String>>,
-}
-
-impl Pipeline {
-    pub async fn process(&self, ctx: PipelineCtx) -> Vec<OutAsset> {
-        let mut assets = match &self.processor {
-            PipelineProcessor::Models(config) => models::pipeline(&ctx, config.clone()).await,
-            PipelineProcessor::Materials(config) => materials::pipeline(&ctx, config.clone()).await,
-            PipelineProcessor::Audio(config) => audio::pipeline(&ctx, config.clone()).await,
-        };
-
-        for asset in &mut assets {
-            asset.tags.extend(self.tags.clone());
-            for i in 0..asset.categories.len() {
-                if let Some(cat) = self.categories.get(i) {
-                    asset.categories[i].extend(cat.iter().cloned().collect::<HashSet<_>>());
-                }
+    for asset in &mut assets {
+        asset.tags.extend(pipeline.tags.clone());
+        for i in 0..asset.categories.len() {
+            if let Some(cat) = pipeline.categories.get(i) {
+                asset.categories[i].extend(cat.iter().cloned().collect::<HashSet<_>>());
             }
         }
-
-        assets
     }
+
+    assets
 }
 
 /// The outermost structure of the pipeline.toml file.
@@ -128,7 +90,7 @@ pub async fn process_pipelines(ctx: &ProcessCtx) -> anyhow::Result<Vec<OutAsset>
             };
 
             async move {
-                tokio::spawn(async move { pipeline.process(ctx).await })
+                tokio::spawn(async move { process_pipeline(&pipeline, ctx).await })
                     .await
                     .context("Pipeline processing panicked")
             }

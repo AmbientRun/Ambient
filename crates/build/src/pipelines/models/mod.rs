@@ -1,19 +1,12 @@
 use std::{path::PathBuf, sync::Arc};
 
 use ambient_core::hierarchy::children;
-use ambient_ecs::Entity;
-use ambient_model_import::{
-    model_crate::ModelCrate, MaterialFilter, ModelTextureSize, ModelTransform, TextureResolver,
-};
-use ambient_physics::collider::{collider_type, ColliderType};
-use ambient_pipeline_types::{
-    materials::PipelinePbrMaterial,
-    models::{Collider, ModelImporter, ModelsPipeline},
-};
+use ambient_model_import::{model_crate::ModelCrate, TextureResolver};
+use ambient_physics::collider::collider_type;
+use ambient_pipeline_types::models::{Collider, ModelImporter, ModelsPipeline};
 use ambient_std::asset_url::AssetType;
 use futures::FutureExt;
 use relative_path::RelativePath;
-use serde::{Deserialize, Serialize};
 
 use super::{
     context::PipelineCtx,
