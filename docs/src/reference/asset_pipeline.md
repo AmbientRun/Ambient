@@ -6,8 +6,6 @@ Ambient features an automated asset pipeline that is capable of loading and proc
 
 To use it, create a file ending in `...pipeline.toml`, such as `pipeline.toml` but also `hello_pipeline.toml`.
 
-The full structure is described in the [Reference](#reference).
-
 This pipelines will look at, but not necessarily process, all of the files adjacent to it in the folder. By convention,
 our examples place their assets in the `assets` folder, but this is not necessary.
 
@@ -63,19 +61,8 @@ The following will filter to just files that contain `table`, scale it down, and
 material.
 
 ```toml
-[[pipelines]]
-type = "Models"
-
-[pipelines.collider]
-type = "FromModel"
-
-[pipelines.material_overrides]
-filter = [ { type = "ByName", name = "wood" } ]
+{{ #include ../../../guest/rust/examples/basics/asset_loading/assets/pipeline.toml }}
 ```
-```json
-{ "pipeline": { "type": "Models", "collider": { "type": "FromModel" }, "material_overrides": [ { "filter": {
-"type": "ByName", "name": "wood" }, "material": { "base_color": "wood_albedo.png", "metalic": 0.5, "roughness": 0.2 } }
-], "transforms": [ { "type": "Scale", "scale": 0.1 } ] }, "sources": ["**/*table*"], "tags": ["Man made"] } ```
 
 ### Notes
 
@@ -83,7 +70,31 @@ filter = [ { type = "ByName", name = "wood" } ]
 corresponding components on the current state of the entity. These components should only be used for static data - that
 is, `max_hitpoints` but not `current_hitpoints`.
 
+## Models
+### Regular
+
+Consumes model file formats into a hierarchy of entities, materials, and meshes.
+
+#### Supported formats:
+- `glb`
+- `gltf`
+- `fbx`
+- `obj`
+
+### Unity
+
+Consumes Unity packages processing all meshes, textures and materials, and *lod* levels into a normalized form to consume in Ambient.
+Usage of a processed model during runtime is identical to `Regular`.
+
+### Quixel
+
+Import Quixel packages
+
+Supports collections, lod-levels, etc.
+
 ## Materials
+
+Import materials from a collecting of maps such as *base_color*, *normals maps*.
 
 Detailed documentation is pending, but please consult the [Reference](#reference).
 
@@ -107,9 +118,9 @@ Detailed documentation is pending, but please consult the [Reference](#reference
 
 ## Reference
 
-The full structure for `pipeline.json` is described below in TypeScript `.d.ts` format:
+See `rustdoc` for a complete reference of supported pipelines, model importers, material configurations,
+and the like.
 
-```typescript {{#include pipeline.d.ts}} ```
-
-In addition, a single `pipeline.json` can contain more than one pipeline. To do this, wrap your existing object in `[]`
-(i.e. a JSON array) and add more pipelines as required.
+```sh
+cargo doc --open -p ambient_pipeline_types
+```
