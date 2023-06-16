@@ -1,5 +1,5 @@
 [package]
-name = "dock_layout"
+name = "ambient_example_dock_layout"
 
 edition = "2021"
 publish = false
@@ -7,7 +7,7 @@ rust-version = { workspace = true }
 version = { workspace = true }
 
 [dependencies]
-ambient_api = {workspace = true}
+ambient_api = { workspace = true }
 
 [[bin]]
 name = "dock_layout_client"

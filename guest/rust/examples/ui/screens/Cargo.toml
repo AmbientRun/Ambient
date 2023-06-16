@@ -1,5 +1,5 @@
 [package]
-name = "screens"
+name = "ambient_example_screens"
 
 edition = "2021"
 publish = false
@@ -7,8 +7,8 @@ rust-version = { workspace = true }
 version = { workspace = true }
 
 [dependencies]
-ambient_api = {workspace = true}
-ambient_friendly_id = {workspace = true}
+ambient_api = { workspace = true }
+ambient_friendly_id = { workspace = true }
 
 [[bin]]
 name = "screens_client"

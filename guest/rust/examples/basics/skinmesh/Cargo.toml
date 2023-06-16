@@ -1,5 +1,5 @@
 [package]
-name = "skinmesh"
+name = "ambient_example_skinmesh"
 
 edition = "2021"
 publish = false

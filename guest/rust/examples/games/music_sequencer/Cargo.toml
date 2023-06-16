@@ -1,5 +1,5 @@
 [package]
-name = "music_sequencer"
+name = "ambient_example_music_sequencer"
 
 edition = "2021"
 publish = false

@@ -1,10 +1,10 @@
 [package]
-name = "messaging"
+name = "ambient_example_messaging"
 
 edition = "2021"
 publish = false
-rust-version = {workspace = true}
-version = {workspace = true}
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
 ambient_api = { path = "../../../api" }

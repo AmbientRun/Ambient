@@ -1,5 +1,5 @@
 [package]
-name = "counter"
+name = "ambient_example_counter"
 
 edition = "2021"
 publish = false
@@ -7,7 +7,7 @@ rust-version = { workspace = true }
 version = { workspace = true }
 
 [dependencies]
-ambient_api = {workspace = true}
+ambient_api = { workspace = true }
 
 [[bin]]
 name = "counter_client"

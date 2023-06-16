@@ -1,5 +1,5 @@
 [package]
-name = "todo"
+name = "ambient_example_todo"
 
 edition = "2021"
 publish = false

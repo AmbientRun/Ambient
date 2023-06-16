@@ -1,13 +1,13 @@
 [package]
-name = "image_quad"
+name = "ambient_example_image_quad"
 
 edition = "2021"
 publish = false
-rust-version = {workspace = true}
-version = {workspace = true}
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
-ambient_api = {workspace = true}
+ambient_api = { workspace = true }
 
 [[bin]]
 name = "image_quad_server"
