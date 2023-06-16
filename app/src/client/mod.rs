@@ -331,7 +331,7 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
     let (show_ecs, set_show_ecs) = hooks.use_state(true);
     let (ecs_size, set_ecs_size) = hooks.use_state(Vec2::ZERO);
-
+    let (w, set_w) = hooks.use_state(0.0);
     hooks.use_frame({
         let state = state.clone();
         let render_target = render_target.clone();
@@ -380,23 +380,28 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                     if show_ecs {
                         ScrollArea::el(
                             ScrollAreaSizing::FitParentWidth,
-                            ECSEditor {
-                                world: Arc::new(InspectableAsyncWorld(cb({
-                                    let state = state.clone();
-                                    move |res| {
-                                        let state = state.game_state.lock();
-                                        res(&state.world)
-                                    }
-                                }))),
-                            }
-                            .el()
-                            .memoize_subtree(state.uid),
+                            MeasureSize::el(
+                                ECSEditor {
+                                    world: Arc::new(InspectableAsyncWorld(cb({
+                                        let state = state.clone();
+                                        move |res| {
+                                            let state = state.game_state.lock();
+                                            res(&state.world)
+                                        }
+                                    }))),
+                                }
+                                .el()
+                                .memoize_subtree(state.uid),
+                                cb(move |size| {
+                                    set_w(size.x);
+                                }),
+                            ),
                         )
                     } else {
                         Element::new()
                     },
                 ])
-                .with(width(), 500.)
+                .with(width(), w)
                 .with(docking(), ambient_layout::Docking::Left)
                 .with_background(vec4(0., 0., 0., 1.))
                 .with(padding(), Borders::even(STREET).into()),
