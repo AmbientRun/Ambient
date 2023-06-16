@@ -35,15 +35,16 @@ async fn asset_requests_from_file_path(
     let content = ambient_sys::fs::read(file_path.as_ref()).await?;
     let total_size = content.len() as u64;
 
+    // using single AssetContent per chunk because gRPC message has to be <4MB
     Ok(content
         .chunks(CHUNK_SIZE)
         .map(|chunk| DeployAssetRequest {
             ember_id: ember_id.as_ref().into(),
-            content: Some(AssetContent {
+            contents: vec![AssetContent {
                 path: asset_path.as_ref().into(),
                 total_size,
                 content_description: Some(ContentDescription::Chunk(chunk.to_vec())),
-            }),
+            }],
         })
         .collect())
 }
@@ -106,9 +107,9 @@ pub async fn deploy(
         let asset_path = asset_path.clone();
         // note: this send shouldn't block as we have an unbounded channel
         file_request_tx.send(if force_upload {
-            FileRequest::Contents(asset_path)
+            FileRequest::SendContents(asset_path)
         } else {
-            FileRequest::MD5(asset_path)
+            FileRequest::SendMD5(asset_path)
         })?;
     }
 
@@ -134,11 +135,16 @@ pub async fn deploy(
                         log::error!("Received error message: {:?}", err);
                         handle.abort();
                     }
+                    Some(Message::AcceptedPath(path)) => {
+                        // uploaded file has been accepted (either after MD5 or contents)
+                        file_request_tx
+                            .send_async(FileRequest::Accepted(path))
+                            .await?;
+                    }
                     Some(Message::MissingPath(path)) => {
                         // we've sent MD5 for a file but the server doesn't have it
-                        log::debug!("Received missing path message for asset: {:?}", path);
                         file_request_tx
-                            .send_async(FileRequest::Contents(path))
+                            .send_async(FileRequest::SendContents(path))
                             .await?;
                     }
                     None => {
@@ -212,15 +218,17 @@ async fn create_client(
 }
 
 enum FileRequest {
-    MD5(String),
-    Contents(String),
+    SendMD5(String),
+    SendContents(String),
+    Accepted(String),
 }
 
 impl FileRequest {
     fn path(&self) -> &str {
         match self {
-            FileRequest::MD5(path) => path,
-            FileRequest::Contents(path) => path,
+            FileRequest::SendMD5(path) => path,
+            FileRequest::SendContents(path) => path,
+            FileRequest::Accepted(path) => path,
         }
     }
 }
@@ -241,31 +249,31 @@ async fn process_file_requests(
         };
 
         match request {
-            FileRequest::MD5(path) => {
+            FileRequest::SendMD5(path) => {
                 // send MD5 hash
                 let content = ambient_sys::fs::read(file_path).await?;
                 let md5_digest = md5::Md5::default()
                     .chain_update(&content)
                     .finalize()
                     .to_vec();
-                log::debug!("Sending MD5 for {:?} = {:?}", path, md5_digest);
+                log::debug!("Sending MD5 for {:?} = {}", path, hex(&md5_digest));
                 tx.send_async(DeployAssetRequest {
                     ember_id: ember_id.clone(),
-                    content: Some(AssetContent {
+                    contents: vec![AssetContent {
                         path,
                         total_size: content.len() as u64,
                         content_description: Some(ContentDescription::Md5(md5_digest)),
-                    }),
+                    }],
                 })
                 .await?;
             }
-            FileRequest::Contents(path) => {
+            FileRequest::SendContents(path) => {
                 // send file contents
                 log::debug!("Sending contents for {:?}", path);
                 let requests = asset_requests_from_file_path(&ember_id, &path, file_path).await?;
                 let count = requests.len();
                 for (idx, request) in requests.into_iter().enumerate() {
-                    let Some(content) = request.content.as_ref() else { unreachable!() };
+                    let Some(content) = request.contents.first() else { unreachable!() };
                     let Some(ContentDescription::Chunk(chunk)) = content.content_description.as_ref() else { unreachable!() };
                     log::debug!(
                         "Deploying asset chunk {}/{} {} {}B/{}B",
@@ -277,9 +285,16 @@ async fn process_file_requests(
                     );
                     tx.send_async(request).await?;
                 }
-
+            }
+            FileRequest::Accepted(path) => {
                 // clear deployed file
-                asset_path_to_file_path.remove(&path);
+                let removed = asset_path_to_file_path.remove(&path);
+                if removed.is_none() {
+                    log::warn!(
+                        "Received accepted path for unknown (or previously accepted) asset: {:?}",
+                        path
+                    );
+                }
                 if asset_path_to_file_path.is_empty() {
                     log::debug!("All assets deployed");
                     break;
@@ -289,4 +304,12 @@ async fn process_file_requests(
     }
     // note: leaving this function drops the tx which will cause the deployer to finish
     anyhow::Ok(())
+}
+
+fn hex(bytes: &[u8]) -> String {
+    let mut s = String::with_capacity(bytes.len() * 2);
+    for byte in bytes {
+        s.push_str(&format!("{:02x}", byte));
+    }
+    s
 }

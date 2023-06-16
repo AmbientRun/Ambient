@@ -6,25 +6,34 @@ message AssetContent {
   string path = 1;
   uint64 totalSize = 2;
   oneof contentDescription {
+    // MD5 hash of the file contents (128 bits = 16 bytes)
     bytes md5 = 3;
+    // Chunk of the file contents - chunks must be sent in order
     bytes chunk = 4;
   }
 }
 
 message DeployAssetRequest {
   string emberId = 1;
-  AssetContent content = 2;
+  repeated AssetContent contents = 2;
 }
 
 message VersionDeployed {
+  // ID of the deployed version
   string id = 1;
 }
 
 message DeployAssetResponse {
   oneof message {
+    // Deployment finished successfully
     VersionDeployed finished = 1;
+    // Error during deployment (unable to continue)
     string error = 2;
-    string missingPath = 3;
+    // Path of an asset that was successfully deployed
+    string acceptedPath = 3;
+    // Path of an asset with missing contents. Only sent as a response to MD5 requests.
+    // Client should send the missing AssetContent with contents.
+    string missingPath = 4;
   }
 }
 

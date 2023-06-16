@@ -13,8 +13,10 @@ pub mod asset_content {
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum ContentDescription {
+        /// MD5 hash of the file contents (128 bits = 16 bytes)
         #[prost(bytes, tag = "3")]
         Md5(::prost::alloc::vec::Vec<u8>),
+        /// Chunk of the file contents - chunks must be sent in order
         #[prost(bytes, tag = "4")]
         Chunk(::prost::alloc::vec::Vec<u8>),
     }
@@ -24,19 +26,20 @@ pub mod asset_content {
 pub struct DeployAssetRequest {
     #[prost(string, tag = "1")]
     pub ember_id: ::prost::alloc::string::String,
-    #[prost(message, optional, tag = "2")]
-    pub content: ::core::option::Option<AssetContent>,
+    #[prost(message, repeated, tag = "2")]
+    pub contents: ::prost::alloc::vec::Vec<AssetContent>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct VersionDeployed {
+    /// ID of the deployed version
     #[prost(string, tag = "1")]
     pub id: ::prost::alloc::string::String,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DeployAssetResponse {
-    #[prost(oneof = "deploy_asset_response::Message", tags = "1, 2, 3")]
+    #[prost(oneof = "deploy_asset_response::Message", tags = "1, 2, 3, 4")]
     pub message: ::core::option::Option<deploy_asset_response::Message>,
 }
 /// Nested message and enum types in `DeployAssetResponse`.
@@ -44,11 +47,18 @@ pub mod deploy_asset_response {
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum Message {
+        /// Deployment finished successfully
         #[prost(message, tag = "1")]
         Finished(super::VersionDeployed),
+        /// Error during deployment (unable to continue)
         #[prost(string, tag = "2")]
         Error(::prost::alloc::string::String),
+        /// Path of an asset that was successfully deployed
         #[prost(string, tag = "3")]
+        AcceptedPath(::prost::alloc::string::String),
+        /// Path of an asset with missing contents. Only sent as a response to MD5 requests.
+        /// Client should send the missing AssetContent with contents.
+        #[prost(string, tag = "4")]
         MissingPath(::prost::alloc::string::String),
     }
 }
