@@ -132,6 +132,273 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_example_ambient_example_multiplayer"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+ "rand 0.8.5",
+]
+
+[[package]]
+name = "ambient_example_asset_loading"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_async"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_auto_editor"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_button"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_clientside"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_clock"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_counter"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_decals"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_dock_layout"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_editors"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+ "indexmap",
+]
+
+[[package]]
+name = "ambient_example_first_person_camera"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_flow_layout"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_fog"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_image"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_image_quad"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_input"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_messaging"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_minigolf"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_music_sequencer"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_pong"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_primitives"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_procedural_generation"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+ "noise",
+ "palette 0.7.1",
+ "rand 0.8.5",
+ "rand_pcg",
+]
+
+[[package]]
+name = "ambient_example_raw_text"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_rect"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_samplers"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_screen_ray"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_screens"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+ "ambient_friendly_id",
+]
+
+[[package]]
+name = "ambient_example_scroll"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_skinmesh"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_slider"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_sun"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_text"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_third_person_camera"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_tictactoe"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+ "palette 0.6.1",
+]
+
+[[package]]
+name = "ambient_example_todo"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
+name = "ambient_example_transparency"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "ambient_friendly_id"
 version = "0.3.0-dev"
 dependencies = [
@@ -284,31 +551,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "088ccb346677e658e7ccd9627c62576fba881f4db7fab71fa9e21bf31c0aa4cb"
 
 [[package]]
-name = "asset_loading"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
-name = "async"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "atomic_refcell"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "857253367827bd9d0fd973f0ef15506a96e79e41b0ad7aa691203a4e3214f6c8"
-
-[[package]]
-name = "auto_editor"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
 
 [[package]]
 name = "autocfg"
@@ -344,13 +590,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "24a6904aef64d73cf10ab17ebace7befb918b82164785cb89907993be7f83813"
 
 [[package]]
-name = "button"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "bytemuck"
 version = "1.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -375,20 +614,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
-name = "clientside"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
-name = "clock"
-version = "0.0.1"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "color_quant"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -401,13 +626,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
 dependencies = [
  "unicode-segmentation",
-]
-
-[[package]]
-name = "counter"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
 ]
 
 [[package]]
@@ -479,13 +697,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23d8666cb01533c39dde32bcbab8e227b4ed6679b2c925eba05feabea39508fb"
 
 [[package]]
-name = "decals"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "deflate"
 version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -511,13 +722,6 @@ name = "diff"
 version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56254986775e3233ffa9c4d7d3faaf6d36a2c09d30b20687e9f88bc8bafc16c8"
-
-[[package]]
-name = "dock_layout"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
 
 [[package]]
 name = "dyn-clonable"
@@ -547,14 +751,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68b0cf012f1230e43cd00ebb729c6bb58707ecfa8ad08b52ef3a4ccd2697fc30"
 
 [[package]]
-name = "editors"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
- "indexmap",
-]
-
-[[package]]
 name = "either"
 version = "1.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -573,27 +769,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "59a98bbaacea1c0eb6a0876280051b892eb73594fd90cf3b20e9c817029c57d2"
 dependencies = [
  "toml 0.5.11",
-]
-
-[[package]]
-name = "first_person_camera"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
-name = "flow_layout"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
-name = "fog"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
 ]
 
 [[package]]
@@ -791,13 +966,6 @@ dependencies = [
 
 [[package]]
 name = "image"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
-name = "image"
 version = "0.23.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "24ffcb7e7244a9bf19d35bf2883b9c080c4ced3c07a9895572178cdb8f13f6a1"
@@ -816,13 +984,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "image_quad"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "indexmap"
 version = "1.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -838,13 +999,6 @@ name = "indoc"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f2cb48b81b1dc9f39676bf99f5499babfec7cd8fe14307f7b3d747208fb5690"
-
-[[package]]
-name = "input"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
 
 [[package]]
 name = "instant"
@@ -927,20 +1081,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "messaging"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
-name = "minigolf"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "miniz_oxide"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -969,27 +1109,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "multiplayer"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
- "rand 0.8.5",
-]
-
-[[package]]
-name = "music_sequencer"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "noise"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ba869e17168793186c10ca82c7079a4ffdeac4f1a7d9e755b9491c028180e40"
 dependencies = [
- "image 0.23.14",
+ "image",
  "num-traits",
  "rand 0.7.3",
  "rand_xorshift",
@@ -1226,13 +1351,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pong"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1248,13 +1366,6 @@ dependencies = [
  "diff",
  "output_vt100",
  "yansi",
-]
-
-[[package]]
-name = "primitives"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
 ]
 
 [[package]]
@@ -1274,17 +1385,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b63bdb0cd06f1f4dedf69b254734f9b45af66e4a031e42a7480257d9898b435"
 dependencies = [
  "unicode-ident",
-]
-
-[[package]]
-name = "procedural_generation"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
- "noise",
- "palette 0.7.2",
- "rand 0.8.5",
- "rand_pcg",
 ]
 
 [[package]]
@@ -1408,13 +1508,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "raw_text"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "rayon"
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1434,13 +1527,6 @@ dependencies = [
  "crossbeam-deque",
  "crossbeam-utils",
  "num_cpus",
-]
-
-[[package]]
-name = "rect"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
 ]
 
 [[package]]
@@ -1471,13 +1557,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f91339c0467de62360649f8d3e185ca8de4224ff281f66000de5eb2a77a79041"
 
 [[package]]
-name = "samplers"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "scoped_threadpool"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1488,28 +1567,6 @@ name = "scopeguard"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
-
-[[package]]
-name = "screen_ray"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
-name = "screens"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
- "ambient_friendly_id",
-]
-
-[[package]]
-name = "scroll"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
 
 [[package]]
 name = "serde"
@@ -1558,26 +1615,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7bd3e3206899af3f8b12af284fafc038cc1dc2b41d1b89dd17297221c5d225de"
 
 [[package]]
-name = "skinmesh"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "slab"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6528351c9bc8ab22353f9d776db39a20288e8d6c37ef8cfe3317cf875eecfc2d"
 dependencies = [
  "autocfg",
-]
-
-[[package]]
-name = "slider"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
 ]
 
 [[package]]
@@ -1615,13 +1658,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sun"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "syn"
 version = "1.0.109"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1644,20 +1680,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "text"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
-name = "third_person_camera"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
-
-[[package]]
 name = "thiserror"
 version = "1.0.39"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1675,14 +1697,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "tictactoe"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
- "palette 0.6.1",
 ]
 
 [[package]]
@@ -1710,13 +1724,6 @@ name = "tinyvec_macros"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
-
-[[package]]
-name = "todo"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
-]
 
 [[package]]
 name = "toml"
@@ -1792,13 +1799,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "24eb03ba0eab1fd845050058ce5e616558e8f8d8fca633e6b163fe25c797213a"
 dependencies = [
  "once_cell",
-]
-
-[[package]]
-name = "transparency"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
 ]
 
 [[package]]

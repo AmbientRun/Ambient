@@ -1,8 +1,11 @@
 [ember]
-id = "skinmesh"
+id = "ambient-example-skinmesh"
 organization = "ambient"
 name = "Skinmesh"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/skinmesh"
+type = "Game"
+categories = ["Example"]
 
 [messages]
 set-controller = { name = "Set controller", description = "Sets the animation controller.", fields = { value = "u32" } }

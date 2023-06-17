@@ -1,5 +1,8 @@
 [ember]
-id = "dock-layout"
+id = "ambient-example-dock-layout"
 organization = "ambient"
 name = "Dock Layout"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/dock_layout"
+type = "Game"
+categories = ["Example"]

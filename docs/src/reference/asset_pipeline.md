@@ -4,15 +4,16 @@
 
 Ambient features an automated asset pipeline that is capable of loading and processing a number of assets and formats.
 
-To use it, create a file named `pipeline.json` anywhere in your project. You can also prepend anything you'd like to the filename, which means `hello_pipeline.json` and such will also work. The full reference structure of the `json` is described in [Reference](#reference).
+To use it, create a file ending in `...pipeline.toml`, such as `pipeline.toml` but also `hello_pipeline.toml`.
 
-This pipeline will look at, but not necessarily process, all of the files adjacent to it in the folder. By convention, our examples place their assets in the `assets` folder, but this is not necessary.
-
-A `pipeline.json` can contain one or more pipelines. To use more than one pipeline, wrap your pipeline object in a JSON array (`[]`).
+This pipelines will look at, but not necessarily process, all of the files adjacent to it in the folder. By convention,
+our examples place their assets in the `assets` folder, but this is not necessary.
 
 ## Models
 
-The `Models` pipeline can be used to compile a model, or models, to meshes that can be used by Ambient. Additionally, by default, prefabs are created for each mesh. These prefabs can have components added to them automatically through the `object_components` field of the pipeline.
+The `Models` pipeline can be used to compile a model, or models, to meshes that can be used by Ambient. Additionally, by
+default, prefabs are created for each mesh. These prefabs can have components added to them automatically through the
+`object_components` field of the pipeline.
 
 ### Supported formats
 
@@ -20,7 +21,8 @@ The `Models` pipeline can be used to compile a model, or models, to meshes that 
 - glTF: Native support
 - Unity models: Native support
 - Quixel models: Native support
-- ~30 other formats: This support is provided through the [assimp](https://github.com/assimp/assimp) library. It is not guaranteed to be fully integrated.
+- ~30 other formats: This support is provided through the [assimp](https://github.com/assimp/assimp) library. It is not
+guaranteed to be fully integrated.
 
 ### Examples
 
@@ -28,81 +30,71 @@ The `Models` pipeline can be used to compile a model, or models, to meshes that 
 
 The following will load `.glb` and `.fbx` files in the folder or any of the sub-folders.
 
-```json
-{
-  "pipeline": {
-    "type": "Models"
-  }
-}
+```toml
+[[pipelines]]
+type = "Models"
 ```
 
 #### Different pipelines for different files
 
-You can use the `sources` attribute to set up different configurations for different files:
+You can use the `sources` attribute to restrict different configurations to different files:
 
-```json
-[
-    {
-        "pipeline": {
-            "type": "Models",
-            "collider": {
-                "type": "FromModel"
-            },
-        },
-        "sources": ["physical/*.glb"]
-    },
-    {
-        "pipeline": {
-            "type": "Models",
-        },
-        "sources": ["ghosts/*.glb"]
-    }
-]
+```toml
+[[pipelines]]
+type = "Models"
+sources = [ "physical/*.glb" ]
+
+[pipelines.collider]
+type = "FromModel"
+
+[[pipelines]]
+type = "Models"
+sources = [ "ghosts/*.glb" ]
 ```
 
-`sources` accepts a list of glob patterns, so you can target a single file, or use a pattern to select all files in a directory (`*.glb`) or sub-tree (`**/test.glb`).
+`sources` accepts a list of glob patterns, so you can target a single file or a pattern to select all files in a
+directory (`*.glb`) or sub-tree (`**/test.glb`).
 
 #### A more complex model example
 
-The following will filter to just files that contain `table`, scale it down, and override materials for the `wood` material.
+The following will filter to just files that contain `table`, scale it down, and override materials for the `wood`
+material.
 
-```json
-{
-  "pipeline": {
-    "type": "Models",
-    "collider": {
-      "type": "FromModel"
-    },
-    "material_overrides": [
-      {
-        "filter": {
-          "type": "ByName",
-          "name": "wood"
-        },
-        "material": {
-          "base_color": "wood_albedo.png",
-          "metalic": 0.5,
-          "roughness": 0.2
-        }
-      }
-    ],
-    "transforms": [
-      {
-        "type": "Scale",
-        "scale": 0.1
-      }
-    ]
-  },
-  "sources": ["**/*table*"],
-  "tags": ["Man made"]
-}
+```toml
+{{ #include ../../../guest/rust/examples/basics/asset_loading/assets/pipeline.toml }}
 ```
 
 ### Notes
 
-- If you are using components in your prefab and are hot-reloading it, the incoming prefab will overwrite any corresponding components on the current state of the entity. These components should only be used for static data - that is, `max_hitpoints` but not `current_hitpoints`.
+- If you are using components in your prefab and are hot-reloading it, the incoming prefab will overwrite any
+corresponding components on the current state of the entity. These components should only be used for static data - that
+is, `max_hitpoints` but not `current_hitpoints`.
+
+## Models
+### Regular
+
+Consumes model file formats into a hierarchy of entities, materials, and meshes.
+
+#### Supported formats:
+- `glb`
+- `gltf`
+- `fbx`
+- `obj`
+
+### Unity
+
+Consumes Unity packages processing all meshes, textures and materials, and *lod* levels into a normalized form to consume in Ambient.
+Usage of a processed model during runtime is identical to `Regular`.
+
+### Quixel
+
+Import Quixel packages
+
+Supports collections, lod-levels, etc.
 
 ## Materials
+
+Import materials from a collecting of maps such as *base_color*, *normals maps*.
 
 Detailed documentation is pending, but please consult the [Reference](#reference).
 
@@ -126,10 +118,9 @@ Detailed documentation is pending, but please consult the [Reference](#reference
 
 ## Reference
 
-The full structure for `pipeline.json` is described below in TypeScript `.d.ts` format:
+See `rustdoc` for a complete reference of supported pipelines, model importers, material configurations,
+and the like.
 
-```typescript
-{{#include pipeline.d.ts}}
+```sh
+cargo doc --open -p ambient_pipeline_types
 ```
-
-In addition, a single `pipeline.json` can contain more than one pipeline. To do this, wrap your existing object in `[]` (i.e. a JSON array) and add more pipelines as required.

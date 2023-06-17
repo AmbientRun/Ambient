@@ -1,5 +1,8 @@
 [ember]
-id = "text"
+id = "ambient-example-text"
 organization = "ambient"
 name = "Text"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/text"
+type = "Game"
+categories = ["Example"]

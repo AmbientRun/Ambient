@@ -1,12 +1,12 @@
 [package]
-name = "clock"
+name = "ambient_example_clock"
 
 edition = "2021"
 publish = false
 version = "0.0.1"
 
 [dependencies]
-ambient_api = {workspace = true}
+ambient_api = { workspace = true }
 
 [[bin]]
 name = "client_clock"

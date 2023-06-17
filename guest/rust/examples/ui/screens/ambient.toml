@@ -1,5 +1,8 @@
 [ember]
-id = "screens"
+id = "ambient-example-screens"
 organization = "ambient"
 name = "Screens"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/screens"
+type = "Game"
+categories = ["Example"]

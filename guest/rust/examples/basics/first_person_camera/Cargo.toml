@@ -1,5 +1,5 @@
 [package]
-name = "first_person_camera"
+name = "ambient_example_first_person_camera"
 
 edition = "2021"
 publish = false

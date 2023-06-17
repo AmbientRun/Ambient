@@ -1,5 +1,8 @@
 [ember]
-id = "flow-layout"
+id = "ambient-example-flow-layout"
 organization = "ambient"
 name = "Flow Layout"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/flow_layout"
+type = "Game"
+categories = ["Example"]

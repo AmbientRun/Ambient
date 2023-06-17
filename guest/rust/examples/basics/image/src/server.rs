@@ -26,7 +26,7 @@ pub fn main() {
         .with(scale(), Vec3::ONE * 10.)
         .with(
             pbr_material_from_url(),
-            asset::url("assets/pipeline.json/0/mat.json").unwrap(),
+            asset::url("assets/pipeline.toml/0/mat.json").unwrap(),
         )
         .spawn();
 }

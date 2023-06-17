@@ -1,8 +1,11 @@
 [ember]
-id = "tictactoe"
+id = "ambient-example-tictactoe"
 organization = "ambient"
 name = "Tic Tac Toe"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/tictactoe"
+type = "Game"
+categories = ["Example"]
 
 [components]
 cells = { type = { type = "vec", element_type = "entity-id" }, name = "Cells", description = "The cells in the game", attributes = [

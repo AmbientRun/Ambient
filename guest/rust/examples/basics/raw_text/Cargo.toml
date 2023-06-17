@@ -1,13 +1,13 @@
 [package]
-name = "raw_text"
+name = "ambient_example_raw_text"
 
 edition = "2021"
 publish = false
-rust-version = {workspace = true}
-version = {workspace = true}
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
-ambient_api = {workspace = true}
+ambient_api = { workspace = true }
 
 [[bin]]
 name = "raw_text_server"

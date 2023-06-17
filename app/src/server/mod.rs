@@ -38,8 +38,8 @@ use crate::{
 
 pub mod wasm;
 
-pub fn start(
-    runtime: &tokio::runtime::Runtime,
+pub async fn start(
+    runtime: &tokio::runtime::Handle,
     assets: AssetCache,
     cli: Cli,
     project_path: AbsAssetUrl,
@@ -62,30 +62,28 @@ pub fn start(
         }
     });
 
-    let server = runtime.block_on(async move {
-        if let Some(port) = quic_interface_port {
-            GameServer::new_with_port(
-                SocketAddr::new(host_cli.bind_address, port),
-                false,
-                proxy_settings,
-                &crypto,
-            )
-            .await
-            .context("failed to create game server with port")
-            .unwrap()
-        } else {
-            GameServer::new_with_port_in_range(
-                host_cli.bind_address,
-                QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10),
-                false,
-                proxy_settings,
-                &crypto,
-            )
-            .await
-            .context("failed to create game server with port in range")
-            .unwrap()
-        }
-    });
+    let server = if let Some(port) = quic_interface_port {
+        GameServer::new_with_port(
+            SocketAddr::new(host_cli.bind_address, port),
+            false,
+            proxy_settings,
+            &crypto,
+        )
+        .await
+        .context("failed to create game server with port")
+        .unwrap()
+    } else {
+        GameServer::new_with_port_in_range(
+            host_cli.bind_address,
+            QUIC_INTERFACE_PORT..(QUIC_INTERFACE_PORT + 10),
+            false,
+            proxy_settings,
+            &crypto,
+        )
+        .await
+        .context("failed to create game server with port in range")
+        .unwrap()
+    };
 
     let addr = server.local_addr();
 
@@ -286,7 +284,7 @@ fn create_resources(assets: AssetCache) -> Entity {
 pub const HTTP_INTERFACE_PORT: u16 = 8999;
 pub const QUIC_INTERFACE_PORT: u16 = 9000;
 fn start_http_interface(
-    runtime: &tokio::runtime::Runtime,
+    runtime: &tokio::runtime::Handle,
     project_path: &Path,
     http_interface_port: u16,
 ) {

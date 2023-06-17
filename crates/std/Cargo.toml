@@ -23,8 +23,11 @@ ulid = { workspace = true }
 mikktspace = { workspace = true }
 
 wgpu = { workspace = true, optional = true }
+
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
+serde_path_to_error = { workspace = true, optional = true }
+
 glam = { workspace = true, optional = true }
 ordered-float = { workspace = true, optional = true }
 rand = { workspace = true, optional = true }
@@ -64,6 +67,7 @@ uncategorized = [
     "dep:wgpu",
     "dep:serde",
     "dep:serde_json",
+    "dep:serde_path_to_error",
     "dep:glam",
     "dep:ordered-float",
     "dep:rand",

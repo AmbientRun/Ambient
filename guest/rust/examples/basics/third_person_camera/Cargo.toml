@@ -1,13 +1,13 @@
 [package]
-name = "third_person_camera"
+name = "ambient_example_third_person_camera"
 
 edition = "2021"
 publish = false
-rust-version = {workspace = true}
-version = {workspace = true}
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
-ambient_api = {workspace = true}
+ambient_api = { workspace = true }
 
 [[bin]]
 name = "client_third_person_camera"

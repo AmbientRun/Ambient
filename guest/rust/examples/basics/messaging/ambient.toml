@@ -1,8 +1,11 @@
 [ember]
-id = "messaging"
+id = "ambient-example-messaging"
 organization = "ambient"
 name = "Messaging"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/messaging"
+type = "Game"
+categories = ["Example"]
 
 [messages.hello]
 name = "Hello"

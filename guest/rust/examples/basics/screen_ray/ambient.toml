@@ -1,8 +1,11 @@
 [ember]
-id = "screen-ray"
+id = "ambient-example-screen-ray"
 organization = "ambient"
 name = "Screen Ray"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/screen_ray"
+type = "Game"
+categories = ["Example"]
 
 [messages.input.fields]
 ray-origin = "vec3"

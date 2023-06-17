@@ -1,0 +1,9 @@
+[[pipelines]]
+type = "Models"
+
+[pipelines.collider]
+type = "FromModel"
+
+[[pipelines]]
+type = "Audio"
+convert = true

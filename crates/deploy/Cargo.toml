@@ -16,9 +16,9 @@ ambient_sys = { path = "../sys" , version = "0.3.0-dev" }
 anyhow = { workspace = true }
 flume = { workspace = true }
 log = { workspace = true }
+md-5 = { workspace = true }
+prost = { workspace = true }
 tokio = { workspace = true }
+tokio-stream = { workspace = true }
+tonic = { workspace = true }
 walkdir = { workspace = true }
-
-prost = "0.11"
-tokio-stream = "0.1"
-tonic = { version = "0.9", features = ["gzip", "tls", "tls-roots"] }

@@ -1,20 +1,16 @@
 use std::{path::PathBuf, sync::Arc};
 
 use ambient_core::hierarchy::children;
-use ambient_ecs::Entity;
-use ambient_model_import::{
-    model_crate::ModelCrate, MaterialFilter, ModelTextureSize, ModelTransform, TextureResolver,
-};
-use ambient_physics::collider::{collider_type, ColliderType};
+use ambient_model_import::{model_crate::ModelCrate, TextureResolver};
+use ambient_physics::collider::collider_type;
+use ambient_pipeline_types::models::{Collider, ModelImporter, ModelsPipeline};
 use ambient_std::asset_url::AssetType;
 use futures::FutureExt;
 use relative_path::RelativePath;
-use serde::{Deserialize, Serialize};
 
 use super::{
     context::PipelineCtx,
     download_image,
-    materials::PipelinePbrMaterial,
     out_asset::{asset_id_from_url, OutAsset, OutAssetContent, OutAssetPreview},
 };
 
@@ -50,153 +46,51 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
     assets
 }
 
-fn true_value() -> bool {
-    true
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelsPipeline {
-    /// The importer to use to process models.
-    #[serde(default)]
-    importer: ModelImporter,
-    /// Use assimp as the importer.
-    /// This will support more file formats, but is less well-integrated. Off by default.
-    #[serde(default)]
-    force_assimp: bool,
-    #[serde(default)]
-    /// The physics collider to use for this mesh.
-    collider: Collider,
-    /// If a collider is present, this controls how it will interact with other colliders.
-    #[serde(default)]
-    collider_type: ColliderType,
-    /// Whether or not this mesh should have its texture sizes capped.
-    cap_texture_sizes: Option<ModelTextureSize>,
-    /// Treats all assets in the pipeline as variations, and outputs a single asset which is a collection of all assets.
-    /// Most useful for grass and other entities whose individual identity is not important.
-    #[serde(default)]
-    collection_of_variants: bool,
-    /// Output prefabs that can be spawned. On by default.
-    #[serde(default = "true_value")]
-    output_prefabs: bool,
-    /// Output the animations that belonged to this model.
-    #[serde(default = "true_value")]
-    output_animations: bool,
-    /// If specified, these components will be added to the prefabs produced by `output_prefabs`.
-    ///
-    /// This is a great way to specify additional information about your prefab that can be used by gameplay logic.
-    /// Note that these components should have static data (i.e. statistics), not dynamic state, as any such state could be
-    /// replaced by this prefab being reloaded.
-    #[serde(default)]
-    prefab_components: Entity,
-    /// If specified, a list of overrides to use for the materials for the mesh.
-    #[serde(default)]
-    material_overrides: Vec<MaterialOverride>,
-    /// If specified, a list of transformations to apply to this model. This can be used
-    /// to correct coordinate space differences between your asset source and the runtime.
-    ///
-    /// These will be applied in sequence.
-    #[serde(default)]
-    transforms: Vec<ModelTransform>,
-}
-impl ModelsPipeline {
-    pub async fn apply(
-        &self,
-        ctx: &PipelineCtx,
-        model_crate: &mut ModelCrate,
-        out_model_path: impl AsRef<RelativePath>,
-    ) -> anyhow::Result<()> {
-        for transform in &self.transforms {
-            transform.apply(model_crate);
-        }
-        for mat in &self.material_overrides {
-            let material = mat
-                .material
-                .to_mat(
-                    ctx,
-                    &ctx.in_root(),
-                    &ctx.out_root()
-                        .push(out_model_path.as_ref().join("materials"))?,
-                )
-                .await?;
-            model_crate.override_material(&mat.filter, material);
-        }
-        if let Some(max_size) = self.cap_texture_sizes {
-            model_crate.cap_texture_sizes(max_size.size());
-        }
-        model_crate.finalize_model();
-        match self.collider {
-            Collider::None => {}
-            Collider::FromModel {
-                flip_normals,
-                reverse_indices,
-            } => {
-                model_crate
-                    .create_collider_from_model(
-                        &ctx.process_ctx.assets,
-                        flip_normals,
-                        reverse_indices,
-                    )
-                    .unwrap();
-            }
-            Collider::Character { radius, height } => {
-                model_crate.create_character_collider(radius, height)
-            }
-        }
-        model_crate.add_component_to_prefab(collider_type(), self.collider_type);
-        let world = model_crate.prefab_world_mut();
-        let obj = world.resource(children())[0];
-        world
-            .add_components(obj, self.prefab_components.clone())
-            .unwrap();
-        Ok(())
+async fn apply(
+    pipeline: &ModelsPipeline,
+    ctx: &PipelineCtx,
+    model_crate: &mut ModelCrate,
+    out_model_path: impl AsRef<RelativePath>,
+) -> anyhow::Result<()> {
+    for transform in &pipeline.transforms {
+        transform.apply(model_crate);
     }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MaterialOverride {
-    /// The filter for this override (i.e. what it should apply to).
-    pub filter: MaterialFilter,
-    /// The material to use as the replacement.
-    pub material: PipelinePbrMaterial,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(tag = "type")]
-pub enum ModelImporter {
-    #[default]
-    /// The default importer is sufficient for the majority of needs.
-    Regular,
-    /// Import Unity models.
-    UnityModels {
-        /// Whether or not the Unity prefabs should be converted to Ambient prefabs.
-        use_prefabs: bool,
-    },
-    /// Import Quixel models.
-    Quixel,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(tag = "type")]
-pub enum Collider {
-    #[default]
-    /// No physics collider. The default.
-    None,
-    /// Extract the physics collider from the model.
-    FromModel {
-        /// Whether or not the normals should be flipped.
-        #[serde(default)]
-        flip_normals: bool,
-        /// Whether or not the indices should be reversed for each triangle. On by default.
-        #[serde(default = "true_value")]
-        reverse_indices: bool,
-    },
-    /// Use a cylindrical character collider.
-    Character {
-        /// The radius of the collider.
-        radius: Option<f32>,
-        /// The height of the collider.
-        height: Option<f32>,
-    },
+    for mat in &pipeline.material_overrides {
+        let material = super::materials::to_mat(
+            &mat.material,
+            ctx,
+            &ctx.in_root(),
+            &ctx.out_root()
+                .push(out_model_path.as_ref().join("materials"))?,
+        )
+        .await?;
+        model_crate.override_material(&mat.filter, material);
+    }
+    if let Some(max_size) = pipeline.cap_texture_sizes {
+        model_crate.cap_texture_sizes(max_size.size());
+    }
+    model_crate.finalize_model();
+    match pipeline.collider {
+        Collider::None => {}
+        Collider::FromModel {
+            flip_normals,
+            reverse_indices,
+        } => {
+            model_crate
+                .create_collider_from_model(&ctx.process_ctx.assets, flip_normals, reverse_indices)
+                .unwrap();
+        }
+        Collider::Character { radius, height } => {
+            model_crate.create_character_collider(radius, height)
+        }
+    }
+    model_crate.add_component_to_prefab(collider_type(), pipeline.collider_type);
+    let world = model_crate.prefab_world_mut();
+    let obj = world.resource(children())[0];
+    world
+        .add_components(obj, pipeline.prefab_components.clone())
+        .unwrap();
+    Ok(())
 }
 
 fn create_texture_resolver(ctx: &PipelineCtx) -> TextureResolver {

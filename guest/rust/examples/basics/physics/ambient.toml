@@ -1,8 +1,11 @@
 [ember]
-id = "physics"
+id = "ambient-example-physics"
 organization = "ambient"
 name = "Physics"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/physics"
+type = "Game"
+categories = ["Example"]
 
 [messages.bonk]
 description = "Collision between two objects."

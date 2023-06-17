@@ -1,5 +1,8 @@
 [ember]
-id = "editors"
+id = "ambient-example-editors"
 organization = "ambient"
 name = "Editors"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/editors"
+type = "Game"
+categories = ["Example"]

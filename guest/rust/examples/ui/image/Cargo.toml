@@ -1,5 +1,5 @@
 [package]
-name = "image"
+name = "ambient_example_image"
 
 edition = "2021"
 publish = false

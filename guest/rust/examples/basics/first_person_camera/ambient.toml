@@ -1,8 +1,11 @@
 [ember]
-id = "first-person-camera"
+id = "ambient-example-first-person-camera"
 organization = "ambient"
 name = "First person camera"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/first_person_camera"
+type = "Game"
+categories = ["Example"]
 
 [components]
 player-head-ref = { type = "entity-id", name = "Player head ref", description = "The player's head.", attributes = [

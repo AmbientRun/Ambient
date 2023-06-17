@@ -53,10 +53,34 @@ pub struct Ember {
     pub name: Option<String>,
     pub version: Option<Version>,
     pub description: Option<String>,
+    pub repository: Option<String>,
     #[serde(default)]
     pub authors: Vec<String>,
+    #[serde(default, rename = "type")]
+    pub type_: EmberType,
+    #[serde(default)]
+    pub categories: Vec<Category>,
     #[serde(default)]
     pub includes: Vec<PathBuf>,
+}
+
+#[derive(Deserialize, Clone, Debug, PartialEq, Serialize, Default)]
+pub enum EmberType {
+    #[default]
+    Game,
+    Mod,
+}
+
+#[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
+pub enum Category {
+    Example,
+    Fps,
+    Survival,
+    Simulation,
+    Multiplayer,
+    Strategy,
+    Sports,
+    Racing,
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
@@ -166,10 +190,7 @@ mod tests {
                     id: i("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
-                    description: None,
-                    authors: vec![],
-                    organization: None,
-                    includes: Default::default(),
+                    ..Default::default()
                 },
                 build: Build {
                     rust: BuildRust {
@@ -223,21 +244,14 @@ mod tests {
                     id: i("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
-                    description: None,
-                    authors: vec![],
-                    organization: None,
-                    includes: Default::default(),
+                    ..Default::default()
                 },
                 build: Build {
                     rust: BuildRust {
                         feature_multibuild: vec!["client".to_string()]
                     }
                 },
-                components: Default::default(),
-                concepts: Default::default(),
-                messages: Default::default(),
-                enums: Default::default(),
-                dependencies: Default::default(),
+                ..Default::default()
             })
         )
     }
@@ -277,10 +291,7 @@ mod tests {
                     id: i("my-project"),
                     name: Some("My Project".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
-                    description: None,
-                    authors: vec![],
-                    organization: None,
-                    includes: Default::default(),
+                    ..Default::default()
                 },
                 build: Build {
                     rust: BuildRust {
@@ -412,10 +423,7 @@ mod tests {
                     id: i("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
-                    description: None,
-                    authors: vec![],
-                    organization: None,
-                    includes: Default::default(),
+                    ..Default::default()
                 },
                 build: Build::default(),
                 components: Default::default(),
@@ -456,10 +464,7 @@ mod tests {
                     id: i("test"),
                     name: Some("Test".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
-                    description: None,
-                    authors: vec![],
-                    organization: None,
-                    includes: Default::default(),
+                    ..Default::default()
                 },
                 build: Build {
                     rust: BuildRust {
@@ -535,12 +540,10 @@ mod tests {
             Ok(Manifest {
                 ember: Ember {
                     id: i("dependencies"),
+                    organization: Some(i("ambient")),
                     name: Some("dependencies".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
-                    description: None,
-                    authors: vec![],
-                    organization: Some(i("ambient")),
-                    includes: Default::default(),
+                    ..Default::default()
                 },
                 build: Default::default(),
                 components: Default::default(),

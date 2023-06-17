@@ -1,5 +1,5 @@
 [package]
-name = "procedural_generation"
+name = "ambient_example_procedural_generation"
 
 edition = "2021"
 publish = false

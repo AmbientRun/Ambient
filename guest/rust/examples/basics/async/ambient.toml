@@ -1,5 +1,8 @@
 [ember]
-id = "async"
+id = "ambient-example-async"
 organization = "ambient"
 name = "Async"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/async"
+type = "Game"
+categories = ["Example"]

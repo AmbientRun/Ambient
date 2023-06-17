@@ -1,8 +1,11 @@
 [ember]
-id = "minigolf"
+id = "ambient-example-minigolf"
 organization = "ambient"
 name = "Minigolf"
 version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/minigolf"
+type = "Game"
+categories = ["Example"]
 
 [components]
 next-player-hue = { type = "f32", name = "Next Player Hue", description = "Controls the hue (in degrees) to use for the next player's color.", attributes = [

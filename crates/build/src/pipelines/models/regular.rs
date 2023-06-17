@@ -8,7 +8,7 @@ use super::{
         out_asset::{OutAssetContent, OutAssetPreview},
         ModelsPipeline,
     },
-    create_texture_resolver,
+    apply, create_texture_resolver,
 };
 use crate::pipelines::{out_asset::asset_id_from_url, OutAsset};
 
@@ -41,9 +41,7 @@ pub async fn pipeline(ctx: &PipelineCtx, config: ModelsPipeline) -> Vec<OutAsset
                 model_crate.create_prefab_from_model();
 
                 let out_model_path = ctx.in_root().relative_path(file.decoded_path());
-                config
-                    .apply(&ctx, &mut model_crate, &out_model_path)
-                    .await?;
+                apply(&config, &ctx, &mut model_crate, &out_model_path).await?;
 
                 let model_crate_url = ctx.write_model_crate(&model_crate, &out_model_path).await;
 

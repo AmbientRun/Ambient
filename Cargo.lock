@@ -360,6 +360,7 @@ dependencies = [
  "ambient_model",
  "ambient_model_import",
  "ambient_physics",
+ "ambient_pipeline_types",
  "ambient_project",
  "ambient_project_native",
  "ambient_renderer",
@@ -385,6 +386,7 @@ dependencies = [
  "relative-path",
  "serde",
  "serde_json",
+ "serde_path_to_error",
  "slugify",
  "symphonia",
  "tokio",
@@ -511,6 +513,7 @@ dependencies = [
  "anyhow",
  "flume",
  "log",
+ "md-5",
  "prost",
  "tokio",
  "tokio-stream",
@@ -1023,6 +1026,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_pipeline_types"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_ecs",
+ "ambient_gpu",
+ "ambient_model_import",
+ "ambient_physics",
+ "ambient_std",
+ "glam 0.24.0",
+ "serde",
+ "wgpu 0.16.1",
+]
+
+[[package]]
 name = "ambient_prefab"
 version = "0.3.0-dev"
 dependencies = [
@@ -1352,6 +1369,7 @@ dependencies = [
  "sentry-anyhow",
  "serde",
  "serde_json",
+ "serde_path_to_error",
  "thiserror",
  "tokio",
  "toml 0.7.4",
@@ -4809,6 +4827,15 @@ name = "maybe-owned"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4facc753ae494aeb6e3c22f839b158aebd4f9270f55cd3c79906c45476c47ab4"
+
+[[package]]
+name = "md-5"
+version = "0.10.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6365506850d44bff6e2fbcb5176cf63650e48bd45ef2fe2665ae1570e0f4b9ca"
+dependencies = [
+ "digest",
+]
 
 [[package]]
 name = "memchr"

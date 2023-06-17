@@ -1,10 +1,10 @@
 [package]
-name = "samplers"
+name = "ambient_example_samplers"
 
 edition = "2021"
 publish = false
-rust-version = {workspace = true}
-version = {workspace = true}
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
 ambient_api = { path = "../../../api" }

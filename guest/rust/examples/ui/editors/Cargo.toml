@@ -1,5 +1,5 @@
 [package]
-name = "editors"
+name = "ambient_example_editors"
 
 edition = "2021"
 publish = false
@@ -7,7 +7,7 @@ rust-version = { workspace = true }
 version = { workspace = true }
 
 [dependencies]
-ambient_api = {workspace = true}
+ambient_api = { workspace = true }
 indexmap = { version = "1", features = ["serde"] }
 
 [[bin]]

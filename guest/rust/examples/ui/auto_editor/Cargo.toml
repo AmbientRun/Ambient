@@ -1,5 +1,5 @@
 [package]
-name = "auto_editor"
+name = "ambient_example_auto_editor"
 
 edition = "2021"
 publish = false

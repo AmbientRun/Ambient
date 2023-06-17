@@ -1,13 +1,13 @@
 [package]
-name = "multiplayer"
+name = "ambient_example_ambient_example_multiplayer"
 
 edition = "2021"
 publish = false
-rust-version = {workspace = true}
-version = {workspace = true}
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
-ambient_api = {workspace = true}
+ambient_api = { workspace = true }
 rand = "0.8.5"
 
 [[bin]]

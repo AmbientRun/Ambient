@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use ambient_core::window::ExitStatus;
 use ambient_network::native::client::ResolvedAddr;
 use ambient_std::{
@@ -14,7 +16,7 @@ mod shared;
 
 use ambient_physics::physx::PhysicsKey;
 use anyhow::{bail, Context};
-use cli::{Cli, Commands};
+use cli::{AssetCommand, Cli, Commands};
 use log::LevelFilter;
 use server::QUIC_INTERFACE_PORT;
 
@@ -127,6 +129,24 @@ struct ProjectPath {
 }
 
 impl ProjectPath {
+    fn new_local(path: impl Into<PathBuf>) -> anyhow::Result<Self> {
+        let path = path.into();
+        let current_dir = std::env::current_dir().context("Error getting current directory")?;
+        let path = if path.is_absolute() {
+            path
+        } else {
+            ambient_std::path::normalize(&current_dir.join(path))
+        };
+
+        if path.exists() && !path.is_dir() {
+            anyhow::bail!("Project path {path:?} exists and is not a directory.");
+        }
+        let url = AbsAssetUrl::from_directory_path(path);
+        let fs_path = url.to_file_path().ok().flatten();
+
+        Ok(Self { url, fs_path })
+    }
+
     fn is_local(&self) -> bool {
         self.fs_path.is_some()
     }
@@ -152,22 +172,7 @@ impl TryFrom<Option<String>> for ProjectPath {
                 let url = AbsAssetUrl::parse(project_path)?;
                 Ok(Self { url, fs_path: None })
             }
-            Some(project_path) => {
-                let project_path = std::path::PathBuf::from(project_path);
-                let current_dir = std::env::current_dir()?;
-                let project_path = if project_path.is_absolute() {
-                    project_path
-                } else {
-                    ambient_shared_types::path::normalize(&current_dir.join(project_path))
-                };
-
-                if project_path.exists() && !project_path.is_dir() {
-                    anyhow::bail!("Project path {project_path:?} exists and is not a directory.");
-                }
-                let url = AbsAssetUrl::from_directory_path(project_path);
-                let fs_path = url.to_file_path().ok().flatten();
-                Ok(Self { url, fs_path })
-            }
+            Some(project_path) => Self::new_local(project_path),
             None => {
                 let url = AbsAssetUrl::from_directory_path(std::env::current_dir()?);
                 let fs_path = url.to_file_path().ok().flatten();
@@ -177,14 +182,40 @@ impl TryFrom<Option<String>> for ProjectPath {
     }
 }
 
-fn main() -> anyhow::Result<()> {
+async fn load_manifest(
+    assets: &AssetCache,
+    path: &ProjectPath,
+) -> anyhow::Result<ambient_project::Manifest> {
+    if let Some(path) = &path.fs_path {
+        // load manifest from file
+        Ok(
+            ambient_project::Manifest::from_file(path.join("ambient.toml"))
+                .context("Failed to read ambient.toml.")?,
+        )
+    } else {
+        // path is a URL, so download the pre-build manifest (with resolved imports)
+        let manifest_url = path.url.push("build/ambient.toml").unwrap();
+        let manifest_data = manifest_url
+            .download_string(&assets)
+            .await
+            .context("Failed to download ambient.toml.")?;
+
+        let manifest = ambient_project::Manifest::parse(&manifest_data)
+            .context("Failed to parse downloaded ambient.toml.")?;
+        Ok(manifest)
+    }
+}
+
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     setup_logging()?;
 
     shared::components::init()?;
-    let runtime = tokio::runtime::Builder::new_multi_thread()
-        .enable_all()
-        .build()?;
-    let assets = AssetCache::new(runtime.handle().clone());
+    // let runtime = tokio::runtime::Builder::new_multi_thread()
+    //     .enable_all()
+    //     .build()?;
+    let runtime = tokio::runtime::Handle::current();
+    let assets = AssetCache::new(runtime.clone());
     PhysicsKey.get(&assets); // Load physics
     AssetsCacheOnDisk.insert(&assets, false); // Disable disk caching for now; see https://github.com/AmbientRun/Ambient/issues/81
 
@@ -212,26 +243,26 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    // If a project was specified, assume that assets need to be built
-    let manifest = project
-        .map(|_| {
-            if let Some(path) = &project_path.fs_path {
-                // load manifest from file
-                anyhow::Ok(
-                    ambient_project::Manifest::from_file(path.join("ambient.toml"))
-                        .context("Failed to read ambient.toml.")?,
-                )
-            } else {
-                // project_path is a URL, so download the pre-build manifest (with resolved imports)
-                let manifest_url = project_path.url.push("build/ambient.toml").unwrap();
-                let manifest_data = runtime
-                    .block_on(manifest_url.download_string(&assets))
-                    .context("Failed to download ambient.toml.")?;
-                Ok(ambient_project::Manifest::parse(&manifest_data)
-                    .context("Failed to parse downloaded ambient.toml.")?)
+    if let Commands::Assets { command, path } = &cli.command {
+        let path = ProjectPath::new_local(path.clone())?;
+        let manifest = load_manifest(&assets, &path).await?;
+
+        match command {
+            AssetCommand::MigratePipelinesToml => {
+                ambient_build::migrate::toml::process(&manifest, path.fs_path.unwrap())
+                    .await
+                    .context("Failed to migrate pipelines")?;
             }
-        })
-        .transpose()?;
+        }
+
+        return Ok(());
+    }
+
+    // If a project was specified, assume that assets need to be built
+    let manifest = match project {
+        Some(_) => Some(load_manifest(&assets, &project_path).await?),
+        None => None,
+    };
 
     let metadata = if let Some(manifest) = manifest.as_ref() {
         let project = project.unwrap();
@@ -241,7 +272,7 @@ fn main() -> anyhow::Result<()> {
 
             tracing::info!("Building project {:?}", project_name);
 
-            let metadata = runtime.block_on(ambient_build::build(
+            let metadata = ambient_build::build(
                 PhysicsKey.get(&assets),
                 &assets,
                 project_path
@@ -251,13 +282,16 @@ fn main() -> anyhow::Result<()> {
                 manifest,
                 project.release,
                 project.clean_build,
-            ));
+            )
+            .await
+            .context("Failed to build project")?;
 
             Some(metadata)
         } else {
             let metadata_url = project_path.push("build/metadata.toml");
-            let metadata_data = runtime
-                .block_on(metadata_url.download_string(&assets))
+            let metadata_data = metadata_url
+                .download_string(&assets)
+                .await
                 .context("Failed to load build/metadata.toml.")?;
 
             Some(ambient_build::Metadata::parse(&metadata_data)?)
@@ -274,7 +308,10 @@ fn main() -> anyhow::Result<()> {
     // If this is just a deploy then deploy and exit
     #[cfg(feature = "deploy")]
     if let Commands::Deploy {
-        token, api_server, ..
+        token,
+        api_server,
+        force_upload,
+        ..
     } = &cli.command
     {
         let Some(auth_token) = token else {
@@ -284,7 +321,7 @@ fn main() -> anyhow::Result<()> {
             anyhow::bail!("Can only deploy a local project");
         };
         let manifest = manifest.as_ref().expect("no manifest");
-        let response = runtime.block_on(ambient_deploy::deploy(
+        let version_id = ambient_deploy::deploy(
             &runtime,
             api_server
                 .clone()
@@ -292,8 +329,9 @@ fn main() -> anyhow::Result<()> {
             auth_token,
             project_fs_path,
             manifest,
-        ))?;
-        log::info!("Version {} deployed successfully", response.id);
+            *force_upload,
+        )?;
+        log::info!("Version {} deployed successfully", version_id);
         return Ok(());
     }
 
@@ -303,7 +341,7 @@ fn main() -> anyhow::Result<()> {
             if !host.contains(':') {
                 host = format!("{host}:{QUIC_INTERFACE_PORT}");
             }
-            runtime.block_on(ResolvedAddr::lookup_host(&host))?
+            ResolvedAddr::lookup_host(&host).await?
         } else {
             ResolvedAddr::localhost_with_port(QUIC_INTERFACE_PORT)
         }
@@ -355,29 +393,29 @@ fn main() -> anyhow::Result<()> {
             manifest.as_ref().expect("no manifest"),
             metadata.as_ref().expect("no build metadata"),
             crypto,
-        );
+        )
+        .await;
+
         ResolvedAddr::localhost_with_port(addr.port())
     } else {
         unreachable!()
     };
 
     // Time to join!
-    let handle = runtime.handle().clone();
+
     if let Some(run) = cli.run() {
         // If we have run parameters, start a client and join a server
-        let exit_status =
-            runtime.block_on(client::run(assets, server_addr, run, project_path.fs_path));
+        let exit_status = client::run(assets, server_addr, run, project_path.fs_path).await;
         if exit_status == ExitStatus::FAILURE {
             bail!("client::run failed with {exit_status:?}");
         }
     } else {
         // Otherwise, wait for the Ctrl+C signal
-        handle.block_on(async move {
-            match tokio::signal::ctrl_c().await {
-                Ok(()) => {}
-                Err(err) => log::error!("Unable to listen for shutdown signal: {}", err),
-            }
-        });
+        match tokio::signal::ctrl_c().await {
+            Ok(()) => {}
+            Err(err) => log::error!("Unable to listen for shutdown signal: {}", err),
+        }
     }
+
     Ok(())
 }
