@@ -9,12 +9,12 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "ambient_web": "file:../client/pkg",
-        "vite-plugin-wasm": "^3.2.2"
+        "ambient_web": "file:../client/pkg"
     },
     "devDependencies": {
         "@types/audioworklet": "^0.0.47",
         "typescript": "^5.0.2",
+        "vite-plugin-wasm": "^3.2.2",
         "vite": "^4.3.9"
     }
 }
