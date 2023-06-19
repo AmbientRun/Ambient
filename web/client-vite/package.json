@@ -9,7 +9,8 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "ambient_web": "file:../client/pkg"
+        "ambient_web": "file:../client/pkg",
+        "vite-plugin-wasm": "^3.2.2"
     },
     "devDependencies": {
         "typescript": "^5.0.2",
