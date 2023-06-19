@@ -17,8 +17,8 @@
         "cmd": "cargo check --workspace --tests --examples"
     },
     "serve": {
-        "cmd": "npm run start",
-        "cwd": "www",
+        "cmd": "npm run dev",
+        "cwd": "client-vite",
         "components": {
             "qf": false
         },
