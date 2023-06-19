@@ -12,6 +12,13 @@ components!("app", {
     window_ctl: flume::Sender<WindowCtl>,
 });
 
+pub fn set_cursor(world: &World, cursor: CursorIcon) {
+    world
+        .resource(window_ctl())
+        .send(WindowCtl::SetCursorIcon(cursor.into()))
+        .ok();
+}
+
 pub fn screen_to_clip_space(world: &World, screen_pos: Vec2) -> Vec2 {
     let screen_size = *world.resource(window_logical_size());
     interpolate(
