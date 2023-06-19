@@ -100,7 +100,7 @@
     },
     "run": {
         "cmd": "npm run dev",
-        "cwd": "web/client-vite",
+        "cwd": "web/www",
         "env": {
             "RUST_LOG": "info"
         }

@@ -18,7 +18,7 @@
     },
     "serve": {
         "cmd": "npm run dev",
-        "cwd": "client-vite",
+        "cwd": "www",
         "components": {
             "qf": false
         },
