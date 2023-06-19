@@ -321,7 +321,7 @@ async fn main() -> anyhow::Result<()> {
             anyhow::bail!("Can only deploy a local project");
         };
         let manifest = manifest.as_ref().expect("no manifest");
-        let version_id = ambient_deploy::deploy(
+        let deployment_id = ambient_deploy::deploy(
             &runtime,
             api_server
                 .clone()
@@ -330,8 +330,13 @@ async fn main() -> anyhow::Result<()> {
             project_fs_path,
             manifest,
             *force_upload,
-        )?;
-        log::info!("Version {} deployed successfully", version_id);
+        )
+        .await?;
+        log::info!(
+            "Assets deployed successfully. Deployment id: {}. Deploy url: https://assets.ambient.run/{}",
+            deployment_id,
+            deployment_id,
+        );
         return Ok(());
     }
 

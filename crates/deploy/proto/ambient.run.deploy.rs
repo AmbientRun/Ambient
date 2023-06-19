@@ -31,8 +31,8 @@ pub struct DeployAssetRequest {
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct VersionDeployed {
-    /// ID of the deployed version
+pub struct Deployment {
+    /// ID of the deployment
     #[prost(string, tag = "1")]
     pub id: ::prost::alloc::string::String,
 }
@@ -49,7 +49,7 @@ pub mod deploy_asset_response {
     pub enum Message {
         /// Deployment finished successfully
         #[prost(message, tag = "1")]
-        Finished(super::VersionDeployed),
+        Finished(super::Deployment),
         /// Error during deployment (unable to continue)
         #[prost(string, tag = "2")]
         Error(::prost::alloc::string::String),
