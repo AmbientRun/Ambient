@@ -98,11 +98,10 @@ impl InspectableWorld for InspectableAsyncWorld {
 }
 
 #[element_component]
-pub fn ECSEditor(_hooks: &mut Hooks, world: Arc<dyn InspectableWorld>, filter: String) -> Element {
+pub fn ECSEditor(_hooks: &mut Hooks, world: Arc<dyn InspectableWorld>) -> Element {
     EntityList {
         world,
         parent: None,
-        filter,
     }
     .el()
 }
@@ -112,7 +111,6 @@ fn EntityList(
     hooks: &mut Hooks,
     world: Arc<dyn InspectableWorld>,
     parent: Option<EntityId>,
-    filter: String,
 ) -> Element {
     let (show_all, set_show_all) = hooks.use_state(false);
     let (entities, set_entities) = hooks.use_state(Vec::new());
@@ -132,7 +130,6 @@ fn EntityList(
                 EntityBlock {
                     world: world.clone(),
                     entity: e.clone(),
-                    filter: filter.clone(),
                 }
                 .el()
                 .memoize_subtree(e.id.to_string())
@@ -157,7 +154,6 @@ fn EntityBlock(
     hooks: &mut Hooks,
     world: Arc<dyn InspectableWorld>,
     entity: InspectedEntity,
-    filter: String,
 ) -> Element {
     let (expanded, set_expanded) = hooks.use_state(false);
     let (components, set_components) = hooks.use_state(false);
@@ -189,7 +185,6 @@ fn EntityBlock(
             EntityComponents {
                 world: world.clone(),
                 entity: entity.id,
-                filter: filter.clone(),
             }
             .el()
             .memoize_subtree(entity.id.to_string())
@@ -200,7 +195,6 @@ fn EntityBlock(
             EntityList {
                 world,
                 parent: Some(entity.id),
-                filter: filter.clone(),
             }
             .el()
             .with(margin(), Borders::left(STREET).into())
@@ -215,7 +209,6 @@ fn EntityComponents(
     hooks: &mut Hooks,
     world: Arc<dyn InspectableWorld>,
     entity: EntityId,
-    filter: String,
 ) -> Element {
     let (components, set_components) = hooks.use_state(Vec::new());
     hooks.use_interval(0.5, {

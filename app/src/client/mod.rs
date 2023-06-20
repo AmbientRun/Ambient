@@ -417,7 +417,6 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                                             res(&state.world)
                                         }
                                     }))),
-                                    filter: "".to_string(),
                                 }
                                 .el()
                                 .memoize_subtree(state.uid),
@@ -425,7 +424,7 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                                     if w_memory != 0.0 {
                                         set_w(w_memory);
                                     } else {
-                                        set_w(size.x);
+                                        set_w(size.x + 10.0);
                                     }
                                 }),
                             ),
