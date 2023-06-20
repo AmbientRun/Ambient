@@ -17,6 +17,20 @@ pub fn MainApp(_hooks: &mut Hooks) -> Element {
     let url = Url::parse("https://127.0.0.1:9000").unwrap();
 
     FlowColumn(vec![
+        Button::new("Dump native UI", |w| {
+            let mut buf = Vec::new();
+            dump_world_hierarchy(w, &mut buf);
+            let s = String::from_utf8(buf).unwrap();
+
+            tracing::info!("Dumping native UI: {}", s.len());
+            ambient_sys::task::RuntimeHandle::current().spawn_local({
+                async move {
+                    let s = s;
+                    ambient_sys::clipboard::set(&s).await;
+                }
+            });
+        })
+        .el(),
         Text::el(format!("Url: {url}")),
         GameClientView {
             url,
