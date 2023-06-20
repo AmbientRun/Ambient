@@ -34,7 +34,7 @@ use crate::{
     shared,
 };
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
-use ambient_layout::{docking, padding, width, Borders};
+use ambient_layout::{docking, margin, padding, width, Borders};
 
 pub mod player;
 mod wasm;
@@ -448,12 +448,14 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                         TextEditor::new(entity_filter, set_entity_filter)
                             .placeholder(Some("\u{f422} entity filter".to_string()))
                             .el()
+                            .with(margin(), Borders::even(STREET).into())
                     },
                     {
                         let comp_filter = comp_filter.clone();
                         TextEditor::new(comp_filter, set_comp_filter)
                             .placeholder(Some("\u{f422} component filter".to_string()))
                             .el()
+                            .with(margin(), Borders::even(STREET).into())
                     },
                     Button::new(if show_ecs { "\u{f137}" } else { "\u{f138}" }, move |_| {
                         set_show_ecs(!show_ecs)
