@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use ambient_cameras::UICamera;
+use ambient_client_shared::player;
 use ambient_ecs::{Entity, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::{server::RpcArgs, web::client::GameClientView};
@@ -69,12 +70,12 @@ fn systems() -> SystemGroup {
         vec![
             // Box::new(ambient_prefab::systems()),
             // Box::new(ambient_decals::client_systems()),
-            // Box::new(ambient_primitives::systems()),
+            Box::new(ambient_primitives::systems()),
             // Box::new(ambient_sky::systems()),
             // Box::new(ambient_water::systems()),
             // Box::new(ambient_physics::client_systems()),
             // Box::new(wasm::systems()),
-            // Box::new(player::systems_final()),
+            Box::new(player::systems_final()),
         ],
     )
 }

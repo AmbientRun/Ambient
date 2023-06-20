@@ -31,7 +31,6 @@ use crate::{
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
 use ambient_layout::{docking, padding, width, Borders};
 
-pub mod player;
 mod wasm;
 
 /// Construct an app and enter the main client view
@@ -132,7 +131,7 @@ fn MainApp(
 
     FocusRoot::el([
         UICamera.el(),
-        player::PlayerRawInputHandler.el(),
+        ambient_client_shared::player::PlayerRawInputHandler.el(),
         WindowSized::el([GameClientView {
             server_addr,
             user_id,
@@ -329,6 +328,7 @@ fn GoldenImageTest(
 fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     let (state, _) = hooks.consume_context::<GameClient>().unwrap();
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
+
     let (show_ecs, set_show_ecs) = hooks.use_state(true);
     let (ecs_size, set_ecs_size) = hooks.use_state(Vec2::ZERO);
     let (w, set_w) = hooks.use_state(0.0);
@@ -458,7 +458,7 @@ fn systems() -> SystemGroup {
             Box::new(ambient_water::systems()),
             Box::new(ambient_physics::client_systems()),
             Box::new(wasm::systems()),
-            Box::new(player::systems_final()),
+            Box::new(ambient_client_shared::player::systems_final()),
         ],
     )
 }

@@ -205,6 +205,19 @@ name = "ambient_cb"
 version = "0.3.0-dev"
 
 [[package]]
+name = "ambient_client_shared"
+version = "0.0.0"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_input",
+ "ambient_network",
+ "ambient_shared_types",
+ "glam",
+]
+
+[[package]]
 name = "ambient_color"
 version = "0.3.0-dev"
 dependencies = [
@@ -566,6 +579,20 @@ dependencies = [
  "web-sys",
  "wgpu",
  "winit",
+]
+
+[[package]]
+name = "ambient_primitives"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_gpu",
+ "ambient_meshes",
+ "ambient_renderer",
+ "ambient_std",
+ "glam",
 ]
 
 [[package]]
@@ -977,6 +1004,7 @@ dependencies = [
  "ambient_app",
  "ambient_audio",
  "ambient_cameras",
+ "ambient_client_shared",
  "ambient_core",
  "ambient_debugger",
  "ambient_ecs",
@@ -984,6 +1012,7 @@ dependencies = [
  "ambient_element",
  "ambient_layout",
  "ambient_network",
+ "ambient_primitives",
  "ambient_renderer",
  "ambient_rpc",
  "ambient_std",

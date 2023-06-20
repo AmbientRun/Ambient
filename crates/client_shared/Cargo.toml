@@ -1,0 +1,16 @@
+[package]
+name = "ambient_client_shared"
+version = "0.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ambient_core = { path = "../core" }
+ambient_ecs = { path = "../ecs" }
+ambient_element = { path = "../../shared_crates/element" }
+ambient_input = { path = "../input" }
+ambient_network = { path = "../network/" }
+ambient_shared_types = { path = "../../shared_crates/shared_types/" }
+
+glam = { workspace = true }
