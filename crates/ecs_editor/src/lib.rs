@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ambient_core::name;
-use ambient_ecs::{query, EntityId, World};
+use ambient_ecs::{debugger_comp_filter, debugger_entity_filter, query, EntityId, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_layout::{fit_horizontal, max_width, width};
 use ambient_renderer::color;
@@ -12,7 +12,6 @@ use ambient_ui_native::{
 };
 use glam::vec4;
 use itertools::Itertools;
-
 pub trait InspectableWorld: Sync + Send + std::fmt::Debug {
     fn get_entities(
         &self,
@@ -45,6 +44,8 @@ impl InspectableWorld for InspectableAsyncWorld {
         callback: ambient_std::Cb<dyn Fn(Vec<InspectedEntity>) + Sync + Send>,
     ) {
         (self.0)(cb(move |world| {
+            let filter = world.resource(debugger_entity_filter());
+            println!("Entities: filter {:?} ", &filter);
             let entities = if let Some(parent) = parent {
                 query(ambient_core::hierarchy::parent())
                     .collect_cloned(world, None)
@@ -71,6 +72,24 @@ impl InspectableWorld for InspectableAsyncWorld {
                     })
                     .collect_vec()
             };
+            let entities = entities
+                .into_iter()
+                .filter(|inspect| {
+                    if filter.is_empty() {
+                        return true;
+                    }
+                    if let Some(name) = &inspect.name {
+                        if name.contains(filter) {
+                            true
+                        } else {
+                            false
+                        }
+                    } else {
+                        false
+                    }
+                })
+                .collect_vec();
+            println!("Entities: filter {:?} {:?}", &filter, entities.len());
             callback(entities);
         }));
     }
@@ -81,12 +100,23 @@ impl InspectableWorld for InspectableAsyncWorld {
         callback: Cb<dyn Fn(Vec<InspectedComponent>) + Sync + Send>,
     ) {
         (self.0)(cb(move |world: &World| {
+            let filter = world.resource(debugger_comp_filter());
             let comps = if let Ok(comps) = world.get_components(entity) {
                 comps
                     .into_iter()
                     .map(|comp| InspectedComponent {
                         name: comp.path(),
                         value: format!("{:?}", world.get_entry(entity, comp).unwrap().as_debug()),
+                    })
+                    .filter(|inspect| {
+                        if filter.is_empty() {
+                            return true;
+                        }
+                        if inspect.name.contains(filter) {
+                            true
+                        } else {
+                            false
+                        }
                     })
                     .collect_vec()
             } else {

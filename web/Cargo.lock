@@ -315,6 +315,7 @@ dependencies = [
  "env_logger",
  "glam",
  "itertools",
+ "parking_lot",
 ]
 
 [[package]]
