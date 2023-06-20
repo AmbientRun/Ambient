@@ -45,7 +45,7 @@ impl InspectableWorld for InspectableAsyncWorld {
     ) {
         (self.0)(cb(move |world| {
             let filter = world.resource(debugger_entity_filter());
-            println!("Entities: filter {:?} ", &filter);
+
             let entities = if let Some(parent) = parent {
                 query(ambient_core::hierarchy::parent())
                     .collect_cloned(world, None)
@@ -89,7 +89,6 @@ impl InspectableWorld for InspectableAsyncWorld {
                     }
                 })
                 .collect_vec();
-            println!("Entities: filter {:?} {:?}", &filter, entities.len());
             callback(entities);
         }));
     }

@@ -336,7 +336,7 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
     let (show_ecs, set_show_ecs) = hooks.use_state(true);
     let (ecs_size, set_ecs_size) = hooks.use_state(Vec2::ZERO);
-    let (w, set_w) = hooks.use_state(0.0);
+    let (w, set_w) = hooks.use_state(300.0);
     let (w_memory, set_w_memory) = hooks.use_state(0.0);
     let (mouse_on_edge, set_mouse_on_edge) = hooks.use_state(false);
     let (should_track_resize, set_should_track_resize) = hooks.use_state(false);
@@ -370,7 +370,7 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
             .add_component(
                 EntityId::resources(),
                 debugger_entity_filter(),
-                comp_filter.clone(),
+                entity_filter.clone(),
             )
             .unwrap();
         let comp_filter = comp_filter.clone();
@@ -462,28 +462,24 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                     .toggled(show_ecs)
                     .el(),
                     if show_ecs {
+                        if w_memory != 0.0 {
+                            set_w(w_memory)
+                        } else {
+                            set_w(300.0)
+                        };
                         ScrollArea::el(
                             ScrollAreaSizing::FitParentWidth,
-                            MeasureSize::el(
-                                ECSEditor {
-                                    world: Arc::new(InspectableAsyncWorld(cb({
-                                        let state = state.clone();
-                                        move |res| {
-                                            let state = state.game_state.lock();
-                                            res(&state.world)
-                                        }
-                                    }))),
-                                }
-                                .el()
-                                .memoize_subtree(state.uid),
-                                cb(move |size| {
-                                    if w_memory != 0.0 {
-                                        set_w(w_memory);
-                                    } else {
-                                        set_w(size.x + 10.0);
+                            ECSEditor {
+                                world: Arc::new(InspectableAsyncWorld(cb({
+                                    let state = state.clone();
+                                    move |res| {
+                                        let state = state.game_state.lock();
+                                        res(&state.world)
                                     }
-                                }),
-                            ),
+                                }))),
+                            }
+                            .el()
+                            .memoize_subtree(state.uid),
                         )
                     } else {
                         set_w(0.0);
