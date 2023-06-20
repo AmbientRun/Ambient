@@ -213,6 +213,8 @@ pub fn GameClientWorld(hooks: &mut Hooks) -> Element {
         }
         .el(),
         cb(move |size| {
+            // panic!("This ought to be called");
+            tracing::info!("Measured size: {size:?}");
             set_render_target(GameClientRenderTarget(Arc::new(RenderTarget::new(
                 &gpu,
                 (size * scale_factor as f32).as_uvec2().max(UVec2::ONE),
