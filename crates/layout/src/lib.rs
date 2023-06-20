@@ -23,11 +23,17 @@ pub use ambient_ecs::generated::components::core::layout::{
 components!("layout", {
     @[Debuggable, Networked, Store, Name["Layout"], Description["The layout to apply to this entity's children."]]
     layout: Layout,
+    @[Debuggable]
     fit_vertical: Fit,
+    @[Debuggable]
     fit_horizontal: Fit,
+    @[Debuggable]
     docking: Docking,
+    @[Debuggable]
     orientation: Orientation,
+    @[Debuggable]
     align_horizontal: Align,
+    @[Debuggable]
     align_vertical: Align,
 });
 gpu_components! {
@@ -137,6 +143,7 @@ impl Borders {
         self.right = right;
         self
     }
+    /// Distance from the top left corner to the inner content
     pub fn offset(&self) -> Vec2 {
         vec2(self.left, self.top)
     }
@@ -302,7 +309,15 @@ fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
         world.get(id, width()).unwrap_or(0.),
         world.get(id, height()).unwrap_or(0.),
     ) - padding.border_size();
+
+    if remaining_size.x < 0.0 || remaining_size.y < 0.0 {
+        log::warn!("Dock layout with negative size: {remaining_size} using padding {padding:?}");
+    }
+
+    log::info!("Dock layout with size: {remaining_size}");
+
     let mut remaining_offset = padding.offset();
+
     for (i, &c) in children.iter().enumerate() {
         let dock = world
             .get(c, docking())
@@ -409,13 +424,11 @@ fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
                     )
                     .ok();
                 if child_fit_horizontal != Fit::Children {
-                    world
-                        .set_if_changed(
-                            c,
-                            width(),
-                            remaining_size.x - child_margin.get_horizontal(),
-                        )
-                        .ok();
+                    let old_width = world.get(c, width()).unwrap();
+                    let new_width = remaining_size.x - child_margin.get_horizontal();
+
+                    log::debug!("Expanding child from {old_width} => {new_width}");
+                    world.set_if_changed(c, width(), new_width).ok();
                 }
                 if child_fit_vertical != Fit::Children {
                     world
