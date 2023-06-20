@@ -574,6 +574,7 @@ dependencies = [
  "env_logger 0.10.0",
  "glam 0.24.0",
  "itertools",
+ "parking_lot",
  "tokio",
 ]
 
