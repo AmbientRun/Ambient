@@ -2,30 +2,6 @@
   <head>
     <meta charset="utf-8" />
     <title>Ambient</title>
-    <style>
-      html,
-      body {
-        background-color: black;
-        height: 100%;
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-      }
-      h1 {
-        color: aquamarine;
-        font-family: monospace;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 0;
-      }
-    </style>
   </head>
 
   <body>
@@ -33,7 +9,7 @@
       >This page contains webassembly and javascript content, please enable
       javascript in your browser.</noscript
     >
-    <h1>loading wasm module...</h1>
-    <script src="./app.js"></script>
+    <div class="center-banner"><h1>Loading WebAssembly module...</h1></div>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
