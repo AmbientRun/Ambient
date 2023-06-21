@@ -434,6 +434,7 @@ impl Renderer {
                     stencil_ops: None,
                 }),
             });
+
             render_pass.set_index_buffer(
                 mesh_buffer.index_buffer.buffer().slice(..),
                 wgpu::IndexFormat::Uint32,
@@ -445,6 +446,7 @@ impl Renderer {
                 &bind_groups,
                 target.size(),
             );
+
             {
                 ambient_profiling::scope!("Drop render pass");
                 drop(render_pass);

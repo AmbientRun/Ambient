@@ -133,8 +133,6 @@ async fn handle_webtransport_session(
         }
     }
 
-    tracing::debug!("Performing additional on connect tracingic after the fact");
-
     tokio::spawn(handle_diffs(
         FramedSendStream::new(conn.open_uni(sid).await?),
         diffs_rx,

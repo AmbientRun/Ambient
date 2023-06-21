@@ -314,8 +314,6 @@ fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
         log::warn!("Dock layout with negative size: {remaining_size} using padding {padding:?}");
     }
 
-    log::info!("Dock layout with size: {remaining_size}");
-
     let mut remaining_offset = padding.offset();
 
     for (i, &c) in children.iter().enumerate() {
@@ -424,10 +422,8 @@ fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
                     )
                     .ok();
                 if child_fit_horizontal != Fit::Children {
-                    let old_width = world.get(c, width()).unwrap();
                     let new_width = remaining_size.x - child_margin.get_horizontal();
 
-                    log::debug!("Expanding child from {old_width} => {new_width}");
                     world.set_if_changed(c, width(), new_width).ok();
                 }
                 if child_fit_vertical != Fit::Children {

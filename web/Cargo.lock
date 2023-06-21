@@ -829,6 +829,7 @@ dependencies = [
 name = "ambient_sys"
 version = "0.3.0-dev"
 dependencies = [
+ "arboard",
  "console_error_panic_hook",
  "derive_more",
  "flume",
@@ -900,6 +901,7 @@ dependencies = [
  "rand",
  "serde",
  "serde_json",
+ "tracing",
 ]
 
 [[package]]

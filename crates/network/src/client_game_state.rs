@@ -38,7 +38,9 @@ pub struct ClientGameState {
     pub(crate) assets: AssetCache,
     user_id: String,
 }
+
 struct TempSystem(Box<dyn FnMut(&mut World) -> bool + Sync + Send>);
+
 impl std::fmt::Debug for TempSystem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("TempSystem").finish()
@@ -61,6 +63,7 @@ impl ClientGameState {
             .with(ambient_core::player::local_user_id(), player_id.clone())
             .with(game_screen_render_target(), render_target)
             .with_merge(client_resources);
+
         game_world
             .add_components(game_world.resource_entity(), local_resources)
             .unwrap();
@@ -129,9 +132,11 @@ impl ClientGameState {
             &mut encoder,
             &mut post_submit,
             RendererTarget::Target(target),
-            Some(Color::rgba(0., 0., 0., 1.)),
+            Some(Color::rgba(1.0, 1.0, 1.0, 1.)),
         );
+
         tracing::debug!("Drawing ui");
+
         self.ui_renderer.render(
             gpu,
             &mut self.world,
@@ -140,6 +145,7 @@ impl ClientGameState {
             RendererTarget::Target(target),
             None,
         );
+
         gpu.queue.submit(Some(encoder.finish()));
         for action in post_submit {
             action();

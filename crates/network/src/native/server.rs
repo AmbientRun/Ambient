@@ -337,8 +337,6 @@ async fn handle_quinn_connection(
         }
     }
 
-    tracing::debug!("Performing additional on connect logic");
-
     tokio::spawn(handle_diffs(
         FramedSendStream::new(conn.open_uni().await?),
         diffs_rx,
