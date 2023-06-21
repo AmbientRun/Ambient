@@ -1,4 +1,4 @@
-use std::{collections::HashMap, f32::consts::PI, fmt::Debug, ops::Deref, sync::Arc};
+use std::{collections::HashMap, f32::consts::PI, fmt::Debug, ops::Deref, str::FromStr, sync::Arc};
 
 use ambient_core::{
     asset_cache,
@@ -147,7 +147,7 @@ pub fn server_systems() -> SystemGroup {
             query(collider_from_url().changed()).to_system(|q, world, qs, _| {
                 for (id, url) in changed_or_missing(q, world, qs, collider()) {
                     tracing::debug!("Loading collider: {url:#?}");
-                    match TypedAssetUrl::parse(&url)
+                    match TypedAssetUrl::from_str(&url)
                         .context("Failed to parse url")
                         .and_then(|url: TypedAssetUrl<ColliderAssetType>| {
                             url.0

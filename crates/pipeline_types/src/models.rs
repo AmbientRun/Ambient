@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::{is_default, is_false, is_true, materials::PipelinePbrMaterial, true_value};
 use glam::Vec3;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(deny_unknown_fields)]
 pub struct ModelsPipeline {
     /// The importer to use to process models.

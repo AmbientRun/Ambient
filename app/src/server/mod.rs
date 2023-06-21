@@ -2,6 +2,7 @@ use std::{
     collections::HashMap,
     net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr},
     path::Path,
+    str::FromStr,
     sync::Arc,
 };
 
@@ -115,7 +116,7 @@ pub async fn start(
     // here the key is inserted into the asset cache
     if let Ok(Some(project_path_fs)) = project_path.to_file_path() {
         let key = format!("http://{public_host}:{http_interface_port}/content/");
-        ServerBaseUrlKey.insert(&assets, AbsAssetUrl::parse(key).unwrap());
+        ServerBaseUrlKey.insert(&assets, AbsAssetUrl::from_str(&key).unwrap());
         start_http_interface(runtime, &project_path_fs, http_interface_port);
     } else {
         ServerBaseUrlKey.insert(&assets, project_path.push("build/").unwrap());

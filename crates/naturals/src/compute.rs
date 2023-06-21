@@ -1,4 +1,4 @@
-use std::{borrow::Cow, sync::Arc};
+use std::{borrow::Cow, str::FromStr, sync::Arc};
 
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
@@ -192,7 +192,7 @@ impl NaturalsPipeline {
         Self {
             pipeline,
             blue_noise: TextureFromUrl {
-                url: AbsAssetUrl::parse(format!("{OLD_CONTENT_SERVER_URL}assets/models/Misc/FreeBlueNoiseTextures/64_64/HDR_L_0.png"))
+                url: AbsAssetUrl::from_str(&format!("{OLD_CONTENT_SERVER_URL}assets/models/Misc/FreeBlueNoiseTextures/64_64/HDR_L_0.png"))
                     .unwrap(),
                 format: wgpu::TextureFormat::Rgba8Unorm,
             }
@@ -200,7 +200,7 @@ impl NaturalsPipeline {
             .await
             .unwrap(),
             cluster_noise: TextureFromUrl {
-                url: AbsAssetUrl::parse(format!(
+                url: AbsAssetUrl::from_str(&format!(
                     "{OLD_CONTENT_SERVER_URL}assets/models/{}",
                     "ArtStationSurfaces/VFX-HQ-Seamless-Noise-Pack-Vol1/Noise_002.png"
                 ))

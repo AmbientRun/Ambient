@@ -1,6 +1,7 @@
 use std::{
     net::{IpAddr, SocketAddr},
     ops::Range,
+    str::FromStr,
     sync::Arc,
     time::Duration,
 };
@@ -399,7 +400,7 @@ async fn start_proxy_connection(
                 );
 
                 // set the content base url to point to proxy provided value
-                match AbsAssetUrl::parse(&assets_root) {
+                match AbsAssetUrl::from_str(&assets_root) {
                     Ok(url) => {
                         tracing::debug!("Got content base root from proxy: {}", url);
                         *content_base_url.write() = url;

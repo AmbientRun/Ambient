@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, str::FromStr, sync::Arc};
 
 use ambient_core::{
     asset_cache,
@@ -130,7 +130,7 @@ async fn internal_spawn_models_from_defs(
         .into_iter()
         .map(|(url, ids)| async move {
             tracing::debug!("Loading model: {url:#?}");
-            let mut url = match TypedAssetUrl::parse(url).context("Failed to parse url") {
+            let mut url = match TypedAssetUrl::from_str(&url).context("Failed to parse url") {
                 Ok(url) => url,
                 Err(e) => return (ids, Err(e)),
             };
@@ -273,7 +273,7 @@ fn remove_model(world: &mut World, entity: EntityId) {
 pub struct ModelFromUrl(pub TypedAssetUrl<ModelAssetType>);
 impl ModelFromUrl {
     pub fn new(url: impl AsRef<str>) -> anyhow::Result<Self> {
-        Ok(Self(TypedAssetUrl::parse(url)?))
+        Ok(Self(TypedAssetUrl::from_str(url.as_ref())?))
     }
 }
 #[async_trait]

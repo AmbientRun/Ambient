@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{str::FromStr, sync::Arc};
 
 use ambient_app::{App, AppBuilder};
 use ambient_core::{
@@ -90,7 +90,7 @@ async fn init(app: &mut App) {
 
     let model = ModelCrate::local_import(
         &assets,
-        &AbsAssetUrl::parse("assets/Soldier.glb").unwrap(),
+        &AbsAssetUrl::from_str("assets/Soldier.glb").unwrap(),
         true,
         false,
     )

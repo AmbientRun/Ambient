@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, str::FromStr};
 
 use ambient_audio::{Source, VorbisFromUrl};
 use ambient_std::{
@@ -40,7 +40,7 @@ impl AudioNode {
         match self {
             AudioNode::Vorbis { url } => {
                 let track = VorbisFromUrl {
-                    url: AbsAssetUrl::parse(url).unwrap(),
+                    url: AbsAssetUrl::from_str(&url).unwrap(),
                 }
                 .peek(assets)
                 .transpose()?;

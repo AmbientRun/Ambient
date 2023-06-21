@@ -4,7 +4,7 @@ use ambient_pipeline_types::{
     audio::AudioPipeline,
     materials::{MaterialsImporter, MaterialsPipeline},
     models::{Collider, ModelsPipeline},
-    pipeline::{Pipeline, PipelineProcessor},
+    Pipeline, PipelineProcessor, PipelinesFile,
 };
 use ambient_project::Manifest;
 use anyhow::Context;
@@ -12,8 +12,7 @@ use futures::{future::ready, stream, StreamExt, TryStreamExt};
 use itertools::Itertools;
 
 use crate::{
-    get_asset_files, migrate::toml::json_pipeline::PipelineOneOrMany, pipelines::PipelineSchema,
-    register_from_manifest,
+    get_asset_files, migrate::toml::json_pipeline::PipelineOneOrMany, register_from_manifest,
 };
 
 pub async fn process(manifest: &Manifest, path: PathBuf) -> anyhow::Result<()> {
@@ -49,7 +48,7 @@ async fn migrate_pipeline(path: &Path) -> anyhow::Result<()> {
 
     tracing::info!("Deserialized json pipeline file: {value:#?}");
 
-    let value = PipelineSchema {
+    let value = PipelinesFile {
         pipelines: {
             match value {
                 PipelineOneOrMany::Many(v) => v.into_iter().map_into().collect(),
