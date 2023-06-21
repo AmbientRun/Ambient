@@ -5,13 +5,11 @@ use ambient_asset_cache::{
 };
 use ambient_decals::decal;
 use ambient_ecs::Entity;
-use ambient_model_import::{
-    model_crate::{cap_texture_size, ModelCrate},
-    ModelTextureSize,
-};
+use ambient_model_import::model_crate::{cap_texture_size, ModelCrate};
 use ambient_physics::collider::{collider, collider_type};
-use ambient_pipeline_types::materials::{
-    MaterialsImporter, MaterialsPipeline, PipelinePbrMaterial,
+use ambient_pipeline_types::{
+    materials::{MaterialsImporter, MaterialsPipeline, PipelinePbrMaterial},
+    models::ModelTextureSize,
 };
 use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
 use ambient_std::{

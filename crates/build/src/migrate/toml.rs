@@ -76,8 +76,8 @@ async fn migrate_pipeline(path: &Path) -> anyhow::Result<()> {
 
 mod json_pipeline {
     use ambient_ecs::Entity;
-    use ambient_model_import::{ModelTextureSize, ModelTransform};
     use ambient_physics::collider::ColliderType;
+    use ambient_pipeline_types::models::{ModelTextureSize, ModelTransform};
     use ambient_pipeline_types::{
         materials::PipelinePbrMaterial,
         models::{MaterialOverride, ModelImporter},
@@ -277,7 +277,20 @@ impl From<json_pipeline::ModelsPipeline> for ModelsPipeline {
             importer: value.importer,
             force_assimp: value.force_assimp,
             collider: value.collider.into(),
-            collider_type: value.collider_type,
+            collider_type: match value.collider_type {
+                ambient_physics::collider::ColliderType::Static => {
+                    ambient_pipeline_types::models::ColliderType::Static
+                }
+                ambient_physics::collider::ColliderType::Dynamic => {
+                    ambient_pipeline_types::models::ColliderType::Dynamic
+                }
+                ambient_physics::collider::ColliderType::TriggerArea => {
+                    ambient_pipeline_types::models::ColliderType::TriggerArea
+                }
+                ambient_physics::collider::ColliderType::Picking => {
+                    ambient_pipeline_types::models::ColliderType::Picking
+                }
+            },
             cap_texture_sizes: value.cap_texture_sizes,
             collection_of_variants: value.collection_of_variants,
             output_prefabs: value.output_prefabs,
