@@ -1033,7 +1033,6 @@ dependencies = [
  "ambient_ecs",
  "ambient_gpu",
  "ambient_model_import",
- "ambient_physics",
  "ambient_std",
  "glam 0.24.0",
  "serde",

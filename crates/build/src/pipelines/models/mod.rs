@@ -84,7 +84,23 @@ async fn apply(
             model_crate.create_character_collider(radius, height)
         }
     }
-    model_crate.add_component_to_prefab(collider_type(), pipeline.collider_type);
+    model_crate.add_component_to_prefab(
+        collider_type(),
+        match pipeline.collider_type {
+            ambient_pipeline_types::models::ColliderType::Static => {
+                ambient_physics::collider::ColliderType::Static
+            }
+            ambient_pipeline_types::models::ColliderType::Dynamic => {
+                ambient_physics::collider::ColliderType::Dynamic
+            }
+            ambient_pipeline_types::models::ColliderType::TriggerArea => {
+                ambient_physics::collider::ColliderType::TriggerArea
+            }
+            ambient_pipeline_types::models::ColliderType::Picking => {
+                ambient_physics::collider::ColliderType::Picking
+            }
+        },
+    );
     let world = model_crate.prefab_world_mut();
     let obj = world.resource(children())[0];
     world

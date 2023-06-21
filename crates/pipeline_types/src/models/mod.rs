@@ -1,6 +1,5 @@
 use ambient_ecs::Entity;
 use ambient_model_import::{MaterialFilter, ModelTextureSize, ModelTransform};
-use ambient_physics::collider::ColliderType;
 use serde::{Deserialize, Serialize};
 
 use crate::{is_default, is_false, is_true, materials::PipelinePbrMaterial, true_value};
@@ -130,4 +129,18 @@ impl Collider {
     pub fn is_none(&self) -> bool {
         matches!(self, Self::None)
     }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[repr(usize)]
+pub enum ColliderType {
+    #[default]
+    /// This object cannot move (e.g. a wall).
+    Static,
+    /// This object can move dynamically in the scene (e.g. a physics object).
+    Dynamic,
+    /// This object should only be present in the trigger-area scene.
+    TriggerArea,
+    /// This object should only be present in the picking scene.
+    Picking,
 }
