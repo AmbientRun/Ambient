@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate closure;
-use std::{f32::consts::PI, sync::Arc};
+use std::{f32::consts::PI, str::FromStr, sync::Arc};
 
 use ambient_core::{
     asset_cache,
@@ -877,7 +877,7 @@ impl ElementComponent for Terrain {
         let noise_texture = use_async_asset(
             hooks,
             TextureFromUrl {
-                url: AbsAssetUrl::parse(format!(
+                url: AbsAssetUrl::from_str(&format!(
                     "{OLD_CONTENT_SERVER_URL}assets/models/{}",
                     "ArtStationSurfaces/VFX-HQ-Seamless-Noise-Pack-Vol1/Noise_002.png"
                 ))

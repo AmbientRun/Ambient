@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{str::FromStr, sync::Arc};
 
 use ambient_core::{
     asset_cache,
@@ -294,7 +294,7 @@ impl AsyncAssetKey<AssetResult<Arc<RectMaterial>>> for RectMaterialKey {
             colors: vec![uvec4(255, 0, 0, 255)],
         };
         let background = match self.background {
-            Some(url) => match AbsAssetUrl::parse(&url) {
+            Some(url) => match AbsAssetUrl::from_str(&url) {
                 Ok(url) => {
                     let tex = TextureFromUrl {
                         url: url.clone(),

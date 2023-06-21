@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, str::FromStr};
 
 use ambient_core::window::ExitStatus;
 use ambient_network::native::client::ResolvedAddr;
@@ -169,7 +169,7 @@ impl TryFrom<Option<String>> for ProjectPath {
             Some(project_path)
                 if project_path.starts_with("http://") || project_path.starts_with("https://") =>
             {
-                let url = AbsAssetUrl::parse(project_path)?;
+                let url = AbsAssetUrl::from_str(&project_path)?;
                 Ok(Self { url, fs_path: None })
             }
             Some(project_path) => Self::new_local(project_path),

@@ -4,7 +4,7 @@ use ambient_ecs::{query, EntityId, SystemGroup, World};
 use ambient_std::{
     asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl, download_asset::BytesFromUrl,
 };
-use std::sync::Arc;
+use std::{str::FromStr, sync::Arc};
 
 mod implementation;
 mod network;
@@ -29,7 +29,7 @@ pub fn systems() -> SystemGroup {
         vec![
             query(client_bytecode_from_url().changed()).to_system(move |q, world, qs, _| {
                 for (id, url) in q.collect_cloned(world, qs) {
-                    let url = match AbsAssetUrl::parse(url) {
+                    let url = match AbsAssetUrl::from_str(&url) {
                         Ok(value) => value,
                         Err(err) => {
                             log::warn!("Failed to parse client_bytecode_from_url url: {:?}", err);

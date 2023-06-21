@@ -1,4 +1,4 @@
-use std::{f32::consts::PI, fmt::Debug, sync::Arc};
+use std::{f32::consts::PI, fmt::Debug, str::FromStr, sync::Arc};
 
 use ambient_core::{
     asset_cache,
@@ -104,7 +104,7 @@ pub fn systems() -> SystemGroup {
             )),
             query(pbr_material_from_url().changed()).to_system(|q, world, qs, _| {
                 for (id, url) in q.collect_cloned(world, qs) {
-                    let url = match AbsAssetUrl::parse(url) {
+                    let url = match AbsAssetUrl::from_str(&url) {
                         Ok(value) => value,
                         Err(err) => {
                             log::warn!("Failed to parse pbr_material_from_url url: {:?}", err);

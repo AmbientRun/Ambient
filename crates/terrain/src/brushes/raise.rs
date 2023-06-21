@@ -1,4 +1,4 @@
-use std::{borrow::Cow, sync::Arc};
+use std::{borrow::Cow, str::FromStr, sync::Arc};
 
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
@@ -149,7 +149,7 @@ impl RaiseBrush {
         Self {
             pipeline,
             noise_texture: TextureFromUrl {
-                url: AbsAssetUrl::parse(format!(
+                url: AbsAssetUrl::from_str(&format!(
                     "{OLD_CONTENT_SERVER_URL}assets/models/{}",
                     "ArtStationSurfaces/VFX-HQ-Seamless-Noise-Pack-Vol1/Noise_002.png"
                 ))
