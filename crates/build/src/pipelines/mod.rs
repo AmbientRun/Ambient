@@ -1,7 +1,7 @@
 use std::{collections::HashSet, sync::Arc};
 
 use ambient_asset_cache::SyncAssetKey;
-use ambient_pipeline_types::{models::ModelsPipeline, Pipeline, PipelineProcessor};
+use ambient_pipeline_types::{models::ModelsPipeline, Pipeline, PipelineProcessor, PipelinesFile};
 use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use anyhow::Context;
 use context::PipelineCtx;
@@ -11,7 +11,6 @@ use futures::{
 };
 use image::ImageFormat;
 use out_asset::{OutAsset, OutAssetContent, OutAssetPreview};
-use serde::{Deserialize, Serialize};
 
 pub mod audio;
 pub mod context;
@@ -38,23 +37,14 @@ pub async fn process_pipeline(pipeline: &Pipeline, ctx: PipelineCtx) -> Vec<OutA
     assets
 }
 
-/// The outermost structure of the pipeline.toml file.
-///
-/// Is a struct of arrays of pipelines as toml does not support top-level arrays
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub(crate) struct PipelineSchema {
-    pub(crate) pipelines: Vec<Pipeline>,
-}
-
 fn get_pipelines(
     ctx: &ProcessCtx,
-) -> impl Stream<Item = anyhow::Result<(&AbsAssetUrl, PipelineSchema)>> {
+) -> impl Stream<Item = anyhow::Result<(&AbsAssetUrl, PipelinesFile)>> {
     stream::iter(ctx.files.0.iter())
         .filter(|file| ready(file.decoded_path().ends_with("pipeline.toml")))
         .then(move |file| async move {
             let schema = file
-                .download_toml::<PipelineSchema>(&ctx.assets)
+                .download_toml::<PipelinesFile>(&ctx.assets)
                 .await
                 .with_context(|| format!("Failed to read pipeline {:?}", file.0.path()))?;
 

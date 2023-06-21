@@ -22,6 +22,15 @@ fn is_default<T: PartialEq + Default>(value: &T) -> bool {
     *value == Default::default()
 }
 
+/// The outermost structure of the pipeline.toml file.
+///
+/// Is a struct of arrays of pipelines as toml does not support top-level arrays
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PipelinesFile {
+    pub pipelines: Vec<Pipeline>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 /// Desrcibes how the pipeline assets should be processed.
