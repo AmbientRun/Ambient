@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, str::FromStr, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, hierarchy::children, runtime};
 use ambient_decals::decal;
@@ -32,7 +32,7 @@ pub fn systems() -> SystemGroup {
                 }
                 for (url, ids) in to_load {
                     let assets = world.resource(asset_cache()).clone();
-                    let url = unwrap_log_err!(AssetUrl::parse(url));
+                    let url = unwrap_log_err!(AssetUrl::from_str(&url));
                     let url = PrefabFromUrl(url);
                     let runtime = world.resource(runtime()).clone();
                     let async_run = world.resource(async_run()).clone();
@@ -72,7 +72,7 @@ impl AsyncAssetKey<Result<Arc<World>, AssetError>> for PrefabFromUrl {
             .with_context(|| format!("Failed to deserialize object2 from url {obj_url}"))?;
         warnings.log_warnings();
         for (_id, (url,), _) in query_mut((model_from_url(),), ()).iter(&mut world, None) {
-            *url = AssetUrl::parse(&url)
+            *url = AssetUrl::from_str(&url)
                 .context("Invalid model url")?
                 .resolve(&obj_url)
                 .context("Failed to resolve model url")?

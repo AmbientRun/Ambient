@@ -45,7 +45,7 @@ use physxx::{
 };
 use relative_path::RelativePathBuf;
 
-use crate::{dotdot_path, MaterialFilter, TextureResolver};
+use crate::{dotdot_path, material_filter_matches, MaterialFilter, TextureResolver};
 
 #[derive(Debug, Clone)]
 pub struct AssetLoc {
@@ -546,7 +546,7 @@ impl ModelCrate {
             self.set_all_material(material);
         } else {
             for old_mat in self.materials.content.values_mut() {
-                if filter.matches(&*old_mat) {
+                if material_filter_matches(filter, &*old_mat) {
                     *old_mat = material.clone();
                 }
             }

@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{str::FromStr, sync::Arc};
 
 use ambient_asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt};
 use ambient_core::{
@@ -143,7 +143,7 @@ pub fn client_systems() -> SystemGroup {
             }),
             query(decal_from_url().changed()).to_system(|q, world, qs, _| {
                 for (id, url) in q.collect_cloned(world, qs) {
-                    let url = match AbsAssetUrl::parse(url) {
+                    let url = match AbsAssetUrl::from_str(&url) {
                         Ok(value) => value,
                         Err(err) => {
                             log::warn!("Failed to parse pbr_material_from_url url: {:?}", err);

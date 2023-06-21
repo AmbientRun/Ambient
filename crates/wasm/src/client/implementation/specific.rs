@@ -2,7 +2,7 @@
 //!
 //! If implementing a trait that is also available on the server, it should go in [super].
 
-use std::sync::Arc;
+use std::{str::FromStr, sync::Arc};
 
 use ambient_audio::AudioFromUrl;
 use ambient_core::{
@@ -198,7 +198,7 @@ impl wit::client_audio::Host for Bindings {
         let world = self.world();
         let assets = world.resource(asset_cache());
         let audio_url = AudioFromUrl {
-            url: AbsAssetUrl::parse(url)?,
+            url: AbsAssetUrl::from_str(&url)?,
         };
         let _track = audio_url.peek(assets);
         Ok(())
@@ -209,7 +209,7 @@ impl wit::client_audio::Host for Bindings {
         let assets = world.resource(asset_cache()).clone();
         let runtime = world.resource(runtime()).clone();
         let async_run = world.resource(async_run()).clone();
-        let url = AbsAssetUrl::parse(url)?.to_download_url(&assets)?;
+        let url = AbsAssetUrl::from_str(&url)?.to_download_url(&assets)?;
         runtime.spawn(async move {
             let track = AudioFromUrl { url: url.clone() }.get(&assets).await;
             async_run.run(move |world| {
@@ -232,7 +232,7 @@ impl wit::client_audio::Host for Bindings {
         let runtime = world.resource(runtime()).clone();
         let async_run = world.resource(async_run()).clone();
         let assets = world.resource(asset_cache());
-        let url = AbsAssetUrl::parse(url)?.to_download_url(assets)?;
+        let url = AbsAssetUrl::from_str(&url)?.to_download_url(assets)?;
         runtime.spawn(async move {
             async_run.run(move |world| {
                 let sender = world.resource(audio_sender());
@@ -247,7 +247,7 @@ impl wit::client_audio::Host for Bindings {
         let runtime = world.resource(runtime()).clone();
         let async_run = world.resource(async_run()).clone();
         let assets = world.resource(asset_cache());
-        let url = AbsAssetUrl::parse(url)?.to_download_url(assets)?;
+        let url = AbsAssetUrl::from_str(&url)?.to_download_url(assets)?;
         runtime.spawn(async move {
             async_run.run(move |world| {
                 let sender = world.resource(audio_sender());

@@ -1,5 +1,5 @@
 use ambient_core::async_ecs::async_run;
-use std::sync::Arc;
+use std::{str::FromStr, sync::Arc};
 
 use ambient_core::{asset_cache, main_scene, mesh, runtime};
 use ambient_ecs::{components, query, Entity, SystemGroup};
@@ -42,7 +42,7 @@ pub fn systems() -> SystemGroup {
                     let assets = world.resource(asset_cache()).clone();
                     runtime.spawn(async move {
                         let normals = TextureFromUrl {
-                            url: AbsAssetUrl::parse(format!(
+                            url: AbsAssetUrl::from_str(&format!(
                                 "{OLD_CONTENT_SERVER_URL}assets/models/Cadhatch/seamless-water-textures/water 0342normal.jpg"
                             ))
                             .unwrap(),

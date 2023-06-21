@@ -1,5 +1,6 @@
 use std::{
     ops::Range,
+    str::FromStr,
     sync::{
         atomic::{AtomicUsize, Ordering},
         Arc,
@@ -73,7 +74,7 @@ pub struct GpuMeshFromUrl {
 impl GpuMeshFromUrl {
     pub fn new(url: impl AsRef<str>, cache_on_disk: bool) -> anyhow::Result<Self> {
         Ok(Self {
-            url: AbsAssetUrl::parse(url)?,
+            url: AbsAssetUrl::from_str(url.as_ref())?,
             cache_on_disk,
         })
     }

@@ -15,6 +15,7 @@ use anyhow::Context;
 use glam::{Mat4, Vec3};
 use itertools::Itertools;
 use parking_lot::Mutex;
+use std::str::FromStr;
 use std::sync::Arc;
 
 pub(crate) fn set_listener(world: &mut World, entity: wit::types::EntityId) -> anyhow::Result<()> {
@@ -55,7 +56,7 @@ pub(crate) fn play_sound_on_entity(
     let assets = world.resource(asset_cache()).clone();
     let runtime = world.resource(runtime()).clone();
     let async_run = world.resource(async_run()).clone();
-    let url = AbsAssetUrl::parse(sound)?.to_download_url(&assets)?;
+    let url = AbsAssetUrl::from_str(&sound)?.to_download_url(&assets)?;
     runtime.spawn(async move {
         let track = AudioFromUrl { url: url.clone() }.get(&assets).await;
         async_run.run(move |world| {

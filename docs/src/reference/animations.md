@@ -10,12 +10,9 @@ by going to [Mixamo](https://www.mixamo.com/#/) and download some characters and
 Put your models and animations in your `assets` folder in your project, and make sure you have a `pipeline.json`
 which can process models and animations, for instance something like this:
 
-```json
-{
-    "pipeline": {
-        "type": "Models"
-    }
-}
+```toml
+[[pipelines]]
+type = "Models"
 ```
 
 ### Finding the clip urls
@@ -130,7 +127,9 @@ The clip will remain loaded as long as the object survives.
 ### Retargeting
 
 It's possible to play an animation that was made for one character on another character. To make
-it look right, you might need to use retargeting though. Try setting retargeting on the `PlayClipFromUrlNode`.
+it look right, you might need to use retargeting though. Try setting retargeting on the `PlayClipFromUrlNode` (`set_retargeting`), and/or use `apply_base_pose` on the same node.
+
+If you're using mixamo for animations, you can do retargeting through mixamo itself to get the best results.
 
 ### Animation nodes lifetimes and ownership
 
