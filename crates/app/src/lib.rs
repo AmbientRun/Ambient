@@ -325,9 +325,12 @@ impl AppBuilder {
 
             // Get the screen's available width and height
             let window = web_sys::window().unwrap();
-            let screen = window.screen().unwrap();
-            let max_width = screen.avail_width().unwrap();
-            let max_height = screen.avail_height().unwrap();
+            // let screen = window.screen().unwrap();
+            // let max_width = screen.avail_width().unwrap();
+            // let max_height = screen.avail_height().unwrap();
+
+            let max_width = target.client_width();
+            let max_height = target.client_height();
 
             // Get device pixel ratio
             let device_pixel_ratio = window.device_pixel_ratio();
@@ -335,6 +338,13 @@ impl AppBuilder {
             // Calculate the real dimensions of the canvas considering the device pixel ratio
             let real_width = (max_width as f64 * device_pixel_ratio) as u32;
             let real_height = (max_height as f64 * device_pixel_ratio) as u32;
+
+            tracing::info!(
+                ?max_width,
+                ?max_height,
+                ?device_pixel_ratio,
+                "Creating canvas"
+            );
 
             // Set the canvas dimensions using the real dimensions
             canvas.set_width(real_width);
@@ -573,7 +583,6 @@ impl App {
                     control_flow,
                 );
             } else if let Some(event) = event.to_static() {
-                // tracing::info!("Handling event: {event:?}");
                 self.handle_static_event(&event, control_flow);
             } else {
                 tracing::error!("Failed to convert event to static")
@@ -721,6 +730,8 @@ impl App {
                     *self.world.resource_mut(window_scale_factor()) = *scale_factor;
                 }
                 WindowEvent::Resized(size) => {
+                    panic!("");
+                    tracing::info!("Window resized: {size:?}");
                     let gpu = world.resource(gpu()).clone();
                     gpu.resize(*size);
 

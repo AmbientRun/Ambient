@@ -132,7 +132,7 @@ impl ClientGameState {
             &mut encoder,
             &mut post_submit,
             RendererTarget::Target(target),
-            Some(Color::rgba(1.0, 1.0, 1.0, 1.)),
+            Some(Color::rgba(0.0, 0.0, 0.2, 1.)),
         );
 
         tracing::debug!("Drawing ui");

@@ -376,7 +376,6 @@ impl TreeRenderer {
             }
 
             for mat in node.tree.values() {
-                tracing::info!("Drawing material: {mat:?}");
                 let material = &mat.material;
 
                 render_pass.set_bind_group(bind_groups.len() as _, material.bind_group(), &[]);

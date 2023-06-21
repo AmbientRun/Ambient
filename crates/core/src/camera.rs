@@ -39,15 +39,21 @@ pub fn camera_systems() -> SystemGroup {
         "camera_systems",
         vec![
             query((aspect_ratio_from_window(), aspect_ratio())).to_system(|q, world, qs, _| {
+                let _span = tracing::info_span!("aspect_ratio_from_window").entered();
                 for (id, (window, old_ratio)) in q.collect_cloned(world, qs) {
                     let window_size = world
                         .get(window, window_physical_size())
                         .unwrap_or_default();
+
                     if window_size.x == 0 || window_size.y == 0 {
+                        // tracing::warn!("Aspect from window of {window_size}");
                         continue;
                     }
 
                     let aspect_ratio = window_size.x as f32 / window_size.y as f32;
+
+                    tracing::debug!(?window_size, "Got window aspect ratio");
+
                     if aspect_ratio != old_ratio {
                         world.set(id, self::aspect_ratio(), aspect_ratio).unwrap();
                     }
