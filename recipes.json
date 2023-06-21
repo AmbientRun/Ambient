@@ -19,7 +19,8 @@
             "tracing",
             "--",
             "join",
-            "localhost:9000"
+            "localhost:9000",
+            "--debugger"
         ]
     },
     "asset-loading": {

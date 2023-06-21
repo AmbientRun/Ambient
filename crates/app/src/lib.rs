@@ -730,8 +730,6 @@ impl App {
                     *self.world.resource_mut(window_scale_factor()) = *scale_factor;
                 }
                 WindowEvent::Resized(size) => {
-                    panic!("");
-                    tracing::info!("Window resized: {size:?}");
                     let gpu = world.resource(gpu()).clone();
                     gpu.resize(*size);
 
