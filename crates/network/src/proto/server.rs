@@ -229,6 +229,14 @@ impl ServerState {
     pub fn is_pending_connection(&self) -> bool {
         matches!(self, Self::PendingConnection)
     }
+
+    /// Returns `true` if the server state is [`Disconnected`].
+    ///
+    /// [`Disconnected`]: ServerState::Disconnected
+    #[must_use]
+    pub fn is_disconnected(&self) -> bool {
+        matches!(self, Self::Disconnected)
+    }
 }
 
 impl ConnectedClient {
@@ -358,6 +366,9 @@ pub async fn handle_diffs<S>(
 {
     while let Some(msg) = diffs_rx.next().await {
         let span = tracing::debug_span!("send_world_diff", ?msg);
-        stream.send_bytes(msg).instrument(span).await.unwrap();
+        if let Err(err) = stream.send_bytes(msg).instrument(span).await {
+            tracing::error!(?err, "Failed to send world diff.");
+            break;
+        }
     }
 }

@@ -138,9 +138,10 @@ impl WorldInstance {
         let msg: Bytes = bincode::serialize(&diff).unwrap().into();
 
         ambient_profiling::scope!("Send MsgEntities");
+
         for (_, (entity_stream,)) in query((player_entity_stream(),)).iter(&self.world, None) {
-            if let Err(_err) = entity_stream.send(msg.clone()) {
-                log::warn!("Failed to broadcast diff to player");
+            if let Err(err) = entity_stream.send(msg.clone()) {
+                log::warn!("Failed to broadcast diff to player: {err:?}");
             }
         }
     }

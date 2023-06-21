@@ -337,15 +337,22 @@ async fn handle_quinn_connection(
         }
     }
 
-    tracing::debug!("Performing additional on connect tracingic after the fact");
+    tracing::debug!("Performing additional on connect logic");
 
     tokio::spawn(handle_diffs(
         FramedSendStream::new(conn.open_uni().await?),
         diffs_rx,
     ));
 
+    let mut server = scopeguard::guard(server, |mut server| {
+        if !server.is_disconnected() {
+            tracing::info!("Connection closed abruptly from {server:?}");
+            server.process_disconnect(&data);
+        }
+    });
+
     // Before a connection has been established, only process the control stream
-    while let proto::server::ServerState::Connected(connected) = &mut server {
+    while let proto::server::ServerState::Connected(connected) = &mut *server {
         tokio::select! {
             Some(frame) = request_recv.next() => {
                 server.process_control(&data, frame?)?;
