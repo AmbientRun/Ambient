@@ -1,6 +1,6 @@
 # Common pitfalls
 
-## The examples doesn't work
+## The examples don't work
 
 This is most often because of mismatching the ambient version with the
 examples version. See [running examples](../user/running_examples.md).
