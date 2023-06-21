@@ -8,9 +8,8 @@ use ambient_core::{
 use ambient_ecs::Entity;
 use ambient_element::ElementComponentExt;
 use ambient_model::{model_from_url, ModelFromUrl};
-use ambient_model_import::{
-    MaterialFilter, ModelImportPipeline, ModelImportTransform, ModelTransform,
-};
+use ambient_model_import::{ModelImportPipeline, ModelImportTransform};
+use ambient_pipeline_types::models::{MaterialFilter, ModelTransform};
 use ambient_primitives::{Cube, Quad};
 use ambient_renderer::{color, materials::pbr_material::PbrMaterialDesc};
 use ambient_std::{

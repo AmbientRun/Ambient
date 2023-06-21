@@ -76,8 +76,8 @@ async fn migrate_pipeline(path: &Path) -> anyhow::Result<()> {
 
 mod json_pipeline {
     use ambient_ecs::Entity;
-    use ambient_model_import::{ModelTextureSize, ModelTransform};
     use ambient_physics::collider::ColliderType;
+    use ambient_pipeline_types::models::{ModelTextureSize, ModelTransform};
     use ambient_pipeline_types::{
         materials::PipelinePbrMaterial,
         models::{MaterialOverride, ModelImporter},

@@ -11,7 +11,7 @@ use ambient_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveF
 use ambient_model_import::{
     dotdot_path,
     model_crate::{cap_texture_size, ModelCrate},
-    ModelImportPipeline, ModelImportTransform, ModelTransform, RelativePathBufExt,
+    ModelImportPipeline, ModelImportTransform, RelativePathBufExt,
 };
 use ambient_renderer::{
     lod::{gpu_lod, lod_cutoffs, LodCutoffs},
@@ -38,6 +38,7 @@ use crate::pipelines::{
     download_image, models, out_asset::asset_id_from_url, OutAsset, OutAssetContent,
     OutAssetPreview,
 };
+use ambient_pipeline_types::models::ModelTransform;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UnityConfig {

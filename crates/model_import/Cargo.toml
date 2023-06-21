@@ -20,6 +20,7 @@ ambient_ui_native = { path = "../ui_native", version = "0.3.0-dev" }
 ambient_physics = { path = "../physics", version = "0.3.0-dev" }
 ambient_model = { path = "../model", version = "0.3.0-dev" }
 ambient_animation = { path = "../animation", version = "0.3.0-dev" }
+ambient_pipeline_types = { path = "../pipeline_types", version = "0.3.0-dev" }
 ambient_editor_derive = { path = "../../shared_crates/editor_derive", version = "0.3.0-dev" }
 
 physxx = { path = "../../libs/physxx", version = "0.3.0-dev" }

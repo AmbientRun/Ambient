@@ -1,7 +1,7 @@
 use std::{path::PathBuf, sync::Arc};
 
 use ambient_core::hierarchy::children;
-use ambient_model_import::{model_crate::ModelCrate, TextureResolver};
+use ambient_model_import::{apply_model_transform, model_crate::ModelCrate, TextureResolver};
 use ambient_physics::collider::collider_type;
 use ambient_pipeline_types::models::{Collider, ModelImporter, ModelsPipeline};
 use ambient_std::asset_url::AssetType;
@@ -53,7 +53,7 @@ async fn apply(
     out_model_path: impl AsRef<RelativePath>,
 ) -> anyhow::Result<()> {
     for transform in &pipeline.transforms {
-        transform.apply(model_crate);
+        apply_model_transform(transform, model_crate);
     }
     for mat in &pipeline.material_overrides {
         let material = super::materials::to_mat(

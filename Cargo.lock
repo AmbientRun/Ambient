@@ -873,6 +873,7 @@ dependencies = [
  "ambient_gpu",
  "ambient_model",
  "ambient_physics",
+ "ambient_pipeline_types",
  "ambient_primitives",
  "ambient_renderer",
  "ambient_std",
@@ -1032,7 +1033,6 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_ecs",
  "ambient_gpu",
- "ambient_model_import",
  "ambient_std",
  "glam 0.24.0",
  "serde",
