@@ -129,6 +129,8 @@ The clip will remain loaded as long as the object survives.
 It's possible to play an animation that was made for one character on another character. To make
 it look right, you might need to use retargeting though. Try setting retargeting on the `PlayClipFromUrlNode` (`set_retargeting`), and/or use `apply_base_pose` on the same node.
 
+If you're using mixamo for animations, you can do retargeting through mixamo itself to get the best results.
+
 ### Animation nodes lifetimes and ownership
 
 The animation player and nodes all live in the ECS, and the `AnimationPlayer` and `PlayClipFromUrlNode` etc.
