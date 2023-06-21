@@ -22,7 +22,7 @@ use walkdir::WalkDir;
 
 use deploy_proto::{
     asset_content::ContentDescription, deploy_asset_response::Message,
-    deployer_client::DeployerClient, AssetContent, DeployAssetRequest, VersionDeployed,
+    deployer_client::DeployerClient, AssetContent, DeployAssetRequest, Deployment,
 };
 
 const CHUNK_SIZE: usize = 1024 * 1024 * 3; // 3MB
@@ -146,17 +146,17 @@ pub async fn deploy(
         .deploy_assets(deploy_asset_request_rx.into_stream())
         .await?;
     let mut response_stream = response.into_inner();
-    let mut version = None;
+    let mut deployment = None;
     while let Some(resp) = response_stream.next().await {
         match resp {
             Ok(resp) => {
                 log::trace!("Deployed asset response: {:?}", resp);
                 match resp.message {
-                    Some(Message::Finished(VersionDeployed { id })) => {
-                        if version.is_some() {
-                            log::warn!("Received multiple version deployed messages");
+                    Some(Message::Finished(Deployment { id })) => {
+                        if deployment.is_some() {
+                            log::warn!("Received multiple deployment finished messages");
                         }
-                        version = Some(id);
+                        deployment = Some(id);
                     }
                     Some(Message::Error(err)) => {
                         // error from the server -> just log it and abort as we can't continue
@@ -190,7 +190,7 @@ pub async fn deploy(
     handle.await??;
 
     // this should have arrived in Finished message from the server
-    version.ok_or_else(|| anyhow::anyhow!("No version returned from deploy"))
+    deployment.ok_or_else(|| anyhow::anyhow!("No deployment id returned from deploy"))
 }
 
 /// Created a client for the deploy API server.

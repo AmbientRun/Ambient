@@ -99,7 +99,7 @@
         }
     },
     "run": {
-        "cmd": "npm run start",
+        "cmd": "npm run dev",
         "cwd": "web/www",
         "env": {
             "RUST_LOG": "info"

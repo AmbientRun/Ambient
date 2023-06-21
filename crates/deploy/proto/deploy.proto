@@ -18,15 +18,15 @@ message DeployAssetRequest {
   repeated AssetContent contents = 2;
 }
 
-message VersionDeployed {
-  // ID of the deployed version
+message Deployment {
+  // ID of the deployment
   string id = 1;
 }
 
 message DeployAssetResponse {
   oneof message {
     // Deployment finished successfully
-    VersionDeployed finished = 1;
+    Deployment finished = 1;
     // Error during deployment (unable to continue)
     string error = 2;
     // Path of an asset that was successfully deployed

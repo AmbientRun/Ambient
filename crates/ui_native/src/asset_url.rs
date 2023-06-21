@@ -5,18 +5,29 @@ use ambient_std::{
     Cb,
 };
 
-use crate::{align_vertical, space_between_items, Align, Button, ButtonStyle, Editor, EditorOpts, FlowRow, Text, STREET};
+use crate::{
+    align_vertical, space_between_items, Align, Button, ButtonStyle, Editor, EditorOpts, FlowRow,
+    Text, STREET,
+};
 
 impl<T: GetAssetType + 'static> Editor for TypedAssetUrl<T> {
     fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, _opts: EditorOpts) -> Element {
-        AssetUrlEditor { value: self, on_change: Some(on_change) }.el()
+        AssetUrlEditor {
+            value: self,
+            on_change: Some(on_change),
+        }
+        .el()
     }
 
     fn view(self, _opts: EditorOpts) -> Element
     where
         Self: Sized,
     {
-        AssetUrlEditor { value: self, on_change: None }.el()
+        AssetUrlEditor {
+            value: self,
+            on_change: None,
+        }
+        .el()
     }
 }
 #[derive(Debug, Clone)]
@@ -32,11 +43,15 @@ impl<T: GetAssetType + 'static> ElementComponent for AssetUrlEditor<T> {
                 Text::el(value.0.to_string()),
                 Button::new("\u{f74e} Browse", move |world| {
                     let on_change = on_change.clone();
-                    select_asset(world.resource(asset_cache()), T::asset_type(), move |asset_url| {
-                        if let Some(url) = asset_url.random() {
-                            on_change(TypedAssetUrl::parse(url).unwrap());
-                        }
-                    });
+                    select_asset(
+                        world.resource(asset_cache()),
+                        T::asset_type(),
+                        move |asset_url| {
+                            if let Some(url) = asset_url.random() {
+                                on_change(TypedAssetUrl::from_str(url).unwrap());
+                            }
+                        },
+                    );
                 })
                 .style(ButtonStyle::Flat)
                 .el(),
@@ -51,14 +66,22 @@ impl<T: GetAssetType + 'static> ElementComponent for AssetUrlEditor<T> {
 
 impl<T: GetAssetType + 'static> Editor for AssetUrlCollection<T> {
     fn editor(self, on_change: Cb<dyn Fn(Self) + Sync + Send>, _opts: EditorOpts) -> Element {
-        AssetUrlCollectionEditor { value: self, on_change: Some(on_change) }.el()
+        AssetUrlCollectionEditor {
+            value: self,
+            on_change: Some(on_change),
+        }
+        .el()
     }
 
     fn view(self, _opts: EditorOpts) -> Element
     where
         Self: Sized,
     {
-        AssetUrlCollectionEditor { value: self, on_change: None }.el()
+        AssetUrlCollectionEditor {
+            value: self,
+            on_change: None,
+        }
+        .el()
     }
 }
 
@@ -75,9 +98,19 @@ impl<T: GetAssetType + 'static> ElementComponent for AssetUrlCollectionEditor<T>
                 Text::el(format!("{:?}", value.0)),
                 Button::new("\u{f74e} Browse", move |world| {
                     let on_change = on_change.clone();
-                    select_asset(world.resource(asset_cache()), T::asset_type(), move |asset_url| {
-                        on_change(AssetUrlCollection::new(asset_url.all().into_iter().map(|x| AssetUrl::parse(x).unwrap()).collect()));
-                    });
+                    select_asset(
+                        world.resource(asset_cache()),
+                        T::asset_type(),
+                        move |asset_url| {
+                            on_change(AssetUrlCollection::new(
+                                asset_url
+                                    .all()
+                                    .into_iter()
+                                    .map(|x| AssetUrl::from_str(x).unwrap())
+                                    .collect(),
+                            ));
+                        },
+                    );
                 })
                 .style(ButtonStyle::Flat)
                 .el(),

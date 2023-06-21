@@ -293,7 +293,7 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
  "noise",
- "palette 0.7.1",
+ "palette 0.7.2",
  "rand 0.8.5",
  "rand_pcg",
 ]
@@ -446,9 +446,7 @@ dependencies = [
 name = "ambient_project"
 version = "0.3.0-dev"
 dependencies = [
- "anyhow",
  "indexmap",
- "log",
  "proc-macro2",
  "quote",
  "serde",

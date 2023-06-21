@@ -1,5 +1,6 @@
 use std::{
     collections::{hash_map::Entry, HashMap},
+    str::FromStr,
     sync::Arc,
     time::Duration,
 };
@@ -203,7 +204,7 @@ pub fn animation_player_systems() -> SystemGroup {
                 for (id, url) in q.collect_cloned(world, qs) {
                     let async_run = world.resource(async_run()).clone();
                     let assets = world.resource(asset_cache()).clone();
-                    let url = match TypedAssetUrl::<AnimationAssetType>::parse(url) {
+                    let url = match TypedAssetUrl::<AnimationAssetType>::from_str(&url) {
                         Ok(val) => val,
                         Err(_) => {
                             world.add_component(id, clip_duration(), 0.).ok();
@@ -213,7 +214,7 @@ pub fn animation_player_systems() -> SystemGroup {
                     let retarget_model = world
                         .get_cloned(id, retarget_model_from_url())
                         .ok()
-                        .and_then(|x| TypedAssetUrl::parse(x).ok());
+                        .and_then(|x| TypedAssetUrl::from_str(&x).ok());
                     let retarget_animation_scaled = world.get(id, retarget_animation_scaled()).ok();
 
                     let retargeting = if retarget_model.is_some() {
@@ -311,7 +312,7 @@ fn build_base_pose(
     assets: &AssetCache,
     clip_url: &str,
 ) -> anyhow::Result<HashMap<AnimationOutputKey, AnimationOutput>> {
-    let clip_url = TypedAssetUrl::<AnimationAssetType>::parse(clip_url)?;
+    let clip_url = TypedAssetUrl::<AnimationAssetType>::from_str(clip_url)?;
     let model_url = clip_url
         .model_crate()
         .context("Failed to get model crate")?

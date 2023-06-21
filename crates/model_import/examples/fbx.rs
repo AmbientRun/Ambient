@@ -14,6 +14,7 @@ use ambient_model_import::model_crate::ModelCrate;
 use ambient_primitives::Quad;
 use ambient_std::{asset_url::AbsAssetUrl, line_hash, math::SphericalCoords};
 use glam::*;
+use std::str::FromStr;
 
 async fn init(app: &mut App) {
     let world = &mut app.world;
@@ -24,7 +25,7 @@ async fn init(app: &mut App) {
 
     let model = ModelCrate::local_import(
         &assets,
-        &AbsAssetUrl::parse("https://dims-content.fra1.digitaloceanspaces.com/assets/models/MixamoCharacters/Vanguard By T. Choonyung.fbx")
+        &AbsAssetUrl::from_str("https://dims-content.fra1.digitaloceanspaces.com/assets/models/MixamoCharacters/Vanguard By T. Choonyung.fbx")
             .unwrap(),
         true,
         false,

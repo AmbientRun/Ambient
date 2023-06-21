@@ -315,6 +315,7 @@ dependencies = [
  "env_logger",
  "glam",
  "itertools",
+ "parking_lot",
 ]
 
 [[package]]
@@ -788,6 +789,7 @@ dependencies = [
  "sentry-anyhow",
  "serde",
  "serde_json",
+ "serde_path_to_error",
  "thiserror",
  "tokio",
  "toml",
@@ -4844,6 +4846,15 @@ checksum = "057d394a50403bcac12672b2b18fb387ab6d289d957dab67dd201875391e52f1"
 dependencies = [
  "itoa",
  "ryu",
+ "serde",
+]
+
+[[package]]
+name = "serde_path_to_error"
+version = "0.1.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7f05c1d5476066defcdfacce1f52fc3cae3af1d3089727100c02ae92e5abbe0"
+dependencies = [
  "serde",
 ]
 

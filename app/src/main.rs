@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, str::FromStr};
 
 use ambient_core::window::ExitStatus;
 use ambient_network::native::client::ResolvedAddr;
@@ -169,7 +169,7 @@ impl TryFrom<Option<String>> for ProjectPath {
             Some(project_path)
                 if project_path.starts_with("http://") || project_path.starts_with("https://") =>
             {
-                let url = AbsAssetUrl::parse(project_path)?;
+                let url = AbsAssetUrl::from_str(&project_path)?;
                 Ok(Self { url, fs_path: None })
             }
             Some(project_path) => Self::new_local(project_path),
@@ -321,7 +321,7 @@ async fn main() -> anyhow::Result<()> {
             anyhow::bail!("Can only deploy a local project");
         };
         let manifest = manifest.as_ref().expect("no manifest");
-        let version_id = ambient_deploy::deploy(
+        let deployment_id = ambient_deploy::deploy(
             &runtime,
             api_server
                 .clone()
@@ -330,8 +330,13 @@ async fn main() -> anyhow::Result<()> {
             project_fs_path,
             manifest,
             *force_upload,
-        )?;
-        log::info!("Version {} deployed successfully", version_id);
+        )
+        .await?;
+        log::info!(
+            "Assets deployed successfully. Deployment id: {}. Deploy url: https://assets.ambient.run/{}",
+            deployment_id,
+            deployment_id,
+        );
         return Ok(());
     }
 
