@@ -4,7 +4,7 @@ use ambient_pipeline_types::{
     audio::AudioPipeline,
     materials::{MaterialsImporter, MaterialsPipeline},
     models::{Collider, ModelsPipeline},
-    pipeline::{Pipeline, PipelineProcessor},
+    Pipeline, PipelineProcessor,
 };
 use ambient_project::Manifest;
 use anyhow::Context;

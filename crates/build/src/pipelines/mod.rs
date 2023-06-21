@@ -1,10 +1,7 @@
 use std::{collections::HashSet, sync::Arc};
 
 use ambient_asset_cache::SyncAssetKey;
-use ambient_pipeline_types::{
-    models::ModelsPipeline,
-    pipeline::{Pipeline, PipelineProcessor},
-};
+use ambient_pipeline_types::{models::ModelsPipeline, Pipeline, PipelineProcessor};
 use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use anyhow::Context;
 use context::PipelineCtx;
