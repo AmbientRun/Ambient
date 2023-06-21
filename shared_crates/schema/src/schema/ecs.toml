@@ -3,19 +3,6 @@
 name = "Entity Component System"
 description = "Core components for the ECS and entities."
 
-[components."core::ecs::debugger_entity_filter"]
-type = "String"
-name = "Debugger entity filter"
-description = "Filter the word."
-attributes = ["Debuggable", "Networked", "MaybeResource"]
-
-
-[components."core::ecs::debugger_comp_filter"]
-type = "String"
-name = "Debugger component filter"
-description = "Filter the word."
-attributes = ["Debuggable", "Networked", "MaybeResource"]
-
 [components."core::ecs::children"]
 type = { type = "Vec", element_type = "EntityId" }
 name = "Children"

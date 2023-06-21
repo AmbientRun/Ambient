@@ -10,10 +10,7 @@ use ambient_core::{
     },
 };
 use ambient_debugger::Debugger;
-use ambient_ecs::{
-    debugger_comp_filter, debugger_entity_filter, generated::messages, Entity, EntityId,
-    SystemGroup,
-};
+use ambient_ecs::{generated::messages, Entity, EntityId, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::{
     client::{client_network_stats, GameClient, GameClientRenderTarget, GameClientWorld},
@@ -24,8 +21,7 @@ use ambient_shared_types::CursorIcon;
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_sys::time::Instant;
 use ambient_ui_native::{
-    Button, Dock, FocusRoot, MeasureSize, ScrollArea, ScrollAreaSizing, TextEditor, UIExt,
-    WindowSized, STREET,
+    Button, Dock, FocusRoot, MeasureSize, ScrollArea, ScrollAreaSizing, UIExt, WindowSized, STREET,
 };
 use glam::{uvec2, vec4, Vec2};
 
@@ -34,7 +30,7 @@ use crate::{
     shared,
 };
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
-use ambient_layout::{docking, margin, padding, width, Borders};
+use ambient_layout::{docking, padding, width, Borders};
 
 pub mod player;
 mod wasm;
@@ -340,8 +336,6 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     let (w_memory, set_w_memory) = hooks.use_state(0.0);
     let (mouse_on_edge, set_mouse_on_edge) = hooks.use_state(false);
     let (should_track_resize, set_should_track_resize) = hooks.use_state(false);
-    let (comp_filter, set_comp_filter) = hooks.use_state("".to_string());
-    let (entity_filter, set_entity_filter) = hooks.use_state("".to_string());
 
     hooks.use_runtime_message::<messages::WindowMouseInput>({
         move |_world, event| {
@@ -356,25 +350,6 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
 
     hooks.use_frame({
         let state = state.clone();
-        let gs = state.clone().game_state;
-        gs.lock()
-            .world
-            .add_component(
-                EntityId::resources(),
-                debugger_comp_filter(),
-                comp_filter.clone(),
-            )
-            .unwrap();
-        gs.lock()
-            .world
-            .add_component(
-                EntityId::resources(),
-                debugger_entity_filter(),
-                entity_filter.clone(),
-            )
-            .unwrap();
-        let comp_filter = comp_filter.clone();
-        let entity_filter = entity_filter.clone();
         let render_target = render_target.clone();
         let set_w = set_w.clone();
         let set_w_memory = set_w_memory.clone();
@@ -400,22 +375,7 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                 .world
                 .set_if_changed(EntityId::resources(), cursor_position(), mouse_pos)
                 .unwrap();
-            state
-                .world
-                .set_if_changed(
-                    EntityId::resources(),
-                    debugger_entity_filter(),
-                    entity_filter.clone(),
-                )
-                .unwrap();
-            state
-                .world
-                .set_if_changed(
-                    EntityId::resources(),
-                    debugger_comp_filter(),
-                    comp_filter.clone(),
-                )
-                .unwrap();
+
             let size = uvec2(
                 render_target.0.color_buffer.size.width,
                 render_target.0.color_buffer.size.height,
@@ -443,20 +403,6 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
         if show_debug {
             MeasureSize::el(
                 Dock::el([
-                    {
-                        let entity_filter = entity_filter.clone();
-                        TextEditor::new(entity_filter, set_entity_filter)
-                            .placeholder(Some("\u{f422} entity filter".to_string()))
-                            .el()
-                            .with(margin(), Borders::even(STREET).into())
-                    },
-                    {
-                        let comp_filter = comp_filter.clone();
-                        TextEditor::new(comp_filter, set_comp_filter)
-                            .placeholder(Some("\u{f422} component filter".to_string()))
-                            .el()
-                            .with(margin(), Borders::even(STREET).into())
-                    },
                     Button::new(if show_ecs { "\u{f137}" } else { "\u{f138}" }, move |_| {
                         set_show_ecs(!show_ecs)
                     })
