@@ -104,36 +104,72 @@ impl PipelineCtx {
             .map(|p| glob::Pattern::new(p))
             .collect::<Result<Vec<_>, glob::PatternError>>()
             .unwrap();
+        log::debug!(
+            "[{}] Sources filter: {:?}",
+            self.pipeline_path(),
+            sources_filter
+        );
         let opt_filter = self
             .process_ctx
             .input_file_filter
             .as_ref()
             .and_then(|x| glob::Pattern::new(x).ok());
+        log::debug!(
+            "[{}] Input file filter: {:?}",
+            self.pipeline_path(),
+            sources_filter
+        );
+        let filter_by_sources = move |file: &AbsAssetUrl| {
+            if sources_filter.is_empty() {
+                true
+            } else {
+                let path = self.in_root().relative_path(file.decoded_path());
+                for pat in &sources_filter {
+                    if pat.matches(path.as_str()) {
+                        return true;
+                    }
+                }
+                false
+            }
+        };
+        let filter_by_opt_filter = |f: &AbsAssetUrl| {
+            let path = self.in_root().relative_path(f.decoded_path());
+            opt_filter
+                .as_ref()
+                .map(|p| p.matches(path.as_str()))
+                .unwrap_or(true)
+        };
         let files = self
             .files
             .0
             .iter()
             .filter(move |file| {
-                if sources_filter.is_empty() {
-                    true
-                } else {
-                    let path = self.in_root().relative_path(file.decoded_path());
-                    for pat in &sources_filter {
-                        if pat.matches(path.as_str()) {
-                            return true;
-                        }
-                    }
-                    false
+                if !filter_by_sources(file) {
+                    log::debug!(
+                        "[{}] Skipping file {} because it doesn't match sources filter",
+                        self.pipeline_path(),
+                        file
+                    );
+                    return false;
                 }
+                if !filter_by_opt_filter(file) {
+                    log::debug!(
+                        "[{}] Skipping file {} because it doesn't match input file filter",
+                        self.pipeline_path(),
+                        file
+                    );
+                    return false;
+                }
+                if !filter(file) {
+                    log::debug!(
+                        "[{}] Skipping file {} because it doesn't match pipeline filter",
+                        self.pipeline_path(),
+                        file
+                    );
+                    return false;
+                }
+                true
             })
-            .filter(|f| {
-                let path = self.in_root().relative_path(f.decoded_path());
-                opt_filter
-                    .as_ref()
-                    .map(|p| p.matches(path.as_str()))
-                    .unwrap_or(true)
-            })
-            .filter(|f| filter(f))
             .cloned()
             .collect_vec();
         let n_files = files.len();
