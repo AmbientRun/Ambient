@@ -84,9 +84,9 @@ impl Gpu {
         let adapter_limits = adapter.limits();
         tracing::debug!("Adapter limits:\n{:#?}", adapter_limits);
 
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "unknown"))]
         let features = wgpu::Features::empty();
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(all(not(target_os = "macos"), not(target_os = "unknown")))]
         let features =
             wgpu::Features::MULTI_DRAW_INDIRECT | wgpu::Features::MULTI_DRAW_INDIRECT_COUNT;
 

@@ -411,6 +411,7 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_api_core",
  "ambient_shared_types",
+ "anyhow",
 ]
 
 [[package]]
