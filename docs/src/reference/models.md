@@ -52,4 +52,4 @@ let left_foot = get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
 set_component(left_foot, rotation(), Quat::from_rotation_x(0.3));
 ```
 
-This will only work on the client side as the skeleton is currently on loaded client-side.
+This will only work on the client side as the skeleton is currently only loaded client-side.
