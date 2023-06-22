@@ -54,6 +54,7 @@ uuid = { workspace = true }
 scopeguard = { workspace = true }
 tokio = { workspace = true, features = ["macros", "io-util"] }
 tokio-util = { version = "0.7", features = ["codec"] }
+git-version = { workspace = true }
 
 webpki-roots = { workspace = true, optional = true }
 

@@ -1,4 +1,5 @@
-use ambient_ecs::ExternalComponentDesc;
+use ambient_core::project_name;
+use ambient_ecs::{ComponentRegistry, ExternalComponentDesc};
 use ambient_std::asset_url::AbsAssetUrl;
 
 pub mod client;
@@ -21,8 +22,16 @@ pub enum ServerPush {
     Disconnect,
 }
 
-#[cfg(not(target_os = "unknown"))]
 pub(crate) const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+pub fn get_version_with_revision() -> String {
+    format!(
+        "{}-{}",
+        VERSION,
+        ambient_std::parse_git_revision(git_version::git_version!())
+            .expect("Failed to find git revision. Please open an issue with `git describe`")
+    )
+}
 
 /// Miscellaneous information about the server that needs to be sent to the client during the handshake.
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
@@ -38,4 +47,25 @@ pub struct ServerInfo {
     /// TODO: use semver
     pub version: String,
     pub external_components: Vec<ExternalComponentDesc>,
+}
+
+impl ServerInfo {
+    pub fn new(state: &mut crate::server::ServerState, content_base_url: AbsAssetUrl) -> Self {
+        let instance = state
+            .instances
+            .get(crate::server::MAIN_INSTANCE_ID)
+            .unwrap();
+        let world = &instance.world;
+        let external_components = ComponentRegistry::get()
+            .all_external()
+            .map(|x| x.0)
+            .collect();
+
+        Self {
+            project_name: world.resource(project_name()).clone(),
+            content_base_url,
+            version: get_version_with_revision(),
+            external_components,
+        }
+    }
 }

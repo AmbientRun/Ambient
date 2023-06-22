@@ -110,6 +110,7 @@ dependencies = [
  "ambient_audio",
  "ambient_build",
  "ambient_cameras",
+ "ambient_client_shared",
  "ambient_core",
  "ambient_debugger",
  "ambient_decals",
@@ -413,6 +414,19 @@ dependencies = [
 [[package]]
 name = "ambient_cb"
 version = "0.3.0-dev"
+
+[[package]]
+name = "ambient_client_shared"
+version = "0.0.0"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_input",
+ "ambient_network",
+ "ambient_shared_types",
+ "glam 0.24.0",
+]
 
 [[package]]
 name = "ambient_color"
@@ -758,6 +772,7 @@ dependencies = [
  "ambient_shared_types",
  "ambient_sys",
  "ambient_text",
+ "anyhow",
  "arboard",
 ]
 
@@ -959,6 +974,7 @@ dependencies = [
  "enum_dispatch",
  "flume",
  "futures",
+ "git-version",
  "glam 0.24.0",
  "h3",
  "h3-quinn",
@@ -1366,6 +1382,8 @@ dependencies = [
 name = "ambient_sys"
 version = "0.3.0-dev"
 dependencies = [
+ "anyhow",
+ "arboard",
  "console_error_panic_hook",
  "derive_more",
  "flume",
@@ -1478,6 +1496,7 @@ dependencies = [
  "rand 0.8.5",
  "serde",
  "serde_json",
+ "tracing",
 ]
 
 [[package]]

@@ -28,6 +28,8 @@ ambient_wasm = { path = "../crates/wasm" }
 ambient_layout = { path = "../crates/layout" }
 ambient_ecs_editor = { path = "../crates/ecs_editor" }
 ambient_debugger = { path = "../crates/debugger" }
+ambient_primitives = { path = "../crates/primitives" }
+ambient_client_shared = { path = "../crates/client_shared/" }
 
 url = "2.3"
 anyhow = "1.0"
@@ -57,4 +59,5 @@ web-sys = { version = "0.3", features = [
     "Performance",
     "Window",
 ] }
+
 js-sys = { version = "0.3" }

@@ -43,11 +43,13 @@ pub fn camera_systems() -> SystemGroup {
                     let window_size = world
                         .get(window, window_physical_size())
                         .unwrap_or_default();
+
                     if window_size.x == 0 || window_size.y == 0 {
                         continue;
                     }
 
                     let aspect_ratio = window_size.x as f32 / window_size.y as f32;
+
                     if aspect_ratio != old_ratio {
                         world.set(id, self::aspect_ratio(), aspect_ratio).unwrap();
                     }

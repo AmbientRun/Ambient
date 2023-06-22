@@ -51,6 +51,16 @@ impl ClientState {
     ) -> anyhow::Result<()> {
         match (frame, &self) {
             (ServerPush::ServerInfo(server_info), Self::Connecting(_user_id)) => {
+                let current_version = get_version_with_revision();
+
+                if server_info.version != current_version {
+                    tracing::error!(
+                        "Client version does not match server version. Server version: {:?}, Client version {:?}",
+                        server_info.version,
+                        current_version
+                    );
+                }
+
                 let state = state.lock();
                 ContentBaseUrlKey.insert(&state.assets, server_info.content_base_url.clone());
                 tracing::debug!(?server_info.external_components, "Adding external components");

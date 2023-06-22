@@ -6,10 +6,10 @@ use std::{
     time::Duration,
 };
 
-use ambient_core::{asset_cache, no_sync, project_name};
+use ambient_core::{asset_cache, no_sync};
 use ambient_ecs::{
-    ArchetypeFilter, ComponentDesc, ComponentRegistry, System, SystemGroup, World, WorldStream,
-    WorldStreamCompEvent, WorldStreamFilter,
+    ArchetypeFilter, ComponentDesc, System, SystemGroup, World, WorldStream, WorldStreamCompEvent,
+    WorldStreamFilter,
 };
 use ambient_proxy::client::AllocatedEndpoint;
 use ambient_std::{
@@ -35,7 +35,7 @@ use crate::{
     proto::{
         self,
         server::{handle_diffs, ConnectionData},
-        ServerInfo, ServerPush, VERSION,
+        ServerInfo, ServerPush,
     },
     server::{
         server_stats, ForkingEvent, ProxySettings, ServerState, SharedServerState, ShutdownEvent,
@@ -293,22 +293,7 @@ async fn handle_quinn_connection(
     tracing::debug!("Handling server connection");
     let (diffs_tx, diffs_rx) = flume::unbounded();
 
-    let server_info = {
-        let state = state.lock();
-        let instance = state.instances.get(MAIN_INSTANCE_ID).unwrap();
-        let world = &instance.world;
-        let external_components = ComponentRegistry::get()
-            .all_external()
-            .map(|x| x.0)
-            .collect();
-
-        ServerInfo {
-            project_name: world.resource(project_name()).clone(),
-            content_base_url,
-            version: VERSION.into(),
-            external_components,
-        }
-    };
+    let server_info = ServerInfo::new(&mut state.lock(), content_base_url);
 
     let mut server = proto::server::ServerState::default();
 
@@ -338,15 +323,20 @@ async fn handle_quinn_connection(
         }
     }
 
-    tracing::debug!("Performing additional on connect tracingic after the fact");
-
     tokio::spawn(handle_diffs(
         FramedSendStream::new(conn.open_uni().await?),
         diffs_rx,
     ));
 
+    let mut server = scopeguard::guard(server, |mut server| {
+        if !server.is_disconnected() {
+            tracing::info!("Connection closed abruptly from {server:?}");
+            server.process_disconnect(&data);
+        }
+    });
+
     // Before a connection has been established, only process the control stream
-    while let proto::server::ServerState::Connected(connected) = &mut server {
+    while let proto::server::ServerState::Connected(connected) = &mut *server {
         tokio::select! {
             Some(frame) = request_recv.next() => {
                 server.process_control(&data, frame?)?;

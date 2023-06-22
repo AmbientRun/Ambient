@@ -325,9 +325,9 @@ impl AppBuilder {
 
             // Get the screen's available width and height
             let window = web_sys::window().unwrap();
-            let screen = window.screen().unwrap();
-            let max_width = screen.avail_width().unwrap();
-            let max_height = screen.avail_height().unwrap();
+
+            let max_width = target.client_width();
+            let max_height = target.client_height();
 
             // Get device pixel ratio
             let device_pixel_ratio = window.device_pixel_ratio();
@@ -573,7 +573,6 @@ impl App {
                     control_flow,
                 );
             } else if let Some(event) = event.to_static() {
-                // tracing::info!("Handling event: {event:?}");
                 self.handle_static_event(&event, control_flow);
             } else {
                 tracing::error!("Failed to convert event to static")

@@ -412,8 +412,12 @@ impl TreeRenderer {
                 }
                 #[cfg(any(target_os = "macos", target_os = "unknown"))]
                 {
-                    if let Some(count) = counts.get(mat.material_index as usize) {
+                    let count = counts.get(mat.material_index as usize);
+                    tracing::debug!("Counts: {count:?}");
+
+                    if let Some(count) = count {
                         for i in 0..*count {
+                            tracing::debug!("Drawing primitive: {i}");
                             render_pass.draw_indexed_indirect(
                                 collect_state.commands.buffer(),
                                 (offset + i as u64)
