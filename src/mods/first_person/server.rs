@@ -1,7 +1,7 @@
 use ambient_api::{
     animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
     components::core::{
-        animation::apply_animation_player,
+        animation::{animation_player, apply_animation_player},
         app::main_scene,
         camera::aspect_ratio_from_window,
         ecs::{children, parent},
@@ -35,7 +35,7 @@ pub fn main() {
     //         .unwrap(),
     // );
     let idle_player = AnimationPlayer::new(&idle);
-    // let walk_player = AnimationPlayer::new(&walk);
+    let walk_player = AnimationPlayer::new(&walk);
     // let attack_player = AnimationPlayer::new(&attack);
     // let cam = Entity::new()
     //     .with_merge(make_perspective_infinite_reverse_camera())
@@ -84,23 +84,6 @@ pub fn main() {
                     .with(translation(), vec3(0., 0., 5.))
                     .with_default(local_to_world()),
             );
-            // entity::add_components(
-            //     id,
-            //     Entity::new()
-            //         .with_merge(make_transformable())
-            //         .with_default(cube())
-            //         .with(color(), vec4(1., 0., 0., 1.))
-            //         .with(scale(), vec3(1., 0.4, 4.0))
-            //         .with_default(cast_shadows())
-            //         // .with(cube_collider(), Vec3::ONE * 0.5)
-            //         .with(character_controller_height(), 2.)
-            //         .with(character_controller_radius(), 0.5)
-            //         .with_default(physics_controlled())
-            //         .with(components::cam_ref(), cam)
-            //         .with(player_pitch(), 0.0)
-            //         .with(player_yaw(), 0.0)
-            //         .with(translation(), vec3(0., 0., 10.)),
-            // )
         }
     });
 
@@ -112,6 +95,11 @@ pub fn main() {
             components::player_movement_direction(),
             msg.direction,
         );
+
+        if msg.direction != Vec2::ZERO {
+            let model = entity::get_component(player_id, components::model_ref()).unwrap();
+            entity::add_component(model, apply_animation_player(), walk_player.0);
+        }
 
         let yaw = entity::mutate_component(player_id, components::player_yaw(), |yaw| {
             *yaw = (*yaw + msg.mouse_delta.x * 0.01) % TAU;

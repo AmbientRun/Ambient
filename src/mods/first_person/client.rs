@@ -1,9 +1,47 @@
-use ambient_api::prelude::*;
+use ambient_api::{
+    animation::{get_bone_by_bind_id, AnimationPlayer, BindId, BlendNode, PlayClipFromUrlNode},
+    components::core::{
+        animation::apply_animation_player, camera::aspect_ratio_from_window, model::model_loaded,
+        prefab::prefab_from_url, primitives::quad, transform::reset_scale,
+    },
+    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
+    element::to_owned,
+    entity::{add_child, add_component, wait_for_component},
+    prelude::*,
+};
 
 #[main]
-fn main() {
+pub fn main() {
     // let cam = query(components::player_head_ref()).build();
     let shotcount = std::sync::atomic::AtomicUsize::new(0);
+    // spawn_query(player()).bind(async |w| {
+    //     wait_for_component(unit_id, model_loaded()).await;
+    // });
+    // let capoeira = PlayClipFromUrlNode::new(
+    //     asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
+    // );
+    // let robot = PlayClipFromUrlNode::new(
+    //     asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap(),
+    // );
+    // let blend = BlendNode::new(&capoeira, &robot, 0.);
+    // let anim_player = AnimationPlayer::new(&blend);
+    // add_component(unit_id, apply_animation_player(), anim_player.0);
+    run_async(async move {
+        let play_id = player::get_local();
+        let model = entity::get_component(play_id, components::model_ref()).unwrap();
+        wait_for_component(model, model_loaded()).await;
+        println!("model loaded");
+        let hand = get_bone_by_bind_id(model, &BindId::RightHand).unwrap();
+        let ball = Entity::new()
+            .with_merge(make_transformable())
+            .with_merge(make_sphere())
+            .with(scale(), vec3(0.3, 0.3, 0.3))
+            .with(color(), vec4(0.0, 1.0, 0.0, 1.0))
+            .with_default(local_to_parent())
+            .with_default(reset_scale())
+            .spawn();
+        add_child(hand, ball);
+    });
 
     ambient_api::messages::Frame::subscribe(move |_| {
         let (_delta, input) = input::get_delta();
