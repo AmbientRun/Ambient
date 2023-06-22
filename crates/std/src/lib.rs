@@ -148,3 +148,16 @@ pub fn parse_git_revision(version: &str) -> Option<String> {
         Some(s.get(3)?[1..].to_string())
     }
 }
+
+#[test]
+fn test_git_revision() {
+    assert_eq!(parse_git_revision("9f244c3"), Some("9f244c3".to_string()));
+    assert_eq!(
+        parse_git_revision("9f244c3-modified"),
+        Some("9f244c3".to_string())
+    );
+    assert_eq!(
+        parse_git_revision("git-0.3.0-dev-g9f244c3"),
+        Some("9f244c3".to_string())
+    );
+}

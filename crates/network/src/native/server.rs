@@ -6,10 +6,10 @@ use std::{
     time::Duration,
 };
 
-use ambient_core::{asset_cache, no_sync, project_name};
+use ambient_core::{asset_cache, no_sync};
 use ambient_ecs::{
-    ArchetypeFilter, ComponentDesc, ComponentRegistry, System, SystemGroup, World, WorldStream,
-    WorldStreamCompEvent, WorldStreamFilter,
+    ArchetypeFilter, ComponentDesc, System, SystemGroup, World, WorldStream, WorldStreamCompEvent,
+    WorldStreamFilter,
 };
 use ambient_proxy::client::AllocatedEndpoint;
 use ambient_std::{
@@ -35,7 +35,7 @@ use crate::{
     proto::{
         self,
         server::{handle_diffs, ConnectionData},
-        ServerInfo, ServerPush, VERSION,
+        ServerInfo, ServerPush,
     },
     server::{
         server_stats, ForkingEvent, ProxySettings, ServerState, SharedServerState, ShutdownEvent,

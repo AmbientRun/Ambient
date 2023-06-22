@@ -132,16 +132,3 @@ pub(crate) fn new_project(
 
     Ok(())
 }
-
-#[test]
-fn test_git_revision() {
-    assert_eq!(git_revision("9f244c3"), Some("9f244c3".to_string()));
-    assert_eq!(
-        git_revision("9f244c3-modified"),
-        Some("9f244c3".to_string())
-    );
-    assert_eq!(
-        git_revision("git-0.3.0-dev-g9f244c3"),
-        Some("9f244c3".to_string())
-    );
-}

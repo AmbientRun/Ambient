@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
-use ambient_core::project_name;
-use ambient_ecs::{ComponentRegistry, WorldStreamFilter};
+use ambient_ecs::WorldStreamFilter;
 use ambient_std::asset_url::AbsAssetUrl;
 use anyhow::Context;
 use bytes::Bytes;
@@ -15,7 +14,7 @@ use crate::{
     proto::{
         self,
         server::{handle_diffs, ConnectionData},
-        ServerInfo, ServerPush, VERSION,
+        ServerInfo, ServerPush,
     },
     server::{SharedServerState, MAIN_INSTANCE_ID},
     stream::{FramedRecvStream, FramedSendStream},
