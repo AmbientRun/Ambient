@@ -4,7 +4,7 @@
 #    Note: the project has to be built (`ambient build guest/rust/examples/games/minigolf`)
 # 3. Run `ambient join` locally to connect to the server
 
-FROM rust:1.67-bullseye AS builder
+FROM rust:1.70-bullseye AS builder
 RUN apt-get update && \
     apt-get install -y \
     zip build-essential cmake pkg-config \
