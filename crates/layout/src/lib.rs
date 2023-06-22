@@ -310,10 +310,6 @@ fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
         world.get(id, height()).unwrap_or(0.),
     ) - padding.border_size();
 
-    if remaining_size.x < 0.0 || remaining_size.y < 0.0 {
-        log::warn!("Dock layout with negative size: {remaining_size} using padding {padding:?}");
-    }
-
     let mut remaining_offset = padding.offset();
 
     for (i, &c) in children.iter().enumerate() {

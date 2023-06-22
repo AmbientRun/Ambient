@@ -207,7 +207,7 @@ impl System for MainRenderer {
                 &mut encoder,
                 &mut post_submit,
                 RendererTarget::Target(&self.render_target),
-                Some(Color::rgba(0.2, 0.0, 0.0, 1.)),
+                Some(Color::rgba(0.0, 0., 0.0, 1.)),
             );
         }
 

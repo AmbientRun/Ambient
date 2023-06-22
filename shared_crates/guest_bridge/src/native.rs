@@ -35,7 +35,7 @@ pub mod window {
     }
 
     #[cfg(target_os = "unknown")]
-    pub async fn set_clipboard(text: &str) -> Result<(), String> {
+    pub async fn set_clipboard(text: &str) -> anyhow::Result<()> {
         ambient_sys::clipboard::set(text).await
     }
 }

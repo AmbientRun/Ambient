@@ -21,6 +21,7 @@ pin-project = { workspace = true }
 slotmap = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
+anyhow = { workspace = true }
 
 time = { version = "0.3", features = ["wasm-bindgen"] }
 # The `console_error_panic_hook` crate provides better debugging of panics by

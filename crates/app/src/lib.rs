@@ -339,13 +339,6 @@ impl AppBuilder {
             let real_width = (max_width as f64 * device_pixel_ratio) as u32;
             let real_height = (max_height as f64 * device_pixel_ratio) as u32;
 
-            tracing::info!(
-                ?max_width,
-                ?max_height,
-                ?device_pixel_ratio,
-                "Creating canvas"
-            );
-
             // Set the canvas dimensions using the real dimensions
             canvas.set_width(real_width);
             canvas.set_height(real_height);

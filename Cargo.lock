@@ -772,6 +772,7 @@ dependencies = [
  "ambient_shared_types",
  "ambient_sys",
  "ambient_text",
+ "anyhow",
  "arboard",
 ]
 
@@ -1380,6 +1381,7 @@ dependencies = [
 name = "ambient_sys"
 version = "0.3.0-dev"
 dependencies = [
+ "anyhow",
  "arboard",
  "console_error_panic_hook",
  "derive_more",

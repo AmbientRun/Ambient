@@ -19,6 +19,7 @@ ambient_text = { path = "../../crates/text", optional = true, version = "0.3.0-d
 ambient_rect = { path = "../../crates/rect", optional = true, version = "0.3.0-dev" }
 ambient_input = { path = "../../crates/input", optional = true, version = "0.3.0-dev" }
 ambient_sys = { path = "../../crates/sys", optional = true, version = "0.3.0-dev" }
+anyhow = { workspace = true }
 
 # Guest only
 ambient_api_core = { path = "../../guest/rust/api_core", optional = true, version = "0.3.0-dev" }

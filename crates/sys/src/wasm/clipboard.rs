@@ -18,7 +18,7 @@ pub async fn get() -> Option<String> {
     Some(text.dyn_into::<JsString>().unwrap().into())
 }
 
-pub async fn set(text: &str) -> Result<(), String> {
+pub async fn set(text: &str) -> anyhow::Result<()> {
     JsFuture::from(
         web_sys::window()
             .expect("No window")
@@ -28,6 +28,6 @@ pub async fn set(text: &str) -> Result<(), String> {
             .write_text(text.into()),
     )
     .await
-    .map_err(|v| format!("{:?}", v))
+    .map_err(|v| anyhow::anyhow!("{:?}", v))
     .map(|_| ())
 }

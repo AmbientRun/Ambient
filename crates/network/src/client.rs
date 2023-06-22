@@ -214,7 +214,7 @@ pub fn GameClientWorld(hooks: &mut Hooks) -> Element {
         .el(),
         cb(move |size| {
             let size = (size * scale_factor as f32).as_uvec2().max(UVec2::ONE);
-            tracing::info!("Resizing render target to {size:?}");
+            tracing::debug!("Resizing render target to {size:?}");
             set_render_target(GameClientRenderTarget(Arc::new(RenderTarget::new(
                 &gpu, size, None,
             ))))
