@@ -12,7 +12,7 @@ RUN apt-get update && \
     libxcb-xfixes0-dev mesa-vulkan-drivers
 ADD . /build
 WORKDIR /build
-RUN cargo build --release --no-default-features
+RUN cargo build --release --no-default-features --features slim
 
 FROM debian:bullseye-slim
 RUN apt-get update && \

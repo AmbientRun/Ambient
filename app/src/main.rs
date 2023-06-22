@@ -103,15 +103,19 @@ fn setup_logging() -> anyhow::Result<()> {
             .with_default_directive(Level::INFO.into())
             .from_env_lossy();
 
-        registry()
-            .with(filter)
-            .with(env_filter)
-            //
-            // .with(
-            //     tracing_tree::HierarchicalLayer::new(4)
-            //         .with_indent_lines(true)
-            //         .with_bracketed_fields(true), // .with_timer(tracing_tree::time::Uptime::from(std::time::Instant::now())),
-            // )
+        let layered_registry = registry().with(filter).with(env_filter);
+
+        // use stackdriver format if available and requested
+        #[cfg(feature = "stackdriver")]
+        if std::env::var("LOG_FORMAT").unwrap_or_default() == "stackdriver" {
+            layered_registry
+                .with(tracing_stackdriver::layer().with_writer(std::io::stdout))
+                .try_init()?;
+            return Ok(());
+        }
+
+        // otherwise use the default format
+        layered_registry
             .with(tracing_subscriber::fmt::Layer::new().with_timer(
                 tracing_subscriber::fmt::time::LocalTime::new(time::macros::format_description!(
                     "[hour]:[minute]:[second]"

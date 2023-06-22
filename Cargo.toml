@@ -15,6 +15,7 @@ tracing = "0.1.35"
 # tracing-tree = { version = "0.2" }
 # https://github.com/davidbarsky/tracing-tree/pull/56#issuecomment-1489148431
 tracing-tree = { git = "https://github.com/TmLev/tracing-tree" }
+tracing-stackdriver = "0.6.2"
 tracing-subscriber = { version = "0.3.16", features = [
     "env-filter",
     "time",
