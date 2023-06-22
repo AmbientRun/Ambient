@@ -209,6 +209,7 @@ fn systems(_world: &mut World) -> SystemGroup {
             Box::new(ambient_prefab::systems()),
             // Happens after the physics step
             ambient_physics::fetch_simulation_system(),
+            Box::new(ambient_animation::animation_systems()),
             Box::new(ambient_physics::physx::sync_ecs_physics()),
             Box::new(ambient_core::transform::TransformSystem::new()),
             ambient_core::remove_at_time_system(),

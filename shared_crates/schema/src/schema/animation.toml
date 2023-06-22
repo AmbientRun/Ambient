@@ -13,7 +13,7 @@ attributes = ["MaybeResource", "Debuggable", "Networked"]
 type = { type = "Vec", element_type = "String" }
 name = "Animation errors"
 description = "A list of errors that were produced trying to play the animation."
-attributes = ["MaybeResource", "Debuggable", "Networked"]
+attributes = ["MaybeResource", "Debuggable"]
 
 [components."core::animation::apply_animation_player"]
 type = "EntityId"
@@ -61,7 +61,7 @@ attributes = ["MaybeResource", "Debuggable", "Networked"]
 type = "F32"
 name = "Clip duration"
 description = "The clip duration is loaded from the clip, and then applied to the entity."
-attributes = ["MaybeResource", "Debuggable", "Networked"]
+attributes = ["MaybeResource", "Debuggable"]
 
 [components."core::animation::blend"]
 type = "F32"
@@ -109,4 +109,4 @@ attributes = ["Debuggable", "Networked", "Store"]
 type = { type = "Vec", element_type = "String" }
 name = "Bind ids"
 description = "Animation bind ids."
-attributes = ["Debuggable", "Networked", "Store"]
+attributes = ["Debuggable", "Store"]
