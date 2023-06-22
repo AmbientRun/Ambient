@@ -1,0 +1,18 @@
+[[pipelines]]
+type = "Models"
+sources = ["model/**/*"]
+
+[[pipelines]]
+type = "Models"
+sources = ["anim/**/*"]
+
+[[pipelines]]
+type = "Models"
+sources = ["map/**/*"]
+
+[pipelines.collider]
+type = "FromModel"
+
+[[pipelines]]
+type = "Audio"
+sources = ["sound/**/*"]

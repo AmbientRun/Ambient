@@ -1,0 +1,53 @@
+[package]
+name = "afpsmod"
+
+edition = "2021"
+publish = false
+version = "0.0.1"
+
+[dependencies]
+ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", branch = "main" }
+
+[[bin]]
+name = "client_afpsmod"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "server_afpsmod"
+path = "src/server.rs"
+required-features = ["server"]
+
+[[bin]]
+name = "mods_scene_server"
+path = "src/mods/scene/server.rs"
+required-features = ["server"]
+
+# [[bin]]
+# name = "mods_player_client"
+# path = "src/mods/player/client.rs"
+# required-features = ["client"]
+
+[[bin]]
+name = "mods_first_person_client"
+path = "src/mods/first_person/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "mods_first_person_server"
+path = "src/mods/first_person/server.rs"
+required-features = ["server"]
+
+[[bin]]
+name = "mods_zombie_server"
+path = "src/mods/zombie/server.rs"
+required-features = ["server"]
+
+[[bin]]
+name = "mods_fps_ui"
+path = "src/mods/fps_ui/client.rs"
+required-features = ["client"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]

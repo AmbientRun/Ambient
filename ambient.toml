@@ -1,0 +1,76 @@
+[ember]
+id = "afpsmod"
+name = "afpsmod"
+version = "0.0.1"
+
+
+[components]
+
+model_ref = { type = "EntityId", name = "Model ref", description = "The model.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+is_zombie = { type = "Empty", attributs = ["Networked", "Debuggable"] }
+
+zombie_step_frame_count = { type = "U32", attributs = [
+    "Networked",
+    "Debuggable",
+] }
+
+zombie_hit_reaction_count = { type = "I32", attributs = [
+    "Networked",
+    "Debuggable",
+] }
+
+zombie_health = { type = "I32", attributs = ["Networked", "Debuggable"] }
+
+zombie_model_ref = { type = "EntityId", attributs = [
+    "Networked",
+    "Debuggable",
+] }
+
+name_ui_toggle = { type = "Bool", attributs = ["Networked", "Debuggable"] }
+
+player_head_ref = { type = "EntityId", name = "Player head ref", description = "The player's head.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+player_movement_direction = { type = "Vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+player_yaw = { type = "F32", name = "Player yaw", description = "The player's yaw.", attributes = [
+    "Debuggable",
+] }
+player_pitch = { type = "F32", name = "Player pitch", description = "The player's pitch.", attributes = [
+    "Debuggable",
+] }
+
+cam_ref = { type = "EntityId", name = "Camera ref", description = "The camera.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+[messages.input]
+description = "Describes the input state of the player."
+[messages.input.fields]
+direction = { type = "Vec2", name = "Direction", description = "The movement direction of the player." }
+mouse_delta = { type = "Vec2", name = "Mouse delta", description = "The mouse delta." }
+
+[messages.ray.fields]
+ray_origin = { type = "Vec3" }
+ray_dir = { type = "Vec3" }
+source = { type = "EntityId" }
+type_action = { type = "U8" }
+
+[messages.hit.fields]
+id = { type = "EntityId" }
+
+[messages.zombie_walk.fields]
+# cam = { type = "EntityId" }
+id = { type = "EntityId" }
+
+[messages.gunfire.fields]
+# cam = { type = "EntityId" }
+id = { type = "EntityId" }
