@@ -158,6 +158,7 @@ fn import_sync(
             PostProcess::FlipWindingOrder,
             PostProcess::GenerateUVCoords,
             PostProcess::FlipUVs,
+            PostProcess::GenerateNormals,
         ],
         extension,
     )?;
@@ -186,8 +187,11 @@ fn import_sync(
             .texture_coords
             .iter()
             .filter_map(|tc| {
-                tc.as_ref()
-                    .map(|tc| tc.iter().map(|v| vec2(v.x, v.y)).collect_vec())
+                tc.as_ref().map(|tc| {
+                    tc.iter()
+                        .map(|v| vec2(v.x.rem_euclid(1.), v.y.rem_euclid(1.)))
+                        .collect_vec()
+                })
             })
             .collect_vec();
         let indices = mesh.faces.iter().flat_map(|f| f.0.clone()).collect_vec();
