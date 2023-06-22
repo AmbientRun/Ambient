@@ -293,22 +293,7 @@ async fn handle_quinn_connection(
     tracing::debug!("Handling server connection");
     let (diffs_tx, diffs_rx) = flume::unbounded();
 
-    let server_info = {
-        let state = state.lock();
-        let instance = state.instances.get(MAIN_INSTANCE_ID).unwrap();
-        let world = &instance.world;
-        let external_components = ComponentRegistry::get()
-            .all_external()
-            .map(|x| x.0)
-            .collect();
-
-        ServerInfo {
-            project_name: world.resource(project_name()).clone(),
-            content_base_url,
-            version: VERSION.into(),
-            external_components,
-        }
-    };
+    let server_info = ServerInfo::new(&mut state.lock(), content_base_url);
 
     let mut server = proto::server::ServerState::default();
 

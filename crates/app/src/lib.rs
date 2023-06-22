@@ -325,9 +325,6 @@ impl AppBuilder {
 
             // Get the screen's available width and height
             let window = web_sys::window().unwrap();
-            // let screen = window.screen().unwrap();
-            // let max_width = screen.avail_width().unwrap();
-            // let max_height = screen.avail_height().unwrap();
 
             let max_width = target.client_width();
             let max_height = target.client_height();

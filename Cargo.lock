@@ -974,6 +974,7 @@ dependencies = [
  "enum_dispatch",
  "flume",
  "futures",
+ "git-version",
  "glam 0.24.0",
  "h3",
  "h3-quinn",
