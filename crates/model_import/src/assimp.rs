@@ -185,10 +185,9 @@ fn import_sync(
         let texcoords = mesh
             .texture_coords
             .iter()
-            .map(|tc| {
+            .filter_map(|tc| {
                 tc.as_ref()
                     .map(|tc| tc.iter().map(|v| vec2(v.x, v.y)).collect_vec())
-                    .unwrap_or_default()
             })
             .collect_vec();
         let indices = mesh.faces.iter().flat_map(|f| f.0.clone()).collect_vec();
