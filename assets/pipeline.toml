@@ -14,5 +14,9 @@ sources = ["map/**/*"]
 type = "FromModel"
 
 [[pipelines]]
+type = "Models"
+sources = ["gun/**/*"]
+
+[[pipelines]]
 type = "Audio"
 sources = ["sound/**/*"]

@@ -3,6 +3,10 @@ id = "afpsmod"
 name = "afpsmod"
 version = "0.0.1"
 
+# includes = ["src/modes/first_person/ambient.toml"]
+
+includes = ["src/mods/first_person/ambient.toml"]
+
 
 [components]
 

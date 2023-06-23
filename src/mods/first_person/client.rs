@@ -1,8 +1,12 @@
 use ambient_api::{
     animation::{get_bone_by_bind_id, AnimationPlayer, BindId, BlendNode, PlayClipFromUrlNode},
     components::core::{
-        animation::apply_animation_player, camera::aspect_ratio_from_window, model::model_loaded,
-        prefab::prefab_from_url, primitives::quad, transform::reset_scale,
+        animation::{animation_player, apply_animation_player},
+        camera::aspect_ratio_from_window,
+        model::model_loaded,
+        prefab::prefab_from_url,
+        primitives::quad,
+        transform::reset_scale,
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     element::to_owned,
@@ -14,6 +18,11 @@ use ambient_api::{
 pub fn main() {
     // let cam = query(components::player_head_ref()).build();
     let shotcount = std::sync::atomic::AtomicUsize::new(0);
+
+    // let blend = BlendNode::new(&shoot, &walk, 0.);
+    // blend.set_mask_humanoid_lower_body(1.);
+    // let blend2 = BlendNode::new(&blend, &idle, 0.);
+
     // spawn_query(player()).bind(async |w| {
     //     wait_for_component(unit_id, model_loaded()).await;
     // });
@@ -27,20 +36,34 @@ pub fn main() {
     // let anim_player = AnimationPlayer::new(&blend);
     // add_component(unit_id, apply_animation_player(), anim_player.0);
     run_async(async move {
-        let play_id = player::get_local();
-        let model = entity::get_component(play_id, components::model_ref()).unwrap();
-        wait_for_component(model, model_loaded()).await;
-        println!("model loaded");
-        let hand = get_bone_by_bind_id(model, &BindId::RightHand).unwrap();
-        let ball = Entity::new()
-            .with_merge(make_transformable())
-            .with_merge(make_sphere())
-            .with(scale(), vec3(0.3, 0.3, 0.3))
-            .with(color(), vec4(0.0, 1.0, 0.0, 1.0))
-            .with_default(local_to_parent())
-            .with_default(reset_scale())
-            .spawn();
-        add_child(hand, ball);
+        loop {
+            let play_id = player::get_local();
+            let model = entity::get_component(play_id, components::model_ref());
+            if model.is_none() {
+                continue;
+            }
+            let model = model.unwrap();
+            wait_for_component(model, model_loaded()).await;
+
+            println!("model loaded");
+
+            let hand = get_bone_by_bind_id(model, &BindId::RightHand).unwrap();
+            let ball = Entity::new()
+                .with_merge(make_transformable())
+                // .with_merge(make_sphere())
+                .with(
+                    prefab_from_url(),
+                    asset::url("assets/gun/m4a1_carbine.glb").unwrap(),
+                )
+                // .with(scale(), Vec3::ONE)
+                .with(scale(), Vec3::ONE * 0.01)
+                .with(color(), vec4(1.0, 1.0, 0.0, 1.0))
+                .with_default(local_to_parent())
+                .with_default(reset_scale())
+                .spawn();
+            add_child(hand, ball);
+            break;
+        }
     });
 
     ambient_api::messages::Frame::subscribe(move |_| {

@@ -1,7 +1,7 @@
 use ambient_api::{
     animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
     components::core::{
-        animation::{animation_player, apply_animation_player},
+        animation::{apply_animation_player, blend},
         app::main_scene,
         camera::aspect_ratio_from_window,
         ecs::{children, parent},
@@ -22,6 +22,11 @@ use ambient_api::{
 use components::{player_head_ref, player_movement_direction, player_pitch, player_yaw};
 use std::f32::consts::{PI, TAU};
 
+use std::cell::RefCell;
+
+const MAX_SPEED: f32 = 0.1;
+const SPEED_DELTA: f32 = 0.005;
+
 #[main]
 pub fn main() {
     let idle = PlayClipFromUrlNode::new(
@@ -30,20 +35,22 @@ pub fn main() {
     let walk = PlayClipFromUrlNode::new(
         asset::url("assets/anim/Rifle Walking Forward.fbx/animations/mixamo.com.anim").unwrap(),
     );
-    // let attack = PlayClipFromUrlNode::new(
-    //     asset::url("assets/anim/Standing Torch Melee Attack 01.fbx/animations/mixamo.com.anim")
-    //         .unwrap(),
-    // );
-    let idle_player = AnimationPlayer::new(&idle);
-    let walk_player = AnimationPlayer::new(&walk);
-    // let attack_player = AnimationPlayer::new(&attack);
-    // let cam = Entity::new()
-    //     .with_merge(make_perspective_infinite_reverse_camera())
-    //     .with(aspect_ratio_from_window(), EntityId::resources())
-    //     .with_default(main_scene())
-    //     .with(translation(), vec3(10.0, 0.0, 10.0) * 1.0)
-    //     .with(lookat_target(), vec3(0., 0., 0.))
-    //     .spawn();
+
+    let idle_walk_blend = RefCell::new(BlendNode::new(&idle, &walk, 0.0));
+    let idel_walk_player = RefCell::new(AnimationPlayer::new(*idle_walk_blend.borrow_mut()));
+    // let idle_player = AnimationPlayer::new(&idle);
+    // let walk_player = AnimationPlayer::new(&walk);
+
+    entity::add_component(
+        entity::resources(),
+        components::animation_blend_list(),
+        vec![idle_walk_blend.0 .0],
+    );
+    entity::add_component(
+        entity::resources(),
+        components::animation_player_list(),
+        vec![idel_walk_player.0],
+    );
 
     spawn_query(player()).bind(move |players| {
         for (id, _) in players {
@@ -68,7 +75,7 @@ pub fn main() {
                 .with_default(local_to_parent())
                 .with(parent(), id)
                 .spawn();
-            entity::add_component(model, apply_animation_player(), idle_player.0);
+            // entity::add_component(model, apply_animation_player(), idle_player.0);
             entity::add_components(
                 id,
                 Entity::new()
@@ -79,6 +86,9 @@ pub fn main() {
                     .with(children(), vec![model, cam])
                     .with(player_head_ref(), cam)
                     .with(components::model_ref(), model)
+                    .with(components::speed(), 0.0)
+                    .with(components::running(), false)
+                    .with(components::offground(), false)
                     .with(player_pitch(), 0.0)
                     .with(player_yaw(), 0.0)
                     .with(translation(), vec3(0., 0., 5.))
@@ -96,10 +106,30 @@ pub fn main() {
             msg.direction,
         );
 
+        let speed;
         if msg.direction != Vec2::ZERO {
-            let model = entity::get_component(player_id, components::model_ref()).unwrap();
-            entity::add_component(model, apply_animation_player(), walk_player.0);
+            let old_speed = entity::get_component(player_id, components::speed()).unwrap();
+            speed = (old_speed + SPEED_DELTA).min(MAX_SPEED);
+            entity::set_component(player_id, components::speed(), speed);
+            let idle_walk_blend =
+                entity::get_component(entity::resources(), components::animation_blend_list())
+                    .unwrap()[0];
+            entity::set_component(idle_walk_blend, blend(), speed / MAX_SPEED);
+        } else {
+            let old_speed = entity::get_component(player_id, components::speed()).unwrap();
+            speed = (old_speed - SPEED_DELTA).max(0.0);
+            entity::set_component(player_id, components::speed(), speed);
+            let idle_walk_blend =
+                entity::get_component(entity::resources(), components::animation_blend_list())
+                    .unwrap()[0];
+            entity::set_component(idle_walk_blend, blend(), speed / MAX_SPEED);
         }
+
+        let idle_walk_player =
+            entity::get_component(entity::resources(), components::animation_player_list())
+                .unwrap()[0];
+        let model = entity::get_component(player_id, components::model_ref()).unwrap();
+        entity::add_component(model, apply_animation_player(), idle_walk_player);
 
         let yaw = entity::mutate_component(player_id, components::player_yaw(), |yaw| {
             *yaw = (*yaw + msg.mouse_delta.x * 0.01) % TAU;
@@ -133,9 +163,15 @@ pub fn main() {
         }
     });
 
-    query((player(), player_movement_direction(), rotation())).each_frame(move |players| {
-        for (player_id, (_, direction, rot)) in players {
-            let speed = 0.1;
+    query((
+        player(),
+        player_movement_direction(),
+        rotation(),
+        components::speed(),
+    ))
+    .each_frame(move |players| {
+        for (player_id, (_, direction, rot, speed)) in players {
+            // let speed = 0.1;
             let displace = rot * (direction.normalize_or_zero() * speed).extend(-0.1);
             // println!("displace: {:?}", displace);
             let collision = physics::move_character(player_id, displace, 0.01, frametime());
