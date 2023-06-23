@@ -80,6 +80,19 @@ fn add_component_recursive<T: ComponentValue + Clone + PartialEq + 'static>(
     }
 }
 
+fn remove_component_recursive<T: ComponentValue + Clone + PartialEq + 'static>(
+    world: &mut World,
+    entity: EntityId,
+    component: Component<T>,
+) {
+    if let Ok(childs) = world.get_cloned(entity, children()) {
+        for c in childs {
+            remove_component_recursive(world, c, component);
+        }
+    }
+    world.remove_component(entity, component).ok();
+}
+
 pub fn copy_component_recursive<T: ComponentValue + PartialEq + Clone + 'static>(
     label: &'static str,
     component_recursive: Component<T>,
@@ -93,6 +106,16 @@ pub fn copy_component_recursive<T: ComponentValue + PartialEq + Clone + 'static>
                     add_component_recursive(world, id, component, val);
                 }
             }),
+            query((component_recursive, children()))
+                .despawned()
+                .to_system(move |q, world, qs, _| {
+                    for (id, (_, childs)) in q.collect_cloned(world, qs) {
+                        world.remove_component(id, component).ok();
+                        for c in childs {
+                            remove_component_recursive(world, c, component);
+                        }
+                    }
+                }),
         ],
     )
 }
