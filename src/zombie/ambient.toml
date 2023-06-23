@@ -1,0 +1,20 @@
+[components]
+
+is_zombie = { type = "Empty", attributs = ["Networked", "Debuggable"] }
+
+zombie_step_frame_count = { type = "U32", attributs = [
+    "Networked",
+    "Debuggable",
+] }
+
+zombie_hit_reaction_count = { type = "I32", attributs = [
+    "Networked",
+    "Debuggable",
+] }
+
+zombie_health = { type = "I32", attributs = ["Networked", "Debuggable"] }
+
+zombie_model_ref = { type = "EntityId", attributs = [
+    "Networked",
+    "Debuggable",
+] }

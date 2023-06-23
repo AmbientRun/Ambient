@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use ambient_api::{
     animation::{get_bone_by_bind_id, AnimationPlayer, BindId, BlendNode, PlayClipFromUrlNode},
     components::core::{
@@ -19,8 +20,10 @@ use ambient_api::{
     prelude::*,
 };
 
-use components::{player_head_ref, player_movement_direction, player_pitch, player_yaw};
-use std::f32::consts::{PI, TAU};
+// #[allow(unused_imports)]
+// use components::{player_head_ref, player_movement_direction, player_pitch, player_yaw};
+// #[allow(unused_imports)]
+// use std::f32::consts::{PI, TAU};
 
 #[main]
 pub async fn main() {
@@ -122,7 +125,7 @@ pub async fn main() {
             let mut min_distance = std::f32::MAX;
             let mut nearest_player_pos: Option<Vec2> = None;
 
-            for (player, pos) in players {
+            for (_player, pos) in players {
                 // println!("player pos {:?}", pos);
                 let player_pos = vec2(pos.x, pos.y);
                 let distance = (zombie_pos - player_pos).length();

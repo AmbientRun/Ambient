@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use ambient_api::{
     animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
     components::core::{
@@ -20,38 +21,14 @@ use ambient_api::{
 };
 
 use components::{player_head_ref, player_movement_direction, player_pitch, player_yaw};
-use std::f32::consts::{PI, TAU};
-
-use std::cell::RefCell;
+use std::f32::consts::{E, PI, TAU};
 
 const MAX_SPEED: f32 = 0.1;
-const SPEED_DELTA: f32 = 0.005;
-
+const SPEED_DELTA: f32 = 0.01;
+mod anim;
 #[main]
 pub fn main() {
-    let idle = PlayClipFromUrlNode::new(
-        asset::url("assets/anim/Rifle Aiming Idle.fbx/animations/mixamo.com.anim").unwrap(),
-    );
-    let walk = PlayClipFromUrlNode::new(
-        asset::url("assets/anim/Rifle Walking Forward.fbx/animations/mixamo.com.anim").unwrap(),
-    );
-
-    let idle_walk_blend = RefCell::new(BlendNode::new(&idle, &walk, 0.0));
-    let idel_walk_player = RefCell::new(AnimationPlayer::new(*idle_walk_blend.borrow_mut()));
-    // let idle_player = AnimationPlayer::new(&idle);
-    // let walk_player = AnimationPlayer::new(&walk);
-
-    entity::add_component(
-        entity::resources(),
-        components::animation_blend_list(),
-        vec![idle_walk_blend.0 .0],
-    );
-    entity::add_component(
-        entity::resources(),
-        components::animation_player_list(),
-        vec![idel_walk_player.0],
-    );
-
+    anim::register_anim();
     spawn_query(player()).bind(move |players| {
         for (id, _) in players {
             let cam = Entity::new()
@@ -89,6 +66,7 @@ pub fn main() {
                     .with(components::speed(), 0.0)
                     .with(components::running(), false)
                     .with(components::offground(), false)
+                    .with(components::player_health(), 100)
                     .with(player_pitch(), 0.0)
                     .with(player_yaw(), 0.0)
                     .with(translation(), vec3(0., 0., 5.))
@@ -100,6 +78,10 @@ pub fn main() {
     messages::Input::subscribe(move |source, msg| {
         let Some(player_id) = source.client_entity_id() else { return; };
 
+        let previous_direction =
+            entity::get_component(player_id, components::player_movement_direction())
+                .unwrap_or_default();
+
         entity::add_component(
             player_id,
             components::player_movement_direction(),
@@ -107,30 +89,65 @@ pub fn main() {
         );
 
         let speed;
-        if msg.direction != Vec2::ZERO {
-            let old_speed = entity::get_component(player_id, components::speed()).unwrap();
-            speed = (old_speed + SPEED_DELTA).min(MAX_SPEED);
-            entity::set_component(player_id, components::speed(), speed);
-            let idle_walk_blend =
-                entity::get_component(entity::resources(), components::animation_blend_list())
-                    .unwrap()[0];
-            entity::set_component(idle_walk_blend, blend(), speed / MAX_SPEED);
-        } else {
+        let fd = msg.direction.y == -1.0;
+        let bk = msg.direction.y == 1.0;
+        let lt = msg.direction.x == -1.0;
+        let rt = msg.direction.x == 1.0;
+
+        let old_fd = previous_direction.y == -1.0;
+        let old_bk = previous_direction.y == 1.0;
+        let old_lt = previous_direction.x == -1.0;
+        let old_rt = previous_direction.x == 1.0;
+
+        let model = entity::get_component(player_id, components::model_ref()).unwrap();
+        if msg.direction == Vec2::ZERO {
+            // stops, but we need to blend to idle depends on previous direction
             let old_speed = entity::get_component(player_id, components::speed()).unwrap();
             speed = (old_speed - SPEED_DELTA).max(0.0);
             entity::set_component(player_id, components::speed(), speed);
-            let idle_walk_blend =
-                entity::get_component(entity::resources(), components::animation_blend_list())
-                    .unwrap()[0];
-            entity::set_component(idle_walk_blend, blend(), speed / MAX_SPEED);
+            let bld = speed / MAX_SPEED;
+            if old_fd {
+                from_move_to_idle(model, bld, components::idle_fd())
+            } else if old_bk {
+                from_move_to_idle(model, bld, components::idle_bk())
+            } else if old_lt {
+                from_move_to_idle(model, bld, components::idle_lt())
+            } else if old_rt {
+                from_move_to_idle(model, bld, components::idle_rt())
+            } else if old_fd && old_lt {
+                from_move_to_idle(model, bld, components::idle_fd_lt())
+            } else if old_fd && old_rt {
+                from_move_to_idle(model, bld, components::idle_fd_rt())
+            } else if old_bk && old_lt {
+                from_move_to_idle(model, bld, components::idle_bk_lt())
+            } else if old_bk && old_rt {
+                from_move_to_idle(model, bld, components::idle_bk_rt())
+            } else {
+                from_move_to_idle(model, bld, components::idle_fd())
+            }
+        } else if fd && !lt && !rt {
+            speed = from_idle_to_move(player_id, components::idle_fd());
+        } else if bk && !lt && !rt {
+            speed = from_idle_to_move(player_id, components::idle_bk());
+        } else if lt && !fd && !bk {
+            speed = from_idle_to_move(player_id, components::idle_lt());
+        } else if rt && !fd && !bk {
+            speed = from_idle_to_move(player_id, components::idle_rt());
+        } else if fd && lt {
+            speed = from_idle_to_move(player_id, components::idle_fd_lt());
+        } else if fd && rt {
+            speed = from_idle_to_move(player_id, components::idle_fd_rt());
+        } else if bk && lt {
+            speed = from_idle_to_move(player_id, components::idle_bk_lt());
+        } else if bk && rt {
+            speed = from_idle_to_move(player_id, components::idle_bk_rt());
+        } else {
+            speed = from_idle_to_move(player_id, components::idle_fd());
         }
-
-        let idle_walk_player =
-            entity::get_component(entity::resources(), components::animation_player_list())
-                .unwrap()[0];
-        let model = entity::get_component(player_id, components::model_ref()).unwrap();
-        entity::add_component(model, apply_animation_player(), idle_walk_player);
-
+        if speed < 0.0 {
+            // this is a dummy function
+            return;
+        }
         let yaw = entity::mutate_component(player_id, components::player_yaw(), |yaw| {
             *yaw = (*yaw + msg.mouse_delta.x * 0.01) % TAU;
         })
@@ -159,6 +176,10 @@ pub fn main() {
                         *x -= 100;
                     }
                 });
+            } else if entity::has_component(hit.entity, components::player_health())
+                && msg.type_action == 0
+            {
+                println!("hit player");
             }
         }
     });
@@ -178,4 +199,21 @@ pub fn main() {
             // println!("collision: {} {} {}", collision.up, collision.down, collision.side);
         }
     });
+}
+
+pub fn from_idle_to_move(player_id: EntityId, comp: Component<Vec<EntityId>>) -> f32 {
+    let model = entity::get_component(player_id, components::model_ref()).unwrap();
+    let old_speed = entity::get_component(player_id, components::speed()).unwrap();
+    let speed = (old_speed + SPEED_DELTA).min(MAX_SPEED);
+    entity::set_component(player_id, components::speed(), speed);
+    let blend_player = entity::get_component(entity::resources(), comp).unwrap();
+    entity::set_component(blend_player[0], blend(), speed / MAX_SPEED);
+    entity::add_component(model, apply_animation_player(), blend_player[1]);
+    speed
+}
+
+pub fn from_move_to_idle(model: EntityId, bld: f32, comp: Component<Vec<EntityId>>) {
+    let blend_player = entity::get_component(entity::resources(), comp).unwrap();
+    entity::set_component(blend_player[0], blend(), bld);
+    entity::add_component(model, apply_animation_player(), blend_player[1]);
 }

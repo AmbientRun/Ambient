@@ -1,0 +1,78 @@
+[components]
+
+player_health = { type = "I32", name = "health", description = "health", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+fd_rt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+fd_lt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+bk_lt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+bk_rt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_fd = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_bk = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_lt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_rt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_fd_lt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_fd_rt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_bk_lt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+idle_bk_rt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt", description = "fd_rt", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+speed = { type = "F32", name = "speed", description = "speed", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+
+movement = { type = "Vec2", name = "movement", description = "movement", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+
+offground = { type = "Bool", name = "jump", description = "jump", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+
+running = { type = "Bool", name = "speed", description = "speed", attributes = [
+    "Debuggable",
+    "Networked",
+] }

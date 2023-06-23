@@ -9,43 +9,28 @@ version = "0.0.1"
 ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", branch = "main" }
 
 [[bin]]
-name = "client_afpsmod"
-path = "src/client.rs"
-required-features = ["client"]
-
-[[bin]]
-name = "server_afpsmod"
-path = "src/server.rs"
+name = "scene_server"
+path = "src/scene/server.rs"
 required-features = ["server"]
 
 [[bin]]
-name = "mods_scene_server"
-path = "src/mods/scene/server.rs"
+name = "fps_client"
+path = "src/fps/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "fps_server"
+path = "src/fps/server.rs"
 required-features = ["server"]
 
 # [[bin]]
-# name = "mods_player_client"
-# path = "src/mods/player/client.rs"
-# required-features = ["client"]
+# name = "zombie_server"
+# path = "src/zombie/server.rs"
+# required-features = ["server"]
 
 [[bin]]
-name = "mods_first_person_client"
-path = "src/mods/first_person/client.rs"
-required-features = ["client"]
-
-[[bin]]
-name = "mods_first_person_server"
-path = "src/mods/first_person/server.rs"
-required-features = ["server"]
-
-[[bin]]
-name = "mods_zombie_server"
-path = "src/mods/zombie/server.rs"
-required-features = ["server"]
-
-[[bin]]
-name = "mods_fps_ui"
-path = "src/mods/fps_ui/client.rs"
+name = "fpsui"
+path = "src/fpsui/client.rs"
 required-features = ["client"]
 
 [features]
