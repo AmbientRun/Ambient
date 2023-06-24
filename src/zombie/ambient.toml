@@ -18,3 +18,6 @@ zombie_model_ref = { type = "EntityId", attributs = [
     "Networked",
     "Debuggable",
 ] }
+
+[messages.hit_zombie.fields]
+id = { type = "EntityId" }

@@ -5,6 +5,20 @@ use ambient_api::{
 
 use crate::components as c;
 pub fn register_anim() {
+    let hit = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Rifle Hit Reaction.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+
+    let death = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Rifle Death.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+
+    // TODO: buggy!!!!!
+    death.looping(false);
+    // death.freeze_at_percentage(100.0);
+    let fire = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Rifle Firing.fbx/animations/mixamo.com.anim").unwrap(),
+    );
     let idle = PlayClipFromUrlNode::new(
         asset::url("assets/anim/Rifle Aiming Idle.fbx/animations/mixamo.com.anim").unwrap(),
     );
@@ -37,6 +51,9 @@ pub fn register_anim() {
     let idle_bk_lt = BlendNode::new(&idle, &bk_lt, 0.5);
     let idle_bk_rt = BlendNode::new(&idle, &bk_rt, 0.5);
 
+    let hit_player = AnimationPlayer::new(&hit);
+    let death_player = AnimationPlayer::new(&death);
+    let fire_player = AnimationPlayer::new(&fire);
     let fd_lt_player = AnimationPlayer::new(&fd_lt);
     let fd_rt_player = AnimationPlayer::new(&fd_rt);
     let bk_lt_player = AnimationPlayer::new(&bk_lt);
@@ -53,6 +70,9 @@ pub fn register_anim() {
     entity::add_components(
         entity::resources(),
         Entity::new()
+            .with(c::hit(), vec![hit.0 .0, hit_player.0])
+            .with(c::death(), vec![death.0 .0, death_player.0])
+            .with(c::fire(), vec![fire.0 .0, fire_player.0])
             .with(c::fd_lt(), vec![fd_lt.0 .0, fd_lt_player.0])
             .with(c::fd_rt(), vec![fd_rt.0 .0, fd_rt_player.0])
             .with(c::bk_lt(), vec![bk_lt.0 .0, bk_lt_player.0])

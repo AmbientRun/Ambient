@@ -19,6 +19,6 @@ pub fn main() {
     Entity::new()
         .with_default(quad())
         .with_default(plane_collider())
-        .with(scale(), Vec3::ONE * 10.)
+        .with(scale(), Vec3::ONE * 20.)
         .spawn();
 }

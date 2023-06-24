@@ -34,20 +34,6 @@ cam_ref = { type = "EntityId", name = "Camera ref", description = "The camera.",
     "Networked",
 ] }
 
-[messages.input]
-description = "Describes the input state of the player."
-[messages.input.fields]
-direction = { type = "Vec2", name = "Direction", description = "The movement direction of the player." }
-mouse_delta = { type = "Vec2", name = "Mouse delta", description = "The mouse delta." }
-
-[messages.ray.fields]
-ray_origin = { type = "Vec3" }
-ray_dir = { type = "Vec3" }
-source = { type = "EntityId" }
-type_action = { type = "U8" }
-
-[messages.hit.fields]
-id = { type = "EntityId" }
 
 [messages.zombie_walk.fields]
 # cam = { type = "EntityId" }

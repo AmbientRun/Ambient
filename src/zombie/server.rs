@@ -19,44 +19,8 @@ use ambient_api::{
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     prelude::*,
 };
-
-// #[allow(unused_imports)]
-// use components::{player_head_ref, player_movement_direction, player_pitch, player_yaw};
-// #[allow(unused_imports)]
-// use std::f32::consts::{PI, TAU};
-
 #[main]
 pub async fn main() {
-    // let cam = Entity::new()
-    //     .with_merge(make_perspective_infinite_reverse_camera())
-    //     .with(aspect_ratio_from_window(), EntityId::resources())
-    //     .with_default(main_scene())
-    //     .with(translation(), vec3(10.0, 0.0, 10.0) * 1.0)
-    //     .with(lookat_target(), vec3(0., 0., 0.))
-    //     .spawn();
-
-    // spawn_query(player()).bind(move |players| {
-    //     for (id, _) in players {
-    //         entity::add_components(
-    //             id,
-    //             Entity::new()
-    //                 .with_merge(make_transformable())
-    //                 .with_default(cube())
-    //                 .with(color(), vec4(1., 0., 0., 1.))
-    //                 .with(scale(), vec3(1., 0.4, 4.0))
-    //                 .with_default(cast_shadows())
-    //                 // .with(cube_collider(), Vec3::ONE * 0.5)
-    //                 .with(character_controller_height(), 2.)
-    //                 .with(character_controller_radius(), 0.5)
-    //                 .with_default(physics_controlled())
-    //                 .with(components::cam_ref(), cam)
-    //                 .with(player_pitch(), 0.0)
-    //                 .with(player_yaw(), 0.0)
-    //                 .with(translation(), vec3(0., 0., 10.)),
-    //         )
-    //     }
-    // });
-
     let chars = vec![
         asset::url("assets/model/Zombiegirl W Kurniawan.fbx").unwrap(),
         asset::url("assets/model/copzombie_l_actisdato.fbx").unwrap(),
@@ -88,6 +52,7 @@ pub async fn main() {
                     .with_default(local_to_world())
                     .with_default(physics_controlled())
                     .with(components::zombie_model_ref(), model)
+                    .with(components::zombie_health(), 100)
                     .with_default(components::is_zombie()),
             );
 
@@ -98,19 +63,7 @@ pub async fn main() {
             let blend = BlendNode::new(&run, &run, 0.);
             let anim_player = AnimationPlayer::new(&blend);
             entity::add_component(model, apply_animation_player(), anim_player.0);
-            // let actions = [entity::AnimationAction {
-            //     clip_url: &asset::url("assets/Zombie Run.fbx/animations/mixamo.com.anim").unwrap(),
-            //     looping: true,
-            //     weight: 1.0,
-            // }];
 
-            // entity::set_animation_controller(
-            //     model,
-            //     entity::AnimationController {
-            //         actions: &actions,
-            //         apply_base_pose: false,
-            //     },
-            // );
             sleep(random::<f32>()).await;
         }
     });
@@ -158,13 +111,4 @@ pub async fn main() {
             }
         }
     });
-
-    // Entity::new()
-    //     .with_merge(make_transformable())
-    //     // .with(prefab_from_url(), asset::url("assets/Shape.glb").unwrap())
-    //     .with_default(quad())
-    //     .with_default(plane_collider())
-    //     // .with(translation(), vec3(0., 0., -1.))
-    //     .with(scale(), Vec3::ONE * 30.0)
-    //     .spawn();
 }

@@ -23,10 +23,15 @@ name = "fps_server"
 path = "src/fps/server.rs"
 required-features = ["server"]
 
-# [[bin]]
-# name = "zombie_server"
-# path = "src/zombie/server.rs"
-# required-features = ["server"]
+[[bin]]
+name = "zombie_server"
+path = "src/zombie/server.rs"
+required-features = ["server"]
+
+[[bin]]
+name = "zombie_client"
+path = "src/zombie/client.rs"
+required-features = ["client"]
 
 [[bin]]
 name = "fpsui"

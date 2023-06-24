@@ -1,6 +1,20 @@
 [components]
 
-player_health = { type = "I32", name = "health", description = "health", attributes = [
+player_health = { type = "I32", attributes = ["Debuggable", "Networked"] }
+
+hit_freeze = { type = "I32", attributes = ["Debuggable", "Networked"] }
+
+hit = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+death = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+fire = { type = { type = "Vec", element_type = "EntityId" }, name = "fire", description = "fire", attributes = [
     "Debuggable",
     "Networked",
 ] }
@@ -76,3 +90,20 @@ running = { type = "Bool", name = "speed", description = "speed", attributes = [
     "Debuggable",
     "Networked",
 ] }
+
+
+[messages.input]
+description = "Describes the input state of the player."
+[messages.input.fields]
+ashoot = { type = "Bool", name = "Attack", description = "Whether the player is attacking." }
+direction = { type = "Vec2", name = "Direction", description = "The movement direction of the player." }
+mouse_delta = { type = "Vec2", name = "Mouse delta", description = "The mouse delta." }
+
+[messages.ray.fields]
+ray_origin = { type = "Vec3" }
+ray_dir = { type = "Vec3" }
+source = { type = "EntityId" }
+type_action = { type = "U8" }
+
+[messages.fire_sound.fields]
+source = { type = "EntityId" }

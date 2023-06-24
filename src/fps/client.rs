@@ -1,16 +1,8 @@
 use ambient_api::{
-    animation::{get_bone_by_bind_id, AnimationPlayer, BindId, BlendNode, PlayClipFromUrlNode},
-    components::core::{
-        animation::{animation_player, apply_animation_player},
-        camera::aspect_ratio_from_window,
-        model::model_loaded,
-        prefab::prefab_from_url,
-        primitives::quad,
-        transform::reset_scale,
-    },
-    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
-    element::to_owned,
-    entity::{add_child, add_component, wait_for_component},
+    animation::{get_bone_by_bind_id, BindId},
+    components::core::{model::model_loaded, prefab::prefab_from_url, transform::reset_scale},
+    concepts::make_transformable,
+    entity::{add_child, wait_for_component},
     prelude::*,
 };
 
@@ -19,22 +11,6 @@ pub fn main() {
     // let cam = query(components::player_head_ref()).build();
     let shotcount = std::sync::atomic::AtomicUsize::new(0);
 
-    // let blend = BlendNode::new(&shoot, &walk, 0.);
-    // blend.set_mask_humanoid_lower_body(1.);
-    // let blend2 = BlendNode::new(&blend, &idle, 0.);
-
-    // spawn_query(player()).bind(async |w| {
-    //     wait_for_component(unit_id, model_loaded()).await;
-    // });
-    // let capoeira = PlayClipFromUrlNode::new(
-    //     asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
-    // );
-    // let robot = PlayClipFromUrlNode::new(
-    //     asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap(),
-    // );
-    // let blend = BlendNode::new(&capoeira, &robot, 0.);
-    // let anim_player = AnimationPlayer::new(&blend);
-    // add_component(unit_id, apply_animation_player(), anim_player.0);
     run_async(async move {
         loop {
             let play_id = player::get_local();
@@ -44,9 +20,6 @@ pub fn main() {
             }
             let model = model.unwrap();
             wait_for_component(model, model_loaded()).await;
-
-            println!("model loaded");
-
             let hand = get_bone_by_bind_id(model, &BindId::RightHand).unwrap();
             let ball = Entity::new()
                 .with_merge(make_transformable())
@@ -54,6 +27,12 @@ pub fn main() {
                 .with(
                     prefab_from_url(),
                     asset::url("assets/gun/m4a1_carbine.glb").unwrap(),
+                )
+                // y => far from body,
+                .with(translation(), vec3(0.0, 0.2, 0.0))
+                .with(
+                    rotation(),
+                    Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2),
                 )
                 // .with(scale(), Vec3::ONE)
                 .with(scale(), Vec3::ONE * 0.01)
@@ -64,6 +43,27 @@ pub fn main() {
             add_child(hand, ball);
             break;
         }
+    });
+
+    messages::FireSound::subscribe(|_, msg| {
+        println!("FireSound");
+        let emitter = msg.source;
+        spatial_audio::set_emitter(emitter);
+        // remember: we change the rotation z on player_entity
+        // entity::get_component(player::get_local(), components::player_head_ref()).unwrap(),
+        spatial_audio::set_listener(player::get_local());
+        spatial_audio::play_sound_on_entity(asset::url("assets/sound/m4a1.ogg").unwrap(), emitter);
+    });
+
+    // TODO: this cannot be put into the Zombie mod?
+    messages::HitZombie::subscribe(move |_source, msg| {
+        let zb = msg.id;
+        // let cam =
+        //     entity::get_component(player::get_local(), components::player_head_ref()).unwrap();
+        println!("Hit zombie {:?}!", zb);
+        spatial_audio::set_emitter(zb);
+        spatial_audio::set_listener(player::get_local());
+        spatial_audio::play_sound_on_entity(asset::url("assets/sound/hit.ogg").unwrap(), zb);
     });
 
     ambient_api::messages::Frame::subscribe(move |_| {
@@ -85,9 +85,8 @@ pub fn main() {
 
         let mut shoot = false;
         if input.mouse_buttons.contains(&MouseButton::Left) {
-            if shotcount.load(std::sync::atomic::Ordering::SeqCst) % 5 == 0 {
+            if shotcount.load(std::sync::atomic::Ordering::SeqCst) % 60 == 0 {
                 shoot = true;
-                // gunsound.volume(0.6).play();
             }
         }
         shotcount.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
@@ -109,49 +108,10 @@ pub fn main() {
                 type_action: 0,
             }
             .send_server_unreliable();
-
-            // let head = cam;
-            // spatial_audio::set_listener(cam);
-            // spatial_audio::set_emitter(cam);
-            // let url = asset::url("assets/sound/m4a1.wav").unwrap();
-            // spatial_audio::play_sound_on_entity(url, cam);
-
-            // let pitch = entity::mutate_component(player_id, components::player_pitch(), |pitch| {
-            //     let recoil = random::<f32>() * 0.01;
-            //     // println!("random::<f32>() * 0.01 {}", back);
-            //     *pitch = *pitch - recoil;
-            // })
-            // .unwrap_or_default();
-
-            // if let Some(cam) = entity::get_component(player_id, player_head_ref()) {
-            //     entity::set_component(cam, rotation(), Quat::from_rotation_x(FRAC_PI_2+pitch));
-            // }
         }
 
-        messages::Input::new(displace, input.mouse_delta).send_server_unreliable();
+        // we need the continues shoot info here
+        let left_pressed = input.mouse_buttons.contains(&MouseButton::Left);
+        messages::Input::new(left_pressed, displace, input.mouse_delta).send_server_unreliable();
     });
-
-    // let mut cursor_lock = input::CursorLockGuard::new(true);
-    // ambient_api::messages::Frame::subscribe(move |_| {
-    //     let input = input::get();
-    //     // if !cursor_lock.auto_unlock_on_escape(&input) {
-    //     //     return;
-    //     // }
-
-    //     let mut displace = Vec2::ZERO;
-    //     if input.keys.contains(&KeyCode::W) {
-    //         displace.y -= 1.0;
-    //     }
-    //     if input.keys.contains(&KeyCode::S) {
-    //         displace.y += 1.0;
-    //     }
-    //     if input.keys.contains(&KeyCode::A) {
-    //         displace.x -= 1.0;
-    //     }
-    //     if input.keys.contains(&KeyCode::D) {
-    //         displace.x += 1.0;
-    //     }
-
-    //     messages::Input::new(displace, input.mouse_delta).send_server_unreliable();
-    // });
 }

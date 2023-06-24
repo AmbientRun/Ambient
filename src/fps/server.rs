@@ -35,8 +35,10 @@ pub fn main() {
                 .with_merge(make_perspective_infinite_reverse_camera())
                 .with(aspect_ratio_from_window(), EntityId::resources())
                 .with_default(main_scene())
-                // .with(user_id(), uid.clone())
-                .with(translation(), vec3(-0.0, 5.0, 3.0))
+                // this is FPS
+                // .with(translation(), vec3(-0.0, 0.2, 2.0))
+                // third person
+                .with(translation(), vec3(-0.0, 2.2, 3.0))
                 .with(parent(), id)
                 .with_default(local_to_parent())
                 // .with_default(local_to_world())
@@ -67,6 +69,7 @@ pub fn main() {
                     .with(components::running(), false)
                     .with(components::offground(), false)
                     .with(components::player_health(), 100)
+                    .with(components::hit_freeze(), 0)
                     .with(player_pitch(), 0.0)
                     .with(player_yaw(), 0.0)
                     .with(translation(), vec3(0., 0., 5.))
@@ -77,6 +80,17 @@ pub fn main() {
 
     messages::Input::subscribe(move |source, msg| {
         let Some(player_id) = source.client_entity_id() else { return; };
+
+        let health = entity::get_component(player_id, components::player_health()).unwrap();
+        if health <= 0 {
+            return;
+        }
+
+        let freeze = entity::get_component(player_id, components::hit_freeze()).unwrap();
+        if freeze > 0 {
+            entity::set_component(player_id, components::hit_freeze(), freeze - 1);
+            return;
+        }
 
         let previous_direction =
             entity::get_component(player_id, components::player_movement_direction())
@@ -100,6 +114,37 @@ pub fn main() {
         let old_rt = previous_direction.x == 1.0;
 
         let model = entity::get_component(player_id, components::model_ref()).unwrap();
+        if msg.ashoot {
+            let fire_anim = entity::get_component(entity::resources(), components::fire()).unwrap();
+            // entity::set_component(fire_anim[], blend(), bld);
+            entity::add_component(model, apply_animation_player(), fire_anim[1]);
+
+            let yaw = entity::mutate_component(player_id, components::player_yaw(), |yaw| {
+                *yaw = (*yaw + msg.mouse_delta.x * 0.01) % TAU;
+            })
+            .unwrap_or_default();
+            let pitch = entity::mutate_component(player_id, player_pitch(), |pitch| {
+                *pitch = (*pitch + msg.mouse_delta.y * 0.01).clamp(-PI / 3., PI / 3.);
+            })
+            .unwrap_or_default();
+            entity::set_component(player_id, rotation(), Quat::from_rotation_z(yaw));
+
+            if let Some(head_id) = entity::get_component(player_id, player_head_ref()) {
+                entity::set_component(head_id, rotation(), Quat::from_rotation_x(PI / 2. + pitch));
+            };
+
+            // TODO: don't have to freeze, just to simplify it
+            entity::add_component(
+                player_id,
+                components::player_movement_direction(),
+                Vec2::ZERO,
+            );
+            return;
+        }
+
+        // some special cases: shot => we need to set upper body to shot
+        // case: hit => ignore all the movement anim until the freeze time is over
+        // case: death => ignore all the movement anim forever
         if msg.direction == Vec2::ZERO {
             // stops, but we need to blend to idle depends on previous direction
             let old_speed = entity::get_component(player_id, components::speed()).unwrap();
@@ -164,22 +209,51 @@ pub fn main() {
 
     messages::Ray::subscribe(move |_source, msg| {
         let result = physics::raycast_first(msg.ray_origin, msg.ray_dir);
+        if msg.type_action == 0 {
+            messages::FireSound::new(msg.source).send_client_broadcast_unreliable();
+        }
         if let Some(hit) = result {
-            // println!("{:?}", hit);
             if entity::has_component(hit.entity, components::is_zombie()) && msg.type_action == 0 {
+                messages::HitZombie::new(hit.entity).send_client_broadcast_unreliable();
                 println!("hit zombie");
-                messages::Hit::new(hit.entity).send_client_broadcast_unreliable();
-                entity::mutate_component(hit.entity, components::zombie_health(), |x| {
-                    if *x <= 0 {
-                        return;
-                    } else {
-                        *x -= 100;
-                    }
-                });
+                let old_zombie_health =
+                    entity::get_component(hit.entity, components::zombie_health()).unwrap();
+                if old_zombie_health <= 0 {
+                    return;
+                }
+                let new_zombie_health = (old_zombie_health - 70).max(0);
+                entity::set_component(hit.entity, components::zombie_health(), new_zombie_health);
+
+                if new_zombie_health <= 0 {
+                    // TODO: play zombie death animation
+                    // entity::despawn_recursive(hit.entity);
+                } else {
+                    // TODO: play zombie hit animation
+                    // entity::despawn_recursive(hit.entity);
+                }
             } else if entity::has_component(hit.entity, components::player_health())
                 && msg.type_action == 0
             {
-                println!("hit player");
+                let old_health =
+                    entity::get_component(hit.entity, components::player_health()).unwrap();
+                println!("hit player: {}", old_health);
+                if old_health <= 0 {
+                    return;
+                }
+                let new_health = (old_health - 10).max(0);
+                entity::set_component(hit.entity, components::player_health(), new_health);
+                let model = entity::get_component(hit.entity, components::model_ref()).unwrap();
+                if old_health > 0 && new_health <= 0 {
+                    println!("player death");
+                    let death_anim =
+                        entity::get_component(entity::resources(), components::death()).unwrap()[1];
+                    entity::set_component(model, apply_animation_player(), death_anim);
+                } else {
+                    entity::set_component(hit.entity, components::hit_freeze(), 20);
+                    let hit_anim =
+                        entity::get_component(entity::resources(), components::hit()).unwrap()[1];
+                    entity::set_component(model, apply_animation_player(), hit_anim);
+                }
             }
         }
     });
@@ -195,7 +269,7 @@ pub fn main() {
             // let speed = 0.1;
             let displace = rot * (direction.normalize_or_zero() * speed).extend(-0.1);
             // println!("displace: {:?}", displace);
-            let collision = physics::move_character(player_id, displace, 0.01, frametime());
+            let _collision = physics::move_character(player_id, displace, 0.01, frametime());
             // println!("collision: {} {} {}", collision.up, collision.down, collision.side);
         }
     });

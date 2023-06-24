@@ -19,4 +19,5 @@ sources = ["gun/**/*"]
 
 [[pipelines]]
 type = "Audio"
+convert = true
 sources = ["sound/**/*"]
