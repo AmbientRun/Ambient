@@ -46,7 +46,7 @@ pub fn main() {
     });
 
     messages::FireSound::subscribe(|_, msg| {
-        println!("FireSound");
+        // println!("FireSound");
         let emitter = msg.source;
         spatial_audio::set_emitter(emitter);
         // remember: we change the rotation z on player_entity
@@ -60,7 +60,7 @@ pub fn main() {
         let zb = msg.id;
         // let cam =
         //     entity::get_component(player::get_local(), components::player_head_ref()).unwrap();
-        println!("Hit zombie {:?}!", zb);
+        // println!("Hit zombie {:?}!", zb);
         spatial_audio::set_emitter(zb);
         spatial_audio::set_listener(player::get_local());
         spatial_audio::play_sound_on_entity(asset::url("assets/sound/hit.ogg").unwrap(), zb);

@@ -34,9 +34,14 @@ path = "src/zombie/client.rs"
 required-features = ["client"]
 
 [[bin]]
-name = "fpsui"
+name = "fpsui_client"
 path = "src/fpsui/client.rs"
 required-features = ["client"]
+
+# [[bin]]
+# name = "audiofps_client"
+# path = "src/audiofps/client.rs"
+# required-features = ["client"]
 
 [features]
 client = ["ambient_api/client"]
