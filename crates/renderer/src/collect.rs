@@ -289,7 +289,7 @@ impl RendererCollect {
             cpass.dispatch_workgroups(width, height, 1);
         }
 
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", target_os = "unknown"))]
         {
             use ambient_core::RuntimeKey;
 
@@ -337,7 +337,7 @@ impl CollectCountStagingBuffers {
         }
     }
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "unknown"))]
     fn take_buffer(&self, gpu: &Gpu, size: u64) -> TypedBuffer<u32> {
         match self.buffers.lock().pop() {
             Some(mut buffer) => {
@@ -354,7 +354,7 @@ impl CollectCountStagingBuffers {
         }
     }
 
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "unknown"))]
     fn return_buffer(&self, buffer: TypedBuffer<u32>) {
         self.buffers.lock().push(buffer)
     }

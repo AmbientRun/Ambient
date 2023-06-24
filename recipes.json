@@ -9,13 +9,28 @@
         "cmd": "cargo run --features profile --release -- run ./guest/rust/examples/basics/third_person_camera"
     },
     "third-person-camera": {
-        "cmd": "cargo run --features tracing -- run ./guest/rust/examples/basics/third_person_camera"
+        "cmd": "cargo run --features tracing -- run ./guest/rust/examples/basics/third_person_camera --debugger"
+    },
+    "join": {
+        "cmd": [
+            "cargo",
+            "run",
+            "--features",
+            "tracing",
+            "--",
+            "join",
+            "localhost:9000",
+            "--debugger"
+        ]
     },
     "asset-loading": {
         "cmd": "cargo run --features tracing -- run ./guest/rust/examples/basics/asset_loading --clean-build --debugger"
     },
     "serve-primitives": {
-        "cmd": "cargo run --features tracing -- serve ./guest/rust/examples/basics/primitives/"
+        "cmd": "cargo run --features tracing -- serve ./guest/rust/examples/basics/primitives/",
+        "env": {
+            "RUST_LOG": "ambient_network=debug,info"
+        }
     },
     "minigolf": {
         "cmd": "cargo run -- run ./guest/rust/examples/games/minigolf"

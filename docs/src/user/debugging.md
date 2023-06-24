@@ -1,6 +1,6 @@
 # Debugging
 
-## ECS
+## Running with the debugger
 
 When the client is run with the `AMBIENT_DEBUGGER` environment variable, or with the `--debugger` flag, the game is surrounded with a debugger:
 
@@ -42,6 +42,16 @@ Here is some sample output for the server ECS:
         "core::player::user_id": "..."
       children: []
 ```
+
+## Increasing log output
+
+You can also get more logs from specific internal modules, by setting `RUST_LOG=ambient_build=info` for instance. Here are some general tips:
+
+- To debug **your asset pipeline**, set `RUST_LOG=ambient_build=info`. For even more logs you can set `RUST_LOG=ambient_build=info,ambient_model_import=info`
+- To debug **rendering**, set `RUST_LOG=ambient_renderer=info`
+- To debug **networking**, set `RUST_LOG=ambient_network=info`
+- To debug **physics**, set `RUST_LOG=ambient_physics=info`
+- To debug everything, set `RUST_LOG=info`. To get even more logs set `RUST_LOG=debug`
 
 ## Physics
 

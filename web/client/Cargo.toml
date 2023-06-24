@@ -31,6 +31,8 @@ ambient_wasm = { workspace = true }
 ambient_ecs_editor = { workspace = true }
 ambient_layout = { workspace = true }
 ambient_debugger = { workspace = true }
+ambient_primitives = { workspace = true }
+ambient_client_shared = { workspace = true }
 
 url = { workspace = true }
 anyhow = { workspace = true }

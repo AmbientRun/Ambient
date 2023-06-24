@@ -25,6 +25,7 @@ pub fn set_panic_hook() {
 #[cfg_attr(target_os = "unknown", path = "./wasm/mod.rs")]
 pub(crate) mod platform;
 
+pub use platform::clipboard;
 /// Platform agnostic file io.
 ///
 /// **Note**: wasm file io always return Err, but do *not* panic.

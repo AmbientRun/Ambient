@@ -4,5 +4,5 @@ output_decals = false
 
 [pipelines.importer]
 type = "Single"
-name = "checkerboard"
-base_color = "checkerboard.png"
+name = "decals"
+base_color = "squirrel.png"

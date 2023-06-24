@@ -21,6 +21,11 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     let (show_ecs, set_show_ecs) = hooks.use_state(true);
     let (ecs_size, set_ecs_size) = hooks.use_state(Vec2::ZERO);
 
+    let set_ecs_size = cb(move |v| {
+        tracing::info!("Set ecs size for debugger {v}");
+        set_ecs_size(v)
+    });
+
     hooks.use_frame({
         let state = state.clone();
         let render_target = render_target.clone();

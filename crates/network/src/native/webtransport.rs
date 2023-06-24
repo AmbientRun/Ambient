@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
-use ambient_core::project_name;
-use ambient_ecs::{ComponentRegistry, WorldStreamFilter};
+use ambient_ecs::WorldStreamFilter;
 use ambient_std::asset_url::AbsAssetUrl;
 use anyhow::Context;
 use bytes::Bytes;
@@ -15,7 +14,7 @@ use crate::{
     proto::{
         self,
         server::{handle_diffs, ConnectionData},
-        ServerInfo, ServerPush, VERSION,
+        ServerInfo, ServerPush,
     },
     server::{SharedServerState, MAIN_INSTANCE_ID},
     stream::{FramedRecvStream, FramedSendStream},
@@ -81,22 +80,7 @@ async fn handle_webtransport_session(
     tracing::info!("Handling webtransport connection");
     let (diffs_tx, diffs_rx) = flume::unbounded();
 
-    let server_info = {
-        let state = state.lock();
-        let instance = state.instances.get(MAIN_INSTANCE_ID).unwrap();
-        let world = &instance.world;
-        let external_components = ComponentRegistry::get()
-            .all_external()
-            .map(|x| x.0)
-            .collect();
-
-        ServerInfo {
-            project_name: world.resource(project_name()).clone(),
-            content_base_url,
-            version: VERSION.into(),
-            external_components,
-        }
-    };
+    let server_info = ServerInfo::new(&mut state.lock(), content_base_url);
 
     let mut server = proto::server::ServerState::default();
 
@@ -133,15 +117,20 @@ async fn handle_webtransport_session(
         }
     }
 
-    tracing::debug!("Performing additional on connect tracingic after the fact");
-
     tokio::spawn(handle_diffs(
         FramedSendStream::new(conn.open_uni(sid).await?),
         diffs_rx,
     ));
 
+    let mut server = scopeguard::guard(server, |mut server| {
+        if !server.is_disconnected() {
+            tracing::info!("Connection closed abruptly from {server:?}");
+            server.process_disconnect(&data);
+        }
+    });
+
     // Before a connection has been established, only process the control stream
-    while let proto::server::ServerState::Connected(connected) = &mut server {
+    while let proto::server::ServerState::Connected(connected) = &mut *server {
         tokio::select! {
             Some(frame) = request_recv.next() => {
                 server.process_control(&data, frame?)?;

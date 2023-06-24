@@ -205,6 +205,19 @@ name = "ambient_cb"
 version = "0.3.0-dev"
 
 [[package]]
+name = "ambient_client_shared"
+version = "0.0.0"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_input",
+ "ambient_network",
+ "ambient_shared_types",
+ "glam",
+]
+
+[[package]]
 name = "ambient_color"
 version = "0.3.0-dev"
 dependencies = [
@@ -434,6 +447,7 @@ dependencies = [
  "ambient_shared_types",
  "ambient_sys",
  "ambient_text",
+ "anyhow",
  "arboard",
 ]
 
@@ -539,6 +553,7 @@ dependencies = [
  "enum_dispatch",
  "flume",
  "futures",
+ "git-version",
  "glam",
  "h3",
  "h3-quinn",
@@ -567,6 +582,20 @@ dependencies = [
  "web-sys",
  "wgpu",
  "winit",
+]
+
+[[package]]
+name = "ambient_primitives"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_core",
+ "ambient_ecs",
+ "ambient_element",
+ "ambient_gpu",
+ "ambient_meshes",
+ "ambient_renderer",
+ "ambient_std",
+ "glam",
 ]
 
 [[package]]
@@ -803,6 +832,8 @@ dependencies = [
 name = "ambient_sys"
 version = "0.3.0-dev"
 dependencies = [
+ "anyhow",
+ "arboard",
  "console_error_panic_hook",
  "derive_more",
  "flume",
@@ -874,6 +905,7 @@ dependencies = [
  "rand",
  "serde",
  "serde_json",
+ "tracing",
 ]
 
 [[package]]
@@ -978,6 +1010,7 @@ dependencies = [
  "ambient_app",
  "ambient_audio",
  "ambient_cameras",
+ "ambient_client_shared",
  "ambient_core",
  "ambient_debugger",
  "ambient_ecs",
@@ -985,6 +1018,7 @@ dependencies = [
  "ambient_element",
  "ambient_layout",
  "ambient_network",
+ "ambient_primitives",
  "ambient_renderer",
  "ambient_rpc",
  "ambient_std",
@@ -2522,6 +2556,28 @@ name = "gimli"
 version = "0.27.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ad0a93d233ebf96623465aad4046a8d3aa4da22d4f4beba5388838c8a434bbb4"
+
+[[package]]
+name = "git-version"
+version = "0.3.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6b0decc02f4636b9ccad390dcbe77b722a77efedfa393caf8379a51d5c61899"
+dependencies = [
+ "git-version-macro",
+ "proc-macro-hack",
+]
+
+[[package]]
+name = "git-version-macro"
+version = "0.3.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe69f1cbdb6e28af2bac214e943b99ce8a0a06b447d15d3e61161b0423139f3f"
+dependencies = [
+ "proc-macro-hack",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
 
 [[package]]
 name = "glam"
@@ -4214,6 +4270,12 @@ dependencies = [
  "once_cell",
  "toml_edit",
 ]
+
+[[package]]
+name = "proc-macro-hack"
+version = "0.5.20+deprecated"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc375e1527247fe1a97d8b7156678dfe7c1af2fc075c9a4db3690ecd2a148068"
 
 [[package]]
 name = "proc-macro2"

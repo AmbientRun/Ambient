@@ -208,10 +208,12 @@ pub fn MeasureSize(
 ) -> Element {
     let (id, set_id) = hooks.use_state(None);
     let (current, set_current) = hooks.use_state(Vec2::ZERO);
+
     hooks.use_frame(move |world| {
         if let Some(id) = id {
             let width = world.get(id, width()).unwrap_or(0.);
             let height = world.get(id, height()).unwrap_or(0.);
+
             let next = vec2(width, height);
             if current != next {
                 on_change(next);

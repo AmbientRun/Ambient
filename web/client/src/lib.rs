@@ -3,7 +3,7 @@ use ambient_cameras::UICamera;
 use ambient_core::camera::active_camera;
 use ambient_ui_native::{
     element::{ElementComponentExt, Group},
-    padding, Borders, FocusRoot,
+    padding, Borders, FocusRoot, WindowSized,
 };
 use app::MainApp;
 use tracing_subscriber::{filter::LevelFilter, fmt::time::UtcTime, prelude::*, registry};
@@ -36,6 +36,7 @@ pub fn init_ambient(logging: bool, panic: bool) {
     ambient_network::init_all_components();
     ambient_world_audio::init_components();
     ambient_wasm::shared::init_all_components();
+    ambient_primitives::init_components();
 }
 
 #[wasm_bindgen]
@@ -73,9 +74,9 @@ async fn init(app: &mut App) {
 
     Group(vec![
         UICamera.el().with(active_camera(), 0.),
-        FocusRoot(vec![
+        FocusRoot(vec![WindowSized::el([
             MainApp::el().with(padding(), Borders::even(10.).into())
-        ])
+        ])])
         .el(),
     ])
     .el()

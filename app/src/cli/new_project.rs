@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use ambient_project::Identifier;
+use ambient_std::parse_git_revision;
 use anyhow::Context;
 use convert_case::Casing;
 
@@ -70,7 +71,7 @@ pub(crate) fn new_project(
                 {
                     if let Some(api_path) = api_path {
                         format!("ambient_api = {{ path = {:?} }}", api_path)
-                    } else if let Some(rev) = git_revision(git_version::git_version!()) {
+                    } else if let Some(rev) = parse_git_revision(git_version::git_version!()) {
                         format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}", rev)
                     } else {
                         format!("ambient_api = \"{}\"", env!("CARGO_PKG_VERSION"))
@@ -130,26 +131,4 @@ pub(crate) fn new_project(
     log::info!("Project \"{name}\" with id `{id}` created at {project_path:?}");
 
     Ok(())
-}
-
-fn git_revision(version: &str) -> Option<String> {
-    let s = version.split('-').collect::<Vec<_>>();
-    if s.len() <= 2 {
-        Some(s[0].to_string())
-    } else {
-        Some(s.get(3)?[1..].to_string())
-    }
-}
-
-#[test]
-fn test_git_revision() {
-    assert_eq!(git_revision("9f244c3"), Some("9f244c3".to_string()));
-    assert_eq!(
-        git_revision("9f244c3-modified"),
-        Some("9f244c3".to_string())
-    );
-    assert_eq!(
-        git_revision("git-0.3.0-dev-g9f244c3"),
-        Some("9f244c3".to_string())
-    );
 }

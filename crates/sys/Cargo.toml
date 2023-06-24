@@ -21,6 +21,7 @@ pin-project = { workspace = true }
 slotmap = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
+anyhow = { workspace = true }
 
 time = { version = "0.3", features = ["wasm-bindgen"] }
 # The `console_error_panic_hook` crate provides better debugging of panics by
@@ -30,12 +31,15 @@ time = { version = "0.3", features = ["wasm-bindgen"] }
 console_error_panic_hook = { version = "0.1.6", optional = true }
 
 [target.'cfg(target_os = "unknown")'.dependencies]
-web-sys = { version = "0.3", features = ["Performance", "Document"] }
+web-sys = { version = "0.3", features = [
+    "Performance",
+    "Document",
+    "Clipboard",
+] }
 js-sys = "0.3"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 gloo = { version = "0.8", features = ["futures"] }
-
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 # Note: not a workspace dependency. The goal is to not use tokio outside of this `sys` abstraction at all
@@ -53,7 +57,7 @@ tokio = { version = "1.25", features = [
     "fs",
 ] }
 tokio-util = { version = "0.7.0", features = ["codec"] }
-
+arboard = { workspace = true }
 
 [target.'cfg(target_os = "unknown")'.dev-dependencies]
 wasm-bindgen-test = "0.3"

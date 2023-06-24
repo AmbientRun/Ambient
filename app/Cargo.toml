@@ -50,8 +50,10 @@ ambient_project = { path = "../shared_crates/project" }
 ambient_shared_types = { path = "../shared_crates/shared_types", features = [
     "native",
 ] }
+ambient_client_shared = { path = "../crates/client_shared/" }
 
 tracing-tree = { workspace = true, optional = true }
+tracing-stackdriver = { workspace = true, optional = true }
 tracing-subscriber = { workspace = true, optional = true }
 tracing-log = { workspace = true, optional = true }
 time = { workspace = true }
@@ -86,13 +88,18 @@ rusty-hook = "^0.11.2"
 no_bundled_certs = []
 default = ["tls-webpki-roots"]
 deploy = ["ambient_deploy"]
+slim = ["stackdriver"]
 production = ["assimp"]
 profile = ["ambient_app/profile"]
 assimp = ["ambient_model_import/russimp"]
+stackdriver = ["tracing", "tracing-stackdriver"]
 tracing = ["tracing-tree", "tracing-subscriber", "tracing-log"]
 tls-native-roots = ["ambient_network/tls-native-roots"]
 tls-webpki-roots = ["ambient_network/tls-webpki-roots"]
-hotload-includes = ["ambient_app/hotload-includes", "ambient_decals/hotload-includes"]
+hotload-includes = [
+    "ambient_app/hotload-includes",
+    "ambient_decals/hotload-includes",
+]
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 axum = { workspace = true }

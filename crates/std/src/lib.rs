@@ -138,3 +138,25 @@ pub fn to_byte_unit(bytes: u64) -> String {
         format!("{} gb", bytes / 1024 / 1024 / 1024)
     }
 }
+
+pub fn parse_git_revision(version: &str) -> Option<String> {
+    let s = version.split('-').collect::<Vec<_>>();
+    if s.len() <= 2 {
+        Some(s[0].to_string())
+    } else {
+        Some(s.get(3)?[1..].to_string())
+    }
+}
+
+#[test]
+fn test_git_revision() {
+    assert_eq!(parse_git_revision("9f244c3"), Some("9f244c3".to_string()));
+    assert_eq!(
+        parse_git_revision("9f244c3-modified"),
+        Some("9f244c3".to_string())
+    );
+    assert_eq!(
+        parse_git_revision("git-0.3.0-dev-g9f244c3"),
+        Some("9f244c3".to_string())
+    );
+}

@@ -19,6 +19,7 @@ pub mod models;
 pub mod out_asset;
 
 pub async fn process_pipeline(pipeline: &Pipeline, ctx: PipelineCtx) -> Vec<OutAsset> {
+    log::info!("Processing pipeline: {:?}", ctx.pipeline_path());
     let mut assets = match &pipeline.processor {
         PipelineProcessor::Models(config) => models::pipeline(&ctx, config.clone()).await,
         PipelineProcessor::Materials(config) => materials::pipeline(&ctx, config.clone()).await,
@@ -41,8 +42,16 @@ fn get_pipelines(
     ctx: &ProcessCtx,
 ) -> impl Stream<Item = anyhow::Result<(&AbsAssetUrl, PipelinesFile)>> {
     stream::iter(ctx.files.0.iter())
-        .filter(|file| ready(file.decoded_path().ends_with("pipeline.toml")))
+        .filter(|file| {
+            ready(
+                file.decoded_path()
+                    .file_name()
+                    .unwrap_or_default()
+                    .ends_with("pipeline.toml"),
+            )
+        })
         .then(move |file| async move {
+            log::info!("Found pipeline file: {:?}, parsing...", file.0.path());
             let schema = file
                 .download_toml::<PipelinesFile>(&ctx.assets)
                 .await
@@ -53,10 +62,15 @@ fn get_pipelines(
 }
 
 pub async fn process_pipelines(ctx: &ProcessCtx) -> anyhow::Result<Vec<OutAsset>> {
-    tracing::info!(?ctx.out_root, "Processing pipeline");
+    tracing::info!(?ctx.out_root, "Processing pipelines");
 
     get_pipelines(ctx)
         .map_ok(|(file, pipelines)| {
+            log::info!(
+                "Found pipelines file: {:?} with {} pipelines",
+                file.0.path(),
+                pipelines.pipelines.len()
+            );
             futures::stream::iter(pipelines.pipelines.into_iter().enumerate().map(
                 |(i, pipeline)| {
                     let mut file = file.clone();
