@@ -1,5 +1,7 @@
 # Common pitfalls
 
+Be aware that a lot of problems are caused by mismatching versions of Ambient. To check your version, run `ambient --version` and make sure it matches the version in your `Cargo.toml` file.
+
 ## The examples don't work
 
 This is most often because of mismatching the ambient version with the
