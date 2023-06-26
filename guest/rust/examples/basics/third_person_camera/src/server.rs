@@ -1,12 +1,13 @@
 use ambient_api::{
     components::core::{
+        app::main_scene,
         physics::{
             character_controller_height, character_controller_radius, physics_controlled,
             plane_collider, sphere_collider,
         },
         player::player,
         primitives::{cube, quad},
-        rendering::color,
+        rendering::{color, fog_density, light_diffuse, sky, sun},
         transform::{rotation, scale, translation},
     },
     concepts::{make_sphere, make_transformable},
@@ -43,16 +44,6 @@ pub fn main() {
 
     // And an atmosphere to go with id
     make_transformable().with_default(sky()).spawn();
-
-    // query((sun(), rotation())).each_frame(|sun| {
-    //     let elapsed = time();
-    //     for (id, _) in sun {
-    //         entity::mutate_component(id, rotation(), |x| {
-    //             *x = Quat::from_axis_angle(vec3(0.0, 1.0, 0.5).normalize(), elapsed * 0.1)
-    //         })
-    //         .unwrap();
-    //     }
-    // });
 
     spawn_query(player()).bind(move |players| {
         for (id, _) in players {

@@ -1,4 +1,15 @@
-use ambient_api::prelude::*;
+use ambient_api::{
+    components::core::{
+        app::window_logical_size,
+        layout::{height, width},
+        rect::{
+            background_color, border_color, border_radius, border_thickness, line_from, line_to,
+            line_width,
+        },
+        transform::translation,
+    },
+    prelude::*,
+};
 use std::f32::consts::PI;
 
 #[element_component]

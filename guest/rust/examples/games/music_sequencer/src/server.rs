@@ -1,4 +1,4 @@
-use ambient_api::{entity::synchronized_resources, prelude::*};
+use ambient_api::{components::core::app::name, entity::synchronized_resources, prelude::*};
 use components::{bpm, next_player_hue, player_hue, track, track_audio_url, track_note_selection};
 
 use ambient_api::{

@@ -1,9 +1,12 @@
 use ambient_api::{
     client::{material, mesh, sampler, texture},
     components::core::{
+        app::main_scene,
         camera::aspect_ratio_from_window,
         primitives::{cube, quad, sphere_radius},
         procedurals::{procedural_material, procedural_mesh},
+        rendering::{cast_shadows, color, light_diffuse, sun},
+        transform::{lookat_target, rotation, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     prelude::*,

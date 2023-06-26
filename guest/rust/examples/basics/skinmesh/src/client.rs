@@ -1,8 +1,15 @@
 use ambient_api::{
     animation::{get_bone_by_bind_id, AnimationPlayer, BindId, BlendNode, PlayClipFromUrlNode},
     components::core::{
-        animation::apply_animation_player, camera::aspect_ratio_from_window, model::model_loaded,
-        prefab::prefab_from_url, primitives::quad, transform::reset_scale,
+        animation::apply_animation_player,
+        app::{main_scene, name},
+        camera::aspect_ratio_from_window,
+        layout::space_between_items,
+        model::model_loaded,
+        prefab::prefab_from_url,
+        primitives::quad,
+        rendering::color,
+        transform::{local_to_parent, lookat_target, reset_scale, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     element::to_owned,

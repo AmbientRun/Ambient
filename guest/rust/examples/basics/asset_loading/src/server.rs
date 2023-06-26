@@ -5,6 +5,7 @@ use ambient_api::{
         app::main_scene,
         camera::aspect_ratio_from_window,
         prefab::{prefab_from_url, spawned},
+        rendering::{cast_shadows, light_ambient, light_diffuse, sun},
         transform::{lookat_target, rotation, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},

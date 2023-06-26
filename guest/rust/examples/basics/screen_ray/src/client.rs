@@ -2,6 +2,7 @@ use ambient_api::{
     components::core::{
         app::main_scene,
         camera::aspect_ratio_from_window,
+        rendering::color,
         transform::{lookat_target, translation},
     },
     concepts::make_perspective_infinite_reverse_camera,

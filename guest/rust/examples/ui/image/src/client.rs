@@ -1,4 +1,14 @@
-use ambient_api::{prelude::*, ui::ImageFromUrl};
+use ambient_api::{
+    components::core::{
+        layout::space_between_items,
+        rect::{
+            background_color, border_color, border_radius, border_thickness,
+            size_from_background_image,
+        },
+    },
+    prelude::*,
+    ui::ImageFromUrl,
+};
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {

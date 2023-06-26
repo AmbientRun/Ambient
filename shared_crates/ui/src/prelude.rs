@@ -11,10 +11,4 @@ pub use ambient_element::{
     self, element_component, Element, ElementComponent, ElementComponentExt, ElementTree, Group,
     Hooks, Memo, Wrap,
 };
-pub use ambient_guest_bridge::{
-    components::{
-        app::*, ecs::*, input::*, layout::*, player::*, rect::*, rendering::*, text::*,
-        transform::*,
-    },
-    ecs::World,
-};
+pub use ambient_guest_bridge::ecs::World;
