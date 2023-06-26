@@ -150,6 +150,7 @@ impl<'a> RendererTarget<'a> {
 
 pub type PostSubmitFunc = Box<dyn FnOnce() + Send + Send>;
 pub trait SubRenderer: std::fmt::Debug + Send + Sync {
+    #[allow(clippy::too_many_arguments)]
     fn render<'a>(
         &'a mut self,
         gpu: &Gpu,

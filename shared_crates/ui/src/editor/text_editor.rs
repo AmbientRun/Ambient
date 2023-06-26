@@ -190,7 +190,7 @@ pub fn TextEditor(
         .unwrap();
 
     if focused {
-        if cursor_left.len() > 0 {
+        if !cursor_left.is_empty() {
             FlowRow::el([a, Cursor.el(), b])
         } else {
             FlowRow::el([Cursor.el(), b])

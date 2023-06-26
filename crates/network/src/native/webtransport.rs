@@ -16,7 +16,7 @@ use crate::{
         server::{handle_diffs, ConnectionData},
         ServerInfo, ServerPush,
     },
-    server::{SharedServerState, MAIN_INSTANCE_ID},
+    server::SharedServerState,
     stream::{FramedRecvStream, FramedSendStream},
     NetworkError,
 };

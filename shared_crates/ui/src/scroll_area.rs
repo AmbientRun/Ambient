@@ -41,6 +41,7 @@ pub fn ScrollArea(
 ) -> Element {
     let (scroll, set_scroll) = hooks.use_state(0.);
     let (ratio, _set_ratio) = hooks.use_state_with(|world| {
+        #[allow(clippy::clone_on_copy)]
         let r = world.resource(window_scale_factor()).clone();
         r as f32
     });

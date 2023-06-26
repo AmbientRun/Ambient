@@ -40,7 +40,7 @@ pub(crate) fn get_animations(
                                         let node = doc.models.get(output_id).unwrap();
                                         let mut bind_ids = bind_ids.borrow_mut();
                                         let track = AnimationTrack {
-                                            target: AnimationTarget::BinderId(bind_ids.get(&node)),
+                                            target: AnimationTarget::BinderId(bind_ids.get(node)),
                                             inputs: curve
                                                 .key_time
                                                 .iter()

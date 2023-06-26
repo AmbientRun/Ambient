@@ -31,6 +31,7 @@ components!("audio", {
     audio_mixer: AudioMixer,
 });
 
+#[allow(clippy::large_enum_variant)]
 pub enum AudioMessage {
     Track(
         Arc<ambient_audio::track::Track>,

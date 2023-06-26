@@ -72,7 +72,7 @@ impl AsyncAssetKey<Result<Arc<World>, AssetError>> for PrefabFromUrl {
             .with_context(|| format!("Failed to deserialize object2 from url {obj_url}"))?;
         warnings.log_warnings();
         for (_id, (url,), _) in query_mut((model_from_url(),), ()).iter(&mut world, None) {
-            *url = AssetUrl::from_str(&url)
+            *url = AssetUrl::from_str(url)
                 .context("Invalid model url")?
                 .resolve(&obj_url)
                 .context("Failed to resolve model url")?

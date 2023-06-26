@@ -143,7 +143,7 @@ impl FbxModel {
     ) {
         let mut out_node = Entity::new()
             .with(name(), self.node_name.to_string())
-            .with(bind_id(), bind_ids.get(&self))
+            .with(bind_id(), bind_ids.get(self))
             .with_default(children());
         if self.double_sided {
             out_node.set(double_sided(), true);

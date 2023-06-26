@@ -78,7 +78,7 @@ fn sample_animation_node_inner(
     time: Duration,
     errors: &mut Vec<String>,
 ) -> anyhow::Result<HashMap<AnimationOutputKey, AnimationOutput>> {
-    if let Ok(_) = world.get_ref(node, play_clip_from_url()) {
+    if world.get_ref(node, play_clip_from_url()).is_ok() {
         let clip = match world.get_ref(node, play_clip()) {
             Ok(clip) => clip,
             Err(_) => return Ok(Default::default()),
@@ -94,7 +94,7 @@ fn sample_animation_node_inner(
             };
             let speed = world.get(node, speed()).unwrap_or(1.);
             if world.get(node, looping()).unwrap_or(false) {
-                time = time % clip.duration() as f64;
+                time %= clip.duration() as f64;
             }
             time * speed as f64
         };
@@ -112,8 +112,8 @@ fn sample_animation_node_inner(
             })
             .collect();
         if let Ok(base_pose) = world.get_ref(node, cached_base_pose()) {
-            for (key, value) in base_pose.into_iter() {
-                if !output.contains_key(&key) {
+            for (key, value) in base_pose.iter() {
+                if !output.contains_key(key) {
                     output.insert(key.clone(), value.clone());
                 }
             }
@@ -157,7 +157,7 @@ fn apply_animation_outputs_to_entity(
     binder: &HashMap<String, EntityId>,
     outputs: &HashMap<AnimationOutputKey, AnimationOutput>,
 ) {
-    for (key, value) in outputs.into_iter() {
+    for (key, value) in outputs.iter() {
         let target = match &key.target {
             AnimationTarget::BinderId(id) => match binder.get(id) {
                 Some(id) => *id,
@@ -230,7 +230,7 @@ pub fn animation_player_systems() -> SystemGroup {
                         let clip = AnimationClipRetargetedFromModel {
                             clip: url,
                             translation_retargeting: retargeting,
-                            retarget_model: retarget_model,
+                            retarget_model,
                         }
                         .get(&assets)
                         .await;
@@ -276,21 +276,21 @@ pub fn animation_player_systems() -> SystemGroup {
                         for (i, bind_id) in bind_ids.iter().enumerate() {
                             mask_map.insert(
                                 bind_id.clone(),
-                                mask_weights.get(i).map(|x| *x).unwrap_or(0.),
+                                mask_weights.get(i).copied().unwrap_or(0.),
                             );
                         }
                         world.add_component(id, mask(), mask_map).ok();
                     }
                 }),
             query((animation_player(), children())).to_system(|q, world, qs, _| {
-                let time = world.resource(absolute_time()).clone();
+                let time = *world.resource(absolute_time());
                 for (id, (_, children)) in q.collect_cloned(world, qs) {
                     let mut errors = Default::default();
                     let output = sample_animation_node(world, children[0], time, &mut errors);
                     world
                         .add_component(id, animation_output(), AnimationOutputs(output))
                         .ok();
-                    if errors.len() > 0 {
+                    if !errors.is_empty() {
                         world.add_component(id, animation_errors(), errors).ok();
                     } else if world.has_component(id, animation_errors()) {
                         world.remove_component(id, animation_errors()).ok();
@@ -323,7 +323,7 @@ fn build_base_pose(
             .into_iter()
             .flat_map(|(bind_id, entity)| {
                 entity.into_iter().map(move |entry| {
-                    let desc: ComponentDesc = (*entry).clone();
+                    let desc: ComponentDesc = *entry;
                     let output = if let Some(value) = entry.try_downcast_ref::<Vec3>() {
                         AnimationOutput::Vec3 {
                             component: desc.try_into().unwrap(),

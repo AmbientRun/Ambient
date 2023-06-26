@@ -47,7 +47,7 @@ pub fn get_transforms_relative_to(
 
     let transform = world
         .get(origin_id, local_to_world())
-        .unwrap_or_else(|_| Mat4::IDENTITY)
+        .unwrap_or(Mat4::IDENTITY)
         .inverse();
 
     let mut result = Vec::with_capacity(list.len());
@@ -57,7 +57,7 @@ pub fn get_transforms_relative_to(
         let relative = transform
             * world
                 .get(entity_id, local_to_world())
-                .unwrap_or_else(|_| Mat4::IDENTITY);
+                .unwrap_or(Mat4::IDENTITY);
         result.push(relative.into_bindgen());
     }
 
