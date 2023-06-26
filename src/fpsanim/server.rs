@@ -26,13 +26,6 @@ mod anim;
 pub fn main() {
     anim::register_anim();
     query((player(), components::player_direction())).each_frame(|results| {
-        if results.len() > 1 {
-            let dir0 = results[0].1 .1;
-            let dir1 = results[1].1 .1;
-            if dir0 != dir1 {
-                println!("dir0: {:?}, dir1: {:?}", dir0, dir1);
-            }
-        }
         for (player_id, (_, dir)) in results {
             let fd = dir.y == -1.0;
             let bk = dir.y == 1.0;
@@ -40,7 +33,6 @@ pub fn main() {
             let rt = dir.x == 1.0;
 
             if fd && !lt && !rt {
-                println!("idle {} {}", player_id, dir);
                 apply_anim(player_id, components::idle_fd(), 1.0);
             } else if bk && !lt && !rt {
                 apply_anim(player_id, components::idle_bk(), 1.0);
@@ -57,9 +49,11 @@ pub fn main() {
             } else if bk && rt {
                 apply_anim(player_id, components::bk_rt(), 0.5);
             } else {
-                // println!("idle {} {}", player_id, dir);
                 // TODO: there is a bug on multiple animations playing at the same time
-                apply_anim(player_id, components::idle_rt(), 0.0);
+                // I cannot use this commented line
+                // there is a "hijack" bug on the animation player
+                apply_anim(player_id, components::idle_fd(), 0.0);
+                // apply_anim(player_id, components::idle_fd_lt(), 0.0);
             }
         }
     });
@@ -67,7 +61,7 @@ pub fn main() {
 
 pub fn apply_anim(player_id: EntityId, comp: Component<Vec<EntityId>>, blend_value: f32) {
     let model = entity::get_component(player_id, components::player_model_ref()).unwrap();
-    let blend_player = entity::get_component(entity::resources(), comp).unwrap();
+    let blend_player = entity::get_component(player_id, comp).unwrap();
     entity::set_component(blend_player[0], blend(), blend_value);
     entity::add_component(model, apply_animation_player(), blend_player[1]);
 }
