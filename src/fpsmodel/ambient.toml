@@ -1,0 +1,13 @@
+[components]
+
+player_model_ref = { type = "EntityId", description = "The player's whole body model id.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+# name_ui_toggle = { type = "Bool", attributs = ["Networked", "Debuggable"] }
+
+player_cam_ref = { type = "EntityId", name = "Player cam ref", description = "The player's head/camera.", attributes = [
+    "Debuggable",
+    "Networked",
+] }
