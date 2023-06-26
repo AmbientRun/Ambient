@@ -4,11 +4,11 @@
 
 The Ambient API is split into two parts: the client and the server. The client is the code that runs on the player's machine, and the server is the code that runs on the host's machine. The client is responsible for rendering the game, and for sending input to the server. The server is responsible for running the game simulation, and for sending the client information about the game state.
 
-When you create a project, both `client` and `server` modules are created. You can put code in either of these modules, and it will be run on the client or the server, respectively. In general, code that runs on the server should be authoritative, and code that runs on the client should be visual. What the server says should be the source of truth for all players.
+When you create an ember, both `client` and `server` modules are created. You can put code in either of these modules, and it will be run on the client or the server, respectively. In general, code that runs on the server should be authoritative, and code that runs on the client should be visual. What the server says should be the source of truth for all players.
 
 The ECS can be used to synchronize state between the server and the client. Both the client and the server have the same ECS, but components with the `Networked` attribute will be synchronized from the server to the client. The client can make its own changes to the ECS, including adding and modifying components, but any modified components will be overridden by the server's version when the server sends an update for those components.
 
-Additionally, both the client and the server can send structured messages to each other to communicate information that can't be represented in the ECS. For more information on this, see the [project documentation](../reference/project.md#messages--messages).
+Additionally, both the client and the server can send structured messages to each other to communicate information that can't be represented in the ECS. For more information on this, see the [ember documentation](ember.md#messages--messages).
 
 Deciding where your code should go is important to making the most of Ambient, and it's not always obvious. Here are some guidelines:
 
