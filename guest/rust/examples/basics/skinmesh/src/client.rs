@@ -12,7 +12,6 @@ use ambient_api::{
         transform::{local_to_parent, lookat_target, reset_scale, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
-    element::to_owned,
     entity::{add_child, add_component, wait_for_component},
     prelude::*,
 };

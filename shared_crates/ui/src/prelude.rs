@@ -8,7 +8,7 @@ pub use crate::{
 };
 pub use ambient_cb::{cb, Cb};
 pub use ambient_element::{
-    self, element_component, Element, ElementComponent, ElementComponentExt, ElementTree, Group,
-    Hooks, Memo, Wrap,
+    self, element_component, to_owned, Element, ElementComponent, ElementComponentExt, ElementTree,
+    Group, Hooks, Memo, Wrap,
 };
 pub use ambient_guest_bridge::ecs::World;
