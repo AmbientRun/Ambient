@@ -66,7 +66,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Animation**: The animation system has been reworked. See the [animation documentation](https://ambientrun.github.io/Ambient/reference/animations.html) for details. Thanks to [@devjobe](https://github.com/devjobe) for laying the foundation for this!
 - **Physics**: Renamed `box_collider` to `cube_collider`.
 - **App**: Renamed the `time` component to `absolute_time`, and the `dtime` component to `delta_time`. The `frametime` function has been renamed to `delta_time`.
-- **Project**: Projects have been renamed to Embers. TODO: add docs page.
+- **Project**: Projects have been renamed to Embers; see the [ember documentation](https://ambientrun.github.io/Ambient/reference/ember.html) for details.
 - **Assets**: Asset pipelines now use TOML instead of JSON. Use the `ambient assets migrate-pipelines-toml` command to migrate. (Note that this command will be removed in the next release.)
 - **Rendering**: Removing the `outline_recursive` component from a entity will now remove the outline from its children as well.
 - **API**: The `ambient_ui` prelude (and the `ambient_api` prelude, by extension) no longer glob-imports components into the global namespace. This means that you will need to import components explicitly.
