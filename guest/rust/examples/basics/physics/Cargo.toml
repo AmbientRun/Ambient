@@ -1,5 +1,5 @@
 [package]
-name = "physics"
+name = "ambient_example_physics"
 
 edition = "2021"
 publish = false

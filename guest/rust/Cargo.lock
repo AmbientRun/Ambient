@@ -274,6 +274,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_example_physics"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "ambient_example_pong"
 version = "0.3.0-dev"
 dependencies = [
@@ -1318,13 +1325,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e1fb5f6f826b772a8d4c0394209441e7d37cbbb967ae9c7e0e8134365c9ee676"
 dependencies = [
  "siphasher",
-]
-
-[[package]]
-name = "physics"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_api",
 ]
 
 [[package]]
