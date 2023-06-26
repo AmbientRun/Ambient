@@ -12,7 +12,6 @@ use ambient_api::{
         transform::{local_to_parent, lookat_target, reset_scale, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
-    entity::{add_child, add_component, wait_for_component},
     prelude::*,
 };
 
@@ -51,11 +50,11 @@ pub async fn main() {
     );
     let blend = BlendNode::new(&capoeira, &robot, 0.);
     let anim_player = AnimationPlayer::new(&blend);
-    add_component(unit_id, apply_animation_player(), anim_player.0);
+    entity::add_component(unit_id, apply_animation_player(), anim_player.0);
 
     println!("Robot duration: {} sec", robot.clip_duration().await);
 
-    wait_for_component(unit_id, model_loaded()).await;
+    entity::wait_for_component(unit_id, model_loaded()).await;
 
     // This demonstrates how to attach an entity to a bone
     let left_foot = get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
@@ -67,7 +66,7 @@ pub async fn main() {
         .with_default(local_to_parent())
         .with_default(reset_scale())
         .spawn();
-    add_child(left_foot, ball);
+    entity::add_child(left_foot, ball);
 
     App::el(blend, anim_player).spawn_interactive()
 }
