@@ -12,7 +12,7 @@ pub async fn main() {
             println!(
                 "And hello from here! {} seconds have passed, and the previous tick took {}ms.",
                 (time() - start_time).as_secs_f32(),
-                frametime() * 1_000.
+                delta_time() * 1_000.
             );
         });
         sleep(0.5).await;

@@ -70,7 +70,7 @@ fn make_lighting() {
                 entity::set_component(
                     sun_id,
                     rotation(),
-                    Quat::from_rotation_z(frametime()) * sun_rotation,
+                    Quat::from_rotation_z(delta_time()) * sun_rotation,
                 );
             }
         });

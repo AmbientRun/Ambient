@@ -9,17 +9,15 @@ name = "Cursor position"
 description = "Absolute mouse cursor position in screen-space. This is the _logical_ position. Multiply by the `window_scale_factor` to get the physical position."
 attributes = ["MaybeResource", "Debuggable", "Networked"]
 
-[components."core::app::dtime"]
+[components."core::app::delta_time"]
 type = "F32"
-name = "Delta Time"
-description = """
-How long the previous tick took in seconds.
-Also known as frametime."""
+name = "Delta time"
+description = "How long the previous tick took in seconds."
 attributes = ["Debuggable", "Resource"]
 
-[components."core::app::abs_time"]
+[components."core::app::absolute_time"]
 type = "Duration"
-name = "Abs Time"
+name = "Absolute time"
 description = "Absolute time since epoch (Jan 1, 1970)."
 attributes = ["Debuggable", "Resource"]
 

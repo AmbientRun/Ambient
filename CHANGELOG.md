@@ -42,7 +42,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Deploy**: The `ambient deploy` command can now be used to deploy a project to the Ambient runtime services.
 - **Audio**: Spatial audio is now supported for 3D sounds. See the [physics example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/basics/physics/src/client.rs).
 - **Networking**: The networking protocol now supports WebTransport for the web client.
-- **Rendering**: Procedural meshes, textures, samplers and materials are no supported on the client. See the [procedural example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/primitives).
+- **Rendering**: Procedural meshes, textures, samplers and materials are no supported on the client. See the [procedural generation example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/procedural_generation).
 
 #### Other
 
@@ -65,7 +65,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Physics**: Renamed the `visualizing` component to `visualize_collider`.
 - **Animation**: The animation system has been reworked. See the [animation documentation](https://ambientrun.github.io/Ambient/reference/animations.html) for details. Thanks to [@devjobe](https://github.com/devjobe) for laying the foundation for this!
 - **Physics**: Renamed `box_collider` to `cube_collider`.
-- **App**: Renamed the `time` component to `abs_time`.
+- **App**: Renamed the `time` component to `absolute_time`, and the `dtime` component to `delta_time`. The `frametime` function has been renamed to `delta_time`.
 - **Project**: Projects have been renamed to Embers. TODO: add docs page.
 - **Assets**: Asset pipelines now use TOML instead of JSON. Use the `ambient assets migrate-pipelines-toml` command to migrate. (Note that this command will be removed in the next release.)
 - **Rendering**: Removing the `outline_recursive` component from a entity will now remove the outline from its children as well.

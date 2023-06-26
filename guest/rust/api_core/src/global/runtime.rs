@@ -8,12 +8,12 @@ use crate::{
 
 /// The time, relative to Jan 1, 1970.
 pub fn time() -> Duration {
-    entity::get_component(entity::resources(), components::core::app::abs_time()).unwrap()
+    entity::get_component(entity::resources(), components::core::app::absolute_time()).unwrap()
 }
 
 /// The length of the previous frame, in seconds.
-pub fn frametime() -> f32 {
-    entity::get_component(entity::resources(), components::core::app::dtime()).unwrap()
+pub fn delta_time() -> f32 {
+    entity::get_component(entity::resources(), components::core::app::delta_time()).unwrap()
 }
 
 /// A trait that abstracts over return types so that you can return an [ResultEmpty] or nothing.

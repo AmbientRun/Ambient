@@ -6,7 +6,9 @@ use std::{
     sync::Arc,
 };
 
-use ambient_core::{abs_time, app_start_time, asset_cache, dtime, name, no_sync, project_name};
+use ambient_core::{
+    absolute_time, app_start_time, asset_cache, delta_time, name, no_sync, project_name,
+};
 use ambient_ecs::{
     dont_store, world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup,
     World, WorldEventsSystem, WorldStreamCompEvent,
@@ -257,9 +259,9 @@ fn create_resources(assets: AssetCache) -> Entity {
     let now = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap();
-    server_resources.set(abs_time(), now);
+    server_resources.set(absolute_time(), now);
     server_resources.set(app_start_time(), now);
-    server_resources.set(dtime(), 1. / 60.);
+    server_resources.set(delta_time(), 1. / 60.);
 
     let mut bistream_handlers = HashMap::new();
     ambient_network::server::register_rpc_bi_stream_handler(
