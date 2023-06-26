@@ -22,6 +22,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
 
     if input.keys.contains(&KeyCode::Tab) {
         set_toggle(true);
+        println!("tab pressed");
     } else {
         set_toggle(false);
     }
@@ -35,7 +36,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
 
     if !ingame {
         FocusRoot::el([FlowColumn::el([
-            Text::el("Enter your name:"),
+            Text::el("Enter your name blow. Press enter to start the game."),
             TextEditor::new(name.clone(), set_name.clone())
                 .auto_focus()
                 .on_submit({
@@ -43,26 +44,21 @@ pub fn App(hooks: &mut Hooks) -> Element {
                     let name = name.clone();
                     move |_| {
                         set_ingame(true);
-                        messages::StartGame {
-                            name: name.clone(),
-                            id: player::get_local(),
-                            uid: player::get_local().to_string(),
-                            // uid: user_id::get_local(),
-                        }
-                        .send_server_unreliable();
+                        // entity::add_component(
+                        //     player::get_local(),
+                        //     components::player_name(),
+                        //     name.clone(),
+                        // );
+                        // messages::StartGame {
+                        //     name: name.clone(),
+                        //     id: player::get_local(),
+                        //     uid: player::get_local().to_string(),
+                        //     // uid: user_id::get_local(),
+                        // }
+                        // .send_server_unreliable();
                     }
                 })
                 .el(),
-            Button::new("Join game", move |_| {
-                set_ingame(true);
-                messages::StartGame {
-                    name: name.clone(),
-                    id: player::get_local(),
-                    uid: player::get_local().to_string(),
-                }
-                .send_server_unreliable();
-            })
-            .el(),
         ])])
     } else {
         Group::el([

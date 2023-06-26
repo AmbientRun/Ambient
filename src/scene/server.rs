@@ -10,11 +10,11 @@ use ambient_api::{
 
 #[main]
 pub fn main() {
-    messages::StartGame::subscribe(|_, msg| {
-        Entity::new()
-            .with_default(quad())
-            .with_default(plane_collider())
-            .with(scale(), Vec3::ONE * 30.)
-            .spawn();
-    });
+    // messages::StartGame::subscribe(|_, msg| {
+    Entity::new()
+        .with_default(quad())
+        .with_default(plane_collider())
+        .with(scale(), Vec3::ONE * 30.)
+        .spawn();
+    // });
 }

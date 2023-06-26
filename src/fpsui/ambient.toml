@@ -1,4 +1,2 @@
-[messages.start_game.fields]
-name = { type = "String" }
-id = { type = "EntityId" }
-uid = { type = "String" }
+[components]
+player_name = { type = "String" }
