@@ -61,6 +61,11 @@ path = "src/fpsui/client.rs"
 required-features = ["client"]
 
 [[bin]]
+name = "fpsui_server"
+path = "src/fpsui/server.rs"
+required-features = ["server"]
+
+[[bin]]
 name = "fpsanim_client"
 path = "src/fpsanim/client.rs"
 required-features = ["client"]

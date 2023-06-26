@@ -6,11 +6,11 @@ use ambient_api::prelude::*;
 
 #[main]
 pub fn main() {
-    spawn_query(player()).bind(move |players| {
-        for (id, _) in players {
-            entity::add_component(id, components::player_health(), 100);
-            entity::add_component(id, components::hit_freeze(), 0);
-        }
+    messages::StartGame::subscribe(|_, msg| {
+        let id = msg.id;
+        entity::add_component(id, components::player_health(), 100);
+        entity::add_component(id, components::hit_freeze(), 0);
+        entity::add_component(id, name(), msg.name.clone());
     });
 
     // TODO: add death and kill count
