@@ -1,29 +1,4 @@
-use ambient_api::{
-    animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
-    components::core::{
-        animation::{apply_animation_player, blend},
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        ecs::{children, parent},
-        physics::{
-            character_controller_height, character_controller_radius, physics_controlled,
-            plane_collider, sphere_collider,
-        },
-        player::{player, user_id},
-        prefab::prefab_from_url,
-        primitives::{cube, quad},
-        rendering::color,
-        transform::{local_to_parent, rotation, scale, translation},
-    },
-    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
-    prelude::*,
-};
-
-// use components::{player_head_ref, player_movement_direction, player_pitch, player_yaw};
-use std::f32::consts::{E, PI, TAU};
-
-const MAX_SPEED: f32 = 0.1;
-const SPEED_DELTA: f32 = 0.01;
+use ambient_api::prelude::*;
 
 #[main]
 pub fn main() {
@@ -53,14 +28,11 @@ pub fn main() {
 
                 if old_health > 0 && new_health <= 0 {
                     println!("player death");
-                    // let death_anim =
-                    //     entity::get_component(entity::resources(), components::death()).unwrap()[1];
-                    // entity::set_component(model, apply_animation_player(), death_anim);
-                } else {
-                    entity::set_component(hit.entity, components::hit_freeze(), 20);
-                    // let hit_anim =
-                    //     entity::get_component(entity::resources(), components::hit()).unwrap()[1];
-                    // entity::set_component(model, apply_animation_player(), hit_anim);
+                    entity::set_component(
+                        hit.entity,
+                        translation(),
+                        vec3(random::<f32>() * 10.0, random::<f32>() * 10.0, 2.0),
+                    );
                 }
             }
         }

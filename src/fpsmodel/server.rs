@@ -22,22 +22,18 @@ use ambient_api::{
 
 #[main]
 pub fn main() {
-    spawn_query(player()).bind(move |players| {
-        for (id, _) in players {
-            println!("___spawning player__!!! {:?}", id);
-            if entity::has_component(id, components::player_cam_ref()) {
-                println!("___pass player__!!! {:?}", id);
-                continue;
-            }
+    spawn_query((player(), user_id())).bind(move |players| {
+        for (id, (_, uid)) in players {
             let cam = Entity::new()
                 .with_merge(make_perspective_infinite_reverse_camera())
                 .with(aspect_ratio_from_window(), EntityId::resources())
                 .with_default(main_scene())
+                .with(parent(), id)
+                .with(user_id(), uid)
                 // this is FPS
                 // .with(translation(), vec3(0.0, 0.2, 2.0))
                 // third person
                 .with(translation(), vec3(0.0, 4.0, 3.0))
-                .with(parent(), id)
                 .with_default(local_to_parent())
                 // .with_default(local_to_world())
                 .with(
@@ -45,7 +41,6 @@ pub fn main() {
                     Quat::from_rotation_x(std::f32::consts::FRAC_PI_2),
                 )
                 .spawn();
-            println!("___spawning cam!!! {:?}", cam);
             let model = Entity::new()
                 .with_merge(make_transformable())
                 .with(
@@ -69,7 +64,7 @@ pub fn main() {
                     .with_default(local_to_world())
                     .with(
                         translation(),
-                        vec3(random::<f32>() * 20., random::<f32>() * 20., 0.0),
+                        vec3(random::<f32>() * 20., random::<f32>() * 20., 2.0),
                     )
                     // .with(
                     //     translation(),
@@ -77,18 +72,8 @@ pub fn main() {
                     // )
                     .with(children(), vec![model, cam])
                     .with(components::player_cam_ref(), cam)
-                    .with(components::player_model_ref(), model), // .with(components::speed(), 0.0)
-                                                                  // .with(components::running(), false)
-                                                                  // .with(components::offground(), false)
-                                                                  // .with(components::player_health(), 100)
-                                                                  // .with(components::hit_freeze(), 0)
+                    .with(components::player_model_ref(), model),
             );
         }
     });
-
-    // query((player(), components::player_model_ref())).each_frame(move |list| {
-    //     for (player_id, (_, model_id)) in list {
-    //         physics::move_character(player_id, vec3(0.0, 0.0, -0.2), 0.01, frametime());
-    //     }
-    // });
 }

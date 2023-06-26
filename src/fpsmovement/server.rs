@@ -73,16 +73,16 @@ pub fn main() {
     ))
     .each_frame(move |list| {
         for (player_id, (_, direction, rot, vspeed)) in list {
-            // let speed = vec2(0.04, 0.06);
-            let displace = rot * (direction.normalize_or_zero() * 0.1).extend(-0.1);
+            let speed = vec2(0.04, 0.06);
+            let displace = rot * (direction.normalize_or_zero() * speed).extend(vspeed);
             let collision = physics::move_character(player_id, displace, 0.01, frametime());
-            // if collision.down {
-            //     entity::set_component(player_id, components::player_vspeed(), 0.0);
-            // } else {
-            //     entity::mutate_component(player_id, components::player_vspeed(), |vspeed| {
-            //         *vspeed -= 9.8 * frametime(); // 1/60 second for example
-            //     });
-            // }
+            if collision.down {
+                entity::set_component(player_id, components::player_vspeed(), 0.0);
+            } else {
+                entity::mutate_component(player_id, components::player_vspeed(), |vspeed| {
+                    *vspeed -= 2.3 * frametime(); // 1/60 second for example
+                });
+            }
         }
     });
 }

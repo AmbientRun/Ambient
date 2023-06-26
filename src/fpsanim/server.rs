@@ -26,19 +26,27 @@ mod anim;
 pub fn main() {
     anim::register_anim();
     query((player(), components::player_direction())).each_frame(|results| {
+        if results.len() > 1 {
+            let dir0 = results[0].1 .1;
+            let dir1 = results[1].1 .1;
+            if dir0 != dir1 {
+                println!("dir0: {:?}, dir1: {:?}", dir0, dir1);
+            }
+        }
         for (player_id, (_, dir)) in results {
             let fd = dir.y == -1.0;
             let bk = dir.y == 1.0;
             let lt = dir.x == -1.0;
             let rt = dir.x == 1.0;
 
-            if fd {
+            if fd && !lt && !rt {
+                println!("idle {} {}", player_id, dir);
                 apply_anim(player_id, components::idle_fd(), 1.0);
-            } else if bk {
+            } else if bk && !lt && !rt {
                 apply_anim(player_id, components::idle_bk(), 1.0);
-            } else if lt {
+            } else if lt && !fd && !bk {
                 apply_anim(player_id, components::idle_lt(), 1.0);
-            } else if rt {
+            } else if rt && !fd && !bk {
                 apply_anim(player_id, components::idle_rt(), 1.0);
             } else if fd && lt {
                 apply_anim(player_id, components::fd_lt(), 0.5);
@@ -49,7 +57,9 @@ pub fn main() {
             } else if bk && rt {
                 apply_anim(player_id, components::bk_rt(), 0.5);
             } else {
-                apply_anim(player_id, components::idle_bk(), 0.0);
+                // println!("idle {} {}", player_id, dir);
+                // TODO: there is a bug on multiple animations playing at the same time
+                apply_anim(player_id, components::idle_rt(), 0.0);
             }
         }
     });

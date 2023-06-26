@@ -1,16 +1,19 @@
 [components]
-player_direction = { type = "Vec2", attributes = ["Debuggable"] }
+player_direction = { type = "Vec2", attributes = ["Debuggable", "Networked"] }
 
 player_yaw = { type = "F32", name = "Player yaw", description = "The player's yaw.", attributes = [
     "Debuggable",
+    "Networked",
 ] }
 
 player_pitch = { type = "F32", name = "Player pitch", description = "The player's pitch.", attributes = [
     "Debuggable",
+    "Networked",
 ] }
 
 player_vspeed = { type = "F32", name = "Player vertical speed", description = "The player's vertical speed.", attributes = [
     "Debuggable",
+    "Networked",
 ] }
 
 [messages.input.fields]

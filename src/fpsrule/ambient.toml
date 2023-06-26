@@ -1,6 +1,14 @@
 [components]
 
-game_type = { type = "U8", description = "0: zombie mode" }
+game_type = { type = "U8", description = "0: zombie mode", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+player_health = { type = "I32", attributes = ["Debuggable", "Networked"] }
+
+hit_freeze = { type = "I32", attributes = ["Debuggable", "Networked"] }
+
 
 [messages.shoot.fields]
 ray_origin = { type = "Vec3" }

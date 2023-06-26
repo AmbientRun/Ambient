@@ -4,9 +4,9 @@ name = "afpsmod"
 version = "0.0.1"
 
 includes = [
-    # "src/zombie/ambient.toml",
+    "src/zombie/ambient.toml",
     "src/fpsmodel/ambient.toml",
-    # "src/fpsmovement/ambient.toml",
-    # "src/fpsrule/ambient.toml",
-    # "src/fpsanim/ambient.toml",
+    "src/fpsmovement/ambient.toml",
+    "src/fpsrule/ambient.toml",
+    "src/fpsanim/ambient.toml",
 ]
