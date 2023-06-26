@@ -38,31 +38,62 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 #### Headline features
 
-<!-- - **Client**: The client can now **run on the web**. -->
-
-- The animation system has been reworked; see the [animation documentation](https://ambientrun.github.io/Ambient/reference/animations.html) for details.
+- **Client**: The client can now **run on the web**.
+- **Deploy**: The `ambient deploy` command can now be used to deploy a project to the Ambient runtime services.
+- **Audio**: Spatial audio is now supported for 3D sounds. See the [physics example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/basics/physics/src/client.rs).
+- **Networking**: The networking protocol now supports WebTransport for the web client.
+- **Rendering**: Procedural meshes, textures, samplers and materials are no supported on the client. See the [procedural example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/primitives).
 
 #### Other
 
-- Added a new `ImageFromUrl` ui component, which can load images from assets or urls. It also supports rounded corners, borders and a fallback background color. See the [image example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/ui/image/src/client.rs) for more details.
+- **UI**: Added a new `ImageFromUrl` element, which can load images from assets or URLs. It also supports rounded corners, borders and a fallback background color. See the [image example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/ui/image/src/client.rs) for more details.
+- **Rendering**: Added a `torus` primitive. Thanks to [@mebyz](https://github.com/mebyz) for implementing this in [#376](https://github.com/AmbientRun/Ambient/pull/376)!
+- **Physics**: Add `set_character_controller_position` to the `physics` API. Thanks to [@devjobe](https://github.com/devjobe) for implementing this in [#398](https://github.com/AmbientRun/Ambient/pull/398).
+- **ECS**: `Duration` is now a supported primitive type.
+- **Docs**: The IDE documentation has been improved, including information on how to set up Emacs for Ambient development (thanks to [@kevzettler](https://github.com/kevzettler) in [#505](https://github.com/AmbientRun/Ambient/pull/505)).
 
 #### Examples
+
+- **Clock**: An analog `clock` example has been added to test line rendering.
 
 ### Changed
 
 #### Breaking
 
-- Locally-broadcasted messages can now choose to include the originating module in the broadcast; this is an additional boolean parameter to `ModuleMessage::send_local_broadcast` and `message::Target::LocalBroadcast`.
-- `screen_to_world_direction` and `clip_space_ray` renamed. See [#410](https://github.com/AmbientRun/Ambient/issues/410)
-- Rename `visualizing` to `visualize_collider`
+- **API**: Locally-broadcasted messages can now choose to include the originating module in the broadcast; this is an additional boolean parameter to `ModuleMessage::send_local_broadcast` and `message::Target::LocalBroadcast`.
+- **Camera**: Renamed `screen_to_world_direction` to `screen_position_to_world_ray` and `clip_space_ray` to `clip_position_to_world_ray`. See [#410](https://github.com/AmbientRun/Ambient/issues/410).
+- **Physics**: Renamed the `visualizing` component to `visualize_collider`.
+- **Animation**: The animation system has been reworked. See the [animation documentation](https://ambientrun.github.io/Ambient/reference/animations.html) for details. Thanks to [@devjobe](https://github.com/devjobe) for laying the foundation for this!
+- **Physics**: Renamed `box_collider` to `cube_collider`.
+- **App**: Renamed the `time` component to `abs_time`.
+- **Project**: Projects have been renamed to Embers. TODO: add docs page.
+- **Assets**: Asset pipelines now use TOML instead of JSON. Use the `ambient assets migrate-pipelines-toml` command to migrate. (Note that this command will be removed in the next release.)
+- **Rendering**: Removing the `outline_recursive` component from a entity will now remove the outline from its children as well.
 
 #### Non-breaking
 
+- **Logging**: The logging output levels have been tweaked to better communicate the state of the system at any given time.
+- **Debugger**: The debugger has been improved with a resizable sidebar, a scrollable view, and a component filter.
+- **Animation**: The animation graph is now executed on the server as well.
+
 ### Fixed
+
+- **Rendering**: Skinned meshes will no longer be corrupted when there is more than one skinned mesh in a mesh buffer.
+- **UI**: `TextEditor` will no longer capture input even when it is not visible.
+- **Rendering**: Decals now render more consistently.
+- **API**: `entity::wait_for_component` will now exit if the entity is despawned.
+- **API**: The `message::Source` methods no longer consume the source when returning their data.
+- **Rendering**: Lines with a `from` located after a `to` on the X-dimension will now render correctly.
+- **API**: The `entity::mutate_component` documentation now refers to the correct parameter. Thanks to [@aldzban](https://github.com/aldzban) for fixing this in [#482](https://github.com/AmbientRun/Ambient/pull/482).
+- **UI**: The `ScrollArea` now has a scroll bar.
 
 ### Community PRs to internals
 
 These PRs are not directly user-facing, but improve the development experience. They're just as appreciated!
+
+### Changed
+
+- `glam` was updated to 0.24. Thanks to [@devjobe](https://github.com/devjobe) for implementing this in [#434](https://github.com/AmbientRun/Ambient/pull/434).
 
 ### Removed
 
