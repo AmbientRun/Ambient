@@ -33,7 +33,18 @@ pub fn main() {
         let player_id = source.client_entity_id().unwrap();
         let direction = msg.direction;
 
-        entity::add_component(player_id, components::player_direction(), direction);
+        // temporary fix pos for shooting
+        if !msg.is_shooting {
+            entity::add_component(player_id, components::player_direction(), direction);
+        } else {
+            entity::add_component(player_id, components::player_direction(), Vec2::ZERO);
+        }
+
+        entity::add_component(
+            player_id,
+            components::player_shooting_status(),
+            msg.is_shooting,
+        );
         let yaw = entity::mutate_component(player_id, components::player_yaw(), |yaw| {
             *yaw = (*yaw + msg.mouse_delta.x * 0.01) % std::f32::consts::TAU;
         })

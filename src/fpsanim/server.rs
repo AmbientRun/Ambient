@@ -25,8 +25,25 @@ mod anim;
 #[main]
 pub fn main() {
     anim::register_anim();
-    query((player(), components::player_direction())).each_frame(|results| {
-        for (player_id, (_, dir)) in results {
+    query((
+        player(),
+        components::player_direction(),
+        components::player_shooting_status(),
+        components::hit_freeze(),
+    ))
+    .each_frame(|results| {
+        for (player_id, (_, dir, is_shooting, freeze)) in results {
+            if freeze > 0 {
+                entity::set_component(player_id, components::hit_freeze(), freeze - 1);
+                continue;
+            }
+            if is_shooting {
+                let model =
+                    entity::get_component(player_id, components::player_model_ref()).unwrap();
+                let anim = entity::get_component(player_id, components::fire()).unwrap();
+                entity::add_component(model, apply_animation_player(), anim[1]);
+                continue;
+            };
             let fd = dir.y == -1.0;
             let bk = dir.y == 1.0;
             let lt = dir.x == -1.0;
@@ -57,6 +74,24 @@ pub fn main() {
             }
         }
     });
+
+    change_query((player(), components::player_health()))
+        .track_change(components::player_health())
+        .bind(|v| {
+            println!("player health changed: {:?}", v);
+            // play hit animation
+            for (id, (_, health)) in v {
+                if health <= 0 {
+                    let model = entity::get_component(id, components::player_model_ref()).unwrap();
+                    let anim = entity::get_component(id, components::death()).unwrap();
+                    entity::add_component(model, apply_animation_player(), anim[1]);
+                } else if health < 100 {
+                    let model = entity::get_component(id, components::player_model_ref()).unwrap();
+                    let anim = entity::get_component(id, components::hit()).unwrap();
+                    entity::add_component(model, apply_animation_player(), anim[1]);
+                }
+            }
+        });
 }
 
 pub fn apply_anim(player_id: EntityId, comp: Component<Vec<EntityId>>, blend_value: f32) {

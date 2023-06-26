@@ -1,15 +1,9 @@
-/// Scene is running on the server.
-/// it determines the scene of the game.
-/// loading assets like maps
-/// and places necessary colliders
-///
-#[allow(unused_imports)]
 use ambient_api::{
     components::core::{
         physics::{cube_collider, plane_collider, sphere_collider, visualize_collider},
-        primitives::{quad, sphere},
+        primitives::{cube, quad},
     },
-    concepts::make_sphere,
+    concepts::{make_sphere, make_transformable},
     entity::{add_components, remove_components},
     prelude::*,
 };
@@ -19,6 +13,6 @@ pub fn main() {
     Entity::new()
         .with_default(quad())
         .with_default(plane_collider())
-        .with(scale(), Vec3::ONE * 20.)
+        .with(scale(), Vec3::ONE * 30.)
         .spawn();
 }

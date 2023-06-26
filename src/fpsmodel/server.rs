@@ -58,7 +58,7 @@ pub fn main() {
                     // with the following three comp, you can move the player
                     // with physics::move_character
                     .with(character_controller_height(), 2.0)
-                    .with(character_controller_radius(), 0.5)
+                    .with(character_controller_radius(), 0.3)
                     .with_default(physics_controlled())
                     // adjust the initial position
                     .with_default(local_to_world())

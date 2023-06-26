@@ -17,7 +17,7 @@ pub fn register_anim() {
             );
 
             // TODO: buggy!!!!!
-            death.looping(false);
+            // death.looping(false);
             // death.freeze_at_percentage(100.0);
             let fire = PlayClipFromUrlNode::new(
                 asset::url("assets/anim/Rifle Firing.fbx/animations/mixamo.com.anim").unwrap(),

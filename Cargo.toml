@@ -35,15 +35,15 @@ name = "fpsmovement_server"
 path = "src/fpsmovement/server.rs"
 required-features = ["server"]
 
-# [[bin]]
-# name = "fpsrule_client"
-# path = "src/fpsrule/client.rs"
-# required-features = ["client"]
+[[bin]]
+name = "fpsrule_client"
+path = "src/fpsrule/client.rs"
+required-features = ["client"]
 
-# [[bin]]
-# name = "fpsrule_server"
-# path = "src/fpsrule/server.rs"
-# required-features = ["server"]
+[[bin]]
+name = "fpsrule_server"
+path = "src/fpsrule/server.rs"
+required-features = ["server"]
 
 # [[bin]]
 # name = "zombie_server"
@@ -55,10 +55,10 @@ required-features = ["server"]
 # path = "src/zombie/client.rs"
 # required-features = ["client"]
 
-# [[bin]]
-# name = "fpsui_client"
-# path = "src/fpsui/client.rs"
-# required-features = ["client"]
+[[bin]]
+name = "fpsui_client"
+path = "src/fpsui/client.rs"
+required-features = ["client"]
 
 [[bin]]
 name = "fpsanim_client"

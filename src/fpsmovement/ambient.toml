@@ -16,10 +16,16 @@ player_vspeed = { type = "F32", name = "Player vertical speed", description = "T
     "Networked",
 ] }
 
+player_shooting_status = { type = "Bool", description = "True when the player is in shooting", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
 [messages.input.fields]
 direction = { type = "Vec2", description = "wasd state for movement direction; strafe;" }
 mouse_delta = { type = "Vec2", description = "The mouse delta used for pitch and yaw" }
-shoot = { type = "Bool" }
+shoot = { type = "Bool", description = "Becomes true on the exact frame when the player pressed the shoot button" }
+is_shooting = { type = "Bool", description = "Whether the player is in shooting or not; used for anim" }
 ray_origin = { type = "Vec3", description = "The origin of the ray cast from the camera" }
 ray_dir = { type = "Vec3", description = "The direction of the ray cast from the camera" }
 walk = { type = "Bool", description = "shift to walk slow and quiet" }

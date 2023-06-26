@@ -78,6 +78,7 @@ pub fn main() {
             direction,
             mouse_delta,
             shoot,
+            is_shooting,
             walk,
             jump,
             duck,
