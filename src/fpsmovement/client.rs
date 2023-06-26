@@ -51,7 +51,6 @@ pub fn main() {
             if is_shooting {
                 if time() - last_shot > Duration::from_millis(1000) {
                     shoot = true;
-
                     last_shot = time();
                 }
             } else {
@@ -62,29 +61,18 @@ pub fn main() {
         } else {
             is_shooting = false;
         }
-
-        // if shoot {
-
-        // }
-
-        // let player_id = player::get_local();
-        // if shoot {
-        //     // println!("shoot");
-        //     let cam = entity::get_component(player_id, components::player_head_ref()).unwrap();
-        //     let window_size =
-        //         entity::get_component(entity::resources(), window_logical_size()).unwrap();
-        //     let ray = camera::screen_position_to_world_ray(
-        //         cam,
-        //         vec2(window_size.x as f32 / 2., window_size.y as f32 / 2.),
-        //     );
-        //     messages::Ray {
-        //         ray_origin: ray.origin,
-        //         ray_dir: ray.dir,
-        //         source: player_id,
-        //         type_action: 0,
-        //     }
-        //     .send_server_unreliable();
-        // }
+        let player_id = player::get_local();
+        let cam = entity::get_component(player_id, components::player_cam_ref());
+        if cam.is_none() {
+            return;
+        }
+        let cam = cam.unwrap();
+        let window_size =
+            entity::get_component(entity::resources(), window_logical_size()).unwrap();
+        let ray = camera::screen_position_to_world_ray(
+            cam,
+            vec2(window_size.x as f32 / 2., window_size.y as f32 / 2.),
+        );
 
         messages::Input {
             direction,
@@ -93,6 +81,8 @@ pub fn main() {
             walk,
             jump,
             duck,
+            ray_origin: ray.origin,
+            ray_dir: ray.dir,
         }
         .send_server_unreliable();
     });

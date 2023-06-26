@@ -24,22 +24,28 @@ use ambient_api::{
 pub fn main() {
     spawn_query(player()).bind(move |players| {
         for (id, _) in players {
+            println!("___spawning player__!!! {:?}", id);
+            if entity::has_component(id, components::player_cam_ref()) {
+                println!("___pass player__!!! {:?}", id);
+                continue;
+            }
             let cam = Entity::new()
                 .with_merge(make_perspective_infinite_reverse_camera())
                 .with(aspect_ratio_from_window(), EntityId::resources())
                 .with_default(main_scene())
                 // this is FPS
-                // .with(translation(), vec3(-0.0, 0.2, 2.0))
+                // .with(translation(), vec3(0.0, 0.2, 2.0))
                 // third person
-                .with_default(local_to_parent())
-                .with(translation(), vec3(-0.0, 5.2, 2.0))
+                .with(translation(), vec3(0.0, 4.0, 3.0))
                 .with(parent(), id)
+                .with_default(local_to_parent())
                 // .with_default(local_to_world())
                 .with(
                     rotation(),
-                    Quat::from_rotation_x(std::f32::consts::PI / 2.0),
+                    Quat::from_rotation_x(std::f32::consts::FRAC_PI_2),
                 )
                 .spawn();
+            println!("___spawning cam!!! {:?}", cam);
             let model = Entity::new()
                 .with_merge(make_transformable())
                 .with(
@@ -63,8 +69,12 @@ pub fn main() {
                     .with_default(local_to_world())
                     .with(
                         translation(),
-                        vec3(random::<f32>() * 10.0, random::<f32>() * 10.0, 5.),
+                        vec3(random::<f32>() * 20., random::<f32>() * 20., 0.0),
                     )
+                    // .with(
+                    //     translation(),
+                    //     vec3(random::<f32>() * 10.0, random::<f32>() * 10.0, 50.),
+                    // )
                     .with(children(), vec![model, cam])
                     .with(components::player_cam_ref(), cam)
                     .with(components::player_model_ref(), model), // .with(components::speed(), 0.0)

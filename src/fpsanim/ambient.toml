@@ -1,9 +1,5 @@
 [components]
 
-player_health = { type = "I32", attributes = ["Debuggable", "Networked"] }
-
-hit_freeze = { type = "I32", attributes = ["Debuggable", "Networked"] }
-
 hit = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
     "Debuggable",
     "Networked",
@@ -67,35 +63,3 @@ idle_bk_rt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt
     "Debuggable",
     "Networked",
 ] }
-
-speed = { type = "F32", name = "speed", description = "speed", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-
-
-movement = { type = "Vec2", name = "movement", description = "movement", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-
-
-offground = { type = "Bool", name = "jump", description = "jump", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-
-
-running = { type = "Bool", name = "speed", description = "speed", attributes = [
-    "Debuggable",
-    "Networked",
-] }
-
-[messages.ray.fields]
-ray_origin = { type = "Vec3" }
-ray_dir = { type = "Vec3" }
-source = { type = "EntityId" }
-type_action = { type = "U8" }
-
-[messages.fire_sound.fields]
-source = { type = "EntityId" }

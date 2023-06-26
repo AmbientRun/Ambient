@@ -1,0 +1,9 @@
+[components]
+
+game_type = { type = "U8", description = "0: zombie mode" }
+
+[messages.shoot.fields]
+ray_origin = { type = "Vec3" }
+ray_dir = { type = "Vec3" }
+source = { type = "EntityId" }
+# type_action = { type = "U8" }

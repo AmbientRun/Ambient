@@ -1,6 +1,3 @@
-use std::f64::consts::FRAC_PI_3;
-
-#[allow(unused_imports)]
 use ambient_api::{
     animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
     components::core::{
@@ -28,6 +25,7 @@ pub fn main() {
         for (id, _) in results {
             entity::add_component(id, components::player_yaw(), 0.0);
             entity::add_component(id, components::player_pitch(), 0.0);
+            entity::add_component(id, components::player_vspeed(), 0.0);
         }
     });
     messages::Input::subscribe(|source, msg| {
@@ -57,14 +55,34 @@ pub fn main() {
             );
         }
 
-        println!("Received input: {:?}", msg);
+        if msg.shoot {
+            messages::Shoot {
+                ray_origin: msg.ray_origin,
+                ray_dir: msg.ray_dir,
+                source: player_id,
+            }
+            .send_local_broadcast(false);
+        }
     });
 
-    query((player(), components::player_direction(), rotation())).each_frame(move |list| {
-        for (player_id, (_, direction, rot)) in list {
-            let speed = 0.1;
-            let displace = rot * (direction.normalize_or_zero() * speed).extend(-0.1);
-            physics::move_character(player_id, displace, 0.01, frametime());
+    query((
+        player(),
+        components::player_direction(),
+        rotation(),
+        components::player_vspeed(),
+    ))
+    .each_frame(move |list| {
+        for (player_id, (_, direction, rot, vspeed)) in list {
+            // let speed = vec2(0.04, 0.06);
+            let displace = rot * (direction.normalize_or_zero() * 0.1).extend(-0.1);
+            let collision = physics::move_character(player_id, displace, 0.01, frametime());
+            // if collision.down {
+            //     entity::set_component(player_id, components::player_vspeed(), 0.0);
+            // } else {
+            //     entity::mutate_component(player_id, components::player_vspeed(), |vspeed| {
+            //         *vspeed -= 9.8 * frametime(); // 1/60 second for example
+            //     });
+            // }
         }
     });
 }

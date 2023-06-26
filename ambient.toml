@@ -4,46 +4,9 @@ name = "afpsmod"
 version = "0.0.1"
 
 includes = [
-    "src/fps/ambient.toml",
-    "src/zombie/ambient.toml",
+    # "src/zombie/ambient.toml",
     "src/fpsmodel/ambient.toml",
-    "src/fpsmovement/ambient.toml",
+    # "src/fpsmovement/ambient.toml",
+    # "src/fpsrule/ambient.toml",
+    # "src/fpsanim/ambient.toml",
 ]
-
-[components]
-
-# model_ref = { type = "EntityId", name = "Model ref", description = "The model.", attributes = [
-#     "Debuggable",
-#     "Networked",
-# ] }
-
-# name_ui_toggle = { type = "Bool", attributs = ["Networked", "Debuggable"] }
-
-# player_head_ref = { type = "EntityId", name = "Player head ref", description = "The player's head.", attributes = [
-#     "Debuggable",
-#     "Networked",
-# ] }
-# player_movement_direction = { type = "Vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
-#     "Debuggable",
-#     "Networked",
-# ] }
-# player_yaw = { type = "F32", name = "Player yaw", description = "The player's yaw.", attributes = [
-#     "Debuggable",
-# ] }
-# player_pitch = { type = "F32", name = "Player pitch", description = "The player's pitch.", attributes = [
-#     "Debuggable",
-# ] }
-
-# cam_ref = { type = "EntityId", name = "Camera ref", description = "The camera.", attributes = [
-#     "Debuggable",
-#     "Networked",
-# ] }
-
-
-# [messages.zombie_walk.fields]
-# # cam = { type = "EntityId" }
-# id = { type = "EntityId" }
-
-# [messages.gunfire.fields]
-# # cam = { type = "EntityId" }
-# id = { type = "EntityId" }

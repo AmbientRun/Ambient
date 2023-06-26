@@ -1,5 +1,5 @@
 [components]
-player_direction = { type = "Vec2" }
+player_direction = { type = "Vec2", attributes = ["Debuggable"] }
 
 player_yaw = { type = "F32", name = "Player yaw", description = "The player's yaw.", attributes = [
     "Debuggable",
@@ -9,11 +9,16 @@ player_pitch = { type = "F32", name = "Player pitch", description = "The player'
     "Debuggable",
 ] }
 
+player_vspeed = { type = "F32", name = "Player vertical speed", description = "The player's vertical speed.", attributes = [
+    "Debuggable",
+] }
 
 [messages.input.fields]
 direction = { type = "Vec2", description = "wasd state for movement direction; strafe;" }
 mouse_delta = { type = "Vec2", description = "The mouse delta used for pitch and yaw" }
 shoot = { type = "Bool" }
+ray_origin = { type = "Vec3", description = "The origin of the ray cast from the camera" }
+ray_dir = { type = "Vec3", description = "The direction of the ray cast from the camera" }
 walk = { type = "Bool", description = "shift to walk slow and quiet" }
 jump = { type = "Bool" }
 duck = { type = "Bool" }
