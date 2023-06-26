@@ -119,9 +119,10 @@ pub async fn start(
     if let Ok(Some(project_path_fs)) = project_path.to_file_path() {
         let key = format!("http://{public_host}:{http_interface_port}/content/");
         ServerBaseUrlKey.insert(&assets, AbsAssetUrl::from_str(&key).unwrap());
-        start_http_interface(runtime, &project_path_fs, http_interface_port);
+        start_http_interface(runtime, Some(&project_path_fs), http_interface_port);
     } else {
         ServerBaseUrlKey.insert(&assets, project_path.push("build/").unwrap());
+        start_http_interface(runtime, None, http_interface_port);
     }
 
     ComponentRegistry::get_mut()
@@ -289,21 +290,24 @@ pub const HTTP_INTERFACE_PORT: u16 = 8999;
 pub const QUIC_INTERFACE_PORT: u16 = 9000;
 fn start_http_interface(
     runtime: &tokio::runtime::Handle,
-    project_path: &Path,
+    project_path: Option<&Path>,
     http_interface_port: u16,
 ) {
-    let router = Router::new()
-        .route("/ping", get(|| async move { "ok" }))
-        .nest_service(
+    let mut router = Router::new().route("/ping", get(|| async move { "ok" }));
+
+    if let Some(project_path) = project_path {
+        router = router.nest_service(
             "/content",
             get_service(ServeDir::new(project_path.join("build"))).handle_error(handle_error),
-        )
-        .layer(
-            CorsLayer::new()
-                .allow_origin(tower_http::cors::Any)
-                .allow_methods(vec![Method::GET])
-                .allow_headers(tower_http::cors::Any),
         );
+    };
+
+    router = router.layer(
+        CorsLayer::new()
+            .allow_origin(tower_http::cors::Any)
+            .allow_methods(vec![Method::GET])
+            .allow_headers(tower_http::cors::Any),
+    );
 
     let serve = |addr| async move {
         axum::Server::try_bind(&addr)?
