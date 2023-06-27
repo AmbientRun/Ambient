@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "ambient_example_scroll"
 name = "Scroll"
 version = "0.0.1"

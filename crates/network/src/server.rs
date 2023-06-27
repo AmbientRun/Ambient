@@ -150,7 +150,11 @@ impl WorldInstance {
     }
     pub fn step(&mut self, time: Duration) {
         self.world
-            .set(self.world.resource_entity(), ambient_core::abs_time(), time)
+            .set(
+                self.world.resource_entity(),
+                ambient_core::absolute_time(),
+                time,
+            )
             .unwrap();
         self.systems.run(&mut self.world, &FrameEvent);
         self.world.next_frame();

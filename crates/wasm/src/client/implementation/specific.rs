@@ -217,7 +217,13 @@ impl wit::client_audio::Host for Bindings {
                     Ok(track) => {
                         let sender = world.resource(audio_sender());
                         sender
-                            .send(AudioMessage::Track(track, looping, volume, url, uid))
+                            .send(AudioMessage::Track {
+                                track,
+                                looping,
+                                volume,
+                                url,
+                                uid,
+                            })
                             .unwrap();
                     }
                     Err(e) => log::error!("{e:?}"),

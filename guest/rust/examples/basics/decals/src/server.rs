@@ -3,7 +3,7 @@ use ambient_api::{
         app::main_scene,
         camera::aspect_ratio_from_window,
         primitives::{cube, quad},
-        rendering::{color, transparency_group},
+        rendering::{color, decal_from_url, transparency_group},
         transform::{lookat_target, rotation, scale, translation},
     },
     concepts::make_perspective_infinite_reverse_camera,

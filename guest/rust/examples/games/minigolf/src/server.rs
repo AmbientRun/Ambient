@@ -385,7 +385,7 @@ pub fn main() {
                 let lv = entity::get_component(player_ball, linear_velocity()).unwrap_or_default();
                 let lvl = lv.length();
                 if lvl > 0.0 && !is_vertically_moving(lv) {
-                    -65.0 * frametime() * lv.xy().extend(0.0) * (1.0 / lvl)
+                    -65.0 * delta_time() * lv.xy().extend(0.0) * (1.0 / lvl)
                 } else {
                     Vec3::ZERO
                 }

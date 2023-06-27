@@ -275,9 +275,9 @@ impl PxSceneRef {
     pub fn set_visualization_parameter(&self, param: PxVisualizationParameter, value: f32) -> bool {
         unsafe { physx_sys::PxScene_setVisualizationParameter_mut(self.0, param.bits, value) }
     }
-    pub fn simulate(&self, dtime: f32) {
+    pub fn simulate(&self, delta_time: f32) {
         unsafe {
-            physx_sys::PxScene_simulate_mut(self.0, dtime, null_mut(), null_mut(), 0, true);
+            physx_sys::PxScene_simulate_mut(self.0, delta_time, null_mut(), null_mut(), 0, true);
         }
     }
     pub fn fetch_results(&self, block: bool) -> bool {

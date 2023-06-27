@@ -8,10 +8,7 @@ use crate::{
         app::{name, ref_count},
         ecs::{children, parent},
     },
-    entity::{
-        add_component, despawn, get_component, mutate_component, remove_component, set_component,
-        wait_for_component,
-    },
+    entity,
     prelude::{time, Entity, EntityId},
 };
 
@@ -28,11 +25,11 @@ impl AnimationPlayer {
             .with(children(), vec![root.0])
             .with(name(), "Animation player".to_string())
             .spawn();
-        add_component(root.0, parent(), player);
+        entity::add_component(root.0, parent(), player);
         Self(player)
     }
     fn root(&self) -> Option<EntityId> {
-        if let Some(children) = get_component(self.0, children()) {
+        if let Some(children) = entity::get_component(self.0, children()) {
             children.get(0).copied()
         } else {
             None
@@ -40,21 +37,21 @@ impl AnimationPlayer {
     }
     fn free_root(&self) {
         if let Some(root) = self.root() {
-            remove_component(root, parent());
+            entity::remove_component(root, parent());
         }
     }
     /// Replaces the current root node of the animation player with a new node
     pub fn play(&self, node: impl AsRef<AnimationNode>) {
         self.free_root();
         let new_root: &AnimationNode = node.as_ref();
-        add_component(self.0, children(), vec![new_root.0]);
-        add_component(new_root.0, parent(), self.0);
+        entity::add_component(self.0, children(), vec![new_root.0]);
+        entity::add_component(new_root.0, parent(), self.0);
     }
     /// Despawn this animation player.
     /// Note that dropping this player won't despawn it automatically; only call this method will despawn it.
     pub fn despawn(self) {
         self.free_root();
-        despawn(self.0);
+        entity::despawn(self.0);
     }
 }
 
@@ -63,13 +60,13 @@ impl AnimationPlayer {
 pub struct AnimationNode(pub EntityId);
 impl Clone for AnimationNode {
     fn clone(&self) -> Self {
-        mutate_component(self.0, ref_count(), |x| *x += 1);
+        entity::mutate_component(self.0, ref_count(), |x| *x += 1);
         Self(self.0)
     }
 }
 impl Drop for AnimationNode {
     fn drop(&mut self) {
-        mutate_component(self.0, ref_count(), |x| *x -= 1);
+        entity::mutate_component(self.0, ref_count(), |x| *x -= 1);
     }
 }
 
@@ -92,32 +89,32 @@ impl PlayClipFromUrlNode {
     }
     /// Set if the animation should loop or not
     pub fn looping(&self, value: bool) {
-        add_component(self.0 .0, looping(), value);
+        entity::add_component(self.0 .0, looping(), value);
     }
     /// Freeze the animation at time
     pub fn freeze_at_time(&self, time: f32) {
-        add_component(self.0 .0, freeze_at_time(), time);
+        entity::add_component(self.0 .0, freeze_at_time(), time);
     }
     /// Freeze the animation at time = percentage * duration
     pub fn freeze_at_percentage(&self, percentage: f32) {
-        add_component(self.0 .0, freeze_at_percentage(), percentage);
+        entity::add_component(self.0 .0, freeze_at_percentage(), percentage);
     }
     /// Set up retargeting
     pub fn set_retargeting(&self, retargeting: AnimationRetargeting) {
         match retargeting {
             AnimationRetargeting::None => {
-                remove_component(self.0 .0, retarget_model_from_url());
+                entity::remove_component(self.0 .0, retarget_model_from_url());
             }
             AnimationRetargeting::Skeleton { model_url } => {
-                remove_component(self.0 .0, retarget_animation_scaled());
-                add_component(self.0 .0, retarget_model_from_url(), model_url);
+                entity::remove_component(self.0 .0, retarget_animation_scaled());
+                entity::add_component(self.0 .0, retarget_model_from_url(), model_url);
             }
             AnimationRetargeting::AnimationScaled {
                 normalize_hip,
                 model_url,
             } => {
-                add_component(self.0 .0, retarget_animation_scaled(), normalize_hip);
-                add_component(self.0 .0, retarget_model_from_url(), model_url);
+                entity::add_component(self.0 .0, retarget_animation_scaled(), normalize_hip);
+                entity::add_component(self.0 .0, retarget_model_from_url(), model_url);
             }
         }
     }
@@ -133,28 +130,28 @@ impl PlayClipFromUrlNode {
     /// I.e. this is mostly relevant for retargeting
     pub fn apply_base_pose(&self, value: bool) {
         if value {
-            add_component(self.0 .0, apply_base_pose(), ());
+            entity::add_component(self.0 .0, apply_base_pose(), ());
         } else {
-            remove_component(self.0 .0, apply_base_pose());
+            entity::remove_component(self.0 .0, apply_base_pose());
         }
     }
     /// Returns None if the duration hasn't been loaded yet
     pub fn peek_clip_duration(&self) -> Option<f32> {
-        get_component(self.0 .0, clip_duration())
+        entity::get_component(self.0 .0, clip_duration())
     }
     /// Returns the duration of this clip. This is async because it needs to wait for the clip to load before the duration can be returned.
     pub async fn clip_duration(&self) -> f32 {
-        wait_for_component(self.0 .0, clip_duration())
+        entity::wait_for_component(self.0 .0, clip_duration())
             .await
             .unwrap_or_default()
     }
     /// Returns None if the clip hasn't been loaded yet
     pub fn peek_bind_ids(&self) -> Option<Vec<String>> {
-        get_component(self.0 .0, bind_ids())
+        entity::get_component(self.0 .0, bind_ids())
     }
     /// Returns the bind ids of this clip. This is async because it needs to wait for the clip to load before the bind ids can be returned.
     pub async fn bind_ids(&self) -> Vec<String> {
-        wait_for_component(self.0 .0, bind_ids())
+        entity::wait_for_component(self.0 .0, bind_ids())
             .await
             .unwrap_or_default()
     }
@@ -193,8 +190,8 @@ impl BlendNode {
             .with(children(), vec![left.0, right.0])
             .with(ref_count(), 1)
             .spawn();
-        add_component(left.0, parent(), node);
-        add_component(right.0, parent(), node);
+        entity::add_component(left.0, parent(), node);
+        entity::add_component(right.0, parent(), node);
         Self(AnimationNode(node))
     }
     /// Set the weight of this blend node.
@@ -203,7 +200,7 @@ impl BlendNode {
     /// If the weight is 1, only the right animation will play.
     /// Values in between blend between the two animations.
     pub fn set_weight(&self, weight: f32) {
-        set_component(self.0 .0, blend(), weight);
+        entity::set_component(self.0 .0, blend(), weight);
     }
     /// Sets the mask of this blend node.
     ///
@@ -214,8 +211,8 @@ impl BlendNode {
             .into_iter()
             .map(|(a, b)| (a.as_str().to_string(), b))
             .unzip();
-        add_component(self.0 .0, mask_bind_ids(), bind_ids);
-        add_component(self.0 .0, mask_weights(), weights);
+        entity::add_component(self.0 .0, mask_bind_ids(), bind_ids);
+        entity::add_component(self.0 .0, mask_weights(), weights);
     }
     /// Sets a mask value to all bones of a humanoids lower body
     pub fn set_mask_humanoid_lower_body(&self, weight: f32) {
@@ -270,12 +267,13 @@ impl Default for AnimationRetargeting {
 
 /// Get the bone entity from the bind_id; for example "LeftFoot"
 pub fn get_bone_by_bind_id(entity: EntityId, bind_id: &BindId) -> Option<EntityId> {
-    if let Some(bid) = get_component(entity, crate::components::core::animation::bind_id()) {
+    if let Some(bid) = entity::get_component(entity, crate::components::core::animation::bind_id())
+    {
         if bid == bind_id.as_str() {
             return Some(entity);
         }
     }
-    if let Some(childs) = get_component(entity, children()) {
+    if let Some(childs) = entity::get_component(entity, children()) {
         for c in childs {
             if let Some(bid) = get_bone_by_bind_id(c, bind_id) {
                 return Some(bid);

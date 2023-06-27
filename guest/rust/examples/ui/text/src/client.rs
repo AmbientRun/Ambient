@@ -1,4 +1,7 @@
-use ambient_api::prelude::*;
+use ambient_api::{
+    components::core::{layout::space_between_items, rendering::color, text::font_size},
+    prelude::*,
+};
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {

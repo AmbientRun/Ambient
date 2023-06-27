@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
 use ambient_audio::{
-    hrtf::HrtfLib, track::TrackDecodeStream, Attenuation, AudioEmitter, AudioListener, AudioMixer,
-    Sound, SoundId, Source, Spatial,
+    hrtf::HrtfLib,
+    track::{Track, TrackDecodeStream},
+    Attenuation, AudioEmitter, AudioListener, AudioMixer, Sound, SoundId, Source, Spatial,
 };
 use ambient_ecs::{components, query, EntityId, Resource, World};
 use ambient_element::ElementComponentExt;
@@ -16,7 +17,6 @@ use derive_more::{Deref, DerefMut, From, Into};
 use glam::{vec2, vec4};
 use itertools::Itertools;
 use parking_lot::Mutex;
-use parking_lot::RawMutex;
 
 use serde::{Deserialize, Serialize};
 
@@ -31,21 +31,16 @@ components!("audio", {
     audio_mixer: AudioMixer,
 });
 
+#[allow(clippy::large_enum_variant)]
 pub enum AudioMessage {
-    Track(
-        Arc<ambient_audio::track::Track>,
-        bool,
-        f32,
-        AbsAssetUrl,
-        u32,
-    ),
-    Spatial(
-        Spatial<
-            TrackDecodeStream,
-            Arc<parking_lot::lock_api::Mutex<RawMutex, AudioListener>>,
-            Arc<parking_lot::lock_api::Mutex<RawMutex, AudioEmitter>>,
-        >,
-    ),
+    Track {
+        track: Arc<Track>,
+        looping: bool,
+        volume: f32,
+        url: AbsAssetUrl,
+        uid: u32,
+    },
+    Spatial(Spatial<TrackDecodeStream, Arc<Mutex<AudioListener>>, Arc<Mutex<AudioEmitter>>>),
     UpdateVolume(AbsAssetUrl, f32),
     Stop(AbsAssetUrl),
     StopById(u32),
@@ -54,7 +49,7 @@ pub enum AudioMessage {
 pub struct SoundInfo {
     pub url: AbsAssetUrl,
     pub looping: bool,
-    pub gain: Arc<Mutex<f32>>,
+    pub volume: Arc<Mutex<f32>>,
     pub id: SoundId,
 }
 

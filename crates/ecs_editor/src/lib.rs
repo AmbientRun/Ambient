@@ -80,11 +80,7 @@ impl InspectableWorld for InspectableAsyncWorld {
                         return true;
                     }
                     if let Some(name) = &inspect.name {
-                        if name.contains(&filter) {
-                            true
-                        } else {
-                            false
-                        }
+                        name.contains(&filter)
                     } else {
                         false
                     }
@@ -112,11 +108,7 @@ impl InspectableWorld for InspectableAsyncWorld {
                         if filter.is_empty() {
                             return true;
                         }
-                        if inspect.name.contains(&filter) {
-                            true
-                        } else {
-                            false
-                        }
+                        inspect.name.contains(&filter)
                     })
                     .collect_vec()
             } else {
@@ -262,8 +254,8 @@ fn EntityBlock(
             EntityList {
                 world,
                 parent: Some(entity.id),
-                filter_entities: filter_entities.clone(),
-                filter_components: filter_components.clone(),
+                filter_entities,
+                filter_components,
             }
             .el()
             .with(margin(), Borders::left(STREET).into())
@@ -287,7 +279,7 @@ fn EntityComponents(
         filter_components.clone(),
         {
             let world = world.clone();
-            let filter_components = filter_components.clone();
+            let filter_components = filter_components;
             move |_| {
                 world.get_components(entity, set_components.clone(), filter_components.clone());
             }

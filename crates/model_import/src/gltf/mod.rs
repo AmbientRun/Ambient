@@ -50,7 +50,7 @@ pub async fn import(
     asset_crate: &mut ModelCrate,
 ) -> anyhow::Result<RelativePathBuf> {
     let name_ = |name: Option<&str>| {
-        name.map(|x| format!("{}_", x.replace("/", "-").replace("\\", "-")))
+        name.map(|x| format!("{}_", x.replace(['/', '\\'], "-")))
             .unwrap_or_default()
     };
     let mut bind_ids = BindIdReg::<usize, gltf::scene::Node<'_>>::new(BindIdNodeFuncs {

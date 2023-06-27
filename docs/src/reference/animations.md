@@ -7,7 +7,7 @@ See the [skinmesh example](https://github.com/AmbientRun/Ambient/tree/main/guest
 To work with animations, you'll need some animation clips to work with. A good way to get started is
 by going to [Mixamo](https://www.mixamo.com/#/) and download some characters and animations there.
 
-Put your models and animations in your `assets` folder in your project, and make sure you have a `pipeline.json`
+Put your models and animations in your `assets` folder in your ember, and make sure you have a `pipeline.json`
 which can process models and animations, for instance something like this:
 
 ```toml
@@ -20,7 +20,7 @@ type = "Models"
 By running `ambient build` you build the assets. You can browse the `build/assets` folder to see what
 the build command produced.
 
-If we look at the [skinmesh example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/skinmesh), you can see that we have an animation called `assets/Capoeira.fbx`. If you build this project,
+If we look at the [skinmesh example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/skinmesh), you can see that we have an animation called `assets/Capoeira.fbx`. If you build this ember,
 you'll see that it produces a file called `build/assets/Capoeira.fbx/animations/mixamo.com.anim`. If you
 remove the `build/` part of that, you will have the animation clip url; i.e. `assets/Capoeira.fbx/animations/mixamo.com.anim`.
 

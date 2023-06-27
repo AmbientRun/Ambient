@@ -1,4 +1,4 @@
-use ambient_api::prelude::*;
+use ambient_api::{components::core::layout::space_between_items, prelude::*};
 
 #[derive(Debug, Clone, Default, ElementEditor)]
 pub struct MyStruct {

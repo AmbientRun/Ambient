@@ -41,29 +41,37 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                     let sound = stream.mixer().play(source);
                     sound.wait();
                 }
-                AudioMessage::Track(t, looping, amp, url, uid) => {
-                    let gain = Arc::new(Mutex::new(amp));
-                    let gain_clone = gain.clone();
+                AudioMessage::Track {
+                    track,
+                    looping,
+                    volume,
+                    url,
+                    uid,
+                } => {
+                    let volume = Arc::new(Mutex::new(volume));
+                    let volume_clone = volume.clone();
 
                     let sound = match looping {
-                        true => stream.mixer().play(t.decode().repeat().gain(gain_clone)),
-                        false => stream.mixer().play(t.decode().gain(gain_clone)),
+                        true => stream
+                            .mixer()
+                            .play(track.decode().repeat().gain(volume_clone)),
+                        false => stream.mixer().play(track.decode().gain(volume_clone)),
                     };
                     sound.wait();
                     let sound_info = SoundInfo {
                         url,
                         looping,
-                        gain,
+                        volume,
                         id: sound.id,
                     };
                     sound_info_lib.insert(uid, sound_info);
                 }
                 AudioMessage::UpdateVolume(target_url, amp) => {
-                    for (_, info) in sound_info_lib.iter_mut() {
-                        if info.url == target_url {
-                            let mut gain_locked = info.gain.lock();
-                            *gain_locked = amp;
-                        }
+                    for (_, info) in sound_info_lib
+                        .iter_mut()
+                        .filter(|(_, info)| info.url == target_url)
+                    {
+                        *info.volume.lock() = amp;
                     }
                     // log::info!("Updated volume for all sounds with url {} to {}", target_url, amp);
                 }

@@ -91,7 +91,7 @@ pub fn main() {
             let speed = 0.1;
 
             let displace = rot * (direction.normalize_or_zero() * speed).extend(-0.1);
-            physics::move_character(player_id, displace, 0.01, frametime());
+            physics::move_character(player_id, displace, 0.01, delta_time());
         }
     });
 }

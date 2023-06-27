@@ -365,17 +365,13 @@ fn test_abs_asset_url() {
         None
     );
     assert_eq!(
-        AbsAssetUrl::from_str("http://t.c/a/b")
-            .unwrap()
-            .file_stem()
-            .as_deref(),
+        AbsAssetUrl::from_str("http://t.c/a/b").unwrap().file_stem(),
         Some("b")
     );
     assert_eq!(
         AbsAssetUrl::from_str("http://t.c/a/b/c.png")
             .unwrap()
-            .file_stem()
-            .as_deref(),
+            .file_stem(),
         Some("c")
     );
 }
@@ -451,7 +447,7 @@ impl FromStr for AssetUrl {
     type Err = url::ParseError;
 
     fn from_str(url_or_relative_path: &str) -> Result<Self, Self::Err> {
-        match Url::parse(url_or_relative_path.as_ref()) {
+        match Url::parse(url_or_relative_path) {
             Ok(url) => Ok(Self::Absolute(AbsAssetUrl(url))),
             Err(url::ParseError::RelativeUrlWithoutBase) => {
                 Ok(Self::Relative(url_or_relative_path.into()))
@@ -604,10 +600,7 @@ impl<T: GetAssetType> FromStr for TypedAssetUrl<T> {
     type Err = url::ParseError;
 
     fn from_str(url_or_relative_path: &str) -> Result<Self, Self::Err> {
-        Ok(Self(
-            AssetUrl::from_str(&url_or_relative_path)?,
-            PhantomData,
-        ))
+        Ok(Self(AssetUrl::from_str(url_or_relative_path)?, PhantomData))
     }
 }
 
