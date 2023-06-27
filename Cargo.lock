@@ -987,9 +987,6 @@ dependencies = [
  "futures",
  "git-version",
  "glam 0.24.0",
- "h3",
- "h3-quinn",
- "h3-webtransport",
  "http",
  "itertools",
  "js-sys",
@@ -1003,6 +1000,7 @@ dependencies = [
  "rustls 0.21.1",
  "rustls-native-certs",
  "scopeguard",
+ "sec-http3",
  "serde",
  "thiserror",
  "tokio",
@@ -4052,48 +4050,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "h3"
-version = "0.0.2"
-source = "git+https://github.com/security-union/h3?branch=add-webtransport#db5c723f653911a476bfd8ffcfebf0f8f2eb980d"
-dependencies = [
- "bytes",
- "fastrand",
- "futures-util",
- "http",
- "pin-project-lite",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "h3-quinn"
-version = "0.0.2"
-source = "git+https://github.com/security-union/h3?branch=add-webtransport#db5c723f653911a476bfd8ffcfebf0f8f2eb980d"
-dependencies = [
- "bytes",
- "futures",
- "h3",
- "quinn",
- "quinn-proto",
- "tokio",
- "tokio-util",
-]
-
-[[package]]
-name = "h3-webtransport"
-version = "0.1.0"
-source = "git+https://github.com/security-union/h3?branch=add-webtransport#db5c723f653911a476bfd8ffcfebf0f8f2eb980d"
-dependencies = [
- "bytes",
- "futures-util",
- "h3",
- "http",
- "pin-project-lite",
- "tokio",
- "tracing",
-]
-
-[[package]]
 name = "half"
 version = "2.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6599,6 +6555,24 @@ dependencies = [
  "memmap2",
  "smithay-client-toolkit",
  "tiny-skia",
+]
+
+[[package]]
+name = "sec-http3"
+version = "0.1.1"
+source = "git+https://github.com/security-union/sec-http3#f16ac6c38acc596c2edba5118a02a35d1ce0807f"
+dependencies = [
+ "bytes",
+ "fastrand",
+ "futures",
+ "futures-util",
+ "http",
+ "pin-project-lite",
+ "quinn",
+ "quinn-proto",
+ "tokio",
+ "tokio-util",
+ "tracing",
 ]
 
 [[package]]

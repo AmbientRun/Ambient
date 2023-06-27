@@ -65,9 +65,7 @@ async-trait = { workspace = true }
 
 quinn = { workspace = true }
 rustls = { workspace = true }
-h3 = { workspace = true }
-h3-quinn = { workspace = true }
-h3-webtransport = { workspace = true }
+sec-http3 = { workspace = true }
 http = { workspace = true }
 ambient_proxy = { version = "0.3.3", git = "https://github.com/AmbientRun/AmbientProxy" }
 

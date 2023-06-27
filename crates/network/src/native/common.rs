@@ -1,12 +1,11 @@
 use bytes::{BufMut, Bytes, BytesMut};
 use futures::future::BoxFuture;
-use h3::quic::BidiStream;
-use h3_webtransport::server::WebTransportSession;
+use sec_http3::webtransport::server::WebTransportSession;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 use crate::{client::ClientConnection, NetworkError, MAX_FRAME_SIZE};
 
-impl ClientConnection for WebTransportSession<h3_quinn::Connection, Bytes> {
+impl ClientConnection for WebTransportSession<sec_http3_quinn::Connection, Bytes> {
     fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>> {
         Box::pin(async move {
             let (mut send, recv) = self.open_bi(self.session_id()).await?.split();
