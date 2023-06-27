@@ -1,5 +1,5 @@
 use ambient_api::{
-    animation::{get_bone_by_bind_id, AnimationPlayer, BindId, BlendNode, PlayClipFromUrlNode},
+    animation::{self, AnimationPlayer, BindId, BlendNode, PlayClipFromUrlNode},
     components::core::{
         animation::apply_animation_player,
         app::{main_scene, name},
@@ -57,7 +57,7 @@ pub async fn main() {
     entity::wait_for_component(unit_id, model_loaded()).await;
 
     // This demonstrates how to attach an entity to a bone
-    let left_foot = get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
+    let left_foot = animation::get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
     let ball = Entity::new()
         .with_merge(make_transformable())
         .with_merge(make_sphere())

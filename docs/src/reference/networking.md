@@ -38,17 +38,17 @@ Communication between the proxy and players uses the same protocol as with a dir
 
 ## Certificates
 
-By default, _ambient_ bundles a self-signed certificate that is used by the server and trusted by the client.
+By default, Ambient bundles a self-signed certificate that is used by the server and trusted by the client.
 
-To use your own certificate specify `--cert`, `--key`, for the server, and `--ca` for the client if the certificate authority which signed the certificate is not in the system roots. If specified, the bundled certificates will _not_ be used as a fallback.
+To use your own certificate:
 
-```sh
-ambient serve --cert ./localhost.crt --key ./localhost.key
+- specify `--cert` and `--key` for the server:
+  ```sh
+  ambient serve --cert ./localhost.crt --key ./localhost.key
+  ```
+- specify `--ca` for the client if the certificate authority that signed the certificate is not present within the client's system roots
+  ```sh
+  ambient join 127.0.0.1:9000
+  ```
 
-```
-
-```sh
-ambient join 127.0.0.1:9000
-```
-
-**Note**: `--ca path_to_ca` must be specified if the used certificate is not in the system roots
+If a custom certificate is specified, the bundled certificates will _not_ be used as a fallback.

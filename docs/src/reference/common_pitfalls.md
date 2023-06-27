@@ -40,5 +40,6 @@ Delete the `build` folder and try again - this should force them to be regenerat
 
 This can happen if your anti-virus or firewall is blocking the connection to the Ambient runtime.
 Try deactivating it, then run the Ambient ember again with 'ambient run'.
+
 If this fixes it, you'll need to add an exception to your anti-virus/firewall to allow Ambient to connect.
 We do not recommend leaving your anti-virus/firewall disabled.

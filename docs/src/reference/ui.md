@@ -5,7 +5,7 @@ Take a look at the [React documentation](https://react.dev/reference/react) to l
 
 ## Getting started
 
-Here's a complete minimal example of a counter app:
+Here's a complete example of a minimal counter app:
 
 ```rust
 use ambient_api::prelude::*;
