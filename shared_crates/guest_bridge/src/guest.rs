@@ -8,6 +8,22 @@ pub fn run_async(_world: &ecs::World, future: impl Future<Output = ()> + Send + 
         api::prelude::OkEmpty
     });
 }
+
+/// Execute a future to completion on a worker thread.
+///
+/// This permits spawning thread local futures
+pub fn run_async_local<F>(_world: &ecs::World, create: impl 'static + Send + FnOnce() -> F)
+where
+    F: 'static + Future,
+    F::Output: Send + 'static,
+{
+    api::prelude::run_async(async {
+        let future = create();
+        future.await;
+        api::prelude::OkEmpty
+    });
+}
+
 pub async fn sleep(seconds: f32) {
     api::prelude::sleep(seconds).await;
 }
@@ -115,7 +131,12 @@ pub mod window {
         #[cfg(not(feature = "client"))]
         let _ = cursor;
     }
-    pub fn get_clipboard() -> Option<String> {
+
+    pub async fn get_clipboard() -> Option<String> {
         None
+    }
+
+    pub async fn set_clipboard(text: &str) -> anyhow::Result<()> {
+        Err(anyhow::anyhow!("Clipboard is not yet supported"))
     }
 }

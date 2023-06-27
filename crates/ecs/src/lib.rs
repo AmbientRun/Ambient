@@ -2,7 +2,6 @@ use core::fmt;
 use std::{
     collections::{HashMap, HashSet},
     fmt::{Debug, Formatter},
-    fs::File,
     iter::once,
     sync::atomic::{AtomicU64, Ordering},
 };
@@ -697,9 +696,10 @@ impl World {
             }
         }
     }
+    #[cfg(not(target_os = "unknown"))]
     pub fn dump_to_tmp_file(&self) {
         std::fs::create_dir_all("tmp").ok();
-        let mut f = File::create("tmp/ecs.txt").expect("Unable to create file");
+        let mut f = std::fs::File::create("tmp/ecs.txt").expect("Unable to create file");
         self.dump(&mut f);
         log::info!("Wrote ecs to tmp/ecs.txt");
     }

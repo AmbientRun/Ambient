@@ -84,7 +84,8 @@ pub fn find_child_with_name_ending(
     })
 }
 
-pub fn dump_world_hierarchy_to_tmp_file(world: &World) {
+#[cfg(not(target_os = "unknown"))]
+fn dump_world_hierarchy_to_tmp_file(world: &World) {
     let cache_dir = world
         .resource_opt(asset_cache())
         .map(|a| AssetsCacheDir.get(a))
@@ -96,6 +97,25 @@ pub fn dump_world_hierarchy_to_tmp_file(world: &World) {
 
     tracing::info!("Wrote hierarchy to {path:?}");
 }
+
+pub fn dump_world_hierarchy_to_clipboard(world: &World) {
+    let mut s = Vec::new();
+    dump_world_hierarchy(world, &mut s);
+
+    let s = String::from_utf8_lossy(&s);
+
+    ambient_sys::clipboard::set_background(s);
+
+    tracing::info!("Wrote hierarchy to clipboard");
+}
+
+pub fn dump_world_hierarchy_to_user(world: &World) {
+    #[cfg(target_os = "unknown")]
+    dump_world_hierarchy_to_clipboard(world);
+    #[cfg(not(target_os = "unknown"))]
+    dump_world_hierarchy_to_tmp_file(world);
+}
+
 pub fn dump_world_hierarchy(world: &World, f: &mut dyn std::io::Write) {
     use yaml_rust::yaml::Yaml;
     let mut visited = HashSet::new();

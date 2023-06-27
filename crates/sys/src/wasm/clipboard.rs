@@ -31,3 +31,12 @@ pub async fn set(text: &str) -> anyhow::Result<()> {
     .map_err(|v| anyhow::anyhow!("{:?}", v))
     .map(|_| ())
 }
+
+pub fn set_background(text: impl Into<String>) {
+    let text = text.into();
+    wasm_bindgen_futures::spawn_local(async move {
+        if let Err(err) = self::set(&text).await {
+            tracing::error!("Failed to set clipboard: {:?}", err);
+        }
+    });
+}

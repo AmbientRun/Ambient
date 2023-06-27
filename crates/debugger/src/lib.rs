@@ -4,7 +4,7 @@ use ambient_core::{
     asset_cache,
     bounding::world_bounding_sphere,
     camera::shadow_cameras_from_world,
-    hierarchy::{dump_world_hierarchy, dump_world_hierarchy_to_tmp_file},
+    hierarchy::{dump_world_hierarchy, dump_world_hierarchy_to_user},
     main_scene,
     player::local_user_id,
     runtime,
@@ -51,8 +51,7 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
                 let get_state = get_state.clone();
                 move |_world| {
                     get_state(&mut |_, _, world| {
-                        dump_world_hierarchy_to_tmp_file(world);
-                        world.dump_to_tmp_file();
+                        dump_world_hierarchy_to_user(world);
                     });
                 }
             })

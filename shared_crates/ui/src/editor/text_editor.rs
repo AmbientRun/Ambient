@@ -101,7 +101,7 @@ pub fn TextEditor(
     });
     hooks.use_runtime_message::<messages::WindowKeyboardInput>({
         to_owned![intermediate_value, on_change, cursor_position];
-        move |_world, event| {
+        move |world, event| {
             if !focused {
                 return;
             }
@@ -119,13 +119,19 @@ pub fn TextEditor(
                     }
                     VirtualKeyCode::V => {
                         if command && pressed {
-                            #[cfg(not(target_os = "unknown"))]
-                            if let Some(paste) = ambient_guest_bridge::window::get_clipboard() {
-                                let mut value = intermediate_value.lock();
-                                value.insert_str(*cursor_position.lock(), &paste);
-                                *cursor_position.lock() += paste.len();
-                                on_change.0(value.clone());
-                            }
+                            let on_change = on_change.clone();
+                            let cursor_position = cursor_position.clone();
+                            let intermediate_value = intermediate_value.clone();
+                            ambient_guest_bridge::run_async_local(world, move || async move {
+                                if let Some(paste) =
+                                    ambient_guest_bridge::window::get_clipboard().await
+                                {
+                                    let mut value = intermediate_value.lock();
+                                    value.insert_str(*cursor_position.lock(), &paste);
+                                    *cursor_position.lock() += paste.len();
+                                    on_change.0(value.clone());
+                                }
+                            })
                         }
                     }
                     VirtualKeyCode::Left => {

@@ -9,7 +9,7 @@ use ambient_core::{
     camera::camera_systems,
     frame_index,
     gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
-    hierarchy::dump_world_hierarchy_to_tmp_file,
+    hierarchy::dump_world_hierarchy_to_user,
     name, refcount_system, remove_at_time_system, runtime,
     transform::TransformSystem,
     window::{
@@ -797,8 +797,10 @@ impl System<Event<'static, ()>> for ExamplesSystem {
                     },
                 ..
             } => match virtual_keycode {
-                VirtualKeyCode::F1 => dump_world_hierarchy_to_tmp_file(world),
+                VirtualKeyCode::F1 => dump_world_hierarchy_to_user(world),
+                #[cfg(not(target_os = "unknown"))]
                 VirtualKeyCode::F2 => world.dump_to_tmp_file(),
+                #[cfg(not(target_os = "unknown"))]
                 VirtualKeyCode::F3 => world.resource(main_renderer()).lock().dump_to_tmp_file(),
                 _ => {}
             },
