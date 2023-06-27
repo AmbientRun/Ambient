@@ -136,7 +136,7 @@ pub mod window {
         None
     }
 
-    pub async fn set_clipboard(text: &str) -> anyhow::Result<()> {
+    pub async fn set_clipboard(_text: &str) -> anyhow::Result<()> {
         Err(anyhow::anyhow!("Clipboard is not yet supported"))
     }
 }
