@@ -156,7 +156,7 @@ impl PlayClipFromUrlNode {
             .unwrap_or_default()
     }
     /// Wait until the clip has been loaded
-    pub async fn wait_until_loaded(&self) {
+    pub async fn wait_for_load(&self) {
         self.clip_duration().await;
     }
 }
