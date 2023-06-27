@@ -29,14 +29,21 @@ pub fn main() {
         player(),
         components::player_direction(),
         components::player_shooting_status(),
-        components::hit_freeze(),
+        // components::hit_freeze(),
     ))
     .each_frame(|results| {
-        for (player_id, (_, dir, is_shooting, freeze)) in results {
-            if freeze > 0 {
-                entity::set_component(player_id, components::hit_freeze(), freeze - 1);
-                continue;
-            }
+        for (player_id, (_, dir, is_shooting)) in results {
+            // this is added later with the rules
+            // the main takeaway is that each mod is not always self contained
+            // for example, the hit_freeze is added in a mod called `rule`
+            // but for its anim, we should add it here
+            if let Some(freeze) = entity::get_component(player_id, components::hit_freeze()) {
+                if freeze > 0 {
+                    entity::set_component(player_id, components::hit_freeze(), freeze - 1);
+                    continue;
+                }
+            };
+
             if is_shooting {
                 let model =
                     entity::get_component(player_id, components::player_model_ref()).unwrap();
@@ -69,12 +76,16 @@ pub fn main() {
                 // TODO: there is a bug on multiple animations playing at the same time
                 // I cannot use this commented line
                 // there is a "hijack" bug on the animation player
+                // have to create anim for each player
                 apply_anim(player_id, components::idle_fd(), 0.0);
                 // apply_anim(player_id, components::idle_fd_lt(), 0.0);
             }
         }
     });
 
+    // this is also added later with the rule mod
+    // but for its anim, we should add it here
+    // play `hit reaction` or `death` animation
     change_query((player(), components::player_health()))
         .track_change(components::player_health())
         .bind(|v| {

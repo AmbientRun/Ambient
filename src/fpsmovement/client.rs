@@ -8,13 +8,15 @@ use ambient_api::{
 };
 
 #[main]
-
 pub fn main() {
     let mut last_shot = time();
     let mut is_shooting = false;
-
+    let mut cursor_lock = input::CursorLockGuard::new(true);
     ambient_api::messages::Frame::subscribe(move |_| {
         let (_delta, input) = input::get_delta();
+        if !cursor_lock.auto_unlock_on_escape(&input) {
+            return;
+        }
         let mouse_delta = input.mouse_delta;
         let mut direction = Vec2::ZERO;
         let mut shoot = false;

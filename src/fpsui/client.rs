@@ -41,7 +41,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
     if !ingame {
         FocusRoot::el([WindowSized(vec![
             FlowColumn::el([
-                Text::el("Enter your name blow. Press enter to start the game."),
+                Text::el("enter your name blow. press enter to start the game."),
                 TextEditor::new(name.clone(), set_name.clone())
                     .auto_focus()
                     .on_submit({
@@ -53,6 +53,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
                         }
                     })
                     .el(),
+                Text::el("hint: use Tab to show/hide the scoreboard."),
             ])
             .with(space_between_items(), STREET), // .with_default(fit_horizontal_parent())
                                                   // .with_default(fit_vertical_parent())
@@ -75,18 +76,20 @@ pub fn App(hooks: &mut Hooks) -> Element {
                 .with(background_color(), vec4(1., 1., 1., 1.)),
             {
                 if toggle {
-                    FlowColumn::el(
+                    WindowSized(vec![FlowColumn::el(
                         players
                             .iter()
-                            .map(|(id, (_, name, kill, death))| {
+                            .map(|(_id, (_, name, kill, death))| {
                                 Text::el(format!(
-                                    "player: {}; kills: {}; death: {};",
+                                    "\u{f007} {}    \u{f118} {}    \u{f119} {}",
                                     name, kill, death
                                 ))
                             })
                             .collect::<Vec<_>>(),
                     )
-                    .with(margin(), vec4(10., 10., 10., 10.))
+                    .with(space_between_items(), STREET)])
+                    .el()
+                    .with_padding_even(20.)
                 } else {
                     Element::new()
                 }

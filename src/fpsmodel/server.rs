@@ -1,22 +1,14 @@
-#[allow(unused_imports)]
 use ambient_api::{
-    animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
     components::core::{
-        animation::{apply_animation_player, blend},
         app::main_scene,
         camera::aspect_ratio_from_window,
         ecs::{children, parent},
-        physics::{
-            character_controller_height, character_controller_radius, physics_controlled,
-            plane_collider, sphere_collider,
-        },
+        physics::{character_controller_height, character_controller_radius, physics_controlled},
         player::{player, user_id},
         prefab::prefab_from_url,
-        primitives::{cube, quad},
-        rendering::color,
-        transform::{local_to_parent, rotation, scale, translation},
+        transform::{local_to_parent, rotation, translation},
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
+    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
 };
 
@@ -24,14 +16,10 @@ use ambient_api::{
 pub async fn main() {
     spawn_query((player(), user_id())).bind(move |players| {
         for (id, (_, uid)) in players {
-            println!("___player {} joined", uid);
             run_async(async move {
                 entity::wait_for_component(id, components::player_name()).await;
-                println!(
-                    "player {} joined with name {:?}",
-                    uid,
-                    entity::get_component::<String>(id, components::player_name())
-                );
+
+                // refer to the first person example in Ambient repo
                 let cam = Entity::new()
                     .with_merge(make_perspective_infinite_reverse_camera())
                     .with(aspect_ratio_from_window(), EntityId::resources())
@@ -74,10 +62,6 @@ pub async fn main() {
                             translation(),
                             vec3(random::<f32>() * 20., random::<f32>() * 20., 2.0),
                         )
-                        // .with(
-                        //     translation(),
-                        //     vec3(random::<f32>() * 10.0, random::<f32>() * 10.0, 50.),
-                        // )
                         .with(children(), vec![model, cam])
                         .with(components::player_cam_ref(), cam)
                         .with(components::player_model_ref(), model),

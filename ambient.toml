@@ -10,4 +10,5 @@ includes = [
     "src/fpsrule/ambient.toml",
     "src/fpsanim/ambient.toml",
     "src/fpsui/ambient.toml",
+    "src/fpsaudio/ambient.toml",
 ]
