@@ -29,10 +29,12 @@ pub fn main() {
     spawn_query(player()).bind(|results| {
         println!("___player movement triggered___");
         for (id, ()) in results {
-            // let id = msg.id;
-            entity::add_component(id, components::player_yaw(), 0.0);
-            entity::add_component(id, components::player_pitch(), 0.0);
-            entity::add_component(id, components::player_vspeed(), 0.0);
+            run_async(async move {
+                entity::wait_for_component(id, components::player_name()).await;
+                entity::add_component(id, components::player_yaw(), 0.0);
+                entity::add_component(id, components::player_pitch(), 0.0);
+                entity::add_component(id, components::player_vspeed(), 0.0);
+            });
         }
     });
 

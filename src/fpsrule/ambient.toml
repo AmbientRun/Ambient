@@ -5,6 +5,10 @@ game_type = { type = "U8", description = "0: zombie mode", attributes = [
     "Networked",
 ] }
 
+player_killcount = { type = "I32", attributes = ["Debuggable", "Networked"] }
+
+player_deathcount = { type = "I32", attributes = ["Debuggable", "Networked"] }
+
 player_health = { type = "I32", attributes = ["Debuggable", "Networked"] }
 
 hit_freeze = { type = "I32", attributes = ["Debuggable", "Networked"] }

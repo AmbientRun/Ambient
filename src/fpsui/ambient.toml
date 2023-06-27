@@ -1,2 +1,6 @@
 [components]
-player_name = { type = "String" }
+player_name = { type = "String", attributes = ["Networked", "Debuggable"] }
+
+[messages.start_game.fields]
+id = { type = "EntityId" }
+name = { type = "String" }

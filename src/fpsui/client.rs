@@ -15,7 +15,12 @@ pub fn App(hooks: &mut Hooks) -> Element {
     let (toggle, set_toggle) = hooks.use_state(false);
     let (ingame, set_ingame) = hooks.use_state(false);
     let (name, set_name) = hooks.use_state("".to_string());
-    let players = hooks.use_query((player(), components::player_name()));
+    let players = hooks.use_query((
+        player(),
+        components::player_name(),
+        components::player_killcount(),
+        components::player_deathcount(),
+    ));
     let size_info = hooks.use_query(window_logical_size());
 
     let input = input::get();
@@ -34,26 +39,28 @@ pub fn App(hooks: &mut Hooks) -> Element {
     let center_y = size_info[0].1.y as f32 / 2.;
 
     if !ingame {
-        FocusRoot::el([FlowColumn::el([
-            Text::el("Enter your name blow. Press enter to start the game."),
-            TextEditor::new(name.clone(), set_name.clone())
-                .auto_focus()
-                .on_submit({
-                    let set_ingame = set_ingame.clone();
-                    move |v| {
-                        set_ingame(true);
-
-                        let n = Entity::new()
-                            .with(components::player_name(), v)
-                            .with(parent(), player::get_local())
-                            .spawn();
-                        entity::mutate_component(player::get_local(), children(), |children| {
-                            children.push(n);
-                        });
-                    }
-                })
-                .el(),
-        ])])
+        FocusRoot::el([WindowSized(vec![
+            FlowColumn::el([
+                Text::el("Enter your name blow. Press enter to start the game."),
+                TextEditor::new(name.clone(), set_name.clone())
+                    .auto_focus()
+                    .on_submit({
+                        let set_ingame = set_ingame.clone();
+                        move |v| {
+                            set_ingame(true);
+                            messages::StartGame::new(player::get_local(), v)
+                                .send_server_unreliable();
+                        }
+                    })
+                    .el(),
+            ])
+            .with(space_between_items(), STREET), // .with_default(fit_horizontal_parent())
+                                                  // .with_default(fit_vertical_parent())
+        ])
+        .el()
+        // .with_default(align_horizontal_center())
+        // .with_default(align_vertical_center())
+        .with_padding_even(20.)])
     } else {
         Group::el([
             Line.el()
@@ -71,7 +78,12 @@ pub fn App(hooks: &mut Hooks) -> Element {
                     FlowColumn::el(
                         players
                             .iter()
-                            .map(|(id, (_, name))| Text::el(format!("player: {}", name)))
+                            .map(|(id, (_, name, kill, death))| {
+                                Text::el(format!(
+                                    "player: {}; kills: {}; death: {};",
+                                    name, kill, death
+                                ))
+                            })
                             .collect::<Vec<_>>(),
                     )
                     .with(margin(), vec4(10., 10., 10., 10.))

@@ -4,17 +4,15 @@ use ambient_api::{
         primitives::{cube, quad},
     },
     concepts::{make_sphere, make_transformable},
-    entity::{add_components, remove_components},
+    entity::{add_components, remove_components, wait_for_component},
     prelude::*,
 };
 
 #[main]
-pub fn main() {
-    // messages::StartGame::subscribe(|_, msg| {
+pub async fn main() {
     Entity::new()
         .with_default(quad())
         .with_default(plane_collider())
         .with(scale(), Vec3::ONE * 30.)
         .spawn();
-    // });
 }

@@ -25,35 +25,35 @@ name = "fpsmodel_server"
 path = "src/fpsmodel/server.rs"
 required-features = ["server"]
 
-# [[bin]]
-# name = "fpsmovement_client"
-# path = "src/fpsmovement/client.rs"
-# required-features = ["client"]
+[[bin]]
+name = "fpsmovement_client"
+path = "src/fpsmovement/client.rs"
+required-features = ["client"]
 
-# [[bin]]
-# name = "fpsmovement_server"
-# path = "src/fpsmovement/server.rs"
-# required-features = ["server"]
+[[bin]]
+name = "fpsmovement_server"
+path = "src/fpsmovement/server.rs"
+required-features = ["server"]
 
-# [[bin]]
-# name = "fpsanim_client"
-# path = "src/fpsanim/client.rs"
-# required-features = ["client"]
+[[bin]]
+name = "fpsanim_client"
+path = "src/fpsanim/client.rs"
+required-features = ["client"]
 
-# [[bin]]
-# name = "fpsanim_server"
-# path = "src/fpsanim/server.rs"
-# required-features = ["server"]
+[[bin]]
+name = "fpsanim_server"
+path = "src/fpsanim/server.rs"
+required-features = ["server"]
 
-# [[bin]]
-# name = "fpsrule_client"
-# path = "src/fpsrule/client.rs"
-# required-features = ["client"]
+[[bin]]
+name = "fpsrule_client"
+path = "src/fpsrule/client.rs"
+required-features = ["client"]
 
-# [[bin]]
-# name = "fpsrule_server"
-# path = "src/fpsrule/server.rs"
-# required-features = ["server"]
+[[bin]]
+name = "fpsrule_server"
+path = "src/fpsrule/server.rs"
+required-features = ["server"]
 
 
 [[bin]]

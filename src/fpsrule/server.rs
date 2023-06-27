@@ -9,8 +9,13 @@ pub fn main() {
     spawn_query(player()).bind(|results| {
         println!("___player movement triggered___");
         for (id, ()) in results {
-            entity::add_component(id, components::player_health(), 100);
-            entity::add_component(id, components::hit_freeze(), 0);
+            run_async(async move {
+                entity::wait_for_component(id, components::player_name()).await;
+                entity::add_component(id, components::player_health(), 100);
+                entity::add_component(id, components::hit_freeze(), 0);
+                entity::add_component(id, components::player_killcount(), 0);
+                entity::add_component(id, components::player_deathcount(), 0);
+            });
         }
     });
 
@@ -36,6 +41,16 @@ pub fn main() {
                 if old_health > 0 && new_health <= 0 {
                     println!("player die, waiting for respawn");
                     entity::set_component(hit.entity, components::hit_freeze(), 114);
+                    entity::mutate_component(msg.source, components::player_killcount(), |count| {
+                        *count += 1;
+                    });
+                    entity::mutate_component(
+                        hit.entity,
+                        components::player_deathcount(),
+                        |count| {
+                            *count += 1;
+                        },
+                    );
                     run_async(async move {
                         sleep(114. / 60.).await;
                         entity::set_component(
