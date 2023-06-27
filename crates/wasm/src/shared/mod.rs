@@ -150,10 +150,11 @@ pub fn initialize<Bindings: bindings::BindingsBound + 'static>(
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
     bindings: fn(EntityId) -> Bindings,
 ) -> anyhow::Result<()> {
+    let async_runtime = world.resource(ambient_core::runtime()).clone();
     world.add_resource(self::messenger(), messenger);
     world.add_resource(
         self::module_state_maker(),
-        ModuleState::create_state_maker(bindings),
+        ModuleState::create_state_maker(async_runtime, bindings),
     );
     world.add_resource(message::pending_messages(), vec![]);
 
@@ -343,6 +344,7 @@ fn run_and_catch_panics<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, S
     match result {
         Ok(Ok(r)) => Ok(r),
         Ok(Err(e)) => {
+            dbg!(&e);
             let mut output = e.to_string();
             let root_cause = e.root_cause().to_string();
             if root_cause != output {

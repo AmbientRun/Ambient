@@ -157,6 +157,11 @@ impl RuntimeHandle {
     {
         JoinHandle(self.0.spawn_blocking(f))
     }
+
+    /// Runs a future to completion on the current thread using this runtime
+    pub fn block_on<F: Future>(&self, future: F) -> F::Output {
+        self.0.block_on(future)
+    }
 }
 
 pub struct PlatformBoxFuture<T>(platform::task::PlatformBoxFutureImpl<T>);

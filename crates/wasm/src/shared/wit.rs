@@ -1,5 +1,6 @@
 wasmtime::component::bindgen!({
     path: "wit",
+    async: true,
 });
 
 pub use ambient::bindings::*;

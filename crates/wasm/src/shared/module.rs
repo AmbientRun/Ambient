@@ -3,15 +3,12 @@ use crate::shared;
 use super::Source;
 #[cfg(feature = "wit")]
 use super::{bindings::BindingsBound, conversion::IntoBindgen};
+use ambient_core::runtime;
 use ambient_ecs::{EntityId, World};
 use data_encoding::BASE64;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
-use std::{any::Any, collections::HashSet, io, sync::Arc};
-use wasi_common::{
-    file::{FdFlags, FileType},
-    ErrorExt, WasiFile,
-};
+use std::{any::Any, collections::HashSet, sync::Arc};
 use wasmtime_wasi::preview2 as wasi_preview2;
 
 #[derive(Clone)]
@@ -126,6 +123,7 @@ pub struct ModuleState {
 impl ModuleState {
     #[cfg(feature = "wit")]
     fn new<Bindings: BindingsBound + 'static>(
+        async_runtime: ambient_sys::task::RuntimeHandle,
         args: ModuleStateArgs<'_>,
         bindings: fn(EntityId) -> Bindings,
     ) -> anyhow::Result<Self> {
@@ -138,6 +136,7 @@ impl ModuleState {
 
         Ok(Self {
             inner: Arc::new(RwLock::new(ModuleStateInnerImpl::new(
+                async_runtime,
                 component_bytecode,
                 stdout_output,
                 stderr_output,
@@ -148,9 +147,10 @@ impl ModuleState {
 
     #[cfg(feature = "wit")]
     pub fn create_state_maker<Bindings: BindingsBound + 'static>(
+        async_runtime: ambient_sys::task::RuntimeHandle,
         bindings: fn(EntityId) -> Bindings,
-    ) -> Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<Self> + Sync + Send> {
-        Arc::new(move |args: ModuleStateArgs<'_>| Self::new(args, bindings))
+    ) -> Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<ModuleState> + Send + Sync> {
+        Arc::new(move |args: ModuleStateArgs<'_>| Self::new(async_runtime.clone(), args, bindings))
     }
 }
 impl ModuleStateBehavior for ModuleState {
@@ -200,6 +200,7 @@ impl<Bindings: BindingsBound> std::fmt::Debug for ModuleStateInnerImpl<Bindings>
 #[cfg(feature = "wit")]
 impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
     fn new(
+        async_runtime: ambient_sys::task::RuntimeHandle,
         component_bytecode: &[u8],
         stdout_output: Box<dyn Fn(&World, &str) + Sync + Send>,
         stderr_output: Box<dyn Fn(&World, &str) + Sync + Send>,
@@ -228,13 +229,18 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
 
         let component = wasmtime::component::Component::from_binary(engine, component_bytecode)?;
 
-        let (guest_bindings, guest_instance) =
-            shared::wit::Bindings::instantiate(&mut store, &component, &linker)?;
+        let (guest_bindings, guest_instance) = async_runtime.block_on(async {
+            let (guest_bindings, guest_instance) =
+                shared::wit::Bindings::instantiate_async(&mut store, &component, &linker).await?;
 
-        // Initialise the runtime.
-        guest_bindings
-            .ambient_bindings_guest()
-            .call_init(&mut store)?;
+            // // Initialise the runtime.
+            guest_bindings
+                .ambient_bindings_guest()
+                .call_init(&mut store)
+                .await?;
+
+            anyhow::Ok((guest_bindings, guest_instance))
+        })?;
 
         Ok(Self {
             store,
@@ -258,7 +264,11 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindi
     ) -> anyhow::Result<()> {
         self.store.data_mut().bindings.set_world(world);
 
-        let result = self.guest_bindings.ambient_bindings_guest().call_exec(
+        let runtime = world.resource(runtime());
+
+        // We purposely use Tokio's runtime here to ensure that this is executed on this thread
+        let guest = &self.guest_bindings.ambient_bindings_guest();
+        let result = runtime.block_on(guest.call_exec(
             &mut self.store,
             &match message_source {
                 Source::Runtime => shared::wit::guest::Source::Runtime,
@@ -268,7 +278,7 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindi
             },
             message_name,
             message_data,
-        );
+        ));
 
         self.store.data_mut().bindings.clear_world();
 
@@ -315,48 +325,6 @@ impl WasiOutputStream {
                 buffer: String::new(),
             },
         )
-    }
-}
-
-#[async_trait::async_trait]
-impl WasiFile for WasiOutputStream {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-    async fn get_filetype(&self) -> Result<FileType, wasi_common::Error> {
-        if self.isatty() {
-            Ok(FileType::CharacterDevice)
-        } else {
-            Ok(FileType::Unknown)
-        }
-    }
-    async fn get_fdflags(&self) -> Result<FdFlags, wasi_common::Error> {
-        Ok(FdFlags::APPEND)
-    }
-    async fn write_vectored<'a>(
-        &self,
-        bufs: &[io::IoSlice<'a>],
-    ) -> Result<u64, wasi_common::Error> {
-        let mut buffer = Vec::new();
-        for buf in bufs {
-            buffer.extend_from_slice(&*buf);
-        }
-        let len = buffer.len();
-        self.0
-            .send(String::from_utf8_lossy(&buffer).into_owned())
-            .map_err(|e| wasi_common::Error::trap(e.into()))?;
-
-        Ok(len.try_into().unwrap())
-    }
-    async fn write_vectored_at<'a>(
-        &self,
-        _bufs: &[std::io::IoSlice<'a>],
-        _offset: u64,
-    ) -> Result<u64, wasi_common::Error> {
-        Err(wasi_common::Error::seek_pipe())
-    }
-    async fn seek(&self, _pos: std::io::SeekFrom) -> Result<u64, wasi_common::Error> {
-        Err(wasi_common::Error::seek_pipe())
     }
 }
 
