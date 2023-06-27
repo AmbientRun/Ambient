@@ -15,14 +15,13 @@ pub fn App(hooks: &mut Hooks) -> Element {
     let (toggle, set_toggle) = hooks.use_state(false);
     let (ingame, set_ingame) = hooks.use_state(false);
     let (name, set_name) = hooks.use_state("".to_string());
-    let players = hooks.use_query((player(), components::player_health()));
+    let players = hooks.use_query((player(), components::player_name()));
     let size_info = hooks.use_query(window_logical_size());
 
     let input = input::get();
 
     if input.keys.contains(&KeyCode::Tab) {
         set_toggle(true);
-        println!("tab pressed");
     } else {
         set_toggle(false);
     }
@@ -41,21 +40,16 @@ pub fn App(hooks: &mut Hooks) -> Element {
                 .auto_focus()
                 .on_submit({
                     let set_ingame = set_ingame.clone();
-                    let name = name.clone();
-                    move |_| {
+                    move |v| {
                         set_ingame(true);
-                        // entity::add_component(
-                        //     player::get_local(),
-                        //     components::player_name(),
-                        //     name.clone(),
-                        // );
-                        // messages::StartGame {
-                        //     name: name.clone(),
-                        //     id: player::get_local(),
-                        //     uid: player::get_local().to_string(),
-                        //     // uid: user_id::get_local(),
-                        // }
-                        // .send_server_unreliable();
+
+                        let n = Entity::new()
+                            .with(components::player_name(), v)
+                            .with(parent(), player::get_local())
+                            .spawn();
+                        entity::mutate_component(player::get_local(), children(), |children| {
+                            children.push(n);
+                        });
                     }
                 })
                 .el(),
@@ -77,9 +71,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
                     FlowColumn::el(
                         players
                             .iter()
-                            .map(|(id, (_, health))| {
-                                Text::el(format!("id: {:?}, health: {}", id, health))
-                            })
+                            .map(|(id, (_, name))| Text::el(format!("player: {}", name)))
                             .collect::<Vec<_>>(),
                     )
                     .with(margin(), vec4(10., 10., 10., 10.))

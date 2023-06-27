@@ -22,6 +22,9 @@ use ambient_api::{
 
 #[main]
 pub fn main() {
+    spawn_query(components::player_name()).bind(|r| {
+        println!("____player name____: {:?}", r);
+    });
     spawn_query((player(), user_id())).bind(move |players| {
         for (id, (_, uid)) in players {
             let cam = Entity::new()

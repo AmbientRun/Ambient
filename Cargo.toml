@@ -55,15 +55,6 @@ required-features = ["server"]
 # path = "src/fpsrule/server.rs"
 # required-features = ["server"]
 
-# [[bin]]
-# name = "zombie_server"
-# path = "src/zombie/server.rs"
-# required-features = ["server"]
-
-# [[bin]]
-# name = "zombie_client"
-# path = "src/zombie/client.rs"
-# required-features = ["client"]
 
 [[bin]]
 name = "fpsui_client"
@@ -75,11 +66,21 @@ name = "fpsui_server"
 path = "src/fpsui/server.rs"
 required-features = ["server"]
 
-
 # [[bin]]
 # name = "audiofps_client"
 # path = "src/audiofps/client.rs"
 # required-features = ["client"]
+
+# [[bin]]
+# name = "zombie_server"
+# path = "src/zombie/server.rs"
+# required-features = ["server"]
+
+# [[bin]]
+# name = "zombie_client"
+# path = "src/zombie/client.rs"
+# required-features = ["client"]
+
 
 [features]
 client = ["ambient_api/client"]

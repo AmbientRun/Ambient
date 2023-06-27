@@ -21,20 +21,21 @@ use ambient_api::{
 
 #[main]
 pub fn main() {
-    messages::StartGame::subscribe(|_, msg| {
-        let id = msg.id;
-        entity::add_component(id, components::player_yaw(), 0.0);
-        entity::add_component(id, components::player_pitch(), 0.0);
-        entity::add_component(id, components::player_vspeed(), 0.0);
-    });
-
     // spawn_query(player()).bind(|results| {
-    //     for (id, _) in results {
-    //         entity::add_component(id, components::player_yaw(), 0.0);
-    //         entity::add_component(id, components::player_pitch(), 0.0);
-    //         entity::add_component(id, components::player_vspeed(), 0.0);
+    //     for (id, ()) in results {
+
     //     }
     // });
+    spawn_query(player()).bind(|results| {
+        println!("___player movement triggered___");
+        for (id, ()) in results {
+            // let id = msg.id;
+            entity::add_component(id, components::player_yaw(), 0.0);
+            entity::add_component(id, components::player_pitch(), 0.0);
+            entity::add_component(id, components::player_vspeed(), 0.0);
+        }
+    });
+
     messages::Input::subscribe(|source, msg| {
         // receive movement and send this for further processing
         let player_id = source.client_entity_id().unwrap();

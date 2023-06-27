@@ -14,14 +14,6 @@ pub fn main() {
     spawn_query((player(), components::player_model_ref())).bind(move |results| {
         for (_, (_, model)) in results {
             run_async(async move {
-                // loop {
-                // sleep(0.1).await;
-                // let play_id = player::get_local();
-                // let model = entity::get_component(play_id, components::player_model_ref());
-                // if model.is_none() {
-                //     continue;
-                // }
-                // let model = model.unwrap();
                 wait_for_component(model, model_loaded()).await;
                 println!("___model loaded___");
                 let hand = get_bone_by_bind_id(model, &BindId::RightHand).unwrap();
@@ -44,8 +36,6 @@ pub fn main() {
                     .with_default(reset_scale())
                     .spawn();
                 add_child(hand, gun);
-                // break;
-                // }
             });
         }
     });
