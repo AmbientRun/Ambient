@@ -7,7 +7,7 @@ use ambient_core::{
     hierarchy::{dump_world_hierarchy, dump_world_hierarchy_to_user},
     main_scene,
     player::local_user_id,
-    runtime,
+    runtime, RuntimeKey,
 };
 use ambient_ecs::{query, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
@@ -17,7 +17,10 @@ use ambient_renderer::{RenderTarget, Renderer};
 use ambient_rpc::RpcRegistry;
 use ambient_shared_types::{ModifiersState, VirtualKeyCode};
 use ambient_std::{
-    asset_cache::SyncAssetKeyExt, color::Color, download_asset::AssetsCacheDir, line_hash, Cb,
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    color::Color,
+    download_asset::AssetsCacheDir,
+    line_hash, Cb,
 };
 use ambient_ui_native::{
     fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit,
@@ -38,6 +41,34 @@ pub async fn rpc_dump_world_hierarchy(args: ServerRpcArgs, _: ()) -> Option<Stri
 
 pub fn register_server_rpcs(reg: &mut RpcRegistry<ServerRpcArgs>) {
     reg.register(rpc_dump_world_hierarchy);
+}
+
+fn dump_to_user(_assets: &AssetCache, _label: &'static str, s: String) {
+    #[cfg(target_os = "unknown")]
+    {
+        ambient_sys::clipboard::set_background(s, move |res| match res {
+            Ok(()) => tracing::info!("Wrote {_label} to clipboard"),
+            Err(err) => tracing::error!("Failed to write {_label} to clipboard: {err:?}"),
+        })
+    }
+    #[cfg(not(target_os = "unknown"))]
+    {
+        let rt = RuntimeKey.get(_assets);
+        let cache_dir = AssetsCacheDir.get(_assets);
+        rt.spawn(async move {
+            let path = cache_dir.join(_label);
+
+            ambient_sys::fs::create_dir_all(cache_dir)
+                .await
+                .expect("Failed to create tmp dir");
+
+            ambient_sys::fs::write(&path, s)
+                .await
+                .expect("Failed to write to file");
+
+            tracing::info!("Dumped renderer to {:?}", path);
+        });
+    }
 }
 
 #[element_component]
@@ -62,14 +93,11 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
             Button::new("Dump Server World", {
                 let game_client = game_client;
                 move |world| {
+                    let assets = world.resource(asset_cache()).clone();
                     let game_client = game_client.clone();
-                    let cache_dir = AssetsCacheDir.get(world.resource(asset_cache()));
                     world.resource(runtime()).clone().spawn(async move {
                         if let Ok(Some(res)) = game_client.rpc(rpc_dump_world_hierarchy, ()).await {
-                            std::fs::create_dir_all(&cache_dir).ok();
-                            let path = cache_dir.join("server_hierarchy.yml");
-                            std::fs::write(&path, res).ok();
-                            log::info!("Wrote {:?}", path);
+                            dump_to_user(&assets, "server_hierarchy.yml", res);
                         }
                     });
                 }
@@ -81,13 +109,11 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
             Button::new("Dump Client Renderer", {
                 let get_state = get_state.clone();
                 move |world| {
-                    let cache_dir = AssetsCacheDir.get(world.resource(asset_cache()));
-                    std::fs::create_dir_all(&cache_dir).ok();
-                    let path = cache_dir.join("renderer.txt");
-                    std::fs::create_dir_all(cache_dir).expect("Failed to create tmp dir");
-                    let mut f = std::fs::File::create(&path).expect("Unable to create file");
-                    get_state(&mut |renderer, _, _| renderer.dump(&mut f));
-                    log::info!("Dumped renderer to {:?}", path);
+                    let assets = world.resource(asset_cache());
+                    let mut s = Vec::new();
+                    tracing::info!("Dumping renderer");
+                    get_state(&mut |renderer, _, _| renderer.dump(&mut s));
+                    dump_to_user(assets, "renderer.txt", String::from_utf8(s).unwrap());
                 }
             })
             .hotkey_modifier(ModifiersState::SHIFT)

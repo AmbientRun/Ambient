@@ -14,9 +14,7 @@ pub fn set_blocking(text: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub fn set_background(text: impl Into<String>) {
+pub fn set_background(text: impl Into<String>, cb: impl 'static + FnOnce(anyhow::Result<()>)) {
     let text = text.into();
-    if let Err(err) = self::set_blocking(&text) {
-        tracing::error!("Failed to set clipboard: {:?}", err);
-    }
+    tokio::task::block_in_place(|| cb(self::set_blocking(&text)))
 }

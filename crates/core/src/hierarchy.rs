@@ -1,7 +1,7 @@
-use std::{collections::HashSet, fs::File, path::PathBuf};
+use std::collections::HashSet;
 
 use ambient_ecs::{query, Component, ComponentValue, ECSError, EntityId, World};
-use ambient_std::{asset_cache::SyncAssetKeyExt, download_asset::AssetsCacheDir};
+use ambient_std::download_asset::AssetsCacheDir;
 use itertools::Itertools;
 use yaml_rust::YamlEmitter;
 
@@ -86,6 +86,10 @@ pub fn find_child_with_name_ending(
 
 #[cfg(not(target_os = "unknown"))]
 fn dump_world_hierarchy_to_tmp_file(world: &World) {
+    use std::{fs::File, path::PathBuf};
+
+    use ambient_std::asset_cache::SyncAssetKeyExt;
+
     let cache_dir = world
         .resource_opt(asset_cache())
         .map(|a| AssetsCacheDir.get(a))
@@ -104,9 +108,10 @@ pub fn dump_world_hierarchy_to_clipboard(world: &World) {
 
     let s = String::from_utf8_lossy(&s);
 
-    ambient_sys::clipboard::set_background(s);
-
-    tracing::info!("Wrote hierarchy to clipboard");
+    ambient_sys::clipboard::set_background(s, |res| match res {
+        Ok(()) => tracing::info!("Dumped world hierarchy to clipboard"),
+        Err(err) => tracing::error!("Failed to dump world hierarchy to clipboard: {err:?}"),
+    });
 }
 
 pub fn dump_world_hierarchy_to_user(world: &World) {

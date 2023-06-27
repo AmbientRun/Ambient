@@ -271,9 +271,10 @@ dependencies = [
  "ambient_rpc",
  "ambient_shared_types",
  "ambient_std",
+ "ambient_sys",
  "ambient_ui_native",
  "glam",
- "log",
+ "tracing",
  "wgpu",
  "winit",
 ]
