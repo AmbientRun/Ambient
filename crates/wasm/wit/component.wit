@@ -2,12 +2,12 @@
 // (i.e. `list-type` and `option-type` are not expanded), and it's only expanded in the first interface to use it.
 //
 // To work around this, we just give it its own interface and have functions that use it in the same interface.
-default interface component {
-    use pkg.types.{entity-id, mat4, quat, vec2, vec3, vec4, uvec2, uvec3, uvec4, duration}
-    use pkg.client-mesh.{handle as procedural-mesh-handle}
-    use pkg.client-texture.{handle as procedural-texture-handle}
-    use pkg.client-sampler.{handle as procedural-sampler-handle}
-    use pkg.client-material.{handle as procedural-material-handle}
+interface component {
+    use types.{entity-id, mat4, quat, vec2, vec3, vec4, uvec2, uvec3, uvec4, duration}
+    use client-mesh.{handle as procedural-mesh-handle}
+    use client-texture.{handle as procedural-texture-handle}
+    use client-sampler.{handle as procedural-sampler-handle}
+    use client-material.{handle as procedural-material-handle}
 
     variant vec-value {
         type-empty(list<tuple<>>),

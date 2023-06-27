@@ -1,7 +1,7 @@
-default interface client-material {
-    use pkg.types.{ulid}
-    use pkg.client-texture.{handle as texture-handle}
-    use pkg.client-sampler.{handle as sampler-handle}
+interface client-material {
+    use types.{ulid}
+    use client-texture.{handle as texture-handle}
+    use client-sampler.{handle as sampler-handle}
 
     record descriptor {
         base-color-map: texture-handle,

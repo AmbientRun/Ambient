@@ -7,7 +7,12 @@ use ambient_ecs::{EntityId, World};
 use data_encoding::BASE64;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
-use std::{any::Any, collections::HashSet, sync::Arc};
+use std::{any::Any, collections::HashSet, io, sync::Arc};
+use wasi_common::{
+    file::{FdFlags, FileType},
+    ErrorExt, WasiFile,
+};
+use wasmtime_wasi::preview2 as wasi_preview2;
 
 #[derive(Clone)]
 pub struct ModuleBytecode(pub Vec<u8>);
@@ -68,8 +73,26 @@ pub struct ModuleErrors(pub Vec<String>);
 
 #[cfg(feature = "wit")]
 struct WasmtimeContext<Bindings: BindingsBound> {
-    wasi: wasmtime_wasi::WasiCtx,
     bindings: Bindings,
+    wasi: wasi_preview2::WasiCtx,
+    table: wasi_preview2::Table,
+}
+impl<B: BindingsBound> wasi_preview2::WasiView for WasmtimeContext<B> {
+    fn table(&self) -> &wasi_preview2::Table {
+        &self.table
+    }
+
+    fn table_mut(&mut self) -> &mut wasi_preview2::Table {
+        &mut self.table
+    }
+
+    fn ctx(&self) -> &wasi_preview2::WasiCtx {
+        &self.wasi
+    }
+
+    fn ctx_mut(&mut self) -> &mut wasi_preview2::WasiCtx {
+        &mut self.wasi
+    }
 }
 
 pub trait ModuleStateBehavior: Sync + Send {
@@ -186,20 +209,22 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
 
         let (stdout_output, stdout_consumer) = WasiOutputStream::make(stdout_output);
         let (stderr_output, stderr_consumer) = WasiOutputStream::make(stderr_output);
+        let mut table = wasi_preview2::Table::new();
+        let wasi = wasi_preview2::WasiCtxBuilder::new()
+            .set_stdout(stdout_output)
+            .set_stderr(stderr_output)
+            .build(&mut table)?;
         let mut store = wasmtime::Store::new(
             engine,
             WasmtimeContext {
-                wasi: wasi_cap_std_sync::WasiCtxBuilder::new()
-                    .stdout(stdout_output)
-                    .stderr(stderr_output)
-                    .build(),
+                wasi,
                 bindings,
+                table,
             },
         );
 
         let mut linker = wasmtime::component::Linker::<WasmtimeContext<Bindings>>::new(engine);
-        wasmtime_wasi::command::add_to_linker(&mut linker, |x| &mut x.wasi)?;
-        shared::wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
+        wasi_preview2::wasi::command::add_to_linker(&mut linker)?;
 
         let component = wasmtime::component::Component::from_binary(engine, component_bytecode)?;
 
@@ -207,7 +232,9 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
             shared::wit::Bindings::instantiate(&mut store, &component, &linker)?;
 
         // Initialise the runtime.
-        guest_bindings.guest().call_init(&mut store)?;
+        guest_bindings
+            .ambient_bindings_guest()
+            .call_init(&mut store)?;
 
         Ok(Self {
             store,
@@ -231,15 +258,13 @@ impl<Bindings: BindingsBound> ModuleStateBehavior for ModuleStateInnerImpl<Bindi
     ) -> anyhow::Result<()> {
         self.store.data_mut().bindings.set_world(world);
 
-        let result = self.guest_bindings.guest().call_exec(
+        let result = self.guest_bindings.ambient_bindings_guest().call_exec(
             &mut self.store,
-            match message_source {
-                Source::Runtime => shared::wit::guest::SourceParam::Runtime,
-                Source::Server => shared::wit::guest::SourceParam::Server,
-                Source::Client(user_id) => shared::wit::guest::SourceParam::Client(user_id),
-                Source::Local(module) => {
-                    shared::wit::guest::SourceParam::Local(module.into_bindgen())
-                }
+            &match message_source {
+                Source::Runtime => shared::wit::guest::Source::Runtime,
+                Source::Server => shared::wit::guest::Source::Server,
+                Source::Client(user_id) => shared::wit::guest::Source::Client(user_id.clone()),
+                Source::Local(module) => shared::wit::guest::Source::Local(module.into_bindgen()),
             },
             message_name,
             message_data,
@@ -280,10 +305,10 @@ struct WasiOutputStream(flume::Sender<String>);
 impl WasiOutputStream {
     fn make(
         outputter: Box<dyn Fn(&World, &str) + Sync + Send>,
-    ) -> (Box<Self>, WasiOutputStreamConsumer) {
+    ) -> (Self, WasiOutputStreamConsumer) {
         let (tx, rx) = flume::unbounded();
         (
-            Box::new(Self(tx)),
+            Self(tx),
             WasiOutputStreamConsumer {
                 rx,
                 outputter,
@@ -294,21 +319,61 @@ impl WasiOutputStream {
 }
 
 #[async_trait::async_trait]
+impl WasiFile for WasiOutputStream {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+    async fn get_filetype(&self) -> Result<FileType, wasi_common::Error> {
+        if self.isatty() {
+            Ok(FileType::CharacterDevice)
+        } else {
+            Ok(FileType::Unknown)
+        }
+    }
+    async fn get_fdflags(&self) -> Result<FdFlags, wasi_common::Error> {
+        Ok(FdFlags::APPEND)
+    }
+    async fn write_vectored<'a>(
+        &self,
+        bufs: &[io::IoSlice<'a>],
+    ) -> Result<u64, wasi_common::Error> {
+        let mut buffer = Vec::new();
+        for buf in bufs {
+            buffer.extend_from_slice(&*buf);
+        }
+        let len = buffer.len();
+        self.0
+            .send(String::from_utf8_lossy(&buffer).into_owned())
+            .map_err(|e| wasi_common::Error::trap(e.into()))?;
+
+        Ok(len.try_into().unwrap())
+    }
+    async fn write_vectored_at<'a>(
+        &self,
+        _bufs: &[std::io::IoSlice<'a>],
+        _offset: u64,
+    ) -> Result<u64, wasi_common::Error> {
+        Err(wasi_common::Error::seek_pipe())
+    }
+    async fn seek(&self, _pos: std::io::SeekFrom) -> Result<u64, wasi_common::Error> {
+        Err(wasi_common::Error::seek_pipe())
+    }
+}
+
+#[async_trait::async_trait]
 #[cfg(feature = "native")]
-impl wasi_common::OutputStream for WasiOutputStream {
+impl wasi_preview2::OutputStream for WasiOutputStream {
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    async fn writable(&self) -> Result<(), wasi_common::Error> {
+    async fn writable(&self) -> Result<(), anyhow::Error> {
         Ok(())
     }
 
-    async fn write(&mut self, buf: &[u8]) -> Result<u64, wasi_common::Error> {
-        let msg = std::str::from_utf8(buf).map_err(|e| wasi_common::Error::trap(e.into()))?;
-        self.0
-            .send(msg.to_string())
-            .map_err(|e| wasi_common::Error::trap(e.into()))?;
+    async fn write(&mut self, buf: &[u8]) -> Result<u64, anyhow::Error> {
+        let msg = std::str::from_utf8(buf)?;
+        self.0.send(msg.to_string())?;
 
         Ok(buf.len().try_into()?)
     }

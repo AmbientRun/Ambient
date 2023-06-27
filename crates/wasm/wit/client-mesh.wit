@@ -1,5 +1,5 @@
-default interface client-mesh {
-    use pkg.types.{vec2, vec3, ulid}
+interface client-mesh {
+    use types.{vec2, vec3, ulid}
 
     record vertex {
         position: vec3,

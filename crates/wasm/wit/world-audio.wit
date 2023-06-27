@@ -1,5 +1,5 @@
-default interface world-audio {
-    use pkg.types.{entity-id, vec3, quat}
+interface world-audio {
+    use types.{entity-id, vec3, quat}
     set-listener: func(entity: entity-id)
     set-emitter: func(entity: entity-id)
     play-sound-on-entity: func(sound: string, emitter: entity-id)
