@@ -50,6 +50,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Rendering**: Added a `torus` primitive. Thanks to [@mebyz](https://github.com/mebyz) for implementing this in [#376](https://github.com/AmbientRun/Ambient/pull/376)!
 - **Physics**: Add `set_character_controller_position` to the `physics` API. Thanks to [@devjobe](https://github.com/devjobe) for implementing this in [#398](https://github.com/AmbientRun/Ambient/pull/398).
 - **ECS**: `Duration` is now a supported primitive type.
+- **ECS**: All integer types from 8-bit to 64-bit are now supported as component types, including signed and unsigned variants. Additionally, all signed and unsigned integer vector types are now supported. This includes `U16`, `IVec2`, `UVec3`, etc.
 - **Docs**: The IDE documentation has been improved, including information on how to set up Emacs for Ambient development (thanks to [@kevzettler](https://github.com/kevzettler) in [#505](https://github.com/AmbientRun/Ambient/pull/505)).
 
 #### Examples

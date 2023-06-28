@@ -2,13 +2,13 @@ use std::time::Duration;
 
 use crate::{
     global::{
-        Mat4, ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
-        ProceduralTextureHandle, Quat, Vec2, Vec3, Vec4,
+        IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle, ProceduralMeshHandle,
+        ProceduralSamplerHandle, ProceduralTextureHandle, Quat, UVec2, UVec3, UVec4, Vec2, Vec3,
+        Vec4,
     },
     internal::wit,
 };
 use ambient_shared_types::procedural_storage_handle_definitions;
-use glam::{UVec2, UVec3, UVec4};
 use paste::paste;
 
 /// Converts from a Rust representation to a wit-bindgen representation.
@@ -127,6 +127,57 @@ impl FromBindgen for wit::types::Uvec4 {
     }
 }
 
+impl IntoBindgen for IVec2 {
+    type Item = wit::types::Ivec2;
+    fn into_bindgen(self) -> Self::Item {
+        wit::types::Ivec2 {
+            x: self.x,
+            y: self.y,
+        }
+    }
+}
+impl FromBindgen for wit::types::Ivec2 {
+    type Item = IVec2;
+    fn from_bindgen(self) -> Self::Item {
+        IVec2::new(self.x, self.y)
+    }
+}
+
+impl IntoBindgen for IVec3 {
+    type Item = wit::types::Ivec3;
+    fn into_bindgen(self) -> Self::Item {
+        wit::types::Ivec3 {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+        }
+    }
+}
+impl FromBindgen for wit::types::Ivec3 {
+    type Item = IVec3;
+    fn from_bindgen(self) -> Self::Item {
+        IVec3::new(self.x, self.y, self.z)
+    }
+}
+
+impl IntoBindgen for IVec4 {
+    type Item = wit::types::Ivec4;
+    fn into_bindgen(self) -> Self::Item {
+        wit::types::Ivec4 {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+            w: self.w,
+        }
+    }
+}
+impl FromBindgen for wit::types::Ivec4 {
+    type Item = IVec4;
+    fn from_bindgen(self) -> Self::Item {
+        IVec4::new(self.x, self.y, self.z, self.w)
+    }
+}
+
 impl IntoBindgen for Quat {
     type Item = wit::types::Quat;
     fn into_bindgen(self) -> Self::Item {
@@ -205,11 +256,15 @@ bindgen_passthrough!(());
 bindgen_passthrough!(bool);
 bindgen_passthrough!(f32);
 bindgen_passthrough!(f64);
-bindgen_passthrough!(i32);
 bindgen_passthrough!(String);
 bindgen_passthrough!(u8);
+bindgen_passthrough!(u16);
 bindgen_passthrough!(u32);
 bindgen_passthrough!(u64);
+bindgen_passthrough!(i8);
+bindgen_passthrough!(i16);
+bindgen_passthrough!(i32);
+bindgen_passthrough!(i64);
 
 impl<T> IntoBindgen for Option<T>
 where

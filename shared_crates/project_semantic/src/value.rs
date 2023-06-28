@@ -7,7 +7,7 @@ use ambient_shared_types::{
     ProceduralSamplerHandle, ProceduralTextureHandle,
 };
 use anyhow::Context as AnyhowContext;
-use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+use glam::{IVec2, IVec3, IVec4, Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 use std::time::Duration;
 
 pub type EntityId = u128;
@@ -157,14 +157,18 @@ impl PrimitiveValue {
             PrimitiveType::Mat4 => Self::Mat4(Mat4::from_cols_array(&as_array(v, |v| {
                 Ok(as_float(v)? as f32)
             })?)),
-            PrimitiveType::I32 => Self::I32(as_integer(v)? as i32),
             PrimitiveType::Quat => {
                 Self::Quat(Quat::from_array(as_array(v, |v| Ok(as_float(v)? as f32))?))
             }
             PrimitiveType::String => Self::String(as_str(v)?.to_string()),
             PrimitiveType::U8 => Self::U8(as_integer(v)? as u8),
+            PrimitiveType::U16 => Self::U16(as_integer(v)? as u16),
             PrimitiveType::U32 => Self::U32(as_integer(v)? as u32),
             PrimitiveType::U64 => Self::U64(as_integer(v)? as u64),
+            PrimitiveType::I8 => Self::I8(as_integer(v)? as i8),
+            PrimitiveType::I16 => Self::I16(as_integer(v)? as i16),
+            PrimitiveType::I32 => Self::I32(as_integer(v)? as i32),
+            PrimitiveType::I64 => Self::I64(as_integer(v)? as i64),
             PrimitiveType::Vec2 => {
                 Self::Vec2(Vec2::from_array(as_array(v, |v| Ok(as_float(v)? as f32))?))
             }
@@ -182,6 +186,15 @@ impl PrimitiveValue {
             })?)),
             PrimitiveType::Uvec4 => Self::Uvec4(UVec4::from_array(as_array(v, |v| {
                 Ok(as_integer(v)? as u32)
+            })?)),
+            PrimitiveType::Ivec2 => Self::Ivec2(IVec2::from_array(as_array(v, |v| {
+                Ok(as_integer(v)? as i32)
+            })?)),
+            PrimitiveType::Ivec3 => Self::Ivec3(IVec3::from_array(as_array(v, |v| {
+                Ok(as_integer(v)? as i32)
+            })?)),
+            PrimitiveType::Ivec4 => Self::Ivec4(IVec4::from_array(as_array(v, |v| {
+                Ok(as_integer(v)? as i32)
             })?)),
             PrimitiveType::Duration => return Ok(None),
             PrimitiveType::ProceduralMeshHandle => return Ok(None),

@@ -103,7 +103,10 @@ pub async fn import(
             } else {
                 Vec::new()
             };
-            if tangents.is_empty() && !texcoords[0].is_empty() && !normals.is_empty() {
+            if tangents.is_empty()
+                && texcoords.get(0).map(|t| !t.is_empty()).unwrap_or_default()
+                && !normals.is_empty()
+            {
                 tangents = generate_tangents(&positions, &texcoords[0], &normals, &indices);
             }
 

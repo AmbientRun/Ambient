@@ -1,7 +1,7 @@
 use std::io::Read;
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
-use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+use glam::{IVec2, IVec3, IVec4, Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -80,14 +80,6 @@ impl MessageSerde for Mat4 {
         Ok(Self::from_cols_array(&values))
     }
 }
-impl MessageSerde for i32 {
-    fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
-        Ok(output.write_i32::<BigEndian>(*self)?)
-    }
-    fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
-        Ok(input.read_i32::<BigEndian>()?)
-    }
-}
 impl MessageSerde for Quat {
     fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
         for value in self.to_array() {
@@ -111,6 +103,14 @@ impl MessageSerde for u8 {
         Ok(input.read_u8()?)
     }
 }
+impl MessageSerde for u16 {
+    fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+        Ok(output.write_u16::<BigEndian>(*self)?)
+    }
+    fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+        Ok(input.read_u16::<BigEndian>()?)
+    }
+}
 impl MessageSerde for u32 {
     fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
         Ok(output.write_u32::<BigEndian>(*self)?)
@@ -125,6 +125,38 @@ impl MessageSerde for u64 {
     }
     fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
         Ok(input.read_u64::<BigEndian>()?)
+    }
+}
+impl MessageSerde for i8 {
+    fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+        Ok(output.write_i8(*self)?)
+    }
+    fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+        Ok(input.read_i8()?)
+    }
+}
+impl MessageSerde for i16 {
+    fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+        Ok(output.write_i16::<BigEndian>(*self)?)
+    }
+    fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+        Ok(input.read_i16::<BigEndian>()?)
+    }
+}
+impl MessageSerde for i32 {
+    fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+        Ok(output.write_i32::<BigEndian>(*self)?)
+    }
+    fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+        Ok(input.read_i32::<BigEndian>()?)
+    }
+}
+impl MessageSerde for i64 {
+    fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+        Ok(output.write_i64::<BigEndian>(*self)?)
+    }
+    fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+        Ok(input.read_i64::<BigEndian>()?)
     }
 }
 impl MessageSerde for Vec2 {
@@ -213,6 +245,51 @@ impl MessageSerde for UVec4 {
         let mut values = [0u32; 4];
         for value in &mut values {
             *value = input.read_u32::<BigEndian>()?;
+        }
+        Ok(Self::from_array(values))
+    }
+}
+impl MessageSerde for IVec2 {
+    fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+        for value in self.to_array() {
+            output.write_i32::<BigEndian>(value)?;
+        }
+        Ok(())
+    }
+    fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+        let mut values = [0i32; 2];
+        for value in &mut values {
+            *value = input.read_i32::<BigEndian>()?;
+        }
+        Ok(Self::from_array(values))
+    }
+}
+impl MessageSerde for IVec3 {
+    fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+        for value in self.to_array() {
+            output.write_i32::<BigEndian>(value)?;
+        }
+        Ok(())
+    }
+    fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+        let mut values = [0i32; 3];
+        for value in &mut values {
+            *value = input.read_i32::<BigEndian>()?;
+        }
+        Ok(Self::from_array(values))
+    }
+}
+impl MessageSerde for IVec4 {
+    fn serialize_message_part(&self, output: &mut Vec<u8>) -> Result<(), MessageSerdeError> {
+        for value in self.to_array() {
+            output.write_i32::<BigEndian>(value)?;
+        }
+        Ok(())
+    }
+    fn deserialize_message_part(input: &mut dyn Read) -> Result<Self, MessageSerdeError> {
+        let mut values = [0i32; 4];
+        for value in &mut values {
+            *value = input.read_i32::<BigEndian>()?;
         }
         Ok(Self::from_array(values))
     }
