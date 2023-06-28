@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use ambient_audio::{blt::Bpf, track::Track, value::Constant, AudioStream, Source};
+use ambient_audio::{track::Track, AudioStream, Source};
 
 fn main() {
     let stream = AudioStream::new().unwrap();
@@ -23,23 +23,20 @@ fn main() {
 
     let source = source
         .decode()
-        .low_pass(1000.0, 6.0)
+        .pan(0.0)
         .repeat()
         .take(Duration::from_secs(5))
         .chain(
             source
                 .decode()
-                .high_pass(1000.0, 6.0)
+                .pan(-0.999)
                 .repeat()
                 .take(Duration::from_secs(5)),
         )
         .chain(
             source
                 .decode()
-                .blt(Constant(Bpf {
-                    freq: 1000.0,
-                    bandwidth: 3.0,
-                }))
+                .pan(1.0)
                 .repeat()
                 .take(Duration::from_secs(5)),
         )

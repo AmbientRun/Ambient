@@ -7,6 +7,7 @@ pub mod history;
 mod mix;
 mod oscilloscope;
 mod pad_to;
+mod pan;
 mod peek;
 mod repeat;
 mod sample_bufferer;
@@ -30,6 +31,7 @@ use circular_queue::CircularQueue;
 pub use crossfade::*;
 pub use gain::*;
 pub use mix::*;
+pub use pan::*;
 use parking_lot::Mutex;
 pub use peek::*;
 pub use repeat::*;
@@ -162,6 +164,14 @@ pub trait Source: Send {
         Gain::new(self, gain)
     }
 
+    fn pan<P>(self, pan: P) -> Pan<Self, P>
+    where
+        Self: Sized,
+        P: PanValue,
+    {
+        Pan::new(self, pan)
+    }
+
     fn spatial<L, P>(self, hrtf_lib: &HrtfLib, listener: L, params: P) -> Spatial<Self, L, P>
     where
         Self: Sized,
@@ -228,26 +238,38 @@ where
         self.deref().sample_count()
     }
 }
-
 const DEFAULT_HZ: SampleRate = 44100;
 
 #[derive(Debug, Clone)]
 pub struct SineWave {
     freq: f32,
-    cursor: usize,
+    phase: f32,
+    sr: SampleRate,
 }
 
 impl SineWave {
     pub fn new(freq: f32) -> Self {
-        Self { freq, cursor: 0 }
+        Self {
+            freq,
+            phase: 0.0,
+            sr: DEFAULT_HZ,
+        }
+    }
+    pub fn phase(mut self, phase: f32) -> Self {
+        self.phase = phase;
+        self
+    }
+
+    pub fn sr(mut self, sr: SampleRate) -> Self {
+        self.sr = sr;
+        self
     }
 }
 
 impl Source for SineWave {
     fn next_sample(&mut self) -> Option<Frame> {
-        let t = self.freq * self.cursor as f32 * TAU / DEFAULT_HZ as f32;
-        let v = t.sin();
-        self.cursor += 1;
+        self.phase += TAU * self.freq / DEFAULT_HZ as f32;
+        let v = self.phase.sin();
         Some(Frame::splat(v))
     }
 
