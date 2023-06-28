@@ -7,7 +7,7 @@ use ambient_core::{
     hierarchy::{dump_world_hierarchy, dump_world_hierarchy_to_user},
     main_scene,
     player::local_user_id,
-    runtime, RuntimeKey,
+    runtime,
 };
 use ambient_ecs::{query, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
@@ -16,12 +16,7 @@ use ambient_network::{client::GameClient, server::RpcArgs as ServerRpcArgs};
 use ambient_renderer::{RenderTarget, Renderer};
 use ambient_rpc::RpcRegistry;
 use ambient_shared_types::{ModifiersState, VirtualKeyCode};
-use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt},
-    color::Color,
-    download_asset::AssetsCacheDir,
-    line_hash, Cb,
-};
+use ambient_std::{asset_cache::AssetCache, color::Color, line_hash, Cb};
 use ambient_ui_native::{
     fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit,
     FlowColumn, FlowRow, Image, UIExt,
@@ -53,8 +48,12 @@ fn dump_to_user(_assets: &AssetCache, _label: &'static str, s: String) {
     }
     #[cfg(not(target_os = "unknown"))]
     {
-        let rt = RuntimeKey.get(_assets);
-        let cache_dir = AssetsCacheDir.get(_assets);
+        let rt = ambient_std::asset_cache::SyncAssetKeyExt::get(&ambient_core::RuntimeKey, _assets);
+        let cache_dir = ambient_std::asset_cache::SyncAssetKeyExt::get(
+            &ambient_std::download_asset::AssetsCacheDir,
+            _assets,
+        );
+
         rt.spawn(async move {
             let path = cache_dir.join(_label);
 

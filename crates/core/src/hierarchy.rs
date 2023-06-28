@@ -1,13 +1,12 @@
 use std::collections::HashSet;
 
 use ambient_ecs::{query, Component, ComponentValue, ECSError, EntityId, World};
-use ambient_std::download_asset::AssetsCacheDir;
 use itertools::Itertools;
 use yaml_rust::YamlEmitter;
 
 pub use ambient_ecs::generated::components::core::ecs::{children, parent};
 
-use crate::{asset_cache, name};
+use crate::name;
 
 pub fn despawn_recursive(world: &mut World, entity: EntityId) {
     if let Ok(children) = world.set(entity, children(), vec![]) {
@@ -91,8 +90,8 @@ fn dump_world_hierarchy_to_tmp_file(world: &World) {
     use ambient_std::asset_cache::SyncAssetKeyExt;
 
     let cache_dir = world
-        .resource_opt(asset_cache())
-        .map(|a| AssetsCacheDir.get(a))
+        .resource_opt(crate::asset_cache())
+        .map(|a| ambient_std::download_asset::AssetsCacheDir.get(a))
         .unwrap_or(PathBuf::from("tmp"));
     std::fs::create_dir_all(&cache_dir).ok();
     let path = cache_dir.join("hierarchy.yml");

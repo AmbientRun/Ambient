@@ -12,8 +12,8 @@ use tracing::debug_span;
 
 use crate::{
     client::{
-        bi_stream_handlers, client_network_stats, datagram_handlers, uni_stream_handlers,
-        NetworkStats, PlatformRecvStream, PlatformSendStream,
+        bi_stream_handlers, datagram_handlers, uni_stream_handlers, PlatformRecvStream,
+        PlatformSendStream,
     },
     client_game_state::ClientGameState,
     proto::*,
@@ -82,7 +82,13 @@ impl ClientState {
     }
 
     #[cfg(not(target_os = "unknown"))]
-    pub fn process_client_stats(&mut self, state: &SharedClientState, stats: NetworkStats) {
+    pub fn process_client_stats(
+        &mut self,
+        state: &SharedClientState,
+        stats: crate::client::NetworkStats,
+    ) {
+        use crate::client::client_network_stats;
+
         let mut gs = state.lock();
         tracing::debug!(?stats, "Client network stats");
         gs.world.add_resource(client_network_stats(), stats);
