@@ -21,7 +21,7 @@ pub fn tree_to_token_stream(
         |context, _ns, ts| match context {
             Context::Host => quote! {
                 use super::components;
-                use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
+                use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, IVec2, IVec3, IVec4, Mat4, Quat};
                 use crate::{EntityId, Entity, Component};
                 #ts
             },
@@ -322,8 +322,36 @@ fn toml_value_to_tokens_primitive(
             let arr = toml_array_f32_to_array_tokens(path, a)?;
             quote! { Mat4::from_cols_array(&[#arr]) }
         }
+        ("I8", toml::Value::Integer(i)) => {
+            let i = *i as i8;
+            quote! {#i}
+        }
+        ("I16", toml::Value::Integer(i)) => {
+            let i = *i as i16;
+            quote! {#i}
+        }
         ("I32", toml::Value::Integer(i)) => {
             let i = *i as i32;
+            quote! {#i}
+        }
+        ("I64", toml::Value::Integer(i)) => {
+            let i = *i;
+            quote! {#i}
+        }
+        ("U8", toml::Value::Integer(i)) => {
+            let i = *i as u8;
+            quote! {#i}
+        }
+        ("U16", toml::Value::Integer(i)) => {
+            let i = *i as u16;
+            quote! {#i}
+        }
+        ("U32", toml::Value::Integer(i)) => {
+            let i = *i as u32;
+            quote! {#i}
+        }
+        ("U64", toml::Value::Integer(i)) => {
+            let i = *i as u64;
             quote! {#i}
         }
         ("Quat", toml::Value::Array(a)) => {
@@ -331,14 +359,6 @@ fn toml_value_to_tokens_primitive(
             quote! { Quat::from_xyzw(#arr) }
         }
         ("String", toml::Value::String(s)) => quote! {#s.to_string()},
-        ("U32", toml::Value::Integer(i)) => {
-            let i = *i as u32;
-            quote! {#i}
-        }
-        ("U64", toml::Value::String(s)) => {
-            let val: u64 = s.parse()?;
-            quote! {#val}
-        }
         ("Vec2", toml::Value::Array(a)) => {
             let arr = toml_array_f32_to_array_tokens(path, a)?;
             quote! { Vec2::new(#arr) }
@@ -350,6 +370,30 @@ fn toml_value_to_tokens_primitive(
         ("Vec4", toml::Value::Array(a)) => {
             let arr = toml_array_f32_to_array_tokens(path, a)?;
             quote! { Vec4::new(#arr) }
+        }
+        ("UVec2", toml::Value::Array(a)) => {
+            let arr = toml_array_int_to_array_tokens(path, a)?;
+            quote! { UVec2::new(#arr) }
+        }
+        ("UVec3", toml::Value::Array(a)) => {
+            let arr = toml_array_int_to_array_tokens(path, a)?;
+            quote! { UVec3::new(#arr) }
+        }
+        ("UVec4", toml::Value::Array(a)) => {
+            let arr = toml_array_int_to_array_tokens(path, a)?;
+            quote! { UVec4::new(#arr) }
+        }
+        ("IVec2", toml::Value::Array(a)) => {
+            let arr = toml_array_int_to_array_tokens(path, a)?;
+            quote! { IVec2::new(#arr) }
+        }
+        ("IVec3", toml::Value::Array(a)) => {
+            let arr = toml_array_int_to_array_tokens(path, a)?;
+            quote! { IVec3::new(#arr) }
+        }
+        ("IVec4", toml::Value::Array(a)) => {
+            let arr = toml_array_int_to_array_tokens(path, a)?;
+            quote! { IVec4::new(#arr) }
         }
         _ => anyhow::bail!("unsupported type `{ty}` and value `{value}` for component `{path}`"),
     })
@@ -366,6 +410,26 @@ fn toml_array_f32_to_array_tokens(
                 Ok(f as f32)
             } else if let Some(i) = c.as_integer() {
                 Ok(i as f32)
+            } else {
+                anyhow::bail!(
+                    "not all of the values for the array initializer for `{path}` were numbers"
+                )
+            }
+        })
+        .collect::<anyhow::Result<Vec<_>>>()?;
+
+    Ok(quote! { #(#members),* })
+}
+
+fn toml_array_int_to_array_tokens(
+    path: IdentifierPath,
+    array: &toml::value::Array,
+) -> anyhow::Result<TokenStream> {
+    let members = array
+        .iter()
+        .map(|c| {
+            if let Some(i) = c.as_integer() {
+                Ok(i)
             } else {
                 anyhow::bail!(
                     "not all of the values for the array initializer for `{path}` were numbers"

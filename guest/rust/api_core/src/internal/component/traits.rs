@@ -1,7 +1,8 @@
 use crate::{
     global::{
-        EntityId, Mat4, ProceduralMaterialHandle, ProceduralMeshHandle, ProceduralSamplerHandle,
-        ProceduralTextureHandle, Quat, Vec2, Vec3, Vec4,
+        EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle, ProceduralMeshHandle,
+        ProceduralSamplerHandle, ProceduralTextureHandle, Quat, UVec2, UVec3, UVec4, Vec2, Vec3,
+        Vec4,
     },
     internal::{
         component::Component,
@@ -10,7 +11,6 @@ use crate::{
     },
 };
 use ambient_shared_types::primitive_component_definitions;
-use glam::{UVec2, UVec3, UVec4};
 use std::time::Duration;
 
 #[doc(hidden)]
