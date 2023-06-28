@@ -64,10 +64,6 @@ impl RuntimeHandle {
     {
         self.spawn(async move { f() })
     }
-
-    pub fn block_on<F: Future>(&self, future: F) -> F::Output {
-        unimplemented!("block_on is not supported for wasm")
-    }
 }
 
 pub struct PlatformBoxFutureImpl<T>(Pin<Box<dyn Future<Output = T>>>);
