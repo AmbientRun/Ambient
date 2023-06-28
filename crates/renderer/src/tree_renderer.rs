@@ -232,6 +232,7 @@ impl TreeRenderer {
             self.primitives.total_len(),
             self.tree.keys().collect_vec()
         );
+
         let mut material_layouts = vec![UVec2::ZERO; self.material_indices.counter as usize];
         for node in self.tree.values() {
             for mat in node.tree.values() {

@@ -1,4 +1,10 @@
-use std::{f32::consts::PI, fmt::Debug, str::FromStr, sync::Arc};
+use core::fmt;
+use std::{
+    f32::consts::PI,
+    fmt::{Debug, Formatter},
+    str::FromStr,
+    sync::Arc,
+};
 
 use ambient_core::{
     asset_cache,
@@ -69,7 +75,9 @@ components!("rendering", {
     primitives: Vec<RenderPrimitive>,
 
     /// The (cpu) primitives are split into an SoA on the gpu side
+    @[Debuggable]
     gpu_primitives_mesh: [u32; MAX_PRIMITIVE_COUNT],
+    @[Debuggable]
     gpu_primitives_lod: [u32; MAX_PRIMITIVE_COUNT],
 
     renderer_shader: RendererShaderProducer,
@@ -248,8 +256,14 @@ pub struct GpuRenderPrimitive {
     pub _padding: UVec2,
 }
 
-#[derive(Clone, Debug, Deref, DerefMut)]
+#[derive(Clone, Deref, DerefMut)]
 pub struct SharedMaterial(pub Arc<dyn Material + 'static>);
+
+impl Debug for SharedMaterial {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Debug::fmt(&*self.0, f)
+    }
+}
 
 impl<T: Material + 'static> From<Arc<T>> for SharedMaterial {
     fn from(v: Arc<T>) -> Self {

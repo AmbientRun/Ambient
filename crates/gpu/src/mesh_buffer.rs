@@ -29,12 +29,21 @@ static MESHES_TOTAL_SIZE: AtomicUsize = AtomicUsize::new(0);
 
 pub type GpuMeshIndex = u64;
 
-#[derive(Debug)]
 pub struct GpuMesh {
     index: GpuMeshIndex,
     size_in_bytes: usize,
     // Notify parent to remove self on drop
     to_remove: Arc<Mutex<Vec<u64>>>,
+}
+
+impl std::fmt::Debug for GpuMesh {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut s = f.debug_struct("GpuMesh");
+
+        s.field("index", &self.index)
+            .field("size_in_bytes", &self.size_in_bytes)
+            .finish_non_exhaustive()
+    }
 }
 
 impl GpuMesh {
