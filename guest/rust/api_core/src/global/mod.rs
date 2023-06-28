@@ -19,7 +19,7 @@ pub mod spatial_audio;
 // Re-exports from other crates.
 pub use ambient_shared_types::{CursorIcon, ModifiersState, MouseButton, VirtualKeyCode};
 pub use futures::{Future, FutureExt};
-pub use glam::{f32::*, u32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
+pub use glam::{f32::*, i32::*, u32::*, Vec2Swizzles, Vec3Swizzles, Vec4Swizzles};
 pub use std::time::Duration;
 pub use ulid::Ulid;
 

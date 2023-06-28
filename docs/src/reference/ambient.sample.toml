@@ -19,7 +19,7 @@ version = "0.0.1"
 # Rust-specific settings.
 [build.rust]
 # `cargo build` will be run with each of these features to produce a separate WASM binary,
-# which is then compoonentized and copied into a folder of the corresponding name in `build/`.
+# which is then componentized and copied into a folder of the corresponding name in `build/`.
 # This is used to build the same code for both client and server.
 # Client and server are built by default; this is exposed so that you can disable building one
 # side entirely if required.
@@ -36,7 +36,14 @@ cool_component = { type = "I32", name = "Cool Component", description = "A cool 
 # Explicit tables can also be used.
 [components.cool_component2]
 # At time of writing, supported component types are:
-#   Empty, Bool, EntityId, F32, F64, Mat4, I32, Quat, String, U32, U64, Vec2, Vec3, Vec4, Uvec2, Uvec3, Uvec4, U8
+#   Empty, Bool, String,
+#   EntityId,
+#   F32, F64, Mat4, Quat,
+#   U8, U16, U32, U64,
+#   I8, I16, I32, I64,
+#   Vec2, Vec3, Vec4,
+#   Uvec2, Uvec3, Uvec4,
+#   Ivec2, Ivec3, Ivec4
 # or
 #   { type = "Vec", element_type = "TypeFromAbove" }
 #   { type = "Option", element_type = "TypeFromAbove" }
