@@ -234,6 +234,8 @@ impl RendererCollect {
             return;
         }
 
+        tracing::debug!("Resizing collect command buffer to {primitives_count}");
+
         output.commands.resize(gpu, primitives_count as u64, true);
         let counts = vec![0; material_layouts.len()];
         output.counts.fill(gpu, &counts, |_| {});
@@ -295,6 +297,7 @@ impl RendererCollect {
 
             let buffs = CollectCountStagingBuffersKey.get(assets);
             let staging = buffs.take_buffer(gpu, output.counts.len());
+
             encoder.copy_buffer_to_buffer(
                 output.counts.buffer(),
                 0,
@@ -302,12 +305,14 @@ impl RendererCollect {
                 0,
                 output.counts.byte_size(),
             );
+
             let counts_res = output.counts_cpu.clone();
             let runtime = RuntimeKey.get(assets);
             let post_submit_gpu = ambient_gpu::gpu::GpuKey.get(assets);
             _post_submit.push(Box::new(move || {
                 runtime.spawn(async move {
                     if let Ok(res) = staging.read(&post_submit_gpu, .., false).await {
+                        tracing::info!("Read count from post submit buffer");
                         *counts_res.lock() = res;
                         buffs.return_buffer(staging);
                     }

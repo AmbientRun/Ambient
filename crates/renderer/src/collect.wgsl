@@ -55,8 +55,8 @@ fn get_entity_primitive(loc: vec2<u32>, index: u32) -> vec2<u32> {
 
 
 fn is_visible(entity_loc: vec2<u32>, primitive_lod: u32) -> bool {
-
     var visibility_from: vec2<u32> = entity_loc;
+
     if has_entity_visibility_from(entity_loc) {
         let visibility_from_raw = get_entity_visibility_from(entity_loc);
         // reinterpret floats as u32
@@ -70,6 +70,7 @@ fn is_visible(entity_loc: vec2<u32>, primitive_lod: u32) -> bool {
     if entity_lod != primitive_lod {
         return false;
     }
+
     if has_entity_renderer_cameras_visible(visibility_from) {
         var cameras = get_entity_renderer_cameras_visible(visibility_from);
         let camera_i = params.camera >> 2u;
@@ -103,13 +104,11 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let mesh_index = entity_primitive.x;
     let primitive_lod = entity_primitive.y;
 
-    if is_visible(primitive.entity_loc, primitive_lod) {
-        let out_offset = atomicAdd(&output_counts.data[primitive.material_index], 1u);
-        let out_index = material_layout.x + out_offset;
-        let mesh = mesh_metadatas[mesh_index];
-        output_commands.data[out_index].vertex_count = mesh.index_count;
-        output_commands.data[out_index].instance_count = 1u;
-        output_commands.data[out_index].base_index = mesh.index_offset;
-        output_commands.data[out_index].base_instance = index;
-    }
+    let out_offset = atomicAdd(&output_counts.data[primitive.material_index], 1u);
+    let out_index = material_layout.x + out_offset;
+    let mesh = mesh_metadatas[mesh_index];
+    output_commands.data[out_index].vertex_count = mesh.index_count;
+    output_commands.data[out_index].instance_count = 1u;
+    output_commands.data[out_index].base_index = mesh.index_offset;
+    output_commands.data[out_index].base_instance = index;
 }

@@ -89,7 +89,6 @@ impl TreeRenderer {
     }
     #[ambient_profiling::function]
     pub fn update(&mut self, gpu: &Gpu, assets: &AssetCache, world: &mut World) {
-        tracing::debug!("Updating TreeRenderer");
         let mut to_update = HashSet::new();
         let mut spawn_qs = std::mem::replace(&mut self.spawn_qs, QueryState::new());
         let mut despawn_qs = std::mem::replace(&mut self.despawn_qs, QueryState::new());
@@ -294,10 +293,12 @@ impl TreeRenderer {
                     primitives: Vec::new(),
                     scissors,
                 });
+
             self.primitives_lookup.insert(
                 (id, primitive_index),
                 (shader_id.clone(), material_id.clone(), mat.primitives.len()),
             );
+
             mat.primitives.push((id, primitive_index));
             Some((shader_id, material_id))
         } else {
