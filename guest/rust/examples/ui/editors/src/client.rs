@@ -1,4 +1,7 @@
-use ambient_api::prelude::*;
+use ambient_api::{
+    components::core::layout::{min_width, space_between_items, width},
+    prelude::*,
+};
 use indexmap::IndexMap;
 
 #[element_component]

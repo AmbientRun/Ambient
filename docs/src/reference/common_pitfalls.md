@@ -1,5 +1,7 @@
 # Common pitfalls
 
+Be aware that a lot of problems are caused by mismatching versions of Ambient. To check your version, run `ambient --version` and make sure it matches the version in your `Cargo.toml` file.
+
 ## The examples don't work
 
 This is most often because of mismatching the ambient version with the
@@ -37,6 +39,7 @@ Delete the `build` folder and try again - this should force them to be regenerat
 ## Failed to download file / error trying to connect: tcp connect error: _etc_ (OS error 10060)
 
 This can happen if your anti-virus or firewall is blocking the connection to the Ambient runtime.
-Try deactivating it, then run the Ambient project again with 'ambient run'.
+Try deactivating it, then run the Ambient ember again with 'ambient run'.
+
 If this fixes it, you'll need to add an exception to your anti-virus/firewall to allow Ambient to connect.
 We do not recommend leaving your anti-virus/firewall disabled.

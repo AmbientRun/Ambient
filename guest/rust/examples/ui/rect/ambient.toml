@@ -1,5 +1,6 @@
 [ember]
-id = "ambient_example_rect"
+id = "ambient-example-rect"
+organization = "ambient"
 name = "Rect"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/rect"

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ambient_core::{
-    dtime,
+    delta_time,
     transform::{rotation, scale, translation},
 };
 use ambient_ecs::{
@@ -230,10 +230,10 @@ pub fn sync_ecs_physics() -> SystemGroup {
             ))
             .incl(kinematic())
             .to_system(|q, world, qs, _| {
-                let dtime = *world.resource(dtime());
+                let delta_time = *world.resource(delta_time());
                 for (id, (body, pos, rot, lvel, avel)) in q.collect_cloned(world, qs) {
-                    let avel = avel * dtime;
-                    let new_pos = pos + lvel * dtime;
+                    let avel = avel * delta_time;
+                    let new_pos = pos + lvel * delta_time;
                     let new_rot = rot * Quat::from_euler(EulerRot::XYZ, avel.x, avel.y, avel.z);
                     let pos_changed = vec3_changed(pos, new_pos);
                     let rot_changed = quat_changed(rot, new_rot);

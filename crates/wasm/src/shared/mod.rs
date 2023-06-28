@@ -325,10 +325,7 @@ pub fn spawn_module(
     enabled: bool,
 ) -> EntityId {
     Entity::new()
-        .with(
-            ambient_core::name(),
-            format!("Wasm module: {}", name.to_string()),
-        )
+        .with(ambient_core::name(), format!("Wasm module: {}", name))
         .with(module_name(), name.to_string())
         .with(ambient_core::description(), description)
         .with_default(module())

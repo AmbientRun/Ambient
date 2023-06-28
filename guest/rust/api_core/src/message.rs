@@ -91,9 +91,16 @@ pub enum Target {
     /// An unreliable transmission to the server.
     ///
     /// Not guaranteed to be received, and must be below one kilobyte.
+    ///
+    /// Unreliable messages are implemented using QUIC datagrams. This makes them ideal
+    /// for messages that are sent frequently, but are not critical to the functioning
+    /// of the logic on the server.
     #[cfg(feature = "client")]
     ServerUnreliable,
     /// A reliable transmission to the server (guaranteed to be received).
+    ///
+    /// Reliable messages are implemented using QUIC streams. This makes them ideal
+    /// for messages that are sent infrequently, but must be received by the server.
     #[cfg(feature = "client")]
     ServerReliable,
 
@@ -101,20 +108,34 @@ pub enum Target {
     /// An unreliable transmission to all clients.
     ///
     /// Not guaranteed to be received, and must be below one kilobyte.
+    ///
+    /// Unreliable messages are implemented using QUIC datagrams. This makes them ideal
+    /// for messages that are sent frequently, but are not critical to the functioning
+    /// of the logic on the client.
     #[cfg(feature = "server")]
     ClientBroadcastUnreliable,
     /// A reliable transmission to all clients (guaranteed to be received).
+    ///
+    /// Reliable messages are implemented using QUIC streams. This makes them ideal
+    /// for messages that are sent infrequently, but must be received by the client.
     #[cfg(feature = "server")]
     ClientBroadcastReliable,
     /// An unreliable transmission to a specific client.
     ///
     /// Not guaranteed to be received, and must be below one kilobyte.
+    ///
+    /// Unreliable messages are implemented using QUIC datagrams. This makes them ideal
+    /// for messages that are sent frequently, but are not critical to the functioning
+    /// of the logic on the client.
     #[cfg(feature = "server")]
     ClientTargetedUnreliable(
         /// The user to send to.
         String,
     ),
     /// A reliable transmission to a specific client (guaranteed to be received).
+    ///
+    /// Reliable messages are implemented using QUIC streams. This makes them ideal
+    /// for messages that are sent infrequently, but must be received by the client.
     #[cfg(feature = "server")]
     ClientTargetedReliable(
         /// The user to send to.
@@ -232,7 +253,7 @@ pub trait ModuleMessage: Message {
     #[cfg(feature = "client")]
     /// Sends an unreliable message to the server.
     ///
-    /// See [Target::ServerUnreliable] for specifics.
+    /// See [Target::ServerUnreliable] for details.
     fn send_server_unreliable(&self) {
         self.send(Target::ServerUnreliable)
     }
@@ -240,7 +261,7 @@ pub trait ModuleMessage: Message {
     #[cfg(feature = "client")]
     /// Sends a reliable message to the server.
     ///
-    /// See [Target::ServerReliable] for specifics.
+    /// See [Target::ServerReliable] for details.
     fn send_server_reliable(&self) {
         self.send(Target::ServerReliable)
     }
@@ -248,7 +269,7 @@ pub trait ModuleMessage: Message {
     #[cfg(feature = "server")]
     /// Sends an unreliable message to all clients.
     ///
-    /// See [Target::ClientBroadcastUnreliable] for specifics.
+    /// See [Target::ClientBroadcastUnreliable] for details.
     fn send_client_broadcast_unreliable(&self) {
         self.send(Target::ClientBroadcastUnreliable)
     }
@@ -256,7 +277,7 @@ pub trait ModuleMessage: Message {
     #[cfg(feature = "server")]
     /// Sends a reliable message to all clients.
     ///
-    /// See [Target::ClientBroadcastReliable] for specifics.
+    /// See [Target::ClientBroadcastReliable] for details.
     fn send_client_broadcast_reliable(&self) {
         self.send(Target::ClientBroadcastReliable)
     }
@@ -264,7 +285,7 @@ pub trait ModuleMessage: Message {
     #[cfg(feature = "server")]
     /// Sends an unreliable message to a specific client.
     ///
-    /// See [Target::ClientTargetedUnreliable] for specifics.
+    /// See [Target::ClientTargetedUnreliable] for details.
     fn send_client_targeted_unreliable(&self, user_id: String) {
         self.send(Target::ClientTargetedUnreliable(user_id))
     }
@@ -272,7 +293,7 @@ pub trait ModuleMessage: Message {
     #[cfg(feature = "server")]
     /// Sends a reliable message to a specific client.
     ///
-    /// See [Target::ClientTargetedReliable] for specifics.
+    /// See [Target::ClientTargetedReliable] for details.
     fn send_client_targeted_reliable(&self, user_id: String) {
         self.send(Target::ClientTargetedReliable(user_id))
     }

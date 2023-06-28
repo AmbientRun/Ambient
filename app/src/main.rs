@@ -200,7 +200,7 @@ async fn load_manifest(
         // path is a URL, so download the pre-build manifest (with resolved imports)
         let manifest_url = path.url.push("build/ambient.toml").unwrap();
         let manifest_data = manifest_url
-            .download_string(&assets)
+            .download_string(assets)
             .await
             .context("Failed to download ambient.toml.")?;
 

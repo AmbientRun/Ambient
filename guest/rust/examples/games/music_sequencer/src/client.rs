@@ -1,7 +1,17 @@
 use std::time::Duration;
 
-use ambient_api::global::time;
-use ambient_api::{entity::synchronized_resources, messages::Frame, prelude::*};
+use ambient_api::{
+    components::core::{
+        app::name,
+        layout::{
+            fit_horizontal_children, fit_vertical_children, height, space_between_items, width,
+        },
+    },
+    entity::synchronized_resources,
+    global::time,
+    messages::Frame,
+    prelude::*,
+};
 
 mod common;
 use components::bpm;

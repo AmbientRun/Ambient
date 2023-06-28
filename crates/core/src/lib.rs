@@ -26,8 +26,8 @@ pub mod transform;
 pub mod window;
 
 pub use ambient_ecs::generated::components::core::app::{
-    abs_time, description, dtime, main_scene, map_seed, name, project_name, ref_count, selectable,
-    snap_to_ground, tags, ui_scene,
+    absolute_time, delta_time, description, main_scene, map_seed, name, project_name, ref_count,
+    selectable, snap_to_ground, tags, ui_scene,
 };
 
 components!("app", {
@@ -85,7 +85,7 @@ impl SyncAssetKey<Arc<winit::window::Window>> for WindowKey {}
 
 pub fn remove_at_time_system() -> DynSystem {
     query((remove_at_time(),)).to_system(|q, world, qs, _| {
-        let time = *world.resource(self::abs_time());
+        let time = *world.resource(self::absolute_time());
         for (id, (remove_at_time,)) in q.collect_cloned(world, qs) {
             if time >= remove_at_time {
                 world.despawn(id);
@@ -123,8 +123,8 @@ impl FixedTimestepSystem {
 impl System for FixedTimestepSystem {
     #[ambient_profiling::function]
     fn run(&mut self, world: &mut World, event: &FrameEvent) {
-        let dtime = *world.resource(self::dtime());
-        self.acc += dtime;
+        let delta_time = *world.resource(self::delta_time());
+        self.acc += delta_time;
         while self.acc >= self.timestep {
             self.acc -= self.timestep;
             self.system.run(world, event);
@@ -145,16 +145,16 @@ impl TimeResourcesSystem {
 }
 impl System for TimeResourcesSystem {
     fn run(&mut self, world: &mut World, _event: &FrameEvent) {
-        let dtime = self.frame_time.elapsed().as_secs_f32();
+        let delta_time = self.frame_time.elapsed().as_secs_f32();
         self.frame_time = Instant::now();
         let time = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap();
         world
-            .set(world.resource_entity(), self::abs_time(), time)
+            .set(world.resource_entity(), self::absolute_time(), time)
             .unwrap();
         world
-            .set(world.resource_entity(), self::dtime(), dtime)
+            .set(world.resource_entity(), self::delta_time(), delta_time)
             .unwrap();
         world
             .set(

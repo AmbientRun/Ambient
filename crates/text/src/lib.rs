@@ -498,7 +498,7 @@ pub struct GlyphVertex {
 }
 
 fn mesh_from_glyph_vertices(vertices: Vec<GlyphVertex>) -> Mesh {
-    assert!(vertices.len() > 0);
+    assert!(!vertices.is_empty());
     let mut positions = Vec::new();
     let mut texcoords = Vec::new();
     let mut normals = Vec::new();

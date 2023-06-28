@@ -15,7 +15,7 @@ components!("app", {
 pub fn set_cursor(world: &World, cursor: CursorIcon) {
     world
         .resource(window_ctl())
-        .send(WindowCtl::SetCursorIcon(cursor.into()))
+        .send(WindowCtl::SetCursorIcon(cursor))
         .ok();
 }
 

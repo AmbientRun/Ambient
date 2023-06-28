@@ -45,13 +45,14 @@ Here is some sample output for the server ECS:
 
 ## Increasing log output
 
-You can also get more logs from specific internal modules, by setting `RUST_LOG=ambient_build=info` for instance. Here are some general tips:
+You can also increase the logging output from specific internal modules using the `RUST_LOG` environment variable,
+which accepts `module=log_level` pairs that are comma-sepparated. Here are some general tips:
 
-- To debug **your asset pipeline**, set `RUST_LOG=ambient_build=info`. For even more logs you can set `RUST_LOG=ambient_build=info,ambient_model_import=info`
-- To debug **rendering**, set `RUST_LOG=ambient_renderer=info`
-- To debug **networking**, set `RUST_LOG=ambient_network=info`
-- To debug **physics**, set `RUST_LOG=ambient_physics=info`
-- To debug everything, set `RUST_LOG=info`. To get even more logs set `RUST_LOG=debug`
+- To debug **your asset pipeline**, set `RUST_LOG=ambient_build=info`. For even more logs, you can set `RUST_LOG=ambient_build=info,ambient_model_import=info`.
+- To debug **rendering**, set `RUST_LOG=ambient_renderer=info`.
+- To debug **networking**, set `RUST_LOG=ambient_network=info`.
+- To debug **physics**, set `RUST_LOG=ambient_physics=info`.
+- To debug everything, set `RUST_LOG=info`. To get even more logs set `RUST_LOG=debug`.
 
 ## Physics
 

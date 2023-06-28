@@ -19,10 +19,10 @@
 
 - [Getting content](reference/getting_content.md)
 - [Runtime](reference/runtime.md)
-- [Project](reference/project.md)
+- [Ember](reference/ember.md)
 - [ECS](reference/ecs.md)
 - [Models](reference/models.md)
-- [Hierarchies & Transforms](reference/hierarchies.md)
+- [Hierarchies and transforms](reference/hierarchies.md)
 - [Asset pipeline](reference/asset_pipeline.md)
 - [Networking](reference/networking.md)
 - [Animations](reference/animations.md)

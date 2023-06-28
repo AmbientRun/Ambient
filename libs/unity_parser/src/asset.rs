@@ -117,7 +117,7 @@ impl Asset {
                                     + channels[UnityVertexAttribs::TexCoord0 as usize + texcoord]
                                         .offset)
                                     / 4;
-                                vec2(vertex_data[offset + 0], 1. - vertex_data[offset + 1])
+                                vec2(vertex_data[offset], 1. - vertex_data[offset + 1])
                             })
                             .collect_vec(),
                     )

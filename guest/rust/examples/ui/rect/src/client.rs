@@ -1,4 +1,13 @@
-use ambient_api::prelude::*;
+use ambient_api::{
+    components::core::{
+        layout::{height, space_between_items, width},
+        rect::{
+            background_color, border_color, border_radius, border_thickness, line_from, line_to,
+            line_width,
+        },
+    },
+    prelude::*,
+};
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {

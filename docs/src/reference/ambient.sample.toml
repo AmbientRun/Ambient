@@ -3,11 +3,11 @@
 #
 [ember]
 # This must be a snake-cased name.
-id = "my_cool_project"
+id = "my_cool_ember"
 # This name is human-readable and can contain anything.
-name = "My Cool Project"
+name = "My Cool Ember"
 # This description is human-readable and can contain anything.
-description = "A sample project that's the coolest thing ever."
+description = "A sample ember that's the coolest thing ever."
 # Embers are expected to use (major, minor, patch) semantic versioning.
 # Other formats are not accepted. This requirement may be relaxed later.
 version = "0.0.1"
@@ -27,7 +27,7 @@ version = "0.0.1"
 feature-multibuild = ["client", "server"]
 
 #
-# Custom components defined by this project.
+# Custom components defined by this ember.
 # Components are used to store data on entities.
 #
 [components]
@@ -55,7 +55,7 @@ attributes = ["Debuggable"]
 "cool::component" = { type = "I32", name = "Cool Component", description = "A cool component", attributes = ["Debuggable"] }
 
 #
-# Custom concepts defined by this project.
+# Custom concepts defined by this ember.
 # Concepts are used to define a set of components that can be attached to an entity.
 #
 [concepts]
@@ -66,20 +66,20 @@ name = "Concept 1"
 description = "The best"
 [concepts.transformable.components]
 # Each component needs to be specified with a default value.
-# At time of writing, you can only use components defined in this project manifest.
+# At time of writing, you can only use components defined in this ember manifest.
 cool_component = 0
 
 # A concept that extends `concept1` and has both `cool_component` and `cool_component2`.
 [concepts.concept2]
 name = "Concept 2"
 description = "The successor"
-# At time of writing, all concepts being extended must be defined in this project manifest.
+# At time of writing, all concepts being extended must be defined in this ember manifest.
 extends = ["concept1"]
 [concepts.concept2.components]
 cool_component2 = 1
 
 #
-# Custom messages defined by this project.
+# Custom messages defined by this ember.
 # Messages are used to communicate between client and server.
 #
 [messages]

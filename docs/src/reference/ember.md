@@ -1,6 +1,6 @@
-# Project
+# Ember
 
-All Ambient projects must have an `ambient.toml` project manifest that describes their functionality. This format is in flux, but is inspired by Rust's `Cargo.toml`.
+All Ambient embers must have an `ambient.toml` manifest that describes their functionality. This format is in flux, but is inspired by Rust's `Cargo.toml`.
 
 At present, dependencies are _not_ supported, but this will change in future.
 
@@ -10,32 +10,32 @@ All `.wasm` components in the `build/{client, server}` directory will be loaded 
 
 This means any `.wasm` that implements the Ambient [WIT interface](https://github.com/AmbientRun/Ambient/tree/main/crates/wasm/wit) and targets WASI snapshot 2 (or uses an adapter that targets WASI snapshot 2) should run within Ambient.
 
-As a convenience for Rust users, Ambient will automatically build a `Cargo.toml` at the root of your project, if present, as `wasm32-wasi` for the features specified in `build.rust.feature-multibuild` in `ambient.toml` (defaults to `client` and `server`).
+As a convenience for Rust users, Ambient will automatically build a `Cargo.toml` at the root of your ember, if present, as `wasm32-wasi` for the features specified in `build.rust.feature-multibuild` in `ambient.toml` (defaults to `client` and `server`).
 
-The default new project template will create `client.rs` and `server.rs` files, with a `Cargo.toml` preconfigured with targets for both. The resulting WASM bytecode files are then converted to components and placed in `build/{client, server}`.
+The default new ember template will create `client.rs` and `server.rs` files, with a `Cargo.toml` preconfigured with targets for both. The resulting WASM bytecode files are then converted to components and placed in `build/{client, server}`.
 
 The process it takes is equivalent to these commands:
 
 ```sh
-cd your_project
+cd your_ember
 cargo build --target wasm32-wasi --features client
-wasm-tools component new target/wasm32-wasi/debug/your_project_client.wasm -o build/client/your_project.wasm --adapt wasi_snapshot_preview1.wasm
+wasm-tools component new target/wasm32-wasi/debug/your_ember_client.wasm -o build/client/your_ember.wasm --adapt wasi_snapshot_preview1.wasm
 cargo build --target wasm32-wasi --features server
-wasm-tools component new target/wasm32-wasi/debug/your_project_server.wasm -o build/server/your_project.wasm --adapt wasi_snapshot_preview1.wasm
+wasm-tools component new target/wasm32-wasi/debug/your_ember_server.wasm -o build/server/your_ember.wasm --adapt wasi_snapshot_preview1.wasm
 ```
 
 using [wasm-tools](https://github.com/bytecodealliance/wasm-tools) and a bundled version of the [preview2-prototyping WASI adapter](https://github.com/bytecodealliance/preview2-prototyping).
 
 ## Reference
 
-`Identifier`s are snake-case ASCII identifiers (as a string), and `IdentifierPath`s are a double-colon-separated list of `Identifier`s. For example, `my_project` is an `Identifier`, and `my_project::my_component` is an `IdentifierPath`.
+`Identifier`s are snake-case ASCII identifiers (as a string), and `IdentifierPath`s are a double-colon-separated list of `Identifier`s. For example, `my_ember` is an `Identifier`, and `my_ember::my_component` is an `IdentifierPath`.
 
 ### Ember / `[ember]`
 
 The ember section contains metadata about the ember itself, such as its name and version.
 
-| Property      | Type         | Description                                                                                   |
-| ------------- | ------------ | --------------------------------------------------------------------------------------------- |
+| Property      | Type         | Description                                                                                 |
+| ------------- | ------------ | ------------------------------------------------------------------------------------------- |
 | `id`          | `Identifier` | _Required_. The ember's snake-cased ID.                                                     |
 | `name`        | `String`     | _Required_. A human-readable name for the ember.                                            |
 | `description` | `String`     | _Required_. A human-readable description of the ember.                                      |
@@ -43,17 +43,17 @@ The ember section contains metadata about the ember itself, such as its name and
 
 ### Build / `[build]`
 
-The build section contains settings related to building the project.
+The build section contains settings related to building the ember.
 
 #### Rust Settings / `[build.rust]`
 
-| Property             | Type       | Description                                                                                                                                                                                                                                                                                                                  |
-| -------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `feature-multibuild` | `String[]` | _Optional_. An array of strings defining the features to be used when building the project. This is used to build the same code for both client and server.<br /><br />Client and server are built by default (e.g. `["client", "server"]`); this is exposed so that you can disable building one side entirely if required. |
+| Property             | Type       | Description                                                                                                                                                                                                                                                                                                                |
+| -------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feature-multibuild` | `String[]` | _Optional_. An array of strings defining the features to be used when building the ember. This is used to build the same code for both client and server.<br /><br />Client and server are built by default (e.g. `["client", "server"]`); this is exposed so that you can disable building one side entirely if required. |
 
 ### Components / `[components]`
 
-The components section contains custom components defined by the project. Components are used to store data on entities.
+The components section contains custom components defined by the ember. Components are used to store data on entities.
 
 This is a TOML table, where the keys are the component IDs (`IdentifierPath`), and the values are the component definitions.
 
@@ -101,22 +101,22 @@ A `ComponentAttribute` is a string that can be one of the following:
 
 ### Concepts / `[concepts]`
 
-The concepts section contains custom concepts defined by the project. Concepts are used to define a set of components that can be attached to an entity.
+The concepts section contains custom concepts defined by the ember. Concepts are used to define a set of components that can be attached to an entity.
 
 This is a TOML table, where the keys are the concept IDs (`Identifier`), and the values are the concept definitions.
 
-| Property      | Type                       | Description                                                                                                                    |
-| ------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `name`        | `String`                   | _Required_. A human-readable name for the concept.                                                                             |
-| `description` | `String`                   | _Required_. A human-readable description of the concept.                                                                       |
-| `extends`     | `String[]`                 | _Optional_. An array of concepts to extend. Must be defined in this project manifest.                                          |
-| `components`  | `Map<IdentifierPath, any>` | _Required_. An object containing the components and their default values. Must be components defined in this project manifest. |
+| Property      | Type                       | Description                                                                                                                  |
+| ------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `name`        | `String`                   | _Required_. A human-readable name for the concept.                                                                           |
+| `description` | `String`                   | _Required_. A human-readable description of the concept.                                                                     |
+| `extends`     | `String[]`                 | _Optional_. An array of concepts to extend. Must be defined in this ember manifest.                                          |
+| `components`  | `Map<IdentifierPath, any>` | _Required_. An object containing the components and their default values. Must be components defined in this ember manifest. |
 
-The `components` is an object where the keys are `IdentifierPath`s of components defined in the project manifest (at this time, it must be in the same manifest), and the values are the default values for those components in the concept.
+The `components` is an object where the keys are `IdentifierPath`s of components defined in the ember manifest (at this time, it must be in the same manifest), and the values are the default values for those components in the concept.
 
 ### Messages / `[messages]`
 
-The messages section contains custom messages defined by the project. Messages are used to communicate between client and server.
+The messages section contains custom messages defined by the ember. Messages are used to communicate between client and server.
 
 For an example of how to use messages, see the [messaging example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/messaging).
 
