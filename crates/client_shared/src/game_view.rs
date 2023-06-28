@@ -1,16 +1,17 @@
 use std::sync::Arc;
 
 use ambient_core::window::{
-    cursor_position, window_logical_size, window_physical_size, window_scale_factor,
+    cursor_position, set_cursor, window_logical_size, window_physical_size, window_scale_factor,
 };
 use ambient_debugger::Debugger;
-use ambient_ecs::EntityId;
+use ambient_ecs::{generated::messages, EntityId};
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::client::{GameClient, GameClientRenderTarget, GameClientWorld};
+use ambient_shared_types::CursorIcon;
 use ambient_ui_native::{
-    cb, docking, padding, Borders, Button, Dock, Docking, FlowColumn, MeasureSize, ScrollArea,
-    ScrollAreaSizing, UIExt, STREET,
+    cb, docking, padding, width, Borders, Button, Dock, MeasureSize, ScrollArea, ScrollAreaSizing,
+    UIExt, STREET,
 };
 use glam::{uvec2, vec4, Vec2};
 
@@ -18,22 +19,48 @@ use glam::{uvec2, vec4, Vec2};
 pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     let (state, _) = hooks.consume_context::<GameClient>().unwrap();
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
+
     let (show_ecs, set_show_ecs) = hooks.use_state(true);
     let (ecs_size, set_ecs_size) = hooks.use_state(Vec2::ZERO);
+    let (w, set_w) = hooks.use_state(300.0);
+    let (w_memory, set_w_memory) = hooks.use_state(0.0);
+    let (mouse_on_edge, set_mouse_on_edge) = hooks.use_state(false);
+    let (should_track_resize, set_should_track_resize) = hooks.use_state(false);
 
-    let set_ecs_size = cb(move |v| {
-        tracing::info!("Set ecs size for debugger {v}");
-        set_ecs_size(v)
+    hooks.use_runtime_message::<messages::WindowMouseInput>({
+        move |_world, event| {
+            let pressed = event.pressed;
+            if pressed && mouse_on_edge {
+                set_should_track_resize(true);
+            } else {
+                set_should_track_resize(false);
+            }
+        }
     });
 
     hooks.use_frame({
         let state = state.clone();
         let render_target = render_target.clone();
+        let set_w = set_w.clone();
+        let set_w_memory = set_w_memory.clone();
         move |world| {
             let mut state = state.game_state.lock();
+
             let scale_factor = *world.resource(window_scale_factor());
             let mut mouse_pos = *world.resource(cursor_position());
+            if (w - mouse_pos.x).abs() < 5.0 {
+                set_cursor(world, CursorIcon::ColResize.into());
+                set_mouse_on_edge(true);
+            } else {
+                set_cursor(world, CursorIcon::Default.into());
+                set_mouse_on_edge(false);
+            }
+            if should_track_resize {
+                set_w(mouse_pos.x);
+                set_w_memory(mouse_pos.x);
+            }
             mouse_pos.x -= ecs_size.x;
+
             state
                 .world
                 .set_if_changed(EntityId::resources(), cursor_position(), mouse_pos)
@@ -43,7 +70,6 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                 render_target.0.color_buffer.size.width,
                 render_target.0.color_buffer.size.height,
             );
-
             state
                 .world
                 .set_if_changed(
@@ -66,7 +92,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     Dock::el([
         if show_debug {
             MeasureSize::el(
-                FlowColumn::el([
+                Dock::el([
                     Button::new(if show_ecs { "\u{f137}" } else { "\u{f138}" }, move |_| {
                         set_show_ecs(!show_ecs)
                     })
@@ -74,8 +100,13 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                     .toggled(show_ecs)
                     .el(),
                     if show_ecs {
+                        if w_memory != 0.0 {
+                            set_w(w_memory)
+                        } else {
+                            set_w(300.0)
+                        };
                         ScrollArea::el(
-                            ScrollAreaSizing::FitChildrenWidth,
+                            ScrollAreaSizing::FitParentWidth,
                             ECSEditor {
                                 world: Arc::new(InspectableAsyncWorld(cb({
                                     let state = state.clone();
@@ -89,11 +120,13 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                             .memoize_subtree(state.uid),
                         )
                     } else {
+                        set_w(0.0);
                         Element::new()
                     },
                 ])
-                .with(docking(), Docking::Left)
-                .with_background(vec4(0., 0., 1., 1.))
+                .with(width(), w)
+                .with(docking(), ambient_layout::Docking::Left)
+                .with_background(vec4(0., 0., 0., 1.))
                 .with(padding(), Borders::even(STREET).into()),
                 set_ecs_size,
             )

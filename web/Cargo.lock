@@ -210,11 +210,15 @@ name = "ambient_client_shared"
 version = "0.0.0"
 dependencies = [
  "ambient_core",
+ "ambient_debugger",
  "ambient_ecs",
+ "ambient_ecs_editor",
  "ambient_element",
  "ambient_input",
+ "ambient_layout",
  "ambient_network",
  "ambient_shared_types",
+ "ambient_ui_native",
  "glam",
 ]
 
