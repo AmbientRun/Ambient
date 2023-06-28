@@ -97,11 +97,11 @@ impl WeakAudioMixer {
 
 #[derive(Clone, Debug)]
 pub struct AudioMixer {
-    inner: Arc<AudioMixerInner>,
+    pub inner: Arc<AudioMixerInner>,
 }
 
-struct AudioMixerInner {
-    sample_rate: SampleRate,
+pub struct AudioMixerInner {
+    pub sample_rate: SampleRate,
     waiters: Mutex<SignalVec>,
     sources: Mutex<SlotMap<SoundId, PlayingSound>>,
 }
