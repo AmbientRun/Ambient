@@ -48,7 +48,7 @@ pub async fn main() {
 
     ambient_api::messages::Collision::subscribe(move |msg| {
         println!("Bonk! {:?} collided", msg.ids);
-        messages::Bonk::new(cube, camera).send_client_broadcast_reliable();
+        messages::Bonk::new(cube, camera).send_client_broadcast_unreliable();
     });
 
     ambient_api::messages::Frame::subscribe(move |_| {
