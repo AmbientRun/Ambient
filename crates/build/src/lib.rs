@@ -1,6 +1,9 @@
 use std::{
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
 };
 
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
@@ -109,6 +112,8 @@ async fn build_assets(
 
     let assets = AssetCache::new_with_config(tokio::runtime::Handle::current(), None);
 
+    let has_errored = Arc::new(AtomicBool::new(false));
+
     PhysicsKey.insert(&assets, physics);
     let ctx = ProcessCtx {
         assets: assets.clone(),
@@ -133,9 +138,13 @@ async fn build_assets(
             log::info!("{}", msg);
             async {}.boxed()
         }),
-        on_error: Arc::new(|err| {
-            log::error!("{:?}", err);
-            async {}.boxed()
+        on_error: Arc::new({
+            let has_errored = has_errored.clone();
+            move |err| {
+                log::error!("{:?}", err);
+                has_errored.store(true, Ordering::SeqCst);
+                async {}.boxed()
+            }
         }),
     };
 
@@ -143,7 +152,11 @@ async fn build_assets(
 
     pipelines::process_pipelines(&ctx)
         .await
-        .with_context(|| format!("Failed to proccess pipelines for {assets_path:?}"))?;
+        .with_context(|| format!("Failed to process pipelines for {assets_path:?}"))?;
+
+    if has_errored.load(Ordering::SeqCst) {
+        anyhow::bail!("Failed to build assets");
+    }
 
     Ok(())
 }
