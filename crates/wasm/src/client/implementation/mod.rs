@@ -77,12 +77,31 @@ impl wit::component::Host for Bindings {
         shared::implementation::component::get_index(id)
     }
 
+    async fn get_id(&mut self, index: u32) -> anyhow::Result<Option<String>> {
+        shared::implementation::component::get_id(index)
+    }
+
     async fn get_component(
         &mut self,
         entity: wit::types::EntityId,
         index: u32,
     ) -> anyhow::Result<Option<wit::component::Value>> {
         shared::implementation::component::get_component(self.world(), entity, index)
+    }
+
+    async fn get_components(
+        &mut self,
+        entity: wit::types::EntityId,
+        indices: Vec<u32>,
+    ) -> anyhow::Result<wit::entity::EntityData> {
+        shared::implementation::component::get_components(self.world(), entity, indices)
+    }
+
+    async fn get_all_components(
+        &mut self,
+        entity: wit::types::EntityId,
+    ) -> anyhow::Result<wit::entity::EntityData> {
+        shared::implementation::component::get_all_components(self.world(), entity)
     }
 
     async fn add_component(

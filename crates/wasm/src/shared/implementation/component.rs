@@ -1,6 +1,6 @@
 use ambient_ecs::{
-    with_component_registry, Component, ComponentDesc, ComponentEntry, ComponentSet,
-    ComponentValue, Entity, EntityId, PrimitiveComponentType as PCT, QueryEvent, QueryState, World,
+    with_component_registry, Component, ComponentSet, ComponentValue, Entity, EntityAccessor,
+    EntityId, PrimitiveComponent, PrimitiveComponentType as PCT, QueryEvent, QueryState, World,
 };
 use ambient_shared_types::primitive_component_definitions;
 use ambient_shared_types::{
@@ -27,221 +27,281 @@ pub fn get_index(id: String) -> anyhow::Result<Option<u32>> {
     }))
 }
 
+pub fn get_id(index: u32) -> anyhow::Result<Option<String>> {
+    Ok(with_component_registry(|r| {
+        Some(r.get_by_index(index)?.path())
+    }))
+}
+
 pub fn get_component_type<T: ComponentValue>(component_index: u32) -> Option<Component<T>> {
     let desc = with_component_registry(|r| r.get_by_index(component_index))?;
 
     Some(Component::new(desc))
 }
 
+trait WitToHostOperation<Context> {
+    fn run<T: ComponentValue>(
+        &mut self,
+        ctx: Context,
+        component: Component<T>,
+        value: T,
+    ) -> anyhow::Result<()>;
+}
+trait HostToWitOperation<Context> {
+    fn run<T: ComponentValue + IntoBindgen>(
+        &mut self,
+        ctx: Context,
+        component: Component<T>,
+    ) -> anyhow::Result<Option<T>>;
+}
+
 macro_rules! define_component_types {
     ($(($value:ident, $type:ty)),*) => { paste! {
-        fn read_primitive_component_from_world(
-            world: &World,
-            entity_id: EntityId,
-            primitive_component: ambient_ecs::PrimitiveComponent,
-        ) -> Option<wit::component::Value> {
-            use ambient_ecs::PrimitiveComponentType as PCT;
-            use wit::component::{Value as V, VecValue as VV, OptionValue as OV};
-
-            fn get<T: IntoBindgen + Clone + Send + Sync + 'static>(
-                world: &World,
-                id: EntityId,
-                component: ComponentDesc,
-            ) -> Option<<T as IntoBindgen>::Item> {
-                Some(world.get_cloned(id, Component::<T>::new(component)).ok()?.into_bindgen())
-            }
-
-            let c = primitive_component.desc;
-            Some(match primitive_component.ty {
-                $(
-                PCT::$value            => V::[<Type $value>](get::<$type>(world, entity_id, c)?),
-                PCT::[<Vec $value>]    => V::TypeVec(VV::[<Type $value>](get::<Vec<$type>>(world, entity_id, c)?),),
-                PCT::[<Option $value>] => V::TypeOption(OV::[<Type $value>](get::<Option<$type>>(world, entity_id, c)?),),
-                )*
-            })
-        }
-
-        pub(crate) fn read_primitive_component_from_entity_accessor(
-            world: &World,
-            entity_accessor: &ambient_ecs::EntityAccessor,
-            primitive_component: ambient_ecs::PrimitiveComponent,
-        ) -> Option<wit::component::Value> {
-            use ambient_ecs::PrimitiveComponentType as PCT;
-            use wit::component::{Value as V, VecValue as VV, OptionValue as OV};
-
-            fn get<T: IntoBindgen + Clone + Send + Sync + 'static>(
-                world: &World,
-                entity_accessor: &ambient_ecs::EntityAccessor,
-                component: ComponentDesc,
-            ) -> <T as IntoBindgen>::Item {
-                entity_accessor.get(world, Component::<T>::new(component)).clone().into_bindgen()
-            }
-
-            let c = primitive_component.desc;
-            Some(match primitive_component.ty {
-                $(
-                PCT::$value            => V::[<Type $value>](get::<$type>(world, entity_accessor, c).clone()),
-                PCT::[<Vec $value>]    => V::TypeVec(VV::[<Type $value>](get::<Vec<$type>>(world, entity_accessor, c).clone()),),
-                PCT::[<Option $value>] => V::TypeOption(OV::[<Type $value>](get::<Option<$type>>(world, entity_accessor, c).clone()),),
-                )*
-            })
-        }
-
-        pub(crate) fn get_component(
-            world: &World,
-            entity_id: wit::types::EntityId,
+        /// Given a WIT value and a component index, do something with the
+        /// typed component and value.
+        fn wit_to_host_operation<Context>(
+            ctx: Context,
             index: u32,
+            value: wit::component::Value,
+            mut operation: impl WitToHostOperation<Context>,
+        ) -> anyhow::Result<()> {
+            use wit::component::{OptionValue as OV, Value as V, VecValue as VV};
+            match value {
+                $(
+                V::[<Type $value >](value) => {
+                    if let Some(component) = get_component_type::<$type>(index) {
+                        operation.run(ctx, component, value.from_bindgen())?;
+                    }
+                }
+                V::TypeVec(VV::[<Type $value >](value)) => {
+                    if let Some(component) = get_component_type::<Vec<$type>>(index) {
+                        operation.run(ctx, component, value.from_bindgen())?;
+                    }
+                }
+                V::TypeOption(OV::[<Type $value >](value)) => {
+                    if let Some(component) = get_component_type::<Option<$type>>(index) {
+                        operation.run(ctx, component, value.from_bindgen())?;
+                    }
+                }
+                ) *
+            }
+
+            Ok(())
+        }
+
+        /// Given a primitive component and a host context, extract the
+        /// value from the host context and return it as a WIT value.
+        fn host_to_wit_operation<Context>(
+            ctx: Context,
+            primitive_component: ambient_ecs::PrimitiveComponent,
+            mut operation: impl HostToWitOperation<Context>,
         ) -> anyhow::Result<Option<wit::component::Value>> {
-            let Some(primitive_component) = with_component_registry(|r| r.get_primitive_component(index)) else { return Ok(None); };
-            Ok(read_primitive_component_from_world(world, entity_id.from_bindgen(), primitive_component))
-        }
+            use wit::component::{OptionValue as OV, Value as V, VecValue as VV};
 
-        #[allow(dead_code)]
-        pub(crate) fn convert_entity_data_to_components(ed: &Entity) -> Vec<(u32, wit::component::Value)> {
-            use wit::component::{VecValue as VV, OptionValue as OV, Value as V};
-
-            with_component_registry(|cr| {
-                ed.iter()
-                    .flat_map(|cu| {
-                        let index = cu.index();
-                        let primitive_component = cr.get_primitive_component(index)?;
-                        fn get<T: IntoBindgen + Clone + Send + Sync + 'static>(
-                            entry: &ComponentEntry,
-                        ) -> Option<<T as IntoBindgen>::Item> {
-                            Some(
-                                entry
-                                    .downcast_cloned::<T>()
-                                    .into_bindgen(),
-                            )
-                        }
-
-                        let value = match primitive_component.ty {
-                            $(
-                            PCT::$value            => V::[<Type $value>](get::<$type>(cu)?),
-                            PCT::[<Vec $value>]    => V::TypeVec(VV::[<Type $value>](get::<Vec<$type>>(cu)?),),
-                            PCT::[<Option $value>] => V::TypeOption(OV::[<Type $value>](get::<Option<$type>>(cu)?),),
-                            )*
-                        };
-
-                        Some((index, value))
-                    })
-                    .collect()
-            })
-        }
-
-        // todo: find a nice efficient abstraction to tie these three functions together
-        pub(crate) fn convert_components_to_entity_data(
-            components: wit::entity::EntityData,
-        ) -> Entity {
-            use wit::component::{VecValue as VV, OptionValue as OV, Value as V};
-            with_component_registry(|cr| {
-                components
-                    .into_iter()
-                    .flat_map(|(index, value)| {
-                        let primitive_component = cr.get_primitive_component(index)?;
-                        let c = primitive_component.desc;
-
-                        match (primitive_component.ty, value) {
-                            $(
-                            (PCT::$value, V::[<Type $value>](v))                              => Some(ComponentEntry::from_raw_parts(c, v.from_bindgen())),
-                            (PCT::[<Vec $value>], V::TypeVec(VV::[<Type $value>](v)))      => Some(ComponentEntry::from_raw_parts(c, v.from_bindgen())),
-                            (PCT::[<Option $value>], V::TypeOption(OV::[<Type $value>](v))) => Some(ComponentEntry::from_raw_parts(c, v.from_bindgen()))
-                            ),*,
-                            _ => None,
-                        }
-                    })
-                    .collect()
-            })
-        }
-
-        pub(crate) fn add_component(
-            world: &mut World,
-            entity_id: wit::types::EntityId,
-            index: u32,
-            value: wit::component::Value,
-        ) -> anyhow::Result<()> {
-            use wit::component::{VecValue as VV, OptionValue as OV, Value as V};
-
-            let entity_id = entity_id.from_bindgen();
-            match value {
+            Ok(match primitive_component.ty {
                 $(
-                V::[<Type $value >](value) => {
-                    if let Some(component) = get_component_type::<$type>(index) {
-                        world.add_component(entity_id, component, value.from_bindgen())?;
-                    }
-                }
-                V::TypeVec(VV::[<Type $value >](value)) => {
-                    if let Some(component) = get_component_type::<Vec<$type>>(index) {
-                        world.add_component(entity_id, component, value.from_bindgen())?;
-                    }
-                }
-                V::TypeOption(OV::[<Type $value >](value)) => {
-                    if let Some(component) = get_component_type::<Option<$type>>(index) {
-                        world.add_component(entity_id, component, value.from_bindgen())?;
-                    }
-                }
-                ) *
-            }
-
-            Ok(())
-        }
-
-        pub(crate) fn set_component(
-            world: &mut World,
-            entity_id: wit::types::EntityId,
-            index: u32,
-            value: wit::component::Value,
-        ) -> anyhow::Result<()> {
-            use wit::component::{VecValue as VV, OptionValue as OV, Value as V};
-
-            let entity_id = entity_id.from_bindgen();
-            match value {
-                $(
-                V::[<Type $value >](value) => {
-                    if let Some(component) = get_component_type::<$type>(index) {
-                        world.set(entity_id, component, value.from_bindgen())?;
-                    }
-                }
-                V::TypeVec(VV::[<Type $value >](value)) => {
-                    if let Some(component) = get_component_type::<Vec<$type>>(index) {
-                        world.set(entity_id, component, value.from_bindgen())?;
-                    }
-                }
-                V::TypeOption(OV::[<Type $value >](value)) => {
-                    if let Some(component) = get_component_type::<Option<$type>>(index) {
-                        world.set(entity_id, component, value.from_bindgen())?;
-                    }
-                }
-                ) *
-            }
-
-            Ok(())
+                PCT::$value            => {
+                    let component = Component::<$type>::new(primitive_component.desc);
+                    operation.run(ctx, component)?.map(|v| V::[<Type $value>](v.into_bindgen()))
+                },
+                PCT::[<Vec $value>]    => {
+                    let component = Component::<Vec<$type>>::new(primitive_component.desc);
+                    operation.run(ctx, component)?.map(|v| V::TypeVec(VV::[<Type $value>](v.into_bindgen())))
+                },
+                PCT::[<Option $value>] => {
+                    let component = Component::<Option<$type>>::new(primitive_component.desc);
+                    operation.run(ctx, component)?.map(|v| V::TypeOption(OV::[<Type $value>](v.into_bindgen())))
+                },
+                )*
+            })
         }
     }};
 }
 
 primitive_component_definitions!(define_component_types);
 
-pub(crate) fn add_components(
+pub(crate) fn add_component(
     world: &mut World,
-    entity_id: wit::types::EntityId,
-    data: wit::entity::EntityData,
+    id: wit::entity::EntityId,
+    index: u32,
+    value: wit::component::Value,
 ) -> anyhow::Result<()> {
-    Ok(world.add_components(
-        entity_id.from_bindgen(),
-        convert_components_to_entity_data(data),
-    )?)
+    struct WorldAdd(EntityId);
+    impl<'a> WitToHostOperation<&'a mut World> for WorldAdd {
+        fn run<T: ComponentValue>(
+            &mut self,
+            ctx: &'a mut World,
+            component: Component<T>,
+            value: T,
+        ) -> anyhow::Result<()> {
+            ctx.add_component(self.0, component, value)?;
+            Ok(())
+        }
+    }
+
+    wit_to_host_operation(world, index, value, WorldAdd(id.from_bindgen()))
+}
+
+pub(crate) fn set_component(
+    world: &mut World,
+    id: wit::entity::EntityId,
+    index: u32,
+    value: wit::component::Value,
+) -> anyhow::Result<()> {
+    struct WorldSet(EntityId);
+    impl<'a> WitToHostOperation<&'a mut World> for WorldSet {
+        fn run<T: ComponentValue>(
+            &mut self,
+            ctx: &'a mut World,
+            component: Component<T>,
+            value: T,
+        ) -> anyhow::Result<()> {
+            ctx.set(self.0, component, value)?;
+            Ok(())
+        }
+    }
+
+    wit_to_host_operation(world, index, value, WorldSet(id.from_bindgen()))
 }
 
 pub(crate) fn set_components(
     world: &mut World,
-    entity_id: wit::types::EntityId,
+    id: wit::entity::EntityId,
     data: wit::entity::EntityData,
 ) -> anyhow::Result<()> {
-    Ok(world.set_components(
-        entity_id.from_bindgen(),
-        convert_components_to_entity_data(data),
-    )?)
+    Ok(world.set_components(id.from_bindgen(), wit_entity_to_host_entity(data)?)?)
+}
+
+pub(crate) fn add_components(
+    world: &mut World,
+    id: wit::entity::EntityId,
+    data: wit::entity::EntityData,
+) -> anyhow::Result<()> {
+    Ok(world.add_components(id.from_bindgen(), wit_entity_to_host_entity(data)?)?)
+}
+
+pub(crate) fn get_component(
+    world: &World,
+    id: wit::entity::EntityId,
+    index: u32,
+) -> anyhow::Result<Option<wit::component::Value>> {
+    let primitive_component = with_component_registry(|cr| cr.get_primitive_component(index))
+        .with_context(|| format!("the component {index} does not exist"))?;
+
+    get_component_entity_accessor(
+        world,
+        &EntityAccessor::World {
+            id: id.from_bindgen(),
+        },
+        primitive_component,
+    )
+}
+
+fn get_component_entity_accessor<'a>(
+    world: &'a World,
+    ea: &'a EntityAccessor,
+    primitive_component: PrimitiveComponent,
+) -> anyhow::Result<Option<wit::component::Value>> {
+    struct EntityAccessorGet<'a>(&'a EntityAccessor);
+    impl<'a> HostToWitOperation<&'a World> for EntityAccessorGet<'a> {
+        fn run<T: ComponentValue>(
+            &mut self,
+            ctx: &'a World,
+            component: Component<T>,
+        ) -> anyhow::Result<Option<T>> {
+            Ok(self.0.get_optional(ctx, component).cloned())
+        }
+    }
+    host_to_wit_operation(world, primitive_component, EntityAccessorGet(ea))
+}
+
+pub(crate) fn get_components(
+    world: &World,
+    id: wit::entity::EntityId,
+    indices: Vec<u32>,
+) -> anyhow::Result<wit::entity::EntityData> {
+    let primitive_components: Vec<_> = with_component_registry(|cr| {
+        indices
+            .into_iter()
+            .flat_map(|index| Some((index, cr.get_primitive_component(index)?)))
+            .collect()
+    });
+
+    let id = id.from_bindgen();
+    let entity_accessor = EntityAccessor::World { id };
+    let mut entity = wit::entity::EntityData::new();
+    for (index, pc) in primitive_components {
+        if let Some(v) = get_component_entity_accessor(world, &entity_accessor, pc)? {
+            entity.push((index, v));
+        }
+    }
+    Ok(entity)
+}
+
+pub(crate) fn get_all_components(
+    world: &World,
+    id: wit::entity::EntityId,
+) -> anyhow::Result<wit::entity::EntityData> {
+    get_components(
+        world,
+        id,
+        world
+            .get_components(id.from_bindgen())?
+            .into_iter()
+            .map(|d| d.index())
+            .collect(),
+    )
+}
+
+pub(crate) fn wit_entity_to_host_entity(
+    wit_entity: wit::entity::EntityData,
+) -> anyhow::Result<Entity> {
+    struct EntityProducer;
+    impl<'a> WitToHostOperation<&'a mut Entity> for EntityProducer {
+        fn run<T: ComponentValue>(
+            &mut self,
+            ctx: &'a mut Entity,
+            component: Component<T>,
+            value: T,
+        ) -> anyhow::Result<()> {
+            ctx.set(component, value);
+            Ok(())
+        }
+    }
+
+    let mut entity = Entity::new();
+    for (index, value) in wit_entity {
+        wit_to_host_operation(&mut entity, index, value, EntityProducer)?;
+    }
+    Ok(entity)
+}
+
+pub(crate) fn host_entity_to_wit_entity(entity: Entity) -> anyhow::Result<wit::entity::EntityData> {
+    struct EntityExtractor;
+    impl<'a> HostToWitOperation<&'a Entity> for EntityExtractor {
+        fn run<T: ComponentValue>(
+            &mut self,
+            ctx: &'a Entity,
+            component: Component<T>,
+        ) -> anyhow::Result<Option<T>> {
+            Ok(ctx.get_cloned(component))
+        }
+    }
+
+    let components: Vec<_> = with_component_registry(|cr| {
+        entity
+            .iter()
+            .flat_map(|ce| cr.get_primitive_component(ce.index()))
+            .collect()
+    });
+    let mut wit_entity = wit::entity::EntityData::new();
+    for component in components {
+        let index = component.desc.index();
+        if let Some(value) = host_to_wit_operation(&entity, component, EntityExtractor)? {
+            wit_entity.push((index, value));
+        }
+    }
+    Ok(wit_entity)
 }
 
 pub fn has_component(
@@ -360,10 +420,7 @@ pub fn query_eval(
                 ea.id().into_bindgen(),
                 primitive_components
                     .iter()
-                    .map(|pc| {
-                        read_primitive_component_from_entity_accessor(world, &ea, pc.clone())
-                            .unwrap()
-                    })
+                    .flat_map(|pc| get_component_entity_accessor(world, &ea, pc.clone()).unwrap())
                     .collect(),
             )
         })

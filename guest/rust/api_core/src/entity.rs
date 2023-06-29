@@ -4,7 +4,7 @@ use crate::{
     internal::{
         component::{Component, Entity, SupportedValue, UntypedComponent},
         conversion::{FromBindgen, IntoBindgen},
-        wit::{self},
+        wit,
     },
     prelude::block_until,
 };
@@ -93,6 +93,19 @@ pub fn get_component<T: SupportedValue>(entity: EntityId, component: Component<T
         entity.into_bindgen(),
         component.index(),
     )?)
+}
+
+/// Retrieves the components `components` for `entity`. Will return an empty `Entity` if no components are found.
+pub fn get_components(entity: EntityId, components: &[&dyn UntypedComponent]) -> Entity {
+    let components: Vec<_> = components.iter().map(|c| c.index()).collect();
+    wit::component::get_components(entity.into_bindgen(), &components).from_bindgen()
+}
+
+/// Retrieves all guest-visible components for `entity`. Will return an empty `Entity` if no components are found.
+///
+/// Note that this may not be all of the components on the entity, as some components are not visible to the guest.
+pub fn get_all_components(entity: EntityId) -> Entity {
+    wit::component::get_all_components(entity.into_bindgen()).from_bindgen()
 }
 
 /// Adds the component `component` for `entity` with `value`. Will replace an existing component if present.

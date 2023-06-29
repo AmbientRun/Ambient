@@ -13,7 +13,7 @@ use super::{
         conversion::{FromBindgen, IntoBindgen},
         wit,
     },
-    component::{convert_components_to_entity_data, convert_entity_data_to_components},
+    component::{host_entity_to_wit_entity, wit_entity_to_host_entity},
 };
 
 pub fn spawn(
@@ -21,7 +21,7 @@ pub fn spawn(
     spawned_entities: &mut HashSet<EntityId>,
     data: wit::entity::EntityData,
 ) -> anyhow::Result<wit::types::EntityId> {
-    let id = convert_components_to_entity_data(data).spawn(world);
+    let id = wit_entity_to_host_entity(data)?.spawn(world);
     spawned_entities.insert(id);
     Ok(id.into_bindgen())
 }
@@ -33,9 +33,7 @@ pub fn despawn(
 ) -> anyhow::Result<Option<wit::entity::EntityData>> {
     let id = id.from_bindgen();
     spawned_entities.remove(&id);
-    Ok(world
-        .despawn(id)
-        .map(|e| convert_entity_data_to_components(&e)))
+    world.despawn(id).map(host_entity_to_wit_entity).transpose()
 }
 
 pub fn get_transforms_relative_to(
