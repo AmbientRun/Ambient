@@ -74,6 +74,7 @@ impl ClientGameState {
                 Box::new(client_systems),
                 Box::new(world_instance_systems(true)),
                 Box::new(spatial_audio_systems()),
+                Box::new(ambient_world_audio::systems::audio_systems()),
             ],
         );
         let mut renderer = Renderer::new(

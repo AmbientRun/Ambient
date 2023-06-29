@@ -343,8 +343,8 @@ fn toml_value_to_tokens_primitive(
             let i = *i as u32;
             quote! {#i}
         }
-        ("U64", toml::Value::Integer(i)) => {
-            let i = *i as u64;
+        ("U64", toml::Value::String(i)) => {
+            let i = i.parse::<u64>()?;
             quote! {#i}
         }
         ("Quat", toml::Value::Array(a)) => {

@@ -7,6 +7,7 @@ version = "0.3.0-dev"
 includes = [
     "schema/animation.toml",
     "schema/app_.toml",
+    "schema/audio.toml",
     "schema/camera.toml",
     "schema/ecs.toml",
     "schema/input.toml",

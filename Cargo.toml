@@ -157,6 +157,7 @@ prost = "0.11"
 tokio-stream = "0.1"
 tonic = { version = "0.9", features = ["gzip", "tls", "tls-roots"] }
 md-5 = "0.10"
+pollster = "0.3.0"
 
 # Web Client
 web-sys = { version = "0.3.61", features = [
@@ -172,8 +173,9 @@ js-sys = { version = "0.3.61" }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 
+#
 # Networking
-
+#
 time = { version = "0.3", features = ["macros"] }
 quinn = { version = "0.10" }
 rustls-native-certs = "0.6.2"
@@ -182,26 +184,23 @@ mikktspace = { git = "https://github.com/gltf-rs/mikktspace" }
 rustls = { version = "0.21.1", features = ["dangerous_configuration", "quic"] }
 
 rustls-pemfile = "1.0"
+
 # See: https://github.com/hyperium/h3/pull/183
-
-
 h3 = { git = "https://github.com/security-union/h3", branch = "add-webtransport" }
 h3-webtransport = { git = "https://github.com/security-union/h3", branch = "add-webtransport" }
 h3-quinn = { git = "https://github.com/security-union/h3", branch = "add-webtransport" }
 http = { version = "0.2.9" }
-#
-# WASM dependencies. Should be able to move off these once this all begins to stabilise a little.
-#
 
-wasmtime = { version = "8.0.1", features = ["component-model"] }
-# Use published versions of these crates when available, or pull them in ourselves
-wasmtime-wasi = { package = "host", git = "https://github.com/AmbientRun/preview2-prototyping.git", branch = "sync" }
-wasi-cap-std-sync = { git = "https://github.com/AmbientRun/preview2-prototyping.git", branch = "sync" }
-wasi-common = { git = "https://github.com/AmbientRun/preview2-prototyping.git", branch = "sync" }
-wit-bindgen-core = "0.6.0"
-wit-bindgen-rust = "0.6.0"
-wit-component = "0.8.1"
-
+#
+# WASM
+#
+wasmtime = { version = "10.0.1", features = ["component-model"] }
+wasmtime-wasi = "10.0.1"
+wasi-cap-std-sync = "10.0.1"
+wasi-common = "10.0.1"
+wit-bindgen-core = "0.7.0"
+wit-bindgen-rust = "0.7.0"
+wit-component = "0.11.0"
 
 # Required since the webtransport stuff is yet on crates.io
 # TODO: use crates.io dependencies

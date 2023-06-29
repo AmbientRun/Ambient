@@ -1,6 +1,6 @@
-default interface entity {
-    use pkg.types.{entity-id, vec3, quat, mat4}
-    use pkg.component.{entity as entity-data}
+interface entity {
+    use types.{entity-id, vec3, quat, mat4}
+    use component.{entity as entity-data}
 
     get-transforms-relative-to: func(entities: list<entity-id>, origin: entity-id) -> list<mat4>
 

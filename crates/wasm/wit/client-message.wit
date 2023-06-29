@@ -1,5 +1,5 @@
-default interface client-message {
-    use pkg.types.{entity-id}
+interface client-message {
+    use types.{entity-id}
 
     variant target {
         server-unreliable,

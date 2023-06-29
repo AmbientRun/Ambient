@@ -1,0 +1,68 @@
+[ember]
+id = "audio"
+name = "Audio"
+description = "Audio functionality and state."
+
+[components.audio-player]
+type = "empty"
+name = "Audio player"
+description = "The entity is audio player."
+attributes = ["maybe-resource", "debuggable"]
+
+[components.looping]
+type = "bool"
+name = "Looping"
+description = """
+Whether or not the audio should loop.
+"""
+attributes = ["maybe-resource", "debuggable"]
+
+[components.amplitude]
+type = "f32"
+name = "Amplitude"
+description = """
+The amplitude of the audio.
+"""
+attributes = ["maybe-resource", "debuggable"]
+
+[components.panning]
+type = "f32"
+name = "Panning"
+description = """
+The panning of the audio.
+"""
+attributes = ["maybe-resource", "debuggable"]
+
+[components.lpf]
+type = "vec2"
+name = "Low-pass filter"
+description = """
+Low pass filter. The first value is the cutoff frequency, the second is the bandwidth.
+"""
+attributes = ["maybe-resource", "debuggable"]
+
+[components.hpf]
+type = "vec2"
+name = "High-pass filter"
+description = """
+High pass filter. The first value is the cutoff frequency, the second is the bandwidth.
+"""
+attributes = ["maybe-resource", "debuggable"]
+
+[components.audio-url]
+type = "string"
+name = "Audio URL"
+description = """
+The URL of the assets.
+"""
+attributes = ["maybe-resource", "debuggable"]
+
+[components.trigger-at-this-frame]
+type = "bool"
+name = "Trigger at this frame"
+description = """
+The system will watch for this component and trigger the audio at this frame,
+using the other components as parameters.
+Then set it back to false.
+"""
+attributes = ["maybe-resource", "debuggable"]

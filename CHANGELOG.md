@@ -40,7 +40,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 - **Client**: The client can now **run on the web**.
 - **Deploy**: The `ambient deploy` command can now be used to deploy a project to the Ambient runtime services.
-- **Audio**: Spatial audio is now supported for 3D sounds. See the [physics example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/basics/physics/src/client.rs).
+- **Audio**: Spatial audio is now supported for 3D sounds. See the [physics example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/basics/physics/src/client.rs) and [first_person_camera example](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/basics/first_person_camera/src/client.rs)
 - **Networking**: The networking protocol now supports WebTransport for the web client.
 - **Rendering**: Procedural meshes, textures, samplers and materials are no supported on the client. See the [procedural generation example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/procedural_generation).
 

@@ -8,8 +8,13 @@ type = "Game"
 categories = ["Example"]
 
 [components]
+ball-ref = { type = "entity-id", name = "Ball ref", description = "The ball entity.", attributes = [
+    "debuggable",
+    "networked"
+] }
 player-head-ref = { type = "entity-id", name = "Player head ref", description = "The player's head.", attributes = [
     "debuggable",
+    "networked"
 ] }
 player-movement-direction = { type = "vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
     "debuggable",

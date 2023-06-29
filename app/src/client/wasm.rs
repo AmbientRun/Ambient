@@ -1,9 +1,9 @@
 use ambient_audio::Source;
 use ambient_ecs::{EntityId, SystemGroup, World};
 use ambient_wasm::shared::{get_module_name, MessageType};
-use ambient_world_audio::{audio_sender, AudioMessage, SoundInfo};
+use ambient_world_audio::{audio_sender, AudioFx::*, AudioMessage, SoundInfo};
 use flume::{Receiver, Sender};
-use parking_lot::Mutex;
+// use parking_lot::Mutex;
 use std::sync::Arc;
 
 pub fn systems() -> SystemGroup {
@@ -31,6 +31,7 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
     );
 
     let (tx, rx): (Sender<AudioMessage>, Receiver<AudioMessage>) = flume::unbounded();
+    world.add_resource(audio_sender(), Arc::new(tx));
 
     std::thread::spawn(move || {
         let stream = ambient_audio::AudioStream::new().unwrap();
@@ -43,38 +44,43 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                 }
                 AudioMessage::Track {
                     track,
-                    looping,
-                    volume,
                     url,
+                    fx,
                     uid,
                 } => {
-                    let volume = Arc::new(Mutex::new(volume));
-                    let volume_clone = volume.clone();
-
-                    let sound = match looping {
-                        true => stream
-                            .mixer()
-                            .play(track.decode().repeat().gain(volume_clone)),
-                        false => stream.mixer().play(track.decode().gain(volume_clone)),
-                    };
+                    let mut t: Box<dyn Source> = Box::new(track.decode());
+                    for effect in &fx {
+                        match effect {
+                            Panning(pan) => {
+                                t = t.pan(*pan);
+                            }
+                            // Looping => {
+                            //     t = t.repeat();
+                            // }
+                            Amplitude(amp) => {
+                                t = t.gain(*amp);
+                            }
+                            _ => {}
+                        }
+                    }
+                    let sound = stream.mixer().play(t);
                     sound.wait();
                     let sound_info = SoundInfo {
                         url,
-                        looping,
-                        volume,
+                        fx,
                         id: sound.id,
                     };
                     sound_info_lib.insert(uid, sound_info);
                 }
-                AudioMessage::UpdateVolume(target_url, amp) => {
-                    for (_, info) in sound_info_lib
-                        .iter_mut()
-                        .filter(|(_, info)| info.url == target_url)
-                    {
-                        *info.volume.lock() = amp;
-                    }
-                    // log::info!("Updated volume for all sounds with url {} to {}", target_url, amp);
-                }
+                // AudioMessage::UpdateVolume(target_url, amp) => {
+                //     for (_, info) in sound_info_lib
+                //         .iter_mut()
+                //         .filter(|(_, info)| info.url == target_url)
+                //     {
+                //         *info.volume.lock() = amp;
+                //     }
+                //     // log::info!("Updated volume for all sounds with url {} to {}", target_url, amp);
+                // }
                 AudioMessage::Stop(target_url) => {
                     let mut keys_to_remove: Vec<u32> = Vec::new();
 
@@ -107,8 +113,9 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
         }
     });
 
-    world.add_resource(audio_sender(), Arc::new(tx));
-
+    // TODO: this is not working for some reason
+    // let stream = ambient_audio::AudioStream::new().unwrap();
+    // world.add_resource(audio_mixer(), stream.mixer().clone());
     ambient_wasm::client::initialize(world, messenger)?;
 
     Ok(())

@@ -7,7 +7,9 @@ fn main() {
 
     let mixer = stream.mixer();
 
-    let source = SineWave::new(440.0).take(Duration::from_secs(4));
+    let sr = mixer.inner.sample_rate;
+
+    let source = SineWave::new(440.0).sr(sr).take(Duration::from_secs(4));
 
     let source = SineWave::new(440.0)
         .gain(0.5)

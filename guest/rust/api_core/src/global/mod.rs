@@ -13,9 +13,6 @@ pub use shapes::*;
 mod procedurals;
 pub use procedurals::*;
 
-/// Spatial audio system
-pub mod spatial_audio;
-
 // Re-exports from other crates.
 pub use ambient_shared_types::{CursorIcon, ModifiersState, MouseButton, VirtualKeyCode};
 pub use futures::{Future, FutureExt};

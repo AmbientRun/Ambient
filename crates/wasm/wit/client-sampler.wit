@@ -1,5 +1,5 @@
-default interface client-sampler {
-    use pkg.types.{ulid}
+interface client-sampler {
+    use types.{ulid}
 
     variant address-mode {
         clamp-to-edge,
