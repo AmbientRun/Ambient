@@ -134,6 +134,10 @@ pub struct RunCli {
 
 #[derive(Args, Clone, Debug)]
 pub struct ProjectCli {
+    /// Dummy flag to catch Rust users using muscle memory and warn them
+    #[arg(long, short, hide = true)]
+    pub project: bool,
+
     /// The path or URL of the project to run; if not specified, this will default to the current directory
     pub path: Option<String>,
 
