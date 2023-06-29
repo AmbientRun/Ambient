@@ -1,13 +1,4 @@
-use ambient_api::{
-    animation::{get_bone_by_bind_id, BindId},
-    components::core::{
-        app::window_logical_size, model::model_loaded, prefab::prefab_from_url,
-        transform::reset_scale,
-    },
-    concepts::make_transformable,
-    entity::{add_child, wait_for_component},
-    prelude::*,
-};
+use ambient_api::{components::core::app::window_logical_size, prelude::*};
 
 #[main]
 pub fn main() {

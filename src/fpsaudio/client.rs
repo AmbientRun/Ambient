@@ -3,9 +3,10 @@ use ambient_api::prelude::*;
 
 #[main]
 pub fn main() {
+    let firesound = audio::AudioPlayer::new();
     messages::FireSound::subscribe(move |_, msg| {
         let fire_sound_url = asset::url("assets/sound/m4a1.ogg").unwrap();
-        let mut firesound = audio::load(fire_sound_url.clone());
+
         let whoshoot = msg.source;
         let listerner = player::get_local();
 
@@ -22,18 +23,17 @@ pub fn main() {
         //     let s = distance.clone() / 1000.0;
 
         //     sleep(s).await;
-        firesound
-            .volume(
-                ({
-                    if distance <= 1.0 {
-                        1.0
-                    } else {
-                        1.0 / distance.log2()
-                    }
-                })
-                .clamp(0.0, 1.0),
-            )
-            .play();
+        firesound.set_amplitude(
+            ({
+                if distance <= 1.0 {
+                    1.0
+                } else {
+                    1.0 / distance.log2()
+                }
+            })
+            .clamp(0.0, 1.0),
+        );
+        firesound.play(fire_sound_url);
     });
     // });
 }

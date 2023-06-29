@@ -5,21 +5,10 @@ use ambient_api::{
     prelude::*,
 };
 
-use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::{active_camera, aspect_ratio_from_window},
-        ecs::children,
-        model::model_from_url,
-        physics::{
-            angular_velocity, collider_from_url, dynamic, kinematic, linear_velocity,
-            physics_controlled, sphere_collider,
-        },
-        player::{player, user_id},
-        rendering::color,
-        transform::{local_to_parent, rotation, scale, translation},
-    },
-    prelude::*,
+use ambient_api::components::core::{
+    player::player,
+    rendering::color,
+    transform::{local_to_parent, rotation, scale, translation},
 };
 
 #[main]
