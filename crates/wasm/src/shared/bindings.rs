@@ -21,9 +21,7 @@ pub trait BindingsBound:
     + super::wit::entity::Host
     + super::wit::message::Host
     + super::wit::player::Host
-    + super::wit::world_audio::Host
     // Client
-    + super::wit::client_audio::Host
     + super::wit::client_message::Host
     + super::wit::client_player::Host
     + super::wit::client_input::Host

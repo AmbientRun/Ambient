@@ -4,13 +4,13 @@ use components::{ball_ref, player_head_ref};
 #[main]
 fn main() {
     let mut cursor_lock = input::CursorLockGuard::new(true);
+    let spatial_audio_player = audio::SpatialAudioPlayer::new();
 
-    spawn_query((player_head_ref(), ball_ref())).bind(|v| {
+    spawn_query((player_head_ref(), ball_ref())).bind(move |v| {
         for (_id, (head, ball)) in v {
-            spatial_audio::set_listener(head);
-            spatial_audio::play_sound_on_entity(
+            spatial_audio_player.set_listener(head);
+            spatial_audio_player.play_sound_on_entity(
                 asset::url("assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg").unwrap(),
-                1.0,
                 ball,
             );
         }
