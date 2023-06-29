@@ -11,6 +11,7 @@ use crate::{
 };
 
 /// play spatial audio
+#[derive(Debug, Clone)]
 pub struct SpatialAudioPlayer {
     /// the entity that represents the spatial audio player
     pub player: EntityId,

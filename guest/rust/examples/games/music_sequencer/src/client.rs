@@ -79,13 +79,15 @@ fn Track(
 
     let (sound, _) = hooks.use_state_with(|_| {
         let url = entity::get_component(track_id, components::track_audio_url()).unwrap();
-        audio::load(asset::url(url).unwrap())
+        asset::url(url).unwrap()
     });
+
+    let (audio_player, _) = hooks.use_state(audio::AudioPlayer::new());
 
     let (last_cursor, set_last_cursor) = hooks.use_state(0);
     if cursor != last_cursor {
         if track_selection[cursor] != 0 {
-            sound.play();
+            audio_player.play(sound);
         }
         set_last_cursor(cursor);
     }

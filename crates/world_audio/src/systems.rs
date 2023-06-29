@@ -132,7 +132,7 @@ pub fn spatial_audio_systems() -> SystemGroup {
                             runtime.spawn(async move {
                                 let track = AudioFromUrl { url: url.clone() }.get(&assets).await;
                                 async_run.run(move |world| {
-                                    log::info!("______playing sound");
+                                    // log::info!("______playing sound");
                                     let listener_id =
                                         world.get(audio_entity, spatial_audio_listener()).unwrap();
                                     let emitter_id =
