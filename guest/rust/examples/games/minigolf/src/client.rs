@@ -17,12 +17,8 @@ fn main() {
         .send_server_unreliable();
     });
 
-    let mut ball_hit_player = audio::AudioPlayer::new();
-    let mut ball_drop_player = audio::AudioPlayer::new();
-    // audio::load(asset::url("assets/ball-hit.ogg").unwrap());
-
-    // audio::load(asset::url("assets/ball-drop.ogg").unwrap());
-
+    let ball_hit_player = audio::AudioPlayer::new();
+    let ball_drop_player = audio::AudioPlayer::new();
     messages::Hit::subscribe(move |_source, data| {
         let ball = data.ball;
         let vel = entity::get_component(ball, linear_velocity()).unwrap();
@@ -33,7 +29,6 @@ fn main() {
         amp = amp * amp;
         ball_hit_player.set_amplitude(amp);
         ball_hit_player.play(asset::url("assets/ball-hit.ogg").unwrap());
-        // ballhit.looping(false).volume(amp).play();
     });
 
     messages::Bonk::subscribe(move |_source, data| {
@@ -46,6 +41,5 @@ fn main() {
         amp = amp * amp;
         ball_drop_player.set_amplitude(amp);
         ball_drop_player.play(asset::url("assets/ball-drop.ogg").unwrap());
-        // balldrop.looping(false).volume(amp).play();
     });
 }

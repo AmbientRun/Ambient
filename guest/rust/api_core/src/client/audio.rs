@@ -17,6 +17,12 @@ pub struct SpatialAudioPlayer {
     pub player: EntityId,
 }
 
+impl Default for SpatialAudioPlayer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SpatialAudioPlayer {
     pub fn new() -> Self {
         let player = Entity::new()
@@ -60,6 +66,12 @@ impl SpatialAudioPlayer {
 pub struct AudioPlayer {
     /// The entity that represents the audio player
     pub entity: EntityId,
+}
+
+impl Default for AudioPlayer {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl AudioPlayer {

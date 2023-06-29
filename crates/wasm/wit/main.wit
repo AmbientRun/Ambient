@@ -6,9 +6,7 @@ world bindings {
     import entity: pkg.entity
     import message: pkg.message
     import player: pkg.player
-    import world-audio: pkg.world-audio
 
-    import client-audio: pkg.client-audio
     import client-message: pkg.client-message
     import client-player: pkg.client-player
     import client-input: pkg.client-input

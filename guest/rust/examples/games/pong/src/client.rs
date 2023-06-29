@@ -32,7 +32,6 @@ async fn main() {
 
     ambient_api::messages::Frame::subscribe(move |_| {
         let input = input::get();
-        let delta = input::get_delta().0;
         let mut direction = 0.0;
 
         if input.keys.contains(&KeyCode::Up) {
