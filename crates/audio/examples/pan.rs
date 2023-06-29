@@ -23,24 +23,24 @@ fn main() {
 
     let source = source
         .decode()
-        .pan(0.0)
         .repeat()
+        .pan(0.0)
         .take(Duration::from_secs(5))
         .chain(
             source
                 .decode()
-                .pan(-0.999)
                 .repeat()
+                .pan(-0.999)
                 .take(Duration::from_secs(5)),
         )
         .chain(
             source
                 .decode()
-                .pan(1.0)
                 .repeat()
+                .pan(1.0)
                 .take(Duration::from_secs(5)),
-        )
-        .repeat();
+        );
+    // .repeat();
 
     let sound = mixer.play(source);
     sound.wait_blocking();
