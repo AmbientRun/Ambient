@@ -1,9 +1,15 @@
 use std::{io::Cursor, sync::Arc};
 
 use crate::{audio_emitter, audio_listener, hrtf_lib};
-use ambient_audio::{hrtf::HrtfLib, AudioFromUrl};
+use ambient_audio::{hrtf::HrtfLib, AudioFromUrl, Source};
+use ambient_audio::{Attenuation, AudioEmitter, AudioListener};
 use ambient_core::transform::local_to_world;
-use ambient_core::{asset_cache, async_ecs::async_run, runtime};
+use ambient_core::{
+    asset_cache,
+    async_ecs::async_run,
+    runtime,
+    transform::{rotation, translation},
+};
 use ambient_ecs::{generated::components::core::audio::*, query, SystemGroup, World};
 use ambient_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl};
 use glam::{vec4, Mat4};
@@ -16,8 +22,18 @@ pub fn audio_systems() -> SystemGroup {
             query((audio_player(), trigger_at_this_frame())).to_system(|q, world, qs, _| {
                 for (audio_entity, (_, should_play)) in q.collect_cloned(world, qs) {
                     if should_play {
-                        let amp = world.get(audio_entity, amplitude()).unwrap();
-                        let pan = world.get(audio_entity, panning()).unwrap();
+                        let amp = match world.get(audio_entity, amplitude()) {
+                            Ok(v) => v,
+                            Err(_) => 1.0,
+                        };
+                        let pan = match world.get(audio_entity, panning()) {
+                            Ok(v) => v,
+                            Err(_) => 0.0,
+                        };
+                        let looping = match world.get(audio_entity, looping()) {
+                            Ok(v) => v,
+                            Err(_) => false,
+                        };
                         world
                             .set(audio_entity, trigger_at_this_frame(), false)
                             .unwrap();
@@ -29,33 +45,34 @@ pub fn audio_systems() -> SystemGroup {
                             .unwrap()
                             .to_download_url(&assets)
                             .unwrap();
-                        std::thread::spawn(move || {
-                            runtime.spawn(async move {
-                                let track = AudioFromUrl { url: url.clone() }.get(&assets).await;
-                                async_run.run(move |world| {
-                                    // log::info!("______playing sound");
-                                    let sender = world.resource(crate::audio_sender());
-                                    sender
-                                        .send(crate::AudioMessage::Track {
-                                            track: track.unwrap(),
-                                            url,
-                                            fx: vec![
+                        // std::thread::spawn(move || {
+                        runtime.spawn(async move {
+                            let track = AudioFromUrl { url: url.clone() }.get(&assets).await;
+                            async_run.run(move |world| {
+                                // log::info!("______playing sound");
+                                let sender = world.resource(crate::audio_sender());
+                                sender
+                                    .send(crate::AudioMessage::Track {
+                                        track: track.unwrap(),
+                                        url,
+                                        fx: if looping {
+                                            vec![
                                                 crate::AudioFx::Amplitude(amp),
                                                 crate::AudioFx::Panning(pan),
-                                            ],
-                                            uid: 0, //TODO: uid
-                                        })
-                                        .unwrap();
-
-                                    // TODO: why this is not working?
-
-                                    // let mixer = world.resource(audio_mixer());
-                                    // let sound = mixer.play(track.unwrap().decode().gain(amp));
-                                    // sound.wait();
-                                    // sound.wait_blocking();
-                                });
+                                                crate::AudioFx::Looping,
+                                            ]
+                                        } else {
+                                            vec![
+                                                crate::AudioFx::Amplitude(amp),
+                                                crate::AudioFx::Panning(pan),
+                                            ]
+                                        },
+                                        uid: 0, //TODO: uid
+                                    })
+                                    .unwrap();
                             });
                         });
+                        // });
                     }
                 }
             }),
@@ -87,6 +104,82 @@ pub fn spatial_audio_systems() -> SystemGroup {
     SystemGroup::new(
         "spatial_audio",
         vec![
+            query((spatial_audio_player(), trigger_at_this_frame())).to_system(
+                |q, world, qs, _| {
+                    for (audio_entity, (_, should_play)) in q.collect_cloned(world, qs) {
+                        if should_play {
+                            let amp = match world.get(audio_entity, amplitude()) {
+                                Ok(v) => v,
+                                Err(_) => 1.0,
+                            };
+                            // TODO: looping is not implemented yet
+                            // let looping = match world.get(audio_entity, looping()) {
+                            //     Ok(v) => v,
+                            //     Err(_) => false,
+                            // };
+                            world
+                                .set(audio_entity, trigger_at_this_frame(), false)
+                                .unwrap();
+                            let assets = world.resource(asset_cache()).clone();
+                            let runtime = world.resource(runtime()).clone();
+                            let async_run = world.resource(async_run()).clone();
+                            let url = world.get_ref(audio_entity, audio_url()).unwrap();
+                            let url = AbsAssetUrl::from_str(url)
+                                .unwrap()
+                                .to_download_url(&assets)
+                                .unwrap();
+
+                            runtime.spawn(async move {
+                                let track = AudioFromUrl { url: url.clone() }.get(&assets).await;
+                                async_run.run(move |world| {
+                                    log::info!("______playing sound");
+                                    let listener_id =
+                                        world.get(audio_entity, spatial_audio_listener()).unwrap();
+                                    let emitter_id =
+                                        world.get(audio_entity, spatial_audio_emitter()).unwrap();
+                                    let pos_listener =
+                                        world.get(listener_id, translation()).unwrap();
+                                    let rot = world.get(listener_id, rotation()).unwrap();
+                                    let pos_emitter = world.get(emitter_id, translation()).unwrap();
+
+                                    let listener =
+                                        Arc::new(parking_lot::Mutex::new(AudioListener::new(
+                                            Mat4::from_rotation_translation(rot, pos_listener),
+                                            glam::Vec3::X * 0.3,
+                                        )));
+                                    let emitter = Arc::new(parking_lot::Mutex::new(AudioEmitter {
+                                        amplitude: amp,
+                                        attenuation: Attenuation::InversePoly {
+                                            quad: 0.1,
+                                            lin: 0.0,
+                                            constant: 1.0,
+                                        },
+                                        pos: pos_emitter,
+                                    }));
+                                    world
+                                        .add_component(emitter_id, audio_emitter(), emitter.clone())
+                                        .unwrap();
+                                    world
+                                        .add_component(
+                                            listener_id,
+                                            audio_listener(),
+                                            listener.clone(),
+                                        )
+                                        .unwrap();
+
+                                    let sender = world.resource(crate::audio_sender());
+                                    let hrtf_lib = world.resource(hrtf_lib());
+                                    let source = track
+                                        .unwrap()
+                                        .decode()
+                                        .spatial(hrtf_lib, listener, emitter);
+                                    sender.send(crate::AudioMessage::Spatial(source)).unwrap();
+                                });
+                            });
+                        }
+                    }
+                },
+            ),
             // Updates the volume of audio emitters in the world
             query((audio_emitter(), local_to_world())).to_system(|q, world, qs, _| {
                 for (_, (emitter, ltw)) in q.iter(world, qs) {
