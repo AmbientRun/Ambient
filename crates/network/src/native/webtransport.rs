@@ -77,21 +77,19 @@ async fn handle_webtransport_session(
     let conn = Arc::new(conn);
 
     let sid = conn.session_id();
-    tracing::info!("Handling webtransport connection");
     let (diffs_tx, diffs_rx) = flume::unbounded();
 
     let server_info = ServerInfo::new(&mut state.lock(), content_base_url);
 
     let mut server = proto::server::ServerState::default();
 
-    tracing::info!("Accepting request stream from client");
     let mut request_recv = FramedRecvStream::new(
         conn.accept_uni()
             .await?
             .ok_or(NetworkError::ConnectionClosed)?
             .1,
     );
-    tracing::info!("Opening control stream");
+
     let mut push_send = FramedSendStream::new(conn.open_uni(sid).await?);
 
     let diffs_rx = diffs_rx.into_stream();
@@ -111,7 +109,6 @@ async fn handle_webtransport_session(
     };
 
     while server.is_pending_connection() {
-        tracing::info!("Waiting for connect request");
         if let Some(frame) = request_recv.next().await {
             server.process_control(&data, frame?)?;
         }
