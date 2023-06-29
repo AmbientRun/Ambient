@@ -1,5 +1,5 @@
-default interface event {
-    use pkg.component.{entity}
+interface message {
+    use component.{entity}
 
     subscribe: func(name: string)
 }

@@ -3,8 +3,9 @@
 use super::Bindings;
 use crate::shared::{implementation::unsupported, wit};
 
+#[async_trait::async_trait]
 impl wit::server_physics::Host for Bindings {
-    fn add_force(
+    async fn add_force(
         &mut self,
         _entity: wit::types::EntityId,
         _force: wit::types::Vec3,
@@ -12,7 +13,7 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 
-    fn add_impulse(
+    async fn add_impulse(
         &mut self,
         _entity: wit::types::EntityId,
         _force: wit::types::Vec3,
@@ -20,7 +21,7 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 
-    fn add_radial_impulse(
+    async fn add_radial_impulse(
         &mut self,
         _position: wit::types::Vec3,
         _impulse: f32,
@@ -30,7 +31,7 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 
-    fn add_force_at_position(
+    async fn add_force_at_position(
         &mut self,
         _entity: wit::types::EntityId,
         _force: wit::types::Vec3,
@@ -39,7 +40,7 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 
-    fn add_impulse_at_position(
+    async fn add_impulse_at_position(
         &mut self,
         _entity: wit::types::EntityId,
         _force: wit::types::Vec3,
@@ -48,7 +49,7 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 
-    fn get_velocity_at_position(
+    async fn get_velocity_at_position(
         &mut self,
         _entity: wit::types::EntityId,
         _position: wit::types::Vec3,
@@ -56,27 +57,31 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 
-    fn set_gravity(&mut self, _gravity: wit::types::Vec3) -> anyhow::Result<()> {
+    async fn set_gravity(&mut self, _gravity: wit::types::Vec3) -> anyhow::Result<()> {
         unsupported()
     }
 
-    fn unfreeze(&mut self, _entity: wit::types::EntityId) -> anyhow::Result<()> {
+    async fn unfreeze(&mut self, _entity: wit::types::EntityId) -> anyhow::Result<()> {
         unsupported()
     }
 
-    fn freeze(&mut self, _entity: wit::types::EntityId) -> anyhow::Result<()> {
+    async fn freeze(&mut self, _entity: wit::types::EntityId) -> anyhow::Result<()> {
         unsupported()
     }
 
-    fn start_motor(&mut self, _entity: wit::types::EntityId, _velocity: f32) -> anyhow::Result<()> {
+    async fn start_motor(
+        &mut self,
+        _entity: wit::types::EntityId,
+        _velocity: f32,
+    ) -> anyhow::Result<()> {
         unsupported()
     }
 
-    fn stop_motor(&mut self, _entity: wit::types::EntityId) -> anyhow::Result<()> {
+    async fn stop_motor(&mut self, _entity: wit::types::EntityId) -> anyhow::Result<()> {
         unsupported()
     }
 
-    fn create_revolute_joint(
+    async fn create_revolute_joint(
         &mut self,
         _entity0: wit::types::EntityId,
         _transform0: wit::types::Mat4,
@@ -86,7 +91,7 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 
-    fn raycast_first(
+    async fn raycast_first(
         &mut self,
         _origin: wit::types::Vec3,
         _direction: wit::types::Vec3,
@@ -94,7 +99,7 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 
-    fn raycast(
+    async fn raycast(
         &mut self,
         _origin: wit::types::Vec3,
         _direction: wit::types::Vec3,
@@ -102,7 +107,7 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 
-    fn move_character(
+    async fn move_character(
         &mut self,
         _entity: wit::types::EntityId,
         _displacement: wit::types::Vec3,
@@ -112,7 +117,7 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 
-    fn set_character_position(
+    async fn set_character_position(
         &mut self,
         _entity: wit::types::EntityId,
         _position: wit::types::Vec3,
@@ -120,7 +125,7 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 
-    fn set_character_foot_position(
+    async fn set_character_foot_position(
         &mut self,
         _entity: wit::types::EntityId,
         _position: wit::types::Vec3,
@@ -128,8 +133,9 @@ impl wit::server_physics::Host for Bindings {
         unsupported()
     }
 }
+#[async_trait::async_trait]
 impl wit::server_message::Host for Bindings {
-    fn send(
+    async fn send(
         &mut self,
         _: wit::server_message::Target,
         _: String,

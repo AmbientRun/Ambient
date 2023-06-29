@@ -1,4 +1,4 @@
-default interface asset {
+interface asset {
     variant url-error {
         invalid-url(string),
     }

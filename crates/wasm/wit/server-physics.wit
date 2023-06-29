@@ -1,5 +1,5 @@
-default interface server-physics {
-    use pkg.types.{entity-id, vec3, mat4}
+interface server-physics {
+    use types.{entity-id, vec3, mat4}
 
     record character-collision {
         side: bool,
