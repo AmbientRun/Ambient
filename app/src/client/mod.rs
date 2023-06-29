@@ -358,7 +358,7 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
 
             let scale_factor = *world.resource(window_scale_factor());
             let mut mouse_pos = *world.resource(cursor_position());
-            if (w - mouse_pos.x).abs() < 5.0 {
+            if (w - mouse_pos.x).abs() < 5.0 && show_debug {
                 set_cursor(world, CursorIcon::ColResize.into());
                 set_mouse_on_edge(true);
             } else {
