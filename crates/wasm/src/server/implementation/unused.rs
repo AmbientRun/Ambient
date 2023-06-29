@@ -71,6 +71,7 @@ impl wit::client_camera::Host for Bindings {
     }
 }
 
+#[async_trait::async_trait]
 impl wit::client_window::Host for Bindings {
     async fn set_fullscreen(&mut self, _fullscreen: bool) -> anyhow::Result<()> {
         unsupported()
