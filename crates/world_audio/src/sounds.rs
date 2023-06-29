@@ -31,25 +31,31 @@ components!("audio", {
     audio_mixer: AudioMixer,
 });
 
+pub enum AudioFx {
+    Looping,
+    Amplitude(f32),
+    Panning(f32),
+    Lpf(f32, f32),
+    Hpf(f32, f32),
+}
+
 #[allow(clippy::large_enum_variant)]
 pub enum AudioMessage {
     Track {
         track: Arc<Track>,
-        looping: bool,
-        volume: f32,
         url: AbsAssetUrl,
+        fx: Vec<AudioFx>,
         uid: u32,
     },
     Spatial(Spatial<TrackDecodeStream, Arc<Mutex<AudioListener>>, Arc<Mutex<AudioEmitter>>>),
-    UpdateVolume(AbsAssetUrl, f32),
+    // UpdateVolume(AbsAssetUrl, f32),
     Stop(AbsAssetUrl),
     StopById(u32),
 }
 
 pub struct SoundInfo {
     pub url: AbsAssetUrl,
-    pub looping: bool,
-    pub volume: Arc<Mutex<f32>>,
+    pub fx: Vec<AudioFx>,
     pub id: SoundId,
 }
 

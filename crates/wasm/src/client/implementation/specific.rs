@@ -22,7 +22,7 @@ use ambient_procedurals::{
 };
 use ambient_renderer::pbr_material::{PbrMaterialConfig, PbrMaterialParams};
 use ambient_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl, mesh::MeshBuilder};
-use ambient_world_audio::{audio_sender, AudioMessage};
+use ambient_world_audio::{audio_sender, AudioFx, AudioMessage};
 use anyhow::Context;
 use glam::Vec4;
 use wgpu::TextureViewDescriptor;
@@ -230,8 +230,13 @@ impl wit::client_audio::Host for Bindings {
                         sender
                             .send(AudioMessage::Track {
                                 track,
-                                looping,
-                                volume,
+                                fx: {
+                                    if looping {
+                                        vec![AudioFx::Amplitude(volume), AudioFx::Looping]
+                                    } else {
+                                        vec![AudioFx::Amplitude(volume)]
+                                    }
+                                },
                                 url,
                                 uid,
                             })
@@ -259,18 +264,19 @@ impl wit::client_audio::Host for Bindings {
         Ok(())
     }
 
-    async fn set_volume(&mut self, url: String, volume: f32) -> anyhow::Result<()> {
+    async fn set_volume(&mut self, url: String, _volume: f32) -> anyhow::Result<()> {
         let world = self.world();
         let runtime = world.resource(runtime()).clone();
         let async_run = world.resource(async_run()).clone();
         let assets = world.resource(asset_cache());
-        let url = AbsAssetUrl::from_str(&url)?.to_download_url(assets)?;
+        let _url = AbsAssetUrl::from_str(&url)?.to_download_url(assets)?;
         runtime.spawn(async move {
             async_run.run(move |world| {
-                let sender = world.resource(audio_sender());
-                sender
-                    .send(AudioMessage::UpdateVolume(url, volume))
-                    .unwrap();
+                let _sender = world.resource(audio_sender());
+                // TODO: remove this
+                // sender
+                //     .send(AudioMessage::UpdateVolume(url, volume))
+                //     .unwrap();
             });
         });
         Ok(())

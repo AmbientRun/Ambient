@@ -156,6 +156,7 @@ dependencies = [
 name = "ambient_audio"
 version = "0.3.0-dev"
 dependencies = [
+ "ambient_ecs",
  "ambient_std",
  "ambient_sys",
  "ambient_ui_native",
@@ -1053,6 +1054,7 @@ dependencies = [
  "ambient_element",
  "ambient_profiling",
  "ambient_std",
+ "ambient_sys",
  "ambient_ui_native",
  "anyhow",
  "atomic_refcell",

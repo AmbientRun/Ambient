@@ -25,6 +25,7 @@ members = [
     "examples/basics/third_person_camera",
     "examples/basics/transparency",
     # UI
+    "examples/ui/audio_ctrl",
     "examples/ui/auto_editor",
     "examples/ui/button",
     "examples/ui/counter",

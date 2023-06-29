@@ -21,3 +21,6 @@ pub mod sampler;
 
 /// **\[Client-only\]** Procedural material generation.
 pub mod material;
+
+///  **\[Client-only\]** Spatial audio system
+pub mod spatial_audio;
