@@ -41,7 +41,7 @@ fn main() {
             let mut paths = vec![];
             for entry in std::fs::read_dir(path)? {
                 let path = entry?.path();
-                paths.extend(load_files(&working_dir, &path)?);
+                paths.extend(load_files(working_dir, &path)?);
             }
             Ok(paths)
         } else {
