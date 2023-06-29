@@ -37,7 +37,7 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
             })),
             min: -1.0,
             max: 1.0,
-            width: 200.,
+            width: 100.,
             logarithmic: false,
             round: Some(4),
             suffix: None,
