@@ -2,9 +2,11 @@ use crate::{
     components::core::{
         app::name,
         audio::{
-            amplitude, audio_player, audio_url, looping, panning, spatial_audio_emitter,
-            spatial_audio_listener, spatial_audio_player, trigger_at_this_frame,
+            amplitude, audio_player, audio_url, looping, panning, playing_sound,
+            spatial_audio_emitter, spatial_audio_listener, spatial_audio_player,
+            trigger_at_this_frame,
         },
+        ecs::children,
     },
     entity,
     prelude::{Entity, EntityId},
@@ -81,6 +83,7 @@ impl AudioPlayer {
             .with_default(audio_player())
             .with(name(), "Audio player".to_string())
             .with(trigger_at_this_frame(), false)
+            .with(children(), vec![])
             .spawn();
         Self { entity: player }
     }
@@ -98,8 +101,16 @@ impl AudioPlayer {
         entity::add_component(self.entity, panning(), pan);
     }
     /// play the sound
-    pub fn play(&self, url: String) {
+    pub fn play(&self, url: String) -> EntityId {
         entity::add_component(self.entity, audio_url(), url);
         entity::set_component(self.entity, trigger_at_this_frame(), true);
+        let id = Entity::new()
+            .with_default(playing_sound())
+            .with(name(), "Playing sound".to_string())
+            .spawn();
+        entity::mutate_component(self.entity, children(), |val| {
+            val.push(id);
+        });
+        id
     }
 }

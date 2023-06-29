@@ -45,18 +45,25 @@ pub enum AudioMessage {
         track: Arc<Track>,
         url: AbsAssetUrl,
         fx: Vec<AudioFx>,
-        uid: u32,
+        uid: String,
     },
     Spatial(Spatial<TrackDecodeStream, Arc<Mutex<AudioListener>>, Arc<Mutex<AudioEmitter>>>),
-    // UpdateVolume(AbsAssetUrl, f32),
+    // sound id and amplitude
+    UpdateVolume(String, f32),
+    UpdatePanning(String, f32),
     Stop(AbsAssetUrl),
     StopById(u32),
 }
 
 pub struct SoundInfo {
     pub url: AbsAssetUrl,
-    pub fx: Vec<AudioFx>,
     pub id: SoundId,
+    pub control_info: Vec<AudioControl>,
+}
+
+pub enum AudioControl {
+    Amplitude(Arc<Mutex<f32>>),
+    Panning(Arc<Mutex<f32>>),
 }
 
 /// TODO: hook this into the Attenuation inside ambient_audio

@@ -10,15 +10,38 @@ use ambient_core::{
     runtime,
     transform::{rotation, translation},
 };
-use ambient_ecs::{generated::components::core::audio::*, query, SystemGroup, World};
+use ambient_ecs::{children, generated::components::core::audio::*, query, SystemGroup, World};
 use ambient_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl};
 use glam::{vec4, Mat4};
+use parking_lot::Mutex;
 use std::str::FromStr;
 
 pub fn audio_systems() -> SystemGroup {
     SystemGroup::new(
         "audio",
         vec![
+            query((playing_sound(), amplitude())).to_system(|q, world, qs, _| {
+                for (playing_entity, (_, amp)) in q.iter(world, qs) {
+                    let sender = world.resource(crate::audio_sender());
+                    sender
+                        .send(crate::AudioMessage::UpdateVolume(
+                            playing_entity.to_base64(),
+                            *amp,
+                        ))
+                        .unwrap();
+                }
+            }),
+            query((playing_sound(), panning())).to_system(|q, world, qs, _| {
+                for (playing_entity, (_, pan)) in q.iter(world, qs) {
+                    let sender = world.resource(crate::audio_sender());
+                    sender
+                        .send(crate::AudioMessage::UpdatePanning(
+                            playing_entity.to_base64(),
+                            *pan,
+                        ))
+                        .unwrap();
+                }
+            }),
             query((audio_player(), trigger_at_this_frame())).to_system(|q, world, qs, _| {
                 for (audio_entity, (_, should_play)) in q.collect_cloned(world, qs) {
                     if should_play {
@@ -39,12 +62,19 @@ pub fn audio_systems() -> SystemGroup {
                         // std::thread::spawn(move || {
                         runtime.spawn(async move {
                             let track = AudioFromUrl { url: url.clone() }.get(&assets).await;
+                            let track = track.unwrap();
+                            let move_track = track.clone();
+                            let id_share = Arc::new(Mutex::new(None));
+                            let id_share_clone = id_share.clone();
                             async_run.run(move |world| {
                                 // log::info!("______playing sound");
                                 let sender = world.resource(crate::audio_sender());
+                                let id_vec = world.get_ref(audio_entity, children()).unwrap();
+                                let id = id_vec.last().unwrap();
+                                id_share.lock().replace(id.clone());
                                 sender
                                     .send(crate::AudioMessage::Track {
-                                        track: track.unwrap(),
+                                        track: move_track,
                                         url,
                                         fx: if looping {
                                             vec![
@@ -58,10 +88,22 @@ pub fn audio_systems() -> SystemGroup {
                                                 crate::AudioFx::Panning(pan),
                                             ]
                                         },
-                                        uid: 0, //TODO: uid
+                                        uid: id.to_base64(),
                                     })
                                     .unwrap();
                             });
+                            if !looping {
+                                let decoded = track.decode();
+                                let count = decoded.sample_count().unwrap();
+                                let sr = decoded.sample_rate();
+                                // TODO: count is buggy
+                                // println!("count {:?} sr {}", count, sr);
+                                let dur = count as f32 / sr as f32 * 3.0; // make it longer than the sound
+                                tokio::time::sleep(tokio::time::Duration::from_secs_f32(dur)).await;
+                                async_run.run(move |world| {
+                                    world.despawn(id_share_clone.lock().unwrap());
+                                });
+                            };
                         });
                         // });
                     }

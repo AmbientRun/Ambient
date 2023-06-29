@@ -1,3 +1,3 @@
-The samples in this folder are selected from:
+Music is from:
 
-https://github.com/tidalcycles/Dirt-Samples
+https://freesound.org/people/Lalks/sounds/316829/

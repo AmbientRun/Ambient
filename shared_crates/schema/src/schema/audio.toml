@@ -36,6 +36,15 @@ Whether or not the audio should loop.
 """
 attributes = ["MaybeResource", "Debuggable"]
 
+[components."core::audio::playing_sound"]
+type = "Empty"
+name = "Playing sound"
+description = """
+The entity with this comp is a playing sound.
+We can attach other components to it to control the sound parameters.
+"""
+attributes = ["MaybeResource", "Debuggable"]
+
 [components."core::audio::amplitude"]
 type = "F32"
 name = "Amplitude"

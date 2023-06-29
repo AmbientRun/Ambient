@@ -1,18 +1,31 @@
-use ambient_api::{components::core::layout::space_between_items, prelude::*};
+use ambient_api::{
+    components::core::{
+        audio::{amplitude, panning},
+        layout::space_between_items,
+    },
+    prelude::*,
+};
 
 #[element_component]
 fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
     let (f32_value, set_f32_value) = hooks.use_state(100.);
-    let (panning, set_panning) = hooks.use_state(0.);
+    let (sound, set_sound) = hooks.use_state(None);
+    let (pan, set_pan) = hooks.use_state(0.);
     FocusRoot::el([FlowColumn::el([
         Text::el("Amplitude:"),
         Slider {
             value: f32_value,
             on_change: Some(cb({
                 let audio_player = audio_player.clone();
+                let sound = sound.clone();
                 move |v| {
                     set_f32_value(v);
                     audio_player.set_amplitude(v / 100.);
+                    if sound.is_some() {
+                        if entity::exists(sound.unwrap()) {
+                            entity::add_component(sound.unwrap(), amplitude(), v / 100.);
+                        }
+                    }
                 }
             })),
             min: 0.0,
@@ -25,12 +38,18 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
         .el(),
         Text::el("Panning:"),
         Slider {
-            value: panning,
+            value: pan,
             on_change: Some(cb({
                 let audio_player = audio_player.clone();
+                let sound = sound.clone();
                 move |v| {
-                    set_panning(v);
+                    set_pan(v);
                     audio_player.set_panning(v);
+                    if sound.is_some() {
+                        if entity::exists(sound.unwrap()) {
+                            entity::add_component(sound.unwrap(), panning(), v);
+                        }
+                    }
                 }
             })),
             min: -1.0,
@@ -43,7 +62,9 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
         .el(),
         Button::new("play sound", {
             move |_| {
-                audio_player.play(asset::url("assets/arpy01.wav").unwrap());
+                let id =
+                    audio_player.play(asset::url("assets/316829__lalks__ferambie.ogg").unwrap());
+                set_sound(Some(id));
             }
         })
         .toggled(true)
