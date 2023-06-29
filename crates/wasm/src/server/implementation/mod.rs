@@ -177,8 +177,8 @@ impl wit::world_audio::Host for Bindings {
         shared::implementation::world_audio::set_listener(self.world_mut(), entity)
     }
 
-    fn set_emitter(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
-        shared::implementation::world_audio::set_emitter(self.world_mut(), entity)
+    fn set_emitter(&mut self, entity: wit::types::EntityId, amp: f32) -> anyhow::Result<()> {
+        shared::implementation::world_audio::set_emitter(self.world_mut(), entity, amp)
     }
     fn play_sound_on_entity(
         &mut self,

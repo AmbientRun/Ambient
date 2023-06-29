@@ -1,0 +1,69 @@
+
+[components."core::audio"]
+name = "Audio"
+description = "Audio functionality and state."
+
+[components."core::audio::audio_player"]
+type = "Empty"
+name = "Audio player"
+description = "The entity is audio player."
+attributes = ["MaybeResource", "Debuggable"]
+
+
+[components."core::audio::looping"]
+type = "Bool"
+name = "Looping"
+description = """
+Whether or not the audio should loop.
+"""
+attributes = ["MaybeResource", "Debuggable"]
+
+[components."core::audio::amplitude"]
+type = "F32"
+name = "Amplitude"
+description = """
+The amplitude of the audio.
+"""
+attributes = ["MaybeResource", "Debuggable"]
+
+[components."core::audio::panning"]
+type = "F32"
+name = "Panning"
+description = """
+The panning of the audio.
+"""
+attributes = ["MaybeResource", "Debuggable"]
+
+[components."core::audio::lpf"]
+type = "Vec2"
+name = "Lpf"
+description = """
+Low pass filter. The first value is the cutoff frequency, the second is the bandwidth.
+"""
+attributes = ["MaybeResource", "Debuggable"]
+
+[components."core::audio::hpf"]
+type = "Vec2"
+name = "Hpf"
+description = """
+High pass filter. The first value is the cutoff frequency, the second is the bandwidth.
+"""
+attributes = ["MaybeResource", "Debuggable"]
+
+[components."core::audio::audio_url"]
+type = "String"
+name = "Audio url"
+description = """
+The URL of the assets.
+"""
+attributes = ["MaybeResource", "Debuggable"]
+
+[components."core::audio::trigger_at_this_frame"]
+type = "Bool"
+name = "Trigger at this frame"
+description = """
+The system will watch for this component and trigger the audio at this frame,
+using the other components as parameters.
+Then set it back to false.
+"""
+attributes = ["MaybeResource", "Debuggable"]

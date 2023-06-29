@@ -11,6 +11,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ambient_sys = { path = "../sys" , version = "0.3.0-dev" }
 ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
 ambient_app = { path = "../app" , version = "0.3.0-dev" }
 ambient_ui_native = { path = "../ui_native" , version = "0.3.0-dev" }

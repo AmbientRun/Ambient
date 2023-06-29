@@ -16,7 +16,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use components::{player_head_ref, player_movement_direction, player_pitch, player_yaw};
+use components::{ball_ref, player_head_ref, player_movement_direction, player_pitch, player_yaw};
 use std::f32::consts::{PI, TAU};
 
 #[main]
@@ -29,7 +29,7 @@ pub fn main() {
         .with_default(plane_collider())
         .spawn();
 
-    Entity::new()
+    let ball = Entity::new()
         .with_merge(make_transformable())
         .with_merge(make_sphere())
         .with(sphere_collider(), 0.5)
@@ -48,7 +48,6 @@ pub fn main() {
                 .with_default(local_to_parent())
                 .with(rotation(), Quat::from_rotation_x(PI / 2.))
                 .spawn();
-
             entity::add_components(
                 id,
                 Entity::new()
@@ -59,6 +58,7 @@ pub fn main() {
                     .with(character_controller_radius(), 0.5)
                     .with_default(physics_controlled())
                     .with(player_head_ref(), head)
+                    .with(ball_ref(), ball)
                     .with(children(), vec![head])
                     .with(player_pitch(), 0.0)
                     .with(player_yaw(), 0.0),
