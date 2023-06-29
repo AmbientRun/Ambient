@@ -226,6 +226,7 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
 
         let mut linker = wasmtime::component::Linker::<WasmtimeContext<Bindings>>::new(engine);
         wasi_preview2::wasi::command::add_to_linker(&mut linker)?;
+        shared::wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
 
         let component = wasmtime::component::Component::from_binary(engine, component_bytecode)?;
 
