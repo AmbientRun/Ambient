@@ -166,6 +166,7 @@ impl ShadowsRenderer {
 impl ShadowsRenderer {
     pub fn render<'a>(
         &'a mut self,
+        world: &World,
         gpu: &Gpu,
         assets: &AssetCache,
         mesh_buffer: &MeshBuffer,
@@ -204,7 +205,10 @@ impl ShadowsRenderer {
                 mesh_buffer.index_buffer.buffer().slice(..),
                 wgpu::IndexFormat::Uint32,
             );
+
             self.renderer.render(
+                world,
+                mesh_buffer,
                 &mut render_pass,
                 &cascade.collect_state,
                 &BindGroups {

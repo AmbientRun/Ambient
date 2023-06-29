@@ -185,6 +185,8 @@ impl Outlines {
             );
 
             self.renderer.render(
+                world,
+                mesh_buffer,
                 &mut render_pass,
                 &self.collect_state,
                 bind_groups,

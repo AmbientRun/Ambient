@@ -382,6 +382,7 @@ impl Renderer {
 
         if let Some(shadows) = &mut self.shadows {
             shadows.render(
+                world,
                 gpu,
                 &assets,
                 &mesh_buffer,
@@ -442,6 +443,8 @@ impl Renderer {
             );
 
             self.forward.render(
+                world,
+                &mesh_buffer,
                 &mut render_pass,
                 &self.forward_collect_state,
                 &bind_groups,

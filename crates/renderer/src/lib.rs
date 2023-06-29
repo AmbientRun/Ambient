@@ -232,7 +232,9 @@ pub struct RenderPrimitive {
     pub mesh: Arc<GpuMesh>,
     pub lod: usize,
 }
+
 pub type PrimitiveIndex = usize;
+
 pub fn get_gpu_primitive_id(
     world: &World,
     id: EntityId,

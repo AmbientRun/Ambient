@@ -3,13 +3,15 @@ use std::{
     sync::Arc,
 };
 
+use ambient_core::asset_cache;
 use ambient_ecs::{query, ArchetypeFilter, EntityId, FramedEventsReader, QueryState, World};
 use ambient_gpu::{
     gpu::Gpu,
+    mesh_buffer::{MeshBuffer, MeshBufferKey},
     multi_buffer::{MultiBufferSizeStrategy, SubBufferId, TypedMultiBuffer},
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
-use ambient_std::asset_cache::AssetCache;
+use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use glam::{uvec2, UVec2, UVec4};
 use itertools::Itertools;
 use wgpu::DepthBiasState;
@@ -346,6 +348,8 @@ impl TreeRenderer {
     #[ambient_profiling::function]
     pub fn render<'a>(
         &'a self,
+        world: &World,
+        mesh_buffer: &MeshBuffer,
         render_pass: &mut wgpu::RenderPass<'a>,
         collect_state: &'a RendererCollectState,
         bind_groups: &BindGroups<'a>,
@@ -416,12 +420,26 @@ impl TreeRenderer {
                 }
                 #[cfg(any(target_os = "macos", target_os = "unknown"))]
                 {
+                    // let mesh_buffer = MeshBufferKey.get(world.resource(asset_cache()));
+                    //
+                    // let mesh_buffer = mesh_buffer.lock();
                     let count = counts.get(mat.material_index as usize);
                     tracing::debug!("Counts: {count:?}");
+                    for (i, &(id, primitive_idx)) in mat.primitives.iter().enumerate() {
+                        let primitive = &world.get_ref(id, primitives()).unwrap()[primitive_idx];
+                        let mesh = mesh_buffer.get_mesh_metadata(&primitive.mesh);
+                        let index = offset + i as u64;
+                        render_pass.draw_indexed(
+                            mesh.index_offset..(mesh.index_offset + mesh.index_count),
+                            0,
+                            index as u32..(index as u32 + i as u32),
+                        )
+                    }
 
                     if let Some(count) = count {
                         for i in 0..*count {
                             tracing::debug!("Drawing primitive: {i}");
+                            // render_pass.draw_indexed(, base_vertex, instances)
                             render_pass.draw_indexed_indirect(
                                 collect_state.commands.buffer(),
                                 (offset + i as u64)
