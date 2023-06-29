@@ -136,6 +136,10 @@ impl RuntimeHandle {
     {
         JoinHandle(self.0.spawn_blocking(f))
     }
+
+    pub fn block_on<F: Future>(&self, future: F) -> F::Output {
+        self.0.block_on(future)
+    }
 }
 
 impl From<tokio::runtime::Handle> for crate::task::RuntimeHandle {

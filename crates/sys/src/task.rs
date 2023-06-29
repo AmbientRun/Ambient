@@ -157,6 +157,17 @@ impl RuntimeHandle {
     {
         JoinHandle(self.0.spawn_blocking(f))
     }
+
+    /// Runs a future to completion on the current thread using this runtime
+    ///
+    /// This is only available on the native runtime, where Tokio is present and can be
+    /// used to run the future on the current thread.
+    ///
+    /// There is no equivalent operation for WASM.
+    #[cfg(not(target_os = "unknown"))]
+    pub fn block_on<F: Future>(&self, future: F) -> F::Output {
+        self.0.block_on(future)
+    }
 }
 
 pub struct PlatformBoxFuture<T>(platform::task::PlatformBoxFutureImpl<T>);

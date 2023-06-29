@@ -9,8 +9,9 @@ use ambient_std::shapes::Ray;
 use anyhow::Context;
 use physxx::{PxControllerCollisionFlag, PxControllerFilters};
 
+#[async_trait::async_trait]
 impl shared::wit::server_physics::Host for Bindings {
-    fn add_force(
+    async fn add_force(
         &mut self,
         entity: wit::types::EntityId,
         force: wit::types::Vec3,
@@ -24,7 +25,7 @@ impl shared::wit::server_physics::Host for Bindings {
         Ok(())
     }
 
-    fn add_impulse(
+    async fn add_impulse(
         &mut self,
         entity: wit::types::EntityId,
         force: wit::types::Vec3,
@@ -38,7 +39,7 @@ impl shared::wit::server_physics::Host for Bindings {
         Ok(())
     }
 
-    fn add_radial_impulse(
+    async fn add_radial_impulse(
         &mut self,
         position: wit::types::Vec3,
         impulse: f32,
@@ -55,7 +56,7 @@ impl shared::wit::server_physics::Host for Bindings {
         Ok(())
     }
 
-    fn add_force_at_position(
+    async fn add_force_at_position(
         &mut self,
         entity: wit::types::EntityId,
         force: wit::types::Vec3,
@@ -71,7 +72,7 @@ impl shared::wit::server_physics::Host for Bindings {
         Ok(())
     }
 
-    fn add_impulse_at_position(
+    async fn add_impulse_at_position(
         &mut self,
         entity: wit::types::EntityId,
         force: wit::types::Vec3,
@@ -87,7 +88,7 @@ impl shared::wit::server_physics::Host for Bindings {
         Ok(())
     }
 
-    fn get_velocity_at_position(
+    async fn get_velocity_at_position(
         &mut self,
         entity: wit::types::EntityId,
         position: wit::types::Vec3,
@@ -103,14 +104,14 @@ impl shared::wit::server_physics::Host for Bindings {
         Ok(result.into_bindgen())
     }
 
-    fn set_gravity(&mut self, gravity: wit::types::Vec3) -> anyhow::Result<()> {
+    async fn set_gravity(&mut self, gravity: wit::types::Vec3) -> anyhow::Result<()> {
         self.world_mut()
             .resource(ambient_physics::main_physics_scene())
             .set_gravity(gravity.from_bindgen());
         Ok(())
     }
 
-    fn unfreeze(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
+    async fn unfreeze(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
         ambient_physics::helpers::convert_rigid_static_to_dynamic(
             self.world_mut(),
             entity.from_bindgen(),
@@ -118,7 +119,7 @@ impl shared::wit::server_physics::Host for Bindings {
         Ok(())
     }
 
-    fn freeze(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
+    async fn freeze(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
         ambient_physics::helpers::convert_rigid_dynamic_to_static(
             self.world_mut(),
             entity.from_bindgen(),
@@ -126,7 +127,11 @@ impl shared::wit::server_physics::Host for Bindings {
         Ok(())
     }
 
-    fn start_motor(&mut self, entity: wit::types::EntityId, velocity: f32) -> anyhow::Result<()> {
+    async fn start_motor(
+        &mut self,
+        entity: wit::types::EntityId,
+        velocity: f32,
+    ) -> anyhow::Result<()> {
         let joint = ambient_physics::helpers::get_entity_revolute_joint(
             self.world_mut(),
             entity.from_bindgen(),
@@ -138,7 +143,7 @@ impl shared::wit::server_physics::Host for Bindings {
         Ok(())
     }
 
-    fn stop_motor(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
+    async fn stop_motor(&mut self, entity: wit::types::EntityId) -> anyhow::Result<()> {
         let joint = ambient_physics::helpers::get_entity_revolute_joint(
             self.world_mut(),
             entity.from_bindgen(),
@@ -149,7 +154,7 @@ impl shared::wit::server_physics::Host for Bindings {
         Ok(())
     }
 
-    fn create_revolute_joint(
+    async fn create_revolute_joint(
         &mut self,
         entity0: wit::types::EntityId,
         transform0: wit::types::Mat4,
@@ -165,7 +170,7 @@ impl shared::wit::server_physics::Host for Bindings {
         )
     }
 
-    fn raycast_first(
+    async fn raycast_first(
         &mut self,
         origin: wit::types::Vec3,
         direction: wit::types::Vec3,
@@ -179,7 +184,7 @@ impl shared::wit::server_physics::Host for Bindings {
         Ok(result)
     }
 
-    fn raycast(
+    async fn raycast(
         &mut self,
         origin: wit::types::Vec3,
         direction: wit::types::Vec3,
@@ -195,7 +200,7 @@ impl shared::wit::server_physics::Host for Bindings {
         Ok(result)
     }
 
-    fn move_character(
+    async fn move_character(
         &mut self,
         entity: wit::types::EntityId,
         displacement: wit::types::Vec3,
@@ -228,7 +233,7 @@ impl shared::wit::server_physics::Host for Bindings {
         }
     }
 
-    fn set_character_position(
+    async fn set_character_position(
         &mut self,
         entity: wit::types::EntityId,
         position: wit::types::Vec3,
@@ -239,7 +244,7 @@ impl shared::wit::server_physics::Host for Bindings {
         Ok(())
     }
 
-    fn set_character_foot_position(
+    async fn set_character_foot_position(
         &mut self,
         entity: wit::types::EntityId,
         position: wit::types::Vec3,

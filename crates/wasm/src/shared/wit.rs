@@ -1,1 +1,7 @@
-wasmtime::component::bindgen!("main.bindings");
+wasmtime::component::bindgen!({
+    path: "wit",
+    async: true,
+});
+
+pub use ambient::bindings::*;
+pub use exports::ambient::bindings::guest;

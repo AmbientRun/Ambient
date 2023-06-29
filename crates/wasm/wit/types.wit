@@ -1,4 +1,4 @@
-default interface types {
+interface types {
     record entity-id {
         id0: u64,
         id1: u64,

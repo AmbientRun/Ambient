@@ -1,5 +1,5 @@
-default interface client-player {
-    use pkg.types.{entity-id}
+interface client-player {
+    use types.{entity-id}
 
     get-local: func() -> entity-id
 }

@@ -35,11 +35,11 @@ pub(crate) fn set_listener(world: &mut World, entity: wit::types::EntityId) -> a
 pub(crate) fn set_emitter(
     world: &mut World,
     entity: wit::types::EntityId,
-    amp: f32,
+    volume: f32,
 ) -> anyhow::Result<()> {
     let pos = world.get(entity.from_bindgen(), translation())?;
     let emitter = Arc::new(Mutex::new(AudioEmitter {
-        amplitude: amp,
+        amplitude: volume,
         attenuation: Attenuation::InversePoly {
             quad: 0.1,
             lin: 0.0,

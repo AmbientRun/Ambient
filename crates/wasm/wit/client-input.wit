@@ -1,5 +1,5 @@
-default interface client-input {
-    use pkg.types.{vec2, entity-id}
+interface client-input {
+    use types.{vec2, entity-id}
 
     enum virtual-key-code {
         /// The '1' key over the letters.

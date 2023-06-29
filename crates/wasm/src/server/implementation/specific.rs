@@ -14,8 +14,9 @@ use crate::shared::{self, conversion::FromBindgen, implementation::message, mess
 mod physics;
 
 #[cfg(feature = "wit")]
+#[async_trait::async_trait]
 impl shared::wit::server_message::Host for Bindings {
-    fn send(
+    async fn send(
         &mut self,
         target: shared::wit::server_message::Target,
         name: String,

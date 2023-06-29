@@ -1,14 +1,17 @@
 use std::path::{Path, PathBuf};
 
 struct File {
-    absolute_path: PathBuf,
+    relative_path: PathBuf,
     contents: String,
 }
 
 /// Copies all files in the wit/ folder to all guests, and generates wit ahead of time
 /// for Rust guests.
 fn main() {
-    let working_dir = std::env::current_dir().unwrap();
+    let working_dir = std::env::current_dir().unwrap().canonicalize().unwrap();
+    // De-UNC the path.
+    #[cfg(target_os = "windows")]
+    let working_dir = dunce::simplified(&working_dir).to_owned();
 
     println!("cargo:rerun-if-changed=wit");
     let filenames_to_copy: Vec<_> = std::fs::read_dir("wit")
@@ -17,22 +20,39 @@ fn main() {
         .collect::<Result<_, _>>()
         .unwrap();
 
-    let files: Vec<_> = filenames_to_copy
-        .iter()
-        .map(|path| -> std::io::Result<_> {
-            let absolute_path = working_dir.join(path).canonicalize().unwrap();
+    fn load_files(working_dir: &Path, path: &Path) -> std::io::Result<Vec<File>> {
+        let absolute_path = working_dir.join(path).canonicalize().unwrap();
 
-            // De-UNC the path.
-            #[cfg(target_os = "windows")]
-            let absolute_path = dunce::simplified(&absolute_path).to_owned();
+        // De-UNC the path.
+        #[cfg(target_os = "windows")]
+        let absolute_path = dunce::simplified(&absolute_path).to_owned();
 
-            Ok(File {
-                absolute_path,
+        if absolute_path.is_file() {
+            Ok(vec![File {
+                relative_path: absolute_path
+                    .strip_prefix(working_dir)
+                    .unwrap()
+                    .strip_prefix("wit")
+                    .unwrap()
+                    .to_owned(),
                 contents: std::fs::read_to_string(path)?,
-            })
-        })
-        .collect::<Result<_, _>>()
-        .unwrap();
+            }])
+        } else if absolute_path.is_dir() {
+            let mut paths = vec![];
+            for entry in std::fs::read_dir(path)? {
+                let path = entry?.path();
+                paths.extend(load_files(working_dir, &path)?);
+            }
+            Ok(paths)
+        } else {
+            panic!("Invalid path to copy: {:?}", absolute_path);
+        }
+    }
+
+    let mut files = vec![];
+    for filename in filenames_to_copy {
+        files.extend(load_files(&working_dir, &filename).unwrap());
+    }
 
     eprintln!("Assembling guest files");
     for guest_path in std::fs::read_dir("../../guest/")
@@ -52,7 +72,7 @@ fn main() {
             let pkg = resolve.push_dir(Path::new("wit")).unwrap().0;
 
             let mut files = Files::default();
-            let world = resolve.select_world(pkg, Some("main.bindings")).unwrap();
+            let world = resolve.select_world(pkg, None).unwrap();
             generator.generate(&resolve, world, &mut files);
 
             for (filename, contents) in files.iter() {
@@ -75,42 +95,18 @@ fn main() {
 
 fn copy_files(guest_path: &Path, files: &[File], working_dir: &Path) {
     let target_wit_dir = guest_path.join("api").join("wit");
-    std::fs::create_dir_all(&target_wit_dir).unwrap();
 
     for file in files {
-        let filename = file
-            .absolute_path
-            .file_name()
-            .and_then(|p| p.to_str())
-            .unwrap();
+        let target_path = ambient_std::path::normalize(
+            &working_dir.join(target_wit_dir.join(&file.relative_path)),
+        );
 
-        let target_path =
-            ambient_std::path::normalize(&working_dir.join(target_wit_dir.join(filename)));
-
-        let absolute_path_relative_to_common = {
-            let mut target_path_it = target_path.iter();
-
-            file.absolute_path
-                .clone()
-                .iter()
-                .skip_while(|segment| {
-                    // do a case-insensitive compare to avoid issues on Windows with rust-analyzer
-                    // where the disk letter may be different case
-                    target_path_it
-                        .next()
-                        .map(|s| s.eq_ignore_ascii_case(segment))
-                        .unwrap_or(false)
-                })
-                .map(|segment| segment.to_string_lossy())
-                .collect::<Vec<_>>()
-                .join("/")
-        };
-
+        std::fs::create_dir_all(target_path.parent().unwrap()).unwrap();
         std::fs::write(
             target_path,
             format!(
-                "/* This file was copied from {:?}. Do not edit it directly. */\n{}",
-                absolute_path_relative_to_common, file.contents
+                "/* This file was automatically copied from the repository. Do not edit it directly. */\n{}",
+                file.contents
             ),
         )
         .unwrap();

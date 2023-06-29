@@ -55,6 +55,7 @@ wgpu = { workspace = true }
 ulid = { workspace = true }
 tracing = { workspace = true }
 wit-component = { workspace = true }
+pollster = { workspace = true }
 
 wasmtime = { workspace = true, optional = true }
 wasmtime-wasi = { workspace = true, optional = true }

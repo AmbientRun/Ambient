@@ -1,5 +1,5 @@
-default interface guest {
-    use pkg.types.{entity-id}
+interface guest {
+    use types.{entity-id}
 
     variant source {
         runtime,
