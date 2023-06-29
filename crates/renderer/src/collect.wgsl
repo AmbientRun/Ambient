@@ -85,12 +85,10 @@ fn is_visible(entity_loc: vec2<u32>, primitive_lod: u32) -> bool {
 @compute
 @workgroup_size(COLLECT_WORKGROUP_SIZE)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
-    let chunk = COLLECT_CHUNK_SIZEu * COLLECT_WORKGROUP_SIZEu;
-    let index = global_id.y * chunk + global_id.x;
+    // let chunk = COLLECT_CHUNK_SIZEu * COLLECT_WORKGROUP_SIZEu;
+    // let index = global_id.y * chunk + global_id.x;
+    let index = global_id.x;
 
-    if index >= arrayLength(&input_primitives.data) {
-        // return;
-    }
 
 
     let primitive = input_primitives.data[index];
@@ -104,6 +102,7 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let mesh_index = entity_primitive.x;
     let primitive_lod = entity_primitive.y;
 
+    // Atomically acquire an index and add it to the compact output buffer
     let out_offset = atomicAdd(&output_counts.data[primitive.material_index], 1u);
 
     let out_index = material_layout.x + out_offset;

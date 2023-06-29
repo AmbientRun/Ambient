@@ -3,11 +3,10 @@ use std::{
     sync::Arc,
 };
 
-use ambient_core::asset_cache;
 use ambient_ecs::{query, ArchetypeFilter, EntityId, FramedEventsReader, QueryState, World};
 use ambient_gpu::{
     gpu::Gpu,
-    mesh_buffer::{MeshBuffer, MeshBufferKey},
+    mesh_buffer::MeshBuffer,
     multi_buffer::{MultiBufferSizeStrategy, SubBufferId, TypedMultiBuffer},
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
@@ -218,7 +217,7 @@ impl TreeRenderer {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn run_collect(
+    pub(crate) fn run_collect(
         &self,
         gpu: &Gpu,
         assets: &AssetCache,
@@ -256,7 +255,7 @@ impl TreeRenderer {
             &self.primitives,
             collect_state,
             self.primitives.total_len() as u32,
-            material_layouts,
+            &material_layouts,
         );
     }
 
@@ -346,7 +345,7 @@ impl TreeRenderer {
         self.tree.retain(|_, v| !v.is_empty());
     }
     #[ambient_profiling::function]
-    pub fn render<'a>(
+    pub(crate) fn render<'a>(
         &'a self,
         world: &World,
         mesh_buffer: &MeshBuffer,

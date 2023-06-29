@@ -25,7 +25,7 @@ use super::{get_defs_module, DrawIndexedIndirect, PrimitiveIndex};
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Default, bytemuck::Pod, bytemuck::Zeroable)]
-pub struct CollectPrimitive {
+pub(crate) struct CollectPrimitive {
     entity_loc: UVec2,
     primitive_index: u32,
     material_index: u32,
@@ -47,14 +47,17 @@ impl CollectPrimitive {
     }
 }
 
-pub struct RendererCollectState {
+/// Contains the primitive input and indirect output buffers for GPU driven rendering
+pub(crate) struct RendererCollectState {
     pub params: TypedBuffer<RendererCollectParams>,
     pub commands: TypedBuffer<DrawIndexedIndirect>,
     pub counts: TypedBuffer<u32>,
     #[cfg(any(target_os = "macos", target_os = "unknown"))]
+    /// Multi draw indexed indirect is not supported on macOS
     pub counts_cpu: Arc<Mutex<Vec<u32>>>,
     pub material_layouts: TypedBuffer<UVec2>,
 }
+
 impl RendererCollectState {
     pub fn new(gpu: &Gpu) -> Self {
         log::debug!("Setting up renderer collect state");
@@ -117,7 +120,7 @@ pub struct RendererCollectParams {
 }
 
 const COLLECT_WORKGROUP_SIZE: u32 = 32;
-const COLLECT_CHUNK_SIZE: u32 = 256;
+// const COLLECT_CHUNK_SIZE: u32 = 256;
 
 /// This collects primitives into indirect draw buffers
 #[allow(dead_code)]
@@ -198,10 +201,10 @@ impl RendererCollect {
                     "COLLECT_WORKGROUP_SIZE",
                     COLLECT_WORKGROUP_SIZE,
                 ))
-                .with_ident(ShaderIdent::constant(
-                    "COLLECT_CHUNK_SIZE",
-                    COLLECT_CHUNK_SIZE,
-                ))
+                // .with_ident(ShaderIdent::constant(
+                //     "COLLECT_CHUNK_SIZE",
+                //     COLLECT_CHUNK_SIZE,
+                // ))
                 .with_binding_desc(layout_desc)
                 .with_dependency(get_defs_module())
                 .with_dependency(get_mesh_meta_module(0))
@@ -215,9 +218,8 @@ impl RendererCollect {
     }
 
     #[allow(clippy::too_many_arguments)]
-    #[allow(clippy::ptr_arg)]
     #[ambient_profiling::function]
-    pub fn run(
+    pub(crate) fn run(
         &self,
         gpu: &Gpu,
         assets: &AssetCache,
@@ -228,7 +230,7 @@ impl RendererCollect {
         input_primitives: &TypedMultiBuffer<CollectPrimitive>,
         output: &mut RendererCollectState,
         primitives_count: u32,
-        material_layouts: Vec<UVec2>,
+        material_layouts: &[UVec2],
     ) {
         if primitives_count == 0 {
             return;
@@ -236,10 +238,16 @@ impl RendererCollect {
 
         tracing::debug!("Resizing collect command buffer to {primitives_count}");
 
-        output.commands.resize(gpu, primitives_count as u64, true);
+        output.commands.resize(
+            gpu,
+            primitives_count as u64
+                + (COLLECT_WORKGROUP_SIZE - primitives_count % COLLECT_WORKGROUP_SIZE) as u64,
+            true,
+        );
+
         let counts = vec![0; material_layouts.len()];
         output.counts.fill(gpu, &counts, |_| {});
-        output.material_layouts.fill(gpu, &material_layouts, |_| {});
+        output.material_layouts.fill(gpu, material_layouts, |_| {});
 
         let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: None,
@@ -272,6 +280,7 @@ impl RendererCollect {
             let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
                 label: Some("Collect"),
             });
+
             cpass.set_pipeline(self.pipeline.pipeline());
 
             for (i, bind_group) in [mesh_meta_bind_group, entities_bind_group, &bind_group]
@@ -281,14 +290,10 @@ impl RendererCollect {
                 cpass.set_bind_group(i as _, bind_group, &[]);
             }
 
-            let count = (primitives_count as f32 / COLLECT_WORKGROUP_SIZE as f32).ceil() as u32;
-            let width = if count < COLLECT_CHUNK_SIZE {
-                count
-            } else {
-                COLLECT_CHUNK_SIZE
-            };
-            let height = (count as f32 / COLLECT_CHUNK_SIZE as f32).ceil() as u32;
-            cpass.dispatch_workgroups(width, height, 1);
+            // Divide up all the primitives among `x` workgroups
+            let x = (primitives_count as f32 / COLLECT_WORKGROUP_SIZE as f32).ceil() as u32;
+
+            cpass.dispatch_workgroups(x, 1, 1);
         }
 
         #[cfg(any(target_os = "macos", target_os = "unknown"))]
@@ -312,7 +317,6 @@ impl RendererCollect {
             _post_submit.push(Box::new(move || {
                 runtime.spawn(async move {
                     if let Ok(res) = staging.read(&post_submit_gpu, .., false).await {
-                        tracing::info!("Read count from post submit buffer");
                         *counts_res.lock() = res;
                         buffs.return_buffer(staging);
                     }
