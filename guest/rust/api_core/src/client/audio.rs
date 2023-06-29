@@ -1,12 +1,11 @@
 use crate::internal::wit;
 use crate::{
     components::core::{
-        app::{name, ref_count},
+        app::name,
         audio::{amplitude, audio_player, audio_url, looping, panning, trigger_at_this_frame},
-        ecs::{children, parent},
     },
     entity,
-    prelude::{time, Entity, EntityId},
+    prelude::{Entity, EntityId},
 };
 
 // /// An audio track that can be played.
@@ -18,7 +17,7 @@ use crate::{
 #[derive(Debug, Clone)]
 pub struct AudioPlayer {
     /// The url of the audio file to play
-    url: String,
+    pub url: String,
     /// The entity that represents the audio player
     entity: EntityId,
 }

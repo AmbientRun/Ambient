@@ -14,7 +14,7 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
                 let audio_player = audio_player.clone();
                 move |v| {
                     set_f32_value(v);
-                    &audio_player.set_amplitude(v / 100.);
+                    audio_player.set_amplitude(v / 100.);
                 }
             })),
             min: 0.0,
@@ -32,7 +32,7 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
                 let audio_player = audio_player.clone();
                 move |v| {
                     set_panning(v);
-                    &audio_player.set_panning(v);
+                    audio_player.set_panning(v);
                 }
             })),
             min: -1.0,
