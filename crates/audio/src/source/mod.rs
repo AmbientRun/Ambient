@@ -156,20 +156,20 @@ pub trait Source: Send {
         SampleIter::new(self)
     }
 
-    fn gain<G>(self, gain: G) -> Gain<Self, G>
+    fn gain<G>(self, gain: G) -> Box<dyn Source + Send>
     where
-        Self: Sized,
-        G: GainValue,
+        Self: Sized + 'static,
+        G: GainValue + Send + 'static,
     {
-        Gain::new(self, gain)
+        Box::new(Gain::new(self, gain))
     }
 
-    fn pan<P>(self, pan: P) -> Pan<Self, P>
+    fn pan<P>(self, pan: P) -> Box<dyn Source + Send>
     where
-        Self: Sized,
-        P: PanValue,
+        Self: Sized + 'static,
+        P: PanValue + Send + 'static,
     {
-        Pan::new(self, pan)
+        Box::new(Pan::new(self, pan))
     }
 
     fn spatial<L, P>(self, hrtf_lib: &HrtfLib, listener: L, params: P) -> Spatial<Self, L, P>

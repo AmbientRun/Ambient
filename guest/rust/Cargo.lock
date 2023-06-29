@@ -154,6 +154,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_example_audio_ctrl"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "ambient_example_auto_editor"
 version = "0.3.0-dev"
 dependencies = [
