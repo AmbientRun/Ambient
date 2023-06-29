@@ -317,7 +317,6 @@ async fn handle_quinn_connection(
     };
 
     while server.is_pending_connection() {
-        tracing::info!("Waiting for connect request");
         if let Some(frame) = request_recv.next().await {
             server.process_control(&data, frame?)?;
         }
@@ -449,7 +448,6 @@ async fn start_proxy_connection(
 
     // start and allocate endpoint
     let mut controller = proxy.start(on_endpoint_allocated, on_player_connected);
-    tracing::info!("Allocating proxy endpoint");
     if let Err(err) = controller.allocate_endpoint().await {
         tracing::warn!("Failed to allocate proxy endpoint: {}", err);
     }

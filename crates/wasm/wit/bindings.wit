@@ -8,9 +8,6 @@ world bindings {
     import entity
     import message
     import player
-    import world-audio
-
-    import client-audio
     import client-message
     import client-player
     import client-input

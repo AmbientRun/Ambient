@@ -70,30 +70,7 @@ impl wit::client_camera::Host for Bindings {
         unsupported()
     }
 }
-#[async_trait::async_trait]
-impl wit::client_audio::Host for Bindings {
-    async fn load(&mut self, _url: String) -> anyhow::Result<()> {
-        unsupported()
-    }
-    async fn play(
-        &mut self,
-        _name: String,
-        _looping: bool,
-        _volume: f32,
-        _uid: u32,
-    ) -> anyhow::Result<()> {
-        unsupported()
-    }
-    async fn stop(&mut self, _name: String) -> anyhow::Result<()> {
-        unsupported()
-    }
-    async fn set_volume(&mut self, _name: String, _volume: f32) -> anyhow::Result<()> {
-        unsupported()
-    }
-    async fn stop_by_id(&mut self, _id: u32) -> anyhow::Result<()> {
-        unsupported()
-    }
-}
+
 #[async_trait::async_trait]
 impl wit::client_window::Host for Bindings {
     async fn set_fullscreen(&mut self, _fullscreen: bool) -> anyhow::Result<()> {

@@ -65,7 +65,7 @@ async fn asset_requests_from_file_path(
 /// be already built.
 pub async fn deploy(
     runtime: &tokio::runtime::Handle,
-    api_server: String,
+    api_server: &str,
     auth_token: &str,
     path: impl AsRef<Path>,
     manifest: &Manifest,
@@ -195,12 +195,12 @@ pub async fn deploy(
 
 /// Created a client for the deploy API server.
 async fn create_client(
-    api_server: String,
+    api_server: &str,
     auth_token: &str,
 ) -> anyhow::Result<DeployerClient<InterceptedService<Channel, impl Interceptor>>> {
     // set up TLS config if needed
     let tls = if api_server.starts_with("https://") {
-        let domain_name = Uri::from_str(&api_server)?
+        let domain_name = Uri::from_str(api_server)?
             .host()
             .ok_or_else(|| {
                 anyhow::anyhow!(
@@ -225,7 +225,7 @@ async fn create_client(
 
     // set up the endpoint and connect
     let channel = {
-        let mut endpoint = Channel::from_shared(api_server)?;
+        let mut endpoint = Channel::from_shared(api_server.to_owned())?;
         if let Some(tls) = tls {
             endpoint = endpoint.tls_config(tls)?
         }
