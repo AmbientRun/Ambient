@@ -43,8 +43,7 @@ async fn image_from_url(assets: AssetCache, url: AbsAssetUrl) -> Result<DynamicI
     Ok(task::block_in_place({
             let url = url.clone();
             move || -> anyhow::Result<DynamicImage> {
-                if let Some(extension) = url.extension() {
-                    let format = ImageFormat::from_extension(extension).context("Invalid extension")?;
+                if let Some(format) = url.extension().and_then(ImageFormat::from_extension) {
                     Ok(image::io::Reader::with_format(Cursor::new(&*data), format).decode()?)
                 } else {
                     Ok(image::io::Reader::new(Cursor::new(&*data))

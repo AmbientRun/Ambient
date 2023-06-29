@@ -97,6 +97,10 @@ pub(crate) async fn download<T: 'static + Send, F: Future<Output = anyhow::Resul
             log::info!("download [download] {}", url_short);
             let resp = client
                 .get(url.clone())
+                .header(
+                    "User-Agent",
+                    format!("Ambient/{}", env!("CARGO_PKG_VERSION")),
+                )
                 .send()
                 .await
                 .with_context(|| format!("Failed to download {url_str}"))?;
