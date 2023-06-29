@@ -89,14 +89,14 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let index = global_id.y * chunk + global_id.x;
 
     if index >= arrayLength(&input_primitives.data) {
-        return;
+        // return;
     }
 
 
     let primitive = input_primitives.data[index];
     let material_layout = material_layouts.data[primitive.material_index];
     if index < material_layout.x || index >= material_layout.x + material_layout.y {
-        return;
+        // return;
     }
 
 
@@ -105,8 +105,10 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let primitive_lod = entity_primitive.y;
 
     let out_offset = atomicAdd(&output_counts.data[primitive.material_index], 1u);
+
     let out_index = material_layout.x + out_offset;
     let mesh = mesh_metadatas[mesh_index];
+
     output_commands.data[out_index].vertex_count = mesh.index_count;
     output_commands.data[out_index].instance_count = 1u;
     output_commands.data[out_index].base_index = mesh.index_offset;

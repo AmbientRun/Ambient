@@ -424,21 +424,22 @@ impl TreeRenderer {
                     //
                     // let mesh_buffer = mesh_buffer.lock();
                     let count = counts.get(mat.material_index as usize);
-                    tracing::debug!("Counts: {count:?}");
-                    for (i, &(id, primitive_idx)) in mat.primitives.iter().enumerate() {
-                        let primitive = &world.get_ref(id, primitives()).unwrap()[primitive_idx];
-                        let mesh = mesh_buffer.get_mesh_metadata(&primitive.mesh);
-                        let index = offset + i as u64;
-                        render_pass.draw_indexed(
-                            mesh.index_offset..(mesh.index_offset + mesh.index_count),
-                            0,
-                            index as u32..(index as u32 + i as u32),
-                        )
-                    }
-
-                    if let Some(count) = count {
+                    if false {
+                        tracing::debug!("Counts: {count:?}");
+                        for (i, &(id, primitive_idx)) in mat.primitives.iter().enumerate() {
+                            let primitive =
+                                &world.get_ref(id, primitives()).unwrap()[primitive_idx];
+                            let mesh = mesh_buffer.get_mesh_metadata(&primitive.mesh);
+                            let index = offset + i as u64;
+                            render_pass.draw_indexed(
+                                mesh.index_offset..(mesh.index_offset + mesh.index_count),
+                                0,
+                                index as u32..(index as u32 + i as u32),
+                            )
+                        }
+                    } else if let Some(count) = count {
                         for i in 0..*count {
-                            tracing::debug!("Drawing primitive: {i}");
+                            tracing::debug!("Drawing primitive: {offset} + {i}");
                             // render_pass.draw_indexed(, base_vertex, instances)
                             render_pass.draw_indexed_indirect(
                                 collect_state.commands.buffer(),
@@ -446,6 +447,8 @@ impl TreeRenderer {
                                     * std::mem::size_of::<DrawIndexedIndirect>() as u64,
                             );
                         }
+                    } else {
+                        tracing::error!("No primitive count available");
                     }
                 }
             }
