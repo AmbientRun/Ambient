@@ -39,6 +39,8 @@ At present, there is only one WIT world, `bindings`, in the `main.wit` folder, a
 These bindings are wired up in the host using [`wasmtime`'s Component Model support](https://docs.wasmtime.dev/api/wasmtime/component/index.html).
 The WIT interfaces generate traits, which are then implemented within [crates/wasm/src/client/mod.rs](https://github.com/AmbientRun/Ambient/tree/main/crates/wasm/src/client/mod.rs) and [crates/wasm/src/server/mod.rs](https://github.com/AmbientRun/Ambient/tree/main/crates/wasm/src/server/mod.rs). As all interfaces need to be implemented - even when not relevant to the side of the network boundary you're on - unused implementations go in the `unused.rs` module in the same folder.
 
+Note that the bindings use `async fn`s in the traits - this is a side-effect of `wasmtime-wasi` preview2 being async-only. Do _not_ attempt to use async functionality in your implementations; it will not work.
+
 Types that are shared between interfaces should go in `types.wit`; otherwise, they should go in the relevant interface file. Where possible, try to describe as much within the WIT files; the more that is specified in the WIT files, the less code needs to be written for each guest language.
 
 If you add a new interface, you will need to expose it in `main.wit`, update `crates/wasm/src/shared/bindings.rs` to include it in `BindingsBound`, and add implementations for the new trait in `crates/wasm/src/client/mod.rs` and `crates/wasm/src/server/mod.rs`.
@@ -152,7 +154,7 @@ Running `cargo campfire golden-images --prefix ui check` will only check tests w
 
 ### Common failures
 
-- If your test includes anything that animates over time, this is likely to fail the golden image test because the current golden image test implementation waits for a brief moment before capturing the image. During this moment, the animation might advance to a state which causes golden image test to fail. Therefore all  tests should be static by default.
+- If your test includes anything that animates over time, this is likely to fail the golden image test because the current golden image test implementation waits for a brief moment before capturing the image. During this moment, the animation might advance to a state which causes golden image test to fail. Therefore all tests should be static by default.
 
 ### Flakiness
 
