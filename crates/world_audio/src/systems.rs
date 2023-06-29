@@ -22,18 +22,9 @@ pub fn audio_systems() -> SystemGroup {
             query((audio_player(), trigger_at_this_frame())).to_system(|q, world, qs, _| {
                 for (audio_entity, (_, should_play)) in q.collect_cloned(world, qs) {
                     if should_play {
-                        let amp = match world.get(audio_entity, amplitude()) {
-                            Ok(v) => v,
-                            Err(_) => 1.0,
-                        };
-                        let pan = match world.get(audio_entity, panning()) {
-                            Ok(v) => v,
-                            Err(_) => 0.0,
-                        };
-                        let looping = match world.get(audio_entity, looping()) {
-                            Ok(v) => v,
-                            Err(_) => false,
-                        };
+                        let amp = world.get(audio_entity, amplitude()).unwrap_or(1.0);
+                        let pan = world.get(audio_entity, panning()).unwrap_or(0.0);
+                        let looping = world.get(audio_entity, looping()).unwrap_or(false);
                         world
                             .set(audio_entity, trigger_at_this_frame(), false)
                             .unwrap();
@@ -108,15 +99,9 @@ pub fn spatial_audio_systems() -> SystemGroup {
                 |q, world, qs, _| {
                     for (audio_entity, (_, should_play)) in q.collect_cloned(world, qs) {
                         if should_play {
-                            let amp = match world.get(audio_entity, amplitude()) {
-                                Ok(v) => v,
-                                Err(_) => 1.0,
-                            };
-                            // TODO: looping is not implemented yet
-                            // let looping = match world.get(audio_entity, looping()) {
-                            //     Ok(v) => v,
-                            //     Err(_) => false,
-                            // };
+                            let amp = world.get(audio_entity, amplitude()).unwrap_or(1.0);
+                            // TODO: find a way to get looping to work
+                            // let looping = world.get(audio_entity, looping()).unwrap_or(false);
                             world
                                 .set(audio_entity, trigger_at_this_frame(), false)
                                 .unwrap();
