@@ -12,10 +12,11 @@ ambient_app = { path = "../crates/app" }
 ambient_audio = { path = "../crates/audio" }
 ambient_build = { path = "../crates/build" }
 ambient_cameras = { path = "../crates/cameras" }
+ambient_cloud_client = { path = "../crates/cloud_client" }
 ambient_core = { path = "../crates/core" }
 ambient_debugger = { path = "../crates/debugger" }
 ambient_decals = { path = "../crates/decals" }
-ambient_deploy = { path = "../crates/deploy", optional = true }
+ambient_deploy = { path = "../crates/deploy" }
 ambient_ecs = { path = "../crates/ecs" }
 ambient_gizmos = { path = "../crates/gizmos" }
 ambient_gpu = { path = "../crates/gpu" }
@@ -87,7 +88,6 @@ rusty-hook = "^0.11.2"
 [features]
 no_bundled_certs = []
 default = ["tls-webpki-roots"]
-deploy = ["ambient_deploy"]
 slim = ["stackdriver"]
 production = ["assimp"]
 profile = ["ambient_app/profile"]

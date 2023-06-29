@@ -3,9 +3,7 @@ use ambient_api::{components::core::layout::space_between_items, prelude::*};
 #[element_component]
 fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
     let (f32_value, set_f32_value) = hooks.use_state(100.);
-
     let (panning, set_panning) = hooks.use_state(0.);
-
     FocusRoot::el([FlowColumn::el([
         Text::el("Amplitude:"),
         Slider {
@@ -45,7 +43,7 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
         .el(),
         Button::new("play sound", {
             move |_| {
-                audio_player.play();
+                audio_player.play(asset::url("assets/arpy01.wav").unwrap());
             }
         })
         .toggled(true)
@@ -58,6 +56,6 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
 
 #[main]
 pub fn main() {
-    let audio_player = audio::AudioPlayer::from_url(asset::url("assets/arpy01.wav").unwrap());
+    let audio_player = audio::AudioPlayer::new();
     App::el(audio_player).spawn_interactive();
 }

@@ -2,15 +2,11 @@
 //!
 //! If implementing a trait that is also available on the server, it should go in [super].
 
-use std::{str::FromStr, sync::Arc};
+use std::sync::Arc;
 
-use ambient_audio::AudioFromUrl;
 use ambient_core::{
-    asset_cache,
-    async_ecs::async_run,
     gpu,
     player::local_user_id,
-    runtime,
     window::{window_ctl, WindowCtl},
 };
 use ambient_gpu::texture::Texture;
@@ -21,8 +17,8 @@ use ambient_procedurals::{
     procedural_storage,
 };
 use ambient_renderer::pbr_material::{PbrMaterialConfig, PbrMaterialParams};
-use ambient_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl, mesh::MeshBuilder};
-use ambient_world_audio::{audio_sender, AudioFx, AudioMessage};
+use ambient_std::mesh::MeshBuilder;
+
 use anyhow::Context;
 use glam::Vec4;
 use wgpu::TextureViewDescriptor;
@@ -197,104 +193,7 @@ impl wit::client_camera::Host for Bindings {
         Ok(ambient_core::window::clip_to_screen_space(self.world(), clip_pos).into_bindgen())
     }
 }
-#[async_trait::async_trait]
-impl wit::client_audio::Host for Bindings {
-    async fn load(&mut self, url: String) -> anyhow::Result<()> {
-        let world = self.world();
-        let assets = world.resource(asset_cache());
-        let audio_url = AudioFromUrl {
-            url: AbsAssetUrl::from_str(&url)?,
-        };
-        let _track = audio_url.peek(assets);
-        Ok(())
-    }
 
-    async fn play(
-        &mut self,
-        url: String,
-        looping: bool,
-        volume: f32,
-        uid: u32,
-    ) -> anyhow::Result<()> {
-        let world = self.world();
-        let assets = world.resource(asset_cache()).clone();
-        let runtime = world.resource(runtime()).clone();
-        let async_run = world.resource(async_run()).clone();
-        let url = AbsAssetUrl::from_str(&url)?.to_download_url(&assets)?;
-        runtime.spawn(async move {
-            let track = AudioFromUrl { url: url.clone() }.get(&assets).await;
-            async_run.run(move |world| {
-                match track {
-                    Ok(track) => {
-                        let sender = world.resource(audio_sender());
-                        sender
-                            .send(AudioMessage::Track {
-                                track,
-                                fx: {
-                                    if looping {
-                                        vec![AudioFx::Amplitude(volume), AudioFx::Looping]
-                                    } else {
-                                        vec![AudioFx::Amplitude(volume)]
-                                    }
-                                },
-                                url,
-                                uid,
-                            })
-                            .unwrap();
-                    }
-                    Err(e) => log::error!("{e:?}"),
-                };
-            });
-        });
-        Ok(())
-    }
-
-    async fn stop(&mut self, url: String) -> anyhow::Result<()> {
-        let world = self.world();
-        let runtime = world.resource(runtime()).clone();
-        let async_run = world.resource(async_run()).clone();
-        let assets = world.resource(asset_cache());
-        let url = AbsAssetUrl::from_str(&url)?.to_download_url(assets)?;
-        runtime.spawn(async move {
-            async_run.run(move |world| {
-                let sender = world.resource(audio_sender());
-                sender.send(AudioMessage::Stop(url)).unwrap();
-            });
-        });
-        Ok(())
-    }
-
-    async fn set_volume(&mut self, url: String, _volume: f32) -> anyhow::Result<()> {
-        let world = self.world();
-        let runtime = world.resource(runtime()).clone();
-        let async_run = world.resource(async_run()).clone();
-        let assets = world.resource(asset_cache());
-        let _url = AbsAssetUrl::from_str(&url)?.to_download_url(assets)?;
-        runtime.spawn(async move {
-            async_run.run(move |world| {
-                let _sender = world.resource(audio_sender());
-                // TODO: remove this
-                // sender
-                //     .send(AudioMessage::UpdateVolume(url, volume))
-                //     .unwrap();
-            });
-        });
-        Ok(())
-    }
-
-    async fn stop_by_id(&mut self, uid: u32) -> anyhow::Result<()> {
-        let world = self.world();
-        let runtime = world.resource(runtime()).clone();
-        let async_run = world.resource(async_run()).clone();
-        runtime.spawn(async move {
-            async_run.run(move |world| {
-                let sender = world.resource(audio_sender());
-                sender.send(AudioMessage::StopById(uid)).unwrap();
-            });
-        });
-        Ok(())
-    }
-}
 #[async_trait::async_trait]
 impl wit::client_window::Host for Bindings {
     async fn set_fullscreen(&mut self, fullscreen: bool) -> anyhow::Result<()> {

@@ -6,7 +6,25 @@ description = "Audio functionality and state."
 [components.audio-player]
 type = "empty"
 name = "Audio player"
-description = "The entity is audio player."
+description = "The entity is an audio player."
+attributes = ["maybe-resource", "debuggable"]
+
+[components.spatial-audio-player]
+type = "empty"
+name = "Spatial audio player"
+description = "The entity is a spatial audio player."
+attributes = ["maybe-resource", "debuggable"]
+
+[components.spatial-audio-emitter]
+type = "entity-id"
+name = "Spatial audio emitter"
+description = "The entity is a spatial audio emitter."
+attributes = ["maybe-resource", "debuggable"]
+
+[components.spatial-audio-listener]
+type = "entity-id"
+name = "Spatial audio listener"
+description = "The entity is a spatial audio listener."
 attributes = ["maybe-resource", "debuggable"]
 
 [components.looping]

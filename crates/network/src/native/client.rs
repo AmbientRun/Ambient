@@ -145,7 +145,6 @@ impl ElementComponent for GameClientView {
                         .add_event(event.clone());
                 }
 
-                // tracing::info!("Drawing game state");
                 game_state.on_frame(&gpu, &render_target.0);
             });
         }
@@ -250,12 +249,7 @@ async fn handle_connection(
     state: SharedClientState,
     control_rx: flume::Receiver<Control>,
 ) -> anyhow::Result<()> {
-    tracing::info!("Handling client connection");
-    tracing::info!("Opening control stream");
-
     let mut request_send = FramedSendStream::new(conn.open_uni().await?);
-
-    tracing::info!("Opened control stream");
 
     // Accept the diff and stat stream
     // Nothing is read from them until the connection has been accepted
@@ -269,18 +263,14 @@ async fn handle_connection(
 
     let mut client = ClientState::Connecting(user_id);
 
-    tracing::info!("Accepting control stream from server");
     let mut push_recv = FramedRecvStream::new(conn.accept_uni().await?);
 
-    tracing::info!("Entering client loop");
     while client.is_connecting() {
-        tracing::info!("Waiting for server to accept connection and send server info");
         if let Some(frame) = push_recv.next().await {
             client.process_push(&state, frame?)?;
         }
     }
 
-    tracing::info!("Accepting diff stream");
     let mut diff_stream = FramedRecvStream::new(conn.accept_uni().await?);
 
     let cleanup = on_loaded(game_client)?;

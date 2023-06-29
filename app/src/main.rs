@@ -5,7 +5,7 @@ use ambient_network::native::client::ResolvedAddr;
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ContentBaseUrlKey},
-    download_asset::AssetsCacheOnDisk,
+    download_asset::{AssetsCacheOnDisk, ReqwestClientKey},
 };
 use clap::Parser;
 
@@ -227,6 +227,13 @@ async fn main() -> anyhow::Result<()> {
 
     let project = cli.project();
 
+    if let Some(project) = &project {
+        if project.project {
+            log::warn!("`-p`/`--project` has no semantic meaning - the path is always treated as a project path.");
+            log::warn!("You do not need to use `-p`/`--project` - `ambient run project` is the same as `ambient run -p project`.");
+        }
+    }
+
     let project_path: ProjectPath = project.and_then(|p| p.path.clone()).try_into()?;
     if project_path.is_remote() {
         // project path is a URL, so let's use it as the content base URL
@@ -310,27 +317,23 @@ async fn main() -> anyhow::Result<()> {
     }
 
     // If this is just a deploy then deploy and exit
-    #[cfg(feature = "deploy")]
     if let Commands::Deploy {
         token,
         api_server,
         force_upload,
+        ensure_running,
+        context,
         ..
     } = &cli.command
     {
-        let Some(auth_token) = token else {
-            anyhow::bail!("-t/--token is required for deploy");
-        };
         let Some(project_fs_path) = &project_path.fs_path else {
             anyhow::bail!("Can only deploy a local project");
         };
         let manifest = manifest.as_ref().expect("no manifest");
         let deployment_id = ambient_deploy::deploy(
             &runtime,
-            api_server
-                .clone()
-                .unwrap_or("https://api.ambient.run".to_string()),
-            auth_token,
+            api_server,
+            token,
             project_fs_path,
             manifest,
             *force_upload,
@@ -341,12 +344,37 @@ async fn main() -> anyhow::Result<()> {
             deployment_id,
             deployment_id,
         );
+        if *ensure_running {
+            let spec = ambient_cloud_client::ServerSpec::new_with_deployment(deployment_id)
+                .with_context(context.clone());
+            let server = ambient_cloud_client::ensure_server_running(
+                &assets,
+                api_server,
+                token.into(),
+                spec,
+            )
+            .await?;
+            log::info!("Deployed ember is running at {}", server.host);
+        }
         return Ok(());
     }
 
     // Otherwise, either connect to a server or host one
     let server_addr = if let Commands::Join { host, .. } = &cli.command {
         if let Some(mut host) = host.clone() {
+            if host.starts_with("http://") || host.starts_with("https://") {
+                tracing::info!("NOTE: Joining server by http url is still experimental and can be removed without warning.");
+                host = ReqwestClientKey
+                    .get(&assets)
+                    .get(host)
+                    .send()
+                    .await?
+                    .text()
+                    .await?;
+                if host.is_empty() {
+                    anyhow::bail!("Failed to resolve host");
+                }
+            }
             if !host.contains(':') {
                 host = format!("{host}:{QUIC_INTERFACE_PORT}");
             }

@@ -15,7 +15,6 @@ pub use rand::prelude::*;
 pub use crate::client::{
     audio, camera,
     input::{self, KeyCode, MouseButton},
-    spatial_audio,
 };
 
 #[cfg(feature = "server")]

@@ -121,6 +121,7 @@ dependencies = [
  "ambient_build",
  "ambient_cameras",
  "ambient_client_shared",
+ "ambient_cloud_client",
  "ambient_core",
  "ambient_debugger",
  "ambient_decals",
@@ -438,6 +439,20 @@ dependencies = [
  "ambient_network",
  "ambient_shared_types",
  "glam 0.24.0",
+]
+
+[[package]]
+name = "ambient_cloud_client"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_asset_cache",
+ "ambient_project",
+ "ambient_std",
+ "ambient_sys",
+ "anyhow",
+ "log",
+ "reqwest",
+ "serde",
 ]
 
 [[package]]
@@ -1592,7 +1607,6 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_animation",
  "ambient_app",
- "ambient_audio",
  "ambient_core",
  "ambient_ecs",
  "ambient_gpu",
@@ -1608,7 +1622,6 @@ dependencies = [
  "ambient_shared_types",
  "ambient_std",
  "ambient_sys",
- "ambient_world_audio",
  "anyhow",
  "async-trait",
  "byteorder",
