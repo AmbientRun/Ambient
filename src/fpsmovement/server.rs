@@ -1,21 +1,5 @@
 use ambient_api::{
-    animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
-    components::core::{
-        animation::{apply_animation_player, blend},
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        ecs::{children, parent},
-        physics::{
-            character_controller_height, character_controller_radius, physics_controlled,
-            plane_collider, sphere_collider,
-        },
-        player::{player, user_id},
-        prefab::prefab_from_url,
-        primitives::{cube, quad},
-        rendering::color,
-        transform::{local_to_parent, rotation, scale, translation},
-    },
-    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
+    components::core::{player::player, transform::rotation},
     prelude::*,
 };
 
@@ -96,12 +80,12 @@ pub fn main() {
         for (player_id, (_, direction, rot, vspeed)) in list {
             let speed = vec2(0.04, 0.06);
             let displace = rot * (direction.normalize_or_zero() * speed).extend(vspeed);
-            let collision = physics::move_character(player_id, displace, 0.01, frametime());
+            let collision = physics::move_character(player_id, displace, 0.01, delta_time());
             if collision.down {
                 entity::set_component(player_id, components::player_vspeed(), 0.0);
             } else {
                 entity::mutate_component(player_id, components::player_vspeed(), |vspeed| {
-                    *vspeed -= 2.3 * frametime(); // 1/60 second for example
+                    *vspeed -= 2.3 * delta_time(); // 1/60 second for example
                 });
             }
         }

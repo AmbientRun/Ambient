@@ -2,8 +2,8 @@
 
 // TODO: this should vary based on the game type
 
+use ambient_api::components::core::{player::player, transform::translation};
 use ambient_api::prelude::*;
-
 #[main]
 pub fn main() {
     spawn_query(player()).bind(|results| {

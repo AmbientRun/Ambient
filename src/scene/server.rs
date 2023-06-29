@@ -2,6 +2,7 @@ use ambient_api::{
     components::core::{
         physics::{cube_collider, plane_collider, sphere_collider, visualize_collider},
         primitives::{cube, quad},
+        transform::scale,
     },
     concepts::{make_sphere, make_transformable},
     entity::{add_components, remove_components, wait_for_component},

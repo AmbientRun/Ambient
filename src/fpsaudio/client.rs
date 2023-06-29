@@ -1,3 +1,4 @@
+use ambient_api::components::core::transform::translation;
 use ambient_api::prelude::*;
 
 #[main]

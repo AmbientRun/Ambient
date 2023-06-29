@@ -3,7 +3,15 @@
 // TODO: finish keybind to show/hide the scoreboard
 // TODO: add a UI to show health
 
-use ambient_api::prelude::*;
+use ambient_api::{
+    components::core::{
+        app::window_logical_size,
+        layout::space_between_items,
+        player::player,
+        rect::{background_color, line_from, line_to, line_width},
+    },
+    prelude::*,
+};
 
 #[main]
 pub fn main() {

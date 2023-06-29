@@ -9,6 +9,17 @@ version = "0.0.1"
 ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", branch = "main" }
 
 [[bin]]
+name = "fpsui_client"
+path = "src/fpsui/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "fpsui_server"
+path = "src/fpsui/server.rs"
+required-features = ["server"]
+
+
+[[bin]]
 name = "scene_server"
 path = "src/scene/server.rs"
 required-features = ["server"]
@@ -35,6 +46,8 @@ name = "fpsmovement_server"
 path = "src/fpsmovement/server.rs"
 required-features = ["server"]
 
+# better uncomment anim with rule
+
 [[bin]]
 name = "fpsanim_server"
 path = "src/fpsanim/server.rs"
@@ -45,16 +58,6 @@ name = "fpsrule_server"
 path = "src/fpsrule/server.rs"
 required-features = ["server"]
 
-
-[[bin]]
-name = "fpsui_client"
-path = "src/fpsui/client.rs"
-required-features = ["client"]
-
-[[bin]]
-name = "fpsui_server"
-path = "src/fpsui/server.rs"
-required-features = ["server"]
 
 [[bin]]
 name = "fpsaudio_client"

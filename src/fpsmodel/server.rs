@@ -6,7 +6,7 @@ use ambient_api::{
         physics::{character_controller_height, character_controller_radius, physics_controlled},
         player::{player, user_id},
         prefab::prefab_from_url,
-        transform::{local_to_parent, rotation, translation},
+        transform::{local_to_parent, local_to_world, rotation, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,

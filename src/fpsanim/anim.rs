@@ -1,5 +1,6 @@
 use ambient_api::{
     animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
+    components::core::player::player,
     prelude::*,
 };
 
