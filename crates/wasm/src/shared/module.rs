@@ -8,6 +8,7 @@ use data_encoding::BASE64;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::{any::Any, collections::HashSet, sync::Arc};
+#[cfg(feature = "wit")]
 use wasmtime_wasi::preview2 as wasi_preview2;
 
 #[derive(Clone)]
@@ -73,6 +74,7 @@ struct WasmtimeContext<Bindings: BindingsBound> {
     wasi: wasi_preview2::WasiCtx,
     table: wasi_preview2::Table,
 }
+#[cfg(feature = "wit")]
 impl<B: BindingsBound> wasi_preview2::WasiView for WasmtimeContext<B> {
     fn table(&self) -> &wasi_preview2::Table {
         &self.table
