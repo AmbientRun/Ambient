@@ -1,0 +1,21 @@
+[package]
+name = "ambient_cloud_client"
+version = { workspace = true }
+rust-version = { workspace = true }
+edition = "2021"
+description = "Functionality for calling Ambient Cloud APIs."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ambient_asset_cache = { path = "../asset_cache/", version = "0.3.0-dev" }
+ambient_project = { path = "../../shared_crates/project", version = "0.3.0-dev" }
+ambient_std = { path = "../std", version = "0.3.0-dev" }
+ambient_sys = { path = "../sys", version = "0.3.0-dev" }
+
+anyhow = { workspace = true }
+log = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }

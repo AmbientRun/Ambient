@@ -38,19 +38,24 @@ pub enum Commands {
         project_args: ProjectCli,
     },
     /// Deploys the project
-    #[cfg(feature = "deploy")]
     Deploy {
         #[command(flatten)]
         project_args: ProjectCli,
-        /// API server endpoint, defaults to https://api.ambient.run
-        #[arg(long)]
-        api_server: Option<String>,
+        /// API server endpoint
+        #[arg(long, default_value = "https://api.ambient.run")]
+        api_server: String,
         /// Authentication token
-        #[arg(short, long)]
-        token: Option<String>,
+        #[arg(short, long, required = true)]
+        token: String,
         /// Don't use differential upload and upload all assets
         #[arg(long)]
         force_upload: bool,
+        /// Ensure the project is running after deploying
+        #[arg(long)]
+        ensure_running: bool,
+        /// Context to run the project in
+        #[arg(long, requires("ensure_running"), default_value = "")]
+        context: String,
     },
     /// Builds and runs the project in server-only mode
     Serve {
@@ -188,7 +193,6 @@ impl Cli {
             Commands::New { .. } => None,
             Commands::Run { run_args, .. } => Some(run_args),
             Commands::Build { .. } => None,
-            #[cfg(feature = "deploy")]
             Commands::Deploy { .. } => None,
             Commands::Serve { .. } => None,
             Commands::View { .. } => None,
@@ -202,7 +206,6 @@ impl Cli {
             Commands::New { project_args, .. } => Some(project_args),
             Commands::Run { project_args, .. } => Some(project_args),
             Commands::Build { project_args, .. } => Some(project_args),
-            #[cfg(feature = "deploy")]
             Commands::Deploy { project_args, .. } => Some(project_args),
             Commands::Serve { project_args, .. } => Some(project_args),
             Commands::View { project_args, .. } => Some(project_args),
@@ -216,7 +219,6 @@ impl Cli {
             Commands::New { .. } => None,
             Commands::Run { host_args, .. } => Some(host_args),
             Commands::Build { .. } => None,
-            #[cfg(feature = "deploy")]
             Commands::Deploy { .. } => None,
             Commands::Serve { host_args, .. } => Some(host_args),
             Commands::View { .. } => None,
