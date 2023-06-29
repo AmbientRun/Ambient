@@ -8,7 +8,7 @@ use ambient_shared_types::{
     ProceduralTextureHandle,
 };
 use anyhow::Context;
-use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+use glam::{IVec2, IVec3, IVec4, Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 use itertools::Itertools;
 use paste::paste;
 use slotmap::Key;

@@ -160,7 +160,10 @@ impl Mesh {
     }
 
     pub fn texcoords(&self, set: usize) -> &[Vec2] {
-        &self.texcoords[set]
+        self.texcoords
+            .get(set)
+            .map(|tc| tc.as_slice())
+            .unwrap_or(&[])
     }
 
     pub fn joint_indices(&self) -> &[UVec4] {

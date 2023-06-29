@@ -40,6 +40,24 @@ default interface types {
         w: u32,
     }
 
+    record ivec2 {
+        x: s32,
+        y: s32,
+    }
+
+    record ivec3 {
+        x: s32,
+        y: s32,
+        z: s32,
+    }
+
+    record ivec4 {
+        x: s32,
+        y: s32,
+        z: s32,
+        w: s32,
+    }
+
     record quat {
         x: float32,
         y: float32,

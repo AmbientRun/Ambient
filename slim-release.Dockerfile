@@ -13,6 +13,7 @@ RUN apt-get update && \
 ADD . /build
 WORKDIR /build
 RUN cargo build --release --no-default-features --features slim
+RUN strip target/release/ambient
 
 FROM debian:bullseye-slim
 RUN apt-get update && \

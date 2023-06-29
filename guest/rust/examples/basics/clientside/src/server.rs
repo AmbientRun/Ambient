@@ -4,7 +4,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::components::{grid_side_length, grid_x, grid_y};
+use crate::components::{grid_position, grid_side_length};
 
 #[main]
 pub fn main() {
@@ -20,8 +20,7 @@ pub fn main() {
             Entity::new()
                 .with_merge(make_transformable())
                 .with_default(cube())
-                .with(grid_x(), x)
-                .with(grid_y(), y)
+                .with(grid_position(), IVec2::new(x, y))
                 .with(color(), Vec4::ONE)
                 .with(
                     translation(),

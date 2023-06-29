@@ -30,13 +30,25 @@ pub fn api_project(_input: TokenStream) -> TokenStream {
 /// If you do not add this attribute to your `main()` function, your module will not run.
 #[proc_macro_attribute]
 pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    main_macro::main_impl(
+    let ts = main_macro::main_impl(
         item.into(),
         ManifestSource::Path(
             PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("no manifest dir"))
                 .join("ambient.toml"),
         ),
-    )
-    .unwrap()
-    .into()
+    );
+
+    match ts {
+        Ok(ts) => ts.into(),
+        Err(e) => {
+            let msg = format!("Error while running Ambient ember macro: {e}");
+            quote::quote! {
+                compile_error!(#msg);
+                #[no_mangle]
+                #[doc(hidden)]
+                fn main() {}
+            }
+        }
+        .into(),
+    }
 }

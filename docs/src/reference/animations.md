@@ -1,48 +1,49 @@
 # Animations
 
-See the [skinmesh example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/skinmesh) for a full runable example.
+See the [skinmesh example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/skinmesh) for a complete example.
 
 ## Animation assets
 
-To work with animations, you'll need some animation clips to work with. A good way to get started is
-by going to [Mixamo](https://www.mixamo.com/#/) and download some characters and animations there.
+To work with animations, you will need some animation clips. A good way to get started is
+by going to [Mixamo](https://www.mixamo.com/#/) and downloading some characters and animations.
 
-Put your models and animations in your `assets` folder in your ember, and make sure you have a `pipeline.json`
-which can process models and animations, for instance something like this:
+In the `assets` folder of your ember, place your models and animations. Additionally, in the same folder,
+make sure you have a `pipeline.toml` which can process models and animations:
 
 ```toml
 [[pipelines]]
 type = "Models"
 ```
 
-### Finding the clip urls
+### Finding the clip URLs
 
-By running `ambient build` you build the assets. You can browse the `build/assets` folder to see what
-the build command produced.
+The `ambient build` command will build the assets. You can browse the `build/assets` folder to see what
+was produced by the command.
 
-If we look at the [skinmesh example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/skinmesh), you can see that we have an animation called `assets/Capoeira.fbx`. If you build this ember,
-you'll see that it produces a file called `build/assets/Capoeira.fbx/animations/mixamo.com.anim`. If you
-remove the `build/` part of that, you will have the animation clip url; i.e. `assets/Capoeira.fbx/animations/mixamo.com.anim`.
+As an example:
+
+- The [skinmesh example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/skinmesh)
+  has an animation called `assets/Capoeira.fbx`.
+- The build process will produce `build/assets/Capoeira.fbx/animations/mixamo.com.anim`.
+- The animation clip URL is this path without `build/`: `assets/Capoeira.fbx/animations/mixamo.com.anim`.
 
 ## Animation player
 
-To play animations, you'll need an `AnimationPlayer`. The animation player plays a graph of animations nodes;
-currently the two nodes that exist are `PlayClipFromUrlNode` and `BlendNode`. Here's an example of how to set
-it up to play a single animation:
+An `AnimationPlayer` is used to play animations. The player executes a graph of animation nodes; at present,
+the two nodes that exist are `PlayClipFromUrlNode` and `BlendNode`.
+
+Here's an example of how to set up a graph and play it for a single animation:
 
 ```rust
 let clip = PlayClipFromUrlNode::new(
-    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
+    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap()
 );
 let player = AnimationPlayer::new(&clip);
 
 // Let's load a character model to apply the animation to.
 Entity::new()
     .with_merge(make_transformable())
-    .with(
-        prefab_from_url(),
-        asset::url("assets/Peasant Man.fbx").unwrap(),
-    )
+    .with(prefab_from_url(), asset::url("assets/Peasant Man.fbx").unwrap())
     .with(apply_animation_player(), player.0)
     .spawn();
 ```
@@ -51,52 +52,58 @@ The same animation player can be attached to multiple models.
 
 ### Blending animations together
 
-To blend two animations together you can use the `BlendNode`:
+A `BlendNode` can be used to blend two animations together:
 
 ```rust
 let capoeira = PlayClipFromUrlNode::new(
-    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
+    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap()
 );
 let robot = PlayClipFromUrlNode::new(
-    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap(),
+    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap()
 );
 let blend = BlendNode::new(&capoeira, &robot, 0.3);
 let anim_player = AnimationPlayer::new(&blend);
 ```
 
-This will blend capoeira (30%) and robot (70%) together, to form one output animation.
+This will blend `capoeira` (30%) and `robot` (70%) together to form one output animation.
 
 ### Masked blending
 
-It's quite common two want to play one animation for the torso and another for the lower
-body of a character model. To achieve this we use masking:
+A common use case for blending is to blend two animations together for different parts of the body;
+this is achieved using masking. Here's an example of how to blend two animations together for the upper and lower
+body:
 
 ```rust
 let capoeira = PlayClipFromUrlNode::new(
-    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
+    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap()
 );
 let robot = PlayClipFromUrlNode::new(
-    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap(),
+    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap()
 );
-let blend = BlendNode::new(&capoeira, &robot, 0.);
-blend.set_mask_humanoid_lower_body(1.);
+
+let blend = BlendNode::new(&capoeira, &robot, 0.0);
+blend.set_mask_humanoid_lower_body(1.0);
+
 let anim_player = AnimationPlayer::new(&blend);
 ```
 
-This will play the capoeira at the upper body, and the robot dance for the lower body.
+This will play the `capoeira` at the upper body, and the `robot` dance for the lower body.
+The `set_mask_humanoid_lower_body` and `set_mask_humanoid_upper_body` functions are convenience
+functions for setting the mask for the upper and lower body.
 
-The value you pass in is the masked blend weight. In the previous example, we saw that a blend
-weight of 0.3 would play 30% of the capoeira animation. The same concept can be applied _per-bone_
-instead. So for instance, setting `BlendNode::new(&capoeira, &robot, 0.3)` and then
-`blend.set_mask_humanoid_lower_body(0.9)` means that all bones play capoeira 30%, except for the
-lower body which plays it 90%.
+The blend node's weight is still relevant when used with masking, but can also be set per-bone using the mask.
+Setting `BlendNode::new(&capoeira, &robot, 0.3)` and then `blend.set_mask_humanoid_lower_body(0.9)` will play all
+nodes in the `capoeira` animation at 30%, except for the lower body, which will play it at 90%. If no mask is set,
+the weight is used for all bones.
 
-### Attaching things to a skeleton
+### Attaching entities to a skeleton
 
-You can also attach things to a skeleton:
+Entities can be attached to bones on a skeleton. This is done by adding a `parent` component to the entity that
+points to the bone to be attached to. The entity should also have a `local_to_parent` component, which will be
+the transformation of the entity relative to the bone. For more information, see the documentation on [hierarchies](hierarchies.md).
 
 ```rust
-let left_foot = get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
+let left_foot = animation::get_bone_by_bind_id(unit_id, &BindId::LeftFoot).unwrap();
 let ball = Entity::new()
     .with_merge(make_transformable())
     .with_merge(make_sphere())
@@ -106,35 +113,42 @@ let ball = Entity::new()
     // bone we're attaching it to
     .with_default(reset_scale())
     .spawn();
-add_child(left_foot, ball);
+entity::add_child(left_foot, ball);
 ```
 
 This will spawn a ball and attach it to the left foot of the character.
 
 ### Pre-loading animations
 
-You can pre-load animations is by simply creating `PlayClipFromUrlNode` nodes and waiting for them to load:
+Animations can be pre-loaded by creating a `PlayClipFromUrlNode` node and waiting for it to load:
 
 ```rust
 let capoeira = PlayClipFromUrlNode::new(
-    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
+    asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap()
 );
-capoeira.wait_until_loaded().await;
+capoeira.wait_for_load().await;
 ```
 
 The clip will remain loaded as long as the object survives.
 
 ### Retargeting
 
-It's possible to play an animation that was made for one character on another character. To make
-it look right, you might need to use retargeting though. Try setting retargeting on the `PlayClipFromUrlNode` (`set_retargeting`), and/or use `apply_base_pose` on the same node.
+It is possible to play an animation that was made for one character on another character.
+Retargeting may be necessary to remap the animation from the original character's skeleton to your target
+character's skeleton.
 
-If you're using mixamo for animations, you can do retargeting through mixamo itself to get the best results.
+To do this, `PlayClipFromUrlNode::set_retargeting` can be used to configure the retargeting for a given clip.
+Additionally, `PlayClipFromUrlNode::apply_base_pose` may be necessary to change the origin of the animation
+for correctness.
+
+If you're using Mixamo for animations, you can do retargeting through Mixamo itself to get the best results.
 
 ### Animation nodes lifetimes and ownership
 
-The animation player and nodes all live in the ECS, and the `AnimationPlayer` and `PlayClipFromUrlNode` etc.
-are all simple wrappers around an `EntityId`. To remove an animation player, call `player.despawn()` on it.
+The animation player and nodes all live in the ECS. The `AnimationPlayer`, `PlayClipFromUrlNode` and other nodes
+are wrappers around an `EntityId`. To remove an animation player, call `player.despawn()` on it.
 
-The animation nodes are ref counted, so the will survive as long as they are either being played by an
-animation player, or as long as you have a reference to them in your code (i.e. you have an `PlayClipFromUrlNode`).
+The animation nodes are ref-counted, so they will survive while at least one of the following is true:
+
+- they are either being played by an animation player
+- they are being referenced by your code (i.e. you have an `PlayClipFromUrlNode`).

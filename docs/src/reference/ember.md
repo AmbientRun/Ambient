@@ -73,16 +73,23 @@ A `ComponentType` is either:
   - `EntityId`: an entity ID
   - `F32`: a 32-bit floating point value
   - `F64`: a 64-bit floating point value
-  - `I32`: a 32-bit signed integer value
   - `Mat4`: a 4x4 32-bit floating point matrix
   - `Quat`: a 32-bit floating point quaternion
   - `String`: a UTF-8 string
+  - `U8`: an 8-bit unsigned integer value
+  - `U16`: an 16-bit unsigned integer value
   - `U32`: a 32-bit unsigned integer value
   - `U64`: a 64-bit unsigned integer value
-  - `U8`: an 8-bit unsigned integer value
+  - `I8`: an 8-bit signed integer value
+  - `I16`: an 16-bit signed integer value
+  - `I32`: a 32-bit signed integer value
+  - `I64`: a 64-bit signed integer value
   - `Uvec2`: a 2-element 32-bit unsigned integer vector
   - `Uvec3`: a 3-element 32-bit unsigned integer vector
   - `Uvec4`: a 4-element 32-bit unsigned integer vector
+  - `Ivec2`: a 2-element 32-bit signed integer vector
+  - `Ivec3`: a 3-element 32-bit signed integer vector
+  - `Ivec4`: a 4-element 32-bit signed integer vector
   - `Vec2`: a 2-element 32-bit floating point vector
   - `Vec3`: a 3-element 32-bit floating point vector
   - `Vec4`: a 4-element 32-bit floating point vector
