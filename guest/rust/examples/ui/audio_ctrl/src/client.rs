@@ -1,9 +1,26 @@
-use ambient_api::{components::core::layout::space_between_items, prelude::*};
+use ambient_api::{
+    components::core::{
+        audio::{amplitude, panning, stop_now},
+        layout::space_between_items,
+    },
+    prelude::*,
+};
 
 #[element_component]
 fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
     let (f32_value, set_f32_value) = hooks.use_state(100.);
-    let (panning, set_panning) = hooks.use_state(0.);
+    let (sound, set_sound) = hooks.use_state(None);
+    let (pan, set_pan) = hooks.use_state(0.);
+    hooks.use_frame({
+        let set_sound = set_sound.clone();
+        move |_world| {
+            if let Some(s) = sound {
+                if !entity::exists(s) {
+                    set_sound(None);
+                }
+            }
+        }
+    });
     FocusRoot::el([FlowColumn::el([
         Text::el("Amplitude:"),
         Slider {
@@ -13,6 +30,11 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
                 move |v| {
                     set_f32_value(v);
                     audio_player.set_amplitude(v / 100.);
+                    if let Some(s) = sound {
+                        if entity::exists(s) {
+                            entity::add_component(s, amplitude(), v / 100.);
+                        }
+                    }
                 }
             })),
             min: 0.0,
@@ -25,12 +47,17 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
         .el(),
         Text::el("Panning:"),
         Slider {
-            value: panning,
+            value: pan,
             on_change: Some(cb({
                 let audio_player = audio_player.clone();
                 move |v| {
-                    set_panning(v);
+                    set_pan(v);
                     audio_player.set_panning(v);
+                    if let Some(s) = sound {
+                        if entity::exists(s) {
+                            entity::add_component(s, panning(), v);
+                        }
+                    }
                 }
             })),
             min: -1.0,
@@ -42,12 +69,33 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
         }
         .el(),
         Button::new("play sound", {
+            let set_sound = set_sound.clone();
             move |_| {
-                audio_player.play(asset::url("assets/arpy01.wav").unwrap());
+                let id = audio_player.play(asset::url("assets/amen_break.wav").unwrap());
+                // mono ogg
+                // let id = audio_player.play(
+                //     asset::url("assets/455516__ispeakwaves__the-plan-upbeat-loop-no-voice-edit-mono-track.ogg"
+                // ).unwrap());
+                set_sound(Some(id));
             }
         })
+        .disabled(sound.is_some())
         .toggled(true)
-        .style(ButtonStyle::Primary)
+        .el(),
+        Button::new("stop sound", {
+            move |_| {
+                if let Some(s) = sound {
+                    if entity::exists(s) {
+                        entity::add_component(s, stop_now(), ());
+                        set_sound(None);
+                    } else {
+                        set_sound(None);
+                    }
+                }
+            }
+        })
+        .disabled(sound.is_none())
+        .toggled(true)
         .el(),
     ])])
     .with(space_between_items(), STREET)
