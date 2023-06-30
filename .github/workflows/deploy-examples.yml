@@ -43,7 +43,7 @@ jobs:
         run: |
           set -e
           cd guest/rust/examples
-          for example in $(find basics games ui -type d -and -depth 1); do
+          for example in $(find basics games ui -type d -and -mindepth 1 -and -maxdepth 1); do
             if [ -z "$EXAMPLES" ]; then
               EXAMPLES="\"$example\""
             else
