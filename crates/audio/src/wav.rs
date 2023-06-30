@@ -193,6 +193,6 @@ impl Source for WavDecodeStream {
     }
 
     fn sample_count(&self) -> Option<u64> {
-        Some(self.decoded_len as _)
+        Some(self.decoded_len as u64)
     }
 }

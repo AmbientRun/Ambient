@@ -93,7 +93,7 @@ impl VorbisTrack {
 
     pub fn decode(&self) -> VorbisDecodeStream {
         let streamer = OggStreamReader::new(Cursor::new(self.bytes.clone())).unwrap();
-        let _channels: ChannelCount = streamer.ident_hdr.audio_channels as _;
+        let channels: ChannelCount = streamer.ident_hdr.audio_channels as _;
         let _sample_rate: SampleRate = streamer.ident_hdr.audio_sample_rate as _;
 
         VorbisDecodeStream {
@@ -101,6 +101,7 @@ impl VorbisTrack {
             decoded_len: self.decoded_len,
             packet: Vec::new(),
             cursor: 0,
+            channels,
             bytes: self.bytes.clone(),
         }
     }
@@ -112,6 +113,7 @@ pub struct VorbisDecodeStream {
     streamer: OggStreamReader<Cursor<Arc<[u8]>>>,
     decoded_len: usize,
     packet: Vec<Frame>,
+    channels: ChannelCount,
     cursor: usize,
 }
 
@@ -122,6 +124,7 @@ impl Clone for VorbisDecodeStream {
             bytes: self.bytes.clone(),
             decoded_len: self.decoded_len,
             packet: Vec::new(),
+            channels: self.channels,
             cursor: 0,
         }
     }
@@ -157,6 +160,7 @@ impl Source for VorbisDecodeStream {
     }
 
     fn sample_count(&self) -> Option<u64> {
-        Some(self.decoded_len as _)
+        // TODO: bug in lewton?
+        Some(self.decoded_len as u64 * self.channels as u64)
     }
 }
