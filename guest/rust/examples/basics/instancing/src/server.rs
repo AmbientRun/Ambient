@@ -66,7 +66,7 @@ pub async fn main() {
         .spawn();
 
     query(instance_index()).each_frame(|items| {
-        let t = time().as_secs_f64();
+        let t = game_time().as_secs_f64();
         for (id, index) in items {
             set_component(
                 id,
