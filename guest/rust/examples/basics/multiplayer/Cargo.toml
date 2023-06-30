@@ -1,5 +1,5 @@
 [package]
-name = "ambient_example_ambient_example_multiplayer"
+name = "ambient_example_multiplayer"
 
 edition = "2021"
 publish = false

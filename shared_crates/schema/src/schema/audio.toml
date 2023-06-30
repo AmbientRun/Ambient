@@ -35,6 +35,15 @@ Whether or not the audio should loop.
 """
 attributes = ["maybe-resource", "debuggable"]
 
+[components.playing-sound]
+type = "empty"
+name = "Playing sound"
+description = """
+The entity with this comp is a playing sound.
+We can attach other components to it to control the sound parameters.
+"""
+attributes = ["maybe-resource", "debuggable"]
+
 [components.amplitude]
 type = "f32"
 name = "Amplitude"
@@ -75,11 +84,21 @@ The URL of the assets.
 """
 attributes = ["maybe-resource", "debuggable"]
 
-[components.trigger-at-this-frame]
-type = "bool"
+[components.play-now]
+type = "empty"
 name = "Trigger at this frame"
 description = """
-The system will watch for this component and trigger the audio at this frame,
+The system will watch for this component and PLAY the audio at this frame,
+using the other components as parameters.
+Then set it back to false.
+"""
+attributes = ["maybe-resource", "debuggable"]
+
+[components.stop-now]
+type = "empty"
+name = "Stop at this frame"
+description = """
+The system will watch for this component and STOP the audio at this frame,
 using the other components as parameters.
 Then set it back to false.
 """

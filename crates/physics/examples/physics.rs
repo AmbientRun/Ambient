@@ -1,6 +1,7 @@
 use ambient_app::{gpu, AppBuilder};
 use ambient_core::{
     asset_cache, camera::active_camera, main_scene, transform::scale, FixedTimestepSystem,
+    FIXED_SERVER_TICK_TIME,
 };
 use ambient_ecs::{FnSystem, World};
 use ambient_element::ElementComponentExt;
@@ -78,15 +79,17 @@ async fn main() {
             ambient_physics::init_all_components();
             let scene = init(&mut app.world);
 
+            let tick_time = FIXED_SERVER_TICK_TIME.as_secs_f32();
+
             app.systems.add(Box::new(FixedTimestepSystem::new(
-                1. / 60.,
+                tick_time,
                 Box::new(sync_ecs_physics()),
             )));
             app.systems.add(Box::new(FixedTimestepSystem::new(
-                1. / 60.,
+                FIXED_SERVER_TICK_TIME.as_secs_f32(),
                 Box::new(FnSystem::new(move |_world, _| {
                     scene.fetch_results(true);
-                    scene.simulate(1. / 60.);
+                    scene.simulate(tick_time);
                 })),
             )));
         })

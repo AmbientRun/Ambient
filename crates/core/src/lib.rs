@@ -1,14 +1,17 @@
 #[macro_use]
 extern crate lazy_static;
 
-use ambient_sys::{task::RuntimeHandle, time::Instant, time::SystemTime};
+use ambient_sys::{
+    task::RuntimeHandle,
+    time::{Instant, SystemTime},
+};
 use chrono::{DateTime, Utc};
 use hierarchy::despawn_recursive;
 use std::{sync::Arc, time::Duration};
 
 use ambient_ecs::{
-    components, parent, query, Debuggable, Description, DynSystem, FrameEvent, Name, Networked,
-    Resource, Store, System, World,
+    components, parent, query, Debuggable, Description, DynSystem, Entity, FrameEvent, Name,
+    Networked, Resource, Store, System, World,
 };
 use ambient_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
@@ -26,9 +29,12 @@ pub mod transform;
 pub mod window;
 
 pub use ambient_ecs::generated::components::core::app::{
-    absolute_time, delta_time, description, main_scene, map_seed, name, project_name, ref_count,
-    selectable, snap_to_ground, tags, ui_scene,
+    delta_time, description, epoch_time, game_time, main_scene, map_seed, name, project_name,
+    ref_count, selectable, snap_to_ground, tags, ui_scene,
 };
+
+/// The time between fixed updates of the server state.
+pub const FIXED_SERVER_TICK_TIME: Duration = Duration::from_micros((1_000_000. / 60.) as u64);
 
 components!("app", {
     @[Resource]
@@ -50,11 +56,13 @@ components!("app", {
     game_mode: GameMode,
 
     @[Resource, Debuggable]
-    app_start_time: Duration,
+    app_start_time: Instant,
+    @[Resource, Debuggable]
+    last_frame_time: Instant,
     @[Resource, Debuggable]
     frame_index: usize,
     @[Debuggable, Store]
-    remove_at_time: Duration,
+    remove_at_game_time: Duration,
 
     /// Generic component that indicates the entity shouldn't be sent over network
     @[Debuggable, Networked, Store]
@@ -84,10 +92,10 @@ pub struct WindowKey;
 impl SyncAssetKey<Arc<winit::window::Window>> for WindowKey {}
 
 pub fn remove_at_time_system() -> DynSystem {
-    query((remove_at_time(),)).to_system(|q, world, qs, _| {
-        let time = *world.resource(self::absolute_time());
+    query((remove_at_game_time(),)).to_system(|q, world, qs, _| {
+        let game_time = *world.resource(self::game_time());
         for (id, (remove_at_time,)) in q.collect_cloned(world, qs) {
-            if time >= remove_at_time {
+            if game_time >= remove_at_time {
                 world.despawn(id);
             }
         }
@@ -103,6 +111,40 @@ pub fn refcount_system() -> DynSystem {
                 }
             }
         })
+}
+
+/// Returns all the time-related components that need to be
+/// created at startup time.
+pub fn time_resources_start(delta_time: Duration) -> Entity {
+    let system_now = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap();
+
+    let instant_now = Instant::now();
+
+    Entity::new()
+        .with(self::app_start_time(), instant_now)
+        .with(self::epoch_time(), system_now)
+        .with(self::game_time(), Duration::ZERO)
+        .with(self::last_frame_time(), instant_now)
+        .with(self::delta_time(), delta_time.as_secs_f32())
+}
+
+// Returns all the time-related components that update every frame.
+pub fn time_resources_frame(
+    frame_time: Instant,
+    app_start_time: Instant,
+    delta_time: Duration,
+) -> Entity {
+    let epoch_time = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap();
+
+    Entity::new()
+        .with(self::last_frame_time(), frame_time)
+        .with(self::epoch_time(), epoch_time)
+        .with(self::game_time(), frame_time - app_start_time)
+        .with(self::delta_time(), delta_time.as_secs_f32())
 }
 
 #[derive(Debug)]
@@ -133,29 +175,32 @@ impl System for FixedTimestepSystem {
 }
 
 #[derive(Debug)]
-pub struct TimeResourcesSystem {
+pub struct ClientTimeResourcesSystem {
     frame_time: Instant,
 }
-impl TimeResourcesSystem {
+impl ClientTimeResourcesSystem {
     pub fn new() -> Self {
         Self {
             frame_time: Instant::now(),
         }
     }
 }
-impl System for TimeResourcesSystem {
+impl System for ClientTimeResourcesSystem {
     fn run(&mut self, world: &mut World, _event: &FrameEvent) {
-        let delta_time = self.frame_time.elapsed().as_secs_f32();
+        let delta_time = self.frame_time.elapsed();
         self.frame_time = Instant::now();
-        let time = SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap();
+
         world
-            .set(world.resource_entity(), self::absolute_time(), time)
+            .set_components(
+                world.resource_entity(),
+                time_resources_frame(
+                    self.frame_time,
+                    *world.resource(self::app_start_time()),
+                    delta_time,
+                ),
+            )
             .unwrap();
-        world
-            .set(world.resource_entity(), self::delta_time(), delta_time)
-            .unwrap();
+
         world
             .set(
                 world.resource_entity(),

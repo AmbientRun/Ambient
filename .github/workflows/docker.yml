@@ -2,6 +2,9 @@ name: Release Docker image
 
 on:
   workflow_dispatch:
+  schedule:
+    # every day at 2am UTC
+    - cron: '0 2 * * *'
   push:
     tags: [v*]
 
@@ -33,6 +36,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
+            type=schedule
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}

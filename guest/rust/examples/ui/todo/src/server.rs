@@ -6,7 +6,7 @@ pub async fn main() {
     messages::NewItem::subscribe(|_source, data| {
         Entity::new()
             .with(todo_item(), data.description)
-            .with(todo_time(), time())
+            .with(todo_time(), game_time())
             .spawn();
     });
     messages::DeleteItem::subscribe(|_source, data| {

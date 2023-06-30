@@ -56,6 +56,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 #### Examples
 
 - **Clock**: An analog `clock` example has been added to test line rendering.
+- **Audio control**: An `audio_ctrl` example has been added to shwo the new audio API usage with UI.
 
 ### Changed
 
@@ -63,12 +64,13 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 - **Ember**: Projects are now renamed to _embers_.
 - **API**: Locally-broadcasted messages can now choose to include the originating module in the broadcast; this is an additional boolean parameter to `ModuleMessage::send_local_broadcast` and `message::Target::LocalBroadcast`.
+- **Audio**: Audio API has completely changed to adapt to the ECS style. See the [audio documentation](https://ambientrun.github.io/Ambient/reference/audio.html) for the new usage.
 - **Camera**: Renamed `screen_to_world_direction` to `screen_position_to_world_ray` and `clip_space_ray` to `clip_position_to_world_ray`. See [#410](https://github.com/AmbientRun/Ambient/issues/410).
 - **Ember**: `type = { type = "Vec3" }` is no longer valid syntax in `ambient.toml`. Only `type = "Vec3"` and `type = { type = "Vec", element-type = "Vec3" }` are valid.
 - **Physics**: Renamed the `visualizing` component to `visualize_collider`.
 - **Animation**: The animation system has been reworked. See the [animation documentation](https://ambientrun.github.io/Ambient/reference/animations.html) for details. Thanks to [@devjobe](https://github.com/devjobe) for laying the foundation for this!
 - **Physics**: Renamed `box_collider` to `cube_collider`.
-- **App**: Renamed the `time` component to `absolute_time`, and the `dtime` component to `delta_time`. The `frametime` function has been renamed to `delta_time`.
+- **API**: The `time` function has been split into `game_time` and `epoch_time`. The `dtime` component has been renamed to `delta_time`. The `frametime` function has been renamed to `delta_time`.
 - **Project**: Projects have been renamed to Embers; see the [ember documentation](https://ambientrun.github.io/Ambient/reference/ember.html) for details.
 - **Assets**: Asset pipelines now use TOML instead of JSON. Use the `ambient assets migrate-pipelines-toml` command to migrate. (Note that this command will be removed in the next release.)
 - **Rendering**: Removing the `outline_recursive` component from a entity will now remove the outline from its children as well.

@@ -26,10 +26,10 @@ pub async fn main() {
         .with(lookat_target(), vec3(0., 0., 0.))
         .spawn();
 
-    let start_time = time();
+    let start_time = game_time();
 
     ambient_api::messages::Frame::subscribe(move |_| {
-        let t = time() - start_time;
+        let t = game_time() - start_time;
         entity::set_component(
             id,
             translation(),
@@ -43,7 +43,7 @@ pub async fn main() {
             for (id, position) in entities {
                 let [x, y] = position.to_array();
                 let grid_cell = position - glam::ivec2(side_length, side_length);
-                let t = (time() - start_time).as_secs_f32();
+                let t = (game_time() - start_time).as_secs_f32();
                 entity::mutate_component(id, translation(), |v| {
                     v.z = (x as f32 + y as f32 + t).sin() - 0.5 * grid_cell.as_vec2().length();
                 });

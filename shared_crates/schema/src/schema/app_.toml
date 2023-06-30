@@ -15,10 +15,16 @@ name = "Delta time"
 description = "How long the previous tick took in seconds."
 attributes = ["debuggable", "resource"]
 
-[components.absolute-time]
+[components.epoch-time]
 type = "duration"
-name = "Absolute time"
-description = "Absolute time since epoch (Jan 1, 1970)."
+name = "Epoch time"
+description = "Time since epoch (Jan 1, 1970). Non-monotonic."
+attributes = ["debuggable", "resource"]
+
+[components.game-time]
+type = "duration"
+name = "Game time"
+description = "Time since the game was started. Monotonic."
 attributes = ["debuggable", "resource"]
 
 [components.element]

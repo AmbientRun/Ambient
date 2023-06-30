@@ -6,9 +6,7 @@ use std::{
     sync::Arc,
 };
 
-use ambient_core::{
-    absolute_time, app_start_time, asset_cache, delta_time, name, no_sync, project_name,
-};
+use ambient_core::{asset_cache, name, no_sync, project_name, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
     dont_store, world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup,
     World, WorldEventsSystem, WorldStreamCompEvent,
@@ -24,7 +22,7 @@ use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ServerBaseUrlKey},
 };
-use ambient_sys::{task::RuntimeHandle, time::SystemTime};
+use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
 use axum::{
     http::{Method, StatusCode},
@@ -257,12 +255,7 @@ fn create_resources(assets: AssetCache) -> Entity {
     server_resources.merge(ambient_core::async_ecs::async_ecs_resources());
     server_resources.set(ambient_core::runtime(), RuntimeHandle::current());
 
-    let now = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap();
-    server_resources.set(absolute_time(), now);
-    server_resources.set(app_start_time(), now);
-    server_resources.set(delta_time(), 1. / 60.);
+    server_resources.merge(ambient_core::time_resources_start(FIXED_SERVER_TICK_TIME));
 
     let mut bistream_handlers = HashMap::new();
     ambient_network::server::register_rpc_bi_stream_handler(

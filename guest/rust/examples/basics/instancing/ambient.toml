@@ -1,0 +1,8 @@
+[ember]
+id = "instancing"
+organization = "ambient"
+name = "instancing"
+version = "0.0.1"
+
+[components]
+instance-index = { type = "uvec3", name = "Instance Index" }

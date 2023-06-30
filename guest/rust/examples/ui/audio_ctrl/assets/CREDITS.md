@@ -1,3 +1,5 @@
-The samples in this folder are selected from:
+Music is from:
 
-https://github.com/tidalcycles/Dirt-Samples
+https://freesound.org/people/ispeakwaves/sounds/455516/
+
+https://freesound.org/people/earlcash05/sounds/402430

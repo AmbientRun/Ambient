@@ -2,9 +2,10 @@ use crate::{
     components::core::{
         app::name,
         audio::{
-            amplitude, audio_player, audio_url, looping, panning, spatial_audio_emitter,
-            spatial_audio_listener, spatial_audio_player, trigger_at_this_frame,
+            amplitude, audio_player, audio_url, looping, panning, play_now, playing_sound,
+            spatial_audio_emitter, spatial_audio_listener, spatial_audio_player,
         },
+        ecs::{children, parent},
     },
     entity,
     prelude::{Entity, EntityId},
@@ -28,7 +29,6 @@ impl SpatialAudioPlayer {
         let player = Entity::new()
             .with_default(spatial_audio_player())
             .with(name(), "Spatial audio player".to_string())
-            .with(trigger_at_this_frame(), false)
             .spawn();
         Self { player }
     }
@@ -51,13 +51,13 @@ impl SpatialAudioPlayer {
 
     pub fn play(&self, url: String) {
         entity::add_component(self.player, audio_url(), url);
-        entity::set_component(self.player, trigger_at_this_frame(), true);
+        entity::add_component(self.player, play_now(), ());
     }
 
     pub fn play_sound_on_entity(&self, url: String, emitter: EntityId) {
         entity::add_component(self.player, spatial_audio_emitter(), emitter);
         entity::add_component(self.player, audio_url(), url);
-        entity::set_component(self.player, trigger_at_this_frame(), true);
+        entity::add_component(self.player, play_now(), ());
     }
 }
 
@@ -80,26 +80,35 @@ impl AudioPlayer {
         let player = Entity::new()
             .with_default(audio_player())
             .with(name(), "Audio player".to_string())
-            .with(trigger_at_this_frame(), false)
+            .with(children(), vec![])
             .spawn();
         Self { entity: player }
     }
-    /// set the looping of the sound
+    /// Set the sound looping or not
     pub fn set_looping(&self, val: bool) {
         entity::add_component(self.entity, looping(), val);
     }
 
-    /// set the amp/volume of the sound
+    /// Set the amp/volume of the sound 0.0 is 0%, 1.0 is 100%
     pub fn set_amplitude(&self, amp: f32) {
         entity::add_component(self.entity, amplitude(), amp);
     }
-    /// set the panning of the sound -1.0 is 100% left, 1.0 is 100% right.
+    /// Set the panning of the sound -1.0 is 100% left, 1.0 is 100% right.
     pub fn set_panning(&self, pan: f32) {
         entity::add_component(self.entity, panning(), pan);
     }
-    /// play the sound
-    pub fn play(&self, url: String) {
+    /// Play the sound, this will generate a new entity that represents the playing sound.
+    pub fn play(&self, url: String) -> EntityId {
         entity::add_component(self.entity, audio_url(), url);
-        entity::set_component(self.entity, trigger_at_this_frame(), true);
+        entity::add_component(self.entity, play_now(), ());
+        let id = Entity::new()
+            .with_default(playing_sound())
+            .with(name(), "Playing sound".to_string())
+            .with(parent(), self.entity)
+            .spawn();
+        entity::mutate_component(self.entity, children(), |val| {
+            val.push(id);
+        });
+        id
     }
 }
