@@ -39,16 +39,16 @@ pub fn get_component_type<T: ComponentValue>(component_index: u32) -> Option<Com
     Some(Component::new(desc))
 }
 
-trait WitToHostOperation<Context> {
-    fn run<T: ComponentValue>(
+trait WitValueVisitor<Context> {
+    fn visit<T: ComponentValue>(
         &mut self,
         ctx: Context,
         component: Component<T>,
         value: T,
     ) -> anyhow::Result<()>;
 }
-trait HostToWitOperation<Context> {
-    fn run<T: ComponentValue + IntoBindgen>(
+trait HostValueVisitor<Context> {
+    fn visit<T: ComponentValue + IntoBindgen>(
         &mut self,
         ctx: Context,
         component: Component<T>,
@@ -59,28 +59,28 @@ macro_rules! define_component_types {
     ($(($value:ident, $type:ty)),*) => { paste! {
         /// Given a WIT value and a component index, do something with the
         /// typed component and value.
-        fn wit_to_host_operation<Context>(
+        fn visit_wit_value<Context>(
             ctx: Context,
             index: u32,
             value: wit::component::Value,
-            mut operation: impl WitToHostOperation<Context>,
+            mut operation: impl WitValueVisitor<Context>,
         ) -> anyhow::Result<()> {
             use wit::component::{OptionValue as OV, Value as V, VecValue as VV};
             match value {
                 $(
                 V::[<Type $value >](value) => {
                     if let Some(component) = get_component_type::<$type>(index) {
-                        operation.run(ctx, component, value.from_bindgen())?;
+                        operation.visit(ctx, component, value.from_bindgen())?;
                     }
                 }
                 V::TypeVec(VV::[<Type $value >](value)) => {
                     if let Some(component) = get_component_type::<Vec<$type>>(index) {
-                        operation.run(ctx, component, value.from_bindgen())?;
+                        operation.visit(ctx, component, value.from_bindgen())?;
                     }
                 }
                 V::TypeOption(OV::[<Type $value >](value)) => {
                     if let Some(component) = get_component_type::<Option<$type>>(index) {
-                        operation.run(ctx, component, value.from_bindgen())?;
+                        operation.visit(ctx, component, value.from_bindgen())?;
                     }
                 }
                 ) *
@@ -91,10 +91,10 @@ macro_rules! define_component_types {
 
         /// Given a primitive component and a host context, extract the
         /// value from the host context and return it as a WIT value.
-        fn host_to_wit_operation<Context>(
+        fn visit_host_value<Context>(
             ctx: Context,
             primitive_component: ambient_ecs::PrimitiveComponent,
-            mut operation: impl HostToWitOperation<Context>,
+            mut operation: impl HostValueVisitor<Context>,
         ) -> anyhow::Result<Option<wit::component::Value>> {
             use wit::component::{OptionValue as OV, Value as V, VecValue as VV};
 
@@ -102,15 +102,15 @@ macro_rules! define_component_types {
                 $(
                 PCT::$value            => {
                     let component = Component::<$type>::new(primitive_component.desc);
-                    operation.run(ctx, component)?.map(|v| V::[<Type $value>](v.into_bindgen()))
+                    operation.visit(ctx, component)?.map(|v| V::[<Type $value>](v.into_bindgen()))
                 },
                 PCT::[<Vec $value>]    => {
                     let component = Component::<Vec<$type>>::new(primitive_component.desc);
-                    operation.run(ctx, component)?.map(|v| V::TypeVec(VV::[<Type $value>](v.into_bindgen())))
+                    operation.visit(ctx, component)?.map(|v| V::TypeVec(VV::[<Type $value>](v.into_bindgen())))
                 },
                 PCT::[<Option $value>] => {
                     let component = Component::<Option<$type>>::new(primitive_component.desc);
-                    operation.run(ctx, component)?.map(|v| V::TypeOption(OV::[<Type $value>](v.into_bindgen())))
+                    operation.visit(ctx, component)?.map(|v| V::TypeOption(OV::[<Type $value>](v.into_bindgen())))
                 },
                 )*
             })
@@ -127,8 +127,8 @@ pub(crate) fn add_component(
     value: wit::component::Value,
 ) -> anyhow::Result<()> {
     struct WorldAdd(EntityId);
-    impl<'a> WitToHostOperation<&'a mut World> for WorldAdd {
-        fn run<T: ComponentValue>(
+    impl<'a> WitValueVisitor<&'a mut World> for WorldAdd {
+        fn visit<T: ComponentValue>(
             &mut self,
             ctx: &'a mut World,
             component: Component<T>,
@@ -139,7 +139,7 @@ pub(crate) fn add_component(
         }
     }
 
-    wit_to_host_operation(world, index, value, WorldAdd(id.from_bindgen()))
+    visit_wit_value(world, index, value, WorldAdd(id.from_bindgen()))
 }
 
 pub(crate) fn set_component(
@@ -149,8 +149,8 @@ pub(crate) fn set_component(
     value: wit::component::Value,
 ) -> anyhow::Result<()> {
     struct WorldSet(EntityId);
-    impl<'a> WitToHostOperation<&'a mut World> for WorldSet {
-        fn run<T: ComponentValue>(
+    impl<'a> WitValueVisitor<&'a mut World> for WorldSet {
+        fn visit<T: ComponentValue>(
             &mut self,
             ctx: &'a mut World,
             component: Component<T>,
@@ -161,7 +161,7 @@ pub(crate) fn set_component(
         }
     }
 
-    wit_to_host_operation(world, index, value, WorldSet(id.from_bindgen()))
+    visit_wit_value(world, index, value, WorldSet(id.from_bindgen()))
 }
 
 pub(crate) fn set_components(
@@ -203,8 +203,8 @@ fn get_component_entity_accessor<'a>(
     primitive_component: PrimitiveComponent,
 ) -> anyhow::Result<Option<wit::component::Value>> {
     struct EntityAccessorGet<'a>(&'a EntityAccessor);
-    impl<'a> HostToWitOperation<&'a World> for EntityAccessorGet<'a> {
-        fn run<T: ComponentValue>(
+    impl<'a> HostValueVisitor<&'a World> for EntityAccessorGet<'a> {
+        fn visit<T: ComponentValue>(
             &mut self,
             ctx: &'a World,
             component: Component<T>,
@@ -212,7 +212,7 @@ fn get_component_entity_accessor<'a>(
             Ok(self.0.get_optional(ctx, component).cloned())
         }
     }
-    host_to_wit_operation(world, primitive_component, EntityAccessorGet(ea))
+    visit_host_value(world, primitive_component, EntityAccessorGet(ea))
 }
 
 pub(crate) fn get_components(
@@ -257,8 +257,8 @@ pub(crate) fn wit_entity_to_host_entity(
     wit_entity: wit::entity::EntityData,
 ) -> anyhow::Result<Entity> {
     struct EntityProducer;
-    impl<'a> WitToHostOperation<&'a mut Entity> for EntityProducer {
-        fn run<T: ComponentValue>(
+    impl<'a> WitValueVisitor<&'a mut Entity> for EntityProducer {
+        fn visit<T: ComponentValue>(
             &mut self,
             ctx: &'a mut Entity,
             component: Component<T>,
@@ -271,15 +271,15 @@ pub(crate) fn wit_entity_to_host_entity(
 
     let mut entity = Entity::new();
     for (index, value) in wit_entity {
-        wit_to_host_operation(&mut entity, index, value, EntityProducer)?;
+        visit_wit_value(&mut entity, index, value, EntityProducer)?;
     }
     Ok(entity)
 }
 
 pub(crate) fn host_entity_to_wit_entity(entity: Entity) -> anyhow::Result<wit::entity::EntityData> {
     struct EntityExtractor;
-    impl<'a> HostToWitOperation<&'a Entity> for EntityExtractor {
-        fn run<T: ComponentValue>(
+    impl<'a> HostValueVisitor<&'a Entity> for EntityExtractor {
+        fn visit<T: ComponentValue>(
             &mut self,
             ctx: &'a Entity,
             component: Component<T>,
@@ -297,7 +297,7 @@ pub(crate) fn host_entity_to_wit_entity(entity: Entity) -> anyhow::Result<wit::e
     let mut wit_entity = wit::entity::EntityData::new();
     for component in components {
         let index = component.desc.index();
-        if let Some(value) = host_to_wit_operation(&entity, component, EntityExtractor)? {
+        if let Some(value) = visit_host_value(&entity, component, EntityExtractor)? {
             wit_entity.push((index, value));
         }
     }
