@@ -456,7 +456,7 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                 }),
             }
             .el()
-            .with(docking(), ambient_layout::Docking::Bottom)
+            .with(docking(), ambient_layout::Docking::Top)
             .with(padding(), Borders::even(STREET).into())
         } else {
             Element::new()
