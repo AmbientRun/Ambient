@@ -102,3 +102,15 @@ impl IntoBindgen for Entity {
         self.0.into_iter().collect()
     }
 }
+impl std::fmt::Debug for Entity {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_map()
+            .entries(self.0.iter().map(|(k, v)| {
+                (
+                    wit::component::get_id(*k).unwrap_or_else(|| format!("[unknown component {k}")),
+                    v,
+                )
+            }))
+            .finish()
+    }
+}

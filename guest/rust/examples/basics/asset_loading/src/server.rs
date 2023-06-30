@@ -41,6 +41,8 @@ pub async fn main() {
 
     entity::wait_for_component(model, spawned()).await;
 
+    println!("Entity components: {:?}", entity::get_all_components(model));
+
     ambient_api::messages::Frame::subscribe(move |_| {
         let t = time().as_secs_f64();
         entity::set_component(
