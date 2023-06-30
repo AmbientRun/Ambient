@@ -44,6 +44,7 @@ pub fn register_server_rpcs(reg: &mut RpcRegistry<ServerRpcArgs>) {
 pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let (show_shadows, set_show_shadows) = hooks.use_state(false);
     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+
     FlowColumn::el([
         FlowRow(vec![
             Button::new("Dump Client World", {

@@ -132,5 +132,34 @@
         "env": {
             "RUST_LOG": "ambient_build=info"
         }
+    },
+    "serve": {
+        "cmd": "npm run dev",
+        "cwd": "web/www",
+        "components": {
+            "qf": false
+        },
+        "env": {
+            "RUST_LOG": "info"
+        }
+    },
+    "serve-bundle": {
+        "depends_on": [
+            "build-web",
+            "serve-primitives",
+            "serve"
+        ]
+    },
+    "instancing": {
+        "cmd": [
+            "cargo",
+            "run",
+            "--features",
+            "tracing",
+            "--",
+            "run",
+            "./guest/rust/examples/basics/instancing",
+            "--clean-build"
+        ]
     }
 }

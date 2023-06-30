@@ -1,0 +1,15 @@
+[[pipelines]]
+type = "Models"
+sources = ["*.glb"]
+
+[[pipelines.material_overrides]]
+
+[pipelines.material_overrides.filter]
+type = "All"
+
+[pipelines.material_overrides.material]
+name = "Planks"
+base_color = "./Planks037B_1K-PNG/Planks037B_1K_Color.png"
+normalmap = "./Planks037B_1K-PNG/Planks037B_1K_NormalGL.png"
+roughness = 0.5
+metallic = 0.0
