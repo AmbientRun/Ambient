@@ -1,0 +1,5 @@
+# This is separate to the host-side Clippy settings, as the guest compiles to WASI and supports operations that wasm32-unknown doesn't
+
+disallowed-macros = []
+disallowed-types = []
+disallowed-methods = []
