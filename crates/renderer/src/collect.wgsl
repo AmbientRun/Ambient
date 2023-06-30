@@ -89,6 +89,9 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     // let index = global_id.y * chunk + global_id.x;
     let index = global_id.x;
 
+    // if index >= arrayLength(&input_primitives.data) {
+        // return;
+    // }
 
 
     let primitive = input_primitives.data[index];
