@@ -79,36 +79,35 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                 }
                 AudioMessage::UpdateVolume(uid, amp) => {
                     let sound = sound_info_lib.get(&uid);
-                    match sound {
-                        Some(sound) => {
-                            for info in &sound.control_info {
-                                match info {
-                                    AudioControl::Amplitude(a) => {
-                                        *a.lock() = amp;
-                                    }
-                                    _ => {}
-                                }
+                    if let Some(sound) = sound {
+                        for info in &sound.control_info {
+                            if let AudioControl::Amplitude(a) = info {
+                                *a.lock() = amp;
                             }
                         }
-                        None => {}
                     }
                 }
 
                 AudioMessage::UpdatePanning(uid, pan) => {
                     let sound = sound_info_lib.get(&uid);
-                    match sound {
-                        Some(sound) => {
-                            for info in &sound.control_info {
-                                match info {
-                                    AudioControl::Panning(p) => {
-                                        *p.lock() = pan;
-                                    }
-                                    _ => {}
-                                }
+                    if let Some(sound) = sound {
+                        for info in &sound.control_info {
+                            if let AudioControl::Panning(p) = info {
+                                *p.lock() = pan;
                             }
                         }
-                        None => {}
                     }
+                }
+                AudioMessage::StopById(uid) => {
+                    let id = match sound_info_lib.remove(&uid) {
+                        Some(info) => info.id,
+                        None => {
+                            log::error!("No sound with id {}", uid);
+                            continue;
+                        }
+                    };
+                    // log::info!("Stopped sound with id {}", uid);
+                    stream.mixer().stop(id);
                 }
                 _ => {} // AudioMessage::Stop(target_url) => {
                         //     let mut keys_to_remove: Vec<u32> = Vec::new();
@@ -126,17 +125,6 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                         //         }
                         //     }
                         //     // log::info!("Stopped all sounds with url {}", target_url);
-                        // }
-                        // AudioMessage::StopById(uid) => {
-                        //     let id = match sound_info_lib.remove(&uid) {
-                        //         Some(info) => info.id,
-                        //         None => {
-                        //             log::error!("No sound with id {}", uid);
-                        //             continue;
-                        //         }
-                        //     };
-                        //     // log::info!("Stopped sound with id {}", uid);
-                        //     stream.mixer().stop(id);
                         // }
             }
         }

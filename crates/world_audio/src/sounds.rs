@@ -52,7 +52,7 @@ pub enum AudioMessage {
     UpdateVolume(String, f32),
     UpdatePanning(String, f32),
     Stop(AbsAssetUrl),
-    StopById(u32),
+    StopById(String),
 }
 
 pub struct SoundInfo {

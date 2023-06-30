@@ -1,6 +1,6 @@
 use ambient_api::{
     components::core::{
-        audio::{amplitude, panning},
+        audio::{amplitude, panning, stop_now},
         layout::space_between_items,
     },
     prelude::*,
@@ -17,13 +17,12 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
             value: f32_value,
             on_change: Some(cb({
                 let audio_player = audio_player.clone();
-                let sound = sound.clone();
                 move |v| {
                     set_f32_value(v);
                     audio_player.set_amplitude(v / 100.);
-                    if sound.is_some() {
-                        if entity::exists(sound.unwrap()) {
-                            entity::add_component(sound.unwrap(), amplitude(), v / 100.);
+                    if let Some(s) = sound {
+                        if entity::exists(s) {
+                            entity::add_component(s, amplitude(), v / 100.);
                         }
                     }
                 }
@@ -41,13 +40,12 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
             value: pan,
             on_change: Some(cb({
                 let audio_player = audio_player.clone();
-                let sound = sound.clone();
                 move |v| {
                     set_pan(v);
                     audio_player.set_panning(v);
-                    if sound.is_some() {
-                        if entity::exists(sound.unwrap()) {
-                            entity::add_component(sound.unwrap(), panning(), v);
+                    if let Some(s) = sound {
+                        if entity::exists(s) {
+                            entity::add_component(s, panning(), v);
                         }
                     }
                 }
@@ -61,14 +59,28 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
         }
         .el(),
         Button::new("play sound", {
+            let set_sound = set_sound.clone();
             move |_| {
                 let id =
                     audio_player.play(asset::url("assets/316829__lalks__ferambie.ogg").unwrap());
                 set_sound(Some(id));
             }
         })
+        .disabled(sound.is_some())
         .toggled(true)
-        .style(ButtonStyle::Primary)
+        .el(),
+        Button::new("stop sound", {
+            move |_| {
+                if let Some(s) = sound {
+                    if entity::exists(s) {
+                        entity::add_component(s, stop_now(), ());
+                        set_sound(None);
+                    }
+                }
+            }
+        })
+        .disabled(sound.is_none())
+        .toggled(true)
         .el(),
     ])])
     .with(space_between_items(), STREET)
