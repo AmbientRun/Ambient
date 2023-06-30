@@ -9,7 +9,7 @@ use crate::{
         ecs::{children, parent},
     },
     entity,
-    prelude::{absolute_epoch_time, Entity, EntityId},
+    prelude::{epoch_time, Entity, EntityId},
 };
 
 /// This plays animations, and can handle blending and masking of animations together to create
@@ -82,7 +82,7 @@ impl PlayClipFromUrlNode {
             .with(animation::play_clip_from_url(), url.into())
             .with(name(), "Play clip from URL".to_string())
             .with(animation::looping(), true)
-            .with(start_time(), absolute_epoch_time())
+            .with(start_time(), epoch_time())
             .with(ref_count(), 1)
             .spawn();
         Self(AnimationNode(node))
