@@ -17,23 +17,25 @@ Ambient can be installed through `cargo install`, which will download and build 
 To install the latest released version from Git, run the following:
 
 ```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.2.1 ambient
+cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.2.1 ambient --locked
 ```
 
 To install the latest version on the `main` branch, run the following:
 
 ```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git ambient
+cargo install --git https://github.com/AmbientRun/Ambient.git ambient --locked
 ```
 
 Note that if you are running a project outside of the `guest/rust` workspace, it is likely that the published version of the API will be incompatible with `main`, and you will need to specify the dependency manually.
+
+Additionally, the `--locked` flag is recommended to ensure that the correct packages are installed and that the build is reproducible between machines.
 
 ### Optional features
 
 You can supply these feature flags to get optional features that are disabled by default:
 
 ```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git ambient --features assimp
+cargo install --git https://github.com/AmbientRun/Ambient.git ambient --features assimp --locked
 ```
 
 - `assimp`: This adds support for [assimp](https://github.com/assimp/assimp), which loads ~40 additional model file formats, such as `obj`, text-based `fbx` and much more
