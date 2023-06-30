@@ -109,7 +109,6 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                     // log::info!("Stopped sound with id {}", uid);
                     stream.mixer().stop(id);
                 }
-                _ => {}
             }
         }
     });

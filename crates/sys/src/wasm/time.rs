@@ -6,7 +6,7 @@ use std::{
 
 use ordered_float::NotNan;
 
-/// Represents an abstract point in time
+/// A measurement of a monotonically nondecreasing clock. Opaque and useful only with [Duration].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Instant(
     /// Time in milliseconds
@@ -59,7 +59,11 @@ impl Instant {
     }
 }
 
-/// Measurement of the system clock
+/// A measurement of the system clock, useful for talking to external entities like the file system or other processes.
+///
+/// Distinct from the [Instant] type, this time measurement is not monotonic. This means that you can save a file to the file system,
+/// then save another file to the file system, and the second file has a [SystemTime] measurement earlier than the first.
+/// In other words, an operation that happens after another operation in real time may have an earlier [SystemTime]!
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SystemTime(NotNan<f64>);
 

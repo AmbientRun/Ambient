@@ -1,4 +1,4 @@
-use std::{future::Future, task::Poll, time::Duration};
+use std::{future::Future, task::Poll, time::{Duration, Instant}};
 
 use crate::{
     components, entity,
@@ -6,9 +6,22 @@ use crate::{
     internal::executor::EXECUTOR,
 };
 
-/// The time, relative to Jan 1, 1970.
-pub fn time() -> Duration {
-    entity::get_component(entity::resources(), components::core::app::absolute_time()).unwrap()
+/// The time, relative to the start of the game. Guaranteed to be monotonic.
+pub fn absolute_game_time() -> Duration {
+    entity::get_component(
+        entity::resources(),
+        components::core::app::absolute_game_time(),
+    )
+    .unwrap()
+}
+
+/// The time, relative to Jan 1, 1970. Not guaranteed to be monotonic. Use [absolute_game_time] for most applications.
+pub fn absolute_epoch_time() -> Duration {
+    entity::get_component(
+        entity::resources(),
+        components::core::app::absolute_epoch_time(),
+    )
+    .unwrap()
 }
 
 /// The length of the previous frame, in seconds.
@@ -70,6 +83,6 @@ pub async fn block_until(condition: impl Fn() -> bool) {
 ///
 /// This must be used with `.await` in either an `async fn` or an `async` block.
 pub async fn sleep(seconds: f32) {
-    let target_time = time() + Duration::from_secs_f32(seconds);
-    block_until(|| time() > target_time).await
+    let target_time = Instant::now() + Duration::from_secs_f32(seconds);
+    block_until(|| Instant::now() > target_time).await
 }
