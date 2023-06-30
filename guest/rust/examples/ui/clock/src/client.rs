@@ -19,12 +19,12 @@ fn App(hooks: &mut Hooks) -> Element {
     let size_info = hooks.use_query(window_logical_size());
     let center_x = size_info[0].1.x as f32 / 2.;
     let center_y = size_info[0].1.y as f32 / 2.;
-    let (now, set_now) = hooks.use_state(absolute_game_time());
+    let (now, set_now) = hooks.use_state(game_time());
     let (x, set_x) = hooks.use_state(size_info[0].1.x as f32 / 2.);
     let (y, set_y) = hooks.use_state(size_info[0].1.y as f32 / 2. - second_r);
     let (phase, set_phase) = hooks.use_state(PI / 30.);
     hooks.use_frame(move |_world| {
-        let latest = absolute_game_time();
+        let latest = game_time();
         if latest - now > Duration::from_secs_f32(1.0) {
             set_now(latest);
             set_phase({

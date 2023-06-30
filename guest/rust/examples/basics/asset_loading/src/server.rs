@@ -44,7 +44,7 @@ pub async fn main() {
     println!("Entity components: {:?}", entity::get_all_components(model));
 
     ambient_api::messages::Frame::subscribe(move |_| {
-        let t = absolute_game_time().as_secs_f32();
+        let t = game_time().as_secs_f32();
         entity::set_component(
             model,
             rotation(),

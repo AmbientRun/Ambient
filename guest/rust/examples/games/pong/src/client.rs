@@ -14,7 +14,6 @@ use components::track_audio_url;
 
 #[main]
 async fn main() {
-
     let url_from_server =
         entity::wait_for_component(entity::synchronized_resources(), track_audio_url())
             .await

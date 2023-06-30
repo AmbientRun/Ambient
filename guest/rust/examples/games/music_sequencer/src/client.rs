@@ -8,7 +8,7 @@ use ambient_api::{
         },
     },
     entity::synchronized_resources,
-    global::absolute_game_time,
+    global::game_time,
     messages::Frame,
     prelude::*,
 };
@@ -19,7 +19,7 @@ use components::bpm;
 #[main]
 pub fn main() {
     let mut cursor = 0;
-    let mut last_note_time = absolute_game_time();
+    let mut last_note_time = game_time();
     let mut last_bpm = 0;
     let mut tree = Element::new().spawn_tree();
     Frame::subscribe(move |_| {
@@ -29,7 +29,7 @@ pub fn main() {
             last_bpm = bpm;
         }
 
-        let now = absolute_game_time();
+        let now = game_time();
         if now - last_note_time > Duration::from_secs_f32(seconds_per_note(bpm)) {
             last_note_time = now;
             cursor = (cursor + 1) % common::NOTE_COUNT;
