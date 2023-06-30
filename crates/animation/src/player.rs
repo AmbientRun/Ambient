@@ -5,7 +5,7 @@ use std::{
     time::Duration,
 };
 
-use ambient_core::{absolute_epoch_time, asset_cache, async_ecs::async_run, runtime};
+use ambient_core::{asset_cache, async_ecs::async_run, epoch_time, runtime};
 use ambient_ecs::{
     children, components,
     generated::components::core::animation::{
@@ -283,7 +283,7 @@ pub fn animation_player_systems() -> SystemGroup {
                     }
                 }),
             query((animation_player(), children())).to_system(|q, world, qs, _| {
-                let time = *world.resource(absolute_epoch_time());
+                let time = *world.resource(epoch_time());
                 for (id, (_, children)) in q.collect_cloned(world, qs) {
                     let mut errors = Default::default();
                     let output = sample_animation_node(world, children[0], time, &mut errors);

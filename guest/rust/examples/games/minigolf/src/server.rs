@@ -271,7 +271,7 @@ pub fn main() {
         messages::Bonk::new(msg.ids[0]).send_client_broadcast_unreliable();
     });
 
-    let start_time = absolute_game_time();
+    let start_time = game_time();
 
     // Update player ball each frame.
     query((
@@ -311,7 +311,7 @@ pub fn main() {
             };
 
             let force_multiplier = {
-                let mut mul = (absolute_game_time() - start_time).as_secs_f32() % 2.0;
+                let mut mul = (game_time() - start_time).as_secs_f32() % 2.0;
                 if mul > 1.0 {
                     mul = 1.0 - (mul - 1.0);
                 }

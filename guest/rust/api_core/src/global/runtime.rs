@@ -1,4 +1,8 @@
-use std::{future::Future, task::Poll, time::{Duration, Instant}};
+use std::{
+    future::Future,
+    task::Poll,
+    time::{Duration, Instant},
+};
 
 use crate::{
     components, entity,
@@ -7,21 +11,13 @@ use crate::{
 };
 
 /// The time, relative to the start of the game. Guaranteed to be monotonic.
-pub fn absolute_game_time() -> Duration {
-    entity::get_component(
-        entity::resources(),
-        components::core::app::absolute_game_time(),
-    )
-    .unwrap()
+pub fn game_time() -> Duration {
+    entity::get_component(entity::resources(), components::core::app::game_time()).unwrap()
 }
 
-/// The time, relative to Jan 1, 1970. Not guaranteed to be monotonic. Use [absolute_game_time] for most applications.
-pub fn absolute_epoch_time() -> Duration {
-    entity::get_component(
-        entity::resources(),
-        components::core::app::absolute_epoch_time(),
-    )
-    .unwrap()
+/// The time, relative to Jan 1, 1970. Not guaranteed to be monotonic. Use [game_time] for most applications.
+pub fn epoch_time() -> Duration {
+    entity::get_component(entity::resources(), components::core::app::epoch_time()).unwrap()
 }
 
 /// The length of the previous frame, in seconds.

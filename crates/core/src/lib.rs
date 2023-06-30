@@ -29,8 +29,8 @@ pub mod transform;
 pub mod window;
 
 pub use ambient_ecs::generated::components::core::app::{
-    absolute_epoch_time, absolute_game_time, delta_time, description, main_scene, map_seed, name,
-    project_name, ref_count, selectable, snap_to_ground, tags, ui_scene,
+    delta_time, description, epoch_time, game_time, main_scene, map_seed, name, project_name,
+    ref_count, selectable, snap_to_ground, tags, ui_scene,
 };
 
 /// The time between fixed updates of the server state.
@@ -93,7 +93,7 @@ impl SyncAssetKey<Arc<winit::window::Window>> for WindowKey {}
 
 pub fn remove_at_time_system() -> DynSystem {
     query((remove_at_game_time(),)).to_system(|q, world, qs, _| {
-        let game_time = *world.resource(self::absolute_game_time());
+        let game_time = *world.resource(self::game_time());
         for (id, (remove_at_time,)) in q.collect_cloned(world, qs) {
             if game_time >= remove_at_time {
                 world.despawn(id);
@@ -124,8 +124,8 @@ pub fn time_resources_start(delta_time: Duration) -> Entity {
 
     Entity::new()
         .with(self::app_start_time(), instant_now)
-        .with(self::absolute_epoch_time(), system_now)
-        .with(self::absolute_game_time(), Duration::ZERO)
+        .with(self::epoch_time(), system_now)
+        .with(self::game_time(), Duration::ZERO)
         .with(self::last_frame_time(), instant_now)
         .with(self::delta_time(), delta_time.as_secs_f32())
 }
@@ -142,8 +142,8 @@ pub fn time_resources_frame(
 
     Entity::new()
         .with(self::last_frame_time(), frame_time)
-        .with(self::absolute_epoch_time(), epoch_time)
-        .with(self::absolute_game_time(), frame_time - app_start_time)
+        .with(self::epoch_time(), epoch_time)
+        .with(self::game_time(), frame_time - app_start_time)
         .with(self::delta_time(), delta_time.as_secs_f32())
 }
 
