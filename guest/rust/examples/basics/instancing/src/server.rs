@@ -7,12 +7,15 @@ use ambient_api::{
         prefab::{prefab_from_url, spawned},
         primitives::quad,
         rendering::{cast_shadows, light_ambient, light_diffuse, sun},
-        transform::{lookat_target, rotation, translation},
+        transform::{lookat_target, rotation, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    entity::set_component,
     glam::EulerRot,
     prelude::*,
 };
+
+use crate::components::instance_index;
 
 #[main]
 pub async fn main() {
@@ -24,10 +27,34 @@ pub async fn main() {
         .with(lookat_target(), vec3(0., 0., 0.))
         .spawn();
 
-    Entity::new()
-        .with_merge(make_transformable())
-        .with_default(quad())
-        .spawn();
+    const INSTANCES: UVec3 = uvec3(15, 15, 15);
+
+    for i in 0..INSTANCES.x {
+        for j in 0..INSTANCES.y {
+            for k in 0..INSTANCES.z {
+                let x = i as f32 / INSTANCES.x as f32;
+                let y = j as f32 / INSTANCES.y as f32;
+                let z = k as f32 / INSTANCES.z as f32;
+
+                let index = k * INSTANCES.z * j * INSTANCES.y * INSTANCES.y + i;
+
+                let model = if index % 2 == 0 {
+                    asset::url("assets/Teapot.glb").unwrap()
+                } else {
+                    asset::url("assets/Monkey.glb").unwrap()
+                };
+
+                Entity::new()
+                    .with_merge(make_transformable())
+                    .with(translation(), (vec3(x, y, z) - 0.5) * 7.0)
+                    .with(instance_index(), uvec3(i, j, k))
+                    .with(scale(), Vec3::ONE * 0.2)
+                    .with_default(cast_shadows())
+                    .with(prefab_from_url(), model)
+                    .spawn();
+            }
+        }
+    }
 
     Entity::new()
         .with_merge(make_transformable())
@@ -38,25 +65,19 @@ pub async fn main() {
         .with(light_ambient(), Vec3::ZERO)
         .spawn();
 
-    let model = Entity::new()
-        .with_merge(make_transformable())
-        .with_default(cast_shadows())
-        .with(prefab_from_url(), asset::url("assets/Teapot.glb").unwrap())
-        .spawn();
-
-    entity::wait_for_component(model, spawned()).await;
-
-    ambient_api::messages::Frame::subscribe(move |_| {
+    query(instance_index()).each_frame(|items| {
         let t = time().as_secs_f64();
-        entity::set_component(
-            model,
-            rotation(),
-            Quat::from_euler(
-                EulerRot::ZXY,
-                (t % TAU) as f32,
-                (t * 2.0).sin() as f32 * 0.5,
-                0.0,
-            ),
-        );
+        for (id, index) in items {
+            set_component(
+                id,
+                rotation(),
+                Quat::from_euler(
+                    EulerRot::ZXY,
+                    (t % TAU) as f32 + index.z as f32 * 0.5,
+                    (t % TAU) as f32 + index.x as f32 * 0.5,
+                    (t % TAU) as f32 + index.y as f32 * 0.5,
+                ),
+            );
+        }
     });
 }
