@@ -6,7 +6,7 @@ publish = false
 version = "0.0.1"
 
 [dependencies]
-ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", branch = "main" }
+ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", rev = "c2ed491" }
 
 [[bin]]
 name = "fpsui_client"

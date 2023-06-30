@@ -2,7 +2,7 @@ use ambient_api::{components::core::app::window_logical_size, prelude::*};
 
 #[main]
 pub fn main() {
-    let mut last_shot = time();
+    let mut last_shot = game_time();
     let mut is_shooting = false;
     let mut cursor_lock = input::CursorLockGuard::new(true);
     ambient_api::messages::Frame::subscribe(move |_| {
@@ -44,14 +44,14 @@ pub fn main() {
 
         if input.mouse_buttons.contains(&MouseButton::Left) {
             if is_shooting {
-                if time() - last_shot > Duration::from_millis(1000) {
+                if game_time() - last_shot > Duration::from_millis(1000) {
                     shoot = true;
-                    last_shot = time();
+                    last_shot = game_time();
                 }
             } else {
                 shoot = true;
                 is_shooting = true;
-                last_shot = time();
+                last_shot = game_time();
             }
         } else {
             is_shooting = false;
@@ -61,6 +61,7 @@ pub fn main() {
         if cam.is_none() {
             return;
         }
+
         let cam = cam.unwrap();
         let window_size =
             entity::get_component(entity::resources(), window_logical_size()).unwrap();
