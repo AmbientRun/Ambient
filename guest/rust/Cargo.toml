@@ -24,6 +24,7 @@ members = [
     "examples/basics/sun",
     "examples/basics/third_person_camera",
     "examples/basics/transparency",
+    "examples/basics/instancing",
     # UI
     "examples/ui/audio_ctrl",
     "examples/ui/auto_editor",

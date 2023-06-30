@@ -1,0 +1,24 @@
+[package]
+name = "instancing"
+
+edition = "2021"
+publish = false
+rust-version = {workspace = true}
+version = {workspace = true}
+
+[dependencies]
+ambient_api = { path = "../../../api" }
+
+[[bin]]
+name = "client_instancing"
+path = "src/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "server_instancing"
+path = "src/server.rs"
+required-features = ["server"]
+
+[features]
+client = ["ambient_api/client"]
+server = ["ambient_api/server"]
