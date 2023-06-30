@@ -109,23 +109,7 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                     // log::info!("Stopped sound with id {}", uid);
                     stream.mixer().stop(id);
                 }
-                _ => {} // AudioMessage::Stop(target_url) => {
-                        //     let mut keys_to_remove: Vec<u32> = Vec::new();
-
-                        //     for (key, info) in sound_info_lib.iter() {
-                        //         if info.url == target_url {
-                        //             keys_to_remove.push(*key);
-                        //         }
-                        //     }
-
-                        //     for key in keys_to_remove {
-                        //         let info = sound_info_lib.remove(&key);
-                        //         if let Some(info) = info {
-                        //             stream.mixer().stop(info.id);
-                        //         }
-                        //     }
-                        //     // log::info!("Stopped all sounds with url {}", target_url);
-                        // }
+                _ => {}
             }
         }
     });

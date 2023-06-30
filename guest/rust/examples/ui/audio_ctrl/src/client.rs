@@ -11,6 +11,16 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
     let (f32_value, set_f32_value) = hooks.use_state(100.);
     let (sound, set_sound) = hooks.use_state(None);
     let (pan, set_pan) = hooks.use_state(0.);
+    hooks.use_frame({
+        let set_sound = set_sound.clone();
+        move |_world| {
+            if let Some(s) = sound {
+                if !entity::exists(s) {
+                    set_sound(None);
+                }
+            }
+        }
+    });
     FocusRoot::el([FlowColumn::el([
         Text::el("Amplitude:"),
         Slider {
@@ -61,8 +71,11 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
         Button::new("play sound", {
             let set_sound = set_sound.clone();
             move |_| {
-                let id =
-                    audio_player.play(asset::url("assets/316829__lalks__ferambie.ogg").unwrap());
+                let id = audio_player.play(asset::url("assets/amen_break.wav").unwrap());
+                // mono ogg
+                // let id = audio_player.play(
+                //     asset::url("assets/455516__ispeakwaves__the-plan-upbeat-loop-no-voice-edit-mono-track.ogg"
+                // ).unwrap());
                 set_sound(Some(id));
             }
         })
@@ -74,6 +87,8 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
                 if let Some(s) = sound {
                     if entity::exists(s) {
                         entity::add_component(s, stop_now(), ());
+                        set_sound(None);
+                    } else {
                         set_sound(None);
                     }
                 }

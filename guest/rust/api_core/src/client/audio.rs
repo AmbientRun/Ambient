@@ -5,7 +5,7 @@ use crate::{
             amplitude, audio_player, audio_url, looping, panning, play_now, playing_sound,
             spatial_audio_emitter, spatial_audio_listener, spatial_audio_player,
         },
-        ecs::children,
+        ecs::{children, parent},
     },
     entity,
     prelude::{Entity, EntityId},
@@ -104,6 +104,7 @@ impl AudioPlayer {
         let id = Entity::new()
             .with_default(playing_sound())
             .with(name(), "Playing sound".to_string())
+            .with(parent(), self.entity)
             .spawn();
         entity::mutate_component(self.entity, children(), |val| {
             val.push(id);

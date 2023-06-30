@@ -51,7 +51,6 @@ pub enum AudioMessage {
     // sound id and amplitude
     UpdateVolume(String, f32),
     UpdatePanning(String, f32),
-    Stop(AbsAssetUrl),
     StopById(String),
 }
 

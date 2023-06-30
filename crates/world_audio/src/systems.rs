@@ -10,7 +10,9 @@ use ambient_core::{
     runtime,
     transform::{rotation, translation},
 };
-use ambient_ecs::{children, generated::components::core::audio::*, query, SystemGroup, World};
+use ambient_ecs::{
+    children, generated::components::core::audio::*, parent, query, SystemGroup, World,
+};
 use ambient_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl};
 use glam::{vec4, Mat4};
 use parking_lot::Mutex;
@@ -22,11 +24,19 @@ pub fn audio_systems() -> SystemGroup {
         vec![
             query((playing_sound(), stop_now())).to_system(|q, world, qs, _| {
                 for (playing_entity, _) in q.collect_cloned(world, qs) {
-                    world.remove_component(playing_entity, stop_now()).unwrap();
                     let sender = world.resource(crate::audio_sender());
                     sender
                         .send(crate::AudioMessage::StopById(playing_entity.to_base64()))
                         .unwrap();
+                    let p = world.get(playing_entity, parent()).unwrap();
+                    let c = world.get_ref(p, children()).unwrap();
+                    let new_c = c
+                        .iter()
+                        .filter(|&&e| e != playing_entity)
+                        .cloned()
+                        .collect::<Vec<_>>();
+                    world.set(p, children(), new_c).unwrap();
+                    world.despawn(playing_entity);
                 }
             }),
             query((playing_sound(), amplitude())).to_system(|q, world, qs, _| {
@@ -58,8 +68,7 @@ pub fn audio_systems() -> SystemGroup {
                     let pan = world.get(audio_entity, panning()).unwrap_or(0.0);
                     let looping = world.get(audio_entity, looping()).unwrap_or(false);
                     world.remove_component(audio_entity, play_now()).unwrap();
-                    // , false)
-                    // .unwrap();
+
                     let assets = world.resource(asset_cache()).clone();
                     let runtime = world.resource(runtime()).clone();
                     let async_run = world.resource(async_run()).clone();
@@ -104,10 +113,8 @@ pub fn audio_systems() -> SystemGroup {
                             let decoded = track.decode();
                             let count = decoded.sample_count().unwrap();
                             let sr = decoded.sample_rate();
-                            // TODO: count in audio crate is buggy
-                            // println!("count {:?} sr {}", count, sr);
-                            let dur = count as f32 / sr as f32 * 3.0; // make it longer than the sound
-                            tokio::time::sleep(tokio::time::Duration::from_secs_f32(dur)).await;
+                            let dur = count as f32 / sr as f32 * 1.001;
+                            ambient_sys::time::sleep(std::time::Duration::from_secs_f32(dur)).await;
                             async_run.run(move |world| {
                                 world.despawn(id_share_clone.lock().unwrap());
                                 let child = world.get_ref(audio_entity, children()).unwrap();
