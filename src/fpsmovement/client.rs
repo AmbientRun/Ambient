@@ -44,7 +44,7 @@ pub fn main() {
 
         if input.mouse_buttons.contains(&MouseButton::Left) {
             if is_shooting {
-                if game_time() - last_shot > Duration::from_millis(1000) {
+                if game_time() - last_shot > Duration::from_millis(200) {
                     shoot = true;
                     last_shot = game_time();
                 }

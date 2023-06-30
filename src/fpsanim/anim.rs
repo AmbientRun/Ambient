@@ -1,5 +1,5 @@
 use ambient_api::{
-    animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
+    animation::{AnimationPlayer, AnimationRetargeting, BlendNode, PlayClipFromUrlNode},
     components::core::player::player,
     prelude::*,
 };
@@ -21,8 +21,11 @@ pub fn register_anim() {
             // death.looping(false);
             // death.freeze_at_percentage(100.0);
             let fire = PlayClipFromUrlNode::new(
-                asset::url("assets/anim/Rifle Firing.fbx/animations/mixamo.com.anim").unwrap(),
+                asset::url("assets/anim/Firing Rifle.fbx/animations/mixamo.com.anim").unwrap(),
             );
+            fire.set_retargeting(AnimationRetargeting::Skeleton {
+                model_url: "assets/model/X Bot.fbx".to_string(),
+            });
             let idle = PlayClipFromUrlNode::new(
                 asset::url("assets/anim/Rifle Aiming Idle.fbx/animations/mixamo.com.anim").unwrap(),
             );
