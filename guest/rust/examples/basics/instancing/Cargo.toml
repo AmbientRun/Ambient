@@ -3,8 +3,8 @@ name = "instancing"
 
 edition = "2021"
 publish = false
-rust-version = {workspace = true}
-version = {workspace = true}
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
 ambient_api = { path = "../../../api" }
@@ -17,3 +17,4 @@ required-features = ["server"]
 [features]
 client = ["ambient_api/client"]
 server = ["ambient_api/server"]
+
