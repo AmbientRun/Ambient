@@ -19,14 +19,14 @@ Audio should be loaded and played in clientside WASM/`client.rs` (the API is not
 - `./guest/rust/examples/games/music_sequencer`
 - `./guest/rust/examples/ui/audio_ctrl`
 
-The general idea is that in the ECS system, you can create an `audio::AudioPlayer` or `audio::SpatialAudioPlayer`. You can set the property of these players with methods such as `set_amplitude`. Then you can use the `player` to play a sound assets. This will actually return an `EntityId`. By `add_component` to the entity, you can control the playing sound as well. The `audio_ctrl` example shows the details.
+The general idea is that in the ECS system, you can create an `audio::AudioPlayer` or `audio::SpatialAudioPlayer`. You can set the property of these players with methods such as `set_amplitude`. Then you can use the `player` to play a sound assets. This will actually return an `EntityId`. By `add_component` to the entity, you can control the playing sound as well. The `audio_ctrl` example shows the details. When the sound playing finishes, the entity will automatically despawn. To stop a playing sound in advance, see the [audio_ctrl example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/audio_ctrl).
 
 ```rust
 pub fn main() {
     let player = audio::AudioPlayer::new();
     player.set_amplitude();
     let playing_sound = player.play(asset::url("assets/sound.ogg"));
-    entity::add_component(s, amplitude(), 0.1);
+    entity::add_component(playing_sound, amplitude(), 0.1);
 }
 ```
 
