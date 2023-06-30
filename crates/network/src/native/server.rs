@@ -6,7 +6,7 @@ use std::{
     time::Duration,
 };
 
-use ambient_core::{asset_cache, no_sync};
+use ambient_core::{asset_cache, no_sync, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
     ArchetypeFilter, ComponentDesc, System, SystemGroup, World, WorldStream, WorldStreamCompEvent,
     WorldStreamFilter,
@@ -139,7 +139,7 @@ impl GameServer {
         )));
 
         let mut fps_counter = FpsCounter::new();
-        let mut sim_interval = interval(Duration::from_secs_f32(1. / 60.));
+        let mut sim_interval = interval(FIXED_SERVER_TICK_TIME);
         sim_interval.set_missed_tick_behavior(MissedTickBehavior::Delay);
 
         let mut inactivity_interval = interval(Duration::from_secs_f32(5.));

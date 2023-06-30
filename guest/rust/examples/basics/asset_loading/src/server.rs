@@ -1,4 +1,4 @@
-use std::f64::consts::TAU;
+use std::f32::consts::TAU;
 
 use ambient_api::{
     components::core::{
@@ -42,16 +42,11 @@ pub async fn main() {
     entity::wait_for_component(model, spawned()).await;
 
     ambient_api::messages::Frame::subscribe(move |_| {
-        let t = time().as_secs_f64();
+        let t = absolute_game_time().as_secs_f32();
         entity::set_component(
             model,
             rotation(),
-            Quat::from_euler(
-                EulerRot::ZXY,
-                (t % TAU) as f32,
-                (t * 2.0).sin() as f32 * 0.5,
-                0.0,
-            ),
+            Quat::from_euler(EulerRot::ZXY, t % TAU, (t * 2.0).sin() * 0.5, 0.0),
         );
     });
 }

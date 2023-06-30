@@ -5,8 +5,9 @@ use crate::{
     RPC_BISTREAM_ID,
 };
 use ambient_core::{
-    name,
+    app_start_time, name,
     player::{get_by_user_id, player},
+    FIXED_SERVER_TICK_TIME,
 };
 use ambient_ecs::{
     components, dont_store, query, ArchetypeFilter, Entity, EntityId, FrameEvent, Networked,
@@ -16,7 +17,7 @@ use ambient_rpc::RpcRegistry;
 use ambient_std::{
     asset_cache::AssetCache, asset_url::AbsAssetUrl, fps_counter::FpsSample, log_result,
 };
-use ambient_sys::time::SystemTime;
+use ambient_sys::time::Instant;
 use bytes::Bytes;
 use flume::Sender;
 use parking_lot::Mutex;
@@ -148,12 +149,15 @@ impl WorldInstance {
     pub fn player_count(&self) -> usize {
         query((player(),)).iter(&self.world, None).count()
     }
-    pub fn step(&mut self, time: Duration) {
+    pub fn step(&mut self, frame_time: Instant, delta_time: Duration) {
         self.world
-            .set(
+            .set_components(
                 self.world.resource_entity(),
-                ambient_core::absolute_time(),
-                time,
+                ambient_core::time_resources_frame(
+                    frame_time,
+                    *self.world.resource(app_start_time()),
+                    delta_time,
+                ),
             )
             .unwrap();
         self.systems.run(&mut self.world, &FrameEvent);
@@ -213,11 +217,8 @@ impl ServerState {
     }
 
     pub fn step(&mut self) {
-        let time = SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap();
         for instance in self.instances.values_mut() {
-            instance.step(time);
+            instance.step(Instant::now(), FIXED_SERVER_TICK_TIME);
         }
     }
     pub fn broadcast_diffs(&mut self) {

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ambient_core::asset_cache;
+use ambient_core::{asset_cache, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
     components, query, Debuggable, DynSystem, Entity, EntityId, FnSystem, Resource, SystemGroup,
     World,
@@ -239,7 +239,7 @@ pub fn run_simulation_system() -> DynSystem {
     Box::new(FnSystem::new(|world, _| {
         ambient_profiling::scope!("run_simulation_system");
         let scene = world.resource(main_physics_scene());
-        scene.simulate(1. / 60.);
+        scene.simulate(FIXED_SERVER_TICK_TIME.as_secs_f32());
     }))
 }
 
