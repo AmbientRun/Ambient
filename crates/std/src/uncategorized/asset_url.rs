@@ -172,11 +172,11 @@ impl AbsAssetUrl {
     pub fn resolve(&self, url_or_relative_path: impl AsRef<str>) -> Result<Self, ParseError> {
         AssetUrl::from_str(url_or_relative_path.as_ref())?.resolve(self)
     }
-    /// This appends [path] to the current path, with a `/` joining them
+    /// This appends `path` to the current path, with a `/` joining them
     pub fn push(&self, path: impl AsRef<str>) -> Result<Self, ParseError> {
         Ok(AbsAssetUrl(self.as_directory().0.join(path.as_ref())?))
     }
-    /// This joins the current url with a relative path. See https://docs.rs/url/latest/url/struct.Url.html#method.join for details how it works
+    /// This joins the current url with a relative path. See <https://docs.rs/url/latest/url/struct.Url.html#method.join> for details on how it works
     pub fn join(&self, path: impl AsRef<str>) -> Result<Self, ParseError> {
         Ok(AbsAssetUrl(self.0.join(path.as_ref())?))
     }

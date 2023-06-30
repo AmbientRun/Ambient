@@ -3,7 +3,7 @@ use std::{fmt::Debug, ops::Deref, sync::Arc};
 use parking_lot::{Mutex, MutexGuard};
 
 /// Represents an abstraction over constants or shared values, allowing sources to use both
-/// constants, and Arc<Mutex<V>> interchangeably.
+/// constants, and `Arc<Mutex<V>>` interchangeably.
 pub trait Value<'a>: Send {
     type Item;
     type Guard: Deref<Target = Self::Item>;
