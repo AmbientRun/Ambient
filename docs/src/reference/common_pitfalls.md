@@ -26,7 +26,7 @@ To fix this, use a random `Vec3` for your color and then extend it to a `Vec4`:
 let color = rand::random::<Vec3>().extend(1.0);
 ```
 
-## Fails to start on Linux (Error in Surface::configure: parent device is lost)
+## Fails to start on Linux (Error in `Surface::configure: parent device is lost`)
 
 If you're running Wayland, you may have to start ambient with: `WAYLAND_DISPLAY=wayland-1 ambient run`.
 See [this issue](https://github.com/gfx-rs/wgpu/issues/2519) for details.
@@ -43,3 +43,16 @@ Try deactivating it, then run the Ambient ember again with 'ambient run'.
 
 If this fixes it, you'll need to add an exception to your anti-virus/firewall to allow Ambient to connect.
 We do not recommend leaving your anti-virus/firewall disabled.
+
+## `<ciso646>` not found
+
+The compilation of `physx-sys` and other C++ libraries may fail due to a missing `ciso646` header.
+This header was removed as part of C++20, and distributions no longer ship it by default.
+
+This can be fixed on Debian-based distributions (i.e. Ubuntu 22.04, Pop!\_OS 22.04, etc) by running
+
+```sh
+sudo apt install libstdc++-12-dev
+```
+
+to install a version of the GNU C++ standard library that includes the header.
