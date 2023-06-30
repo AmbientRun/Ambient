@@ -2,6 +2,9 @@ name: Deploy examples
 
 on:
   workflow_dispatch:
+  schedule:
+    # 5am UTC on Monday
+    - cron: '0 5 * * 1'
 
 env:
   CARGO_TERM_COLOR: always
