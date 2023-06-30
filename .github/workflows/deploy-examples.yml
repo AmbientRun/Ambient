@@ -5,7 +5,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  CACHE_KEY: ambient-$GITHUB_SHA
+  CACHE_KEY: ambient-${{ github.sha }}
 
 jobs:
   build-ambient:
@@ -40,11 +40,43 @@ jobs:
         example:
           - basics/asset_loading
           - basics/async
+          - basics/clientside
+          - basics/decals
+          - basics/first_person_camera
+          - basics/fog
+          - basics/image
+          - basics/input
+          - basics/messaging
+          - basics/multiplayer
+          - basics/physics
+          - basics/primitives
+          - basics/procedural_generation
+          - basics/raw_text
+          - basics/samplers
+          - basics/screen_ray
+          - basics/skinmesh
+          - basics/sun
+          - basics/third_person_camera
+          - basics/transparency
           - games/minigolf
           - games/music_sequencer
           - games/pong
           - games/tictactoe
           - ui/audio_ctrl
+          - ui/auto_editor
+          - ui/button
+          - ui/clock
+          - ui/counter
+          - ui/dock_layout
+          - ui/editors
+          - ui/flow_layout
+          - ui/image
+          - ui/rect
+          - ui/screens
+          - ui/scroll
+          - ui/slider
+          - ui/text
+          - ui/todo
 
     steps:
       - name: Install build dependencies
