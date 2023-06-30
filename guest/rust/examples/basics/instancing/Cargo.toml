@@ -10,11 +10,6 @@ version = {workspace = true}
 ambient_api = { path = "../../../api" }
 
 [[bin]]
-name = "client_instancing"
-path = "src/client.rs"
-required-features = ["client"]
-
-[[bin]]
 name = "server_instancing"
 path = "src/server.rs"
 required-features = ["server"]

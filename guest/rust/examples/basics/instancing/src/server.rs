@@ -4,8 +4,7 @@ use ambient_api::{
     components::core::{
         app::main_scene,
         camera::aspect_ratio_from_window,
-        prefab::{prefab_from_url, spawned},
-        primitives::quad,
+        prefab::prefab_from_url,
         rendering::{cast_shadows, light_ambient, light_diffuse, sun},
         transform::{lookat_target, rotation, scale, translation},
     },
