@@ -691,21 +691,32 @@ impl EntityAccessor {
             Self::Despawned { id, .. } => *id,
         }
     }
-    pub fn get<'a, T: ComponentValue>(&self, world: &'a World, component: Component<T>) -> &'a T {
+    pub fn get_optional<'a, T: ComponentValue>(
+        &self,
+        world: &'a World,
+        component: Component<T>,
+    ) -> Option<&'a T> {
         match self {
-            Self::World { id } => world.get_ref(*id, component).unwrap(),
+            Self::World { id } => world.get_ref(*id, component).ok(),
             Self::Despawned {
                 archetype,
                 event_id,
                 ..
             } => world.archetypes[*archetype]
                 .moveout_events
-                .get(*event_id)
-                .unwrap()
+                .get(*event_id)?
                 .1
-                .get_ref(component)
-                .unwrap(),
+                .get_ref(component),
         }
+    }
+    pub fn get<'a, T: ComponentValue>(&self, world: &'a World, component: Component<T>) -> &'a T {
+        self.get_optional(world, component).unwrap_or_else(|| {
+            panic!(
+                "Entity {} doesn't have component {:?}",
+                self.id(),
+                component
+            )
+        })
     }
     pub fn get_mut<'a, T: ComponentValue>(
         &self,

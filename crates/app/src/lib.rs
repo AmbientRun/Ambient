@@ -1,4 +1,4 @@
-use std::{future::Future, sync::Arc};
+use std::{future::Future, sync::Arc, time::Duration};
 
 use ambient_cameras::assets_camera_systems;
 pub use ambient_core::gpu;
@@ -16,7 +16,7 @@ use ambient_core::{
         cursor_position, get_window_sizes, window_logical_size, window_physical_size,
         window_scale_factor, ExitStatus, WindowCtl,
     },
-    RuntimeKey, TimeResourcesSystem,
+    ClientTimeResourcesSystem, RuntimeKey,
 };
 use ambient_ecs::{
     components, world_events, Debuggable, DynSystem, Entity, FrameEvent, MakeDefault,
@@ -35,7 +35,7 @@ use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     fps_counter::{FpsCounter, FpsSample},
 };
-use ambient_sys::{task::RuntimeHandle, time::SystemTime};
+use ambient_sys::task::RuntimeHandle;
 use glam::{uvec2, vec2, UVec2, Vec2};
 use parking_lot::Mutex;
 use renderers::{main_renderer, ui_renderer, MainRenderer, UiRenderer};
@@ -93,7 +93,7 @@ pub fn world_instance_systems(full: bool) -> SystemGroup {
     SystemGroup::new(
         "world_instance",
         vec![
-            Box::new(TimeResourcesSystem::new()),
+            Box::new(ClientTimeResourcesSystem::new()),
             Box::new(async_ecs_systems()),
             remove_at_time_system(),
             refcount_system(),
@@ -147,9 +147,6 @@ impl AppResources {
 }
 
 pub fn world_instance_resources(resources: AppResources) -> Entity {
-    let current_time = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap();
     Entity::new()
         .with(name(), "Resources".to_string())
         .with(self::gpu(), resources.gpu.clone())
@@ -161,13 +158,11 @@ pub fn world_instance_resources(resources: AppResources) -> Entity {
         .with_default(world_events())
         .with(frame_index(), 0_usize)
         .with(ambient_core::window::cursor_position(), Vec2::ZERO)
-        .with(ambient_core::app_start_time(), current_time)
-        .with(ambient_core::absolute_time(), current_time)
-        .with(ambient_core::delta_time(), 0.)
         .with(
             gpu_world(),
             GpuWorld::new_arced(&resources.gpu, resources.assets),
         )
+        .with_merge(ambient_core::time_resources_start(Duration::ZERO))
         .with_merge(ambient_input::resources())
         .with_merge(ambient_input::picking::resources())
         .with_merge(ambient_core::async_ecs::async_ecs_resources())

@@ -112,8 +112,11 @@ interface component {
 
     type entity = list<tuple<u32, value>>
     get-index: func(id: string) -> option<u32>
+    get-id: func(index: u32) -> option<string>
 
     get-component: func(entity: entity-id, index: u32) -> option<value>
+    get-components: func(entity: entity-id, indices: list<u32>) -> entity
+    get-all-components: func(entity: entity-id) -> entity
 
     add-component: func(entity: entity-id, index: u32, value: value)
     add-components: func(entity: entity-id, data: entity)

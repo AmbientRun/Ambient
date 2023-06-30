@@ -1,6 +1,9 @@
 use std::collections::HashSet;
 
-use ambient_core::transform::{get_world_position, rotation, translation};
+use ambient_core::{
+    transform::{get_world_position, rotation, translation},
+    FIXED_SERVER_TICK_TIME,
+};
 use ambient_ecs::{query, ECSError, EntityId, World};
 use anyhow::{bail, Context};
 use glam::{vec3, Mat4, Vec3};
@@ -570,7 +573,8 @@ impl PhysicsObjectCollection {
             let pos = get_world_position(world, id).unwrap();
             let force = get_force(pos);
             let a = force / mass;
-            *world.get_mut(id, unit_velocity()).unwrap() += a * (1. / 60.);
+            *world.get_mut(id, unit_velocity()).unwrap() +=
+                a * FIXED_SERVER_TICK_TIME.as_secs_f32();
         }
     }
     pub fn add_radial_impulse(
