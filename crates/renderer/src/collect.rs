@@ -236,8 +236,9 @@ impl RendererCollect {
             return;
         }
 
-        tracing::debug!("Resizing collect command buffer to {primitives_count}");
+        tracing::debug!(?primitives_count, "Running collect shader");
 
+        tracing::debug!("Resizing collect command buffer to {primitives_count}");
         output.commands.resize(
             gpu,
             primitives_count as u64
@@ -292,6 +293,7 @@ impl RendererCollect {
 
             // Divide up all the primitives among `x` workgroups
             let x = (primitives_count as f32 / COLLECT_WORKGROUP_SIZE as f32).ceil() as u32;
+            tracing::debug!("Dispatching {x} workgroups");
 
             cpass.dispatch_workgroups(x, 1, 1);
         }

@@ -366,6 +366,7 @@ impl TreeRenderer {
 
         let mut is_bound = false;
 
+        tracing::info!("Render:");
         for node in self.tree.values() {
             tracing::debug!(?node, "Drawing node");
             render_pass.set_pipeline(node.pipeline.pipeline());
