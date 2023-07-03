@@ -161,5 +161,19 @@
             "./guest/rust/examples/basics/instancing",
             "--clean-build"
         ]
+    },
+    "instancing-release": {
+        "cmd": [
+            "cargo",
+            "run",
+            "--features",
+            "tracing",
+            "--release",
+            "--",
+            "run",
+            "./guest/rust/examples/basics/instancing",
+            "--clean-build",
+            "--release"
+        ]
     }
 }
