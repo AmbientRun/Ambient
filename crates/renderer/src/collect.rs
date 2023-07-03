@@ -19,7 +19,7 @@ use wgpu::{
     ShaderStages,
 };
 
-use crate::{get_mesh_meta_module, PostSubmitFunc, GLOBALS_BIND_GROUP};
+use crate::{get_mesh_meta_module, MaterialLayout, PostSubmitFunc, GLOBALS_BIND_GROUP};
 
 use super::{get_defs_module, DrawIndexedIndirect, PrimitiveIndex};
 
@@ -55,7 +55,7 @@ pub(crate) struct RendererCollectState {
     #[cfg(any(target_os = "macos", target_os = "unknown"))]
     /// Multi draw indexed indirect is not supported on macOS
     pub counts_cpu: Arc<Mutex<Vec<u32>>>,
-    pub material_layouts: TypedBuffer<UVec2>,
+    pub material_layouts: TypedBuffer<MaterialLayout>,
 }
 
 impl RendererCollectState {
@@ -230,7 +230,7 @@ impl RendererCollect {
         input_primitives: &TypedMultiBuffer<CollectPrimitive>,
         output: &mut RendererCollectState,
         primitives_count: u32,
-        material_layouts: &[UVec2],
+        material_layouts: &[MaterialLayout],
     ) {
         if primitives_count == 0 {
             return;
@@ -248,6 +248,7 @@ impl RendererCollect {
 
         let counts = vec![0; material_layouts.len()];
         output.counts.fill(gpu, &counts, |_| {});
+        tracing::debug!("material_layouts: {material_layouts:?}");
         output.material_layouts.fill(gpu, material_layouts, |_| {});
 
         let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {

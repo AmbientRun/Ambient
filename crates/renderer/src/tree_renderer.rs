@@ -10,8 +10,8 @@ use ambient_gpu::{
     multi_buffer::{MultiBufferSizeStrategy, SubBufferId, TypedMultiBuffer},
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
-use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
-use glam::{uvec2, UVec2, UVec4};
+use ambient_std::asset_cache::AssetCache;
+use glam::UVec4;
 use itertools::Itertools;
 use wgpu::DepthBiasState;
 
@@ -23,6 +23,14 @@ use crate::{
     bind_groups::BindGroups, is_transparent, scissors, set_scissors_safe, PostSubmitFunc,
     RendererConfig,
 };
+
+#[repr(C)]
+#[derive(bytemuck::Pod, bytemuck::Zeroable, Clone, Copy, Debug)]
+pub struct MaterialLayout {
+    /// The offset to the start of the output sub buffer
+    offset: u32,
+    primitive_count: u32,
+}
 
 pub struct TreeRendererConfig {
     pub renderer_config: RendererConfig,
@@ -49,6 +57,7 @@ pub struct TreeRenderer {
     despawn_qs: QueryState,
     material_indices: MaterialIndices,
 }
+
 impl TreeRenderer {
     pub fn new(gpu: &Gpu, config: TreeRendererConfig) -> Self {
         Self {
@@ -233,15 +242,26 @@ impl TreeRenderer {
             self.tree.keys().collect_vec()
         );
 
-        let mut material_layouts = vec![UVec2::ZERO; self.material_indices.counter as usize];
+        let mut material_layouts = vec![
+            MaterialLayout {
+                offset: 0,
+                primitive_count: 0
+            };
+            self.material_indices.counter as usize
+        ];
+
+        // Fill the material layouts with the offsets and primitive counts of the sub buffers
         for node in self.tree.values() {
             for mat in node.tree.values() {
                 let offset = self
                     .primitives
                     .buffer_offset(mat.primitives_subbuffer)
                     .unwrap();
-                material_layouts[mat.material_index as usize] =
-                    uvec2(offset as u32, mat.primitives.len() as u32);
+
+                material_layouts[mat.material_index as usize] = MaterialLayout {
+                    offset: offset.try_into().unwrap(),
+                    primitive_count: mat.primitives.len().try_into().unwrap(),
+                };
             }
         }
 
@@ -438,6 +458,7 @@ impl TreeRenderer {
                             )
                         }
                     } else if let Some(count) = count {
+                        // NOTE: this issues 1 draw call *for every single visible primitive* in the scene
                         for i in 0..*count {
                             tracing::debug!("Drawing primitive: {offset} + {i}");
                             // render_pass.draw_indexed(, base_vertex, instances)

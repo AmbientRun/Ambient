@@ -37,6 +37,7 @@ pub struct MultiBuffer {
     total_capacity: u64,
     size_strategy: MultiBufferSizeStrategy,
 }
+
 pub type SubBufferId = usize;
 
 impl MultiBuffer {
@@ -61,6 +62,7 @@ impl MultiBuffer {
             size_strategy,
         }
     }
+
     pub fn total_bytes_used() -> usize {
         MULTI_BUFFERS_TOTAL_SIZE.load(Ordering::SeqCst)
     }
@@ -104,7 +106,7 @@ impl MultiBuffer {
         };
         // Buffers have to have some capacity, otherwise their order is indeterminable (if two buffers next to each other
         // have capacity=0 then their offsets will both be 0)
-        self.change_buffer_capacity(gpu, encoder, id, capacity.unwrap_or(4));
+        self.change_sub_buffer_capacity(gpu, encoder, id, capacity.unwrap_or(4));
         id
     }
     pub fn remove_buffer(&mut self, gpu: &Gpu, id: SubBufferId) -> Result<(), MultiBufferError> {
@@ -124,7 +126,7 @@ impl MultiBuffer {
         id: SubBufferId,
     ) -> Result<(), MultiBufferError> {
         if self.buffer_exists(id) {
-            self.change_buffer_capacity(gpu, encoder, id, 0);
+            self.change_sub_buffer_capacity(gpu, encoder, id, 0);
             self.sub_buffers[id] = None;
             self.free_ids.push(id);
             Ok(())
@@ -174,7 +176,7 @@ impl MultiBuffer {
             return Err(MultiBufferError::NoSuchSubBuffer(id));
         }
         if let Some(new_capacity) = change_capacity {
-            self.change_buffer_capacity(gpu, encoder, id, new_capacity);
+            self.change_sub_buffer_capacity(gpu, encoder, id, new_capacity);
         }
         Ok(())
     }
@@ -201,6 +203,7 @@ impl MultiBuffer {
             Err(MultiBufferError::NoSuchSubBuffer(id))
         }
     }
+
     pub fn buffer_len(&self, id: SubBufferId) -> Result<u64, MultiBufferError> {
         if let Some(Some(buf)) = &self.sub_buffers.get(id) {
             Ok(buf.size_bytes)
@@ -208,6 +211,7 @@ impl MultiBuffer {
             Err(MultiBufferError::NoSuchSubBuffer(id))
         }
     }
+
     pub fn buffer_layout(&self, id: SubBufferId) -> Result<SubBuffer, MultiBufferError> {
         if let Some(Some(buf)) = &self.sub_buffers.get(id) {
             Ok(*buf)
@@ -215,29 +219,41 @@ impl MultiBuffer {
             Err(MultiBufferError::NoSuchSubBuffer(id))
         }
     }
-    fn change_buffer_capacity(
+
+    fn change_sub_buffer_capacity(
         &mut self,
         gpu: &Gpu,
         encoder: &mut wgpu::CommandEncoder,
         id: SubBufferId,
         capacity: u64,
     ) {
-        // Wgpu requires copy_buffer_to_buffer to align to COPY_BUFFER_ALIGNMENT, so each of our sub-buffers need to align to that too
+        // wgpu requires copy_buffer_to_buffer to align to COPY_BUFFER_ALIGNMENT, so each of our sub-buffers need to align to that too
         assert_eq!(capacity % wgpu::COPY_BUFFER_ALIGNMENT, 0);
         let buf = self.sub_buffers[id].unwrap();
+
         let capacity_change = capacity as i64 - buf.capacity_bytes as i64;
         let new_total_capacity = (self.total_capacity as i64 + capacity_change) as u64;
+        tracing::debug!(
+            label = self.label,
+            "Rezing sub buffer {id} {} => {}",
+            buf.capacity_bytes,
+            capacity,
+        );
+
         if capacity_change > 0 {
             MULTI_BUFFERS_TOTAL_SIZE.fetch_add(capacity_change as usize, Ordering::SeqCst);
         } else {
             MULTI_BUFFERS_TOTAL_SIZE.fetch_sub((-capacity_change) as usize, Ordering::SeqCst);
         }
+
+        // Create a new buffer for everything
         let new_buffer = gpu.device.create_buffer(&wgpu::BufferDescriptor {
             label: Some(&self.label),
             usage: self.usage,
             size: new_total_capacity,
             mapped_at_creation: false,
         });
+
         encoder.copy_buffer_to_buffer(
             &self.buffer,
             0,
@@ -245,7 +261,10 @@ impl MultiBuffer {
             0,
             (buf.offset_bytes + buf.capacity_bytes).min(new_total_capacity),
         );
+
+        // Compact everything
         self.sub_buffers[id].as_mut().unwrap().capacity_bytes = capacity;
+
         if let Some(next_id) = self.get_next_buffer(buf.offset_bytes) {
             let next = self.sub_buffers[next_id].unwrap();
             encoder.copy_buffer_to_buffer(
@@ -316,6 +335,7 @@ impl MultiBuffer {
         data
     }
 }
+
 impl Drop for MultiBuffer {
     fn drop(&mut self) {
         MULTI_BUFFERS_TOTAL_SIZE.fetch_sub(self.total_capacity as usize, Ordering::SeqCst);
