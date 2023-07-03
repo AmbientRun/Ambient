@@ -38,8 +38,8 @@ name = "scene_server"
 path = "src/scene/server.rs"
 required-features = ["server"]
 
-# Group 3: show the players' model
-# This will show a T-pose player and you cannot move
+# # Group 3: show the players' model
+# # This will show a T-pose player and you cannot move
 
 [[bin]]
 name = "fpsmodel_client"
@@ -51,8 +51,8 @@ name = "fpsmodel_server"
 path = "src/fpsmodel/server.rs"
 required-features = ["server"]
 
-# Group 4: add the movement system
-# Now you can move your model with mouse/keyboard
+# # Group 4: add the movement system
+# # Now you can move your model with mouse/keyboard
 
 [[bin]]
 name = "fpsmovement_client"
@@ -64,14 +64,14 @@ name = "fpsmovement_server"
 path = "src/fpsmovement/server.rs"
 required-features = ["server"]
 
-# Group 5: Animation
+# # Group 5: Animation
 
 [[bin]]
 name = "fpsanim_server"
 path = "src/fpsanim/server.rs"
 required-features = ["server"]
 
-# Group 6: The audio system
+# # Group 6: The audio system
 
 [[bin]]
 name = "fpsaudio_client"

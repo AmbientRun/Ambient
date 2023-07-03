@@ -27,6 +27,12 @@ pub fn main() {
         let player_id = source.client_entity_id().unwrap();
         let direction = msg.direction;
 
+        if msg.jump {
+            println!("___jump triggered___");
+            // components::player_vspeed(),
+            entity::add_component(player_id, components::player_vspeed(), 0.6);
+        }
+
         // temporary fix pos for shooting
         if !msg.is_shooting {
             entity::add_component(player_id, components::player_direction(), direction);
@@ -85,7 +91,7 @@ pub fn main() {
                 entity::set_component(player_id, components::player_vspeed(), 0.0);
             } else {
                 entity::mutate_component(player_id, components::player_vspeed(), |vspeed| {
-                    *vspeed -= 2.3 * delta_time(); // 1/60 second for example
+                    *vspeed -= 3.0 * delta_time(); // 1/60 second for example
                 });
             }
         }

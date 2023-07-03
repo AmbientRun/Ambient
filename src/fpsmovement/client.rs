@@ -6,7 +6,7 @@ pub fn main() {
     let mut is_shooting = false;
     let mut cursor_lock = input::CursorLockGuard::new(true);
     ambient_api::messages::Frame::subscribe(move |_| {
-        let (_delta, input) = input::get_delta();
+        let (delta, input) = input::get_delta();
         if !cursor_lock.auto_unlock_on_escape(&input) {
             return;
         }
@@ -30,7 +30,7 @@ pub fn main() {
             direction.x += 1.0;
         }
 
-        if input.keys.contains(&KeyCode::Space) {
+        if delta.keys.contains(&KeyCode::Space) {
             jump = true;
         }
 

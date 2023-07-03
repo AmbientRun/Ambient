@@ -8,6 +8,13 @@ use crate::components as c;
 pub fn register_anim() {
     spawn_query(player()).bind(move |info| {
         for (id, ()) in info {
+            let jump = PlayClipFromUrlNode::new(
+                asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim").unwrap(),
+            );
+
+            // Looping is buggy
+            // jump.looping(false);
+
             let hit = PlayClipFromUrlNode::new(
                 asset::url("assets/anim/Rifle Hit Reaction.fbx/animations/mixamo.com.anim")
                     .unwrap(),
@@ -60,6 +67,7 @@ pub fn register_anim() {
             let idle_bk_lt = BlendNode::new(&idle, &bk_lt, 0.5);
             let idle_bk_rt = BlendNode::new(&idle, &bk_rt, 0.5);
 
+            let jump_player = AnimationPlayer::new(&jump);
             let hit_player = AnimationPlayer::new(&hit);
             let death_player = AnimationPlayer::new(&death);
             let fire_player = AnimationPlayer::new(&fire);
@@ -78,6 +86,7 @@ pub fn register_anim() {
             entity::add_components(
                 id,
                 Entity::new()
+                    .with(c::jump(), vec![jump.0 .0, jump_player.0])
                     .with(c::hit(), vec![hit.0 .0, hit_player.0])
                     .with(c::death(), vec![death.0 .0, death_player.0])
                     .with(c::fire(), vec![fire.0 .0, fire_player.0])

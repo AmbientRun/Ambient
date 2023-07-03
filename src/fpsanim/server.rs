@@ -15,10 +15,20 @@ pub fn main() {
         player(),
         components::player_direction(),
         components::player_shooting_status(),
-        // components::hit_freeze(),
+        components::player_vspeed(),
     ))
     .each_frame(|results| {
-        for (player_id, (_, dir, is_shooting)) in results {
+        for (player_id, (_, dir, is_shooting, vspeed)) in results {
+            if vspeed.abs() > 0.07 {
+                let model =
+                    entity::get_component(player_id, components::player_model_ref()).unwrap();
+                let anim = entity::get_component(player_id, components::jump()).unwrap();
+                println!("___jump anim triggered___");
+                entity::add_component(model, apply_animation_player(), anim[1]);
+
+                continue;
+            }
+
             // this is added later with the rules
             // the main takeaway is that each mod is not always self contained
             // for example, the hit_freeze is added in a mod called `rule`
