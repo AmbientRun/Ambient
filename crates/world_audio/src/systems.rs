@@ -146,7 +146,7 @@ pub fn setup_audio(world: &mut World) -> anyhow::Result<()> {
 }
 
 /// This translates elements RHS Z-up coordinate system to the HRIR sphere LHS Y-up
-/// https://github.com/mrDIMAS/hrir_sphere_builder/blob/e52a10ece678a2b80a0978f7cf23f3ad9cce41c3/src/hrtf_builder.cpp#L155-L162
+/// <https://github.com/mrDIMAS/hrir_sphere_builder/blob/e52a10ece678a2b80a0978f7cf23f3ad9cce41c3/src/hrtf_builder.cpp#L155-L162>
 pub const Y_UP_LHS: Mat4 = Mat4::from_cols(
     vec4(1.0, 0.0, 0.0, 0.0),
     vec4(0.0, 0.0, 1.0, 0.0),

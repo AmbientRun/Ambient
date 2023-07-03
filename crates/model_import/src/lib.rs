@@ -325,12 +325,12 @@ fn material_filter_matches(filter: &MaterialFilter, mat: &PbrMaterialDesc) -> bo
 
 pub const MODEL_EXTENSIONS: &[&str] = &["glb", "fbx", "obj", "x"];
 
-/// ../[path]
+/// `../[path]`
 pub fn dotdot_path(path: impl Into<RelativePathBuf>) -> RelativePathBuf {
     RelativePathBuf::from("..").join(path.into())
 }
 pub trait RelativePathBufExt {
-    /// [prefix]/[self]
+    /// `[prefix]/[self]`
     fn prejoin(&self, prefix: impl Into<RelativePathBuf>) -> Self;
 }
 impl RelativePathBufExt for RelativePathBuf {

@@ -30,7 +30,8 @@
 
 use std::time::Duration;
 
-use crate::platform::time::Instant;
+#[allow(unused_imports)]
+use crate::platform::time::{Instant, Interval};
 
 /// Defines the behavior of an [`Interval`] when it misses a tick.
 ///
@@ -38,7 +39,7 @@ use crate::platform::time::Instant;
 /// following:
 ///
 /// ```
-/// use tokio::time::{self, Duration};
+/// use ambient_sys::time::{self, Duration};
 /// # async fn task_that_takes_one_to_three_millis() {}
 ///
 /// #[tokio::main]
@@ -86,7 +87,7 @@ pub enum MissedTickBehavior {
     /// In code:
     ///
     /// ```
-    /// use tokio::time::{interval, Duration};
+    /// use ambient_sys::time::{interval, Duration};
     /// # async fn task_that_takes_200_millis() {}
     ///
     /// # #[tokio::main(flavor = "current_thread")]
@@ -120,7 +121,7 @@ pub enum MissedTickBehavior {
     /// ```
     ///
     /// This is the default behavior when [`Interval`] is created with
-    /// [`interval`] and [`interval_at`].
+    /// `interval` and `interval_at`.
     ///
     /// [`Delay`]: MissedTickBehavior::Delay
     /// [`Skip`]: MissedTickBehavior::Skip
@@ -145,7 +146,7 @@ pub enum MissedTickBehavior {
     /// In code:
     ///
     /// ```
-    /// use tokio::time::{interval, Duration, MissedTickBehavior};
+    /// use ambient_sys::time::{interval, Duration, MissedTickBehavior};
     /// # async fn task_that_takes_more_than_50_millis() {}
     ///
     /// # #[tokio::main(flavor = "current_thread")]
@@ -196,7 +197,7 @@ pub enum MissedTickBehavior {
     /// In code:
     ///
     /// ```
-    /// use tokio::time::{interval, Duration, MissedTickBehavior};
+    /// use ambient_sys::time::{interval, Duration, MissedTickBehavior};
     /// # async fn task_that_takes_75_millis() {}
     ///
     /// # #[tokio::main(flavor = "current_thread")]

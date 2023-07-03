@@ -68,7 +68,7 @@ impl AudioListener {
 /// Defines the attenuation.
 ///
 /// See:
-/// https://www.desmos.com/calculator/mpbzwayz5f
+/// <https://www.desmos.com/calculator/mpbzwayz5f>
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, ambient_ui_native::ElementEditor)]
 pub enum Attenuation {
     /// 1/(ax^2)

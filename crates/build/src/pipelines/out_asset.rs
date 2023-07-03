@@ -30,8 +30,8 @@ pub struct OutAsset {
     pub name: String,
     pub tags: Vec<String>,
     /// Each entry in the vec is a category level, i.e.:
-    /// self.categories[0].insert("Vehicles");
-    /// self.categories[1].insert("Vehicles > Cars");
+    /// `self.categories[0].insert("Vehicles");`
+    /// `self.categories[1].insert("Vehicles > Cars");`
     pub categories: [HashSet<String>; 3],
     pub preview: OutAssetPreview,
     pub content: OutAssetContent,

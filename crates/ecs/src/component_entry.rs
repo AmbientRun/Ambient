@@ -200,7 +200,7 @@ impl Debug for ComponentEntry {
 macro_rules! impl_infallible {
     ($recv: ty, $name: ident, $ret: ty) => {
         paste::paste! {
-            #[doc = "See [`" try_ $name "`]" ]
+            #[doc = "See [`Self::" try_ $name "`]" ]
             #[doc = "# Panics"]
             #[doc = "If the types do not match"]
             pub fn $name<T: 'static>(self: $recv) -> $ret {

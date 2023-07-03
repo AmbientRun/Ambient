@@ -1,7 +1,7 @@
 [ember]
 id = "instancing"
 organization = "ambient"
-name = "instancing"
+name = "Instancing"
 version = "0.0.1"
 
 [components]

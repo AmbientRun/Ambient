@@ -357,7 +357,7 @@ impl IntentRegistry {
     /// **Note**: The lock on the world will be held for the whole duration of the async intent.
     ///
     /// This is to prevent deadlocks and swept under the rug when intents are partially applied.
-    /// If this is not desired, consider [`tokio::spawn`] or [`ambient_core::AsyncRun`].
+    /// If this is not desired, consider [`tokio::spawn`] or `AsyncRun`.
     pub fn register<Arg, RevertState, Apply, Revert, Merge>(
         &mut self,
         intent: Component<Arg>,
