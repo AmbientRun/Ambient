@@ -1,22 +1,14 @@
-#[allow(unused_imports)]
 use ambient_api::{
-    animation::{get_bone_by_bind_id, AnimationPlayer, BindId, BlendNode, PlayClipFromUrlNode},
+    animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
     components::core::{
         animation::apply_animation_player,
-        app::main_scene,
-        camera::aspect_ratio_from_window,
         ecs::{children, parent},
-        physics::{
-            character_controller_height, character_controller_radius, cube_collider, dynamic,
-            linear_velocity, physics_controlled, plane_collider, sphere_collider,
-        },
-        player::{player, user_id},
+        physics::{character_controller_height, character_controller_radius, physics_controlled},
+        player::player,
         prefab::prefab_from_url,
-        primitives::{cube, quad},
-        rendering::color,
-        transform::{local_to_parent, rotation, scale, translation},
+        transform::{local_to_parent, local_to_world, rotation, scale, translation},
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
+    concepts::make_transformable,
     prelude::*,
 };
 #[main]
@@ -104,7 +96,7 @@ pub async fn main() {
                     zombie,
                     vec3(displace.x, displace.y, -0.1),
                     0.01,
-                    frametime(),
+                    delta_time(),
                 );
                 entity::set_component(zombie, rotation(), rot);
                 // println!("collision: {} {} {}", collision.up, collision.down, collision.side);
