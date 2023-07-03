@@ -1,7 +1,7 @@
 use ambient_api::{
     components::core::{
         app::main_scene,
-        camera::aspect_ratio_from_window,
+        camera::{aspect_ratio_from_window, fovy},
         ecs::{children, parent},
         physics::{character_controller_height, character_controller_radius, physics_controlled},
         player::{player, user_id},
@@ -11,9 +11,15 @@ use ambient_api::{
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
 };
+use components::{player_cam_ref, player_zoomed};
 
 #[main]
 pub async fn main() {
+    query((player(), player_zoomed(), player_cam_ref())).each_frame(|v| {
+        for (_, ((), zoomed, cam_ref)) in v {
+            entity::set_component(cam_ref, fovy(), if zoomed { 0.3 } else { 1.0 })
+        }
+    });
     spawn_query((player(), user_id())).bind(move |players| {
         for (id, (_, uid)) in players {
             run_async(async move {
