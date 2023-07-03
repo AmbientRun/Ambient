@@ -18,7 +18,10 @@ The `Cargo.toml` includes several `bins` in orders. You can try to uncomment the
 
 # Group 1: show the UI
 # This include the aiming cross in the middle of the screen
-# The scoreboard is always here but it requires the "Rule" mod to activate
+# Use TAB key to toggle the scoreboard
+# The "Rule" mod provides the calculation for player's score/health, etc.
+# It's also the foundation of the future animation mod
+# When the player health changes, "Hit" or "Death" animation will be triggered
 
 [[bin]]
 name = "fpsui_client"
@@ -28,6 +31,11 @@ required-features = ["client"]
 [[bin]]
 name = "fpsui_server"
 path = "src/fpsui/server.rs"
+required-features = ["server"]
+
+[[bin]]
+name = "fpsrule_server"
+path = "src/fpsrule/server.rs"
 required-features = ["server"]
 
 # Group 2: show the scene
@@ -43,13 +51,11 @@ required-features = ["server"]
 
 [[bin]]
 name = "fpsmodel_client"
-# name = "afpsmod_fpsmodel_client"
 path = "src/fpsmodel/client.rs"
 required-features = ["client"]
 
 [[bin]]
 name = "fpsmodel_server"
-# name = "afpsmod_fpsmodel_server"
 path = "src/fpsmodel/server.rs"
 required-features = ["server"]
 
@@ -73,14 +79,7 @@ name = "fpsanim_server"
 path = "src/fpsanim/server.rs"
 required-features = ["server"]
 
-# Group 6: Rules
-
-[[bin]]
-name = "fpsrule_server"
-path = "src/fpsrule/server.rs"
-required-features = ["server"]
-
-# Group 7: The audio system
+# Group 6: The audio system
 
 [[bin]]
 name = "fpsaudio_client"
@@ -92,7 +91,9 @@ name = "fpsaudio_server"
 path = "src/fpsaudio/server.rs"
 required-features = ["server"]
 
-# Group 8: Optional and unfinished Zombie system
+# Group 7: Optional and unfinished Zombie system
+# The Zombie rules and health/hit anim is not included yet
+# They simply spawan and chase the nearest player
 
 # [[bin]]
 # name = "zombie_server"
