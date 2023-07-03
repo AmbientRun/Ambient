@@ -1,5 +1,5 @@
 [package]
-name = "instancing"
+name = "ambient_example_instancing"
 
 edition = "2021"
 publish = false
