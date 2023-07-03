@@ -1,6 +1,6 @@
 [ember]
-id = "instancing"
-name = "instancing"
+id = "ambient_example_instancing"
+name = "Instancing"
 version = "0.0.1"
 
 [components]
