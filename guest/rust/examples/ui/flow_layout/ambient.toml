@@ -1,5 +1,6 @@
 [ember]
-id = "ambient_example_flow_layout"
+owner = "ambient"
+id = "example_flow_layout"
 name = "Flow Layout"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/flow_layout"

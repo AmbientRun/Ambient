@@ -14,7 +14,7 @@ pub fn all_defined_components(
     } else {
         manifest
             .ember
-            .organization
+            .owner
             .iter()
             .chain(std::iter::once(&manifest.ember.id))
             .cloned()

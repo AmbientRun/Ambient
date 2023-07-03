@@ -1,5 +1,6 @@
 [ember]
-id = "ambient_example_image"
+owner = "ambient"
+id = "example_image"
 name = "Image"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/image"

@@ -39,7 +39,7 @@ impl Manifest {
 
     pub fn project_path(&self) -> IdentifierPathBuf {
         self.ember
-            .organization
+            .owner
             .iter()
             .chain(std::iter::once(&self.ember.id))
             .cloned()
@@ -73,7 +73,7 @@ pub struct Ember {
     pub type_: EmberType,
     #[serde(default)]
     pub categories: Vec<Category>,
-    pub organization: Option<Identifier>,
+    pub owner: Option<Identifier>,
     #[serde(default)]
     pub includes: Vec<String>,
 }

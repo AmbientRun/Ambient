@@ -172,31 +172,10 @@ async fn build_rust_if_available(
         return Ok(());
     }
 
-    let toml = cargo_toml::Manifest::from_str(&tokio::fs::read_to_string(&cargo_toml_path).await?)?;
-    match toml.package {
-        Some(package) if package.name == manifest.ember.id.as_ref() => {}
-        Some(package) => {
-            anyhow::bail!(
-                "The name of the package in the Cargo.toml ({}) does not match the project's ID ({})",
-                package.name,
-                manifest.ember.id
-            );
-        }
-        None => anyhow::bail!(
-            "No [package] present in Cargo.toml for project {}",
-            manifest.ember.id.as_ref()
-        ),
-    }
-
     let rustc = ambient_rustc::Rust::get_system_installation().await?;
 
     for feature in &manifest.build.rust.feature_multibuild {
-        for (path, bytecode) in rustc.build(
-            project_path,
-            manifest.ember.id.as_ref(),
-            optimize,
-            &[feature],
-        )? {
+        for (path, bytecode) in rustc.build(project_path, optimize, &[feature])? {
             let component_bytecode = ambient_wasm::shared::build::componentize(&bytecode)?;
 
             let output_path = build_path.join(feature);

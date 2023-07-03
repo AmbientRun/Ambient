@@ -239,7 +239,7 @@ fn can_generate_components_from_manifest_with_org() {
         id = "my_project"
         name = "My Project"
         version = "0.0.1"
-        organization = "evil_corp"
+        owner = "evil_corp"
 
         [components]
         a_cool_component = { name = "Cool Component", description = "", type = "Empty" }

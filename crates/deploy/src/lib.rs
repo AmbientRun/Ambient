@@ -71,6 +71,9 @@ pub async fn deploy(
     manifest: &Manifest,
     force_upload: bool,
 ) -> anyhow::Result<String> {
+    anyhow::ensure!(manifest.ember.owner.is_some(), "Ember owner is required");
+    // TODO: consider ember owner in deployment target
+
     let ember_id = manifest.ember.id.to_string();
     log::info!(
         "Deploying ember `{}` ({})",

@@ -1,5 +1,6 @@
 [ember]
-id = "ambient_example_auto_editor"
+owner = "ambient"
+id = "example_auto_editor"
 name = "Auto editor"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/auto_editor"

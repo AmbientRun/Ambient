@@ -1,5 +1,6 @@
 [ember]
-id = "ambient_example_procedural_generation"
+owner = "ambient"
+id = "example_procedural_generation"
 name = "Procedural generation"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/procedural_generation"

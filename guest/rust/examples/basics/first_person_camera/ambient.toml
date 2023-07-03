@@ -1,5 +1,6 @@
 [ember]
-id = "ambient_example_first_person_camera"
+owner = "ambient"
+id = "example_first_person_camera"
 name = "First person camera"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/first_person_camera"
