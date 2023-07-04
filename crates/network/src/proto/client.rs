@@ -3,7 +3,10 @@ use std::sync::Arc;
 use ambient_ecs::{
     generated::components::core::network::is_remote_entity, ComponentRegistry, Entity, WorldDiff,
 };
-use ambient_std::{asset_cache::SyncAssetKeyExt, asset_url::ContentBaseUrlKey};
+use ambient_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    asset_url::ContentBaseUrlKey,
+};
 use anyhow::{bail, Context};
 use bytes::{Buf, Bytes};
 use parking_lot::Mutex;
@@ -27,7 +30,7 @@ pub(crate) struct ConnectedClient {}
 
 #[derive(Debug)]
 pub(crate) enum ClientState {
-    Connecting(String),
+    Pending(String),
     Connected(ConnectedClient),
     Disconnected,
 }
@@ -44,13 +47,9 @@ impl ClientState {
 
     /// Processes an incoming control frame from the server.
     #[tracing::instrument(level = "debug")]
-    pub fn process_push(
-        &mut self,
-        state: &SharedClientState,
-        frame: ServerPush,
-    ) -> anyhow::Result<()> {
+    pub fn process_push(&mut self, assets: &AssetCache, frame: ServerPush) -> anyhow::Result<()> {
         match (frame, &self) {
-            (ServerPush::ServerInfo(server_info), Self::Connecting(_user_id)) => {
+            (ServerPush::ServerInfo(server_info), Self::Pending(_user_id)) => {
                 let current_version = get_version_with_revision();
 
                 if server_info.version != current_version {
@@ -61,9 +60,8 @@ impl ClientState {
                     );
                 }
 
-                let state = state.lock();
                 tracing::debug!(content_base_url=?server_info.content_base_url, "Inserting content base url");
-                ContentBaseUrlKey.insert(&state.assets, server_info.content_base_url.clone());
+                ContentBaseUrlKey.insert(&assets, server_info.content_base_url.clone());
                 tracing::debug!(?server_info.external_components, "Adding external components");
                 ComponentRegistry::get_mut().add_external(server_info.external_components);
 
@@ -89,12 +87,20 @@ impl ClientState {
         gs.world.add_resource(client_network_stats(), stats);
     }
 
-    /// Returns `true` if the client state is [`Connecting`].
+    /// Returns `true` if the client state is [`Pending`].
     ///
-    /// [`Connecting`]: ClientState::Connecting
+    /// [`Pending`]: ClientState::Pending
     #[must_use]
-    pub(crate) fn is_connecting(&self) -> bool {
-        matches!(self, Self::Connecting(..))
+    pub(crate) fn is_pending(&self) -> bool {
+        matches!(self, Self::Pending(..))
+    }
+
+    /// Returns `true` if the client state is [`Connected`].
+    ///
+    /// [`Connected`]: ClientState::Connected
+    #[must_use]
+    pub(crate) fn is_connected(&self) -> bool {
+        matches!(self, Self::Connected(..))
     }
 }
 

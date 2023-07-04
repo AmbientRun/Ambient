@@ -78,9 +78,9 @@ impl<'a> Hooks<'a> {
     /// The same as [Hooks::use_state], but with a function that returns the initial value.
     ///
     /// This can be used to avoid cloning the initial value each time the [Element](crate::Element) is re-rendered.
-    pub fn use_state_with<T: Clone + Debug + Send + 'static, F: FnOnce(&mut World) -> T>(
+    pub fn use_state_with<T: Clone + Debug + Send + 'static>(
         &mut self,
-        init: F,
+        init: impl FnOnce(&mut World) -> T,
     ) -> (T, Setter<T>) {
         let index = self.state_index;
         self.state_index += 1;

@@ -1,6 +1,6 @@
 use crate::{
-    client::{Control, GameClient, GameClientRenderTarget, LoadedFunc, NetworkStats},
-    client_game_state::ClientGameState,
+    client::{CleanupFunc, Control, GameClient, GameClientRenderTarget, LoadedFunc, NetworkStats},
+    client_game_state::{game_screen_render_target, ClientGameState},
     native::load_root_certs,
     proto::{
         client::{ClientState, SharedClientState},
@@ -10,17 +10,21 @@ use crate::{
     stream::{FramedRecvStream, FramedSendStream},
     NetworkError,
 };
-use ambient_app::window_title;
-use ambient_core::{asset_cache, gpu};
+use ambient_app::{window_title, world_instance_resources, AppResources};
+use ambient_core::{asset_cache, gpu, player::user_id};
 use ambient_ecs::{generated::messages, world_events, Entity, SystemGroup};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_std::{cb, Cb};
+use ambient_std::{
+    asset_cache::{AssetCache, AssetLoadDropPolicy},
+    cb, Cb,
+};
 use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Throbber};
 use anyhow::Context;
 use futures::{SinkExt, StreamExt};
 use glam::uvec2;
+use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
 use quinn::{ClientConfig, Connection, Endpoint, TransportConfig};
 use rand::Rng;
@@ -92,20 +96,23 @@ impl ElementComponent for GameClientView {
 
         let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
 
-        let assets = hooks.world.resource(asset_cache()).clone();
-        let game_state = hooks.use_ref_with(|world| {
-            let (systems, resources) = systems_and_resources();
+        let (game_state_ref, _) =
+            hooks.use_state_with::<Arc<OnceCell<SharedClientState>>>(|_| Arc::new(OnceCell::new()));
 
-            ClientGameState::new(
-                &gpu,
-                world,
-                assets.clone(),
-                user_id.clone(),
-                render_target.0.clone(),
-                systems,
-                resources,
-            )
-        });
+        let assets = hooks.world.resource(asset_cache()).clone();
+        // let game_state = hooks.use_ref_with(|world| {
+        //     let (systems, resources) = systems_and_resources();
+
+        //     ClientGameState::new(
+        //         &gpu,
+        //         world,
+        //         assets.clone(),
+        //         user_id.clone(),
+        //         render_target.0.clone(),
+        //         systems,
+        //         resources,
+        //     )
+        // });
 
         let ((control_tx, control_rx), _) = hooks.use_state_with(|_| flume::unbounded());
 
@@ -119,33 +126,32 @@ impl ElementComponent for GameClientView {
                 control_tx.send(Control::Disconnect).ok();
             }
         });
+        let gpu2 = Arc::clone(&gpu);
 
         // Run game logic
         {
-            let game_state = game_state.clone();
+            let game_state = game_state_ref.clone();
             let render_target = render_target.clone();
             let world_event_reader = Mutex::new(hooks.world.resource(world_events()).reader());
 
-            let game_client_exists = game_client.is_some();
             hooks.use_frame(move |app_world| {
-                if !game_client_exists {
-                    return;
+                if let Some(game_state) = game_state.get() {
+                    let mut game_state = game_state.lock();
+                    // Pipe events from app world to game world
+                    for (_, event) in world_event_reader
+                        .lock()
+                        .iter(app_world.resource(world_events()))
+                    {
+                        game_state
+                            .world
+                            .resource_mut(world_events())
+                            .add_event(event.clone());
+                    }
+
+                    game_state.on_frame(&gpu, &render_target.0);
+                } else {
+                    tracing::warn!("No game state");
                 }
-
-                let mut game_state = game_state.lock();
-
-                // Pipe events from app world to game world
-                for (_, event) in world_event_reader
-                    .lock()
-                    .iter(app_world.resource(world_events()))
-                {
-                    game_state
-                        .world
-                        .resource_mut(world_events())
-                        .add_event(event.clone());
-                }
-
-                game_state.on_frame(&gpu, &render_target.0);
             });
         }
 
@@ -155,7 +161,12 @@ impl ElementComponent for GameClientView {
 
         let (err, set_error) = hooks.use_state(None);
 
-        hooks.use_task(move |_| {
+        let assets2 = assets.clone();
+        hooks.use_task(move |ui_world| {
+            let gpu = gpu2;
+
+            let local_resources = world_instance_resources(AppResources::from_world(ui_world))
+                .with(game_screen_render_target(), render_target.0.clone());
             let task = async move {
                 let conn = open_connection(server_addr.clone(), cert.map(Certificate))
                     .await
@@ -163,21 +174,41 @@ impl ElementComponent for GameClientView {
 
                 tracing::debug!("Connected to the server");
 
-                // Create a handle for the game client
-                let game_client = GameClient::new(
-                    Arc::new(conn.clone()),
-                    Arc::new(create_rpc_registry()),
-                    game_state.clone(),
-                    user_id.clone(),
-                );
-
                 handle_connection(
-                    game_client,
-                    conn,
+                    conn.clone(),
+                    assets2.clone(),
                     user_id,
-                    cb(move |game_client| {
+                    move |user_id| {
+                        let (systems, resources) = systems_and_resources();
+                        let resources = local_resources
+                            .clone()
+                            .with(ambient_core::player::local_user_id(), user_id.into())
+                            .with_merge(resources);
+
+                        let game_state = ClientGameState::new(
+                            &gpu,
+                            assets.clone(),
+                            user_id.into(),
+                            render_target.0.clone(),
+                            systems,
+                            resources,
+                        );
+
+                        let game_state = game_state_ref
+                            .try_insert(Arc::new(Mutex::new(game_state)))
+                            .expect("Attempt to connect twice using the same connection");
+
+                        // Create a handle for the game client
+                        let game_client = GameClient::new(
+                            Arc::new(conn.clone()),
+                            Arc::new(create_rpc_registry()),
+                            Arc::clone(game_state),
+                            user_id.into(),
+                        );
+
                         let game_state = &game_client.game_state;
                         {
+                            tracing::info!("Setting game state");
                             // Updates the game client context in the Ui tree
                             set_game_client(Some(game_client.clone()));
                             // Update the resources on the client side world to reflect the new connection
@@ -188,9 +219,10 @@ impl ElementComponent for GameClientView {
                                 Some(game_client.clone()),
                             );
                         }
-                        (on_loaded)(game_client)
-                    }),
-                    game_state,
+                        let cleanup = (on_loaded)(&game_client)?;
+                        Ok((game_state.clone(), cleanup))
+                    },
+                    // game_state,
                     control_rx,
                 )
                 .await?;
@@ -242,11 +274,11 @@ impl ElementComponent for GameClientView {
 }
 
 async fn handle_connection(
-    game_client: GameClient,
     conn: quinn::Connection,
+    assets: AssetCache,
     user_id: String,
-    on_loaded: LoadedFunc,
-    state: SharedClientState,
+    on_loaded: impl Fn(&str) -> anyhow::Result<(SharedClientState, CleanupFunc)> + Send + Sync,
+    // state: SharedClientState,
     control_rx: flume::Receiver<Control>,
 ) -> anyhow::Result<()> {
     let mut request_send = FramedSendStream::new(conn.open_uni().await?);
@@ -261,21 +293,31 @@ async fn handle_connection(
         .send(ClientRequest::Connect(user_id.clone()))
         .await?;
 
-    let mut client = ClientState::Connecting(user_id);
+    let mut client = ClientState::Pending(user_id.clone());
 
     let mut push_recv = FramedRecvStream::new(conn.accept_uni().await?);
 
-    while client.is_connecting() {
+    while client.is_pending() {
         if let Some(frame) = push_recv.next().await {
-            client.process_push(&state, frame?)?;
+            client.process_push(&assets, frame?)?;
         }
     }
 
+    if !client.is_connected() {
+        tracing::warn!("Connection failed or was denied");
+        return Ok(());
+    }
+
+    tracing::info!("Connection successfully established");
+
+    // Create the game client
+
     let mut diff_stream = FramedRecvStream::new(conn.accept_uni().await?);
 
-    let cleanup = on_loaded(game_client)?;
+    let (shared_client_state, cleanup) = on_loaded(&user_id)?;
+
     let on_disconnect = move || {
-        tracing::info!("Running connection cleanup");
+        tracing::debug!("Running connection cleanup");
         cleanup()
     };
 
@@ -292,12 +334,12 @@ async fn handle_connection(
     while let ClientState::Connected(connected) = &mut client {
         tokio::select! {
             Some(frame) = push_recv.next() => {
-                client.process_push(&state, frame?)?;
+                client.process_push(&assets, frame?)?;
             }
             _ = stats_timer.tick() => {
                 let stats = conn.stats();
 
-                client.process_client_stats(&state, NetworkStats {
+                client.process_client_stats(&shared_client_state, NetworkStats {
                     latency_ms: conn.rtt().as_millis() as u64,
                     bytes_sent: (stats.udp_tx.bytes - prev_stats.udp_tx.bytes) / stats_interval,
                     bytes_received: (stats.udp_rx.bytes - prev_stats.udp_rx.bytes) / stats_interval,
@@ -317,16 +359,16 @@ async fn handle_connection(
             }
 
             Ok(datagram) = conn.read_datagram() => {
-                connected.process_datagram(&state, datagram)?;
+                connected.process_datagram(&shared_client_state, datagram)?;
             }
             Ok((send, recv)) = conn.accept_bi() => {
-                connected.process_bi(&state, send, recv).await?;
+                connected.process_bi(&shared_client_state, send, recv).await?;
             }
             Ok(recv) = conn.accept_uni() => {
-                connected.process_uni(&state, recv).await?;
+                connected.process_uni(&shared_client_state, recv).await?;
             }
             Some(diff) = diff_stream.next() => {
-                connected.process_diff(&state, diff?)?;
+                connected.process_diff(&shared_client_state, diff?)?;
             }
         }
     }
