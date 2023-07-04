@@ -177,7 +177,7 @@ pub fn remove_components(entity: EntityId, components: &[&dyn UntypedComponent])
 ///
 /// This will not set the component if the value is the same, which will prevent change events from
 /// being unnecessarily fired.
-pub fn mutate_component<T: SupportedValue + SupportedValue + Clone + PartialEq>(
+pub fn mutate_component<T: SupportedValue + Clone + PartialEq>(
     entity: EntityId,
     component: Component<T>,
     mutator: impl FnOnce(&mut T),
@@ -196,7 +196,7 @@ pub fn mutate_component<T: SupportedValue + SupportedValue + Clone + PartialEq>(
 ///
 /// This will not set the component if the value is the same, which will prevent change events from
 /// being unnecessarily fired.
-pub fn mutate_component_with_default<T: SupportedValue + SupportedValue + Clone + PartialEq>(
+pub fn mutate_component_with_default<T: SupportedValue + Clone + PartialEq>(
     entity: EntityId,
     component: Component<T>,
     default: T,
@@ -206,7 +206,7 @@ pub fn mutate_component_with_default<T: SupportedValue + SupportedValue + Clone 
     if let Some(value) = value {
         value
     } else {
-        set_component(entity, component, default.clone());
+        add_component(entity, component, default.clone());
         default
     }
 }
