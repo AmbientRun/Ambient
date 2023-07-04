@@ -8,7 +8,7 @@ use anyhow::{bail, Context};
 use bytes::{Buf, Bytes};
 use parking_lot::Mutex;
 use tokio::io::AsyncReadExt;
-use tracing::debug_span;
+use tracing::{debug_span, Instrument};
 
 use crate::{
     client::{
@@ -115,7 +115,6 @@ impl ConnectedClient {
     }
 
     /// Processes a server initiated bidirectional stream
-    #[tracing::instrument(level = "debug", skip(send, recv))]
     pub async fn process_bi(
         &mut self,
         state: &SharedClientState,
@@ -124,45 +123,49 @@ impl ConnectedClient {
     ) -> anyhow::Result<()> {
         let id = recv.read_u32().await?;
 
-        let mut gs = state.lock();
-        let gs = &mut *gs;
-        let world = &mut gs.world;
-        let assets = gs.assets.clone();
+        let handler = {
+            let mut gs = state.lock();
+            let gs = &mut *gs;
+            let world = &mut gs.world;
+            let assets = gs.assets.clone();
 
-        let (name, handler) = world
-            .resource(bi_stream_handlers())
-            .get(&id)
-            .with_context(|| format!("No handler for stream {id}"))?
-            .clone();
+            let (name, handler) = world
+                .resource(bi_stream_handlers())
+                .get(&id)
+                .with_context(|| format!("No handler for stream {id}"))?
+                .clone();
 
-        let _span = debug_span!("handle_bi", name, id).entered();
-        handler(world, assets, send, recv);
+            handler(world, assets, send, recv).instrument(debug_span!("handle_bi", name, id))
+        };
+
+        handler.await;
 
         Ok(())
     }
 
     /// Processes a server initiated unidirectional stream
-    #[tracing::instrument(level = "debug", skip(recv))]
     pub async fn process_uni(
         &mut self,
         state: &SharedClientState,
         mut recv: PlatformRecvStream,
     ) -> anyhow::Result<()> {
         let id = recv.read_u32().await?;
+        let handler = {
+            let mut gs = state.lock();
+            let gs = &mut *gs;
+            let world = &mut gs.world;
+            let assets = gs.assets.clone();
 
-        let mut gs = state.lock();
-        let gs = &mut *gs;
-        let world = &mut gs.world;
-        let assets = gs.assets.clone();
+            let (name, handler) = world
+                .resource(uni_stream_handlers())
+                .get(&id)
+                .with_context(|| format!("No handler for stream {id}"))?
+                .clone();
 
-        let (name, handler) = world
-            .resource(uni_stream_handlers())
-            .get(&id)
-            .with_context(|| format!("No handler for stream {id}"))?
-            .clone();
+            handler(world, assets, recv).instrument(tracing::debug_span!("handle_uni", name, id))
+        };
 
-        let _span = debug_span!("handle_uni", name, id).entered();
-        handler(world, assets, recv);
+        handler.await;
 
         Ok(())
     }
