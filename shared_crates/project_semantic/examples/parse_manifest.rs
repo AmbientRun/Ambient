@@ -53,7 +53,7 @@ struct Printer {
 impl Printer {
     fn print(&mut self, semantic: &Semantic) -> anyhow::Result<()> {
         let items = &semantic.items;
-        self.print_scope(items, &*items.get(semantic.root_scope)?)?;
+        self.print_scope(items, &*items.get(*semantic.ambient_scope)?)?;
         for id in semantic.organizations.values() {
             self.print_scope(items, &*items.get(*id)?)?;
         }
