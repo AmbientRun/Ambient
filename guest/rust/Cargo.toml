@@ -47,6 +47,7 @@ members = [
     "examples/games/pong",
     "examples/games/tictactoe",
 ]
+resolver = "2"
 
 [workspace.package]
 rust-version = "1.67.0"
