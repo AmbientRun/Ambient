@@ -184,8 +184,8 @@ impl ServerState {
         });
     }
 
+    #[tracing::instrument(level = "debug")]
     pub fn process_disconnect(&mut self, data: &ConnectionData) {
-        tracing::info!("Client wants to disconnect");
         if let Self::Connected(ConnectedClient { user_id, .. }) = self {
             tracing::info!(?user_id, "User disconnected");
             let mut state = data.state.lock();
@@ -365,7 +365,8 @@ pub async fn handle_diffs<S>(
     S: Unpin + AsyncWrite,
 {
     while let Some(msg) = diffs_rx.next().await {
-        let span = tracing::debug_span!("send_world_diff", ?msg);
+        let span = tracing::debug_span!("send_world_diff");
+        tracing::trace!(diff=?msg);
         if let Err(err) = stream.send_bytes(msg).instrument(span).await {
             tracing::error!(?err, "Failed to send world diff.");
             break;

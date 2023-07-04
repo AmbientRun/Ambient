@@ -336,7 +336,7 @@ async fn handle_connection(
 }
 
 /// Connnect to the server endpoint.
-#[tracing::instrument(level = "debug")]
+#[tracing::instrument(level = "debug", skip(cert))]
 async fn open_connection(
     server_addr: ResolvedAddr,
     cert: Option<Certificate>,

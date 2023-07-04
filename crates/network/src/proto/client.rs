@@ -62,6 +62,7 @@ impl ClientState {
                 }
 
                 let state = state.lock();
+                tracing::debug!(content_base_url=?server_info.content_base_url, "Inserting content base url");
                 ContentBaseUrlKey.insert(&state.assets, server_info.content_base_url.clone());
                 tracing::debug!(?server_info.external_components, "Adding external components");
                 ComponentRegistry::get_mut().add_external(server_info.external_components);
@@ -105,7 +106,7 @@ impl ConnectedClient {
         diff: WorldDiff,
     ) -> anyhow::Result<()> {
         let mut gs = state.lock();
-        tracing::debug!(?diff, "Applying diff");
+        tracing::debug!(diff=?diff.len(), "Applying diff");
         diff.apply(
             &mut gs.world,
             Entity::new().with(is_remote_entity(), ()),

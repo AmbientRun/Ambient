@@ -310,11 +310,18 @@ fn start_http_interface(
         Ok::<_, anyhow::Error>(())
     };
 
+    let project_path = project_path.map(ToOwned::to_owned);
+
     runtime.spawn(async move {
         let addr = SocketAddr::from(([0, 0, 0, 0], http_interface_port));
 
-        if let Err(err) = serve(addr).await {
-            tracing::error!("Failed to start server on: {addr}\n\n{err:?}");
+        tracing::info!(?project_path, "Starting HTTP interface on: {addr}");
+
+        if let Err(err) = serve(addr)
+            .await
+            .with_context(|| format!("Failed to start server on: {addr}"))
+        {
+            tracing::error!("{err:?}");
         }
     });
 }
