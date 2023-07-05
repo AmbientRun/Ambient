@@ -6,7 +6,7 @@ use ambient_core::{
 use ambient_ecs::{generated::messages, Component, ComponentValue, EntityId};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_intent::{client_push_intent, rpc_undo_head_exact};
-use ambient_network::client::GameClient;
+use ambient_network::client::ClientState;
 use ambient_shared_types::MouseButton;
 use ambient_sys::task::RuntimeHandle;
 use derive_more::Display;
@@ -59,7 +59,7 @@ use self::entity_browser::EntityBrowserScreen;
 /// This is due to the builtin drop/removed events queue keeping the value alive
 pub struct EditorAction<T: ComponentValue> {
     id: Option<String>,
-    client: GameClient,
+    client: ClientState,
     runtime: RuntimeHandle,
     tx: futures_signals::signal::Sender<Option<(String, T)>>,
     intent: Component<T>,
@@ -77,7 +77,7 @@ impl<T: ComponentValue> std::fmt::Debug for EditorAction<T> {
 impl<T: ComponentValue> EditorAction<T> {
     pub fn new(
         runtime: RuntimeHandle,
-        client: GameClient,
+        client: ClientState,
         intent: Component<T>,
         throttle: Duration,
     ) -> Self {
@@ -141,7 +141,7 @@ impl<T: ComponentValue> Drop for EditorAction<T> {
 pub struct EditorBuildMode;
 impl ElementComponent for EditorBuildMode {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
         let (selection, set_selection) = use_player_selection(hooks);
         // tracing::info!("Drawing EditorBuildMode: {selection:?}");
 

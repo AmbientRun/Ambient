@@ -3,7 +3,7 @@ use ambient_ecs::{query, EntityId};
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_network::{
-    client::{game_client, GameClient},
+    client::{game_client, ClientState},
     is_remote_entity,
 };
 use ambient_std::{cb, Cb};
@@ -24,7 +24,7 @@ impl ElementComponent for EntityBrowser {
         let (entities, set_entities) = hooks.use_state(Vec::new());
         let (all_tags, set_all_tags) = hooks.use_state(Vec::new());
         let (selected_tag, set_selected_tag) = hooks.use_state(None);
-        let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
         hooks.use_spawn(move |_| {
             let state = game_client.game_state.lock();
             let entities = query(selectable())

@@ -9,7 +9,7 @@ use ambient_ecs::{
 };
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_network::{
-    client::GameClient,
+    client::ClientState,
     hooks::{use_remote_component, use_remote_world_system},
     server::{RpcArgs as ServerRpcArgs, SharedServerState},
     unwrap_log_network_err,
@@ -62,7 +62,7 @@ components!("intent", {
 });
 
 pub async fn client_push_intent<T: ComponentValue>(
-    game_client: GameClient,
+    game_client: ClientState,
     intent_arg: Component<T>,
     arg: T,
     collapse_id: Option<String>,

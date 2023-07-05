@@ -13,7 +13,7 @@ use ambient_gpu::{
     shader_module::{BindGroupDesc, ShaderModule},
 };
 use ambient_intent::client_push_intent;
-use ambient_network::client::GameClient;
+use ambient_network::client::ClientState;
 use ambient_physics::{
     intersection::{rpc_pick, RaycastFilter},
     ColliderScene,
@@ -68,7 +68,7 @@ impl ElementComponent for TerrainRaycastPicker {
             brush_shape,
             erosion_config,
         } = *self;
-        let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
         let (target_position, set_target_position) = hooks.use_state(None);
         let (mouseover, set_mouseover) = hooks.use_state(false);
         let (mousedown, set_mousedown) = hooks.use_state::<Option<Vec3>>(None); // start position
@@ -531,7 +531,7 @@ impl ElementComponent for EditorTerrainMode {
 pub struct GenerateTerrainButton;
 impl ElementComponent for GenerateTerrainButton {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
         let (has_terrain, set_has_terrain) = hooks.use_state(true);
         hooks.use_interval(1., {
             let game_client = game_client.clone();

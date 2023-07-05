@@ -6,7 +6,7 @@ use ambient_core::{
 };
 use ambient_ecs::generated::messages;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_network::{client::GameClient, log_network_result};
+use ambient_network::{client::ClientState, log_network_result};
 use ambient_std::{color::Color, math::interpolate};
 use ambient_ui_native::{
     layout::{height, width},
@@ -27,7 +27,7 @@ impl ElementComponent for SelectArea {
         let (dragging, set_dragging) = hooks.use_state::<Option<Vec2>>(None);
         let (area_offset, set_area_offset) = hooks.use_state(Vec2::ZERO);
         let (mouse_pos, set_mouse_pos) = hooks.use_state(Vec2::ZERO);
-        let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
         let (select_mode, _) = hooks.consume_context::<SelectMode>().unwrap();
         let is_clicking = hooks.use_ref_with(|_| false);
 

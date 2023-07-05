@@ -12,7 +12,7 @@ use ambient_core::{
 use ambient_ecs::{query, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_gizmos::{gizmos, GizmoPrimitive};
-use ambient_network::{client::GameClient, server::RpcArgs as ServerRpcArgs};
+use ambient_network::{client::ClientState, server::RpcArgs as ServerRpcArgs};
 use ambient_renderer::{RenderTarget, Renderer};
 use ambient_rpc::RpcRegistry;
 use ambient_shared_types::{ModifiersState, VirtualKeyCode};
@@ -43,7 +43,7 @@ pub fn register_server_rpcs(reg: &mut RpcRegistry<ServerRpcArgs>) {
 #[element_component]
 pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let (show_shadows, set_show_shadows) = hooks.use_state(false);
-    let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
 
     FlowColumn::el([
         FlowRow(vec![

@@ -25,7 +25,7 @@ use crate::{
 
 components!("network::client", {
     @[Resource]
-    game_client: Option<GameClient>,
+    game_client: Option<ClientState>,
     @[Resource]
     bi_stream_handlers: BiStreamHandlers,
     @[Resource]
@@ -63,7 +63,7 @@ pub type DatagramHandlers = HashMap<u32, (&'static str, DatagramHandler)>;
 /// Represents either side of a high level connection to a game client of some sort.
 ///
 /// Allows making requests and RPC, etc
-pub trait ClientConnection: 'static + Send + Sync {
+pub trait ConnectionTransport: 'static + Send + Sync {
     /// Performs a bidirectional request and waits for a response.
     fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>>;
     /// Performs a unidirectional request without waiting for a response.
@@ -77,15 +77,15 @@ pub(crate) enum Control {
 
 #[derive(Clone)]
 /// Manages the client side connection to the server.
-pub struct GameClient {
-    pub connection: Arc<dyn ClientConnection>,
+pub struct ClientState {
+    pub connection: Arc<dyn ConnectionTransport>,
     pub rpc_registry: Arc<RpcRegistry<server::RpcArgs>>,
     pub user_id: String,
     pub game_state: SharedClientState,
     pub uid: String,
 }
 
-impl Debug for GameClient {
+impl Debug for ClientState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("GameClient")
             .field("connection", &self.connection.type_name())
@@ -97,9 +97,9 @@ impl Debug for GameClient {
     }
 }
 
-impl GameClient {
+impl ClientState {
     pub fn new(
-        connection: Arc<dyn ClientConnection>,
+        connection: Arc<dyn ConnectionTransport>,
         rpc_registry: Arc<RpcRegistry<server::RpcArgs>>,
         game_state: Arc<Mutex<ClientGameState>>,
         user_id: String,
@@ -158,7 +158,7 @@ async fn rpc_request<
     F: Fn(Args, Req) -> L + Send + Sync + Copy + 'static,
     L: Future<Output = Resp> + Send,
 >(
-    conn: &dyn ClientConnection,
+    conn: &dyn ConnectionTransport,
     reg: Arc<RpcRegistry<Args>>,
     func: F,
     req: Req,
@@ -192,7 +192,7 @@ impl<T> UseOnce<T> {
 }
 
 pub type CleanupFunc = Box<dyn FnOnce() + Send + Sync>;
-pub type LoadedFunc = Cb<dyn Fn(&GameClient) -> anyhow::Result<CleanupFunc> + Send + Sync>;
+pub type LoadedFunc = Cb<dyn Fn(&ClientState) -> anyhow::Result<CleanupFunc> + Send + Sync>;
 
 #[element_component]
 pub fn GameClientWorld(hooks: &mut Hooks) -> Element {

@@ -1,9 +1,9 @@
 use crate::{
-    client::{CleanupFunc, Control, GameClient, GameClientRenderTarget, LoadedFunc, NetworkStats},
+    client::{CleanupFunc, ClientState, Control, GameClientRenderTarget, LoadedFunc, NetworkStats},
     client_game_state::{game_screen_render_target, ClientGameState},
     native::load_root_certs,
     proto::{
-        client::{ClientState, SharedClientState},
+        client::{ClientProtoState, SharedClientState},
         ClientRequest,
     },
     server::RpcArgs,
@@ -66,7 +66,7 @@ impl ResolvedAddr {
 }
 
 #[derive(Debug, Clone)]
-pub struct GameClientView {
+pub struct ClientView {
     pub server_addr: ResolvedAddr,
     pub cert: Option<Vec<u8>>,
     pub user_id: String,
@@ -76,7 +76,7 @@ pub struct GameClientView {
     pub inner: Element,
 }
 
-impl ElementComponent for GameClientView {
+impl ElementComponent for ClientView {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self {
             server_addr,
@@ -117,7 +117,7 @@ impl ElementComponent for GameClientView {
         let ((control_tx, control_rx), _) = hooks.use_state_with(|_| flume::unbounded());
 
         // The game client will be set once a connection establishes
-        let (game_client, set_game_client) = hooks.use_state(None as Option<GameClient>);
+        let (game_client, set_game_client) = hooks.use_state(None as Option<ClientState>);
 
         // Subscribe to window close events
         hooks.use_runtime_message::<messages::WindowClose>({
@@ -189,7 +189,6 @@ impl ElementComponent for GameClientView {
                             &gpu,
                             assets.clone(),
                             user_id.into(),
-                            render_target.0.clone(),
                             systems,
                             resources,
                         );
@@ -199,7 +198,7 @@ impl ElementComponent for GameClientView {
                             .expect("Attempt to connect twice using the same connection");
 
                         // Create a handle for the game client
-                        let game_client = GameClient::new(
+                        let game_client = ClientState::new(
                             Arc::new(conn.clone()),
                             Arc::new(create_rpc_registry()),
                             Arc::clone(game_state),
@@ -293,7 +292,7 @@ async fn handle_connection(
         .send(ClientRequest::Connect(user_id.clone()))
         .await?;
 
-    let mut client = ClientState::Pending(user_id.clone());
+    let mut client = ClientProtoState::Pending(user_id.clone());
 
     let mut push_recv = FramedRecvStream::new(conn.accept_uni().await?);
 
@@ -331,7 +330,7 @@ async fn handle_connection(
 
     tracing::info!("Client connected");
 
-    while let ClientState::Connected(connected) = &mut client {
+    while let ClientProtoState::Connected(connected) = &mut client {
         tokio::select! {
             Some(frame) = push_recv.next() => {
                 client.process_push(&assets, frame?)?;

@@ -12,7 +12,7 @@ use ambient_element::{Hooks, Setter};
 use ambient_std::{cb, Cb};
 
 use crate::{
-    client::GameClient, log_network_result, persistent_resources, rpc::rpc_world_diff,
+    client::ClientState, log_network_result, persistent_resources, rpc::rpc_world_diff,
     synced_resources,
 };
 
@@ -28,7 +28,7 @@ pub fn use_remote_world_system<
     query: TypedReadQuery<R>,
     run: F,
 ) {
-    if let Some((game_client, _)) = hooks.consume_context::<GameClient>() {
+    if let Some((game_client, _)) = hooks.consume_context::<ClientState>() {
         let query_state = hooks.use_ref_with(|_| QueryState::new());
         hooks.use_frame(move |_| {
             let mut game_state = game_client.game_state.lock();
@@ -43,7 +43,7 @@ pub fn use_remote_component<T: ComponentValue + std::fmt::Debug>(
     entity: EntityId,
     component: Component<T>,
 ) -> Result<T, ECSError> {
-    let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
     let component_version = hooks.use_ref_with(|_| {
         let game_state = game_client.game_state.lock();
         game_state
@@ -79,7 +79,7 @@ pub fn use_remote_components<T: ComponentValue + std::fmt::Debug>(
     let (values, set_values) = hooks.use_state(HashMap::new());
     let runtime = hooks.world.resource(runtime()).clone();
 
-    let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
     let qs_changed = hooks.use_ref_with(|_| QueryState::new());
     let qs_despawned = hooks.use_ref_with(|_| QueryState::new());
     let values_intermediate = hooks.use_ref_with(|_| HashMap::new());
@@ -168,7 +168,7 @@ pub fn use_remote_first_component<T: ComponentValue + std::fmt::Debug>(
         },
     );
 
-    let (game_client, _) = hooks.consume_context::<GameClient>()?;
+    let (game_client, _) = hooks.consume_context::<ClientState>()?;
     let runtime = hooks.world.resource(runtime()).clone();
     Some((
         value,
@@ -235,7 +235,7 @@ pub fn use_remote_resource<T: ComponentValue + std::fmt::Debug>(
 }
 
 pub fn use_player_id(hooks: &mut Hooks) -> Option<EntityId> {
-    let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
     let (ent, set_ent) = hooks.use_state(None);
     use_remote_world_system(
         hooks,
@@ -268,7 +268,7 @@ pub fn use_remote_player_component<T: ComponentValue + Default + std::fmt::Debug
         },
     );
 
-    let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
     let runtime = hooks.world.resource(runtime()).clone();
     let set_value = cb(move |new_value| {
         let game_client = game_client.clone();

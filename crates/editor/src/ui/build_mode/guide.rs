@@ -7,7 +7,7 @@ use ambient_core::{
 use ambient_ecs::{Entity, EntityId, World};
 use ambient_element::{Element, ElementComponent};
 use ambient_meshes::QuadMeshKey;
-use ambient_network::client::GameClient;
+use ambient_network::client::ClientState;
 use ambient_renderer::{
     color, double_sided, gpu_primitives_lod, gpu_primitives_mesh, material, primitives,
     renderer_shader, SharedMaterial, StandardShaderKey,
@@ -67,7 +67,7 @@ impl ElementComponent for GridGuide {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
         let Self { rotation, point } = *self;
 
-        let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
 
         let (entity, _) = hooks.use_state_with(|world| {
             let assets = world.resource(asset_cache());
@@ -122,7 +122,7 @@ impl ElementComponent for AxisGuide {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
         let Self { axis, point } = *self;
 
-        let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
 
         let (entity, _) = hooks.use_state_with(|world| {
             let mut state = game_client.game_state.lock();

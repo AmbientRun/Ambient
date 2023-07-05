@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fmt::Debug, sync::Arc, time::Duration};
 
 use crate::{
-    client::ClientConnection, proto::server::Player, DynRecv, DynSend, NetworkError,
+    client::ConnectionTransport, proto::server::Player, DynRecv, DynSend, NetworkError,
     RPC_BISTREAM_ID,
 };
 use ambient_core::{
@@ -34,7 +34,7 @@ components!("network::server", {
 
     player_entity_stream: Sender<Bytes>,
     player_connection_id: Uuid,
-    player_connection: Arc<dyn ClientConnection>,
+    player_connection: Arc<dyn ConnectionTransport>,
     // synced resource
     @[Networked]
     server_stats: FpsSample,
@@ -76,7 +76,7 @@ impl RpcArgs {
 }
 
 pub fn create_player_entity_data(
-    conn: Arc<dyn ClientConnection>,
+    conn: Arc<dyn ConnectionTransport>,
     user_id: String,
     entities_tx: Sender<Bytes>,
     connection_id: Uuid,

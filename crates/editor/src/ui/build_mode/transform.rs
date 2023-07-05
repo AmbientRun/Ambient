@@ -7,7 +7,7 @@ use ambient_ecs::{EntityId, World};
 use ambient_element::{
     element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks,
 };
-use ambient_network::client::GameClient;
+use ambient_network::client::ClientState;
 use ambient_shared_types::{ModifiersState, MouseButton, VirtualKeyCode};
 use ambient_std::{
     cb,
@@ -98,7 +98,7 @@ pub struct IntialState {
 
 fn initial_transforms(
     hooks: &mut Hooks,
-    game_client: &GameClient,
+    game_client: &ClientState,
     targets: Arc<[EntityId]>,
 ) -> IntialState {
     hooks.use_memo_with(targets, |_, targets| {
@@ -131,7 +131,7 @@ pub(super) fn PlaceController(
     on_click: Cb<dyn Fn(ambient_shared_types::MouseButton) + Sync + Send>,
 ) -> Element {
     assert_ne!(targets.len(), 0);
-    let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
     let (prefs, _) = hooks.consume_context::<EditorPrefs>().unwrap();
 
     // Use a memo, that way the intent is reverted when the axis changes
@@ -198,7 +198,7 @@ impl ElementComponent for TranslationController {
         let (axis, set_axis) = hooks.use_state(AxisFlags::all());
 
         assert_ne!(targets.len(), 0);
-        let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
         let (prefs, _) = hooks.consume_context::<EditorPrefs>().unwrap();
 
         // Freeze to_relative to the position when moving was started
@@ -390,7 +390,7 @@ pub(super) struct ScaleController {
 impl ElementComponent for ScaleController {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_click, targets } = *self;
-        let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
         let runtime = hooks.world.resource(runtime()).clone();
         let (axis, set_axis) = hooks.use_state(AxisFlags::all());
 
@@ -473,7 +473,7 @@ pub(super) struct RotateController {
 impl ElementComponent for RotateController {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_click, targets } = *self;
-        let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
         let runtime = hooks.world.resource(runtime()).clone();
         let (axis, set_axis) = hooks.use_state(AxisFlags::all());
 

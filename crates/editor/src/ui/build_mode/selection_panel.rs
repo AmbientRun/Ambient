@@ -1,5 +1,5 @@
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_network::{client::GameClient, log_network_result};
+use ambient_network::{client::ClientState, log_network_result};
 use ambient_std::Cb;
 use ambient_ui_native::{
     layout::{fit_horizontal, fit_vertical, space_between_items, Fit},
@@ -22,7 +22,7 @@ impl ElementComponent for SelectionPanel {
             selection,
             set_selection: _,
         } = *self;
-        let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
         let (settings, _) = hooks.consume_context::<EditorSettings>().unwrap();
 
         FlowColumn(vec![

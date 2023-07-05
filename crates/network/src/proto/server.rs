@@ -11,7 +11,7 @@ use tracing::{debug_span, Instrument};
 use uuid::Uuid;
 
 use crate::{
-    client::ClientConnection,
+    client::ConnectionTransport,
     log_network_result,
     proto::ServerPush,
     server::{
@@ -28,7 +28,7 @@ use super::ClientRequest;
 /// The server starts in the `PendingConnection` state, until
 /// the clients sends a `Connect` request.
 #[derive(Default, Debug)]
-pub enum ServerState {
+pub enum ServerProtoState {
     #[default]
     PendingConnection,
     Connected(ConnectedClient),
@@ -62,7 +62,7 @@ pub struct ConnectionData {
     /// Unique identifier for this session
     /// Used to declare ownership of the player entity when multiple simultaneous connections are made or reconnected
     pub(crate) connection_id: Uuid,
-    pub(crate) conn: Arc<dyn ClientConnection>,
+    pub(crate) conn: Arc<dyn ConnectionTransport>,
     pub(crate) world_stream_filter: WorldStreamFilter,
 }
 
@@ -100,7 +100,7 @@ impl Player {
     }
 }
 
-impl ServerState {
+impl ServerProtoState {
     /// Processes a client request
     pub fn process_control(
         &mut self,

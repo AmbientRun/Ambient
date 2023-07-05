@@ -10,7 +10,7 @@ use ambient_ecs::{
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_intent::client_push_intent;
-use ambient_network::{client::GameClient, hooks::use_remote_component};
+use ambient_network::{client::ClientState, hooks::use_remote_component};
 use ambient_physics::collider::{character_controller_height, character_controller_radius, mass};
 use ambient_std::{cb, Cb};
 use ambient_ui_native::{
@@ -32,7 +32,7 @@ pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
     // tracing::info!("Drawing EntityEditor");
     let (entity, set_entity) = hooks.use_state(None);
     hooks.provide_context(|| EditingEntityContext(entity_id));
-    let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
 
     hooks.use_interval_deps(
         Duration::from_millis(100),

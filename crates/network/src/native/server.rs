@@ -34,7 +34,7 @@ use crate::{
     },
     proto::{
         self,
-        server::{handle_diffs, ConnectionData},
+        server::{handle_diffs, ConnectionData, ServerProtoState},
         ServerInfo, ServerPush,
     },
     server::{
@@ -295,7 +295,7 @@ async fn handle_quinn_connection(
 
     let server_info = ServerInfo::new(&mut state.lock(), content_base_url);
 
-    let mut server = proto::server::ServerState::default();
+    let mut server = ServerProtoState::default();
 
     let mut request_recv = FramedRecvStream::new(conn.accept_uni().await?);
     let mut push_send = FramedSendStream::new(conn.open_uni().await?);
@@ -335,7 +335,7 @@ async fn handle_quinn_connection(
     });
 
     // Before a connection has been established, only process the control stream
-    while let proto::server::ServerState::Connected(connected) = &mut *server {
+    while let ServerProtoState::Connected(connected) = &mut *server {
         tokio::select! {
             Some(frame) = request_recv.next() => {
                 server.process_control(&data, frame?)?;

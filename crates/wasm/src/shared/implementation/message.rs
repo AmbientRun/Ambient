@@ -1,7 +1,7 @@
 use ambient_core::runtime;
 use ambient_ecs::{EntityId, World};
 use ambient_network::{
-    client::ClientConnection, log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
+    client::ConnectionTransport, log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
 };
 
 use anyhow::Context;
@@ -126,7 +126,7 @@ pub fn send_local(
 /// Sends a message over the network for the specified module
 pub fn send_networked(
     world: &World,
-    connection: Arc<dyn ClientConnection>,
+    connection: Arc<dyn ConnectionTransport>,
     module_id: EntityId,
     name: &str,
     data: &[u8],
@@ -142,7 +142,7 @@ pub fn send_networked(
 
 fn send_datagram(
     world: &World,
-    connection: Arc<dyn ClientConnection>,
+    connection: Arc<dyn ConnectionTransport>,
     module_id: EntityId,
     name: &str,
     data: &[u8],
@@ -169,7 +169,7 @@ fn send_datagram(
 
 fn send_unistream(
     world: &World,
-    connection: Arc<dyn ClientConnection>,
+    connection: Arc<dyn ConnectionTransport>,
     module_id: EntityId,
     name: &str,
     data: &[u8],

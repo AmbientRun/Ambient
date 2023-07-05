@@ -24,12 +24,12 @@ use crate::{
 
 /// The client logic handler in a connected state
 ///
-/// Entered after the client has sent a connect request and received a `ServerInfo` message from the server, in no particular order.
+/// Entered after the client has sent a connect request and received a `ServerInfo` message from the server
 #[derive(Debug)]
 pub(crate) struct ConnectedClient {}
 
 #[derive(Debug)]
-pub(crate) enum ClientState {
+pub(crate) enum ClientProtoState {
     Pending(String),
     Connected(ConnectedClient),
     Disconnected,
@@ -38,7 +38,7 @@ pub(crate) enum ClientState {
 /// Holds the material world of the client.
 pub type SharedClientState = Arc<Mutex<ClientGameState>>;
 
-impl ClientState {
+impl ClientProtoState {
     pub fn process_disconnect(&mut self) {
         tracing::info!("Disconnecting client: {self:#?}");
 
@@ -89,7 +89,7 @@ impl ClientState {
 
     /// Returns `true` if the client state is [`Pending`].
     ///
-    /// [`Pending`]: ClientState::Pending
+    /// [`Pending`]: ClientProtoState::Pending
     #[must_use]
     pub(crate) fn is_pending(&self) -> bool {
         matches!(self, Self::Pending(..))
@@ -97,7 +97,7 @@ impl ClientState {
 
     /// Returns `true` if the client state is [`Connected`].
     ///
-    /// [`Connected`]: ClientState::Connected
+    /// [`Connected`]: ClientProtoState::Connected
     #[must_use]
     pub(crate) fn is_connected(&self) -> bool {
         matches!(self, Self::Connected(..))

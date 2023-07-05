@@ -52,7 +52,6 @@ impl ClientGameState {
         gpu: &Gpu,
         assets: AssetCache,
         player_id: String,
-        render_target: Arc<RenderTarget>,
         client_systems: SystemGroup,
         all_resources: Entity,
     ) -> Self {

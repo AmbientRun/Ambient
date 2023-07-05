@@ -12,7 +12,7 @@ use ambient_element::{
 use ambient_intent::{rpc_redo, rpc_undo_head, IntentHistoryVisualizer};
 use ambient_naturals::{get_default_natural_layers, natural_layers, NaturalsPreset};
 use ambient_network::{
-    client::GameClient,
+    client::ClientState,
     hooks::{use_remote_persisted_resource, use_remote_player_component},
     log_network_result,
     rpc::{rpc_fork_instance, rpc_get_instances_info, rpc_join_instance, RpcForkInstance},
@@ -90,7 +90,7 @@ const PLAY_INSTANCE_ID: &str = "play";
 pub fn EditorUI(hooks: &mut Hooks) -> Element {
     let (editor_mode, set_editor_mode) = hooks.use_state(EditorMode::Build);
 
-    let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
     let (hide_ui, set_hide_ui) = hooks.use_state(false);
     let (user_settings, _) = hooks.consume_context::<EditorSettings>().unwrap();
     let (screen, _set_screen) = hooks.use_state(None);
@@ -253,7 +253,7 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn ServerInstancesInfo(hooks: &mut Hooks) -> Element {
-    let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
     let runtime = hooks.world.resource(runtime()).clone();
     let (instances, set_instances) = hooks.use_state(HashMap::new());
     hooks.use_interval(1., move || {
