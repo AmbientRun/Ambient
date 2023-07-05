@@ -86,6 +86,8 @@ impl ElementComponent for DragArea {
                         } else {
                             set_moving(false);
                         }
+                    } else {
+                        set_moving(false);
                     }
                 }
             }

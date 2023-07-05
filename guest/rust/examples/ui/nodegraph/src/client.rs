@@ -45,7 +45,7 @@ fn App(_hooks: &mut Hooks) -> Element {
 
     // Node::el()
 
-    Graph::el()
+    GraphFull::el()
 }
 
 #[main]
