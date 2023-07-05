@@ -1,6 +1,7 @@
 //! Defines the [DragArea] element.
 
 use ambient_element::{to_owned, Element, ElementComponent, Hooks};
+use ambient_guest_bridge::components::transform::{local_to_parent, local_to_world};
 use ambient_guest_bridge::components::{app::cursor_position, transform::translation};
 use ambient_guest_bridge::{
     components::input::{mouse_over, mouse_pickable_max, mouse_pickable_min},
