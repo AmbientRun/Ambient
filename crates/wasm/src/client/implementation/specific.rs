@@ -53,7 +53,7 @@ impl wit::client_message::Host for Bindings {
                     .resource(client_state())
                     .as_ref()
                     .context("no game client")?
-                    .connection
+                    .transport
                     .clone();
 
                 message::send_networked(

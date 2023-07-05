@@ -1,7 +1,7 @@
 use ambient_core::runtime;
 use ambient_ecs::{EntityId, World};
 use ambient_network::{
-    client::ConnectionTransport, log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
+    client::NetworkTransport, log_network_result, WASM_DATAGRAM_ID, WASM_UNISTREAM_ID,
 };
 
 use anyhow::Context;
@@ -126,23 +126,23 @@ pub fn send_local(
 /// Sends a message over the network for the specified module
 pub fn send_networked(
     world: &World,
-    connection: Arc<dyn ConnectionTransport>,
+    transport: Arc<dyn NetworkTransport>,
     module_id: EntityId,
     name: &str,
     data: &[u8],
     reliable: bool,
 ) -> anyhow::Result<()> {
     if reliable {
-        send_unistream(world, connection, module_id, name, data);
+        send_unistream(world, transport, module_id, name, data);
         Ok(())
     } else {
-        send_datagram(world, connection, module_id, name, data)
+        send_datagram(world, transport, module_id, name, data)
     }
 }
 
 fn send_datagram(
     world: &World,
-    connection: Arc<dyn ConnectionTransport>,
+    transport: Arc<dyn NetworkTransport>,
     module_id: EntityId,
     name: &str,
     data: &[u8],
@@ -158,7 +158,7 @@ fn send_datagram(
 
     world.resource(runtime()).spawn(async move {
         log_network_result!(
-            connection
+            transport
                 .send_datagram(WASM_DATAGRAM_ID, payload.freeze())
                 .await
         );
@@ -169,7 +169,7 @@ fn send_datagram(
 
 fn send_unistream(
     world: &World,
-    connection: Arc<dyn ConnectionTransport>,
+    transport: Arc<dyn NetworkTransport>,
     module_id: EntityId,
     name: &str,
     data: &[u8],
@@ -186,7 +186,7 @@ fn send_unistream(
 
         payload.put(&data[..]);
 
-        connection
+        transport
             .request_uni(WASM_UNISTREAM_ID, payload.freeze())
             .await?;
 

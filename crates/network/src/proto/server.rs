@@ -11,7 +11,7 @@ use tracing::{debug_span, Instrument};
 use uuid::Uuid;
 
 use crate::{
-    client::ConnectionTransport,
+    client::NetworkTransport,
     log_network_result,
     proto::ServerPush,
     server::{
@@ -62,7 +62,7 @@ pub struct ConnectionData {
     /// Unique identifier for this session
     /// Used to declare ownership of the player entity when multiple simultaneous connections are made or reconnected
     pub(crate) connection_id: Uuid,
-    pub(crate) conn: Arc<dyn ConnectionTransport>,
+    pub(crate) conn: Arc<dyn NetworkTransport>,
     pub(crate) world_stream_filter: WorldStreamFilter,
 }
 

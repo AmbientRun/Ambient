@@ -4,7 +4,7 @@
 
 use ambient_core::player::{player, user_id};
 use ambient_ecs::{query, EntityId, World};
-use ambient_network::server::player_connection;
+use ambient_network::server::player_transport;
 
 use super::super::Bindings;
 
@@ -61,7 +61,7 @@ fn send_networked(
     data: Vec<u8>,
     reliable: bool,
 ) -> anyhow::Result<()> {
-    let connections: Vec<_> = query((user_id(), player_connection()))
+    let connections: Vec<_> = query((user_id(), player_transport()))
         .incl(player())
         .iter(world, None)
         .filter(|(_, (uid, _))| {

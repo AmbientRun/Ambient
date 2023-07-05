@@ -5,7 +5,7 @@ use flume::Sender;
 use futures::future::BoxFuture;
 use tokio::sync::oneshot;
 
-use crate::{client::ConnectionTransport, NetworkError};
+use crate::{client::NetworkTransport, NetworkError};
 
 /// A proxy for the webtransport connection.
 ///
@@ -37,7 +37,7 @@ pub(crate) enum ProxyMessage {
     },
 }
 
-impl ConnectionTransport for WebTransportProxy {
+impl NetworkTransport for WebTransportProxy {
     fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>> {
         Box::pin(async move {
             let (tx, rx) = oneshot::channel();

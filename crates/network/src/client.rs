@@ -63,7 +63,7 @@ pub type DatagramHandlers = HashMap<u32, (&'static str, DatagramHandler)>;
 /// Represents either side of a high level connection to a game client of some sort.
 ///
 /// Allows making requests and RPC, etc
-pub trait ConnectionTransport: 'static + Send + Sync {
+pub trait NetworkTransport: 'static + Send + Sync {
     /// Performs a bidirectional request and waits for a response.
     fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>>;
     /// Performs a unidirectional request without waiting for a response.
@@ -78,7 +78,7 @@ pub(crate) enum Control {
 #[derive(Clone)]
 /// Manages the client side connection to the server.
 pub struct ClientState {
-    pub connection: Arc<dyn ConnectionTransport>,
+    pub transport: Arc<dyn NetworkTransport>,
     pub rpc_registry: Arc<RpcRegistry<server::RpcArgs>>,
     pub user_id: String,
     pub game_state: SharedClientGameState,
@@ -88,7 +88,7 @@ pub struct ClientState {
 impl Debug for ClientState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("GameClient")
-            .field("connection", &self.connection.type_name())
+            .field("connection", &self.transport.type_name())
             .field("rpc_registry", &self.rpc_registry)
             .field("user_id", &self.user_id)
             .field("game_state", &self.game_state)
@@ -99,13 +99,13 @@ impl Debug for ClientState {
 
 impl ClientState {
     pub fn new(
-        connection: Arc<dyn ConnectionTransport>,
+        transport: Arc<dyn NetworkTransport>,
         rpc_registry: Arc<RpcRegistry<server::RpcArgs>>,
         game_state: Arc<Mutex<ClientGameState>>,
         user_id: String,
     ) -> Self {
         Self {
-            connection,
+            transport,
             rpc_registry,
             user_id,
             game_state,
@@ -123,7 +123,7 @@ impl ClientState {
         func: F,
         req: Req,
     ) -> Result<Resp, NetworkError> {
-        rpc_request(&*self.connection, self.rpc_registry.clone(), func, req).await
+        rpc_request(&*self.transport, self.rpc_registry.clone(), func, req).await
     }
 
     pub fn make_standalone_rpc_wrapper<
@@ -137,7 +137,7 @@ impl ClientState {
         func: F,
     ) -> Cb<impl Fn(Req)> {
         let runtime = runtime.clone();
-        let (connection, rpc_registry) = (self.connection.clone(), self.rpc_registry.clone());
+        let (connection, rpc_registry) = (self.transport.clone(), self.rpc_registry.clone());
         cb(move |req| {
             let (connection, rpc_registry) = (connection.clone(), rpc_registry.clone());
             runtime.spawn(async move {
@@ -158,14 +158,14 @@ async fn rpc_request<
     F: Fn(Args, Req) -> L + Send + Sync + Copy + 'static,
     L: Future<Output = Resp> + Send,
 >(
-    conn: &dyn ConnectionTransport,
+    transport: &dyn NetworkTransport,
     reg: Arc<RpcRegistry<Args>>,
     func: F,
     req: Req,
 ) -> Result<Resp, NetworkError> {
     let req = reg.serialize_req(func, req);
 
-    let resp = conn.request_bi(RPC_BISTREAM_ID, req.into()).await?;
+    let resp = transport.request_bi(RPC_BISTREAM_ID, req.into()).await?;
 
     let resp = reg.deserialize_resp(func, &resp)?;
     Ok(resp)
