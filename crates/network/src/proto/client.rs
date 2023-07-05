@@ -15,8 +15,8 @@ use tracing::{debug_span, Instrument};
 
 use crate::{
     client::{
-        bi_stream_handlers, client_network_stats, datagram_handlers, uni_stream_handlers,
-        NetworkStats, PlatformRecvStream, PlatformSendStream,
+        bi_stream_handlers, datagram_handlers, uni_stream_handlers, PlatformRecvStream,
+        PlatformSendStream,
     },
     client_game_state::ClientGameState,
     proto::*,
@@ -61,7 +61,7 @@ impl ClientProtoState {
                 }
 
                 tracing::debug!(content_base_url=?server_info.content_base_url, "Inserting content base url");
-                ContentBaseUrlKey.insert(assets, server_info.content_base_url.clone());
+                ContentBaseUrlKey.insert(&assets, server_info.content_base_url.clone());
                 tracing::debug!(?server_info.external_components, "Adding external components");
                 ComponentRegistry::get_mut().add_external(server_info.external_components);
 
@@ -81,7 +81,13 @@ impl ClientProtoState {
     }
 
     #[cfg(not(target_os = "unknown"))]
-    pub fn process_client_stats(&mut self, state: &SharedClientGameState, stats: NetworkStats) {
+    pub fn process_client_stats(
+        &mut self,
+        state: &SharedClientGameState,
+        stats: crate::client::NetworkStats,
+    ) {
+        use crate::client::client_network_stats;
+
         let mut gs = state.lock();
         tracing::debug!(?stats, "Client network stats");
         gs.world.add_resource(client_network_stats(), stats);

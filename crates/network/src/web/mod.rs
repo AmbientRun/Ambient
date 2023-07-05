@@ -5,19 +5,7 @@ use flume::Sender;
 use futures::future::BoxFuture;
 use tokio::sync::oneshot;
 
-use crate::{
-    client::{ClientConnection, Control, GameClient, GameClientRenderTarget, LoadedFunc},
-    client_game_state::ClientGameState,
-    log_network_result,
-    proto::{
-        client::{ClientState, SharedClientState},
-        ClientRequest,
-    },
-    server::RpcArgs,
-    stream::{self, FramedRecvStream, FramedSendStream},
-    webtransport::{self, Connection},
-    NetworkError,
-};
+use crate::{client::ConnectionTransport, NetworkError};
 
 /// A proxy for the webtransport connection.
 ///
@@ -49,7 +37,7 @@ pub(crate) enum ProxyMessage {
     },
 }
 
-impl ClientConnection for WebTransportProxy {
+impl ConnectionTransport for WebTransportProxy {
     fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>> {
         Box::pin(async move {
             let (tx, rx) = oneshot::channel();

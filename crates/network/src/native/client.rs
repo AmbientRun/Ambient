@@ -152,13 +152,11 @@ impl ElementComponent for ClientView {
                     .await
                     .with_context(|| format!("Failed to connect to endpoint: {server_addr:?}"))?;
 
-                tracing::debug!("Connected to the server");
-
                 handle_connection(
                     conn.clone(),
-                    assets2.clone(),
+                    &assets2,
                     user_id,
-                    move |user_id| {
+                    move |assets, user_id| {
                         let (systems, resources) = systems_and_resources();
                         let resources = local_resources
                             .clone()
@@ -257,10 +255,11 @@ impl ElementComponent for ClientView {
 
 async fn handle_connection(
     conn: quinn::Connection,
-    assets: AssetCache,
+    assets: &AssetCache,
     user_id: String,
-    on_loaded: impl Fn(&str) -> anyhow::Result<(SharedClientGameState, CleanupFunc)> + Send + Sync,
-    // state: SharedClientState,
+    mut on_loaded: impl FnMut(&AssetCache, &str) -> anyhow::Result<(SharedClientGameState, CleanupFunc)>
+        + Send
+        + Sync,
     control_rx: flume::Receiver<Control>,
 ) -> anyhow::Result<()> {
     let mut request_send = FramedSendStream::new(conn.open_uni().await?);
@@ -296,7 +295,7 @@ async fn handle_connection(
 
     let mut diff_stream = FramedRecvStream::new(conn.accept_uni().await?);
 
-    let (shared_client_state, cleanup) = on_loaded(&user_id)?;
+    let (shared_client_state, cleanup) = on_loaded(assets, &user_id)?;
 
     let on_disconnect = move || {
         tracing::debug!("Running connection cleanup");
