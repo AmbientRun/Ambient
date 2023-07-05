@@ -3,7 +3,7 @@ use ambient_ecs::{query, EntityId};
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_network::{
-    client::{game_client, ClientState},
+    client::{client_state, ClientState},
     is_remote_entity,
 };
 use ambient_std::{cb, Cb};
@@ -24,9 +24,9 @@ impl ElementComponent for EntityBrowser {
         let (entities, set_entities) = hooks.use_state(Vec::new());
         let (all_tags, set_all_tags) = hooks.use_state(Vec::new());
         let (selected_tag, set_selected_tag) = hooks.use_state(None);
-        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
+        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
         hooks.use_spawn(move |_| {
-            let state = game_client.game_state.lock();
+            let state = client_state.game_state.lock();
             let entities = query(selectable())
                 .incl(is_remote_entity())
                 .iter(&state.world, None)
@@ -38,6 +38,7 @@ impl ElementComponent for EntityBrowser {
                     )
                 })
                 .collect_vec();
+
             let all_tags = entities
                 .iter()
                 .flat_map(|entity| &entity.2)
@@ -45,6 +46,7 @@ impl ElementComponent for EntityBrowser {
                 .dedup()
                 .cloned()
                 .collect_vec();
+
             set_entities(entities);
             set_all_tags(all_tags);
             |_| {}
@@ -130,9 +132,9 @@ impl ElementComponent for EntityBrowserScreen {
                     .with(space_between_items(), STREET),
                     if advanced {
                         ECSEditor::el(Arc::new(InspectableAsyncWorld(cb({
-                            let game_client = hooks.world.resource(game_client()).clone();
+                            let client_state = hooks.world.resource(client_state()).clone();
                             move |cb| {
-                                let state = game_client.as_ref().unwrap().game_state.lock();
+                                let state = client_state.as_ref().unwrap().game_state.lock();
                                 cb(&state.world);
                             }
                         }))))

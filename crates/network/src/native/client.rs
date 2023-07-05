@@ -11,15 +11,12 @@ use crate::{
     NetworkError,
 };
 use ambient_app::{window_title, world_instance_resources, AppResources};
-use ambient_core::{asset_cache, gpu, player::user_id};
+use ambient_core::{asset_cache, gpu};
 use ambient_ecs::{generated::messages, world_events, Entity, SystemGroup};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_std::{
-    asset_cache::{AssetCache, AssetLoadDropPolicy},
-    cb, Cb,
-};
+use ambient_std::{asset_cache::AssetCache, Cb};
 use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Throbber};
 use anyhow::Context;
 use futures::{SinkExt, StreamExt};
@@ -117,7 +114,7 @@ impl ElementComponent for ClientView {
         let ((control_tx, control_rx), _) = hooks.use_state_with(|_| flume::unbounded());
 
         // The game client will be set once a connection establishes
-        let (game_client, set_game_client) = hooks.use_state(None as Option<ClientState>);
+        let (client_state, set_client_state) = hooks.use_state(None as Option<ClientState>);
 
         // Subscribe to window close events
         hooks.use_runtime_message::<messages::WindowClose>({
@@ -198,27 +195,27 @@ impl ElementComponent for ClientView {
                             .expect("Attempt to connect twice using the same connection");
 
                         // Create a handle for the game client
-                        let game_client = ClientState::new(
+                        let client_state = ClientState::new(
                             Arc::new(conn.clone()),
                             Arc::new(create_rpc_registry()),
                             Arc::clone(game_state),
                             user_id.into(),
                         );
 
-                        let game_state = &game_client.game_state;
+                        let game_state = &client_state.game_state;
                         {
                             tracing::info!("Setting game state");
                             // Updates the game client context in the Ui tree
-                            set_game_client(Some(game_client.clone()));
+                            set_client_state(Some(client_state.clone()));
                             // Update the resources on the client side world to reflect the new connection
                             // state
                             let world = &mut game_state.lock().world;
                             world.add_resource(
-                                crate::client::game_client(),
-                                Some(game_client.clone()),
+                                crate::client::client_state(),
+                                Some(client_state.clone()),
                             );
                         }
-                        let cleanup = (on_loaded)(&game_client)?;
+                        let cleanup = (on_loaded)(&client_state)?;
                         Ok((game_state.clone(), cleanup))
                     },
                     // game_state,
@@ -254,12 +251,12 @@ impl ElementComponent for ClientView {
             return Dock(vec![Text::el("Error").header_style(), Text::el(err)]).el();
         }
 
-        if let Some(game_client) = game_client {
+        if let Some(client_state) = client_state {
             // Provide the context
-            hooks.provide_context(|| game_client.clone());
+            hooks.provide_context(|| client_state.clone());
             hooks
                 .world
-                .add_resource(crate::client::game_client(), Some(game_client.clone()));
+                .add_resource(crate::client::client_state(), Some(client_state.clone()));
 
             inner
         } else {

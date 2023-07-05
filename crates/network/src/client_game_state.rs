@@ -1,8 +1,6 @@
 use std::sync::Arc;
 
-use ambient_app::{
-    gpu_world_sync_systems, world_instance_resources, world_instance_systems, AppResources,
-};
+use ambient_app::{gpu_world_sync_systems, world_instance_systems};
 use ambient_core::{
     camera::{get_active_camera, projection_view},
     gpu_ecs::GpuWorldSyncEvent,

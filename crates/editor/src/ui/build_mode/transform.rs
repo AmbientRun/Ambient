@@ -98,11 +98,11 @@ pub struct IntialState {
 
 fn initial_transforms(
     hooks: &mut Hooks,
-    game_client: &ClientState,
+    client_state: &ClientState,
     targets: Arc<[EntityId]>,
 ) -> IntialState {
     hooks.use_memo_with(targets, |_, targets| {
-        let state = game_client.game_state.lock();
+        let state = client_state.game_state.lock();
         let transforms = match get_world_transforms(&state.world, targets) {
             Ok(v) => v,
             Err(err) => {
@@ -131,14 +131,14 @@ pub(super) fn PlaceController(
     on_click: Cb<dyn Fn(ambient_shared_types::MouseButton) + Sync + Send>,
 ) -> Element {
     assert_ne!(targets.len(), 0);
-    let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
+    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
     let (prefs, _) = hooks.consume_context::<EditorPrefs>().unwrap();
 
     // Use a memo, that way the intent is reverted when the axis changes
     let action = hooks.use_memo_with(prefs, |world, _| {
         Arc::new(Mutex::new(EditorAction::new(
             world.resource(runtime()).clone(),
-            game_client.clone(),
+            client_state.clone(),
             intent_place_ray(),
             TRANSFORM_THROTTLE,
         )))
@@ -159,7 +159,7 @@ pub(super) fn PlaceController(
             })
         },
         on_mouse_move: cb(move |world, _, _| {
-            let state = game_client.game_state.lock();
+            let state = client_state.game_state.lock();
             let mouse_clip_pos = screen_to_clip_space(world, *world.resource(cursor_position()));
 
             let targets = targets.clone();
@@ -198,13 +198,13 @@ impl ElementComponent for TranslationController {
         let (axis, set_axis) = hooks.use_state(AxisFlags::all());
 
         assert_ne!(targets.len(), 0);
-        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
+        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
         let (prefs, _) = hooks.consume_context::<EditorPrefs>().unwrap();
 
         // Freeze to_relative to the position when moving was started
-        let initial_state = initial_transforms(hooks, &game_client, targets.clone());
+        let initial_state = initial_transforms(hooks, &client_state, targets.clone());
 
-        let game_state = game_client.game_state.lock();
+        let game_state = client_state.game_state.lock();
 
         let to_target_local = to_isometry(initial_state.transforms.last().unwrap().inverse());
         let to_view_local = to_isometry(game_state.view().unwrap());
@@ -213,7 +213,7 @@ impl ElementComponent for TranslationController {
         let action = hooks.use_memo_with((axis, prefs), |world, _| {
             Arc::new(Mutex::new(EditorAction::new(
                 world.resource(runtime()).clone(),
-                game_client.clone(),
+                client_state.clone(),
                 intent_translate(),
                 TRANSFORM_THROTTLE,
             )))
@@ -335,7 +335,7 @@ impl ElementComponent for TranslationController {
                         })
                     },
                     on_mouse_move: cb(move |world, _, _| {
-                        let game_state = game_client.game_state.lock();
+                        let game_state = client_state.game_state.lock();
                         let mouse_clip_pos =
                             screen_to_clip_space(world, *world.resource(cursor_position()))
                                 - initial_cursor_offset;
@@ -390,14 +390,14 @@ pub(super) struct ScaleController {
 impl ElementComponent for ScaleController {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_click, targets } = *self;
-        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
+        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
         let runtime = hooks.world.resource(runtime()).clone();
         let (axis, set_axis) = hooks.use_state(AxisFlags::all());
 
         let action = hooks.use_memo_with(axis, |_, _| {
             Arc::new(Mutex::new(EditorAction::new(
                 runtime,
-                game_client.clone(),
+                client_state.clone(),
                 intent_set_transform(),
                 TRANSFORM_THROTTLE,
             )))
@@ -406,7 +406,7 @@ impl ElementComponent for ScaleController {
         let action = Arc::downgrade(&action);
 
         // Freeze to_relative to the position when moving was started
-        let state = initial_transforms(hooks, &game_client, targets.clone());
+        let state = initial_transforms(hooks, &client_state, targets.clone());
 
         let update = {
             let action = action.clone();
@@ -473,7 +473,7 @@ pub(super) struct RotateController {
 impl ElementComponent for RotateController {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { on_click, targets } = *self;
-        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
+        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
         let runtime = hooks.world.resource(runtime()).clone();
         let (axis, set_axis) = hooks.use_state(AxisFlags::all());
 
@@ -482,7 +482,7 @@ impl ElementComponent for RotateController {
         let action = hooks.use_memo_with(axis, |_, _| {
             Arc::new(Mutex::new(EditorAction::new(
                 runtime,
-                game_client.clone(),
+                client_state.clone(),
                 intent_set_transform(),
                 TRANSFORM_THROTTLE,
             )))
@@ -491,7 +491,7 @@ impl ElementComponent for RotateController {
         let action = Arc::downgrade(&action);
 
         // Freeze to_relative to the position when moving was started
-        let state = initial_transforms(hooks, &game_client, targets.clone());
+        let state = initial_transforms(hooks, &client_state, targets.clone());
 
         let to_relative = {
             if prefs.use_global_coordinates {

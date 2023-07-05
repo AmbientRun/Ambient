@@ -141,7 +141,7 @@ impl<T: ComponentValue> Drop for EditorAction<T> {
 pub struct EditorBuildMode;
 impl ElementComponent for EditorBuildMode {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
+        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
         let (selection, set_selection) = use_player_selection(hooks);
         // tracing::info!("Drawing EditorBuildMode: {selection:?}");
 
@@ -153,7 +153,7 @@ impl ElementComponent for EditorBuildMode {
         let rerender = hooks.use_rerender_signal();
 
         {
-            let game_state = game_client.game_state.clone();
+            let game_state = client_state.game_state.clone();
             let targets = targets.clone();
             let mut prev = None;
 
@@ -226,10 +226,10 @@ impl ElementComponent for EditorBuildMode {
                 let mut items = vec![
                     Button::new("\u{f405}", {
                         let set_srt_mode = set_srt_mode.clone();
-                        let game_client = game_client.clone();
+                        let client_state = client_state.clone();
                         move |world| {
                             let set_srt_mode = set_srt_mode.clone();
-                            let game_client = game_client.clone();
+                            let client_state = client_state.clone();
                             let async_run = world.resource(async_run()).clone();
                             select_asset(world.resource(asset_cache()), AssetType::Prefab, move |object_url| {
                                 tracing::info!("got object_url: {object_url:?}");
@@ -237,11 +237,11 @@ impl ElementComponent for EditorBuildMode {
                                     async_run.run(move |world| {
                                         let set_srt_mode = set_srt_mode.clone();
                                         let ray = {
-                                            game_client.game_state.lock().screen_ray(get_mouse_clip_space_position(world))
+                                            client_state.game_state.lock().screen_ray(get_mouse_clip_space_position(world))
                                         };
                                         let position = ray.origin + ray.dir * 10.;
                                         world.resource(runtime()).spawn(async move {
-                                            client_push_intent(game_client, intent_spawn_object(), IntentSpawnObject {
+                                            client_push_intent(client_state, intent_spawn_object(), IntentSpawnObject {
                                                 object_url,
                                                 entity_id: EntityId::new(),
                                                 position,
@@ -291,13 +291,13 @@ impl ElementComponent for EditorBuildMode {
                         Separator { vertical: true }.el(),
                         Button::new(
                             "\u{f68e}",
-                            closure!(clone game_client, clone targets, clone set_srt_mode, |world| {
+                            closure!(clone client_state, clone targets, clone set_srt_mode, |world| {
                                 let set_srt_mode = set_srt_mode.clone();
-                                let game_client = game_client.clone();
+                                let client_state = client_state.clone();
 
                                 tracing::info!("Duplicating {targets:?}");
                                 world.resource(runtime()).spawn(
-                                    client_push_intent(game_client, intent_duplicate(), IntentDuplicate { new_uids: targets.iter().map(|_| EntityId::new()).collect(), entities: targets.to_vec(), select: true }, None, Some(Box::new(move || {
+                                    client_push_intent(client_state, intent_duplicate(), IntentDuplicate { new_uids: targets.iter().map(|_| EntityId::new()).collect(), entities: targets.to_vec(), select: true }, None, Some(Box::new(move || {
                                         tracing::info!("Entering translate move");
 
 
@@ -314,7 +314,7 @@ impl ElementComponent for EditorBuildMode {
                             let targets = targets.clone();
                             move |world| {
                                 world.resource(runtime()).spawn(client_push_intent(
-                                    game_client.clone(),
+                                    client_state.clone(),
                                     intent_delete(),
                                     targets.to_vec(),
                                     None,

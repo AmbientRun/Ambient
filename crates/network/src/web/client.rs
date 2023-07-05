@@ -81,10 +81,10 @@ impl ElementComponent for GameClientView {
         });
 
         // The game client will be set once a connection establishes
-        let (game_client, set_game_client) = hooks.use_state(None as Option<GameClient>);
+        let (client_state, set_client_state) = hooks.use_state(None as Option<GameClient>);
 
         // When the client is connected, run the update logic each frame
-        if game_client.is_some() {
+        if client_state.is_some() {
             tracing::info!("Adding game logic hook");
             run_game_logic(hooks, game_state.clone(), render_target);
         }
@@ -107,7 +107,7 @@ impl ElementComponent for GameClientView {
                 let proxy = WebTransportProxy::new(tx);
 
                 // Create a handle for the game client
-                let game_client = GameClient::new(
+                let client_state = GameClient::new(
                     Arc::new(proxy),
                     Arc::new(create_rpc_registry()),
                     game_state.clone(),
@@ -115,23 +115,23 @@ impl ElementComponent for GameClientView {
                 );
 
                 handle_connection(
-                    game_client,
+                    client_state,
                     conn,
                     user_id,
-                    cb(move |game_client| {
-                        let game_state = &game_client.game_state;
+                    cb(move |client_state| {
+                        let game_state = &client_state.game_state;
                         {
                             // Updates the game client context in the Ui tree
-                            set_game_client(Some(game_client.clone()));
+                            set_client_state(Some(client_state.clone()));
                             // Update the resources on the client side world to reflect the new connection
                             // state
                             let world = &mut game_state.lock().world;
                             world.add_resource(
-                                crate::client::game_client(),
-                                Some(game_client.clone()),
+                                crate::client::client_state(),
+                                Some(client_state.clone()),
                             );
                         }
-                        (on_loaded)(game_client)
+                        (on_loaded)(client_state)
                     }),
                     game_state,
                     control_rx,
@@ -169,12 +169,12 @@ impl ElementComponent for GameClientView {
             return Dock(vec![Text::el("Error").header_style(), Text::el(err)]).el();
         }
 
-        if let Some(game_client) = game_client {
+        if let Some(client_state) = client_state {
             // Provide the context
-            hooks.provide_context(|| game_client.clone());
+            hooks.provide_context(|| client_state.clone());
             hooks
                 .world
-                .add_resource(crate::client::game_client(), Some(game_client.clone()));
+                .add_resource(crate::client::client_state(), Some(client_state.clone()));
 
             // FlowRow(vec![Text::el(format!("Connected")), inner]).el()
             inner
@@ -216,7 +216,7 @@ fn run_game_logic(
 }
 
 async fn handle_connection(
-    game_client: GameClient,
+    client_state: GameClient,
     mut conn: Connection,
     user_id: String,
     on_loaded: LoadedFunc,
@@ -267,7 +267,7 @@ async fn handle_connection(
             .ok_or(NetworkError::ConnectionClosed)??,
     );
 
-    let cleanup = on_loaded(game_client)?;
+    let cleanup = on_loaded(client_state)?;
     let on_disconnect = move || {
         tracing::info!("Running connection cleanup");
         cleanup()

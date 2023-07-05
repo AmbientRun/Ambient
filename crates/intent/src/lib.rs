@@ -62,17 +62,17 @@ components!("intent", {
 });
 
 pub async fn client_push_intent<T: ComponentValue>(
-    game_client: ClientState,
+    client_state: ClientState,
     intent_arg: Component<T>,
     arg: T,
     collapse_id: Option<String>,
     on_applied: Option<Box<dyn Fn() + Sync + Send + 'static>>,
 ) {
     let ed = create_intent(intent_arg, arg, collapse_id);
-    let intent_id = unwrap_log_network_err!(game_client.rpc(rpc_push_intent, ed).await);
+    let intent_id = unwrap_log_network_err!(client_state.rpc(rpc_push_intent, ed).await);
     if let Some(on_applied) = on_applied {
         if let Some(intent_id) = intent_id {
-            let mut state = game_client.game_state.lock();
+            let mut state = client_state.game_state.lock();
             let mut qs = QueryState::new();
             state.add_temporary_system(move |world| {
                 for (id, _) in query(intent_applied()).spawned().iter(world, Some(&mut qs)) {

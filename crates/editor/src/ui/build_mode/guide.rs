@@ -67,12 +67,12 @@ impl ElementComponent for GridGuide {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
         let Self { rotation, point } = *self;
 
-        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
+        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
 
         let (entity, _) = hooks.use_state_with(|world| {
             let assets = world.resource(asset_cache());
 
-            let mut state = game_client.game_state.lock();
+            let mut state = client_state.game_state.lock();
             let mat = GridMaterialKey {
                 major: Vec2::splat(1.0 / (GRID_SIZE * 5.0)),
                 minor: Vec2::splat(1.0 / GRID_SIZE),
@@ -85,7 +85,7 @@ impl ElementComponent for GridGuide {
         });
 
         {
-            let game_state = game_client.game_state.clone();
+            let game_state = client_state.game_state.clone();
             hooks.use_spawn(move |_| {
                 move |_| {
                     game_state.lock().world.despawn(entity);
@@ -94,7 +94,7 @@ impl ElementComponent for GridGuide {
         }
 
         hooks.use_effect((rotation, point), |_, &(rotation, point)| {
-            let mut state = game_client.game_state.lock();
+            let mut state = client_state.game_state.lock();
             let _euler = rotation.to_euler(EulerRot::YXZ);
 
             let transform =
@@ -122,10 +122,10 @@ impl ElementComponent for AxisGuide {
     fn render(self: Box<Self>, hooks: &mut ambient_element::Hooks) -> ambient_element::Element {
         let Self { axis, point } = *self;
 
-        let (game_client, _) = hooks.consume_context::<ClientState>().unwrap();
+        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
 
         let (entity, _) = hooks.use_state_with(|world| {
-            let mut state = game_client.game_state.lock();
+            let mut state = client_state.game_state.lock();
             let assets = world.resource(asset_cache());
 
             let mat = GridMaterialKey {
@@ -140,7 +140,7 @@ impl ElementComponent for AxisGuide {
         });
 
         {
-            let game_state = game_client.game_state.clone();
+            let game_state = client_state.game_state.clone();
             hooks.use_spawn(move |_| {
                 move |_| {
                     game_state.lock().world.despawn(entity);
@@ -148,7 +148,7 @@ impl ElementComponent for AxisGuide {
             });
         }
 
-        let mut state = game_client.game_state.lock();
+        let mut state = client_state.game_state.lock();
 
         assert!(axis.is_normalized(), "axis: {axis}");
         let view = state.view().unwrap_or_default();

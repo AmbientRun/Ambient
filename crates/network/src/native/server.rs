@@ -33,7 +33,6 @@ use crate::{
         client_connection::ConnectionKind, load_root_certs, webtransport::handle_h3_connection,
     },
     proto::{
-        self,
         server::{handle_diffs, ConnectionData, ServerProtoState},
         ServerInfo, ServerPush,
     },

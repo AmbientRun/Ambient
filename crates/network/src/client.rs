@@ -25,7 +25,7 @@ use crate::{
 
 components!("network::client", {
     @[Resource]
-    game_client: Option<ClientState>,
+    client_state: Option<ClientState>,
     @[Resource]
     bi_stream_handlers: BiStreamHandlers,
     @[Resource]
