@@ -21,7 +21,6 @@ use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Th
 use anyhow::Context;
 use futures::{SinkExt, StreamExt};
 use glam::uvec2;
-use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
 use quinn::{ClientConfig, Connection, Endpoint, TransportConfig};
 use rand::Rng;
@@ -93,23 +92,7 @@ impl ElementComponent for ClientView {
 
         let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
 
-        let (game_state_ref, _) = hooks
-            .use_state_with::<Arc<OnceCell<SharedClientGameState>>>(|_| Arc::new(OnceCell::new()));
-
         let assets = hooks.world.resource(asset_cache()).clone();
-        // let game_state = hooks.use_ref_with(|world| {
-        //     let (systems, resources) = systems_and_resources();
-
-        //     ClientGameState::new(
-        //         &gpu,
-        //         world,
-        //         assets.clone(),
-        //         user_id.clone(),
-        //         render_target.0.clone(),
-        //         systems,
-        //         resources,
-        //     )
-        // });
 
         let ((control_tx, control_rx), _) = hooks.use_state_with(|_| flume::unbounded());
 
@@ -127,13 +110,13 @@ impl ElementComponent for ClientView {
 
         // Run game logic
         {
-            let game_state = game_state_ref.clone();
             let render_target = render_target.clone();
             let world_event_reader = Mutex::new(hooks.world.resource(world_events()).reader());
 
+            let client_state = client_state.clone();
             hooks.use_frame(move |app_world| {
-                if let Some(game_state) = game_state.get() {
-                    let mut game_state = game_state.lock();
+                if let Some(client_state) = &client_state {
+                    let mut game_state = client_state.game_state.lock();
                     // Pipe events from app world to game world
                     for (_, event) in world_event_reader
                         .lock()
@@ -190,15 +173,11 @@ impl ElementComponent for ClientView {
                             resources,
                         );
 
-                        let game_state = game_state_ref
-                            .try_insert(Arc::new(Mutex::new(game_state)))
-                            .expect("Attempt to connect twice using the same connection");
-
                         // Create a handle for the game client
                         let client_state = ClientState::new(
                             Arc::new(conn.clone()),
                             Arc::new(create_rpc_registry()),
-                            Arc::clone(game_state),
+                            Arc::new(Mutex::new(game_state)),
                             user_id.into(),
                         );
 
@@ -258,7 +237,7 @@ impl ElementComponent for ClientView {
             return Dock(vec![Text::el("Error").header_style(), Text::el(err)]).el();
         }
 
-        if let Some(client_state) = client_state {
+        if let Some(client_state) = &client_state {
             // Provide the context
             hooks.provide_context(|| client_state.clone());
             hooks
