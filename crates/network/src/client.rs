@@ -19,7 +19,7 @@ use std::{
 };
 
 use crate::{
-    client_game_state::ClientGameState, log_network_result, proto::client::SharedClientState,
+    client_game_state::ClientGameState, log_network_result, proto::client::SharedClientGameState,
     server, NetworkError, RPC_BISTREAM_ID,
 };
 
@@ -81,7 +81,7 @@ pub struct ClientState {
     pub connection: Arc<dyn ConnectionTransport>,
     pub rpc_registry: Arc<RpcRegistry<server::RpcArgs>>,
     pub user_id: String,
-    pub game_state: SharedClientState,
+    pub game_state: SharedClientGameState,
     pub uid: String,
 }
 

@@ -3,7 +3,7 @@ use crate::{
     client_game_state::{game_screen_render_target, ClientGameState},
     native::load_root_certs,
     proto::{
-        client::{ClientProtoState, SharedClientState},
+        client::{ClientProtoState, SharedClientGameState},
         ClientRequest,
     },
     server::RpcArgs,
@@ -96,8 +96,8 @@ impl ElementComponent for ClientView {
 
         let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
 
-        let (game_state_ref, _) =
-            hooks.use_state_with::<Arc<OnceCell<SharedClientState>>>(|_| Arc::new(OnceCell::new()));
+        let (game_state_ref, _) = hooks
+            .use_state_with::<Arc<OnceCell<SharedClientGameState>>>(|_| Arc::new(OnceCell::new()));
 
         let assets = hooks.world.resource(asset_cache()).clone();
         // let game_state = hooks.use_ref_with(|world| {
@@ -276,7 +276,7 @@ async fn handle_connection(
     conn: quinn::Connection,
     assets: AssetCache,
     user_id: String,
-    on_loaded: impl Fn(&str) -> anyhow::Result<(SharedClientState, CleanupFunc)> + Send + Sync,
+    on_loaded: impl Fn(&str) -> anyhow::Result<(SharedClientGameState, CleanupFunc)> + Send + Sync,
     // state: SharedClientState,
     control_rx: flume::Receiver<Control>,
 ) -> anyhow::Result<()> {

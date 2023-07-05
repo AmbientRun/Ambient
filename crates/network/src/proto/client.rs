@@ -36,7 +36,7 @@ pub(crate) enum ClientProtoState {
 }
 
 /// Holds the material world of the client.
-pub type SharedClientState = Arc<Mutex<ClientGameState>>;
+pub type SharedClientGameState = Arc<Mutex<ClientGameState>>;
 
 impl ClientProtoState {
     pub fn process_disconnect(&mut self) {
@@ -61,7 +61,7 @@ impl ClientProtoState {
                 }
 
                 tracing::debug!(content_base_url=?server_info.content_base_url, "Inserting content base url");
-                ContentBaseUrlKey.insert(&assets, server_info.content_base_url.clone());
+                ContentBaseUrlKey.insert(assets, server_info.content_base_url.clone());
                 tracing::debug!(?server_info.external_components, "Adding external components");
                 ComponentRegistry::get_mut().add_external(server_info.external_components);
 
@@ -81,7 +81,7 @@ impl ClientProtoState {
     }
 
     #[cfg(not(target_os = "unknown"))]
-    pub fn process_client_stats(&mut self, state: &SharedClientState, stats: NetworkStats) {
+    pub fn process_client_stats(&mut self, state: &SharedClientGameState, stats: NetworkStats) {
         let mut gs = state.lock();
         tracing::debug!(?stats, "Client network stats");
         gs.world.add_resource(client_network_stats(), stats);
@@ -108,7 +108,7 @@ impl ConnectedClient {
     #[tracing::instrument(level = "debug")]
     pub fn process_diff(
         &mut self,
-        state: &SharedClientState,
+        state: &SharedClientGameState,
         diff: WorldDiff,
     ) -> anyhow::Result<()> {
         let mut gs = state.lock();
@@ -124,7 +124,7 @@ impl ConnectedClient {
     /// Processes a server initiated bidirectional stream
     pub async fn process_bi(
         &mut self,
-        state: &SharedClientState,
+        state: &SharedClientGameState,
         send: PlatformSendStream,
         mut recv: PlatformRecvStream,
     ) -> anyhow::Result<()> {
@@ -153,7 +153,7 @@ impl ConnectedClient {
     /// Processes a server initiated unidirectional stream
     pub async fn process_uni(
         &mut self,
-        state: &SharedClientState,
+        state: &SharedClientGameState,
         mut recv: PlatformRecvStream,
     ) -> anyhow::Result<()> {
         let id = recv.read_u32().await?;
@@ -181,7 +181,7 @@ impl ConnectedClient {
     #[tracing::instrument(level = "debug")]
     pub fn process_datagram(
         &mut self,
-        state: &SharedClientState,
+        state: &SharedClientGameState,
         mut data: Bytes,
     ) -> anyhow::Result<()> {
         if data.len() < 4 {
