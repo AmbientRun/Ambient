@@ -192,7 +192,8 @@ impl<T> UseOnce<T> {
 }
 
 pub type CleanupFunc = Box<dyn FnOnce() + Send + Sync>;
-pub type LoadedFunc = Cb<dyn Fn(&ClientState) -> anyhow::Result<CleanupFunc> + Send + Sync>;
+pub type LoadedFunc =
+    Cb<dyn Fn(&ClientState, &mut ClientGameState) -> anyhow::Result<CleanupFunc> + Send + Sync>;
 
 #[element_component]
 pub fn GameClientWorld(hooks: &mut Hooks) -> Element {

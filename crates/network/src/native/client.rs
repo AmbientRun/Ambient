@@ -203,19 +203,26 @@ impl ElementComponent for ClientView {
                         );
 
                         let game_state = &client_state.game_state;
-                        {
-                            tracing::info!("Setting game state");
+                        tracing::info!("Setting game state");
+                        let cleanup = {
+                            // Lock before setting
+                            let game_state = &mut game_state.lock();
+
                             // Updates the game client context in the Ui tree
-                            set_client_state(Some(client_state.clone()));
                             // Update the resources on the client side world to reflect the new connection
                             // state
-                            let world = &mut game_state.lock().world;
-                            world.add_resource(
+
+                            game_state.world.add_resource(
                                 crate::client::client_state(),
                                 Some(client_state.clone()),
                             );
-                        }
-                        let cleanup = (on_loaded)(&client_state)?;
+
+                            (on_loaded)(&client_state, game_state)?
+                        };
+
+                        // Set the client last so that the game state is initialized first
+                        set_client_state(Some(client_state.clone()));
+
                         Ok((game_state.clone(), cleanup))
                     },
                     // game_state,

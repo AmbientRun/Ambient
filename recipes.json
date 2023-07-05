@@ -23,11 +23,28 @@
             "run",
             "--features",
             "tracing",
-            "--",
             "join",
             "localhost:9000",
             "--debugger"
         ]
+    },
+    "debug-join": {
+        "cmd": [
+            "cargo",
+            "build",
+            "--message-format=json",
+            "--features",
+            "tracing"
+        ],
+        "components": {
+            "cargo-dap": {
+                "args": [
+                    "join",
+                    "localhost:9000",
+                    "--debugger"
+                ]
+            }
+        }
     },
     "asset-loading": {
         "cmd": "cargo run --features tracing -- run ./guest/rust/examples/basics/asset_loading --clean-build --debugger"

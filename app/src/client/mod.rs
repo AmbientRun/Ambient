@@ -136,8 +136,13 @@ fn MainApp(
         WindowSized::el([ClientView {
             server_addr,
             user_id,
-            on_loaded: cb(move |client| {
-                let mut game_state = client.game_state.lock();
+            // NOTE: client.game_state is **locked** and accesible through game_state.
+            //
+            // This is to prevent another thread from updating with the client after connection but
+            // just before `on_loaded`. This is a very small window of time, but does occasionally
+            // happen, especially when joining a server which is already running and server
+            // immediately.
+            on_loaded: cb(move |_, game_state| {
                 let world = &mut game_state.world;
 
                 wasm::initialize(world).unwrap();
