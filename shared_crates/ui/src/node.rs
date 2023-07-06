@@ -21,34 +21,76 @@ use ambient_guest_bridge::{
     messages,
 };
 use ambient_shared_types::{CursorIcon, ModifiersState, VirtualKeyCode};
-use glam::{vec2, vec3, vec4, Vec2, Vec3, Vec4};
+use glam::{vec2, vec3, vec4, Mat4, Vec2, Vec3, Vec4};
 use std::str::FromStr;
 
 #[element_component]
-/// Test UI element.
-pub fn GraphFull(hooks: &mut Hooks) -> Element {
+/// A Graph Element that you can put lots of nodes
+pub fn Graph(hooks: &mut Hooks) -> Element {
     let (nodes, set_nodes) = hooks.use_state(vec![]);
     let in_id = hooks.use_ref_with(|_| vec![]);
     let out_id = hooks.use_ref_with(|_| vec![]);
     let start_id = hooks.use_ref_with(|_| None);
     let (lines, set_lines) = hooks.use_state(vec![]);
-    // let in_mouse_over_count = hooks.use_ref_with(|_| 0);
-    // let out_mouse_over_count = hooks.use_ref_with(|_| 0);
+    let (temp_line, set_temp_line) = hooks.use_state(None::<(Vec3, Vec3)>);
+    let temp_line_toggle = hooks.use_ref_with(|_| false);
+    hooks.use_frame({
+        to_owned![lines, set_lines, temp_line, set_temp_line, temp_line_toggle];
+        move |world| {
+            if *temp_line_toggle.lock() {
+                if let Some(line) = temp_line {
+                    let mouse_pos = world.resource(cursor_position());
+                    set_temp_line(Some((line.0, mouse_pos.extend(line.1.z))));
+                }
+            }
+
+            for (index, ((from_id, from_pos), (to_id, to_pos))) in lines.iter().enumerate() {
+                // let new_from_pos = world.get(*from_id, translation()).unwrap_or(Vec3::ZERO);
+                // let new_to_pos = world.get(*to_id, translation()).unwrap_or(Vec3::ZERO);
+                let ltw = world.get(*from_id, local_to_world()).unwrap();
+                let (_, _, new_from_pos) = Mat4::to_scale_rotation_translation(&ltw);
+                let new_from_pos = new_from_pos + vec3(5.0, 5.0, 0.0);
+
+                if new_from_pos != *from_pos {
+                    let mut l = lines.clone();
+                    l[index] = ((*from_id, new_from_pos), (*to_id, *to_pos));
+                    set_lines(l);
+                }
+
+                let ltw = world.get(*to_id, local_to_world()).unwrap();
+                let (_, _, new_to_pos) = Mat4::to_scale_rotation_translation(&ltw);
+                let new_to_pos = new_to_pos + vec3(5.0, 5.0, 0.0);
+
+                if new_to_pos != *to_pos {
+                    let mut l = lines.clone();
+                    l[index] = ((*from_id, *from_pos), (*to_id, new_to_pos));
+                    set_lines(l);
+                }
+            }
+        }
+    });
 
     hooks.use_runtime_message::<messages::WindowMouseInput>({
-        to_owned![out_id, in_id, start_id, lines, set_lines];
+        to_owned![
+            out_id,
+            in_id,
+            start_id,
+            lines,
+            set_lines,
+            set_temp_line,
+            temp_line_toggle
+        ];
         move |world, event| {
-            println!("mouse input: {:?}", event);
             for id in out_id.lock().iter() {
                 if event.pressed && event.button == 0 {
                     let mouse_over_state = world.get(*id, mouse_over()).unwrap_or(0);
                     if mouse_over_state > 0 {
-                        println!("prepare to connect");
-                        let pos = world.get(*id, translation()).unwrap_or(Vec3::ZERO);
-                        let p = world.get(*id, parent()).unwrap();
-                        let p_pos = world.get(p, translation()).unwrap_or(Vec3::ZERO);
-                        let start_pos = pos + p_pos + vec3(5.0, 5.0, 0.0);
-                        *start_id.lock() = Some(start_pos);
+                        let ltw = world.get(*id, local_to_world()).unwrap();
+                        let (_, _, pos) = Mat4::to_scale_rotation_translation(&ltw);
+                        let start_pos = pos + vec3(5.0, 5.0, 0.0);
+                        *start_id.lock() = Some((id.clone(), start_pos));
+                        *temp_line_toggle.lock() = true;
+                        set_temp_line(Some((start_pos, start_pos)))
                     }
                 }
             }
@@ -57,25 +99,24 @@ pub fn GraphFull(hooks: &mut Hooks) -> Element {
                 if !event.pressed && event.button == 0 {
                     let mouse_over_state = world.get(*id, mouse_over()).unwrap_or(0);
                     if mouse_over_state > 0 {
-                        println!("prepare to drop the connection");
                         if let Some(start_id) = *start_id.lock() {
                             let mut l = lines.clone();
-                            let pos = world.get(*id, translation()).unwrap_or(Vec3::ZERO);
-                            let p = world.get(*id, parent()).unwrap();
-                            let p_pos = world.get(p, translation()).unwrap_or(Vec3::ZERO);
-                            let end_pos = pos + p_pos + vec3(5.0, 5.0, 0.0);
-                            l.push((start_id, end_pos));
+                            let ltw = world.get(*id, local_to_world()).unwrap();
+                            let (_, _, pos) = Mat4::to_scale_rotation_translation(&ltw);
+                            let end_pos = pos + vec3(5.0, 5.0, 0.0);
+                            l.push((start_id, (id.clone(), end_pos)));
                             set_lines(l);
-                            // println!("connect {} to {}", start_id, id);
                         } else {
                             println!("no start id");
-                            // *start_id.lock() = None;
                         }
                     } else {
-                        println!("no start id");
-                        // *start_id.lock() = None;
+                        println!("dropped to none inlet");
                     }
                 }
+            }
+            if !event.pressed {
+                *temp_line_toggle.lock() = false;
+                set_temp_line(None);
             }
         }
     });
@@ -88,7 +129,6 @@ pub fn GraphFull(hooks: &mut Hooks) -> Element {
                 .as_deref()
                 .and_then(|x| VirtualKeyCode::from_str(x).ok())
             {
-                println!("key: {:?}", virtual_keycode);
                 if virtual_keycode != VirtualKeyCode::I {
                     return;
                 }
@@ -102,12 +142,11 @@ pub fn GraphFull(hooks: &mut Hooks) -> Element {
             }
         }
     });
-    let ga = Group::el(
+    let group_nodes = Group::el(
         nodes
             .iter()
             .map(move |node| {
                 println!("node: {:?}", node);
-
                 let inlet = Rectangle::el()
                     .with(width(), 10.)
                     .with(height(), 10.)
@@ -120,7 +159,6 @@ pub fn GraphFull(hooks: &mut Hooks) -> Element {
                         to_owned![in_id];
                         move |_, new_id, _| {
                             in_id.lock().push(new_id);
-                            // *in_id.lock() = Some(new_id);
                         }
                     });
                 let outlet = Rectangle::el()
@@ -170,8 +208,6 @@ pub fn GraphFull(hooks: &mut Hooks) -> Element {
                         to_owned![node];
                         move |world, new_id, _| {
                             println!("spawned node: {}", new_id);
-                            // id_list.lock().push(new_id);
-                            // id_list.lock().push(new_id);
                             world.set(new_id, translation(), node.pos).unwrap();
                         }
                     })
@@ -188,10 +224,10 @@ pub fn GraphFull(hooks: &mut Hooks) -> Element {
             })
             .collect::<Vec<_>>(),
     );
-    let gb = Group::el(
+    let group_edges = Group::el(
         lines
             .iter()
-            .map(|(from, to)| {
+            .map(|((_, from), (_, to))| {
                 // let from = world.get(l.0, translation()).unwrap_or(Vec3::ZERO);
                 Line.el()
                     .with(line_from(), *from)
@@ -201,7 +237,23 @@ pub fn GraphFull(hooks: &mut Hooks) -> Element {
             })
             .collect::<Vec<_>>(),
     );
-    Group::el([ga, gb])
+    let temp_line_el = {
+        to_owned![temp_line_toggle, temp_line];
+        if let Some(line) = temp_line {
+            if *temp_line_toggle.lock() {
+                Line.el()
+                    .with(line_from(), line.0)
+                    .with(line_to(), line.1)
+                    .with(line_width(), 2.)
+                    .with(background_color(), vec4(0.5, 0.8, 1.0, 1.))
+            } else {
+                Element::new()
+            }
+        } else {
+            Element::new()
+        }
+    };
+    Group::el([group_nodes, group_edges, temp_line_el])
 }
 
 #[element_component]
@@ -338,66 +390,6 @@ pub fn Node(hooks: &mut Hooks) -> Element {
         .children(vec![inlet, outlet, body])
         .with_dragarea()
         .el()
-}
-
-#[element_component]
-/// A button UI element.
-pub fn Graph(hooks: &mut Hooks) -> Element {
-    let (nodes, set_nodes) = hooks.use_state(vec![]);
-    let id_list = hooks.use_ref_with(|_| vec![]);
-    // (vec2(0., 0.), vec2(0., 0.))
-    hooks.use_runtime_message::<messages::WindowKeyboardInput>({
-        to_owned![nodes];
-        move |world, event| {
-            if let Some(virtual_keycode) = event
-                .keycode
-                .as_deref()
-                .and_then(|x| VirtualKeyCode::from_str(x).ok())
-            {
-                println!("key: {:?}", virtual_keycode);
-                if virtual_keycode != VirtualKeyCode::I {
-                    return;
-                }
-                if event.pressed {
-                    let mut nodes = nodes.clone();
-                    nodes.push(NodeInfo {
-                        pos: world.resource(cursor_position()).clone().extend(-0.001),
-                    });
-                    set_nodes(nodes);
-                }
-            }
-        }
-    });
-
-    // hooks.use_frame({
-    //     to_owned![id_list];
-    //     move |world| {
-    //         let mut id_list = id_list.lock();
-    //         for id in id_list.iter() {
-    //             let pos = world.get(*id, translation()).unwrap_or(Vec3::ZERO);
-    //             // println!("pos: {:?}", pos);
-    //         }
-    //     }
-    // });
-
-    Group::el(
-        nodes
-            .iter()
-            .map(move |node| {
-                println!("node: {:?}", node);
-                // Group::el(vec![
-                Node::el().on_spawned({
-                    to_owned![id_list, node];
-                    move |world, new_id, _| {
-                        println!("spawned node: {}", new_id);
-                        id_list.lock().push(new_id);
-                        // id_list.lock().push(new_id);
-                        world.set(new_id, translation(), node.pos).unwrap();
-                    }
-                })
-            })
-            .collect::<Vec<_>>(),
-    )
 }
 
 /// Node info.
