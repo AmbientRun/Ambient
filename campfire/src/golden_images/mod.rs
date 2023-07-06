@@ -97,9 +97,10 @@ pub(crate) async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
             run("Checking", ambient_path, check_tests, &tests[..], true)
                 .await
                 .context(
-                    "Checking failed, possible causes:\n \
-                - Missing golden image: consider running `cargo cf golden-images update` first.\n \
-                - Golden image differs: investigate if the difference was intentional.\n",
+                    "Checking failed, possible causes:
+    - Golden image differs: investigate if the difference was intentional.
+    - Missing golden image: consider running `cargo cf golden-images update` first.
+",
                 )?;
         }
     }
@@ -284,8 +285,14 @@ async fn run<S: AsRef<str>>(
 
     if !failures.is_empty() {
         for failure in &failures {
-            failure.log();
+            eprintln!("{failure}")
         }
+
+        log::error!(
+            "Failed tests: \n    {}",
+            failures.iter().map(|v| &v.test).join("\n    ")
+        );
+
         bail!("{} tests failed", failures.len());
     }
 
