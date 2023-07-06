@@ -66,8 +66,16 @@ impl SyncAssetKey<bool> for AssetsCacheOnDisk {
 pub struct ReqwestClientKey;
 impl SyncAssetKey<reqwest::Client> for ReqwestClientKey {
     fn load(&self, _assets: AssetCache) -> reqwest::Client {
+        let mut headers = reqwest::header::HeaderMap::new();
+        headers.insert(
+            "User-Agent",
+            reqwest::header::HeaderValue::from_static(concat!(
+                "Ambient/",
+                env!("CARGO_PKG_VERSION")
+            )),
+        );
         reqwest::Client::builder()
-            .user_agent(format!("Ambient/{}", env!("CARGO_PKG_VERSION")))
+            .default_headers(headers)
             .build()
             .unwrap()
     }
