@@ -5,6 +5,7 @@ fn main() {
     // Load the asset
     println!(
         "asset url can be accessed from client: {}",
-        asset::url("assets/Cube.glb").unwrap()
+        // Should this panic?
+        asset::url("assets/ube.glb").unwrap()
     );
 }
