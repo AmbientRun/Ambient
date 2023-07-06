@@ -55,6 +55,40 @@
             "RUST_LOG": "ambient_network=debug,info"
         }
     },
+    "samplers": {
+        "cmd": [
+            "cargo",
+            "run",
+            "--features",
+            "tracing",
+            "--",
+            "serve",
+            "./guest/rust/examples/basics/samplers/"
+        ],
+        "env": {
+            "RUST_LOG": "ambient_network=debug,info"
+        }
+    },
+    "debug-samplers": {
+        "cmd": [
+            "cargo",
+            "build",
+            "--message-format=json",
+            "--features",
+            "tracing"
+        ],
+        "components": {
+            "cargo-dap": {
+                "args": [
+                    "serve",
+                    "./guest/rust/examples/basics/samplers/"
+                ]
+            }
+        },
+        "env": {
+            "RUST_LOG": "ambient_network=debug,info"
+        }
+    },
     "minigolf": {
         "cmd": "cargo run -- run ./guest/rust/examples/games/minigolf"
     },
