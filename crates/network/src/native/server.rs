@@ -419,7 +419,7 @@ async fn start_proxy_connection(
         )
     };
 
-    static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
+    static APP_USER_AGENT: &str = concat!("Ambient/", env!("CARGO_PKG_VERSION"));
 
     let builder = ambient_proxy::client::builder()
         .endpoint(endpoint.clone())
