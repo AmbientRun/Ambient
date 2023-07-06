@@ -193,7 +193,7 @@
             "check"
         ],
         "env": {
-            "RUST_LOG": "debug"
+            "RUST_LOG": "ambient_network=debug,ambient=debug,info"
         }
     }
 }

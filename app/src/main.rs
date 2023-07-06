@@ -237,8 +237,6 @@ async fn main() -> anyhow::Result<()> {
 
     let project_path: ProjectPath = project.and_then(|p| p.path.clone()).try_into()?;
 
-    tracing::debug!(?project_path);
-
     if project_path.is_remote() {
         // project path is a URL, so let's use it as the content base URL
         ContentBaseUrlKey.insert(&assets, project_path.url.push("build/")?);

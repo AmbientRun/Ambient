@@ -4,7 +4,6 @@ use ambient_std::asset_url::{AbsAssetUrl, ParseError};
 
 use crate::shared::wit;
 
-#[tracing::instrument(level = "info")]
 pub(crate) fn url(
     world: &World,
     path: String,

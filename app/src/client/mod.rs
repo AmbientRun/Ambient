@@ -138,7 +138,7 @@ fn MainApp(
             user_id,
             // NOTE: client.game_state is **locked** and accesible through game_state.
             //
-            // This is to prevent another thread from updating with the client after connection but
+            // This is to prevent another thread from updating using the client after connection but
             // just before `on_loaded`. This is a very small window of time, but does occasionally
             // happen, especially when joining a server which is already running and server
             // immediately.
