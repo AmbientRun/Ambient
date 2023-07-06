@@ -61,7 +61,7 @@ impl ClientProtoState {
                 }
 
                 tracing::debug!(content_base_url=?server_info.content_base_url, "Inserting content base url");
-                // ContentBaseUrlKey.insert(assets, server_info.content_base_url.clone());
+                ContentBaseUrlKey.insert(&assets, server_info.content_base_url.clone());
                 tracing::debug!(?server_info.external_components, "Adding external components");
                 ComponentRegistry::get_mut().add_external(server_info.external_components);
 
