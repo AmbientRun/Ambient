@@ -20,7 +20,7 @@ use ambient_network::{
 use ambient_prefab::PrefabFromUrl;
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
-    asset_url::{AbsAssetUrl, ServerBaseUrlKey},
+    asset_url::{AbsAssetUrl, ContentBaseUrlKey, ServerBaseUrlKey},
 };
 use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
@@ -116,10 +116,17 @@ pub async fn start(
     // here the key is inserted into the asset cache
     if let Ok(Some(project_path_fs)) = project_path.to_file_path() {
         let key = format!("http://{public_host}:{http_interface_port}/content/");
-        ServerBaseUrlKey.insert(&assets, AbsAssetUrl::from_str(&key).unwrap());
+        let base_url = AbsAssetUrl::from_str(&key).unwrap();
+        ServerBaseUrlKey.insert(&assets, base_url.clone());
+        ContentBaseUrlKey.insert(&assets, base_url);
+
         start_http_interface(runtime, Some(&project_path_fs), http_interface_port);
     } else {
-        ServerBaseUrlKey.insert(&assets, project_path.push("build/").unwrap());
+        let base_url = project_path.push("build/").unwrap();
+
+        ServerBaseUrlKey.insert(&assets, base_url.clone());
+        ContentBaseUrlKey.insert(&assets, base_url);
+
         start_http_interface(runtime, None, http_interface_port);
     }
 

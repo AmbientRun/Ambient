@@ -16,7 +16,11 @@ use ambient_ecs::{generated::messages, world_events, Entity, SystemGroup};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_std::{asset_cache::AssetCache, Cb};
+use ambient_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    asset_url::ContentBaseUrlKey,
+    Cb,
+};
 use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Throbber};
 use anyhow::Context;
 use futures::{SinkExt, StreamExt};
@@ -280,9 +284,11 @@ async fn handle_connection(
 
     while client.is_pending() {
         if let Some(frame) = push_recv.next().await {
-            client.process_push(&assets, frame?)?;
+            client.process_push(assets, frame?)?;
         }
     }
+
+    assert!(ContentBaseUrlKey.exists(assets));
 
     if !client.is_connected() {
         tracing::warn!("Connection failed or was denied");

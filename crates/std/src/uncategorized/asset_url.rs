@@ -29,7 +29,7 @@ pub const ASSETS_PROTOCOL_SCHEME: &str = "ambient-assets";
 pub struct ServerBaseUrlKey;
 impl SyncAssetKey<AbsAssetUrl> for ServerBaseUrlKey {
     fn load(&self, _assets: AssetCache) -> AbsAssetUrl {
-        AbsAssetUrl::from_str("http://localhost:8999/content/").unwrap()
+        panic!("ServerBaseUrlKey should never be loaded implicitly");
     }
 }
 
@@ -37,7 +37,7 @@ impl SyncAssetKey<AbsAssetUrl> for ServerBaseUrlKey {
 pub struct ContentBaseUrlKey;
 impl SyncAssetKey<AbsAssetUrl> for ContentBaseUrlKey {
     fn load(&self, _assets: AssetCache) -> AbsAssetUrl {
-        panic!("ContentBaseUrlKey should never be loaded directly");
+        panic!("ContentBaseUrlKey should never be loaded implicitely");
     }
 }
 
