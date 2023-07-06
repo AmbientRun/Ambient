@@ -56,6 +56,9 @@ pub fn main() {
         } else {
             is_shooting = false;
         }
+
+        let toggle_zoom = _delta.mouse_buttons.contains(&MouseButton::Right);
+
         let player_id = player::get_local();
         let cam = entity::get_component(player_id, components::player_cam_ref());
         if cam.is_none() {
@@ -74,6 +77,7 @@ pub fn main() {
             direction,
             mouse_delta,
             shoot,
+            toggle_zoom,
             is_shooting,
             walk,
             jump,

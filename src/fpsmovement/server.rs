@@ -17,6 +17,7 @@ pub fn main() {
                 entity::wait_for_component(id, components::player_name()).await;
                 entity::add_component(id, components::player_yaw(), 0.0);
                 entity::add_component(id, components::player_pitch(), 0.0);
+                entity::add_component(id, components::player_zoomed(), false);
                 entity::add_component(id, components::player_vspeed(), 0.0);
             });
         }
@@ -45,6 +46,11 @@ pub fn main() {
             components::player_shooting_status(),
             msg.is_shooting,
         );
+
+        if msg.toggle_zoom {
+            entity::mutate_component(player_id, components::player_zoomed(), |v| *v = !*v);
+        }
+
         let yaw = entity::mutate_component(player_id, components::player_yaw(), |yaw| {
             *yaw = (*yaw + msg.mouse_delta.x * 0.01) % std::f32::consts::TAU;
         })
