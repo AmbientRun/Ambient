@@ -4,6 +4,8 @@ This crate provides a workspace for the web client for Ambient.
 
 The client is compiled using the `wasm32-unknown-unknown` toolchain into a `.wasm` file, which is then imported as an ECMAScript module.
 
+Note: you need to serve a project using `ambient` to connect to
+
 ## Build Prerequisites
 
 - [wasm-pack](https://rustwasm.github.io/wasm-pack/)
@@ -14,7 +16,7 @@ The client is compiled using the `wasm32-unknown-unknown` toolchain into a `.was
 ## Setup
 
 ```sh
-cd www
+cd web/www
 
 # Installs the dependencies and the webpack dev server
 npm install -d
@@ -25,7 +27,7 @@ rustup target add wasm32-unknown-unknown
 
 ## Building
 
-From the root run:
+From the `web/`
 
 ```
 wasm-pack build client --dev
@@ -34,7 +36,7 @@ wasm-pack build client --dev
 ## Running
 
 ```
-cd www
+cd web/www
 
 npm run dev
 ```
@@ -50,6 +52,8 @@ If using self-signed certificates, you need to toll Chrome to trust it
 ```sh
 ./scripts/launch_chrome.sh
 ```
+
+After opening the client it will attempt connect to a locally running `ambient server` on `127.0.0.1:9000` (the default)
 
 ## Known Issues
 
