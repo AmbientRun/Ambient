@@ -9,10 +9,10 @@ version = {workspace = true}
 [dependencies]
 ambient_api = {workspace = true}
 
-[[bin]]
-name = "physics_client"
-path = "src/client.rs"
-required-features = ["client"]
+# [[bin]]
+# name = "physics_client"
+# path = "src/client.rs"
+# required-features = ["client"]
 
 [[bin]]
 name = "physics_server"

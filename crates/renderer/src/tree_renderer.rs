@@ -444,7 +444,7 @@ impl TreeRenderer {
                     //
                     // let mesh_buffer = mesh_buffer.lock();
                     let count = counts.get(mat.material_index as usize);
-                    if false {
+                    if true {
                         tracing::debug!("Counts: {count:?}");
                         for (i, &(id, primitive_idx)) in mat.primitives.iter().enumerate() {
                             let primitive =

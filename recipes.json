@@ -58,6 +58,12 @@
             "RUST_LOG": "ambient_network=debug,info"
         }
     },
+    "serve-physics": {
+        "cmd": "cargo run --features tracing -- serve ./guest/rust/examples/basics/physics/ --clean-build",
+        "env": {
+            "RUST_LOG": "ambient_network=debug,info"
+        }
+    },
     "samplers": {
         "cmd": [
             "cargo",
