@@ -4,7 +4,7 @@ This crate provides a workspace for the web client for Ambient.
 
 The client is compiled using the `wasm32-unknown-unknown` toolchain into a `.wasm` file, which is then imported as an ECMAScript module.
 
-Note: you need to serve a project using `ambient` to connect to
+Note: you need to serve a project using `ambient` for the web client to connect to.
 
 ## Build Prerequisites
 
@@ -15,9 +15,9 @@ Note: you need to serve a project using `ambient` to connect to
 
 ## Setup
 
-```sh
-cd web/www
+From `./web/www`
 
+```sh
 # Installs the dependencies and the webpack dev server
 npm install -d
 
@@ -27,7 +27,7 @@ rustup target add wasm32-unknown-unknown
 
 ## Building
 
-From the `web/`
+From `./web/`
 
 ```
 wasm-pack build client --dev
@@ -35,8 +35,9 @@ wasm-pack build client --dev
 
 ## Running
 
+From `./web/www`
+
 ```
-cd web/www
 
 npm run dev
 ```
@@ -48,6 +49,8 @@ This will launch `vite dev server` and bind to `:5173`. See the command output f
 ## Connecting
 
 If using self-signed certificates, you need to toll Chrome to trust it
+
+From `./`
 
 ```sh
 ./scripts/launch_chrome.sh
