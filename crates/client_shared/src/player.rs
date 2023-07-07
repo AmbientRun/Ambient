@@ -4,7 +4,7 @@ use ambient_core::window::cursor_position;
 use ambient_ecs::{generated::messages, query_mut, SystemGroup, World};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{player_prev_raw_input, player_raw_input, PlayerRawInput};
-use ambient_network::client::game_client;
+use ambient_network::client::client_state;
 use ambient_shared_types::VirtualKeyCode;
 use glam::Vec2;
 
@@ -43,7 +43,7 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
             return;
         }
 
-        let Some(Some(gc)) = ui_world.resource_opt(game_client()).cloned() else {
+        let Some(Some(gc)) = ui_world.resource_opt(client_state()).cloned() else {
             return;
         };
         gc.with_physics_world(|w| {

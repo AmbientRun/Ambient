@@ -11,23 +11,80 @@
     "third-person-camera": {
         "cmd": "cargo run --features tracing -- run ./guest/rust/examples/basics/third_person_camera --debugger"
     },
+    "gi-samplers": {
+        "cmd": "cargo run --release -- run --release guest/rust/examples/basics/samplers --headless --no-proxy --quic-interface-port 9009 --http-interface-port 10009 golden-image-check --timeout-seconds 30.0",
+        "env": {
+            "RUST_LOG": "ambient_network=debug,ambient_wasm=debug,ambient=debug,ambient_ecs=info,ambient_renderer=warn,ambient_std=debug,ambient_network::client_game_state=info,ambient_element=warn,ambient_app=warn,info"
+        }
+    },
     "join": {
         "cmd": [
             "cargo",
             "run",
             "--features",
             "tracing",
-            "--",
             "join",
             "localhost:9000",
             "--debugger"
         ]
+    },
+    "debug-join": {
+        "cmd": [
+            "cargo",
+            "build",
+            "--message-format=json",
+            "--features",
+            "tracing"
+        ],
+        "components": {
+            "cargo-dap": {
+                "args": [
+                    "join",
+                    "localhost:9000",
+                    "--debugger"
+                ]
+            }
+        }
     },
     "asset-loading": {
         "cmd": "cargo run --features tracing -- run ./guest/rust/examples/basics/asset_loading --clean-build --debugger"
     },
     "serve-primitives": {
         "cmd": "cargo run --features tracing -- serve ./guest/rust/examples/basics/primitives/",
+        "env": {
+            "RUST_LOG": "ambient_network=debug,info"
+        }
+    },
+    "samplers": {
+        "cmd": [
+            "cargo",
+            "run",
+            "--features",
+            "tracing",
+            "--",
+            "serve",
+            "./guest/rust/examples/basics/samplers/"
+        ],
+        "env": {
+            "RUST_LOG": "ambient_network=debug,info"
+        }
+    },
+    "debug-samplers": {
+        "cmd": [
+            "cargo",
+            "build",
+            "--message-format=json",
+            "--features",
+            "tracing"
+        ],
+        "components": {
+            "cargo-dap": {
+                "args": [
+                    "serve",
+                    "./guest/rust/examples/basics/samplers/"
+                ]
+            }
+        },
         "env": {
             "RUST_LOG": "ambient_network=debug,info"
         }
@@ -161,5 +218,16 @@
             "./guest/rust/examples/basics/instancing",
             "--clean-build"
         ]
+    },
+    "golden-images": {
+        "cmd": [
+            "cargo",
+            "cf",
+            "golden-images",
+            "check"
+        ],
+        "env": {
+            "RUST_LOG": "ambient_network=debug,ambient=debug,info"
+        }
     }
 }

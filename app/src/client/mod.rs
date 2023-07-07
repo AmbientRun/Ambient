@@ -13,9 +13,9 @@ use ambient_debugger::Debugger;
 use ambient_ecs::{generated::messages, Entity, EntityId, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::{
-    client::{client_network_stats, GameClient, GameClientRenderTarget, GameClientWorld},
+    client::{client_network_stats, ClientState, GameClientRenderTarget, GameClientWorld},
     hooks::use_remote_resource,
-    native::client::{GameClientView, ResolvedAddr},
+    native::client::{ClientView, ResolvedAddr},
 };
 use ambient_shared_types::CursorIcon;
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
@@ -133,11 +133,16 @@ fn MainApp(
     FocusRoot::el([
         UICamera.el(),
         ambient_client_shared::player::PlayerRawInputHandler.el(),
-        WindowSized::el([GameClientView {
+        WindowSized::el([ClientView {
             server_addr,
             user_id,
-            on_loaded: cb(move |client| {
-                let mut game_state = client.game_state.lock();
+            // NOTE: client.game_state is **locked** and accesible through game_state.
+            //
+            // This is to prevent another thread from updating using the client after connection but
+            // just before `on_loaded`. This is a very small window of time, but does occasionally
+            // happen, especially when joining a server which is already running and finished
+            // loading.
+            on_loaded: cb(move |_, game_state| {
                 let world = &mut game_state.world;
 
                 wasm::initialize(world).unwrap();
@@ -327,7 +332,7 @@ fn GoldenImageTest(
 
 #[element_component]
 fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
-    let (state, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (state, _) = hooks.consume_context::<ClientState>().unwrap();
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
 
     let (show_ecs, set_show_ecs) = hooks.use_state(true);

@@ -1,5 +1,5 @@
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_network::{client::GameClient, log_network_result};
+use ambient_network::{client::ClientState, log_network_result};
 use ambient_std::Cb;
 use ambient_ui_native::{
     layout::{fit_horizontal, fit_vertical, space_between_items, Fit},
@@ -22,13 +22,13 @@ impl ElementComponent for SelectionPanel {
             selection,
             set_selection: _,
         } = *self;
-        let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
         let (settings, _) = hooks.consume_context::<EditorSettings>().unwrap();
 
         FlowColumn(vec![
             #[allow(clippy::comparison_chain)]
             if selection.len() == 1 {
-                let _state = game_client.game_state.lock();
+                let _state = client_state.game_state.lock();
 
                 EntityEditor { entity_id: selection.entities[0] }.el().with(fit_horizontal(), Fit::Parent)
             } else {
@@ -37,11 +37,11 @@ impl ElementComponent for SelectionPanel {
             if !selection.is_empty() && settings.debug_mode {
                 Button::new_async(
                     "Toggle collider visualization",
-                    closure!(clone selection, clone game_client, || {
-                        let game_client = game_client.clone();
+                    closure!(clone selection, clone client_state, || {
+                        let client_state = client_state.clone();
                         let selection = selection.iter().collect();
                         async move {
-                            log_network_result!(game_client.rpc(rpc_toggle_visualize_colliders, selection).await);
+                            log_network_result!(client_state.rpc(rpc_toggle_visualize_colliders, selection).await);
                         }
                     }),
                 )

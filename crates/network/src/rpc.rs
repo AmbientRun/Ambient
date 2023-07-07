@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     server::{
-        create_player_entity_data, player_connection, player_connection_id, player_entity_stream,
+        create_player_entity_data, player_connection_id, player_entity_stream, player_transport,
         ForkingEvent, RpcArgs as ServerRpcArgs, WorldInstance, MAIN_INSTANCE_ID,
     },
     ServerWorldExt,
@@ -131,7 +131,7 @@ pub async fn rpc_join_instance(args: ServerRpcArgs, new_instance_id: String) {
         entities_tx = ed.remove_self(player_entity_stream()).unwrap();
 
         connection_id = ed.remove_self(player_connection_id()).unwrap();
-        conn = ed.remove_self(player_connection()).unwrap();
+        conn = ed.remove_self(player_transport()).unwrap();
     };
 
     // Borrow the new world mutably to spawn the player in with their old streams.

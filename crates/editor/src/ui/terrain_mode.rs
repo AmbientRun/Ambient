@@ -13,7 +13,7 @@ use ambient_gpu::{
     shader_module::{BindGroupDesc, ShaderModule},
 };
 use ambient_intent::client_push_intent;
-use ambient_network::client::GameClient;
+use ambient_network::client::ClientState;
 use ambient_physics::{
     intersection::{rpc_pick, RaycastFilter},
     ColliderScene,
@@ -68,14 +68,14 @@ impl ElementComponent for TerrainRaycastPicker {
             brush_shape,
             erosion_config,
         } = *self;
-        let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
         let (target_position, set_target_position) = hooks.use_state(None);
         let (mouseover, set_mouseover) = hooks.use_state(false);
         let (mousedown, set_mousedown) = hooks.use_state::<Option<Vec3>>(None); // start position
 
         let (vis_brush_id, set_vis_brush_id) = hooks.use_state(None);
 
-        let game_state = game_client.game_state.clone();
+        let game_state = client_state.game_state.clone();
         hooks.use_spawn(move |ui_world| {
             let assets = ui_world.resource(asset_cache());
             let gpu = ui_world.resource(gpu());
@@ -117,16 +117,16 @@ impl ElementComponent for TerrainRaycastPicker {
         hooks.use_frame(move |world| {
             let gpu = world.resource(gpu());
             let mouse_clip_pos = get_mouse_clip_space_position(world);
-            let mut state = game_client.game_state.lock();
+            let mut state = client_state.game_state.lock();
 
             // Update the target position with the result of our raycast.
             {
                 let ray = state.screen_ray(mouse_clip_pos);
                 let filter = filter.clone();
                 let set_target_position = set_target_position.clone();
-                let game_client = game_client.clone();
+                let client_state = client_state.clone();
                 world.resource(runtime()).clone().spawn(async move {
-                    if let Ok(resp) = game_client.rpc(rpc_pick, (ray, filter)).await {
+                    if let Ok(resp) = client_state.rpc(rpc_pick, (ray, filter)).await {
                         set_target_position(resp.map(|(_, dist)| ray.origin + ray.dir * dist));
                     }
                 });
@@ -164,10 +164,10 @@ impl ElementComponent for TerrainRaycastPicker {
                     let center = target_position.xy();
 
                     let erosion = erosion_config.clone();
-                    let game_client = game_client.clone();
+                    let client_state = client_state.clone();
                     world.resource(runtime()).spawn({
                         client_push_intent(
-                            game_client,
+                            client_state,
                             intent_terrain_stroke(),
                             TerrainBrushStroke {
                                 center,
@@ -531,12 +531,12 @@ impl ElementComponent for EditorTerrainMode {
 pub struct GenerateTerrainButton;
 impl ElementComponent for GenerateTerrainButton {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+        let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
         let (has_terrain, set_has_terrain) = hooks.use_state(true);
         hooks.use_interval(1., {
-            let game_client = game_client.clone();
+            let client_state = client_state.clone();
             move || {
-                let state = game_client.game_state.lock();
+                let state = client_state.game_state.lock();
                 let has_terrain = query((terrain_world_cell(),))
                     .iter(&state.world, None)
                     .count()
@@ -547,7 +547,7 @@ impl ElementComponent for GenerateTerrainButton {
         if !has_terrain {
             Button::new("Generate terrain", move |world| {
                 world.resource(runtime()).spawn(client_push_intent(
-                    game_client.clone(),
+                    client_state.clone(),
                     intent_terrain_stroke(),
                     TerrainBrushStroke::initial_island(),
                     None,
