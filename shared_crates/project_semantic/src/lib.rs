@@ -1,6 +1,5 @@
 use std::{
     fmt::Debug,
-    ops::Deref,
     path::{Path, PathBuf},
 };
 
@@ -59,16 +58,13 @@ impl FileProvider for ProxyFileProvider<'_> {
 #[derive(Clone, PartialEq, Debug)]
 pub struct Semantic {
     pub items: ItemMap,
-    pub ambient_scope: AmbientScope,
+    pub root_scope: ItemId<Scope>,
 }
 impl Semantic {
     pub fn new() -> anyhow::Result<Self> {
         let mut items = ItemMap::default();
-        let ambient_scope = AmbientScope::new(&mut items)?;
-        Ok(Self {
-            items,
-            ambient_scope,
-        })
+        let root_scope = create_root_scope(&mut items)?;
+        Ok(Self { items, root_scope })
     }
 
     pub fn add_file_at_non_toplevel(
@@ -129,19 +125,19 @@ impl Semantic {
 
         let organization_id = self
             .items
-            .get(*self.ambient_scope)?
+            .get(self.root_scope)?
             .scopes
             .get(organization_key)
             .map(|(_, id)| *id);
         let organization_id = organization_id.unwrap_or_else(|| {
             let id = self.items.add(Scope::new(ItemData {
-                parent_id: Some(*self.ambient_scope),
+                parent_id: Some(self.root_scope),
                 id: organization_key.clone(),
                 is_ambient: false,
             }));
 
             self.items
-                .get_mut(*self.ambient_scope)
+                .get_mut(self.root_scope)
                 .unwrap()
                 .scopes
                 .insert(organization_key.clone(), (Default::default(), id));
@@ -184,7 +180,7 @@ impl Semantic {
     pub fn resolve(&mut self) -> anyhow::Result<()> {
         let root_scopes = self
             .items
-            .get(*self.ambient_scope)?
+            .get(self.root_scope)?
             .scopes
             .values()
             .map(|(_, id)| *id)
@@ -192,7 +188,7 @@ impl Semantic {
 
         for scope_id in root_scopes {
             self.items
-                .resolve_clone(scope_id, &Context::new(*self.ambient_scope))?;
+                .resolve_clone(scope_id, &Context::new(self.root_scope))?;
         }
         Ok(())
     }
@@ -291,79 +287,67 @@ impl Semantic {
     }
 }
 
-#[derive(Clone, PartialEq, Debug)]
-/// Predefined "ambient" definitions that are always available
-pub struct AmbientScope(ItemId<Scope>);
-impl AmbientScope {
-    fn new(items: &mut ItemMap) -> anyhow::Result<Self> {
-        macro_rules! define_primitive_types {
-            ($(($value:ident, $_type:ty)),*) => {
-                [
-                    $((stringify!($value), PrimitiveType::$value)),*
-                ]
-            };
-        }
-
-        let root_scope = items.add(Scope::new(ItemData {
-            parent_id: None,
-            id: Identifier::default(),
-            is_ambient: true,
-        }));
-
-        for (id, pt) in primitive_component_definitions!(define_primitive_types) {
-            let id = id
-                .with_boundaries(&[
-                    Boundary::LowerUpper,
-                    Boundary::DigitUpper,
-                    Boundary::DigitLower,
-                    Boundary::Acronym,
-                ])
-                .to_case(Case::Kebab);
-            let id = Identifier::new(id)
-                .map_err(anyhow::Error::msg)
-                .context("standard value was not valid kebab-case")?;
-
-            let ty = Type::new(
-                ItemData {
-                    parent_id: Some(root_scope),
-                    id: id.clone(),
-                    is_ambient: true,
-                },
-                TypeInner::Primitive(pt),
-            );
-            let item_id = items.add(ty);
-            items.get_mut(root_scope)?.types.insert(id, item_id);
-        }
-
-        for name in [
-            "debuggable",
-            "networked",
-            "resource",
-            "maybe-resource",
-            "store",
-        ] {
-            let id = Identifier::new(name)
-                .map_err(anyhow::Error::msg)
-                .context("standard value was not valid kebab-case")?;
-            let item_id = items.add(Attribute {
-                data: ItemData {
-                    parent_id: Some(root_scope),
-                    id: id.clone(),
-                    is_ambient: true,
-                },
-            });
-            items.get_mut(root_scope)?.attributes.insert(id, item_id);
-        }
-
-        Ok(Self(root_scope))
+fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
+    macro_rules! define_primitive_types {
+        ($(($value:ident, $_type:ty)),*) => {
+            [
+                $((stringify!($value), PrimitiveType::$value)),*
+            ]
+        };
     }
-}
-impl Deref for AmbientScope {
-    type Target = ItemId<Scope>;
 
-    fn deref(&self) -> &Self::Target {
-        &self.0
+    let root_scope = items.add(Scope::new(ItemData {
+        parent_id: None,
+        id: Identifier::default(),
+        is_ambient: true,
+    }));
+
+    for (id, pt) in primitive_component_definitions!(define_primitive_types) {
+        let id = id
+            .with_boundaries(&[
+                Boundary::LowerUpper,
+                Boundary::DigitUpper,
+                Boundary::DigitLower,
+                Boundary::Acronym,
+            ])
+            .to_case(Case::Kebab);
+        let id = Identifier::new(id)
+            .map_err(anyhow::Error::msg)
+            .context("standard value was not valid kebab-case")?;
+
+        let ty = Type::new(
+            ItemData {
+                parent_id: Some(root_scope),
+                id: id.clone(),
+                is_ambient: true,
+            },
+            TypeInner::Primitive(pt),
+        );
+        let item_id = items.add(ty);
+        items.get_mut(root_scope)?.types.insert(id, item_id);
     }
+
+    for name in [
+        "debuggable",
+        "networked",
+        "resource",
+        "maybe-resource",
+        "store",
+    ] {
+        let id = Identifier::new(name)
+            .map_err(anyhow::Error::msg)
+            .context("standard value was not valid kebab-case")?;
+        let item_id = items.add(Attribute {
+            data: ItemData {
+                parent_id: Some(root_scope),
+                id: id.clone(),
+                is_ambient: true,
+            },
+        });
+        items.get_mut(root_scope)?.attributes.insert(id, item_id);
+    }
+
+    Ok(root_scope)
 }
 
 pub struct Printer {
@@ -376,7 +360,7 @@ impl Printer {
 
     pub fn print(&mut self, semantic: &Semantic) -> anyhow::Result<()> {
         let items = &semantic.items;
-        self.print_scope(items, &*items.get(*semantic.ambient_scope)?)?;
+        self.print_scope(items, &*items.get(semantic.root_scope)?)?;
         Ok(())
     }
 
