@@ -127,6 +127,7 @@ fn setup_logging() -> anyhow::Result<()> {
     }
 }
 
+#[derive(Debug)]
 struct ProjectPath {
     url: AbsAssetUrl,
     fs_path: Option<std::path::PathBuf>,
@@ -235,6 +236,7 @@ async fn main() -> anyhow::Result<()> {
     }
 
     let project_path: ProjectPath = project.and_then(|p| p.path.clone()).try_into()?;
+
     if project_path.is_remote() {
         // project path is a URL, so let's use it as the content base URL
         ContentBaseUrlKey.insert(&assets, project_path.url.push("build/")?);

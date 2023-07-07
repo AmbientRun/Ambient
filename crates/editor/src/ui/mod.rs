@@ -12,7 +12,7 @@ use ambient_element::{
 use ambient_intent::{rpc_redo, rpc_undo_head, IntentHistoryVisualizer};
 use ambient_naturals::{get_default_natural_layers, natural_layers, NaturalsPreset};
 use ambient_network::{
-    client::GameClient,
+    client::ClientState,
     hooks::{use_remote_persisted_resource, use_remote_player_component},
     log_network_result,
     rpc::{rpc_fork_instance, rpc_get_instances_info, rpc_join_instance, RpcForkInstance},
@@ -90,7 +90,7 @@ const PLAY_INSTANCE_ID: &str = "play";
 pub fn EditorUI(hooks: &mut Hooks) -> Element {
     let (editor_mode, set_editor_mode) = hooks.use_state(EditorMode::Build);
 
-    let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
     let (hide_ui, set_hide_ui) = hooks.use_state(false);
     let (user_settings, _) = hooks.consume_context::<EditorSettings>().unwrap();
     let (screen, _set_screen) = hooks.use_state(None);
@@ -106,12 +106,12 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
     hooks.provide_context(HydraulicErosionConfig::default);
 
     hooks.use_effect(editor_mode, {
-        let game_client = game_client.clone();
+        let client_state = client_state.clone();
         move |world, _| {
             world.resource(runtime()).spawn(async move {
                 if editor_mode == EditorMode::Experience {
                     let id = unwrap_log_network_err!(
-                        game_client
+                        client_state
                             .rpc(
                                 rpc_fork_instance,
                                 RpcForkInstance {
@@ -122,10 +122,10 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
                             )
                             .await
                     );
-                    log_network_result!(game_client.rpc(rpc_join_instance, id).await);
+                    log_network_result!(client_state.rpc(rpc_join_instance, id).await);
                 } else {
                     log_network_result!(
-                        game_client
+                        client_state
                             .rpc(rpc_join_instance, MAIN_INSTANCE_ID.to_string())
                             .await
                     );
@@ -205,11 +205,11 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
                     .el(),
                 // UploadThumbnailButton.el(),
                 Button::new_async(FontAwesomeIcon::el(0xf2ea, true), {
-                    let game_client = game_client.clone();
+                    let client_state = client_state.clone();
                     move || {
-                        let game_client = game_client.clone();
+                        let client_state = client_state.clone();
                         async move {
-                            game_client.rpc(rpc_undo_head, ()).await.ok();
+                            client_state.rpc(rpc_undo_head, ()).await.ok();
                         }
                     }
                 })
@@ -218,9 +218,9 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
                 .tooltip("Undo")
                 .el(),
                 Button::new_async(FontAwesomeIcon::el(0xf2f9, true), move || {
-                    let game_client = game_client.clone();
+                    let client_state = client_state.clone();
                     async move {
-                        game_client.rpc(rpc_redo, ()).await.ok();
+                        client_state.rpc(rpc_redo, ()).await.ok();
                     }
                 })
                 .hotkey(VirtualKeyCode::Z)
@@ -253,14 +253,14 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
 
 #[element_component]
 fn ServerInstancesInfo(hooks: &mut Hooks) -> Element {
-    let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
     let runtime = hooks.world.resource(runtime()).clone();
     let (instances, set_instances) = hooks.use_state(HashMap::new());
     hooks.use_interval(1., move || {
-        let game_client = game_client.clone();
+        let client_state = client_state.clone();
         let set_instances = set_instances.clone();
         runtime.spawn(async move {
-            if let Ok(instances) = game_client.rpc(rpc_get_instances_info, ()).await {
+            if let Ok(instances) = client_state.rpc(rpc_get_instances_info, ()).await {
                 set_instances(instances.instances);
             }
         });
@@ -519,11 +519,11 @@ pub fn EditorPlayerMovementHandler(
 
 // #[element_component]
 // fn UploadThumbnailButton(hooks: &mut Hooks) -> Element {
-//     let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+//     let (client_state, _) = hooks.consume_context::<GameClient>().unwrap();
 //     let (world_instance_config, _) = hooks.consume_context::<Option<WorldInstanceConfig>>().unwrap();
 //     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
 //     Button::new_async("\u{f030}", move || {
-//         let game_client = game_client.clone();
+//         let client_state = client_state.clone();
 //         let reader = render_target.0.color_buffer.reader();
 //         let map_url = world_instance_config.as_ref().unwrap().map_url.clone();
 //         async move {
@@ -543,7 +543,7 @@ pub fn EditorPlayerMovementHandler(
 //             .to_image();
 //             let thumbnail = image::imageops::resize(&cropped, 640, 360, image::imageops::FilterType::CatmullRom);
 
-//             // log_network_result!(game_client.rpc(rpc_upload_thumbnail, (map_url, image_to_png(thumbnail))).await);
+//             // log_network_result!(client_state.rpc(rpc_upload_thumbnail, (map_url, image_to_png(thumbnail))).await);
 //             // original: &image_to_png(screenshot)
 //         }
 //     })

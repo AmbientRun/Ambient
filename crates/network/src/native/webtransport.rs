@@ -81,7 +81,7 @@ async fn handle_webtransport_session(
 
     let server_info = ServerInfo::new(&mut state.lock(), content_base_url);
 
-    let mut server = proto::server::ServerState::default();
+    let mut server = proto::server::ServerProtoState::default();
 
     let mut request_recv = FramedRecvStream::new(
         conn.accept_uni()
@@ -127,7 +127,7 @@ async fn handle_webtransport_session(
     });
 
     // Before a connection has been established, only process the control stream
-    while let proto::server::ServerState::Connected(connected) = &mut *server {
+    while let proto::server::ServerProtoState::Connected(connected) = &mut *server {
         tokio::select! {
             Some(frame) = request_recv.next() => {
                 server.process_control(&data, frame?)?;

@@ -12,7 +12,7 @@ use ambient_core::{
 use ambient_ecs::{query, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_gizmos::{gizmos, GizmoPrimitive};
-use ambient_network::{client::GameClient, server::RpcArgs as ServerRpcArgs};
+use ambient_network::{client::ClientState, server::RpcArgs as ServerRpcArgs};
 use ambient_renderer::{RenderTarget, Renderer};
 use ambient_rpc::RpcRegistry;
 use ambient_shared_types::{ModifiersState, VirtualKeyCode};
@@ -43,7 +43,7 @@ pub fn register_server_rpcs(reg: &mut RpcRegistry<ServerRpcArgs>) {
 #[element_component]
 pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let (show_shadows, set_show_shadows) = hooks.use_state(false);
-    let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
 
     FlowColumn::el([
         FlowRow(vec![
@@ -61,12 +61,13 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
             .style(ButtonStyle::Flat)
             .el(),
             Button::new("Dump Server World", {
-                let game_client = game_client;
+                let client_state = client_state;
                 move |world| {
-                    let game_client = game_client.clone();
+                    let client_state = client_state.clone();
                     let cache_dir = AssetsCacheDir.get(world.resource(asset_cache()));
                     world.resource(runtime()).clone().spawn(async move {
-                        if let Ok(Some(res)) = game_client.rpc(rpc_dump_world_hierarchy, ()).await {
+                        if let Ok(Some(res)) = client_state.rpc(rpc_dump_world_hierarchy, ()).await
+                        {
                             std::fs::create_dir_all(&cache_dir).ok();
                             let path = cache_dir.join("server_hierarchy.yml");
                             std::fs::write(&path, res).ok();

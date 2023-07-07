@@ -71,7 +71,7 @@ pub(crate) fn new_project(
                 {
                     if let Some(api_path) = api_path {
                         format!("ambient_api = {{ path = {:?} }}", api_path)
-                    } else if let Some(rev) = parse_git_revision(git_version::git_version!()) {
+                    } else if let Some(rev) = git_revision() {
                         format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}", rev)
                     } else {
                         format!("ambient_api = \"{}\"", env!("CARGO_PKG_VERSION"))
@@ -131,4 +131,11 @@ pub(crate) fn new_project(
     log::info!("Project \"{name}\" with id `{id}` created at {project_path:?}");
 
     Ok(())
+}
+
+#[cfg(not(feature = "production"))]
+fn git_revision() -> Option<String> {
+    parse_git_revision(git_version::git_version!(
+        args = ["--abbrev=10", "--always", "--long"]
+    ))
 }

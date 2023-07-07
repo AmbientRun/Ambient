@@ -1,8 +1,6 @@
 use std::sync::Arc;
 
-use ambient_app::{
-    gpu_world_sync_systems, world_instance_resources, world_instance_systems, AppResources,
-};
+use ambient_app::{gpu_world_sync_systems, world_instance_systems};
 use ambient_core::{
     camera::{get_active_camera, projection_view},
     gpu_ecs::GpuWorldSyncEvent,
@@ -50,22 +48,16 @@ impl std::fmt::Debug for TempSystem {
 impl ClientGameState {
     pub fn new(
         gpu: &Gpu,
-        world: &mut World,
         assets: AssetCache,
         player_id: String,
-        render_target: Arc<RenderTarget>,
         client_systems: SystemGroup,
-        client_resources: Entity,
+        all_resources: Entity,
     ) -> Self {
         let mut game_world = World::new("client_game_world");
         setup_audio(&mut game_world).unwrap();
-        let local_resources = world_instance_resources(AppResources::from_world(world))
-            .with(ambient_core::player::local_user_id(), player_id.clone())
-            .with(game_screen_render_target(), render_target)
-            .with_merge(client_resources);
 
         game_world
-            .add_components(game_world.resource_entity(), local_resources)
+            .add_components(game_world.resource_entity(), all_resources)
             .unwrap();
 
         let systems = SystemGroup::new(

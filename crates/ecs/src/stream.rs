@@ -174,6 +174,10 @@ impl WorldDiff {
             changes: despanwed.chain(spawned).chain(updated).collect_vec(),
         }
     }
+
+    pub fn len(&self) -> usize {
+        self.changes.len()
+    }
 }
 impl Display for WorldDiff {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

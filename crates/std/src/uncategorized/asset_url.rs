@@ -29,15 +29,15 @@ pub const ASSETS_PROTOCOL_SCHEME: &str = "ambient-assets";
 pub struct ServerBaseUrlKey;
 impl SyncAssetKey<AbsAssetUrl> for ServerBaseUrlKey {
     fn load(&self, _assets: AssetCache) -> AbsAssetUrl {
-        AbsAssetUrl::from_str("http://localhost:8999/content/").unwrap()
+        panic!("ServerBaseUrlKey should never be loaded implicitly");
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct ContentBaseUrlKey;
 impl SyncAssetKey<AbsAssetUrl> for ContentBaseUrlKey {
-    fn load(&self, assets: AssetCache) -> AbsAssetUrl {
-        ServerBaseUrlKey.load(assets)
+    fn load(&self, _assets: AssetCache) -> AbsAssetUrl {
+        panic!("ContentBaseUrlKey should never be loaded implicitely");
     }
 }
 
@@ -236,7 +236,9 @@ impl AbsAssetUrl {
         Ok(Self(self.to_download_raw_url(assets)?))
     }
     fn to_download_raw_url(&self, assets: &AssetCache) -> Result<Url, url::ParseError> {
-        self.to_download_url_with_base(&ContentBaseUrlKey.get(assets))
+        let content_url = ContentBaseUrlKey.get(assets);
+
+        self.to_download_url_with_base(&content_url)
     }
     pub async fn download_bytes(&self, assets: &AssetCache) -> anyhow::Result<Vec<u8>> {
         if let Some(path) = self.to_file_path()? {

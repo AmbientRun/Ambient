@@ -19,13 +19,13 @@ use std::{
 };
 
 use crate::{
-    client_game_state::ClientGameState, log_network_result, proto::client::SharedClientState,
+    client_game_state::ClientGameState, log_network_result, proto::client::SharedClientGameState,
     server, NetworkError, RPC_BISTREAM_ID,
 };
 
 components!("network::client", {
     @[Resource]
-    game_client: Option<GameClient>,
+    client_state: Option<ClientState>,
     @[Resource]
     bi_stream_handlers: BiStreamHandlers,
     @[Resource]
@@ -63,7 +63,7 @@ pub type DatagramHandlers = HashMap<u32, (&'static str, DatagramHandler)>;
 /// Represents either side of a high level connection to a game client of some sort.
 ///
 /// Allows making requests and RPC, etc
-pub trait ClientConnection: 'static + Send + Sync {
+pub trait NetworkTransport: 'static + Send + Sync {
     /// Performs a bidirectional request and waits for a response.
     fn request_bi(&self, id: u32, data: Bytes) -> BoxFuture<Result<Bytes, NetworkError>>;
     /// Performs a unidirectional request without waiting for a response.
@@ -77,18 +77,18 @@ pub(crate) enum Control {
 
 #[derive(Clone)]
 /// Manages the client side connection to the server.
-pub struct GameClient {
-    pub connection: Arc<dyn ClientConnection>,
+pub struct ClientState {
+    pub transport: Arc<dyn NetworkTransport>,
     pub rpc_registry: Arc<RpcRegistry<server::RpcArgs>>,
     pub user_id: String,
-    pub game_state: SharedClientState,
+    pub game_state: SharedClientGameState,
     pub uid: String,
 }
 
-impl Debug for GameClient {
+impl Debug for ClientState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("GameClient")
-            .field("connection", &self.connection.type_name())
+            .field("connection", &self.transport.type_name())
             .field("rpc_registry", &self.rpc_registry)
             .field("user_id", &self.user_id)
             .field("game_state", &self.game_state)
@@ -97,15 +97,15 @@ impl Debug for GameClient {
     }
 }
 
-impl GameClient {
+impl ClientState {
     pub fn new(
-        connection: Arc<dyn ClientConnection>,
+        transport: Arc<dyn NetworkTransport>,
         rpc_registry: Arc<RpcRegistry<server::RpcArgs>>,
         game_state: Arc<Mutex<ClientGameState>>,
         user_id: String,
     ) -> Self {
         Self {
-            connection,
+            transport,
             rpc_registry,
             user_id,
             game_state,
@@ -123,7 +123,7 @@ impl GameClient {
         func: F,
         req: Req,
     ) -> Result<Resp, NetworkError> {
-        rpc_request(&*self.connection, self.rpc_registry.clone(), func, req).await
+        rpc_request(&*self.transport, self.rpc_registry.clone(), func, req).await
     }
 
     pub fn make_standalone_rpc_wrapper<
@@ -137,7 +137,7 @@ impl GameClient {
         func: F,
     ) -> Cb<impl Fn(Req)> {
         let runtime = runtime.clone();
-        let (connection, rpc_registry) = (self.connection.clone(), self.rpc_registry.clone());
+        let (connection, rpc_registry) = (self.transport.clone(), self.rpc_registry.clone());
         cb(move |req| {
             let (connection, rpc_registry) = (connection.clone(), rpc_registry.clone());
             runtime.spawn(async move {
@@ -158,14 +158,14 @@ async fn rpc_request<
     F: Fn(Args, Req) -> L + Send + Sync + Copy + 'static,
     L: Future<Output = Resp> + Send,
 >(
-    conn: &dyn ClientConnection,
+    transport: &dyn NetworkTransport,
     reg: Arc<RpcRegistry<Args>>,
     func: F,
     req: Req,
 ) -> Result<Resp, NetworkError> {
     let req = reg.serialize_req(func, req);
 
-    let resp = conn.request_bi(RPC_BISTREAM_ID, req.into()).await?;
+    let resp = transport.request_bi(RPC_BISTREAM_ID, req.into()).await?;
 
     let resp = reg.deserialize_resp(func, &resp)?;
     Ok(resp)
@@ -192,7 +192,8 @@ impl<T> UseOnce<T> {
 }
 
 pub type CleanupFunc = Box<dyn FnOnce() + Send + Sync>;
-pub type LoadedFunc = Cb<dyn Fn(GameClient) -> anyhow::Result<CleanupFunc> + Send + Sync>;
+pub type LoadedFunc =
+    Cb<dyn Fn(&ClientState, &mut ClientGameState) -> anyhow::Result<CleanupFunc> + Send + Sync>;
 
 #[element_component]
 pub fn GameClientWorld(hooks: &mut Hooks) -> Element {

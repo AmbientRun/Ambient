@@ -1,8 +1,8 @@
-use std::process::ExitStatus;
+use std::{fmt::Display, process::ExitStatus};
 
 #[derive(Debug)]
 pub(super) struct Failure {
-    test: String,
+    pub test: String,
     stdout: String,
     stderr: String,
     status: ExitStatus,
@@ -21,12 +21,22 @@ impl Failure {
             status: output.status,
         }
     }
-    pub(super) fn log(&self) {
-        log::error!("{} failed with status {}", self.test, self.status);
-        log::error!("stdout:");
-        self.stdout.lines().for_each(|line| eprintln!("{line}"));
-        log::error!("stderr:");
-        self.stderr.lines().for_each(|line| eprintln!("{line}"));
-        eprintln!(); // Space between consecutive errors.
+}
+
+impl Display for Failure {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "{} failed with status {}", self.test, self.status)?;
+        writeln!(f, "stdout: ")?;
+
+        self.stdout
+            .lines()
+            .try_for_each(|line| writeln!(f, "    {}", line))?;
+        writeln!(f, "stderr: ")?;
+
+        self.stderr
+            .lines()
+            .try_for_each(|line| writeln!(f, "    {}", line))?;
+
+        Ok(())
     }
 }

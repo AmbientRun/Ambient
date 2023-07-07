@@ -56,8 +56,7 @@ pub fn MainApp(_hooks: &mut Hooks) -> Element {
 
             (systems(), resources)
         }),
-        on_loaded: cb(move |client| {
-            let mut game_state = client.game_state.lock();
+        on_loaded: cb(move |_, game_state| {
             let world = &mut game_state.world;
 
             // TODO: client side wasm on the web
