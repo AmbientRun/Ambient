@@ -9,7 +9,7 @@ The client is compiled using the `wasm32-unknown-unknown` toolchain into a `.was
 - [wasm-pack](https://rustwasm.github.io/wasm-pack/)
 - [wasm-bindgen](https://github.com/rustwasm/wasm-bindgen)
 - Node `>= v.19`
-- WebGPU supported web browser (Chrome Canary)
+- WebGPU supported web browser (recent enough)
 
 ## Setup
 
@@ -28,7 +28,7 @@ rustup target add wasm32-unknown-unknown
 From the root run:
 
 ```
-wasm-pack build client
+wasm-pack build client --dev
 ```
 
 ## Running
@@ -36,14 +36,20 @@ wasm-pack build client
 ```
 cd www
 
-npm run start
+npm run dev
 ```
 
-This will launch `webpack dev server` on port `8080`
+This will launch `vite dev server` and bind to `:5173`. See the command output for exact url
 
-Open chrome (or another browser which supports webgpu)
+**Note**: the self-signed certificate is only valid for `127.0.0.1`
 
-[localhost:8080](http://localhost:8080)
+## Connecting
+
+If using self-signed certificates, you need to toll Chrome to trust it
+
+```sh
+./scripts/launch_chrome.sh
+```
 
 ## Known Issues
 
