@@ -11,7 +11,7 @@ use tracing::{debug_span, Instrument};
 use uuid::Uuid;
 
 use crate::{
-    client::ClientConnection,
+    client::NetworkTransport,
     log_network_result,
     proto::ServerPush,
     server::{
@@ -28,7 +28,7 @@ use super::ClientRequest;
 /// The server starts in the `PendingConnection` state, until
 /// the clients sends a `Connect` request.
 #[derive(Default, Debug)]
-pub enum ServerState {
+pub enum ServerProtoState {
     #[default]
     PendingConnection,
     Connected(ConnectedClient),
@@ -62,7 +62,7 @@ pub struct ConnectionData {
     /// Unique identifier for this session
     /// Used to declare ownership of the player entity when multiple simultaneous connections are made or reconnected
     pub(crate) connection_id: Uuid,
-    pub(crate) conn: Arc<dyn ClientConnection>,
+    pub(crate) conn: Arc<dyn NetworkTransport>,
     pub(crate) world_stream_filter: WorldStreamFilter,
 }
 
@@ -100,7 +100,7 @@ impl Player {
     }
 }
 
-impl ServerState {
+impl ServerProtoState {
     /// Processes a client request
     pub fn process_control(
         &mut self,
@@ -184,8 +184,8 @@ impl ServerState {
         });
     }
 
+    #[tracing::instrument(level = "debug")]
     pub fn process_disconnect(&mut self, data: &ConnectionData) {
-        tracing::info!("Client wants to disconnect");
         if let Self::Connected(ConnectedClient { user_id, .. }) = self {
             tracing::info!(?user_id, "User disconnected");
             let mut state = data.state.lock();
@@ -365,7 +365,8 @@ pub async fn handle_diffs<S>(
     S: Unpin + AsyncWrite,
 {
     while let Some(msg) = diffs_rx.next().await {
-        let span = tracing::debug_span!("send_world_diff", ?msg);
+        let span = tracing::debug_span!("send_world_diff");
+        tracing::trace!(diff=?msg);
         if let Err(err) = stream.send_bytes(msg).instrument(span).await {
             tracing::error!(?err, "Failed to send world diff.");
             break;

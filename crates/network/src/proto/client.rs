@@ -3,12 +3,15 @@ use std::sync::Arc;
 use ambient_ecs::{
     generated::components::core::network::is_remote_entity, ComponentRegistry, Entity, WorldDiff,
 };
-use ambient_std::{asset_cache::SyncAssetKeyExt, asset_url::ContentBaseUrlKey};
+use ambient_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    asset_url::ContentBaseUrlKey,
+};
 use anyhow::{bail, Context};
 use bytes::{Buf, Bytes};
 use parking_lot::Mutex;
 use tokio::io::AsyncReadExt;
-use tracing::debug_span;
+use tracing::{debug_span, Instrument};
 
 use crate::{
     client::{
@@ -21,21 +24,21 @@ use crate::{
 
 /// The client logic handler in a connected state
 ///
-/// Entered after the client has sent a connect request and received a `ServerInfo` message from the server, in no particular order.
+/// Entered after the client has sent a connect request and received a `ServerInfo` message from the server
 #[derive(Debug)]
 pub(crate) struct ConnectedClient {}
 
 #[derive(Debug)]
-pub(crate) enum ClientState {
-    Connecting(String),
+pub(crate) enum ClientProtoState {
+    Pending(String),
     Connected(ConnectedClient),
     Disconnected,
 }
 
 /// Holds the material world of the client.
-pub type SharedClientState = Arc<Mutex<ClientGameState>>;
+pub type SharedClientGameState = Arc<Mutex<ClientGameState>>;
 
-impl ClientState {
+impl ClientProtoState {
     pub fn process_disconnect(&mut self) {
         tracing::info!("Disconnecting client: {self:#?}");
 
@@ -44,13 +47,9 @@ impl ClientState {
 
     /// Processes an incoming control frame from the server.
     #[tracing::instrument(level = "debug")]
-    pub fn process_push(
-        &mut self,
-        state: &SharedClientState,
-        frame: ServerPush,
-    ) -> anyhow::Result<()> {
+    pub fn process_push(&mut self, assets: &AssetCache, frame: ServerPush) -> anyhow::Result<()> {
         match (frame, &self) {
-            (ServerPush::ServerInfo(server_info), Self::Connecting(_user_id)) => {
+            (ServerPush::ServerInfo(server_info), Self::Pending(_user_id)) => {
                 let current_version = get_version_with_revision();
 
                 if server_info.version != current_version {
@@ -61,8 +60,8 @@ impl ClientState {
                     );
                 }
 
-                let state = state.lock();
-                ContentBaseUrlKey.insert(&state.assets, server_info.content_base_url.clone());
+                tracing::debug!(content_base_url=?server_info.content_base_url, "Inserting content base url");
+                ContentBaseUrlKey.insert(&assets, server_info.content_base_url.clone());
                 tracing::debug!(?server_info.external_components, "Adding external components");
                 ComponentRegistry::get_mut().add_external(server_info.external_components);
 
@@ -84,7 +83,7 @@ impl ClientState {
     #[cfg(not(target_os = "unknown"))]
     pub fn process_client_stats(
         &mut self,
-        state: &SharedClientState,
+        state: &SharedClientGameState,
         stats: crate::client::NetworkStats,
     ) {
         use crate::client::client_network_stats;
@@ -94,12 +93,20 @@ impl ClientState {
         gs.world.add_resource(client_network_stats(), stats);
     }
 
-    /// Returns `true` if the client state is [`Connecting`].
+    /// Returns `true` if the client state is [`Pending`].
     ///
-    /// [`Connecting`]: ClientState::Connecting
+    /// [`Pending`]: ClientProtoState::Pending
     #[must_use]
-    pub(crate) fn is_connecting(&self) -> bool {
-        matches!(self, Self::Connecting(..))
+    pub(crate) fn is_pending(&self) -> bool {
+        matches!(self, Self::Pending(..))
+    }
+
+    /// Returns `true` if the client state is [`Connected`].
+    ///
+    /// [`Connected`]: ClientProtoState::Connected
+    #[must_use]
+    pub(crate) fn is_connected(&self) -> bool {
+        matches!(self, Self::Connected(..))
     }
 }
 
@@ -107,11 +114,11 @@ impl ConnectedClient {
     #[tracing::instrument(level = "debug")]
     pub fn process_diff(
         &mut self,
-        state: &SharedClientState,
+        state: &SharedClientGameState,
         diff: WorldDiff,
     ) -> anyhow::Result<()> {
         let mut gs = state.lock();
-        tracing::debug!(?diff, "Applying diff");
+        tracing::debug!(diff=?diff.len(), "Applying diff");
         diff.apply(
             &mut gs.world,
             Entity::new().with(is_remote_entity(), ()),
@@ -121,54 +128,57 @@ impl ConnectedClient {
     }
 
     /// Processes a server initiated bidirectional stream
-    #[tracing::instrument(level = "debug", skip(send, recv))]
     pub async fn process_bi(
         &mut self,
-        state: &SharedClientState,
+        state: &SharedClientGameState,
         send: PlatformSendStream,
         mut recv: PlatformRecvStream,
     ) -> anyhow::Result<()> {
         let id = recv.read_u32().await?;
 
-        let mut gs = state.lock();
-        let gs = &mut *gs;
-        let world = &mut gs.world;
-        let assets = gs.assets.clone();
+        let handler = {
+            let mut gs = state.lock();
+            let gs = &mut *gs;
+            let world = &mut gs.world;
+            let assets = gs.assets.clone();
 
-        let (name, handler) = world
-            .resource(bi_stream_handlers())
-            .get(&id)
-            .with_context(|| format!("No handler for stream {id}"))?
-            .clone();
+            let (name, handler) = world
+                .resource(bi_stream_handlers())
+                .get(&id)
+                .with_context(|| format!("No handler for stream {id}"))?
+                .clone();
 
-        let _span = debug_span!("handle_bi", name, id).entered();
-        handler(world, assets, send, recv);
+            handler(world, assets, send, recv).instrument(debug_span!("handle_bi", name, id))
+        };
+
+        handler.await;
 
         Ok(())
     }
 
     /// Processes a server initiated unidirectional stream
-    #[tracing::instrument(level = "debug", skip(recv))]
     pub async fn process_uni(
         &mut self,
-        state: &SharedClientState,
+        state: &SharedClientGameState,
         mut recv: PlatformRecvStream,
     ) -> anyhow::Result<()> {
         let id = recv.read_u32().await?;
+        let handler = {
+            let mut gs = state.lock();
+            let gs = &mut *gs;
+            let world = &mut gs.world;
+            let assets = gs.assets.clone();
 
-        let mut gs = state.lock();
-        let gs = &mut *gs;
-        let world = &mut gs.world;
-        let assets = gs.assets.clone();
+            let (name, handler) = world
+                .resource(uni_stream_handlers())
+                .get(&id)
+                .with_context(|| format!("No handler for stream {id}"))?
+                .clone();
 
-        let (name, handler) = world
-            .resource(uni_stream_handlers())
-            .get(&id)
-            .with_context(|| format!("No handler for stream {id}"))?
-            .clone();
+            handler(world, assets, recv).instrument(tracing::debug_span!("handle_uni", name, id))
+        };
 
-        let _span = debug_span!("handle_uni", name, id).entered();
-        handler(world, assets, recv);
+        handler.await;
 
         Ok(())
     }
@@ -177,7 +187,7 @@ impl ConnectedClient {
     #[tracing::instrument(level = "debug")]
     pub fn process_datagram(
         &mut self,
-        state: &SharedClientState,
+        state: &SharedClientGameState,
         mut data: Bytes,
     ) -> anyhow::Result<()> {
         if data.len() < 4 {

@@ -55,7 +55,7 @@ pub(crate) async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     let tests = tokio::spawn(parse_tests_from_manifest());
 
     if gi.ambient_path.is_none() {
-        run("Build ambient", "", build_package, &["ambient"], true).await?;
+        run("Build ambient", "", build_package, &["ambient"], true, &[]).await?;
     }
 
     let ambient_path = gi
@@ -87,20 +87,36 @@ pub(crate) async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     }
 
     // Build tests.
-    run("Building", ambient_path, build_tests, &tests, true).await?;
+    run("Building", ambient_path, build_tests, &tests, true, &[]).await?;
 
     match gi.mode {
         Mode::Update => {
-            run("Updating", ambient_path, update_tests, &tests, true).await?;
+            run(
+                "Updating",
+                ambient_path,
+                update_tests,
+                &tests,
+                true,
+                &[("RUST_LOG", "info")],
+            )
+            .await?;
         }
         Mode::Check => {
-            run("Checking", ambient_path, check_tests, &tests[..], true)
-                .await
-                .context(
-                    "Checking failed, possible causes:\n \
-                - Missing golden image: consider running `cargo cf golden-images update` first.\n \
-                - Golden image differs: investigate if the difference was intentional.\n",
-                )?;
+            run(
+                "Checking",
+                ambient_path,
+                check_tests,
+                &tests[..],
+                true,
+                &[("RUST_LOG", "info"), ("RUST_BACKTRACE", "1")],
+            )
+            .await
+            .context(
+                "Checking failed, possible causes:
+    - Golden image differs: investigate if the difference was intentional.
+    - Missing golden image: consider running `cargo cf golden-images update` first.
+",
+            )?;
         }
     }
 
@@ -211,6 +227,7 @@ async fn run<S: AsRef<str>>(
     runner: impl Fn(usize, &str, &str) -> (String, Vec<String>),
     tests: &[S],
     parallel: bool,
+    env: &[(&str, &str)],
 ) -> anyhow::Result<()> {
     let name = name.into();
     let concurrency = if parallel { num_cpus::get() } else { 1 };
@@ -237,6 +254,7 @@ async fn run<S: AsRef<str>>(
                     .join(" ");
 
                 let output = Command::new(cmd)
+                    .envs(env.into_iter().copied())
                     .args(args)
                     .kill_on_drop(true)
                     .output()
@@ -284,8 +302,14 @@ async fn run<S: AsRef<str>>(
 
     if !failures.is_empty() {
         for failure in &failures {
-            failure.log();
+            eprintln!("{failure}")
         }
+
+        log::error!(
+            "Failed tests: \n    {}",
+            failures.iter().map(|v| &v.test).join("\n    ")
+        );
+
         bail!("{} tests failed", failures.len());
     }
 

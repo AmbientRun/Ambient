@@ -149,8 +149,14 @@ pub fn parse_git_revision(version: &str) -> Option<String> {
     }
 }
 
+pub fn git_revision() -> Option<String> {
+    parse_git_revision(git_version::git_version!(
+        args = ["--abbrev=10", "--always", "--long"]
+    ))
+}
+
 #[test]
-fn test_git_revision() {
+fn test_parse_git_revision() {
     assert_eq!(parse_git_revision("9f244c3"), Some("9f244c3".to_string()));
     assert_eq!(
         parse_git_revision("9f244c3-modified"),
@@ -160,4 +166,17 @@ fn test_git_revision() {
         parse_git_revision("git-0.3.0-dev-g9f244c3"),
         Some("9f244c3".to_string())
     );
+}
+
+#[test]
+fn test_git_revision() {
+    let revision = String::from_utf8(
+        std::process::Command::new("git")
+            .args(["rev-parse", "--short=10", "HEAD"])
+            .output()
+            .expect("Failed to init git repo")
+            .stdout,
+    )
+    .expect("Invalid encoding");
+    assert_eq!(git_revision().as_deref(), Some(revision.trim()));
 }

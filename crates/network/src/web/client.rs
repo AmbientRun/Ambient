@@ -1,9 +1,13 @@
+use ambient_app::{world_instance_resources, AppResources};
 use ambient_core::{asset_cache, gpu, RuntimeKey};
 use ambient_ecs::{world_events, Entity, SystemGroup};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_std::{asset_cache::SyncAssetKeyExt, cb, Cb};
+use ambient_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    Cb,
+};
 use ambient_sys::{task::RuntimeHandle, time::sleep};
 use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Throbber};
 use anyhow::Context;
@@ -16,11 +20,11 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use url::Url;
 
 use crate::{
-    client::{Control, GameClient, GameClientRenderTarget, LoadedFunc},
-    client_game_state::ClientGameState,
+    client::{CleanupFunc, ClientState, Control, GameClientRenderTarget, LoadedFunc},
+    client_game_state::{game_screen_render_target, ClientGameState},
     log_network_result,
     proto::{
-        client::{ClientState, SharedClientState},
+        client::{ClientProtoState, SharedClientGameState},
         ClientRequest,
     },
     server::RpcArgs,
@@ -63,30 +67,22 @@ impl ElementComponent for GameClientView {
         hooks.provide_context(|| {
             GameClientRenderTarget(Arc::new(RenderTarget::new(&gpu, uvec2(1, 1), None)))
         });
+
         let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
 
         let assets = hooks.world.resource(asset_cache()).clone();
-        let game_state = hooks.use_ref_with(|world| {
-            let (systems, resources) = systems_and_resources();
-
-            ClientGameState::new(
-                &gpu,
-                world,
-                assets.clone(),
-                user_id.clone(),
-                render_target.0.clone(),
-                systems,
-                resources,
-            )
-        });
 
         // The game client will be set once a connection establishes
-        let (game_client, set_game_client) = hooks.use_state(None as Option<GameClient>);
+        let (client_state, set_client_state) = hooks.use_state(None as Option<ClientState>);
 
         // When the client is connected, run the update logic each frame
-        if game_client.is_some() {
+        if let Some(client_state) = &client_state {
             tracing::info!("Adding game logic hook");
-            run_game_logic(hooks, game_state.clone(), render_target);
+            run_game_logic(
+                hooks,
+                client_state.game_state.clone(),
+                render_target.clone(),
+            );
         }
 
         // TODO: allow remote shutdown
@@ -94,46 +90,80 @@ impl ElementComponent for GameClientView {
 
         let (err, set_error) = hooks.use_state(None);
 
-        hooks.use_local_task(|_| {
+        hooks.use_local_task(move |ui_world| {
+            let local_resources = world_instance_resources(AppResources::from_world(ui_world))
+                .with(game_screen_render_target(), render_target.0.clone());
+
             let task = async move {
+                // NOTE: this is here to simulate a little connection delay to test the
+                // robustness for execution before connect etc
+                //
+                // TODO: remove once the web is fully working
+                tracing::info!("Sleeping for 2 seconds to simulate connection delay");
                 sleep(Duration::from_millis(2000)).await;
+
                 let conn = Connection::connect(url.clone()).await.with_context(|| {
                     format!("Failed to establish a WebTransport  session to {url}")
                 })?;
 
                 tracing::info!("Established WebTransport session");
 
-                let (tx, proxy_rx) = flume::bounded(16);
-                let proxy = WebTransportProxy::new(tx);
+                let (proxy_tx, proxy_rx) = flume::bounded(32);
 
+                let mut proxy_tx = Some(WebTransportProxy::new(proxy_tx));
                 // Create a handle for the game client
-                let game_client = GameClient::new(
-                    Arc::new(proxy),
-                    Arc::new(create_rpc_registry()),
-                    game_state.clone(),
-                    user_id.clone(),
-                );
 
                 handle_connection(
-                    game_client,
                     conn,
+                    &assets,
                     user_id,
-                    cb(move |game_client| {
-                        let game_state = &game_client.game_state;
-                        {
+                    move |assets, user_id| {
+                        let (systems, resources) = systems_and_resources();
+
+                        let resources = local_resources
+                            .clone()
+                            .with(ambient_core::player::local_user_id(), user_id.into())
+                            .with_merge(resources);
+
+                        let game_state = ClientGameState::new(
+                            &gpu,
+                            assets.clone(),
+                            user_id.into(),
+                            systems,
+                            resources,
+                        );
+
+                        // Create a handle for the game client
+                        let client_state = ClientState::new(
+                            Arc::new(proxy_tx.take().expect("on_loaded called twice")),
+                            Arc::new(create_rpc_registry()),
+                            Arc::new(Mutex::new(game_state)),
+                            user_id.into(),
+                        );
+
+                        let game_state = &client_state.game_state;
+                        tracing::info!("Setting game state");
+                        let cleanup = {
+                            // Lock before setting
+                            let game_state = &mut game_state.lock();
+
                             // Updates the game client context in the Ui tree
-                            set_game_client(Some(game_client.clone()));
                             // Update the resources on the client side world to reflect the new connection
                             // state
-                            let world = &mut game_state.lock().world;
-                            world.add_resource(
-                                crate::client::game_client(),
-                                Some(game_client.clone()),
+
+                            game_state.world.add_resource(
+                                crate::client::client_state(),
+                                Some(client_state.clone()),
                             );
-                        }
-                        (on_loaded)(game_client)
-                    }),
-                    game_state,
+
+                            (on_loaded)(&client_state, game_state)?
+                        };
+
+                        // Set the client last so that the game state is initialized first
+                        set_client_state(Some(client_state.clone()));
+
+                        Ok((game_state.clone(), cleanup))
+                    },
                     control_rx,
                     proxy_rx,
                 )
@@ -169,12 +199,12 @@ impl ElementComponent for GameClientView {
             return Dock(vec![Text::el("Error").header_style(), Text::el(err)]).el();
         }
 
-        if let Some(game_client) = game_client {
+        if let Some(client_state) = client_state {
             // Provide the context
-            hooks.provide_context(|| game_client.clone());
+            hooks.provide_context(|| client_state.clone());
             hooks
                 .world
-                .add_resource(crate::client::game_client(), Some(game_client.clone()));
+                .add_resource(crate::client::client_state(), Some(client_state.clone()));
 
             // FlowRow(vec![Text::el(format!("Connected")), inner]).el()
             inner
@@ -190,7 +220,7 @@ impl ElementComponent for GameClientView {
 
 fn run_game_logic(
     hooks: &mut Hooks,
-    game_state: SharedClientState,
+    game_state: SharedClientGameState,
     render_target: GameClientRenderTarget,
 ) {
     let world_event_reader = Mutex::new(hooks.world.resource(world_events()).reader());
@@ -216,17 +246,16 @@ fn run_game_logic(
 }
 
 async fn handle_connection(
-    game_client: GameClient,
     mut conn: Connection,
+    assets: &AssetCache,
     user_id: String,
-    on_loaded: LoadedFunc,
-    state: SharedClientState,
+    mut on_loaded: impl FnMut(&AssetCache, &str) -> anyhow::Result<(SharedClientGameState, CleanupFunc)>,
     control_rx: flume::Receiver<Control>,
     proxy_rx: flume::Receiver<ProxyMessage>,
 ) -> anyhow::Result<()> {
     tracing::info!("Handling client connection");
     tracing::info!("Opening control stream");
-    let assets = state.lock().assets.clone();
+
     let runtime = RuntimeKey.get(&assets);
 
     let mut request_send = FramedSendStream::new(conn.open_uni().await?);
@@ -243,7 +272,7 @@ async fn handle_connection(
         .send(ClientRequest::Connect(user_id.clone()))
         .await?;
 
-    let mut client = ClientState::Connecting(user_id);
+    let mut client = ClientProtoState::Pending(user_id.clone());
 
     tracing::info!("Accepting control stream from server");
     let mut push_recv = FramedRecvStream::new(
@@ -253,11 +282,16 @@ async fn handle_connection(
     );
 
     tracing::info!("Entering client loop");
-    while client.is_connecting() {
+    while client.is_pending() {
         tracing::info!("Waiting for server to accept connection and send server info");
         if let Some(frame) = push_recv.next().await {
-            client.process_push(&state, frame?)?;
+            client.process_push(&assets, frame?)?;
         }
+    }
+
+    if !client.is_connected() {
+        tracing::warn!("Connection failed or was denied");
+        return Ok(());
     }
 
     tracing::info!("Accepting diff stream");
@@ -267,7 +301,7 @@ async fn handle_connection(
             .ok_or(NetworkError::ConnectionClosed)??,
     );
 
-    let cleanup = on_loaded(game_client)?;
+    let (shared_client_state, cleanup) = on_loaded(&assets, &user_id)?;
     let on_disconnect = move || {
         tracing::info!("Running connection cleanup");
         cleanup()
@@ -280,10 +314,10 @@ async fn handle_connection(
 
     tracing::info!("Client connected");
 
-    while let ClientState::Connected(connected) = &mut client {
+    while let ClientProtoState::Connected(connected) = &mut client {
         tokio::select! {
             Some(frame) = push_recv.next() => {
-                client.process_push(&state, frame?)?;
+                client.process_push(&assets, frame?)?;
             }
 
             Some(message) = proxy_rx.next() => {
@@ -301,19 +335,19 @@ async fn handle_connection(
             }
 
             Some(Ok(datagram)) = conn.read_datagram() => {
-                connected.process_datagram(&state, datagram)?;
+                connected.process_datagram(&shared_client_state, datagram)?;
             }
 
             Some(Ok((send, recv))) = conn.accept_bi() => {
-                connected.process_bi(&state, send, recv).await?;
+                connected.process_bi(&shared_client_state, send, recv).await?;
             }
 
             Some(Ok(recv)) = conn.accept_uni() => {
-                connected.process_uni(&state, recv).await?;
+                connected.process_uni(&shared_client_state, recv).await?;
             }
 
             Some(diff) = diff_stream.next() => {
-                connected.process_diff(&state, diff?)?;
+                connected.process_diff(&shared_client_state, diff?)?;
             }
         }
     }

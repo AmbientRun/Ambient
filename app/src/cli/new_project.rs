@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use ambient_project::Identifier;
-use ambient_std::parse_git_revision;
+use ambient_std::git_revision;
 use anyhow::Context;
 use convert_case::Casing;
 
@@ -44,9 +44,6 @@ pub(crate) fn new_project(
         .replace("{{id}}", id.as_ref())
         .replace("{{name}}", name);
 
-    #[cfg(not(feature = "production"))]
-    log::info!("Ambient git version: {}", git_version::git_version!());
-
     let cargo_toml = {
         // Special-case creating an example in guest/rust/examples so that it "Just Works".
         let segments = project_path.iter().collect::<Vec<_>>();
@@ -70,11 +67,15 @@ pub(crate) fn new_project(
                 #[cfg(not(feature = "production"))]
                 {
                     if let Some(api_path) = api_path {
+                        log::info!("Ambient path: {}", api_path);
                         format!("ambient_api = {{ path = {:?} }}", api_path)
-                    } else if let Some(rev) = parse_git_revision(git_version::git_version!()) {
+                    } else if let Some(rev) = git_revision() {
+                        log::info!("Ambient revision: {}", rev);
                         format!("ambient_api = {{ git = \"https://github.com/AmbientRun/Ambient.git\", rev = \"{}\" }}", rev)
                     } else {
-                        format!("ambient_api = \"{}\"", env!("CARGO_PKG_VERSION"))
+                        let version = env!("CARGO_PKG_VERSION");
+                        log::info!("Ambient version: {}", version);
+                        format!("ambient_api = \"{}\"", version)
                     }
                 },
                 false,

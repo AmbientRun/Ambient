@@ -10,7 +10,7 @@ use ambient_ecs::{
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_intent::client_push_intent;
-use ambient_network::{client::GameClient, hooks::use_remote_component};
+use ambient_network::{client::ClientState, hooks::use_remote_component};
 use ambient_physics::collider::{character_controller_height, character_controller_radius, mass};
 use ambient_std::{cb, Cb};
 use ambient_ui_native::{
@@ -32,20 +32,16 @@ pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
     // tracing::info!("Drawing EntityEditor");
     let (entity, set_entity) = hooks.use_state(None);
     hooks.provide_context(|| EditingEntityContext(entity_id));
-    let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
 
     hooks.use_interval_deps(
         Duration::from_millis(100),
         false,
         entity_id,
-        closure!(clone set_entity, clone game_client, |&entity_id| {
+        closure!(clone set_entity, clone client_state, |&entity_id| {
             ambient_profiling::scope!("EntityEditor::update_entity_data");
-            let game_state = game_client.game_state.lock();
-            if let Ok(data) = game_state.world.clone_entity(entity_id) {
-                set_entity(Some(data));
-            } else {
-                set_entity(None);
-            }
+            let client_state = client_state.game_state.lock();
+            set_entity(client_state.world.clone_entity(entity_id).ok());
         }),
     );
 
@@ -66,7 +62,7 @@ pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
                 value: entity,
                 on_change: cb(move |change| {
                     runtime.spawn(client_push_intent(
-                        game_client.clone(),
+                        client_state.clone(),
                         intent_component_change(),
                         (entity_id, change),
                         None,
@@ -79,9 +75,9 @@ pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
             // if let Some(translation) = translation {
             //     Button::new("Teleport to entity", {
             //         move |_| {
-            //             let game_client = game_client.clone();
+            //             let client_state = client_state.clone();
             //             runtime.spawn(async move {
-            //                 game_client.rpc(rpc_teleport_player, translation).await.ok();
+            //                 client_state.rpc(rpc_teleport_player, translation).await.ok();
             //             });
             //         }
             //     })

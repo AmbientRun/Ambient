@@ -10,9 +10,9 @@ use ambient_core::{
 use ambient_ecs::{Entity, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::{
-    client::{client_network_stats, GameClientRenderTarget},
+    client::{client_network_stats, ClientState, GameClientRenderTarget, GameClientWorld},
     hooks::use_remote_resource,
-    native::client::{GameClientView, ResolvedAddr},
+    native::client::{ClientView, ResolvedAddr},
 };
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_sys::time::Instant;
@@ -125,11 +125,16 @@ fn MainApp(
     FocusRoot::el([
         UICamera.el(),
         ambient_client_shared::player::PlayerRawInputHandler.el(),
-        WindowSized::el([GameClientView {
+        WindowSized::el([ClientView {
             server_addr,
             user_id,
-            on_loaded: cb(move |client| {
-                let mut game_state = client.game_state.lock();
+            // NOTE: client.game_state is **locked** and accesible through game_state.
+            //
+            // This is to prevent another thread from updating using the client after connection but
+            // just before `on_loaded`. This is a very small window of time, but does occasionally
+            // happen, especially when joining a server which is already running and finished
+            // loading.
+            on_loaded: cb(move |_, game_state| {
                 let world = &mut game_state.world;
 
                 wasm::initialize(world).unwrap();

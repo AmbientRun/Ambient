@@ -7,7 +7,7 @@ use ambient_debugger::Debugger;
 use ambient_ecs::{generated::messages, EntityId};
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_network::client::{GameClient, GameClientRenderTarget, GameClientWorld};
+use ambient_network::client::{ClientState, GameClientRenderTarget, GameClientWorld};
 use ambient_shared_types::CursorIcon;
 use ambient_ui_native::{
     cb, docking, padding, width, Borders, Button, Dock, MeasureSize, ScrollArea, ScrollAreaSizing,
@@ -17,7 +17,7 @@ use glam::{uvec2, vec4, Vec2};
 
 #[element_component]
 pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
-    let (state, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
     let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
 
     let (show_ecs, set_show_ecs) = hooks.use_state(true);
@@ -39,7 +39,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     });
 
     hooks.use_frame({
-        let state = state.clone();
+        let state = client_state.clone();
         let render_target = render_target.clone();
         let set_w = set_w.clone();
         let set_w_memory = set_w_memory.clone();
@@ -109,7 +109,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                             ScrollAreaSizing::FitParentWidth,
                             ECSEditor {
                                 world: Arc::new(InspectableAsyncWorld(cb({
-                                    let state = state.clone();
+                                    let state = client_state.clone();
                                     move |res| {
                                         let state = state.game_state.lock();
                                         res(&state.world)
@@ -117,7 +117,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                                 }))),
                             }
                             .el()
-                            .memoize_subtree(state.uid),
+                            .memoize_subtree(client_state.uid),
                         )
                     } else {
                         set_w(0.0);
@@ -136,7 +136,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
         if show_debug {
             Debugger {
                 get_state: cb(move |cb| {
-                    let mut game_state = state.game_state.lock();
+                    let mut game_state = client_state.game_state.lock();
                     let game_state = &mut *game_state;
                     cb(
                         &mut game_state.renderer,

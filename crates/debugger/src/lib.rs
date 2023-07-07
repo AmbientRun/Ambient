@@ -12,7 +12,7 @@ use ambient_core::{
 use ambient_ecs::{query, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_gizmos::{gizmos, GizmoPrimitive};
-use ambient_network::{client::GameClient, server::RpcArgs as ServerRpcArgs};
+use ambient_network::{client::ClientState, server::RpcArgs as ServerRpcArgs};
 use ambient_renderer::{RenderTarget, Renderer};
 use ambient_rpc::RpcRegistry;
 use ambient_shared_types::{ModifiersState, VirtualKeyCode};
@@ -73,7 +73,7 @@ fn dump_to_user(_assets: &AssetCache, _label: &'static str, s: String) {
 #[element_component]
 pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
     let (show_shadows, set_show_shadows) = hooks.use_state(false);
-    let (game_client, _) = hooks.consume_context::<GameClient>().unwrap();
+    let (client_state, _) = hooks.consume_context::<ClientState>().unwrap();
 
     FlowColumn::el([
         FlowRow(vec![
@@ -90,12 +90,13 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
             .style(ButtonStyle::Flat)
             .el(),
             Button::new("Dump Server World", {
-                let game_client = game_client;
+                let client_state = client_state;
                 move |world| {
                     let assets = world.resource(asset_cache()).clone();
-                    let game_client = game_client.clone();
+                    let client_state = client_state.clone();
                     world.resource(runtime()).clone().spawn(async move {
-                        if let Ok(Some(res)) = game_client.rpc(rpc_dump_world_hierarchy, ()).await {
+                        if let Ok(Some(res)) = client_state.rpc(rpc_dump_world_hierarchy, ()).await
+                        {
                             dump_to_user(&assets, "server_hierarchy.yml", res);
                         }
                     });

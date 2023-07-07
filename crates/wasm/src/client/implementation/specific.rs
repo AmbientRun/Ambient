@@ -11,7 +11,7 @@ use ambient_core::{
 };
 use ambient_gpu::texture::Texture;
 use ambient_input::{player_prev_raw_input, player_raw_input};
-use ambient_network::client::game_client;
+use ambient_network::client::client_state;
 use ambient_procedurals::{
     new_material_handle, new_mesh_handle, new_sampler_handle, new_texture_handle,
     procedural_storage,
@@ -50,10 +50,10 @@ impl wit::client_message::Host for Bindings {
         match target {
             WitTarget::ServerUnreliable | WitTarget::ServerReliable => {
                 let connection = world
-                    .resource(game_client())
+                    .resource(client_state())
                     .as_ref()
                     .context("no game client")?
-                    .connection
+                    .transport
                     .clone();
 
                 message::send_networked(

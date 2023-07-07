@@ -170,6 +170,7 @@ impl RuntimeHandle {
     }
 }
 
+#[must_use = "Futures do nothing if not polled"]
 pub struct PlatformBoxFuture<T>(platform::task::PlatformBoxFutureImpl<T>);
 
 impl<T> PlatformBoxFuture<T> {
