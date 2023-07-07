@@ -365,29 +365,36 @@ impl Printer {
     }
 
     fn print_scope(&mut self, items: &ItemMap, scope: &Scope) -> anyhow::Result<()> {
-        for id in scope.components.values() {
-            self.print_component(items, &*items.get(*id)?)?;
-        }
+        self.print_indent();
+        println!("{}", fully_qualified_path(items, scope)?);
 
-        for id in scope.concepts.values() {
-            self.print_concept(items, &*items.get(*id)?)?;
-        }
+        self.with_indent(|p| {
+            for id in scope.components.values() {
+                p.print_component(items, &*items.get(*id)?)?;
+            }
 
-        for id in scope.messages.values() {
-            self.print_message(items, &*items.get(*id)?)?;
-        }
+            for id in scope.concepts.values() {
+                p.print_concept(items, &*items.get(*id)?)?;
+            }
 
-        for id in scope.types.values() {
-            self.print_type(items, &*items.get(*id)?)?;
-        }
+            for id in scope.messages.values() {
+                p.print_message(items, &*items.get(*id)?)?;
+            }
 
-        for id in scope.attributes.values() {
-            self.print_attribute(items, &*items.get(*id)?)?;
-        }
+            for id in scope.types.values() {
+                p.print_type(items, &*items.get(*id)?)?;
+            }
 
-        for (_, id) in scope.scopes.values() {
-            self.print_scope(items, &*items.get(*id)?)?;
-        }
+            for id in scope.attributes.values() {
+                p.print_attribute(items, &*items.get(*id)?)?;
+            }
+
+            for (_, id) in scope.scopes.values() {
+                p.print_scope(items, &*items.get(*id)?)?;
+            }
+
+            Ok(())
+        })?;
 
         Ok(())
     }
@@ -398,6 +405,9 @@ impl Printer {
 
         self.with_indent(|p| {
             p.print_indent();
+            println!("type: {}", write_resolvable_id(items, &component.type_)?);
+
+            p.print_indent();
             println!("name: {:?}", component.name.as_deref().unwrap_or_default());
 
             p.print_indent();
@@ -407,7 +417,7 @@ impl Printer {
             );
 
             p.print_indent();
-            println!("type: {}", write_resolvable_id(items, &component.type_)?);
+            println!("default: {:?}", component.default);
 
             p.print_indent();
             println!("attributes:");
@@ -418,9 +428,6 @@ impl Printer {
                 }
                 Ok(())
             })?;
-
-            p.print_indent();
-            println!("default: {:?}", component.default);
 
             Ok(())
         })
