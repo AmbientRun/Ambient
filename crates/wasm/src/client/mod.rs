@@ -1,6 +1,7 @@
 use crate::shared::{self, client_bytecode_from_url, module_bytecode, ModuleBytecode};
 use ambient_core::{asset_cache, async_ecs::async_run, runtime};
 use ambient_ecs::{query, EntityId, SystemGroup, World};
+use ambient_guest_bridge::components::text::hyperlink;
 use ambient_std::{
     asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl, download_asset::BytesFromUrl,
 };
@@ -27,6 +28,12 @@ pub fn systems() -> SystemGroup {
     SystemGroup::new(
         "core/wasm/client",
         vec![
+            query(hyperlink().changed()).to_system(move |q, world, qs, _| {
+                for (id, url) in q.collect_cloned(world, qs) {
+                    webbrowser::open(&url).ok();
+                    world.despawn(id);
+                }
+            }),
             query(client_bytecode_from_url().changed()).to_system(move |q, world, qs, _| {
                 for (id, url) in q.collect_cloned(world, qs) {
                     let url = match AbsAssetUrl::from_str(&url) {
