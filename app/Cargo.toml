@@ -79,7 +79,6 @@ walkdir = { workspace = true }
 image = { workspace = true }
 tracing = { workspace = true }
 image_hasher = { workspace = true }
-git-version = { workspace = true }
 
 [dev-dependencies]
 glam = { workspace = true }
