@@ -30,7 +30,12 @@ pub fn systems() -> SystemGroup {
         vec![
             query(hyperlink().changed()).to_system(move |q, world, qs, _| {
                 for (id, url) in q.collect_cloned(world, qs) {
-                    webbrowser::open(&url).ok();
+                    match open::that(&url) {
+                        Ok(()) => log::info!("Opened '{}'", &url),
+                        Err(err) => {
+                            log::error!("An error occurred when opening '{}': {}", &url, err)
+                        }
+                    }
                     world.despawn(id);
                 }
             }),

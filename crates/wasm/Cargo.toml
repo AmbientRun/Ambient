@@ -27,7 +27,6 @@ ambient_shared_types = { path = "../../shared_crates/shared_types", features = [
     "native",
 ] }
 
-webbrowser = "0.8.10"
 
 anyhow = { workspace = true }
 async-trait = { workspace = true }
@@ -43,6 +42,7 @@ indoc = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
 once_cell = { workspace = true }
+open =  { workspace = true }
 parking_lot = { workspace = true }
 paste = { workspace = true }
 ambient_profiling = { workspace = true }

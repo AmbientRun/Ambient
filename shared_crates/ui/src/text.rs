@@ -80,7 +80,6 @@ pub fn Hyperlink(
     url: String,
 ) -> Element {
     crate::prelude::Button::new(&url.clone(), move |world| {
-        println!("Opening url {}", &url);
         let link = Entity::new().with(hyperlink(), url.clone());
         world.spawn(link);
     })
