@@ -1,6 +1,6 @@
 [ember]
 id = "instancing"
-organization = "ambient"
+owner = "ambient"
 name = "Instancing"
 version = "0.0.1"
 

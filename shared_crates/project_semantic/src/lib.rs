@@ -88,7 +88,7 @@ impl Semantic {
         )
     }
 
-    // TODO(philpax): This merges organizations together, which may lead to some degree of semantic conflation,
+    // TODO(philpax): This merges owners together, which may lead to some degree of semantic conflation,
     // especially with dependencies: a parent may be able to access a child's dependencies.
     //
     // This is a simplifying assumption that will enable the cross-cutting required for Ambient's ecosystem,
@@ -115,24 +115,24 @@ impl Semantic {
         let manifest = Manifest::parse(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename:?}"))?;
 
-        // Create an organization scope if necessary
-        let organization_key = manifest.ember.organization.as_ref().with_context(|| {
+        // Create an owner scope if necessary
+        let owner_key = manifest.ember.owner.as_ref().with_context(|| {
             format!(
-                "file {:?} has no organization, which is required for a top-level ember",
+                "file {:?} has no owner, which is required for a top-level ember",
                 file_provider.full_path(filename)
             )
         })?;
 
-        let organization_id = self
+        let owner_id = self
             .items
             .get(self.root_scope)?
             .scopes
-            .get(organization_key)
+            .get(owner_key)
             .map(|(_, id)| *id);
-        let organization_id = organization_id.unwrap_or_else(|| {
+        let owner_id = owner_id.unwrap_or_else(|| {
             let id = self.items.add(Scope::new(ItemData {
                 parent_id: Some(self.root_scope),
-                id: organization_key.clone(),
+                id: owner_key.clone(),
                 is_ambient: false,
             }));
 
@@ -140,15 +140,15 @@ impl Semantic {
                 .get_mut(self.root_scope)
                 .unwrap()
                 .scopes
-                .insert(organization_key.clone(), (Default::default(), id));
+                .insert(owner_key.clone(), (Default::default(), id));
 
             id
         });
 
-        // Check that this scope hasn't already been created for this organization
+        // Check that this scope hasn't already been created for this owner
         let scope_id = manifest.ember.id.clone();
         if let Some((existing_path, existing_scope_id)) =
-            self.items.get(organization_id)?.scopes.get(&scope_id)
+            self.items.get(owner_id)?.scopes.get(&scope_id)
         {
             if existing_path == &file_provider.full_path(filename) {
                 return Ok(*existing_scope_id);
@@ -160,10 +160,10 @@ impl Semantic {
             );
         }
 
-        // Create a new scope and add it to the organization
+        // Create a new scope and add it to the owner
         let manifest_path = file_provider.full_path(filename);
         let item_id = self.add_scope_from_manifest(
-            Some(organization_id),
+            Some(owner_id),
             file_provider,
             manifest,
             manifest_path.clone(),
@@ -171,7 +171,7 @@ impl Semantic {
             is_ambient,
         )?;
         self.items
-            .get_mut(organization_id)?
+            .get_mut(owner_id)?
             .scopes
             .insert(scope_id, (manifest_path, item_id));
         Ok(item_id)

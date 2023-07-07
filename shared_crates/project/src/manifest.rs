@@ -49,7 +49,7 @@ impl Manifest {
 #[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
 pub struct Ember {
     pub id: Identifier,
-    pub organization: Option<Identifier>,
+    pub owner: Option<Identifier>,
     pub name: Option<String>,
     pub version: Option<Version>,
     pub description: Option<String>,
@@ -525,7 +525,7 @@ mod tests {
         const TOML: &str = r#"
         [ember]
         id = "dependencies"
-        organization = "ambient"
+        owner = "ambient"
         name = "dependencies"
         version = "0.0.1"
 
@@ -540,7 +540,7 @@ mod tests {
             Ok(Manifest {
                 ember: Ember {
                     id: i("dependencies"),
-                    organization: Some(i("ambient")),
+                    owner: Some(i("ambient")),
                     name: Some("dependencies".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     ..Default::default()

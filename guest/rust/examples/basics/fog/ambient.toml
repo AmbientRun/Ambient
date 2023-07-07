@@ -1,6 +1,6 @@
 [ember]
 id = "ambient-example-fog"
-organization = "ambient"
+owner = "ambient"
 name = "Fog"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/fog"

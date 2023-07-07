@@ -1,6 +1,6 @@
 [ember]
 id = "ambient-example-raw-text"
-organization = "ambient"
+owner = "ambient"
 name = "Raw Text"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/raw_text"

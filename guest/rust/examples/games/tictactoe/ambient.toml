@@ -1,6 +1,6 @@
 [ember]
 id = "ambient-example-tictactoe"
-organization = "ambient"
+owner = "ambient"
 name = "Tic Tac Toe"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/tictactoe"

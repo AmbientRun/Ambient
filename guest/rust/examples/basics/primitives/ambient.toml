@@ -1,6 +1,6 @@
 [ember]
 id = "ambient-example-primitives"
-organization = "ambient"
+owner = "ambient"
 name = "Primitives"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/primitives"

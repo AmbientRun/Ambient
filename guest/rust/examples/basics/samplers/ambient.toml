@@ -1,6 +1,6 @@
 [ember]
 id = "ambient-example-samplers"
-organization = "ambient"
+owner = "ambient"
 name = "samplers"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/samplers"

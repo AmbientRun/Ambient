@@ -1,6 +1,6 @@
 [ember]
 id = "ambient-example-skinmesh"
-organization = "ambient"
+owner = "ambient"
 name = "Skinmesh"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/skinmesh"

@@ -1,6 +1,6 @@
 [ember]
 id = "ambient-example-input"
-organization = "ambient"
+owner = "ambient"
 name = "input"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/input"

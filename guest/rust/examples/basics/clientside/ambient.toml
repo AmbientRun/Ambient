@@ -1,6 +1,6 @@
 [ember]
 id = "ambient-example-clientside"
-organization = "ambient"
+owner = "ambient"
 name = "clientside"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/clientside"

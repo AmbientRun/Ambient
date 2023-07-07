@@ -1,6 +1,6 @@
 [ember]
 id = "ambient-example-counter"
-organization = "ambient"
+owner = "ambient"
 name = "Counter"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/counter"

@@ -1,6 +1,6 @@
 [ember]
 id = "ambient-example-clock"
-organization = "ambient"
+owner = "ambient"
 name = "clock"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/clock"
