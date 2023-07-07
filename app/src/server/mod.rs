@@ -322,7 +322,7 @@ fn start_http_interface(
     runtime.spawn(async move {
         let addr = SocketAddr::from(([0, 0, 0, 0], http_interface_port));
 
-        tracing::info!(?project_path, "Starting HTTP interface on: {addr}");
+        tracing::debug!(?project_path, "Starting HTTP interface on: {addr}");
 
         if let Err(err) = serve(addr)
             .await

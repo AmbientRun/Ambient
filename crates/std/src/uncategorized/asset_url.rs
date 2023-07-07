@@ -237,7 +237,6 @@ impl AbsAssetUrl {
     }
     fn to_download_raw_url(&self, assets: &AssetCache) -> Result<Url, url::ParseError> {
         let content_url = ContentBaseUrlKey.get(assets);
-        log::info!("Converting {self} to a download url. Found {content_url:?}");
 
         self.to_download_url_with_base(&content_url)
     }

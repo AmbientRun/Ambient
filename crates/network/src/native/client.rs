@@ -110,10 +110,10 @@ impl ElementComponent for ClientView {
                 control_tx.send(Control::Disconnect).ok();
             }
         });
-        let gpu2 = Arc::clone(&gpu);
 
         // Run game logic
         {
+            let gpu = gpu.clone();
             let render_target = render_target.clone();
             let world_event_reader = Mutex::new(hooks.world.resource(world_events()).reader());
 
@@ -145,10 +145,7 @@ impl ElementComponent for ClientView {
 
         let (err, set_error) = hooks.use_state(None);
 
-        let assets2 = assets.clone();
         hooks.use_task(move |ui_world| {
-            let gpu = gpu2;
-
             let local_resources = world_instance_resources(AppResources::from_world(ui_world))
                 .with(game_screen_render_target(), render_target.0.clone());
             let task = async move {
@@ -158,7 +155,7 @@ impl ElementComponent for ClientView {
 
                 handle_connection(
                     conn.clone(),
-                    &assets2,
+                    &assets,
                     user_id,
                     move |assets, user_id| {
                         let (systems, resources) = systems_and_resources();
@@ -321,7 +318,7 @@ async fn handle_connection(
     while let ClientProtoState::Connected(connected) = &mut client {
         tokio::select! {
             Some(frame) = push_recv.next() => {
-                client.process_push(&assets, frame?)?;
+                client.process_push(assets, frame?)?;
             }
             _ = stats_timer.tick() => {
                 let stats = conn.stats();

@@ -99,6 +99,7 @@ impl ElementComponent for GameClientView {
                 // robustness for execution before connect etc
                 //
                 // TODO: remove once the web is fully working
+                tracing::info!("Sleeping for 2 seconds to simulate connection delay");
                 sleep(Duration::from_millis(2000)).await;
 
                 let conn = Connection::connect(url.clone()).await.with_context(|| {

@@ -140,8 +140,8 @@ fn MainApp(
             //
             // This is to prevent another thread from updating using the client after connection but
             // just before `on_loaded`. This is a very small window of time, but does occasionally
-            // happen, especially when joining a server which is already running and server
-            // immediately.
+            // happen, especially when joining a server which is already running and finished
+            // loading.
             on_loaded: cb(move |_, game_state| {
                 let world = &mut game_state.world;
 
