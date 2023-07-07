@@ -9,10 +9,11 @@ use std::path::Path;
 pub fn host_project(_input: TokenStream) -> TokenStream {
     TokenStream::from(
         ambient_project_macro_common::generate_code(
-            ManifestSource::Path(Path::new(ambient_schema::MANIFEST_PATH).to_owned()),
+            vec![(
+                ManifestSource::Path(Path::new(ambient_schema::MANIFEST_PATH).to_owned()),
+                false,
+            )],
             ambient_project_macro_common::Context::Host,
-            true,
-            true,
         )
         .unwrap(),
     )

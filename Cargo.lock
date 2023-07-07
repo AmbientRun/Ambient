@@ -1184,6 +1184,7 @@ name = "ambient_project_macro_common"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_project",
+ "ambient_project_semantic",
  "ambient_shared_types",
  "anyhow",
  "indoc",

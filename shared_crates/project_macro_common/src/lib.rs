@@ -1,20 +1,9 @@
 extern crate proc_macro;
 
-use ambient_project::{Component, Concept, ItemPath, ItemPathBuf, Manifest, Message};
+use ambient_project_semantic::{FileProvider, ItemMap, Scope, Semantic};
+use proc_macro2::TokenStream;
 use quote::quote;
-
-use proc_macro2::Ident;
-use std::path::PathBuf;
-use tree::Tree;
-
-#[cfg(test)]
-mod tests;
-
-mod component;
-mod concept;
-mod message;
-mod tree;
-mod util;
+use std::path::{Path, PathBuf};
 
 pub enum Context {
     Host,
@@ -26,86 +15,88 @@ pub enum Context {
 
 pub enum ManifestSource {
     Path(PathBuf),
+    /// Does not support paths to other files
     String(String),
-}
-impl ManifestSource {
-    fn build(&self) -> anyhow::Result<(Manifest, proc_macro2::TokenStream)> {
-        match self {
-            Self::Path(file_path) => {
-                let manifest = Manifest::from_file(file_path)?;
-                let mut file_paths = vec![file_path.to_str().unwrap().to_string()];
-                let dir = file_path.parent().unwrap();
-                for include in &manifest.ember.includes {
-                    let path = dir.join(include);
-                    let file_path = path.to_str().unwrap().to_string();
-                    file_paths.push(file_path);
-                }
-                let force_reload = file_paths.into_iter().enumerate().map(|(i, file_path)| {
-                    let name = Ident::new(
-                        &format!("_PROJECT_MANIFEST_{}", i),
-                        proc_macro2::Span::call_site(),
-                    );
-                    quote! { const #name: &'static str = include_str!(#file_path); }
-                });
-                Ok((manifest, quote! { #(#force_reload)* }))
-            }
-            Self::String(string) => Ok((Manifest::parse(string)?, quote! {})),
-        }
-    }
-}
-
-pub struct TypeRegistry {
-    pub components: Tree<Component>,
-    pub concepts: Tree<Concept>,
-    pub messages: Tree<Message>,
-}
-impl TypeRegistry {
-    pub fn get_component(&self, path: ItemPath) -> Option<&Component> {
-        self.components.get(path)
-    }
 }
 
 pub fn generate_code(
-    manifest: ManifestSource,
+    // bool is whether or not it's ambient
+    manifests: Vec<(ManifestSource, bool)>,
     context: Context,
-    is_api_manifest: bool,
-    validate_namespaces_documented: bool,
-) -> anyhow::Result<proc_macro2::TokenStream> {
-    let (manifest, force_reload) = manifest.build()?;
-
-    let project_path = if !is_api_manifest {
-        manifest.project_path()
-    } else {
-        ItemPathBuf::empty()
-    };
-
-    let component_tree = Tree::new(&manifest.components, validate_namespaces_documented)?;
-    let components_tokens =
-        component::tree_to_token_stream(&component_tree, &context, project_path.as_path())?;
-
-    let concept_tree = Tree::new(&manifest.concepts, validate_namespaces_documented)?;
-    let concept_tokens = concept::tree_to_token_stream(&concept_tree, &component_tree, &context)?;
-
-    let message_tree = Tree::new(&manifest.messages, validate_namespaces_documented)?;
-    let message_tokens = message::tree_to_token_stream(&message_tree, &context, is_api_manifest)?;
-
-    Ok(quote!(
-        #force_reload
-
-        /// Auto-generated component definitions. These come from `ambient.toml` in the root of the project.
-        pub mod components {
-            #components_tokens
+) -> anyhow::Result<TokenStream> {
+    struct DiskFileProvider(PathBuf);
+    impl FileProvider for DiskFileProvider {
+        fn get(&self, path: &Path) -> std::io::Result<String> {
+            std::fs::read_to_string(self.0.join(path))
         }
+
+        fn full_path(&self, path: &Path) -> PathBuf {
+            self.0.join(path)
+        }
+    }
+
+    struct StringFileProvider(String);
+    impl FileProvider for StringFileProvider {
+        fn get(&self, path: &Path) -> std::io::Result<String> {
+            if path.to_string_lossy() == "ambient.toml" {
+                Ok(self.0.clone())
+            } else {
+                Err(std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "not found",
+                ))
+            }
+        }
+
+        fn full_path(&self, path: &Path) -> PathBuf {
+            path.to_owned()
+        }
+    }
+
+    let mut semantic = Semantic::new()?;
+    for (manifest, ambient) in manifests {
+        match manifest {
+            ManifestSource::Path(path) => {
+                semantic.add_file(
+                    &path,
+                    &DiskFileProvider(path.parent().unwrap().to_owned()),
+                    ambient,
+                )?;
+            }
+            ManifestSource::String(string) => {
+                semantic.add_file(
+                    Path::new("ambient.toml"),
+                    &StringFileProvider(string),
+                    ambient,
+                )?;
+            }
+        }
+    }
+
+    let mut printer = ambient_project_semantic::Printer::new();
+    semantic.resolve()?;
+    printer.print(&semantic)?;
+
+    let items = &semantic.items;
+    let components = make_component_definitions(&items, &*items.get(semantic.root_scope)?)?;
+
+    let output = quote! {
+        /// Auto-generated component definitions. These come from `ambient.toml` in the root of the project.
+        pub mod components {}
         /// Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept.
         ///
         /// They do not have any runtime representation outside of the components that compose them.
-        pub mod concepts {
-            #concept_tokens
-        }
+        pub mod concepts {}
         /// Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,
         /// and with other modules.
-        pub mod messages {
-            #message_tokens
-        }
-    ))
+        pub mod messages {}
+    };
+
+    println!("{}", output.to_string());
+
+    Ok(output)
+}
+
+fn make_component_definitions(items: &ItemMap, scope: &Scope) -> anyhow::Result<TokenStream> {
+    Ok(quote! {})
 }

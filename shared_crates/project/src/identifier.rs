@@ -59,6 +59,26 @@ impl<'a> ItemPath<'a> {
         (self.scope, self.item)
     }
 
+    /// Returns the first element of the path and the rest of the path.
+    /// If the scope is empty, returns `None`.
+    ///
+    /// Useful for traversing into a hierarchy.
+    pub fn split_first(&self) -> Option<(&Identifier, ItemPath)> {
+        let (first, scope) = self.scope.split_first()?;
+        Some((
+            first,
+            ItemPath {
+                scope,
+                item: self.item,
+            },
+        ))
+    }
+
+    /// Returns the path without the first element.
+    pub fn without_first(&self) -> Option<ItemPath> {
+        self.split_first().map(|(_, rest)| rest)
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = &Identifier> {
         self.scope.iter().chain(Some(self.item))
     }
