@@ -30,6 +30,7 @@ pub fn systems() -> SystemGroup {
         vec![
             query(hyperlink().changed()).to_system(move |q, world, qs, _| {
                 for (id, url) in q.collect_cloned(world, qs) {
+                    #[cfg(not(target_os = "unknown"))]
                     match open::that(&url) {
                         Ok(()) => log::info!("Opened '{}'", &url),
                         Err(err) => {
