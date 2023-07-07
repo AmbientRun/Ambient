@@ -91,8 +91,9 @@ impl Context {
 #[derive(Clone, PartialEq)]
 pub struct Scope {
     pub data: ItemData,
+    pub path: Option<PathBuf>,
 
-    pub scopes: IndexMap<Identifier, (PathBuf, ItemId<Scope>)>,
+    pub scopes: IndexMap<Identifier, ItemId<Scope>>,
     pub components: IndexMap<Identifier, ItemId<Component>>,
     pub concepts: IndexMap<Identifier, ItemId<Concept>>,
     pub messages: IndexMap<Identifier, ItemId<Message>>,
@@ -104,6 +105,9 @@ impl std::fmt::Debug for Scope {
         let mut ds = f.debug_struct("Scope");
         ds.field("id", &self.data);
 
+        if let Some(path) = &self.path {
+            ds.field("path", &path);
+        }
         if !self.components.is_empty() {
             ds.field("components", &self.components);
         }
@@ -177,7 +181,7 @@ impl ResolveClone for Scope {
         let mut context = context.clone();
         context.push(self_id);
 
-        for (_, id) in self.scopes.values() {
+        for id in self.scopes.values() {
             items.resolve_clone(*id, &context)?;
         }
         resolve(&self.components, items, &context)?;
@@ -191,9 +195,10 @@ impl ResolveClone for Scope {
 }
 impl Scope {
     /// Creates a new empty scope with the specified data.
-    pub fn new(data: ItemData) -> Self {
+    pub fn new(data: ItemData, path: Option<PathBuf>) -> Self {
         Self {
             data,
+            path,
             scopes: Default::default(),
             components: Default::default(),
             concepts: Default::default(),

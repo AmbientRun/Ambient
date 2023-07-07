@@ -128,29 +128,31 @@ impl Semantic {
             .get(self.root_scope)?
             .scopes
             .get(owner_key)
-            .map(|(_, id)| *id);
+            .copied();
         let owner_id = owner_id.unwrap_or_else(|| {
-            let id = self.items.add(Scope::new(ItemData {
-                parent_id: Some(self.root_scope),
-                id: owner_key.clone(),
-                is_ambient: false,
-            }));
+            let id = self.items.add(Scope::new(
+                ItemData {
+                    parent_id: Some(self.root_scope),
+                    id: owner_key.clone(),
+                    is_ambient: false,
+                },
+                None,
+            ));
 
             self.items
                 .get_mut(self.root_scope)
                 .unwrap()
                 .scopes
-                .insert(owner_key.clone(), (Default::default(), id));
+                .insert(owner_key.clone(), id);
 
             id
         });
 
         // Check that this scope hasn't already been created for this owner
         let scope_id = manifest.ember.id.clone();
-        if let Some((existing_path, existing_scope_id)) =
-            self.items.get(owner_id)?.scopes.get(&scope_id)
-        {
-            if existing_path == &file_provider.full_path(filename) {
+        if let Some(existing_scope_id) = self.items.get(owner_id)?.scopes.get(&scope_id) {
+            let existing_path = self.items.get(*existing_scope_id)?.path.clone();
+            if existing_path == Some(file_provider.full_path(filename)) {
                 return Ok(*existing_scope_id);
             }
 
@@ -173,7 +175,7 @@ impl Semantic {
         self.items
             .get_mut(owner_id)?
             .scopes
-            .insert(scope_id, (manifest_path, item_id));
+            .insert(scope_id, item_id);
         Ok(item_id)
     }
 
@@ -183,7 +185,7 @@ impl Semantic {
             .get(self.root_scope)?
             .scopes
             .values()
-            .map(|(_, id)| *id)
+            .copied()
             .collect::<Vec<_>>();
 
         for scope_id in root_scopes {
@@ -203,11 +205,14 @@ impl Semantic {
         id: Identifier,
         is_ambient: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
-        let scope = Scope::new(ItemData {
-            parent_id,
-            id,
-            is_ambient,
-        });
+        let scope = Scope::new(
+            ItemData {
+                parent_id,
+                id,
+                is_ambient,
+            },
+            Some(manifest_path.clone()),
+        );
         let scope_id = self.items.add(scope);
 
         for include in &manifest.ember.includes {
@@ -217,7 +222,7 @@ impl Semantic {
             self.items
                 .get_mut(scope_id)?
                 .scopes
-                .insert(id, (file_provider.full_path(include), child_scope_id));
+                .insert(id, child_scope_id);
         }
 
         for (_, dependency) in manifest.dependencies.iter() {
@@ -296,11 +301,14 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
         };
     }
 
-    let root_scope = items.add(Scope::new(ItemData {
-        parent_id: None,
-        id: Identifier::default(),
-        is_ambient: true,
-    }));
+    let root_scope = items.add(Scope::new(
+        ItemData {
+            parent_id: None,
+            id: Identifier::default(),
+            is_ambient: true,
+        },
+        None,
+    ));
 
     for (id, pt) in primitive_component_definitions!(define_primitive_types) {
         let id = id
@@ -369,6 +377,11 @@ impl Printer {
         println!("{}", fully_qualified_path(items, scope)?);
 
         self.with_indent(|p| {
+            if let Some(path) = scope.path.as_deref() {
+                p.print_indent();
+                println!("path: {}", path.display());
+            }
+
             for id in scope.components.values() {
                 p.print_component(items, &*items.get(*id)?)?;
             }
@@ -389,7 +402,7 @@ impl Printer {
                 p.print_attribute(items, &*items.get(*id)?)?;
             }
 
-            for (_, id) in scope.scopes.values() {
+            for id in scope.scopes.values() {
                 p.print_scope(items, &*items.get(*id)?)?;
             }
 

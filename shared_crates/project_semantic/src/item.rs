@@ -136,8 +136,8 @@ impl ItemMap {
             scope_id = scope
                 .scopes
                 .get(segment)
+                .copied()
                 .with_context(|| format!("failed to find scope {segment} in {scope_id}"))?
-                .1;
         }
         self.get(scope_id)
     }
@@ -150,19 +150,22 @@ impl ItemMap {
     ) -> anyhow::Result<RefMut<Scope>> {
         let mut scope_id = start_scope_id;
         for segment in path.iter() {
-            let existing_id = self.get(scope_id)?.scopes.get(segment).map(|(_, id)| *id);
+            let existing_id = self.get(scope_id)?.scopes.get(segment).copied();
             scope_id = match existing_id {
                 Some(id) => id,
                 None => {
                     let parent_scope_data = self.get(scope_id)?.data().clone();
-                    let new_id = self.add(Scope::new(ItemData {
-                        parent_id: Some(scope_id),
-                        id: segment.clone(),
-                        ..parent_scope_data
-                    }));
+                    let new_id = self.add(Scope::new(
+                        ItemData {
+                            parent_id: Some(scope_id),
+                            id: segment.clone(),
+                            ..parent_scope_data
+                        },
+                        Some(manifest_path.clone()),
+                    ));
                     self.get_mut(scope_id)?
                         .scopes
-                        .insert(segment.clone(), (manifest_path.clone(), new_id));
+                        .insert(segment.clone(), new_id);
                     new_id
                 }
             };
