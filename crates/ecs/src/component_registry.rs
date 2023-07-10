@@ -39,16 +39,18 @@ pub(crate) struct RegistryComponent {
 pub struct ExternalComponentDesc {
     pub path: String,
     pub ty: PrimitiveComponentType,
-    pub attributes: ExternalComponentFlagAttributes,
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub attributes: ExternalComponentAttributes,
 }
 
-macro_rules! define_external_component_attribute_flags {
+macro_rules! define_external_component_attribute {
     ($(($field_name:ident, $type_name:ty)),*) => {
         #[derive(Serialize, Deserialize, Clone, Debug, Default)]
-        pub struct ExternalComponentFlagAttributes {
+        pub struct ExternalComponentAttributes {
             $(pub $field_name: bool,)*
         }
-        impl ExternalComponentFlagAttributes {
+        impl ExternalComponentAttributes {
             pub fn from_existing_component(desc: ComponentDesc) -> Self {
                 Self {
                     $($field_name: desc.has_attribute::<$type_name>(),)*
@@ -71,7 +73,7 @@ macro_rules! define_external_component_attribute_flags {
                 )*
             }
         }
-        impl<'a> FromIterator<&'a str> for ExternalComponentFlagAttributes {
+        impl<'a> FromIterator<&'a str> for ExternalComponentAttributes {
             fn from_iter<T: IntoIterator<Item = &'a str>>(iter: T) -> Self {
                 let mut flags = Self::default();
                 for flag_str in iter {
@@ -85,7 +87,7 @@ macro_rules! define_external_component_attribute_flags {
         }
     }
 }
-define_external_component_attribute_flags![
+define_external_component_attribute![
     (debuggable, Debuggable),
     (networked, Networked),
     (resource, Resource),
@@ -113,7 +115,13 @@ impl ComponentRegistry {
 
     pub fn add_external(&mut self, components: Vec<ExternalComponentDesc>) {
         for desc in components {
-            desc.ty.register(self, &desc.path, desc.attributes);
+            desc.ty.register(
+                self,
+                &desc.path,
+                desc.name.as_deref(),
+                desc.description.as_deref(),
+                desc.attributes,
+            );
         }
 
         for handler in self.on_external_components_change.iter() {
@@ -235,9 +243,9 @@ impl ComponentRegistry {
                     ExternalComponentDesc {
                         path: pc.desc.path(),
                         ty: pc.ty,
-                        attributes: ExternalComponentFlagAttributes::from_existing_component(
-                            pc.desc,
-                        ),
+                        name: pc.desc.attribute::<Name>().map(|n| n.0.clone()),
+                        description: pc.desc.attribute::<Description>().map(|n| n.0.clone()),
+                        attributes: ExternalComponentAttributes::from_existing_component(pc.desc),
                     },
                     pc.desc,
                 )

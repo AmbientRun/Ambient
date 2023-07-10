@@ -143,6 +143,7 @@ dependencies = [
  "ambient_primitives",
  "ambient_project",
  "ambient_project_native",
+ "ambient_project_semantic",
  "ambient_renderer",
  "ambient_rpc",
  "ambient_shared_types",
@@ -376,6 +377,7 @@ dependencies = [
  "ambient_pipeline_types",
  "ambient_project",
  "ambient_project_native",
+ "ambient_project_semantic",
  "ambient_renderer",
  "ambient_rustc",
  "ambient_std",
@@ -1222,6 +1224,7 @@ name = "ambient_project_semantic"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_project",
+ "ambient_schema",
  "ambient_shared_types",
  "anyhow",
  "convert_case 0.6.0",

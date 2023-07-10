@@ -18,6 +18,7 @@ use ambient_network::{
     synced_resources,
 };
 use ambient_prefab::PrefabFromUrl;
+use ambient_project_semantic::DiskFileProvider;
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ContentBaseUrlKey, ServerBaseUrlKey},
@@ -130,8 +131,21 @@ pub async fn start(
         start_http_interface(runtime, None, http_interface_port);
     }
 
+    let ambient_toml = Path::new("ambient.toml");
+    let mut semantic = ambient_project_semantic::Semantic::new()?;
+    semantic.add_file(ambient_toml, &ArrayFileProvider::from_schema(), true)?;
+    semantic.add_file(
+        ambient_toml,
+        &DiskFileProvider(
+            project_path
+                .to_file_path()?
+                .context("cannot add non-local ember ambient.toml")?,
+        ),
+        false,
+    );
+
     ComponentRegistry::get_mut()
-        .add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
+        .add_external(ambient_project_native::all_defined_components(&semantic).unwrap());
 
     let manifest = manifest.clone();
     let metadata = metadata.clone();

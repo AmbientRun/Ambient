@@ -45,6 +45,50 @@ pub trait FileProvider {
     fn full_path(&self, path: &Path) -> PathBuf;
 }
 
+/// Implements [FileProvider] by reading from the filesystem.
+pub struct DiskFileProvider(pub PathBuf);
+impl FileProvider for DiskFileProvider {
+    fn get(&self, path: &Path) -> std::io::Result<String> {
+        std::fs::read_to_string(self.0.join(path))
+    }
+
+    fn full_path(&self, path: &Path) -> PathBuf {
+        self.0.join(path)
+    }
+}
+
+/// Implements [FileProvider] by reading from an array of files.
+///
+/// Used with `ambient_schema`.
+pub struct ArrayFileProvider<'a> {
+    pub files: &'a [(&'a str, &'a str)],
+}
+impl ArrayFileProvider<'_> {
+    pub fn from_schema() -> Self {
+        Self {
+            files: ambient_schema::FILES,
+        }
+    }
+}
+impl FileProvider for ArrayFileProvider<'_> {
+    fn get(&self, path: &Path) -> std::io::Result<String> {
+        let path = path.to_str().unwrap();
+        for (name, contents) in self.files {
+            if path == *name {
+                return Ok(contents.to_string());
+            }
+        }
+        Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            format!("file not found: {:?}", path),
+        ))
+    }
+
+    fn full_path(&self, path: &Path) -> PathBuf {
+        path.to_path_buf()
+    }
+}
+
 pub struct ProxyFileProvider<'a> {
     pub provider: &'a dyn FileProvider,
     pub base: &'a Path,

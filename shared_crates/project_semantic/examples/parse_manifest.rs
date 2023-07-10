@@ -1,29 +1,14 @@
 use std::path::{Path, PathBuf};
 
-use ambient_project_semantic::{FileProvider, Printer, Semantic};
+use ambient_project_semantic::{
+    ArrayFileProvider, DiskFileProvider, FileProvider, Printer, Semantic,
+};
 
 pub fn main() -> anyhow::Result<()> {
-    const SCHEMA_PATH: &str = "shared_crates/schema/src";
-
-    struct DiskFileProvider(PathBuf);
-    impl FileProvider for DiskFileProvider {
-        fn get(&self, path: &Path) -> std::io::Result<String> {
-            std::fs::read_to_string(self.0.join(path))
-        }
-
-        fn full_path(&self, path: &Path) -> PathBuf {
-            self.0.join(path)
-        }
-    }
-
     let ambient_toml = Path::new("ambient.toml");
 
     let mut semantic = Semantic::new()?;
-    semantic.add_file(
-        ambient_toml,
-        &DiskFileProvider(PathBuf::from(SCHEMA_PATH)),
-        true,
-    )?;
+    semantic.add_file(ambient_toml, &ArrayFileProvider::from_schema(), true)?;
 
     if let Some(project_path) = std::env::args().nth(1) {
         if project_path == "all" {

@@ -1,6 +1,8 @@
 extern crate proc_macro;
 
-use ambient_project_semantic::{FileProvider, ItemId, ItemMap, Scope, Semantic, Type, TypeInner};
+use ambient_project_semantic::{
+    ArrayFileProvider, DiskFileProvider, ItemId, ItemMap, Scope, Semantic, Type, TypeInner,
+};
 use convert_case::{Case, Casing};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
@@ -17,46 +19,16 @@ pub enum Context {
     },
 }
 
-pub enum ManifestSource {
+pub enum ManifestSource<'a> {
     Path(PathBuf),
-    /// Does not support paths to other files
-    String(String),
+    Array(&'a [(&'a str, &'a str)]),
 }
 
 pub fn generate_code(
     // bool is whether or not it's ambient
-    manifests: Vec<(ManifestSource, bool)>,
+    manifests: Vec<(ManifestSource<'_>, bool)>,
     context: Context,
 ) -> anyhow::Result<TokenStream> {
-    struct DiskFileProvider(PathBuf);
-    impl FileProvider for DiskFileProvider {
-        fn get(&self, path: &Path) -> std::io::Result<String> {
-            std::fs::read_to_string(self.0.join(path))
-        }
-
-        fn full_path(&self, path: &Path) -> PathBuf {
-            self.0.join(path)
-        }
-    }
-
-    struct StringFileProvider(String);
-    impl FileProvider for StringFileProvider {
-        fn get(&self, path: &Path) -> std::io::Result<String> {
-            if path.to_string_lossy() == "ambient.toml" {
-                Ok(self.0.clone())
-            } else {
-                Err(std::io::Error::new(
-                    std::io::ErrorKind::NotFound,
-                    "not found",
-                ))
-            }
-        }
-
-        fn full_path(&self, path: &Path) -> PathBuf {
-            path.to_owned()
-        }
-    }
-
     let mut semantic = Semantic::new()?;
     for (manifest, ambient) in manifests {
         match manifest {
@@ -67,10 +39,10 @@ pub fn generate_code(
                     ambient,
                 )?;
             }
-            ManifestSource::String(string) => {
+            ManifestSource::Array(files) => {
                 semantic.add_file(
                     Path::new("ambient.toml"),
-                    &StringFileProvider(string),
+                    &ArrayFileProvider { files },
                     ambient,
                 )?;
             }

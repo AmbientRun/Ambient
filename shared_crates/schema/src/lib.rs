@@ -1,1 +1,1 @@
-pub const MANIFEST_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/src/ambient.toml");
+include!(concat!(env!("OUT_DIR"), "/schema.rs"));

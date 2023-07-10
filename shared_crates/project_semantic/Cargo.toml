@@ -10,6 +10,7 @@ version = { workspace = true }
 [dependencies]
 ambient_project = { path = "../project" , version = "0.3.0-dev" }
 ambient_shared_types = { path = "../shared_types" , version = "0.3.0-dev" }
+ambient_schema = { path = "../schema" , version = "0.3.0-dev" }
 
 anyhow = { workspace = true }
 ulid = { workspace = true }

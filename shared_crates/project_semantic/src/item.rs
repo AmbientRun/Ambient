@@ -1,5 +1,5 @@
 use ambient_project::Identifier;
-use convert_case::{Case, Casing};
+use convert_case::{Boundary, Case, Casing};
 use ulid::Ulid;
 
 use crate::{Attribute, Component, Concept, Context, Message, Scope, Type, TypeInner};
@@ -185,11 +185,30 @@ impl ItemMap {
     ) -> anyhow::Result<String> {
         let data = item.data();
 
-        let mut path = vec![data.id.as_ref().to_case(case)];
+        let mut path = vec![data
+            .id
+            .as_ref()
+            .with_boundaries(&[
+                Boundary::LowerUpper,
+                Boundary::DigitUpper,
+                Boundary::DigitLower,
+                Boundary::Acronym,
+            ])
+            .to_case(case)];
         let mut parent_id = data.parent_id;
         while let Some(this_parent_id) = parent_id {
             let parent = self.get(this_parent_id)?;
-            let id = parent.data().id.as_ref().to_case(case);
+            let id = parent
+                .data()
+                .id
+                .as_ref()
+                .with_boundaries(&[
+                    Boundary::LowerUpper,
+                    Boundary::DigitUpper,
+                    Boundary::DigitLower,
+                    Boundary::Acronym,
+                ])
+                .to_case(case);
             if !id.is_empty() {
                 path.push(id);
             }
