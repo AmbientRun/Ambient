@@ -39,23 +39,7 @@ pub(crate) struct RegistryComponent {
 pub struct ExternalComponentDesc {
     pub path: String,
     pub ty: PrimitiveComponentType,
-    pub attributes: ExternalComponentAttributes,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct ExternalComponentAttributes {
-    pub name: Option<String>,
-    pub description: Option<String>,
-    pub flags: ExternalComponentFlagAttributes,
-}
-impl ExternalComponentAttributes {
-    pub fn from_existing_component(desc: ComponentDesc) -> Self {
-        Self {
-            name: desc.attribute::<Name>().map(|n| n.0.clone()),
-            description: desc.attribute::<Description>().map(|n| n.0.clone()),
-            flags: ExternalComponentFlagAttributes::from_existing_component(desc),
-        }
-    }
+    pub attributes: ExternalComponentFlagAttributes,
 }
 
 macro_rules! define_external_component_attribute_flags {
@@ -251,7 +235,9 @@ impl ComponentRegistry {
                     ExternalComponentDesc {
                         path: pc.desc.path(),
                         ty: pc.ty,
-                        attributes: ExternalComponentAttributes::from_existing_component(pc.desc),
+                        attributes: ExternalComponentFlagAttributes::from_existing_component(
+                            pc.desc,
+                        ),
                     },
                     pc.desc,
                 )

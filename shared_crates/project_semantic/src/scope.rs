@@ -207,6 +207,28 @@ impl Scope {
             attributes: Default::default(),
         }
     }
+
+    pub fn visit_recursive(
+        &self,
+        items: &ItemMap,
+        mut visitor: impl FnMut(&Scope) -> anyhow::Result<()>,
+    ) -> anyhow::Result<()> {
+        fn visit_recursive_inner(
+            scope: &Scope,
+            items: &ItemMap,
+            visitor: &mut dyn FnMut(&Scope) -> anyhow::Result<()>,
+        ) -> anyhow::Result<()> {
+            visitor(scope)?;
+
+            for scope in scope.scopes.values().copied() {
+                visit_recursive_inner(&*items.get(scope)?, items, visitor)?;
+            }
+
+            Ok(())
+        }
+
+        visit_recursive_inner(self, items, &mut visitor)
+    }
 }
 
 fn get_type_id(

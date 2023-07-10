@@ -6,30 +6,16 @@ use ambient_ecs::{
 use ambient_project::{ComponentType, ItemPathBuf, Manifest};
 
 pub fn all_defined_components(
-    manifest: &Manifest,
-    global_namespace: bool,
-) -> Result<Vec<ExternalComponentDesc>, &'static str> {
-    let project_path: Vec<_> = if global_namespace {
-        vec![]
-    } else {
-        manifest
-            .ember
-            .owner
-            .iter()
-            .chain(std::iter::once(&manifest.ember.id))
-            .cloned()
-            .collect()
-    };
+    semantic: &ambient_project_semantic::Semantic,
+) -> anyhow::Result<Vec<ExternalComponentDesc>> {
+    let components = vec![];
+    let items = &semantic.items;
+    semantic.root_scope().visit_recursive(&items, |scope| {
+        for id in scope.components.values().copied() {
+            let component = items.get(id)?;
 
-    manifest
-        .components
-        .iter()
-        .filter_map(|(id, component)| Some((id, component.other()?)))
-        .map(|(id, component)| {
-            let full_path =
-                ItemPathBuf::from_iter(project_path.iter().chain(id.as_path().iter()).cloned());
-            Ok(ExternalComponentDesc {
-                path: full_path.to_string(),
+            components.push(ExternalComponentDesc {
+                path: items.fully_qualified_display_path_ambient_style(&*component),
                 ty: component_type_to_primitive(&component.type_)?,
                 attributes: ExternalComponentAttributes {
                     name: component.name.clone(),
@@ -38,75 +24,8 @@ pub fn all_defined_components(
                         component.attributes.iter().map(|s| s.as_str()),
                     ),
                 },
-            })
-        })
-        .collect::<Result<Vec<_>, _>>()
-}
-
-fn component_type_to_primitive(ty: &ComponentType) -> Result<PrimitiveComponentType, &'static str> {
-    match ty {
-        ComponentType::String(ty) => PrimitiveComponentType::try_from(ty.as_str()),
-        ComponentType::Contained {
-            type_,
-            element_type,
-        } => {
-            let element_ty = PrimitiveComponentType::try_from(element_type.as_str())?;
-            match type_.as_str() {
-                "Vec" => element_ty
-                    .to_vec_type()
-                    .ok_or("invalid element type for Vec"),
-                "Option" => element_ty
-                    .to_option_type()
-                    .ok_or("invalid element type for Option"),
-                _ => Err("invalid container type"),
-            }
+            });
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use ambient_shared_types::primitive_component_definitions;
-
-    use crate::{component_type_to_primitive, ComponentType};
-
-    #[test]
-    fn can_convert_component_types() {
-        use ambient_ecs::PrimitiveComponentType as PCT;
-        use ComponentType as CT;
-
-        fn test_type(ty: &str, pct_raw: PCT, pct_vec: PCT, pct_option: PCT) {
-            fn str_ty(ty: &str) -> CT {
-                CT::String(ty.to_string())
-            }
-            fn ct_ty(ct: &str, ty: &str) -> CT {
-                CT::Contained {
-                    type_: ct.to_string(),
-                    element_type: ty.to_string(),
-                }
-            }
-
-            assert_eq!(component_type_to_primitive(&str_ty(ty)), Ok(pct_raw));
-            assert_eq!(component_type_to_primitive(&ct_ty("Vec", ty)), Ok(pct_vec));
-            assert_eq!(
-                component_type_to_primitive(&ct_ty("Option", ty)),
-                Ok(pct_option)
-            );
-        }
-
-        macro_rules! make_test_cases {
-            ($(($value:ident, $_:ty)),*) => {
-                paste::paste! {
-                    $(test_type(
-                        stringify!($value),
-                        PCT::$value,
-                        PCT::[<Vec $value>],
-                        PCT::[<Option $value>],
-                    );)*
-                }
-            };
-        }
-
-        primitive_component_definitions!(make_test_cases);
-    }
+        Ok(())
+    });
 }

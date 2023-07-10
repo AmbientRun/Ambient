@@ -1,4 +1,5 @@
 use std::{
+    cell::Ref,
     fmt::Debug,
     path::{Path, PathBuf},
 };
@@ -61,13 +62,16 @@ impl FileProvider for ProxyFileProvider<'_> {
 #[derive(Clone, PartialEq, Debug)]
 pub struct Semantic {
     pub items: ItemMap,
-    pub root_scope: ItemId<Scope>,
+    pub root_scope_id: ItemId<Scope>,
 }
 impl Semantic {
     pub fn new() -> anyhow::Result<Self> {
         let mut items = ItemMap::default();
-        let root_scope = create_root_scope(&mut items)?;
-        Ok(Self { items, root_scope })
+        let root_scope_id = create_root_scope(&mut items)?;
+        Ok(Self {
+            items,
+            root_scope_id,
+        })
     }
 
     pub fn add_file_at_non_toplevel(
@@ -128,14 +132,14 @@ impl Semantic {
 
         let owner_id = self
             .items
-            .get(self.root_scope)?
+            .get(self.root_scope_id)?
             .scopes
             .get(owner_key)
             .copied();
         let owner_id = owner_id.unwrap_or_else(|| {
             let id = self.items.add(Scope::new(
                 ItemData {
-                    parent_id: Some(self.root_scope),
+                    parent_id: Some(self.root_scope_id),
                     id: owner_key.clone(),
                     is_ambient: false,
                 },
@@ -143,7 +147,7 @@ impl Semantic {
             ));
 
             self.items
-                .get_mut(self.root_scope)
+                .get_mut(self.root_scope_id)
                 .unwrap()
                 .scopes
                 .insert(owner_key.clone(), id);
@@ -185,7 +189,7 @@ impl Semantic {
     pub fn resolve(&mut self) -> anyhow::Result<()> {
         let root_scopes = self
             .items
-            .get(self.root_scope)?
+            .get(self.root_scope_id)?
             .scopes
             .values()
             .copied()
@@ -193,9 +197,13 @@ impl Semantic {
 
         for scope_id in root_scopes {
             self.items
-                .resolve_clone(scope_id, &Context::new(self.root_scope))?;
+                .resolve_clone(scope_id, &Context::new(self.root_scope_id))?;
         }
         Ok(())
+    }
+
+    pub fn root_scope(&self) -> Ref<'_, Scope> {
+        self.items.get(self.root_scope_id).unwrap()
     }
 }
 impl Semantic {

@@ -1187,6 +1187,7 @@ dependencies = [
  "ambient_project_semantic",
  "ambient_shared_types",
  "anyhow",
+ "convert_case 0.6.0",
  "indoc",
  "proc-macro2 1.0.60",
  "quote 1.0.28",
@@ -1202,7 +1203,9 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_ecs",
  "ambient_project",
+ "ambient_project_semantic",
  "ambient_shared_types",
+ "anyhow",
  "paste",
  "serde_json",
 ]

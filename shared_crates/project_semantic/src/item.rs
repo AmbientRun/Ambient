@@ -1,4 +1,5 @@
 use ambient_project::Identifier;
+use convert_case::{Case, Casing};
 use ulid::Ulid;
 
 use crate::{Attribute, Component, Concept, Context, Message, Scope, Type, TypeInner};
@@ -172,6 +173,60 @@ impl ItemMap {
         }
         self.get_mut(scope_id)
     }
+
+    /// Gets the fully qualified display path of an item.
+    pub fn fully_qualified_display_path<T: Item>(
+        &self,
+        item: &T,
+        case: Case,
+        separator: &str,
+        type_prefix: bool,
+        ambient_suffix: bool,
+    ) -> anyhow::Result<String> {
+        let data = item.data();
+
+        let mut path = vec![data.id.as_ref().to_case(case)];
+        let mut parent_id = data.parent_id;
+        while let Some(this_parent_id) = parent_id {
+            let parent = self.get(this_parent_id)?;
+            let id = parent.data().id.as_ref().to_case(case);
+            if !id.is_empty() {
+                path.push(id);
+            }
+            parent_id = parent.data().parent_id;
+        }
+        path.reverse();
+
+        let prefix = if type_prefix {
+            format!("{}:", T::TYPE.to_string().to_lowercase())
+        } else {
+            "".to_string()
+        };
+        Ok(format!(
+            "{}{}{}",
+            prefix,
+            path.join(separator),
+            if ambient_suffix && data.is_ambient {
+                " [A]"
+            } else {
+                ""
+            }
+        ))
+    }
+
+    pub fn fully_qualified_display_path_ambient_style<T: Item>(
+        &self,
+        item: &T,
+    ) -> anyhow::Result<String> {
+        self.fully_qualified_display_path(item, Case::Kebab, "/", true, true)
+    }
+
+    pub fn fully_qualified_display_path_rust_style<T: Item>(
+        &self,
+        item: &T,
+    ) -> anyhow::Result<String> {
+        self.fully_qualified_display_path(item, Case::Camel, "::", false, false)
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -279,7 +334,7 @@ pub enum ResolvableItemId<T: Item> {
     Resolved(ItemId<T>),
 }
 impl<T: Item> ResolvableItemId<T> {
-    pub(crate) fn as_resolved(&self) -> Option<ItemId<T>> {
+    pub fn as_resolved(&self) -> Option<ItemId<T>> {
         match self {
             Self::Unresolved(_) => None,
             Self::Resolved(id) => Some(*id),

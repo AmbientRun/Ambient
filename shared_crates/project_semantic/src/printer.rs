@@ -19,7 +19,10 @@ impl Printer {
 
     fn print_scope(&mut self, items: &ItemMap, scope: &Scope) -> anyhow::Result<()> {
         self.print_indent();
-        println!("{}", fully_qualified_path(items, scope)?);
+        println!(
+            "{}",
+            items.fully_qualified_display_path_ambient_style(scope)?
+        );
 
         self.with_indent(|p| {
             if let Some(path) = scope.path.as_deref() {
@@ -59,7 +62,10 @@ impl Printer {
 
     fn print_component(&mut self, items: &ItemMap, component: &Component) -> anyhow::Result<()> {
         self.print_indent();
-        println!("{}", fully_qualified_path(items, component)?);
+        println!(
+            "{}",
+            items.fully_qualified_display_path_ambient_style(component)?
+        );
 
         self.with_indent(|p| {
             p.print_indent();
@@ -93,7 +99,10 @@ impl Printer {
 
     fn print_concept(&mut self, items: &ItemMap, concept: &Concept) -> anyhow::Result<()> {
         self.print_indent();
-        println!("{}", fully_qualified_path(items, concept)?);
+        println!(
+            "{}",
+            items.fully_qualified_display_path_ambient_style(concept)?
+        );
 
         self.with_indent(|p| {
             p.print_indent();
@@ -128,7 +137,10 @@ impl Printer {
 
     fn print_message(&mut self, items: &ItemMap, message: &Message) -> anyhow::Result<()> {
         self.print_indent();
-        println!("{}", fully_qualified_path(items, message)?);
+        println!(
+            "{}",
+            items.fully_qualified_display_path_ambient_style(message)?
+        );
 
         self.with_indent(|p| {
             p.print_indent();
@@ -153,7 +165,10 @@ impl Printer {
 
     fn print_type(&mut self, items: &ItemMap, type_: &Type) -> anyhow::Result<()> {
         self.print_indent();
-        println!("{}", fully_qualified_path(items, type_)?,);
+        println!(
+            "{}",
+            items.fully_qualified_display_path_ambient_style(type_)?,
+        );
         if let TypeInner::Enum(e) = &type_.inner {
             self.with_indent(|p| {
                 for (name, description) in &e.members {
@@ -169,7 +184,10 @@ impl Printer {
 
     fn print_attribute(&mut self, items: &ItemMap, attribute: &Attribute) -> anyhow::Result<()> {
         self.print_indent();
-        println!("{}", fully_qualified_path(items, attribute)?);
+        println!(
+            "{}",
+            items.fully_qualified_display_path_ambient_style(attribute)?
+        );
         Ok(())
     }
 
@@ -197,28 +215,10 @@ fn write_resolvable_id<T: Item>(
     Ok(match r {
         ResolvableItemId::Unresolved(unresolved) => format!("unresolved({:?})", unresolved),
         ResolvableItemId::Resolved(resolved) => {
-            format!("{}", fully_qualified_path(items, &*items.get(*resolved)?)?)
+            format!(
+                "{}",
+                items.fully_qualified_display_path_ambient_style(&*items.get(*resolved)?)?
+            )
         }
     })
-}
-
-fn fully_qualified_path<T: Item>(items: &ItemMap, item: &T) -> anyhow::Result<String> {
-    let data = item.data();
-    let mut path = vec![data.id.to_string()];
-    let mut parent_id = data.parent_id;
-    while let Some(this_parent_id) = parent_id {
-        let parent = items.get(this_parent_id)?;
-        let id = parent.data().id.to_string();
-        if !id.is_empty() {
-            path.push(id);
-        }
-        parent_id = parent.data().parent_id;
-    }
-    path.reverse();
-    Ok(format!(
-        "{}:{}{}",
-        T::TYPE.to_string().to_lowercase(),
-        path.join("/"),
-        if data.is_ambient { " [A]" } else { "" }
-    ))
 }

@@ -20,4 +20,9 @@ impl MessageSerde for crate::EntityId {
     }
 }
 
-ambient_project_macro::host_project!();
+mod inner {
+    ambient_project_macro::host_project!();
+}
+pub mod components {
+    pub use super::inner::components::{ambient::*, init};
+}

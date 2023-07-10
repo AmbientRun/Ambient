@@ -8,7 +8,7 @@ use ambient_shared_types::{
 };
 use anyhow::Context as AnyhowContext;
 use glam::{IVec2, IVec3, IVec4, Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
-use std::time::Duration;
+use std::{fmt, time::Duration};
 
 pub type EntityId = u128;
 
@@ -47,6 +47,14 @@ impl ResolvedValue {
         })
     }
 }
+impl fmt::Display for ResolvedValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Primitive(value) => write!(f, "{value}"),
+            Self::Enum(_id, variant) => write!(f, "{variant}"),
+        }
+    }
+}
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum ResolvableValue {
@@ -59,6 +67,13 @@ impl ResolvableValue {
             *self = Self::Resolved(ResolvedValue::from_toml_value(value, items, id)?);
         }
         Ok(())
+    }
+
+    pub fn as_resolved(&self) -> Option<&ResolvedValue> {
+        match self {
+            Self::Resolved(value) => Some(value),
+            _ => None,
+        }
     }
 }
 
@@ -80,10 +95,14 @@ macro_rules! define_primitive_value {
                     }
                 }
             )*
+            impl fmt::Display for PrimitiveValue {
+                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    fmt::Debug::fmt(self, f)
+                }
+            }
         }
     };
 }
-
 primitive_component_definitions!(define_primitive_value);
 
 impl PrimitiveValue {
