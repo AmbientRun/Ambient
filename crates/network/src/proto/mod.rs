@@ -28,10 +28,8 @@ pub fn get_version_with_revision() -> String {
     format!(
         "{}-{}",
         VERSION,
-        ambient_std::parse_git_revision(git_version::git_version!(
-            args = ["--abbrev=10", "--always", "--long"]
-        ))
-        .expect("Failed to find git revision. Please open an issue with `git describe`")
+        ambient_std::git_revision()
+            .expect("Failed to find git revision. Please open an issue with `git describe`")
     )
 }
 

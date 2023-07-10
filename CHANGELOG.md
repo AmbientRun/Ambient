@@ -64,7 +64,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 
 - **Ember**: Projects are now renamed to _embers_.
 - **API**: Locally-broadcasted messages can now choose to include the originating module in the broadcast; this is an additional boolean parameter to `ModuleMessage::send_local_broadcast` and `message::Target::LocalBroadcast`.
-- **Audio**: Audio API has completely changed to adapt to the ECS style. See the [audio documentation](https://ambientrun.github.io/Ambient/reference/audio.html) for the new usage.
+- **Audio**: Audio API has completely changed to adapt to the ECS style. See the [audio documentation](https://ambientrun.github.io/Ambient/reference/audio.html) for the new usage. A CLI option `--mute-audio` is also added.
 - **Camera**: Renamed `screen_to_world_direction` to `screen_position_to_world_ray` and `clip_space_ray` to `clip_position_to_world_ray`. See [#410](https://github.com/AmbientRun/Ambient/issues/410).
 - **Ember**: `type = { type = "Vec3" }` is no longer valid syntax in `ambient.toml`. Only `type = "Vec3"` and `type = { type = "Vec", element-type = "Vec3" }` are valid.
 - **Physics**: Renamed the `visualizing` component to `visualize_collider`.

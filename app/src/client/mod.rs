@@ -53,6 +53,8 @@ pub async fn run(
 
     let is_debug = std::env::var("AMBIENT_DEBUGGER").is_ok() || run.debugger;
 
+    let mute_audio = run.mute_audio;
+
     let cert = if let Some(ca) = &run.ca {
         match std::fs::read(ca) {
             Ok(v) => Some(v),
@@ -86,6 +88,7 @@ pub async fn run(
                 golden_image_cmd: run.golden_image,
                 golden_image_output_dir,
                 cert,
+                mute_audio,
             }
             .el()
             .spawn_interactive(&mut app.world);
@@ -127,6 +130,7 @@ fn MainApp(
     show_debug: bool,
     golden_image_cmd: Option<GoldenImageCommand>,
     cert: Option<Vec<u8>>,
+    mute_audio: bool,
 ) -> Element {
     let (loaded, set_loaded) = hooks.use_state(false);
 
@@ -145,7 +149,7 @@ fn MainApp(
             on_loaded: cb(move |_, game_state| {
                 let world = &mut game_state.world;
 
-                wasm::initialize(world).unwrap();
+                wasm::initialize(world, mute_audio).unwrap();
 
                 UICamera.el().spawn_static(world);
                 set_loaded(true);
@@ -337,6 +341,8 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
 
     let (show_ecs, set_show_ecs) = hooks.use_state(true);
     let (ecs_size, set_ecs_size) = hooks.use_state(Vec2::ZERO);
+    let (debugger_size, set_debugger_size) = hooks.use_state(Vec2::ZERO);
+
     let (w, set_w) = hooks.use_state(300.0);
     let (w_memory, set_w_memory) = hooks.use_state(0.0);
     let (mouse_on_edge, set_mouse_on_edge) = hooks.use_state(false);
@@ -375,6 +381,7 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                 set_w_memory(mouse_pos.x);
             }
             mouse_pos.x -= ecs_size.x;
+            mouse_pos.y -= debugger_size.y;
 
             state
                 .world
@@ -449,18 +456,21 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
             Element::new()
         },
         if show_debug {
-            Debugger {
-                get_state: cb(move |cb| {
-                    let mut game_state = state.game_state.lock();
-                    let game_state = &mut *game_state;
-                    cb(
-                        &mut game_state.renderer,
-                        &render_target.0,
-                        &mut game_state.world,
-                    );
-                }),
-            }
-            .el()
+            MeasureSize::el(
+                Debugger {
+                    get_state: cb(move |cb| {
+                        let mut game_state = state.game_state.lock();
+                        let game_state = &mut *game_state;
+                        cb(
+                            &mut game_state.renderer,
+                            &render_target.0,
+                            &mut game_state.world,
+                        );
+                    }),
+                }
+                .el(),
+                set_debugger_size,
+            )
             .with(docking(), ambient_layout::Docking::Top)
             .with(padding(), Borders::even(STREET).into())
         } else {

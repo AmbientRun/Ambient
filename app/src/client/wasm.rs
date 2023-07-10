@@ -10,7 +10,7 @@ pub fn systems() -> SystemGroup {
     ambient_wasm::client::systems()
 }
 
-pub fn initialize(world: &mut World) -> anyhow::Result<()> {
+pub fn initialize(world: &mut World, mute_audio: bool) -> anyhow::Result<()> {
     let messenger = Arc::new(
         |world: &World, id: EntityId, type_: MessageType, message: &str| {
             let name = get_module_name(world, id);
@@ -39,6 +39,10 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
         while let Ok(message) = rx.recv() {
             match message {
                 AudioMessage::Spatial(source) => {
+                    if mute_audio {
+                        log::info!("Debug: get a spatial audio message.");
+                        continue;
+                    }
                     let sound = stream.mixer().play(source);
                     sound.wait();
                 }
@@ -48,6 +52,11 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                     fx,
                     uid,
                 } => {
+                    if mute_audio {
+                        log::info!("Playing track {}", url);
+                        log::info!("Effects: {:?}", fx);
+                        continue;
+                    }
                     let mut t: Box<dyn Source> = Box::new(track.decode());
                     let mut ctrl = vec![];
                     for effect in &fx {
@@ -78,6 +87,10 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                     sound_info_lib.insert(uid, sound_info);
                 }
                 AudioMessage::UpdateVolume(uid, amp) => {
+                    if mute_audio {
+                        log::info!("Updating amp for sound with id {} to {}", uid, amp);
+                        continue;
+                    }
                     let sound = sound_info_lib.get(&uid);
                     if let Some(sound) = sound {
                         for info in &sound.control_info {
@@ -89,6 +102,10 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                 }
 
                 AudioMessage::UpdatePanning(uid, pan) => {
+                    if mute_audio {
+                        log::info!("Updating panning for sound with id {} to {}", uid, pan);
+                        continue;
+                    }
                     let sound = sound_info_lib.get(&uid);
                     if let Some(sound) = sound {
                         for info in &sound.control_info {
@@ -99,6 +116,10 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                     }
                 }
                 AudioMessage::StopById(uid) => {
+                    if mute_audio {
+                        log::info!("Stopped sound with id {}", uid);
+                        continue;
+                    }
                     let id = match sound_info_lib.remove(&uid) {
                         Some(info) => info.id,
                         None => {
@@ -106,7 +127,6 @@ pub fn initialize(world: &mut World) -> anyhow::Result<()> {
                             continue;
                         }
                     };
-                    // log::info!("Stopped sound with id {}", uid);
                     stream.mixer().stop(id);
                 }
             }
