@@ -160,12 +160,10 @@ pub fn spatial_audio_systems() -> SystemGroup {
         vec![
             query((spatial_audio_player(), play_now())).to_system(|q, world, qs, _| {
                 for (audio_entity, _) in q.collect_cloned(world, qs) {
-                    // if should_play {
                     let amp = world.get(audio_entity, amplitude()).unwrap_or(1.0);
                     // TODO: find a way to get looping to work
                     // let looping = world.get(audio_entity, looping()).unwrap_or(false);
                     world.remove_component(audio_entity, play_now()).unwrap();
-                    // , false)
 
                     let assets = world.resource(asset_cache()).clone();
                     let runtime = world.resource(runtime()).clone();
@@ -215,7 +213,6 @@ pub fn spatial_audio_systems() -> SystemGroup {
                         });
                     });
                 }
-                // }
             }),
             // Updates the volume of audio emitters in the world
             query((audio_emitter(), local_to_world())).to_system(|q, world, qs, _| {
