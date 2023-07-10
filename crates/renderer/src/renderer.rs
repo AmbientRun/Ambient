@@ -334,12 +334,14 @@ impl Renderer {
             self.overlays.update(gpu, &assets, world);
             self.forward.run_collect(
                 gpu,
+                world,
                 &assets,
                 encoder,
                 post_submit,
                 &mesh_meta_bind_group,
                 &entities_bind_group,
                 &mut self.forward_collect_state,
+                &mesh_buffer,
             );
             self.transparent.update(
                 gpu,
@@ -443,6 +445,7 @@ impl Renderer {
             );
 
             self.forward.render(
+                gpu,
                 world,
                 &mesh_buffer,
                 &mut render_pass,

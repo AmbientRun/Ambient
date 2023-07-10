@@ -178,12 +178,14 @@ impl ShadowsRenderer {
             ambient_profiling::scope!("Shadow dynamic render");
             self.renderer.run_collect(
                 gpu,
+                world,
                 assets,
                 encoder,
                 post_submit,
                 bind_groups.mesh_meta,
                 bind_groups.entities,
                 &mut cascade.collect_state,
+                mesh_buffer,
             );
             let label = format!("Shadow cascade {i}");
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -207,6 +209,7 @@ impl ShadowsRenderer {
             );
 
             self.renderer.render(
+                gpu,
                 world,
                 mesh_buffer,
                 &mut render_pass,

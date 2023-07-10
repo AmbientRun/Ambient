@@ -1,5 +1,6 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
+    mem,
     sync::Arc,
 };
 
@@ -11,17 +12,18 @@ use ambient_gpu::{
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
 use ambient_std::asset_cache::AssetCache;
+use bytemuck::Zeroable;
 use glam::UVec4;
 use itertools::Itertools;
 use wgpu::DepthBiasState;
 
 use super::{
-    double_sided, lod::cpu_lod_visible, primitives, CollectPrimitive, DrawIndexedIndirect, FSMain,
-    PrimitiveIndex, RendererCollectState, RendererResources, RendererShader, SharedMaterial,
+    double_sided, lod::cpu_lod_visible, primitives, CollectPrimitive, FSMain, PrimitiveIndex,
+    RendererCollectState, RendererResources, RendererShader, SharedMaterial,
 };
 use crate::{
-    bind_groups::BindGroups, is_transparent, scissors, set_scissors_safe, PostSubmitFunc,
-    RendererConfig,
+    bind_groups::BindGroups, is_transparent, scissors, set_scissors_safe, DrawIndexedIndirect,
+    PostSubmitFunc, RendererConfig,
 };
 
 #[repr(C)]
@@ -50,6 +52,7 @@ pub struct TreeRenderer {
     entity_primitive_count: HashMap<EntityId, usize>,
     primitives_lookup: HashMap<(EntityId, PrimitiveIndex), (String, String, usize)>,
     loc_changed_reader: FramedEventsReader<EntityId>,
+    collect_primitives: BTreeMap<u32, Vec<CollectPrimitive>>,
 
     primitives: TypedMultiBuffer<CollectPrimitive>,
     primitives_bind_group: Option<wgpu::BindGroup>,
@@ -81,6 +84,7 @@ impl TreeRenderer {
             spawn_qs: QueryState::new(),
             despawn_qs: QueryState::new(),
             material_indices: MaterialIndices::new(),
+            collect_primitives: BTreeMap::new(),
         }
     }
     fn create_primitives_bind_group(
@@ -170,7 +174,7 @@ impl TreeRenderer {
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: Some("TreeRenderer.update"),
             });
-        let mut primitives_to_write = Vec::new();
+
         for (shader_id, material_id) in to_update.into_iter() {
             if let Some(shader) = self.tree.get(&shader_id) {
                 if let Some(mat) = shader.tree.get(&material_id) {
@@ -194,17 +198,19 @@ impl TreeRenderer {
                             primitives.len() as u64,
                         )
                         .unwrap();
-                    primitives_to_write.push((mat.primitives_subbuffer, primitives));
+
+                    self.collect_primitives
+                        .insert(mat.primitives_subbuffer as u32, primitives);
                 }
             }
         }
 
         gpu.queue.submit(Some(encoder.finish()));
-        for (subbuffer, primitives) in primitives_to_write.into_iter() {
-            self.primitives
-                .write(gpu, subbuffer, 0, &primitives)
-                .unwrap();
-        }
+        // for (subbuffer, primitives) in primitives_to_write.into_iter() {
+        //     self.primitives
+        //         .write(gpu, subbuffer, 0, &primitives)
+        //         .unwrap();
+        // }
 
         for node in self.tree.values_mut() {
             for mat in node.tree.values_mut() {
@@ -229,12 +235,14 @@ impl TreeRenderer {
     pub(crate) fn run_collect(
         &self,
         gpu: &Gpu,
+        world: &World,
         assets: &AssetCache,
         encoder: &mut wgpu::CommandEncoder,
         post_submit: &mut Vec<PostSubmitFunc>,
         resources_bind_group: &wgpu::BindGroup,
         entities_bind_group: &wgpu::BindGroup,
         collect_state: &mut RendererCollectState,
+        mesh_buffer: &MeshBuffer,
     ) {
         tracing::debug!(
             "Collecting tree renderer {:?} {:?}",
@@ -264,6 +272,57 @@ impl TreeRenderer {
                 };
             }
         }
+
+        assert_eq!(
+            mem::size_of::<DrawIndexedIndirect>(),
+            mem::size_of::<wgpu::util::DrawIndexedIndirect>()
+        );
+
+        assert_eq!(
+            mem::align_of::<DrawIndexedIndirect>(),
+            mem::align_of::<wgpu::util::DrawIndexedIndirect>()
+        );
+
+        let mut i = 0;
+        let mut commands =
+            vec![DrawIndexedIndirect::zeroed(); self.primitives.total_len() as usize];
+        let mut counts = vec![0u32; material_layouts.len()];
+        for (&_subbuffer, primitives) in &self.collect_primitives {
+            for (_, primitive) in primitives.iter().enumerate() {
+                let _material_layout = &material_layouts[primitive.material_index as usize];
+                let out_index = counts[primitive.material_index as usize];
+                counts[primitive.material_index as usize] += 1;
+
+                let id =
+                    world.id_from_lod(primitive.entity_loc.x as _, primitive.entity_loc.y as _);
+
+                let cpu_primitive = &world.get_ref(id, crate::primitives()).unwrap()[0];
+
+                let mesh = mesh_buffer.get_mesh_metadata(&cpu_primitive.mesh);
+
+                // Offset to the start of this material into the input primitives buffer
+                // let offset = self
+                //     .primitives
+                //     .buffer_offset(mat.primitives_subbuffer)
+                //     .unwrap();
+
+                // assert_eq!(i as u32, primitive.primitive_index);
+
+                commands[out_index as usize] = DrawIndexedIndirect {
+                    base_index: mesh.index_offset,
+                    vertex_count: mesh.index_count,
+                    instance_count: 1,
+                    vertex_offset: 0,
+                    base_instance: i as u32,
+                };
+
+                i += 1;
+            }
+            collect_state.commands.write(gpu, 0, &commands)
+        }
+
+        tracing::info!("Counts: {counts:?}");
+        *collect_state.counts_cpu.lock() = counts;
 
         self.config.renderer_resources.collect.run(
             gpu,
@@ -349,6 +408,7 @@ impl TreeRenderer {
             None
         }
     }
+
     fn clean_empty(&mut self, gpu: &Gpu) {
         for node in self.tree.values_mut() {
             node.tree.retain(|_, mat| {
@@ -364,9 +424,11 @@ impl TreeRenderer {
         }
         self.tree.retain(|_, v| !v.is_empty());
     }
+
     #[ambient_profiling::function]
     pub(crate) fn render<'a>(
         &'a self,
+        gpu: &Gpu,
         world: &World,
         mesh_buffer: &MeshBuffer,
         render_pass: &mut wgpu::RenderPass<'a>,
@@ -440,26 +502,31 @@ impl TreeRenderer {
                 }
                 #[cfg(any(target_os = "macos", target_os = "unknown"))]
                 {
+                    // collect_state.commands.write(self.gpu, mat.primitives_subbuffer, DrawIndexedIndirect {
+                    //     ind wex_count: mesh.
+                    // })
                     // let mesh_buffer = MeshBufferKey.get(world.resource(asset_cache()));
                     //
                     // let mesh_buffer = mesh_buffer.lock();
-                    let count = counts.get(mat.material_index as usize);
-                    if true {
+                    let count = counts[mat.material_index as usize];
+                    if false {
                         tracing::debug!("Counts: {count:?}");
                         for (i, &(id, primitive_idx)) in mat.primitives.iter().enumerate() {
                             let primitive =
                                 &world.get_ref(id, primitives()).unwrap()[primitive_idx];
+
                             let mesh = mesh_buffer.get_mesh_metadata(&primitive.mesh);
                             let index = offset + i as u64;
+
                             render_pass.draw_indexed(
                                 mesh.index_offset..(mesh.index_offset + mesh.index_count),
                                 0,
-                                index as u32..(index as u32 + i as u32),
+                                index as u32..(index as u32 + 1 as u32),
                             )
                         }
-                    } else if let Some(count) = count {
+                    } else {
                         // NOTE: this issues 1 draw call *for every single visible primitive* in the scene
-                        for i in 0..*count {
+                        for i in 0..count {
                             tracing::debug!("Drawing primitive: {offset} + {i}");
                             // render_pass.draw_indexed(, base_vertex, instances)
                             render_pass.draw_indexed_indirect(
@@ -468,8 +535,6 @@ impl TreeRenderer {
                                     * std::mem::size_of::<DrawIndexedIndirect>() as u64,
                             );
                         }
-                    } else {
-                        tracing::error!("No primitive count available");
                     }
                 }
             }

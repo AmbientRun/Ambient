@@ -19,16 +19,18 @@ use wgpu::{
     ShaderStages,
 };
 
-use crate::{get_mesh_meta_module, MaterialLayout, PostSubmitFunc, GLOBALS_BIND_GROUP};
+use crate::{
+    get_mesh_meta_module, DrawIndexedIndirect, MaterialLayout, PostSubmitFunc, GLOBALS_BIND_GROUP,
+};
 
-use super::{get_defs_module, DrawIndexedIndirect, PrimitiveIndex};
+use super::{get_defs_module, PrimitiveIndex};
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Default, bytemuck::Pod, bytemuck::Zeroable)]
 pub(crate) struct CollectPrimitive {
-    entity_loc: UVec2,
-    primitive_index: u32,
-    material_index: u32,
+    pub entity_loc: UVec2,
+    pub primitive_index: u32,
+    pub material_index: u32,
 }
 
 impl CollectPrimitive {
@@ -246,6 +248,12 @@ impl RendererCollect {
             true,
         );
 
+        assert_eq!(
+            input_primitives.total_len(),
+            primitives_count as u64,
+            "Expected count {primitives_count}",
+        );
+
         let counts = vec![0; material_layouts.len()];
         output.counts.fill(gpu, &counts, |_| {});
         tracing::debug!("material_layouts: {material_layouts:?}");
@@ -278,54 +286,54 @@ impl RendererCollect {
             ],
         });
 
-        {
-            let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
-                label: Some("Collect"),
-            });
+        // {
+        //     let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
+        //         label: Some("Collect"),
+        //     });
 
-            cpass.set_pipeline(self.pipeline.pipeline());
+        //     cpass.set_pipeline(self.pipeline.pipeline());
 
-            for (i, bind_group) in [mesh_meta_bind_group, entities_bind_group, &bind_group]
-                .iter()
-                .enumerate()
-            {
-                cpass.set_bind_group(i as _, bind_group, &[]);
-            }
+        //     for (i, bind_group) in [mesh_meta_bind_group, entities_bind_group, &bind_group]
+        //         .iter()
+        //         .enumerate()
+        //     {
+        //         cpass.set_bind_group(i as _, bind_group, &[]);
+        //     }
 
-            // Divide up all the primitives among `x` workgroups
-            let x = (primitives_count as f32 / COLLECT_WORKGROUP_SIZE as f32).ceil() as u32;
-            tracing::debug!("Dispatching {x} workgroups");
+        //     // Divide up all the primitives among `x` workgroups
+        //     let x = (primitives_count as f32 / COLLECT_WORKGROUP_SIZE as f32).ceil() as u32;
+        //     tracing::debug!("Dispatching {x} workgroups");
 
-            cpass.dispatch_workgroups(x, 1, 1);
-        }
+        //     cpass.dispatch_workgroups(x, 1, 1);
+        // }
 
-        #[cfg(any(target_os = "macos", target_os = "unknown"))]
-        {
-            use ambient_core::RuntimeKey;
+        // #[cfg(any(target_os = "macos", target_os = "unknown"))]
+        // {
+        //     use ambient_core::RuntimeKey;
 
-            let buffs = CollectCountStagingBuffersKey.get(assets);
-            let staging = buffs.take_buffer(gpu, output.counts.len());
+        //     let buffs = CollectCountStagingBuffersKey.get(assets);
+        //     let staging = buffs.take_buffer(gpu, output.counts.len());
 
-            encoder.copy_buffer_to_buffer(
-                output.counts.buffer(),
-                0,
-                staging.buffer(),
-                0,
-                output.counts.byte_size(),
-            );
+        //     encoder.copy_buffer_to_buffer(
+        //         output.counts.buffer(),
+        //         0,
+        //         staging.buffer(),
+        //         0,
+        //         output.counts.byte_size(),
+        //     );
 
-            let counts_res = output.counts_cpu.clone();
-            let runtime = RuntimeKey.get(assets);
-            let post_submit_gpu = ambient_gpu::gpu::GpuKey.get(assets);
-            _post_submit.push(Box::new(move || {
-                runtime.spawn(async move {
-                    if let Ok(res) = staging.read(&post_submit_gpu, .., false).await {
-                        *counts_res.lock() = res;
-                        buffs.return_buffer(staging);
-                    }
-                });
-            }))
-        }
+        //     let counts_res = output.counts_cpu.clone();
+        //     let runtime = RuntimeKey.get(assets);
+        //     let post_submit_gpu = ambient_gpu::gpu::GpuKey.get(assets);
+        //     _post_submit.push(Box::new(move || {
+        //         runtime.spawn(async move {
+        //             if let Ok(res) = staging.read(&post_submit_gpu, .., false).await {
+        //                 *counts_res.lock() = res;
+        //                 buffs.return_buffer(staging);
+        //             }
+        //         });
+        //     }))
+        // }
     }
 }
 

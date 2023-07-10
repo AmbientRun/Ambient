@@ -11,6 +11,22 @@
     "third-person-camera": {
         "cmd": "cargo run --features tracing -- run ./guest/rust/examples/basics/third_person_camera --debugger"
     },
+    "primitives": {
+        "cmd": "cargo build",
+        "components": {
+            "dap": {
+                "program": "./target/debug/ambient",
+                "args": [
+                    "run",
+                    "./guest/rust/examples/basics/primitives"
+                ],
+                "adapter": "rust",
+                "env": {
+                    "RUST_LOG": "ambient_renderer=info,ambient_network=debug,info"
+                }
+            }
+        }
+    },
     "gi-samplers": {
         "cmd": "cargo run --release -- run --release guest/rust/examples/basics/samplers --headless --no-proxy --quic-interface-port 9009 --http-interface-port 10009 golden-image-check --timeout-seconds 30.0",
         "env": {

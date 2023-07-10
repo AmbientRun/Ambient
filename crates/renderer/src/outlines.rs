@@ -157,12 +157,14 @@ impl Outlines {
         self.renderer.update(gpu, assets, world);
         self.renderer.run_collect(
             gpu,
+            world,
             assets,
             encoder,
             post_submit,
             bind_groups.mesh_meta,
             bind_groups.entities,
             &mut self.collect_state,
+            mesh_buffer,
         );
 
         {
@@ -185,6 +187,7 @@ impl Outlines {
             );
 
             self.renderer.render(
+                gpu,
                 world,
                 mesh_buffer,
                 &mut render_pass,

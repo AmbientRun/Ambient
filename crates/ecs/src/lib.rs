@@ -610,6 +610,11 @@ impl World {
     pub fn entity_loc(&self, id: EntityId) -> Option<&EntityLocation> {
         self.locs.get(&id)
     }
+
+    pub fn id_from_lod(&self, archetype: usize, index: usize) -> EntityId {
+        self.archetypes[archetype].entity_indices_to_ids[index]
+    }
+
     /// Returns the content version of this component, which only changes when the component is written to (not when the entity changes archetype)
     pub fn get_component_content_version(
         &self,
