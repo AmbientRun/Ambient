@@ -50,7 +50,7 @@ If the `convert` entry is missing, the default behaviour is no conversion.
 In some cases, e.g. an FPS game, you want to test how one client's movement sounds to the other client. Then use `--mute-audio` flag with `ambient` cli. For example:
 
 ```
-amient run --mute-audio
+ambient run --mute-audio
 ```
 
 This will mute the client opened with this command while the rest clients won't be influenced.
