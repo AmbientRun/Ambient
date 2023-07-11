@@ -17,12 +17,16 @@ use ambient_element::{
 use ambient_guest_bridge::{
     components::{
         layout::{
-            align_vertical_center, fit_horizontal_parent, height, margin, min_height, padding,
+            //LEGACY_MISSING_ENUM_SUPPORT: align_vertical_center, fit_horizontal_parent,
+            height,
+            margin,
+            min_height,
+            padding,
             space_between_items,
         },
         rect::{border_color, border_radius, border_thickness},
         rendering::color,
-        text::font_style,
+        //LEGACY_MISSING_ENUM_SUPPORT: text::font_style,
     },
     ecs::World,
     messages, run_async,
@@ -162,14 +166,14 @@ impl ButtonStyle {
                 content,
                 UIBase
                     .el()
-                    .with_default(fit_horizontal_parent())
+                    // LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_parent())
                     .with(height(), 2.)
                     .with_background(Color::WHITE.into())
                     .with(margin(), vec4(2., 0., 0., 0.)),
             ])
             .with_background(background.into())
         } else {
-            let content = content.with(font_style(), "Bold".to_string());
+            // LEGACY_MISSING_ENUM_SUPPORT: let content = content.with(font_style(), "Bold".to_string());
             let tooltip = if let Some(hotkey) = hotkey {
                 let modifier = if hotkey_modifier != ModifiersState::empty() {
                     format!("{hotkey_modifier:?} + ")
@@ -204,7 +208,7 @@ impl ButtonStyle {
                         },
                     ),
                 )
-                .with_default(align_vertical_center())
+                // LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_vertical_center())
                 .with_background(background.into())
                 .with(
                     border_radius(),

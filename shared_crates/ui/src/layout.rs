@@ -13,10 +13,12 @@ use ambient_element::{
 use ambient_guest_bridge::components::{
     ecs::children,
     layout::{
-        align_horizontal_begin, align_horizontal_center, align_vertical_begin,
-        align_vertical_center, fit_horizontal_children, fit_horizontal_none, fit_horizontal_parent,
-        fit_vertical_children, fit_vertical_none, fit_vertical_parent, height, is_book_file,
-        layout_bookcase, layout_dock, layout_flow, orientation_horizontal, orientation_vertical,
+        //LEGACY_MISSING_ENUM_SUPPORT: align_horizontal_begin, align_horizontal_center, align_vertical_begin,
+        //LEGACY_MISSING_ENUM_SUPPORT: align_vertical_center, fit_horizontal_children, fit_horizontal_none, fit_horizontal_parent,
+        //LEGACY_MISSING_ENUM_SUPPORT: fit_vertical_children, fit_vertical_none, fit_vertical_parent,
+        //LEGACY_MISSING_ENUM_SUPPORT: layout_bookcase, layout_dock, layout_flow, orientation_horizontal, orientation_vertical,
+        height,
+        is_book_file,
         width,
     },
     transform::{local_to_parent, local_to_world, translation},
@@ -51,7 +53,7 @@ define_el_function_for_vec_element_newtype!(Dock);
 impl ElementComponent for Dock {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Element::from(UIBase)
-            .init_default(layout_dock())
+            //LEGACY_MISSING_ENUM_SUPPORT: .init_default(layout_dock())
             .init_default(children())
             .children(self.0)
     }
@@ -67,7 +69,7 @@ define_el_function_for_vec_element_newtype!(Flow);
 impl ElementComponent for Flow {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Element::from(UIBase)
-            .init_default(layout_flow())
+            //LEGACY_MISSING_ENUM_SUPPORT: .init_default(layout_flow())
             .init_default(children())
             .children(self.0)
     }
@@ -81,7 +83,7 @@ pub struct Bookcase(pub Vec<BookFile>);
 impl ElementComponent for Bookcase {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
         Element::from(UIBase)
-            .init_default(layout_bookcase())
+            //LEGACY_MISSING_ENUM_SUPPORT: .init_default(layout_bookcase())
             .init_default(children())
             .children(self.0.into_iter().map(|x| x.el()).collect())
     }
@@ -110,13 +112,12 @@ pub struct FlowColumn(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(FlowColumn);
 impl ElementComponent for FlowColumn {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Flow(self.0)
-            .el()
-            .with_default(orientation_vertical())
-            .with_default(align_horizontal_begin())
-            .with_default(align_vertical_begin())
-            .with_default(fit_horizontal_children())
-            .with_default(fit_vertical_children())
+        Flow(self.0).el()
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(orientation_vertical())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_horizontal_begin())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_vertical_begin())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_children())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_children())
         // .set(orientation(), Orientation::Vertical)
         // .set(align_horizontal(), Align::Begin)
         // .set(align_vertical(), Align::Begin)
@@ -133,13 +134,12 @@ pub struct FlowRow(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(FlowRow);
 impl ElementComponent for FlowRow {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Flow(self.0)
-            .el()
-            .with_default(orientation_horizontal())
-            .with_default(align_horizontal_begin())
-            .with_default(align_vertical_begin())
-            .with_default(fit_horizontal_children())
-            .with_default(fit_vertical_children())
+        Flow(self.0).el()
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(orientation_horizontal())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_horizontal_begin())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_vertical_begin())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_children())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_children())
         // .set(orientation(), Orientation::Horizontal)
         // .set(align_horizontal(), Align::Begin)
         // .set(align_vertical(), Align::Begin)
@@ -155,13 +155,12 @@ pub struct Centered(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(Centered);
 impl ElementComponent for Centered {
     fn render(self: Box<Self>, _: &mut Hooks) -> Element {
-        Flow(self.0)
-            .el()
-            .with_default(orientation_vertical())
-            .with_default(align_horizontal_center())
-            .with_default(align_vertical_center())
-            .with_default(fit_horizontal_none())
-            .with_default(fit_vertical_none())
+        Flow(self.0).el()
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(orientation_vertical())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_horizontal_center())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_vertical_center())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_none())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_none())
         // .set(orientation(), Orientation::Vertical)
         // .set(align_horizontal(), Align::Center)
         // .set(align_vertical(), Align::Center)
@@ -260,11 +259,11 @@ pub fn Separator(
         .with_background(Color::rgba(0., 0., 0., 0.8).into());
     if vertical {
         el.with(width(), 1.)
-            .with_default(fit_horizontal_none())
-            .with_default(fit_vertical_parent())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_none())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_parent())
     } else {
         el.with(height(), 1.)
-            .with_default(fit_horizontal_parent())
-            .with_default(fit_vertical_none())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_parent())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_none())
     }
 }

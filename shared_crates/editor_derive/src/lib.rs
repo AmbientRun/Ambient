@@ -187,7 +187,9 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
             fn render(self: Box<Self>, hooks: &mut #element_crate::Hooks) -> #element_crate::Element {
                 use #element_crate::{Element, ElementComponentExt};
                 use #ui_crate::{editor::{Editor, EditorRow, EditorColumn, Slider, IntegerSlider}, select::{ListSelect, DropdownSelect}, layout::{FlowRow, FlowColumn}, text::Text};
-                use #layout_crate::{margin, fit_horizontal_parent};
+                use #layout_crate::{margin,
+                    //LEGACY_MISSING_ENUM_SUPPORT: fit_horizontal_parent
+                };
                 let Self { value, on_change, opts } = *self;
                 #body
             }
@@ -587,9 +589,11 @@ fn fields_editor(
         } else {
             quote! {
                 FlowColumn(vec![
-                    #(#rows .set(fit_horizontal_parent(), ())),*
+                    #(#rows
+                        //LEGACY_MISSING_ENUM_SUPPORT: .set(fit_horizontal_parent(), ())
+                    ),*
                 ]).el()
-                    .set(fit_horizontal_parent(), ())
+                    //LEGACY_MISSING_ENUM_SUPPORT: .set(fit_horizontal_parent(), ())
             }
         }
     } else {

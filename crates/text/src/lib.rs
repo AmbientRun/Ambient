@@ -209,7 +209,7 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
         "ui/text",
         vec![
             ensure_has_component(text(), font_family(), FontFamily::Default.to_string()),
-            ensure_has_component(text(), font_style(), format!("{:?}", FontStyle::Regular)),
+            // LEGACY_MISSING_ENUM_SUPPORT: ensure_has_component(text(), font_style(), format!("{:?}", FontStyle::Regular)),
             ensure_has_component(text(), font_size(), 12.),
             query(())
                 .incl(text())
@@ -273,7 +273,8 @@ pub fn systems(use_gpu: bool) -> SystemGroup {
                         world.resource(runtime()).spawn(async move {
                             let font = FontDef(
                                 unwrap_log_warn!(FontFamily::from_str(&font_family)),
-                                unwrap_log_warn!(FontStyle::from_str(&font_style)),
+                                //LEGACY_MISSING_ENUM_SUPPORT: unwrap_log_warn!(FontStyle::from_str(&font_style)),
+                                FontStyle::Regular,
                             )
                             .get(&assets)
                             .await;

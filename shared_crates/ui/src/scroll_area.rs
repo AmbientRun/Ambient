@@ -6,7 +6,9 @@ use ambient_guest_bridge::{
         ecs::children,
         input::{mouse_over, mouse_pickable_max, mouse_pickable_min},
         layout::{
-            fit_horizontal_children, fit_horizontal_parent, fit_vertical_children, height, width,
+            //LEGACY_MISSING_ENUM_SUPPORT: fit_horizontal_children, fit_horizontal_parent, fit_vertical_children,
+            height,
+            width,
         },
         rect::{background_color, border_radius},
         rendering::scissors_recursive,
@@ -132,12 +134,12 @@ pub fn ScrollArea(
                     .with(translation(), vec3(0., scroll, 0.));
                 match sizing {
                     ScrollAreaSizing::FitParentWidth => flow
-                        .with_default(fit_vertical_children())
-                        .with_default(fit_horizontal_parent())
+                        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_children())
+                        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_parent())
                         .with(width(), outer_size.x),
                     ScrollAreaSizing::FitChildrenWidth => flow
-                        .with_default(fit_vertical_children())
-                        .with_default(fit_horizontal_children()),
+                        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_children())
+                        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_children()),
                 }
             },
             set_inner_size,

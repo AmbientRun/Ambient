@@ -13,11 +13,11 @@ use glam::{vec2, vec3, vec4, Mat4, Vec2, Vec4};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
-pub mod guest_api;
+// LEGACY_MISSING_ENUM_SUPPORT: pub use ambient_ecs::generated::components::core::layout::fit_horizontal_parent;
 
 pub use ambient_ecs::generated::components::core::layout::{
-    fit_horizontal_parent, gpu_ui_size, height, is_book_file, margin, max_height, max_width,
-    mesh_to_local_from_size, min_height, min_width, padding, screen, space_between_items, width,
+    gpu_ui_size, height, is_book_file, margin, max_height, max_width, mesh_to_local_from_size,
+    min_height, min_width, padding, screen, space_between_items, width,
 };
 
 components!("layout", {
@@ -209,7 +209,6 @@ pub fn layout_systems() -> SystemGroup {
     SystemGroup::new(
         "layout",
         vec![
-            Box::new(guest_api::systems()),
             // For all "normal" components, i.e. non-layout components
             query((width().changed(),))
                 .excl(layout())
