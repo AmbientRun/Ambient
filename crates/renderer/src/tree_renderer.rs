@@ -103,6 +103,7 @@ impl TreeRenderer {
     }
     #[ambient_profiling::function]
     pub fn update(&mut self, gpu: &Gpu, assets: &AssetCache, world: &mut World) {
+        tracing::info!("Updating renderer");
         let mut to_update = HashSet::new();
         let mut spawn_qs = std::mem::replace(&mut self.spawn_qs, QueryState::new());
         let mut despawn_qs = std::mem::replace(&mut self.despawn_qs, QueryState::new());
@@ -175,6 +176,7 @@ impl TreeRenderer {
                 label: Some("TreeRenderer.update"),
             });
 
+        let mut primitive_writes = Vec::new();
         for (shader_id, material_id) in to_update.into_iter() {
             if let Some(shader) = self.tree.get(&shader_id) {
                 if let Some(mat) = shader.tree.get(&material_id) {
@@ -190,6 +192,7 @@ impl TreeRenderer {
                             )
                         })
                         .collect_vec();
+
                     self.primitives
                         .resize_buffer_with_encoder(
                             gpu,
@@ -199,18 +202,26 @@ impl TreeRenderer {
                         )
                         .unwrap();
 
-                    self.collect_primitives
-                        .insert(mat.primitives_subbuffer as u32, primitives);
+                    primitive_writes.push((mat.primitives_subbuffer as u32, primitives));
                 }
             }
         }
 
+        self.collect_primitives
+            .extend(primitive_writes.iter().cloned());
+
         gpu.queue.submit(Some(encoder.finish()));
-        // for (subbuffer, primitives) in primitives_to_write.into_iter() {
-        //     self.primitives
-        //         .write(gpu, subbuffer, 0, &primitives)
-        //         .unwrap();
-        // }
+
+        for (subbuffer, primitives) in primitive_writes {
+            tracing::info!(
+                "Writing {} primitives to subbuffer {}",
+                primitives.len(),
+                subbuffer
+            );
+            self.primitives
+                .write(gpu, subbuffer as _, 0, &primitives)
+                .unwrap();
+        }
 
         for node in self.tree.values_mut() {
             for mat in node.tree.values_mut() {
@@ -283,52 +294,41 @@ impl TreeRenderer {
             mem::align_of::<wgpu::util::DrawIndexedIndirect>()
         );
 
-        // let mut i = 0;
-        // let mut commands =
-        //     vec![DrawIndexedIndirect::zeroed(); self.primitives.total_len() as usize];
-        // let mut counts = vec![0u32; material_layouts.len()];
-        // for (&_subbuffer, primitives) in &self.collect_primitives {
-        //     for (_, primitive) in primitives.iter().enumerate() {
-        //         let _material_layout = &material_layouts[primitive.material_index as usize];
-        //         let out_index = counts[primitive.material_index as usize];
-        //         counts[primitive.material_index as usize] += 1;
+        let mut commands =
+            vec![DrawIndexedIndirect::zeroed(); self.primitives.total_len() as usize];
+        let mut counts = vec![0u32; material_layouts.len()];
+        for (&_subbuffer, primitives) in &self.collect_primitives {
+            for (_, primitive) in primitives.iter().enumerate() {
+                let _material_layout = &material_layouts[primitive.material_index as usize];
+                let out_index = counts[primitive.material_index as usize];
+                counts[primitive.material_index as usize] += 1;
 
-        //         let id =
-        //             world.id_from_lod(primitive.entity_loc.x as _, primitive.entity_loc.y as _);
+                let id =
+                    world.id_from_lod(primitive.entity_loc.x as _, primitive.entity_loc.y as _);
 
-        //         let cpu_primitive = &world.get_ref(id, crate::primitives()).unwrap()[0];
+                let cpu_primitive = &world.get_ref(id, crate::primitives()).unwrap()[0];
 
-        //         let mesh = mesh_buffer.get_mesh_metadata(&cpu_primitive.mesh);
+                let mesh = mesh_buffer.get_mesh_metadata(&cpu_primitive.mesh);
 
-        //         // Offset to the start of this material into the input primitives buffer
-        //         // let offset = self
-        //         //     .primitives
-        //         //     .buffer_offset(mat.primitives_subbuffer)
-        //         //     .unwrap();
+                commands[out_index as usize] = DrawIndexedIndirect {
+                    base_index: mesh.index_offset,
+                    vertex_count: mesh.index_count,
+                    instance_count: 1,
+                    vertex_offset: 0,
+                    base_instance: primitive.primitive_index,
+                };
+            }
 
-        //         // assert_eq!(i as u32, primitive.primitive_index);
+            collect_state
+                .commands
+                .resize(gpu, commands.len() as _, true);
 
-        //         commands[out_index as usize] = DrawIndexedIndirect {
-        //             base_index: mesh.index_offset,
-        //             vertex_count: mesh.index_count,
-        //             instance_count: 1,
-        //             vertex_offset: 0,
-        //             base_instance: primitive.primitive_index,
-        //         };
+            collect_state.commands.write(gpu, 0, &commands)
+        }
 
-        //         i += 1;
-        //     }
+        tracing::info!("Counts: {counts:?}");
 
-        //     collect_state
-        //         .commands
-        //         .resize(gpu, commands.len() as _, true);
-
-        //     collect_state.commands.write(gpu, 0, &commands)
-        // }
-
-        // tracing::info!("Counts: {counts:?}");
-
-        // *collect_state.counts_cpu.lock() = counts;
+        *collect_state.counts_cpu.lock() = counts;
 
         self.config.renderer_resources.collect.run(
             gpu,
@@ -369,16 +369,17 @@ impl TreeRenderer {
                 .entry(shader_id.clone())
                 .or_insert_with(|| ShaderNode::new(gpu, config, shader.clone(), double_sided));
 
-            let mat = node
-                .tree
-                .entry(material_id.clone())
-                .or_insert_with(|| MaterialNode {
+            let mat = node.tree.entry(material_id.clone()).or_insert_with(|| {
+                let index = self.primitives.create_buffer(gpu, None);
+                tracing::info!("Creating material node at {index}");
+                MaterialNode {
                     material_index: self.material_indices.acquire_index(),
-                    primitives_subbuffer: self.primitives.create_buffer(gpu, None),
+                    primitives_subbuffer: index,
                     material: material.clone(),
                     primitives: Vec::new(),
                     scissors,
-                });
+                }
+            });
 
             self.primitives_lookup.insert(
                 (id, primitive_index),
@@ -419,15 +420,22 @@ impl TreeRenderer {
         for node in self.tree.values_mut() {
             node.tree.retain(|_, mat| {
                 let to_remove = mat.primitives.is_empty();
+
                 if to_remove {
                     self.primitives
                         .remove_buffer(gpu, mat.primitives_subbuffer)
                         .unwrap();
+
+                    self.collect_primitives
+                        .remove(&(mat.primitives_subbuffer as u32));
+
                     self.material_indices.release_index(mat.material_index);
                 }
+
                 !to_remove
             });
         }
+
         self.tree.retain(|_, v| !v.is_empty());
     }
 
@@ -508,7 +516,7 @@ impl TreeRenderer {
                 }
                 #[cfg(any(target_os = "macos", target_os = "unknown"))]
                 {
-                    if true {
+                    if false {
                         // tracing::debug!("Counts: {count:?}");
                         for (i, &(id, primitive_idx)) in mat.primitives.iter().enumerate() {
                             let primitive =
