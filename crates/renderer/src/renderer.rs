@@ -12,12 +12,12 @@ use ambient_core::{
     asset_cache, camera::*, gpu, gpu_ecs::gpu_world, player::local_user_id, ui_scene,
 };
 use ambient_ecs::{ArchetypeFilter, Component, World};
-use ambient_gpu::mesh_buffer::MeshBufferKey;
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     mesh_buffer::MeshBuffer,
     shader_module::BindGroupDesc,
 };
+use ambient_gpu::{mesh_buffer::MeshBufferKey, settings::SettingsKey};
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     color::Color,
@@ -191,12 +191,15 @@ impl Renderer {
         let shadows = if config.shadows {
             Some(ShadowsRenderer::new(
                 gpu,
+                assets,
                 renderer_resources.clone(),
                 config.clone(),
             ))
         } else {
             None
         };
+
+        let settings = SettingsKey.get(assets);
 
         let normals_format = to_linear_format(gpu.swapchain_format()).into();
 
@@ -231,6 +234,8 @@ impl Renderer {
                     depth_stencil: true,
                     cull_mode: Some(wgpu::Face::Back),
                     depth_bias: Default::default(),
+                    render_mode: settings.render_mode,
+                    software_culling: settings.software_culling,
                 },
             ),
             transparent: TransparentRenderer::new(

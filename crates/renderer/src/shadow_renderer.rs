@@ -5,10 +5,11 @@ use ambient_ecs::{ArchetypeFilter, World};
 use ambient_gpu::{
     gpu::Gpu,
     mesh_buffer::MeshBuffer,
+    settings::SettingsKey,
     shader_module::DEPTH_FORMAT,
     texture::{Texture, TextureView},
 };
-use ambient_std::asset_cache::AssetCache;
+use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use bytemuck::{Pod, Zeroable};
 use glam::{Mat4, Vec3};
 use itertools::Itertools;
@@ -39,7 +40,12 @@ impl std::fmt::Debug for ShadowsRenderer {
 }
 
 impl ShadowsRenderer {
-    pub fn new(gpu: &Gpu, renderer_resources: RendererResources, config: RendererConfig) -> Self {
+    pub fn new(
+        gpu: &Gpu,
+        assets: &AssetCache,
+        renderer_resources: RendererResources,
+        config: RendererConfig,
+    ) -> Self {
         let shadow_texture = Arc::new(Texture::new(
             gpu,
             &wgpu::TextureDescriptor {
@@ -65,6 +71,8 @@ impl ShadowsRenderer {
             ..Default::default()
         });
 
+        let settings = SettingsKey.get(assets);
+
         Self {
             renderer: TreeRenderer::new(
                 gpu,
@@ -84,6 +92,8 @@ impl ShadowsRenderer {
                         slope_scale: -1.5,
                         clamp: 0.0,
                     },
+                    render_mode: settings.render_mode,
+                    software_culling: settings.software_culling,
                 },
             ),
             cascades: (0..config.shadow_cascades)

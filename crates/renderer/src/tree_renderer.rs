@@ -9,6 +9,7 @@ use ambient_gpu::{
     gpu::Gpu,
     mesh_buffer::MeshBuffer,
     multi_buffer::{MultiBufferSizeStrategy, SubBufferId, TypedMultiBuffer},
+    settings::RenderMode,
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
 use ambient_std::asset_cache::AssetCache;
@@ -44,6 +45,8 @@ pub struct TreeRendererConfig {
     pub depth_stencil: bool,
     pub cull_mode: Option<wgpu::Face>,
     pub depth_bias: DepthBiasState,
+    pub render_mode: RenderMode,
+    pub software_culling: bool,
 }
 
 pub struct TreeRenderer {
@@ -297,60 +300,61 @@ impl TreeRenderer {
         let mut commands =
             vec![DrawIndexedIndirect::zeroed(); self.primitives.total_len() as usize];
 
-        let mut counts = vec![0u32; material_layouts.len()];
+        if self.config.software_culling {
+            self.config
+                .renderer_resources
+                .collect
+                .update(gpu, &material_layouts, collect_state);
+            let mut counts = vec![0u32; material_layouts.len()];
 
-        for (&subbuffer, primitives) in &self.collect_primitives {
-            let buffer_offset = self.primitives.buffer_offset(subbuffer as _).unwrap();
+            for (&subbuffer, primitives) in &self.collect_primitives {
+                let buffer_offset = self.primitives.buffer_offset(subbuffer as _).unwrap();
 
-            for (i, primitive) in primitives.iter().enumerate() {
-                let _material_layout = &material_layouts[primitive.material_index as usize];
-                let out_index = counts[primitive.material_index as usize];
-                counts[primitive.material_index as usize] += 1;
+                for (i, primitive) in primitives.iter().enumerate() {
+                    let _material_layout = &material_layouts[primitive.material_index as usize];
+                    let out_index = counts[primitive.material_index as usize];
+                    counts[primitive.material_index as usize] += 1;
 
-                let id =
-                    world.id_from_lod(primitive.entity_loc.x as _, primitive.entity_loc.y as _);
-                let instance = buffer_offset as u32 + i as u32;
+                    let id =
+                        world.id_from_lod(primitive.entity_loc.x as _, primitive.entity_loc.y as _);
+                    let instance = buffer_offset as u32 + i as u32;
 
-                let cpu_primitive = &world.get_ref(id, crate::primitives()).unwrap()[0];
+                    let cpu_primitive = &world.get_ref(id, crate::primitives()).unwrap()[0];
 
-                let mesh = mesh_buffer.get_mesh_metadata(&cpu_primitive.mesh);
+                    let mesh = mesh_buffer.get_mesh_metadata(&cpu_primitive.mesh);
 
-                commands[out_index as usize] = DrawIndexedIndirect {
-                    vertex_count: mesh.index_count,
-                    base_index: mesh.index_offset,
-                    instance_count: 1,
-                    vertex_offset: 0,
-                    base_instance: instance,
-                };
+                    commands[out_index as usize] = DrawIndexedIndirect {
+                        vertex_count: mesh.index_count,
+                        base_index: mesh.index_offset,
+                        instance_count: 1,
+                        vertex_offset: 0,
+                        base_instance: instance,
+                    };
+                }
+
+                collect_state
+                    .commands
+                    .resize(gpu, commands.len() as _, true);
+
+                collect_state.commands.write(gpu, 0, &commands)
             }
 
-            collect_state
-                .commands
-                .resize(gpu, commands.len() as _, true);
+            tracing::info!("Counts: {counts:?}");
 
-            collect_state.commands.write(gpu, 0, &commands)
+            *collect_state.counts_cpu.lock() = counts;
+        } else {
+            self.config.renderer_resources.collect.compute_indirect(
+                gpu,
+                assets,
+                encoder,
+                post_submit,
+                resources_bind_group,
+                entities_bind_group,
+                &self.primitives,
+                collect_state,
+                self.primitives.total_len() as u32,
+            );
         }
-
-        tracing::info!("Counts: {counts:?}");
-
-        *collect_state.counts_cpu.lock() = counts;
-
-        self.config
-            .renderer_resources
-            .collect
-            .update(gpu, &material_layouts, collect_state);
-
-        self.config.renderer_resources.collect.compute_indirect(
-            gpu,
-            assets,
-            encoder,
-            post_submit,
-            resources_bind_group,
-            entities_bind_group,
-            &self.primitives,
-            collect_state,
-            self.primitives.total_len() as u32,
-        );
     }
 
     fn insert(
@@ -521,7 +525,7 @@ impl TreeRenderer {
                 }
                 #[cfg(any(target_os = "macos", target_os = "unknown"))]
                 {
-                    if false {
+                    if self.config.render_mode == RenderMode::Direct {
                         // tracing::debug!("Counts: {count:?}");
                         for (i, &(id, primitive_idx)) in mat.primitives.iter().enumerate() {
                             let primitive =

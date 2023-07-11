@@ -27,7 +27,7 @@ use ambient_gizmos::{gizmos, Gizmos};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     mesh_buffer::MeshBufferKey,
-    settings::Settings,
+    settings::{Settings, SettingsKey},
 };
 use ambient_procedurals::{procedural_storage, ProceduralStorage};
 use ambient_renderer::lod::lod_system;
@@ -281,17 +281,13 @@ impl AppBuilder {
     pub async fn build(self) -> anyhow::Result<App> {
         crate::init_all_components();
 
-        #[cfg(target_os = "unknown")]
-        let settings = Settings::default();
+        let runtime = RuntimeHandle::current();
 
-        #[cfg(not(target_os = "unknown"))]
-        let settings = match Settings::load_from_config() {
-            Ok(settings) => settings,
-            Err(error) => {
-                tracing::warn!("Failed to load settings with error {error}. Fallback to defaults.");
-                Settings::default()
-            }
-        };
+        let assets = self
+            .asset_cache
+            .unwrap_or_else(|| AssetCache::new(runtime.clone()));
+
+        let settings = SettingsKey.get(&assets);
 
         let (window, event_loop) = if self.headless.is_some() {
             (None, None)
@@ -368,12 +364,6 @@ impl AppBuilder {
 
         #[cfg(not(target_os = "unknown"))]
         let _ = thread_priority::set_current_thread_priority(thread_priority::ThreadPriority::Max);
-
-        let runtime = RuntimeHandle::current();
-
-        let assets = self
-            .asset_cache
-            .unwrap_or_else(|| AssetCache::new(runtime.clone()));
 
         let mut world = World::new("main_app");
         let gpu = Arc::new(Gpu::with_config(window.as_deref(), true, &settings).await);
