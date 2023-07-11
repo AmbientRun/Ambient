@@ -215,10 +215,7 @@ fn write_resolvable_id<T: Item>(
     Ok(match r {
         ResolvableItemId::Unresolved(unresolved) => format!("unresolved({:?})", unresolved),
         ResolvableItemId::Resolved(resolved) => {
-            format!(
-                "{}",
-                items.fully_qualified_display_path_ambient_style(&*items.get(*resolved)?)?
-            )
+            items.fully_qualified_display_path_ambient_style(&*items.get(*resolved)?)?
         }
     })
 }

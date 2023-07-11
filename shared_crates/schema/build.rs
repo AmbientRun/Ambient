@@ -24,7 +24,7 @@ fn main() {
     let out_dir = std::env::var("OUT_DIR").unwrap();
     let dest_path = std::path::Path::new(&out_dir).join("schema.rs");
     std::fs::write(
-        &dest_path,
+        dest_path,
         format!(
             "pub const FILES: &[(&str, &str)] = &{:?};",
             files

@@ -187,7 +187,7 @@ impl PrimitiveValue {
             PrimitiveType::I8 => Self::I8(as_integer(v)? as i8),
             PrimitiveType::I16 => Self::I16(as_integer(v)? as i16),
             PrimitiveType::I32 => Self::I32(as_integer(v)? as i32),
-            PrimitiveType::I64 => Self::I64(as_integer(v)? as i64),
+            PrimitiveType::I64 => Self::I64(as_integer(v)?),
             PrimitiveType::Vec2 => {
                 Self::Vec2(Vec2::from_array(as_array(v, |v| Ok(as_float(v)? as f32))?))
             }

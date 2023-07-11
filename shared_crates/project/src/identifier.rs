@@ -1,5 +1,6 @@
 use std::fmt::{Debug, Display};
 
+use convert_case::{Boundary, Case, Casing};
 use proc_macro2::TokenStream;
 use quote::{ToTokens, TokenStreamExt};
 use serde::{Deserialize, Serialize};
@@ -147,7 +148,7 @@ impl ItemPathBuf {
     }
 
     fn new_impl(path: String) -> Result<Self, &'static str> {
-        let segments: Vec<_> = path.split("/").filter(|s| !s.is_empty()).collect();
+        let segments: Vec<_> = path.split('/').filter(|s| !s.is_empty()).collect();
         if segments.is_empty() {
             return Err("an identifier path must not be empty");
         }
@@ -209,6 +210,26 @@ impl Identifier {
         }
 
         Ok(id)
+    }
+
+    pub fn to_case(&self, case: Case) -> String {
+        self.0
+            .with_boundaries(&[
+                Boundary::LowerUpper,
+                Boundary::DigitUpper,
+                Boundary::DigitLower,
+                Boundary::Acronym,
+                Boundary::Hyphen,
+            ])
+            .to_case(case)
+    }
+
+    pub fn as_snake_case(&self) -> String {
+        self.to_case(Case::Snake)
+    }
+
+    pub fn as_upper_camel_case(&self) -> String {
+        self.to_case(Case::UpperCamel)
     }
 }
 impl Debug for Identifier {

@@ -1,5 +1,5 @@
 use ambient_project::Identifier;
-use convert_case::{Boundary, Case, Casing};
+use convert_case::Case;
 use ulid::Ulid;
 
 use crate::{Attribute, Component, Concept, Context, Message, Scope, Type, TypeInner};
@@ -58,6 +58,8 @@ impl ItemMap {
         new_id
     }
 
+    // TEMP: allow disallowed methods for development for now
+    #[allow(clippy::disallowed_methods)]
     fn add_raw<T: Item>(&mut self, value: ItemValue) -> ItemId<T> {
         let ulid = ulid::Ulid::new();
         self.items.insert(ulid, RefCell::new(value));
@@ -178,37 +180,22 @@ impl ItemMap {
     pub fn fully_qualified_display_path<T: Item>(
         &self,
         item: &T,
-        case: Case,
+        (scope_case, function_case, type_case): (Case, Case, Case),
         separator: &str,
-        type_prefix: bool,
-        ambient_suffix: bool,
+        (type_prefix, ambient_suffix): (bool, bool),
     ) -> anyhow::Result<String> {
         let data = item.data();
+        let item_case = match T::TYPE {
+            ItemType::Component | ItemType::Concept => function_case,
+            ItemType::Message | ItemType::Type | ItemType::Attribute => type_case,
+            ItemType::Scope => scope_case,
+        };
 
-        let mut path = vec![data
-            .id
-            .as_ref()
-            .with_boundaries(&[
-                Boundary::LowerUpper,
-                Boundary::DigitUpper,
-                Boundary::DigitLower,
-                Boundary::Acronym,
-            ])
-            .to_case(case)];
+        let mut path = vec![data.id.to_case(item_case)];
         let mut parent_id = data.parent_id;
         while let Some(this_parent_id) = parent_id {
             let parent = self.get(this_parent_id)?;
-            let id = parent
-                .data()
-                .id
-                .as_ref()
-                .with_boundaries(&[
-                    Boundary::LowerUpper,
-                    Boundary::DigitUpper,
-                    Boundary::DigitLower,
-                    Boundary::Acronym,
-                ])
-                .to_case(case);
+            let id = parent.data().id.to_case(scope_case);
             if !id.is_empty() {
                 path.push(id);
             }
@@ -237,14 +224,24 @@ impl ItemMap {
         &self,
         item: &T,
     ) -> anyhow::Result<String> {
-        self.fully_qualified_display_path(item, Case::Kebab, "/", true, true)
+        self.fully_qualified_display_path(
+            item,
+            (Case::Kebab, Case::Kebab, Case::Kebab),
+            "/",
+            (true, true),
+        )
     }
 
     pub fn fully_qualified_display_path_rust_style<T: Item>(
         &self,
         item: &T,
     ) -> anyhow::Result<String> {
-        self.fully_qualified_display_path(item, Case::Camel, "::", false, false)
+        self.fully_qualified_display_path(
+            item,
+            (Case::Snake, Case::Snake, Case::UpperCamel),
+            "::",
+            (false, false),
+        )
     }
 }
 

@@ -26,3 +26,6 @@ mod inner {
 pub mod components {
     pub use super::inner::components::{ambient::*, init};
 }
+pub mod messages {
+    pub use super::inner::messages::ambient::*;
+}

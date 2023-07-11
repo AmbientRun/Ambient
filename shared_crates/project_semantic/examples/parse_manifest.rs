@@ -1,8 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use ambient_project_semantic::{
-    ArrayFileProvider, DiskFileProvider, FileProvider, Printer, Semantic,
-};
+use ambient_project_semantic::{ArrayFileProvider, DiskFileProvider, Printer, Semantic};
 
 pub fn main() -> anyhow::Result<()> {
     let ambient_toml = Path::new("ambient.toml");

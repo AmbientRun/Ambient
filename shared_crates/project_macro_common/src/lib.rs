@@ -3,7 +3,6 @@ extern crate proc_macro;
 use ambient_project_semantic::{
     ArrayFileProvider, DiskFileProvider, ItemId, ItemMap, Scope, Semantic, Type, TypeInner,
 };
-use convert_case::{Case, Casing};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use std::{
@@ -99,7 +98,7 @@ pub fn generate_code(
         pub mod messages {}
     };
 
-    println!("{}", output.to_string());
+    // println!("{}", output.to_string());
 
     Ok(output)
 }
@@ -147,7 +146,7 @@ fn make_component_definitions_inner(
         .values()
         .map(|s| {
             let scope = items.get(*s)?;
-            let id = make_ident(&scope.data.id.as_ref().to_case(Case::Snake));
+            let id = make_ident(&scope.data.id.as_snake_case());
 
             let inner = make_component_definitions_inner(context, items, type_map, &scope)?;
             Ok(quote! {
@@ -164,7 +163,7 @@ fn make_component_definitions_inner(
         .values()
         .map(|c| {
             let component = items.get(*c)?;
-            let id = component.data.id.as_ref().to_case(Case::Snake);
+            let id = component.data.id.as_snake_case();
             let type_id = component.type_.as_resolved().expect("type was unresolved");
             let ty = type_map.get(&type_id).unwrap_or_else(|| {
                 panic!(
@@ -179,7 +178,7 @@ fn make_component_definitions_inner(
                 .attributes
                 .iter()
                 .filter_map(|id| id.as_resolved())
-                .map(|id| items.get(id).unwrap().data.id.as_ref().to_string())
+                .map(|id| items.get(id).unwrap().data.id.clone())
                 .collect();
 
             let name = component
@@ -197,6 +196,7 @@ fn make_component_definitions_inner(
 
             // Metadata
             if !component.attributes.is_empty() {
+                let attributes: Vec<_> = attributes.iter().map(|id| id.to_string()).collect();
                 doc_comment += &format!("\n\n*Attributes*: {}", attributes.join(", "))
             }
             if let Some(default) = component.default.as_ref().and_then(|c| c.as_resolved()) {
@@ -210,7 +210,7 @@ fn make_component_definitions_inner(
                     let ident = make_ident(&id);
                     let attributes: Vec<_> = attributes
                         .into_iter()
-                        .map(|s| make_ident(&s.to_case(Case::UpperCamel)))
+                        .map(|s| make_ident(&s.as_upper_camel_case()))
                         .collect();
                     let description = component.description.to_owned().unwrap_or_default();
 

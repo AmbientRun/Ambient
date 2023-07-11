@@ -219,7 +219,7 @@ impl Semantic {
             Some(owner_id),
             file_provider,
             manifest,
-            manifest_path.clone(),
+            manifest_path,
             scope_id.clone(),
             is_ambient,
         )?;
@@ -285,7 +285,7 @@ impl Semantic {
                 Dependency::Path { path } => {
                     let file_provider = ProxyFileProvider {
                         provider: file_provider,
-                        base: &path,
+                        base: path,
                     };
 
                     self.add_file(Path::new("ambient.toml"), &file_provider, is_ambient)?;
