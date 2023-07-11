@@ -296,6 +296,7 @@ impl TreeRenderer {
 
         let mut commands =
             vec![DrawIndexedIndirect::zeroed(); self.primitives.total_len() as usize];
+
         let mut counts = vec![0u32; material_layouts.len()];
 
         for (&subbuffer, primitives) in &self.collect_primitives {
@@ -334,7 +335,12 @@ impl TreeRenderer {
 
         *collect_state.counts_cpu.lock() = counts;
 
-        self.config.renderer_resources.collect.run(
+        self.config
+            .renderer_resources
+            .collect
+            .update(gpu, &material_layouts, collect_state);
+
+        self.config.renderer_resources.collect.compute_indirect(
             gpu,
             assets,
             encoder,
@@ -344,7 +350,6 @@ impl TreeRenderer {
             &self.primitives,
             collect_state,
             self.primitives.total_len() as u32,
-            &material_layouts,
         );
     }
 

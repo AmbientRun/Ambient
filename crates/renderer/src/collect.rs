@@ -219,9 +219,29 @@ impl RendererCollect {
         Self { pipeline, layout }
     }
 
-    #[allow(clippy::too_many_arguments)]
+    /// Updates the GPU side data needed for indirect rendering.
+    ///
+    /// **Note**:
+    pub(crate) fn update(
+        &self,
+        gpu: &Gpu,
+        material_layouts: &[MaterialLayout],
+        collect_state: &mut RendererCollectState,
+    ) {
+        // let counts = vec![0; material_layouts.len()];
+
+        // collect_state.counts.fill(gpu, &counts, |_| {});
+
+        tracing::debug!("material_layouts: {material_layouts:?}");
+
+        collect_state
+            .material_layouts
+            .fill(gpu, material_layouts, |_| {});
+    }
+
+    /// Computes indirect draw commands using culling
     #[ambient_profiling::function]
-    pub(crate) fn run(
+    pub(crate) fn compute_indirect(
         &self,
         gpu: &Gpu,
         assets: &AssetCache,
@@ -232,13 +252,10 @@ impl RendererCollect {
         input_primitives: &TypedMultiBuffer<CollectPrimitive>,
         output: &mut RendererCollectState,
         primitives_count: u32,
-        material_layouts: &[MaterialLayout],
     ) {
         if primitives_count == 0 {
             return;
         }
-
-        tracing::debug!(?primitives_count, "Running collect shader");
 
         tracing::debug!("Resizing collect command buffer to {primitives_count}");
         output.commands.resize(
@@ -254,10 +271,10 @@ impl RendererCollect {
             "Expected count {primitives_count}",
         );
 
-        let counts = vec![0; material_layouts.len()];
-        output.counts.fill(gpu, &counts, |_| {});
-        tracing::debug!("material_layouts: {material_layouts:?}");
-        output.material_layouts.fill(gpu, material_layouts, |_| {});
+        // let counts = vec![0; material_layouts.len()];
+        // output.counts.fill(gpu, &counts, |_| {});
+        // tracing::debug!("material_layouts: {material_layouts:?}");
+        // output.material_layouts.fill(gpu, material_layouts, |_| {});
 
         let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: None,
@@ -325,6 +342,7 @@ impl RendererCollect {
             let counts_res = output.counts_cpu.clone();
             let runtime = RuntimeKey.get(assets);
             let post_submit_gpu = ambient_gpu::gpu::GpuKey.get(assets);
+
             _post_submit.push(Box::new(move || {
                 runtime.spawn(async move {
                     if let Ok(res) = staging.read(&post_submit_gpu, .., false).await {
