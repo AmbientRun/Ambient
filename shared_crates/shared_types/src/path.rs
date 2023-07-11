@@ -42,7 +42,6 @@ pub fn normalize(path: &Path) -> PathBuf {
 }
 
 /// Convert a path to a string using `/` as a separator independent of the platform.
-#[cfg(feature = "uncategorized")]
 pub fn path_to_unix_string(path: impl AsRef<Path>) -> String {
     use std::borrow::Cow;
     use std::path::Component;

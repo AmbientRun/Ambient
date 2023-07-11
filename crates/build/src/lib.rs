@@ -9,7 +9,8 @@ use std::{
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_physics::physx::{Physics, PhysicsKey};
 use ambient_project::{Manifest as ProjectManifest, Version};
-use ambient_std::{asset_url::AbsAssetUrl, path::path_to_unix_string};
+use ambient_shared_types::path::path_to_unix_string;
+use ambient_std::asset_url::AbsAssetUrl;
 use anyhow::Context;
 use futures::FutureExt;
 use itertools::Itertools;
