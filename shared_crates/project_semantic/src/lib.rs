@@ -124,6 +124,7 @@ impl Semantic {
         filename: &Path,
         file_provider: &dyn FileProvider,
         is_ambient: bool,
+        is_ambient_api: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
         let manifest = Manifest::parse(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename:?}"))?;
@@ -136,6 +137,7 @@ impl Semantic {
             file_provider.full_path(filename),
             id,
             is_ambient,
+            is_ambient_api,
         )
     }
 
@@ -162,6 +164,7 @@ impl Semantic {
         filename: &Path,
         file_provider: &dyn FileProvider,
         is_ambient: bool,
+        is_ambient_api: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
         let manifest = Manifest::parse(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename:?}"))?;
@@ -186,6 +189,7 @@ impl Semantic {
                     parent_id: Some(self.root_scope_id),
                     id: owner_key.clone(),
                     is_ambient: false,
+                    is_ambient_api: false,
                 },
                 None,
             ));
@@ -222,6 +226,7 @@ impl Semantic {
             manifest_path,
             scope_id.clone(),
             is_ambient,
+            is_ambient_api,
         )?;
         self.items
             .get_mut(owner_id)?
@@ -259,20 +264,27 @@ impl Semantic {
         manifest_path: PathBuf,
         id: Identifier,
         is_ambient: bool,
+        is_ambient_api: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
         let scope = Scope::new(
             ItemData {
                 parent_id,
                 id,
                 is_ambient,
+                is_ambient_api: false,
             },
             Some(manifest_path.clone()),
         );
         let scope_id = self.items.add(scope);
 
         for include in &manifest.ember.includes {
-            let child_scope_id =
-                self.add_file_at_non_toplevel(scope_id, include, file_provider, is_ambient)?;
+            let child_scope_id = self.add_file_at_non_toplevel(
+                scope_id,
+                include,
+                file_provider,
+                is_ambient,
+                is_ambient_api,
+            )?;
             let id = self.items.get(child_scope_id)?.data().id.clone();
             self.items
                 .get_mut(scope_id)?
@@ -288,7 +300,12 @@ impl Semantic {
                         base: path,
                     };
 
-                    self.add_file(Path::new("ambient.toml"), &file_provider, is_ambient)?;
+                    self.add_file(
+                        Path::new("ambient.toml"),
+                        &file_provider,
+                        is_ambient,
+                        is_ambient_api,
+                    )?;
                 }
             }
         }
@@ -298,6 +315,7 @@ impl Semantic {
                 parent_id: Some(scope_id),
                 id: item_id.clone(),
                 is_ambient,
+                is_ambient_api,
             }
         };
 
@@ -361,6 +379,7 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
             parent_id: None,
             id: Identifier::default(),
             is_ambient: true,
+            is_ambient_api: false,
         },
         None,
     ));
@@ -383,6 +402,7 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
                 parent_id: Some(root_scope),
                 id: id.clone(),
                 is_ambient: true,
+                is_ambient_api: false,
             },
             TypeInner::Primitive(pt),
         );
@@ -405,6 +425,7 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
                 parent_id: Some(root_scope),
                 id: id.clone(),
                 is_ambient: true,
+                is_ambient_api: false,
             },
         });
         items.get_mut(root_scope)?.attributes.insert(id, item_id);

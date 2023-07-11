@@ -8,7 +8,7 @@ use proc_macro::TokenStream;
 pub fn host_project(_input: TokenStream) -> TokenStream {
     TokenStream::from(
         ambient_project_macro_common::generate_code(
-            vec![(ManifestSource::Array(ambient_schema::FILES), false)],
+            vec![(ManifestSource::Array(ambient_schema::FILES), false, true)],
             ambient_project_macro_common::Context::Host,
         )
         .unwrap(),

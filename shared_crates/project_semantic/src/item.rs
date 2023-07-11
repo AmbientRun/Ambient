@@ -281,6 +281,9 @@ pub struct ItemData {
     ///
     /// Similar to [TypeScript ambient modules](https://www.typescriptlang.org/docs/handbook/modules.html#ambient-modules).
     pub is_ambient: bool,
+    /// Whether or not this item belongs to the Ambient API. Yes, this is confusing with `is_ambient`, but it's
+    /// a different concept.
+    pub is_ambient_api: bool,
 }
 
 pub trait Item: Clone {

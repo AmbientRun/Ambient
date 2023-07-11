@@ -6,17 +6,17 @@ pub fn main() -> anyhow::Result<()> {
     let ambient_toml = Path::new("ambient.toml");
 
     let mut semantic = Semantic::new()?;
-    semantic.add_file(ambient_toml, &ArrayFileProvider::from_schema(), true)?;
+    semantic.add_file(ambient_toml, &ArrayFileProvider::from_schema(), true, true)?;
 
     if let Some(project_path) = std::env::args().nth(1) {
         if project_path == "all" {
             for path in all_examples()? {
                 let file_provider = DiskFileProvider(path);
-                semantic.add_file(ambient_toml, &file_provider, false)?;
+                semantic.add_file(ambient_toml, &file_provider, false, false)?;
             }
         } else {
             let file_provider = DiskFileProvider(project_path.into());
-            semantic.add_file(ambient_toml, &file_provider, false)?;
+            semantic.add_file(ambient_toml, &file_provider, false, false)?;
         }
     }
 

@@ -23,9 +23,13 @@ impl MessageSerde for crate::EntityId {
 mod inner {
     ambient_project_macro::host_project!();
 }
+// Legacy re-exports to maintain compatibility with old code
 pub mod components {
     pub use super::inner::components::{ambient::*, init};
 }
 pub mod messages {
-    pub use super::inner::messages::ambient::*;
+    pub use super::inner::messages::ambient::core::*;
+}
+pub mod concepts {
+    // pub use super::inner::concepts::ambient::core::*;
 }

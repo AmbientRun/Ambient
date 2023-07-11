@@ -1,7 +1,7 @@
 extern crate proc_macro;
 
 use ambient_project_semantic::{
-    ArrayFileProvider, DiskFileProvider, ItemId, ItemMap, Scope, Semantic, Type, TypeInner,
+    ArrayFileProvider, DiskFileProvider, Item, ItemId, ItemMap, Scope, Semantic, Type, TypeInner,
 };
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
@@ -24,18 +24,19 @@ pub enum ManifestSource<'a> {
 }
 
 pub fn generate_code(
-    // bool is whether or not it's ambient
-    manifests: Vec<(ManifestSource<'_>, bool)>,
+    // first bool is whether it's ambient, second bool is whether it's from the Aombient API
+    manifests: Vec<(ManifestSource<'_>, bool, bool)>,
     context: Context,
 ) -> anyhow::Result<TokenStream> {
     let mut semantic = Semantic::new()?;
-    for (manifest, ambient) in manifests {
+    for (manifest, ambient, ambient_api) in manifests {
         match manifest {
             ManifestSource::Path(path) => {
                 semantic.add_file(
                     &path,
                     &DiskFileProvider(path.parent().unwrap().to_owned()),
                     ambient,
+                    ambient_api,
                 )?;
             }
             ManifestSource::Array(files) => {
@@ -43,6 +44,7 @@ pub fn generate_code(
                     Path::new("ambient.toml"),
                     &ArrayFileProvider { files },
                     ambient,
+                    ambient_api,
                 )?;
             }
         }
@@ -63,8 +65,8 @@ pub fn generate_code(
             if let TypeInner::Primitive(pt) = type_.inner {
                 let ty_tokens = syn::parse_str::<syn::Type>(&pt.to_string())?.to_token_stream();
                 type_map.insert(*type_id, ty_tokens.clone());
-                type_map.insert(items.get_vec_id(*type_id), quote! {Vec<#ty_tokens>});
-                type_map.insert(items.get_option_id(*type_id), quote! {Option<#ty_tokens>});
+                type_map.insert(items.get_vec_id(*type_id), quote! {Vec::<#ty_tokens>});
+                type_map.insert(items.get_option_id(*type_id), quote! {Option::<#ty_tokens>});
             }
         }
 
@@ -83,6 +85,7 @@ pub fn generate_code(
     };
 
     let components = make_component_definitions(&context, &items, &type_map, root_scope)?;
+    let messages = make_message_definitions(&context, &items, &type_map, root_scope)?;
 
     let output = quote! {
         /// Auto-generated component definitions. These come from `ambient.toml` in the root of the project.
@@ -95,7 +98,9 @@ pub fn generate_code(
         pub mod concepts {}
         /// Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,
         /// and with other modules.
-        pub mod messages {}
+        pub mod messages {
+            #messages
+        }
     };
 
     // println!("{}", output.to_string());
@@ -146,9 +151,12 @@ fn make_component_definitions_inner(
         .values()
         .map(|s| {
             let scope = items.get(*s)?;
-            let id = make_ident(&scope.data.id.as_snake_case());
+            let id = make_path(&scope.data.id.as_snake_case());
 
             let inner = make_component_definitions_inner(context, items, type_map, &scope)?;
+            if inner.is_empty() {
+                return Ok(quote! {});
+            }
             Ok(quote! {
                 #[allow(unused)]
                 pub mod #id {
@@ -207,10 +215,10 @@ fn make_component_definitions_inner(
 
             match context {
                 Context::Host => {
-                    let ident = make_ident(&id);
+                    let ident = make_path(&id);
                     let attributes: Vec<_> = attributes
                         .into_iter()
-                        .map(|s| make_ident(&s.as_upper_camel_case()))
+                        .map(|s| make_path(&s.as_upper_camel_case()))
                         .collect();
                     let description = component.description.to_owned().unwrap_or_default();
 
@@ -221,8 +229,8 @@ fn make_component_definitions_inner(
                     })
                 }
                 Context::Guest { .. } => {
-                    let ident = make_ident(&id);
-                    let uppercase_ident = make_ident(&id.to_uppercase());
+                    let ident = make_path(&id);
+                    let uppercase_ident = make_path(&id.to_uppercase());
 
                     let component_init = quote! {
                         Lazy::new(|| __internal_get_component(#ident))
@@ -285,6 +293,138 @@ fn make_component_definitions_inner(
     })
 }
 
-fn make_ident(id: &str) -> syn::Ident {
-    syn::Ident::new(id, proc_macro2::Span::call_site())
+fn make_message_definitions(
+    context: &Context,
+    items: &ItemMap,
+    type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
+    scope: &Scope,
+) -> anyhow::Result<TokenStream> {
+    let scopes = scope
+        .scopes
+        .values()
+        .map(|s| {
+            let scope = items.get(*s)?;
+            let id = make_path(&scope.data.id.as_snake_case());
+
+            let inner = make_message_definitions(context, items, type_map, &scope)?;
+            if inner.is_empty() {
+                return Ok(quote! {});
+            }
+            Ok(quote! {
+                #[allow(unused)]
+                pub mod #id {
+                    #inner
+                }
+            })
+        })
+        .collect::<anyhow::Result<Vec<_>>>()?;
+
+    let messages = scope
+        .messages
+        .values()
+        .map(|m| {
+            let message = items.get(*m)?;
+            let id = message.data().id.as_upper_camel_case();
+
+            let doc_comment = if let Some(desc) = &message.description {
+                format!("**{}**: {}", id, desc)
+            } else {
+                format!("**{}**", id)
+            };
+
+            let struct_name = make_path(&id);
+
+            let fields = message.fields.iter().map(|f| {
+                let name = f.0;
+                let ty = &type_map[&f.1.as_resolved().unwrap()];
+                quote! { pub #name: #ty }
+            });
+
+            let new_parameters = message.fields.iter().map(|f| {
+                let name = f.0;
+                let ty = &type_map[&f.1.as_resolved().unwrap()];
+                quote! { #name: impl Into<#ty> }
+            });
+
+            let new_fields = message.fields.iter().map(|f| {
+                let name = f.0;
+                quote! { #name: #name.into() }
+            });
+
+            let serialize_fields = message.fields.iter().map(|f| {
+                let name = f.0;
+                quote! { self.#name.serialize_message_part(&mut output)? }
+            });
+
+            let deserialize_fields = message.fields.iter().map(|f| {
+                let name = f.0;
+                let ty = &type_map[&f.1.as_resolved().unwrap()];
+                quote! { #name: #ty ::deserialize_message_part(&mut input)? }
+            });
+
+            let message_impl = if message.data().is_ambient_api {
+                quote! { RuntimeMessage }
+            } else {
+                quote! { ModuleMessage }
+            };
+
+            Ok(quote! {
+                #[derive(Clone, Debug)]
+                #[doc = #doc_comment]
+                pub struct #struct_name {
+                    #(#fields,)*
+                }
+                impl #struct_name {
+                    pub fn new(#(#new_parameters,)*) -> Self {
+                        Self {
+                            #(#new_fields,)*
+                        }
+                    }
+                }
+                impl Message for #struct_name {
+                    fn id() -> &'static str {
+                        #id
+                    }
+                    fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                        let mut output = vec![];
+                        #(#serialize_fields;)*
+                        Ok(output)
+                    }
+                    fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                        Ok(Self {
+                            #(#deserialize_fields,)*
+                        })
+                    }
+                }
+                impl #message_impl for #struct_name {}
+            })
+        })
+        .collect::<anyhow::Result<Vec<_>>>()?;
+
+    let inner = if messages.is_empty() {
+        quote! {}
+    } else {
+        match context {
+            Context::Host => quote! {
+                use ambient_project_rt::message_serde::{Message, MessageSerde, MessageSerdeError, RuntimeMessage};
+                use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
+                use crate::{EntityId, Entity};
+                #(#messages)*
+            },
+
+            Context::Guest { api_path, .. } => quote! {
+                use #api_path::{prelude::*, message::{Message, MessageSerde, MessageSerdeError, RuntimeMessage, ModuleMessage}};
+                #(#messages)*
+            },
+        }
+    };
+
+    Ok(quote! {
+        #(#scopes)*
+        #inner
+    })
+}
+
+fn make_path(id: &str) -> syn::Path {
+    syn::parse_str(id).unwrap()
 }
