@@ -31,6 +31,7 @@ components!("audio", {
     audio_mixer: AudioMixer,
 });
 
+#[derive(Debug, Clone, Copy)]
 pub enum AudioFx {
     Looping,
     Amplitude(f32),

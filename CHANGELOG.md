@@ -63,7 +63,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 #### Breaking
 
 - **API**: Locally-broadcasted messages can now choose to include the originating module in the broadcast; this is an additional boolean parameter to `ModuleMessage::send_local_broadcast` and `message::Target::LocalBroadcast`.
-- **Audio**: Audio API has completely changed to adapt to the ECS style. See the [audio documentation](https://ambientrun.github.io/Ambient/reference/audio.html) for the new usage.
+- **Audio**: Audio API has completely changed to adapt to the ECS style. See the [audio documentation](https://ambientrun.github.io/Ambient/reference/audio.html) for the new usage. A CLI option `--mute-audio` is also added.
 - **Camera**: Renamed `screen_to_world_direction` to `screen_position_to_world_ray` and `clip_space_ray` to `clip_position_to_world_ray`. See [#410](https://github.com/AmbientRun/Ambient/issues/410).
 - **Physics**: Renamed the `visualizing` component to `visualize_collider`.
 - **Animation**: The animation system has been reworked. See the [animation documentation](https://ambientrun.github.io/Ambient/reference/animations.html) for details. Thanks to [@devjobe](https://github.com/devjobe) for laying the foundation for this!

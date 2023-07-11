@@ -22,6 +22,8 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
 
     let (show_ecs, set_show_ecs) = hooks.use_state(true);
     let (ecs_size, set_ecs_size) = hooks.use_state(Vec2::ZERO);
+    let (debugger_size, set_debugger_size) = hooks.use_state(Vec2::ZERO);
+
     let (w, set_w) = hooks.use_state(300.0);
     let (w_memory, set_w_memory) = hooks.use_state(0.0);
     let (mouse_on_edge, set_mouse_on_edge) = hooks.use_state(false);
@@ -48,7 +50,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
 
             let scale_factor = *world.resource(window_scale_factor());
             let mut mouse_pos = *world.resource(cursor_position());
-            if (w - mouse_pos.x).abs() < 5.0 {
+            if (w - mouse_pos.x).abs() < 5.0 && show_debug {
                 set_cursor(world, CursorIcon::ColResize.into());
                 set_mouse_on_edge(true);
             } else {
@@ -60,6 +62,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                 set_w_memory(mouse_pos.x);
             }
             mouse_pos.x -= ecs_size.x;
+            mouse_pos.y -= debugger_size.y;
 
             state
                 .world
@@ -109,10 +112,10 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                             ScrollAreaSizing::FitParentWidth,
                             ECSEditor {
                                 world: Arc::new(InspectableAsyncWorld(cb({
-                                    let state = client_state.clone();
+                                    let client_state = client_state.clone();
                                     move |res| {
-                                        let state = state.game_state.lock();
-                                        res(&state.world)
+                                        let client_state = client_state.game_state.lock();
+                                        res(&client_state.world)
                                     }
                                 }))),
                             }
@@ -134,18 +137,21 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
             Element::new()
         },
         if show_debug {
-            Debugger {
-                get_state: cb(move |cb| {
-                    let mut game_state = client_state.game_state.lock();
-                    let game_state = &mut *game_state;
-                    cb(
-                        &mut game_state.renderer,
-                        &render_target.0,
-                        &mut game_state.world,
-                    );
-                }),
-            }
-            .el()
+            MeasureSize::el(
+                Debugger {
+                    get_state: cb(move |cb| {
+                        let mut game_state = client_state.game_state.lock();
+                        let game_state = &mut *game_state;
+                        cb(
+                            &mut game_state.renderer,
+                            &render_target.0,
+                            &mut game_state.world,
+                        );
+                    }),
+                }
+                .el(),
+                set_debugger_size,
+            )
             .with(docking(), ambient_layout::Docking::Top)
             .with(padding(), Borders::even(STREET).into())
         } else {

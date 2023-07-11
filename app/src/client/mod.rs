@@ -45,6 +45,8 @@ pub async fn run(
 
     let is_debug = std::env::var("AMBIENT_DEBUGGER").is_ok() || run.debugger;
 
+    let mute_audio = run.mute_audio;
+
     let cert = if let Some(ca) = &run.ca {
         match std::fs::read(ca) {
             Ok(v) => Some(v),
@@ -78,6 +80,7 @@ pub async fn run(
                 golden_image_cmd: run.golden_image,
                 golden_image_output_dir,
                 cert,
+                mute_audio,
             }
             .el()
             .spawn_interactive(&mut app.world);
@@ -119,6 +122,7 @@ fn MainApp(
     show_debug: bool,
     golden_image_cmd: Option<GoldenImageCommand>,
     cert: Option<Vec<u8>>,
+    mute_audio: bool,
 ) -> Element {
     let (loaded, set_loaded) = hooks.use_state(false);
 
@@ -137,7 +141,7 @@ fn MainApp(
             on_loaded: cb(move |_, game_state| {
                 let world = &mut game_state.world;
 
-                wasm::initialize(world).unwrap();
+                wasm::initialize(world, mute_audio).unwrap();
 
                 UICamera.el().spawn_static(world);
                 set_loaded(true);

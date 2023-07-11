@@ -115,6 +115,10 @@ pub struct RunCli {
     #[arg(short, long)]
     pub debugger: bool,
 
+    /// If set, no audio will be played, which can be useful for debugging
+    #[arg(long)]
+    pub mute_audio: bool,
+
     /// Run in headless mode
     #[arg(long)]
     pub headless: bool,
