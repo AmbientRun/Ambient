@@ -29,7 +29,7 @@ use super::{get_defs_module, PrimitiveIndex};
 #[derive(Debug, Clone, Copy, Default, bytemuck::Pod, bytemuck::Zeroable)]
 pub(crate) struct CollectPrimitive {
     pub entity_loc: UVec2,
-    pub primitive_index: u32,
+    pub primitive_id: u32,
     pub material_index: u32,
 }
 
@@ -43,7 +43,7 @@ impl CollectPrimitive {
         let loc = world.entity_loc(id).unwrap();
         Self {
             entity_loc: uvec2(loc.archetype as u32, loc.index as u32),
-            primitive_index: primitive_index as u32,
+            primitive_id: primitive_index as u32,
             material_index,
         }
     }

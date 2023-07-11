@@ -117,19 +117,19 @@ impl TreeRenderer {
             .iter(world, Some(&mut spawn_qs))
         {
             if let Some(primitive_count) = self.entity_primitive_count.get(&id) {
-                for primitive_index in 0..*primitive_count {
-                    if let Some(update) = self.remove_primitive(id, primitive_index) {
+                for primitive_id in 0..*primitive_count {
+                    if let Some(update) = self.remove_primitive(id, primitive_id) {
                         to_update.insert(update);
                     }
                 }
             }
-            for (primitive_index, primitive) in primitives.iter().enumerate() {
+            for (primitive_id, primitive) in primitives.iter().enumerate() {
                 let primitive_shader = (primitive.shader)(assets, &self.config.renderer_config);
                 if let Some(update) = self.insert(
                     gpu,
                     world,
                     id,
-                    primitive_index,
+                    primitive_id,
                     &primitive_shader,
                     &primitive.material,
                 ) {
@@ -146,8 +146,8 @@ impl TreeRenderer {
             .iter(world, Some(&mut despawn_qs))
         {
             if let Some(primitive_count) = self.entity_primitive_count.get(&id) {
-                for primitive_index in 0..*primitive_count {
-                    if let Some(update) = self.remove_primitive(id, primitive_index) {
+                for primitive_id in 0..*primitive_count {
+                    if let Some(update) = self.remove_primitive(id, primitive_id) {
                         to_update.insert(update);
                     }
                 }
@@ -183,11 +183,11 @@ impl TreeRenderer {
                     let primitives = mat
                         .primitives
                         .iter()
-                        .map(|(id, primitive_index)| {
+                        .map(|(id, primitive_id)| {
                             CollectPrimitive::from_primitive(
                                 world,
                                 *id,
-                                *primitive_index,
+                                *primitive_id,
                                 mat.material_index,
                             )
                         })
@@ -297,25 +297,29 @@ impl TreeRenderer {
         let mut commands =
             vec![DrawIndexedIndirect::zeroed(); self.primitives.total_len() as usize];
         let mut counts = vec![0u32; material_layouts.len()];
-        for (&_subbuffer, primitives) in &self.collect_primitives {
-            for (_, primitive) in primitives.iter().enumerate() {
+
+        for (&subbuffer, primitives) in &self.collect_primitives {
+            let buffer_offset = self.primitives.buffer_offset(subbuffer as _).unwrap();
+
+            for (i, primitive) in primitives.iter().enumerate() {
                 let _material_layout = &material_layouts[primitive.material_index as usize];
                 let out_index = counts[primitive.material_index as usize];
                 counts[primitive.material_index as usize] += 1;
 
                 let id =
                     world.id_from_lod(primitive.entity_loc.x as _, primitive.entity_loc.y as _);
+                let instance = buffer_offset as u32 + i as u32;
 
                 let cpu_primitive = &world.get_ref(id, crate::primitives()).unwrap()[0];
 
                 let mesh = mesh_buffer.get_mesh_metadata(&cpu_primitive.mesh);
 
                 commands[out_index as usize] = DrawIndexedIndirect {
-                    base_index: mesh.index_offset,
                     vertex_count: mesh.index_count,
+                    base_index: mesh.index_offset,
                     instance_count: 1,
                     vertex_offset: 0,
-                    base_instance: primitive.primitive_index,
+                    base_instance: instance,
                 };
             }
 
@@ -349,7 +353,7 @@ impl TreeRenderer {
         gpu: &Gpu,
         world: &World,
         id: EntityId,
-        primitive_index: usize,
+        primitive_id: usize,
         shader: &Arc<RendererShader>,
         material: &SharedMaterial,
     ) -> Option<(String, String)> {
@@ -382,24 +386,20 @@ impl TreeRenderer {
             });
 
             self.primitives_lookup.insert(
-                (id, primitive_index),
+                (id, primitive_id),
                 (shader_id.clone(), material_id.clone(), mat.primitives.len()),
             );
 
-            mat.primitives.push((id, primitive_index));
+            mat.primitives.push((id, primitive_id));
             Some((shader_id, material_id))
         } else {
             None
         }
     }
 
-    fn remove_primitive(
-        &mut self,
-        id: EntityId,
-        primitive_index: usize,
-    ) -> Option<(String, String)> {
+    fn remove_primitive(&mut self, id: EntityId, primitive_id: usize) -> Option<(String, String)> {
         if let Some((shader_id, material_id, index)) =
-            self.primitives_lookup.remove(&(id, primitive_index))
+            self.primitives_lookup.remove(&(id, primitive_id))
         {
             let shader = self.tree.get_mut(&shader_id).unwrap();
             let material = shader.tree.get_mut(&material_id).unwrap();
