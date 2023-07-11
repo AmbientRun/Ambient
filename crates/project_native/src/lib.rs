@@ -1,9 +1,23 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, path::Path};
 
-use ambient_ecs::{ExternalComponentAttributes, ExternalComponentDesc, PrimitiveComponentType};
-use ambient_project_semantic::{Item, TypeInner};
+use ambient_ecs::{
+    ComponentRegistry, ExternalComponentAttributes, ExternalComponentDesc, PrimitiveComponentType,
+};
+use ambient_project_semantic::{Item, ItemId, Scope, Semantic, TypeInner};
 
-pub fn all_defined_components(
+pub fn create_semantic_and_register_components(
+    ember_path: &Path,
+) -> anyhow::Result<(Semantic, ItemId<Scope>)> {
+    let mut semantic = ambient_project_semantic::Semantic::new()?;
+    semantic.add_ambient_schema(true)?;
+    let id = semantic.add_ember(ember_path)?;
+
+    ComponentRegistry::get_mut().add_external(all_defined_components(&semantic)?);
+
+    Ok((semantic, id))
+}
+
+fn all_defined_components(
     semantic: &ambient_project_semantic::Semantic,
 ) -> anyhow::Result<Vec<ExternalComponentDesc>> {
     let items = &semantic.items;
@@ -38,7 +52,7 @@ pub fn all_defined_components(
     };
 
     let mut components = vec![];
-    root_scope.visit_recursive(&items, |scope| {
+    root_scope.visit_recursive(items, |scope| {
         for id in scope.components.values().copied() {
             let component = items.get(id)?;
 

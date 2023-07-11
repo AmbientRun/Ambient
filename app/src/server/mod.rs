@@ -8,8 +8,8 @@ use std::{
 
 use ambient_core::{asset_cache, name, no_sync, project_name, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
-    dont_store, world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup,
-    World, WorldEventsSystem, WorldStreamCompEvent,
+    dont_store, world_events, ComponentDesc, Entity, Networked, SystemGroup, World,
+    WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_network::{
     native::server::{Crypto, GameServer},
@@ -18,7 +18,6 @@ use ambient_network::{
     synced_resources,
 };
 use ambient_prefab::PrefabFromUrl;
-use ambient_project_semantic::DiskFileProvider;
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ContentBaseUrlKey, ServerBaseUrlKey},
@@ -44,7 +43,7 @@ pub async fn start(
     runtime: &tokio::runtime::Handle,
     assets: AssetCache,
     cli: Cli,
-    project_path: AbsAssetUrl,
+    ember_path: AbsAssetUrl,
     manifest: &ambient_project::Manifest,
     metadata: &ambient_build::Metadata,
     crypto: Crypto,
@@ -58,7 +57,7 @@ pub async fn start(
                 .proxy
                 .clone()
                 .unwrap_or("http://proxy.ambient.run/proxy".to_string()),
-            project_path: project_path.clone(),
+            project_path: ember_path.clone(),
             pre_cache_assets: host_cli.proxy_pre_cache_assets,
             project_id: manifest.ember.id.to_string(),
         }
@@ -115,7 +114,7 @@ pub async fn start(
     };
 
     // here the key is inserted into the asset cache
-    if let Ok(Some(project_path_fs)) = project_path.to_file_path() {
+    if let Ok(Some(project_path_fs)) = ember_path.to_file_path() {
         let key = format!("http://{public_host}:{http_interface_port}/content/");
         let base_url = AbsAssetUrl::from_str(&key).unwrap();
         ServerBaseUrlKey.insert(&assets, base_url.clone());
@@ -123,29 +122,13 @@ pub async fn start(
 
         start_http_interface(runtime, Some(&project_path_fs), http_interface_port);
     } else {
-        let base_url = project_path.push("build/").unwrap();
+        let base_url = ember_path.push("build/").unwrap();
 
         ServerBaseUrlKey.insert(&assets, base_url.clone());
         ContentBaseUrlKey.insert(&assets, base_url);
 
         start_http_interface(runtime, None, http_interface_port);
     }
-
-    let ambient_toml = Path::new("ambient.toml");
-    let mut semantic = ambient_project_semantic::Semantic::new()?;
-    semantic.add_file(ambient_toml, &ArrayFileProvider::from_schema(), true)?;
-    semantic.add_file(
-        ambient_toml,
-        &DiskFileProvider(
-            project_path
-                .to_file_path()?
-                .context("cannot add non-local ember ambient.toml")?,
-        ),
-        false,
-    );
-
-    ComponentRegistry::get_mut()
-        .add_external(ambient_project_native::all_defined_components(&semantic).unwrap());
 
     let manifest = manifest.clone();
     let metadata = metadata.clone();
@@ -187,7 +170,7 @@ pub async fn start(
         wasm::initialize(
             &mut server_world,
             assets.clone(),
-            project_path.clone(),
+            ember_path.clone(),
             &manifest,
             &metadata,
         )
@@ -195,7 +178,7 @@ pub async fn start(
         .unwrap();
 
         if let Commands::View { asset_path, .. } = cli.command.clone() {
-            let asset_path = project_path
+            let asset_path = ember_path
                 .push("build")
                 .expect("pushing 'build' shouldn't fail")
                 .push(asset_path.to_string_lossy())

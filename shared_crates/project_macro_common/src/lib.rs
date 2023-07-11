@@ -1,14 +1,11 @@
 extern crate proc_macro;
 
 use ambient_project_semantic::{
-    ArrayFileProvider, DiskFileProvider, Item, ItemId, ItemMap, Scope, Semantic, Type, TypeInner,
+    ArrayFileProvider, Item, ItemId, ItemMap, Scope, Semantic, Type, TypeInner,
 };
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-};
+use std::{collections::HashMap, path::Path};
 
 pub enum Context {
     Host,
@@ -19,32 +16,28 @@ pub enum Context {
 }
 
 pub enum ManifestSource<'a> {
-    Path(PathBuf),
+    Path { ember_path: &'a Path },
     Array(&'a [(&'a str, &'a str)]),
 }
 
 pub fn generate_code(
-    // first bool is whether it's ambient, second bool is whether it's from the Aombient API
-    manifests: Vec<(ManifestSource<'_>, bool, bool)>,
+    manifests: Vec<ManifestSource<'_>>,
+    ambient_api_is_ambient: bool,
     context: Context,
 ) -> anyhow::Result<TokenStream> {
     let mut semantic = Semantic::new()?;
-    for (manifest, ambient, ambient_api) in manifests {
+    semantic.add_ambient_schema(ambient_api_is_ambient)?;
+    for manifest in manifests {
         match manifest {
-            ManifestSource::Path(path) => {
-                semantic.add_file(
-                    &path,
-                    &DiskFileProvider(path.parent().unwrap().to_owned()),
-                    ambient,
-                    ambient_api,
-                )?;
+            ManifestSource::Path { ember_path } => {
+                semantic.add_ember(ember_path)?;
             }
             ManifestSource::Array(files) => {
                 semantic.add_file(
                     Path::new("ambient.toml"),
                     &ArrayFileProvider { files },
-                    ambient,
-                    ambient_api,
+                    false,
+                    false,
                 )?;
             }
         }
@@ -84,8 +77,8 @@ pub fn generate_code(
         type_map
     };
 
-    let components = make_component_definitions(&context, &items, &type_map, root_scope)?;
-    let messages = make_message_definitions(&context, &items, &type_map, root_scope)?;
+    let components = make_component_definitions(&context, items, &type_map, root_scope)?;
+    let messages = make_message_definitions(&context, items, &type_map, root_scope)?;
 
     let output = quote! {
         /// Auto-generated component definitions. These come from `ambient.toml` in the root of the project.
@@ -114,14 +107,14 @@ fn make_component_definitions(
     type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
     root_scope: &Scope,
 ) -> anyhow::Result<TokenStream> {
-    let inner = make_component_definitions_inner(&context, &items, &type_map, root_scope)?;
+    let inner = make_component_definitions_inner(context, items, type_map, root_scope)?;
 
     let namespaces = {
         let mut namespaces = vec![];
         root_scope.visit_recursive(items, |scope| {
             if !scope.components.is_empty() {
                 namespaces.push(syn::parse_str::<syn::Path>(
-                    &items.fully_qualified_display_path_rust_style(&*scope)?,
+                    &items.fully_qualified_display_path_rust_style(scope)?,
                 )?);
             }
             Ok(())

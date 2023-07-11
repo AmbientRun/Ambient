@@ -64,14 +64,6 @@ pub async fn build(
 
     tracing::info!("Building project `{}` ({})", manifest.ember.id, name);
 
-    let ambient_toml = Path::new("ambient.toml");
-    let mut semantic = ambient_project_semantic::Semantic::new()?;
-    semantic.add_file(ambient_toml, &ArrayFileProvider::from_schema(), true)?;
-    semantic.add_file(ambient_toml, &DiskFileProvider(path.clone()), false);
-
-    ambient_ecs::ComponentRegistry::get_mut()
-        .add_external(ambient_project_native::all_defined_components(&semantic).unwrap());
-
     let build_path = path.join("build");
     let assets_path = path.join("assets");
 

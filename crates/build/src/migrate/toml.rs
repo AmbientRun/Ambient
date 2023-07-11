@@ -6,17 +6,13 @@ use ambient_pipeline_types::{
     models::{Collider, ModelsPipeline},
     Pipeline, PipelineProcessor, PipelinesFile,
 };
-use ambient_project::Manifest;
 use anyhow::Context;
 use futures::{future::ready, stream, StreamExt, TryStreamExt};
 use itertools::Itertools;
 
-use crate::{
-    get_asset_files, migrate::toml::json_pipeline::PipelineOneOrMany, register_from_manifest,
-};
+use crate::{get_asset_files, migrate::toml::json_pipeline::PipelineOneOrMany};
 
-pub async fn process(manifest: &Manifest, path: PathBuf) -> anyhow::Result<()> {
-    register_from_manifest(manifest);
+pub async fn process(path: PathBuf) -> anyhow::Result<()> {
     let assets_path = path.join("assets");
 
     stream::iter(get_asset_files(&assets_path))

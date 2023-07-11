@@ -187,30 +187,6 @@ impl TryFrom<Option<String>> for ProjectPath {
     }
 }
 
-async fn load_manifest(
-    assets: &AssetCache,
-    path: &ProjectPath,
-) -> anyhow::Result<ambient_project::Manifest> {
-    if let Some(path) = &path.fs_path {
-        // load manifest from file
-        Ok(
-            ambient_project::Manifest::from_file(path.join("ambient.toml"))
-                .context("Failed to read ambient.toml.")?,
-        )
-    } else {
-        // path is a URL, so download the pre-build manifest (with resolved imports)
-        let manifest_url = path.url.push("build/ambient.toml").unwrap();
-        let manifest_data = manifest_url
-            .download_string(assets)
-            .await
-            .context("Failed to download ambient.toml.")?;
-
-        let manifest = ambient_project::Manifest::parse(&manifest_data)
-            .context("Failed to parse downloaded ambient.toml.")?;
-        Ok(manifest)
-    }
-}
-
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     setup_logging()?;
@@ -256,13 +232,25 @@ async fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
+    // If a project was specified, prepare its semantic state
+    let semantic_and_scope = match project {
+        Some(_) => {
+            let path = project_path
+                .fs_path
+                .as_ref()
+                .context("project path must be local for now")?;
+
+            Some(ambient_project_native::create_semantic_and_register_components(path)?)
+        }
+        None => None,
+    };
+
     if let Commands::Assets { command, path } = &cli.command {
         let path = ProjectPath::new_local(path.clone())?;
-        let manifest = load_manifest(&assets, &path).await?;
 
         match command {
             AssetCommand::MigratePipelinesToml => {
-                ambient_build::migrate::toml::process(&manifest, path.fs_path.unwrap())
+                ambient_build::migrate::toml::process(path.fs_path.unwrap())
                     .await
                     .context("Failed to migrate pipelines")?;
             }
@@ -271,10 +259,17 @@ async fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    // If a project was specified, assume that assets need to be built
-    let manifest = match project {
-        Some(_) => Some(load_manifest(&assets, &project_path).await?),
-        None => None,
+    let manifest = if let Some((semantic, scope)) = semantic_and_scope.as_ref() {
+        let manifest = semantic
+            .items
+            .get(*scope)?
+            .manifest
+            .clone()
+            .context("no manifest for scope")?;
+
+        Some(manifest)
+    } else {
+        None
     };
 
     let metadata = if let Some(manifest) = manifest.as_ref() {

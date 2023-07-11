@@ -367,6 +367,31 @@ impl Semantic {
         Ok(scope_id)
     }
 }
+// public helpers
+impl Semantic {
+    pub fn add_ambient_schema(
+        &mut self,
+        // is_ambient refers to whether or not these should be considered global definitions,
+        // not whether or not they're part of the ambient schema (which is always true with this function)
+        is_ambient: bool,
+    ) -> anyhow::Result<ItemId<Scope>> {
+        self.add_file(
+            Path::new("ambient.toml"),
+            &ArrayFileProvider::from_schema(),
+            is_ambient,
+            true,
+        )
+    }
+
+    pub fn add_ember(&mut self, ember_path: &Path) -> anyhow::Result<ItemId<Scope>> {
+        self.add_file(
+            Path::new("ambient.toml"),
+            &DiskFileProvider(ember_path.to_owned()),
+            false,
+            false,
+        )
+    }
+}
 
 fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
     macro_rules! define_primitive_types {

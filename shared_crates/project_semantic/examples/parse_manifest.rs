@@ -1,23 +1,21 @@
 use std::path::{Path, PathBuf};
 
-use ambient_project_semantic::{ArrayFileProvider, DiskFileProvider, Printer, Semantic};
+use ambient_project_semantic::{Printer, Semantic};
 
 pub fn main() -> anyhow::Result<()> {
-    let ambient_toml = Path::new("ambient.toml");
-
     let mut semantic = Semantic::new()?;
-    semantic.add_file(ambient_toml, &ArrayFileProvider::from_schema(), true, true)?;
+    semantic.add_ambient_schema(true)?;
 
-    if let Some(project_path) = std::env::args().nth(1) {
-        if project_path == "all" {
-            for path in all_examples()? {
-                let file_provider = DiskFileProvider(path);
-                semantic.add_file(ambient_toml, &file_provider, false, false)?;
-            }
+    let paths = {
+        let arg = std::env::args().nth(1).expect("path or 'all' as first arg");
+        if arg == "all" {
+            all_examples()?
         } else {
-            let file_provider = DiskFileProvider(project_path.into());
-            semantic.add_file(ambient_toml, &file_provider, false, false)?;
+            vec![PathBuf::from(arg)]
         }
+    };
+    for path in paths {
+        semantic.add_ember(&path)?;
     }
 
     let mut printer = Printer::new();

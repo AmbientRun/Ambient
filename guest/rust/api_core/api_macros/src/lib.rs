@@ -13,13 +13,12 @@ mod main_macro;
 pub fn api_project(_input: TokenStream) -> TokenStream {
     TokenStream::from(
         ambient_project_macro_common::generate_code(
-            ManifestSource::Path(PathBuf::from(ambient_schema::MANIFEST_PATH)),
+            vec![],
+            false,
             ambient_project_macro_common::Context::Guest {
                 api_path: syn::Path::from(syn::Ident::new("crate", Span::call_site())),
                 fully_qualified_path: true,
             },
-            true,
-            true,
         )
         .unwrap(),
     )
@@ -32,10 +31,9 @@ pub fn api_project(_input: TokenStream) -> TokenStream {
 pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let ts = main_macro::main_impl(
         item.into(),
-        ManifestSource::Path(
-            PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("no manifest dir"))
-                .join("ambient.toml"),
-        ),
+        ManifestSource::Path {
+            ember_path: Path::new(&std::env::var("CARGO_MANIFEST_DIR").expect("no manifest dir")),
+        },
     );
 
     match ts {
