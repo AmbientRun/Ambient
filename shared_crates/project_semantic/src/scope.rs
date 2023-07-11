@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use ambient_project::{ComponentType, Identifier, ItemPath};
+use ambient_project::{ComponentType, Identifier, ItemPath, Manifest};
 use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
@@ -92,6 +92,7 @@ impl Context {
 pub struct Scope {
     pub data: ItemData,
     pub path: Option<PathBuf>,
+    pub manifest: Option<Manifest>,
 
     pub scopes: IndexMap<Identifier, ItemId<Scope>>,
     pub components: IndexMap<Identifier, ItemId<Component>>,
@@ -195,10 +196,11 @@ impl ResolveClone for Scope {
 }
 impl Scope {
     /// Creates a new empty scope with the specified data.
-    pub fn new(data: ItemData, path: Option<PathBuf>) -> Self {
+    pub fn new(data: ItemData, path: Option<PathBuf>, manifest: Option<Manifest>) -> Self {
         Self {
             data,
             path,
+            manifest,
             scopes: Default::default(),
             components: Default::default(),
             concepts: Default::default(),

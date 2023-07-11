@@ -165,6 +165,7 @@ impl ItemMap {
                             ..parent_scope_data
                         },
                         Some(manifest_path.clone()),
+                        None,
                     ));
                     self.get_mut(scope_id)?
                         .scopes

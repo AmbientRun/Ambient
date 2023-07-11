@@ -192,6 +192,7 @@ impl Semantic {
                     is_ambient_api: false,
                 },
                 None,
+                None,
             ));
 
             self.items
@@ -256,6 +257,7 @@ impl Semantic {
     }
 }
 impl Semantic {
+    #[allow(clippy::too_many_arguments)]
     fn add_scope_from_manifest(
         &mut self,
         parent_id: Option<ItemId<Scope>>,
@@ -274,6 +276,7 @@ impl Semantic {
                 is_ambient_api: false,
             },
             Some(manifest_path.clone()),
+            Some(manifest.clone()),
         );
         let scope_id = self.items.add(scope);
 
@@ -381,6 +384,7 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
             is_ambient: true,
             is_ambient_api: false,
         },
+        None,
         None,
     ));
 
