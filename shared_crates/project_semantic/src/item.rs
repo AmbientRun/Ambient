@@ -231,13 +231,14 @@ impl ItemMap {
     pub fn fully_qualified_display_path_ambient_style<T: Item>(
         &self,
         item: &T,
+        display_affixes: bool,
         relative_to: Option<ItemId<Scope>>,
     ) -> anyhow::Result<String> {
         self.fully_qualified_display_path(
             item,
             (Case::Kebab, Case::Kebab, Case::Kebab),
             "/",
-            (true, true),
+            (display_affixes, display_affixes),
             relative_to,
         )
     }

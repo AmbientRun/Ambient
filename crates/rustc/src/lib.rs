@@ -42,7 +42,6 @@ impl Rust {
     pub fn build(
         &self,
         working_directory: &Path,
-        package_name: &str,
         optimize: bool,
         features: &[&str],
     ) -> anyhow::Result<Vec<(PathBuf, Vec<u8>)>> {
@@ -62,8 +61,6 @@ impl Rust {
                     "json",
                     "--target",
                     "wasm32-wasi",
-                    "--package",
-                    package_name,
                 ]
                 .into_iter()
                 .chain(features.iter().map(|s| s.as_str()))

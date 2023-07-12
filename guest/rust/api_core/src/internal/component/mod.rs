@@ -45,14 +45,6 @@ impl<T> UntypedComponent for Component<T> {
     }
 }
 
-#[doc(hidden)]
-#[macro_export]
-macro_rules! lazy_component {
-    ($id:literal) => {
-        $crate::LazyComponent::new(|| $crate::__internal_get_component($id))
-    };
-}
-
 /// A tuple of [Component]s.
 pub trait ComponentsTuple {
     /// The types of the data stored in this tuple

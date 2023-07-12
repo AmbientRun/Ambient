@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::Path};
 use ambient_ecs::{
     ComponentRegistry, ExternalComponentAttributes, ExternalComponentDesc, PrimitiveComponentType,
 };
-use ambient_project_semantic::{Item, ItemId, Scope, Semantic, TypeInner};
+use ambient_project_semantic::{Item, ItemId, PrimitiveType, Scope, Semantic, TypeInner};
 
 pub fn create_semantic_and_register_components(
     ember_path: &Path,
@@ -11,8 +11,9 @@ pub fn create_semantic_and_register_components(
     let mut semantic = ambient_project_semantic::Semantic::new()?;
     semantic.add_ambient_schema(true)?;
     let id = semantic.add_ember(ember_path)?;
+    semantic.resolve()?;
 
-    ComponentRegistry::get_mut().add_external(all_defined_components(&semantic)?);
+    ComponentRegistry::get_mut().add_external(dbg!(all_defined_components(&semantic)?));
 
     Ok((semantic, id))
 }
@@ -30,7 +31,7 @@ fn all_defined_components(
         for type_id in root_scope.types.values() {
             let type_ = items.get(*type_id).expect("type id not in items");
             if let TypeInner::Primitive(pt) = type_.inner {
-                let ty = PrimitiveComponentType::try_from(pt.to_string().as_str()).unwrap();
+                let ty = primitive_type_to_primitive_component_type(pt);
                 type_map.insert(*type_id, ty);
                 type_map.insert(items.get_vec_id(*type_id), ty.to_vec_type().unwrap());
                 type_map.insert(items.get_option_id(*type_id), ty.to_option_type().unwrap());
@@ -60,14 +61,24 @@ fn all_defined_components(
                 .attributes
                 .iter()
                 .map(|id| {
-                    let attr = items.get(id.as_resolved().unwrap())?;
+                    let attr = items.get(id.as_resolved().unwrap_or_else(|| {
+                        panic!(
+                            "attribute id {:?} not resolved in component {:?}",
+                            id, component
+                        )
+                    }))?;
                     Ok(attr.data().id.as_upper_camel_case())
                 })
                 .collect::<anyhow::Result<_>>()?;
 
             components.push(ExternalComponentDesc {
-                path: items.fully_qualified_display_path_ambient_style(&*component, None)?,
-                ty: type_map[&component.type_.as_resolved().unwrap()],
+                path: items.fully_qualified_display_path_ambient_style(&*component, false, None)?,
+                ty: type_map[&component.type_.as_resolved().unwrap_or_else(|| {
+                    panic!(
+                        "type id {:?} not resolved in component {:?}",
+                        component.type_, component
+                    )
+                })],
                 name: component.name.clone(),
                 description: component.description.clone(),
                 attributes: ExternalComponentAttributes::from_iter(
@@ -78,4 +89,16 @@ fn all_defined_components(
         Ok(())
     })?;
     Ok(components)
+}
+
+fn primitive_type_to_primitive_component_type(pt: PrimitiveType) -> PrimitiveComponentType {
+    macro_rules! convert {
+        ($(($value:ident, $_type:ty)),*) => {
+            match pt {
+                $(PrimitiveType::$value => PrimitiveComponentType::$value,)*
+            }
+        };
+    }
+
+    ambient_shared_types::primitive_component_definitions!(convert)
 }

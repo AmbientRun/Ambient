@@ -204,6 +204,7 @@ fn make_component_definitions_inner(
                     items
                         .fully_qualified_display_path_ambient_style(
                             &*items.get(type_id).unwrap(),
+                            true,
                             None
                         )
                         .unwrap()
@@ -257,8 +258,11 @@ fn make_component_definitions_inner(
                     })
                 }
                 Context::Guest { .. } => {
-                    let component_id =
-                        items.fully_qualified_display_path_ambient_style(&*component, None)?;
+                    let component_id = items.fully_qualified_display_path_ambient_style(
+                        &*component,
+                        false,
+                        None,
+                    )?;
                     let ident = make_path(&id);
                     let uppercase_ident = make_path(&id.to_uppercase());
 

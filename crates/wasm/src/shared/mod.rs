@@ -20,7 +20,6 @@ use ambient_ecs::{
     EntityId, FnSystem, Message, SystemGroup, World, WorldEventReader,
 };
 
-use ambient_project::Identifier;
 use itertools::Itertools;
 pub use module::*;
 
@@ -59,10 +58,10 @@ mod internal {
 
 pub use internal::{
     client_bytecode_from_url, messenger, module, module_bytecode, module_enabled, module_errors,
-    module_state, module_state_maker, remote_paired_id,
+    module_name, module_state, module_state_maker, remote_paired_id,
 };
 
-use self::{internal::module_name, message::Source};
+use self::message::Source;
 use crate::shared::message::{RuntimeMessageExt, Target};
 
 pub fn init_all_components() {
@@ -265,7 +264,11 @@ fn run(
 ) {
     ambient_profiling::scope!(
         "run",
-        format!("{} - {}", get_module_name(world, id), message_name)
+        format!(
+            "{} - {}",
+            world.get_cloned(id, module_name()).unwrap(),
+            message_name
+        )
     );
 
     // If it's not in the subscribed events, skip over it
@@ -316,12 +319,7 @@ pub(crate) fn unload(world: &mut World, module_id: EntityId, reason: &str) {
     );
 }
 
-pub fn spawn_module(
-    world: &mut World,
-    name: &Identifier,
-    description: String,
-    enabled: bool,
-) -> EntityId {
+pub fn spawn_module(world: &mut World, name: &str, description: String, enabled: bool) -> EntityId {
     Entity::new()
         .with(ambient_core::name(), format!("Wasm module: {}", name))
         .with(module_name(), name.to_string())
@@ -330,10 +328,6 @@ pub fn spawn_module(
         .with(module_enabled(), enabled)
         .with_default(module_errors())
         .spawn(world)
-}
-
-pub fn get_module_name(world: &World, id: EntityId) -> Identifier {
-    Identifier::new(world.get_cloned(id, module_name()).unwrap()).unwrap()
 }
 
 fn run_and_catch_panics<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, String> {

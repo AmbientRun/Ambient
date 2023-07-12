@@ -21,7 +21,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(scope, None)?
+            items.fully_qualified_display_path_ambient_style(scope, true, None)?
         );
 
         self.with_indent(|p| {
@@ -64,7 +64,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(component, None)?
+            items.fully_qualified_display_path_ambient_style(component, true, None)?
         );
 
         self.with_indent(|p| {
@@ -101,7 +101,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(concept, None)?
+            items.fully_qualified_display_path_ambient_style(concept, true, None)?
         );
 
         self.with_indent(|p| {
@@ -139,7 +139,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(message, None)?
+            items.fully_qualified_display_path_ambient_style(message, true, None)?
         );
 
         self.with_indent(|p| {
@@ -167,7 +167,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(type_, None)?,
+            items.fully_qualified_display_path_ambient_style(type_, true, None)?,
         );
         if let TypeInner::Enum(e) = &type_.inner {
             self.with_indent(|p| {
@@ -186,7 +186,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(attribute, None)?
+            items.fully_qualified_display_path_ambient_style(attribute, true, None)?
         );
         Ok(())
     }
@@ -215,7 +215,7 @@ fn write_resolvable_id<T: Item>(
     Ok(match r {
         ResolvableItemId::Unresolved(unresolved) => format!("unresolved({:?})", unresolved),
         ResolvableItemId::Resolved(resolved) => {
-            items.fully_qualified_display_path_ambient_style(&*items.get(*resolved)?, None)?
+            items.fully_qualified_display_path_ambient_style(&*items.get(*resolved)?, true, None)?
         }
     })
 }

@@ -1,11 +1,10 @@
 use std::{collections::HashMap, sync::Arc};
 
 use ambient_ecs::{EntityId, SystemGroup, World};
-use ambient_project::Identifier;
 use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{
-    client_bytecode_from_url, get_module_name, module_bytecode, remote_paired_id, spawn_module,
+    client_bytecode_from_url, module_bytecode, module_name, remote_paired_id, spawn_module,
     MessageType, ModuleBytecode,
 };
 use anyhow::Context;
@@ -23,7 +22,7 @@ pub async fn initialize(
 ) -> anyhow::Result<()> {
     let messenger = Arc::new(
         |world: &World, id: EntityId, type_: MessageType, message: &str| {
-            let name = get_module_name(world, id);
+            let name = world.get_cloned(id, module_name()).unwrap();
             let (prefix, level) = match type_ {
                 MessageType::Info => ("info", log::Level::Info),
                 MessageType::Warn => ("warn", log::Level::Warn),
@@ -51,12 +50,9 @@ pub async fn initialize(
         let is_sole_module = wasm_component_paths.len() == 1;
         for path in wasm_component_paths {
             let component_url = build_dir.push(path).unwrap();
-            let name = Identifier::new(
-                component_url
-                    .file_stem()
-                    .context("no file stem for {path:?}")?,
-            )
-            .map_err(anyhow::Error::msg)?;
+            let name = component_url
+                .file_stem()
+                .context("no file stem for {path:?}")?;
 
             let description = manifest.ember.description.clone().unwrap_or_default();
             let description = if is_sole_module {
@@ -70,10 +66,9 @@ pub async fn initialize(
                 (
                     target,
                     // Support `client_module`, `module_client` and `module`
-                    name.as_ref()
-                        .strip_prefix(target)
-                        .or_else(|| name.as_ref().strip_suffix(target))
-                        .unwrap_or(name.as_ref())
+                    name.strip_prefix(target)
+                        .or_else(|| name.strip_suffix(target))
+                        .unwrap_or(name)
                         .trim_matches('_')
                         .to_string(),
                 ),
