@@ -159,7 +159,7 @@ impl GpuRun {
         // Only one
 
         out_buffer
-            .read(gpu, .., true)
+            .read_staging(gpu, ..)
             .await
             .expect("Failed to map buffer")[0]
     }

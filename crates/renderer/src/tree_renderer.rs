@@ -4,6 +4,7 @@ use std::{
     sync::Arc,
 };
 
+use ambient_core::runtime;
 use ambient_ecs::{query, ArchetypeFilter, EntityId, FramedEventsReader, QueryState, World};
 use ambient_gpu::{
     gpu::Gpu,
@@ -281,15 +282,15 @@ impl TreeRenderer {
             }
         }
 
-        assert_eq!(
-            mem::size_of::<DrawIndexedIndirect>(),
-            mem::size_of::<wgpu::util::DrawIndexedIndirect>()
-        );
+        // assert_eq!(
+        //     mem::size_of::<DrawIndexedIndirect>(),
+        //     mem::size_of::<wgpu::util::DrawIndexedIndirect>()
+        // );
 
-        assert_eq!(
-            mem::align_of::<DrawIndexedIndirect>(),
-            mem::align_of::<wgpu::util::DrawIndexedIndirect>()
-        );
+        // assert_eq!(
+        //     mem::align_of::<DrawIndexedIndirect>(),
+        //     mem::align_of::<wgpu::util::DrawIndexedIndirect>()
+        // );
 
         let mut commands =
             vec![DrawIndexedIndirect::zeroed(); self.primitives.total_len() as usize];
@@ -471,6 +472,15 @@ impl TreeRenderer {
 
         let mut is_bound = false;
 
+        tracing::debug!("Tree: {:?}", self.tree.keys().collect_vec());
+
+        let read = collect_state.commands.read_staging(gpu, ..);
+        world.resource(runtime()).spawn(async move {
+            let data = read.await.unwrap();
+
+            tracing::info!("Indirect commands: {data:#?}");
+        });
+
         for node in self.tree.values() {
             render_pass.set_pipeline(node.pipeline.pipeline());
             // Bind on first invocation
@@ -486,12 +496,14 @@ impl TreeRenderer {
                 }
             }
 
+            tracing::debug!("Node: {:?}", node.tree.keys().collect_vec());
             for mat in node.tree.values() {
                 let material = &mat.material;
 
                 render_pass.set_bind_group(bind_groups.len() as _, material.bind_group(), &[]);
 
                 if !set_scissors_safe(render_pass, render_target_size, mat.scissors) {
+                    panic!("");
                     continue;
                 }
 
@@ -544,13 +556,16 @@ impl TreeRenderer {
 
                         // NOTE: this issues 1 draw call *for every single visible primitive* in the scene
 
-                        for i in 0..count {
-                            tracing::debug!("Drawing primitive: {offset} + {i}");
-                            render_pass.draw_indexed_indirect(
-                                collect_state.commands.buffer(),
-                                (offset + i as u64)
-                                    * std::mem::size_of::<DrawIndexedIndirect>() as u64,
-                            );
+                        if count > 1 {
+                            for i in 0..count {
+                                tracing::debug!(?offset, ?i, commands=?collect_state.commands, "Drawing primitive");
+                                render_pass.draw_indexed_indirect(
+                                    collect_state.commands.buffer(),
+                                    offset * 20,
+                                    // (offset + i as u64)
+                                    //     * std::mem::size_of::<DrawIndexedIndirect>() as u64,
+                                );
+                            }
                         }
                     }
                 }

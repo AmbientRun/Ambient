@@ -335,7 +335,7 @@ impl RendererCollect {
 
             _post_submit.push(Box::new(move || {
                 runtime.spawn(async move {
-                    if let Ok(res) = staging.read(&post_submit_gpu, .., false).await {
+                    if let Ok(res) = staging.read_direct(&post_submit_gpu, ..).await {
                         *counts_res.lock() = res;
                         buffs.return_buffer(staging);
                     }

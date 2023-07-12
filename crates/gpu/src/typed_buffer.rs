@@ -1,16 +1,18 @@
 use std::{
+    any::type_name,
     marker::PhantomData,
-    ops::{DerefMut, RangeBounds},
+    ops::{Bound, DerefMut, RangeBounds},
     sync::atomic::{AtomicUsize, Ordering},
 };
 
-use wgpu::{util::DeviceExt, BufferAddress, BufferAsyncError};
+use ambient_std::asset_cache::AssetCache;
+use futures::Future;
+use wgpu::{util::DeviceExt, BufferAddress, BufferAsyncError, CommandEncoder};
 
 use super::gpu::Gpu;
 
 static UNTYPED_BUFFERS_TOTAL_SIZE: AtomicUsize = AtomicUsize::new(0);
 
-#[derive(Debug)]
 pub struct UntypedBuffer {
     label: String,
     pub buffer: wgpu::Buffer,
@@ -18,6 +20,15 @@ pub struct UntypedBuffer {
     capacity: u64,
     length: u64,
     item_size: u64,
+}
+
+impl std::fmt::Debug for UntypedBuffer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("UntypedBuffer")
+            .field("capacity", &self.capacity)
+            .field("length", &self.length)
+            .finish()
+    }
 }
 
 impl UntypedBuffer {
@@ -143,64 +154,82 @@ impl UntypedBuffer {
         self.capacity = new_capacity;
     }
 
-    /// If use_staging is true it will create a temporary staging buffer internally, copy the data over, and then read from that
-    pub async fn read(
+    pub async fn read_direct(
         &self,
         gpu: &Gpu,
         bounds: impl RangeBounds<BufferAddress>,
-        use_staging: bool,
     ) -> Result<Vec<u8>, BufferAsyncError> {
-        if use_staging {
-            let start = match bounds.start_bound() {
-                std::ops::Bound::Included(v) => *v,
-                std::ops::Bound::Excluded(v) => *v + 1,
-                std::ops::Bound::Unbounded => 0,
-            };
-            let end = match bounds.end_bound() {
-                std::ops::Bound::Included(v) => *v + 1,
-                std::ops::Bound::Excluded(v) => *v,
-                std::ops::Bound::Unbounded => self.length,
-            };
-            let size = end - start;
-            if size == 0 {
-                return Ok(Vec::new());
-            }
+        let read = Self::read_buf(&self.buffer, bounds);
 
-            let mut encoder = gpu
-                .device
-                .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-            let staging_buffer = gpu.device.create_buffer(&wgpu::BufferDescriptor {
-                label: None,
-                size,
-                usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
-                mapped_at_creation: false,
-            });
-            encoder.copy_buffer_to_buffer(&self.buffer, start, &staging_buffer, 0, size);
-            gpu.queue.submit(Some(encoder.finish()));
-            Self::read_buf(gpu, &staging_buffer, ..).await
-        } else {
-            Self::read_buf(gpu, &self.buffer, bounds).await
+        if !gpu.will_be_polled {
+            gpu.device.poll(wgpu::Maintain::Wait);
         }
+
+        read.await
     }
-    async fn read_buf(
+
+    pub fn read_staging<'a>(
+        &self,
         gpu: &Gpu,
-        buf: &wgpu::Buffer,
+        bounds: impl RangeBounds<BufferAddress>,
+    ) -> impl Future<Output = Result<Vec<u8>, BufferAsyncError>> + 'a {
+        let start = match bounds.start_bound() {
+            Bound::Included(v) => *v,
+            Bound::Excluded(v) => *v + 1,
+            Bound::Unbounded => 0,
+        };
+
+        let end = match bounds.end_bound() {
+            Bound::Included(v) => *v + 1,
+            Bound::Excluded(v) => *v,
+            Bound::Unbounded => self.length,
+        };
+
+        let size = end - start;
+        if size == 0 {
+            panic!("Cannot read 0 bytes from a buffer");
+        }
+
+        let mut encoder = gpu
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+
+        let staging_buffer = gpu.device.create_buffer(&wgpu::BufferDescriptor {
+            label: None,
+            size,
+            usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
+
+        encoder.copy_buffer_to_buffer(&self.buffer, start, &staging_buffer, 0, size);
+        gpu.queue.submit(Some(encoder.finish()));
+
+        async move { Self::read_buf(&staging_buffer, ..).await }
+    }
+
+    fn read_buf<'a>(
+        // gpu: &'a Gpu,
+        buf: &'a wgpu::Buffer,
         range: impl RangeBounds<BufferAddress>,
-    ) -> Result<Vec<u8>, BufferAsyncError> {
+    ) -> impl Future<Output = Result<Vec<u8>, BufferAsyncError>> + 'a {
         let slice = buf.slice(range);
         let (tx, value) = tokio::sync::oneshot::channel();
         slice.map_async(wgpu::MapMode::Read, |v| {
             tx.send(v).ok();
         });
-        if !gpu.will_be_polled {
-            gpu.device.poll(wgpu::Maintain::Wait);
+
+        // if !gpu.will_be_polled {
+        //     gpu.device.poll(wgpu::Maintain::Wait);
+        // }
+
+        async move {
+            value.await.unwrap()?;
+            let range = slice.get_mapped_range();
+            let data = range.to_vec();
+            drop(range);
+            buf.unmap();
+            Ok(data)
         }
-        value.await.unwrap()?;
-        let range = slice.get_mapped_range();
-        let data = range.to_vec();
-        drop(range);
-        buf.unmap();
-        Ok(data)
     }
 }
 impl Drop for UntypedBuffer {
@@ -209,10 +238,20 @@ impl Drop for UntypedBuffer {
     }
 }
 
-#[derive(Debug)]
 pub struct TypedBuffer<T: bytemuck::Pod> {
     buffer: UntypedBuffer,
     _type: PhantomData<T>,
+}
+
+impl<T: bytemuck::Pod + std::fmt::Debug> std::fmt::Debug for TypedBuffer<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TypedBuffer")
+            .field("type", &type_name::<T>())
+            .field("capacity", &self.capacity)
+            .field("length", &self.length)
+            .field("item_size", &self.item_size)
+            .finish()
+    }
 }
 
 impl<T: bytemuck::Pod> TypedBuffer<T> {
@@ -277,25 +316,50 @@ impl<T: bytemuck::Pod> TypedBuffer<T> {
     }
 
     /// Reads a range from the buffer. The range is defined in items; i.e. 1..3 means read item 1 through 3 (not bytes).
-    pub async fn read(
+    pub async fn read_direct(
         &self,
         gpu: &Gpu,
         bounds: impl RangeBounds<u64>,
-        use_staging: bool,
     ) -> Result<Vec<T>, BufferAsyncError> {
+        // Convert the bounds
         let start = match bounds.start_bound() {
-            std::ops::Bound::Included(v) => v * self.item_size,
-            std::ops::Bound::Excluded(v) => (v + 1) * self.item_size,
-            std::ops::Bound::Unbounded => 0,
+            Bound::Included(v) => v * self.item_size,
+            Bound::Excluded(v) => (v + 1) * self.item_size,
+            Bound::Unbounded => 0,
         };
         let end = match bounds.end_bound() {
-            std::ops::Bound::Included(v) => (v + 1) * self.item_size,
-            std::ops::Bound::Excluded(v) => v * self.item_size,
-            std::ops::Bound::Unbounded => self.length * self.item_size,
+            Bound::Included(v) => (v + 1) * self.item_size,
+            Bound::Excluded(v) => v * self.item_size,
+            Bound::Unbounded => self.length * self.item_size,
         };
 
-        let data = self.buffer.read(gpu, start..end, use_staging).await?;
+        let data = self.buffer.read_direct(gpu, start..end).await?;
         Ok(bytemuck::cast_slice(&data).to_vec())
+    }
+
+    /// Reads a range from the buffer. The range is defined in items; i.e. 1..3 means read item 1 through 3 (not bytes).
+    pub fn read_staging<'a>(
+        &self,
+        gpu: &Gpu,
+        bounds: impl RangeBounds<u64>,
+    ) -> impl Future<Output = Result<Vec<T>, BufferAsyncError>> {
+        // Convert the bounds
+        let start = match bounds.start_bound() {
+            Bound::Included(v) => v * self.item_size,
+            Bound::Excluded(v) => (v + 1) * self.item_size,
+            Bound::Unbounded => 0,
+        };
+        let end = match bounds.end_bound() {
+            Bound::Included(v) => (v + 1) * self.item_size,
+            Bound::Excluded(v) => v * self.item_size,
+            Bound::Unbounded => self.length * self.item_size,
+        };
+
+        let read = self.buffer.read_staging(gpu, start..end);
+        async move {
+            let data = read.await?;
+            Ok(bytemuck::cast_slice(&data).to_vec())
+        }
     }
 
     pub fn buffer(&self) -> &wgpu::Buffer {
