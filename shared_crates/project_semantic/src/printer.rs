@@ -21,7 +21,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(scope)?
+            items.fully_qualified_display_path_ambient_style(scope, None)?
         );
 
         self.with_indent(|p| {
@@ -64,7 +64,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(component)?
+            items.fully_qualified_display_path_ambient_style(component, None)?
         );
 
         self.with_indent(|p| {
@@ -101,7 +101,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(concept)?
+            items.fully_qualified_display_path_ambient_style(concept, None)?
         );
 
         self.with_indent(|p| {
@@ -139,7 +139,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(message)?
+            items.fully_qualified_display_path_ambient_style(message, None)?
         );
 
         self.with_indent(|p| {
@@ -167,7 +167,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(type_)?,
+            items.fully_qualified_display_path_ambient_style(type_, None)?,
         );
         if let TypeInner::Enum(e) = &type_.inner {
             self.with_indent(|p| {
@@ -186,7 +186,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(attribute)?
+            items.fully_qualified_display_path_ambient_style(attribute, None)?
         );
         Ok(())
     }
@@ -215,7 +215,7 @@ fn write_resolvable_id<T: Item>(
     Ok(match r {
         ResolvableItemId::Unresolved(unresolved) => format!("unresolved({:?})", unresolved),
         ResolvableItemId::Resolved(resolved) => {
-            items.fully_qualified_display_path_ambient_style(&*items.get(*resolved)?)?
+            items.fully_qualified_display_path_ambient_style(&*items.get(*resolved)?, None)?
         }
     })
 }

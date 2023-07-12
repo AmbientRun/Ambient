@@ -14,12 +14,13 @@ pub fn main_impl(item: TokenStream, ambient_toml: ManifestSource) -> anyhow::Res
     path.leading_colon = Some(syn::Token![::](spans));
 
     let project_boilerplate = ambient_project_macro_common::generate_code(
-        ambient_toml,
+        vec![ambient_toml],
         false,
         ambient_project_macro_common::Context::Guest {
             api_path: path.clone(),
             fully_qualified_path: true,
         },
+        None,
     )?;
 
     let call_expr = if is_async {

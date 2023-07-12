@@ -1,5 +1,6 @@
 extern crate proc_macro;
 
+use ambient_project::ItemPathBuf;
 use ambient_project_semantic::{
     ArrayFileProvider, Item, ItemId, ItemMap, Scope, Semantic, Type, TypeInner,
 };
@@ -24,6 +25,7 @@ pub fn generate_code(
     manifests: Vec<ManifestSource<'_>>,
     ambient_api_is_ambient: bool,
     context: Context,
+    generate_from_scope_path: Option<&str>,
 ) -> anyhow::Result<TokenStream> {
     let mut semantic = Semantic::new()?;
     semantic.add_ambient_schema(ambient_api_is_ambient)?;
@@ -77,8 +79,29 @@ pub fn generate_code(
         type_map
     };
 
-    let components = make_component_definitions(&context, items, &type_map, root_scope)?;
-    let messages = make_message_definitions(&context, items, &type_map, root_scope)?;
+    let generate_from_scope_id = generate_from_scope_path
+        .map(|id| ItemPathBuf::new(id).expect("invalid generate_from_scope_path"))
+        .map(|id| {
+            items
+                .get_scope_id(semantic.root_scope_id, id.as_path().iter())
+                .unwrap()
+        })
+        .unwrap_or(semantic.root_scope_id);
+    let generate_from_scope = &*items.get(generate_from_scope_id)?;
+    let components = make_component_definitions(
+        &context,
+        items,
+        &type_map,
+        generate_from_scope_id,
+        generate_from_scope,
+    )?;
+    let messages = make_message_definitions(
+        &context,
+        items,
+        &type_map,
+        generate_from_scope_id,
+        generate_from_scope,
+    )?;
 
     let output = quote! {
         /// Auto-generated component definitions. These come from `ambient.toml` in the root of the project.
@@ -105,31 +128,38 @@ fn make_component_definitions(
     context: &Context,
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
+    root_scope_id: ItemId<Scope>,
     root_scope: &Scope,
 ) -> anyhow::Result<TokenStream> {
-    let inner = make_component_definitions_inner(context, items, type_map, root_scope)?;
+    let inner =
+        make_component_definitions_inner(context, items, type_map, root_scope_id, root_scope)?;
+    let init = match context {
+        Context::Host => {
+            let mut namespaces = vec![];
+            root_scope.visit_recursive(items, |scope| {
+                if !scope.components.is_empty() {
+                    namespaces.push(syn::parse_str::<syn::Path>(
+                        &items
+                            .fully_qualified_display_path_rust_style(scope, Some(root_scope_id))?,
+                    )?);
+                }
+                Ok(())
+            })?;
 
-    let namespaces = {
-        let mut namespaces = vec![];
-        root_scope.visit_recursive(items, |scope| {
-            if !scope.components.is_empty() {
-                namespaces.push(syn::parse_str::<syn::Path>(
-                    &items.fully_qualified_display_path_rust_style(scope)?,
-                )?);
+            quote! {
+                pub fn init() {
+                    #(
+                        #namespaces::init_components();
+                    )*
+                }
             }
-            Ok(())
-        })?;
-        namespaces
+        }
+        Context::Guest { .. } => quote! {},
     };
 
     Ok(quote! {
         #inner
-
-        pub fn init() {
-            #(
-                #namespaces::init_components();
-            )*
-        }
+        #init
     })
 }
 
@@ -137,6 +167,7 @@ fn make_component_definitions_inner(
     context: &Context,
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
+    root_scope_id: ItemId<Scope>,
     scope: &Scope,
 ) -> anyhow::Result<TokenStream> {
     let scopes = scope
@@ -146,7 +177,8 @@ fn make_component_definitions_inner(
             let scope = items.get(*s)?;
             let id = make_path(&scope.data.id.as_snake_case());
 
-            let inner = make_component_definitions_inner(context, items, type_map, &scope)?;
+            let inner =
+                make_component_definitions_inner(context, items, type_map, root_scope_id, &scope)?;
             if inner.is_empty() {
                 return Ok(quote! {});
             }
@@ -170,7 +202,10 @@ fn make_component_definitions_inner(
                 panic!(
                     "type not found: {}",
                     items
-                        .fully_qualified_display_path_ambient_style(&*items.get(type_id).unwrap())
+                        .fully_qualified_display_path_ambient_style(
+                            &*items.get(type_id).unwrap(),
+                            None
+                        )
                         .unwrap()
                 )
             });
@@ -222,19 +257,21 @@ fn make_component_definitions_inner(
                     })
                 }
                 Context::Guest { .. } => {
+                    let component_id =
+                        items.fully_qualified_display_path_ambient_style(&*component, None)?;
                     let ident = make_path(&id);
                     let uppercase_ident = make_path(&id.to_uppercase());
 
                     let component_init = quote! {
-                        Lazy::new(|| __internal_get_component(#ident))
+                        Lazy::new(|| __internal_get_component(#component_id))
                     };
 
                     Ok(quote! {
                         static #uppercase_ident: Lazy< Component< #ty > > = #component_init;
 
                         #[doc = #doc_comment]
-                        fn #ident() -> Component<#ty> {
-                            unimplemented!()
+                        pub fn #ident() -> Component<#ty> {
+                            *#uppercase_ident
                         }
                     })
                 }
@@ -247,7 +284,8 @@ fn make_component_definitions_inner(
     } else {
         match context {
             Context::Host => {
-                let namespace_path = items.fully_qualified_display_path_rust_style(scope)?;
+                let namespace_path =
+                    items.fully_qualified_display_path_rust_style(scope, Some(root_scope_id))?;
                 quote! {
                     use std::time::Duration;
                     use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
@@ -263,7 +301,7 @@ fn make_component_definitions_inner(
                 fully_qualified_path,
             } => {
                 let fully_qualified_prefix = if *fully_qualified_path {
-                    quote! { #api_path::global:: }
+                    quote! { #api_path::global }
                 } else {
                     quote! {}
                 };
@@ -271,7 +309,7 @@ fn make_component_definitions_inner(
                     use #api_path::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
                     use #fully_qualified_prefix::{
                         EntityId, Mat4, Quat, Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, IVec2, IVec3, IVec4,
-                        Duration, ProceduralMeshHandle, ProceduralTextureHandle, ProceduralSamplerHandler,
+                        Duration, ProceduralMeshHandle, ProceduralTextureHandle, ProceduralSamplerHandle,
                         ProceduralMaterialHandle
                     };
                     #(#components)*
@@ -290,6 +328,7 @@ fn make_message_definitions(
     context: &Context,
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
+    _root_scope_id: ItemId<Scope>,
     scope: &Scope,
 ) -> anyhow::Result<TokenStream> {
     let scopes = scope
@@ -299,7 +338,7 @@ fn make_message_definitions(
             let scope = items.get(*s)?;
             let id = make_path(&scope.data.id.as_snake_case());
 
-            let inner = make_message_definitions(context, items, type_map, &scope)?;
+            let inner = make_message_definitions(context, items, type_map, _root_scope_id, &scope)?;
             if inner.is_empty() {
                 return Ok(quote! {});
             }

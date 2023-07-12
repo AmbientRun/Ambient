@@ -240,7 +240,7 @@ fn get_type_id(
 ) -> anyhow::Result<ItemId<Type>> {
     let (scope, item) = path.scope_and_item();
     items
-        .get_scope(self_scope_id, scope)?
+        .get_scope(self_scope_id, scope.iter())?
         .types
         .get(item)
         .copied()
@@ -254,7 +254,7 @@ fn get_attribute_id(
 ) -> anyhow::Result<ItemId<Attribute>> {
     let (scope, item) = path.scope_and_item();
     items
-        .get_scope(self_scope_id, scope)?
+        .get_scope(self_scope_id, scope.iter())?
         .attributes
         .get(item)
         .copied()
@@ -268,7 +268,7 @@ fn get_concept_id(
 ) -> anyhow::Result<ItemId<Concept>> {
     let (scope, item) = path.scope_and_item();
     items
-        .get_scope(self_scope_id, scope)?
+        .get_scope(self_scope_id, scope.iter())?
         .concepts
         .get(item)
         .copied()
@@ -282,7 +282,7 @@ fn get_component_id(
 ) -> anyhow::Result<ItemId<Component>> {
     let (scope, item) = path.scope_and_item();
     items
-        .get_scope(self_scope_id, scope)?
+        .get_scope(self_scope_id, scope.iter())?
         .components
         .get(item)
         .copied()

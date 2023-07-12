@@ -1,5 +1,5 @@
 pub use ambient_api_core as api;
-pub use api::{components::core as components, concepts, message::*, messages};
+pub use api::{components::core as components, concepts, message::*, messages::core as messages};
 
 use std::future::Future;
 pub fn run_async(_world: &ecs::World, future: impl Future<Output = ()> + Send + 'static) {

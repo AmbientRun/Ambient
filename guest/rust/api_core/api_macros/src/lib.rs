@@ -1,28 +1,11 @@
 extern crate proc_macro;
 
-use std::path::PathBuf;
+use std::path::Path;
 
 use ambient_project_macro_common::ManifestSource;
 use proc_macro::TokenStream;
-use proc_macro2::Span;
 
 mod main_macro;
-
-/// Generates global components and other boilerplate for the API crate.
-#[proc_macro]
-pub fn api_project(_input: TokenStream) -> TokenStream {
-    TokenStream::from(
-        ambient_project_macro_common::generate_code(
-            vec![],
-            false,
-            ambient_project_macro_common::Context::Guest {
-                api_path: syn::Path::from(syn::Ident::new("crate", Span::call_site())),
-                fully_qualified_path: true,
-            },
-        )
-        .unwrap(),
-    )
-}
 
 /// Makes your `main()` function accessible to the WASM host, and generates `components` and `concept` modules for your project.
 ///

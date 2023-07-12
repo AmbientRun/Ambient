@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use ambient_core::window::cursor_position;
-use ambient_ecs::{generated::messages, query_mut, SystemGroup, World};
+use ambient_ecs::{generated::messages::core as messages, query_mut, SystemGroup, World};
 use ambient_element::{element_component, Element, Hooks};
 use ambient_input::{player_prev_raw_input, player_raw_input, PlayerRawInput};
 use ambient_network::client::client_state;

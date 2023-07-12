@@ -310,7 +310,10 @@ impl Element {
     /// ```
     #[cfg(feature = "guest")]
     pub fn spawn_interactive(self) {
-        use ambient_guest_bridge::api::{message::RuntimeMessage, messages, prelude::OkEmpty};
+        use ambient_guest_bridge::{
+            api::{message::RuntimeMessage, prelude::OkEmpty},
+            messages,
+        };
 
         let mut tree = self.spawn_tree();
         messages::Frame::subscribe(move |_| {

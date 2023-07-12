@@ -71,10 +71,13 @@ dunce = "1.0"
 
 [build-dependencies]
 ambient_shared_types = { path = "../../shared_crates/shared_types", features = ["native"] }
+ambient_project_macro_common = { path = "../../shared_crates/project_macro_common" }
 wit-bindgen-core = { workspace = true }
 wit-bindgen-rust = { workspace = true }
+syn = { workspace = true }
 
 [features]
-native = ["wasmtime", "wasmtime-wasi", "wasi-common", "wasi-cap-std-sync"]
-physics = ["physxx", "ambient_prefab", "ambient_physics"]
+native = ["wasm-native", "physics", "wit"]
+wasm-native = ["dep:wasmtime", "dep:wasmtime-wasi", "dep:wasi-common", "dep:wasi-cap-std-sync"]
+physics = ["dep:physxx", "dep:ambient_prefab", "dep:ambient_physics"]
 wit = []

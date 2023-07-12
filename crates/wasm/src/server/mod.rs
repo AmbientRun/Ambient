@@ -1,5 +1,7 @@
 use crate::shared::{self, message::RuntimeMessageExt};
-use ambient_ecs::{query, EntityId, FnSystem, SystemGroup, World};
+use ambient_ecs::{
+    generated::messages::core as messages, query, EntityId, FnSystem, SystemGroup, World,
+};
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use std::sync::Arc;
 
@@ -33,7 +35,7 @@ pub fn systems() -> SystemGroup {
                     None => return,
                 };
                 for (a, b) in collisions.into_iter() {
-                    ambient_ecs::generated::messages::Collision::new(vec![a, b])
+                    messages::Collision::new(vec![a, b])
                         .run(world, None)
                         .unwrap();
                 }
@@ -50,7 +52,7 @@ pub fn systems() -> SystemGroup {
                     return;
                 }
 
-                ambient_ecs::generated::messages::ColliderLoads::new(collider_loads)
+                messages::ColliderLoads::new(collider_loads)
                     .run(world, None)
                     .unwrap();
             })),

@@ -10,6 +10,7 @@ pub fn host_project(_input: TokenStream) -> TokenStream {
             vec![],
             false,
             ambient_project_macro_common::Context::Host,
+            Some("ambient"),
         )
         .unwrap(),
     )

@@ -8,7 +8,7 @@ use std::{
 
 pub use ambient_cb as cb;
 use ambient_core::{transform::*, window::window_ctl, window::WindowCtl};
-use ambient_ecs::generated::messages;
+use ambient_ecs::generated::messages::core as messages;
 pub use ambient_ecs::{EntityId, SystemGroup, World};
 pub use ambient_editor_derive::ElementEditor;
 pub use ambient_element as element;

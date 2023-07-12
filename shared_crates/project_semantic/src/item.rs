@@ -20,49 +20,41 @@ pub struct ItemMap {
 }
 impl ItemMap {
     pub fn add<T: Item>(&mut self, item: T) -> ItemId<T> {
-        let data = item.data().clone();
+        if T::TYPE == Type::TYPE {
+            let data = item.data().clone();
+            let raw_new_id = self.add_raw(item);
+            // We know this is a type, so reify it
+            let new_id = ItemId(raw_new_id.0, PhantomData::<Type>);
 
-        let value = item.into_item_value();
-        let is_type = matches!(value, ItemValue::Type(_));
-
-        let new_id = self.add_raw(value);
-
-        if is_type {
-            let new_id = ItemId::<Type>(new_id.0, PhantomData);
-
-            let vec_id = self.add_raw(
-                Type::new(
-                    ItemData {
-                        id: Identifier::new(format!("vec-{}", data.id)).unwrap(),
-                        ..data
-                    },
-                    TypeInner::Vec(new_id),
-                )
-                .into_item_value(),
-            );
+            let vec_id = self.add_raw(Type::new(
+                ItemData {
+                    id: Identifier::new(format!("vec-{}", data.id)).unwrap(),
+                    ..data
+                },
+                TypeInner::Vec(new_id),
+            ));
             self.vec_items.insert(new_id, vec_id);
 
-            let option_id = self.add_raw(
-                Type::new(
-                    ItemData {
-                        id: Identifier::new(format!("option-{}", data.id)).unwrap(),
-                        ..data
-                    },
-                    TypeInner::Option(new_id),
-                )
-                .into_item_value(),
-            );
+            let option_id = self.add_raw(Type::new(
+                ItemData {
+                    id: Identifier::new(format!("option-{}", data.id)).unwrap(),
+                    ..data
+                },
+                TypeInner::Option(new_id),
+            ));
             self.option_items.insert(new_id, option_id);
+            raw_new_id
+        } else {
+            self.add_raw(item)
         }
-
-        new_id
     }
 
     // TEMP: allow disallowed methods for development for now
     #[allow(clippy::disallowed_methods)]
-    fn add_raw<T: Item>(&mut self, value: ItemValue) -> ItemId<T> {
+    fn add_raw<T: Item>(&mut self, value: T) -> ItemId<T> {
         let ulid = ulid::Ulid::new();
-        self.items.insert(ulid, RefCell::new(value));
+        self.items
+            .insert(ulid, RefCell::new(value.into_item_value()));
         ItemId(ulid, PhantomData)
     }
 
@@ -128,13 +120,13 @@ impl ItemMap {
         self.option_items.get(&id).copied().unwrap()
     }
 
-    pub(crate) fn get_scope(
+    pub fn get_scope_id<'a>(
         &self,
         start_scope_id: ItemId<Scope>,
-        path: &[Identifier],
-    ) -> anyhow::Result<Ref<Scope>> {
+        path: impl Iterator<Item = &'a Identifier>,
+    ) -> anyhow::Result<ItemId<Scope>> {
         let mut scope_id = start_scope_id;
-        for segment in path.iter() {
+        for segment in path {
             let scope = self.get(scope_id)?;
             scope_id = scope
                 .scopes
@@ -142,7 +134,15 @@ impl ItemMap {
                 .copied()
                 .with_context(|| format!("failed to find scope {segment} in {scope_id}"))?
         }
-        self.get(scope_id)
+        Ok(scope_id)
+    }
+
+    pub fn get_scope<'a>(
+        &self,
+        start_scope_id: ItemId<Scope>,
+        path: impl Iterator<Item = &'a Identifier>,
+    ) -> anyhow::Result<Ref<Scope>> {
+        self.get(self.get_scope_id(start_scope_id, path)?)
     }
 
     pub(crate) fn get_or_create_scope_mut(
@@ -184,6 +184,7 @@ impl ItemMap {
         (scope_case, function_case, type_case): (Case, Case, Case),
         separator: &str,
         (type_prefix, ambient_suffix): (bool, bool),
+        relative_to: Option<ItemId<Scope>>,
     ) -> anyhow::Result<String> {
         let data = item.data();
         let item_case = match T::TYPE {
@@ -195,6 +196,12 @@ impl ItemMap {
         let mut path = vec![data.id.to_case(item_case)];
         let mut parent_id = data.parent_id;
         while let Some(this_parent_id) = parent_id {
+            if let Some(relative_to) = relative_to {
+                if this_parent_id == relative_to {
+                    break;
+                }
+            }
+
             let parent = self.get(this_parent_id)?;
             let id = parent.data().id.to_case(scope_case);
             if !id.is_empty() {
@@ -224,24 +231,28 @@ impl ItemMap {
     pub fn fully_qualified_display_path_ambient_style<T: Item>(
         &self,
         item: &T,
+        relative_to: Option<ItemId<Scope>>,
     ) -> anyhow::Result<String> {
         self.fully_qualified_display_path(
             item,
             (Case::Kebab, Case::Kebab, Case::Kebab),
             "/",
             (true, true),
+            relative_to,
         )
     }
 
     pub fn fully_qualified_display_path_rust_style<T: Item>(
         &self,
         item: &T,
+        relative_to: Option<ItemId<Scope>>,
     ) -> anyhow::Result<String> {
         self.fully_qualified_display_path(
             item,
             (Case::Snake, Case::Snake, Case::UpperCamel),
             "::",
             (false, false),
+            relative_to,
         )
     }
 }

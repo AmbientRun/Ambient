@@ -16,8 +16,8 @@ use std::sync::Arc;
 
 use ambient_core::async_ecs::async_run;
 use ambient_ecs::{
-    dont_despawn_on_unload, generated::messages, query, world_events, Entity, EntityId, FnSystem,
-    Message, SystemGroup, World, WorldEventReader,
+    dont_despawn_on_unload, generated::messages::core as messages, query, world_events, Entity,
+    EntityId, FnSystem, Message, SystemGroup, World, WorldEventReader,
 };
 
 use ambient_project::Identifier;
@@ -126,9 +126,7 @@ pub fn systems() -> SystemGroup {
             Box::new(FnSystem::new(move |world, _| {
                 ambient_profiling::scope!("WASM module frame event");
                 // trigger frame event
-                ambient_ecs::generated::messages::Frame::new()
-                    .run(world, None)
-                    .unwrap();
+                messages::Frame::new().run(world, None).unwrap();
             })),
             Box::new(FnSystem::new(move |world, _| {
                 ambient_profiling::scope!("WASM module pending messages");

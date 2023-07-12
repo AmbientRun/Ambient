@@ -66,7 +66,7 @@ fn all_defined_components(
                 .collect::<anyhow::Result<_>>()?;
 
             components.push(ExternalComponentDesc {
-                path: items.fully_qualified_display_path_ambient_style(&*component)?,
+                path: items.fully_qualified_display_path_ambient_style(&*component, None)?,
                 ty: type_map[&component.type_.as_resolved().unwrap()],
                 name: component.name.clone(),
                 description: component.description.clone(),

@@ -259,7 +259,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
         callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
     ) -> Listener {
         use crate::message::RuntimeMessage;
-        crate::messages::Frame::subscribe(move |_| {
+        crate::messages::core::Frame::subscribe(move |_| {
             let results = self.evaluate();
             if !results.is_empty() {
                 callback(results).into_result()?;

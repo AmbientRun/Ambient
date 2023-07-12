@@ -2,7 +2,7 @@ pub use ambient_ecs as ecs;
 use std::{future::Future, time::Duration};
 
 pub use ecs::{
-    generated::{components::core as components, concepts, messages},
+    generated::{components::core as components, concepts, messages::core as messages},
     Message, RuntimeMessage,
 };
 

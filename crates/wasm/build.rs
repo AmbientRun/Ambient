@@ -54,17 +54,16 @@ fn main() {
         files.extend(load_files(&working_dir, &filename).unwrap());
     }
 
-    eprintln!("Assembling guest files");
     for guest_path in std::fs::read_dir("../../guest/")
         .unwrap()
         .filter_map(Result::ok)
         .map(|de| de.path())
         .filter(|de| de.is_dir())
     {
-        eprintln!("Reading file in guest path: {guest_path:?}");
         // HACK: Build wit files ahead of time so that we don't need to use a macro in the guest code.
+        //
+        // Additionally, generate the API project Rust code ahead of time.
         if guest_path.file_name().unwrap_or_default() == "rust" {
-            eprintln!("Reading rust wit");
             use wit_bindgen_core::{wit_parser::Resolve, Files};
 
             let mut generator = wit_bindgen_rust::Opts::default().build();
@@ -76,7 +75,6 @@ fn main() {
             generator.generate(&resolve, world, &mut files);
 
             for (filename, contents) in files.iter() {
-                eprintln!("Writing file: {filename:?}");
                 std::fs::write(
                     guest_path
                         .join("api_core")
@@ -87,6 +85,32 @@ fn main() {
                 )
                 .unwrap();
             }
+
+            // Generate the API project Rust code.
+            let api_generated_code = ambient_project_macro_common::generate_code(
+                vec![],
+                false,
+                ambient_project_macro_common::Context::Guest {
+                    api_path: syn::parse_str::<syn::Path>("crate").unwrap(),
+                    fully_qualified_path: true,
+                },
+                Some("ambient"),
+            )
+            .unwrap();
+
+            let api_generated_code = format!("#![allow(missing_docs)]\n{api_generated_code}");
+
+            let generated_path = guest_path
+                .join("api_core")
+                .join("src")
+                .join("internal")
+                .join("generated.rs");
+
+            std::fs::write(&generated_path, api_generated_code).unwrap();
+            std::process::Command::new("rustfmt")
+                .arg(generated_path)
+                .status()
+                .unwrap();
         } else {
             copy_files(&guest_path, &files, &working_dir);
         }
