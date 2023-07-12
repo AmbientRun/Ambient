@@ -300,11 +300,12 @@ impl TreeRenderer {
         let mut commands =
             vec![DrawIndexedIndirect::zeroed(); self.primitives.total_len() as usize];
 
+        self.config
+            .renderer_resources
+            .collect
+            .update(gpu, &material_layouts, collect_state);
+
         if self.config.software_culling {
-            self.config
-                .renderer_resources
-                .collect
-                .update(gpu, &material_layouts, collect_state);
             let mut counts = vec![0u32; material_layouts.len()];
 
             for (&subbuffer, primitives) in &self.collect_primitives {
@@ -343,6 +344,13 @@ impl TreeRenderer {
 
             *collect_state.counts_cpu.lock() = counts;
         } else {
+            {
+                // let mut counts_cpu = collect_state.counts_cpu.lock();
+                // if counts_cpu.len() != material_layouts.len() {
+                //     *counts_cpu = material_layouts.iter().map(|v| v.primitive_count).collect();
+                // }
+            }
+
             self.config.renderer_resources.collect.compute_indirect(
                 gpu,
                 assets,
@@ -542,16 +550,18 @@ impl TreeRenderer {
                             )
                         }
                     } else {
-                        let count = counts[mat.material_index as usize];
+                        let count = counts.get(mat.material_index as usize);
+
                         // NOTE: this issues 1 draw call *for every single visible primitive* in the scene
-                        for i in 0..count {
-                            tracing::debug!("Drawing primitive: {offset} + {i}");
-                            // render_pass.draw_indexed(, base_vertex, instances)
-                            render_pass.draw_indexed_indirect(
-                                collect_state.commands.buffer(),
-                                (offset + i as u64)
-                                    * std::mem::size_of::<DrawIndexedIndirect>() as u64,
-                            );
+                        if let Some(&count) = count {
+                            for i in 0..count {
+                                tracing::debug!("Drawing primitive: {offset} + {i}");
+                                render_pass.draw_indexed_indirect(
+                                    collect_state.commands.buffer(),
+                                    (offset + i as u64)
+                                        * std::mem::size_of::<DrawIndexedIndirect>() as u64,
+                                );
+                            }
                         }
                     }
                 }

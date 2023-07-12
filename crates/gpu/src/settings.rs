@@ -54,6 +54,8 @@ impl Settings {
 impl Settings {
     #[cfg(not(target_os = "unknown"))]
     pub fn load_from_file() -> Result<Settings> {
+        use std::io::ErrorKind;
+
         const QUALIFIER: &str = "com";
         const ORGANIZATION: &str = "Ambient";
         const APPLICATION: &str = "Ambient";
@@ -75,19 +77,21 @@ impl Settings {
 
         let settings_path = settings_dir.join(FILE_NAME);
         tracing::info!("Reading {FILE_NAME} from {}", settings_path.display());
-        let settings = if settings_path.exists() {
-            let settings = std::fs::read_to_string(&settings_path)?;
-            let settings: Settings =
-                toml::from_str(&settings).with_context(|| format!("Deserializing {FILE_NAME}"))?;
-            settings
-        } else {
-            Settings::default()
-        };
-
-        std::fs::write(&settings_path, toml::to_string(&settings)?)
-            .with_context(|| format!("Writing {FILE_NAME}"))?;
-
-        Ok(settings)
+        let settings = std::fs::read_to_string(&settings_path);
+        match settings {
+            Ok(settings) => {
+                let settings: Settings = toml::from_str(&settings)
+                    .with_context(|| format!("Deserializing {FILE_NAME}"))?;
+                Ok(settings)
+            }
+            Err(e) if e.kind() == ErrorKind::NotFound => {
+                let settings = Settings::default();
+                std::fs::write(&settings_path, toml::to_string(&settings)?)
+                    .with_context(|| format!("Writing {FILE_NAME}"))?;
+                Ok(settings)
+            }
+            Err(e) => Err(e).context("Error reading settings file at {settings_path:?}"),
+        }
     }
 }
 

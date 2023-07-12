@@ -228,11 +228,11 @@ impl RendererCollect {
         material_layouts: &[MaterialLayout],
         collect_state: &mut RendererCollectState,
     ) {
-        // let counts = vec![0; material_layouts.len()];
+        let counts = vec![0; material_layouts.len()];
 
-        // collect_state.counts.fill(gpu, &counts, |_| {});
+        collect_state.counts.fill(gpu, &counts, |_| {});
 
-        tracing::debug!("material_layouts: {material_layouts:?}");
+        // tracing::debug!("material_layouts: {material_layouts:?}");
 
         collect_state
             .material_layouts
@@ -258,23 +258,13 @@ impl RendererCollect {
         }
 
         tracing::debug!("Resizing collect command buffer to {primitives_count}");
-        output.commands.resize(
-            gpu,
-            primitives_count as u64
-                + (COLLECT_WORKGROUP_SIZE - primitives_count % COLLECT_WORKGROUP_SIZE) as u64,
-            true,
-        );
+        output.commands.resize(gpu, primitives_count as u64, true);
 
         assert_eq!(
             input_primitives.total_len(),
             primitives_count as u64,
             "Expected count {primitives_count}",
         );
-
-        // let counts = vec![0; material_layouts.len()];
-        // output.counts.fill(gpu, &counts, |_| {});
-        // tracing::debug!("material_layouts: {material_layouts:?}");
-        // output.material_layouts.fill(gpu, material_layouts, |_| {});
 
         let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: None,
