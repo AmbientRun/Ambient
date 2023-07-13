@@ -22,7 +22,7 @@ This will download the source and compile the runtime. Our minimum supported Rus
 cargo install --git https://github.com/AmbientRun/Ambient.git --locked --force ambient
 ```
 
-### Installing the latest *RELEASE*
+### Installing a *tagged release*
 
 ```sh
 cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.2.1 --locked --force ambient
