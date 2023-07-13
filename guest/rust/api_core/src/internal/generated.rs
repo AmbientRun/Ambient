@@ -1427,7 +1427,23 @@ pub mod components {
 #[doc = r" Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept."]
 #[doc = r""]
 #[doc = r" They do not have any runtime representation outside of the components that compose them."]
-pub mod concepts {}
+pub mod concepts {
+    #[allow(unused)]
+    pub mod core {
+        #[allow(unused)]
+        pub mod camera {
+            use crate::prelude::*;
+        }
+        #[allow(unused)]
+        pub mod primitives {
+            use crate::prelude::*;
+        }
+        #[allow(unused)]
+        pub mod transform {
+            use crate::prelude::*;
+        }
+    }
+}
 #[doc = r" Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,"]
 #[doc = r" and with other modules."]
 pub mod messages {
