@@ -20,7 +20,7 @@ use ambient_std::{
     asset_cache::SyncAssetKeyExt, color::Color, download_asset::AssetsCacheDir, line_hash, Cb,
 };
 use ambient_ui_native::{
-    fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit,
+    fit_horizontal_impl, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit,
     FlowColumn, FlowRow, Image, UIExt,
 };
 use glam::Vec3;
@@ -180,7 +180,7 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
         },
     ])
     .with_background(Color::rgba(0., 0., 0., 1.).into())
-    .with(fit_horizontal(), Fit::Parent)
+    .with(fit_horizontal_impl(), Fit::Parent)
 }
 
 #[element_component]

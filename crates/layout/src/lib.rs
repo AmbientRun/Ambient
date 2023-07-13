@@ -22,19 +22,26 @@ pub use ambient_ecs::generated::components::core::layout::{
 
 components!("layout", {
     @[Debuggable, Networked, Store, Name["Layout"], Description["The layout to apply to this entity's children."]]
-    layout: Layout,
+    // LEGACY_MISSING_ENUM_SUPPORT: layout: Layout,
+    layout_impl: Layout,
     @[Debuggable]
-    fit_vertical: Fit,
+    // LEGACY_MISSING_ENUM_SUPPORT: fit_vertical: Fit,
+    fit_vertical_impl: Fit,
     @[Debuggable]
-    fit_horizontal: Fit,
+    // LEGACY_MISSING_ENUM_SUPPORT: fit_horizontal: Fit,
+    fit_horizontal_impl: Fit,
     @[Debuggable]
-    docking: Docking,
+    // LEGACY_MISSING_ENUM_SUPPORT: docking: Docking,
+    docking_impl: Docking,
     @[Debuggable]
-    orientation: Orientation,
+    // LEGACY_MISSING_ENUM_SUPPORT: orientation: Orientation,
+    orientation_impl: Orientation,
     @[Debuggable]
-    align_horizontal: Align,
+    // LEGACY_MISSING_ENUM_SUPPORT: align_horizontal: Align,
+    align_horizontal_impl: Align,
     @[Debuggable]
-    align_vertical: Align,
+    // LEGACY_MISSING_ENUM_SUPPORT: align_vertical: Align,
+    align_vertical_impl: Align,
 });
 gpu_components! {
     gpu_ui_size() => ui_size: GpuComponentFormat::Vec4,
@@ -211,14 +218,14 @@ pub fn layout_systems() -> SystemGroup {
         vec![
             // For all "normal" components, i.e. non-layout components
             query((width().changed(),))
-                .excl(layout())
+                .excl(layout_impl())
                 .to_system_with_name("layout/width_non_layout", |q, world, qs, _| {
                     for (id, _) in q.collect_cloned(world, qs) {
                         invalidate_parent_layout(world, id, Orientation::Horizontal);
                     }
                 }),
             query((height().changed(),))
-                .excl(layout())
+                .excl(layout_impl())
                 .to_system_with_name("layout/height_non_layout", |q, world, qs, _| {
                     for (id, _) in q.collect_cloned(world, qs) {
                         invalidate_parent_layout(world, id, Orientation::Vertical);
@@ -228,7 +235,7 @@ pub fn layout_systems() -> SystemGroup {
                 width().changed(),
                 height().changed(),
                 children().changed(),
-                layout().changed(),
+                layout_impl().changed(),
             ))
             .optional_changed(parent())
             .to_system_with_name("layout/main", |q, world, qs, _| {
@@ -298,7 +305,7 @@ fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
         .unwrap_or(Borders::ZERO.into())
         .into();
     let orientation = world
-        .get(id, orientation())
+        .get(id, orientation_impl())
         .unwrap_or(Orientation::Vertical);
     let default_dock = match orientation {
         Orientation::Vertical => Docking::Top,
@@ -313,14 +320,14 @@ fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
 
     for (i, &c) in children.iter().enumerate() {
         let dock = world
-            .get(c, docking())
+            .get(c, docking_impl())
             .unwrap_or(if i == children.len() - 1 {
                 Docking::Fill
             } else {
                 default_dock
             });
-        let child_fit_horizontal = world.get(c, fit_horizontal()).unwrap_or(Fit::Parent);
-        let child_fit_vertical = world.get(c, fit_vertical()).unwrap_or(Fit::Parent);
+        let child_fit_horizontal = world.get(c, fit_horizontal_impl()).unwrap_or(Fit::Parent);
+        let child_fit_vertical = world.get(c, fit_vertical_impl()).unwrap_or(Fit::Parent);
         let child_margin: Borders = world
             .get(c, margin())
             .unwrap_or(Borders::ZERO.into())
@@ -438,7 +445,7 @@ fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
 #[ambient_profiling::function]
 fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     let orientation = world
-        .get(id, orientation())
+        .get(id, orientation_impl())
         .unwrap_or(Orientation::Horizontal);
     let space_between_items = world.get(id, space_between_items()).unwrap_or(0.);
     let self_padding: Borders = world
@@ -450,8 +457,8 @@ fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
         world.get(id, height()).unwrap_or(0.),
     );
     let mut offset = Vec2::ZERO;
-    let self_fit_horizontal = world.get(id, fit_horizontal()).unwrap_or(Fit::None);
-    let self_fit_vertical = world.get(id, fit_vertical()).unwrap_or(Fit::None);
+    let self_fit_horizontal = world.get(id, fit_horizontal_impl()).unwrap_or(Fit::None);
+    let self_fit_vertical = world.get(id, fit_vertical_impl()).unwrap_or(Fit::None);
     let self_min_width = world.get(id, min_width()).unwrap_or(0.);
     let self_min_height = world.get(id, min_height()).unwrap_or(0.);
     let self_max_width = if self_fit_horizontal == Fit::Children {
@@ -481,8 +488,8 @@ fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
                 .unwrap_or(Borders::ZERO.into())
                 .into();
 
-            let child_fit_horizontal = world.get(c, fit_horizontal()).unwrap_or(Fit::None);
-            let child_fit_vertical = world.get(c, fit_vertical()).unwrap_or(Fit::None);
+            let child_fit_horizontal = world.get(c, fit_horizontal_impl()).unwrap_or(Fit::None);
+            let child_fit_vertical = world.get(c, fit_vertical_impl()).unwrap_or(Fit::None);
 
             let child_size = vec2(
                 if child_fit_horizontal == Fit::Parent {
@@ -545,8 +552,10 @@ fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
         self_size.y
     };
 
-    let align_horizontal = world.get(id, align_horizontal()).unwrap_or(Align::Begin);
-    let align_vertical = world.get(id, align_vertical()).unwrap_or(Align::Begin);
+    let align_horizontal = world
+        .get(id, align_horizontal_impl())
+        .unwrap_or(Align::Begin);
+    let align_vertical = world.get(id, align_vertical_impl()).unwrap_or(Align::Begin);
     let align_left = match align_horizontal {
         Align::Begin => self_padding.left,
         Align::Center => (new_self_width - children_width) / 2.,
@@ -565,8 +574,8 @@ fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
             .unwrap_or(Borders::ZERO.into())
             .into();
         let child_base_position = vec3(align_left, align_top, 0.) + pos;
-        let child_fit_horizontal = world.get(c, fit_horizontal()).unwrap_or(Fit::None);
-        let child_fit_vertical = world.get(c, fit_vertical()).unwrap_or(Fit::None);
+        let child_fit_horizontal = world.get(c, fit_horizontal_impl()).unwrap_or(Fit::None);
+        let child_fit_vertical = world.get(c, fit_vertical_impl()).unwrap_or(Fit::None);
         let child_width = if child_fit_horizontal == Fit::Parent {
             let child_new_width =
                 new_self_width - child_base_position.x - child_margin.right - self_padding.right;
@@ -619,7 +628,7 @@ fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
 #[ambient_profiling::function]
 fn bookcase_layout(world: &mut World, id: EntityId, files: Vec<EntityId>) {
     let orientation = world
-        .get(id, orientation())
+        .get(id, orientation_impl())
         .unwrap_or(Orientation::Horizontal);
     let self_size = vec2(
         world.get(id, width()).unwrap_or(0.),
@@ -701,9 +710,11 @@ fn width_to_children(world: &mut World, id: EntityId, children: Vec<EntityId>) {
 fn invalidate_parent_layout(world: &mut World, id: EntityId, orientation: Orientation) {
     let self_is_parent_fit = match orientation {
         Orientation::Horizontal => {
-            world.get(id, fit_horizontal()).unwrap_or(Fit::None) == Fit::Parent
+            world.get(id, fit_horizontal_impl()).unwrap_or(Fit::None) == Fit::Parent
         }
-        Orientation::Vertical => world.get(id, fit_vertical()).unwrap_or(Fit::None) == Fit::Parent,
+        Orientation::Vertical => {
+            world.get(id, fit_vertical_impl()).unwrap_or(Fit::None) == Fit::Parent
+        }
     };
     if self_is_parent_fit {
         return;

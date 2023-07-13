@@ -20,7 +20,7 @@ use ambient_std::{
 };
 use ambient_ui_native::{
     command_modifier,
-    layout::{docking, width, Docking},
+    layout::{docking_impl, width, Docking},
     margin, padding, space_between_items, Borders, Button, ButtonStyle, Dock, FlowRow, Hotkey,
     ScreenContainer, Separator, StylesExt, STREET,
 };
@@ -215,7 +215,7 @@ impl ElementComponent for EditorBuildMode {
                 SelectionPanel { selection: selection.clone(), set_selection: set_selection.clone() }
                     .el()
                     .with(width(), 300.)
-                    .with(docking(), Docking::Right)
+                    .with(docking_impl(), Docking::Right)
                     .floating_panel()
                     .with(margin(), Borders::even(STREET).into())
                     .with(padding(), Borders::even(STREET).into())
@@ -333,7 +333,7 @@ impl ElementComponent for EditorBuildMode {
             })
                 .el()
                 .floating_panel()
-                .with(docking(), Docking::Top)
+                .with(docking_impl(), Docking::Top)
                 .with(space_between_items(), STREET)
                 .with(margin(), Borders::even(STREET).into())
                 .with(padding(), Borders::even(STREET).into()),

@@ -30,7 +30,7 @@ use crate::{
     shared,
 };
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
-use ambient_layout::{docking, padding, width, Borders};
+use ambient_layout::{docking_impl, padding, width, Borders};
 
 mod wasm;
 
@@ -447,7 +447,7 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                     },
                 ])
                 .with(width(), w)
-                .with(docking(), ambient_layout::Docking::Left)
+                .with(docking_impl(), ambient_layout::Docking::Left)
                 .with_background(vec4(0., 0., 0., 1.))
                 .with(padding(), Borders::even(STREET).into()),
                 set_ecs_size,
@@ -471,7 +471,7 @@ fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                 .el(),
                 set_debugger_size,
             )
-            .with(docking(), ambient_layout::Docking::Top)
+            .with(docking_impl(), ambient_layout::Docking::Top)
             .with(padding(), Borders::even(STREET).into())
         } else {
             Element::new()

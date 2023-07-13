@@ -9,8 +9,9 @@ use ambient_std::{
     pretty_duration, to_byte_unit,
 };
 use ambient_ui_native::{
-    docking, fit_horizontal, height, margin, width, Borders, Button, ButtonStyle, Dock, Docking,
-    Editor, Fit, FlowColumn, FlowRow, Rectangle, StylesExt, Text, Tooltip, UIBase, UIExt, STREET,
+    docking_impl, fit_horizontal_impl, height, margin, width, Borders, Button, ButtonStyle, Dock,
+    Docking, Editor, Fit, FlowColumn, FlowRow, Rectangle, StylesExt, Text, Tooltip, UIBase, UIExt,
+    STREET,
 };
 use glam::{vec3, vec4, Vec4};
 use itertools::Itertools;
@@ -164,7 +165,7 @@ impl ElementComponent for AssetTimelineVisualizer {
             ])
             .keyboard(),
         );
-        FlowColumn::el(children).with(fit_horizontal(), Fit::Parent)
+        FlowColumn::el(children).with(fit_horizontal_impl(), Fit::Parent)
     }
 }
 
@@ -210,15 +211,15 @@ impl ElementComponent for AssetTimelineRow {
                     .el()
                     .with(width(), 200. - padding)
                     .with(margin(), Borders::left(padding).into())
-                    .with(fit_horizontal(), Fit::None)
-                    .with(docking(), Docking::Left),
+                    .with(fit_horizontal_impl(), Fit::None)
+                    .with(docking_impl(), Docking::Left),
                 if let Some(cpu_size) = value.cpu_size {
                     Text::el(to_byte_unit(cpu_size))
                 } else {
                     UIBase.el()
                 }
                 .with(width(), 100.)
-                .with(docking(), Docking::Left)
+                .with(docking_impl(), Docking::Left)
                 .with(margin(), Borders::left(STREET).into()),
                 if let Some(gpu_size) = total_gpu_size.or(value.gpu_size) {
                     Text::el(to_byte_unit(gpu_size))
@@ -226,7 +227,7 @@ impl ElementComponent for AssetTimelineRow {
                     UIBase.el()
                 }
                 .with(width(), 100.)
-                .with(docking(), Docking::Left)
+                .with(docking_impl(), Docking::Left)
                 .with(margin(), Borders::left(STREET).into()),
                 AssetLifetimeViz {
                     lifetimes: value.lifetimes,
@@ -235,7 +236,7 @@ impl ElementComponent for AssetTimelineRow {
             ])
             .el()
             .with(height(), 20.)
-            .with(fit_horizontal(), Fit::Parent),
+            .with(fit_horizontal_impl(), Fit::Parent),
             if expanded {
                 let mut stack = value.stack;
                 stack.push(key);
@@ -260,7 +261,7 @@ impl ElementComponent for AssetTimelineRow {
                 Element::new()
             },
         ])
-        .with(fit_horizontal(), Fit::Parent)
+        .with(fit_horizontal_impl(), Fit::Parent)
     }
 }
 

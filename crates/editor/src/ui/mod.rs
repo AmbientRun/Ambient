@@ -30,7 +30,7 @@ use ambient_terrain::{
 };
 use ambient_ui_native::{
     command_modifier, height,
-    layout::{docking, space_between_items, width, Borders, Docking},
+    layout::{docking_impl, space_between_items, width, Borders, Docking},
     margin, use_window_logical_resolution, Button, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey,
     Rectangle, ScreenContainer, ScrollArea, ScrollAreaSizing, Separator, StylesExt, Text, UIExt,
     WindowSized, STREET,
@@ -233,7 +233,7 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
             .keyboard()
             .with(margin(), Borders::even(STREET).set_bottom(0.).into())]),
             if user_settings.debug_intents {
-                IntentHistoryVisualizer.el().with(margin(), Borders::even(STREET).into()).with(docking(), Docking::Top)
+                IntentHistoryVisualizer.el().with(margin(), Borders::even(STREET).into()).with(docking_impl(), Docking::Top)
             } else {
                 Element::new()
             },
@@ -242,8 +242,8 @@ pub fn EditorUI(hooks: &mut Hooks) -> Element {
                 EditorMode::Terrain => EditorTerrainMode.el(),
                 EditorMode::Build => EditorBuildMode.el(),
                 EditorMode::Atmosphere => EditorAtmosphereMode.el(),
-                EditorMode::NaturalLayers => NaturalLayersEditor.el().with(docking(), Docking::Left).with(width(), 500.),
-                EditorMode::TerrainMaterial => TerrainMaterialEditor.el().with(docking(), Docking::Left).with(width(), 500.),
+                EditorMode::NaturalLayers => NaturalLayersEditor.el().with(docking_impl(), Docking::Left).with(width(), 500.),
+                EditorMode::TerrainMaterial => TerrainMaterialEditor.el().with(docking_impl(), Docking::Left).with(width(), 500.),
             },
         ])
         .el(),

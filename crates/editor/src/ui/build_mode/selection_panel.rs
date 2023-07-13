@@ -2,7 +2,7 @@ use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_network::{client::ClientState, log_network_result};
 use ambient_std::Cb;
 use ambient_ui_native::{
-    layout::{fit_horizontal, fit_vertical, space_between_items, Fit},
+    layout::{fit_horizontal_impl, fit_vertical_impl, space_between_items, Fit},
     Button, FlowColumn, Text, UIExt, STREET,
 };
 
@@ -30,7 +30,7 @@ impl ElementComponent for SelectionPanel {
             if selection.len() == 1 {
                 let _state = client_state.game_state.lock();
 
-                EntityEditor { entity_id: selection.entities[0] }.el().with(fit_horizontal(), Fit::Parent)
+                EntityEditor { entity_id: selection.entities[0] }.el().with(fit_horizontal_impl(), Fit::Parent)
             } else {
                 Text::el(format!("{} entities", selection.len()))
             },
@@ -52,8 +52,8 @@ impl ElementComponent for SelectionPanel {
         ])
         .el()
         .with(space_between_items(), STREET)
-        .with(fit_horizontal(), Fit::None)
-        .with(fit_vertical(), Fit::None)
+        .with(fit_horizontal_impl(), Fit::None)
+        .with(fit_vertical_impl(), Fit::None)
         .with_clickarea()
         .el()
     }
