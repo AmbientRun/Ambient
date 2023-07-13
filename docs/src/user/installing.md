@@ -16,12 +16,6 @@ The *Ambient Runtime* can be installed through `cargo install` using git.
 
 This will download the source and compile the runtime. Our minimum supported Rust version is <!-- rust-version-begin --> 1.67.0 <!-- rust-version-end -->.
 
-### Installing the latest *HEAD*
-
-```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git --locked --force ambient
-```
-
 ### Installing a *tagged release*
 
 ```sh
@@ -31,6 +25,12 @@ cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.2.1 --loc
 **Note**: If you are running a project outside of the `guest/rust` workspace, it is likely that the published version of the API will be incompatible with `main`, and you will need to specify the dependency manually.
 
 Additionally, the `--locked` flag is recommended to ensure that the correct packages are installed and that the build is reproducible between machines.
+
+### Installing the latest *HEAD*
+
+```sh
+cargo install --git https://github.com/AmbientRun/Ambient.git --locked --force ambient
+```
 
 ### Optional features
 
