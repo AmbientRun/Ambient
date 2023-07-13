@@ -26,13 +26,10 @@ cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.2.1 --loc
 
 ### Installing the latest development version
 
-This is recommended if you are developing and targeting the latest features of Ambient that are actively being
-developed, such as new features, bugfixes, and breaking changes.
-    
-**Note**: The `main` branch changes rapidly and is as such subject to frequent breaking changes and may include new bugs
-and decreased stability. It is not a stable development target and is not recommended if you are unable to actively
-update your project to accommodate these changes.
+Ambient is actively developed on the `main` branch of the repository. This branch contains in-development changes, including new features, bug fixes and breaking changes. This method can be used if you would like to try out these changes.
 
+**Note**: The `main` branch is subject to frequent breaking changes, including potential new bugs and decreased stability, and is not a stable development target for projects. Using the `main` branch is not recommended if you are unable to actively update your project to accommodate breaking changes.
+    
 ```sh
 cargo install --git https://github.com/AmbientRun/Ambient.git --locked --force ambient
 ```
