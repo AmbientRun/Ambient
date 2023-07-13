@@ -17,6 +17,14 @@ pub enum TypeInner {
     Option(ItemId<Type>),
     Enum(Enum),
 }
+impl TypeInner {
+    pub fn as_enum(&self) -> Option<&Enum> {
+        match self {
+            Self::Enum(v) => Some(v),
+            _ => None,
+        }
+    }
+}
 impl Type {
     pub fn new(data: ItemData, inner: TypeInner) -> Self {
         Self { data, inner }

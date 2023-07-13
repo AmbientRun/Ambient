@@ -163,7 +163,7 @@ pub mod components {
             };
             use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
             use std::time::Duration;
-            components ! ("physics" , { # [doc = "**Angular velocity**: Angular velocity (radians/second) of this entity in the physics scene.\n\nUpdating this component will update the entity's angular velocity in the physics scene.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Angular velocity"] , Description ["Angular velocity (radians/second) of this entity in the physics scene.\nUpdating this component will update the entity's angular velocity in the physics scene."]] angular_velocity : Vec3 , # [doc = "**Cube collider**: If attached, this entity will have a cube physics collider.\n\n`x, y, z` is the size of the cube.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Cube collider"] , Description ["If attached, this entity will have a cube physics collider.\n`x, y, z` is the size of the cube."]] cube_collider : Vec3 , # [doc = "**Character controller height**: The height of the physics character controller attached to this entity.\n\nIf an entity has both this and a `character-controller-radius`, it will be given a physical character collider.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Character controller height"] , Description ["The height of the physics character controller attached to this entity.\nIf an entity has both this and a `character-controller-radius`, it will be given a physical character collider."]] character_controller_height : f32 , # [doc = "**Character controller radius**: The radius of the physics character controller attached to this entity.\n\nIf an entity has both this and a `character-controller-height`, it will be given a physical character collider.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Character controller radius"] , Description ["The radius of the physics character controller attached to this entity.\nIf an entity has both this and a `character-controller-height`, it will be given a physical character collider."]] character_controller_radius : f32 , # [doc = "**Collider from URL**: This entity will load its physics collider from the URL.\n\nThe value is the URL to load from.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Collider from URL"] , Description ["This entity will load its physics collider from the URL.\nThe value is the URL to load from."]] collider_from_url : String , # [doc = "**Collider loaded**: This component is automatically attached to an entity once the collider has been loaded (through e.g. `collider-from-url`).\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Collider loaded"] , Description ["This component is automatically attached to an entity once the collider has been loaded (through e.g. `collider-from-url`)."]] collider_loaded : () , # [doc = "**Collider loads**: Contains all colliders that were loaded in this physics tick.\n\n*Attributes*: debuggable, networked, resource, store"] @ [Debuggable , Networked , Resource , Store , Name ["Collider loads"] , Description ["Contains all colliders that were loaded in this physics tick."]] collider_loads : Vec :: < EntityId > , # [doc = "**Contact offset**: Contact offset (in meters) of this entity in the physics scene.\n\nUpdating this component will update the entity's contact offset for each attached shape in the physics scene.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Contact offset"] , Description ["Contact offset (in meters) of this entity in the physics scene.\nUpdating this component will update the entity's contact offset for each attached shape in the physics scene."]] contact_offset : f32 , # [doc = "**Density**: The density of this entity.\n\nThis is used to update the `mass` when the entity is rescaled.\n\n*Attributes*: debuggable, networked, store\n\n*Suggested Default*: F32(1.0)"] @ [Debuggable , Networked , Store , Name ["Density"] , Description ["The density of this entity.\nThis is used to update the `mass` when the entity is rescaled."]] density : f32 , # [doc = "**Dynamic**: If this is true, the entity will be dynamic (i.e. be able to move). Otherwise, it will be static.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Dynamic"] , Description ["If this is true, the entity will be dynamic (i.e. be able to move). Otherwise, it will be static."]] dynamic : bool , # [doc = "**Kinematic**: If attached, and this entity is dynamic, this entity will also be kinematic (i.e. unable to be affected by other entities motion). Otherwise, it will receive forces normally.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Kinematic"] , Description ["If attached, and this entity is dynamic, this entity will also be kinematic (i.e. unable to be affected by other entities motion). Otherwise, it will receive forces normally."]] kinematic : () , # [doc = "**Linear velocity**: Linear velocity (meters/second) of this entity in the physics scene.\n\nUpdating this component will update the entity's linear velocity in the physics scene.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Linear velocity"] , Description ["Linear velocity (meters/second) of this entity in the physics scene.\nUpdating this component will update the entity's linear velocity in the physics scene."]] linear_velocity : Vec3 , # [doc = "**Make physics static**: All physics objects will be made static when loaded.\n\n*Attributes*: debuggable, networked, resource, store"] @ [Debuggable , Networked , Resource , Store , Name ["Make physics static"] , Description ["All physics objects will be made static when loaded."]] make_physics_static : bool , # [doc = "**Mass**: The mass of this entity, measured in kilograms.\n\n*Attributes*: debuggable, networked, store\n\n*Suggested Default*: F32(1.0)"] @ [Debuggable , Networked , Store , Name ["Mass"] , Description ["The mass of this entity, measured in kilograms."]] mass : f32 , # [doc = "**Physics controlled**: If attached, this entity will be controlled by physics.\n\nNote that this requires the entity to have a collider.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Physics controlled"] , Description ["If attached, this entity will be controlled by physics.\nNote that this requires the entity to have a collider."]] physics_controlled : () , # [doc = "**Plane collider**: If attached, this entity will have a plane physics collider.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Plane collider"] , Description ["If attached, this entity will have a plane physics collider."]] plane_collider : () , # [doc = "**Rest offset**: Rest offset (in meters) of this entity in the physics scene.\n\nUpdating this component will update the entity's rest offset for each attached shape in the physics scene.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Rest offset"] , Description ["Rest offset (in meters) of this entity in the physics scene.\nUpdating this component will update the entity's rest offset for each attached shape in the physics scene."]] rest_offset : f32 , # [doc = "**Sphere collider**: If attached, this entity will have a sphere physics collider.\n\nThe value corresponds to the radius of the sphere.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Sphere collider"] , Description ["If attached, this entity will have a sphere physics collider.\nThe value corresponds to the radius of the sphere."]] sphere_collider : f32 , # [doc = "**Unit mass**: The mass of a character/unit.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Unit mass"] , Description ["The mass of a character/unit."]] unit_mass : f32 , # [doc = "**Unit velocity**: The velocity of a character/unit.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Unit velocity"] , Description ["The velocity of a character/unit."]] unit_velocity : Vec3 , # [doc = "**Unit yaw**: The yaw of a character/unit.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Unit yaw"] , Description ["The yaw of a character/unit."]] unit_yaw : f32 , # [doc = "**Visualize collider**: If attached, the collider will be rendered.\n\n*Attributes*: debuggable, networked"] @ [Debuggable , Networked , Name ["Visualize collider"] , Description ["If attached, the collider will be rendered."]] visualize_collider : () , });
+            components ! ("physics" , { # [doc = "**Angular velocity**: Angular velocity (radians/second) of this entity in the physics scene.\n\nUpdating this component will update the entity's angular velocity in the physics scene.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Angular velocity"] , Description ["Angular velocity (radians/second) of this entity in the physics scene.\nUpdating this component will update the entity's angular velocity in the physics scene."]] angular_velocity : Vec3 , # [doc = "**Cube collider**: If attached, this entity will have a cube physics collider.\n\n`x, y, z` is the size of the cube.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Cube collider"] , Description ["If attached, this entity will have a cube physics collider.\n`x, y, z` is the size of the cube."]] cube_collider : Vec3 , # [doc = "**Character controller height**: The height of the physics character controller attached to this entity.\n\nIf an entity has both this and a `character-controller-radius`, it will be given a physical character collider.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Character controller height"] , Description ["The height of the physics character controller attached to this entity.\nIf an entity has both this and a `character-controller-radius`, it will be given a physical character collider."]] character_controller_height : f32 , # [doc = "**Character controller radius**: The radius of the physics character controller attached to this entity.\n\nIf an entity has both this and a `character-controller-height`, it will be given a physical character collider.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Character controller radius"] , Description ["The radius of the physics character controller attached to this entity.\nIf an entity has both this and a `character-controller-height`, it will be given a physical character collider."]] character_controller_radius : f32 , # [doc = "**Collider from URL**: This entity will load its physics collider from the URL.\n\nThe value is the URL to load from.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Collider from URL"] , Description ["This entity will load its physics collider from the URL.\nThe value is the URL to load from."]] collider_from_url : String , # [doc = "**Collider loaded**: This component is automatically attached to an entity once the collider has been loaded (through e.g. `collider-from-url`).\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Collider loaded"] , Description ["This component is automatically attached to an entity once the collider has been loaded (through e.g. `collider-from-url`)."]] collider_loaded : () , # [doc = "**Collider loads**: Contains all colliders that were loaded in this physics tick.\n\n*Attributes*: debuggable, networked, resource, store"] @ [Debuggable , Networked , Resource , Store , Name ["Collider loads"] , Description ["Contains all colliders that were loaded in this physics tick."]] collider_loads : Vec :: < EntityId > , # [doc = "**Contact offset**: Contact offset (in meters) of this entity in the physics scene.\n\nUpdating this component will update the entity's contact offset for each attached shape in the physics scene.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Contact offset"] , Description ["Contact offset (in meters) of this entity in the physics scene.\nUpdating this component will update the entity's contact offset for each attached shape in the physics scene."]] contact_offset : f32 , # [doc = "**Density**: The density of this entity.\n\nThis is used to update the `mass` when the entity is rescaled.\n\n*Attributes*: debuggable, networked, store\n\n*Suggested Default*: 1.0"] @ [Debuggable , Networked , Store , Name ["Density"] , Description ["The density of this entity.\nThis is used to update the `mass` when the entity is rescaled."]] density : f32 , # [doc = "**Dynamic**: If this is true, the entity will be dynamic (i.e. be able to move). Otherwise, it will be static.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Dynamic"] , Description ["If this is true, the entity will be dynamic (i.e. be able to move). Otherwise, it will be static."]] dynamic : bool , # [doc = "**Kinematic**: If attached, and this entity is dynamic, this entity will also be kinematic (i.e. unable to be affected by other entities motion). Otherwise, it will receive forces normally.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Kinematic"] , Description ["If attached, and this entity is dynamic, this entity will also be kinematic (i.e. unable to be affected by other entities motion). Otherwise, it will receive forces normally."]] kinematic : () , # [doc = "**Linear velocity**: Linear velocity (meters/second) of this entity in the physics scene.\n\nUpdating this component will update the entity's linear velocity in the physics scene.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Linear velocity"] , Description ["Linear velocity (meters/second) of this entity in the physics scene.\nUpdating this component will update the entity's linear velocity in the physics scene."]] linear_velocity : Vec3 , # [doc = "**Make physics static**: All physics objects will be made static when loaded.\n\n*Attributes*: debuggable, networked, resource, store"] @ [Debuggable , Networked , Resource , Store , Name ["Make physics static"] , Description ["All physics objects will be made static when loaded."]] make_physics_static : bool , # [doc = "**Mass**: The mass of this entity, measured in kilograms.\n\n*Attributes*: debuggable, networked, store\n\n*Suggested Default*: 1.0"] @ [Debuggable , Networked , Store , Name ["Mass"] , Description ["The mass of this entity, measured in kilograms."]] mass : f32 , # [doc = "**Physics controlled**: If attached, this entity will be controlled by physics.\n\nNote that this requires the entity to have a collider.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Physics controlled"] , Description ["If attached, this entity will be controlled by physics.\nNote that this requires the entity to have a collider."]] physics_controlled : () , # [doc = "**Plane collider**: If attached, this entity will have a plane physics collider.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Plane collider"] , Description ["If attached, this entity will have a plane physics collider."]] plane_collider : () , # [doc = "**Rest offset**: Rest offset (in meters) of this entity in the physics scene.\n\nUpdating this component will update the entity's rest offset for each attached shape in the physics scene.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Rest offset"] , Description ["Rest offset (in meters) of this entity in the physics scene.\nUpdating this component will update the entity's rest offset for each attached shape in the physics scene."]] rest_offset : f32 , # [doc = "**Sphere collider**: If attached, this entity will have a sphere physics collider.\n\nThe value corresponds to the radius of the sphere.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Sphere collider"] , Description ["If attached, this entity will have a sphere physics collider.\nThe value corresponds to the radius of the sphere."]] sphere_collider : f32 , # [doc = "**Unit mass**: The mass of a character/unit.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Unit mass"] , Description ["The mass of a character/unit."]] unit_mass : f32 , # [doc = "**Unit velocity**: The velocity of a character/unit.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Unit velocity"] , Description ["The velocity of a character/unit."]] unit_velocity : Vec3 , # [doc = "**Unit yaw**: The yaw of a character/unit.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Unit yaw"] , Description ["The yaw of a character/unit."]] unit_yaw : f32 , # [doc = "**Visualize collider**: If attached, the collider will be rendered.\n\n*Attributes*: debuggable, networked"] @ [Debuggable , Networked , Name ["Visualize collider"] , Description ["If attached, the collider will be rendered."]] visualize_collider : () , });
         }
         #[allow(unused)]
         pub mod player {
@@ -205,7 +205,7 @@ pub mod components {
             };
             use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
             use std::time::Duration;
-            components ! ("primitives" , { # [doc = "**Cube**: If attached to an entity, the entity will be converted to a cube primitive.\n\nThe cube is unit-sized (i.e. 0.5 metres out to each side).\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Cube"] , Description ["If attached to an entity, the entity will be converted to a cube primitive.\nThe cube is unit-sized (i.e. 0.5 metres out to each side)."]] cube : () , # [doc = "**Quad**: If attached to an entity, the entity will be converted to a quad primitive.\n\nThe quad is unit-sized on the XY axes, and flat on the Z axis (i.e. 0.5 metres out to the XY axes).\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Quad"] , Description ["If attached to an entity, the entity will be converted to a quad primitive.\nThe quad is unit-sized on the XY axes, and flat on the Z axis (i.e. 0.5 metres out to the XY axes)."]] quad : () , # [doc = "**Sphere**: If attached to an entity alongside the other `sphere-*` components, the entity will be converted to a sphere primitive.\n\nTo easily instantiate a unit-diameter `sphere`, consider using the `sphere` concept (e.g. `make-sphere`).\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Sphere"] , Description ["If attached to an entity alongside the other `sphere-*` components, the entity will be converted to a sphere primitive.\nTo easily instantiate a unit-diameter `sphere`, consider using the `sphere` concept (e.g. `make-sphere`)."]] sphere : () , # [doc = "**Sphere radius**: Set the radius of a `sphere` entity.\n\n*Attributes*: debuggable, networked, store\n\n*Suggested Default*: F32(0.5)"] @ [Debuggable , Networked , Store , Name ["Sphere radius"] , Description ["Set the radius of a `sphere` entity."]] sphere_radius : f32 , # [doc = "**Sphere sectors**: Set the longitudinal sectors of a `sphere` entity.\n\n*Attributes*: debuggable, networked, store\n\n*Suggested Default*: U32(36)"] @ [Debuggable , Networked , Store , Name ["Sphere sectors"] , Description ["Set the longitudinal sectors of a `sphere` entity."]] sphere_sectors : u32 , # [doc = "**Sphere stacks**: Set the latitudinal stacks of a `sphere` entity.\n\n*Attributes*: debuggable, networked, store\n\n*Suggested Default*: U32(18)"] @ [Debuggable , Networked , Store , Name ["Sphere stacks"] , Description ["Set the latitudinal stacks of a `sphere` entity."]] sphere_stacks : u32 , # [doc = "**Torus**: If attached to an entity alongside the other `torus-*` components, the entity will be converted to a torus primitive.\n\nTo easily instantiate a default `torus`, consider using the `torus` concept (e.g. `make-torus`).\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Torus"] , Description ["If attached to an entity alongside the other `torus-*` components, the entity will be converted to a torus primitive.\nTo easily instantiate a default `torus`, consider using the `torus` concept (e.g. `make-torus`)."]] torus : () , # [doc = "**Torus inner radius**: Set the inner radius of a `torus` entity, spanning XY-plane.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Torus inner radius"] , Description ["Set the inner radius of a `torus` entity, spanning XY-plane."]] torus_inner_radius : f32 , # [doc = "**Torus outer radius**: Set the outer radius of a `torus` entity, spanning XY-plane.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Torus outer radius"] , Description ["Set the outer radius of a `torus` entity, spanning XY-plane."]] torus_outer_radius : f32 , # [doc = "**Torus loops**: Set the loops of a `torus` entity, spanning XY-plane.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Torus loops"] , Description ["Set the loops of a `torus` entity, spanning XY-plane."]] torus_loops : u32 , # [doc = "**Torus slices**: Set the slices of a `torus` entity, spanning XY-plane.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Torus slices"] , Description ["Set the slices of a `torus` entity, spanning XY-plane."]] torus_slices : u32 , # [doc = "**Capsule**: If attached to an entity alongside the other `capsule-*` components, the entity will be converted to a capsule primitive.\n\nTo easily instantiate a default `capsule`, consider using the `capsule` concept (e.g. `make-capsule`).\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Capsule"] , Description ["If attached to an entity alongside the other `capsule-*` components, the entity will be converted to a capsule primitive.\nTo easily instantiate a default `capsule`, consider using the `capsule` concept (e.g. `make-capsule`)."]] capsule : () , # [doc = "**Capsule radius**: Set the radius of a `capsule` entity, spanning XY-plane.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Capsule radius"] , Description ["Set the radius of a `capsule` entity, spanning XY-plane."]] capsule_radius : f32 , # [doc = "**Capsule half-height**: Set the half-height of the `capsule` entity, spanning Z-axis, excluding the caps.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Capsule half-height"] , Description ["Set the half-height of the `capsule` entity, spanning Z-axis, excluding the caps."]] capsule_half_height : f32 , # [doc = "**Capsule rings**: Set the number of sections between the caps.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Capsule rings"] , Description ["Set the number of sections between the caps."]] capsule_rings : u32 , # [doc = "**Capsule latitudes**: Set the number of latitudinal sections. Should be even.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Capsule latitudes"] , Description ["Set the number of latitudinal sections. Should be even."]] capsule_latitudes : u32 , # [doc = "**Capsule longitudes**: Set the number of longitudinal sections.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Capsule longitudes"] , Description ["Set the number of longitudinal sections."]] capsule_longitudes : u32 , });
+            components ! ("primitives" , { # [doc = "**Cube**: If attached to an entity, the entity will be converted to a cube primitive.\n\nThe cube is unit-sized (i.e. 0.5 metres out to each side).\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Cube"] , Description ["If attached to an entity, the entity will be converted to a cube primitive.\nThe cube is unit-sized (i.e. 0.5 metres out to each side)."]] cube : () , # [doc = "**Quad**: If attached to an entity, the entity will be converted to a quad primitive.\n\nThe quad is unit-sized on the XY axes, and flat on the Z axis (i.e. 0.5 metres out to the XY axes).\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Quad"] , Description ["If attached to an entity, the entity will be converted to a quad primitive.\nThe quad is unit-sized on the XY axes, and flat on the Z axis (i.e. 0.5 metres out to the XY axes)."]] quad : () , # [doc = "**Sphere**: If attached to an entity alongside the other `sphere-*` components, the entity will be converted to a sphere primitive.\n\nTo easily instantiate a unit-diameter `sphere`, consider using the `sphere` concept (e.g. `make-sphere`).\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Sphere"] , Description ["If attached to an entity alongside the other `sphere-*` components, the entity will be converted to a sphere primitive.\nTo easily instantiate a unit-diameter `sphere`, consider using the `sphere` concept (e.g. `make-sphere`)."]] sphere : () , # [doc = "**Sphere radius**: Set the radius of a `sphere` entity.\n\n*Attributes*: debuggable, networked, store\n\n*Suggested Default*: 0.5"] @ [Debuggable , Networked , Store , Name ["Sphere radius"] , Description ["Set the radius of a `sphere` entity."]] sphere_radius : f32 , # [doc = "**Sphere sectors**: Set the longitudinal sectors of a `sphere` entity.\n\n*Attributes*: debuggable, networked, store\n\n*Suggested Default*: 36"] @ [Debuggable , Networked , Store , Name ["Sphere sectors"] , Description ["Set the longitudinal sectors of a `sphere` entity."]] sphere_sectors : u32 , # [doc = "**Sphere stacks**: Set the latitudinal stacks of a `sphere` entity.\n\n*Attributes*: debuggable, networked, store\n\n*Suggested Default*: 18"] @ [Debuggable , Networked , Store , Name ["Sphere stacks"] , Description ["Set the latitudinal stacks of a `sphere` entity."]] sphere_stacks : u32 , # [doc = "**Torus**: If attached to an entity alongside the other `torus-*` components, the entity will be converted to a torus primitive.\n\nTo easily instantiate a default `torus`, consider using the `torus` concept (e.g. `make-torus`).\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Torus"] , Description ["If attached to an entity alongside the other `torus-*` components, the entity will be converted to a torus primitive.\nTo easily instantiate a default `torus`, consider using the `torus` concept (e.g. `make-torus`)."]] torus : () , # [doc = "**Torus inner radius**: Set the inner radius of a `torus` entity, spanning XY-plane.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Torus inner radius"] , Description ["Set the inner radius of a `torus` entity, spanning XY-plane."]] torus_inner_radius : f32 , # [doc = "**Torus outer radius**: Set the outer radius of a `torus` entity, spanning XY-plane.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Torus outer radius"] , Description ["Set the outer radius of a `torus` entity, spanning XY-plane."]] torus_outer_radius : f32 , # [doc = "**Torus loops**: Set the loops of a `torus` entity, spanning XY-plane.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Torus loops"] , Description ["Set the loops of a `torus` entity, spanning XY-plane."]] torus_loops : u32 , # [doc = "**Torus slices**: Set the slices of a `torus` entity, spanning XY-plane.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Torus slices"] , Description ["Set the slices of a `torus` entity, spanning XY-plane."]] torus_slices : u32 , # [doc = "**Capsule**: If attached to an entity alongside the other `capsule-*` components, the entity will be converted to a capsule primitive.\n\nTo easily instantiate a default `capsule`, consider using the `capsule` concept (e.g. `make-capsule`).\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Capsule"] , Description ["If attached to an entity alongside the other `capsule-*` components, the entity will be converted to a capsule primitive.\nTo easily instantiate a default `capsule`, consider using the `capsule` concept (e.g. `make-capsule`)."]] capsule : () , # [doc = "**Capsule radius**: Set the radius of a `capsule` entity, spanning XY-plane.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Capsule radius"] , Description ["Set the radius of a `capsule` entity, spanning XY-plane."]] capsule_radius : f32 , # [doc = "**Capsule half-height**: Set the half-height of the `capsule` entity, spanning Z-axis, excluding the caps.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Capsule half-height"] , Description ["Set the half-height of the `capsule` entity, spanning Z-axis, excluding the caps."]] capsule_half_height : f32 , # [doc = "**Capsule rings**: Set the number of sections between the caps.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Capsule rings"] , Description ["Set the number of sections between the caps."]] capsule_rings : u32 , # [doc = "**Capsule latitudes**: Set the number of latitudinal sections. Should be even.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Capsule latitudes"] , Description ["Set the number of latitudinal sections. Should be even."]] capsule_latitudes : u32 , # [doc = "**Capsule longitudes**: Set the number of longitudinal sections.\n\n*Attributes*: debuggable, networked, store"] @ [Debuggable , Networked , Store , Name ["Capsule longitudes"] , Description ["Set the number of longitudinal sections."]] capsule_longitudes : u32 , });
         }
         #[allow(unused)]
         pub mod procedurals {
@@ -309,16 +309,460 @@ pub mod concepts {
         pub mod camera {
             use crate::{Component, Entity, EntityId};
             use glam::{IVec2, IVec3, IVec4, Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+            #[allow(clippy::approx_constant)]
+            #[doc = "Makes a *Camera*.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/camera/near\": f32 = 0.1,\n  \"ambient/core/camera/projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient/core/camera/projection-view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient/core/camera/active-camera\": f32 = 0.0,\n  \"ambient/core/transform/local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient/core/transform/inv-local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient/core/transform/transformable\": { // Concept.\n    \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n    \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n    \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  },\n}\n```\n"]
+            pub fn make_camera() -> Entity {
+                Entity::new()
+                    .with_merge(crate::concepts::ambient::core::transform::transformable())
+                    .with(crate::components::ambient::core::camera::near(), 0.1)
+                    .with(
+                        crate::components::ambient::core::camera::projection(),
+                        Mat4 {
+                            x_axis: Vec4(1.0, 0.0, 0.0, 0.0),
+                            y_axis: Vec4(0.0, 1.0, 0.0, 0.0),
+                            z_axis: Vec4(0.0, 0.0, 1.0, 0.0),
+                            w_axis: Vec4(0.0, 0.0, 0.0, 1.0),
+                        },
+                    )
+                    .with(
+                        crate::components::ambient::core::camera::projection_view(),
+                        Mat4 {
+                            x_axis: Vec4(1.0, 0.0, 0.0, 0.0),
+                            y_axis: Vec4(0.0, 1.0, 0.0, 0.0),
+                            z_axis: Vec4(0.0, 0.0, 1.0, 0.0),
+                            w_axis: Vec4(0.0, 0.0, 0.0, 1.0),
+                        },
+                    )
+                    .with(
+                        crate::components::ambient::core::camera::active_camera(),
+                        0.0,
+                    )
+                    .with(
+                        crate::components::ambient::core::transform::local_to_world(),
+                        Mat4 {
+                            x_axis: Vec4(1.0, 0.0, 0.0, 0.0),
+                            y_axis: Vec4(0.0, 1.0, 0.0, 0.0),
+                            z_axis: Vec4(0.0, 0.0, 1.0, 0.0),
+                            w_axis: Vec4(0.0, 0.0, 0.0, 1.0),
+                        },
+                    )
+                    .with(
+                        crate::components::ambient::core::transform::inv_local_to_world(),
+                        Mat4 {
+                            x_axis: Vec4(1.0, 0.0, 0.0, 0.0),
+                            y_axis: Vec4(0.0, 1.0, 0.0, 0.0),
+                            z_axis: Vec4(0.0, 0.0, 1.0, 0.0),
+                            w_axis: Vec4(0.0, 0.0, 0.0, 1.0),
+                        },
+                    )
+            }
+            #[doc = "Checks if the entity is a *Camera*.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/camera/near\": f32 = 0.1,\n  \"ambient/core/camera/projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient/core/camera/projection-view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient/core/camera/active-camera\": f32 = 0.0,\n  \"ambient/core/transform/local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient/core/transform/inv-local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient/core/transform/transformable\": { // Concept.\n    \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n    \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n    \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  },\n}\n```\n"]
+            pub fn is_camera(world: &crate::World, id: EntityId) -> bool {
+                crate::concepts::ambient::core::transform::transformable()(world, id)
+                    && world.has_components(id, &{
+                        let mut set = crate::ComponentSet::new();
+                        set.insert(crate::components::ambient::core::camera::near().desc());
+                        set.insert(crate::components::ambient::core::camera::projection().desc());
+                        set.insert(
+                            crate::components::ambient::core::camera::projection_view().desc(),
+                        );
+                        set.insert(
+                            crate::components::ambient::core::camera::active_camera().desc(),
+                        );
+                        set.insert(
+                            crate::components::ambient::core::transform::local_to_world().desc(),
+                        );
+                        set.insert(
+                            crate::components::ambient::core::transform::inv_local_to_world()
+                                .desc(),
+                        );
+                        set
+                    })
+            }
+            #[doc = "Returns the components that comprise *Camera* as a tuple.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/camera/near\": f32 = 0.1,\n  \"ambient/core/camera/projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient/core/camera/projection-view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient/core/camera/active-camera\": f32 = 0.0,\n  \"ambient/core/transform/local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient/core/transform/inv-local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient/core/transform/transformable\": { // Concept.\n    \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n    \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n    \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  },\n}\n```\n"]
+            pub fn camera() -> (
+                Component<f32>,
+                Component<Mat4>,
+                Component<Mat4>,
+                Component<f32>,
+                Component<Mat4>,
+                Component<Mat4>,
+            ) {
+                (
+                    crate::components::ambient::core::camera::near(),
+                    crate::components::ambient::core::camera::projection(),
+                    crate::components::ambient::core::camera::projection_view(),
+                    crate::components::ambient::core::camera::active_camera(),
+                    crate::components::ambient::core::transform::local_to_world(),
+                    crate::components::ambient::core::transform::inv_local_to_world(),
+                )
+            }
+            #[allow(clippy::approx_constant)]
+            #[doc = "Makes a *Perspective Common Camera*.\n\nBase components for a perspective camera. Consider `perspective-camera` or `perspective-infinite-reverse-camera`.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/camera/fovy\": f32 = 1.0,\n  \"ambient/core/camera/aspect-ratio\": f32 = 1.0,\n  \"ambient/core/camera/camera\": { // Concept.\n    \"ambient/core/camera/near\": f32 = 0.1,\n    \"ambient/core/camera/projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/camera/projection-view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/camera/active-camera\": f32 = 0.0,\n    \"ambient/core/transform/local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/transform/inv-local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/transform/transformable\": { // Concept.\n      \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n      \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n      \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n    },\n  },\n}\n```\n"]
+            pub fn make_perspective_common_camera() -> Entity {
+                Entity::new()
+                    .with_merge(crate::concepts::ambient::core::camera::camera())
+                    .with(crate::components::ambient::core::camera::fovy(), 1.0)
+                    .with(
+                        crate::components::ambient::core::camera::aspect_ratio(),
+                        1.0,
+                    )
+            }
+            #[doc = "Checks if the entity is a *Perspective Common Camera*.\n\nBase components for a perspective camera. Consider `perspective-camera` or `perspective-infinite-reverse-camera`.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/camera/fovy\": f32 = 1.0,\n  \"ambient/core/camera/aspect-ratio\": f32 = 1.0,\n  \"ambient/core/camera/camera\": { // Concept.\n    \"ambient/core/camera/near\": f32 = 0.1,\n    \"ambient/core/camera/projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/camera/projection-view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/camera/active-camera\": f32 = 0.0,\n    \"ambient/core/transform/local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/transform/inv-local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/transform/transformable\": { // Concept.\n      \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n      \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n      \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n    },\n  },\n}\n```\n"]
+            pub fn is_perspective_common_camera(world: &crate::World, id: EntityId) -> bool {
+                crate::concepts::ambient::core::camera::camera()(world, id)
+                    && world.has_components(id, &{
+                        let mut set = crate::ComponentSet::new();
+                        set.insert(crate::components::ambient::core::camera::fovy().desc());
+                        set.insert(crate::components::ambient::core::camera::aspect_ratio().desc());
+                        set
+                    })
+            }
+            #[doc = "Returns the components that comprise *Perspective Common Camera* as a tuple.\n\nBase components for a perspective camera. Consider `perspective-camera` or `perspective-infinite-reverse-camera`.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/camera/fovy\": f32 = 1.0,\n  \"ambient/core/camera/aspect-ratio\": f32 = 1.0,\n  \"ambient/core/camera/camera\": { // Concept.\n    \"ambient/core/camera/near\": f32 = 0.1,\n    \"ambient/core/camera/projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/camera/projection-view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/camera/active-camera\": f32 = 0.0,\n    \"ambient/core/transform/local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/transform/inv-local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/transform/transformable\": { // Concept.\n      \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n      \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n      \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n    },\n  },\n}\n```\n"]
+            pub fn perspective_common_camera() -> (Component<f32>, Component<f32>) {
+                (
+                    crate::components::ambient::core::camera::fovy(),
+                    crate::components::ambient::core::camera::aspect_ratio(),
+                )
+            }
+            #[allow(clippy::approx_constant)]
+            #[doc = "Makes a *Perspective Camera*.\n\nA perspective camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/camera/perspective\": () = (),\n  \"ambient/core/camera/far\": f32 = 1000.0,\n  \"ambient/core/camera/perspective-common-camera\": { // Concept.\n    \"ambient/core/camera/fovy\": f32 = 1.0,\n    \"ambient/core/camera/aspect-ratio\": f32 = 1.0,\n    \"ambient/core/camera/camera\": { // Concept.\n      \"ambient/core/camera/near\": f32 = 0.1,\n      \"ambient/core/camera/projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/camera/projection-view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/camera/active-camera\": f32 = 0.0,\n      \"ambient/core/transform/local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/transform/inv-local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/transform/transformable\": { // Concept.\n        \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n        \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n        \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n      },\n    },\n  },\n}\n```\n"]
+            pub fn make_perspective_camera() -> Entity {
+                Entity::new()
+                    .with_merge(crate::concepts::ambient::core::camera::perspective_common_camera())
+                    .with(crate::components::ambient::core::camera::perspective(), ())
+                    .with(crate::components::ambient::core::camera::far(), 1000.0)
+            }
+            #[doc = "Checks if the entity is a *Perspective Camera*.\n\nA perspective camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/camera/perspective\": () = (),\n  \"ambient/core/camera/far\": f32 = 1000.0,\n  \"ambient/core/camera/perspective-common-camera\": { // Concept.\n    \"ambient/core/camera/fovy\": f32 = 1.0,\n    \"ambient/core/camera/aspect-ratio\": f32 = 1.0,\n    \"ambient/core/camera/camera\": { // Concept.\n      \"ambient/core/camera/near\": f32 = 0.1,\n      \"ambient/core/camera/projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/camera/projection-view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/camera/active-camera\": f32 = 0.0,\n      \"ambient/core/transform/local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/transform/inv-local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/transform/transformable\": { // Concept.\n        \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n        \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n        \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n      },\n    },\n  },\n}\n```\n"]
+            pub fn is_perspective_camera(world: &crate::World, id: EntityId) -> bool {
+                crate::concepts::ambient::core::camera::perspective_common_camera()(world, id)
+                    && world.has_components(id, &{
+                        let mut set = crate::ComponentSet::new();
+                        set.insert(crate::components::ambient::core::camera::perspective().desc());
+                        set.insert(crate::components::ambient::core::camera::far().desc());
+                        set
+                    })
+            }
+            #[doc = "Returns the components that comprise *Perspective Camera* as a tuple.\n\nA perspective camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/camera/perspective\": () = (),\n  \"ambient/core/camera/far\": f32 = 1000.0,\n  \"ambient/core/camera/perspective-common-camera\": { // Concept.\n    \"ambient/core/camera/fovy\": f32 = 1.0,\n    \"ambient/core/camera/aspect-ratio\": f32 = 1.0,\n    \"ambient/core/camera/camera\": { // Concept.\n      \"ambient/core/camera/near\": f32 = 0.1,\n      \"ambient/core/camera/projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/camera/projection-view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/camera/active-camera\": f32 = 0.0,\n      \"ambient/core/transform/local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/transform/inv-local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/transform/transformable\": { // Concept.\n        \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n        \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n        \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n      },\n    },\n  },\n}\n```\n"]
+            pub fn perspective_camera() -> (Component<()>, Component<f32>) {
+                (
+                    crate::components::ambient::core::camera::perspective(),
+                    crate::components::ambient::core::camera::far(),
+                )
+            }
+            #[allow(clippy::approx_constant)]
+            #[doc = "Makes a *Perspective-Infinite-Reverse Camera*.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/camera/perspective-infinite-reverse\": () = (),\n  \"ambient/core/camera/perspective-common-camera\": { // Concept.\n    \"ambient/core/camera/fovy\": f32 = 1.0,\n    \"ambient/core/camera/aspect-ratio\": f32 = 1.0,\n    \"ambient/core/camera/camera\": { // Concept.\n      \"ambient/core/camera/near\": f32 = 0.1,\n      \"ambient/core/camera/projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/camera/projection-view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/camera/active-camera\": f32 = 0.0,\n      \"ambient/core/transform/local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/transform/inv-local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/transform/transformable\": { // Concept.\n        \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n        \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n        \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n      },\n    },\n  },\n}\n```\n"]
+            pub fn make_perspective_infinite_reverse_camera() -> Entity {
+                Entity::new()
+                    .with_merge(crate::concepts::ambient::core::camera::perspective_common_camera())
+                    .with(
+                        crate::components::ambient::core::camera::perspective_infinite_reverse(),
+                        (),
+                    )
+            }
+            #[doc = "Checks if the entity is a *Perspective-Infinite-Reverse Camera*.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/camera/perspective-infinite-reverse\": () = (),\n  \"ambient/core/camera/perspective-common-camera\": { // Concept.\n    \"ambient/core/camera/fovy\": f32 = 1.0,\n    \"ambient/core/camera/aspect-ratio\": f32 = 1.0,\n    \"ambient/core/camera/camera\": { // Concept.\n      \"ambient/core/camera/near\": f32 = 0.1,\n      \"ambient/core/camera/projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/camera/projection-view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/camera/active-camera\": f32 = 0.0,\n      \"ambient/core/transform/local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/transform/inv-local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/transform/transformable\": { // Concept.\n        \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n        \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n        \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n      },\n    },\n  },\n}\n```\n"]
+            pub fn is_perspective_infinite_reverse_camera(
+                world: &crate::World,
+                id: EntityId,
+            ) -> bool {
+                crate::concepts::ambient::core::camera::perspective_common_camera()(world, id)
+                    && world.has_components(id, &{
+                        let mut set = crate::ComponentSet::new();
+                        set.insert(
+                            crate::components::ambient::core::camera::perspective_infinite_reverse(
+                            )
+                            .desc(),
+                        );
+                        set
+                    })
+            }
+            #[doc = "Returns the components that comprise *Perspective-Infinite-Reverse Camera* as a tuple.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/camera/perspective-infinite-reverse\": () = (),\n  \"ambient/core/camera/perspective-common-camera\": { // Concept.\n    \"ambient/core/camera/fovy\": f32 = 1.0,\n    \"ambient/core/camera/aspect-ratio\": f32 = 1.0,\n    \"ambient/core/camera/camera\": { // Concept.\n      \"ambient/core/camera/near\": f32 = 0.1,\n      \"ambient/core/camera/projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/camera/projection-view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/camera/active-camera\": f32 = 0.0,\n      \"ambient/core/transform/local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/transform/inv-local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient/core/transform/transformable\": { // Concept.\n        \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n        \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n        \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n      },\n    },\n  },\n}\n```\n"]
+            pub fn perspective_infinite_reverse_camera() -> (Component<()>) {
+                (crate::components::ambient::core::camera::perspective_infinite_reverse())
+            }
+            #[allow(clippy::approx_constant)]
+            #[doc = "Makes a *Orthographic Camera*.\n\nAn orthographic camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/camera/orthographic\": () = (),\n  \"ambient/core/camera/orthographic-left\": f32 = -1.0,\n  \"ambient/core/camera/orthographic-right\": f32 = 1.0,\n  \"ambient/core/camera/orthographic-top\": f32 = 1.0,\n  \"ambient/core/camera/orthographic-bottom\": f32 = -1.0,\n  \"ambient/core/camera/near\": f32 = -1.0,\n  \"ambient/core/camera/far\": f32 = 1.0,\n  \"ambient/core/camera/camera\": { // Concept.\n    \"ambient/core/camera/near\": f32 = 0.1,\n    \"ambient/core/camera/projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/camera/projection-view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/camera/active-camera\": f32 = 0.0,\n    \"ambient/core/transform/local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/transform/inv-local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/transform/transformable\": { // Concept.\n      \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n      \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n      \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n    },\n  },\n}\n```\n"]
+            pub fn make_orthographic_camera() -> Entity {
+                Entity::new()
+                    .with_merge(crate::concepts::ambient::core::camera::camera())
+                    .with(crate::components::ambient::core::camera::orthographic(), ())
+                    .with(
+                        crate::components::ambient::core::camera::orthographic_left(),
+                        -1.0,
+                    )
+                    .with(
+                        crate::components::ambient::core::camera::orthographic_right(),
+                        1.0,
+                    )
+                    .with(
+                        crate::components::ambient::core::camera::orthographic_top(),
+                        1.0,
+                    )
+                    .with(
+                        crate::components::ambient::core::camera::orthographic_bottom(),
+                        -1.0,
+                    )
+                    .with(crate::components::ambient::core::camera::near(), -1.0)
+                    .with(crate::components::ambient::core::camera::far(), 1.0)
+            }
+            #[doc = "Checks if the entity is a *Orthographic Camera*.\n\nAn orthographic camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/camera/orthographic\": () = (),\n  \"ambient/core/camera/orthographic-left\": f32 = -1.0,\n  \"ambient/core/camera/orthographic-right\": f32 = 1.0,\n  \"ambient/core/camera/orthographic-top\": f32 = 1.0,\n  \"ambient/core/camera/orthographic-bottom\": f32 = -1.0,\n  \"ambient/core/camera/near\": f32 = -1.0,\n  \"ambient/core/camera/far\": f32 = 1.0,\n  \"ambient/core/camera/camera\": { // Concept.\n    \"ambient/core/camera/near\": f32 = 0.1,\n    \"ambient/core/camera/projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/camera/projection-view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/camera/active-camera\": f32 = 0.0,\n    \"ambient/core/transform/local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/transform/inv-local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/transform/transformable\": { // Concept.\n      \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n      \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n      \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n    },\n  },\n}\n```\n"]
+            pub fn is_orthographic_camera(world: &crate::World, id: EntityId) -> bool {
+                crate::concepts::ambient::core::camera::camera()(world, id)
+                    && world.has_components(id, &{
+                        let mut set = crate::ComponentSet::new();
+                        set.insert(crate::components::ambient::core::camera::orthographic().desc());
+                        set.insert(
+                            crate::components::ambient::core::camera::orthographic_left().desc(),
+                        );
+                        set.insert(
+                            crate::components::ambient::core::camera::orthographic_right().desc(),
+                        );
+                        set.insert(
+                            crate::components::ambient::core::camera::orthographic_top().desc(),
+                        );
+                        set.insert(
+                            crate::components::ambient::core::camera::orthographic_bottom().desc(),
+                        );
+                        set.insert(crate::components::ambient::core::camera::near().desc());
+                        set.insert(crate::components::ambient::core::camera::far().desc());
+                        set
+                    })
+            }
+            #[doc = "Returns the components that comprise *Orthographic Camera* as a tuple.\n\nAn orthographic camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/camera/orthographic\": () = (),\n  \"ambient/core/camera/orthographic-left\": f32 = -1.0,\n  \"ambient/core/camera/orthographic-right\": f32 = 1.0,\n  \"ambient/core/camera/orthographic-top\": f32 = 1.0,\n  \"ambient/core/camera/orthographic-bottom\": f32 = -1.0,\n  \"ambient/core/camera/near\": f32 = -1.0,\n  \"ambient/core/camera/far\": f32 = 1.0,\n  \"ambient/core/camera/camera\": { // Concept.\n    \"ambient/core/camera/near\": f32 = 0.1,\n    \"ambient/core/camera/projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/camera/projection-view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/camera/active-camera\": f32 = 0.0,\n    \"ambient/core/transform/local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/transform/inv-local-to-world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient/core/transform/transformable\": { // Concept.\n      \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n      \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n      \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n    },\n  },\n}\n```\n"]
+            pub fn orthographic_camera() -> (
+                Component<()>,
+                Component<f32>,
+                Component<f32>,
+                Component<f32>,
+                Component<f32>,
+                Component<f32>,
+                Component<f32>,
+            ) {
+                (
+                    crate::components::ambient::core::camera::orthographic(),
+                    crate::components::ambient::core::camera::orthographic_left(),
+                    crate::components::ambient::core::camera::orthographic_right(),
+                    crate::components::ambient::core::camera::orthographic_top(),
+                    crate::components::ambient::core::camera::orthographic_bottom(),
+                    crate::components::ambient::core::camera::near(),
+                    crate::components::ambient::core::camera::far(),
+                )
+            }
         }
         #[allow(unused)]
         pub mod primitives {
             use crate::{Component, Entity, EntityId};
             use glam::{IVec2, IVec3, IVec4, Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+            #[allow(clippy::approx_constant)]
+            #[doc = "Makes a *Sphere*.\n\nA primitive sphere.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/primitives/sphere\": () = (),\n  \"ambient/core/primitives/sphere-radius\": f32 = 0.5,\n  \"ambient/core/primitives/sphere-sectors\": u32 = 36,\n  \"ambient/core/primitives/sphere-stacks\": u32 = 18,\n}\n```\n"]
+            pub fn make_sphere() -> Entity {
+                Entity::new()
+                    .with(crate::components::ambient::core::primitives::sphere(), ())
+                    .with(
+                        crate::components::ambient::core::primitives::sphere_radius(),
+                        0.5,
+                    )
+                    .with(
+                        crate::components::ambient::core::primitives::sphere_sectors(),
+                        36,
+                    )
+                    .with(
+                        crate::components::ambient::core::primitives::sphere_stacks(),
+                        18,
+                    )
+            }
+            #[doc = "Checks if the entity is a *Sphere*.\n\nA primitive sphere.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/primitives/sphere\": () = (),\n  \"ambient/core/primitives/sphere-radius\": f32 = 0.5,\n  \"ambient/core/primitives/sphere-sectors\": u32 = 36,\n  \"ambient/core/primitives/sphere-stacks\": u32 = 18,\n}\n```\n"]
+            pub fn is_sphere(world: &crate::World, id: EntityId) -> bool {
+                world.has_components(id, &{
+                    let mut set = crate::ComponentSet::new();
+                    set.insert(crate::components::ambient::core::primitives::sphere().desc());
+                    set.insert(
+                        crate::components::ambient::core::primitives::sphere_radius().desc(),
+                    );
+                    set.insert(
+                        crate::components::ambient::core::primitives::sphere_sectors().desc(),
+                    );
+                    set.insert(
+                        crate::components::ambient::core::primitives::sphere_stacks().desc(),
+                    );
+                    set
+                })
+            }
+            #[doc = "Returns the components that comprise *Sphere* as a tuple.\n\nA primitive sphere.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/primitives/sphere\": () = (),\n  \"ambient/core/primitives/sphere-radius\": f32 = 0.5,\n  \"ambient/core/primitives/sphere-sectors\": u32 = 36,\n  \"ambient/core/primitives/sphere-stacks\": u32 = 18,\n}\n```\n"]
+            pub fn sphere() -> (
+                Component<()>,
+                Component<f32>,
+                Component<u32>,
+                Component<u32>,
+            ) {
+                (
+                    crate::components::ambient::core::primitives::sphere(),
+                    crate::components::ambient::core::primitives::sphere_radius(),
+                    crate::components::ambient::core::primitives::sphere_sectors(),
+                    crate::components::ambient::core::primitives::sphere_stacks(),
+                )
+            }
+            #[allow(clippy::approx_constant)]
+            #[doc = "Makes a *Capsule*.\n\nA primitive capsule. Defined as a cylinder capped by hemispheres.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/primitives/capsule\": () = (),\n  \"ambient/core/primitives/capsule-radius\": f32 = 0.5,\n  \"ambient/core/primitives/capsule-half-height\": f32 = 0.5,\n  \"ambient/core/primitives/capsule-rings\": u32 = 0,\n  \"ambient/core/primitives/capsule-latitudes\": u32 = 16,\n  \"ambient/core/primitives/capsule-longitudes\": u32 = 32,\n}\n```\n"]
+            pub fn make_capsule() -> Entity {
+                Entity::new()
+                    .with(crate::components::ambient::core::primitives::capsule(), ())
+                    .with(
+                        crate::components::ambient::core::primitives::capsule_radius(),
+                        0.5,
+                    )
+                    .with(
+                        crate::components::ambient::core::primitives::capsule_half_height(),
+                        0.5,
+                    )
+                    .with(
+                        crate::components::ambient::core::primitives::capsule_rings(),
+                        0,
+                    )
+                    .with(
+                        crate::components::ambient::core::primitives::capsule_latitudes(),
+                        16,
+                    )
+                    .with(
+                        crate::components::ambient::core::primitives::capsule_longitudes(),
+                        32,
+                    )
+            }
+            #[doc = "Checks if the entity is a *Capsule*.\n\nA primitive capsule. Defined as a cylinder capped by hemispheres.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/primitives/capsule\": () = (),\n  \"ambient/core/primitives/capsule-radius\": f32 = 0.5,\n  \"ambient/core/primitives/capsule-half-height\": f32 = 0.5,\n  \"ambient/core/primitives/capsule-rings\": u32 = 0,\n  \"ambient/core/primitives/capsule-latitudes\": u32 = 16,\n  \"ambient/core/primitives/capsule-longitudes\": u32 = 32,\n}\n```\n"]
+            pub fn is_capsule(world: &crate::World, id: EntityId) -> bool {
+                world.has_components(id, &{
+                    let mut set = crate::ComponentSet::new();
+                    set.insert(crate::components::ambient::core::primitives::capsule().desc());
+                    set.insert(
+                        crate::components::ambient::core::primitives::capsule_radius().desc(),
+                    );
+                    set.insert(
+                        crate::components::ambient::core::primitives::capsule_half_height().desc(),
+                    );
+                    set.insert(
+                        crate::components::ambient::core::primitives::capsule_rings().desc(),
+                    );
+                    set.insert(
+                        crate::components::ambient::core::primitives::capsule_latitudes().desc(),
+                    );
+                    set.insert(
+                        crate::components::ambient::core::primitives::capsule_longitudes().desc(),
+                    );
+                    set
+                })
+            }
+            #[doc = "Returns the components that comprise *Capsule* as a tuple.\n\nA primitive capsule. Defined as a cylinder capped by hemispheres.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/primitives/capsule\": () = (),\n  \"ambient/core/primitives/capsule-radius\": f32 = 0.5,\n  \"ambient/core/primitives/capsule-half-height\": f32 = 0.5,\n  \"ambient/core/primitives/capsule-rings\": u32 = 0,\n  \"ambient/core/primitives/capsule-latitudes\": u32 = 16,\n  \"ambient/core/primitives/capsule-longitudes\": u32 = 32,\n}\n```\n"]
+            pub fn capsule() -> (
+                Component<()>,
+                Component<f32>,
+                Component<f32>,
+                Component<u32>,
+                Component<u32>,
+                Component<u32>,
+            ) {
+                (
+                    crate::components::ambient::core::primitives::capsule(),
+                    crate::components::ambient::core::primitives::capsule_radius(),
+                    crate::components::ambient::core::primitives::capsule_half_height(),
+                    crate::components::ambient::core::primitives::capsule_rings(),
+                    crate::components::ambient::core::primitives::capsule_latitudes(),
+                    crate::components::ambient::core::primitives::capsule_longitudes(),
+                )
+            }
+            #[allow(clippy::approx_constant)]
+            #[doc = "Makes a *Torus*.\n\nA primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/primitives/torus\": () = (),\n  \"ambient/core/primitives/torus-inner-radius\": f32 = 0.25,\n  \"ambient/core/primitives/torus-outer-radius\": f32 = 0.35,\n  \"ambient/core/primitives/torus-slices\": u32 = 32,\n  \"ambient/core/primitives/torus-loops\": u32 = 16,\n}\n```\n"]
+            pub fn make_torus() -> Entity {
+                Entity::new()
+                    .with(crate::components::ambient::core::primitives::torus(), ())
+                    .with(
+                        crate::components::ambient::core::primitives::torus_inner_radius(),
+                        0.25,
+                    )
+                    .with(
+                        crate::components::ambient::core::primitives::torus_outer_radius(),
+                        0.35,
+                    )
+                    .with(
+                        crate::components::ambient::core::primitives::torus_slices(),
+                        32,
+                    )
+                    .with(
+                        crate::components::ambient::core::primitives::torus_loops(),
+                        16,
+                    )
+            }
+            #[doc = "Checks if the entity is a *Torus*.\n\nA primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/primitives/torus\": () = (),\n  \"ambient/core/primitives/torus-inner-radius\": f32 = 0.25,\n  \"ambient/core/primitives/torus-outer-radius\": f32 = 0.35,\n  \"ambient/core/primitives/torus-slices\": u32 = 32,\n  \"ambient/core/primitives/torus-loops\": u32 = 16,\n}\n```\n"]
+            pub fn is_torus(world: &crate::World, id: EntityId) -> bool {
+                world.has_components(id, &{
+                    let mut set = crate::ComponentSet::new();
+                    set.insert(crate::components::ambient::core::primitives::torus().desc());
+                    set.insert(
+                        crate::components::ambient::core::primitives::torus_inner_radius().desc(),
+                    );
+                    set.insert(
+                        crate::components::ambient::core::primitives::torus_outer_radius().desc(),
+                    );
+                    set.insert(crate::components::ambient::core::primitives::torus_slices().desc());
+                    set.insert(crate::components::ambient::core::primitives::torus_loops().desc());
+                    set
+                })
+            }
+            #[doc = "Returns the components that comprise *Torus* as a tuple.\n\nA primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/primitives/torus\": () = (),\n  \"ambient/core/primitives/torus-inner-radius\": f32 = 0.25,\n  \"ambient/core/primitives/torus-outer-radius\": f32 = 0.35,\n  \"ambient/core/primitives/torus-slices\": u32 = 32,\n  \"ambient/core/primitives/torus-loops\": u32 = 16,\n}\n```\n"]
+            pub fn torus() -> (
+                Component<()>,
+                Component<f32>,
+                Component<f32>,
+                Component<u32>,
+                Component<u32>,
+            ) {
+                (
+                    crate::components::ambient::core::primitives::torus(),
+                    crate::components::ambient::core::primitives::torus_inner_radius(),
+                    crate::components::ambient::core::primitives::torus_outer_radius(),
+                    crate::components::ambient::core::primitives::torus_slices(),
+                    crate::components::ambient::core::primitives::torus_loops(),
+                )
+            }
         }
         #[allow(unused)]
         pub mod transform {
             use crate::{Component, Entity, EntityId};
             use glam::{IVec2, IVec3, IVec4, Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
+            #[allow(clippy::approx_constant)]
+            #[doc = "Makes a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n}\n```\n"]
+            pub fn make_transformable() -> Entity {
+                Entity::new()
+                    .with(
+                        crate::components::ambient::core::transform::translation(),
+                        Vec3(0.0, 0.0, 0.0),
+                    )
+                    .with(
+                        crate::components::ambient::core::transform::rotation(),
+                        Quat(0.0, 0.0, 0.0, 1.0),
+                    )
+                    .with(
+                        crate::components::ambient::core::transform::scale(),
+                        Vec3(1.0, 1.0, 1.0),
+                    )
+            }
+            #[doc = "Checks if the entity is a *Transformable*.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n}\n```\n"]
+            pub fn is_transformable(world: &crate::World, id: EntityId) -> bool {
+                world.has_components(id, &{
+                    let mut set = crate::ComponentSet::new();
+                    set.insert(crate::components::ambient::core::transform::translation().desc());
+                    set.insert(crate::components::ambient::core::transform::rotation().desc());
+                    set.insert(crate::components::ambient::core::transform::scale().desc());
+                    set
+                })
+            }
+            #[doc = "Returns the components that comprise *Transformable* as a tuple.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient/core/transform/translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient/core/transform/rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient/core/transform/scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n}\n```\n"]
+            pub fn transformable() -> (Component<Vec3>, Component<Quat>, Component<Vec3>) {
+                (
+                    crate::components::ambient::core::transform::translation(),
+                    crate::components::ambient::core::transform::rotation(),
+                    crate::components::ambient::core::transform::scale(),
+                )
+            }
         }
     }
 }

@@ -97,7 +97,13 @@ macro_rules! define_primitive_value {
             )*
             impl fmt::Display for PrimitiveValue {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    fmt::Debug::fmt(self, f)
+                    match self {
+                        $(
+                            Self::$value(value) => fmt::Debug::fmt(value, f),
+                            Self::[<Vec $value>](value) => fmt::Debug::fmt(value, f),
+                            Self::[<Option $value>](value) => fmt::Debug::fmt(value, f),
+                        )*
+                    }
                 }
             }
         }
