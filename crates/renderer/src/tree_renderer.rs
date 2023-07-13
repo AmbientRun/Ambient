@@ -14,7 +14,7 @@ use ambient_gpu::{
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
 use ambient_std::asset_cache::AssetCache;
-use bytemuck::Zeroable;
+use bytemuck::{bytes_of_mut, Zeroable};
 use glam::UVec4;
 use itertools::Itertools;
 use wgpu::DepthBiasState;
@@ -474,13 +474,24 @@ impl TreeRenderer {
 
         tracing::debug!("Tree: {:?}", self.tree.keys().collect_vec());
 
-        let read = collect_state.commands.read_staging(gpu, ..);
-        world.resource(runtime()).spawn(async move {
+        let byte_size = collect_state.commands.byte_size();
+
+        if byte_size > 0 {
+            let read = collect_state.commands.untyped().read_staging(gpu, ..);
+
+            world.resource(runtime()).spawn(async move {
             let data = read.await.unwrap();
-
-            tracing::info!("Indirect commands: {data:#?}");
+            tracing::info!(data.len=?data.len(),?data, byte_size, elem_size=mem::size_of::<[u32; 5]>(), "Read indirect commands");
+            match bytemuck::try_cast_slice::<_, [u32; 5]>(&data) {
+                Ok(data) => {
+                    tracing::info!("Indirect commands: {data:#?}");
+                }
+                Err(err) => {
+                    log::error!("Failed to cast indirect commands: {err}")
+                }
+            }
         });
-
+        }
         for node in self.tree.values() {
             render_pass.set_pipeline(node.pipeline.pipeline());
             // Bind on first invocation

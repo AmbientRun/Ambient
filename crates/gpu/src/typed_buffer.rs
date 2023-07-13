@@ -194,6 +194,7 @@ impl UntypedBuffer {
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
+        tracing::debug!("Creating staging buffer of {size}");
         let staging_buffer = gpu.device.create_buffer(&wgpu::BufferDescriptor {
             label: None,
             size,
@@ -201,6 +202,7 @@ impl UntypedBuffer {
             mapped_at_creation: false,
         });
 
+        tracing::debug!("Copying {size} bytes to staging buffer");
         encoder.copy_buffer_to_buffer(&self.buffer, start, &staging_buffer, 0, size);
         gpu.queue.submit(Some(encoder.finish()));
 
@@ -364,6 +366,10 @@ impl<T: bytemuck::Pod> TypedBuffer<T> {
 
     pub fn buffer(&self) -> &wgpu::Buffer {
         &self.buffer.buffer
+    }
+
+    pub fn untyped(&self) -> &UntypedBuffer {
+        &self.buffer
     }
 
     pub fn push(&mut self, gpu: &Gpu, val: T, mut on_resize: impl FnMut(&Self)) {
