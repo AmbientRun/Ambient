@@ -12,21 +12,23 @@ rustup target add --toolchain stable wasm32-wasi
 
 ## Installing from Git
 
-Ambient can be installed through `cargo install`, which will download and build the repository. Our current minimum supported Rust version is <!-- rust-version-begin !-->1.67.0<!-- rust-version-end !-->, as we use recently-stabilised standard library features.
+The *Ambient Runtime* can be installed through `cargo install` using git.
 
-To install the latest released version from Git, run the following:
+This will download the source and compile the runtime. Our minimum supported Rust version is <!-- rust-version-begin --> 1.67.0 <!-- rust-version-end -->.
 
-```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.2.1 ambient --locked
-```
-
-To install the latest version on the `main` branch, run the following:
+### Installing the latest *HEAD*
 
 ```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git ambient --locked
+cargo install --git https://github.com/AmbientRun/Ambient.git --locked --force ambient
 ```
 
-Note that if you are running a project outside of the `guest/rust` workspace, it is likely that the published version of the API will be incompatible with `main`, and you will need to specify the dependency manually.
+### Installing the latest *RELEASE*
+
+```sh
+cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.2.1 --locked --force ambient
+```
+
+**Note**: If you are running a project outside of the `guest/rust` workspace, it is likely that the published version of the API will be incompatible with `main`, and you will need to specify the dependency manually.
 
 Additionally, the `--locked` flag is recommended to ensure that the correct packages are installed and that the build is reproducible between machines.
 
@@ -35,7 +37,7 @@ Additionally, the `--locked` flag is recommended to ensure that the correct pack
 You can supply these feature flags to get optional features that are disabled by default:
 
 ```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git ambient --features assimp --locked
+cargo install --git https://github.com/AmbientRun/Ambient.git ambient --features assimp --locked --force
 ```
 
 - `assimp`: This adds support for [assimp](https://github.com/assimp/assimp), which loads ~40 additional model file formats, such as `obj`, text-based `fbx` and much more
