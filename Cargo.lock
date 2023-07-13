@@ -569,7 +569,7 @@ name = "ambient_ecs"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_profiling",
- "ambient_project_macro",
+ "ambient_project_macro_common",
  "ambient_project_rt",
  "ambient_shared_types",
  "ambient_std",
@@ -1169,16 +1169,6 @@ dependencies = [
  "syn 1.0.109",
  "thiserror",
  "toml 0.7.4",
-]
-
-[[package]]
-name = "ambient_project_macro"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_project_macro_common",
- "ambient_schema",
- "proc-macro2 1.0.64",
- "syn 1.0.109",
 ]
 
 [[package]]
