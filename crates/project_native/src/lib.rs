@@ -13,7 +13,7 @@ pub fn create_semantic_and_register_components(
     let id = semantic.add_ember(ember_path)?;
     semantic.resolve()?;
 
-    ComponentRegistry::get_mut().add_external(dbg!(all_defined_components(&semantic)?));
+    ComponentRegistry::get_mut().add_external(all_defined_components(&semantic)?);
 
     Ok((semantic, id))
 }

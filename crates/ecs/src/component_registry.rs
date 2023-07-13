@@ -136,7 +136,13 @@ impl ComponentRegistry {
         attributes: Option<AttributeStore>,
     ) -> ComponentDesc {
         if let Some(vpath) = vtable.path {
-            assert_eq!(path, vpath, "Static name does not match provided name");
+            // Underscores must be replaced by dashes as the component path is constructed
+            // at compile-time, where kebab-conversion is not easy
+            assert_eq!(
+                path,
+                vpath.replace('_', "-"),
+                "Static name does not match provided name"
+            );
         }
 
         let index = match self.component_paths.entry(path.to_owned()) {
@@ -197,7 +203,7 @@ impl ComponentRegistry {
 
     pub fn register_static(
         &mut self,
-        path: &'static str,
+        path: &str,
         vtable: &'static ComponentVTable<()>,
     ) -> ComponentDesc {
         log::debug!("Registering static component: {path}");

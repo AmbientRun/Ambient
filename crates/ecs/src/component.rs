@@ -194,7 +194,7 @@ impl ComponentDesc {
     /// The fully qualified component path.
     pub fn path(&self) -> String {
         if let Some(path) = self.vtable.path {
-            path.to_string()
+            path.replace('_', "-")
         } else {
             self.attribute::<ComponentPath>()
                 .expect("No path for component")
@@ -336,6 +336,13 @@ impl<'de> Deserialize<'de> for ComponentDesc {
     }
 }
 
+/// Takes an Ambient namespace and a Rust snake-case identifier and returns the corresponding Ambient path.
+///
+/// e.g. (`ambient/core`, `my_component`) -> `ambient/core/my-component`
+pub fn rust_component_to_ambient_path(namespace: &str, snake_case_name: &str) -> String {
+    format!("{}/{}", namespace, snake_case_name.replace("_", "-"))
+}
+
 #[macro_export]
 /// Defines components to use within the ECS.
 ///
@@ -370,24 +377,25 @@ macro_rules! components {
 
                     static ATTRIBUTES: $crate::OnceCell<$crate::parking_lot::RwLock<$crate::AttributeStore>> = $crate::OnceCell::new();
 
-                    static PATH: &str = concat!("core::", $ns, "::", stringify!($name));
-
+                    // This path will use the wrong convention for the name, but it's only used for debugging
+                    static DEBUG_PATH: &str = concat!("ambient/core/", $ns, "/", stringify!($name));
                     static VTABLE: &$crate::ComponentVTable<$ty> = &$crate::ComponentVTable::construct(
-                        PATH,
+                        DEBUG_PATH,
                         |desc| $crate::parking_lot::RwLockReadGuard::map(ATTRIBUTES.get_or_init(|| init_attr($crate::Component::new(desc))).read(), |v| v),
                         |desc| $crate::parking_lot::RwLockWriteGuard::map(ATTRIBUTES.get_or_init(|| init_attr($crate::Component::new(desc))).write(), |v| v)
                     );
 
                     *[<comp_ $name>].get_or_init(|| {
-                        reg.register_static(PATH, unsafe { VTABLE.erase() } )
+                        reg.register_static(&$crate::rust_component_to_ambient_path(concat!("ambient/core/", $ns), stringify!($name)), unsafe { VTABLE.erase() } )
                     })
                 }
 
                 $(#[$outer])*
                 pub fn $name() -> $crate::Component<$ty> {
 
-                    let desc = *[<comp_ $name>].get()
-                        .expect(concat!("Component: ", "core::", $ns, "::", stringify!($name), " is not initialized"));
+                    let desc = *[<comp_ $name>].get().unwrap_or_else(|| {
+                        panic!("Component {} is not initialized", $crate::rust_component_to_ambient_path($ns, stringify!($ns)))
+                    });
 
                     $crate::Component::new(desc)
                 }
@@ -457,7 +465,7 @@ mod test {
 
     #[test]
     fn component_macro() {
-        components! ("component_macro",{
+        components! ("component-macro",{
             @[Serializable, Debuggable]
             foo: String,
             /// This is a person
@@ -509,7 +517,7 @@ mod test {
             }
         }
 
-        components! ("make_default", {
+        components! ("make-default", {
             @[MakeDefault, Debuggable]
             people: Vec<Person>,
             @[MakeDefault[default_person], Debuggable, Store, Networked]
@@ -557,7 +565,7 @@ mod test {
 
     #[test]
     fn test_take() {
-        components! ("test_take", {
+        components! ("test-take", {
             @[Store]
             my_component: Arc<String>,
         });
@@ -586,7 +594,7 @@ mod test {
     fn leak_test() {
         let shared = Arc::new("Foo".to_string());
 
-        components! ("leak_test", {
+        components! ("leak-test", {
             my_component: Arc<String>,
         });
 

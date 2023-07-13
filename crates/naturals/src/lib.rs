@@ -29,7 +29,7 @@ pub use compute::*;
 pub use config::*;
 use tokio::sync::Semaphore;
 
-components!("game_objects", {
+components!("game-objects", {
     natural_entities: HashMap<String, Vec<EntityId>>,
     // Keep a ref to the model on each natural, so that the model doesn't get unloaded while there are any naturals of that type
     natural_model: Arc<Model>,

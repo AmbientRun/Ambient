@@ -32,7 +32,7 @@ mod internal {
 
     use super::{MessageType, ModuleBytecode, ModuleErrors, ModuleState, ModuleStateArgs};
 
-    components!("wasm::shared", {
+    components!("wasm/shared", {
         @[Networked, Store, Debuggable]
         module: (),
         module_state: ModuleState,

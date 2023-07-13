@@ -21,7 +21,7 @@ use winit::{
     event::{Event, WindowEvent},
 };
 
-components!("app_renderers", {
+components!("app-renderers", {
     ui_renderer: Arc<Mutex<UiRenderer>>,
     main_renderer: Arc<Mutex<MainRenderer>>,
 });

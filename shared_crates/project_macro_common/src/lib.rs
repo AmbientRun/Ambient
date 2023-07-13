@@ -289,7 +289,9 @@ fn make_component_definitions_inner(
         match context {
             Context::Host => {
                 let namespace_path =
-                    items.fully_qualified_display_path_rust_style(scope, Some(root_scope_id))?;
+                    items.fully_qualified_display_path_ambient_style(scope, false, None)?;
+                // lazy hack to get ambient/core components to work
+                let namespace_path = namespace_path.strip_prefix("ambient/core/").unwrap();
                 quote! {
                     use std::time::Duration;
                     use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};

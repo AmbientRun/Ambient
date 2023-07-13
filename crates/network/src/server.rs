@@ -24,7 +24,7 @@ use parking_lot::Mutex;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use uuid::Uuid;
 
-components!("network::server", {
+components!("network/server", {
     @[Resource]
     bi_stream_handlers: BiStreamHandlers,
     @[Resource]
