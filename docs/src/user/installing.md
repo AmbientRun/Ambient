@@ -18,6 +18,8 @@ This will download the source and compile the runtime. Our minimum supported Rus
 
 ### Installing a *tagged release*
 
+This is recommended if you want a binary for your platform using the last stable release
+
 ```sh
 cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.2.1 --locked --force ambient
 ```
@@ -27,6 +29,11 @@ cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.2.1 --loc
 Additionally, the `--locked` flag is recommended to ensure that the correct packages are installed and that the build is reproducible between machines.
 
 ### Installing the latest *HEAD*
+
+This is recommended if you are developing and targeting the latest features of Ambient which have yet to release.
+
+**Note**: This enables you to use the latest and experimental features but may lead to more bugs or decreased
+stability.
 
 ```sh
 cargo install --git https://github.com/AmbientRun/Ambient.git --locked --force ambient
