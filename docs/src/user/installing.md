@@ -12,21 +12,29 @@ rustup target add --toolchain stable wasm32-wasi
 
 ## Installing from Git
 
-Ambient can be installed through `cargo install`, which will download and build the repository. Our current minimum supported Rust version is <!-- rust-version-begin !-->1.67.0<!-- rust-version-end !-->, as we use recently-stabilised standard library features.
+Ambient can be installed through `cargo install`.
 
-To install the latest released version from Git, run the following:
+This will automatically download the source, compile and install Ambient from your system. Our minimum supported Rust version is <!-- rust-version-begin -->1.67.0<!-- rust-version-end -->.
 
-```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.2.1 ambient --locked
-```
+### Installing the latest published release
 
-To install the latest version on the `main` branch, run the following:
+This is the recommended method of installing Ambient from source if the downloadable binaries are insufficient. The latest published release should be used unless you have a specific reason to use the development version.
 
 ```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git ambient --locked
+cargo install --git https://github.com/AmbientRun/Ambient.git --tag v0.2.1 --locked --force ambient
 ```
 
-Note that if you are running a project outside of the `guest/rust` workspace, it is likely that the published version of the API will be incompatible with `main`, and you will need to specify the dependency manually.
+### Installing the latest development version
+
+Ambient is actively developed on the `main` branch of the repository. This branch contains in-development changes, including new features, bug fixes and breaking changes. This method can be used if you would like to try out these changes.
+
+**Note**: The `main` branch is subject to frequent breaking changes, including potential new bugs and decreased stability, and is not a stable development target for projects. Using the `main` branch is not recommended if you are unable to actively update your project to accommodate breaking changes.
+    
+```sh
+cargo install --git https://github.com/AmbientRun/Ambient.git --locked --force ambient
+```
+
+**Note**: If you are running a project outside of the `guest/rust` workspace, it is likely that the published version of the API will be incompatible with `main`, and you will need to specify the dependency manually.
 
 Additionally, the `--locked` flag is recommended to ensure that the correct packages are installed and that the build is reproducible between machines.
 
@@ -35,7 +43,7 @@ Additionally, the `--locked` flag is recommended to ensure that the correct pack
 You can supply these feature flags to get optional features that are disabled by default:
 
 ```sh
-cargo install --git https://github.com/AmbientRun/Ambient.git ambient --features assimp --locked
+cargo install --git https://github.com/AmbientRun/Ambient.git ambient --features assimp --locked --force
 ```
 
 - `assimp`: This adds support for [assimp](https://github.com/assimp/assimp), which loads ~40 additional model file formats, such as `obj`, text-based `fbx` and much more
