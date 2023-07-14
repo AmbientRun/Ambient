@@ -103,12 +103,18 @@ impl CursorLockGuard {
         self.is_locked()
     }
 }
+impl Default for CursorLockGuard {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl Drop for CursorLockGuard {
     fn drop(&mut self) {
         self.set_locked(false);
         self.listener.take().unwrap().stop();
     }
 }
+
 struct CursorLockGuardInner {
     locked: bool,
 }
