@@ -1,10 +1,7 @@
 use crate::{
     components::core::{
         app::name,
-        audio::{
-            amplitude, audio_player, audio_url, looping, panning, play_now, playing_sound,
-            spatial_audio_emitter, spatial_audio_listener, spatial_audio_player,
-        },
+        audio::*,
         ecs::{children, parent},
     },
     entity,
@@ -87,6 +84,11 @@ impl AudioPlayer {
     /// Set the sound looping or not
     pub fn set_looping(&self, val: bool) {
         entity::add_component(self.entity, looping(), val);
+    }
+
+    /// Add a simple onepole lowpass filter to the sound with one param: roll off frequency
+    pub fn add_one_pole_lpf(&self, rolloff_freq: f32) {
+        entity::add_component(self.entity, onepole_lpf(), rolloff_freq);
     }
 
     /// Set the amp/volume of the sound 0.0 is 0%, 1.0 is 100%

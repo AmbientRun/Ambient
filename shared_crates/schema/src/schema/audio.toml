@@ -36,6 +36,14 @@ Whether or not the audio should loop.
 """
 attributes = ["MaybeResource", "Debuggable"]
 
+[components."core::audio::onepole_lpf"]
+type = "F32"
+name = "One pole low pass filter"
+description = """
+With this component, the audio will be filtered with a one pole low pass filter.
+"""
+attributes = ["MaybeResource", "Debuggable"]
+
 [components."core::audio::playing_sound"]
 type = "Empty"
 name = "Playing sound"
