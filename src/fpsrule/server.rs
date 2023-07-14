@@ -1,5 +1,3 @@
-// TODO: add death and kill count
-
 // TODO: this should vary based on the game type
 
 use ambient_api::components::core::{player::player, transform::translation};
@@ -18,13 +16,6 @@ pub fn main() {
             });
         }
     });
-
-    // TODO: add death and kill count
-
-    // TODO: this should vary based on the game type
-    // let game_type =
-    //     entity::get_component(entity::resources(), components::game_type()).unwrap();
-
     messages::Shoot::subscribe(move |_source, msg| {
         let result = physics::raycast_first(msg.ray_origin, msg.ray_dir);
 

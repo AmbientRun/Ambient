@@ -4,12 +4,14 @@ use ambient_api::{components::core::app::window_logical_size, prelude::*};
 pub fn main() {
     let mut last_shot = game_time();
     let mut is_shooting = false;
-    let mut cursor_lock = input::CursorLockGuard::new(true);
+
+    // TODO: fixed?
+    // let mut cursor_lock = input::CursorLockGuard::new(true);
     ambient_api::messages::Frame::subscribe(move |_| {
         let (delta, input) = input::get_delta();
-        if !cursor_lock.auto_unlock_on_escape(&input) {
-            return;
-        }
+        // if !cursor_lock.auto_unlock_on_escape(&input) {
+        //     return;
+        // }
         let mouse_delta = input.mouse_delta;
         let mut direction = Vec2::ZERO;
         let mut shoot = false;

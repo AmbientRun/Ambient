@@ -6,7 +6,7 @@
 use ambient_api::{
     components::core::{
         app::window_logical_size,
-        layout::space_between_items,
+        layout::{docking_bottom, space_between_items},
         player::player,
         rect::{background_color, line_from, line_to, line_width},
     },
@@ -29,6 +29,15 @@ pub fn App(hooks: &mut Hooks) -> Element {
         components::player_killcount(),
         components::player_deathcount(),
     ));
+    let (local_health, set_local_health) = hooks.use_state(100);
+
+    hooks.use_frame(move |world| {
+        let local_player = player::get_local();
+        if let Ok(health) = world.get(local_player, components::player_health()) {
+            set_local_health(health);
+        }
+    });
+
     let size_info = hooks.use_query(window_logical_size());
 
     let input = input::get();
@@ -38,10 +47,6 @@ pub fn App(hooks: &mut Hooks) -> Element {
     } else {
         set_toggle(false);
     }
-
-    // for (resource_id, xy) in &size_info {
-    //     println!("window size change: {:?} {:?}", resource_id, xy);
-    // }
 
     let center_x = size_info[0].1.x as f32 / 2.;
     let center_y = size_info[0].1.y as f32 / 2.;
@@ -102,6 +107,15 @@ pub fn App(hooks: &mut Hooks) -> Element {
                     Element::new()
                 }
             },
+            WindowSized(vec![Dock::el([Text::el(format!(
+                "health: {:?}",
+                local_health
+            ))
+            // .header_style()
+            .with_default(docking_bottom())
+            .with_margin_even(10.)])])
+            .el()
+            .with_padding_even(20.),
         ])
     }
 }
