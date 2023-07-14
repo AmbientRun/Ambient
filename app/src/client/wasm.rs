@@ -71,6 +71,12 @@ pub fn initialize(world: &mut World, mute_audio: bool) -> anyhow::Result<()> {
                                 t = t.gain(a.clone());
                                 ctrl.push(AudioControl::Amplitude(a));
                             }
+                            AudioFx::OnePole(freq) => {
+                                let f = Arc::new(Mutex::new(*freq));
+                                t = t.onepole(f.clone());
+                                ctrl.push(AudioControl::OnePole(f));
+                            }
+
                             // Looping => {
                             //     t = t.repeat();
                             // }
@@ -96,6 +102,20 @@ pub fn initialize(world: &mut World, mute_audio: bool) -> anyhow::Result<()> {
                         for info in &sound.control_info {
                             if let AudioControl::Amplitude(a) = info {
                                 *a.lock() = amp;
+                            }
+                        }
+                    }
+                }
+
+                AudioMessage::AddOnePoleLpf(uid, freq) => {
+                    if mute_audio {
+                        continue;
+                    }
+                    let sound = sound_info_lib.get(&uid);
+                    if let Some(sound) = sound {
+                        for info in &sound.control_info {
+                            if let AudioControl::OnePole(f) = info {
+                                *f.lock() = freq;
                             }
                         }
                     }
