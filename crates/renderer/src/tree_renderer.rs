@@ -471,7 +471,7 @@ impl TreeRenderer {
 
         tracing::debug!("Tree: {:?}", self.tree.keys().collect_vec());
 
-        let byte_size = collect_state.commands.byte_size();
+        let byte_size = collect_state.commands.byte_len();
 
         if byte_size > 0 {
             let read = collect_state.commands.read_staging(gpu, ..);

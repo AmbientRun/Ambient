@@ -670,7 +670,7 @@ fn create_mesh_meta_bind_group(
         layout,
         entries: &[wgpu::BindGroupEntry {
             binding: 0,
-            resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding(),
+            resource: mesh_buffer.metadata_buffer.as_binding(),
         }],
         label: Some("mesh_meta"),
     })

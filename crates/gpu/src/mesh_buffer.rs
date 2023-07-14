@@ -344,7 +344,13 @@ impl MeshBuffer {
 
         update_meshes_sorted.sort_by_key(|(_, x)| x.metadata.base_offset);
 
-        let mut sizes = MeshMetadata::default();
+        let mut sizes = MeshMetadata {
+            base_offset: 0,
+            skinned_offset: 0,
+            index_offset: 0,
+            index_count: 0,
+        };
+
         for (_, mesh) in &update_meshes_sorted {
             sizes.base_offset += mesh.base_count as u32;
             sizes.skinned_offset += mesh.skinned_count as u32;
@@ -417,7 +423,7 @@ impl MeshBuffer {
                     0,
                     self.$buff.front.buffer(),
                     offset,
-                    self.$buff.tmp.byte_size() - offset,
+                    self.$buff.tmp.byte_len(),
                 );
             };
         }
@@ -442,10 +448,10 @@ impl MeshBuffer {
     }
 
     pub fn size(&self) -> u64 {
-        self.metadata_buffer.byte_size()
-            + self.base_buffer.front.byte_size()
-            + self.skinned_buffer.front.byte_size()
-            + self.index_buffer.front.byte_size()
+        self.metadata_buffer.byte_capacity()
+            + self.base_buffer.front.byte_capacity()
+            + self.skinned_buffer.front.byte_capacity()
+            + self.index_buffer.front.byte_capacity()
     }
 
     pub fn n_meshes(&self) -> usize {
@@ -509,5 +515,9 @@ impl<T: bytemuck::Pod> AttributeBuffer<T> {
 
     pub fn buffer(&self) -> &wgpu::Buffer {
         self.front.buffer()
+    }
+
+    pub fn front(&self) -> &TypedBuffer<T> {
+        &self.front
     }
 }

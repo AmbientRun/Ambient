@@ -326,7 +326,7 @@ impl RendererCollect {
                 0,
                 staging.buffer(),
                 0,
-                output.counts.byte_size(),
+                output.counts.byte_len(),
             );
 
             let counts_res = output.counts_cpu.clone();

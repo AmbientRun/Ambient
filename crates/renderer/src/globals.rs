@@ -491,19 +491,19 @@ impl ShadowAndUIGlobals {
                 },
                 wgpu::BindGroupEntry {
                     binding: 8 + MESH_METADATA_BINDING,
-                    resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding(),
+                    resource: mesh_buffer.metadata_buffer.as_binding(),
                 },
                 wgpu::BindGroupEntry {
                     binding: 8 + MESH_BASE_BINDING,
-                    resource: mesh_buffer.base_buffer.buffer().as_entire_binding(),
+                    resource: mesh_buffer.base_buffer.front().as_binding(),
                 },
                 wgpu::BindGroupEntry {
                     binding: 8 + MESH_SKIN_BINDING,
-                    resource: mesh_buffer.skinned_buffer.buffer().as_entire_binding(),
+                    resource: mesh_buffer.skinned_buffer.front().as_binding(),
                 },
                 wgpu::BindGroupEntry {
                     binding: 8 + SKINS_BINDING,
-                    resource: skins.buffer.buffer().as_entire_binding(),
+                    resource: skins.buffer.as_binding(),
                 },
             ],
             label: Some("ShadowGlobals.bind_group"),

@@ -2,15 +2,16 @@ use std::{
     any::type_name,
     marker::PhantomData,
     mem::{self, size_of},
-    ops::{Bound, DerefMut, Range, RangeBounds},
-    sync::atomic::{AtomicU64, AtomicUsize, Ordering},
+    num::NonZeroU64,
+    ops::{Bound, Range, RangeBounds},
+    sync::atomic::{AtomicU64, Ordering},
 };
 
 use bytemuck::Pod;
 use futures::Future;
 use wgpu::{
     util::{BufferInitDescriptor, DeviceExt},
-    BufferAddress, BufferAsyncError, BufferDescriptor,
+    BindingResource, BufferAddress, BufferAsyncError, BufferDescriptor,
 };
 
 use super::gpu::Gpu;
@@ -37,7 +38,7 @@ impl<T: bytemuck::Pod + std::fmt::Debug> std::fmt::Debug for TypedBuffer<T> {
 
 impl<T> Drop for TypedBuffer<T> {
     fn drop(&mut self) {
-        TOTAL_ALLOCATED_BYTES.fetch_sub(self.byte_size(), Ordering::SeqCst);
+        TOTAL_ALLOCATED_BYTES.fetch_sub(self.byte_capacity(), Ordering::SeqCst);
     }
 }
 
@@ -83,8 +84,13 @@ impl<T> TypedBuffer<T> {
     }
 
     /// Allocated buffer size in bytes
-    pub fn byte_size(&self) -> BufferAddress {
+    pub fn byte_capacity(&self) -> BufferAddress {
         self.capacity as u64 * mem::size_of::<T>() as u64
+    }
+
+    /// Initialized buffer size in bytes
+    pub fn byte_len(&self) -> BufferAddress {
+        self.len as u64 * mem::size_of::<T>() as u64
     }
 
     #[inline]
@@ -117,6 +123,14 @@ impl<T> TypedBuffer<T> {
     /// **Note**: The same instance will not always be returned due to reallocation
     pub fn buffer(&self) -> &wgpu::Buffer {
         &self.buffer
+    }
+
+    pub fn as_binding(&self) -> BindingResource {
+        BindingResource::Buffer(wgpu::BufferBinding {
+            buffer: self.buffer(),
+            offset: 0,
+            size: Some(NonZeroU64::new(self.byte_len()).expect("buffer size is 0")),
+        })
     }
 
     fn change_capacity(&mut self, gpu: &Gpu, new_capacity: usize, retain_content: bool) {
