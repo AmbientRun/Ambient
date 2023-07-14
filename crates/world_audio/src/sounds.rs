@@ -36,8 +36,9 @@ pub enum AudioFx {
     Looping,
     Amplitude(f32),
     Panning(f32),
-    Lpf(f32, f32),
-    Hpf(f32, f32),
+    OnePole(f32),
+    LowPass(f32, f32),
+    HighPass(f32, f32),
 }
 
 #[allow(clippy::large_enum_variant)]
@@ -52,6 +53,7 @@ pub enum AudioMessage {
     // sound id and amplitude
     UpdateVolume(String, f32),
     UpdatePanning(String, f32),
+    AddOnePoleLpf(String, f32),
     StopById(String),
 }
 
@@ -64,6 +66,9 @@ pub struct SoundInfo {
 pub enum AudioControl {
     Amplitude(Arc<Mutex<f32>>),
     Panning(Arc<Mutex<f32>>),
+    OnePole(Arc<Mutex<f32>>),
+    LowPass(Arc<Mutex<f32>>, Arc<Mutex<f32>>),
+    HighPass(Arc<Mutex<f32>>, Arc<Mutex<f32>>),
 }
 
 /// TODO: hook this into the Attenuation inside ambient_audio
