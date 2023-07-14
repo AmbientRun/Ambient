@@ -22,6 +22,14 @@ pub struct PlayerRawInput {
     pub mouse_wheel: f32,
     pub mouse_buttons: HashSet<ambient_shared_types::MouseButton>,
 }
+impl PlayerRawInput {
+    pub fn clear(&mut self) {
+        self.keys.clear();
+        self.mouse_delta = vec2(0.0, 0.0);
+        self.mouse_wheel = 0.0;
+        self.mouse_buttons.clear();
+    }
+}
 
 components!("input", {
     event_modifiers_change: ModifiersState,

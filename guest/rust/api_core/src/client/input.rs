@@ -1,4 +1,7 @@
-use std::collections::HashSet;
+use std::{
+    collections::HashSet,
+    sync::{Arc, Mutex},
+};
 
 use crate::{
     global::{CursorIcon, Vec2},
@@ -6,6 +9,9 @@ use crate::{
         conversion::{FromBindgen, IntoBindgen},
         wit,
     },
+    message::Listener,
+    messages,
+    prelude::RuntimeMessage,
 };
 
 /// Gets the local player's most recent raw input state.
@@ -50,28 +56,29 @@ pub fn set_cursor_lock(locked: bool) {
 ///
 /// Will unlock the cursor when dropped.
 pub struct CursorLockGuard {
-    locked: bool,
+    inner: Arc<Mutex<CursorLockGuardInner>>,
+    listener: Option<Listener>,
 }
 impl CursorLockGuard {
     /// Creates a new [CursorLockGuard] with the given lock state.
-    pub fn new(locked: bool) -> Self {
-        let mut guard = Self { locked: !locked };
-        guard.set_locked(locked);
-        guard
+    pub fn new() -> Self {
+        let inner = Arc::new(Mutex::new(CursorLockGuardInner::new()));
+        Self {
+            inner: inner.clone(),
+            listener: Some(messages::WindowFocusChange::subscribe(move |msg| {
+                inner.lock().unwrap().set_locked(msg.focused)
+            })),
+        }
     }
 
     /// Locks and hides the cursor if necessary.
     pub fn set_locked(&mut self, locked: bool) {
-        if locked != self.locked {
-            set_cursor_lock(locked);
-            set_cursor_visible(!locked);
-        }
-        self.locked = locked;
+        self.inner.lock().unwrap().set_locked(locked);
     }
 
     /// Returns whether or not the cursor is currently locked.
     pub fn is_locked(&self) -> bool {
-        self.locked
+        self.inner.lock().unwrap().is_locked()
     }
 
     /// Helper that calls [Self::set_locked] with `true`.
@@ -96,9 +103,38 @@ impl CursorLockGuard {
         self.is_locked()
     }
 }
+impl Default for CursorLockGuard {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl Drop for CursorLockGuard {
     fn drop(&mut self) {
         self.set_locked(false);
+        self.listener.take().unwrap().stop();
+    }
+}
+
+struct CursorLockGuardInner {
+    locked: bool,
+}
+impl CursorLockGuardInner {
+    fn new() -> Self {
+        Self { locked: false }
+    }
+
+    /// Locks and hides the cursor if necessary.
+    fn set_locked(&mut self, locked: bool) {
+        if locked != self.locked {
+            set_cursor_lock(locked);
+            set_cursor_visible(!locked);
+        }
+        self.locked = locked;
+    }
+
+    /// Returns whether or not the cursor is currently locked.
+    fn is_locked(&self) -> bool {
+        self.locked
     }
 }
 
