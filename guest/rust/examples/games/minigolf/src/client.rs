@@ -2,7 +2,7 @@ use ambient_api::{components::core::physics::linear_velocity, prelude::*};
 
 #[main]
 fn main() {
-    let mut cursor_lock = input::CursorLockGuard::new(true);
+    let mut cursor_lock = input::CursorLockGuard::new();
     ambient_api::messages::Frame::subscribe(move |_| {
         let (delta, input) = input::get_delta();
         if !cursor_lock.auto_unlock_on_escape(&input) {
