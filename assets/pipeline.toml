@@ -10,8 +10,8 @@ sources = ["anim/**/*"]
 type = "Models"
 sources = ["map/**/*"]
 
-[pipelines.collider]
-type = "FromModel"
+# [pipelines.collider]
+# type = "FromModel"
 
 [[pipelines]]
 type = "Models"

@@ -27,6 +27,7 @@ dependencies = [
 [[package]]
 name = "ambient_api"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "ambient_api_core",
  "ambient_cb",
@@ -43,6 +44,7 @@ dependencies = [
 [[package]]
 name = "ambient_api_core"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "ambient_api_macros",
  "ambient_project_rt",
@@ -64,6 +66,7 @@ dependencies = [
 [[package]]
 name = "ambient_api_macros"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "ambient_project",
  "ambient_project_macro_common",
@@ -77,10 +80,12 @@ dependencies = [
 [[package]]
 name = "ambient_cb"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 
 [[package]]
 name = "ambient_color"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "glam",
  "hex",
@@ -91,6 +96,7 @@ dependencies = [
 [[package]]
 name = "ambient_editor_derive"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "convert_case",
  "itertools",
@@ -104,6 +110,7 @@ dependencies = [
 [[package]]
 name = "ambient_element"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "ambient_cb",
  "ambient_element_component",
@@ -123,6 +130,7 @@ dependencies = [
 [[package]]
 name = "ambient_element_component"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "itertools",
  "proc-macro-crate",
@@ -134,6 +142,7 @@ dependencies = [
 [[package]]
 name = "ambient_friendly_id"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "rand",
 ]
@@ -141,6 +150,7 @@ dependencies = [
 [[package]]
 name = "ambient_guest_bridge"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "ambient_api_core",
  "ambient_shared_types",
@@ -150,6 +160,7 @@ dependencies = [
 [[package]]
 name = "ambient_math"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "glam",
  "rand",
@@ -179,6 +190,7 @@ dependencies = [
 [[package]]
 name = "ambient_project"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "anyhow",
  "log",
@@ -193,6 +205,7 @@ dependencies = [
 [[package]]
 name = "ambient_project_macro_common"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "ambient_project",
  "ambient_shared_types",
@@ -208,6 +221,7 @@ dependencies = [
 [[package]]
 name = "ambient_project_rt"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "byteorder",
  "glam",
@@ -217,10 +231,12 @@ dependencies = [
 [[package]]
 name = "ambient_schema"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 
 [[package]]
 name = "ambient_shared_types"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "bitflags 1.3.2",
  "paste",
@@ -232,6 +248,7 @@ dependencies = [
 [[package]]
 name = "ambient_time"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "itertools",
  "thiserror",
@@ -240,6 +257,7 @@ dependencies = [
 [[package]]
 name = "ambient_ui"
 version = "0.3.0-dev"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=42b78f8#42b78f833625d0cb5553625963b942efebd7da5d"
 dependencies = [
  "ambient_cb",
  "ambient_color",
