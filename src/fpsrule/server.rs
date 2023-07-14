@@ -1,6 +1,11 @@
 // TODO: this should vary based on the game type
 
-use ambient_api::components::core::{player::player, transform::translation};
+use ambient_api::components::core::{
+    player::player,
+    primitives::quad,
+    rendering::pbr_material_from_url,
+    transform::{rotation, scale, translation},
+};
 use ambient_api::prelude::*;
 #[main]
 pub fn main() {
@@ -17,6 +22,8 @@ pub fn main() {
         }
     });
     messages::Shoot::subscribe(move |_source, msg| {
+        // let model = entity::get_component(msg.source, components::player_model_ref()).unwrap();
+
         let result = physics::raycast_first(msg.ray_origin, msg.ray_dir);
 
         if let Some(hit) = result {
