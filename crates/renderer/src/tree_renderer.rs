@@ -477,7 +477,7 @@ impl TreeRenderer {
         let byte_size = collect_state.commands.byte_size();
 
         if byte_size > 0 {
-            let read = collect_state.commands.untyped().read_staging(gpu, ..);
+            let read = collect_state.commands.read_staging(gpu, ..);
 
             world.resource(runtime()).spawn(async move {
             let data = read.await.unwrap();

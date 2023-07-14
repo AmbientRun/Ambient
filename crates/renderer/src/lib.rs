@@ -85,11 +85,13 @@ components!("rendering", {
     @[Resource]
     renderer_stats: String,
 });
+
 gpu_components! {
     color() => color: GpuComponentFormat::Vec4,
     gpu_primitives_mesh() => gpu_primitives_mesh: GpuComponentFormat::Mat4,
     gpu_primitives_lod() => gpu_primitives_lod: GpuComponentFormat::Mat4,
 }
+
 pub fn init_all_components() {
     init_components();
     init_gpu_components();

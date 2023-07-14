@@ -165,16 +165,14 @@ impl TransparentRenderer {
             (x.transparency_group, OrderedFloat(point.z))
         });
 
-        if self
-            .gpu_primitives
-            .resize(gpu, self.primitives.len() as u64, true)
-        {
+        if self.gpu_primitives.resize(gpu, self.primitives.len(), true) {
             self.primitives_bind_group = Self::create_primitives_bind_group(
                 gpu,
                 &self.config.renderer_resources.primitives_layout,
                 self.gpu_primitives.buffer(),
             );
         }
+
         self.gpu_primitives.write(
             gpu,
             0,

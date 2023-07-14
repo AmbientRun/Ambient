@@ -1,11 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use ambient_ecs::{components, ArchetypeId, Resource, System, World};
-use ambient_gpu::{
-    gpu::Gpu,
-    shader_module::ShaderModule,
-    typed_buffer::{TypedBuffer, UntypedBuffer},
-};
+use ambient_gpu::{gpu::Gpu, shader_module::ShaderModule, typed_buffer::TypedBuffer};
 use ambient_std::asset_cache::{AssetCache, SyncAssetKey};
 use itertools::Itertools;
 use parking_lot::Mutex;
@@ -18,7 +14,7 @@ use ambient_std::asset_cache::SyncAssetKeyExt;
 pub use component::*;
 pub use sync::*;
 pub use update::*;
-use wgpu::BindGroupLayout;
+use wgpu::{BindGroupLayout, COPY_BUFFER_ALIGNMENT};
 
 use crate::gpu;
 
@@ -119,7 +115,7 @@ impl GpuWorld {
         for (i, buf) in self.buffers.iter().enumerate() {
             buffers.push(wgpu::BindGroupEntry {
                 binding: i as u32 + 1,
-                resource: buf.data.buffer.as_entire_binding(),
+                resource: buf.buffer.as_entire_binding(),
             });
         }
 
@@ -136,47 +132,45 @@ impl GpuWorld {
         component: &str,
         archetype: ArchetypeId,
     ) -> Option<(&wgpu::Buffer, u64, u64)> {
-        let buff = self
+        let buf = self
             .buffers
             .iter()
             .find(|buff| buff.config.format == format)?;
-        let comp = buff.layout.get(component)?;
+        let comp = buf.layout.get(component)?;
         let offset = *comp.get(&archetype)? as u64;
-        Some((
-            &buff.data.buffer,
-            offset * buff.data.item_size(),
-            buff.layout_version,
-        ))
+        Some((&buf.buffer, offset * buf.item_size, buf.layout_version))
     }
 }
 
 pub struct GpuComponentsBuffer {
     config: GpuComponentsConfig,
-    pub data: UntypedBuffer,
+    pub buffer: TypedBuffer<u8>,
     pub layout: HashMap<String, HashMap<ArchetypeId, u32>>,
     layout_offsets: Vec<i32>,
     layout_buffer_offset: u64,
     layout_version: u64,
+    item_size: u64,
 }
 
 impl GpuComponentsBuffer {
     pub fn new(gpu: &Gpu, config: GpuComponentsConfig) -> Self {
+        let size = config.format.size().max(COPY_BUFFER_ALIGNMENT) as usize;
         Self {
-            data: UntypedBuffer::new(
+            buffer: TypedBuffer::new(
                 gpu,
-                &format!("EntityBuffers.{}.data", config.format),
-                1,
-                1,
+                format!("EntityBuffers.{}.data", config.format),
+                size,
+                size,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
                     | wgpu::BufferUsages::COPY_SRC,
-                config.format.size(),
             ),
             layout: config
                 .components
                 .iter()
                 .map(|comp| (comp.name.clone(), HashMap::new()))
                 .collect(),
+            item_size: config.format.size(),
             config,
             layout_offsets: Vec::new(),
             layout_buffer_offset: 0,
@@ -191,32 +185,47 @@ impl GpuComponentsBuffer {
         layout_buffer_offset: u64,
     ) {
         let mut gpu_layout = Vec::new();
-        let mut offset = 0;
+        let mut index = 0;
+
         for component in &self.config.components {
             let mut layout = HashMap::new();
             for arch in world.archetypes() {
-                if component.exists_for.matches_archetype(arch) {
-                    layout.insert(arch.id, offset as u32);
+                if component.filter.matches_archetype(arch) {
+                    layout.insert(arch.id, index as u32);
                     let buf_len = arch.entity_count();
-                    gpu_layout.push(offset);
+                    gpu_layout.push(index);
                     let buf_size_pow2 = 2i32.pow((buf_len as f32).log2().ceil() as u32);
-                    offset += buf_size_pow2;
+                    index += buf_size_pow2;
                 } else {
                     gpu_layout.push(-1);
                 }
             }
             self.layout.insert(component.name.clone(), layout);
         }
+
         if gpu_layout != self.layout_offsets
-            || offset != self.data.len() as i32
+            || index != self.buffer.len() as i32
             || layout_buffer_offset != self.layout_buffer_offset
         {
             self.layout_version += 1;
         }
+
         self.layout_buffer_offset = layout_buffer_offset;
-        self.data.resize(gpu, offset as u64, true);
-        layout_buffer.resize(gpu, layout_buffer_offset + gpu_layout.len() as u64, true);
-        layout_buffer.write(gpu, layout_buffer_offset, &gpu_layout);
+
+        self.buffer
+            .resize(gpu, index as usize * self.item_size as usize, true);
+
+        layout_buffer.resize(
+            gpu,
+            gpu_layout.len() + layout_buffer_offset as usize * self.item_size as usize,
+            true,
+        );
+
+        layout_buffer.write(
+            gpu,
+            layout_buffer_offset as usize * self.item_size as usize,
+            &gpu_layout,
+        );
         self.layout_offsets = gpu_layout;
     }
 }

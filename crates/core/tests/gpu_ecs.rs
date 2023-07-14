@@ -75,6 +75,7 @@ impl TestCommon {
                 gpu_world.clone(),
             )
             .unwrap();
+
         world
             .add_component(world.resource_entity(), ambient_core::gpu(), gpu)
             .unwrap();

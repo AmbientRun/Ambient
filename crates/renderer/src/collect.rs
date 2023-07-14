@@ -258,7 +258,7 @@ impl RendererCollect {
         }
 
         tracing::debug!("Resizing collect command buffer to {primitives_count}");
-        output.commands.resize(gpu, primitives_count as u64, true);
+        output.commands.resize(gpu, primitives_count as usize, true);
 
         assert_eq!(
             input_primitives.total_len(),
@@ -366,7 +366,7 @@ impl CollectCountStagingBuffers {
     }
 
     #[cfg(any(target_os = "macos", target_os = "unknown"))]
-    fn take_buffer(&self, gpu: &Gpu, size: u64) -> TypedBuffer<u32> {
+    fn take_buffer(&self, gpu: &Gpu, size: usize) -> TypedBuffer<u32> {
         match self.buffers.lock().pop() {
             Some(mut buffer) => {
                 buffer.resize(gpu, size, false);
