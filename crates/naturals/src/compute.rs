@@ -249,8 +249,8 @@ impl NaturalsPipeline {
         let out_entities_staging = TypedBuffer::<NaturalEntity>::new(
             gpu,
             "Naturals.out_entities_staging",
-            NATURALS_MAX_ENTITIES as u64,
-            NATURALS_MAX_ENTITIES as u64,
+            NATURALS_MAX_ENTITIES as usize,
+            NATURALS_MAX_ENTITIES as usize,
             wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
         );
 
@@ -277,8 +277,8 @@ impl NaturalsPipeline {
             let out_entities_buffer = TypedBuffer::<NaturalEntity>::new(
                 gpu,
                 "Naturals.out_entities",
-                NATURALS_MAX_ENTITIES as u64,
-                NATURALS_MAX_ENTITIES as u64,
+                NATURALS_MAX_ENTITIES as usize,
+                NATURALS_MAX_ENTITIES as usize,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_SRC
                     | wgpu::BufferUsages::COPY_DST,
@@ -372,16 +372,12 @@ impl NaturalsPipeline {
             gpu.queue.submit(Some(encoder.finish()));
         }
 
-        let count = out_count_staging
-            .read(gpu, .., false)
-            .await
-            .unwrap()
-            .to_vec()[0]
-            .min(NATURALS_MAX_ENTITIES);
+        let count =
+            out_count_staging.read(gpu, ..).await.unwrap().to_vec()[0].min(NATURALS_MAX_ENTITIES);
 
         if count > 0 {
             out_entities_staging
-                .read(gpu, 0..count as u64, false)
+                .read(gpu, 0..count as usize)
                 .await
                 .unwrap()
                 .to_vec()

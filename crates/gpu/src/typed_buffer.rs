@@ -112,21 +112,11 @@ impl<T> TypedBuffer<T> {
     }
 
     #[inline]
+    /// Returns the underlying wgpu::Buffer
+    ///
+    /// **Note**: The same instance will not always be returned due to reallocation
     pub fn buffer(&self) -> &wgpu::Buffer {
         &self.buffer
-    }
-
-    /// Returns true if the capacity changed
-    pub fn resize(&mut self, gpu: &Gpu, new_len: usize, retain_content: bool) -> bool {
-        if self.capacity < new_len {
-            let cap = new_len.next_power_of_two();
-            self.change_capacity(gpu, cap, retain_content);
-            self.len = new_len;
-            true
-        } else {
-            self.len = new_len;
-            false
-        }
     }
 
     fn change_capacity(&mut self, gpu: &Gpu, new_capacity: usize, retain_content: bool) {
@@ -198,8 +188,39 @@ impl<T: Pod> TypedBuffer<T> {
         }
     }
 
+    /// Sets the length of the *initialized* region of the buffer.
+    ///
+    /// Will increase capacity as appropriate.
+    ///
+    /// Returns true if the buffer was resized
+    pub fn set_len(&mut self, gpu: &Gpu, len: usize) -> bool {
+        self.set_len_inner(gpu, len, true)
+    }
+
+    /// Same as [`Self::set_len`] but discards the contents when resized.
+    ///
+    /// Use this if you immediately fill the buffer
+    pub fn set_len_discard(&mut self, gpu: &Gpu, len: usize) -> bool {
+        self.set_len_inner(gpu, len, false)
+    }
+
+    fn set_len_inner(&mut self, gpu: &Gpu, len: usize, retain: bool) -> bool {
+        if len > self.capacity {
+            self.change_capacity(gpu, len.next_power_of_two(), retain);
+            self.len = len;
+            true
+        } else {
+            self.len = len;
+            false
+        }
+    }
+
     pub fn write(&self, gpu: &Gpu, index: usize, data: &[T]) {
-        assert!(data.len() + index <= self.capacity);
+        assert!(
+            data.len() + index <= self.len,
+            "Writing outside initialized bounds of buffer"
+        );
+
         gpu.queue.write_buffer(
             &self.buffer,
             index as u64 * size_of::<T>() as u64,
@@ -208,7 +229,7 @@ impl<T: Pod> TypedBuffer<T> {
     }
 
     /// Reads a range from the buffer. The range is defined in items; i.e. 1..3 means read item 1 through 3 (not bytes).
-    pub async fn read_direct(
+    pub async fn read(
         &self,
         gpu: &Gpu,
         bounds: impl RangeBounds<usize>,
@@ -304,18 +325,10 @@ impl<T: Pod> TypedBuffer<T> {
     }
 
     pub fn fill(&mut self, gpu: &Gpu, data: &[T], mut on_resize: impl FnMut(&Self)) {
-        if self.resize(gpu, data.len(), true) {
+        if self.set_len_discard(gpu, data.len()) {
             on_resize(self);
         }
 
         self.write(gpu, 0, data)
-    }
-}
-
-impl<T: bytemuck::Pod> std::ops::Deref for TypedBuffer<T> {
-    type Target = wgpu::Buffer;
-
-    fn deref(&self) -> &Self::Target {
-        &self.buffer
     }
 }

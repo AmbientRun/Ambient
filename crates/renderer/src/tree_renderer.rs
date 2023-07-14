@@ -107,7 +107,6 @@ impl TreeRenderer {
     }
     #[ambient_profiling::function]
     pub fn update(&mut self, gpu: &Gpu, assets: &AssetCache, world: &mut World) {
-        tracing::info!("Updating renderer");
         let mut to_update = HashSet::new();
         let mut spawn_qs = std::mem::replace(&mut self.spawn_qs, QueryState::new());
         let mut despawn_qs = std::mem::replace(&mut self.despawn_qs, QueryState::new());
@@ -328,9 +327,7 @@ impl TreeRenderer {
                     };
                 }
 
-                collect_state
-                    .commands
-                    .resize(gpu, commands.len() as _, true);
+                collect_state.commands.set_len(gpu, commands.len() as _);
 
                 collect_state.commands.write(gpu, 0, &commands)
             }
@@ -567,16 +564,13 @@ impl TreeRenderer {
 
                         // NOTE: this issues 1 draw call *for every single visible primitive* in the scene
 
-                        if count > 1 {
-                            for i in 0..count {
-                                tracing::debug!(?offset, ?i, commands=?collect_state.commands, "Drawing primitive");
-                                render_pass.draw_indexed_indirect(
-                                    collect_state.commands.buffer(),
-                                    offset * 20,
-                                    // (offset + i as u64)
-                                    //     * std::mem::size_of::<DrawIndexedIndirect>() as u64,
-                                );
-                            }
+                        for i in 0..count {
+                            tracing::debug!(?offset, ?i, commands=?collect_state.commands, "Drawing primitive");
+                            render_pass.draw_indexed_indirect(
+                                collect_state.commands.buffer(),
+                                (offset + i as u64)
+                                    * std::mem::size_of::<DrawIndexedIndirect>() as u64,
+                            );
                         }
                     }
                 }

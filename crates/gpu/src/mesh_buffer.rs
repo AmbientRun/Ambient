@@ -224,7 +224,7 @@ impl MeshBuffer {
 
             self.base_buffer
                 .front
-                .resize(gpu, self.base_buffer.front.len() + data.len(), true);
+                .set_len(gpu, self.base_buffer.front.len() + data.len());
 
             self.base_buffer
                 .front
@@ -252,7 +252,7 @@ impl MeshBuffer {
 
             self.skinned_buffer
                 .front
-                .resize(gpu, self.skinned_buffer.front.len() + len, true);
+                .set_len(gpu, self.skinned_buffer.front.len() + len);
 
             self.skinned_buffer
                 .front
@@ -261,10 +261,9 @@ impl MeshBuffer {
             internal_mesh.skinned_count += len as u64;
         }
 
-        self.index_buffer.front.resize(
+        self.index_buffer.front.set_len(
             gpu,
             self.index_buffer.front.len() + mesh.index_count() as usize,
-            true,
         );
 
         self.index_buffer
@@ -278,8 +277,10 @@ impl MeshBuffer {
             offset as usize
         } else {
             let offset = self.metadata_buffer.len();
+
             self.metadata_buffer
-                .resize(gpu, self.metadata_buffer.len() + 1, true);
+                .set_len(gpu, self.metadata_buffer.len() + 1);
+
             self.meshes.push(Some(internal_mesh));
             offset
         };
@@ -352,15 +353,15 @@ impl MeshBuffer {
 
         self.base_buffer
             .tmp
-            .resize(gpu, sizes.base_offset as usize, true);
+            .set_len(gpu, sizes.base_offset as usize);
 
         self.skinned_buffer
             .tmp
-            .resize(gpu, sizes.skinned_offset as usize, true);
+            .set_len(gpu, sizes.skinned_offset as usize);
 
         self.index_buffer
             .tmp
-            .resize(gpu, sizes.index_offset as usize, true);
+            .set_len(gpu, sizes.index_offset as usize);
 
         let mut cursor = MeshMetadata::default();
         for (index, mesh) in update_meshes_sorted {
@@ -407,11 +408,9 @@ impl MeshBuffer {
 
         macro_rules! copy_back_buff {
             ( $gpu:expr, $encoder:expr, $base_offset:ident, $buff:ident, $field:ident ) => {
-                self.$buff.front.resize(
-                    $gpu,
-                    $base_offset.$field as usize + self.$buff.tmp.len(),
-                    true,
-                );
+                self.$buff
+                    .front
+                    .set_len($gpu, $base_offset.$field as usize + self.$buff.tmp.len());
                 let offset = $base_offset.$field as u64 * self.$buff.front.item_size();
                 encoder.copy_buffer_to_buffer(
                     self.$buff.tmp.buffer(),

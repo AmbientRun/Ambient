@@ -258,7 +258,7 @@ impl RendererCollect {
         }
 
         tracing::debug!("Resizing collect command buffer to {primitives_count}");
-        output.commands.resize(gpu, primitives_count as usize, true);
+        output.commands.set_len(gpu, primitives_count as usize);
 
         assert_eq!(
             input_primitives.total_len(),
@@ -335,7 +335,7 @@ impl RendererCollect {
 
             _post_submit.push(Box::new(move || {
                 runtime.spawn(async move {
-                    if let Ok(res) = staging.read_direct(&post_submit_gpu, ..).await {
+                    if let Ok(res) = staging.read(&post_submit_gpu, ..).await {
                         *counts_res.lock() = res;
                         buffs.return_buffer(staging);
                     }
@@ -369,7 +369,7 @@ impl CollectCountStagingBuffers {
     fn take_buffer(&self, gpu: &Gpu, size: usize) -> TypedBuffer<u32> {
         match self.buffers.lock().pop() {
             Some(mut buffer) => {
-                buffer.resize(gpu, size, false);
+                buffer.set_len_discard(gpu, size);
                 buffer
             }
             None => TypedBuffer::<u32>::new(

@@ -74,8 +74,7 @@ impl SkinsBuffer {
     }
     pub fn create(&mut self, gpu: &Gpu, size: u32) -> Skin {
         let skin = Skin(Arc::new(AtomicU32::new(self.buffer.len() as u32)));
-        self.buffer
-            .resize(gpu, self.buffer.len() + size as usize, true);
+        self.buffer.set_len(gpu, self.buffer.len() + size as usize);
         skin
     }
     pub fn update(&self, gpu: &Gpu, skin: &Skin, joint_matrices: &[Mat4]) {

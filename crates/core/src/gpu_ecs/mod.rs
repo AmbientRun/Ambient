@@ -115,7 +115,7 @@ impl GpuWorld {
         for (i, buf) in self.buffers.iter().enumerate() {
             buffers.push(wgpu::BindGroupEntry {
                 binding: i as u32 + 1,
-                resource: buf.buffer.as_entire_binding(),
+                resource: buf.buffer.buffer().as_entire_binding(),
             });
         }
 
@@ -138,7 +138,11 @@ impl GpuWorld {
             .find(|buff| buff.config.format == format)?;
         let comp = buf.layout.get(component)?;
         let offset = *comp.get(&archetype)? as u64;
-        Some((&buf.buffer, offset * buf.item_size, buf.layout_version))
+        Some((
+            buf.buffer.buffer(),
+            offset * buf.item_size,
+            buf.layout_version,
+        ))
     }
 }
 
@@ -213,19 +217,11 @@ impl GpuComponentsBuffer {
         self.layout_buffer_offset = layout_buffer_offset;
 
         self.buffer
-            .resize(gpu, index as usize * self.item_size as usize, true);
+            .set_len(gpu, index as usize * self.item_size as usize);
 
-        layout_buffer.resize(
-            gpu,
-            gpu_layout.len() + layout_buffer_offset as usize * self.item_size as usize,
-            true,
-        );
+        layout_buffer.set_len(gpu, gpu_layout.len() + layout_buffer_offset as usize);
 
-        layout_buffer.write(
-            gpu,
-            layout_buffer_offset as usize * self.item_size as usize,
-            &gpu_layout,
-        );
+        layout_buffer.write(gpu, layout_buffer_offset as usize, &gpu_layout);
         self.layout_offsets = gpu_layout;
     }
 }
