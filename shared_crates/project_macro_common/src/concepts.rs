@@ -334,10 +334,21 @@ impl std::fmt::Display for SemiprettyTokenStream {
     }
 }
 
-fn value_to_token_stream(items: &ItemMap, value: &ResolvedValue) -> anyhow::Result<TokenStream> {
+fn value_to_token_stream(items: &ItemMap, value: &Value) -> anyhow::Result<TokenStream> {
     Ok(match value {
-        ResolvedValue::Primitive(value) => TokenStream::from_str(&value.to_string()).unwrap(),
-        ResolvedValue::Enum(id, member) => {
+        Value::Scalar(v) => scalar_value_to_token_stream(v),
+        Value::Vec(v) => {
+            let streams = v.iter().map(|v| scalar_value_to_token_stream(v));
+            quote! { vec![#(#streams,)*] }
+        }
+        Value::Option(v) => match v.as_ref() {
+            Some(v) => {
+                let v = scalar_value_to_token_stream(v);
+                quote! { Some(#v) }
+            }
+            None => quote! { None },
+        },
+        Value::Enum(id, member) => {
             let item = &*items.get(*id)?;
             let index = item
                 .inner
@@ -350,4 +361,76 @@ fn value_to_token_stream(items: &ItemMap, value: &ResolvedValue) -> anyhow::Resu
             quote! { #index }
         }
     })
+}
+
+fn scalar_value_to_token_stream(v: &ScalarValue) -> TokenStream {
+    match v {
+        ScalarValue::Empty(_) => quote! { () },
+        ScalarValue::Bool(v) => quote! { #v },
+        ScalarValue::EntityId(id) => quote! { EntityId(#id) },
+        ScalarValue::F32(v) => quote! { #v },
+        ScalarValue::F64(v) => quote! { #v },
+        ScalarValue::Mat4(v) => {
+            let arr = v.to_cols_array();
+            quote! { Mat4::from_cols_array(&[#(#arr,)*]) }
+        }
+        ScalarValue::Quat(v) => {
+            let arr = v.to_array();
+            quote! { Quat::from_xyzw(#(#arr,)*) }
+        }
+        ScalarValue::String(v) => quote! { #v },
+        ScalarValue::U8(v) => quote! { #v },
+        ScalarValue::U16(v) => quote! { #v },
+        ScalarValue::U32(v) => quote! { #v },
+        ScalarValue::U64(v) => quote! { #v },
+        ScalarValue::I8(v) => quote! { #v },
+        ScalarValue::I16(v) => quote! { #v },
+        ScalarValue::I32(v) => quote! { #v },
+        ScalarValue::I64(v) => quote! { #v },
+        ScalarValue::Vec2(v) => {
+            let arr = v.to_array();
+            quote! { Vec2::new(#(#arr,)*) }
+        }
+        ScalarValue::Vec3(v) => {
+            let arr = v.to_array();
+            quote! { Vec3::new(#(#arr,)*) }
+        }
+        ScalarValue::Vec4(v) => {
+            let arr = v.to_array();
+            quote! { Vec4::new(#(#arr,)*) }
+        }
+        ScalarValue::Uvec2(v) => {
+            let arr = v.to_array();
+            quote! { UVec2::new(#(#arr,)*) }
+        }
+        ScalarValue::Uvec3(v) => {
+            let arr = v.to_array();
+            quote! { UVec3::new(#(#arr,)*) }
+        }
+        ScalarValue::Uvec4(v) => {
+            let arr = v.to_array();
+            quote! { UVec4::new(#(#arr,)*) }
+        }
+        ScalarValue::Ivec2(v) => {
+            let arr = v.to_array();
+            quote! { IVec2::new(#(#arr,)*) }
+        }
+        ScalarValue::Ivec3(v) => {
+            let arr = v.to_array();
+            quote! { IVec3::new(#(#arr,)*) }
+        }
+        ScalarValue::Ivec4(v) => {
+            let arr = v.to_array();
+            quote! { IVec4::new(#(#arr,)*) }
+        }
+        ScalarValue::Duration(v) => {
+            let secs = v.as_secs();
+            let nanos = v.subsec_nanos();
+            quote! { Duration::new(#secs, #nanos) }
+        }
+        ScalarValue::ProceduralMeshHandle(_v) => quote! { unsupported!() },
+        ScalarValue::ProceduralTextureHandle(_v) => quote! { unsupported!() },
+        ScalarValue::ProceduralSamplerHandle(_v) => quote! { unsupported!() },
+        ScalarValue::ProceduralMaterialHandle(_v) => quote! { unsupported!() },
+    }
 }

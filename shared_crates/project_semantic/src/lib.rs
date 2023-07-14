@@ -35,7 +35,7 @@ mod message;
 pub use message::Message;
 
 mod value;
-pub use value::{PrimitiveValue, ResolvableValue, ResolvedValue};
+pub use value::{ResolvableValue, ScalarValue, Value};
 
 mod printer;
 pub use printer::Printer;

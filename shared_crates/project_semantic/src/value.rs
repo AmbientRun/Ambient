@@ -13,63 +13,19 @@ use std::{fmt, time::Duration};
 pub type EntityId = u128;
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum ResolvedValue {
-    Primitive(PrimitiveValue),
-    Enum(ItemId<Type>, Identifier),
-}
-impl ResolvedValue {
-    fn from_toml_value(
-        value: &toml::Value,
-        items: &ItemMap,
-        id: ItemId<Type>,
-    ) -> anyhow::Result<Self> {
-        let ty = &*items.get(id)?;
-        Ok(match &ty.inner {
-            TypeInner::Enum(e) => {
-                let variant = value.as_str().with_context(|| {
-                    format!("Expected string for enum variant, got {:?}", value)
-                })?;
-
-                let variant = e
-                    .members
-                    .iter()
-                    .find(|(name, _description)| name.as_ref() == variant)
-                    .with_context(|| {
-                        format!(
-                            "Expected enum variant to be one of {:?}, got {:?}",
-                            e.members, variant
-                        )
-                    })?;
-
-                Self::Enum(id, variant.0.clone())
-            }
-            _ => Self::Primitive(PrimitiveValue::from_toml_value(value, ty)?),
-        })
-    }
-}
-impl fmt::Display for ResolvedValue {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Primitive(value) => write!(f, "{value}"),
-            Self::Enum(_id, variant) => write!(f, "{variant}"),
-        }
-    }
-}
-
-#[derive(Clone, PartialEq, Debug)]
 pub enum ResolvableValue {
     Unresolved(toml::Value),
-    Resolved(ResolvedValue),
+    Resolved(Value),
 }
 impl ResolvableValue {
     pub(crate) fn resolve(&mut self, items: &ItemMap, id: ItemId<Type>) -> anyhow::Result<()> {
         if let Self::Unresolved(value) = self {
-            *self = Self::Resolved(ResolvedValue::from_toml_value(value, items, id)?);
+            *self = Self::Resolved(Value::from_toml(value, items, id)?);
         }
         Ok(())
     }
 
-    pub fn as_resolved(&self) -> Option<&ResolvedValue> {
+    pub fn as_resolved(&self) -> Option<&Value> {
         match self {
             Self::Resolved(value) => Some(value),
             _ => None,
@@ -77,31 +33,27 @@ impl ResolvableValue {
     }
 }
 
-macro_rules! define_primitive_value {
+macro_rules! define_scalar_value {
     ($(($value:ident, $type:ty)),*) => {
         paste::paste! {
             #[derive(Debug, Clone, PartialEq)]
-            pub enum PrimitiveValue {
+            pub enum ScalarValue {
                 $(
                     $value($type),
-                    [<Vec $value>](Vec<$type>),
-                    [<Option $value>](Option<$type>),
                 )*
             }
             $(
-                impl From<$type> for PrimitiveValue {
+                impl From<$type> for ScalarValue {
                     fn from(value: $type) -> Self {
                         Self::$value(value)
                     }
                 }
             )*
-            impl fmt::Display for PrimitiveValue {
+            impl fmt::Display for ScalarValue {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     match self {
                         $(
                             Self::$value(value) => fmt::Debug::fmt(value, f),
-                            Self::[<Vec $value>](value) => fmt::Debug::fmt(value, f),
-                            Self::[<Option $value>](value) => fmt::Debug::fmt(value, f),
                         )*
                     }
                 }
@@ -109,23 +61,10 @@ macro_rules! define_primitive_value {
         }
     };
 }
-primitive_component_definitions!(define_primitive_value);
+primitive_component_definitions!(define_scalar_value);
 
-impl PrimitiveValue {
-    pub(crate) fn from_toml_value(value: &toml::Value, ty: &Type) -> anyhow::Result<Self> {
-        Ok(match ty.inner {
-            TypeInner::Primitive(pt) => Self::primitive_from_toml_value(value, pt)?
-                .with_context(|| format!("Failed to parse TOML value {:?} as {:?}", value, pt))?,
-            TypeInner::Vec(_v) => todo!("We don't support vecs yet"),
-            TypeInner::Option(_o) => todo!("We don't support options yet"),
-            TypeInner::Enum(_) => unreachable!("Enum should be resolved"),
-        })
-    }
-
-    pub fn primitive_from_toml_value(
-        value: &toml::Value,
-        ty: PrimitiveType,
-    ) -> anyhow::Result<Option<Self>> {
+impl ScalarValue {
+    pub fn from_toml(value: &toml::Value, ty: PrimitiveType) -> anyhow::Result<Self> {
         fn as_bool(v: &toml::Value) -> anyhow::Result<bool> {
             v.as_bool()
                 .with_context(|| format!("Expected bool, got {:?}", v))
@@ -164,7 +103,7 @@ impl PrimitiveValue {
         }
 
         let v = value;
-        Ok(Some(match ty {
+        Ok(match ty {
             PrimitiveType::Empty => Self::Empty(()),
             PrimitiveType::Bool => Self::Bool(as_bool(v)?),
             PrimitiveType::EntityId => {
@@ -221,11 +160,127 @@ impl PrimitiveValue {
             PrimitiveType::Ivec4 => Self::Ivec4(IVec4::from_array(as_array(v, |v| {
                 Ok(as_integer(v)? as i32)
             })?)),
-            PrimitiveType::Duration => return Ok(None),
-            PrimitiveType::ProceduralMeshHandle => return Ok(None),
-            PrimitiveType::ProceduralTextureHandle => return Ok(None),
-            PrimitiveType::ProceduralSamplerHandle => return Ok(None),
-            PrimitiveType::ProceduralMaterialHandle => return Ok(None),
-        }))
+            PrimitiveType::Duration => anyhow::bail!("unsupported value to load from TOML"),
+            PrimitiveType::ProceduralMeshHandle => {
+                anyhow::bail!("unsupported value to load from TOML")
+            }
+            PrimitiveType::ProceduralTextureHandle => {
+                anyhow::bail!("unsupported value to load from TOML")
+            }
+            PrimitiveType::ProceduralSamplerHandle => {
+                anyhow::bail!("unsupported value to load from TOML")
+            }
+            PrimitiveType::ProceduralMaterialHandle => {
+                anyhow::bail!("unsupported value to load from TOML")
+            }
+        })
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Value {
+    Scalar(ScalarValue),
+    Vec(Vec<ScalarValue>),
+    Option(Option<ScalarValue>),
+    Enum(ItemId<Type>, Identifier),
+}
+impl fmt::Display for Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Scalar(v) => fmt::Display::fmt(v, f),
+            Self::Vec(v) => {
+                write!(f, "[")?;
+                for (i, v) in v.iter().enumerate() {
+                    if i != 0 {
+                        write!(f, ", ")?;
+                    }
+                    fmt::Display::fmt(v, f)?;
+                }
+                write!(f, "]")
+            }
+            Self::Option(v) => {
+                if let Some(v) = v {
+                    write!(f, "Some({})", v)
+                } else {
+                    write!(f, "None")
+                }
+            }
+            Self::Enum(ty, v) => write!(f, "{ty}::{v}"),
+        }
+    }
+}
+impl Value {
+    pub(crate) fn from_toml(
+        value: &toml::Value,
+        items: &ItemMap,
+        ty_id: ItemId<Type>,
+    ) -> anyhow::Result<Self> {
+        let ty = &*items.get(ty_id)?;
+        Ok(match &ty.inner {
+            TypeInner::Primitive(pt) => Self::Scalar(ScalarValue::from_toml(value, *pt)?),
+            TypeInner::Vec(v) => {
+                let ty = &*items.get(*v)?;
+                let inner_ty_id = ty
+                    .inner
+                    .as_vec()
+                    .with_context(|| format!("Expected vector type, got {:?}", ty))?;
+                let inner_ty = &*items.get(inner_ty_id)?;
+                let inner_ty = inner_ty.inner.as_primitive().with_context(|| {
+                    format!("Expected primitive type, got {:?}", inner_ty.inner)
+                })?;
+
+                let arr = value
+                    .as_array()
+                    .with_context(|| format!("Expected array, got {:?}", value))?;
+
+                Self::Vec(
+                    arr.iter()
+                        .map(|v| ScalarValue::from_toml(v, inner_ty))
+                        .collect::<anyhow::Result<_>>()?,
+                )
+            }
+            TypeInner::Option(o) => {
+                let ty = &*items.get(*o)?;
+                let inner_ty = ty
+                    .inner
+                    .as_option()
+                    .with_context(|| format!("Expected option type, got {:?}", ty))?;
+                let inner_ty = &*items.get(inner_ty)?;
+                let inner_ty = inner_ty.inner.as_primitive().with_context(|| {
+                    format!("Expected primitive type, got {:?}", inner_ty.inner)
+                })?;
+
+                let arr = value
+                    .as_array()
+                    .with_context(|| format!("Expected array, got {:?}", value))?;
+                if arr.len() > 1 {
+                    anyhow::bail!("Expected array of length 0 or 1, got {:?}", value);
+                }
+
+                if arr.is_empty() {
+                    Self::Option(None)
+                } else {
+                    Self::Option(Some(ScalarValue::from_toml(&arr[0], inner_ty)?))
+                }
+            }
+            TypeInner::Enum(e) => {
+                let variant = value.as_str().with_context(|| {
+                    format!("Expected string for enum variant, got {:?}", value)
+                })?;
+
+                let variant = e
+                    .members
+                    .iter()
+                    .find(|(name, _description)| name.as_ref() == variant)
+                    .with_context(|| {
+                        format!(
+                            "Expected enum variant to be one of {:?}, got {:?}",
+                            e.members, variant
+                        )
+                    })?;
+
+                Self::Enum(ty_id, variant.0.clone())
+            }
+        })
     }
 }

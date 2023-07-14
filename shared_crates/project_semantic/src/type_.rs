@@ -18,9 +18,30 @@ pub enum TypeInner {
     Enum(Enum),
 }
 impl TypeInner {
+    pub fn as_primitive(&self) -> Option<PrimitiveType> {
+        match self {
+            Self::Primitive(v) => Some(*v),
+            _ => None,
+        }
+    }
+
     pub fn as_enum(&self) -> Option<&Enum> {
         match self {
             Self::Enum(v) => Some(v),
+            _ => None,
+        }
+    }
+
+    pub fn as_vec(&self) -> Option<ItemId<Type>> {
+        match self {
+            Self::Vec(v) => Some(*v),
+            _ => None,
+        }
+    }
+
+    pub fn as_option(&self) -> Option<ItemId<Type>> {
+        match self {
+            Self::Option(v) => Some(*v),
             _ => None,
         }
     }
