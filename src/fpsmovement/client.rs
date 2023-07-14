@@ -57,7 +57,7 @@ pub fn main() {
             is_shooting = false;
         }
 
-        let toggle_zoom = _delta.mouse_buttons.contains(&MouseButton::Right);
+        let toggle_zoom = delta.mouse_buttons.contains(&MouseButton::Right);
 
         let player_id = player::get_local();
         let cam = entity::get_component(player_id, components::player_cam_ref());
