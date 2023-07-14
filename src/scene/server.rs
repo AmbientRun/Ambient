@@ -24,7 +24,7 @@ pub async fn main() {
         .with_merge(make_transformable())
         .with(
             prefab_from_url(),
-            // asset::url("assets/map/map_collider.glb").unwrap(),
+            // asset::url("assets/map/c0.glb").unwrap(),
             asset::url("assets/map/fps_map_ghost_city.glb").unwrap(),
         )
         .with(scale(), Vec3::ONE * 1.5)
