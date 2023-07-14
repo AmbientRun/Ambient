@@ -20,8 +20,11 @@ pub fn make_definitions(
             root_scope.visit_recursive(items, |scope| {
                 if !scope.components.is_empty() {
                     namespaces.push(syn::parse_str::<syn::Path>(
-                        &items
-                            .fully_qualified_display_path_rust_style(scope, Some(root_scope_id))?,
+                        &items.fully_qualified_display_path_rust_style(
+                            scope,
+                            Some(root_scope_id),
+                            None,
+                        )?,
                     )?);
                 }
                 Ok(())
@@ -48,7 +51,7 @@ fn make_definitions_inner(
     context: &Context,
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
-    root_scope_id: ItemId<Scope>,
+    _root_scope_id: ItemId<Scope>,
     scope: &Scope,
 ) -> anyhow::Result<TokenStream> {
     let scopes = scope
@@ -58,7 +61,7 @@ fn make_definitions_inner(
             let scope = items.get(*s)?;
             let id = make_path(&scope.data.id.as_snake_case());
 
-            let inner = make_definitions_inner(context, items, type_map, root_scope_id, &scope)?;
+            let inner = make_definitions_inner(context, items, type_map, _root_scope_id, &scope)?;
             if inner.is_empty() {
                 return Ok(quote! {});
             }

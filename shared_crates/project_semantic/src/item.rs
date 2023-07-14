@@ -185,6 +185,7 @@ impl ItemMap {
         separator: &str,
         (type_prefix, ambient_suffix): (bool, bool),
         relative_to: Option<ItemId<Scope>>,
+        item_prefix: Option<&str>,
     ) -> anyhow::Result<String> {
         let data = item.data();
         let item_case = match T::TYPE {
@@ -193,7 +194,11 @@ impl ItemMap {
             ItemType::Scope => scope_case,
         };
 
-        let mut path = vec![data.id.to_case(item_case)];
+        let mut path = vec![format!(
+            "{}{}",
+            item_prefix.unwrap_or_default(),
+            data.id.to_case(item_case)
+        )];
         let mut parent_id = data.parent_id;
         while let Some(this_parent_id) = parent_id {
             if let Some(relative_to) = relative_to {
@@ -240,6 +245,7 @@ impl ItemMap {
             "/",
             (display_affixes, display_affixes),
             relative_to,
+            None,
         )
     }
 
@@ -247,6 +253,7 @@ impl ItemMap {
         &self,
         item: &T,
         relative_to: Option<ItemId<Scope>>,
+        item_prefix: Option<&str>,
     ) -> anyhow::Result<String> {
         self.fully_qualified_display_path(
             item,
@@ -254,6 +261,7 @@ impl ItemMap {
             "::",
             (false, false),
             relative_to,
+            item_prefix,
         )
     }
 }

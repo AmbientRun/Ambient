@@ -1,6 +1,6 @@
-use std::{collections::HashMap, str::FromStr};
+use std::collections::HashMap;
 
-use ambient_project_semantic::{Concept, Item, ItemId, ItemMap, ResolvedValue, Scope, Type};
+use ambient_project_semantic::{Concept, Item, ItemId, ItemMap, ScalarValue, Scope, Type, Value};
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -10,9 +10,14 @@ pub fn make_definitions(
     context: &Context,
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, TokenStream>,
-    _root_scope_id: ItemId<Scope>,
+    root_scope_id: ItemId<Scope>,
     scope: &Scope,
 ) -> anyhow::Result<TokenStream> {
+    let rust_root_prefix = match context {
+        Context::Host => quote! { crate::generated:: },
+        Context::Guest { api_path, .. } => quote! { #api_path :: },
+    };
+
     let scopes = scope
         .scopes
         .values()
@@ -20,7 +25,7 @@ pub fn make_definitions(
             let scope = items.get(*s)?;
             let id = make_path(&scope.data.id.as_snake_case());
 
-            let inner = make_definitions(context, items, type_map, _root_scope_id, &scope)?;
+            let inner = make_definitions(context, items, type_map, root_scope_id, &scope)?;
             if inner.is_empty() {
                 return Ok(quote! {});
             }
@@ -38,9 +43,30 @@ pub fn make_definitions(
         .values()
         .map(|id| {
             let concept = &*items.get(*id)?;
-            let make_concept = generate_make(items, type_map, context, concept)?;
-            let is_concept = generate_is(items, type_map, context, concept)?;
-            let concept_fn = generate_concept(items, type_map, context, concept)?;
+            let make_concept = generate_make(
+                items,
+                type_map,
+                context,
+                &rust_root_prefix,
+                root_scope_id,
+                concept,
+            )?;
+            let is_concept = generate_is(
+                items,
+                type_map,
+                context,
+                &rust_root_prefix,
+                root_scope_id,
+                concept,
+            )?;
+            let concept_fn = generate_concept(
+                items,
+                type_map,
+                context,
+                &rust_root_prefix,
+                root_scope_id,
+                concept,
+            )?;
             Ok(quote! {
                 #make_concept
                 #is_concept
@@ -76,6 +102,8 @@ fn generate_make(
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, TokenStream>,
     context: &Context,
+    rust_root_prefix: &TokenStream,
+    root_scope_id: ItemId<Scope>,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
     let name = concept.data().id.as_snake_case();
@@ -92,10 +120,13 @@ fn generate_make(
         .iter()
         .map(|id| {
             let concept = &*items.get(id.as_resolved().unwrap())?;
-            let extend_path =
-                make_path(&items.fully_qualified_display_path_rust_style(concept, None)?);
+            let extend_path = make_path(&items.fully_qualified_display_path_rust_style(
+                concept,
+                Some(root_scope_id),
+                Some("make_"),
+            )?);
             Ok(quote! {
-                with_merge(crate :: concepts :: #extend_path())
+                with_merge(#rust_root_prefix concepts :: #extend_path())
             })
         })
         .collect::<anyhow::Result<_>>()?;
@@ -105,11 +136,14 @@ fn generate_make(
         .iter()
         .map(|(id, default)| {
             let component = &*items.get(id.as_resolved().unwrap())?;
-            let full_path =
-                make_path(&items.fully_qualified_display_path_rust_style(component, None)?);
+            let full_path = make_path(&items.fully_qualified_display_path_rust_style(
+                component,
+                Some(root_scope_id),
+                None,
+            )?);
             let default = value_to_token_stream(items, default.as_resolved().unwrap())?;
 
-            Ok(quote! { with(crate :: components :: #full_path(), #default) })
+            Ok(quote! { with(#rust_root_prefix components :: #full_path(), #default) })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
@@ -128,6 +162,8 @@ fn generate_is(
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, TokenStream>,
     context: &Context,
+    rust_root_prefix: &TokenStream,
+    root_scope_id: ItemId<Scope>,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
     let name = concept.data().id.as_snake_case();
@@ -144,10 +180,13 @@ fn generate_is(
         .iter()
         .map(|id| {
             let concept = &*items.get(id.as_resolved().unwrap())?;
-            let extend_path =
-                make_path(&items.fully_qualified_display_path_rust_style(concept, None)?);
+            let extend_path = make_path(&items.fully_qualified_display_path_rust_style(
+                concept,
+                Some(root_scope_id),
+                Some("is_"),
+            )?);
             Ok(quote! {
-                crate :: concepts :: #extend_path()
+                #rust_root_prefix concepts :: #extend_path
             })
         })
         .collect::<anyhow::Result<_>>()?;
@@ -157,10 +196,13 @@ fn generate_is(
         .iter()
         .map(|(id, _)| {
             let component = &*items.get(id.as_resolved().unwrap())?;
-            let full_path =
-                make_path(&items.fully_qualified_display_path_rust_style(component, None)?);
+            let full_path = make_path(&items.fully_qualified_display_path_rust_style(
+                component,
+                Some(root_scope_id),
+                None,
+            )?);
 
-            Ok(quote! { crate :: components :: #full_path() })
+            Ok(quote! { #rust_root_prefix components :: #full_path() })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
@@ -190,6 +232,8 @@ fn generate_concept(
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, TokenStream>,
     context: &Context,
+    rust_root_prefix: &TokenStream,
+    root_scope_id: ItemId<Scope>,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
     let name = concept.data().id.as_snake_case();
@@ -201,15 +245,19 @@ fn generate_concept(
     );
     let fn_ident = quote::format_ident!("{}", name);
 
+    // TODO: include extends in component list
     let components = concept
         .components
         .iter()
         .map(|(id, _)| {
             let component = &*items.get(id.as_resolved().unwrap())?;
-            let full_path =
-                make_path(&items.fully_qualified_display_path_rust_style(component, None)?);
+            let full_path = make_path(&items.fully_qualified_display_path_rust_style(
+                component,
+                Some(root_scope_id),
+                None,
+            )?);
 
-            Ok(quote! { crate :: components :: #full_path() })
+            Ok(quote! { #rust_root_prefix components :: #full_path() })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
@@ -244,7 +292,7 @@ pub fn generate_component_list_doc_comment(
     fn write_level(
         items: &ItemMap,
         type_map: &HashMap<ItemId<Type>, TokenStream>,
-        context: &Context,
+        _context: &Context,
         concept: &Concept,
         output: &mut String,
         level: usize,
@@ -276,7 +324,7 @@ pub fn generate_component_list_doc_comment(
                 items.fully_qualified_display_path_ambient_style(concept, false, None)?;
 
             writeln!(output, "{padding}\"{concept_path}\": {{ // Concept.")?;
-            write_level(items, type_map, context, concept, output, level + 1)?;
+            write_level(items, type_map, _context, concept, output, level + 1)?;
             writeln!(output, "{padding}}},")?;
         }
 
@@ -338,7 +386,7 @@ fn value_to_token_stream(items: &ItemMap, value: &Value) -> anyhow::Result<Token
     Ok(match value {
         Value::Scalar(v) => scalar_value_to_token_stream(v),
         Value::Vec(v) => {
-            let streams = v.iter().map(|v| scalar_value_to_token_stream(v));
+            let streams = v.iter().map(scalar_value_to_token_stream);
             quote! { vec![#(#streams,)*] }
         }
         Value::Option(v) => match v.as_ref() {
