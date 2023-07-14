@@ -4,7 +4,7 @@ use ambient_core::{
     window::cursor_position,
     window::{window_logical_size, window_scale_factor},
 };
-use ambient_ecs::generated::messages;
+use ambient_ecs::generated::messages::core as messages;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_network::{client::ClientState, log_network_result};
 use ambient_std::{color::Color, math::interpolate};

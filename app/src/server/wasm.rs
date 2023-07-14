@@ -61,7 +61,7 @@ pub async fn initialize(
                 format!("{description} ({name})")
             };
 
-            let id = spawn_module(world, &name, description, true);
+            let id = spawn_module(world, name, description, true);
             modules_to_entity_ids.insert(
                 (
                     target,

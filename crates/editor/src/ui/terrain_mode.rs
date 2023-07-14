@@ -6,7 +6,7 @@ use ambient_core::{
     window::get_mouse_clip_space_position,
 };
 use ambient_decals::DecalShaderKey;
-use ambient_ecs::{generated::messages, query, ArchetypeFilter};
+use ambient_ecs::{generated::messages::core as messages, query, ArchetypeFilter};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Group, Hooks};
 use ambient_gpu::{
     gpu::Gpu,

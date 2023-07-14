@@ -3,7 +3,7 @@ use std::{str::FromStr, sync::Arc, time::Duration};
 use ambient_core::{
     asset_cache, async_ecs::async_run, runtime, window::get_mouse_clip_space_position,
 };
-use ambient_ecs::{generated::messages, Component, ComponentValue, EntityId};
+use ambient_ecs::{generated::messages::core as messages, Component, ComponentValue, EntityId};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_intent::{client_push_intent, rpc_undo_head_exact};
 use ambient_network::client::ClientState;

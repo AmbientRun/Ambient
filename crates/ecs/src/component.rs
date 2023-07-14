@@ -340,7 +340,7 @@ impl<'de> Deserialize<'de> for ComponentDesc {
 ///
 /// e.g. (`ambient/core`, `my_component`) -> `ambient/core/my-component`
 pub fn rust_component_to_ambient_path(namespace: &str, snake_case_name: &str) -> String {
-    format!("{}/{}", namespace, snake_case_name.replace("_", "-"))
+    format!("{}/{}", namespace, snake_case_name.replace('_', "-"))
 }
 
 #[macro_export]
