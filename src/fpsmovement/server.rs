@@ -30,7 +30,7 @@ pub fn main() {
         let direction = msg.direction;
 
         if direction != Vec2::ZERO {
-            if game_time() - last_walk > Duration::from_millis(600) {
+            if game_time() - last_walk > Duration::from_millis(700) {
                 last_walk = game_time();
                 messages::FootOnGround { source: player_id }.send_local_broadcast(false);
             }
