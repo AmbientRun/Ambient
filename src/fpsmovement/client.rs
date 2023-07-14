@@ -6,12 +6,12 @@ pub fn main() {
     let mut is_shooting = false;
 
     // TODO: fixed?
-    // let mut cursor_lock = input::CursorLockGuard::new(true);
+    let mut cursor_lock = input::CursorLockGuard::new();
     ambient_api::messages::Frame::subscribe(move |_| {
         let (delta, input) = input::get_delta();
-        // if !cursor_lock.auto_unlock_on_escape(&input) {
-        //     return;
-        // }
+        if !cursor_lock.auto_unlock_on_escape(&input) {
+            return;
+        }
         let mouse_delta = input.mouse_delta;
         let mut direction = Vec2::ZERO;
         let mut shoot = false;

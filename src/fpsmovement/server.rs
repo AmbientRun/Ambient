@@ -23,10 +23,18 @@ pub fn main() {
         }
     });
 
-    messages::Input::subscribe(|source, msg| {
+    let mut last_walk = game_time();
+    messages::Input::subscribe(move |source, msg| {
         // receive movement and send this for further processing
         let player_id = source.client_entity_id().unwrap();
         let direction = msg.direction;
+
+        if direction != Vec2::ZERO {
+            if game_time() - last_walk > Duration::from_millis(600) {
+                last_walk = game_time();
+                messages::FootOnGround { source: player_id }.send_local_broadcast(false);
+            }
+        }
 
         if msg.jump {
             println!("___jump triggered___");
