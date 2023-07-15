@@ -3,6 +3,7 @@ use clap::Parser;
 mod doc;
 mod example;
 mod golden_images;
+mod install;
 mod release;
 
 #[derive(Parser, Clone)]
@@ -19,6 +20,8 @@ pub enum Cli {
     /// Release-related functionality
     #[command(subcommand)]
     Release(release::Release),
+    /// Helper to install specific versions of Ambient
+    Install(install::Install),
 
     // Helper aliases for subcommands
     /// Clean all build artifacts for all examples.
@@ -42,6 +45,7 @@ async fn main() -> anyhow::Result<()> {
         Cli::Example(ex) => example::main(&ex),
         Cli::GoldenImages(gi) => golden_images::main(&gi).await,
         Cli::Release(re) => release::main(&re),
+        Cli::Install(install) => install::main(&install),
 
         Cli::Clean => example::clean(),
         Cli::Run(run) => example::run(&run),
