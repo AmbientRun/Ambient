@@ -51,12 +51,15 @@ pub fn main() {
                 id,
                 Entity::new()
                     .with_merge(make_transformable())
+                    .with_default(player_movement_direction())
+                    .with_default(player_mouse_delta_x())
+                    .with_default(player_scroll())
+                    .with_default(physics_controlled())
                     .with_default(cube())
                     .with(color(), Vec4::ONE)
                     .with(character_controller_height(), 2.)
                     .with(character_controller_radius(), 0.5)
-                    .with(camera_follow_distance(), 4.0)
-                    .with_default(physics_controlled()),
+                    .with(camera_follow_distance(), 4.0),
             );
         }
     });
@@ -64,9 +67,9 @@ pub fn main() {
     messages::Input::subscribe(move |source, msg| {
         let Some(player_id) = source.client_entity_id() else { return; };
 
-        entity::add_component(player_id, player_movement_direction(), msg.direction);
-        entity::add_component(player_id, player_mouse_delta_x(), msg.mouse_delta_x);
-        entity::add_component(player_id, player_scroll(), msg.scroll);
+        entity::set_component(player_id, player_movement_direction(), msg.direction);
+        entity::set_component(player_id, player_mouse_delta_x(), msg.mouse_delta_x);
+        entity::set_component(player_id, player_scroll(), msg.scroll);
     });
 
     query((
