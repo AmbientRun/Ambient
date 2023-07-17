@@ -2,9 +2,8 @@
 
 pub use crate::{
     button::*, clickarea::*, default_theme::*, dropdown::*, editor::*, layout::*, prompt::*,
-    screens::*, scroll_area::*, select::*, tabs::*, text::*, throbber::*, use_focus,
-    use_window_logical_resolution, use_window_physical_resolution, with_rect, Focus, FocusRoot,
-    HooksExt, Line, Rectangle, UIBase, UIElement, UIExt,
+    screens::*, scroll_area::*, select::*, tabs::*, text::*, throbber::*, with_rect, Focus,
+    FocusRoot, HooksExt, Line, Rectangle, UIBase, UIElement, UIExt,
 };
 pub use ambient_cb::{cb, Cb};
 pub use ambient_element::{

@@ -21,9 +21,7 @@ use glam::*;
 use itertools::Itertools;
 
 use super::{Editor, EditorOpts};
-use crate::{
-    layout::FlowRow, text::Text, use_focus, with_rect, HooksExt, Rectangle, UIBase, UIExt,
-};
+use crate::{layout::FlowRow, text::Text, with_rect, HooksExt, Rectangle, UIBase, UIExt};
 
 /// A text editor.
 #[element_component]
@@ -42,7 +40,7 @@ pub fn TextEditor(
     /// Whether the text editor should be focused when it is created.
     auto_focus: bool,
 ) -> Element {
-    let (focused, set_focused) = use_focus(hooks);
+    let (focused, set_focused) = hooks.use_focus();
     let (command, set_command) = hooks.use_state(false);
     let intermediate_value = hooks.use_ref_with(|_| value.clone());
     let cursor_position = hooks.use_ref_with(|_| value.len());

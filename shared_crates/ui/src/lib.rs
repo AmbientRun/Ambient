@@ -28,10 +28,10 @@
 //! [See all UI examples here](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui).
 #![deny(missing_docs)]
 
-use ambient_cb::{cb, Cb};
+use ambient_cb::cb;
 use ambient_element::{
     define_el_function_for_vec_element_newtype, element_component, to_owned, Element,
-    ElementComponent, ElementComponentExt, Hooks,
+    ElementComponent, ElementComponentExt, Hooks, Setter,
 };
 use ambient_guest_bridge::{
     components::{
@@ -85,33 +85,6 @@ impl From<Element> for UIElement {
     }
 }
 
-// We need `clone` as resource is a ref on host and a copy on guest
-#[allow(clippy::clone_on_copy)]
-/// A hook that returns the current window physical resolution (i.e. not taking DPI scaling into account)
-pub fn use_window_physical_resolution(hooks: &mut Hooks) -> UVec2 {
-    let (res, set_res) = hooks.use_state(hooks.world.resource(window_physical_size()).clone());
-    hooks.use_frame(move |world| {
-        let new_res = world.resource(window_physical_size()).clone();
-        if new_res != res {
-            set_res(new_res);
-        }
-    });
-    res
-}
-// We need `clone` as resource is a ref on host and a copy on guest
-#[allow(clippy::clone_on_copy)]
-/// A hook that returns the current window logical resolution (i.e. taking DPI scaling into account)
-pub fn use_window_logical_resolution(hooks: &mut Hooks) -> UVec2 {
-    let (res, set_res) = hooks.use_state(hooks.world.resource(window_logical_size()).clone());
-    hooks.use_frame(move |world| {
-        let new_res = world.resource(window_logical_size()).clone();
-        if new_res != res {
-            set_res(new_res);
-        }
-    });
-    res
-}
-
 /// A simple UI rect. Use components like `width`, `height`, `background_color`, `border_color`, `border_radius` and `border_thickness`
 /// to control its appearance.
 #[element_component]
@@ -161,34 +134,6 @@ impl Focus {
     pub fn new(focus: Option<String>) -> Self {
         Self(focus.map(|x| (x, rand::random())))
     }
-}
-/// A hook that returns the current focus state for this element and a callback to set the focus state.
-pub fn use_focus(hooks: &mut Hooks) -> (bool, Cb<dyn Fn(bool) + Sync + Send>) {
-    use_focus_for_instance_id(hooks, hooks.instance_id().to_owned())
-}
-/// A hook that returns the current focus state for this element, given a specific `instance_id`, and a callback to set the focus state.
-pub fn use_focus_for_instance_id(
-    hooks: &mut Hooks,
-    instance_id: String,
-) -> (bool, Cb<dyn Fn(bool) + Sync + Send>) {
-    let (focus, set_focus) = hooks
-        .consume_context::<Focus>()
-        .expect("No FocusRoot available");
-    let focused = if let Focus(Some((focused, _))) = &focus {
-        focused == &instance_id
-    } else {
-        false
-    };
-    (
-        focused,
-        cb(move |new_focus| {
-            set_focus(Focus::new(if new_focus {
-                Some(instance_id.clone())
-            } else {
-                None
-            }));
-        }),
-    )
 }
 
 #[derive(Debug, Clone)]
@@ -260,6 +205,15 @@ pub trait HooksExt {
         &mut self,
         func: impl Fn(&mut World, Option<VirtualKeyCode>, ModifiersState, bool) + Sync + Send + 'static,
     );
+
+    /// A hook that returns the current window physical resolution (i.e. not taking DPI scaling into account)
+    fn use_window_physical_resolution(&mut self) -> UVec2;
+    /// A hook that returns the current window logical resolution (i.e. taking DPI scaling into account)
+    fn use_window_logical_resolution(&mut self) -> UVec2;
+    /// A hook that returns the current focus state for this element and a callback to set the focus state.
+    fn use_focus(&mut self) -> (bool, Setter<bool>);
+    /// A hook that returns the current focus state for this element, given a specific `instance_id`, and a callback to set the focus state.
+    fn use_focus_for_instance_id(&mut self, instance_id: String) -> (bool, Setter<bool>);
 }
 impl HooksExt for Hooks<'_> {
     fn use_keyboard_input(
@@ -279,5 +233,56 @@ impl HooksExt for Hooks<'_> {
                 );
             },
         );
+    }
+
+    // We need `clone` as resource is a ref on host and a copy on guest
+    #[allow(clippy::clone_on_copy)]
+    fn use_window_physical_resolution(&mut self) -> UVec2 {
+        let (res, set_res) = self.use_state(self.world.resource(window_physical_size()).clone());
+        self.use_frame(move |world| {
+            let new_res = world.resource(window_physical_size()).clone();
+            if new_res != res {
+                set_res(new_res);
+            }
+        });
+        res
+    }
+
+    // We need `clone` as resource is a ref on host and a copy on guest
+    #[allow(clippy::clone_on_copy)]
+    fn use_window_logical_resolution(&mut self) -> UVec2 {
+        let (res, set_res) = self.use_state(self.world.resource(window_logical_size()).clone());
+        self.use_frame(move |world| {
+            let new_res = world.resource(window_logical_size()).clone();
+            if new_res != res {
+                set_res(new_res);
+            }
+        });
+        res
+    }
+
+    fn use_focus(&mut self) -> (bool, Setter<bool>) {
+        self.use_focus_for_instance_id(self.instance_id().to_owned())
+    }
+
+    fn use_focus_for_instance_id(&mut self, instance_id: String) -> (bool, Setter<bool>) {
+        let (focus, set_focus) = self
+            .consume_context::<Focus>()
+            .expect("No FocusRoot available");
+        let focused = if let Focus(Some((focused, _))) = &focus {
+            focused == &instance_id
+        } else {
+            false
+        };
+        (
+            focused,
+            cb(move |new_focus| {
+                set_focus(Focus::new(if new_focus {
+                    Some(instance_id.clone())
+                } else {
+                    None
+                }));
+            }),
+        )
     }
 }

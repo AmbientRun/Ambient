@@ -1,6 +1,5 @@
 use ambient_api::{
     components::core::{
-        app::window_logical_size,
         layout::{height, width},
         rect::{
             background_color, border_color, border_radius, border_thickness, line_from, line_to,
@@ -16,12 +15,12 @@ use std::f32::consts::PI;
 fn App(hooks: &mut Hooks) -> Element {
     let clock_r = 100.;
     let second_r = 70.;
-    let size_info = hooks.use_query(window_logical_size());
-    let center_x = size_info[0].1.x as f32 / 2.;
-    let center_y = size_info[0].1.y as f32 / 2.;
+    let size_info = hooks.use_window_logical_resolution();
+    let center_x = size_info.x as f32 / 2.;
+    let center_y = size_info.y as f32 / 2.;
     let (now, set_now) = hooks.use_state(game_time());
-    let (x, set_x) = hooks.use_state(size_info[0].1.x as f32 / 2.);
-    let (y, set_y) = hooks.use_state(size_info[0].1.y as f32 / 2. - second_r);
+    let (x, set_x) = hooks.use_state(size_info.x as f32 / 2.);
+    let (y, set_y) = hooks.use_state(size_info.y as f32 / 2. - second_r);
     let (phase, set_phase) = hooks.use_state(PI / 30.);
     hooks.use_frame(move |_world| {
         let latest = game_time();
