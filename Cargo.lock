@@ -7752,10 +7752,11 @@ dependencies = [
 
 [[package]]
 name = "tracing-tree"
-version = "0.2.2"
-source = "git+https://github.com/TmLev/tracing-tree#43993998fe5d0bc9dab363a9cfa42a0b9e78e8f3"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "92d6b63348fad3ae0439b8bebf8d38fb5bda0b115d7a8a7e6f165f12790c58c3"
 dependencies = [
- "atty",
+ "is-terminal",
  "nu-ansi-term",
  "tracing-core",
  "tracing-log",
