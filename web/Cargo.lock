@@ -1512,6 +1512,7 @@ dependencies = [
  "num-integer",
  "num-traits",
  "serde",
+ "time 0.1.45",
  "wasm-bindgen",
  "winapi",
 ]
