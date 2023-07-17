@@ -34,3 +34,9 @@ ray_dir = { type = "Vec3", description = "The direction of the ray cast from the
 walk = { type = "Bool", description = "shift to walk slow and quiet" }
 jump = { type = "Bool" }
 duck = { type = "Bool" }
+
+[messages.request_input]
+fields = {}
+
+[messages.release_input]
+fields = {}

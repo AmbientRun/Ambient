@@ -1,21 +1,17 @@
-use ambient_api::{components::core::app::window_logical_size, prelude::*};
+use std::{cell::RefCell, rc::Rc};
+
+use ambient_api::{components::core::app::window_logical_size, input::CursorLockGuard, prelude::*};
 
 #[main]
 pub async fn main() {
     let mut last_shot = game_time();
     let mut is_shooting = false;
 
-    // Wait until we are in-game before trying to grab movement
-    block_until(|| {
-        entity::get_component(entity::resources(), components::ingame()).unwrap_or_default()
-    })
-    .await;
-
     // TODO: fixed?
-    let mut cursor_lock = input::CursorLockGuard::new();
+    let mut input_lock = InputLock::new();
     ambient_api::messages::Frame::subscribe(move |_| {
         let (delta, input) = input::get_delta();
-        if !cursor_lock.auto_unlock_on_escape(&input) {
+        if !input_lock.update(&input) {
             return;
         }
         let mouse_delta = input.mouse_delta;
@@ -95,4 +91,62 @@ pub async fn main() {
         }
         .send_server_unreliable();
     });
+}
+
+struct InputLock {
+    refcount: Rc<RefCell<u8>>,
+    subscribers: Vec<message::Listener>,
+    cursor_lock: Option<CursorLockGuard>,
+}
+impl InputLock {
+    fn new() -> Self {
+        // We keep the refcount local to this struct and not in the ECS
+        // so that other embers can't mess with it.
+        let refcount = Rc::new(RefCell::new(0));
+        let subscribers = vec![
+            messages::RequestInput::subscribe({
+                let refcount = refcount.clone();
+                move |_, _| {
+                    *refcount.borrow_mut() += 1;
+                }
+            }),
+            messages::ReleaseInput::subscribe({
+                let refcount = refcount.clone();
+                move |_, _| {
+                    let mut refcount = refcount.borrow_mut();
+                    *refcount = u8::saturating_sub(*refcount, 1);
+                }
+            }),
+        ];
+
+        Self {
+            refcount,
+            subscribers,
+            cursor_lock: None,
+        }
+    }
+
+    fn update(&mut self, input: &input::Input) -> bool {
+        let refcount = *self.refcount.borrow();
+
+        if refcount == 0 {
+            if self.cursor_lock.is_none() {
+                self.cursor_lock = Some(CursorLockGuard::new());
+            }
+        } else {
+            self.cursor_lock = None;
+        }
+
+        match &mut self.cursor_lock {
+            Some(lock) => lock.auto_unlock_on_escape(&input),
+            _ => false,
+        }
+    }
+}
+impl Drop for InputLock {
+    fn drop(&mut self) {
+        for subscriber in self.subscribers.drain(..) {
+            subscriber.stop();
+        }
+    }
 }
