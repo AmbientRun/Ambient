@@ -561,6 +561,42 @@ impl<'a> Hooks<'a> {
         query.evaluate()
     }
 
+    #[cfg(feature = "guest")]
+    /// Use a resource from the ECS, and update its state if required.
+    ///
+    /// If the resource does not exist, this will return `None`.
+    /// The setter will add the resource if it does not exist.
+    pub fn use_resource<
+        T: ambient_guest_bridge::api::ecs::SupportedValue
+            + Clone
+            + Debug
+            + Sync
+            + Send
+            + PartialEq
+            + 'static,
+    >(
+        &mut self,
+        component: ambient_guest_bridge::api::ecs::Component<T>,
+    ) -> (Option<T>, Setter<T>) {
+        use ambient_guest_bridge::api::prelude::{change_query, entity};
+
+        let refresh = self.use_rerender_signal();
+        self.use_spawn(move |_| {
+            let c = change_query(component).track_change(component).bind({
+                let refresh = refresh.clone();
+                move |_| refresh()
+            });
+            |_| {
+                c.stop();
+            }
+        });
+
+        (
+            entity::get_component(entity::resources(), component),
+            cb(move |value| entity::add_component(entity::resources(), component, value)),
+        )
+    }
+
     /// Run `cb` every `seconds` seconds.
     ///
     /// If your `cb` depends on some state, consider using [Self::use_interval_deps] instead.
