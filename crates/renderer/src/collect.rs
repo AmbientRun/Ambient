@@ -49,6 +49,34 @@ impl CollectPrimitive {
     }
 }
 
+#[derive(Debug, Default)]
+pub(crate) struct DrawCountState {
+    counts: Vec<u32>,
+    /// The last tick that the counts were updated. Used for enforcing ordering
+    last_tick: u64,
+}
+
+impl DrawCountState {
+    pub fn update(&mut self, counts: Vec<u32>, tick: u64) {
+        if self.last_tick > tick {
+            tracing::warn!("Skipping count update because it's out of date");
+            return;
+        }
+
+        self.last_tick = tick;
+        self.counts = counts;
+    }
+
+    #[inline]
+    pub fn counts(&self) -> &[u32] {
+        self.counts.as_ref()
+    }
+
+    pub fn counts_mut(&mut self) -> &mut Vec<u32> {
+        &mut self.counts
+    }
+}
+
 /// Contains the primitive input and indirect output buffers for GPU driven rendering
 pub(crate) struct RendererCollectState {
     pub params: TypedBuffer<RendererCollectParams>,
@@ -56,7 +84,8 @@ pub(crate) struct RendererCollectState {
     pub counts: TypedBuffer<u32>,
     #[cfg(any(target_os = "macos", target_os = "unknown"))]
     /// Multi draw indexed indirect is not supported on macOS
-    pub counts_cpu: Arc<Mutex<Vec<u32>>>,
+    pub(crate) counts_cpu: Arc<Mutex<DrawCountState>>,
+    pub tick: u64,
     pub material_layouts: TypedBuffer<MaterialLayout>,
 }
 
@@ -92,7 +121,7 @@ impl RendererCollectState {
                     | wgpu::BufferUsages::INDIRECT,
             ),
             #[cfg(any(target_os = "macos", target_os = "unknown"))]
-            counts_cpu: Arc::new(Mutex::new(Vec::new())),
+            counts_cpu: Arc::new(Default::default()),
             material_layouts: TypedBuffer::new(
                 gpu,
                 "RendererCollectState.materials",
@@ -103,6 +132,7 @@ impl RendererCollectState {
                     | wgpu::BufferUsages::COPY_SRC
                     | wgpu::BufferUsages::INDIRECT,
             ),
+            tick: 0,
         }
     }
     pub fn set_camera(&self, gpu: &Gpu, camera: u32) {
@@ -237,6 +267,7 @@ impl RendererCollect {
         collect_state
             .material_layouts
             .fill(gpu, material_layouts, |_| {});
+        collect_state.tick += 1;
     }
 
     /// Computes indirect draw commands using culling
@@ -332,12 +363,18 @@ impl RendererCollect {
             let counts_res = output.counts_cpu.clone();
             let runtime = RuntimeKey.get(assets);
             let post_submit_gpu = ambient_gpu::gpu::GpuKey.get(assets);
+            let tick = output.tick;
 
             _post_submit.push(Box::new(move || {
                 runtime.spawn(async move {
                     if let Ok(res) = staging.read(&post_submit_gpu, ..).await {
                         let len = res.len();
-                        *counts_res.lock() = res;
+
+                        let mut count_state = counts_res.lock();
+                        assert_ne!(count_state.last_tick, tick);
+
+                        count_state.update(res, tick);
+
                         buffs.return_buffer(staging);
                     }
                 });

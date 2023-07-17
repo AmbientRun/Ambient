@@ -567,7 +567,7 @@ impl Renderer {
 
     pub fn is_rendered(&self) -> bool {
         #[cfg(any(target_os = "macos", target_os = "unknown"))]
-        let res = self.forward_collect_state.counts_cpu.lock().len()
+        let res = self.forward_collect_state.counts_cpu.lock().counts().len()
             == self.forward_collect_state.counts.len() as usize;
 
         #[cfg(all(not(target_os = "macos"), not(target_os = "unknown")))]

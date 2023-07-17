@@ -14,7 +14,7 @@ use ambient_gpu::{
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
 use ambient_std::asset_cache::AssetCache;
-use bytemuck::{bytes_of_mut, Zeroable};
+use bytemuck::Zeroable;
 use glam::UVec4;
 use itertools::Itertools;
 use wgpu::DepthBiasState;
@@ -294,13 +294,12 @@ impl TreeRenderer {
         let mut commands =
             vec![DrawIndexedIndirect::zeroed(); self.primitives.total_len() as usize];
 
-        self.config
-            .renderer_resources
-            .collect
-            .update(gpu, &material_layouts, collect_state);
-
         if self.config.software_culling {
             let mut counts = vec![0u32; material_layouts.len()];
+            self.config
+                .renderer_resources
+                .collect
+                .update(gpu, &material_layouts, collect_state);
 
             for (&subbuffer, primitives) in &self.collect_primitives {
                 let buffer_offset = self.primitives.buffer_offset(subbuffer as _).unwrap();
@@ -332,13 +331,20 @@ impl TreeRenderer {
                 collect_state.commands.write(gpu, 0, &commands)
             }
 
-            *collect_state.counts_cpu.lock() = counts;
+            let mut counts_state = collect_state.counts_cpu.lock();
+            counts_state.update(counts, collect_state.tick)
         } else {
+            self.config
+                .renderer_resources
+                .collect
+                .update(gpu, &material_layouts, collect_state);
             {
-                let mut counts_cpu = collect_state.counts_cpu.lock();
-                if counts_cpu.len() != material_layouts.len() {
+                let mut counts_state = collect_state.counts_cpu.lock();
+                if counts_state.counts().len() != material_layouts.len() {
                     tracing::info!("Resizing counts buffer to {}", material_layouts.len());
-                    *counts_cpu = material_layouts.iter().map(|v| v.primitive_count).collect();
+                    *counts_state.counts_mut() =
+                        material_layouts.iter().map(|v| v.primitive_count).collect();
+                    collect_state.tick += 2;
                 }
             }
 
@@ -466,7 +472,7 @@ impl TreeRenderer {
         };
 
         #[cfg(any(target_os = "macos", target_os = "unknown"))]
-        let counts = collect_state.counts_cpu.lock().clone();
+        let count_state = collect_state.counts_cpu.lock();
 
         let mut is_bound = false;
 
@@ -561,7 +567,7 @@ impl TreeRenderer {
                             )
                         }
                     } else {
-                        let count = counts[mat.material_index as usize];
+                        let count = count_state.counts()[mat.material_index as usize];
 
                         // NOTE: this issues 1 draw call *for every single visible primitive* in the scene
 
