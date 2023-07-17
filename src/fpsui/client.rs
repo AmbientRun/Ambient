@@ -58,7 +58,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
 
     if !ingame {
         FocusRoot::el([WindowSized(vec![FlowColumn::el([
-            Text::el("enter your name blow. press enter to start the game."),
+            Text::el("enter your name below. press enter to start the game."),
             TextEditor::new(name.clone(), set_name.clone())
                 .auto_focus()
                 .on_submit({
@@ -67,7 +67,8 @@ pub fn App(hooks: &mut Hooks) -> Element {
                         messages::StartGame::new(player::get_local(), v).send_server_reliable();
                     }
                 })
-                .el(),
+                .el()
+                .with(min_width(), 100.0),
             Text::el("hint: hold Tab to toggle the scoreboard."),
         ])
         .with(space_between_items(), STREET)])
