@@ -16,17 +16,12 @@ use ambient_api::{
 #[main]
 pub fn main() {
     App.el().spawn_interactive();
-    entity::add_component(entity::resources(), components::ingame(), false);
 }
 
 #[element_component]
 pub fn App(hooks: &mut Hooks) -> Element {
     let (toggle, set_toggle) = hooks.use_state(false);
-    let ingame = hooks
-        .use_query(components::ingame())
-        .get(0)
-        .map(|(_, v)| *v)
-        .unwrap_or(false);
+    let (ingame, set_ingame) = hooks.use_resource(components::ingame());
     let (name, set_name) = hooks.use_state("".to_string());
     let players = hooks.use_query((
         player(),
@@ -56,14 +51,14 @@ pub fn App(hooks: &mut Hooks) -> Element {
     let center_x = size_info[0].1.x as f32 / 2.;
     let center_y = size_info[0].1.y as f32 / 2.;
 
-    if !ingame {
+    if !ingame.unwrap_or_default() {
         FocusRoot::el([WindowSized(vec![FlowColumn::el([
             Text::el("enter your name below. press enter to start the game."),
             TextEditor::new(name.clone(), set_name.clone())
                 .auto_focus()
                 .on_submit({
                     move |v| {
-                        entity::set_component(entity::resources(), components::ingame(), true);
+                        set_ingame(true);
                         messages::StartGame::new(player::get_local(), v).send_server_reliable();
                     }
                 })
