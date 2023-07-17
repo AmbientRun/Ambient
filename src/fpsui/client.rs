@@ -59,7 +59,7 @@ pub fn App(hooks: &mut Hooks) -> Element {
                 .on_submit({
                     move |v| {
                         set_ingame(true);
-                        messages::StartGame::new(player::get_local(), v).send_server_reliable();
+                        messages::StartGame::new(v).send_server_reliable();
                     }
                 })
                 .el()
