@@ -7,6 +7,7 @@ use ambient_element::{element_component, to_owned, Element, ElementComponentExt,
 use ambient_guest_bridge::{
     components::{
         layout::{height, min_height, min_width, width},
+        rect::background_color,
         rendering::color,
         text::text,
         transform::translation,
@@ -21,7 +22,7 @@ use glam::*;
 use itertools::Itertools;
 
 use super::{Editor, EditorOpts};
-use crate::{layout::FlowRow, text::Text, use_focus, Rectangle, UIBase, UIExt};
+use crate::{layout::FlowRow, text::Text, use_focus, with_rect, Rectangle, UIBase, UIExt};
 
 /// A text editor.
 #[element_component]
@@ -189,7 +190,7 @@ pub fn TextEditor(
         .try_into()
         .unwrap();
 
-    if focused {
+    with_rect(if focused {
         if !cursor_left.is_empty() {
             FlowRow::el([a, Cursor.el(), b])
         } else {
@@ -201,9 +202,10 @@ pub fn TextEditor(
             .with(color(), vec4(1., 1., 1., 0.2))
     } else {
         FlowRow::el([a, b])
-    }
+    })
     .with(min_width(), 3.)
     .with(min_height(), 13.)
+    .with(background_color(), vec4(0., 0., 0., 0.5))
     .with_clickarea()
     .on_mouse_up(move |_, _, _| {
         set_focused(true);
