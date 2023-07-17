@@ -24,7 +24,7 @@ use ambient_std::{
 };
 use glam::uvec2;
 use std::sync::Arc;
-use tracing::debug_span;
+use tracing::{debug_span, info_span};
 use wgpu::{BindGroupLayout, BindGroupLayoutEntry, TextureView};
 
 pub const GLOBALS_BIND_GROUP: &str = "GLOBALS_BIND_GROUP";
@@ -288,8 +288,8 @@ impl Renderer {
         target: RendererTarget,
         clear: Option<Color>,
     ) {
-        let _span = debug_span!("Renderer.render");
-        ambient_profiling::scope!("Renderer.render");
+        let _span = info_span!("Renderer.render", label = world.name()).entered();
+        ambient_profiling::scope!("Renderer.render", world.name());
 
         if let RendererTarget::Target(target) = &target {
             if self.solids_frame.color_buffer.size != target.color_buffer.size {

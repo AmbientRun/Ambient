@@ -63,6 +63,11 @@ impl DrawCountState {
             return;
         }
 
+        tracing::info!(
+            "Updating counts for {} materials tick: {tick}",
+            counts.len()
+        );
+
         self.last_tick = tick;
         self.counts = counts;
     }
@@ -260,6 +265,7 @@ impl RendererCollect {
     ) {
         let counts = vec![0; material_layouts.len()];
 
+        tracing::info!("Resizing counts buffer to {}", counts.len());
         collect_state.counts.fill(gpu, &counts, |_| {});
 
         // tracing::debug!("material_layouts: {material_layouts:?}");
@@ -284,12 +290,13 @@ impl RendererCollect {
         output: &mut RendererCollectState,
         primitives_count: u32,
     ) {
+        tracing::debug!("Resizing collect command buffer to {primitives_count}");
+        output.commands.set_len(gpu, primitives_count as usize);
+
+        // Avoid binding 0 size buffers
         if primitives_count == 0 {
             return;
         }
-
-        tracing::debug!("Resizing collect command buffer to {primitives_count}");
-        output.commands.set_len(gpu, primitives_count as usize);
 
         assert_eq!(
             input_primitives.total_len(),
@@ -370,11 +377,12 @@ impl RendererCollect {
                     if let Ok(res) = staging.read(&post_submit_gpu, ..).await {
                         let len = res.len();
 
-                        let mut count_state = counts_res.lock();
-                        assert_ne!(count_state.last_tick, tick);
+                        {
+                            let mut count_state = counts_res.lock();
+                            assert_ne!(count_state.last_tick, tick);
 
-                        count_state.update(res, tick);
-
+                            count_state.update(res, tick);
+                        }
                         buffs.return_buffer(staging);
                     }
                 });

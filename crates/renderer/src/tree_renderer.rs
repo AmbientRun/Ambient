@@ -281,6 +281,11 @@ impl TreeRenderer {
             }
         }
 
+        tracing::info!(
+            "Material Layouts: {material_layouts:?}, primitives: {:#?}",
+            self.primitives
+        );
+
         // assert_eq!(
         //     mem::size_of::<DrawIndexedIndirect>(),
         //     mem::size_of::<wgpu::util::DrawIndexedIndirect>()
@@ -296,6 +301,7 @@ impl TreeRenderer {
 
         if self.config.software_culling {
             let mut counts = vec![0u32; material_layouts.len()];
+
             self.config
                 .renderer_resources
                 .collect
@@ -311,6 +317,7 @@ impl TreeRenderer {
 
                     let id =
                         world.id_from_lod(primitive.entity_loc.x as _, primitive.entity_loc.y as _);
+
                     let instance = buffer_offset as u32 + i as u32;
 
                     let cpu_primitive = &world.get_ref(id, crate::primitives()).unwrap()[0];
@@ -334,10 +341,6 @@ impl TreeRenderer {
             let mut counts_state = collect_state.counts_cpu.lock();
             counts_state.update(counts, collect_state.tick)
         } else {
-            self.config
-                .renderer_resources
-                .collect
-                .update(gpu, &material_layouts, collect_state);
             {
                 let mut counts_state = collect_state.counts_cpu.lock();
                 if counts_state.counts().len() != material_layouts.len() {
@@ -347,6 +350,13 @@ impl TreeRenderer {
                     collect_state.tick += 2;
                 }
             }
+
+            self.config
+                .renderer_resources
+                .collect
+                .update(gpu, &material_layouts, collect_state);
+
+            tracing::info!("Primitives total_len: {}", self.primitives.total_len());
 
             self.config.renderer_resources.collect.compute_indirect(
                 gpu,
@@ -358,6 +368,19 @@ impl TreeRenderer {
                 &self.primitives,
                 collect_state,
                 self.primitives.total_len() as u32,
+            );
+
+            assert_eq!(
+                self.primitives.total_len() as usize,
+                collect_state.commands.len()
+            );
+
+            assert_eq!(
+                self.primitives.total_len() as usize,
+                material_layouts
+                    .iter()
+                    .map(|v| v.primitive_count as usize)
+                    .sum::<usize>(),
             );
         }
     }
@@ -423,6 +446,7 @@ impl TreeRenderer {
                     self.primitives_lookup.get_mut(last_id).unwrap().2 = index;
                 }
             }
+
             material.primitives.swap_remove(index);
             Some((shader_id, material_id))
         } else {
@@ -483,12 +507,13 @@ impl TreeRenderer {
         if byte_size > 0 {
             let read = collect_state.commands.read_staging(gpu, ..);
 
+            let counts = count_state.counts().to_owned();
             world.resource(runtime()).spawn(async move {
             let data = read.await.unwrap();
             tracing::info!(data.len=?data.len(),?data, byte_size, elem_size=mem::size_of::<[u32; 5]>(), "Read indirect commands");
             match bytemuck::try_cast_slice::<_, [u32; 5]>(&data) {
                 Ok(data) => {
-                    tracing::info!("Indirect commands: {data:#?}");
+                    tracing::info!("Indirect commands: {data:#?}, counts: {counts:#?}");
                 }
                 Err(err) => {
                     log::error!("Failed to cast indirect commands: {err}")
@@ -567,7 +592,14 @@ impl TreeRenderer {
                             )
                         }
                     } else {
-                        let count = count_state.counts()[mat.material_index as usize];
+                        // If none, a new material has been added, but the async buffer read has
+                        // not yet finished and we are still using the previous frame's material
+                        // counts.
+                        let count = count_state
+                            .counts()
+                            .get(mat.material_index as usize)
+                            .copied()
+                            .unwrap_or(0);
 
                         // NOTE: this issues 1 draw call *for every single visible primitive* in the scene
 

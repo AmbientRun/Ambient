@@ -43,12 +43,12 @@ pub struct MultiBuffer {
 impl std::fmt::Debug for MultiBuffer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut s = f.debug_struct("MultiBuffer");
-        s.field("buffer", &self.buffer)
-            .field("sub_buffers", &self.sub_buffers)
+        s.field("sub_buffers", &self.sub_buffers)
             .field("free_ids", &self.free_ids)
             .field("label", &self.label)
             .field("usage", &self.usage)
             .field("total_capacity", &self.total_capacity)
+            .field("total_size", &self.total_size)
             .field("size_strategy", &self.size_strategy)
             .finish()
     }
@@ -74,7 +74,7 @@ impl MultiBuffer {
             free_ids: Vec::new(),
             label: label.into(),
             usage,
-            total_capacity: 4,
+            total_capacity: 0,
             total_size: 0,
             size_strategy,
         }
@@ -197,11 +197,11 @@ impl MultiBuffer {
             if cap != buf.capacity_bytes {
                 self.change_sub_buffer_capacity(gpu, encoder, id, cap);
             }
-        } else {
-            return Err(MultiBufferError::NoSuchSubBuffer(id));
-        }
 
-        Ok(())
+            Ok(())
+        } else {
+            Err(MultiBufferError::NoSuchSubBuffer(id))
+        }
     }
 
     pub fn write(
@@ -403,9 +403,13 @@ impl<T: bytemuck::Pod> TypedMultiBuffer<T> {
             _type: PhantomData,
         }
     }
+
+    #[inline]
     pub fn buffer(&self) -> &wgpu::Buffer {
         self.buffer.buffer()
     }
+
+    #[inline]
     pub fn total_capacity_in_bytes(&self) -> u64 {
         self.buffer.total_capacity_in_bytes()
     }
@@ -418,6 +422,7 @@ impl<T: bytemuck::Pod> TypedMultiBuffer<T> {
     pub fn create_buffer(&mut self, gpu: &Gpu, capacity: Option<u64>) -> SubBufferId {
         self.buffer.create_buffer(gpu, capacity)
     }
+
     pub fn create_buffer_with_encoder(
         &mut self,
         gpu: &Gpu,
@@ -427,9 +432,11 @@ impl<T: bytemuck::Pod> TypedMultiBuffer<T> {
         self.buffer
             .create_buffer_with_encoder(gpu, encoder, capacity)
     }
+
     pub fn remove_buffer(&mut self, gpu: &Gpu, id: SubBufferId) -> Result<(), MultiBufferError> {
         self.buffer.remove_buffer(gpu, id)
     }
+
     pub fn remove_buffer_with_encoder(
         &mut self,
         gpu: &Gpu,
