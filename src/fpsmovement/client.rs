@@ -1,9 +1,15 @@
 use ambient_api::{components::core::app::window_logical_size, prelude::*};
 
 #[main]
-pub fn main() {
+pub async fn main() {
     let mut last_shot = game_time();
     let mut is_shooting = false;
+
+    // Wait until we are in-game before trying to grab movement
+    block_until(|| {
+        entity::get_component(entity::resources(), components::ingame()).unwrap_or_default()
+    })
+    .await;
 
     // TODO: fixed?
     let mut cursor_lock = input::CursorLockGuard::new();

@@ -6,7 +6,7 @@
 use ambient_api::{
     components::core::{
         app::window_logical_size,
-        layout::{docking_bottom, space_between_items},
+        layout::{docking_bottom, min_width, space_between_items},
         player::player,
         rect::{background_color, line_from, line_to, line_width},
     },
@@ -16,12 +16,17 @@ use ambient_api::{
 #[main]
 pub fn main() {
     App.el().spawn_interactive();
+    entity::add_component(entity::resources(), components::ingame(), false);
 }
 
 #[element_component]
 pub fn App(hooks: &mut Hooks) -> Element {
     let (toggle, set_toggle) = hooks.use_state(false);
-    let (ingame, set_ingame) = hooks.use_state(false);
+    let ingame = hooks
+        .use_query(components::ingame())
+        .get(0)
+        .map(|(_, v)| *v)
+        .unwrap_or(false);
     let (name, set_name) = hooks.use_state("".to_string());
     let players = hooks.use_query((
         player(),
@@ -57,9 +62,8 @@ pub fn App(hooks: &mut Hooks) -> Element {
             TextEditor::new(name.clone(), set_name.clone())
                 .auto_focus()
                 .on_submit({
-                    let set_ingame = set_ingame.clone();
                     move |v| {
-                        set_ingame(true);
+                        entity::set_component(entity::resources(), components::ingame(), true);
                         messages::StartGame::new(player::get_local(), v).send_server_reliable();
                     }
                 })
