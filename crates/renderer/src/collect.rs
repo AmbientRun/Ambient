@@ -272,7 +272,7 @@ impl RendererCollect {
             entries: &[
                 BindGroupEntry {
                     binding: 0,
-                    resource: output.params.buffer().as_entire_binding(),
+                    resource: output.params.as_binding(),
                 },
                 BindGroupEntry {
                     binding: 1,
@@ -280,15 +280,15 @@ impl RendererCollect {
                 },
                 BindGroupEntry {
                     binding: 2,
-                    resource: output.commands.buffer().as_entire_binding(),
+                    resource: output.commands.as_binding(),
                 },
                 BindGroupEntry {
                     binding: 3,
-                    resource: output.counts.buffer().as_entire_binding(),
+                    resource: output.counts.as_binding(),
                 },
                 BindGroupEntry {
                     binding: 4,
-                    resource: output.material_layouts.buffer().as_entire_binding(),
+                    resource: output.material_layouts.as_binding(),
                 },
             ],
         });
@@ -336,6 +336,7 @@ impl RendererCollect {
             _post_submit.push(Box::new(move || {
                 runtime.spawn(async move {
                     if let Ok(res) = staging.read(&post_submit_gpu, ..).await {
+                        let len = res.len();
                         *counts_res.lock() = res;
                         buffs.return_buffer(staging);
                     }

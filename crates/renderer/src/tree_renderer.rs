@@ -337,6 +337,7 @@ impl TreeRenderer {
             {
                 let mut counts_cpu = collect_state.counts_cpu.lock();
                 if counts_cpu.len() != material_layouts.len() {
+                    tracing::info!("Resizing counts buffer to {}", material_layouts.len());
                     *counts_cpu = material_layouts.iter().map(|v| v.primitive_count).collect();
                 }
             }

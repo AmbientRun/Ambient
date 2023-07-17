@@ -120,6 +120,9 @@
     "minigolf": {
         "cmd": "cargo run -- run ./guest/rust/examples/games/minigolf"
     },
+    "minigolf-release": {
+        "cmd": "cargo run --release -- run --release ./guest/rust/examples/games/minigolf"
+    },
     "tictactoe": {
         "cmd": "cargo run -- run ./guest/rust/examples/games/tictactoe"
     },

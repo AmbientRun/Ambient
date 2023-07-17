@@ -125,11 +125,12 @@ impl<T> TypedBuffer<T> {
         &self.buffer
     }
 
+    /// Creates a binding for the initialized length of the buffer
     pub fn as_binding(&self) -> BindingResource {
         BindingResource::Buffer(wgpu::BufferBinding {
             buffer: self.buffer(),
             offset: 0,
-            size: Some(NonZeroU64::new(self.byte_len()).expect("buffer size is 0")),
+            size: NonZeroU64::new(self.byte_len()),
         })
     }
 
