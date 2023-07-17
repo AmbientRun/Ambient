@@ -25,7 +25,7 @@ use crate::{
     },
     dropdown::Dropdown,
     layout::{FlowColumn, FlowRow},
-    use_focus, HooksExt, UIBase, UIExt,
+    HooksExt, UIBase, UIExt,
 };
 use glam::{vec4, Vec4};
 
@@ -338,7 +338,7 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
             item_opts,
             item_editor,
         } = *self;
-        let (focused, set_focused) = use_focus(hooks);
+        let (focused, set_focused) = hooks.use_focus();
         hooks.use_keyboard_input(move |_world, keycode, _modifiers, pressed| {
             if !focused || !pressed {
                 return;
