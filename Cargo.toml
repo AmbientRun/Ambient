@@ -1,5 +1,5 @@
 [package]
-name = "afpsmod"
+name = "afps"
 
 edition = "2021"
 publish = false

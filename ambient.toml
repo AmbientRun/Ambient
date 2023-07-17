@@ -1,6 +1,6 @@
 [ember]
-id = "afpsmod"
-name = "afpsmod"
+id = "afps"
+name = "afps"
 version = "0.0.1"
 
 includes = [
