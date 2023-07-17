@@ -18,7 +18,7 @@ use ambient_guest_bridge::ecs::{
 use ambient_guest_bridge::ecs::{ComponentValue, World};
 use ambient_guest_bridge::RuntimeMessage;
 #[cfg(feature = "guest")]
-use ambient_guest_bridge::{ModuleMessage, Source};
+use ambient_guest_bridge::{ecs::EntityId, ModuleMessage, Source};
 #[cfg(feature = "native")]
 use ambient_sys::task;
 use as_any::Downcast;
@@ -562,11 +562,11 @@ impl<'a> Hooks<'a> {
     }
 
     #[cfg(feature = "guest")]
-    /// Use a resource from the ECS, and update its state if required.
+    /// Use a component from an entity in the ECS, and update its state if required.
     ///
-    /// If the resource does not exist, this will return `None`.
-    /// The setter will add the resource if it does not exist.
-    pub fn use_resource<
+    /// If the entity or component does not exist, this will return `None`.
+    /// The setter will add the component if it does not exist.
+    pub fn use_entity_component<
         T: ambient_guest_bridge::api::ecs::SupportedValue
             + Clone
             + Debug
@@ -576,6 +576,7 @@ impl<'a> Hooks<'a> {
             + 'static,
     >(
         &mut self,
+        id: EntityId,
         component: ambient_guest_bridge::api::ecs::Component<T>,
     ) -> (Option<T>, Setter<T>) {
         use ambient_guest_bridge::api::prelude::{change_query, entity};
@@ -592,9 +593,31 @@ impl<'a> Hooks<'a> {
         });
 
         (
-            entity::get_component(entity::resources(), component),
-            cb(move |value| entity::add_component(entity::resources(), component, value)),
+            entity::get_component(id, component),
+            cb(move |value| entity::add_component(id, component, value)),
         )
+    }
+
+    #[cfg(feature = "guest")]
+    /// Use a resource from the ECS, and update its state if required.
+    ///
+    /// If the resource does not exist, this will return `None`.
+    /// The setter will add the resource if it does not exist.
+    pub fn use_resource<
+        T: ambient_guest_bridge::api::ecs::SupportedValue
+            + Clone
+            + Debug
+            + Sync
+            + Send
+            + PartialEq
+            + 'static,
+    >(
+        &mut self,
+        component: ambient_guest_bridge::api::ecs::Component<T>,
+    ) -> (Option<T>, Setter<T>) {
+        use ambient_guest_bridge::api::entity;
+
+        self.use_entity_component(entity::resources(), component)
     }
 
     /// Run `cb` every `seconds` seconds.
