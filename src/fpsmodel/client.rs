@@ -7,8 +7,8 @@ use ambient_api::{
 
 use ambient_api::components::core::{
     player::player,
-    primitives::quad,
-    rendering::{color, pbr_material_from_url},
+    // primitives::quad,
+    rendering::color, //pbr_material_from_url
     transform::{local_to_parent, rotation, scale, translation},
 };
 
@@ -19,7 +19,11 @@ pub fn main() {
             run_async(async move {
                 entity::wait_for_component(model, model_loaded()).await;
                 println!("___model loaded___");
-                let hand = get_bone_by_bind_id(model, &BindId::RightHand).unwrap();
+                let hand = get_bone_by_bind_id(model, &BindId::RightHand);
+                if hand.is_none() {
+                    return;
+                }
+                let hand = hand.unwrap();
                 let gun = Entity::new()
                     .with_merge(make_transformable())
                     .with(
@@ -37,18 +41,18 @@ pub fn main() {
                     .with_default(local_to_parent())
                     .with_default(reset_scale())
                     .spawn();
-                let f = Entity::new()
-                    .with_merge(make_transformable())
-                    .with_default(quad())
-                    .with(scale(), Vec3::ONE * 100.)
-                    .with(
-                        pbr_material_from_url(),
-                        asset::url("assets/pipeline.toml/5/mat.json").unwrap(),
-                    )
-                    .with_default(local_to_parent())
-                    .spawn();
+                // let f = Entity::new()
+                //     .with_merge(make_transformable())
+                //     .with_default(quad())
+                //     .with(scale(), Vec3::ONE * 100.)
+                //     .with(
+                //         pbr_material_from_url(),
+                //         asset::url("assets/pipeline.toml/5/mat.json").unwrap(),
+                //     )
+                //     .with_default(local_to_parent())
+                //     .spawn();
                 entity::add_child(hand, gun);
-                entity::add_child(hand, f);
+                // entity::add_child(hand, f);
             });
         }
     });

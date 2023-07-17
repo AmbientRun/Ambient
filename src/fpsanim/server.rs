@@ -13,22 +13,17 @@ pub fn main() {
     anim::register_anim();
     query((
         player(),
+        components::player_model_ref(),
         components::player_direction(),
         components::player_shooting_status(),
         components::player_vspeed(),
+        components::jump(),
+        components::fire(),
     ))
     .each_frame(|results| {
-        for (player_id, (_, dir, is_shooting, vspeed)) in results {
+        for (player_id, (_, model, dir, is_shooting, vspeed, jump_anim, fire_anim)) in results {
             if vspeed.abs() > 0.07 {
-                let model = entity::get_component(player_id, components::player_model_ref());
-                if model.is_none() {
-                    continue;
-                }
-                let model = model.unwrap();
-                let anim = entity::get_component(player_id, components::jump()).unwrap();
-                println!("___jump anim triggered___");
-                entity::add_component(model, apply_animation_player(), anim[1]);
-
+                entity::add_component(model, apply_animation_player(), jump_anim[1]);
                 continue;
             }
 
@@ -44,10 +39,7 @@ pub fn main() {
             };
 
             if is_shooting {
-                let model =
-                    entity::get_component(player_id, components::player_model_ref()).unwrap();
-                let anim = entity::get_component(player_id, components::fire()).unwrap();
-                entity::add_component(model, apply_animation_player(), anim[1]);
+                entity::add_component(model, apply_animation_player(), fire_anim[1]);
                 continue;
             };
             let fd = dir.y == -1.0;
@@ -85,27 +77,37 @@ pub fn main() {
     // this is also added later with the rule mod
     // but for its anim, we should add it here
     // play `hit reaction` or `death` animation
-    change_query((player(), components::player_health()))
-        .track_change(components::player_health())
-        .bind(|v| {
-            // play hit animation
-            for (id, (_, health)) in v {
-                if health <= 0 {
-                    let model = entity::get_component(id, components::player_model_ref()).unwrap();
-                    let anim = entity::get_component(id, components::death()).unwrap();
-                    entity::add_component(model, apply_animation_player(), anim[1]);
-                } else if health < 100 {
-                    let model = entity::get_component(id, components::player_model_ref()).unwrap();
-                    let anim = entity::get_component(id, components::hit()).unwrap();
-                    entity::add_component(model, apply_animation_player(), anim[1]);
-                }
+    change_query((
+        player(),
+        components::player_health(),
+        components::player_model_ref(),
+        components::death(),
+        components::hit(),
+    ))
+    .track_change(components::player_health())
+    .bind(|v| {
+        // play hit animation
+        for (_id, (_, health, model, death_anim, hit_anim)) in v {
+            if health <= 0 {
+                entity::add_component(model, apply_animation_player(), death_anim[1]);
+            } else if health < 100 {
+                entity::add_component(model, apply_animation_player(), hit_anim[1]);
             }
-        });
+        }
+    });
 }
 
 pub fn apply_anim(player_id: EntityId, comp: Component<Vec<EntityId>>, blend_value: f32) {
-    let model = entity::get_component(player_id, components::player_model_ref()).unwrap();
-    let blend_player = entity::get_component(player_id, comp).unwrap();
+    let model = entity::get_component(player_id, components::player_model_ref());
+    if model.is_none() {
+        return;
+    }
+    let model = model.unwrap();
+    let blend_player = entity::get_component(player_id, comp);
+    if blend_player.is_none() {
+        return;
+    }
+    let blend_player = blend_player.unwrap();
     entity::set_component(blend_player[0], blend(), blend_value);
     entity::add_component(model, apply_animation_player(), blend_player[1]);
 }

@@ -5,11 +5,6 @@ use ambient_api::{
 
 #[main]
 pub fn main() {
-    // spawn_query(player()).bind(|results| {
-    //     for (id, ()) in results {
-
-    //     }
-    // });
     spawn_query(player()).bind(|results| {
         println!("___player movement triggered___");
         for (id, ()) in results {
