@@ -117,7 +117,7 @@ attributes = ["debuggable", "networked", "store"]
 [components.plane-collider]
 type = "empty"
 name = "Plane collider"
-description = "If attached, this entity will have a plane physics collider."
+description = "If attached, this entity will have a plane physics collider. A plane is an infinite, flat surface. If you need a bounded flat surface, consider using a cube collider instead."
 attributes = ["debuggable", "networked", "store"]
 
 [components.rest-offset]

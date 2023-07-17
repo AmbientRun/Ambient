@@ -30,28 +30,13 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
 
     // Assume window has focus
     let (has_focus, set_has_focus) = hooks.use_state(true);
-    hooks.use_runtime_message::<messages::WindowFocusChange>(move |_, event| {
+    hooks.use_runtime_message::<messages::WindowFocusChange>(move |world, event| {
         set_has_focus(event.focused);
-    });
 
-    fn process_input(
-        ui_world: &World,
-        has_focus: bool,
-        processor: impl Fn(&mut PlayerRawInput, Vec2),
-    ) {
-        if !has_focus {
-            return;
+        if !event.focused {
+            process_input(world, true, |input, _| input.clear());
         }
-
-        let Some(Some(gc)) = ui_world.resource_opt(client_state()).cloned() else {
-            return;
-        };
-        gc.with_physics_world(|w| {
-            let mouse_pos = *w.resource(cursor_position());
-            let input = w.resource_mut(player_raw_input());
-            processor(input, mouse_pos);
-        });
-    }
+    });
 
     hooks.use_runtime_message::<messages::WindowKeyboardInput>(move |world, event| {
         process_input(world, has_focus, |input, _| {
@@ -92,6 +77,25 @@ pub fn PlayerRawInputHandler(hooks: &mut Hooks) -> Element {
             };
         });
     });
+
+    fn process_input(
+        ui_world: &World,
+        has_focus: bool,
+        processor: impl Fn(&mut PlayerRawInput, Vec2),
+    ) {
+        if !has_focus {
+            return;
+        }
+
+        let Some(Some(gc)) = ui_world.resource_opt(client_state()).cloned() else {
+            return;
+        };
+        gc.with_physics_world(|w| {
+            let mouse_pos = *w.resource(cursor_position());
+            let input = w.resource_mut(player_raw_input());
+            processor(input, mouse_pos);
+        });
+    }
 
     Element::new()
 }

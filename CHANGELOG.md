@@ -75,6 +75,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Assets**: Asset pipelines now use TOML instead of JSON. Use the `ambient assets migrate-pipelines-toml` command to migrate. (Note that this command will be removed in the next release.)
 - **Rendering**: Removing the `outline_recursive` component from a entity will now remove the outline from its children as well.
 - **API**: The `ambient_ui` prelude (and the `ambient_api` prelude, by extension) no longer glob-imports components into the global namespace. This means that you will need to import components explicitly.
+- **Input**: `CursorLockGuard` no longer takes an initial argument for its lock state. Instead, it will automatically lock and unlock on focus change.
 
 #### Non-breaking
 
@@ -92,6 +93,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **Rendering**: Lines with a `from` located after a `to` on the X-dimension will now render correctly.
 - **API**: The `entity::mutate_component` documentation now refers to the correct parameter. Thanks to [@aldzban](https://github.com/aldzban) for fixing this in [#482](https://github.com/AmbientRun/Ambient/pull/482).
 - **UI**: The `ScrollArea` now has a scroll bar.
+- **Input**: Input is now cleared when the window loses focus, preventing "stuck input" bugs.
 
 ### Community PRs to internals
 
