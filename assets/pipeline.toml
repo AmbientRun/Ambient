@@ -21,11 +21,3 @@ sources = ["gun/**/*"]
 type = "Audio"
 convert = true
 sources = ["sound/**/*"]
-
-[[pipelines]]
-type = "Materials"
-
-[pipelines.importer]
-type = "Single"
-name = "flash"
-base_color = "flash.png"
