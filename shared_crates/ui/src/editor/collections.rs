@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, str::FromStr, sync::Arc};
+use std::{collections::HashMap, fmt::Debug, hash::Hash, ops::Deref, sync::Arc};
 
 use ambient_cb::{cb, Cb};
 use ambient_color::Color;
@@ -25,7 +25,7 @@ use crate::{
     },
     dropdown::Dropdown,
     layout::{FlowColumn, FlowRow},
-    use_focus, UIBase, UIExt,
+    use_focus, HooksExt, UIBase, UIExt,
 };
 use glam::{vec4, Vec4};
 
@@ -339,14 +339,12 @@ impl<T: std::fmt::Debug + Clone + Default + Sync + Send + 'static> ElementCompon
             item_editor,
         } = *self;
         let (focused, set_focused) = use_focus(hooks);
-        hooks.use_runtime_message::<messages::WindowKeyboardInput>(move |_world, event| {
-            let pressed = event.pressed;
+        hooks.use_keyboard_input(move |_world, keycode, _modifiers, pressed| {
             if !focused || !pressed {
                 return;
             }
             if let Some(on_delete) = &on_delete {
-                if let Some(keycode) = event.keycode.clone() {
-                    let keycode = VirtualKeyCode::from_str(&keycode).unwrap();
+                if let Some(keycode) = keycode {
                     if keycode == VirtualKeyCode::Back || keycode == VirtualKeyCode::Delete {
                         on_delete.0();
                     }

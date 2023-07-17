@@ -1,9 +1,9 @@
-use std::{str::FromStr, sync::Arc, time::Duration};
+use std::{sync::Arc, time::Duration};
 
 use ambient_core::{
     asset_cache, async_ecs::async_run, runtime, window::get_mouse_clip_space_position,
 };
-use ambient_ecs::{generated::messages, Component, ComponentValue, EntityId};
+use ambient_ecs::{Component, ComponentValue, EntityId};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_intent::{client_push_intent, rpc_undo_head_exact};
 use ambient_network::client::ClientState;
@@ -21,8 +21,8 @@ use ambient_std::{
 use ambient_ui_native::{
     command_modifier,
     layout::{docking, width, Docking},
-    margin, padding, space_between_items, Borders, Button, ButtonStyle, Dock, FlowRow, Hotkey,
-    ScreenContainer, Separator, StylesExt, STREET,
+    margin, padding, space_between_items, Borders, Button, ButtonStyle, Dock, FlowRow, HooksExt,
+    Hotkey, ScreenContainer, Separator, StylesExt, STREET,
 };
 use tokio::time::sleep;
 
@@ -181,10 +181,8 @@ impl ElementComponent for EditorBuildMode {
                 update_targets,
             );
         }
-        hooks.use_runtime_message::<messages::WindowKeyboardInput>(move |_world, event| {
-            let pressed = event.pressed;
-            if let Some(keycode) = event.keycode.as_deref() {
-                let keycode = VirtualKeyCode::from_str(keycode).unwrap();
+        hooks.use_keyboard_input(move |_world, keycode, _modifiers, pressed| {
+            if let Some(keycode) = keycode {
                 match keycode {
                     VirtualKeyCode::LShift => {
                         if pressed {

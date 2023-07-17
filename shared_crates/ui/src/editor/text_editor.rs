@@ -1,6 +1,5 @@
 #[cfg(feature = "guest")]
 use std::time::Instant;
-use std::{self, str::FromStr};
 
 use ambient_cb::{cb, Cb};
 use ambient_element::{element_component, to_owned, Element, ElementComponentExt, Hooks};
@@ -22,7 +21,9 @@ use glam::*;
 use itertools::Itertools;
 
 use super::{Editor, EditorOpts};
-use crate::{layout::FlowRow, text::Text, use_focus, with_rect, Rectangle, UIBase, UIExt};
+use crate::{
+    layout::FlowRow, text::Text, use_focus, with_rect, HooksExt, Rectangle, UIBase, UIExt,
+};
 
 /// A text editor.
 #[element_component]
@@ -100,15 +101,13 @@ pub fn TextEditor(
             }
         }
     });
-    hooks.use_runtime_message::<messages::WindowKeyboardInput>({
+    hooks.use_keyboard_input({
         to_owned![intermediate_value, on_change, cursor_position];
-        move |_world, event| {
+        move |_world, keycode, _modifiers, pressed| {
             if !focused {
                 return;
             }
-            let pressed = event.pressed;
-            if let Some(kc) = event.keycode.as_deref() {
-                let kc = VirtualKeyCode::from_str(kc).unwrap();
+            if let Some(kc) = keycode {
                 match kc {
                     VirtualKeyCode::LWin => {
                         #[cfg(target_os = "macos")]
