@@ -4,6 +4,7 @@ use ambient_api::{
     components::core::{
         layout::{docking_bottom, docking_fill, fit_horizontal_parent, margin, min_height},
         rendering::color,
+        text::font_style,
     },
     prelude::*,
 };
@@ -15,11 +16,7 @@ mod shared;
 pub fn main() {
     let console = Console::new();
 
-    App {
-        console: Arc::new(Mutex::new(console)),
-    }
-    .el()
-    .spawn_interactive();
+    App { console }.el().spawn_interactive();
 }
 
 #[element_component]
@@ -55,7 +52,6 @@ pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
         let console = console.clone();
         move |_| {
             console.lock().unwrap().on_update(move || render_signal());
-
             move |_| {
                 console.lock().unwrap().clear_update();
             }
@@ -87,11 +83,7 @@ pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
             ScrollAreaSizing::FitParentWidth,
             FlowColumn::el({
                 let console = console.lock().unwrap();
-                console
-                    .lines()
-                    .iter()
-                    .map(|m| Text::el(&m.text).with(color(), m.ty.into()))
-                    .collect::<Vec<_>>()
+                console.lines().iter().map(line_to_text).collect::<Vec<_>>()
             })
             .with_padding_even(4.0),
         )
@@ -101,4 +93,16 @@ pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
     ]))
     .with_background(vec4(0.0, 0.0, 0.0, 0.5))])
     .with_padding_even(20.)])
+}
+
+fn line_to_text(line: &ConsoleLine) -> Element {
+    let (line_font_style, line_color) = match line.ty {
+        ConsoleLineType::Normal => ("Regular", vec4(0.8, 0.8, 0.8, 1.0)),
+        ConsoleLineType::User => ("Bold", vec4(0.0, 0.8, 0.0, 1.0)),
+        ConsoleLineType::Error => ("Regular", vec4(0.8, 0.0, 0.0, 1.0)),
+    };
+
+    Text::el(&line.text)
+        .with(font_style(), line_font_style.to_string())
+        .with(color(), line_color)
 }

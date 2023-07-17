@@ -1,6 +1,8 @@
 use ambient_api::prelude::*;
+use std::sync::{Arc, Mutex};
 
 pub struct Console {
+    engine: rhai::Engine,
     lines: Vec<ConsoleLine>,
     on_update: Option<Box<dyn FnMut() + Send + Sync>>,
 }
@@ -12,8 +14,9 @@ impl std::fmt::Debug for Console {
     }
 }
 impl Console {
-    pub fn new() -> Self {
-        Self {
+    pub fn new() -> Arc<Mutex<Self>> {
+        Arc::new(Mutex::new(Self {
+            engine: rhai::Engine::new(),
             lines: (0..10)
                 .map(|i| ConsoleLine {
                     text: format!("Line {i}"),
@@ -21,7 +24,7 @@ impl Console {
                 })
                 .collect::<Vec<_>>(),
             on_update: None,
-        }
+        }))
     }
 
     pub fn lines(&self) -> &[ConsoleLine] {
@@ -41,6 +44,20 @@ impl Console {
             text: format!("> {}", text),
             ty: ConsoleLineType::User,
         });
+        match self.engine.eval::<rhai::Dynamic>(text) {
+            Ok(result) => {
+                self.push(ConsoleLine {
+                    text: format!("= {}", result),
+                    ty: ConsoleLineType::Normal,
+                });
+            }
+            Err(error) => {
+                self.push(ConsoleLine {
+                    text: format!("{}", error),
+                    ty: ConsoleLineType::Error,
+                });
+            }
+        }
     }
 }
 impl Console {
@@ -59,14 +76,7 @@ impl Console {
 pub enum ConsoleLineType {
     Normal,
     User,
-}
-impl From<ConsoleLineType> for Vec4 {
-    fn from(value: ConsoleLineType) -> Self {
-        match value {
-            ConsoleLineType::Normal => vec4(0.8, 0.8, 0.8, 1.0),
-            ConsoleLineType::User => vec4(0.0, 0.8, 0.0, 1.0),
-        }
-    }
+    Error,
 }
 
 #[derive(Debug, Clone)]
