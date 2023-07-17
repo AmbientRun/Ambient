@@ -7,7 +7,7 @@ use ambient_api::{
 
 use ambient_api::components::core::{
     player::player,
-    primitives::{cube, quad},
+    primitives::quad,
     rendering::{color, pbr_material_from_url},
     transform::{local_to_parent, rotation, scale, translation},
 };
@@ -47,20 +47,8 @@ pub fn main() {
                     )
                     .with_default(local_to_parent())
                     .spawn();
-                // let c = Entity::new()
-                //     .with_merge(make_transformable())
-                //     .with_default(cube())
-                //     .with(scale(), Vec3::ONE * 200.1)
-                //     .with(color(), vec4(1.0, 0.0, 0.0, 1.0))
-                //     .with(
-                //         pbr_material_from_url(),
-                //         asset::url("assets/pipeline.toml/0/mat.json").unwrap(),
-                //     )
-                //     .with_default(local_to_parent())
-                //     .spawn();
                 entity::add_child(hand, gun);
                 entity::add_child(hand, f);
-                // entity::add_child(hand, c);
             });
         }
     });

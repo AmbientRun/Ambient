@@ -52,28 +52,22 @@ pub fn App(hooks: &mut Hooks) -> Element {
     let center_y = size_info[0].1.y as f32 / 2.;
 
     if !ingame {
-        FocusRoot::el([WindowSized(vec![
-            FlowColumn::el([
-                Text::el("enter your name blow. press enter to start the game."),
-                TextEditor::new(name.clone(), set_name.clone())
-                    .auto_focus()
-                    .on_submit({
-                        let set_ingame = set_ingame.clone();
-                        move |v| {
-                            set_ingame(true);
-                            messages::StartGame::new(player::get_local(), v)
-                                .send_server_unreliable();
-                        }
-                    })
-                    .el(),
-                Text::el("hint: use Tab to show/hide the scoreboard."),
-            ])
-            .with(space_between_items(), STREET), // .with_default(fit_horizontal_parent())
-                                                  // .with_default(fit_vertical_parent())
+        FocusRoot::el([WindowSized(vec![FlowColumn::el([
+            Text::el("enter your name blow. press enter to start the game."),
+            TextEditor::new(name.clone(), set_name.clone())
+                .auto_focus()
+                .on_submit({
+                    let set_ingame = set_ingame.clone();
+                    move |v| {
+                        set_ingame(true);
+                        messages::StartGame::new(player::get_local(), v).send_server_reliable();
+                    }
+                })
+                .el(),
+            Text::el("hint: hold Tab to toggle the scoreboard."),
         ])
+        .with(space_between_items(), STREET)])
         .el()
-        // .with_default(align_horizontal_center())
-        // .with_default(align_vertical_center())
         .with_padding_even(20.)])
     } else {
         Group::el([

@@ -1,16 +1,10 @@
 // TODO: this should vary based on the game type
 
-use ambient_api::components::core::{
-    player::player,
-    primitives::quad,
-    rendering::pbr_material_from_url,
-    transform::{rotation, scale, translation},
-};
+use ambient_api::components::core::{player::player, transform::translation};
 use ambient_api::prelude::*;
 #[main]
 pub fn main() {
     spawn_query(player()).bind(|results| {
-        println!("___player movement triggered___");
         for (id, ()) in results {
             run_async(async move {
                 entity::wait_for_component(id, components::player_name()).await;
@@ -22,14 +16,15 @@ pub fn main() {
         }
     });
     messages::Shoot::subscribe(move |_source, msg| {
-        // let model = entity::get_component(msg.source, components::player_model_ref()).unwrap();
-
         let result = physics::raycast_first(msg.ray_origin, msg.ray_dir);
 
         if let Some(hit) = result {
             if entity::has_component(hit.entity, components::player_health()) {
-                let old_health =
-                    entity::get_component(hit.entity, components::player_health()).unwrap();
+                let old_health = entity::get_component(hit.entity, components::player_health());
+                if old_health.is_none() {
+                    return;
+                }
+                let old_health = old_health.unwrap();
                 if old_health <= 0 {
                     return;
                 }
@@ -37,7 +32,7 @@ pub fn main() {
                 entity::set_component(hit.entity, components::player_health(), new_health);
 
                 if old_health > 0 && new_health <= 0 {
-                    println!("player die, waiting for respawn");
+                    println!("player dead, waiting for respawn");
                     entity::set_component(hit.entity, components::hit_freeze(), 114);
                     entity::mutate_component(msg.source, components::player_killcount(), |count| {
                         *count += 1;
@@ -60,7 +55,6 @@ pub fn main() {
                         entity::set_component(hit.entity, components::hit_freeze(), 0);
                     });
                 } else {
-                    println!("hit player, make the health becomes => {}", new_health);
                     entity::set_component(hit.entity, components::hit_freeze(), 20);
                 }
             }

@@ -28,7 +28,6 @@ pub async fn main() {
                 .with(parent(), zombie)
                 .with_default(local_to_parent())
                 .with(rotation(), Quat::from_rotation_z(-3.14159265359 / 2.0))
-                // .with_default(local_to_world())
                 .spawn();
 
             entity::add_components(
@@ -71,7 +70,6 @@ pub async fn main() {
             let mut nearest_player_pos: Option<Vec2> = None;
 
             for (_player, pos) in players {
-                // println!("player pos {:?}", pos);
                 let player_pos = vec2(pos.x, pos.y);
                 let distance = (zombie_pos - player_pos).length();
                 if distance < min_distance {

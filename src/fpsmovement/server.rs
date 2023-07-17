@@ -26,7 +26,11 @@ pub fn main() {
     let mut last_walk = game_time();
     messages::Input::subscribe(move |source, msg| {
         // receive movement and send this for further processing
-        let player_id = source.client_entity_id().unwrap();
+        let player_id = source.client_entity_id();
+        if player_id.is_none() {
+            return;
+        }
+        let player_id = player_id.unwrap();
         let direction = msg.direction;
 
         if direction != Vec2::ZERO {

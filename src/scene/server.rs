@@ -1,14 +1,13 @@
 use ambient_api::{
     components::core::{
         app::main_scene,
-        physics::{cube_collider, plane_collider, sphere_collider, visualize_collider},
+        physics::plane_collider,
         prefab::prefab_from_url,
-        primitives::{cube, quad},
-        rendering::{fog_density, light_diffuse, pbr_material_from_url, sky, sun},
+        primitives::quad,
+        rendering::{fog_density, light_diffuse, sky, sun},
         transform::{rotation, scale},
     },
-    concepts::{make_sphere, make_transformable},
-    entity::{add_components, remove_components, wait_for_component},
+    concepts::make_transformable,
     prelude::*,
 };
 
@@ -16,26 +15,21 @@ use ambient_api::{
 pub async fn main() {
     Entity::new()
         .with_default(quad())
-        // .with(
-        //     pbr_material_from_url(),
-        //     asset::url("assets/pipeline.toml/5/mat.json").unwrap(),
-        // )
         .with_default(plane_collider())
         .with(scale(), Vec3::ONE * 1.)
         .spawn();
-
-    // Entity::new()
-    //     .with_merge(make_transformable())
-    //     .with(
-    //         prefab_from_url(),
-    //         // asset::url("assets/map/c0.glb").unwrap(),
-    //         asset::url("assets/map/fps_map_ghost_city.glb").unwrap(),
-    //     )
-    //     .with(scale(), Vec3::ONE * 1.5)
-    //     .spawn();
     Entity::new()
         .with_merge(make_transformable())
         .with_default(sky())
+        .spawn();
+    Entity::new()
+        .with_merge(make_transformable())
+        .with(
+            prefab_from_url(),
+            // asset::url("assets/map/c0.glb").unwrap(),
+            asset::url("assets/map/fps_map_ghost_city.glb").unwrap(),
+        )
+        .with(scale(), Vec3::ONE * 1.5)
         .spawn();
     Entity::new()
         .with_merge(make_transformable())
