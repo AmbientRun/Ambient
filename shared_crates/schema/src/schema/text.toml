@@ -26,3 +26,14 @@ type = "String"
 name = "Text"
 description = "Create a text mesh on this entity."
 attributes = ["Debuggable", "Networked", "Store"]
+
+
+[components."core::text::hyperlink"]
+type = "String"
+name = "Hyperlink"
+description = """
+This is a hyperlink text. With this component, the entity is a special one.
+Once spawned, the system will open the URL String in the browser.
+Then the entity will be destroyed.
+"""
+attributes = ["Debuggable", "Networked", "Store"]

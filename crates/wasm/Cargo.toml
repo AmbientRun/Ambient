@@ -20,10 +20,13 @@ ambient_gpu = { path = "../gpu" }
 ambient_renderer = { path = "../renderer" }
 ambient_procedurals = { path = "../procedurals" }
 
+ambient_guest_bridge = { path = "../../shared_crates/guest_bridge", default-features = false, version = "0.3.0-dev" }
+
 ambient_project = { path = "../../shared_crates/project" }
 ambient_shared_types = { path = "../../shared_crates/shared_types", features = [
     "native",
 ] }
+
 
 anyhow = { workspace = true }
 async-trait = { workspace = true }
@@ -39,6 +42,7 @@ indoc = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
 once_cell = { workspace = true }
+open =  { workspace = true }
 parking_lot = { workspace = true }
 paste = { workspace = true }
 ambient_profiling = { workspace = true }

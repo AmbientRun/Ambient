@@ -2,12 +2,15 @@
 
 use crate::{UIBase, UIElement};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::{
-    app::{name, ui_scene},
-    layout::{height, width},
-    rendering::color,
-    text::{font_family, font_size, text},
-    transform::mesh_to_local,
+use ambient_guest_bridge::{
+    components::{
+        app::{name, ui_scene},
+        layout::{height, width},
+        rendering::color,
+        text::{font_family, font_size, hyperlink, text},
+        transform::mesh_to_local,
+    },
+    ecs::Entity,
 };
 use glam::{vec4, Mat4};
 
@@ -67,4 +70,19 @@ pub fn FontAwesomeIcon(
         }
         .to_string(),
     )
+}
+
+#[element_component]
+/// Hyperlink to a URL. This will open browser when clicked.
+pub fn Hyperlink(
+    _hooks: &mut Hooks,
+    /// The URL to open
+    url: String,
+) -> Element {
+    crate::prelude::Button::new(&url.clone(), move |world| {
+        let link = Entity::new().with(hyperlink(), url.clone());
+        world.spawn(link);
+    })
+    .style(crate::prelude::ButtonStyle::Inline)
+    .el()
 }

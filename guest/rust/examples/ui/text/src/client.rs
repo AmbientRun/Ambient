@@ -14,6 +14,8 @@ fn App(_hooks: &mut Hooks) -> Element {
         Text::el("Custom size").with(font_size(), 40.),
         Text::el("Custom color").with(color(), vec4(1., 0., 0., 1.)),
         Text::el("Multi\n\nLine"),
+        Text::el("Hyperlink:"),
+        Hyperlink::el("https://ambient.run".to_string()),
     ])
     .with_padding_even(STREET)
     .with(space_between_items(), 10.)
