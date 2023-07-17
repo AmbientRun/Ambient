@@ -12,8 +12,11 @@ use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     include_file,
 };
+use ambient_sys::task::{JoinHandle, RuntimeHandle};
+use futures::future::BoxFuture;
 use glam::{uvec2, UVec2, UVec3};
 use parking_lot::Mutex;
+use tokio::sync::{watch, Notify};
 use wgpu::{
     BindGroupEntry, BindGroupLayout, BindGroupLayoutEntry, BindingType, BufferBindingType,
     ShaderStages,
@@ -49,6 +52,51 @@ impl CollectPrimitive {
     }
 }
 
+struct NodeCountState {
+    counts: Arc<Mutex<Vec<u32>>>,
+    staging_buffer: TypedBuffer<u32>,
+    ready: AtomicBool,
+}
+
+impl NodeCountState {
+    pub fn new(runtime: &RuntimeHandle) -> Self {
+        let counts = Arc::new(Mutex::new(Vec::new()));
+
+        let (tx, rx) = watch::channel(None);
+        let task = runtime.spawn({
+            let counts = counts.clone();
+            let notify = notify_read.clone();
+            async move {
+                let staging_buffers = CollectCountStagingBuffers::new();
+                loop {
+                    notify.notified().await;
+
+                    match staging.read(&post_submit_gpu, ..).await {
+                        Ok(res) => {
+                            let len = res.len();
+                            *counts_res.lock() = res;
+                            staging_buffers.return_buffer(staging);
+                        }
+                        Err(err) => tracing::error!("Error reading collect counts: {err:?}"),
+                    }
+                }
+            }
+        });
+
+        Self {
+            counts,
+            task,
+            notify_read,
+        }
+    }
+}
+
+impl Drop for NodeCountState {
+    fn drop(&mut self) {
+        self.task.abort();
+    }
+}
+
 /// Contains the primitive input and indirect output buffers for GPU driven rendering
 pub(crate) struct RendererCollectState {
     pub params: TypedBuffer<RendererCollectParams>,
@@ -56,12 +104,12 @@ pub(crate) struct RendererCollectState {
     pub counts: TypedBuffer<u32>,
     #[cfg(any(target_os = "macos", target_os = "unknown"))]
     /// Multi draw indexed indirect is not supported on macOS
-    pub counts_cpu: Arc<Mutex<Vec<u32>>>,
+    pub counts_cpu: NodeCountState,
     pub material_layouts: TypedBuffer<MaterialLayout>,
 }
 
 impl RendererCollectState {
-    pub fn new(gpu: &Gpu) -> Self {
+    pub fn new(gpu: &Gpu, runtime: &RuntimeHandle) -> Self {
         log::debug!("Setting up renderer collect state");
         Self {
             params: TypedBuffer::new(
@@ -92,7 +140,7 @@ impl RendererCollectState {
                     | wgpu::BufferUsages::INDIRECT,
             ),
             #[cfg(any(target_os = "macos", target_os = "unknown"))]
-            counts_cpu: Arc::new(Mutex::new(Vec::new())),
+            counts_cpu: NodeCountState::new(runtime),
             material_layouts: TypedBuffer::new(
                 gpu,
                 "RendererCollectState.materials",
@@ -359,6 +407,7 @@ impl SyncAssetKey<CollectCountStagingBuffers> for CollectCountStagingBuffersKey 
 struct CollectCountStagingBuffers {
     buffers: Arc<Mutex<Vec<TypedBuffer<u32>>>>,
 }
+
 impl CollectCountStagingBuffers {
     fn new() -> Self {
         Self {

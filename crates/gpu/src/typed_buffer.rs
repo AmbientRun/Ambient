@@ -4,7 +4,10 @@ use std::{
     mem::{self, size_of},
     num::NonZeroU64,
     ops::{Bound, Range, RangeBounds},
-    sync::atomic::{AtomicU64, Ordering},
+    sync::{
+        atomic::{AtomicBool, AtomicU64, Ordering},
+        Arc,
+    },
 };
 
 use bytemuck::Pod;
@@ -241,6 +244,61 @@ impl<T: Pod> TypedBuffer<T> {
             index as u64 * size_of::<T>() as u64,
             bytemuck::cast_slice(data),
         );
+    }
+
+    /// Reads a range from the buffer. The range is defined in items; i.e. 1..3 means read item 1 through 3 (not bytes).
+    pub async fn read_begin(
+        &self,
+        gpu: &Gpu,
+        bounds: impl RangeBounds<usize>,
+        ready: Arc<AtomicBool>,
+    ) -> Result<Vec<T>, BufferAsyncError> {
+        // Convert the bounds to byte offsets
+
+        let bounds = self.to_byte_offsets(bounds);
+        let slice = self.buffer().slice(bounds);
+
+        slice.map_async(wgpu::MapMode::Read, |v| {
+            ready.store(true, Ordering::Relaxed);
+        });
+
+        if !gpu.will_be_polled {
+            eprintln!("Polling gpu");
+            gpu.device.poll(wgpu::Maintain::Wait);
+        }
+
+        rx.await.unwrap()?;
+
+        let data: Vec<T> = bytemuck::cast_slice(&slice.get_mapped_range()).to_vec();
+
+        self.buffer().unmap();
+
+        Ok(data)
+    }
+
+    pub async fn poll_read_end(
+        &self,
+        gpu: &Gpu,
+        bounds: impl RangeBounds<usize>,
+        ready: Arc<AtomicBool>,
+    ) -> Option<Vec<T>> {
+        // Convert the bounds to byte offsets
+
+        let bounds = self.to_byte_offsets(bounds);
+        let slice = self.buffer().slice(bounds);
+
+        if ready
+            .compare_exchange(true, false, Ordering::Acquire, Ordering::Relaxed)
+            .is_ok()
+        {
+            let data: Vec<T> = bytemuck::cast_slice(&slice.get_mapped_range()).to_vec();
+
+            self.buffer().unmap();
+            Some(data)
+        } else {
+            tracing::warn!("Not ready to map yet");
+            None
+        }
     }
 
     /// Reads a range from the buffer. The range is defined in items; i.e. 1..3 means read item 1 through 3 (not bytes).
