@@ -2,13 +2,11 @@
 
 use ambient_api::{
     components::core::{
-        app::window_logical_size,
         layout::{docking_bottom, min_width, space_between_items},
         player::player,
         rect::{background_color, line_from, line_to, line_width},
     },
     prelude::*,
-    ui::HooksExt,
 };
 
 #[main]
@@ -69,8 +67,7 @@ fn GameUI(hooks: &mut Hooks) -> Element {
 // TODO: there is *definitely* a better way to put the crosshair in the centre of the screen
 #[element_component]
 fn Crosshair(hooks: &mut Hooks) -> Element {
-    let (size, _) = hooks.use_resource(window_logical_size());
-    let size = size.unwrap_or_default();
+    let size = hooks.use_window_logical_resolution();
     let center_x = size.x as f32 / 2.;
     let center_y = size.y as f32 / 2.;
 
