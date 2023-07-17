@@ -326,6 +326,7 @@ pub fn Button(
         content
     }
 }
+
 impl Button {
     /// Create a new [Button] with the given content and callback.
     pub fn new<T: Into<UIElement>>(

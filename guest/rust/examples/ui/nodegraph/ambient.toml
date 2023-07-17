@@ -1,0 +1,7 @@
+[ember]
+id = "ambient_example_nodegraph"
+name = "Nodegraph"
+version = "0.0.1"
+repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/nodegraph"
+type = "Game"
+categories = ["Example"]

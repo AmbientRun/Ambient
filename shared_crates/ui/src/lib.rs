@@ -50,9 +50,11 @@ use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
 pub mod button;
 pub mod clickarea;
 pub mod default_theme;
+pub mod dragarea;
 pub mod dropdown;
 pub mod editor;
 pub mod layout;
+pub mod node;
 pub mod prelude;
 pub mod prompt;
 pub mod screens;
@@ -228,10 +230,15 @@ pub trait UIExt {
     fn with_padding_even(self, padding: f32) -> Self;
     /// Adds margin to all sides of this element.
     fn with_margin_even(self, margin: f32) -> Self;
+    /// Wraps this element in a [DragArea] element.
+    fn with_dragarea(self) -> dragarea::DragArea;
 }
 impl UIExt for Element {
     fn with_clickarea(self) -> ClickArea {
         ClickArea::new(self)
+    }
+    fn with_dragarea(self) -> dragarea::DragArea {
+        dragarea::DragArea::new(self)
     }
     fn with_background(self, background: Vec4) -> Self {
         with_rect(self).with(background_color(), background)
