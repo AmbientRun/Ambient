@@ -20,6 +20,8 @@ use ambient_ecs::{
     Message, SystemGroup, World, WorldEventReader,
 };
 
+pub use ambient_ecs::generated::components::core::wasm::*;
+
 use ambient_project::Identifier;
 use itertools::Itertools;
 pub use module::*;
@@ -34,17 +36,11 @@ mod internal {
     use super::{MessageType, ModuleBytecode, ModuleErrors, ModuleState, ModuleStateArgs};
 
     components!("wasm::shared", {
-        @[Networked, Store, Debuggable]
-        module: (),
         module_state: ModuleState,
         @[Store, Description["Bytecode of a WASM component; if attached, will be run."]]
         module_bytecode: ModuleBytecode,
         @[Networked, Store, Debuggable, Description["Asset URL for the bytecode of a clientside WASM component."]]
         client_bytecode_from_url: String,
-        @[Networked, Store, Debuggable]
-        module_enabled: bool,
-        @[Networked, Store, Debuggable]
-        module_name: String,
         @[Networked, Store, Debuggable]
         module_errors: ModuleErrors,
         @[Networked, Debuggable, Description["The ID of the module on the \"other side\" of this module, if available. (e.g. serverside module to clientside module)."]]
@@ -58,11 +54,11 @@ mod internal {
 }
 
 pub use internal::{
-    client_bytecode_from_url, messenger, module, module_bytecode, module_enabled, module_errors,
-    module_state, module_state_maker, remote_paired_id,
+    client_bytecode_from_url, messenger, module_bytecode, module_errors, module_state,
+    module_state_maker, remote_paired_id,
 };
 
-use self::{internal::module_name, message::Source};
+use self::message::Source;
 use crate::shared::message::{RuntimeMessageExt, Target};
 
 pub fn init_all_components() {
@@ -323,15 +319,23 @@ pub fn spawn_module(
     name: &Identifier,
     description: String,
     enabled: bool,
+    on_server: bool,
 ) -> EntityId {
-    Entity::new()
+    let entity = Entity::new()
         .with(ambient_core::name(), format!("Wasm module: {}", name))
         .with(module_name(), name.to_string())
         .with(ambient_core::description(), description)
         .with_default(module())
         .with(module_enabled(), enabled)
-        .with_default(module_errors())
-        .spawn(world)
+        .with_default(module_errors());
+
+    let entity = if on_server {
+        entity.with_default(module_on_server())
+    } else {
+        entity
+    };
+
+    entity.spawn(world)
 }
 
 pub fn get_module_name(world: &World, id: EntityId) -> Identifier {

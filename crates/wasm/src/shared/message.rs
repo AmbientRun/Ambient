@@ -1,4 +1,4 @@
-use crate::shared::internal::module_name;
+use super::module_name;
 use ambient_ecs::{components, Debuggable, EntityId, Resource, World};
 
 components!("wasm::message", {
