@@ -6,8 +6,8 @@ publish = false
 version = "0.0.1"
 
 [dependencies]
-ambient_api = { path = "../Ambient/guest/rust/api" }
-# ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", rev = "10c57e36c7da588195ec526acb9ef96ee27e0dcb" }
+# ambient_api = { path = "../Ambient/guest/rust/api" }
+ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", rev = "8ce8718f74be4501880788230480c7d863a9b04e" }
 
 rhai = { version = "1.15", features = ["sync"] }
 
