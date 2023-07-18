@@ -11,4 +11,6 @@ includes = [
     "src/fpsanim/ambient.toml",
     "src/fpsui/ambient.toml",
     "src/fpsaudio/ambient.toml",
+
+    "src/console/ambient.toml",
 ]

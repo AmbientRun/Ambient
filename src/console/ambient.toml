@@ -1,0 +1,7 @@
+[messages.console_server_input.fields]
+input = "String"
+
+[messages.console_server_output.fields]
+text = "String"
+ty = "U8"
+is_server = "Bool"

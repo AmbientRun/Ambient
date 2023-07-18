@@ -14,7 +14,32 @@ mod shared;
 
 #[main]
 pub fn main() {
-    let console = Console::new();
+    let console = Console::new(false);
+    {
+        let mut console = console.lock().unwrap();
+        let engine = console.engine();
+        engine.register_fn("server", |input: String| {
+            messages::ConsoleServerInput { input }.send_server_reliable();
+        });
+    }
+
+    messages::ConsoleServerOutput::subscribe({
+        let console = console.clone();
+        move |source, msg| {
+            if !source.server() {
+                return;
+            }
+
+            console.lock().unwrap().push(
+                ConsoleLine {
+                    text: msg.text,
+                    ty: ConsoleLineType::try_from(msg.ty).unwrap(),
+                    is_server: msg.is_server,
+                },
+                None,
+            );
+        }
+    });
 
     App { console }.el().spawn_interactive();
 }
@@ -23,10 +48,7 @@ pub fn main() {
 pub fn App(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
     let (toggle, set_toggle) = hooks.use_state(false);
     hooks.use_keyboard_input(move |_, keycode, modifiers, pressed| {
-        if modifiers == ModifiersState::empty()
-            && keycode == Some(VirtualKeyCode::Grave)
-            && !pressed
-        {
+        if modifiers == ModifiersState::empty() && keycode == Some(VirtualKeyCode::F1) && !pressed {
             set_toggle(!toggle);
         }
     });
@@ -51,9 +73,9 @@ pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
     hooks.use_spawn({
         let console = console.clone();
         move |_| {
-            console.lock().unwrap().on_update(move || render_signal());
+            console.lock().unwrap().on_output(move || render_signal());
             move |_| {
-                console.lock().unwrap().clear_update();
+                console.lock().unwrap().clear_on_output();
             }
         }
     });
@@ -67,7 +89,7 @@ pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
             .on_submit({
                 let console = console.clone();
                 move |text| {
-                    console.lock().unwrap().input(&text);
+                    console.lock().unwrap().input(&text, |_| {});
                     set_command(String::new());
                 }
             })
@@ -97,12 +119,27 @@ pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
 
 fn line_to_text(line: &ConsoleLine) -> Element {
     let (line_font_style, line_color) = match line.ty {
-        ConsoleLineType::Normal => ("Regular", vec4(0.8, 0.8, 0.8, 1.0)),
-        ConsoleLineType::User => ("Bold", vec4(0.0, 0.8, 0.0, 1.0)),
-        ConsoleLineType::Error => ("Regular", vec4(0.8, 0.0, 0.0, 1.0)),
+        ConsoleLineType::Normal => ("Regular", vec3(0.8, 0.8, 0.8)),
+        ConsoleLineType::User => (
+            if line.is_server { "Regular" } else { "Bold" },
+            vec3(0.0, 0.8, 0.0),
+        ),
+        ConsoleLineType::Error => ("Regular", vec3(0.8, 0.0, 0.0)),
     };
 
-    Text::el(&line.text)
+    let line_color = if line.is_server {
+        line_color * 0.75
+    } else {
+        line_color
+    };
+
+    let text = if line.is_server {
+        format!("server|{}", line.text)
+    } else {
+        line.text.clone()
+    };
+
+    Text::el(text)
         .with(font_style(), line_font_style.to_string())
-        .with(color(), line_color)
+        .with(color(), line_color.extend(1.0))
 }
