@@ -23,9 +23,7 @@ use ambient_ecs::{
 pub use ambient_ecs::generated::components::core::wasm::*;
 
 use ambient_project::Identifier;
-use ambient_std::{
-    asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl, download_asset::BytesFromUrl,
-};
+use ambient_std::{asset_url::AbsAssetUrl, download_asset::download_uncached_bytes};
 use itertools::Itertools;
 pub use module::*;
 
@@ -103,7 +101,10 @@ pub fn systems() -> SystemGroup {
                     let assets = world.resource(asset_cache()).clone();
                     let async_run = world.resource(async_run()).clone();
                     world.resource(runtime()).spawn(async move {
-                        match BytesFromUrl::new(url, true).get(&assets).await {
+                        // TODO: We use an uncached download here to ensure that we can
+                        // reload modules on the fly. Revisit once we have some form of
+                        // hot-reloading working.
+                        match download_uncached_bytes(&assets, url.clone()).await {
                             Err(err) => {
                                 log::warn!("Failed to load bytecode from URL: {:?}", err);
                             }
@@ -122,15 +123,11 @@ pub fn systems() -> SystemGroup {
                     });
                 }
             }),
-            query((module_bytecode(), module_enabled().changed())).to_system(
+            query((module_bytecode().changed(), module_enabled().changed())).to_system(
                 move |q, world, qs, _| {
                     ambient_profiling::scope!("WASM module reloads");
                     let modules = q
                         .iter(world, qs)
-                        .filter(|(id, (_, enabled))| {
-                            let has_state = world.has_component(*id, module_state());
-                            **enabled != has_state
-                        })
                         .map(|(id, (bytecode, enabled))| (id, enabled.then(|| bytecode.clone())))
                         .collect_vec();
 
