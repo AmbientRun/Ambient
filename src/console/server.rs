@@ -1,7 +1,6 @@
 use ambient_api::prelude::*;
 
 use shared::*;
-
 mod shared;
 
 #[main]

@@ -1,3 +1,5 @@
+use ambient_api::{components::core, ecs::GeneralQuery, prelude::*};
+use rhai::plugin::*;
 use std::sync::{Arc, Mutex};
 
 pub struct Console {
@@ -15,12 +17,24 @@ impl std::fmt::Debug for Console {
 }
 impl Console {
     pub fn new(is_server: bool) -> Arc<Mutex<Self>> {
-        Arc::new(Mutex::new(Self {
+        let mut console = Self {
             engine: rhai::Engine::new(),
             lines: Vec::new(),
             on_output: None,
             is_server,
-        }))
+        };
+
+        let ctx = ConsoleContext::new();
+
+        {
+            let engine = console.engine();
+            engine.set_default_tag(Dynamic::from(ctx));
+
+            let wasm_module = exported_module!(wasm);
+            engine.register_static_module("wasm", wasm_module.into());
+        }
+
+        Arc::new(Mutex::new(console))
     }
 
     pub fn engine(&mut self) -> &mut rhai::Engine {
@@ -138,4 +152,56 @@ pub struct ConsoleLine {
     pub text: String,
     pub ty: ConsoleLineType,
     pub is_server: bool,
+}
+
+#[derive(Clone)]
+struct ConsoleContext {
+    module_query: GeneralQuery<(Component<String>, Component<bool>)>,
+}
+impl ConsoleContext {
+    fn new() -> Self {
+        ConsoleContext {
+            module_query: query((core::wasm::module_name(), core::wasm::module_enabled())).build(),
+        }
+    }
+}
+
+#[export_module]
+mod wasm {
+    #[cfg(feature = "client")]
+    pub fn list(ctx: NativeCallContext) -> Dynamic {
+        list_internal(ctx, ListFilter::Client)
+    }
+
+    #[cfg(feature = "server")]
+    pub fn list_client(ctx: NativeCallContext) -> Dynamic {
+        list_internal(ctx, ListFilter::Client)
+    }
+
+    #[cfg(feature = "server")]
+    pub fn list_server(ctx: NativeCallContext) -> Dynamic {
+        list_internal(ctx, ListFilter::Server)
+    }
+
+    enum ListFilter {
+        Client,
+        Server,
+    }
+    fn list_internal(ctx: NativeCallContext, filter: ListFilter) -> Dynamic {
+        let ctx = ctx.tag().unwrap().clone_cast::<ConsoleContext>();
+        let modules = ctx.module_query.evaluate();
+
+        modules
+            .into_iter()
+            .filter(|(id, _)| {
+                let on_server = entity::has_component(*id, core::wasm::module_on_server());
+                match filter {
+                    ListFilter::Client => !on_server,
+                    ListFilter::Server => on_server,
+                }
+            })
+            .map(|(_, (name, enabled))| format!("{name}: {enabled}"))
+            .collect::<Vec<_>>()
+            .into()
+    }
 }

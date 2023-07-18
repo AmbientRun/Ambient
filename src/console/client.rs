@@ -18,8 +18,11 @@ pub fn main() {
     {
         let mut console = console.lock().unwrap();
         let engine = console.engine();
-        engine.register_fn("server", |input: String| {
-            messages::ConsoleServerInput { input }.send_server_reliable();
+        engine.register_fn("server", |input: &str| {
+            messages::ConsoleServerInput {
+                input: input.to_string(),
+            }
+            .send_server_reliable();
         });
     }
 
