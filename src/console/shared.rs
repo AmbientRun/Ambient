@@ -228,12 +228,24 @@ mod wasm {
     #[rhai_fn(return_raw)]
     pub fn reload(ctx: NativeCallContext, name: &str) -> Result<(), Box<EvalAltResult>> {
         update_module(ctx, name, |id| {
-            entity::set_component(id, core::wasm::module_enabled(), false);
-            // hack: wait a few frames and re-enable it
-            run_async(async move {
-                sleep(0.1).await;
-                entity::set_component(id, core::wasm::module_enabled(), true);
-            });
+            entity::set_component(
+                id,
+                core::wasm::bytecode_from_url(),
+                entity::get_component(id, core::wasm::bytecode_from_url()).unwrap(),
+            );
+            entity::set_component(id, core::wasm::module_enabled(), true);
+            Ok(())
+        })
+    }
+
+    #[rhai_fn(return_raw)]
+    pub fn set_bytecode_url(
+        ctx: NativeCallContext,
+        name: &str,
+        bytecode_url: &str,
+    ) -> Result<(), Box<EvalAltResult>> {
+        update_module(ctx, name, |id| {
+            entity::set_component(id, core::wasm::bytecode_from_url(), bytecode_url.to_owned());
             Ok(())
         })
     }
