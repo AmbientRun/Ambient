@@ -5,6 +5,7 @@ use std::sync::{Arc, Mutex};
 pub struct Console {
     engine: rhai::Engine,
     lines: Vec<ConsoleLine>,
+    incoming_lines: Arc<Mutex<Vec<ConsoleLine>>>,
     on_output: Option<Box<dyn FnMut() + Send + Sync>>,
     is_server: bool,
 }
@@ -17,9 +18,11 @@ impl std::fmt::Debug for Console {
 }
 impl Console {
     pub fn new(is_server: bool) -> Arc<Mutex<Self>> {
+        let incoming_lines = Arc::new(Mutex::new(Vec::new()));
         let mut console = Self {
             engine: rhai::Engine::new(),
             lines: Vec::new(),
+            incoming_lines: incoming_lines.clone(),
             on_output: None,
             is_server,
         };
@@ -32,6 +35,14 @@ impl Console {
 
             let wasm_module = exported_module!(wasm);
             engine.register_static_module("wasm", wasm_module.into());
+
+            engine.on_print(move |line| {
+                incoming_lines.lock().unwrap().push(ConsoleLine {
+                    text: line.to_string(),
+                    ty: ConsoleLineType::Normal,
+                    is_server,
+                });
+            });
         }
 
         Arc::new(Mutex::new(console))
@@ -92,7 +103,14 @@ impl Console {
             },
             Some(output),
         );
-        match self.engine.eval::<rhai::Dynamic>(text) {
+        let eval = self.engine.eval::<rhai::Dynamic>(text);
+        {
+            let mutex = self.incoming_lines.clone();
+            for line in mutex.lock().unwrap().drain(..) {
+                self.push(line, Some(output));
+            }
+        }
+        match eval {
             Ok(result) => {
                 if result.is_unit() {
                     return;
