@@ -227,6 +227,7 @@ impl Renderer {
             forward: if config.forward {
                 Some(TreeRenderer::new(
                     gpu,
+                    "forward",
                     TreeRendererConfig {
                         renderer_config: config.clone(),
                         targets: vec![Some(gpu.swapchain_format().into()), Some(normals_format)],

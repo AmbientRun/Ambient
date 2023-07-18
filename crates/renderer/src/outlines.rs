@@ -101,6 +101,7 @@ impl Outlines {
             collect_state: RendererCollectState::new(gpu),
             renderer: TreeRenderer::new(
                 gpu,
+                "outlines",
                 TreeRendererConfig {
                     renderer_config,
                     targets: vec![Some(wgpu::ColorTargetState {

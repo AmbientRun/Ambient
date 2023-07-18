@@ -51,6 +51,7 @@ pub struct TreeRendererConfig {
 }
 
 pub struct TreeRenderer {
+    label: String,
     config: Arc<TreeRendererConfig>,
     tree: HashMap<String, ShaderNode>,
     entity_primitive_count: HashMap<EntityId, usize>,
@@ -66,8 +67,9 @@ pub struct TreeRenderer {
 }
 
 impl TreeRenderer {
-    pub fn new(gpu: &Gpu, config: TreeRendererConfig) -> Self {
+    pub fn new(gpu: &Gpu, label: impl Into<String>, config: TreeRendererConfig) -> Self {
         Self {
+            label: label.into(),
             tree: HashMap::new(),
             entity_primitive_count: HashMap::new(),
             primitives_lookup: HashMap::new(),
@@ -258,6 +260,7 @@ impl TreeRenderer {
         collect_state: &mut RendererCollectState,
         mesh_buffer: &MeshBuffer,
     ) {
+        let _span = tracing::debug_span!("collect", label = self.label).entered();
         let mut material_layouts = vec![
             MaterialLayout {
                 offset: 0,
@@ -281,10 +284,10 @@ impl TreeRenderer {
             }
         }
 
-        tracing::info!(
-            "Material Layouts: {material_layouts:?}, primitives: {:#?}",
-            self.primitives
-        );
+        // tracing::info!(
+        //     "Material Layouts: {material_layouts:?}, primitives: {:#?}",
+        //     self.primitives
+        // );
 
         // assert_eq!(
         //     mem::size_of::<DrawIndexedIndirect>(),
@@ -296,10 +299,10 @@ impl TreeRenderer {
         //     mem::align_of::<wgpu::util::DrawIndexedIndirect>()
         // );
 
-        let mut commands =
-            vec![DrawIndexedIndirect::zeroed(); self.primitives.total_len() as usize];
-
         if self.config.software_culling {
+            let mut draw_commands =
+                vec![DrawIndexedIndirect::zeroed(); self.primitives.total_len() as usize];
+
             let mut counts = vec![0u32; material_layouts.len()];
 
             self.config
@@ -324,7 +327,7 @@ impl TreeRenderer {
 
                     let mesh = mesh_buffer.get_mesh_metadata(&cpu_primitive.mesh);
 
-                    commands[out_index as usize] = DrawIndexedIndirect {
+                    draw_commands[out_index as usize] = DrawIndexedIndirect {
                         vertex_count: mesh.index_count,
                         base_index: mesh.index_offset,
                         instance_count: 1,
@@ -332,11 +335,14 @@ impl TreeRenderer {
                         base_instance: instance,
                     };
                 }
-
-                collect_state.commands.set_len(gpu, commands.len() as _);
-
-                collect_state.commands.write(gpu, 0, &commands)
             }
+
+            collect_state
+                .commands
+                .set_len(gpu, draw_commands.len() as _);
+
+            tracing::info!("Writing draw commands {draw_commands:#?}");
+            collect_state.commands.write(gpu, 0, &draw_commands);
 
             let mut counts_state = collect_state.counts_cpu.lock();
             counts_state.update(counts, collect_state.tick)
@@ -344,7 +350,6 @@ impl TreeRenderer {
             {
                 let mut counts_state = collect_state.counts_cpu.lock();
                 if counts_state.counts().len() != material_layouts.len() {
-                    tracing::info!("Resizing counts buffer to {}", material_layouts.len());
                     *counts_state.counts_mut() =
                         material_layouts.iter().map(|v| v.primitive_count).collect();
                     collect_state.tick += 2;
@@ -510,7 +515,7 @@ impl TreeRenderer {
             let counts = count_state.counts().to_owned();
             world.resource(runtime()).spawn(async move {
             let data = read.await.unwrap();
-            tracing::info!(data.len=?data.len(),?data, byte_size, elem_size=mem::size_of::<[u32; 5]>(), "Read indirect commands");
+            tracing::info!(data.len=?data.len(), byte_size, elem_size=mem::size_of::<[u32; 5]>(), "Read indirect commands");
             match bytemuck::try_cast_slice::<_, [u32; 5]>(&data) {
                 Ok(data) => {
                     tracing::info!("Indirect commands: {data:#?}, counts: {counts:#?}");
@@ -602,14 +607,16 @@ impl TreeRenderer {
                             .unwrap_or(0);
 
                         // NOTE: this issues 1 draw call *for every single visible primitive* in the scene
-
-                        for i in 0..count {
-                            tracing::debug!(?offset, ?i, commands=?collect_state.commands, "Drawing primitive");
+                        if count > 1 || true {
+                            // for i in 0..count {
+                            tracing::debug!(?offset, "Drawing primitive");
                             render_pass.draw_indexed_indirect(
                                 collect_state.commands.buffer(),
-                                (offset + i as u64)
-                                    * std::mem::size_of::<DrawIndexedIndirect>() as u64,
+                                0,
+                                // (offset + i as u64)
+                                //     * std::mem::size_of::<DrawIndexedIndirect>() as u64,
                             );
+                            // }
                         }
                     }
                 }

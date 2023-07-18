@@ -37,8 +37,6 @@
         "cmd": [
             "cargo",
             "run",
-            "--features",
-            "tracing",
             "join",
             "localhost:9000",
             "--debugger"

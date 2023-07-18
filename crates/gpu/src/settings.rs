@@ -100,7 +100,7 @@ pub struct SettingsKey;
 
 impl SyncAssetKey<Settings> for SettingsKey {
     fn load(&self, _assets: ambient_std::asset_cache::AssetCache) -> Settings {
-        #[cfg(target_os = "unknown")]
+        // #[cfg(target_os = "unknown")]
         {
             Settings {
                 resolution: Resolution((800, 600)),
@@ -109,17 +109,17 @@ impl SyncAssetKey<Settings> for SettingsKey {
                 software_culling: true,
             }
         }
-        #[cfg(not(target_os = "unknown"))]
-        {
-            match Settings::load_from_file() {
-                Ok(settings) => settings,
-                Err(error) => {
-                    tracing::warn!(
-                        "Failed to load settings with error {error}. Fallback to defaults."
-                    );
-                    Settings::default()
-                }
-            }
-        }
+        // #[cfg(not(target_os = "unknown"))]
+        // {
+        //     match Settings::load_from_file() {
+        //         Ok(settings) => settings,
+        //         Err(error) => {
+        //             tracing::warn!(
+        //                 "Failed to load settings with error {error}. Fallback to defaults."
+        //             );
+        //             Settings::default()
+        //         }
+        //     }
+        // }
     }
 }
