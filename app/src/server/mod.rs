@@ -172,7 +172,6 @@ pub async fn start(
 
         wasm::initialize(
             &mut server_world,
-            assets.clone(),
             project_path.clone(),
             &manifest,
             &metadata,

@@ -10,6 +10,12 @@ description = "Whether or not this module is on the server."
 type = "Empty"
 attributes = ["Networked", "Store", "Debuggable"]
 
+[components."core::wasm::bytecode_from_url"]
+name = "Bytecode from URL"
+description = "Asset URL for the bytecode of a WASM component."
+type = "String"
+attributes = ["Networked", "Store", "Debuggable"]
+
 [components."core::wasm::module_enabled"]
 name = "Module enabled"
 description = "Whether or not this module is enabled."

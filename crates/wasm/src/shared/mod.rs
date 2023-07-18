@@ -12,9 +12,9 @@ pub mod message;
 #[cfg(feature = "wit")]
 pub mod wit;
 
-use std::sync::Arc;
+use std::{str::FromStr, sync::Arc};
 
-use ambient_core::async_ecs::async_run;
+use ambient_core::{asset_cache, async_ecs::async_run, runtime};
 use ambient_ecs::{
     dont_despawn_on_unload, generated::messages, query, world_events, Entity, EntityId, FnSystem,
     Message, SystemGroup, World, WorldEventReader,
@@ -23,6 +23,9 @@ use ambient_ecs::{
 pub use ambient_ecs::generated::components::core::wasm::*;
 
 use ambient_project::Identifier;
+use ambient_std::{
+    asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl, download_asset::BytesFromUrl,
+};
 use itertools::Itertools;
 pub use module::*;
 
@@ -39,8 +42,6 @@ mod internal {
         module_state: ModuleState,
         @[Store, Description["Bytecode of a WASM component; if attached, will be run."]]
         module_bytecode: ModuleBytecode,
-        @[Networked, Store, Debuggable, Description["Asset URL for the bytecode of a clientside WASM component."]]
-        client_bytecode_from_url: String,
         @[Networked, Store, Debuggable]
         module_errors: ModuleErrors,
         @[Networked, Debuggable, Description["The ID of the module on the \"other side\" of this module, if available. (e.g. serverside module to clientside module)."]]
@@ -54,8 +55,7 @@ mod internal {
 }
 
 pub use internal::{
-    client_bytecode_from_url, messenger, module_bytecode, module_errors, module_state,
-    module_state_maker, remote_paired_id,
+    messenger, module_bytecode, module_errors, module_state, module_state_maker, remote_paired_id,
 };
 
 use self::message::Source;
@@ -83,6 +83,45 @@ pub fn systems() -> SystemGroup {
     SystemGroup::new(
         "core/wasm",
         vec![
+            query(bytecode_from_url().changed()).to_system(move |q, world, qs, _| {
+                // TODO: there has got to be a better way to do this
+                let is_server = world.name() == "server";
+
+                for (id, url) in q.collect_cloned(world, qs) {
+                    let on_server = world.has_component(id, module_on_server());
+                    if is_server != on_server {
+                        continue;
+                    }
+
+                    let url = match AbsAssetUrl::from_str(&url) {
+                        Ok(value) => value,
+                        Err(err) => {
+                            log::warn!("Failed to parse bytecode_from_url URL: {:?}", err);
+                            continue;
+                        }
+                    };
+                    let assets = world.resource(asset_cache()).clone();
+                    let async_run = world.resource(async_run()).clone();
+                    world.resource(runtime()).spawn(async move {
+                        match BytesFromUrl::new(url, true).get(&assets).await {
+                            Err(err) => {
+                                log::warn!("Failed to load bytecode from URL: {:?}", err);
+                            }
+                            Ok(bytecode) => {
+                                async_run.run(move |world| {
+                                    world
+                                        .add_component(
+                                            id,
+                                            module_bytecode(),
+                                            ModuleBytecode(bytecode.to_vec()),
+                                        )
+                                        .ok();
+                                });
+                            }
+                        }
+                    });
+                }
+            }),
             query((module_bytecode(), module_enabled().changed())).to_system(
                 move |q, world, qs, _| {
                     ambient_profiling::scope!("WASM module reloads");
