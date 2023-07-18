@@ -168,6 +168,61 @@ impl ConsoleContext {
 
 #[export_module]
 mod wasm {
+    pub fn enabled(ctx: NativeCallContext, name: &str) -> bool {
+        let ctx = console_context(ctx);
+        ctx.module_query
+            .evaluate()
+            .into_iter()
+            .find(|(_, (module_name, _))| module_name == name)
+            .map(|(_, (_, enabled))| enabled)
+            .unwrap_or(false)
+    }
+
+    #[rhai_fn(return_raw)]
+    pub fn set_enabled(
+        ctx: NativeCallContext,
+        name: &str,
+        enabled: bool,
+    ) -> Result<(), Box<EvalAltResult>> {
+        update_module(ctx, name, |id| {
+            entity::set_component(id, core::wasm::module_enabled(), enabled);
+            Ok(())
+        })
+    }
+
+    #[rhai_fn(return_raw)]
+    pub fn reload(ctx: NativeCallContext, name: &str) -> Result<(), Box<EvalAltResult>> {
+        update_module(ctx, name, |id| {
+            entity::set_component(id, core::wasm::module_enabled(), false);
+            // hack: wait a few frames and re-enable it
+            run_async(async move {
+                sleep(0.1).await;
+                entity::set_component(id, core::wasm::module_enabled(), true);
+            });
+            Ok(())
+        })
+    }
+
+    fn update_module(
+        ctx: NativeCallContext,
+        name: &str,
+        mut updater: impl FnMut(EntityId) -> Result<(), Box<EvalAltResult>>,
+    ) -> Result<(), Box<EvalAltResult>> {
+        let ctx = console_context(ctx);
+        let id = ctx
+            .module_query
+            .evaluate()
+            .into_iter()
+            .find(|(_, (module_name, _))| module_name == name)
+            .map(|(id, (_, _))| id);
+
+        if let Some(id) = id {
+            updater(id)
+        } else {
+            Err("module not found".into())
+        }
+    }
+
     #[cfg(feature = "client")]
     pub fn list(ctx: NativeCallContext) -> Dynamic {
         list_internal(ctx, ListFilter::Client)
@@ -188,10 +243,9 @@ mod wasm {
         Server,
     }
     fn list_internal(ctx: NativeCallContext, filter: ListFilter) -> Dynamic {
-        let ctx = ctx.tag().unwrap().clone_cast::<ConsoleContext>();
-        let modules = ctx.module_query.evaluate();
-
-        modules
+        let ctx = console_context(ctx);
+        ctx.module_query
+            .evaluate()
             .into_iter()
             .filter(|(id, _)| {
                 let on_server = entity::has_component(*id, core::wasm::module_on_server());
@@ -203,5 +257,9 @@ mod wasm {
             .map(|(_, (name, enabled))| format!("{name}: {enabled}"))
             .collect::<Vec<_>>()
             .into()
+    }
+
+    fn console_context(ctx: NativeCallContext) -> ConsoleContext {
+        ctx.tag().unwrap().clone_cast::<ConsoleContext>()
     }
 }
