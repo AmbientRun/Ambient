@@ -28,6 +28,7 @@ pub struct Gpu {
     /// If this is true, we don't need to use blocking device.polls, since they are assumed to be polled elsewhere
     pub will_be_polled: bool,
 }
+
 impl Gpu {
     pub async fn new(window: Option<&Window>) -> Self {
         Self::with_config(window, false, &Settings::default()).await
@@ -60,6 +61,7 @@ impl Gpu {
             // https://docs.rs/wgpu/latest/wgpu/enum.Dx12Compiler.html
             dx12_shader_compiler: wgpu::Dx12Compiler::Fxc,
         });
+
         let surface = window.map(|window| unsafe { instance.create_surface(window).unwrap() });
         #[cfg(not(target_os = "unknown"))]
         {
@@ -84,11 +86,16 @@ impl Gpu {
         let adapter_limits = adapter.limits();
         tracing::debug!("Adapter limits:\n{:#?}", adapter_limits);
 
-        #[cfg(any(target_os = "macos", target_os = "unknown"))]
-        let features = wgpu::Features::empty();
-        #[cfg(all(not(target_os = "macos"), not(target_os = "unknown")))]
-        let features =
-            wgpu::Features::MULTI_DRAW_INDIRECT | wgpu::Features::MULTI_DRAW_INDIRECT_COUNT;
+        cfg_if::cfg_if! {
+            if #[cfg(target_os = "macos")] {
+                let features = wgpu::Features::empty();
+            } else if #[cfg(target_os = "unknown")] {
+                let features = wgpu::Features::INDIRECT_FIRST_INSTANCE;
+            } else {
+                let features =
+                wgpu::Features::MULTI_DRAW_INDIRECT | wgpu::Features::MULTI_DRAW_INDIRECT_COUNT;
+            }
+        };
 
         tracing::info!("Using features: {features:#?}");
 

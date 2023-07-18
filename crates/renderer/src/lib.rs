@@ -502,11 +502,16 @@ pub type RendererShaderProducer =
 #[repr(C)]
 #[derive(Debug, Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct DrawIndexedIndirect {
-    pub vertex_count: u32,
-    pub instance_count: u32,
-    pub base_index: u32,
-    pub vertex_offset: u32,
-    pub base_instance: u32,
+    index_count: u32,
+    instance_count: u32,
+    first_index: u32,
+    base_vertex: u32,
+    first_instance: u32,
+    // pub vertex_count: u32,
+    // pub instance_count: u32,
+    // pub base_index: u32,
+    // pub vertex_offset: u32,
+    // pub base_instance: u32,
 }
 
 fn is_transparent(

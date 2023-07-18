@@ -768,6 +768,7 @@ dependencies = [
  "async-trait",
  "bytemuck",
  "byteorder",
+ "cfg-if",
  "directories",
  "futures",
  "glam 0.24.0",

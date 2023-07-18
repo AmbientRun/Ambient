@@ -289,17 +289,12 @@ impl TreeRenderer {
         //     self.primitives
         // );
 
-        // assert_eq!(
-        //     mem::size_of::<DrawIndexedIndirect>(),
-        //     mem::size_of::<wgpu::util::DrawIndexedIndirect>()
-        // );
+        assert_eq!(mem::size_of::<DrawIndexedIndirect>(), 20);
 
-        // assert_eq!(
-        //     mem::align_of::<DrawIndexedIndirect>(),
-        //     mem::align_of::<wgpu::util::DrawIndexedIndirect>()
-        // );
+        assert_eq!(mem::align_of::<DrawIndexedIndirect>(), 4);
 
-        if self.config.software_culling {
+        if self.config.render_mode == RenderMode::Direct {
+        } else if self.config.software_culling {
             let mut draw_commands =
                 vec![DrawIndexedIndirect::zeroed(); self.primitives.total_len() as usize];
 
@@ -327,12 +322,13 @@ impl TreeRenderer {
 
                     let mesh = mesh_buffer.get_mesh_metadata(&cpu_primitive.mesh);
 
+                    tracing::debug!(?out_index);
                     draw_commands[out_index as usize] = DrawIndexedIndirect {
-                        vertex_count: mesh.index_count,
-                        base_index: mesh.index_offset,
+                        index_count: mesh.index_count,
                         instance_count: 1,
-                        vertex_offset: 0,
-                        base_instance: instance,
+                        first_index: mesh.index_offset,
+                        base_vertex: 0,
+                        first_instance: instance,
                     };
                 }
             }
@@ -607,16 +603,13 @@ impl TreeRenderer {
                             .unwrap_or(0);
 
                         // NOTE: this issues 1 draw call *for every single visible primitive* in the scene
-                        if count > 1 || true {
-                            // for i in 0..count {
-                            tracing::debug!(?offset, "Drawing primitive");
+                        for i in 0..count {
+                            tracing::debug!(?offset, ?i, ?count, "Drawing primitive");
                             render_pass.draw_indexed_indirect(
                                 collect_state.commands.buffer(),
-                                0,
-                                // (offset + i as u64)
-                                //     * std::mem::size_of::<DrawIndexedIndirect>() as u64,
+                                (offset + i as u64)
+                                    * std::mem::size_of::<DrawIndexedIndirect>() as u64,
                             );
-                            // }
                         }
                     }
                 }
