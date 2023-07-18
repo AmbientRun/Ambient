@@ -27,7 +27,7 @@ impl Console {
             is_server,
         };
 
-        let ctx = ConsoleContext::new();
+        let ctx = ConsoleContext::new(is_server, incoming_lines.clone());
 
         {
             let engine = console.engine();
@@ -174,25 +174,42 @@ pub struct ConsoleLine {
 
 #[derive(Clone)]
 struct ConsoleContext {
-    module_query: GeneralQuery<(Component<String>, Component<bool>)>,
+    module_query: GeneralQuery<(Component<String>, Component<String>, Component<bool>)>,
+    is_server: bool,
+    incoming_lines: Arc<Mutex<Vec<ConsoleLine>>>,
 }
 impl ConsoleContext {
-    fn new() -> Self {
+    fn new(is_server: bool, incoming_lines: Arc<Mutex<Vec<ConsoleLine>>>) -> Self {
         ConsoleContext {
-            module_query: query((core::wasm::module_name(), core::wasm::module_enabled())).build(),
+            module_query: query((
+                core::wasm::module_name(),
+                core::wasm::bytecode_from_url(),
+                core::wasm::module_enabled(),
+            ))
+            .build(),
+            is_server,
+            incoming_lines,
         }
+    }
+
+    fn print(&self, msg: &str) {
+        self.incoming_lines.lock().unwrap().push(ConsoleLine {
+            text: msg.to_string(),
+            ty: ConsoleLineType::Normal,
+            is_server: self.is_server,
+        });
     }
 }
 
 #[export_module]
 mod wasm {
     pub fn enabled(ctx: NativeCallContext, name: &str) -> bool {
-        let ctx = console_context(ctx);
+        let ctx = console_context(&ctx);
         ctx.module_query
             .evaluate()
             .into_iter()
-            .find(|(_, (module_name, _))| module_name == name)
-            .map(|(_, (_, enabled))| enabled)
+            .find(|(_, (module_name, _, _))| module_name == name)
+            .map(|(_, (_, _, enabled))| enabled)
             .unwrap_or(false)
     }
 
@@ -226,13 +243,13 @@ mod wasm {
         name: &str,
         mut updater: impl FnMut(EntityId) -> Result<(), Box<EvalAltResult>>,
     ) -> Result<(), Box<EvalAltResult>> {
-        let ctx = console_context(ctx);
+        let ctx = console_context(&ctx);
         let id = ctx
             .module_query
             .evaluate()
             .into_iter()
-            .find(|(_, (module_name, _))| module_name == name)
-            .map(|(id, (_, _))| id);
+            .find(|(_, (module_name, _, _))| module_name == name)
+            .map(|(id, _)| id);
 
         if let Some(id) = id {
             updater(id)
@@ -242,17 +259,17 @@ mod wasm {
     }
 
     #[cfg(feature = "client")]
-    pub fn list(ctx: NativeCallContext) -> Dynamic {
+    pub fn list(ctx: NativeCallContext) {
         list_internal(ctx, ListFilter::Client)
     }
 
     #[cfg(feature = "server")]
-    pub fn list_client(ctx: NativeCallContext) -> Dynamic {
+    pub fn list_client(ctx: NativeCallContext) {
         list_internal(ctx, ListFilter::Client)
     }
 
     #[cfg(feature = "server")]
-    pub fn list_server(ctx: NativeCallContext) -> Dynamic {
+    pub fn list_server(ctx: NativeCallContext) {
         list_internal(ctx, ListFilter::Server)
     }
 
@@ -260,24 +277,22 @@ mod wasm {
         Client,
         Server,
     }
-    fn list_internal(ctx: NativeCallContext, filter: ListFilter) -> Dynamic {
-        let ctx = console_context(ctx);
-        ctx.module_query
-            .evaluate()
-            .into_iter()
-            .filter(|(id, _)| {
+    fn list_internal(ctx: NativeCallContext, filter: ListFilter) {
+        let ctx = console_context(&ctx);
+        for (_, (name, bytecode_url, enabled)) in
+            ctx.module_query.evaluate().into_iter().filter(|(id, _)| {
                 let on_server = entity::has_component(*id, core::wasm::module_on_server());
                 match filter {
                     ListFilter::Client => !on_server,
                     ListFilter::Server => on_server,
                 }
             })
-            .map(|(_, (name, enabled))| format!("{name}: {enabled}"))
-            .collect::<Vec<_>>()
-            .into()
+        {
+            ctx.print(&format!("{}: {} ({})", name, enabled, bytecode_url));
+        }
     }
+}
 
-    fn console_context(ctx: NativeCallContext) -> ConsoleContext {
-        ctx.tag().unwrap().clone_cast::<ConsoleContext>()
-    }
+fn console_context(ctx: &NativeCallContext) -> ConsoleContext {
+    ctx.tag().unwrap().clone_cast::<ConsoleContext>()
 }

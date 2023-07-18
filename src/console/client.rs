@@ -137,7 +137,7 @@ fn line_to_text(line: &ConsoleLine) -> Element {
     };
 
     let text = if line.is_server {
-        format!("server|{}", line.text)
+        format!("[s] {}", line.text)
     } else {
         line.text.clone()
     };
