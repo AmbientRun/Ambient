@@ -36,8 +36,6 @@ pub fn main() {
         }
 
         if msg.jump {
-            println!("___jump triggered___");
-            // components::player_vspeed(),
             entity::add_component(player_id, components::player_vspeed(), 0.6);
         }
 
@@ -97,7 +95,8 @@ pub fn main() {
     ))
     .each_frame(move |list| {
         for (player_id, (_, direction, rot, vspeed)) in list {
-            let speed = vec2(0.04, 0.06);
+            let scale_factor = 1.0;
+            let speed = scale_factor * vec2(0.04, 0.06);
             let displace = rot * (direction.normalize_or_zero() * speed).extend(vspeed);
             let collision = physics::move_character(player_id, displace, 0.01, delta_time());
             if collision.down {
