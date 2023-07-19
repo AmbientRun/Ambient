@@ -151,7 +151,11 @@ impl ConnectedClient {
             handler(world, assets, send, recv).instrument(debug_span!("handle_bi", name, id))
         };
 
-        handler.await;
+        let rt = ambient_sys::task::RuntimeHandle::current();
+        #[cfg(target_os = "unknown")]
+        rt.spawn_local(handler);
+        #[cfg(not(target_os = "unknown"))]
+        rt.spawn(handler);
 
         Ok(())
     }
@@ -178,7 +182,11 @@ impl ConnectedClient {
             handler(world, assets, recv).instrument(tracing::debug_span!("handle_uni", name, id))
         };
 
-        handler.await;
+        let rt = ambient_sys::task::RuntimeHandle::current();
+        #[cfg(target_os = "unknown")]
+        rt.spawn_local(handler);
+        #[cfg(not(target_os = "unknown"))]
+        rt.spawn(handler);
 
         Ok(())
     }

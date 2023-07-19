@@ -301,7 +301,14 @@ impl ConnectedClient {
         };
 
         let _span = debug_span!("handle_uni", name, id).entered();
-        handler(data.state.clone(), assets, &self.user_id, Box::pin(stream));
+        let user_id = self.user_id.clone();
+        let state = data.state.clone();
+        ambient_sys::task::spawn(
+            async move {
+                handler(state, assets, &user_id, Box::pin(stream));
+            }
+            .instrument(debug_span!("handle_bi", name, id)),
+        );
 
         Ok(())
     }
@@ -334,13 +341,14 @@ impl ConnectedClient {
             )
         };
 
-        let _span = debug_span!("handle_bi", name, id).entered();
-        handler(
-            data.state.clone(),
-            assets,
-            &self.user_id,
-            Box::pin(send),
-            Box::pin(recv),
+        let user_id = self.user_id.clone();
+        let state = data.state.clone();
+
+        ambient_sys::task::spawn(
+            async move {
+                handler(state, assets, &user_id, Box::pin(send), Box::pin(recv));
+            }
+            .instrument(debug_span!("handle_bi", name, id)),
         );
 
         Ok(())
