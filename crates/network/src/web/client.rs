@@ -343,7 +343,7 @@ async fn handle_connection(
             }
 
             Some(Ok(recv)) = conn.accept_uni() => {
-                connected.process_uni(&shared_client_state, recv)?;
+                connected.process_uni(&shared_client_state, recv);
             }
 
             Some(diff) = diff_stream.next() => {

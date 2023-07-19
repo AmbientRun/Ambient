@@ -3,14 +3,15 @@ use std::sync::Arc;
 use ambient_core::player::get_by_user_id;
 use ambient_ecs::{WorldDiff, WorldStreamFilter};
 use ambient_std::{fps_counter::FpsSample, log_result};
-use anyhow::{bail, Context};
-use bytes::{Buf, Bytes};
+use anyhow::Context;
+use bytes::Bytes;
 use futures::{Stream, StreamExt};
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
 use tracing::{debug_span, Instrument};
 use uuid::Uuid;
 
 use crate::{
+    bytes_ext::BufExt,
     client::NetworkTransport,
     log_network_result, log_task_result,
     proto::ServerPush,
@@ -131,7 +132,6 @@ impl ServerProtoState {
 
     #[tracing::instrument(level = "debug")]
     fn process_connect(&mut self, data: &ConnectionData, user_id: String) {
-        tracing::debug!("[{}] Locking world", user_id);
         let mut state = data.state.lock();
 
         let (control_tx, control_rx) = flume::unbounded();
@@ -247,11 +247,7 @@ impl ConnectedClient {
         data: &ConnectionData,
         mut payload: Bytes,
     ) -> anyhow::Result<()> {
-        if payload.len() < 4 {
-            bail!("Received malformed datagram");
-        }
-
-        let id = payload.get_u32();
+        let id = payload.try_get_u32()?;
 
         let ((name, handler), assets) = {
             let mut state = data.state.lock();

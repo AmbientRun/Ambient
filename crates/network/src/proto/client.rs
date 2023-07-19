@@ -7,13 +7,14 @@ use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::ContentBaseUrlKey,
 };
-use anyhow::{bail, Context};
-use bytes::{Buf, Bytes};
+use anyhow::Context;
+use bytes::Bytes;
 use parking_lot::Mutex;
 use tokio::io::AsyncReadExt;
 use tracing::{debug_span, Instrument};
 
 use crate::{
+    bytes_ext::BufExt,
     client::{
         bi_stream_handlers, datagram_handlers, uni_stream_handlers, PlatformRecvStream,
         PlatformSendStream,
@@ -134,7 +135,7 @@ impl ConnectedClient {
         state: &SharedClientGameState,
         send: PlatformSendStream,
         mut recv: PlatformRecvStream,
-    ) -> anyhow::Result<()> {
+    ) {
         let state = state.clone();
 
         let task = log_task_result(async move {
@@ -167,16 +168,10 @@ impl ConnectedClient {
         rt.spawn_local(task);
         #[cfg(not(target_os = "unknown"))]
         rt.spawn(task);
-
-        Ok(())
     }
 
     /// Processes a server initiated unidirectional stream
-    pub fn process_uni(
-        &mut self,
-        state: &SharedClientGameState,
-        mut recv: PlatformRecvStream,
-    ) -> anyhow::Result<()> {
+    pub fn process_uni(&mut self, state: &SharedClientGameState, mut recv: PlatformRecvStream) {
         let state = state.clone();
 
         let task = log_task_result(
@@ -215,8 +210,6 @@ impl ConnectedClient {
         rt.spawn_local(task);
         #[cfg(not(target_os = "unknown"))]
         rt.spawn(task);
-
-        Ok(())
     }
 
     /// Processes an incoming datagram
@@ -226,11 +219,7 @@ impl ConnectedClient {
         state: &SharedClientGameState,
         mut data: Bytes,
     ) -> anyhow::Result<()> {
-        if data.len() < 4 {
-            bail!("Received malformed datagram");
-        }
-
-        let id = data.get_u32();
+        let id = data.try_get_u32()?;
 
         let mut gs = state.lock();
         let gs = &mut *gs;
