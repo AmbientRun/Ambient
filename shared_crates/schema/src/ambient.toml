@@ -22,7 +22,8 @@ includes = [
     "schema/rect.toml",
     "schema/rendering.toml",
     "schema/text.toml",
-    "schema/transform.toml"
+    "schema/transform.toml",
+    "schema/wasm.toml"
 ]
 
 # Messages

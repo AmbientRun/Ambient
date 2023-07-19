@@ -1,7 +1,8 @@
 [ember]
-id = "instancing"
+id = "ambient-example-instancing"
 owner = "ambient"
 name = "Instancing"
+description = "This show how to render many objects with a single draw call."
 version = "0.0.1"
 
 [components]

@@ -2,6 +2,7 @@
 id = "ambient-example-decals"
 owner = "ambient"
 name = "Decals"
+description = "This shows how to render decals."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/decals"
 type = "Game"

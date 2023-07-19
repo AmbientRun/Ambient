@@ -10,7 +10,7 @@ use crate::{
         wit,
     },
     message::Listener,
-    messages,
+    messages::core as messages,
     prelude::RuntimeMessage,
 };
 

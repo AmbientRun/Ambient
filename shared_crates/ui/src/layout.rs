@@ -3,7 +3,7 @@
 //! The layout is roughly based on [Windows Forms](https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/layout?view=netdesktop-6.0#container-flow-layout).
 //!
 //! There are two major layout components, [Dock] and [Flow] (which includes [FlowColumn] and [FlowRow]).
-use crate::{use_window_logical_resolution, UIBase, UIExt};
+use crate::{HooksExt, UIBase, UIExt};
 use ambient_cb::Cb;
 use ambient_color::Color;
 use ambient_element::{
@@ -32,7 +32,7 @@ pub struct WindowSized(pub Vec<Element>);
 define_el_function_for_vec_element_newtype!(WindowSized);
 impl ElementComponent for WindowSized {
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
-        let res = use_window_logical_resolution(hooks);
+        let res = hooks.use_window_logical_resolution();
         Dock(self.0)
             .el()
             .with(width(), res.x as _)

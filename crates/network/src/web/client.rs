@@ -339,11 +339,11 @@ async fn handle_connection(
             }
 
             Some(Ok((send, recv))) = conn.accept_bi() => {
-                connected.process_bi(&shared_client_state, send, recv).await?;
+                connected.process_bi(&shared_client_state, send, recv);
             }
 
             Some(Ok(recv)) = conn.accept_uni() => {
-                connected.process_uni(&shared_client_state, recv).await?;
+                connected.process_uni(&shared_client_state, recv);
             }
 
             Some(diff) = diff_stream.next() => {

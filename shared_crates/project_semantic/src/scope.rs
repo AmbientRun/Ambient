@@ -104,7 +104,7 @@ pub struct Scope {
 impl std::fmt::Debug for Scope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut ds = f.debug_struct("Scope");
-        ds.field("id", &self.data);
+        ds.field("data", &self.data);
 
         if let Some(path) = &self.path {
             ds.field("path", &path);

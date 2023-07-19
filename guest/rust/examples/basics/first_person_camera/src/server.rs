@@ -53,10 +53,11 @@ pub fn main() {
                 Entity::new()
                     .with_merge(make_transformable())
                     .with_default(cube())
+                    .with_default(physics_controlled())
+                    .with_default(player_movement_direction())
                     .with(color(), Vec4::ONE)
                     .with(character_controller_height(), 2.)
                     .with(character_controller_radius(), 0.5)
-                    .with_default(physics_controlled())
                     .with(player_head_ref(), head)
                     .with(ball_ref(), ball)
                     .with(children(), vec![head])
@@ -69,7 +70,7 @@ pub fn main() {
     messages::Input::subscribe(move |source, msg| {
         let Some(player_id) = source.client_entity_id() else { return; };
 
-        entity::add_component(player_id, player_movement_direction(), msg.direction);
+        entity::set_component(player_id, player_movement_direction(), msg.direction);
 
         let yaw = entity::mutate_component(player_id, player_yaw(), |yaw| {
             *yaw = (*yaw + msg.mouse_delta.x * 0.01) % TAU;

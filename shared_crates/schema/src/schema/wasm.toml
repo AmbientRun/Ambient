@@ -1,0 +1,34 @@
+[ember]
+id = "wasm"
+name = "WASM"
+description = "State related to WASM functionality."
+
+[components.module]
+name = "Module"
+description = "A module."
+type = "empty"
+attributes = ["networked", "store", "debuggable"]
+
+[components.module-on-server]
+name = "Module on server"
+description = "Whether or not this module is on the server."
+type = "empty"
+attributes = ["networked", "store", "debuggable"]
+
+[components.bytecode-from-url]
+name = "Bytecode from URL"
+description = "Asset URL for the bytecode of a WASM component."
+type = "string"
+attributes = ["networked", "store", "debuggable"]
+
+[components.module-enabled]
+name = "Module enabled"
+description = "Whether or not this module is enabled."
+type = "bool"
+attributes = ["networked", "store", "debuggable"]
+
+[components.module-name]
+name = "Module name"
+description = "The name of this module."
+type = "string"
+attributes = ["networked", "store", "debuggable"]

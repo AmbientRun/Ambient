@@ -167,15 +167,9 @@ pub async fn start(
             .with(persistent_resources(), ())
             .spawn(&mut server_world);
 
-        wasm::initialize(
-            &mut server_world,
-            assets.clone(),
-            ember_path.clone(),
-            &manifest,
-            &metadata,
-        )
-        .await
-        .unwrap();
+        wasm::initialize(&mut server_world, ember_path.clone(), &manifest, &metadata)
+            .await
+            .unwrap();
 
         if let Commands::View { asset_path, .. } = cli.command.clone() {
             let asset_path = ember_path

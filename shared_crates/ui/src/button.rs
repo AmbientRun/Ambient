@@ -2,7 +2,6 @@
 
 use std::{
     fmt::Debug,
-    str::FromStr,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
@@ -41,7 +40,7 @@ use crate::{
     dropdown::Tooltip,
     layout::{FlowColumn, FlowRow},
     text::Text,
-    UIBase, UIElement, UIExt,
+    HooksExt, UIBase, UIElement, UIExt,
 };
 
 #[derive(Clone, Debug)]
@@ -503,21 +502,14 @@ impl ElementComponent for Hotkey {
             on_invoke,
         } = *self;
         let (is_pressed, _) = hooks.use_state_with(|_| Arc::new(AtomicBool::new(false)));
-        hooks.use_runtime_message::<messages::WindowKeyboardInput>({
+        hooks.use_keyboard_input({
             let is_pressed = is_pressed.clone();
-            move |world, event| {
-                let modifiers = ModifiersState::from_bits(event.modifiers).unwrap();
-
-                // FIXME: get_ref returns `&T` on native, but `T` on guest
-                if let Some(virtual_keycode) = event
-                    .keycode
-                    .as_deref()
-                    .and_then(|x| VirtualKeyCode::from_str(x).ok())
-                {
+            move |world, keycode, modifiers, pressed| {
+                if let Some(virtual_keycode) = keycode {
                     if virtual_keycode != hotkey {
                         return;
                     }
-                    if event.pressed {
+                    if pressed {
                         if modifiers == hotkey_modifier {
                             if let Some(on_is_pressed_changed) = on_is_pressed_changed.clone() {
                                 on_is_pressed_changed.0(true);

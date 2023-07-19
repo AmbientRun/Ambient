@@ -1,11 +1,10 @@
 use std::{collections::HashMap, sync::Arc};
 
 use ambient_ecs::{EntityId, SystemGroup, World};
-use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
+use ambient_std::asset_url::AbsAssetUrl;
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{
-    client_bytecode_from_url, module_bytecode, module_name, remote_paired_id, spawn_module,
-    MessageType, ModuleBytecode,
+    bytecode_from_url, module_name, remote_paired_id, spawn_module, MessageType,
 };
 use anyhow::Context;
 
@@ -15,7 +14,6 @@ pub fn systems() -> SystemGroup {
 
 pub async fn initialize(
     world: &mut World,
-    assets: AssetCache,
     project_path: AbsAssetUrl,
     manifest: &ambient_project::Manifest,
     build_metadata: &ambient_build::Metadata,
@@ -61,7 +59,7 @@ pub async fn initialize(
                 format!("{description} ({name})")
             };
 
-            let id = spawn_module(world, name, description, true);
+            let id = spawn_module(world, &name, description, true, target == "server");
             modules_to_entity_ids.insert(
                 (
                     target,
@@ -75,13 +73,8 @@ pub async fn initialize(
                 id,
             );
 
-            if target == "client" {
-                let bytecode_url = AbsAssetUrl::from_asset_key(path)?.to_string();
-                world.add_component(id, client_bytecode_from_url(), bytecode_url)?;
-            } else {
-                let bytecode = component_url.download_bytes(&assets).await?;
-                world.add_component(id, module_bytecode(), ModuleBytecode(bytecode))?;
-            }
+            let bytecode_url = AbsAssetUrl::from_asset_key(path)?.to_string();
+            world.add_component(id, bytecode_from_url(), bytecode_url)?;
         }
     }
 

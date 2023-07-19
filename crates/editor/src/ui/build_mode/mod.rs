@@ -1,4 +1,4 @@
-use std::{str::FromStr, sync::Arc, time::Duration};
+use std::{sync::Arc, time::Duration};
 
 use ambient_core::{
     asset_cache, async_ecs::async_run, runtime, window::get_mouse_clip_space_position,
@@ -20,9 +20,9 @@ use ambient_std::{
 };
 use ambient_ui_native::{
     command_modifier,
-    layout::{docking_impl, width, Docking},
-    margin, padding, space_between_items, Borders, Button, ButtonStyle, Dock, FlowRow, Hotkey,
-    ScreenContainer, Separator, StylesExt, STREET,
+    layout::{docking, width, Docking},
+    margin, padding, space_between_items, Borders, Button, ButtonStyle, Dock, FlowRow, HooksExt,
+    Hotkey, ScreenContainer, Separator, StylesExt, STREET,
 };
 use tokio::time::sleep;
 
@@ -181,10 +181,8 @@ impl ElementComponent for EditorBuildMode {
                 update_targets,
             );
         }
-        hooks.use_runtime_message::<messages::WindowKeyboardInput>(move |_world, event| {
-            let pressed = event.pressed;
-            if let Some(keycode) = event.keycode.as_deref() {
-                let keycode = VirtualKeyCode::from_str(keycode).unwrap();
+        hooks.use_keyboard_input(move |_world, keycode, _modifiers, pressed| {
+            if let Some(keycode) = keycode {
                 match keycode {
                     VirtualKeyCode::LShift => {
                         if pressed {

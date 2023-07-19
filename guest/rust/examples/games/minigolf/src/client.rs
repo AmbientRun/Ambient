@@ -21,7 +21,7 @@ fn main() {
     let ball_drop_player = audio::AudioPlayer::new();
     messages::Hit::subscribe(move |_source, data| {
         let ball = data.ball;
-        let vel = entity::get_component(ball, linear_velocity()).unwrap();
+        let vel = entity::get_component(ball, linear_velocity()).unwrap_or_default();
         let mut amp = (vel.x.abs() / 5.0).powf(2.0)
             + (vel.y.abs() / 5.0).powf(2.0)
             + (vel.z.abs() / 5.0).powf(2.0);
@@ -33,7 +33,7 @@ fn main() {
 
     messages::Bonk::subscribe(move |_source, data| {
         let ball = data.ball;
-        let vel = entity::get_component(ball, linear_velocity()).unwrap();
+        let vel = entity::get_component(ball, linear_velocity()).unwrap_or_default();
         let mut amp = (vel.x.abs() / 5.0).powf(2.0)
             + (vel.y.abs() / 5.0).powf(2.0)
             + (vel.z.abs() / 5.0).powf(2.0);

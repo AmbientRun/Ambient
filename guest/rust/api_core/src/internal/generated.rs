@@ -295,6 +295,12 @@ pub mod components {
             pub fn looping() -> Component<bool> {
                 *LOOPING
             }
+            static ONEPOLE_LPF: Lazy<Component<f32>> =
+                Lazy::new(|| __internal_get_component("ambient/core/audio/onepole-lpf"));
+            #[doc = "**One pole low pass filter**: With this component, the audio will be filtered with a one pole low pass filter.\n\n\n\n*Attributes*: maybe-resource, debuggable"]
+            pub fn onepole_lpf() -> Component<f32> {
+                *ONEPOLE_LPF
+            }
             static PLAYING_SOUND: Lazy<Component<()>> =
                 Lazy::new(|| __internal_get_component("ambient/core/audio/playing-sound"));
             #[doc = "**Playing sound**: The entity with this comp is a playing sound.\n\nWe can attach other components to it to control the sound parameters.\n\n\n\n*Attributes*: maybe-resource, debuggable"]
@@ -837,7 +843,7 @@ pub mod components {
             }
             static PLANE_COLLIDER: Lazy<Component<()>> =
                 Lazy::new(|| __internal_get_component("ambient/core/physics/plane-collider"));
-            #[doc = "**Plane collider**: If attached, this entity will have a plane physics collider.\n\n*Attributes*: debuggable, networked, store"]
+            #[doc = "**Plane collider**: If attached, this entity will have a plane physics collider. A plane is an infinite, flat surface. If you need a bounded flat surface, consider using a cube collider instead.\n\n*Attributes*: debuggable, networked, store"]
             pub fn plane_collider() -> Component<()> {
                 *PLANE_COLLIDER
             }
@@ -1420,6 +1426,48 @@ pub mod components {
             #[doc = "**Translation**: The translation/position of this entity.\n\n*Attributes*: debuggable, networked, store"]
             pub fn translation() -> Component<Vec3> {
                 *TRANSLATION
+            }
+        }
+        #[allow(unused)]
+        pub mod wasm {
+            use crate::global::{
+                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
+                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
+                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
+            };
+            use crate::{
+                ecs::{Component, __internal_get_component},
+                once_cell::sync::Lazy,
+            };
+            static MODULE: Lazy<Component<()>> =
+                Lazy::new(|| __internal_get_component("ambient/core/wasm/module"));
+            #[doc = "**Module**: A module.\n\n*Attributes*: networked, store, debuggable"]
+            pub fn module() -> Component<()> {
+                *MODULE
+            }
+            static MODULE_ON_SERVER: Lazy<Component<()>> =
+                Lazy::new(|| __internal_get_component("ambient/core/wasm/module-on-server"));
+            #[doc = "**Module on server**: Whether or not this module is on the server.\n\n*Attributes*: networked, store, debuggable"]
+            pub fn module_on_server() -> Component<()> {
+                *MODULE_ON_SERVER
+            }
+            static BYTECODE_FROM_URL: Lazy<Component<String>> =
+                Lazy::new(|| __internal_get_component("ambient/core/wasm/bytecode-from-url"));
+            #[doc = "**Bytecode from URL**: Asset URL for the bytecode of a WASM component.\n\n*Attributes*: networked, store, debuggable"]
+            pub fn bytecode_from_url() -> Component<String> {
+                *BYTECODE_FROM_URL
+            }
+            static MODULE_ENABLED: Lazy<Component<bool>> =
+                Lazy::new(|| __internal_get_component("ambient/core/wasm/module-enabled"));
+            #[doc = "**Module enabled**: Whether or not this module is enabled.\n\n*Attributes*: networked, store, debuggable"]
+            pub fn module_enabled() -> Component<bool> {
+                *MODULE_ENABLED
+            }
+            static MODULE_NAME: Lazy<Component<String>> =
+                Lazy::new(|| __internal_get_component("ambient/core/wasm/module-name"));
+            #[doc = "**Module name**: The name of this module.\n\n*Attributes*: networked, store, debuggable"]
+            pub fn module_name() -> Component<String> {
+                *MODULE_NAME
             }
         }
     }
