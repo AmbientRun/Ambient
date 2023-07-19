@@ -1,6 +1,7 @@
 use ambient_ecs::{
     query, Component, ComponentValue, EntityId, Networked, Serializable, Store, World,
 };
+use futures::Future;
 use std::{io::ErrorKind, pin::Pin};
 use stream::FrameError;
 use tokio::io::{AsyncRead, AsyncWrite};
@@ -207,6 +208,12 @@ macro_rules! log_network_result {
             $crate::log_network_error(&err.into());
         }
     };
+}
+
+pub async fn log_task_result(task: impl Future<Output = anyhow::Result<()>>) {
+    if let Err(err) = task.await {
+        log_network_error(&err);
+    }
 }
 
 #[cfg(not(target_os = "unknown"))]
