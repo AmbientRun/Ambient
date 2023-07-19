@@ -83,7 +83,6 @@ impl GpuWorld {
                 gpu,
                 "GpuWorld.layout_buffer",
                 1,
-                1,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
                     | wgpu::BufferUsages::COPY_SRC,
@@ -163,7 +162,6 @@ impl GpuComponentsBuffer {
             buffer: TypedBuffer::new(
                 gpu,
                 format!("EntityBuffers.{}.data", config.format),
-                size,
                 size,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST

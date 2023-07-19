@@ -63,10 +63,7 @@ impl DrawCountState {
             return;
         }
 
-        tracing::info!(
-            "Updating counts for {} materials tick: {tick}",
-            counts.len()
-        );
+        tracing::debug!(?counts, "Updating counts");
 
         self.last_tick = tick;
         self.counts = counts;
@@ -102,13 +99,11 @@ impl RendererCollectState {
                 gpu,
                 "RendererCollectState.params",
                 1,
-                1,
                 wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             ),
             commands: TypedBuffer::new(
                 gpu,
                 "RendererCollectState.commands",
-                1,
                 1,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
@@ -118,7 +113,6 @@ impl RendererCollectState {
             counts: TypedBuffer::new(
                 gpu,
                 "RendererCollectState.counts",
-                1,
                 1,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
@@ -130,7 +124,6 @@ impl RendererCollectState {
             material_layouts: TypedBuffer::new(
                 gpu,
                 "RendererCollectState.materials",
-                1,
                 1,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
@@ -263,10 +256,16 @@ impl RendererCollect {
         material_layouts: &[MaterialLayout],
         collect_state: &mut RendererCollectState,
     ) {
+        tracing::info!(
+            from = collect_state.counts.len(),
+            to = material_layouts.len(),
+            "Resizing counts buffer",
+        );
+        // if collect_state.counts.len() != material_layouts.len() {
         let counts = vec![0; material_layouts.len()];
 
-        tracing::info!("Resizing counts buffer to {}", counts.len());
         collect_state.counts.fill(gpu, &counts, |_| {});
+        // }
 
         // tracing::debug!("material_layouts: {material_layouts:?}");
 
@@ -290,7 +289,6 @@ impl RendererCollect {
         output: &mut RendererCollectState,
         primitives_count: u32,
     ) {
-        tracing::debug!("Resizing collect command buffer to {primitives_count}");
         output.commands.set_len(gpu, primitives_count as usize);
 
         // Avoid binding 0 size buffers
@@ -421,7 +419,6 @@ impl CollectCountStagingBuffers {
             None => TypedBuffer::<u32>::new(
                 gpu,
                 "RendererCollectState.counts_staging",
-                size,
                 size,
                 wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
             ),

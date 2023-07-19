@@ -86,7 +86,6 @@ impl GpuWorldUpdater {
                 gpu,
                 "GpuWorldUpdate.chunks",
                 1,
-                1,
                 wgpu::BufferUsages::COPY_DST
                     | wgpu::BufferUsages::COPY_SRC
                     | wgpu::BufferUsages::STORAGE,

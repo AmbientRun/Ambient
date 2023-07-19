@@ -47,7 +47,6 @@ impl<T> TypedBuffer<T> {
         gpu: &Gpu,
         label: impl Into<String>,
         capacity: usize,
-        len: usize,
         usage: wgpu::BufferUsages,
     ) -> Self {
         let label = label.into();
@@ -65,8 +64,8 @@ impl<T> TypedBuffer<T> {
         Self {
             label,
             buffer,
-            len,
-            capacity: len,
+            len: 0,
+            capacity: 0,
             _marker: PhantomData,
         }
     }

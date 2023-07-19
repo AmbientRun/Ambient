@@ -357,7 +357,7 @@ impl TreeRenderer {
                 .collect
                 .update(gpu, &material_layouts, collect_state);
 
-            tracing::info!("Primitives total_len: {}", self.primitives.total_len());
+            tracing::trace!("Primitives total_len: {}", self.primitives.total_len());
 
             self.config.renderer_resources.collect.compute_indirect(
                 gpu,
@@ -503,25 +503,6 @@ impl TreeRenderer {
 
         tracing::debug!("Tree: {:?}", self.tree.keys().collect_vec());
 
-        let byte_size = collect_state.commands.byte_len();
-
-        if byte_size > 0 {
-            let read = collect_state.commands.read_staging(gpu, ..);
-
-            let counts = count_state.counts().to_owned();
-            world.resource(runtime()).spawn(async move {
-            let data = read.await.unwrap();
-            tracing::info!(data.len=?data.len(), byte_size, elem_size=mem::size_of::<[u32; 5]>(), "Read indirect commands");
-            match bytemuck::try_cast_slice::<_, [u32; 5]>(&data) {
-                Ok(data) => {
-                    tracing::info!("Indirect commands: {data:#?}, counts: {counts:#?}");
-                }
-                Err(err) => {
-                    log::error!("Failed to cast indirect commands: {err}")
-                }
-            }
-        });
-        }
         for node in self.tree.values() {
             render_pass.set_pipeline(node.pipeline.pipeline());
             // Bind on first invocation
@@ -544,7 +525,6 @@ impl TreeRenderer {
                 render_pass.set_bind_group(bind_groups.len() as _, material.bind_group(), &[]);
 
                 if !set_scissors_safe(render_pass, render_target_size, mat.scissors) {
-                    panic!("");
                     continue;
                 }
 
@@ -603,8 +583,8 @@ impl TreeRenderer {
                             .unwrap_or(0);
 
                         // NOTE: this issues 1 draw call *for every single visible primitive* in the scene
+                        tracing::debug!(?count, ?offset, "Drawing primitives for node");
                         for i in 0..count {
-                            tracing::debug!(?offset, ?i, ?count, "Drawing primitive");
                             render_pass.draw_indexed_indirect(
                                 collect_state.commands.buffer(),
                                 (offset + i as u64)

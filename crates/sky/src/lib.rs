@@ -150,7 +150,6 @@ impl CloudMaterial {
             gpu,
             "Cloud Buffer",
             state.tree.len().max(64) as usize,
-            0,
             BufferUsages::STORAGE | BufferUsages::COPY_DST | BufferUsages::COPY_SRC,
         );
 

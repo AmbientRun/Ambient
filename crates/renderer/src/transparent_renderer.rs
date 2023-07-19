@@ -49,7 +49,6 @@ impl TransparentRenderer {
             gpu,
             "TransparentRenderer.primitives",
             1,
-            1,
             wgpu::BufferUsages::STORAGE
                 | wgpu::BufferUsages::COPY_DST
                 | wgpu::BufferUsages::COPY_SRC
