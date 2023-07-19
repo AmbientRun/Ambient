@@ -129,45 +129,30 @@ impl ConnectedClient {
         Ok(())
     }
 
-    /// Processes a server initiated bidirectional stream
-    pub fn process_bi(
+    /// Processes an incoming datagram
+    #[tracing::instrument(level = "debug")]
+    pub fn process_datagram(
         &mut self,
         state: &SharedClientGameState,
-        send: PlatformSendStream,
-        mut recv: PlatformRecvStream,
-    ) {
-        let state = state.clone();
+        mut data: Bytes,
+    ) -> anyhow::Result<()> {
+        let id = data.try_get_u32()?;
 
-        let task = log_task_result(async move {
-            let id = recv.read_u32().await?;
+        let mut gs = state.lock();
+        let gs = &mut *gs;
+        let world = &mut gs.world;
+        let assets = gs.assets.clone();
 
-            // The handler is returned to avoid holding the lock while the handler is running
-            let handler = {
-                let mut gs = state.lock();
-                let gs = &mut *gs;
-                let world = &mut gs.world;
-                let assets = gs.assets.clone();
+        let (name, handler) = world
+            .resource(datagram_handlers())
+            .get(&id)
+            .with_context(|| format!("No handler for stream {id}"))?
+            .clone();
 
-                let (name, handler) = world
-                    .resource(bi_stream_handlers())
-                    .get(&id)
-                    .with_context(|| format!("No handler for stream {id}"))?
-                    .clone();
+        let _span = debug_span!("handle_uni", name, id).entered();
+        handler(world, assets, data);
 
-                handler(world, assets, send, recv).instrument(debug_span!("handle_bi", name, id))
-            };
-
-            handler.await;
-
-            Ok(())
-        })
-        .instrument(debug_span!("process_bi"));
-
-        let rt = ambient_sys::task::RuntimeHandle::current();
-        #[cfg(target_os = "unknown")]
-        rt.spawn_local(task);
-        #[cfg(not(target_os = "unknown"))]
-        rt.spawn(task);
+        Ok(())
     }
 
     /// Processes a server initiated unidirectional stream
@@ -212,29 +197,44 @@ impl ConnectedClient {
         rt.spawn(task);
     }
 
-    /// Processes an incoming datagram
-    #[tracing::instrument(level = "debug")]
-    pub fn process_datagram(
+    /// Processes a server initiated bidirectional stream
+    pub fn process_bi(
         &mut self,
         state: &SharedClientGameState,
-        mut data: Bytes,
-    ) -> anyhow::Result<()> {
-        let id = data.try_get_u32()?;
+        send: PlatformSendStream,
+        mut recv: PlatformRecvStream,
+    ) {
+        let state = state.clone();
 
-        let mut gs = state.lock();
-        let gs = &mut *gs;
-        let world = &mut gs.world;
-        let assets = gs.assets.clone();
+        let task = log_task_result(async move {
+            let id = recv.read_u32().await?;
 
-        let (name, handler) = world
-            .resource(datagram_handlers())
-            .get(&id)
-            .with_context(|| format!("No handler for stream {id}"))?
-            .clone();
+            // The handler is returned to avoid holding the lock while the handler is running
+            let handler = {
+                let mut gs = state.lock();
+                let gs = &mut *gs;
+                let world = &mut gs.world;
+                let assets = gs.assets.clone();
 
-        let _span = debug_span!("handle_uni", name, id).entered();
-        handler(world, assets, data);
+                let (name, handler) = world
+                    .resource(bi_stream_handlers())
+                    .get(&id)
+                    .with_context(|| format!("No handler for stream {id}"))?
+                    .clone();
 
-        Ok(())
+                handler(world, assets, send, recv).instrument(debug_span!("handle_bi", name, id))
+            };
+
+            handler.await;
+
+            Ok(())
+        })
+        .instrument(debug_span!("process_bi"));
+
+        let rt = ambient_sys::task::RuntimeHandle::current();
+        #[cfg(target_os = "unknown")]
+        rt.spawn_local(task);
+        #[cfg(not(target_os = "unknown"))]
+        rt.spawn(task);
     }
 }
