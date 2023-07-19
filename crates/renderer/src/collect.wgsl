@@ -22,11 +22,11 @@ struct MaterialLayout {
 var<storage> input_primitives: array<CollectPrimitive>;
 
 struct DrawIndexedIndirect {
-    vertex_count: u32,
+    index_count: u32,
     instance_count: u32,
-    base_index: u32,
-    vertex_offset: i32,
-    base_instance: u32,
+    first_index: u32,
+    base_vertex: u32,
+    first_instance: u32,
 };
 
 
@@ -108,14 +108,14 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let mesh_index = entity_primitive.x;
     let primitive_lod = entity_primitive.y;
 
-    // Atomically acquire an index and add it to the compact output buffer
-    let out_offset = atomicAdd(&output_counts[primitive.material_index], 1u);
+    if is_visible(primitive.entity_loc, primitive_lod) {
+        // Atomically acquire an index and add it to the compact output buffer
+        let out_offset = atomicAdd(&output_counts[primitive.material_index], 1u);
 
-    let out_index = material_layout.offset + out_offset;
-    let mesh = mesh_metadatas[mesh_index];
+        let out_index = material_layout.offset + out_offset;
+        let mesh = mesh_metadatas[mesh_index];
 
-    output_commands[out_index].vertex_count = mesh.index_count;
-    output_commands[out_index].instance_count = 1u;
-    output_commands[out_index].base_index = mesh.index_offset;
-    output_commands[out_index].base_instance = index;
+        let command = DrawIndexedIndirect(mesh.index_count, 1u, mesh.index_offset, 0u, index);
+        output_commands[out_index] = command;
+    }
 }
