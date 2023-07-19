@@ -87,35 +87,35 @@ fn is_visible(entity_loc: vec2<u32>, primitive_lod: u32) -> bool {
 @compute
 @workgroup_size(COLLECT_WORKGROUP_SIZE)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
-    // let index = global_id.x;
+    let index = global_id.x;
 
-    // let primitive = input_primitives[index];
+    let primitive = input_primitives[index];
 
-    // // NOTE: This *only* works if there is no overcommit in the buffer allocation and binding.
-    // // As of now, the `MultiBuffer` will not contain any holes or uninitialized
-    // // trailers. If it does, garbage or old primitives will be read, and ghosts will be rendered.
-    // if index >= arrayLength(&input_primitives) {
-    //     return;
-    // }
+    // NOTE: This *only* works if there is no overcommit in the buffer allocation and binding.
+    // As of now, the `MultiBuffer` will not contain any holes or uninitialized
+    // trailers. If it does, garbage or old primitives will be read, and ghosts will be rendered.
+    if index >= arrayLength(&input_primitives) {
+        return;
+    }
 
-    // let material_layout = material_layouts[primitive.material_index];
+    let material_layout = material_layouts[primitive.material_index];
 
-    // if index < material_layout.offset || index >= material_layout.offset + material_layout.count {
-    //     return;
-    // }
+    if index < material_layout.offset || index >= material_layout.offset + material_layout.count {
+        return;
+    }
 
-    // var entity_primitive = get_entity_primitive(primitive.entity_loc, primitive.primitive_index);
-    // let mesh_index = entity_primitive.x;
-    // let primitive_lod = entity_primitive.y;
+    var entity_primitive = get_entity_primitive(primitive.entity_loc, primitive.primitive_index);
+    let mesh_index = entity_primitive.x;
+    let primitive_lod = entity_primitive.y;
 
-    // // Atomically acquire an index and add it to the compact output buffer
-    // let out_offset = atomicAdd(&output_counts[primitive.material_index], 1u);
+    // Atomically acquire an index and add it to the compact output buffer
+    let out_offset = atomicAdd(&output_counts[primitive.material_index], 1u);
 
-    // let out_index = material_layout.offset + out_offset;
-    // let mesh = mesh_metadatas[mesh_index];
+    let out_index = material_layout.offset + out_offset;
+    let mesh = mesh_metadatas[mesh_index];
 
-    // output_commands[out_index].vertex_count = mesh.index_count;
-    // output_commands[out_index].instance_count = 1u;
-    // output_commands[out_index].base_index = mesh.index_offset;
-    // output_commands[out_index].base_instance = index;
+    output_commands[out_index].vertex_count = mesh.index_count;
+    output_commands[out_index].instance_count = 1u;
+    output_commands[out_index].base_index = mesh.index_offset;
+    output_commands[out_index].base_instance = index;
 }

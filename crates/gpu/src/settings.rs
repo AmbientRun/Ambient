@@ -106,7 +106,7 @@ impl SyncAssetKey<Settings> for SettingsKey {
                 resolution: Resolution((800, 600)),
                 vsync: Vsync(true),
                 render_mode: RenderMode::Indirect,
-                software_culling: true,
+                software_culling: false,
             }
         }
         // #[cfg(not(target_os = "unknown"))]
