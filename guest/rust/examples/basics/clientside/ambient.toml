@@ -1,6 +1,7 @@
 [ember]
 id = "ambient_example_clientside"
-name = "clientside"
+name = "Clientside"
+description = "How to use client side code."
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/clientside"
 type = "Game"
