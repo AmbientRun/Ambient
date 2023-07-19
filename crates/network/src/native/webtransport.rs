@@ -133,17 +133,18 @@ async fn handle_webtransport_session(
                 server.process_control(&data, frame?)?;
             }
             stream = conn.accept_uni() => {
-                connected.process_uni(&data, stream?.ok_or(NetworkError::ConnectionClosed)?.1).await?;
+                let (_, stream) = stream?.ok_or(NetworkError::ConnectionClosed)?;
+                connected.process_uni(&data, stream);
             }
             stream = conn.accept_bi() => {
                 if let AcceptedBi::BidiStream(_, stream) = stream?.ok_or(NetworkError::ConnectionClosed)? {
                     let (send, recv) = stream.split();
 
-                    connected.process_bi(&data, send, recv).await?;
+                    connected.process_bi(&data, send, recv);
                 }
             }
             datagram = conn.accept_datagram() => {
-                connected.process_datagram(&data, datagram?.ok_or(NetworkError::ConnectionClosed)?.1).await?;
+                connected.process_datagram(&data, datagram?.ok_or(NetworkError::ConnectionClosed)?.1)?;
             }
             Some(msg) = connected.control_rx.next() => {
                 push_send.send(&msg).await?;

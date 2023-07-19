@@ -12,7 +12,7 @@ use uuid::Uuid;
 
 use crate::{
     client::NetworkTransport,
-    log_network_result,
+    log_network_result, log_task_result,
     proto::ServerPush,
     server::{
         bi_stream_handlers, create_player_entity_data, datagram_handlers, uni_stream_handlers,
@@ -242,7 +242,7 @@ impl ServerProtoState {
 impl ConnectedClient {
     /// Processes an incoming datagram
     #[tracing::instrument(level = "debug", skip(data))]
-    pub async fn process_datagram(
+    pub fn process_datagram(
         &mut self,
         data: &ConnectionData,
         mut payload: Bytes,
@@ -275,83 +275,77 @@ impl ConnectedClient {
     }
 
     #[tracing::instrument(level = "debug", skip(data, stream))]
-    pub async fn process_uni<R>(
-        &mut self,
-        data: &ConnectionData,
-        mut stream: R,
-    ) -> anyhow::Result<()>
+    pub fn process_uni<R>(&mut self, data: &ConnectionData, mut stream: R)
     where
         R: 'static + Send + Sync + AsyncRead + Unpin,
     {
-        let id = stream.read_u32().await?;
-
-        let ((name, handler), assets) = {
-            let mut state = data.state.lock();
-            let world = state
-                .get_player_world_mut(&self.user_id)
-                .context("Failed to get player world")?;
-            (
-                world
-                    .resource(uni_stream_handlers())
-                    .get(&id)
-                    .with_context(|| format!("No handler for uni stream: {id}"))?
-                    .clone(),
-                state.assets.clone(),
-            )
-        };
-
-        let _span = debug_span!("handle_uni", name, id).entered();
         let user_id = self.user_id.clone();
         let state = data.state.clone();
-        ambient_sys::task::spawn(
-            async move {
-                handler(state, assets, &user_id, Box::pin(stream));
-            }
-            .instrument(debug_span!("handle_bi", name, id)),
-        );
 
-        Ok(())
+        ambient_sys::task::spawn(
+            log_task_result(async move {
+                let id = stream.read_u32().await?;
+
+                let ((name, handler), assets) = {
+                    let mut state = state.lock();
+                    let world = state
+                        .get_player_world_mut(&user_id)
+                        .context("Failed to get player world")?;
+                    (
+                        world
+                            .resource(uni_stream_handlers())
+                            .get(&id)
+                            .with_context(|| format!("No handler for uni stream: {id}"))?
+                            .clone(),
+                        state.assets.clone(),
+                    )
+                };
+
+                debug_span!("handle_uni", name, id).in_scope(|| {
+                    handler(state, assets, &user_id, Box::pin(stream));
+                });
+
+                Ok(())
+            })
+            .instrument(debug_span!("process_uni")),
+        );
     }
 
     #[tracing::instrument(level = "debug", skip(data, send, recv))]
-    pub async fn process_bi<S, R>(
-        &mut self,
-        data: &ConnectionData,
-        send: S,
-        mut recv: R,
-    ) -> anyhow::Result<()>
+    pub fn process_bi<S, R>(&mut self, data: &ConnectionData, send: S, mut recv: R)
     where
         R: 'static + Send + Sync + Unpin + AsyncRead,
         S: 'static + Send + Sync + Unpin + AsyncWrite,
     {
-        let id = recv.read_u32().await?;
-
-        let ((name, handler), assets) = {
-            let mut state = data.state.lock();
-            let world = state
-                .get_player_world_mut(&self.user_id)
-                .context("Failed to get player world")?;
-            (
-                world
-                    .resource(bi_stream_handlers())
-                    .get(&id)
-                    .with_context(|| format!("No handler for bi stream: {id}"))?
-                    .clone(),
-                state.assets.clone(),
-            )
-        };
-
         let user_id = self.user_id.clone();
         let state = data.state.clone();
 
         ambient_sys::task::spawn(
-            async move {
-                handler(state, assets, &user_id, Box::pin(send), Box::pin(recv));
-            }
-            .instrument(debug_span!("handle_bi", name, id)),
-        );
+            log_task_result(async move {
+                let id = recv.read_u32().await?;
 
-        Ok(())
+                let ((name, handler), assets) = {
+                    let mut state = state.lock();
+                    let world = state
+                        .get_player_world_mut(&user_id)
+                        .context("Failed to get player world")?;
+                    (
+                        world
+                            .resource(bi_stream_handlers())
+                            .get(&id)
+                            .with_context(|| format!("No handler for bi stream: {id}"))?
+                            .clone(),
+                        state.assets.clone(),
+                    )
+                };
+
+                debug_span!("handle_bi", name, id)
+                    .in_scope(|| handler(state, assets, &user_id, Box::pin(send), Box::pin(recv)));
+
+                Ok(())
+            })
+            .instrument(debug_span!("process_bi")),
+        );
     }
 }
 
