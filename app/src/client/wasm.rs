@@ -34,7 +34,13 @@ pub fn initialize(world: &mut World, mute_audio: bool) -> anyhow::Result<()> {
     world.add_resource(audio_sender(), Arc::new(tx));
 
     std::thread::spawn(move || {
-        let stream = ambient_audio::AudioStream::new().unwrap();
+        let stream = match ambient_audio::AudioStream::new() {
+            Ok(stream) => stream,
+            Err(err) => {
+                log::error!("Failed to initialize audio stream: {err}");
+                return;
+            }
+        };
         let mut sound_info_lib = std::collections::HashMap::new();
         while let Ok(message) = rx.recv() {
             match message {
