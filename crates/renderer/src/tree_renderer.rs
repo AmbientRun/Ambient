@@ -4,7 +4,6 @@ use std::{
     sync::Arc,
 };
 
-use ambient_core::runtime;
 use ambient_ecs::{query, ArchetypeFilter, EntityId, FramedEventsReader, QueryState, World};
 use ambient_gpu::{
     gpu::Gpu,
@@ -223,8 +222,7 @@ impl TreeRenderer {
                 subbuffer
             );
 
-            let old = self
-                .collect_primitives
+            self.collect_primitives
                 .insert(subbuffer, primitives.clone());
 
             self.primitives
@@ -494,7 +492,7 @@ impl TreeRenderer {
     #[ambient_profiling::function]
     pub(crate) fn render<'a>(
         &'a self,
-        gpu: &Gpu,
+        _: &Gpu,
         world: &World,
         mesh_buffer: &MeshBuffer,
         render_pass: &mut wgpu::RenderPass<'a>,

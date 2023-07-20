@@ -178,7 +178,7 @@ pub fn systems() -> SystemGroup {
                         );
                     }
                     for (i, p) in primitives.iter().enumerate().take(MAX_PRIMITIVE_COUNT) {
-                        p_mesh[i] = p.mesh.index() as u32;
+                        p_mesh[i] = p.mesh.index();
                         p_lod[i] = p.lod as u32;
                     }
                 }

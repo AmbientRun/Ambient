@@ -24,7 +24,7 @@ use ambient_std::{
 };
 use glam::uvec2;
 use std::sync::Arc;
-use tracing::{debug_span, info_span};
+use tracing::debug_span;
 use wgpu::{BindGroupLayout, BindGroupLayoutEntry, TextureView};
 
 pub const GLOBALS_BIND_GROUP: &str = "GLOBALS_BIND_GROUP";
@@ -581,7 +581,7 @@ impl Renderer {
     pub fn is_rendered(&self) -> bool {
         #[cfg(any(target_os = "macos", target_os = "unknown"))]
         let res = self.forward_collect_state.counts_cpu.lock().counts().len()
-            == self.forward_collect_state.counts.len() as usize;
+            == self.forward_collect_state.counts.len();
 
         #[cfg(all(not(target_os = "macos"), not(target_os = "unknown")))]
         let res = true;
