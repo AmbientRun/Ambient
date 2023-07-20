@@ -267,7 +267,7 @@ impl RendererCollect {
         collect_state.counts.fill(gpu, &counts, |_| {});
         // }
 
-        // tracing::debug!("material_layouts: {material_layouts:?}");
+        tracing::debug!("material_layouts: {material_layouts:?}");
 
         collect_state
             .material_layouts
@@ -295,12 +295,6 @@ impl RendererCollect {
         if primitives_count == 0 {
             return;
         }
-
-        assert_eq!(
-            input_primitives.total_len(),
-            primitives_count as u64,
-            "Expected count {primitives_count}",
-        );
 
         let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: None,

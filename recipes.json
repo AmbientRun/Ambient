@@ -45,6 +45,19 @@
             "RUST_LOG": "ambient_renderer=debug,ambient_gpu=debug,info"
         }
     },
+    "join-release": {
+        "cmd": [
+            "cargo",
+            "run",
+            "--release",
+            "join",
+            "localhost:9000",
+            "--debugger"
+        ],
+        "env": {
+            "RUST_LOG": "ambient_renderer=debug,ambient_gpu=debug,info"
+        }
+    },
     "debug-join": {
         "cmd": [
             "cargo",
@@ -55,11 +68,15 @@
         ],
         "components": {
             "cargo-dap": {
+                "adapter": "rust",
                 "args": [
                     "join",
                     "localhost:9000",
                     "--debugger"
-                ]
+                ],
+                "env": {
+                    "RUST_LOG": "ambient_renderer=debug,ambient_gpu=debug,info"
+                }
             }
         }
     },
@@ -71,6 +88,12 @@
     },
     "serve-primitives": {
         "cmd": "cargo run --features tracing -- serve ./guest/rust/examples/basics/primitives/",
+        "env": {
+            "RUST_LOG": "ambient_network=debug,info"
+        }
+    },
+    "serve-procedural": {
+        "cmd": "cargo run --features tracing -- serve ./guest/rust/examples/basics/procedural_generation/",
         "env": {
             "RUST_LOG": "ambient_network=debug,info"
         }

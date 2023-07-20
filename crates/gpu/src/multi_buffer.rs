@@ -419,6 +419,11 @@ impl<T: bytemuck::Pod> TypedMultiBuffer<T> {
         self.buffer.total_size / self.item_size
     }
 
+    pub fn total_capacity(&self) -> u64 {
+        debug_assert_eq!(self.buffer.total_size % self.item_size, 0);
+        self.buffer.total_capacity / self.item_size
+    }
+
     pub fn create_buffer(&mut self, gpu: &Gpu, capacity: Option<u64>) -> SubBufferId {
         self.buffer.create_buffer(gpu, capacity)
     }
@@ -476,6 +481,16 @@ impl<T: bytemuck::Pod> TypedMultiBuffer<T> {
         offset: u64,
         data: &[T],
     ) -> Result<(), MultiBufferError> {
+        // let buffer = self
+        //     .buffer
+        //     .sub_buffers
+        //     .get_mut(id)
+        //     .map(|v| v.as_mut())
+        //     .flatten()
+        //     .expect("Destination sub buffer does not exist");
+
+        // buffer.size_bytes = data.len() as u64 * self.item_size;
+
         self.buffer
             .write(gpu, id, offset * self.item_size, bytemuck::cast_slice(data))
     }

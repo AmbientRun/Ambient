@@ -57,7 +57,8 @@ pub struct TreeRenderer {
     entity_primitive_count: HashMap<EntityId, usize>,
     primitives_lookup: HashMap<(EntityId, PrimitiveIndex), (String, String, usize)>,
     loc_changed_reader: FramedEventsReader<EntityId>,
-    collect_primitives: BTreeMap<u32, Vec<CollectPrimitive>>,
+    /// CPU side copy of the primitives on the GPU
+    collect_primitives: BTreeMap<usize, Vec<CollectPrimitive>>,
 
     primitives: TypedMultiBuffer<CollectPrimitive>,
     primitives_bind_group: Option<wgpu::BindGroup>,
@@ -163,6 +164,7 @@ impl TreeRenderer {
         self.spawn_qs = spawn_qs;
         self.despawn_qs = despawn_qs;
         self.clean_empty(gpu);
+
         for (_, id) in self.loc_changed_reader.iter(world.loc_changed()) {
             if let Ok(primitives) = world.get_ref(*id, primitives()) {
                 for primivite_index in 0..primitives.len() {
@@ -207,13 +209,10 @@ impl TreeRenderer {
                         )
                         .unwrap();
 
-                    primitive_writes.push((mat.primitives_subbuffer as u32, primitives));
+                    primitive_writes.push((mat.primitives_subbuffer, primitives));
                 }
             }
         }
-
-        self.collect_primitives
-            .extend(primitive_writes.iter().cloned());
 
         gpu.queue.submit(Some(encoder.finish()));
 
@@ -223,8 +222,19 @@ impl TreeRenderer {
                 primitives.len(),
                 subbuffer
             );
+
+            let old = self
+                .collect_primitives
+                .insert(subbuffer, primitives.clone());
+
+            tracing::debug!(
+                old = ?old.map(|v| v.len()),
+                new = primitives.len(),
+                "Replaced primitives"
+            );
+
             self.primitives
-                .write(gpu, subbuffer as _, 0, &primitives)
+                .write(gpu, subbuffer, 0, &primitives)
                 .unwrap();
         }
 
@@ -296,7 +306,7 @@ impl TreeRenderer {
         if self.config.render_mode == RenderMode::Direct {
         } else if self.config.software_culling {
             let mut draw_commands =
-                vec![DrawIndexedIndirect::zeroed(); self.primitives.total_len() as usize];
+                vec![DrawIndexedIndirect::zeroed(); self.primitives.total_capacity() as usize];
 
             let mut counts = vec![0u32; material_layouts.len()];
 
@@ -309,8 +319,9 @@ impl TreeRenderer {
                 let buffer_offset = self.primitives.buffer_offset(subbuffer as _).unwrap();
 
                 for (i, primitive) in primitives.iter().enumerate() {
-                    let _material_layout = &material_layouts[primitive.material_index as usize];
-                    let out_index = counts[primitive.material_index as usize];
+                    let material_layout = &material_layouts[primitive.material_index as usize];
+                    let out_index =
+                        material_layout.offset + counts[primitive.material_index as usize];
                     counts[primitive.material_index as usize] += 1;
 
                     let id =
@@ -323,6 +334,7 @@ impl TreeRenderer {
                     let mesh = mesh_buffer.get_mesh_metadata(&cpu_primitive.mesh);
 
                     tracing::debug!(?out_index);
+                    assert_eq!(draw_commands[out_index as usize].instance_count, 0);
                     draw_commands[out_index as usize] = DrawIndexedIndirect {
                         index_count: mesh.index_count,
                         instance_count: 1,
@@ -333,11 +345,29 @@ impl TreeRenderer {
                 }
             }
 
+            let total_primitives = draw_commands
+                .iter()
+                .map(|v| v.instance_count as usize)
+                .sum::<usize>();
+
+            assert_eq!(
+                total_primitives,
+                material_layouts
+                    .iter()
+                    .map(|v| v.primitive_count as usize)
+                    .sum::<usize>(),
+                "Total primitives mismatch {:#?}",
+                self.collect_primitives,
+            );
+
             collect_state
                 .commands
                 .set_len(gpu, draw_commands.len() as _);
 
-            tracing::info!("Writing draw commands {draw_commands:#?}");
+            tracing::info!(
+                ?total_primitives,
+                "Writing draw commands {draw_commands:#?}"
+            );
             collect_state.commands.write(gpu, 0, &draw_commands);
 
             let mut counts_state = collect_state.counts_cpu.lock();
@@ -368,12 +398,7 @@ impl TreeRenderer {
                 entities_bind_group,
                 &self.primitives,
                 collect_state,
-                self.primitives.total_len() as u32,
-            );
-
-            assert_eq!(
-                self.primitives.total_len() as usize,
-                collect_state.commands.len()
+                self.primitives.total_capacity() as u32,
             );
 
             assert_eq!(
@@ -465,8 +490,7 @@ impl TreeRenderer {
                         .remove_buffer(gpu, mat.primitives_subbuffer)
                         .unwrap();
 
-                    self.collect_primitives
-                        .remove(&(mat.primitives_subbuffer as u32));
+                    self.collect_primitives.remove(&(mat.primitives_subbuffer));
 
                     self.material_indices.release_index(mat.material_index);
                 }

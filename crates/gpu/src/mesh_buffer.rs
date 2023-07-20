@@ -283,6 +283,7 @@ impl MeshBuffer {
 
         self.metadata_buffer
             .write(gpu, metadata_offset, &[metadata]);
+
         MESHES_TOTAL_SIZE.store(self.size() as usize, Ordering::SeqCst);
 
         Arc::new(GpuMesh {
