@@ -229,6 +229,13 @@ impl<T: Pod> TypedBuffer<T> {
         }
     }
 
+    /// Writes to the *initialized* region of the buffer
+    ///
+    /// # Panics
+    ///
+    /// If the written data is outside the current `len` of the buffer. This is because the buffer
+    /// can not implicitly resize at this stage as it would invalidate bind groups and miss pending
+    /// writes for the current buffer (if changed to a new buffer).
     pub fn write(&self, gpu: &Gpu, index: usize, data: &[T]) {
         assert!(
             data.len() + index <= self.len,
@@ -251,6 +258,11 @@ impl<T: Pod> TypedBuffer<T> {
         // Convert the bounds to byte offsets
 
         let bounds = self.to_byte_offsets(bounds);
+
+        if bounds.is_empty() {
+            return Ok(Vec::new());
+        }
+
         let (tx, rx) = tokio::sync::oneshot::channel();
         let slice = self.buffer().slice(bounds);
 
@@ -284,7 +296,7 @@ impl<T: Pod> TypedBuffer<T> {
         let size = bounds.end - bounds.start;
 
         if size == 0 {
-            panic!("Cannot read 0 bytes from a buffer");
+            panic!("Cannot read 0 bytes from a buffer using 'static staging future");
         }
 
         let mut encoder = gpu

@@ -79,13 +79,13 @@ impl GpuWorld {
         );
 
         Self {
-            layout_buffer: TypedBuffer::new(
+            layout_buffer: TypedBuffer::new_init(
                 gpu,
                 "GpuWorld.layout_buffer",
-                1,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
                     | wgpu::BufferUsages::COPY_SRC,
+                &[0],
             ),
             buffers: config
                 .buffers

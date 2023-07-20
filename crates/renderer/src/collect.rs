@@ -95,11 +95,11 @@ impl RendererCollectState {
     pub fn new(gpu: &Gpu) -> Self {
         log::debug!("Setting up renderer collect state");
         Self {
-            params: TypedBuffer::new(
+            params: TypedBuffer::new_init(
                 gpu,
                 "RendererCollectState.params",
-                1,
                 wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+                &[RendererCollectParams::default()],
             ),
             commands: TypedBuffer::new(
                 gpu,
