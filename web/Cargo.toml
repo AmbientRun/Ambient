@@ -46,9 +46,8 @@ time = { version = "0.3", features = ["wasm-bindgen"] }
 chrono = { version = "0.4", default-features = false, features = [
     "serde",
     "clock",
-    "wasmbind",
+    "wasmbind"
 ] }
-
 getrandom = { version = "0.2.8", features = ["js"] }
 web-sys = { version = "0.3", features = [
     "CanvasRenderingContext2d",

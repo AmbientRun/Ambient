@@ -5,6 +5,7 @@ pub(crate) mod dynamic_delay;
 pub mod gain;
 pub mod history;
 mod mix;
+mod onepole;
 mod oscilloscope;
 mod pad_to;
 mod pan;
@@ -31,6 +32,7 @@ use circular_queue::CircularQueue;
 pub use crossfade::*;
 pub use gain::*;
 pub use mix::*;
+pub use onepole::*;
 pub use pan::*;
 use parking_lot::Mutex;
 pub use peek::*;
@@ -42,11 +44,27 @@ pub use uniform::*;
 
 use self::{history::History, mix::Mix, oscilloscope::Oscilloscope, pad_to::PadTo};
 use crate::{
-    blt::{BilinearTransform, Hpf, Lpf, TransferFunction},
+    blt::*,
     hrtf::HrtfLib,
     value::{Constant, Value},
     AudioEmitter, AudioListener, Frame, SampleRate,
 };
+
+pub trait Param: Clone {
+    fn get_value(&self) -> f32;
+}
+
+impl Param for f32 {
+    fn get_value(&self) -> f32 {
+        *self
+    }
+}
+
+impl Param for Arc<Mutex<f32>> {
+    fn get_value(&self) -> f32 {
+        *self.lock()
+    }
+}
 
 /// A source represents a continuous stream of stereo audio samples.
 ///
@@ -193,6 +211,14 @@ pub trait Source: Send {
         Self: Sized,
     {
         BilinearTransform::new(self, Constant(Lpf { freq, bandwidth }))
+    }
+
+    fn onepole<P>(self, freq: P) -> Box<dyn Source + Send>
+    where
+        Self: Sized + 'static,
+        P: Param + Send + 'static,
+    {
+        Box::new(OnePole::new(self, freq))
     }
 
     fn blt<V, H>(self, transfer: V) -> BilinearTransform<Self, H, V>

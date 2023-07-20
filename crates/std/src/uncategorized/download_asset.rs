@@ -156,6 +156,28 @@ impl BytesFromUrl {
     }
 }
 
+/// Use [BytesFromUrl] unless you _really_ need uncached downloads
+pub async fn download_uncached_bytes(
+    assets: &AssetCache,
+    url: AbsAssetUrl,
+) -> AssetResult<Vec<u8>> {
+    if let Some(path) = url.to_file_path()? {
+        return Ok(ambient_sys::fs::read(path)
+            .await
+            .context(format!("Failed to read file at: {:}", url.0))?);
+    }
+
+    let body = download(
+        assets,
+        url.to_download_url(assets).map_err(anyhow::Error::new)?.0,
+        |resp| async { Ok(resp.bytes().await?) },
+    )
+    .await?
+    .to_vec();
+    assert!(!body.is_empty());
+    Ok(body)
+}
+
 #[async_trait]
 impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<Vec<u8>>> {
@@ -174,26 +196,9 @@ impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
             ));
         }
 
-        if let Some(path) = self.url.to_file_path()? {
-            return Ok(Arc::new(
-                ambient_sys::fs::read(path)
-                    .await
-                    .context(format!("Failed to read file at: {:}", self.url.0))?,
-            ));
-        }
-
-        let body = download(
-            &assets,
-            self.url
-                .to_download_url(&assets)
-                .map_err(anyhow::Error::new)?
-                .0,
-            |resp| async { Ok(resp.bytes().await?) },
-        )
-        .await?
-        .to_vec();
-        assert!(!body.is_empty());
-        Ok(Arc::new(body))
+        download_uncached_bytes(&assets, self.url.clone())
+            .await
+            .map(Arc::new)
     }
 
     fn cpu_size(&self, value: &AssetResult<Arc<Vec<u8>>>) -> Option<u64> {

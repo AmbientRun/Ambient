@@ -61,12 +61,25 @@ pub fn audio_systems() -> SystemGroup {
                         .unwrap();
                 }
             }),
+            query((playing_sound(), onepole_lpf())).to_system(|q, world, qs, _| {
+                for (playing_entity, (_, freq)) in q.iter(world, qs) {
+                    let sender = world.resource(crate::audio_sender());
+                    sender
+                        .send(crate::AudioMessage::AddOnePoleLpf(
+                            playing_entity.to_base64(),
+                            *freq,
+                        ))
+                        .unwrap();
+                }
+            }),
             query((audio_player(), play_now())).to_system(|q, world, qs, _| {
                 for (audio_entity, _) in q.collect_cloned(world, qs) {
-                    // if should_play {
+                    // TODO: should check if these components exist
                     let amp = world.get(audio_entity, amplitude()).unwrap_or(1.0);
                     let pan = world.get(audio_entity, panning()).unwrap_or(0.0);
+                    let freq = world.get(audio_entity, onepole_lpf()).unwrap_or(20000.0);
                     let looping = world.get(audio_entity, looping()).unwrap_or(false);
+
                     world.remove_component(audio_entity, play_now()).unwrap();
 
                     let assets = world.resource(asset_cache()).clone();
@@ -89,22 +102,20 @@ pub fn audio_systems() -> SystemGroup {
                             let id_vec = world.get_ref(audio_entity, children()).unwrap();
                             let id = id_vec.last().unwrap();
                             id_share.lock().replace((*id).clone());
+
+                            // TODO: this should be empty
+                            // use has_component to check
+                            let fx = vec![
+                                crate::AudioFx::Amplitude(amp),
+                                crate::AudioFx::Panning(pan),
+                                crate::AudioFx::OnePole(freq),
+                            ];
+
                             sender
                                 .send(crate::AudioMessage::Track {
                                     track: move_track,
                                     url,
-                                    fx: if looping {
-                                        vec![
-                                            crate::AudioFx::Amplitude(amp),
-                                            crate::AudioFx::Panning(pan),
-                                            crate::AudioFx::Looping,
-                                        ]
-                                    } else {
-                                        vec![
-                                            crate::AudioFx::Amplitude(amp),
-                                            crate::AudioFx::Panning(pan),
-                                        ]
-                                    },
+                                    fx,
                                     uid: id.to_base64(),
                                 })
                                 .unwrap();

@@ -1,12 +1,12 @@
 #[cfg(feature = "guest")]
 use std::time::Instant;
-use std::{self, str::FromStr};
 
 use ambient_cb::{cb, Cb};
 use ambient_element::{element_component, to_owned, Element, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
     components::{
         layout::{height, min_height, min_width, width},
+        rect::background_color,
         rendering::color,
         text::text,
         transform::translation,
@@ -21,7 +21,7 @@ use glam::*;
 use itertools::Itertools;
 
 use super::{Editor, EditorOpts};
-use crate::{layout::FlowRow, text::Text, use_focus, Rectangle, UIBase, UIExt};
+use crate::{layout::FlowRow, text::Text, with_rect, HooksExt, Rectangle, UIBase, UIExt};
 
 /// A text editor.
 #[element_component]
@@ -40,7 +40,7 @@ pub fn TextEditor(
     /// Whether the text editor should be focused when it is created.
     auto_focus: bool,
 ) -> Element {
-    let (focused, set_focused) = use_focus(hooks);
+    let (focused, set_focused) = hooks.use_focus();
     let (command, set_command) = hooks.use_state(false);
     let intermediate_value = hooks.use_ref_with(|_| value.clone());
     let cursor_position = hooks.use_ref_with(|_| value.len());
@@ -99,15 +99,13 @@ pub fn TextEditor(
             }
         }
     });
-    hooks.use_runtime_message::<messages::WindowKeyboardInput>({
+    hooks.use_keyboard_input({
         to_owned![intermediate_value, on_change, cursor_position];
-        move |world, event| {
+        move |world, keycode, _modifiers, pressed| {
             if !focused {
                 return;
             }
-            let pressed = event.pressed;
-            if let Some(kc) = event.keycode.as_deref() {
-                let kc = VirtualKeyCode::from_str(kc).unwrap();
+            if let Some(kc) = keycode {
                 match kc {
                     VirtualKeyCode::LWin => {
                         #[cfg(target_os = "macos")]
@@ -195,7 +193,7 @@ pub fn TextEditor(
         .try_into()
         .unwrap();
 
-    if focused {
+    with_rect(if focused {
         if !cursor_left.is_empty() {
             FlowRow::el([a, Cursor.el(), b])
         } else {
@@ -207,9 +205,10 @@ pub fn TextEditor(
             .with(color(), vec4(1., 1., 1., 0.2))
     } else {
         FlowRow::el([a, b])
-    }
+    })
     .with(min_width(), 3.)
     .with(min_height(), 13.)
+    .with(background_color(), vec4(0., 0., 0., 0.5))
     .with_clickarea()
     .on_mouse_up(move |_, _, _| {
         set_focused(true);

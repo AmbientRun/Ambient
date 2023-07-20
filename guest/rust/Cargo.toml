@@ -46,6 +46,8 @@ members = [
     "examples/games/music_sequencer",
     "examples/games/pong",
     "examples/games/tictactoe",
+    # Test cases
+    "testcases/588-prefab-despawn-panic"
 ]
 resolver = "2"
 

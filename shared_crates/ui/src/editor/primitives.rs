@@ -16,7 +16,7 @@ use crate::{
     default_theme::STREET,
     layout::{FlowColumn, FlowRow},
     text::{FontAwesomeIcon, Text},
-    use_focus_for_instance_id,
+    HooksExt,
 };
 
 #[derive(Debug, Clone)]
@@ -42,7 +42,7 @@ impl<T: FromStr + Debug + std::fmt::Display + Clone + Sync + Send + 'static> Ele
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self { value, on_change } = *self;
         let (text_id, set_text_id) = hooks.use_state(String::new());
-        let (focused, _) = use_focus_for_instance_id(hooks, text_id);
+        let (focused, _) = hooks.use_focus_for_instance_id(text_id);
         let (text, set_text) = hooks.use_state(None);
         if focused && text.is_none() {
             set_text(Some(value.to_string()));
@@ -86,7 +86,7 @@ impl<T: Debug + Clone + Sync + Send + 'static> ElementComponent for CustomParseI
         } = *self;
 
         let (text_id, set_text_id) = hooks.use_state(String::new());
-        let (focused, _) = use_focus_for_instance_id(hooks, text_id);
+        let (focused, _) = hooks.use_focus_for_instance_id(text_id);
         let (text, set_text) = hooks.use_state(None);
         if focused && text.is_none() {
             set_text(Some(to_string(&value)));

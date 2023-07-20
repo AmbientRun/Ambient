@@ -3,7 +3,7 @@ use components::{ball_ref, player_head_ref};
 
 #[main]
 fn main() {
-    let mut cursor_lock = input::CursorLockGuard::new(true);
+    let mut cursor_lock = input::CursorLockGuard::new();
     let spatial_audio_player = audio::SpatialAudioPlayer::new();
 
     spawn_query((player_head_ref(), ball_ref())).bind(move |v| {

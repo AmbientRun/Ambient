@@ -159,6 +159,13 @@ fn all_examples() -> anyhow::Result<Vec<PathBuf>> {
                 examples.push(example_path);
             }
         }
+
+        let testcases_path = guest.join("testcases");
+        if testcases_path.exists() {
+            for path in all_directories_in(&testcases_path)? {
+                examples.push(path);
+            }
+        }
     }
 
     Ok(examples)
