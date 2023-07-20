@@ -521,7 +521,6 @@ impl ElementTree {
             instance_id,
             index,
             value,
-            name: _,
         } in state_updates.into_iter()
         {
             ambient_profiling::scope!("state_updates");
