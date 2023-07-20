@@ -20,6 +20,7 @@ mod failure;
 use failure::*;
 
 mod progress;
+use crate::example::all_examples;
 use progress::*;
 
 const TEST_BASE_PATH: &str = "guest/rust/examples";
@@ -52,7 +53,14 @@ pub(crate) async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     let start_time = Instant::now();
 
     // Get tests.
-    let tests = tokio::spawn(parse_tests_from_manifest());
+    let tests = if let Mode::Update = gi.mode {
+        all_examples(false)?
+            .into_iter()
+            .map(|(_, p)| p)
+            .collect_vec()
+    } else {
+        tokio::spawn(parse_tests_from_manifest()).await??
+    };
 
     if gi.ambient_path.is_none() {
         run("Build ambient", "", build_package, &["ambient"], true, &[]).await?;
@@ -63,8 +71,6 @@ pub(crate) async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
         .as_ref()
         .map(|x| x as &str)
         .unwrap_or("./target/release/ambient");
-
-    let tests = tests.await??;
 
     // Filter tests.
     let tests = if let Some(prefix) = &gi.prefix {
