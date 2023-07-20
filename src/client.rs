@@ -1,9 +1,16 @@
 use ambient_api::{
     components::core::{
-        app::main_scene,
+        app::{main_scene, name},
         camera::{aspect_ratio_from_window, fog, fovy},
+        ecs::{children, parent},
         physics::linear_velocity,
-        transform::{lookat_target, rotation, translation},
+        rect::{line_from, line_to, line_width, rect},
+        rendering::color,
+        text::{font_size, text},
+        transform::{
+            local_to_parent, local_to_world, lookat_target, mesh_to_local, mesh_to_world, rotation,
+            scale, translation,
+        },
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     messages::Frame,
@@ -50,10 +57,7 @@ pub fn main() {
                 .spawn();
 
             entity::add_component(id, vehicle_hud(), hud_id);
-            entity::add_component_if_required(id, children(), vec![]);
-            entity::mutate_component(id, children(), |children| {
-                children.push(hud_id);
-            });
+            entity::add_child(id, hud_id);
         }
     });
 
@@ -91,7 +95,11 @@ pub fn main() {
                 format!(
                     "{:.1}\n{:.1}s",
                     speed_kph(lv, rot),
-                    common::JUMP_TIMEOUT - (time() - ljt).min(common::JUMP_TIMEOUT),
+                    common::JUMP_TIMEOUT
+                        - game_time()
+                            .checked_sub(ljt)
+                            .map(|d| d.as_secs_f32())
+                            .unwrap_or(common::JUMP_TIMEOUT),
                 ),
             );
         }

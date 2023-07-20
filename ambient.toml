@@ -1,4 +1,4 @@
-[project]
+[ember]
 id = "tangent"
 name = "tangent"
 version = "0.0.1"
@@ -10,8 +10,8 @@ debug_messages = {type = {type = "Vec", element_type = "String"}, name = "Debug 
 player_vehicle = {type = "EntityId", name = "Player Vehicle", description = "The player's vehicle", attributes = ["Networked", "Debuggable"]}
 
 last_distances = {type = {type = "Vec", element_type = "F32"}, name = "Last Distances", description = "Distances from the ground for each vehicle probe", attributes = ["Networked"]}
-last_jump_time = {type = "F32", name = "Last Jump Time", description = "The last time the player jumped", attributes = ["Networked"]}
-last_slowdown_time = {type = "F32", name = "Last Slowdown Time", description = "The last time the player's vehicle was slowed down", attributes = ["Networked"]}
+last_jump_time = {type = "Duration", name = "Last Jump Time", description = "The last time the player jumped", attributes = ["Networked"]}
+last_slowdown_time = {type = "Duration", name = "Last Slowdown Time", description = "The last time the player's vehicle was slowed down", attributes = ["Networked"]}
 vehicle = {type = "EntityId", name = "Vehicle", description = "A vehicle (and its driver)", attributes = ["Networked"]}
 vehicle_hud = {type = "EntityId", name = "Vehicle HUD", description = "The HUD for a vehicle", attributes = ["Debuggable"]}
 

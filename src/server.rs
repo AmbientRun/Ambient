@@ -3,7 +3,7 @@ use ambient_api::{
         app::main_scene,
         model::model_from_url,
         physics::{
-            angular_velocity, box_collider, density, dynamic, linear_velocity, physics_controlled,
+            angular_velocity, cube_collider, density, dynamic, linear_velocity, physics_controlled,
             plane_collider,
         },
         player::player as player_component,
@@ -122,13 +122,13 @@ fn vehicle_creation_and_destruction() {
                 .with(components::last_distances(), OFFSETS.map(|_| 0.0).to_vec())
                 .with(components::debug_messages(), vec![])
                 .with(components::debug_lines(), vec![])
-                .with(components::last_jump_time(), 0.0)
-                .with(components::last_slowdown_time(), 0.0)
+                .with(components::last_jump_time(), game_time())
+                .with(components::last_slowdown_time(), game_time())
                 .with(
                     model_from_url(),
                     asset::url("assets/models/dynamic/raceCarWhite.glb/models/main.json").unwrap(),
                 )
-                .with(box_collider(), Vec3::new(0.6, 1.0, 0.2))
+                .with(cube_collider(), Vec3::new(0.6, 1.0, 0.2))
                 .spawn();
 
             entity::add_component(player_id, components::player_vehicle(), vehicle_id);
@@ -175,13 +175,12 @@ fn vehicle_processing() {
             let mut last_distances =
                 entity::get_component(vehicle_id, components::last_distances()).unwrap();
 
+            let vehicle_last_jump_time =
+                entity::get_component(vehicle_id, components::last_jump_time()).unwrap_or_default();
             if entity::get_component(driver_id, components::input_jump()).unwrap_or_default()
-                && time()
-                    - entity::get_component(vehicle_id, components::last_jump_time())
-                        .unwrap_or_default()
-                    > common::JUMP_TIMEOUT
+                && (game_time() - vehicle_last_jump_time).as_secs_f32() > common::JUMP_TIMEOUT
             {
-                entity::set_component(vehicle_id, components::last_jump_time(), time());
+                entity::set_component(vehicle_id, components::last_jump_time(), game_time());
                 physics::add_force(vehicle_id, vehicle_rotation * Vec3::Z * INPUT_JUMP_STRENGTH);
             };
 
@@ -224,7 +223,7 @@ fn vehicle_processing() {
                     let p = K_P * error_distance;
                     let d = K_D * delta_distance;
                     let strength =
-                        ((p + d + strength_offset) * frametime()).clamp(-0.1, MAX_STRENGTH);
+                        ((p + d + strength_offset) * delta_time()).clamp(-0.1, MAX_STRENGTH);
 
                     let force = -probe_direction * strength;
                     let position = vehicle_position + vehicle_rotation * offset;
@@ -278,15 +277,14 @@ fn vehicle_processing() {
                     * SLOWDOWN_STRENGTH,
             );
 
-            if time()
-                - entity::get_component(vehicle_id, components::last_slowdown_time())
-                    .unwrap_or_default()
-                > ANGULAR_SLOWDOWN_DELAY
-            {
+            let vehicle_last_slowdown_time =
+                entity::get_component(vehicle_id, components::last_slowdown_time())
+                    .unwrap_or_default();
+            if (game_time() - vehicle_last_slowdown_time).as_secs_f32() > ANGULAR_SLOWDOWN_DELAY {
                 entity::mutate_component(vehicle_id, angular_velocity(), |av| {
                     *av -= *av * ANGULAR_SLOWDOWN_STRENGTH;
                 });
-                entity::set_component(vehicle_id, components::last_slowdown_time(), time());
+                entity::set_component(vehicle_id, components::last_slowdown_time(), game_time());
             }
         }
     });
