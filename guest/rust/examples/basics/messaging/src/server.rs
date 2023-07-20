@@ -3,7 +3,15 @@ use std::sync::{
     Arc,
 };
 
-use ambient_api::prelude::*;
+use ambient_api::{
+    components::core::{
+        primitives::cube,
+        rendering::color,
+        transform::{scale, translation},
+    },
+    concepts::make_transformable,
+    prelude::*,
+};
 
 #[main]
 pub fn main() {
@@ -14,6 +22,9 @@ pub fn main() {
     //
     // After that, it will register a listener for messages from other modules on this side (3), and then send a message to
     // other modules (e.g. `server_two.rs`) until it gets a response (4).
+    //
+    // A cube is spawned to indicate that the message has been received from the client.
+    // See <https://github.com/AmbientRun/Ambient/issues/590> for more details.
 
     // 1
     messages::Hello::subscribe(|source, data| {
@@ -40,6 +51,24 @@ pub fn main() {
             format!("{source_reliable}: Hello, world (everyone) from the server!"),
         )
         .send_client_broadcast_reliable();
+
+        Entity::new()
+            .with_merge(make_transformable())
+            .with_default(cube())
+            .with(
+                translation(),
+                vec3(if source_reliable { -1. } else { 1. }, 0., 0.),
+            )
+            .with(scale(), Vec3::ONE)
+            .with(
+                color(),
+                if source_reliable {
+                    vec4(1., 0., 0., 1.)
+                } else {
+                    vec4(0., 0., 1., 1.)
+                },
+            )
+            .spawn();
     });
 
     // 3

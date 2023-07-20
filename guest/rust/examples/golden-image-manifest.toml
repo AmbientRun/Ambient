@@ -5,6 +5,7 @@ tests = [
     "basics/fog",
     "basics/image",
     "basics/input",
+    "basics/messaging",
     "basics/primitives",
     "basics/procedural_generation",
     "basics/raw_text",
