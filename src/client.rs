@@ -81,27 +81,9 @@ pub fn main() {
         }
     });
 
-    query((
-        vehicle_hud(),
-        rotation(),
-        linear_velocity(),
-        last_jump_time(),
-    ))
-    .each_frame(|huds| {
-        for (_, (hud_id, rot, lv, ljt)) in huds {
-            entity::set_component(
-                hud_id,
-                text(),
-                format!(
-                    "{:.1}\n{:.1}s",
-                    speed_kph(lv, rot),
-                    common::JUMP_TIMEOUT
-                        - game_time()
-                            .checked_sub(ljt)
-                            .map(|d| d.as_secs_f32())
-                            .unwrap_or(common::JUMP_TIMEOUT),
-                ),
-            );
+    query((vehicle_hud(), rotation(), linear_velocity())).each_frame(|huds| {
+        for (_, (hud_id, rot, lv)) in huds {
+            entity::set_component(hud_id, text(), format!("{:.1}\n", speed_kph(lv, rot)));
         }
     });
 
