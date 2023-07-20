@@ -1,18 +1,23 @@
 tests = [
     "basics/async",
-    "basics/decals",
-    "basics/first_person_camera",
-    "basics/fog",
-    "basics/image",
     "basics/input",
-    "basics/messaging",
     "basics/primitives",
     "basics/procedural_generation",
-    "basics/raw_text",
-    "basics/samplers",
-    "basics/third_person_camera",
-    "basics/transparency",
+
+    "intermediate/messaging",
+
+    "controllers/first_person_camera",
+    "controllers/third_person_camera",
+
+    "rendering/decals",
+    "rendering/fog",
+    "rendering/image",
+    "rendering/raw_text",
+    "rendering/samplers",
+    "rendering/transparency",
+
     "games/tictactoe",
+
     "ui/auto_editor",
     "ui/button",
     "ui/dock_layout",
