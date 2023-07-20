@@ -256,7 +256,7 @@ impl RendererCollect {
         material_layouts: &[MaterialLayout],
         collect_state: &mut RendererCollectState,
     ) {
-        tracing::info!(
+        tracing::trace!(
             from = collect_state.counts.len(),
             to = material_layouts.len(),
             "Resizing counts buffer",
