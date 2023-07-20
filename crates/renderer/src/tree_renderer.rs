@@ -217,7 +217,7 @@ impl TreeRenderer {
         gpu.queue.submit(Some(encoder.finish()));
 
         for (subbuffer, primitives) in primitive_writes {
-            tracing::info!(
+            tracing::debug!(
                 "Writing {} primitives to subbuffer {}",
                 primitives.len(),
                 subbuffer
@@ -226,12 +226,6 @@ impl TreeRenderer {
             let old = self
                 .collect_primitives
                 .insert(subbuffer, primitives.clone());
-
-            tracing::debug!(
-                old = ?old.map(|v| v.len()),
-                new = primitives.len(),
-                "Replaced primitives"
-            );
 
             self.primitives
                 .write(gpu, subbuffer, 0, &primitives)
@@ -293,11 +287,6 @@ impl TreeRenderer {
                 };
             }
         }
-
-        // tracing::info!(
-        //     "Material Layouts: {material_layouts:?}, primitives: {:#?}",
-        //     self.primitives
-        // );
 
         assert_eq!(mem::size_of::<DrawIndexedIndirect>(), 20);
 
@@ -438,7 +427,7 @@ impl TreeRenderer {
 
             let mat = node.tree.entry(material_id.clone()).or_insert_with(|| {
                 let index = self.primitives.create_buffer(gpu, None);
-                tracing::info!("Creating material node at {index}");
+                tracing::debug!("Creating material node at {index}");
                 MaterialNode {
                     material_index: self.material_indices.acquire_index(),
                     primitives_subbuffer: index,
@@ -525,8 +514,6 @@ impl TreeRenderer {
 
         let mut is_bound = false;
 
-        tracing::debug!("Tree: {:?}", self.tree.keys().collect_vec());
-
         for node in self.tree.values() {
             render_pass.set_pipeline(node.pipeline.pipeline());
             // Bind on first invocation
@@ -542,7 +529,6 @@ impl TreeRenderer {
                 }
             }
 
-            tracing::debug!("Node: {:?}", node.tree.keys().collect_vec());
             for mat in node.tree.values() {
                 let material = &mat.material;
 
@@ -581,7 +567,6 @@ impl TreeRenderer {
                 #[cfg(any(target_os = "macos", target_os = "unknown"))]
                 {
                     if self.config.render_mode == RenderMode::Direct {
-                        // tracing::debug!("Counts: {count:?}");
                         for (i, &(id, primitive_idx)) in mat.primitives.iter().enumerate() {
                             let primitive =
                                 &world.get_ref(id, primitives()).unwrap()[primitive_idx];

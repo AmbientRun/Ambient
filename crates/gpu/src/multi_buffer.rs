@@ -481,6 +481,7 @@ impl<T: bytemuck::Pod> TypedMultiBuffer<T> {
         offset: u64,
         data: &[T],
     ) -> Result<(), MultiBufferError> {
+        // TODO: correctly update len for the written subbuffer
         // let buffer = self
         //     .buffer
         //     .sub_buffers

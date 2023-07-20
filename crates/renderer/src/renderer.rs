@@ -295,7 +295,7 @@ impl Renderer {
         target: RendererTarget,
         clear: Option<Color>,
     ) {
-        let _span = info_span!("Renderer.render", label = world.name()).entered();
+        let _span = debug_span!("Renderer.render", label = world.name()).entered();
         ambient_profiling::scope!("Renderer.render", world.name());
 
         if let RendererTarget::Target(target) = &target {

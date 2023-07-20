@@ -271,7 +271,6 @@ impl<T: Pod> TypedBuffer<T> {
         });
 
         if !gpu.will_be_polled {
-            eprintln!("Polling gpu");
             gpu.device.poll(wgpu::Maintain::Wait);
         }
 
@@ -303,7 +302,7 @@ impl<T: Pod> TypedBuffer<T> {
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
-        tracing::debug!("Creating staging buffer of {size}");
+        tracing::trace!("Creating staging buffer of {size}");
 
         let sb = gpu.device.create_buffer(&wgpu::BufferDescriptor {
             label: None,
@@ -312,7 +311,7 @@ impl<T: Pod> TypedBuffer<T> {
             mapped_at_creation: false,
         });
 
-        tracing::debug!("Copying {size} bytes to staging buffer");
+        tracing::trace!("Copying {size} bytes to staging buffer");
         encoder.copy_buffer_to_buffer(&self.buffer, bounds.start, &sb, 0, size);
         gpu.queue.submit(Some(encoder.finish()));
 
@@ -322,7 +321,6 @@ impl<T: Pod> TypedBuffer<T> {
         });
 
         if !gpu.will_be_polled {
-            eprintln!("Polling gpu");
             gpu.device.poll(wgpu::Maintain::Wait);
         }
 
