@@ -357,9 +357,13 @@ impl TreeRenderer {
             );
             collect_state.commands.write(gpu, 0, &draw_commands);
 
-            let mut counts_state = collect_state.counts_cpu.lock();
-            counts_state.update(counts, collect_state.tick)
+            #[cfg(any(target_os = "macos", target_os = "unknown"))]
+            {
+                let mut counts_state = collect_state.counts_cpu.lock();
+                counts_state.update(counts, collect_state.tick)
+            }
         } else {
+            #[cfg(any(target_os = "macos", target_os = "unknown"))]
             {
                 let mut counts_state = collect_state.counts_cpu.lock();
                 if counts_state.counts().len() != material_layouts.len() {
