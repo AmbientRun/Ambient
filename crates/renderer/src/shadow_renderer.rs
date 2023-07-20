@@ -185,8 +185,6 @@ impl ShadowsRenderer {
         bind_groups: &BindGroups<'a>,
         post_submit: &mut Vec<PostSubmitFunc>,
     ) {
-        return;
-
         for (i, cascade) in self.cascades.iter_mut().enumerate() {
             ambient_profiling::scope!("Shadow dynamic render");
             self.renderer.run_collect(
