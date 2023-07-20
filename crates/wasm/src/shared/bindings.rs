@@ -26,6 +26,7 @@ pub trait BindingsBound:
     + super::wit::client_player::Host
     + super::wit::client_input::Host
     + super::wit::client_camera::Host
+    + super::wit::client_clipboard::Host
     + super::wit::client_window::Host
     + super::wit::client_mesh::Host
     + super::wit::client_texture::Host

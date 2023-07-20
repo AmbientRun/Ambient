@@ -193,7 +193,16 @@ impl wit::client_camera::Host for Bindings {
         Ok(ambient_core::window::clip_to_screen_space(self.world(), clip_pos).into_bindgen())
     }
 }
+#[async_trait::async_trait]
+impl wit::client_clipboard::Host for Bindings {
+    async fn get(&mut self) -> anyhow::Result<Option<String>> {
+        Ok(ambient_sys::clipboard::get())
+    }
 
+    async fn set(&mut self, text: String) -> anyhow::Result<()> {
+        ambient_sys::clipboard::set(&text)
+    }
+}
 #[async_trait::async_trait]
 impl wit::client_window::Host for Bindings {
     async fn set_fullscreen(&mut self, fullscreen: bool) -> anyhow::Result<()> {

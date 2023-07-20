@@ -116,6 +116,9 @@ pub mod window {
         let _ = cursor;
     }
     pub fn get_clipboard() -> Option<String> {
-        None
+        #[cfg(feature = "client")]
+        return super::api::client::clipboard::get();
+        #[cfg(not(feature = "client"))]
+        return None;
     }
 }
