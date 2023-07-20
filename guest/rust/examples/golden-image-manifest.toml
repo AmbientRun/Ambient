@@ -1,9 +1,8 @@
 tests = [
-    "basics/async",
     "basics/input",
     "basics/primitives",
-    "basics/procedural_generation",
 
+    "intermediate/async",
     "intermediate/messaging",
 
     "controllers/first_person_camera",
@@ -14,6 +13,7 @@ tests = [
     "rendering/image",
     "rendering/raw_text",
     "rendering/samplers",
+    "rendering/procedural_generation",
     "rendering/transparency",
 
     "games/tictactoe",
