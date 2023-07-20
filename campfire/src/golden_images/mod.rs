@@ -113,7 +113,7 @@ pub(crate) async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
                 ambient_path,
                 check_tests,
                 &tests[..],
-                true,
+                false,
                 &[("RUST_LOG", "info"), ("RUST_BACKTRACE", "1")],
             )
             .await
