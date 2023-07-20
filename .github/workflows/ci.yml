@@ -177,7 +177,7 @@ jobs:
       - name: Download ambient executable
         uses: actions/download-artifact@v3
         with:
-          name: ambient-ubuntu-20.04
+          name: ambient-ubuntu-22.04
       - run: chmod a+x ambient
       - name: Install run (headless) dependencies
         run: |
