@@ -40,7 +40,7 @@ const INPUT_SIDE_FORCE: f32 = 0.8;
 
 const INPUT_PITCH_STRENGTH: f32 = 10.0;
 const INPUT_TURNING_STRENGTH: f32 = 20.0;
-const INPUT_JUMP_STRENGTH: f32 = 800.0;
+const INPUT_JUMP_STRENGTH: f32 = 80.0;
 
 const DENSITY: f32 = 10.0;
 const SLOWDOWN_STRENGTH: f32 = 0.8;
@@ -180,8 +180,15 @@ fn vehicle_processing() {
             if entity::get_component(driver_id, components::input_jump()).unwrap_or_default()
                 && (game_time() - vehicle_last_jump_time).as_secs_f32() > common::JUMP_TIMEOUT
             {
+                let linear_velocity =
+                    entity::get_component(vehicle_id, linear_velocity()).unwrap_or_default();
+                let forward = (linear_velocity.dot(vehicle_rotation * -Vec3::Y) * 0.3).max(5.0);
+
                 entity::set_component(vehicle_id, components::last_jump_time(), game_time());
-                physics::add_force(vehicle_id, vehicle_rotation * Vec3::Z * INPUT_JUMP_STRENGTH);
+                physics::add_force(
+                    vehicle_id,
+                    vehicle_rotation * Vec3::Z * INPUT_JUMP_STRENGTH * forward,
+                );
             };
 
             let mut avg_distance = 0.0;
