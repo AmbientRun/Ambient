@@ -2,4 +2,8 @@ examples/*/*/.cargo
 examples/*/*/.gitignore
 examples/*/*/build
 examples/*/*/target
-api/wit
+
+testcases/*/.cargo
+testcases/*/.gitignore
+testcases/*/build
+testcases/*/target

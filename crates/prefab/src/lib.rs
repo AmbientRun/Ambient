@@ -43,6 +43,11 @@ pub fn systems() -> SystemGroup {
                         let entity = obj.clone_entity(base_ent_id).unwrap();
                         async_run.run(move |world| {
                             for id in ids {
+                                if !world.exists(id) {
+                                    // https://github.com/AmbientRun/Ambient/issues/588
+                                    continue;
+                                }
+
                                 world.add_components(id, entity.clone()).unwrap();
                                 world.add_component(id, spawned(), ()).unwrap();
                             }
