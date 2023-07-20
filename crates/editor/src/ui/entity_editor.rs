@@ -328,10 +328,7 @@ fn EntityComponentsEditor(
                         ))
                         .error_text_style()]),
                         move |_| {
-                            arboard::Clipboard::new()
-                                .unwrap()
-                                .set_text(anim_error.join("\n"))
-                                .ok();
+                            ambient_sys::clipboard::set(&anim_error.join("\n")).ok();
                         },
                     )
                     .style(ButtonStyle::Flat)

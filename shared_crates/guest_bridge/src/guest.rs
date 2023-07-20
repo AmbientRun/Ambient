@@ -131,9 +131,11 @@ pub mod window {
         #[cfg(not(feature = "client"))]
         let _ = cursor;
     }
-
-    pub async fn get_clipboard() -> Option<String> {
-        None
+    pub fn get_clipboard() -> Option<String> {
+        #[cfg(feature = "client")]
+        return super::api::client::clipboard::get();
+        #[cfg(not(feature = "client"))]
+        return None;
     }
 
     pub async fn set_clipboard(_text: &str) -> anyhow::Result<()> {

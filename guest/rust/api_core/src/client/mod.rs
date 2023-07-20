@@ -7,6 +7,9 @@ pub mod input;
 /// **\[Client-only\]** Helper functions for the camera.
 pub mod camera;
 
+/// **\[Client-only\]** Manipulating the operating system's clipboard.
+pub mod clipboard;
+
 /// **\[Client-only\]** Window-specific functionality.
 pub mod window;
 

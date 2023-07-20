@@ -590,14 +590,11 @@ impl<T: Serialize + DeserializeOwned + Send + Sync + std::fmt::Debug + Clone + '
         let Self { value, on_change } = *self;
         FlowRow(vec![
             Button::new("Copy", move |_| {
-                arboard::Clipboard::new()
-                    .unwrap()
-                    .set_text(serde_json::to_string_pretty(&value).unwrap())
-                    .ok();
+                ambient_sys::clipboard::set(&serde_json::to_string_pretty(&value).unwrap()).ok();
             })
             .el(),
             Button::new("Paste", move |_| {
-                if let Ok(paste) = arboard::Clipboard::new().unwrap().get_text() {
+                if let Some(paste) = ambient_sys::clipboard::get() {
                     on_change(serde_json::from_str(&paste).unwrap());
                 }
             })
