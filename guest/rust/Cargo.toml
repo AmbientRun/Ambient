@@ -5,26 +5,33 @@ members = [
     "api_core/api_macros",
     # Basics
     "examples/basics/asset_loading",
-    "examples/basics/async",
-    "examples/basics/clientside",
-    "examples/basics/decals",
-    "examples/basics/first_person_camera",
-    "examples/basics/fog",
-    "examples/basics/image",
     "examples/basics/input",
-    "examples/basics/messaging",
     "examples/basics/multiplayer",
     "examples/basics/physics",
     "examples/basics/primitives",
-    "examples/basics/procedural_generation",
-    "examples/basics/raw_text",
-    "examples/basics/samplers",
-    "examples/basics/screen_ray",
     "examples/basics/skinmesh",
-    "examples/basics/sun",
-    "examples/basics/third_person_camera",
-    "examples/basics/transparency",
-    "examples/basics/instancing",
+
+    # Intermediate
+    "examples/intermediate/messaging",
+    "examples/intermediate/async",
+    "examples/intermediate/screen_ray",
+    "examples/intermediate/clientside",
+
+    # Controllers
+    "examples/controllers/first_person_camera",
+    "examples/controllers/third_person_camera",
+
+    # Rendering
+    "examples/rendering/decals",
+    "examples/rendering/fog",
+    "examples/rendering/image",
+    "examples/rendering/procedural_generation",
+    "examples/rendering/raw_text",
+    "examples/rendering/samplers",
+    "examples/rendering/sun",
+    "examples/rendering/transparency",
+    "examples/rendering/instancing",
+
     # UI
     "examples/ui/audio_ctrl",
     "examples/ui/auto_editor",
@@ -41,6 +48,7 @@ members = [
     "examples/ui/slider",
     "examples/ui/text",
     "examples/ui/todo",
+
     # Games
     "examples/games/minigolf",
     "examples/games/music_sequencer",
