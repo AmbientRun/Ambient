@@ -44,9 +44,9 @@ use crate::{
 pub use ambient_ecs::generated::components::core::physics::*;
 
 components!("physics", {
-    @[MakeDefault, Networked, Store, Debuggable]
+    @[MakeDefault, Store, Debuggable]
     collider: ColliderDef,
-    @[MakeDefault,  Networked, Store, Debuggable]
+    @[MakeDefault, Store, Debuggable]
     collider_type: ColliderType,
     collider_shapes: Vec<PxShape>,
     collider_shapes_convex: Vec<PxShape>,

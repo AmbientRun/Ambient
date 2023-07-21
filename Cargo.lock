@@ -127,7 +127,6 @@ dependencies = [
  "ambient_decals",
  "ambient_deploy",
  "ambient_ecs",
- "ambient_ecs_editor",
  "ambient_editor_derive",
  "ambient_element",
  "ambient_gizmos",
@@ -432,11 +431,15 @@ name = "ambient_client_shared"
 version = "0.0.0"
 dependencies = [
  "ambient_core",
+ "ambient_debugger",
  "ambient_ecs",
+ "ambient_ecs_editor",
  "ambient_element",
  "ambient_input",
+ "ambient_layout",
  "ambient_network",
  "ambient_shared_types",
+ "ambient_ui_native",
  "glam 0.24.0",
 ]
 
@@ -516,9 +519,10 @@ dependencies = [
  "ambient_rpc",
  "ambient_shared_types",
  "ambient_std",
+ "ambient_sys",
  "ambient_ui_native",
  "glam 0.24.0",
- "log",
+ "tracing",
  "wgpu 0.16.1",
  "winit",
 ]
@@ -764,6 +768,7 @@ dependencies = [
  "async-trait",
  "bytemuck",
  "byteorder",
+ "cfg-if",
  "directories",
  "futures",
  "glam 0.24.0",

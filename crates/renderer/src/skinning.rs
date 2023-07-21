@@ -65,7 +65,6 @@ impl SkinsBuffer {
                 gpu,
                 "SkinsBuffer.buffer",
                 1,
-                1,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_SRC
                     | wgpu::BufferUsages::COPY_DST,
@@ -74,13 +73,12 @@ impl SkinsBuffer {
     }
     pub fn create(&mut self, gpu: &Gpu, size: u32) -> Skin {
         let skin = Skin(Arc::new(AtomicU32::new(self.buffer.len() as u32)));
-        self.buffer
-            .resize(gpu, self.buffer.len() + size as u64, true);
+        self.buffer.set_len(gpu, self.buffer.len() + size as usize);
         skin
     }
     pub fn update(&self, gpu: &Gpu, skin: &Skin, joint_matrices: &[Mat4]) {
         self.buffer
-            .write(gpu, skin.get_offset() as u64, joint_matrices);
+            .write(gpu, skin.get_offset() as usize, joint_matrices);
     }
 }
 

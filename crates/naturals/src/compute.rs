@@ -14,6 +14,7 @@ use ambient_std::{
 };
 use ambient_terrain::{wgsl_terrain_preprocess, TerrainSize, TerrainState};
 use async_trait::async_trait;
+use bytemuck::Zeroable;
 use itertools::Itertools;
 
 use crate::{
@@ -239,18 +240,16 @@ impl NaturalsPipeline {
         grid_size: f32,
         terrain_state: &TerrainState,
     ) -> Vec<NaturalEntity> {
-        let out_count_staging = TypedBuffer::<u32>::new(
+        let out_count_staging = TypedBuffer::<u32>::new_init(
             gpu,
             "Naturals.out_count_staging",
-            1,
-            1,
             wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
+            &[0],
         );
         let out_entities_staging = TypedBuffer::<NaturalEntity>::new(
             gpu,
             "Naturals.out_entities_staging",
-            NATURALS_MAX_ENTITIES as u64,
-            NATURALS_MAX_ENTITIES as u64,
+            NATURALS_MAX_ENTITIES as usize,
             wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
         );
 
@@ -265,20 +264,18 @@ impl NaturalsPipeline {
                     .collect_vec(),
             );
 
-            let out_count_buffer = TypedBuffer::<u32>::new(
+            let out_count_buffer = TypedBuffer::<u32>::new_init(
                 gpu,
                 "Naturals.out_count",
-                1,
-                1,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_SRC
                     | wgpu::BufferUsages::COPY_DST,
+                &[0],
             );
             let out_entities_buffer = TypedBuffer::<NaturalEntity>::new(
                 gpu,
                 "Naturals.out_entities",
-                NATURALS_MAX_ENTITIES as u64,
-                NATURALS_MAX_ENTITIES as u64,
+                NATURALS_MAX_ENTITIES as usize,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_SRC
                     | wgpu::BufferUsages::COPY_DST,
@@ -372,16 +369,12 @@ impl NaturalsPipeline {
             gpu.queue.submit(Some(encoder.finish()));
         }
 
-        let count = out_count_staging
-            .read(gpu, .., false)
-            .await
-            .unwrap()
-            .to_vec()[0]
-            .min(NATURALS_MAX_ENTITIES);
+        let count =
+            out_count_staging.read(gpu, ..).await.unwrap().to_vec()[0].min(NATURALS_MAX_ENTITIES);
 
         if count > 0 {
             out_entities_staging
-                .read(gpu, 0..count as u64, false)
+                .read(gpu, 0..count as usize)
                 .await
                 .unwrap()
                 .to_vec()

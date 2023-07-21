@@ -31,3 +31,16 @@ pub async fn set(text: &str) -> anyhow::Result<()> {
     .map_err(|v| anyhow::anyhow!("{:?}", v))
     .map(|_| ())
 }
+
+pub fn set_background(text: impl Into<String>, cb: impl 'static + FnOnce(anyhow::Result<()>)) {
+    let text = text.into();
+    wasm_bindgen_futures::spawn_local(async move {
+        cb(self::set(&text).await);
+    });
+}
+
+pub fn get_background(cb: impl 'static + FnOnce(Option<String>)) {
+    wasm_bindgen_futures::spawn_local(async move {
+        cb(self::get().await);
+    });
+}

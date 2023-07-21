@@ -49,7 +49,6 @@ impl TransparentRenderer {
             gpu,
             "TransparentRenderer.primitives",
             1,
-            1,
             wgpu::BufferUsages::STORAGE
                 | wgpu::BufferUsages::COPY_DST
                 | wgpu::BufferUsages::COPY_SRC
@@ -165,16 +164,14 @@ impl TransparentRenderer {
             (x.transparency_group, OrderedFloat(point.z))
         });
 
-        if self
-            .gpu_primitives
-            .resize(gpu, self.primitives.len() as u64, true)
-        {
+        if self.gpu_primitives.set_len(gpu, self.primitives.len()) {
             self.primitives_bind_group = Self::create_primitives_bind_group(
                 gpu,
                 &self.config.renderer_resources.primitives_layout,
                 self.gpu_primitives.buffer(),
             );
         }
+
         self.gpu_primitives.write(
             gpu,
             0,

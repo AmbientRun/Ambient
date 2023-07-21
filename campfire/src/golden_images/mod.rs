@@ -260,7 +260,7 @@ async fn run<S: AsRef<str>>(
                     .join(" ");
 
                 let output = Command::new(cmd)
-                    .envs(env.into_iter().copied())
+                    .envs(env.iter().copied())
                     .args(args)
                     .kill_on_drop(true)
                     .output()

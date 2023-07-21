@@ -74,7 +74,6 @@ impl GizmoRenderer {
             gpu,
             "Gizmo Buffer",
             128,
-            0,
             BufferUsages::STORAGE | BufferUsages::COPY_DST | BufferUsages::COPY_SRC,
         );
 

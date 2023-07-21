@@ -196,11 +196,11 @@ impl wit::client_camera::Host for Bindings {
 #[async_trait::async_trait]
 impl wit::client_clipboard::Host for Bindings {
     async fn get(&mut self) -> anyhow::Result<Option<String>> {
-        Ok(ambient_sys::clipboard::get())
+        Ok(ambient_sys::clipboard::get().await)
     }
 
     async fn set(&mut self, text: String) -> anyhow::Result<()> {
-        ambient_sys::clipboard::set(&text)
+        ambient_sys::clipboard::set(&text).await
     }
 }
 #[async_trait::async_trait]

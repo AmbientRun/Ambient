@@ -2,35 +2,27 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc, time::Duration};
 
 use ambient_app::{fps_stats, window_title, AppBuilder};
 use ambient_cameras::UICamera;
+use ambient_client_shared::game_view::GameView;
 use ambient_core::{
     gpu, runtime,
-    window::{
-        cursor_position, set_cursor, window_ctl, window_logical_size, window_physical_size,
-        window_scale_factor, ExitStatus, WindowCtl,
-    },
+    window::{window_ctl, ExitStatus, WindowCtl},
 };
-use ambient_debugger::Debugger;
-use ambient_ecs::{generated::messages, Entity, EntityId, SystemGroup};
+use ambient_ecs::{Entity, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::{
     client::{client_network_stats, ClientState, GameClientRenderTarget, GameClientWorld},
     hooks::use_remote_resource,
     native::client::{ClientView, ResolvedAddr},
 };
-use ambient_shared_types::CursorIcon;
 use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_sys::time::Instant;
-use ambient_ui_native::{
-    Button, Dock, FocusRoot, MeasureSize, ScrollArea, ScrollAreaSizing, UIExt, WindowSized, STREET,
-};
-use glam::{uvec2, vec4, Vec2};
+use ambient_ui_native::{Dock, FocusRoot, WindowSized};
+use glam::uvec2;
 
 use crate::{
     cli::{GoldenImageCommand, RunCli},
     shared,
 };
-use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
-use ambient_layout::{docking, padding, width, Borders};
 
 mod wasm;
 
@@ -187,7 +179,6 @@ fn MainApp(
                 } else {
                     Element::new()
                 },
-                // Text::el("Insert game here"),
                 GameView { show_debug }.el(),
             ]),
         }
@@ -332,167 +323,6 @@ fn GoldenImageTest(
     }
 
     Element::new()
-}
-
-#[element_component]
-fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
-    let (state, _) = hooks.consume_context::<ClientState>().unwrap();
-    let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
-
-    let (show_ecs, set_show_ecs) = hooks.use_state(true);
-    let (ecs_size, set_ecs_size) = hooks.use_state(Vec2::ZERO);
-    let (debugger_size, set_debugger_size) = hooks.use_state(Vec2::ZERO);
-
-    let (w, set_w) = hooks.use_state(300.0);
-    let (w_memory, set_w_memory) = hooks.use_state(0.0);
-    let (mouse_on_edge, set_mouse_on_edge) = hooks.use_state(false);
-    let (should_track_resize, set_should_track_resize) = hooks.use_state(false);
-
-    hooks.use_runtime_message::<messages::WindowMouseInput>({
-        move |_world, event| {
-            let pressed = event.pressed;
-            if pressed && mouse_on_edge {
-                set_should_track_resize(true);
-            } else {
-                set_should_track_resize(false);
-            }
-        }
-    });
-
-    hooks.use_frame({
-        let state = state.clone();
-        let render_target = render_target.clone();
-        let set_w = set_w.clone();
-        let set_w_memory = set_w_memory.clone();
-        move |world| {
-            let mut state = state.game_state.lock();
-
-            let scale_factor = *world.resource(window_scale_factor());
-            let mut mouse_pos = *world.resource(cursor_position());
-            if (w - mouse_pos.x).abs() < 5.0 && show_debug {
-                set_cursor(world, CursorIcon::ColResize.into());
-                set_mouse_on_edge(true);
-            } else {
-                set_cursor(world, CursorIcon::Default.into());
-                set_mouse_on_edge(false);
-            }
-            if should_track_resize {
-                set_w(mouse_pos.x);
-                set_w_memory(mouse_pos.x);
-            }
-            mouse_pos.x -= ecs_size.x;
-            mouse_pos.y -= debugger_size.y;
-
-            state
-                .world
-                .set_if_changed(EntityId::resources(), cursor_position(), mouse_pos)
-                .unwrap();
-
-            let size = uvec2(
-                render_target.0.color_buffer.size.width,
-                render_target.0.color_buffer.size.height,
-            );
-            state
-                .world
-                .set_if_changed(
-                    EntityId::resources(),
-                    window_logical_size(),
-                    (size.as_vec2() / scale_factor as f32).as_uvec2(),
-                )
-                .unwrap();
-            state
-                .world
-                .set_if_changed(EntityId::resources(), window_physical_size(), size)
-                .unwrap();
-            state
-                .world
-                .set_if_changed(EntityId::resources(), window_scale_factor(), scale_factor)
-                .unwrap();
-        }
-    });
-
-    Dock::el([
-        if show_debug {
-            MeasureSize::el(
-                Dock::el([
-                    Button::new(if show_ecs { "\u{f137}" } else { "\u{f138}" }, move |_| {
-                        set_show_ecs(!show_ecs)
-                    })
-                    .style(ambient_ui_native::ButtonStyle::Flat)
-                    .toggled(show_ecs)
-                    .el(),
-                    if show_ecs {
-                        if w_memory != 0.0 {
-                            set_w(w_memory)
-                        } else {
-                            set_w(300.0)
-                        };
-                        ScrollArea::el(
-                            ScrollAreaSizing::FitParentWidth,
-                            ECSEditor {
-                                world: Arc::new(InspectableAsyncWorld(cb({
-                                    let state = state.clone();
-                                    move |res| {
-                                        let state = state.game_state.lock();
-                                        res(&state.world)
-                                    }
-                                }))),
-                            }
-                            .el()
-                            .memoize_subtree(state.uid),
-                        )
-                    } else {
-                        set_w(0.0);
-                        Element::new()
-                    },
-                ])
-                .with(width(), w)
-                .with(docking(), ambient_layout::Docking::Left)
-                .with_background(vec4(0., 0., 0., 1.))
-                .with(padding(), Borders::even(STREET).into()),
-                set_ecs_size,
-            )
-        } else {
-            Element::new()
-        },
-        if show_debug {
-            MeasureSize::el(
-                Debugger {
-                    get_state: cb(move |cb| {
-                        let mut game_state = state.game_state.lock();
-                        let game_state = &mut *game_state;
-                        cb(
-                            &mut game_state.renderer,
-                            &render_target.0,
-                            &mut game_state.world,
-                        );
-                    }),
-                }
-                .el(),
-                set_debugger_size,
-            )
-            .with(docking(), ambient_layout::Docking::Top)
-            .with(padding(), Borders::even(STREET).into())
-        } else {
-            Element::new()
-        },
-        if show_debug {
-            Dock::el([GameClientWorld.el()])
-                .with_background(vec4(0.2, 0.2, 0.2, 1.))
-                .with(
-                    padding(),
-                    Borders {
-                        left: 1.,
-                        top: 0.,
-                        right: 0.,
-                        bottom: 1.,
-                    }
-                    .into(),
-                )
-        } else {
-            GameClientWorld.el()
-        },
-    ])
 }
 
 fn systems() -> SystemGroup {

@@ -105,7 +105,6 @@ impl<'a> Hooks<'a> {
                     instance_id: element.clone(),
                     index,
                     value: Box::new(new_value),
-                    name: type_name::<T>(),
                 })
             }),
         )
@@ -741,7 +740,6 @@ pub(crate) struct ContextUpdate {
 pub(crate) struct StateUpdate {
     pub instance_id: InstanceId,
     pub index: usize,
-    pub name: &'static str,
     pub value: Box<dyn AnyCloneable + Send>,
 }
 

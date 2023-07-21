@@ -16,7 +16,7 @@ pub type GpuComponentId = &'static str;
 pub struct GpuComponent {
     pub name: String,
     pub format: GpuComponentFormat,
-    pub exists_for: ArchetypeFilter,
+    pub filter: ArchetypeFilter,
 }
 
 /// Represents the type of the component in the shader.
@@ -280,7 +280,7 @@ macro_rules! gpu_components {
                     registry.components.push($crate::gpu_ecs::GpuComponent {
                         name: stringify!($name).to_string(),
                         format: $format,
-                        exists_for: ambient_ecs::ArchetypeFilter::new()
+                        filter: ambient_ecs::ArchetypeFilter::new()
                             $( .incl($cpu_component) )*
                     });
                 )*
