@@ -4,15 +4,45 @@ use ambient_project_semantic::{Item, ItemId, ItemMap, Scope, Type};
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::{make_path, Context};
+use crate::{make_manifest_ref, make_path, Context};
 
 pub fn make_definitions(
+    context: &Context,
+    items: &ItemMap,
+    type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
+    root_scope_id: ItemId<Scope>,
+    scope: &Scope,
+    generate_ambient_types: bool,
+    manifest_scope_id: Option<ItemId<Scope>>,
+) -> anyhow::Result<TokenStream> {
+    let inner = make_definitions_inner(
+        context,
+        items,
+        type_map,
+        root_scope_id,
+        scope,
+        generate_ambient_types,
+        manifest_scope_id,
+    )?;
+
+    let manifest_ref = make_manifest_ref(items, root_scope_id, manifest_scope_id, |scope| {
+        !scope.messages.is_empty()
+    });
+
+    Ok(quote! {
+        #inner
+        #manifest_ref
+    })
+}
+
+pub fn make_definitions_inner(
     context: &Context,
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
     _root_scope_id: ItemId<Scope>,
     scope: &Scope,
     generate_ambient_types: bool,
+    manifest_scope_id: Option<ItemId<Scope>>,
 ) -> anyhow::Result<TokenStream> {
     let scopes = scope
         .scopes
@@ -21,13 +51,14 @@ pub fn make_definitions(
             let scope = items.get(*s)?;
             let id = make_path(&scope.data.id.as_snake_case());
 
-            let inner = make_definitions(
+            let inner = make_definitions_inner(
                 context,
                 items,
                 type_map,
                 _root_scope_id,
                 &scope,
                 generate_ambient_types,
+                manifest_scope_id,
             )?;
             if inner.is_empty() {
                 return Ok(quote! {});

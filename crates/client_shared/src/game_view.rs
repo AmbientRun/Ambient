@@ -10,8 +10,8 @@ use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::client::{ClientState, GameClientRenderTarget, GameClientWorld};
 use ambient_shared_types::CursorIcon;
 use ambient_ui_native::{
-    cb, docking, padding, width, Borders, Button, Dock, MeasureSize, ScrollArea, ScrollAreaSizing,
-    UIExt, STREET,
+    cb, docking_impl, padding, width, Borders, Button, Dock, MeasureSize, ScrollArea,
+    ScrollAreaSizing, UIExt, STREET,
 };
 use glam::{uvec2, vec4, Vec2};
 
@@ -29,7 +29,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     let (mouse_on_edge, set_mouse_on_edge) = hooks.use_state(false);
     let (should_track_resize, set_should_track_resize) = hooks.use_state(false);
 
-    hooks.use_runtime_message::<messages::WindowMouseInput>({
+    hooks.use_runtime_message::<messages::core::WindowMouseInput>({
         move |_world, event| {
             let pressed = event.pressed;
             if pressed && mouse_on_edge {
@@ -128,7 +128,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                     },
                 ])
                 .with(width(), w)
-                .with(docking(), ambient_layout::Docking::Left)
+                .with(docking_impl(), ambient_layout::Docking::Left)
                 .with_background(vec4(0., 0., 0., 1.))
                 .with(padding(), Borders::even(STREET).into()),
                 set_ecs_size,
@@ -152,7 +152,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
                 .el(),
                 set_debugger_size,
             )
-            .with(docking(), ambient_layout::Docking::Top)
+            .with(docking_impl(), ambient_layout::Docking::Top)
             .with(padding(), Borders::even(STREET).into())
         } else {
             Element::new()

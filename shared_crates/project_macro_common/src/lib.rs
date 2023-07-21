@@ -1,7 +1,7 @@
 extern crate proc_macro;
 
 use ambient_project::ItemPathBuf;
-use ambient_project_semantic::{ArrayFileProvider, Semantic, TypeInner};
+use ambient_project_semantic::{ArrayFileProvider, ItemId, ItemMap, Scope, Semantic, TypeInner};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use std::{collections::HashMap, path::Path};
@@ -24,7 +24,7 @@ pub enum ManifestSource<'a> {
 }
 
 pub fn generate_code(
-    manifests: Vec<ManifestSource<'_>>,
+    manifest: Option<ManifestSource<'_>>,
     ambient_api_is_ambient: bool,
     generate_ambient_types: bool,
     context: Context,
@@ -32,21 +32,20 @@ pub fn generate_code(
 ) -> anyhow::Result<TokenStream> {
     let mut semantic = Semantic::new()?;
     semantic.add_ambient_schema(ambient_api_is_ambient)?;
-    for manifest in manifests {
-        match manifest {
-            ManifestSource::Path { ember_path } => {
-                semantic.add_ember(ember_path)?;
-            }
-            ManifestSource::Array(files) => {
-                semantic.add_file(
+    // Used to generate a `this` reference to the scope for convenience
+    let manifest_scope_id = manifest
+        .map(|m| {
+            anyhow::Ok(match m {
+                ManifestSource::Path { ember_path } => semantic.add_ember(ember_path)?,
+                ManifestSource::Array(files) => semantic.add_file(
                     Path::new("ambient.toml"),
                     &ArrayFileProvider { files },
                     false,
                     false,
-                )?;
-            }
-        }
-    }
+                )?,
+            })
+        })
+        .transpose()?;
 
     // let mut printer = ambient_project_semantic::Printer::new();
     semantic.resolve()?;
@@ -98,6 +97,7 @@ pub fn generate_code(
         generate_from_scope_id,
         generate_from_scope,
         generate_ambient_types,
+        manifest_scope_id,
     )?;
     let concepts = concepts::make_definitions(
         &context,
@@ -106,6 +106,7 @@ pub fn generate_code(
         generate_from_scope_id,
         generate_from_scope,
         generate_ambient_types,
+        manifest_scope_id,
     )?;
     let messages = messages::make_definitions(
         &context,
@@ -114,6 +115,7 @@ pub fn generate_code(
         generate_from_scope_id,
         generate_from_scope,
         generate_ambient_types,
+        manifest_scope_id,
     )?;
 
     let output = quote! {
@@ -141,4 +143,28 @@ pub fn generate_code(
 
 fn make_path(id: &str) -> syn::Path {
     syn::parse_str(id).unwrap()
+}
+
+fn make_manifest_ref(
+    items: &ItemMap,
+    root_scope_id: ItemId<Scope>,
+    manifest_scope_id: Option<ItemId<Scope>>,
+    presence_check: impl Fn(&Scope) -> bool,
+) -> TokenStream {
+    let Some(manifest_scope_id) = manifest_scope_id else { return quote!{}; };
+    let manifest_scope = items.get(manifest_scope_id).unwrap();
+
+    if !presence_check(&*manifest_scope) {
+        return quote! {};
+    }
+
+    let manifest_path = syn::parse_str::<syn::Path>(
+        &items
+            .fully_qualified_display_path_rust_style(&*manifest_scope, Some(root_scope_id), None)
+            .unwrap(),
+    )
+    .unwrap();
+    quote! {
+        pub use #manifest_path as this;
+    }
 }

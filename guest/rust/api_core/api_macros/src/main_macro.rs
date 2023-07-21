@@ -14,7 +14,7 @@ pub fn main_impl(item: TokenStream, ambient_toml: ManifestSource) -> anyhow::Res
     path.leading_colon = Some(syn::Token![::](spans));
 
     let project_boilerplate = ambient_project_macro_common::generate_code(
-        vec![ambient_toml],
+        Some(ambient_toml),
         true,
         false,
         ambient_project_macro_common::Context::Guest {

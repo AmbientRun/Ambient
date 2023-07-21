@@ -28,7 +28,7 @@ fn main() {
     "#;
 
     let api_generated_code = ambient_project_macro_common::generate_code(
-        vec![],
+        None,
         false,
         true,
         ambient_project_macro_common::Context::Host,

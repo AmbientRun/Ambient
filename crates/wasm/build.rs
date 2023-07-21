@@ -88,7 +88,7 @@ fn main() {
 
             // Generate the API project Rust code.
             let api_generated_code = ambient_project_macro_common::generate_code(
-                vec![],
+                None,
                 false,
                 true,
                 ambient_project_macro_common::Context::Guest {

@@ -11,7 +11,9 @@ use ambient_api::{
         rendering::color,
         transform::{lookat_target, scale, translation},
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    concepts::core::{
+        camera::make_perspective_infinite_reverse_camera, transform::make_transformable,
+    },
     prelude::*,
 };
 
@@ -37,11 +39,11 @@ pub fn main() {
         .spawn();
 
     // 1
-    messages::Hello::new(false, "Hello, world from the client!").send_server_unreliable();
-    messages::Hello::new(true, "Hello, world from the client!").send_server_reliable();
+    messages::this::Hello::new("Hello, world from the client!", false).send_server_unreliable();
+    messages::this::Hello::new("Hello, world from the client!", true).send_server_reliable();
 
     // 2
-    messages::Hello::subscribe(|source, data| {
+    messages::this::Hello::subscribe(|source, data| {
         println!("{source:?}: {:?}", data);
 
         let source_reliable = data.source_reliable;
@@ -66,7 +68,7 @@ pub fn main() {
 
     // 3
     let handled = Arc::new(AtomicBool::new(false));
-    messages::Local::subscribe({
+    messages::this::Local::subscribe({
         let handled = handled.clone();
         move |source, data| {
             handled.store(true, Ordering::SeqCst);
@@ -78,7 +80,7 @@ pub fn main() {
     run_async(async move {
         while !handled.load(Ordering::SeqCst) {
             sleep(1.0).await;
-            messages::Local::new("Hello!").send_local_broadcast(false)
+            messages::this::Local::new("Hello!").send_local_broadcast(false)
         }
     });
 }
