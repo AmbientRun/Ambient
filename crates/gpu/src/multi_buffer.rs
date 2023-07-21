@@ -258,7 +258,7 @@ impl MultiBuffer {
         let new_total_capacity = (self.total_capacity as i64 + capacity_change) as u64;
         tracing::debug!(
             label = self.label,
-            "Rezing sub buffer {id} {} => {}",
+            "Resizing sub buffer {id} {} => {}",
             buf.capacity_bytes,
             capacity,
         );
