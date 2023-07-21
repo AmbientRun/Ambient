@@ -40,9 +40,10 @@ use glam::{uvec2, vec2, UVec2, Vec2};
 use parking_lot::Mutex;
 use renderers::{main_renderer, ui_renderer, MainRenderer, UiRenderer};
 use winit::{
+    dpi::PhysicalPosition,
     event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
-    window::{Fullscreen, Window, WindowBuilder},
+    window::{CursorGrabMode, Fullscreen, Window, WindowBuilder},
 };
 
 mod renderers;
@@ -632,6 +633,27 @@ impl App {
                     match v {
                         WindowCtl::GrabCursor(mode) => {
                             if let Some(window) = &self.window {
+                                match mode {
+                                    CursorGrabMode::Confined | CursorGrabMode::Locked => {
+                                        // Move the cursor to the centre of the window to ensure
+                                        // the cursor is within the window and will not be locked
+                                        // in place outside the window.
+                                        //
+                                        // Without this, on macOS, the cursor will be locked in place
+                                        // and visible outside the window, which means the user can
+                                        // click on other aspects of the operating system while
+                                        // the cursor is locked.
+                                        let (width, height) =
+                                            <(u32, u32)>::from(window.inner_size());
+                                        window
+                                            .set_cursor_position(PhysicalPosition::new(
+                                                width / 2,
+                                                height / 2,
+                                            ))
+                                            .ok();
+                                    }
+                                    _ => {}
+                                }
                                 window.set_cursor_grab(mode).ok();
                             }
                         }
