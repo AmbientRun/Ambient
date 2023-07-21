@@ -176,7 +176,7 @@ pub(crate) fn all_examples(with_testcases: bool) -> anyhow::Result<Vec<(PathBuf,
                 for entry in all_directories_in(&testcases_path)? {
                     examples.push((
                         entry.path(),
-                        format!("{}", entry.file_name().to_str().unwrap()),
+                        entry.file_name().to_str().unwrap().to_string(),
                     ));
                 }
             }

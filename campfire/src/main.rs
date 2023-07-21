@@ -1,4 +1,8 @@
-use campfire::{cli::Cli, doc, example, golden_images, install, release};
+use campfire::{
+    cli::Cli,
+    doc, example, golden_images, install, release,
+    web::{self, Web},
+};
 use clap::Parser;
 
 #[tokio::main(flavor = "current_thread")]
@@ -20,5 +24,6 @@ async fn main() -> anyhow::Result<()> {
 
         Cli::Clean => example::clean(),
         Cli::Run(run) => example::run(&run),
+        Cli::Web(command) => web::run(command).await,
     }
 }

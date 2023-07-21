@@ -5,7 +5,7 @@ target
 /rust
 
 # WASM
-pkg/
+web/pkg/
 node_modules/
 bin/
 wasm-pack.log

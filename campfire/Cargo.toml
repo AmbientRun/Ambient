@@ -32,4 +32,4 @@ futures = "0.3"
 num_cpus = "1.15.0"
 home = "0.5"
 miette = "5.10"
-
+tracing = "0.1"
