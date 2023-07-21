@@ -8,10 +8,14 @@ use ambient_ecs::{copy_component_recursive, ArchetypeFilter, Component, SystemGr
 use ambient_gpu::{
     gpu::Gpu,
     mesh_buffer::MeshBuffer,
+    settings::SettingsKey,
     shader_module::{BindGroupDesc, GraphicsPipeline, GraphicsPipelineInfo, Shader},
     texture::Texture,
 };
-use ambient_std::{asset_cache::AssetCache, include_file};
+use ambient_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    include_file,
+};
 use wgpu::{BindGroupLayoutEntry, BindingType, PrimitiveTopology, ShaderStages};
 
 use super::{
@@ -82,6 +86,8 @@ impl Outlines {
             },
         );
 
+        let settings = SettingsKey.get(assets);
+
         Self {
             outlines: Self::create_outline_texture(
                 gpu,
@@ -95,6 +101,7 @@ impl Outlines {
             collect_state: RendererCollectState::new(gpu),
             renderer: TreeRenderer::new(
                 gpu,
+                "outlines",
                 TreeRendererConfig {
                     renderer_config,
                     targets: vec![Some(wgpu::ColorTargetState {
@@ -109,6 +116,8 @@ impl Outlines {
                     depth_stencil: false,
                     cull_mode: Some(wgpu::Face::Back),
                     depth_bias: Default::default(),
+                    render_mode: settings.render_mode,
+                    software_culling: settings.software_culling,
                 },
             ),
             _config: config,
@@ -157,12 +166,14 @@ impl Outlines {
         self.renderer.update(gpu, assets, world);
         self.renderer.run_collect(
             gpu,
+            world,
             assets,
             encoder,
             post_submit,
             bind_groups.mesh_meta,
             bind_groups.entities,
             &mut self.collect_state,
+            mesh_buffer,
         );
 
         {
@@ -185,6 +196,9 @@ impl Outlines {
             );
 
             self.renderer.render(
+                gpu,
+                world,
+                mesh_buffer,
                 &mut render_pass,
                 &self.collect_state,
                 bind_groups,

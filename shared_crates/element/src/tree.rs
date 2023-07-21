@@ -521,13 +521,11 @@ impl ElementTree {
             instance_id,
             index,
             value,
-            name,
         } in state_updates.into_iter()
         {
             ambient_profiling::scope!("state_updates");
             if let Some(instance) = self.instances.get_mut(&instance_id) {
-                let key = &instance.config.get_element_key(true);
-                tracing::debug!(key, name, "updated state");
+                let _key = &instance.config.get_element_key(true);
                 instance.hooks_state[index] = value;
                 to_update.insert(instance_id);
             }

@@ -19,16 +19,18 @@ use wgpu::{
     ShaderStages,
 };
 
-use crate::{get_mesh_meta_module, PostSubmitFunc, GLOBALS_BIND_GROUP};
+use crate::{
+    get_mesh_meta_module, DrawIndexedIndirect, MaterialLayout, PostSubmitFunc, GLOBALS_BIND_GROUP,
+};
 
-use super::{get_defs_module, DrawIndexedIndirect, PrimitiveIndex};
+use super::{get_defs_module, PrimitiveIndex};
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Default, bytemuck::Pod, bytemuck::Zeroable)]
-pub struct CollectPrimitive {
-    entity_loc: UVec2,
-    primitive_index: u32,
-    material_index: u32,
+pub(crate) struct CollectPrimitive {
+    pub entity_loc: UVec2,
+    pub primitive_id: u32,
+    pub material_index: u32,
 }
 
 impl CollectPrimitive {
@@ -41,35 +43,67 @@ impl CollectPrimitive {
         let loc = world.entity_loc(id).unwrap();
         Self {
             entity_loc: uvec2(loc.archetype as u32, loc.index as u32),
-            primitive_index: primitive_index as u32,
+            primitive_id: primitive_index as u32,
             material_index,
         }
     }
 }
 
-pub struct RendererCollectState {
+#[derive(Debug, Default)]
+pub(crate) struct DrawCountState {
+    counts: Vec<u32>,
+    /// The last tick that the counts were updated. Used for enforcing ordering
+    last_tick: u64,
+}
+
+impl DrawCountState {
+    pub fn update(&mut self, counts: Vec<u32>, tick: u64) {
+        if self.last_tick > tick {
+            tracing::warn!("Skipping count update because it's out of date");
+            return;
+        }
+
+        tracing::debug!(?counts, "Updating counts");
+
+        self.last_tick = tick;
+        self.counts = counts;
+    }
+
+    #[inline]
+    pub fn counts(&self) -> &[u32] {
+        self.counts.as_ref()
+    }
+
+    pub fn counts_mut(&mut self) -> &mut Vec<u32> {
+        &mut self.counts
+    }
+}
+
+/// Contains the primitive input and indirect output buffers for GPU driven rendering
+pub(crate) struct RendererCollectState {
     pub params: TypedBuffer<RendererCollectParams>,
     pub commands: TypedBuffer<DrawIndexedIndirect>,
     pub counts: TypedBuffer<u32>,
     #[cfg(any(target_os = "macos", target_os = "unknown"))]
-    pub counts_cpu: Arc<Mutex<Vec<u32>>>,
-    pub material_layouts: TypedBuffer<UVec2>,
+    /// Multi draw indexed indirect is not supported on macOS
+    pub(crate) counts_cpu: Arc<Mutex<DrawCountState>>,
+    pub tick: u64,
+    pub material_layouts: TypedBuffer<MaterialLayout>,
 }
+
 impl RendererCollectState {
     pub fn new(gpu: &Gpu) -> Self {
         log::debug!("Setting up renderer collect state");
         Self {
-            params: TypedBuffer::new(
+            params: TypedBuffer::new_init(
                 gpu,
                 "RendererCollectState.params",
-                1,
-                1,
                 wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+                &[RendererCollectParams::default()],
             ),
             commands: TypedBuffer::new(
                 gpu,
                 "RendererCollectState.commands",
-                1,
                 1,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
@@ -80,24 +114,23 @@ impl RendererCollectState {
                 gpu,
                 "RendererCollectState.counts",
                 1,
-                1,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
                     | wgpu::BufferUsages::COPY_SRC
                     | wgpu::BufferUsages::INDIRECT,
             ),
             #[cfg(any(target_os = "macos", target_os = "unknown"))]
-            counts_cpu: Arc::new(Mutex::new(Vec::new())),
+            counts_cpu: Arc::new(Default::default()),
             material_layouts: TypedBuffer::new(
                 gpu,
                 "RendererCollectState.materials",
-                1,
                 1,
                 wgpu::BufferUsages::STORAGE
                     | wgpu::BufferUsages::COPY_DST
                     | wgpu::BufferUsages::COPY_SRC
                     | wgpu::BufferUsages::INDIRECT,
             ),
+            tick: 0,
         }
     }
     pub fn set_camera(&self, gpu: &Gpu, camera: u32) {
@@ -117,7 +150,7 @@ pub struct RendererCollectParams {
 }
 
 const COLLECT_WORKGROUP_SIZE: u32 = 32;
-const COLLECT_CHUNK_SIZE: u32 = 256;
+// const COLLECT_CHUNK_SIZE: u32 = 256;
 
 /// This collects primitives into indirect draw buffers
 #[allow(dead_code)]
@@ -198,10 +231,10 @@ impl RendererCollect {
                     "COLLECT_WORKGROUP_SIZE",
                     COLLECT_WORKGROUP_SIZE,
                 ))
-                .with_ident(ShaderIdent::constant(
-                    "COLLECT_CHUNK_SIZE",
-                    COLLECT_CHUNK_SIZE,
-                ))
+                // .with_ident(ShaderIdent::constant(
+                //     "COLLECT_CHUNK_SIZE",
+                //     COLLECT_CHUNK_SIZE,
+                // ))
                 .with_binding_desc(layout_desc)
                 .with_dependency(get_defs_module())
                 .with_dependency(get_mesh_meta_module(0))
@@ -214,10 +247,37 @@ impl RendererCollect {
         Self { pipeline, layout }
     }
 
-    #[allow(clippy::too_many_arguments)]
-    #[allow(clippy::ptr_arg)]
+    /// Updates the GPU side data needed for indirect rendering.
+    ///
+    /// **Note**:
+    pub(crate) fn update(
+        &self,
+        gpu: &Gpu,
+        material_layouts: &[MaterialLayout],
+        collect_state: &mut RendererCollectState,
+    ) {
+        tracing::trace!(
+            from = collect_state.counts.len(),
+            to = material_layouts.len(),
+            "Resizing counts buffer",
+        );
+        // if collect_state.counts.len() != material_layouts.len() {
+        let counts = vec![0; material_layouts.len()];
+
+        collect_state.counts.fill(gpu, &counts, |_| {});
+        // }
+
+        tracing::debug!("material_layouts: {material_layouts:?}");
+
+        collect_state
+            .material_layouts
+            .fill(gpu, material_layouts, |_| {});
+        collect_state.tick += 1;
+    }
+
+    /// Computes indirect draw commands using culling
     #[ambient_profiling::function]
-    pub fn run(
+    pub(crate) fn compute_indirect(
         &self,
         gpu: &Gpu,
         assets: &AssetCache,
@@ -228,16 +288,13 @@ impl RendererCollect {
         input_primitives: &TypedMultiBuffer<CollectPrimitive>,
         output: &mut RendererCollectState,
         primitives_count: u32,
-        material_layouts: Vec<UVec2>,
     ) {
+        output.commands.set_len(gpu, primitives_count as usize);
+
+        // Avoid binding 0 size buffers
         if primitives_count == 0 {
             return;
         }
-
-        output.commands.resize(gpu, primitives_count as u64, true);
-        let counts = vec![0; material_layouts.len()];
-        output.counts.fill(gpu, &counts, |_| {});
-        output.material_layouts.fill(gpu, &material_layouts, |_| {});
 
         let bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: None,
@@ -245,7 +302,7 @@ impl RendererCollect {
             entries: &[
                 BindGroupEntry {
                     binding: 0,
-                    resource: output.params.buffer().as_entire_binding(),
+                    resource: output.params.as_binding(),
                 },
                 BindGroupEntry {
                     binding: 1,
@@ -253,15 +310,15 @@ impl RendererCollect {
                 },
                 BindGroupEntry {
                     binding: 2,
-                    resource: output.commands.buffer().as_entire_binding(),
+                    resource: output.commands.as_binding(),
                 },
                 BindGroupEntry {
                     binding: 3,
-                    resource: output.counts.buffer().as_entire_binding(),
+                    resource: output.counts.as_binding(),
                 },
                 BindGroupEntry {
                     binding: 4,
-                    resource: output.material_layouts.buffer().as_entire_binding(),
+                    resource: output.material_layouts.as_binding(),
                 },
             ],
         });
@@ -270,6 +327,7 @@ impl RendererCollect {
             let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
                 label: Some("Collect"),
             });
+
             cpass.set_pipeline(self.pipeline.pipeline());
 
             for (i, bind_group) in [mesh_meta_bind_group, entities_bind_group, &bind_group]
@@ -279,14 +337,11 @@ impl RendererCollect {
                 cpass.set_bind_group(i as _, bind_group, &[]);
             }
 
-            let count = (primitives_count as f32 / COLLECT_WORKGROUP_SIZE as f32).ceil() as u32;
-            let width = if count < COLLECT_CHUNK_SIZE {
-                count
-            } else {
-                COLLECT_CHUNK_SIZE
-            };
-            let height = (count as f32 / COLLECT_CHUNK_SIZE as f32).ceil() as u32;
-            cpass.dispatch_workgroups(width, height, 1);
+            // Divide up all the primitives among `x` workgroups
+            let x = (primitives_count as f32 / COLLECT_WORKGROUP_SIZE as f32).ceil() as u32;
+            tracing::debug!("Dispatching {x} workgroups");
+
+            cpass.dispatch_workgroups(x, 1, 1);
         }
 
         #[cfg(any(target_os = "macos", target_os = "unknown"))]
@@ -295,20 +350,29 @@ impl RendererCollect {
 
             let buffs = CollectCountStagingBuffersKey.get(assets);
             let staging = buffs.take_buffer(gpu, output.counts.len());
+
             encoder.copy_buffer_to_buffer(
                 output.counts.buffer(),
                 0,
                 staging.buffer(),
                 0,
-                output.counts.byte_size(),
+                output.counts.byte_len(),
             );
+
             let counts_res = output.counts_cpu.clone();
             let runtime = RuntimeKey.get(assets);
             let post_submit_gpu = ambient_gpu::gpu::GpuKey.get(assets);
+            let tick = output.tick;
+
             _post_submit.push(Box::new(move || {
                 runtime.spawn(async move {
-                    if let Ok(res) = staging.read(&post_submit_gpu, .., false).await {
-                        *counts_res.lock() = res;
+                    if let Ok(res) = staging.read(&post_submit_gpu, ..).await {
+                        {
+                            let mut count_state = counts_res.lock();
+                            assert_ne!(count_state.last_tick, tick);
+
+                            count_state.update(res, tick);
+                        }
                         buffs.return_buffer(staging);
                     }
                 });
@@ -338,16 +402,15 @@ impl CollectCountStagingBuffers {
     }
 
     #[cfg(any(target_os = "macos", target_os = "unknown"))]
-    fn take_buffer(&self, gpu: &Gpu, size: u64) -> TypedBuffer<u32> {
+    fn take_buffer(&self, gpu: &Gpu, size: usize) -> TypedBuffer<u32> {
         match self.buffers.lock().pop() {
             Some(mut buffer) => {
-                buffer.resize(gpu, size, false);
+                buffer.set_len_discard(gpu, size);
                 buffer
             }
             None => TypedBuffer::<u32>::new(
                 gpu,
                 "RendererCollectState.counts_staging",
-                size,
                 size,
                 wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
             ),

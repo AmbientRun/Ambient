@@ -5,8 +5,9 @@ use ambient_api::{
         app::main_scene,
         camera::aspect_ratio_from_window,
         prefab::{prefab_from_url, spawned},
+        primitives::quad,
         rendering::{cast_shadows, light_ambient, light_diffuse, sun},
-        transform::{lookat_target, rotation, translation},
+        transform::{lookat_target, rotation, scale, translation},
     },
     concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     glam::EulerRot,
@@ -22,6 +23,14 @@ pub async fn main() {
         .with(translation(), vec3(2., 2., 1.))
         .with(lookat_target(), vec3(0., 0., 0.))
         .spawn();
+
+    Entity::new()
+        .with_merge(make_transformable())
+        .with_default(quad())
+        .with(scale(), Vec3::ONE * 2.0)
+        .spawn();
+
+    println!("Hello, Ambient!");
 
     Entity::new()
         .with_merge(make_transformable())

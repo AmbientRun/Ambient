@@ -21,16 +21,17 @@ pub fn main() {
     Entity::new()
         .with_merge(make_transformable())
         .with_default(quad())
-        .with(scale(), Vec3::ONE * 10.)
-        .with(color(), vec4(1., 0., 0., 1.))
+        .with(scale(), Vec3::ONE * 10.0)
+        .with(color(), vec4(1.0, 0.0, 0.0, 1.0))
         .with_default(plane_collider())
         .spawn();
 
     Entity::new()
         .with_merge(make_transformable())
         .with_merge(make_sphere())
+        .with(color(), vec4(0.5, 0.0, 1.0, 1.0))
         .with(sphere_collider(), 0.5)
-        .with(translation(), vec3(5., 5., 1.))
+        .with(translation(), vec3(5.0, 5.0, 1.0))
         .spawn();
 
     // Spawn a sun
@@ -57,7 +58,7 @@ pub fn main() {
                     .with_default(physics_controlled())
                     .with_default(cube())
                     .with(color(), Vec4::ONE)
-                    .with(character_controller_height(), 2.)
+                    .with(character_controller_height(), 2.0)
                     .with(character_controller_radius(), 0.5)
                     .with(camera_follow_distance(), 4.0),
             );

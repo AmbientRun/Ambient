@@ -149,8 +149,7 @@ impl CloudMaterial {
         let cloud_buffer = TypedBuffer::new(
             gpu,
             "Cloud Buffer",
-            state.tree.len().max(64) as u64,
-            0,
+            state.tree.len().max(64) as usize,
             BufferUsages::STORAGE | BufferUsages::COPY_DST | BufferUsages::COPY_SRC,
         );
 

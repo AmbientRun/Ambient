@@ -45,7 +45,7 @@ pub fn main() {
     Entity::new()
         .with_merge(make_transformable())
         .with_merge(make_sphere())
-        .with(sphere_radius(), 1.)
+        .with(sphere_radius(), 1.0)
         .with(sphere_sectors(), 12)
         .with(sphere_stacks(), 6)
         .with(translation(), vec3(0., 2., 0.5))

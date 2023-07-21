@@ -608,6 +608,7 @@ mod test {
             drop(value);
             assert_eq!(Arc::strong_count(&shared), 2);
 
+            #[allow(clippy::redundant_clone)]
             let value3 = value2.clone();
             let value4: Arc<String> = value2.downcast_cloned();
             assert_eq!(Arc::strong_count(&shared), 4);

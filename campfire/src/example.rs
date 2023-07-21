@@ -1,4 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::{
+    fs::DirEntry,
+    path::{Path, PathBuf},
+};
 
 use anyhow::Context;
 use clap::Parser;
@@ -46,7 +49,7 @@ pub(crate) fn main(args: &Example) -> anyhow::Result<()> {
 
 pub(crate) fn clean() -> anyhow::Result<()> {
     log::info!("Cleaning examples...");
-    for example_path in all_examples()? {
+    for (example_path, _) in all_examples(true)? {
         let build_path = example_path.join("build");
         if !build_path.exists() {
             continue;
@@ -66,9 +69,9 @@ pub(crate) fn run(args: &Run) -> anyhow::Result<()> {
         args,
     } = args;
 
-    let example_path = all_examples()?
+    let (example_path, _) = all_examples(true)?
         .into_iter()
-        .find(|p| p.ends_with(example))
+        .find(|(p, _)| p.ends_with(example))
         .ok_or_else(|| anyhow::anyhow!("no example found with name {}", example))?;
 
     log::info!(
@@ -79,7 +82,7 @@ pub(crate) fn run(args: &Run) -> anyhow::Result<()> {
 }
 
 fn run_all(release: bool, args: &[String]) -> anyhow::Result<()> {
-    for example_path in all_examples()? {
+    for (example_path, _) in all_examples(true)? {
         log::info!(
             "Running example {} (Ambient built with release: {release}, extra args {args:?})...",
             example_path.display()
@@ -141,11 +144,11 @@ fn run_ambient(args: &[&str], release: bool) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn all_examples() -> anyhow::Result<Vec<PathBuf>> {
+pub(crate) fn all_examples(with_testcases: bool) -> anyhow::Result<Vec<(PathBuf, String)>> {
     let mut examples = Vec::new();
 
     for guest in all_directories_in(Path::new("guest")).context("Failed to find guest directory")? {
-        let examples_path = guest.join("examples");
+        let examples_path = guest.path().join("examples");
         let dirs = match all_directories_in(&examples_path) {
             Ok(v) => v,
             Err(e) => {
@@ -154,9 +157,28 @@ fn all_examples() -> anyhow::Result<Vec<PathBuf>> {
             }
         };
 
-        for category_path in dirs {
-            for example_path in all_directories_in(&category_path)? {
-                examples.push(example_path);
+        for category in dirs {
+            for example in all_directories_in(&category.path())? {
+                examples.push((
+                    example.path(),
+                    format!(
+                        "{}/{}",
+                        category.file_name().to_str().unwrap(),
+                        example.file_name().to_str().unwrap()
+                    ),
+                ));
+            }
+        }
+
+        if with_testcases {
+            let testcases_path = guest.path().join("testcases");
+            if testcases_path.exists() {
+                for entry in all_directories_in(&testcases_path)? {
+                    examples.push((
+                        entry.path(),
+                        format!("{}", entry.file_name().to_str().unwrap()),
+                    ));
+                }
             }
         }
     }
@@ -164,9 +186,8 @@ fn all_examples() -> anyhow::Result<Vec<PathBuf>> {
     Ok(examples)
 }
 
-fn all_directories_in(path: &Path) -> anyhow::Result<impl Iterator<Item = PathBuf>> {
+fn all_directories_in(path: &Path) -> anyhow::Result<impl Iterator<Item = DirEntry>> {
     Ok(std::fs::read_dir(path)?
         .filter_map(Result::ok)
-        .map(|de| de.path())
-        .filter(|p| p.is_dir()))
+        .filter(|p| p.path().is_dir()))
 }

@@ -28,9 +28,7 @@ use physxx::{
 pub use ambient_ecs::generated::components::core::physics::visualize_collider;
 
 components!("physics", {
-    @[Networked]
     physx_viz_line: PxDebugLine,
-    @[Networked]
     shape_primitives: Vec<GizmoPrimitive>,
 });
 

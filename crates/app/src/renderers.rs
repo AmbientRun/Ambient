@@ -154,12 +154,14 @@ impl MainRenderer {
         }
     }
 
-    pub fn dump_to_tmp_file(&self) {
+    #[cfg(not(target_os = "unknown"))]
+    pub(crate) fn dump_to_tmp_file(&self) {
         std::fs::create_dir_all("tmp").unwrap();
         let mut f = std::fs::File::create("tmp/renderer.txt").expect("Unable to create file");
         self.dump(&mut f);
         tracing::info!("Wrote renderer to tmp/renderer.txt");
     }
+
     #[allow(dead_code)]
     pub fn n_entities(&self) -> usize {
         self.main.as_ref().map(|x| x.n_entities()).unwrap_or(0)
@@ -172,7 +174,9 @@ impl MainRenderer {
             String::new()
         }
     }
-    pub fn dump(&self, f: &mut dyn std::io::Write) {
+
+    #[cfg(not(target_os = "unknown"))]
+    pub(crate) fn dump(&self, f: &mut dyn std::io::Write) {
         if let Some(main) = &self.main {
             writeln!(f, "## MAIN ##").unwrap();
             main.dump(f);

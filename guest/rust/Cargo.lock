@@ -538,6 +538,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_testcase_588"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "ambient_time"
 version = "0.3.0-dev"
 dependencies = [

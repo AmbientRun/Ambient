@@ -1,17 +1,13 @@
-use std::collections::HashMap;
-
 use ambient_cameras::UICamera;
-use ambient_client_shared::player;
-use ambient_core::hierarchy::dump_world_hierarchy;
+use ambient_client_shared::{game_view::GameView, player};
 use ambient_ecs::{Entity, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::{server::RpcArgs, web::client::GameClientView};
 use ambient_rpc::RpcRegistry;
 use ambient_std::friendly_id;
-use ambient_ui_native::{cb, space_between_items, Button, Dock, FlowColumn, Text};
+use ambient_ui_native::{cb, Dock};
+use std::collections::HashMap;
 use url::Url;
-
-use crate::game_view::GameView;
 
 #[element_component]
 pub fn MainApp(_hooks: &mut Hooks) -> Element {

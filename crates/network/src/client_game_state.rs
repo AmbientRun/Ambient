@@ -86,6 +86,7 @@ impl ClientGameState {
             RendererConfig {
                 scene: ui_scene(),
                 shadows: false,
+                forward: false,
                 ..Default::default()
             },
         );

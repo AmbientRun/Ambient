@@ -20,3 +20,10 @@ pub async fn write(_path: impl AsRef<Path>, _contents: impl AsRef<[u8]>) -> io::
         "File IO on wasm it not supported",
     ))
 }
+
+pub async fn create_dir_all(_path: impl AsRef<Path>) -> io::Result<Vec<u8>> {
+    Err(io::Error::new(
+        io::ErrorKind::Unsupported,
+        "File IO on wasm it not supported",
+    ))
+}

@@ -19,6 +19,7 @@ pub enum MultiBufferError {
     },
 }
 
+#[derive(Debug)]
 pub enum MultiBufferSizeStrategy {
     /// The sub-buffers are exactly the requested size
     Exact,
@@ -35,8 +36,24 @@ pub struct MultiBuffer {
     label: String,
     usage: wgpu::BufferUsages,
     total_capacity: u64,
+    total_size: u64,
     size_strategy: MultiBufferSizeStrategy,
 }
+
+impl std::fmt::Debug for MultiBuffer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut s = f.debug_struct("MultiBuffer");
+        s.field("sub_buffers", &self.sub_buffers)
+            .field("free_ids", &self.free_ids)
+            .field("label", &self.label)
+            .field("usage", &self.usage)
+            .field("total_capacity", &self.total_capacity)
+            .field("total_size", &self.total_size)
+            .field("size_strategy", &self.size_strategy)
+            .finish()
+    }
+}
+
 pub type SubBufferId = usize;
 
 impl MultiBuffer {
@@ -58,9 +75,11 @@ impl MultiBuffer {
             label: label.into(),
             usage,
             total_capacity: 0,
+            total_size: 0,
             size_strategy,
         }
     }
+
     pub fn total_bytes_used() -> usize {
         MULTI_BUFFERS_TOTAL_SIZE.load(Ordering::SeqCst)
     }
@@ -79,10 +98,12 @@ impl MultiBuffer {
             .create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: Some("MultiBuffer.create_buffer"),
             });
+
         let res = self.create_buffer_with_encoder(gpu, &mut encoder, capacity);
         gpu.queue.submit(Some(encoder.finish()));
         res
     }
+
     pub fn create_buffer_with_encoder(
         &mut self,
         gpu: &Gpu,
@@ -104,9 +125,10 @@ impl MultiBuffer {
         };
         // Buffers have to have some capacity, otherwise their order is indeterminable (if two buffers next to each other
         // have capacity=0 then their offsets will both be 0)
-        self.change_buffer_capacity(gpu, encoder, id, capacity.unwrap_or(4));
+        self.change_sub_buffer_capacity(gpu, encoder, id, capacity.unwrap_or(4));
         id
     }
+
     pub fn remove_buffer(&mut self, gpu: &Gpu, id: SubBufferId) -> Result<(), MultiBufferError> {
         let mut encoder = gpu
             .device
@@ -117,14 +139,16 @@ impl MultiBuffer {
         gpu.queue.submit(Some(encoder.finish()));
         res
     }
+
     pub fn remove_buffer_with_encoder(
         &mut self,
         gpu: &Gpu,
         encoder: &mut wgpu::CommandEncoder,
         id: SubBufferId,
     ) -> Result<(), MultiBufferError> {
-        if self.buffer_exists(id) {
-            self.change_buffer_capacity(gpu, encoder, id, 0);
+        if let Some(Some(buf)) = self.sub_buffers.get(id) {
+            self.total_size -= buf.size_bytes;
+            self.change_sub_buffer_capacity(gpu, encoder, id, 0);
             self.sub_buffers[id] = None;
             self.free_ids.push(id);
             Ok(())
@@ -160,23 +184,24 @@ impl MultiBuffer {
         id: SubBufferId,
         len: u64,
     ) -> Result<(), MultiBufferError> {
-        let mut change_capacity = None;
         if let Some(Some(buf)) = self.sub_buffers.get_mut(id) {
+            // Maintain the total sizes
+            self.total_size -= buf.size_bytes;
+            self.total_size += len;
             buf.size_bytes = len;
+
             let cap = match self.size_strategy {
                 MultiBufferSizeStrategy::Exact => len,
                 MultiBufferSizeStrategy::Pow2 => 2u64.pow((len as f32).log2().ceil() as u32),
             };
             if cap != buf.capacity_bytes {
-                change_capacity = Some(cap);
+                self.change_sub_buffer_capacity(gpu, encoder, id, cap);
             }
+
+            Ok(())
         } else {
-            return Err(MultiBufferError::NoSuchSubBuffer(id));
+            Err(MultiBufferError::NoSuchSubBuffer(id))
         }
-        if let Some(new_capacity) = change_capacity {
-            self.change_buffer_capacity(gpu, encoder, id, new_capacity);
-        }
-        Ok(())
     }
 
     pub fn write(
@@ -201,6 +226,7 @@ impl MultiBuffer {
             Err(MultiBufferError::NoSuchSubBuffer(id))
         }
     }
+
     pub fn buffer_len(&self, id: SubBufferId) -> Result<u64, MultiBufferError> {
         if let Some(Some(buf)) = &self.sub_buffers.get(id) {
             Ok(buf.size_bytes)
@@ -208,6 +234,7 @@ impl MultiBuffer {
             Err(MultiBufferError::NoSuchSubBuffer(id))
         }
     }
+
     pub fn buffer_layout(&self, id: SubBufferId) -> Result<SubBuffer, MultiBufferError> {
         if let Some(Some(buf)) = &self.sub_buffers.get(id) {
             Ok(*buf)
@@ -215,29 +242,41 @@ impl MultiBuffer {
             Err(MultiBufferError::NoSuchSubBuffer(id))
         }
     }
-    fn change_buffer_capacity(
+
+    fn change_sub_buffer_capacity(
         &mut self,
         gpu: &Gpu,
         encoder: &mut wgpu::CommandEncoder,
         id: SubBufferId,
         capacity: u64,
     ) {
-        // Wgpu requires copy_buffer_to_buffer to align to COPY_BUFFER_ALIGNMENT, so each of our sub-buffers need to align to that too
+        // wgpu requires copy_buffer_to_buffer to align to COPY_BUFFER_ALIGNMENT, so each of our sub-buffers need to align to that too
         assert_eq!(capacity % wgpu::COPY_BUFFER_ALIGNMENT, 0);
         let buf = self.sub_buffers[id].unwrap();
+
         let capacity_change = capacity as i64 - buf.capacity_bytes as i64;
         let new_total_capacity = (self.total_capacity as i64 + capacity_change) as u64;
+        tracing::debug!(
+            label = self.label,
+            "Resizing sub buffer {id} {} => {}",
+            buf.capacity_bytes,
+            capacity,
+        );
+
         if capacity_change > 0 {
             MULTI_BUFFERS_TOTAL_SIZE.fetch_add(capacity_change as usize, Ordering::SeqCst);
         } else {
             MULTI_BUFFERS_TOTAL_SIZE.fetch_sub((-capacity_change) as usize, Ordering::SeqCst);
         }
+
+        // Create a new buffer for everything
         let new_buffer = gpu.device.create_buffer(&wgpu::BufferDescriptor {
             label: Some(&self.label),
             usage: self.usage,
             size: new_total_capacity,
             mapped_at_creation: false,
         });
+
         encoder.copy_buffer_to_buffer(
             &self.buffer,
             0,
@@ -245,7 +284,10 @@ impl MultiBuffer {
             0,
             (buf.offset_bytes + buf.capacity_bytes).min(new_total_capacity),
         );
+
+        // Compact everything
         self.sub_buffers[id].as_mut().unwrap().capacity_bytes = capacity;
+
         if let Some(next_id) = self.get_next_buffer(buf.offset_bytes) {
             let next = self.sub_buffers[next_id].unwrap();
             encoder.copy_buffer_to_buffer(
@@ -264,6 +306,7 @@ impl MultiBuffer {
         self.buffer = new_buffer;
         self.total_capacity = new_total_capacity;
     }
+
     fn get_next_buffer(&self, offset: u64) -> Option<SubBufferId> {
         self.sub_buffers
             .iter()
@@ -278,10 +321,12 @@ impl MultiBuffer {
             .min_by_key(|(_, buf)| buf.as_ref().unwrap().offset_bytes)
             .map(|(index, _)| index)
     }
+
     #[cfg(test)]
     async fn read_all(&self, gpu: &Gpu) -> Vec<u8> {
         self.read_range(gpu, 0, self.total_capacity).await
     }
+
     #[cfg(test)]
     async fn read_range(&self, gpu: &Gpu, offset: u64, size: u64) -> Vec<u8> {
         if size == 0 {
@@ -316,6 +361,7 @@ impl MultiBuffer {
         data
     }
 }
+
 impl Drop for MultiBuffer {
     fn drop(&mut self) {
         MULTI_BUFFERS_TOTAL_SIZE.fetch_sub(self.total_capacity as usize, Ordering::SeqCst);
@@ -334,6 +380,16 @@ pub struct TypedMultiBuffer<T: bytemuck::Pod> {
     item_size: u64,
     _type: PhantomData<T>,
 }
+
+impl<T: bytemuck::Pod> std::fmt::Debug for TypedMultiBuffer<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TypedMultiBuffer")
+            .field("buffer", &self.buffer)
+            .field("item_size", &self.item_size)
+            .finish()
+    }
+}
+
 impl<T: bytemuck::Pod> TypedMultiBuffer<T> {
     pub fn new(
         gpu: &Gpu,
@@ -347,18 +403,31 @@ impl<T: bytemuck::Pod> TypedMultiBuffer<T> {
             _type: PhantomData,
         }
     }
+
+    #[inline]
     pub fn buffer(&self) -> &wgpu::Buffer {
         self.buffer.buffer()
     }
+
+    #[inline]
     pub fn total_capacity_in_bytes(&self) -> u64 {
         self.buffer.total_capacity_in_bytes()
     }
+
     pub fn total_len(&self) -> u64 {
-        self.buffer.total_capacity_in_bytes() / self.item_size
+        debug_assert_eq!(self.buffer.total_size % self.item_size, 0);
+        self.buffer.total_size / self.item_size
     }
+
+    pub fn total_capacity(&self) -> u64 {
+        debug_assert_eq!(self.buffer.total_size % self.item_size, 0);
+        self.buffer.total_capacity / self.item_size
+    }
+
     pub fn create_buffer(&mut self, gpu: &Gpu, capacity: Option<u64>) -> SubBufferId {
         self.buffer.create_buffer(gpu, capacity)
     }
+
     pub fn create_buffer_with_encoder(
         &mut self,
         gpu: &Gpu,
@@ -368,9 +437,11 @@ impl<T: bytemuck::Pod> TypedMultiBuffer<T> {
         self.buffer
             .create_buffer_with_encoder(gpu, encoder, capacity)
     }
+
     pub fn remove_buffer(&mut self, gpu: &Gpu, id: SubBufferId) -> Result<(), MultiBufferError> {
         self.buffer.remove_buffer(gpu, id)
     }
+
     pub fn remove_buffer_with_encoder(
         &mut self,
         gpu: &Gpu,
@@ -410,6 +481,17 @@ impl<T: bytemuck::Pod> TypedMultiBuffer<T> {
         offset: u64,
         data: &[T],
     ) -> Result<(), MultiBufferError> {
+        // TODO: correctly update len for the written subbuffer
+        // let buffer = self
+        //     .buffer
+        //     .sub_buffers
+        //     .get_mut(id)
+        //     .map(|v| v.as_mut())
+        //     .flatten()
+        //     .expect("Destination sub buffer does not exist");
+
+        // buffer.size_bytes = data.len() as u64 * self.item_size;
+
         self.buffer
             .write(gpu, id, offset * self.item_size, bytemuck::cast_slice(data))
     }
