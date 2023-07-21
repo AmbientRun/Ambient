@@ -291,6 +291,7 @@ impl TreeRenderer {
         assert_eq!(mem::align_of::<DrawIndexedIndirect>(), 4);
 
         if self.config.render_mode == RenderMode::Direct {
+            // No primitive data needs to be uploaded to the GPU for Direct drawing
         } else if self.config.software_culling {
             let mut draw_commands =
                 vec![DrawIndexedIndirect::zeroed(); self.primitives.total_capacity() as usize];

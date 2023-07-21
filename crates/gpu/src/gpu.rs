@@ -88,10 +88,19 @@ impl Gpu {
 
         cfg_if::cfg_if! {
             if #[cfg(target_os = "macos")] {
+                // The renderer will dispatch 1 indirect draw command for *each* primitive in the
+                // scene, but the data draw data such as index_count, first_instance, etc lives on
+                // the gpu
                 let features = wgpu::Features::empty();
             } else if #[cfg(target_os = "unknown")] {
+
+                // Same as above, but the *web*gpu target requires a feature flag to be set, or
+                // else indirect commands no-op
                 let features = wgpu::Features::INDIRECT_FIRST_INSTANCE;
             } else {
+                // TODO: make configurable at runtime
+                // The renderer will use indirect drawing with the draw commands *and* count
+                // fetched from gpu side buffers
                 let features =
                 wgpu::Features::MULTI_DRAW_INDIRECT | wgpu::Features::MULTI_DRAW_INDIRECT_COUNT;
             }
