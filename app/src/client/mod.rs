@@ -10,7 +10,7 @@ use ambient_core::{
 use ambient_ecs::{generated::messages::core as messages, Entity, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::{
-    client::{client_network_stats, ClientState, GameClientRenderTarget, GameClientWorld},
+    client::{client_network_stats, GameClientRenderTarget},
     hooks::use_remote_resource,
     native::client::{ClientView, ResolvedAddr},
 };

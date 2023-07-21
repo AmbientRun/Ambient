@@ -486,7 +486,7 @@ impl<'a> Hooks<'a> {
         let mut prev_deps = prev_deps.lock();
         if prev_deps.as_ref() != Some(&dependencies) {
             let mut cleanup_prev = cleanup_prev.lock();
-            if let Some(cleanup_prev) = std::mem::replace(&mut *cleanup_prev, None) {
+            if let Some(cleanup_prev) = (*cleanup_prev).take() {
                 cleanup_prev.0(self.world);
             }
             ambient_profiling::scope!("use_effect_run");

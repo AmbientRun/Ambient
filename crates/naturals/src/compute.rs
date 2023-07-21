@@ -14,7 +14,6 @@ use ambient_std::{
 };
 use ambient_terrain::{wgsl_terrain_preprocess, TerrainSize, TerrainState};
 use async_trait::async_trait;
-use bytemuck::Zeroable;
 use itertools::Itertools;
 
 use crate::{

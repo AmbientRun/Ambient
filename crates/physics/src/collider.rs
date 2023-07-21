@@ -8,7 +8,7 @@ use ambient_core::{
 };
 use ambient_ecs::{
     components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, Entity, EntityId,
-    MakeDefault, Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World,
+    MakeDefault, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World,
 };
 use ambient_model::model_from_url;
 use ambient_std::{

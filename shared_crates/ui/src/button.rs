@@ -366,7 +366,7 @@ impl Button {
             let on_invoked = on_invoked.clone();
             let on_invoked = {
                 let mut on_invoked = on_invoked.lock();
-                std::mem::replace(&mut *on_invoked, None)
+                (*on_invoked).take()
             };
             on_invoked.expect("'Once' button called more than once")(world);
         })
@@ -400,7 +400,7 @@ impl Button {
             async move {
                 let on_invoked = {
                     let mut on_invoked = on_invoked.lock();
-                    std::mem::replace(&mut *on_invoked, None)
+                    (*on_invoked).take()
                 };
                 on_invoked.expect("'Async once' button called more than once")().await;
             }

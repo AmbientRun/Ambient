@@ -175,6 +175,7 @@ impl ShadowsRenderer {
 }
 
 impl ShadowsRenderer {
+    #[allow(clippy::too_many_arguments)]
     pub fn render<'a>(
         &'a mut self,
         world: &World,
