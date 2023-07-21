@@ -590,13 +590,24 @@ impl<T: Serialize + DeserializeOwned + Send + Sync + std::fmt::Debug + Clone + '
         let Self { value, on_change } = *self;
         FlowRow(vec![
             Button::new("Copy", move |_| {
-                ambient_sys::clipboard::set(&serde_json::to_string_pretty(&value).unwrap()).ok();
+                ambient_sys::clipboard::set_background(
+                    serde_json::to_string_pretty(&value).ok().unwrap(),
+                    |res| {
+                        if let Err(err) = res {
+                            tracing::error!("Failed to write to clipboard {err:?}");
+                        }
+                    },
+                );
             })
             .el(),
             Button::new("Paste", move |_| {
-                if let Some(paste) = ambient_sys::clipboard::get() {
-                    on_change(serde_json::from_str(&paste).unwrap());
-                }
+                let on_change = on_change.clone();
+
+                ambient_sys::clipboard::get_background(move |res| {
+                    if let Some(res) = res {
+                        on_change(serde_json::from_str(&res).unwrap());
+                    }
+                });
             })
             .el(),
         ])

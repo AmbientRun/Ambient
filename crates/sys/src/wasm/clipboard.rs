@@ -38,3 +38,9 @@ pub fn set_background(text: impl Into<String>, cb: impl 'static + FnOnce(anyhow:
         cb(self::set(&text).await);
     });
 }
+
+pub fn get_background(cb: impl 'static + FnOnce(Option<String>)) {
+    wasm_bindgen_futures::spawn_local(async move {
+        cb(self::get().await);
+    });
+}

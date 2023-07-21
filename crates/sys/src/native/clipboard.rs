@@ -18,3 +18,13 @@ pub fn set_background(text: impl Into<String>, cb: impl 'static + FnOnce(anyhow:
     let text = text.into();
     tokio::task::block_in_place(|| cb(self::set_blocking(&text)))
 }
+
+pub fn get_background(cb: impl 'static + FnOnce(Option<String>)) {
+    tokio::task::block_in_place(|| {
+        let text = arboard::Clipboard::new()
+            .ok()
+            .and_then(|mut v| v.get_text().ok());
+
+        cb(text);
+    });
+}
