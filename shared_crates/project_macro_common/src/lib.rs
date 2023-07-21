@@ -26,6 +26,7 @@ pub enum ManifestSource<'a> {
 pub fn generate_code(
     manifests: Vec<ManifestSource<'_>>,
     ambient_api_is_ambient: bool,
+    generate_ambient_types: bool,
     context: Context,
     generate_from_scope_path: Option<&str>,
 ) -> anyhow::Result<TokenStream> {
@@ -96,6 +97,7 @@ pub fn generate_code(
         &type_map,
         generate_from_scope_id,
         generate_from_scope,
+        generate_ambient_types,
     )?;
     let concepts = concepts::make_definitions(
         &context,
@@ -103,6 +105,7 @@ pub fn generate_code(
         &type_map,
         generate_from_scope_id,
         generate_from_scope,
+        generate_ambient_types,
     )?;
     let messages = messages::make_definitions(
         &context,
@@ -110,6 +113,7 @@ pub fn generate_code(
         &type_map,
         generate_from_scope_id,
         generate_from_scope,
+        generate_ambient_types,
     )?;
 
     let output = quote! {

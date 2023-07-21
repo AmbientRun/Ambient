@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use ambient_project_semantic::{ItemId, ItemMap, Scope, Type};
+use ambient_project_semantic::{Item, ItemId, ItemMap, Scope, Type};
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -12,8 +12,16 @@ pub fn make_definitions(
     type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
     root_scope_id: ItemId<Scope>,
     root_scope: &Scope,
+    generate_ambient_types: bool,
 ) -> anyhow::Result<TokenStream> {
-    let inner = make_definitions_inner(context, items, type_map, root_scope_id, root_scope)?;
+    let inner = make_definitions_inner(
+        context,
+        items,
+        type_map,
+        root_scope_id,
+        root_scope,
+        generate_ambient_types,
+    )?;
     let init = match context {
         Context::Host => {
             let mut namespaces = vec![];
@@ -53,6 +61,7 @@ fn make_definitions_inner(
     type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
     _root_scope_id: ItemId<Scope>,
     scope: &Scope,
+    generate_ambient_types: bool,
 ) -> anyhow::Result<TokenStream> {
     let scopes = scope
         .scopes
@@ -61,7 +70,14 @@ fn make_definitions_inner(
             let scope = items.get(*s)?;
             let id = make_path(&scope.data.id.as_snake_case());
 
-            let inner = make_definitions_inner(context, items, type_map, _root_scope_id, &scope)?;
+            let inner = make_definitions_inner(
+                context,
+                items,
+                type_map,
+                _root_scope_id,
+                &scope,
+                generate_ambient_types,
+            )?;
             if inner.is_empty() {
                 return Ok(quote! {});
             }
@@ -77,8 +93,14 @@ fn make_definitions_inner(
     let components = scope
         .components
         .values()
-        .map(|c| {
-            let component = items.get(*c)?;
+        .filter_map(|c| {
+            let component = items.get(*c).unwrap();
+            if component.data().is_ambient && !generate_ambient_types {
+                return None;
+            }
+            Some(component)
+        })
+        .map(|component| {
             let id = component.data.id.as_snake_case();
             let type_id = component.type_.as_resolved().expect("type was unresolved");
             let ty = type_map.get(&type_id).unwrap_or_else(|| {

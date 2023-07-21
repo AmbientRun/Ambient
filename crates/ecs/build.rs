@@ -30,6 +30,7 @@ fn main() {
     let api_generated_code = ambient_project_macro_common::generate_code(
         vec![],
         false,
+        true,
         ambient_project_macro_common::Context::Host,
         Some("ambient"),
     )

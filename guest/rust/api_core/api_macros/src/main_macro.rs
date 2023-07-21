@@ -15,6 +15,7 @@ pub fn main_impl(item: TokenStream, ambient_toml: ManifestSource) -> anyhow::Res
 
     let project_boilerplate = ambient_project_macro_common::generate_code(
         vec![ambient_toml],
+        true,
         false,
         ambient_project_macro_common::Context::Guest {
             api_path: path.clone(),

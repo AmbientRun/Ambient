@@ -12,6 +12,7 @@ pub fn make_definitions(
     type_map: &HashMap<ItemId<Type>, TokenStream>,
     root_scope_id: ItemId<Scope>,
     scope: &Scope,
+    generate_ambient_types: bool,
 ) -> anyhow::Result<TokenStream> {
     let rust_root_prefix = match context {
         Context::Host => quote! { crate::generated:: },
@@ -25,7 +26,14 @@ pub fn make_definitions(
             let scope = items.get(*s)?;
             let id = make_path(&scope.data.id.as_snake_case());
 
-            let inner = make_definitions(context, items, type_map, root_scope_id, &scope)?;
+            let inner = make_definitions(
+                context,
+                items,
+                type_map,
+                root_scope_id,
+                &scope,
+                generate_ambient_types,
+            )?;
             if inner.is_empty() {
                 return Ok(quote! {});
             }
@@ -41,8 +49,15 @@ pub fn make_definitions(
     let concepts = scope
         .concepts
         .values()
-        .map(|id| {
-            let concept = &*items.get(*id)?;
+        .filter_map(|c| {
+            let concept = items.get(*c).unwrap();
+            if concept.data().is_ambient && !generate_ambient_types {
+                return None;
+            }
+            Some(concept)
+        })
+        .map(|concept| {
+            let concept = &*concept;
             let make_concept = generate_make(
                 items,
                 type_map,

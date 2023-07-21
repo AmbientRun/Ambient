@@ -12,6 +12,7 @@ pub fn make_definitions(
     type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
     _root_scope_id: ItemId<Scope>,
     scope: &Scope,
+    generate_ambient_types: bool,
 ) -> anyhow::Result<TokenStream> {
     let scopes = scope
         .scopes
@@ -20,7 +21,14 @@ pub fn make_definitions(
             let scope = items.get(*s)?;
             let id = make_path(&scope.data.id.as_snake_case());
 
-            let inner = make_definitions(context, items, type_map, _root_scope_id, &scope)?;
+            let inner = make_definitions(
+                context,
+                items,
+                type_map,
+                _root_scope_id,
+                &scope,
+                generate_ambient_types,
+            )?;
             if inner.is_empty() {
                 return Ok(quote! {});
             }
@@ -36,8 +44,14 @@ pub fn make_definitions(
     let messages = scope
         .messages
         .values()
-        .map(|m| {
-            let message = items.get(*m)?;
+        .filter_map(|m| {
+            let message = items.get(*m).unwrap();
+            if message.data().is_ambient && !generate_ambient_types {
+                return None;
+            }
+            Some(message)
+        })
+        .map(|message| {
             let id = message.data().id.as_upper_camel_case();
 
             let doc_comment = if let Some(desc) = &message.description {
@@ -49,29 +63,29 @@ pub fn make_definitions(
             let struct_name = make_path(&id);
 
             let fields = message.fields.iter().map(|f| {
-                let name = f.0;
+                let name = make_path(&f.0.as_snake_case());
                 let ty = &type_map[&f.1.as_resolved().unwrap()];
                 quote! { pub #name: #ty }
             });
 
             let new_parameters = message.fields.iter().map(|f| {
-                let name = f.0;
+                let name = make_path(&f.0.as_snake_case());
                 let ty = &type_map[&f.1.as_resolved().unwrap()];
                 quote! { #name: impl Into<#ty> }
             });
 
             let new_fields = message.fields.iter().map(|f| {
-                let name = f.0;
+                let name = make_path(&f.0.as_snake_case());
                 quote! { #name: #name.into() }
             });
 
             let serialize_fields = message.fields.iter().map(|f| {
-                let name = f.0;
+                let name = make_path(&f.0.as_snake_case());
                 quote! { self.#name.serialize_message_part(&mut output)? }
             });
 
             let deserialize_fields = message.fields.iter().map(|f| {
-                let name = f.0;
+                let name = make_path(&f.0.as_snake_case());
                 let ty = &type_map[&f.1.as_resolved().unwrap()];
                 quote! { #name: #ty ::deserialize_message_part(&mut input)? }
             });
