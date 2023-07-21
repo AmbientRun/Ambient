@@ -144,3 +144,9 @@ impl wit::server_message::Host for Bindings {
         unimplemented!()
     }
 }
+#[async_trait::async_trait]
+impl wit::server_http::Host for Bindings {
+    async fn get(&mut self, _: String) -> anyhow::Result<()> {
+        unimplemented!()
+    }
+}

@@ -2,13 +2,22 @@
 //!
 //! If implementing a trait that is also available on the client, it should go in [super].
 
-use ambient_core::player::{player, user_id};
-use ambient_ecs::{query, EntityId, World};
+use ambient_core::{
+    async_ecs::async_run,
+    player::{player, user_id},
+    runtime,
+};
+use ambient_ecs::{generated::messages::HttpResponse, query, EntityId, Message, World};
 use ambient_network::server::player_transport;
 
 use super::super::Bindings;
 
-use crate::shared::{self, conversion::FromBindgen, implementation::message, message::Target};
+use crate::shared::{
+    self,
+    conversion::FromBindgen,
+    implementation::message,
+    message::{Source, Target},
+};
 
 #[cfg(all(feature = "wit", feature = "physics"))]
 mod physics;
@@ -78,4 +87,52 @@ fn send_networked(
     }
 
     Ok(())
+}
+
+#[async_trait::async_trait]
+impl shared::wit::server_http::Host for Bindings {
+    async fn get(&mut self, url: String) -> anyhow::Result<()> {
+        let id = self.id;
+        let world = self.world_mut();
+        let runtime = world.resource(runtime());
+        let async_run = world.resource(async_run()).clone();
+
+        async fn make_request(url: String) -> anyhow::Result<(u32, Vec<u8>)> {
+            let response = reqwest::get(url).await?;
+            Ok((
+                response.status().as_u16() as u32,
+                response.bytes().await?.to_vec(),
+            ))
+        }
+
+        runtime.spawn(async move {
+            let result = make_request(url.clone()).await;
+            let response = match result {
+                Ok((status, body)) => HttpResponse {
+                    url,
+                    body,
+                    status,
+                    error: None,
+                },
+                Err(err) => HttpResponse {
+                    url,
+                    body: Vec::new(),
+                    status: 0,
+                    error: Some(err.to_string()),
+                },
+            };
+
+            async_run.run(move |world| {
+                shared::message::send(
+                    world,
+                    Target::Module(id),
+                    Source::Runtime,
+                    HttpResponse::id().to_string(),
+                    response.serialize_message().unwrap(),
+                );
+            });
+        });
+
+        Ok(())
+    }
 }

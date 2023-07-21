@@ -21,6 +21,7 @@ world bindings {
 
     import server-physics
     import server-message
+    import server-http
 
     export guest
 }

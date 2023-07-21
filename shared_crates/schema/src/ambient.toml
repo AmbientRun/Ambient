@@ -105,3 +105,8 @@ fields = { delta = "Vec2", pixels = "Bool" }
 name = "Window Mouse Motion"
 description = "Sent when the window receives a mouse motion input."
 fields = { delta = "Vec2" }
+
+[messages.http_response]
+name = "HTTP Response"
+description = "Sent when an HTTP response is received."
+fields = { url = "String", status = "U32", body = { type = "Vec", element_type = "U8" }, error = { type = "Option", element_type = "String" } }
