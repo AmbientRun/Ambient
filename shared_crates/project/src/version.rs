@@ -10,6 +10,7 @@ pub struct Version {
     patch: u32,
     suffix: VersionSuffix,
 }
+
 impl Version {
     pub fn new(major: u32, minor: u32, patch: u32, suffix: VersionSuffix) -> Self {
         Self {
@@ -30,6 +31,7 @@ impl Version {
             .next()
             .ok_or(VersionError::TooFewComponents)?
             .parse()?;
+
         let minor = segments.next().map(|s| s.parse()).transpose()?.unwrap_or(0);
         // We handle patch separately as it may have a suffix.
         let (patch, suffix) = if let Some(patch) = segments.next() {

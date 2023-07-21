@@ -38,7 +38,7 @@ pub struct Run {
     pub args: Vec<String>,
 }
 
-pub(crate) fn main(args: &Example) -> anyhow::Result<()> {
+pub fn main(args: &Example) -> anyhow::Result<()> {
     match args {
         Example::Clean => clean(),
         Example::Run(args) => run(args),
@@ -47,7 +47,7 @@ pub(crate) fn main(args: &Example) -> anyhow::Result<()> {
     }
 }
 
-pub(crate) fn clean() -> anyhow::Result<()> {
+pub fn clean() -> anyhow::Result<()> {
     log::info!("Cleaning examples...");
     for (example_path, _) in all_examples(true)? {
         let build_path = example_path.join("build");
@@ -62,7 +62,7 @@ pub(crate) fn clean() -> anyhow::Result<()> {
     Ok(())
 }
 
-pub(crate) fn run(args: &Run) -> anyhow::Result<()> {
+pub fn run(args: &Run) -> anyhow::Result<()> {
     let Run {
         example,
         release,

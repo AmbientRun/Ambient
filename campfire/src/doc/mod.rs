@@ -20,7 +20,7 @@ pub enum Doc {
     },
 }
 
-pub(crate) fn main(args: &Doc) -> anyhow::Result<()> {
+pub fn main(args: &Doc) -> anyhow::Result<()> {
     match args {
         Doc::Runtime => runtime(),
         Doc::Api { args } => api(args),
