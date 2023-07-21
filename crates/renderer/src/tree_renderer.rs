@@ -495,6 +495,7 @@ impl TreeRenderer {
     }
 
     #[ambient_profiling::function]
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn render<'a>(
         &'a self,
         _: &Gpu,

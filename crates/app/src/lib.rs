@@ -27,7 +27,7 @@ use ambient_gizmos::{gizmos, Gizmos};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     mesh_buffer::MeshBufferKey,
-    settings::{Settings, SettingsKey},
+    settings::SettingsKey,
 };
 use ambient_procedurals::{procedural_storage, ProceduralStorage};
 use ambient_renderer::lod::lod_system;

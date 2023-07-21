@@ -328,7 +328,7 @@ fn EntityComponentsEditor(
                         ))
                         .error_text_style()]),
                         move |_| {
-                            ambient_sys::clipboard::set_background(&anim_error.join("\n"), |res| {
+                            ambient_sys::clipboard::set_background(anim_error.join("\n"), |res| {
                                 if let Err(err) = res {
                                     tracing::error!("Failed to write to clipboard {err:?}");
                                 }
