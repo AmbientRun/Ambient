@@ -328,10 +328,11 @@ fn EntityComponentsEditor(
                         ))
                         .error_text_style()]),
                         move |_| {
-                            arboard::Clipboard::new()
-                                .unwrap()
-                                .set_text(anim_error.join("\n"))
-                                .ok();
+                            ambient_sys::clipboard::set_background(anim_error.join("\n"), |res| {
+                                if let Err(err) = res {
+                                    tracing::error!("Failed to write to clipboard {err:?}");
+                                }
+                            });
                         },
                     )
                     .style(ButtonStyle::Flat)

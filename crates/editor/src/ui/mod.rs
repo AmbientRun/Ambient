@@ -31,9 +31,9 @@ use ambient_terrain::{
 use ambient_ui_native::{
     command_modifier, height,
     layout::{docking, space_between_items, width, Borders, Docking},
-    margin, use_window_logical_resolution, Button, FlowColumn, FlowRow, FontAwesomeIcon, Hotkey,
-    Rectangle, ScreenContainer, ScrollArea, ScrollAreaSizing, Separator, StylesExt, Text, UIExt,
-    WindowSized, STREET,
+    margin, Button, FlowColumn, FlowRow, FontAwesomeIcon, HooksExt, Hotkey, Rectangle,
+    ScreenContainer, ScrollArea, ScrollAreaSizing, Separator, StylesExt, Text, UIExt, WindowSized,
+    STREET,
 };
 use build_mode::*;
 use glam::{vec3, Vec3};
@@ -564,7 +564,7 @@ pub fn Crosshair(hooks: &mut Hooks) -> Element {
     if !settings.show_hud {
         return Element::new();
     }
-    let window_size = use_window_logical_resolution(hooks).as_vec2();
+    let window_size = hooks.use_window_logical_resolution().as_vec2();
     Rectangle
         .el()
         .with(width(), 2.)
@@ -590,16 +590,24 @@ impl<T: Serialize + DeserializeOwned + Send + Sync + std::fmt::Debug + Clone + '
         let Self { value, on_change } = *self;
         FlowRow(vec![
             Button::new("Copy", move |_| {
-                arboard::Clipboard::new()
-                    .unwrap()
-                    .set_text(serde_json::to_string_pretty(&value).unwrap())
-                    .ok();
+                ambient_sys::clipboard::set_background(
+                    serde_json::to_string_pretty(&value).ok().unwrap(),
+                    |res| {
+                        if let Err(err) = res {
+                            tracing::error!("Failed to write to clipboard {err:?}");
+                        }
+                    },
+                );
             })
             .el(),
             Button::new("Paste", move |_| {
-                if let Ok(paste) = arboard::Clipboard::new().unwrap().get_text() {
-                    on_change(serde_json::from_str(&paste).unwrap());
-                }
+                let on_change = on_change.clone();
+
+                ambient_sys::clipboard::get_background(move |res| {
+                    if let Some(res) = res {
+                        on_change(serde_json::from_str(&res).unwrap());
+                    }
+                });
             })
             .el(),
         ])

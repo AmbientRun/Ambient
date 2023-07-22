@@ -9,7 +9,7 @@ use ambient_core::{
     camera::camera_systems,
     frame_index,
     gpu_ecs::{gpu_world, GpuWorld, GpuWorldSyncEvent, GpuWorldUpdate},
-    hierarchy::dump_world_hierarchy_to_tmp_file,
+    hierarchy::dump_world_hierarchy_to_user,
     name, refcount_system, remove_at_time_system, runtime,
     transform::TransformSystem,
     window::{
@@ -27,7 +27,7 @@ use ambient_gizmos::{gizmos, Gizmos};
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     mesh_buffer::MeshBufferKey,
-    settings::Settings,
+    settings::SettingsKey,
 };
 use ambient_procedurals::{procedural_storage, ProceduralStorage};
 use ambient_renderer::lod::lod_system;
@@ -40,10 +40,11 @@ use glam::{uvec2, vec2, UVec2, Vec2};
 use parking_lot::Mutex;
 use renderers::{main_renderer, ui_renderer, MainRenderer, UiRenderer};
 use winit::{
+    dpi::PhysicalPosition,
     event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
     platform::macos::WindowExtMacOS,
-    window::{Fullscreen, Window, WindowBuilder},
+    window::{CursorGrabMode, Fullscreen, Window, WindowBuilder},
 };
 
 mod renderers;
@@ -289,17 +290,13 @@ impl AppBuilder {
     pub async fn build(self) -> anyhow::Result<App> {
         crate::init_all_components();
 
-        #[cfg(target_os = "unknown")]
-        let settings = Settings::default();
+        let runtime = RuntimeHandle::current();
 
-        #[cfg(not(target_os = "unknown"))]
-        let settings = match Settings::load_from_config() {
-            Ok(settings) => settings,
-            Err(error) => {
-                tracing::warn!("Failed to load settings with error {error}. Fallback to defaults.");
-                Settings::default()
-            }
-        };
+        let assets = self
+            .asset_cache
+            .unwrap_or_else(|| AssetCache::new(runtime.clone()));
+
+        let settings = SettingsKey.get(&assets);
 
         #[cfg(not(target_os = "windows"))]
         let (window, event_loop) = if self.headless.is_some() {
@@ -397,12 +394,6 @@ impl AppBuilder {
 
         #[cfg(not(target_os = "unknown"))]
         let _ = thread_priority::set_current_thread_priority(thread_priority::ThreadPriority::Max);
-
-        let runtime = RuntimeHandle::current();
-
-        let assets = self
-            .asset_cache
-            .unwrap_or_else(|| AssetCache::new(runtime.clone()));
 
         let mut world = World::new("main_app");
         let gpu = Arc::new(Gpu::with_config(window.as_deref(), true, &settings).await);
@@ -688,6 +679,27 @@ impl App {
                     match v {
                         WindowCtl::GrabCursor(mode) => {
                             if let Some(window) = &self.window {
+                                match mode {
+                                    CursorGrabMode::Confined | CursorGrabMode::Locked => {
+                                        // Move the cursor to the centre of the window to ensure
+                                        // the cursor is within the window and will not be locked
+                                        // in place outside the window.
+                                        //
+                                        // Without this, on macOS, the cursor will be locked in place
+                                        // and visible outside the window, which means the user can
+                                        // click on other aspects of the operating system while
+                                        // the cursor is locked.
+                                        let (width, height) =
+                                            <(u32, u32)>::from(window.inner_size());
+                                        window
+                                            .set_cursor_position(PhysicalPosition::new(
+                                                width / 2,
+                                                height / 2,
+                                            ))
+                                            .ok();
+                                    }
+                                    _ => {}
+                                }
                                 window.set_cursor_grab(mode).ok();
                             }
                         }
@@ -843,8 +855,10 @@ impl System<Event<'static, ()>> for ExamplesSystem {
                     },
                 ..
             } => match virtual_keycode {
-                VirtualKeyCode::F1 => dump_world_hierarchy_to_tmp_file(world),
+                VirtualKeyCode::F1 => dump_world_hierarchy_to_user(world),
+                #[cfg(not(target_os = "unknown"))]
                 VirtualKeyCode::F2 => world.dump_to_tmp_file(),
+                #[cfg(not(target_os = "unknown"))]
                 VirtualKeyCode::F3 => world.resource(main_renderer()).lock().dump_to_tmp_file(),
                 _ => {}
             },

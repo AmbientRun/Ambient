@@ -12,9 +12,7 @@ rust-version = "1.67.0"
 aho-corasick = "0.7.20"
 ambient_profiling = { version = "1.0.9", features = ["profile-with-puffin"] }
 tracing = "0.1.35"
-# tracing-tree = { version = "0.2" }
-# https://github.com/davidbarsky/tracing-tree/pull/56#issuecomment-1489148431
-tracing-tree = { git = "https://github.com/TmLev/tracing-tree" }
+tracing-tree = { version = "0.2" }
 tracing-stackdriver = "0.6.2"
 tracing-subscriber = { version = "0.3.16", features = [
     "env-filter",
@@ -158,6 +156,8 @@ tokio-stream = "0.1"
 tonic = { version = "0.9", features = ["gzip", "tls", "tls-roots"] }
 md-5 = "0.10"
 pollster = "0.3.0"
+
+cfg-if = "1.0"
 
 # Web Client
 web-sys = { version = "0.3.61", features = [

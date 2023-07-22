@@ -1,7 +1,0 @@
-[ember]
-id = "ambient_example_instancing"
-name = "Instancing"
-version = "0.0.1"
-
-[components]
-instance_index = { type = "Uvec3", name = "Instance Index" }

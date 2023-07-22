@@ -86,6 +86,7 @@ impl ClientGameState {
             RendererConfig {
                 scene: ui_scene(),
                 shadows: false,
+                forward: false,
                 ..Default::default()
             },
         );
@@ -118,7 +119,7 @@ impl ClientGameState {
                 label: Some("GameState.render"),
             });
         let mut post_submit = Vec::new();
-        tracing::debug!("Drawing world");
+        tracing::trace!("Drawing world");
         self.renderer.render(
             gpu,
             &mut self.world,
@@ -128,7 +129,7 @@ impl ClientGameState {
             Some(Color::rgba(0., 0., 0., 1.)),
         );
 
-        tracing::debug!("Drawing ui");
+        tracing::trace!("Drawing ui");
 
         self.ui_renderer.render(
             gpu,

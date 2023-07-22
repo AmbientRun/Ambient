@@ -30,6 +30,16 @@ To see the latest version of the API docs, run the following command in the `Amb
 cargo campfire doc api --open
 ```
 
+## Installing
+
+As a developer, you may find yourself needing to install (a specific version of) Ambient on your system. This can be done with the following command:
+
+```
+cargo campfire install [--git-revision <revision>] [--git-tag <tag>]
+```
+
+If no revision or tag is specified, the version of Ambient in the current directory will be installed.
+
 ## Adding to the API
 
 Our bindings are defined in [WIT](https://github.com/WebAssembly/component-model/blob/main/design/mvp/WIT.md), which is a language-independent interface definition language for defining WebAssembly interfaces.

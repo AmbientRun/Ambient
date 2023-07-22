@@ -12,12 +12,12 @@ use ambient_core::{
     asset_cache, camera::*, gpu, gpu_ecs::gpu_world, player::local_user_id, ui_scene,
 };
 use ambient_ecs::{ArchetypeFilter, Component, World};
-use ambient_gpu::mesh_buffer::MeshBufferKey;
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     mesh_buffer::MeshBuffer,
     shader_module::BindGroupDesc,
 };
+use ambient_gpu::{mesh_buffer::MeshBufferKey, settings::SettingsKey};
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     color::Color,
@@ -83,6 +83,7 @@ impl SyncAssetKey<RendererResources> for RendererResourcesKey {
 #[derive(Debug, Clone)]
 pub struct RendererConfig {
     pub scene: Component<()>,
+    pub forward: bool,
     pub shadows: bool,
     pub shadow_map_resolution: u32,
     pub shadow_cascades: u32,
@@ -93,6 +94,7 @@ impl Default for RendererConfig {
     fn default() -> Self {
         Self {
             scene: ui_scene(),
+            forward: true,
             shadows: true,
             shadow_map_resolution: 1024,
             shadow_cascades: 5,
@@ -172,7 +174,7 @@ pub struct Renderer {
     pub shadows: Option<ShadowsRenderer>,
     forward_globals: ForwardGlobals,
     forward_collect_state: RendererCollectState,
-    forward: TreeRenderer,
+    forward: Option<TreeRenderer>,
     overlays: OverlayRenderer,
     transparent: TransparentRenderer,
     solids_frame: RenderTarget,
@@ -191,12 +193,15 @@ impl Renderer {
         let shadows = if config.shadows {
             Some(ShadowsRenderer::new(
                 gpu,
+                assets,
                 renderer_resources.clone(),
                 config.clone(),
             ))
         } else {
             None
         };
+
+        let settings = SettingsKey.get(assets);
 
         let normals_format = to_linear_format(gpu.swapchain_format()).into();
 
@@ -219,20 +224,27 @@ impl Renderer {
                     resources: renderer_resources.clone(),
                 },
             ),
-            forward: TreeRenderer::new(
-                gpu,
-                TreeRendererConfig {
-                    renderer_config: config.clone(),
-                    targets: vec![Some(gpu.swapchain_format().into()), Some(normals_format)],
-                    filter: ArchetypeFilter::new().incl(config.scene),
-                    renderer_resources: renderer_resources.clone(),
-                    fs_main: FSMain::Forward,
-                    opaque_only: true,
-                    depth_stencil: true,
-                    cull_mode: Some(wgpu::Face::Back),
-                    depth_bias: Default::default(),
-                },
-            ),
+            forward: if config.forward {
+                Some(TreeRenderer::new(
+                    gpu,
+                    "forward",
+                    TreeRendererConfig {
+                        renderer_config: config.clone(),
+                        targets: vec![Some(gpu.swapchain_format().into()), Some(normals_format)],
+                        filter: ArchetypeFilter::new().incl(config.scene),
+                        renderer_resources: renderer_resources.clone(),
+                        fs_main: FSMain::Forward,
+                        opaque_only: true,
+                        depth_stencil: true,
+                        cull_mode: Some(wgpu::Face::Back),
+                        depth_bias: Default::default(),
+                        render_mode: settings.render_mode,
+                        software_culling: settings.software_culling,
+                    },
+                ))
+            } else {
+                None
+            },
             transparent: TransparentRenderer::new(
                 gpu,
                 TransparentRendererConfig {
@@ -283,8 +295,8 @@ impl Renderer {
         target: RendererTarget,
         clear: Option<Color>,
     ) {
-        let _span = debug_span!("Renderer.render");
-        ambient_profiling::scope!("Renderer.render");
+        let _span = debug_span!("Renderer.render", label = world.name()).entered();
+        ambient_profiling::scope!("Renderer.render", world.name());
 
         if let RendererTarget::Target(target) = &target {
             if self.solids_frame.color_buffer.size != target.color_buffer.size {
@@ -330,17 +342,23 @@ impl Renderer {
             self.culling.run(gpu, encoder, world);
 
             self.forward_collect_state.set_camera(gpu, 0);
-            self.forward.update(gpu, &assets, world);
             self.overlays.update(gpu, &assets, world);
-            self.forward.run_collect(
-                gpu,
-                &assets,
-                encoder,
-                post_submit,
-                &mesh_meta_bind_group,
-                &entities_bind_group,
-                &mut self.forward_collect_state,
-            );
+
+            if let Some(forward) = &mut self.forward {
+                forward.update(gpu, &assets, world);
+                forward.run_collect(
+                    gpu,
+                    world,
+                    &assets,
+                    encoder,
+                    post_submit,
+                    &mesh_meta_bind_group,
+                    &entities_bind_group,
+                    &mut self.forward_collect_state,
+                    &mesh_buffer,
+                );
+            }
+
             self.transparent.update(
                 gpu,
                 &assets,
@@ -382,6 +400,7 @@ impl Renderer {
 
         if let Some(shadows) = &mut self.shadows {
             shadows.render(
+                world,
                 gpu,
                 &assets,
                 &mesh_buffer,
@@ -441,12 +460,17 @@ impl Renderer {
                 wgpu::IndexFormat::Uint32,
             );
 
-            self.forward.render(
-                &mut render_pass,
-                &self.forward_collect_state,
-                &bind_groups,
-                target.size(),
-            );
+            if let Some(forward) = &self.forward {
+                forward.render(
+                    gpu,
+                    world,
+                    &mesh_buffer,
+                    &mut render_pass,
+                    &self.forward_collect_state,
+                    &bind_groups,
+                    target.size(),
+                );
+            }
 
             {
                 ambient_profiling::scope!("Drop render pass");
@@ -556,8 +580,8 @@ impl Renderer {
 
     pub fn is_rendered(&self) -> bool {
         #[cfg(any(target_os = "macos", target_os = "unknown"))]
-        let res = self.forward_collect_state.counts_cpu.lock().len()
-            == self.forward_collect_state.counts.len() as usize;
+        let res = self.forward_collect_state.counts_cpu.lock().counts().len()
+            == self.forward_collect_state.counts.len();
 
         #[cfg(all(not(target_os = "macos"), not(target_os = "unknown")))]
         let res = true;
@@ -565,15 +589,24 @@ impl Renderer {
     }
 
     pub fn n_entities(&self) -> usize {
-        self.forward.n_entities()
+        self.forward
+            .as_ref()
+            .map(|v| v.n_entities())
+            .unwrap_or_default()
     }
 
     pub fn stats(&self) -> String {
         format!(
             "{} forward: {}/{} transparent: {}",
             self.shadows.as_ref().map(|x| x.stats()).unwrap_or_default(),
-            self.forward.n_entities(),
-            self.forward.n_nodes(),
+            self.forward
+                .as_ref()
+                .map(|v| v.n_entities())
+                .unwrap_or_default(),
+            self.forward
+                .as_ref()
+                .map(|v| v.n_nodes())
+                .unwrap_or_default(),
             self.transparent.n_entities()
         )
     }
@@ -583,7 +616,9 @@ impl Renderer {
             shadows.dump(f);
         }
         writeln!(f, "  forward").unwrap();
-        self.forward.dump(f);
+        if let Some(forward) = &self.forward {
+            forward.dump(f);
+        }
         writeln!(f, "  transparent").unwrap();
         self.transparent.dump(f);
         writeln!(f, "  outlines").unwrap();
@@ -659,7 +694,7 @@ fn create_mesh_meta_bind_group(
         layout,
         entries: &[wgpu::BindGroupEntry {
             binding: 0,
-            resource: mesh_buffer.metadata_buffer.buffer().as_entire_binding(),
+            resource: mesh_buffer.metadata_buffer.as_binding(),
         }],
         label: Some("mesh_meta"),
     })

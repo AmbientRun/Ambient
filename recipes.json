@@ -11,6 +11,22 @@
     "third-person-camera": {
         "cmd": "cargo run --features tracing -- run ./guest/rust/examples/basics/third_person_camera --debugger"
     },
+    "primitives": {
+        "cmd": "cargo build",
+        "components": {
+            "dap": {
+                "program": "./target/debug/ambient",
+                "args": [
+                    "run",
+                    "./guest/rust/examples/basics/primitives"
+                ],
+                "adapter": "rust",
+                "env": {
+                    "RUST_LOG": "ambient_renderer=info,ambient_network=debug,info"
+                }
+            }
+        }
+    },
     "gi-samplers": {
         "cmd": "cargo run --release -- run --release guest/rust/examples/basics/samplers --headless --no-proxy --quic-interface-port 9009 --http-interface-port 10009 golden-image-check --timeout-seconds 30.0",
         "env": {
@@ -21,12 +37,26 @@
         "cmd": [
             "cargo",
             "run",
-            "--features",
-            "tracing",
             "join",
             "localhost:9000",
             "--debugger"
-        ]
+        ],
+        "env": {
+            "RUST_LOG": "ambient_renderer=debug,ambient_gpu=debug,info"
+        }
+    },
+    "join-release": {
+        "cmd": [
+            "cargo",
+            "run",
+            "--release",
+            "join",
+            "localhost:9000",
+            "--debugger"
+        ],
+        "env": {
+            "RUST_LOG": "ambient_renderer=debug,ambient_gpu=debug,info"
+        }
     },
     "debug-join": {
         "cmd": [
@@ -38,19 +68,38 @@
         ],
         "components": {
             "cargo-dap": {
+                "adapter": "rust",
                 "args": [
                     "join",
                     "localhost:9000",
                     "--debugger"
-                ]
+                ],
+                "env": {
+                    "RUST_LOG": "ambient_renderer=debug,ambient_gpu=debug,info"
+                }
             }
         }
     },
     "asset-loading": {
-        "cmd": "cargo run --features tracing -- run ./guest/rust/examples/basics/asset_loading --clean-build --debugger"
+        "cmd": "cargo run -- run ./guest/rust/examples/basics/asset_loading --clean-build --debugger",
+        "env": {
+            "RUST_LOG": "ambient_renderer=debug,info"
+        }
     },
     "serve-primitives": {
         "cmd": "cargo run --features tracing -- serve ./guest/rust/examples/basics/primitives/",
+        "env": {
+            "RUST_LOG": "ambient_network=debug,info"
+        }
+    },
+    "serve-procedural": {
+        "cmd": "cargo run --features tracing -- serve ./guest/rust/examples/basics/procedural_generation/",
+        "env": {
+            "RUST_LOG": "ambient_network=debug,info"
+        }
+    },
+    "serve-physics": {
+        "cmd": "cargo run --features tracing -- serve ./guest/rust/examples/basics/physics/ --clean-build",
         "env": {
             "RUST_LOG": "ambient_network=debug,info"
         }
@@ -80,7 +129,7 @@
         "components": {
             "cargo-dap": {
                 "args": [
-                    "serve",
+                    "run",
                     "./guest/rust/examples/basics/samplers/"
                 ]
             }
@@ -91,6 +140,9 @@
     },
     "minigolf": {
         "cmd": "cargo run -- run ./guest/rust/examples/games/minigolf"
+    },
+    "minigolf-release": {
+        "cmd": "cargo run --release -- run --release ./guest/rust/examples/games/minigolf"
     },
     "tictactoe": {
         "cmd": "cargo run -- run ./guest/rust/examples/games/tictactoe"
@@ -217,6 +269,20 @@
             "run",
             "./guest/rust/examples/basics/instancing",
             "--clean-build"
+        ]
+    },
+    "instancing-release": {
+        "cmd": [
+            "cargo",
+            "run",
+            "--features",
+            "tracing",
+            "--release",
+            "--",
+            "run",
+            "./guest/rust/examples/basics/instancing",
+            "--clean-build",
+            "--release"
         ]
     },
     "golden-images": {

@@ -2,9 +2,7 @@ use ambient_app::{App, AppBuilder};
 use ambient_core::{
     asset_cache,
     camera::{active_camera, far},
-    gpu,
-    hierarchy::dump_world_hierarchy_to_tmp_file,
-    main_scene,
+    gpu, main_scene,
     transform::*,
 };
 use ambient_element::ElementComponentExt;
@@ -32,7 +30,8 @@ async fn init(app: &mut App) {
     )
     .await
     .unwrap();
-    dump_world_hierarchy_to_tmp_file(&model.0);
+    // Why is this here?
+    // dump_world_hierarchy_to_tmp_file(&model.0);
 
     let id = model.spawn(&gpu, world, &Default::default());
     {

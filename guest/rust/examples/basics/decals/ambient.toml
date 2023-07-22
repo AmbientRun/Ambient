@@ -1,7 +1,0 @@
-[ember]
-id = "ambient_example_decals"
-name = "Decals"
-version = "0.0.1"
-repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/decals"
-type = "Game"
-categories = ["Example"]

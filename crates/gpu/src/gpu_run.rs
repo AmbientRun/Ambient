@@ -112,11 +112,12 @@ impl GpuRun {
             BufferUsages::COPY_DST | BufferUsages::STORAGE,
             &[input],
         );
+
         let out_buffer = TypedBuffer::new_init(
             gpu,
             "GpuRun.out",
             BufferUsages::STORAGE | BufferUsages::COPY_SRC,
-            &[Out::zeroed(); 1],
+            &[Out::zeroed()],
         );
 
         let pipeline = shader.to_compute_pipeline(gpu, "main");
@@ -159,7 +160,7 @@ impl GpuRun {
         // Only one
 
         out_buffer
-            .read(gpu, .., true)
+            .read_staging(gpu, ..)
             .await
             .expect("Failed to map buffer")[0]
     }

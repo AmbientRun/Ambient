@@ -8,7 +8,7 @@ use ambient_core::{
 };
 use ambient_ecs::{
     components, query, Component, ComponentQuery, ComponentValueBase, Debuggable, Entity, EntityId,
-    MakeDefault, Networked, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World,
+    MakeDefault, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World,
 };
 use ambient_model::model_from_url;
 use ambient_std::{
@@ -44,9 +44,9 @@ use crate::{
 pub use ambient_ecs::generated::components::core::physics::*;
 
 components!("physics", {
-    @[MakeDefault, Networked, Store, Debuggable]
+    @[MakeDefault, Store, Debuggable]
     collider: ColliderDef,
-    @[MakeDefault,  Networked, Store, Debuggable]
+    @[MakeDefault, Store, Debuggable]
     collider_type: ColliderType,
     collider_shapes: Vec<PxShape>,
     collider_shapes_convex: Vec<PxShape>,

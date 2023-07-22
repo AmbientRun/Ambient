@@ -2,7 +2,6 @@ use core::fmt;
 use std::{
     collections::{HashMap, HashSet},
     fmt::{Debug, Formatter},
-    fs::File,
     iter::once,
     sync::atomic::{AtomicU64, Ordering},
 };
@@ -611,6 +610,11 @@ impl World {
     pub fn entity_loc(&self, id: EntityId) -> Option<&EntityLocation> {
         self.locs.get(&id)
     }
+
+    pub fn id_from_lod(&self, archetype: usize, index: usize) -> EntityId {
+        self.archetypes[archetype].entity_indices_to_ids[index]
+    }
+
     /// Returns the content version of this component, which only changes when the component is written to (not when the entity changes archetype)
     pub fn get_component_content_version(
         &self,
@@ -697,9 +701,10 @@ impl World {
             }
         }
     }
+    #[cfg(not(target_os = "unknown"))]
     pub fn dump_to_tmp_file(&self) {
         std::fs::create_dir_all("tmp").ok();
-        let mut f = File::create("tmp/ecs.txt").expect("Unable to create file");
+        let mut f = std::fs::File::create("tmp/ecs.txt").expect("Unable to create file");
         self.dump(&mut f);
         log::info!("Wrote ecs to tmp/ecs.txt");
     }

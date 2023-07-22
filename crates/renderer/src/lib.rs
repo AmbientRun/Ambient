@@ -1,4 +1,10 @@
-use std::{f32::consts::PI, fmt::Debug, str::FromStr, sync::Arc};
+use core::fmt;
+use std::{
+    f32::consts::PI,
+    fmt::{Debug, Formatter},
+    str::FromStr,
+    sync::Arc,
+};
 
 use ambient_core::{
     asset_cache,
@@ -69,7 +75,9 @@ components!("rendering", {
     primitives: Vec<RenderPrimitive>,
 
     /// The (cpu) primitives are split into an SoA on the gpu side
+    @[Debuggable]
     gpu_primitives_mesh: [u32; MAX_PRIMITIVE_COUNT],
+    @[Debuggable]
     gpu_primitives_lod: [u32; MAX_PRIMITIVE_COUNT],
 
     renderer_shader: RendererShaderProducer,
@@ -77,11 +85,13 @@ components!("rendering", {
     @[Resource]
     renderer_stats: String,
 });
+
 gpu_components! {
     color() => color: GpuComponentFormat::Vec4,
     gpu_primitives_mesh() => gpu_primitives_mesh: GpuComponentFormat::Mat4,
     gpu_primitives_lod() => gpu_primitives_lod: GpuComponentFormat::Mat4,
 }
+
 pub fn init_all_components() {
     init_components();
     init_gpu_components();
@@ -168,7 +178,7 @@ pub fn systems() -> SystemGroup {
                         );
                     }
                     for (i, p) in primitives.iter().enumerate().take(MAX_PRIMITIVE_COUNT) {
-                        p_mesh[i] = p.mesh.index() as u32;
+                        p_mesh[i] = p.mesh.index();
                         p_lod[i] = p.lod as u32;
                     }
                 }
@@ -224,7 +234,9 @@ pub struct RenderPrimitive {
     pub mesh: Arc<GpuMesh>,
     pub lod: usize,
 }
+
 pub type PrimitiveIndex = usize;
+
 pub fn get_gpu_primitive_id(
     world: &World,
     id: EntityId,
@@ -248,8 +260,14 @@ pub struct GpuRenderPrimitive {
     pub _padding: UVec2,
 }
 
-#[derive(Clone, Debug, Deref, DerefMut)]
+#[derive(Clone, Deref, DerefMut)]
 pub struct SharedMaterial(pub Arc<dyn Material + 'static>);
+
+impl Debug for SharedMaterial {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Debug::fmt(&*self.0, f)
+    }
+}
 
 impl<T: Material + 'static> From<Arc<T>> for SharedMaterial {
     fn from(v: Arc<T>) -> Self {
@@ -484,11 +502,11 @@ pub type RendererShaderProducer =
 #[repr(C)]
 #[derive(Debug, Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct DrawIndexedIndirect {
-    pub vertex_count: u32,
-    pub instance_count: u32,
-    pub base_index: u32,
-    pub vertex_offset: i32,
-    pub base_instance: u32,
+    index_count: u32,
+    instance_count: u32,
+    first_index: u32,
+    base_vertex: u32,
+    first_instance: u32,
 }
 
 fn is_transparent(

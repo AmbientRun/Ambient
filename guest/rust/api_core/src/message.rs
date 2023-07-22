@@ -29,6 +29,12 @@ impl Source {
         matches!(self, Source::Runtime)
     }
 
+    #[cfg(feature = "client")]
+    /// Is this message from the corresponding serverside module?
+    pub fn server(&self) -> bool {
+        matches!(self, Source::Server)
+    }
+
     #[cfg(feature = "server")]
     /// The user that sent this message, if any.
     pub fn client_user_id(&self) -> Option<String> {

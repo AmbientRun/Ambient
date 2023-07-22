@@ -340,14 +340,14 @@ async fn handle_quinn_connection(
                 server.process_control(&data, frame?)?;
             }
             stream = conn.accept_uni() => {
-                connected.process_uni(&data, stream?).await?;
+                connected.process_uni(&data, stream?);
             }
             stream = conn.accept_bi() => {
                 let (send, recv) = stream?;
-                connected.process_bi(&data, send, recv).await?;
+                connected.process_bi(&data, send, recv);
             }
             datagram = conn.read_datagram() => {
-                connected.process_datagram(&data, datagram?).await?;
+                connected.process_datagram(&data, datagram?)?;
             }
             Some(msg) = connected.control_rx.next() => {
                 push_send.send(&msg).await?;

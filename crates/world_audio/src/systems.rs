@@ -101,7 +101,7 @@ pub fn audio_systems() -> SystemGroup {
                             let sender = world.resource(crate::audio_sender());
                             let id_vec = world.get_ref(audio_entity, children()).unwrap();
                             let id = id_vec.last().unwrap();
-                            id_share.lock().replace((*id).clone());
+                            id_share.lock().replace(*id);
 
                             // TODO: this should be empty
                             // use has_component to check

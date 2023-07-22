@@ -12,6 +12,7 @@ world bindings {
     import client-player
     import client-input
     import client-camera
+    import client-clipboard
     import client-window
     import client-mesh
     import client-texture
@@ -20,6 +21,7 @@ world bindings {
 
     import server-physics
     import server-message
+    import server-http
 
     export guest
 }
