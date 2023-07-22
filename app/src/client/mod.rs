@@ -90,26 +90,34 @@ pub async fn run(
 }
 
 #[element_component]
-fn TitleUpdater(hooks: &mut Hooks) -> Element {
+fn TitleUpdater(hooks: &mut Hooks, debug: bool) -> Element {
     let (net, _) = use_remote_resource(hooks, client_network_stats()).expect("No game client");
 
     let world = &hooks.world;
     let title = world.resource(window_title());
-    let fps = world
-        .get_cloned(hooks.world.resource_entity(), fps_stats())
-        .ok()
-        .filter(|f| !f.fps().is_nan());
 
-    let title = match (fps, net) {
-        (None, None) => title.clone(),
-        (Some(fps), None) => format!("{} [{}]", title, fps.dump_both()),
-        (None, Some(net)) => format!("{} [{}]", title, net),
-        (Some(fps), Some(net)) => format!("{} [{}, {}]", title, fps.dump_both(), net),
-    };
-    world
-        .resource(window_ctl())
-        .send(WindowCtl::SetTitle(title))
-        .ok();
+    if debug {
+        let fps = world
+            .get_cloned(hooks.world.resource_entity(), fps_stats())
+            .ok()
+            .filter(|f| !f.fps().is_nan());
+
+        let title = match (fps, net) {
+            (None, None) => title.clone(),
+            (Some(fps), None) => format!("{} [{}]", title, fps.dump_both()),
+            (None, Some(net)) => format!("{} [{}]", title, net),
+            (Some(fps), Some(net)) => format!("{} [{}, {}]", title, fps.dump_both(), net),
+        };
+        world
+            .resource(window_ctl())
+            .send(WindowCtl::SetTitle(title))
+            .ok();
+    } else {
+        world
+            .resource(window_ctl())
+            .send(WindowCtl::SetTitle(title.clone()))
+            .ok();
+    }
 
     Element::new()
 }
@@ -174,7 +182,7 @@ fn MainApp(
             cert,
             create_rpc_registry: cb(shared::create_server_rpc_registry),
             inner: Dock::el(vec![
-                TitleUpdater.el(),
+                TitleUpdater::el(show_debug),
                 if let Some(golden_image_cmd) = golden_image_cmd.filter(|_| loaded) {
                     GoldenImageTest::el(golden_image_output_dir, golden_image_cmd)
                 } else {
