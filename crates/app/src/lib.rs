@@ -42,6 +42,7 @@ use renderers::{main_renderer, ui_renderer, MainRenderer, UiRenderer};
 use winit::{
     event::{ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
+    platform::macos::WindowExtMacOS,
     window::{Fullscreen, Window, WindowBuilder},
 };
 
@@ -189,6 +190,7 @@ pub struct AppBuilder {
     pub main_renderer: bool,
     pub examples_systems: bool,
     pub headless: Option<UVec2>,
+    debug: bool,
     pub update_title_with_fps_stats: bool,
     #[cfg(target_os = "unknown")]
     pub parent_element: Option<web_sys::HtmlElement>,
@@ -220,6 +222,7 @@ impl AppBuilder {
             main_renderer: true,
             examples_systems: false,
             headless: None,
+            debug: false,
             update_title_with_fps_stats: true,
             #[cfg(target_os = "unknown")]
             parent_element: None,
@@ -267,6 +270,11 @@ impl AppBuilder {
         self
     }
 
+    pub fn debug(mut self, debug: bool) -> Self {
+        self.debug = debug;
+        self
+    }
+
     pub fn update_title_with_fps_stats(mut self, value: bool) -> Self {
         self.update_title_with_fps_stats = value;
         self
@@ -293,6 +301,7 @@ impl AppBuilder {
             }
         };
 
+        #[cfg(not(target_os = "windows"))]
         let (window, event_loop) = if self.headless.is_some() {
             (None, None)
         } else {
@@ -302,6 +311,26 @@ impl AppBuilder {
                 height: settings.resolution().1,
             });
             let window = Arc::new(window.build(&event_loop).unwrap());
+            window.set_simple_fullscreen(!self.debug);
+            (Some(window), Some(event_loop))
+        };
+
+        #[cfg(target_os = "windows")]
+        let (window, event_loop) = if self.headless.is_some() {
+            (None, None)
+        } else {
+            let event_loop = self.event_loop.unwrap_or_else(EventLoop::new);
+
+            let monitor = event_loop.primary_monitor().unwrap();
+            let video_mode = monitor.video_modes().next().unwrap();
+            let window = WindowBuilder::new()
+                .with_inner_size(winit::dpi::LogicalSize {
+                    width: settings.resolution().0,
+                    height: settings.resolution().1,
+                })
+                .with_fullscreen(Some(Fullscreen::Exclusive(video_mode)));
+            let window = Arc::new(window.build(&event_loop).unwrap());
+            window.set_simple_fullscreen(!self.debug);
             (Some(window), Some(event_loop))
         };
 
@@ -597,6 +626,23 @@ impl App {
                         },
                         control_flow,
                     );
+                } else if let Event::WindowEvent {
+                    event:
+                        WindowEvent::KeyboardInput {
+                            input:
+                                KeyboardInput {
+                                    state: ElementState::Pressed,
+                                    virtual_keycode: Some(VirtualKeyCode::Escape),
+                                    ..
+                                },
+                            ..
+                        },
+                    ..
+                } = &event
+                {
+                    if let Some(window) = self.window.as_ref() {
+                        window.set_simple_fullscreen(false);
+                    }
                 } else if let Some(event) = event.to_static() {
                     self.handle_static_event(&event, control_flow);
                 }

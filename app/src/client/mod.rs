@@ -78,6 +78,7 @@ pub async fn run(
         .ui_renderer(true)
         .with_asset_cache(assets)
         .headless(headless)
+        .debug(is_debug)
         .update_title_with_fps_stats(false)
         .run(move |app, _runtime| {
             *app.world.resource_mut(window_title()) = "Ambient".to_string();
