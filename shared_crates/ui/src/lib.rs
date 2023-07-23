@@ -195,7 +195,7 @@ impl UIExt for Element {
 ///
 /// This should include all hooks that relate to game/UI state.
 pub trait HooksExt {
-    /// Helper wrapper around [Self::use_runtime_message] that listens to WindowKeyboardInput messages
+    /// Helper wrapper around [Hooks::use_runtime_message] that listens to `WindowKeyboardInput` messages
     /// and parses them for you.
     ///
     /// The boolean is whether or not the button was pressed (true) or released (false).
