@@ -2,13 +2,17 @@
 //!
 //! If implementing a trait that is also available on the client, it should go in [super].
 
+use std::str::FromStr;
+
 use ambient_core::{
+    asset_cache,
     async_ecs::async_run,
     player::{player, user_id},
     runtime,
 };
 use ambient_ecs::{generated::messages::HttpResponse, query, EntityId, Message, World};
 use ambient_network::server::player_transport;
+use ambient_std::asset_url::AbsAssetUrl;
 
 use super::super::Bindings;
 
@@ -94,6 +98,7 @@ impl shared::wit::server_http::Host for Bindings {
     async fn get(&mut self, url: String) -> anyhow::Result<()> {
         let id = self.id;
         let world = self.world_mut();
+        let assets = world.resource(asset_cache());
         let runtime = world.resource(runtime());
         let async_run = world.resource(async_run()).clone();
 
@@ -105,8 +110,12 @@ impl shared::wit::server_http::Host for Bindings {
             ))
         }
 
+        let resolved_url = AbsAssetUrl::from_str(&url)?
+            .to_download_url(&assets)?
+            .to_string();
+
         runtime.spawn(async move {
-            let result = make_request(url.clone()).await;
+            let result = make_request(resolved_url).await;
             let response = match result {
                 Ok((status, body)) => HttpResponse {
                     url,

@@ -19,9 +19,10 @@ impl fmt::Display for HttpError {
 ///
 /// **NOTE**: This may be replaced with `wasi-http` support in the future,
 /// which will allow the use of native Rust libraries like `reqwest`.
-pub async fn get(url: &str) -> Result<Vec<u8>, HttpError> {
+pub async fn get(url: impl AsRef<str>) -> Result<Vec<u8>, HttpError> {
     let result = Rc::new(RefCell::new(None));
 
+    let url = url.as_ref();
     wit::server_http::get(url);
     let mut listener = Some(HttpResponse::subscribe({
         let result = result.clone();
