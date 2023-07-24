@@ -6,7 +6,6 @@ use ambient_api::{
 #[main]
 pub fn main() {
     spawn_query(player()).bind(|results| {
-        println!("___player movement triggered___");
         for (id, ()) in results {
             run_async(async move {
                 entity::wait_for_component(id, components::player_name()).await;
