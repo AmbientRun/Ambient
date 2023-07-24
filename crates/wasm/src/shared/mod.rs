@@ -84,6 +84,48 @@ pub fn systems() -> SystemGroup {
     SystemGroup::new(
         "core/wasm",
         vec![
+            query(bytecode_from_url())
+                .incl(module())
+                .excl(module_name())
+                .spawned()
+                .to_system(move |q, world, qs, _| {
+                    for (id, url) in q.collect_cloned(world, qs) {
+                        let url = AbsAssetUrl::from_str(&url).unwrap();
+                        let decoded_path = url.decoded_path();
+                        let name = decoded_path
+                            .file_stem()
+                            .unwrap_or_else(|| decoded_path.as_str());
+
+                        world
+                            .add_component(id, module_name(), name.to_string())
+                            .ok();
+                    }
+                }),
+            query(module_name())
+                .incl(module())
+                .excl(ambient_core::name())
+                .spawned()
+                .to_system(move |q, world, qs, _| {
+                    for (id, name) in q.collect_cloned(world, qs) {
+                        world
+                            .add_component(
+                                id,
+                                ambient_core::name(),
+                                format!("Wasm module: {}", name),
+                            )
+                            .ok();
+                    }
+                }),
+            query(module())
+                .excl(module_errors())
+                .spawned()
+                .to_system(move |q, world, qs, _| {
+                    for (id, _) in q.collect_cloned(world, qs) {
+                        world
+                            .add_component(id, module_errors(), Default::default())
+                            .ok();
+                    }
+                }),
             query(bytecode_from_url().changed()).to_system(move |q, world, qs, _| {
                 // TODO: there has got to be a better way to do this
                 let is_server = world.name() == "server";
@@ -376,18 +418,14 @@ pub(crate) fn unload(world: &mut World, module_id: EntityId, reason: &str) {
 
 pub fn spawn_module(
     world: &mut World,
-    name: &Identifier,
-    description: String,
+    bytecode_from_url: AbsAssetUrl,
     enabled: bool,
     on_server: bool,
 ) -> EntityId {
     let entity = Entity::new()
-        .with(ambient_core::name(), format!("Wasm module: {}", name))
-        .with(module_name(), name.to_string())
-        .with(ambient_core::description(), description)
         .with_default(module())
-        .with(module_enabled(), enabled)
-        .with_default(module_errors());
+        .with(self::bytecode_from_url(), bytecode_from_url.to_string())
+        .with(module_enabled(), enabled);
 
     let entity = if on_server {
         entity.with_default(module_on_server())
