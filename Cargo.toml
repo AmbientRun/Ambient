@@ -6,10 +6,17 @@ publish = false
 version = "0.0.1"
 
 [dependencies]
-# ambient_api = { path = "../Ambient/guest/rust/api" }
-ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", rev = "8ce8718f74be4501880788230480c7d863a9b04e" }
+ambient_api = { path = "../Ambient/guest/rust/api" }
+# ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", rev = "8ce8718f74be4501880788230480c7d863a9b04e" }
 
+# Console-only
 rhai = { version = "1.15", features = ["sync"] }
+
+# Ember reloader
+toml = "0.7"
+serde = { version = "1.0", features = ["derive"] }
+ambient_project = { path = "../Ambient/shared_crates/project" }
+# ambient_project = { git = "https://github.com/AmbientRun/Ambient.git", rev = "8ce8718f74be4501880788230480c7d863a9b04e" }
 
 # Group 1: show the UI
 # This include the aiming cross in the middle of the screen
@@ -113,6 +120,17 @@ name = "console_server"
 path = "src/console/server.rs"
 required-features = ["server"]
 
+# ----------------------------------------------------------------
+# The ember reloader is a tool that allows you to reload embers
+[[bin]]
+name = "ember_reloader_client"
+path = "src/ember_reloader/client_bin.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "ember_reloader_server"
+path = "src/ember_reloader/server_bin.rs"
+required-features = ["server"]
 
 [features]
 client = ["ambient_api/client"]
