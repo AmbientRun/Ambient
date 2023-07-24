@@ -6,7 +6,6 @@ use ambient_api::{
 #[main]
 pub fn main() {
     spawn_query(player()).bind(|results| {
-        println!("___player movement triggered___");
         for (id, ()) in results {
             run_async(async move {
                 entity::wait_for_component(id, components::player_name()).await;
@@ -29,7 +28,14 @@ pub fn main() {
         let direction = msg.direction;
 
         if direction != Vec2::ZERO {
-            if game_time() - last_walk > Duration::from_millis(700) {
+            let dur = if msg.running {
+                Duration::from_millis(400)
+            } else {
+                Duration::from_millis(600)
+            };
+            let is_jumping =
+                entity::get_component(player_id, components::player_vspeed()).unwrap_or(0.0);
+            if is_jumping <= 0.0 && game_time() - last_walk > dur {
                 last_walk = game_time();
                 messages::FootOnGround { source: player_id }.send_local_broadcast(false);
             }
@@ -37,6 +43,12 @@ pub fn main() {
 
         if msg.jump {
             entity::add_component(player_id, components::player_vspeed(), 0.6);
+        }
+
+        if msg.running {
+            entity::add_component(player_id, components::player_running(), true);
+        } else {
+            entity::add_component(player_id, components::player_running(), false);
         }
 
         // temporary fix pos for shooting
@@ -92,10 +104,11 @@ pub fn main() {
         components::player_direction(),
         rotation(),
         components::player_vspeed(),
+        components::player_running(),
     ))
     .each_frame(move |list| {
-        for (player_id, (_, direction, rot, vspeed)) in list {
-            let scale_factor = 10.0;
+        for (player_id, (_, direction, rot, vspeed, running)) in list {
+            let scale_factor = if running { 1.5 } else { 1.0 };
             let speed = scale_factor * vec2(0.04, 0.06);
             let displace = rot * (direction.normalize_or_zero() * speed).extend(vspeed);
             let collision = physics::move_character(player_id, displace, 0.01, delta_time());

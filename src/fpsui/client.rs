@@ -2,11 +2,12 @@
 
 use ambient_api::{
     components::core::{
-        layout::{docking_bottom, min_width, space_between_items},
+        layout::{docking_bottom, height, min_height, min_width, space_between_items, width},
         player::player,
         rect::{background_color, line_from, line_to, line_width},
     },
     prelude::*,
+    ui::ImageFromUrl,
 };
 
 #[main]
@@ -31,17 +32,40 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
     use_input_request(hooks);
     let (name, set_name) = hooks.use_state("".to_string());
 
-    FocusRoot::el([WindowSized::el([FlowColumn::el([
-        Text::el("enter your name below. press enter to start the game."),
-        TextEditor::new(name.clone(), set_name.clone())
-            .auto_focus()
-            .on_submit(|v| messages::StartGame::new(v).send_server_reliable())
-            .el()
-            .with(min_width(), 100.0),
-        Text::el("hint: hold Tab to toggle the scoreboard."),
+    FocusRoot::el([
+        WindowSized::el([FlowColumn::el([
+            Text::el("APFS").header_style(),
+            Separator { vertical: false }.el(),
+            Text::el("enter your name below. press enter to start the game."),
+            TextEditor::new(name.clone(), set_name.clone())
+                .auto_focus()
+                .on_submit(|v| messages::StartGame::new(v).send_server_reliable())
+                .el()
+                .with(background_color(), vec4(0.3, 0.3, 0.3, 0.6))
+                .with(min_height(), 16.0)
+                .with(min_width(), 100.0),
+            Separator { vertical: false }.el(),
+            Text::el("rules:").section_style(),
+            Text::el("shoot every one see to death you to gain a point."),
+            Text::el("once you die, you lose a point and will be respawned."),
+            Separator { vertical: false }.el(),
+            Text::el("control:").section_style(),
+            Text::el("use your mouse to look around; shoot with left click."),
+            Text::el("right click to zoom."),
+            Text::el("hold [WASD] to move."),
+            Text::el("tap [Space] to jump."),
+            Text::el("hold [Shift] to run."),
+            Text::el("hold [Tab] to toggle the scoreboard."),
+        ])
+        .with(space_between_items(), STREET)])
+        .with_padding_even(20.),
+        ImageFromUrl {
+            url: asset::url("assets/afps.png").unwrap(),
+        }
+        .el()
+        .with(width(), hooks.use_window_logical_resolution().x as f32)
+        .with(height(), hooks.use_window_logical_resolution().y as f32),
     ])
-    .with(space_between_items(), STREET)])
-    .with_padding_even(20.)])
 }
 
 #[element_component]

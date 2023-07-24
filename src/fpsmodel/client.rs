@@ -18,7 +18,7 @@ pub fn main() {
         for (_, (_, model)) in results {
             run_async(async move {
                 entity::wait_for_component(model, model_loaded()).await;
-                println!("___model loaded___");
+                println!("___model loaded___waiting for binding__");
                 let hand = get_bone_by_bind_id(model, &BindId::RightHand);
                 if hand.is_none() {
                     return;

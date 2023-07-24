@@ -1,5 +1,10 @@
 [components]
 
+run = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
 jump = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
     "Debuggable",
     "Networked",

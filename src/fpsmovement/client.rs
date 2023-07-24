@@ -17,7 +17,7 @@ pub async fn main() {
         let mouse_delta = input.mouse_delta;
         let mut direction = Vec2::ZERO;
         let mut shoot = false;
-        let mut walk = false;
+        let mut running = false;
         let mut jump = false;
         let mut duck = false;
 
@@ -43,7 +43,7 @@ pub async fn main() {
         }
 
         if input.keys.contains(&KeyCode::LShift) {
-            walk = true;
+            running = true;
         }
 
         if input.mouse_buttons.contains(&MouseButton::Left) {
@@ -83,9 +83,9 @@ pub async fn main() {
             shoot,
             toggle_zoom,
             is_shooting,
-            walk,
-            jump,
             duck,
+            jump,
+            running,
             ray_origin: ray.origin,
             ray_dir: ray.dir,
         }
