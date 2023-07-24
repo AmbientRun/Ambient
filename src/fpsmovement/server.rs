@@ -29,7 +29,14 @@ pub fn main() {
         let direction = msg.direction;
 
         if direction != Vec2::ZERO {
-            if game_time() - last_walk > Duration::from_millis(700) {
+            let dur = if msg.running {
+                Duration::from_millis(400)
+            } else {
+                Duration::from_millis(600)
+            };
+            let is_jumping =
+                entity::get_component(player_id, components::player_vspeed()).unwrap_or(0.0);
+            if is_jumping <= 0.0 && game_time() - last_walk > dur {
                 last_walk = game_time();
                 messages::FootOnGround { source: player_id }.send_local_broadcast(false);
             }
