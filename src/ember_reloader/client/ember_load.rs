@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use ambient_api::{
     components::core::{
         layout::{
-            align_vertical_center, fit_horizontal_parent, margin, min_height, space_between_items,
+            align_vertical_center, fit_horizontal_parent, margin, min_height, min_width,
+            space_between_items,
         },
         text::font_style,
         wasm::{bytecode_from_url, module_name},
@@ -53,6 +54,7 @@ fn EmberLoadDialogInner(hooks: &mut Hooks, close: Cb<dyn Fn() + Sync + Send>) ->
             .with(min_height(), 22.0)
             .with(margin(), vec4(0.0, STREET, STREET, STREET)),
     ])
+    .with(min_width(), 600.0)
 }
 
 #[element_component]
