@@ -8,10 +8,14 @@ use data_encoding::BASE64;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::{any::Any, collections::HashSet, sync::Arc};
+
+#[cfg(feature = "wit")]
 use wasi_cap_std_sync::Dir;
 #[cfg(feature = "wit")]
 use wasmtime_wasi::preview2 as wasi_preview2;
-use wasmtime_wasi::preview2::{DirPerms, FilePerms};
+
+#[cfg(feature = "wit")]
+use wasi_preview2::{DirPerms, FilePerms};
 
 #[derive(Clone)]
 pub struct ModuleBytecode(pub Vec<u8>);
@@ -115,6 +119,7 @@ pub struct ModuleStateArgs<'a> {
     pub stdout_output: Messenger,
     pub stderr_output: Messenger,
     pub id: EntityId,
+    #[cfg(feature = "wit")]
     pub preopened_dir: Option<Dir>,
 }
 

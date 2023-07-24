@@ -14,7 +14,6 @@ pub fn systems() -> SystemGroup {
 pub async fn initialize(
     world: &mut World,
     project_path: AbsAssetUrl,
-    manifest: &ambient_project::Manifest,
     build_metadata: &ambient_build::Metadata,
     build_project: Option<Cb<dyn Fn(&mut World) + Send + Sync>>,
 ) -> anyhow::Result<()> {

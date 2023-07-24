@@ -28,6 +28,7 @@ use ambient_ecs::{
 
 use ambient_std::{asset_url::AbsAssetUrl, download_asset::download_uncached_bytes};
 use itertools::Itertools;
+#[cfg(feature = "wit")]
 use wasi_cap_std_sync::Dir;
 
 mod internal {
@@ -36,7 +37,6 @@ mod internal {
     use ambient_ecs::{
         components, Debuggable, Description, EntityId, Networked, Resource, Store, World,
     };
-    use wasi_cap_std_sync::Dir;
 
     use super::{MessageType, ModuleBytecode, ModuleErrors, ModuleState, ModuleStateArgs};
 
@@ -53,17 +53,31 @@ mod internal {
         messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
         @[Resource]
         module_state_maker: Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<ModuleState> + Sync + Send>,
+    });
+}
 
+#[cfg(feature = "wit")]
+mod internal_wit {
+    use std::sync::Arc;
+
+    use ambient_ecs::{components, Resource};
+    use wasi_cap_std_sync::Dir;
+
+    components!("wasm::shared", {
         @[Resource]
         preopened_dir: Arc<Dir>,
     });
 }
 
-use self::{internal::preopened_dir, message::Source};
+#[cfg(feature = "wit")]
+use self::internal_wit::preopened_dir;
+use self::message::Source;
 use crate::shared::message::{RuntimeMessageExt, Target};
 
 pub fn init_all_components() {
     internal::init_components();
+    #[cfg(feature = "wit")]
+    internal_wit::init_components();
     message::init_components();
 }
 
@@ -283,6 +297,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
         .map(|x| x.clone())
         .unwrap_or_else(|_| "Unknown".to_string());
 
+    #[cfg(feature = "wit")]
     let preopened_dir = world
         .resource_opt(preopened_dir())
         .map(|d| d.try_clone().unwrap());
@@ -303,6 +318,7 @@ fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
                     messenger(world, id, MessageType::Stderr, msg);
                 }),
                 id,
+                #[cfg(feature = "wit")]
                 preopened_dir,
             });
             log::info!("Done loading module: {}", name);

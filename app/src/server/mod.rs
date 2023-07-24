@@ -176,7 +176,6 @@ pub async fn start(
         wasm::initialize(
             &mut server_world,
             project_path.clone(),
-            &manifest,
             &metadata,
             build_config.map(|config| {
                 // HACK: provide a callback to rebuild the project to WASM.
