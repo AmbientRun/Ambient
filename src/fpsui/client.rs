@@ -46,7 +46,7 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
                 .with(min_width(), 100.0),
             Separator { vertical: false }.el(),
             Text::el("rules:").section_style(),
-            Text::el("shoot every one see to death you to gain a point."),
+            Text::el("shoot every one you see to death to gain a point."),
             Text::el("once you die, you lose a point and will be respawned."),
             Separator { vertical: false }.el(),
             Text::el("control:").section_style(),
@@ -56,6 +56,8 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
             Text::el("tap [Space] to jump."),
             Text::el("hold [Shift] to run."),
             Text::el("hold [Tab] to toggle the scoreboard."),
+            Text::el("console:").section_style(),
+            Text::el("use [F1] to toggle the console."),
         ])
         .with(space_between_items(), STREET)])
         .with_padding_even(20.),
