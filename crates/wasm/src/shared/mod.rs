@@ -26,7 +26,6 @@ use ambient_ecs::{
     Message, SystemGroup, World, WorldEventReader,
 };
 
-use ambient_project::Identifier;
 use ambient_std::{asset_url::AbsAssetUrl, download_asset::download_uncached_bytes};
 use itertools::Itertools;
 use wasi_cap_std_sync::Dir;
@@ -320,7 +319,11 @@ fn run(
 ) {
     ambient_profiling::scope!(
         "run",
-        format!("{} - {}", get_module_name(world, id), message_name)
+        format!(
+            "{} - {}",
+            world.get_cloned(id, module_name()).unwrap_or_default(),
+            message_name
+        )
     );
 
     // If it's not in the subscribed events, skip over it
@@ -393,10 +396,6 @@ pub fn spawn_module(
     };
 
     entity.spawn(world)
-}
-
-pub fn get_module_name(world: &World, id: EntityId) -> Identifier {
-    Identifier::new(world.get_cloned(id, module_name()).unwrap()).unwrap()
 }
 
 fn run_and_catch_panics<R>(f: impl FnOnce() -> anyhow::Result<R>) -> Result<R, String> {

@@ -4,9 +4,7 @@ use ambient_ecs::{EntityId, SystemGroup, World};
 use ambient_project::Identifier;
 use ambient_std::{asset_url::AbsAssetUrl, Cb};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
-use ambient_wasm::shared::{
-    bytecode_from_url, get_module_name, remote_paired_id, spawn_module, MessageType,
-};
+use ambient_wasm::shared::{bytecode_from_url, remote_paired_id, spawn_module, MessageType};
 use anyhow::Context;
 
 pub fn systems() -> SystemGroup {
@@ -22,7 +20,7 @@ pub async fn initialize(
 ) -> anyhow::Result<()> {
     let messenger = Arc::new(
         |world: &World, id: EntityId, type_: MessageType, message: &str| {
-            let name = get_module_name(world, id);
+            let name = world.get_cloned(id, module_name()).unwrap_or_default();
             let (prefix, level) = match type_ {
                 MessageType::Info => ("info", log::Level::Info),
                 MessageType::Warn => ("warn", log::Level::Warn),

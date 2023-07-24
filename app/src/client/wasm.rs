@@ -1,6 +1,6 @@
 use ambient_audio::Source;
 use ambient_ecs::{EntityId, SystemGroup, World};
-use ambient_wasm::shared::{get_module_name, MessageType};
+use ambient_wasm::shared::{module_name, MessageType};
 use ambient_world_audio::{audio_sender, AudioControl, AudioFx, AudioMessage, SoundInfo};
 use flume::{Receiver, Sender};
 use parking_lot::Mutex;
@@ -13,7 +13,7 @@ pub fn systems() -> SystemGroup {
 pub fn initialize(world: &mut World, mute_audio: bool) -> anyhow::Result<()> {
     let messenger = Arc::new(
         |world: &World, id: EntityId, type_: MessageType, message: &str| {
-            let name = get_module_name(world, id);
+            let name = world.get_cloned(id, module_name()).unwrap_or_default();
             let (prefix, level) = match type_ {
                 MessageType::Info => ("info", log::Level::Info),
                 MessageType::Warn => ("warn", log::Level::Warn),

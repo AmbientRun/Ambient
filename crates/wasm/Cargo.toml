@@ -59,6 +59,7 @@ wasmtime = { workspace = true, optional = true }
 wasmtime-wasi = { workspace = true, optional = true }
 wasi-common = { workspace = true, optional = true }
 wasi-cap-std-sync = { workspace = true, optional = true }
+
 ambient_physics = { path = "../physics", optional = true }
 physxx = { path = "../../libs/physxx", optional = true }
 
