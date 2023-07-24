@@ -59,6 +59,7 @@ pub async fn build(
     manifest: &ProjectManifest,
     optimize: bool,
     clean_build: bool,
+    build_wasm_only: bool,
 ) -> anyhow::Result<Metadata> {
     let name = manifest
         .ember
@@ -85,7 +86,9 @@ pub async fn build(
         .await
         .context("Failed to create build directory")?;
 
-    build_assets(physics, &assets_path, &build_path).await?;
+    if !build_wasm_only {
+        build_assets(physics, &assets_path, &build_path).await?;
+    }
 
     build_rust_if_available(&path, manifest, &build_path, optimize)
         .await

@@ -295,6 +295,7 @@ async fn main() -> anyhow::Result<()> {
                 manifest,
                 project.release,
                 project.clean_build,
+                project.build_wasm_only,
             )
             .await
             .context("Failed to build project")?;
