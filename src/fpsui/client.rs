@@ -56,8 +56,10 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
             Text::el("tap [Space] to jump."),
             Text::el("hold [Shift] to run."),
             Text::el("hold [Tab] to toggle the scoreboard."),
-            Text::el("console:").section_style(),
+            Text::el("modding:").section_style(),
             Text::el("use [F1] to toggle the console."),
+            Text::el("use [F2] to open the Ember Loader."),
+            Text::el("use [F3] to open the WASM Manager."),
         ])
         .with(space_between_items(), STREET)])
         .with_padding_even(20.),
