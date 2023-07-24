@@ -95,7 +95,7 @@ pub fn main() {
     ))
     .each_frame(move |list| {
         for (player_id, (_, direction, rot, vspeed)) in list {
-            let scale_factor = 1.0;
+            let scale_factor = 10.0;
             let speed = scale_factor * vec2(0.04, 0.06);
             let displace = rot * (direction.normalize_or_zero() * speed).extend(vspeed);
             let collision = physics::move_character(player_id, displace, 0.01, delta_time());
