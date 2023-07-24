@@ -6,7 +6,7 @@ use ambient_api::{
             align_vertical_center, fit_horizontal_parent, margin, min_height, space_between_items,
         },
         text::font_style,
-        wasm::module_name,
+        wasm::{bytecode_from_url, module_name},
     },
     prelude::*,
 };
@@ -79,9 +79,9 @@ fn EmberView(hooks: &mut Hooks) -> Element {
 fn EmberViewInner(hooks: &mut Hooks, msg: Option<messages::EmberLoadSuccess>) -> Element {
     use_input_request(hooks);
     let modules_by_name: HashMap<_, _> = hooks
-        .use_query(module_name())
+        .use_query((module_name(), bytecode_from_url()))
         .into_iter()
-        .map(|(id, name)| (name, id))
+        .map(|(id, (name, url))| (name, (id, url)))
         .collect();
 
     let msg = msg.unwrap();
@@ -108,23 +108,43 @@ fn EmberViewInner(hooks: &mut Hooks, msg: Option<messages::EmberLoadSuccess>) ->
             .to_string()
     }
 
-    fn render_wasm(url: String, existing_modules: &HashMap<String, EntityId>) -> Element {
+    fn render_wasm(url: String, existing_modules: &HashMap<String, (EntityId, String)>) -> Element {
         let name = url_to_name(&url);
 
+        let existing_module = existing_modules.get(&name).cloned();
+
         FlowRow::el([
-            match existing_modules.get(&name).copied() {
-                Some(id) => Button::new("Replace existing", move |_| {
-                    messages::WasmReplaceBytecodeUrl {
-                        id,
-                        url: url.clone(),
+            match existing_module.clone() {
+                Some((id, existing_url)) => Button::new("Replace existing", {
+                    let url = url.clone();
+                    move |_| {
+                        messages::WasmReplaceBytecodeUrl {
+                            id,
+                            url: url.clone(),
+                        }
+                        .send_server_reliable();
                     }
-                    .send_server_reliable();
                 })
                 .style(ButtonStyle::Flat)
+                .disabled(url == existing_url)
                 .el(),
                 None => Element::new(),
             },
-            Text::el(name.clone()).with_default(align_vertical_center()),
+            FlowColumn::el([
+                Text::el(name.clone()).with_default(align_vertical_center()),
+                Text::el(match &existing_module {
+                    Some((_, existing_url)) => {
+                        if *existing_url == url {
+                            format!("{url} (already loaded)")
+                        } else {
+                            format!("{existing_url} -> {url}")
+                        }
+                    }
+                    None => url,
+                })
+                .small_style()
+                .with(font_style(), "Italic".to_string()),
+            ]),
         ])
         .with(space_between_items(), STREET)
     }
