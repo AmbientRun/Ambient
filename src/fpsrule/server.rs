@@ -2,6 +2,7 @@
 
 use ambient_api::components::core::{player::player, transform::translation};
 use ambient_api::prelude::*;
+
 #[main]
 pub fn main() {
     spawn_query(player()).bind(|results| {
@@ -49,6 +50,11 @@ pub fn main() {
                     );
                     run_async(async move {
                         sleep(114. / 60.).await;
+
+                        if !entity::exists(hit.entity) {
+                            return;
+                        }
+
                         entity::set_component(
                             hit.entity,
                             translation(),
