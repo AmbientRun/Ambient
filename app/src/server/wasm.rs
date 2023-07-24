@@ -38,7 +38,7 @@ pub async fn initialize(
         },
     );
 
-    ambient_wasm::server::initialize(world, messenger)?;
+    ambient_wasm::server::initialize(world, project_path.clone(), messenger)?;
 
     let build_dir = project_path.push("build").unwrap();
 

@@ -12,7 +12,13 @@ pub mod message;
 #[cfg(feature = "wit")]
 pub mod wit;
 
-use std::{str::FromStr, sync::Arc};
+pub use ambient_ecs::generated::components::core::wasm::*;
+pub use internal::{
+    messenger, module_bytecode, module_errors, module_state, module_state_maker, remote_paired_id,
+};
+pub use module::*;
+
+use std::{path::Path, str::FromStr, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, runtime};
 use ambient_ecs::{
@@ -20,12 +26,10 @@ use ambient_ecs::{
     Message, SystemGroup, World, WorldEventReader,
 };
 
-pub use ambient_ecs::generated::components::core::wasm::*;
-
 use ambient_project::Identifier;
 use ambient_std::{asset_url::AbsAssetUrl, download_asset::download_uncached_bytes};
 use itertools::Itertools;
-pub use module::*;
+use wasi_cap_std_sync::Dir;
 
 mod internal {
     use std::sync::Arc;
@@ -33,6 +37,7 @@ mod internal {
     use ambient_ecs::{
         components, Debuggable, Description, EntityId, Networked, Resource, Store, World,
     };
+    use wasi_cap_std_sync::Dir;
 
     use super::{MessageType, ModuleBytecode, ModuleErrors, ModuleState, ModuleStateArgs};
 
@@ -49,14 +54,13 @@ mod internal {
         messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
         @[Resource]
         module_state_maker: Arc<dyn Fn(ModuleStateArgs<'_>) -> anyhow::Result<ModuleState> + Sync + Send>,
+
+        @[Resource]
+        preopened_dir: Arc<Dir>,
     });
 }
 
-pub use internal::{
-    messenger, module_bytecode, module_errors, module_state, module_state_maker, remote_paired_id,
-};
-
-use self::message::Source;
+use self::{internal::preopened_dir, message::Source};
 use crate::shared::message::{RuntimeMessageExt, Target};
 
 pub fn init_all_components() {
@@ -177,17 +181,31 @@ pub fn systems() -> SystemGroup {
 }
 
 #[cfg(feature = "wit")]
-pub fn initialize<Bindings: bindings::BindingsBound + 'static>(
+pub fn initialize<'a, Bindings: bindings::BindingsBound + 'static>(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
     bindings: fn(EntityId) -> Bindings,
+    preopened_dir_path: Option<&'a Path>,
 ) -> anyhow::Result<()> {
+    use wasi_cap_std_sync::ambient_authority;
+
     world.add_resource(self::messenger(), messenger);
     world.add_resource(
         self::module_state_maker(),
         ModuleState::create_state_maker(bindings),
     );
     world.add_resource(message::pending_messages(), vec![]);
+
+    if let Some(preopened_dir_path) = preopened_dir_path {
+        std::fs::create_dir_all(preopened_dir_path)?;
+        world.add_resource(
+            preopened_dir(),
+            Arc::new(Dir::open_ambient_dir(
+                preopened_dir_path,
+                ambient_authority(),
+            )?),
+        );
+    }
 
     Ok(())
 }
@@ -213,16 +231,20 @@ fn reload(world: &mut World, module_id: EntityId, bytecode: Option<ModuleBytecod
     }
 }
 
-fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
+fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
     let messenger = world.resource(messenger()).clone();
     let module_state_maker = world.resource(module_state_maker()).clone();
 
     let async_run = world.resource(async_run()).clone();
     let component_bytecode = component_bytecode.to_vec();
     let name = world
-        .get_ref(module_id, module_name())
+        .get_ref(id, module_name())
         .map(|x| x.clone())
         .unwrap_or_else(|_| "Unknown".to_string());
+
+    let preopened_dir = world
+        .resource_opt(preopened_dir())
+        .map(|d| d.try_clone().unwrap());
 
     // Spawn the module on another thread to ensure that it does not block the main thread during compilation.
     std::thread::spawn(move || {
@@ -233,13 +255,14 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
                 stdout_output: Box::new({
                     let messenger = messenger.clone();
                     move |world, msg| {
-                        messenger(world, module_id, MessageType::Stdout, msg);
+                        messenger(world, id, MessageType::Stdout, msg);
                     }
                 }),
                 stderr_output: Box::new(move |world, msg| {
-                    messenger(world, module_id, MessageType::Stderr, msg);
+                    messenger(world, id, MessageType::Stderr, msg);
                 }),
-                id: module_id,
+                id,
+                preopened_dir,
             });
             log::info!("Done loading module: {}", name);
             res
@@ -255,14 +278,12 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
                         sms.listen_to_message(id.to_string());
                     }
 
-                    world.add_component(module_id, module_state(), sms).unwrap();
+                    world.add_component(id, module_state(), sms).unwrap();
 
                     log::info!("Running startup event for module: {}", name);
-                    messages::ModuleLoad::new()
-                        .run(world, Some(module_id))
-                        .unwrap();
+                    messages::ModuleLoad::new().run(world, Some(id)).unwrap();
                 }
-                Err(err) => update_errors(world, &[(module_id, err)]),
+                Err(err) => update_errors(world, &[(id, err)]),
             }
         });
     });

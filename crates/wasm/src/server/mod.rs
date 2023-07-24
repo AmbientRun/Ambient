@@ -1,6 +1,7 @@
 use crate::shared::{self, message::RuntimeMessageExt};
 use ambient_ecs::{query, EntityId, FnSystem, SystemGroup, World};
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
+use ambient_std::asset_url::AbsAssetUrl;
 use std::sync::Arc;
 
 mod implementation;
@@ -8,13 +9,27 @@ mod network;
 
 pub fn initialize(
     world: &mut World,
+    project_path: AbsAssetUrl,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
 ) -> anyhow::Result<()> {
-    shared::initialize(world, messenger, |id| Bindings {
-        base: Default::default(),
-        world_ref: Default::default(),
-        id,
-    })?;
+    let data_path = match project_path.to_file_path().ok().flatten() {
+        Some(path) => Some(path.join("data")),
+        None => {
+            log::warn!("No data path for project at {project_path:?} (invalid local filepath)");
+            None
+        }
+    };
+
+    shared::initialize(
+        world,
+        messenger,
+        |id| Bindings {
+            base: Default::default(),
+            world_ref: Default::default(),
+            id,
+        },
+        data_path.as_deref(),
+    )?;
 
     network::initialize(world);
 

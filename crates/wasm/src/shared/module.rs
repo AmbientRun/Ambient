@@ -8,8 +8,10 @@ use data_encoding::BASE64;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::{any::Any, collections::HashSet, sync::Arc};
+use wasi_cap_std_sync::Dir;
 #[cfg(feature = "wit")]
 use wasmtime_wasi::preview2 as wasi_preview2;
+use wasmtime_wasi::preview2::{DirPerms, FilePerms};
 
 #[derive(Clone)]
 pub struct ModuleBytecode(pub Vec<u8>);
@@ -113,6 +115,7 @@ pub struct ModuleStateArgs<'a> {
     pub stdout_output: Messenger,
     pub stderr_output: Messenger,
     pub id: EntityId,
+    pub preopened_dir: Option<Dir>,
 }
 
 #[derive(Clone)]
@@ -127,20 +130,8 @@ impl ModuleState {
         args: ModuleStateArgs<'_>,
         bindings: fn(EntityId) -> Bindings,
     ) -> anyhow::Result<Self> {
-        let ModuleStateArgs {
-            component_bytecode,
-            stdout_output,
-            stderr_output,
-            id,
-        } = args;
-
         Ok(Self {
-            inner: Arc::new(RwLock::new(ModuleStateInnerImpl::new(
-                component_bytecode,
-                stdout_output,
-                stderr_output,
-                bindings(id),
-            )?)),
+            inner: Arc::new(RwLock::new(ModuleStateInnerImpl::new(args, bindings)?)),
         })
     }
 
@@ -197,12 +188,17 @@ impl<Bindings: BindingsBound> std::fmt::Debug for ModuleStateInnerImpl<Bindings>
 
 #[cfg(feature = "wit")]
 impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
-    fn new(
-        component_bytecode: &[u8],
-        stdout_output: Box<dyn Fn(&World, &str) + Sync + Send>,
-        stderr_output: Box<dyn Fn(&World, &str) + Sync + Send>,
-        bindings: Bindings,
-    ) -> anyhow::Result<Self> {
+    fn new(args: ModuleStateArgs<'_>, bindings: fn(EntityId) -> Bindings) -> anyhow::Result<Self> {
+        let ModuleStateArgs {
+            component_bytecode,
+            stdout_output,
+            stderr_output,
+            id,
+            preopened_dir,
+        } = args;
+
+        let bindings = bindings(id);
+
         let engine = &*crate::WASMTIME_ENGINE;
 
         let (stdout_output, stdout_consumer) = WasiOutputStream::make(stdout_output);
@@ -210,8 +206,15 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
         let mut table = wasi_preview2::Table::new();
         let wasi = wasi_preview2::WasiCtxBuilder::new()
             .set_stdout(stdout_output)
-            .set_stderr(stderr_output)
-            .build(&mut table)?;
+            .set_stderr(stderr_output);
+
+        let wasi = if let Some(dir) = preopened_dir {
+            wasi.push_preopened_dir(dir, DirPerms::all(), FilePerms::all(), "/")
+        } else {
+            wasi
+        };
+
+        let wasi = wasi.build(&mut table)?;
         let mut store = wasmtime::Store::new(
             engine,
             WasmtimeContext {
