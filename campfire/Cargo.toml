@@ -27,6 +27,7 @@ tokio = { version = "1.0", features = [
     "parking_lot",
     "process",
     "rt",
+    "time",
 ] }
 futures = "0.3"
 num_cpus = "1.15.0"
@@ -35,3 +36,4 @@ miette = "5.10"
 tracing = "0.1"
 openssl = "0.10"
 base64 = "0.21"
+cfg-if = "1.0"

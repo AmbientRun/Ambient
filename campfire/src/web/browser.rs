@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use anyhow::Context;
 use base64::Engine;
 use openssl::hash::MessageDigest;
@@ -26,17 +28,30 @@ pub async fn open() -> anyhow::Result<()> {
 }
 
 async fn open_browser(spki: &str, url: &str) -> anyhow::Result<()> {
-    let status = tokio::process::Command::new("open")
-        .args(["-a", "Google Chrome", url, "--args"])
-        .arg(format!("--ignore-certificate-errors-spki-list={spki}"))
-        .spawn()
-        .context("Failed to spawn browser")?
-        .wait()
-        .await
-        .context("Failed to wait for launch command to exit")?;
+    cfg_if::cfg_if! {
+        if #[cfg(target_os = "macos")] {
+            let status = tokio::process::Command::new("open")
+                .args(["-a", "Google Chrome", url, "--args"])
+                .arg(format!("--ignore-certificate-errors-spki-list={spki}"))
+                .spawn()
+                .context("Failed to spawn browser")?
+                .wait()
+                .await
+                .context("Failed to wait for launch command to exit")?;
+            if !status.success() {
+                anyhow::bail!("Failed to launch browser. Process exited with {status:?}");
+            }
+        }
+        else if #[cfg(target_os = "linux")]{
+            std::process::Command::new("google-chrome")
+                // .args(["-a", "Google Chrome", url, "--args"])
+                // .arg(format!("--ignore-certificate-errors-spki-list={spki}"))
+                .spawn()
+                .context("Failed to spawn browser")?;
 
-    if !status.success() {
-        anyhow::bail!("Failed to launch browser. Process exited with {status:?}");
+            tokio::time::sleep(Duration::from_secs(5)).await;
+        }
+
     }
 
     Ok(())
