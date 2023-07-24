@@ -45,6 +45,21 @@ pub fn register_from_manifest(manifest: &ProjectManifest) {
         .add_external(ambient_project_native::all_defined_components(manifest, false).unwrap());
 }
 
+#[derive(Clone)]
+pub struct BuildConfiguration {
+    pub physics: Physics,
+    pub path: PathBuf,
+    pub manifest: ProjectManifest,
+    pub optimize: bool,
+    pub clean_build: bool,
+    pub build_wasm_only: bool,
+}
+impl BuildConfiguration {
+    pub fn build_path(&self) -> PathBuf {
+        self.path.join("build")
+    }
+}
+
 /// This takes the path to an Ambient project and builds it. An Ambient project is expected to
 /// have the following structure:
 ///
@@ -52,15 +67,17 @@ pub fn register_from_manifest(manifest: &ProjectManifest) {
 /// src/**  This is where you store Rust source files
 /// build  This is the output directory, and is created when building
 /// ambient.toml  This is a metadata file to describe the project
-pub async fn build(
-    physics: Physics,
-    _assets: &AssetCache,
-    path: PathBuf,
-    manifest: &ProjectManifest,
-    optimize: bool,
-    clean_build: bool,
-    build_wasm_only: bool,
-) -> anyhow::Result<Metadata> {
+pub async fn build(config: BuildConfiguration) -> anyhow::Result<Metadata> {
+    let build_path = config.build_path();
+    let BuildConfiguration {
+        physics,
+        path,
+        manifest,
+        optimize,
+        clean_build,
+        build_wasm_only,
+    } = config;
+
     let name = manifest
         .ember
         .name
@@ -69,9 +86,8 @@ pub async fn build(
 
     tracing::info!("Building project `{}` ({})", manifest.ember.id, name);
 
-    register_from_manifest(manifest);
+    register_from_manifest(&manifest);
 
-    let build_path = path.join("build");
     let assets_path = path.join("assets");
 
     if clean_build {
@@ -90,11 +106,11 @@ pub async fn build(
         build_assets(physics, &assets_path, &build_path).await?;
     }
 
-    build_rust_if_available(&path, manifest, &build_path, optimize)
+    build_rust_if_available(&path, &manifest, &build_path, optimize)
         .await
         .with_context(|| format!("Failed to build rust {build_path:?}"))?;
 
-    store_manifest(manifest, &build_path).await?;
+    store_manifest(&manifest, &build_path).await?;
     store_metadata(&build_path).await
 }
 
@@ -164,7 +180,7 @@ async fn build_assets(
     Ok(())
 }
 
-async fn build_rust_if_available(
+pub async fn build_rust_if_available(
     project_path: &Path,
     manifest: &ProjectManifest,
     build_path: &Path,

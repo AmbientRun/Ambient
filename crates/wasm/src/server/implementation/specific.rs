@@ -13,6 +13,7 @@ use ambient_core::{
 use ambient_ecs::{generated::messages::HttpResponse, query, EntityId, Message, World};
 use ambient_network::server::player_transport;
 use ambient_std::asset_url::AbsAssetUrl;
+use anyhow::Context;
 
 use super::super::Bindings;
 
@@ -26,6 +27,21 @@ use crate::shared::{
 #[cfg(all(feature = "wit", feature = "physics"))]
 mod physics;
 
+#[cfg(feature = "wit")]
+#[async_trait::async_trait]
+impl shared::wit::server_asset::Host for Bindings {
+    async fn build_wasm(&mut self) -> anyhow::Result<()> {
+        let build_wasm = self
+            .world()
+            .resource_opt(crate::server::build_wasm())
+            .context("no build project call available (non-local project?)")?
+            .clone();
+
+        build_wasm(self.world_mut());
+
+        Ok(())
+    }
+}
 #[cfg(feature = "wit")]
 #[async_trait::async_trait]
 impl shared::wit::server_message::Host for Bindings {

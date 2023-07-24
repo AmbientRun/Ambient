@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-use crate::internal::wit;
+use crate::{global, internal::wit, messages};
 
 #[derive(Error, Debug)]
 /// Errors that can occur when resolving an asset URL.
@@ -20,4 +20,19 @@ impl From<wit::asset::UrlError> for UrlError {
 /// Resolves a asset path for an Ambient asset in this project to an absolute URL.
 pub fn url(path: impl AsRef<str>) -> Result<String, UrlError> {
     Ok(wit::asset::url(path.as_ref())?)
+}
+
+#[cfg(feature = "server")]
+/// On the server, attempts to rebuild all compatible WASM modules in the project.
+///
+/// NOTE: This may be removed at a later stage. It primarily exists to enable WASM rebuilding.
+pub async fn build_wasm() -> anyhow::Result<()> {
+    wit::server_asset::build_wasm();
+    match global::wait_for_runtime_message::<messages::WasmRebuild>(|_| true)
+        .await
+        .error
+    {
+        Some(err) => anyhow::bail!("{err}"),
+        None => Ok(()),
+    }
 }
