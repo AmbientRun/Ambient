@@ -110,3 +110,8 @@ fields = { delta = "Vec2" }
 name = "HTTP Response"
 description = "Sent when an HTTP response is received."
 fields = { url = "String", status = "U32", body = { type = "Vec", element_type = "U8" }, error = { type = "Option", element_type = "String" } }
+
+[messages.wasm_rebuild]
+name = "WASM Rebuild"
+description = "Sent when a request for WASM rebuilding is completed."
+fields = { error = { type = "Option", element_type = "String" } }

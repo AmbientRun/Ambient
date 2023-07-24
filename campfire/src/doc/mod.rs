@@ -15,6 +15,10 @@ pub enum Doc {
     Runtime,
     /// Document the API
     Api {
+        #[clap(long, short)]
+        /// Open the docs in a browser
+        open: bool,
+
         /// The args to pass through to `cargo doc`
         args: Vec<String>,
     },
@@ -23,7 +27,7 @@ pub enum Doc {
 pub(crate) fn main(args: &Doc) -> anyhow::Result<()> {
     match args {
         Doc::Runtime => runtime(),
-        Doc::Api { args } => api(args),
+        Doc::Api { open, args } => api(*open, args),
     }
 }
 
@@ -31,12 +35,15 @@ fn runtime() -> anyhow::Result<()> {
     pipeline()
 }
 
-fn api(args: &[String]) -> anyhow::Result<()> {
+fn api(open: bool, args: &[String]) -> anyhow::Result<()> {
     let root_path = Path::new("guest/rust");
 
     let mut command = std::process::Command::new("cargo");
     command.current_dir(root_path);
     command.args(["+nightly", "doc", "-p", "ambient_api", "--all-features"]);
+    if open {
+        command.arg("--open");
+    }
     command.args(args.iter().map(|s| s.as_str()));
     command.env("RUSTDOCFLAGS", "--cfg docsrs");
 

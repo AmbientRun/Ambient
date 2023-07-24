@@ -152,10 +152,6 @@ impl ProjectPath {
         Ok(Self { url, fs_path })
     }
 
-    fn is_local(&self) -> bool {
-        self.fs_path.is_some()
-    }
-
     fn is_remote(&self) -> bool {
         self.fs_path.is_none()
     }
@@ -277,27 +273,29 @@ async fn main() -> anyhow::Result<()> {
         None => None,
     };
 
+    let build_config = match (&project, &manifest, project_path.fs_path.clone()) {
+        (Some(project), Some(manifest), Some(fs_path)) => Some(ambient_build::BuildConfiguration {
+            physics: PhysicsKey.get(&assets),
+            path: fs_path,
+            manifest: manifest.clone(),
+            optimize: project.release,
+            clean_build: project.clean_build,
+            build_wasm_only: project.build_wasm_only,
+        }),
+        _ => None,
+    };
+
     let metadata = if let Some(manifest) = manifest.as_ref() {
         let project = project.unwrap();
 
-        if !project.no_build && project_path.is_local() {
+        if let (false, Some(build_config)) = (project.no_build, build_config.clone()) {
             let project_name = manifest.ember.name.as_deref().unwrap_or("project");
 
             tracing::info!("Building project {:?}", project_name);
 
-            let metadata = ambient_build::build(
-                PhysicsKey.get(&assets),
-                &assets,
-                project_path
-                    .fs_path
-                    .clone()
-                    .expect("should be present as it's already checked above"),
-                manifest,
-                project.release,
-                project.clean_build,
-            )
-            .await
-            .context("Failed to build project")?;
+            let metadata = ambient_build::build(build_config)
+                .await
+                .context("Failed to build project")?;
 
             Some(metadata)
         } else {
@@ -432,6 +430,7 @@ async fn main() -> anyhow::Result<()> {
             manifest.as_ref().expect("no manifest"),
             metadata.as_ref().expect("no build metadata"),
             crypto,
+            build_config,
         )
         .await;
 

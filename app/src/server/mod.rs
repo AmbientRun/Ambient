@@ -6,10 +6,11 @@ use std::{
     sync::Arc,
 };
 
+use ambient_build::BuildConfiguration;
 use ambient_core::{asset_cache, name, no_sync, project_name, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
-    dont_store, world_events, ComponentDesc, ComponentRegistry, Entity, Networked, SystemGroup,
-    World, WorldEventsSystem, WorldStreamCompEvent,
+    dont_store, generated::messages, world_events, ComponentDesc, ComponentRegistry, Entity,
+    Networked, SystemGroup, World, WorldEventsExt, WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_network::{
     native::server::{Crypto, GameServer},
@@ -21,6 +22,7 @@ use ambient_prefab::PrefabFromUrl;
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ContentBaseUrlKey, ServerBaseUrlKey},
+    cb, Cb,
 };
 use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
@@ -47,6 +49,7 @@ pub async fn start(
     manifest: &ambient_project::Manifest,
     metadata: &ambient_build::Metadata,
     crypto: Crypto,
+    build_config: Option<BuildConfiguration>,
 ) -> SocketAddr {
     let host_cli = cli.host().unwrap();
     let quic_interface_port = host_cli.quic_interface_port;
@@ -173,8 +176,36 @@ pub async fn start(
         wasm::initialize(
             &mut server_world,
             project_path.clone(),
-            &manifest,
             &metadata,
+            build_config.map(|config| {
+                // HACK: provide a callback to rebuild the project to WASM.
+                // this is not done directly within WASM due to circular dependencies.
+                cb(move |world: &mut World| {
+                    let runtime = world.resource(ambient_core::runtime()).clone();
+                    let async_run = world.resource(ambient_core::async_ecs::async_run()).clone();
+                    let (path, manifest, build_path, optimize) = (
+                        config.path.clone(),
+                        config.manifest.clone(),
+                        config.build_path(),
+                        config.optimize,
+                    );
+                    runtime.spawn(async move {
+                        let result = ambient_build::build_rust_if_available(
+                            &path,
+                            &manifest,
+                            &build_path,
+                            optimize,
+                        )
+                        .await;
+
+                        async_run.run(|world| {
+                            world.resource_mut(ambient_ecs::world_events()).add_message(
+                                messages::WasmRebuild::new(result.err().map(|err| err.to_string())),
+                            );
+                        });
+                    });
+                }) as Cb<dyn Fn(&mut World) + Send + Sync>
+            }),
         )
         .await
         .unwrap();

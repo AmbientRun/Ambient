@@ -9,11 +9,16 @@ pub fn initialize(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
 ) -> anyhow::Result<()> {
-    shared::initialize(world, messenger, |id| Bindings {
-        base: Default::default(),
-        world_ref: Default::default(),
-        id,
-    })?;
+    shared::initialize(
+        world,
+        messenger,
+        |id| Bindings {
+            base: Default::default(),
+            world_ref: Default::default(),
+            id,
+        },
+        None,
+    )?;
 
     network::initialize(world);
 

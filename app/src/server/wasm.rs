@@ -2,11 +2,9 @@ use std::{collections::HashMap, sync::Arc};
 
 use ambient_ecs::{EntityId, SystemGroup, World};
 use ambient_project::Identifier;
-use ambient_std::asset_url::AbsAssetUrl;
+use ambient_std::{asset_url::AbsAssetUrl, Cb};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
-use ambient_wasm::shared::{
-    bytecode_from_url, get_module_name, remote_paired_id, spawn_module, MessageType,
-};
+use ambient_wasm::shared::{module_name, remote_paired_id, spawn_module, MessageType};
 use anyhow::Context;
 
 pub fn systems() -> SystemGroup {
@@ -16,12 +14,12 @@ pub fn systems() -> SystemGroup {
 pub async fn initialize(
     world: &mut World,
     project_path: AbsAssetUrl,
-    manifest: &ambient_project::Manifest,
     build_metadata: &ambient_build::Metadata,
+    build_project: Option<Cb<dyn Fn(&mut World) + Send + Sync>>,
 ) -> anyhow::Result<()> {
     let messenger = Arc::new(
         |world: &World, id: EntityId, type_: MessageType, message: &str| {
-            let name = get_module_name(world, id);
+            let name = world.get_cloned(id, module_name()).unwrap_or_default();
             let (prefix, level) = match type_ {
                 MessageType::Info => ("info", log::Level::Info),
                 MessageType::Warn => ("warn", log::Level::Warn),
@@ -38,7 +36,7 @@ pub async fn initialize(
         },
     );
 
-    ambient_wasm::server::initialize(world, messenger)?;
+    ambient_wasm::server::initialize(world, project_path.clone(), messenger, build_project)?;
 
     let build_dir = project_path.push("build").unwrap();
 
@@ -46,7 +44,6 @@ pub async fn initialize(
     for target in ["client", "server"] {
         let wasm_component_paths: &[String] = build_metadata.component_paths(target);
 
-        let is_sole_module = wasm_component_paths.len() == 1;
         for path in wasm_component_paths {
             let component_url = build_dir.push(path).unwrap();
             let name = Identifier::new(
@@ -56,14 +53,8 @@ pub async fn initialize(
             )
             .map_err(anyhow::Error::msg)?;
 
-            let description = manifest.ember.description.clone().unwrap_or_default();
-            let description = if is_sole_module {
-                description
-            } else {
-                format!("{description} ({name})")
-            };
-
-            let id = spawn_module(world, &name, description, true, target == "server");
+            let bytecode_url = AbsAssetUrl::from_asset_key(path)?;
+            let id = spawn_module(world, bytecode_url, true, target == "server");
             modules_to_entity_ids.insert(
                 (
                     target,
@@ -77,9 +68,6 @@ pub async fn initialize(
                 ),
                 id,
             );
-
-            let bytecode_url = AbsAssetUrl::from_asset_key(path)?.to_string();
-            world.add_component(id, bytecode_from_url(), bytecode_url)?;
         }
     }
 

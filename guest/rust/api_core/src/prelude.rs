@@ -18,4 +18,4 @@ pub use crate::client::{
 };
 
 #[cfg(feature = "server")]
-pub use crate::server::physics;
+pub use crate::server::{http, physics};
