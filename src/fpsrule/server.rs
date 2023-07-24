@@ -15,19 +15,22 @@ pub fn main() {
             });
         }
     });
+
     messages::Shoot::subscribe(move |_source, msg| {
         let result = physics::raycast_first(msg.ray_origin, msg.ray_dir);
 
         if let Some(hit) = result {
-            if entity::has_component(hit.entity, components::player_health()) {
-                let old_health = entity::get_component(hit.entity, components::player_health());
-                if old_health.is_none() {
-                    return;
-                }
-                let old_health = old_health.unwrap();
+            if hit.entity == msg.source {
+                eprintln!("self hit");
+                return;
+            }
+
+            if let Some(old_health) = entity::get_component(hit.entity, components::player_health())
+            {
                 if old_health <= 0 {
                     return;
                 }
+
                 let new_health = (old_health - 10).max(0);
                 entity::set_component(hit.entity, components::player_health(), new_health);
 
