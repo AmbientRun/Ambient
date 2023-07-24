@@ -2,11 +2,12 @@
 
 use ambient_api::{
     components::core::{
-        layout::{docking_bottom, min_width, space_between_items},
+        layout::{docking_bottom, height, min_width, space_between_items, width},
         player::player,
         rect::{background_color, line_from, line_to, line_width},
     },
     prelude::*,
+    ui::ImageFromUrl,
 };
 
 #[main]
@@ -31,17 +32,25 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
     use_input_request(hooks);
     let (name, set_name) = hooks.use_state("".to_string());
 
-    FocusRoot::el([WindowSized::el([FlowColumn::el([
-        Text::el("enter your name below. press enter to start the game."),
-        TextEditor::new(name.clone(), set_name.clone())
-            .auto_focus()
-            .on_submit(|v| messages::StartGame::new(v).send_server_reliable())
-            .el()
-            .with(min_width(), 100.0),
-        Text::el("hint: hold Tab to toggle the scoreboard."),
+    FocusRoot::el([
+        WindowSized::el([FlowColumn::el([
+            Text::el("enter your name below. press enter to start the game."),
+            TextEditor::new(name.clone(), set_name.clone())
+                .auto_focus()
+                .on_submit(|v| messages::StartGame::new(v).send_server_reliable())
+                .el()
+                .with(min_width(), 100.0),
+            Text::el("hint: hold Tab to toggle the scoreboard."),
+        ])
+        .with(space_between_items(), STREET)])
+        .with_padding_even(20.),
+        ImageFromUrl {
+            url: asset::url("assets/afps.png").unwrap(),
+        }
+        .el()
+        .with(width(), hooks.use_window_logical_resolution().x as f32)
+        .with(height(), hooks.use_window_logical_resolution().y as f32),
     ])
-    .with(space_between_items(), STREET)])
-    .with_padding_even(20.)])
 }
 
 #[element_component]
