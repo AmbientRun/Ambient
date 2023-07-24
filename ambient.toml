@@ -13,4 +13,5 @@ includes = [
     "src/fpsaudio/ambient.toml",
 
     "src/console/ambient.toml",
+    "src/ember_reloader/ambient.toml",
 ]

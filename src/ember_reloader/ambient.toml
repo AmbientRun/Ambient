@@ -1,0 +1,24 @@
+[messages.ember_load.fields]
+url = "String"
+
+[messages.ember_load_success.fields]
+id = "String"
+name = { container_type = "Option", element_type = "String" }
+version = "String"
+authors = { container_type = "Vec", element_type = "String" }
+client_wasms = { container_type = "Vec", element_type = "String" }
+server_wasms = { container_type = "Vec", element_type = "String" }
+
+[messages.error_message.fields]
+reason = "String"
+
+[messages.wasm_set_enabled.fields]
+id = "EntityId"
+enabled = "Bool"
+
+[messages.wasm_reload.fields]
+id = "EntityId"
+
+[messages.wasm_replace_bytecode_url.fields]
+id = "EntityId"
+url = "String"
