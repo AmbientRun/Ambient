@@ -63,7 +63,12 @@ pub fn initialize(world: &mut World, mute_audio: bool) -> anyhow::Result<()> {
                         log::info!("Effects: {:?}", fx);
                         continue;
                     }
-                    let mut t: Box<dyn Source> = Box::new(track.decode());
+
+                    let mut t: Box<dyn Source> = if fx.contains(&AudioFx::Looping) {
+                        Box::new(track.decode().repeat())
+                    } else {
+                        Box::new(track.decode())
+                    };
                     let mut ctrl = vec![];
                     for effect in &fx {
                         match effect {
@@ -82,13 +87,10 @@ pub fn initialize(world: &mut World, mute_audio: bool) -> anyhow::Result<()> {
                                 t = t.onepole(f.clone());
                                 ctrl.push(AudioControl::OnePole(f));
                             }
-
-                            // Looping => {
-                            //     t = t.repeat();
-                            // }
                             _ => {}
                         }
                     }
+
                     let sound = stream.mixer().play(t);
                     sound.wait();
                     let sound_info = SoundInfo {
