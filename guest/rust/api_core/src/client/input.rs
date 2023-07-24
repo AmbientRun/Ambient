@@ -14,6 +14,8 @@ use crate::{
     prelude::RuntimeMessage,
 };
 
+pub use ambient_shared_types::MouseButton;
+
 /// Gets the local player's most recent raw input state.
 ///
 /// To determine if the player just supplied an input, compare it to [get_previous] or use [get_delta].
@@ -510,19 +512,6 @@ impl FromBindgen for wit::client_input::VirtualKeyCode {
             Self::Cut => Self::Item::Cut,
         }
     }
-}
-
-/// A button on the mouse.
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
-pub enum MouseButton {
-    /// Left mouse button
-    Left,
-    /// Right mouse button
-    Right,
-    /// Middle mouse button (scroll-wheel click)
-    Middle,
-    /// Other buttons
-    Other(u16),
 }
 
 impl FromBindgen for wit::client_input::MouseButton {
