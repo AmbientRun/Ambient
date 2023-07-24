@@ -1,4 +1,7 @@
 [components]
+
+player_running = { type = "Bool", attributes = ["Debuggable", "Networked"] }
+
 player_direction = { type = "Vec2", attributes = ["Debuggable", "Networked"] }
 
 player_yaw = { type = "F32", name = "Player yaw", description = "The player's yaw.", attributes = [
@@ -31,9 +34,9 @@ toggle_zoom = { type = "Bool", description = "Toggle scope/zoom" }
 is_shooting = { type = "Bool", description = "Whether the player is in shooting or not; used for anim" }
 ray_origin = { type = "Vec3", description = "The origin of the ray cast from the camera" }
 ray_dir = { type = "Vec3", description = "The direction of the ray cast from the camera" }
-walk = { type = "Bool", description = "shift to walk slow and quiet" }
+duck = { type = "Bool", description = "Use CTRL to walk slow and quiet" }
 jump = { type = "Bool" }
-duck = { type = "Bool" }
+running = { type = "Bool" }
 
 [messages.request_input]
 fields = {}

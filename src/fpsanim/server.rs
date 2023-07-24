@@ -17,11 +17,17 @@ pub fn main() {
         components::player_direction(),
         components::player_shooting_status(),
         components::player_vspeed(),
+        components::player_running(),
         components::jump(),
         components::fire(),
+        components::run(),
     ))
     .each_frame(|results| {
-        for (player_id, (_, model, dir, is_shooting, vspeed, jump_anim, fire_anim)) in results {
+        for (
+            player_id,
+            (_, model, dir, is_shooting, vspeed, is_running, jump_anim, fire_anim, run_anim),
+        ) in results
+        {
             if vspeed.abs() > 0.07 {
                 entity::add_component(model, apply_animation_player(), jump_anim[1]);
                 continue;
@@ -42,6 +48,12 @@ pub fn main() {
                 entity::add_component(model, apply_animation_player(), fire_anim[1]);
                 continue;
             };
+
+            if is_running {
+                entity::add_component(model, apply_animation_player(), run_anim[1]);
+                continue;
+            };
+
             let fd = dir.y == -1.0;
             let bk = dir.y == 1.0;
             let lt = dir.x == -1.0;

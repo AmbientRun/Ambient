@@ -39,6 +39,12 @@ pub fn main() {
             entity::add_component(player_id, components::player_vspeed(), 0.6);
         }
 
+        if msg.running {
+            entity::add_component(player_id, components::player_running(), true);
+        } else {
+            entity::add_component(player_id, components::player_running(), false);
+        }
+
         // temporary fix pos for shooting
         if !msg.is_shooting {
             entity::add_component(player_id, components::player_direction(), direction);
@@ -92,10 +98,11 @@ pub fn main() {
         components::player_direction(),
         rotation(),
         components::player_vspeed(),
+        components::player_running(),
     ))
     .each_frame(move |list| {
-        for (player_id, (_, direction, rot, vspeed)) in list {
-            let scale_factor = 1.0;
+        for (player_id, (_, direction, rot, vspeed, running)) in list {
+            let scale_factor = if running { 1.5 } else { 1.0 };
             let speed = scale_factor * vec2(0.04, 0.06);
             let displace = rot * (direction.normalize_or_zero() * speed).extend(vspeed);
             let collision = physics::move_character(player_id, displace, 0.01, delta_time());
