@@ -17,7 +17,7 @@ pub fn Window(
     child: Element,
 ) -> Element {
     let (dragging, set_dragging) = hooks.use_state(false);
-    let (position, set_position) = hooks.use_state(vec2(0.0, 0.0));
+    let (position, set_position) = hooks.use_state(Vec2::ONE * 100.0);
 
     hooks.use_runtime_message::<WindowMouseInput>({
         let set_dragging = set_dragging.clone();
