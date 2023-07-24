@@ -18,3 +18,7 @@ enabled = "Bool"
 
 [messages.wasm_reload.fields]
 id = "EntityId"
+
+[messages.wasm_replace_bytecode_url.fields]
+id = "EntityId"
+url = "String"

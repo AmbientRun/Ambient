@@ -1,4 +1,4 @@
-use ambient_api::{anyhow, prelude::*};
+use ambient_api::{anyhow, components::core::wasm::bytecode_from_url, prelude::*};
 use serde::{de::DeserializeOwned, Deserialize};
 
 use crate::messages;
@@ -11,7 +11,7 @@ pub fn main() {
             match get_manifest_and_metadata(&url).await {
                 Ok((manifest, metadata)) => {
                     let ember = &manifest.ember;
-                    let make_url = |suffix: String| format!("{}/{}", url, suffix);
+                    let make_url = |suffix: String| format!("{}/build/{}", url, suffix);
 
                     messages::EmberLoadSuccess {
                         id: ember.id.to_string(),
@@ -37,6 +37,10 @@ pub fn main() {
                 }
             };
         });
+    });
+
+    messages::WasmReplaceBytecodeUrl::subscribe(|_, msg| {
+        entity::set_component(msg.id, bytecode_from_url(), msg.url);
     });
 }
 

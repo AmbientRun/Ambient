@@ -1,7 +1,12 @@
+use std::collections::HashMap;
+
 use ambient_api::{
     components::core::{
-        layout::{fit_horizontal_parent, margin, min_height, space_between_items},
+        layout::{
+            align_vertical_center, fit_horizontal_parent, margin, min_height, space_between_items,
+        },
         text::font_style,
+        wasm::module_name,
     },
     prelude::*,
 };
@@ -73,6 +78,12 @@ fn EmberView(hooks: &mut Hooks) -> Element {
 #[element_component]
 fn EmberViewInner(hooks: &mut Hooks, msg: Option<messages::EmberLoadSuccess>) -> Element {
     use_input_request(hooks);
+    let modules_by_name: HashMap<_, _> = hooks
+        .use_query(module_name())
+        .into_iter()
+        .map(|(id, name)| (name, id))
+        .collect();
+
     let msg = msg.unwrap();
 
     let authors = if msg.authors.is_empty() {
@@ -87,7 +98,7 @@ fn EmberViewInner(hooks: &mut Hooks, msg: Option<messages::EmberLoadSuccess>) ->
     };
     let subtitle = format!("{subtitle} by {authors}");
 
-    fn url_to_name(url: String) -> String {
+    fn url_to_name(url: &str) -> String {
         url.rsplit_once('/')
             .map(|(_, name)| name)
             .unwrap_or(&url)
@@ -95,6 +106,27 @@ fn EmberViewInner(hooks: &mut Hooks, msg: Option<messages::EmberLoadSuccess>) ->
             .map(|(name, _)| name)
             .unwrap_or(&url)
             .to_string()
+    }
+
+    fn render_wasm(url: String, existing_modules: &HashMap<String, EntityId>) -> Element {
+        let name = url_to_name(&url);
+
+        FlowRow::el([
+            match existing_modules.get(&name).copied() {
+                Some(id) => Button::new("Replace existing", move |_| {
+                    messages::WasmReplaceBytecodeUrl {
+                        id,
+                        url: url.clone(),
+                    }
+                    .send_server_reliable();
+                })
+                .style(ButtonStyle::Flat)
+                .el(),
+                None => Element::new(),
+            },
+            Text::el(name.clone()).with_default(align_vertical_center()),
+        ])
+        .with(space_between_items(), STREET)
     }
 
     FlowColumn::el([
@@ -108,7 +140,7 @@ fn EmberViewInner(hooks: &mut Hooks, msg: Option<messages::EmberLoadSuccess>) ->
             FlowColumn::el(
                 msg.client_wasms
                     .into_iter()
-                    .map(|url| Text::el(url_to_name(url))),
+                    .map(|url| render_wasm(url, &modules_by_name)),
             ),
         ])
         .with(space_between_items(), 4.0),
@@ -117,7 +149,7 @@ fn EmberViewInner(hooks: &mut Hooks, msg: Option<messages::EmberLoadSuccess>) ->
             FlowColumn::el(
                 msg.server_wasms
                     .into_iter()
-                    .map(|url| Text::el(url_to_name(url))),
+                    .map(|url| render_wasm(url, &modules_by_name)),
             ),
         ])
         .with(space_between_items(), 4.0),
