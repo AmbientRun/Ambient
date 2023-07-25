@@ -96,4 +96,4 @@ rand = "0.8.5"
 wit-bindgen = { version = "0.7.0", features = ["realloc"] }
 ulid = { version = "1.0.0", features = ["serde"] }
 static_assertions = "1.1.0"
-indexmap = { version = "2", features = ["serde"] }
+indexmap = { version = "2.0", features = ["serde"] }
