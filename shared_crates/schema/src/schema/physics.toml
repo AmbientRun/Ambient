@@ -157,5 +157,7 @@ attributes = ["Debuggable", "Networked", "Store"]
 [components."core::physics::visualize_collider"]
 type = "Empty"
 name = "Visualize collider"
-description = "If attached, the collider will be rendered."
+description = """If attached, the collider will be rendered.
+**Note**: this will hijack `local_gizmos`
+"""
 attributes = ["Debuggable", "Networked"]
