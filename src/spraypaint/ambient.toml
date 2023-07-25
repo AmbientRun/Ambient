@@ -1,0 +1,5 @@
+[messages.spraypaint.fields]
+origin = { type = "Vec3" }
+dir = { type = "Vec3" }
+
+# source = { type = "EntityId" }
