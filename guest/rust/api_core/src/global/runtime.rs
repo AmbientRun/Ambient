@@ -1,5 +1,7 @@
 use std::{
+    cell::RefCell,
     future::Future,
+    rc::Rc,
     task::Poll,
     time::{Duration, Instant},
 };
@@ -8,6 +10,7 @@ use crate::{
     components, entity,
     global::{OkEmpty, ResultEmpty},
     internal::executor::EXECUTOR,
+    prelude::RuntimeMessage,
 };
 
 /// The time, relative to the start of the game. Guaranteed to be monotonic.
@@ -81,4 +84,36 @@ pub async fn block_until(condition: impl Fn() -> bool) {
 pub async fn sleep(seconds: f32) {
     let target_time = Instant::now() + Duration::from_secs_f32(seconds);
     block_until(|| Instant::now() > target_time).await
+}
+
+/// Stops execution of this function until the given [`RuntimeMessage`] is received.
+/// The `is_relevant` function is used to filter out messages that are not relevant.
+///
+/// This must be used with `.await` in either an `async fn` or an `async` block.
+pub async fn wait_for_runtime_message<T: RuntimeMessage + Clone + 'static>(
+    is_relevant: impl Fn(&T) -> bool + 'static,
+) -> T {
+    let result = Rc::new(RefCell::new(None));
+    let mut listener = Some(T::subscribe({
+        let result = result.clone();
+        move |response| {
+            if !is_relevant(&response) {
+                return;
+            }
+
+            *result.borrow_mut() = Some(response);
+        }
+    }));
+
+    std::future::poll_fn(move |_cx| match &*result.borrow() {
+        Some(r) => {
+            let r = (*r).clone();
+            if let Some(listener) = listener.take() {
+                listener.stop();
+            }
+            Poll::Ready(r)
+        }
+        _ => Poll::Pending,
+    })
+    .await
 }

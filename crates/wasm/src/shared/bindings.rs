@@ -33,8 +33,10 @@ pub trait BindingsBound:
     + super::wit::client_sampler::Host
     + super::wit::client_material::Host
     // Server
+    + super::wit::server_asset::Host
     + super::wit::server_message::Host
     + super::wit::server_physics::Host
+    + super::wit::server_http::Host
     + Clone
     + Sync
     + Send

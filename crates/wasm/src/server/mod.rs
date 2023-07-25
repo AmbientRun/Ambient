@@ -1,22 +1,50 @@
 use crate::shared::{self, message::RuntimeMessageExt};
 use ambient_ecs::{
-    generated::messages::core as messages, query, EntityId, FnSystem, SystemGroup, World,
+    components, generated::messages::core as messages, query, EntityId, FnSystem, Resource,
+    SystemGroup, World,
 };
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
+use ambient_std::{asset_url::AbsAssetUrl, Cb};
 use std::sync::Arc;
 
 mod implementation;
 mod network;
 
+components!("wasm::server", {
+    @[Resource]
+    pub build_wasm: Cb<dyn Fn(&mut World) + Send + Sync>,
+});
+
 pub fn initialize(
     world: &mut World,
+    project_path: AbsAssetUrl,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
+    build_project: Option<Cb<dyn Fn(&mut World) + Send + Sync>>,
 ) -> anyhow::Result<()> {
-    shared::initialize(world, messenger, |id| Bindings {
-        base: Default::default(),
-        world_ref: Default::default(),
-        id,
-    })?;
+    init_components();
+
+    let data_path = match project_path.to_file_path().ok().flatten() {
+        Some(path) => Some(path.join("data")),
+        None => {
+            log::warn!("No data path for project at {project_path:?} (invalid local filepath)");
+            None
+        }
+    };
+
+    if let Some(build_project) = build_project {
+        world.add_component(world.resource_entity(), self::build_wasm(), build_project)?;
+    }
+
+    shared::initialize(
+        world,
+        messenger,
+        |id| Bindings {
+            base: Default::default(),
+            world_ref: Default::default(),
+            id,
+        },
+        data_path.as_deref(),
+    )?;
 
     network::initialize(world);
 

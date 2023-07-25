@@ -103,13 +103,15 @@ pub fn audio_systems() -> SystemGroup {
                             let id = id_vec.last().unwrap();
                             id_share.lock().replace(*id);
 
-                            // TODO: this should be empty
-                            // use has_component to check
-                            let fx = vec![
+                            let mut fx = vec![
                                 crate::AudioFx::Amplitude(amp),
                                 crate::AudioFx::Panning(pan),
                                 crate::AudioFx::OnePole(freq),
                             ];
+
+                            if looping {
+                                fx.push(crate::AudioFx::Looping);
+                            }
 
                             sender
                                 .send(crate::AudioMessage::Track {
@@ -128,6 +130,9 @@ pub fn audio_systems() -> SystemGroup {
                             ambient_sys::time::sleep(std::time::Duration::from_secs_f32(dur)).await;
                             async_run.run(move |world| {
                                 world.despawn(id_share_clone.lock().unwrap());
+                                if !world.exists(audio_entity) {
+                                    return;
+                                }
                                 let child = world.get_ref(audio_entity, children()).unwrap();
                                 let new_child = child
                                     .iter()
@@ -138,7 +143,6 @@ pub fn audio_systems() -> SystemGroup {
                             });
                         };
                     });
-                    // }
                 }
             }),
         ],

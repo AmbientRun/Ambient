@@ -1,0 +1,3 @@
+interface server-http {
+    get: func(url: string)
+}

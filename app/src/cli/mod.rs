@@ -152,9 +152,14 @@ pub struct ProjectCli {
     /// Avoid building the project
     #[arg(long)]
     pub no_build: bool,
+
     #[arg(long)]
     /// Perform a clean build
     pub clean_build: bool,
+
+    #[arg(long)]
+    /// Only build the WASM modules
+    pub build_wasm_only: bool,
 }
 #[derive(Args, Clone, Debug)]
 pub struct HostCli {

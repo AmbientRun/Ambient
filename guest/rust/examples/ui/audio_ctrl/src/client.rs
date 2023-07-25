@@ -105,5 +105,6 @@ fn App(hooks: &mut Hooks, audio_player: audio::AudioPlayer) -> Element {
 #[main]
 pub fn main() {
     let audio_player = audio::AudioPlayer::new();
+    audio_player.set_looping(true); // try false
     App::el(audio_player).spawn_interactive();
 }

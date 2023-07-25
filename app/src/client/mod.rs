@@ -7,7 +7,7 @@ use ambient_core::{
     gpu, runtime,
     window::{window_ctl, ExitStatus, WindowCtl},
 };
-use ambient_ecs::{generated::messages::core as messages, Entity, SystemGroup};
+use ambient_ecs::{Entity, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_network::{
     client::{client_network_stats, GameClientRenderTarget},

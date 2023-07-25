@@ -2,17 +2,46 @@
 //!
 //! If implementing a trait that is also available on the client, it should go in [super].
 
-use ambient_core::player::{player, user_id};
-use ambient_ecs::{query, EntityId, World};
+use std::str::FromStr;
+
+use ambient_core::{
+    asset_cache,
+    async_ecs::async_run,
+    player::{player, user_id},
+    runtime,
+};
+use ambient_ecs::{generated::messages::core::HttpResponse, query, EntityId, Message, World};
 use ambient_network::server::player_transport;
+use ambient_std::asset_url::AbsAssetUrl;
+use anyhow::Context;
 
 use super::super::Bindings;
 
-use crate::shared::{self, conversion::FromBindgen, implementation::message, message::Target};
+use crate::shared::{
+    self,
+    conversion::FromBindgen,
+    implementation::message,
+    message::{Source, Target},
+};
 
 #[cfg(all(feature = "wit", feature = "physics"))]
 mod physics;
 
+#[cfg(feature = "wit")]
+#[async_trait::async_trait]
+impl shared::wit::server_asset::Host for Bindings {
+    async fn build_wasm(&mut self) -> anyhow::Result<()> {
+        let build_wasm = self
+            .world()
+            .resource_opt(crate::server::build_wasm())
+            .context("no build project call available (non-local project?)")?
+            .clone();
+
+        build_wasm(self.world_mut());
+
+        Ok(())
+    }
+}
 #[cfg(feature = "wit")]
 #[async_trait::async_trait]
 impl shared::wit::server_message::Host for Bindings {
@@ -78,4 +107,57 @@ fn send_networked(
     }
 
     Ok(())
+}
+
+#[async_trait::async_trait]
+impl shared::wit::server_http::Host for Bindings {
+    async fn get(&mut self, url: String) -> anyhow::Result<()> {
+        let id = self.id;
+        let world = self.world_mut();
+        let assets = world.resource(asset_cache());
+        let runtime = world.resource(runtime());
+        let async_run = world.resource(async_run()).clone();
+
+        async fn make_request(url: String) -> anyhow::Result<(u32, Vec<u8>)> {
+            let response = reqwest::get(url).await?;
+            Ok((
+                response.status().as_u16() as u32,
+                response.bytes().await?.to_vec(),
+            ))
+        }
+
+        let resolved_url = AbsAssetUrl::from_str(&url)?
+            .to_download_url(&assets)?
+            .to_string();
+
+        runtime.spawn(async move {
+            let result = make_request(resolved_url).await;
+            let response = match result {
+                Ok((status, body)) => HttpResponse {
+                    url,
+                    body,
+                    status,
+                    error: None,
+                },
+                Err(err) => HttpResponse {
+                    url,
+                    body: Vec::new(),
+                    status: 0,
+                    error: Some(err.to_string()),
+                },
+            };
+
+            async_run.run(move |world| {
+                shared::message::send(
+                    world,
+                    Target::Module(id),
+                    Source::Runtime,
+                    HttpResponse::id().to_string(),
+                    response.serialize_message().unwrap(),
+                );
+            });
+        });
+
+        Ok(())
+    }
 }

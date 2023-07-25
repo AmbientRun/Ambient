@@ -13,7 +13,7 @@ pub fn systems() -> SystemGroup {
 pub fn initialize(world: &mut World, mute_audio: bool) -> anyhow::Result<()> {
     let messenger = Arc::new(
         |world: &World, id: EntityId, type_: MessageType, message: &str| {
-            let name = world.get_cloned(id, module_name()).unwrap();
+            let name = world.get_cloned(id, module_name()).unwrap_or_default();
             let (prefix, level) = match type_ {
                 MessageType::Info => ("info", log::Level::Info),
                 MessageType::Warn => ("warn", log::Level::Warn),
@@ -63,7 +63,12 @@ pub fn initialize(world: &mut World, mute_audio: bool) -> anyhow::Result<()> {
                         log::info!("Effects: {:?}", fx);
                         continue;
                     }
-                    let mut t: Box<dyn Source> = Box::new(track.decode());
+
+                    let mut t: Box<dyn Source> = if fx.contains(&AudioFx::Looping) {
+                        Box::new(track.decode().repeat())
+                    } else {
+                        Box::new(track.decode())
+                    };
                     let mut ctrl = vec![];
                     for effect in &fx {
                         match effect {
@@ -82,13 +87,10 @@ pub fn initialize(world: &mut World, mute_audio: bool) -> anyhow::Result<()> {
                                 t = t.onepole(f.clone());
                                 ctrl.push(AudioControl::OnePole(f));
                             }
-
-                            // Looping => {
-                            //     t = t.repeat();
-                            // }
                             _ => {}
                         }
                     }
+
                     let sound = stream.mixer().play(t);
                     sound.wait();
                     let sound_info = SoundInfo {

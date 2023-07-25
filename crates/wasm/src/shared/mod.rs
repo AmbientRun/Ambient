@@ -12,7 +12,13 @@ pub mod message;
 #[cfg(feature = "wit")]
 pub mod wit;
 
-use std::{str::FromStr, sync::Arc};
+pub use ambient_ecs::generated::components::core::wasm::*;
+pub use internal::{
+    messenger, module_bytecode, module_errors, module_state, module_state_maker, remote_paired_id,
+};
+pub use module::*;
+
+use std::{path::Path, str::FromStr, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, runtime};
 use ambient_ecs::{
@@ -24,7 +30,8 @@ pub use ambient_ecs::generated::components::core::wasm::*;
 
 use ambient_std::{asset_url::AbsAssetUrl, download_asset::download_uncached_bytes};
 use itertools::Itertools;
-pub use module::*;
+#[cfg(feature = "wit")]
+use wasi_cap_std_sync::Dir;
 
 mod internal {
     use std::sync::Arc;
@@ -51,15 +58,28 @@ mod internal {
     });
 }
 
-pub use internal::{
-    messenger, module_bytecode, module_errors, module_state, module_state_maker, remote_paired_id,
-};
+#[cfg(feature = "wit")]
+mod internal_wit {
+    use std::sync::Arc;
 
+    use ambient_ecs::{components, Resource};
+    use wasi_cap_std_sync::Dir;
+
+    components!("wasm::shared", {
+        @[Resource]
+        preopened_dir: Arc<Dir>,
+    });
+}
+
+#[cfg(feature = "wit")]
+use self::internal_wit::preopened_dir;
 use self::message::Source;
 use crate::shared::message::{RuntimeMessageExt, Target};
 
 pub fn init_all_components() {
     internal::init_components();
+    #[cfg(feature = "wit")]
+    internal_wit::init_components();
     message::init_components();
 }
 
@@ -80,6 +100,48 @@ pub fn systems() -> SystemGroup {
     SystemGroup::new(
         "core/wasm",
         vec![
+            query(bytecode_from_url())
+                .incl(module())
+                .excl(module_name())
+                .spawned()
+                .to_system(move |q, world, qs, _| {
+                    for (id, url) in q.collect_cloned(world, qs) {
+                        let url = AbsAssetUrl::from_str(&url).unwrap();
+                        let decoded_path = url.decoded_path();
+                        let name = decoded_path
+                            .file_stem()
+                            .unwrap_or_else(|| decoded_path.as_str());
+
+                        world
+                            .add_component(id, module_name(), name.to_string())
+                            .ok();
+                    }
+                }),
+            query(module_name())
+                .incl(module())
+                .excl(ambient_core::name())
+                .spawned()
+                .to_system(move |q, world, qs, _| {
+                    for (id, name) in q.collect_cloned(world, qs) {
+                        world
+                            .add_component(
+                                id,
+                                ambient_core::name(),
+                                format!("Wasm module: {}", name),
+                            )
+                            .ok();
+                    }
+                }),
+            query(module())
+                .excl(module_errors())
+                .spawned()
+                .to_system(move |q, world, qs, _| {
+                    for (id, _) in q.collect_cloned(world, qs) {
+                        world
+                            .add_component(id, module_errors(), Default::default())
+                            .ok();
+                    }
+                }),
             query(bytecode_from_url().changed()).to_system(move |q, world, qs, _| {
                 // TODO: there has got to be a better way to do this
                 let is_server = world.name() == "server";
@@ -174,17 +236,31 @@ pub fn systems() -> SystemGroup {
 }
 
 #[cfg(feature = "wit")]
-pub fn initialize<Bindings: bindings::BindingsBound + 'static>(
+pub fn initialize<'a, Bindings: bindings::BindingsBound + 'static>(
     world: &mut World,
     messenger: Arc<dyn Fn(&World, EntityId, MessageType, &str) + Send + Sync>,
     bindings: fn(EntityId) -> Bindings,
+    preopened_dir_path: Option<&'a Path>,
 ) -> anyhow::Result<()> {
+    use wasi_cap_std_sync::ambient_authority;
+
     world.add_resource(self::messenger(), messenger);
     world.add_resource(
         self::module_state_maker(),
         ModuleState::create_state_maker(bindings),
     );
     world.add_resource(message::pending_messages(), vec![]);
+
+    if let Some(preopened_dir_path) = preopened_dir_path {
+        std::fs::create_dir_all(preopened_dir_path)?;
+        world.add_resource(
+            preopened_dir(),
+            Arc::new(Dir::open_ambient_dir(
+                preopened_dir_path,
+                ambient_authority(),
+            )?),
+        );
+    }
 
     Ok(())
 }
@@ -210,16 +286,21 @@ fn reload(world: &mut World, module_id: EntityId, bytecode: Option<ModuleBytecod
     }
 }
 
-fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
+fn load(world: &mut World, id: EntityId, component_bytecode: &[u8]) {
     let messenger = world.resource(messenger()).clone();
     let module_state_maker = world.resource(module_state_maker()).clone();
 
     let async_run = world.resource(async_run()).clone();
     let component_bytecode = component_bytecode.to_vec();
     let name = world
-        .get_ref(module_id, module_name())
+        .get_ref(id, module_name())
         .map(|x| x.clone())
         .unwrap_or_else(|_| "Unknown".to_string());
+
+    #[cfg(feature = "wit")]
+    let preopened_dir = world
+        .resource_opt(preopened_dir())
+        .map(|d| d.try_clone().unwrap());
 
     // Spawn the module on another thread to ensure that it does not block the main thread during compilation.
     std::thread::spawn(move || {
@@ -230,13 +311,15 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
                 stdout_output: Box::new({
                     let messenger = messenger.clone();
                     move |world, msg| {
-                        messenger(world, module_id, MessageType::Stdout, msg);
+                        messenger(world, id, MessageType::Stdout, msg);
                     }
                 }),
                 stderr_output: Box::new(move |world, msg| {
-                    messenger(world, module_id, MessageType::Stderr, msg);
+                    messenger(world, id, MessageType::Stderr, msg);
                 }),
-                id: module_id,
+                id,
+                #[cfg(feature = "wit")]
+                preopened_dir,
             });
             log::info!("Done loading module: {}", name);
             res
@@ -252,14 +335,12 @@ fn load(world: &mut World, module_id: EntityId, component_bytecode: &[u8]) {
                         sms.listen_to_message(id.to_string());
                     }
 
-                    world.add_component(module_id, module_state(), sms).unwrap();
+                    world.add_component(id, module_state(), sms).unwrap();
 
                     log::info!("Running startup event for module: {}", name);
-                    messages::ModuleLoad::new()
-                        .run(world, Some(module_id))
-                        .unwrap();
+                    messages::ModuleLoad::new().run(world, Some(id)).unwrap();
                 }
-                Err(err) => update_errors(world, &[(module_id, err)]),
+                Err(err) => update_errors(world, &[(id, err)]),
             }
         });
     });
@@ -298,7 +379,7 @@ fn run(
         "run",
         format!(
             "{} - {}",
-            world.get_cloned(id, module_name()).unwrap(),
+            world.get_cloned(id, module_name()).unwrap_or_default(),
             message_name
         )
     );
@@ -353,18 +434,14 @@ pub(crate) fn unload(world: &mut World, module_id: EntityId, reason: &str) {
 
 pub fn spawn_module(
     world: &mut World,
-    name: &str,
-    description: String,
+    bytecode_from_url: AbsAssetUrl,
     enabled: bool,
     on_server: bool,
 ) -> EntityId {
     let entity = Entity::new()
-        .with(ambient_core::name(), format!("Wasm module: {}", name))
-        .with(module_name(), name.to_string())
-        .with(ambient_core::description(), description)
         .with_default(module())
-        .with(module_enabled(), enabled)
-        .with_default(module_errors());
+        .with(self::bytecode_from_url(), bytecode_from_url.to_string())
+        .with(module_enabled(), enabled);
 
     let entity = if on_server {
         entity.with_default(module_on_server())

@@ -19,8 +19,10 @@ world bindings {
     import client-sampler
     import client-material
 
+    import server-asset
     import server-physics
     import server-message
+    import server-http
 
     export guest
 }

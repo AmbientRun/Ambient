@@ -91,3 +91,13 @@ fields = { delta = "vec2", pixels = "bool" }
 name = "Window Mouse Motion"
 description = "Sent when the window receives a mouse motion input."
 fields = { delta = "vec2" }
+
+[messages.http-response]
+name = "HTTP Response"
+description = "Sent when an HTTP response is received."
+fields = { url = "string", status = "u32", body = { type = "vec", element-type = "u8" }, error = { type = "option", element-type = "string" } }
+
+[messages.wasm-rebuild]
+name = "WASM Rebuild"
+description = "Sent when a request for WASM rebuilding is completed."
+fields = { error = { type = "option", element-type = "string" } }

@@ -1151,5 +1151,78 @@ pub mod messages {
             }
         }
         impl RuntimeMessage for WindowMouseMotion {}
+        #[derive(Clone, Debug)]
+        #[doc = "**HttpResponse**: Sent when an HTTP response is received."]
+        pub struct HttpResponse {
+            pub url: String,
+            pub status: u32,
+            pub body: Vec<u8>,
+            pub error: Option<String>,
+        }
+        impl HttpResponse {
+            pub fn new(
+                url: impl Into<String>,
+                status: impl Into<u32>,
+                body: impl Into<Vec<u8>>,
+                error: impl Into<Option<String>>,
+            ) -> Self {
+                Self {
+                    url: url.into(),
+                    status: status.into(),
+                    body: body.into(),
+                    error: error.into(),
+                }
+            }
+        }
+        impl Message for HttpResponse {
+            fn id() -> &'static str {
+                "HttpResponse"
+            }
+            fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                let mut output = vec![];
+                self.url.serialize_message_part(&mut output)?;
+                self.status.serialize_message_part(&mut output)?;
+                self.body.serialize_message_part(&mut output)?;
+                self.error.serialize_message_part(&mut output)?;
+                Ok(output)
+            }
+            fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                Ok(Self {
+                    url: String::deserialize_message_part(&mut input)?,
+                    status: u32::deserialize_message_part(&mut input)?,
+                    body: Vec::<u8>::deserialize_message_part(&mut input)?,
+                    error: Option::<String>::deserialize_message_part(&mut input)?,
+                })
+            }
+        }
+        impl RuntimeMessage for HttpResponse {}
+        #[derive(Clone, Debug)]
+        #[doc = "**WasmRebuild**: Sent when a request for WASM rebuilding is completed."]
+        pub struct WasmRebuild {
+            pub error: Option<String>,
+        }
+        impl WasmRebuild {
+            pub fn new(error: impl Into<Option<String>>) -> Self {
+                Self {
+                    error: error.into(),
+                }
+            }
+        }
+        impl Message for WasmRebuild {
+            fn id() -> &'static str {
+                "WasmRebuild"
+            }
+            fn serialize_message(&self) -> Result<Vec<u8>, MessageSerdeError> {
+                let mut output = vec![];
+                self.error.serialize_message_part(&mut output)?;
+                Ok(output)
+            }
+            fn deserialize_message(mut input: &[u8]) -> Result<Self, MessageSerdeError> {
+                Ok(Self {
+                    error: Option::<String>::deserialize_message_part(&mut input)?,
+                })
+            }
+        }
+        impl RuntimeMessage for WasmRebuild {}
     }
 }
