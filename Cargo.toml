@@ -145,6 +145,7 @@ symphonia = { version = "0.5", default-features = false, features = [
     "wav",
 ] }
 vorbis_rs = "0.3.0"
+optivorbis = "0.1.4"
 colored = "2.0.0"
 directories = "5.0.1"
 ulid = { version = "1.0.0", features = ["serde"] }
