@@ -74,6 +74,16 @@ name = "fpsmovement_server"
 path = "src/fpsmovement/server.rs"
 required-features = ["server"]
 
+[[bin]]
+name = "spraypaint_client"
+path = "src/spraypaint/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "spraypaint_server"
+path = "src/spraypaint/server.rs"
+required-features = ["server"]
+
 # # Group 5: Animation
 
 [[bin]]

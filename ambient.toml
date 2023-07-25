@@ -14,4 +14,5 @@ includes = [
 
     "src/console/ambient.toml",
     "src/ember_reloader/ambient.toml",
+    "src/spraypaint/ambient.toml",
 ]
