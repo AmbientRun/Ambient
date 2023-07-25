@@ -5,15 +5,13 @@ use crate::{
     picking_scene, trigger_areas_scene,
 };
 use ambient_core::{
-    camera::Camera,
-    main_scene,
     transform::{get_world_transform, local_to_world},
     ui_scene,
 };
 use ambient_ecs::{
     components, dont_store, ensure_has_component, ensure_has_component_with_default,
     generated::components::core::rect::{
-        background_color, line_from, line_to, line_width, pixel_line_from, pixel_line_to,
+        background_color, line_width, pixel_line_from, pixel_line_to,
     },
     query, Entity, EntityId, FnSystem, SystemGroup, World,
 };
