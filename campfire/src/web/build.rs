@@ -4,13 +4,23 @@ use std::{
 };
 
 use anyhow::Context;
-use clap::Args;
+use clap::{Args, Subcommand, ValueEnum};
 use tokio::process::Command;
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+pub(crate) enum Target {
+    /// Generates a wasm and js shim that uses `require` to import the `.wasm`
+    Bundler,
+    /// The shim won't import the `.wasm` itself, allowing for external fetching
+    Standalone,
+}
 
 #[derive(Debug, Args, Clone)]
 pub struct BuildOptions {
     #[arg(long, default_value = "dev")]
     pub profile: String,
+    #[arg(long, value_enum)]
+    target: Target,
 }
 
 pub async fn run(opts: BuildOptions) -> anyhow::Result<()> {
@@ -75,10 +85,12 @@ pub async fn run_wasm_bindgen(
 
     let output_path = ["web", "pkg"].iter().collect::<PathBuf>();
 
-    command
-        .args(["--target", "bundler", "--out-dir"])
-        .arg(&output_path)
-        .arg(path);
+    command.args(["--out-dir"]).arg(&output_path).arg(path);
+
+    match opts.target {
+        Target::Bundler => command.args(["--target", "bundler"]),
+        Target::Standalone => command.args(["--target", "no-modules"]),
+    };
 
     let res = command.spawn()?.wait().await?;
     if !res.success() {

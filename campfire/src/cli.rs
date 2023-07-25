@@ -29,3 +29,5 @@ pub enum Cli {
     /// Run an example. Alias for `example run`.
     Run(example::Run),
 }
+
+// https://rust-cli-recommendations.sunshowers.io/handling-arguments.html
