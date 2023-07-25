@@ -9,7 +9,7 @@ use tokio::process::Command;
 
 #[derive(Debug, Args, Clone)]
 pub struct BuildOptions {
-    #[arg(long, default_value = "debug")]
+    #[arg(long, default_value = "dev")]
     pub profile: String,
 }
 
@@ -45,7 +45,10 @@ pub async fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
         "web",
         "target",
         "wasm32-unknown-unknown",
-        &opts.profile,
+        match &opts.profile[..] {
+            "dev" => "debug",
+            v => v,
+        },
         "ambient_web.wasm",
     ]
     .iter()
