@@ -1,23 +1,16 @@
-use std::borrow::{Borrow, Cow};
-
-use ambient_ecs::{components, query, Debuggable, Networked, Resource, SystemGroup};
+use ambient_ecs::{components, Resource};
 use glam::{Mat4, Vec2};
 
 pub mod render;
 mod traits;
-use ambient_std::{math::Line, CowStr};
+use ambient_std::math::Line;
 use dashmap::{mapref::one::RefMut, DashMap};
 use glam::Vec3;
 pub use traits::*;
 
 components!("gizmos", {
-    /// A store of gizmos to collect
     @[Resource]
     gizmos: Gizmos,
-
-    /// Gizmos for an entity.
-    @[Networked, Debuggable]
-    local_gizmos: Vec<GizmoPrimitive>,
 });
 
 #[derive(Debug, Copy, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -44,7 +37,6 @@ pub enum GizmoPrimitive {
         color: Vec3,
     },
 }
-
 impl From<Line> for GizmoPrimitive {
     fn from(line: Line) -> Self {
         GizmoPrimitive::line(line.0, line.1, 0.2)
@@ -277,7 +269,7 @@ impl Cuboid {
 
 #[derive(Debug, Clone)]
 pub struct Gizmos {
-    scopes: DashMap<Cow<'static, str>, GizmoScope>,
+    scopes: DashMap<u64, GizmoScope>,
 }
 
 impl Gizmos {
@@ -287,25 +279,20 @@ impl Gizmos {
         }
     }
 
-    pub fn scope(&self, scope: impl Into<CowStr>) -> RefMut<CowStr, GizmoScope> {
+    pub fn scope(&self, scope: u64) -> RefMut<u64, GizmoScope> {
         let scope = self
             .scopes
-            .entry(scope.into())
+            .entry(scope)
             .and_modify(|s| s.clear())
             .or_default();
-
         scope
     }
 
-    pub fn remove_scope(&self, scope: impl Borrow<str>) {
-        self.scopes.remove(scope.borrow());
-    }
-
-    pub fn scopes(&self) -> dashmap::iter::Iter<CowStr, GizmoScope> {
+    pub fn scopes(&self) -> dashmap::iter::Iter<u64, GizmoScope> {
         self.scopes.iter()
     }
 
-    pub fn with_scope(&self, scope: impl Into<CowStr>, f: impl FnOnce(&mut GizmoScope)) -> &Self {
+    pub fn with_scope(&self, scope: u64, f: impl FnOnce(&mut GizmoScope)) -> &Self {
         let mut scope = self.scope(scope);
         f(&mut scope);
         self
@@ -336,27 +323,4 @@ impl GizmoScope {
     fn clear(&mut self) {
         self.primitives.clear()
     }
-}
-
-pub fn client_systems() -> SystemGroup {
-    SystemGroup::new(
-        "visualization/client",
-        vec![
-            query(local_gizmos()).to_system(|q, world, qs, _| {
-                ambient_profiling::scope!("local_gizmos");
-                for (id, prim) in q.iter(world, qs) {
-                    let mut scope = world.resource(gizmos()).scope(id.to_string());
-                    scope.draw(prim.iter().copied());
-                }
-            }),
-            query(local_gizmos())
-                .despawned()
-                .to_system(|q, world, qs, _| {
-                    ambient_profiling::scope!("local_gizmos_despawned");
-                    for (id, _) in q.iter(world, qs) {
-                        world.resource(gizmos()).remove_scope(id.to_string());
-                    }
-                }),
-        ],
-    )
 }

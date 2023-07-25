@@ -370,7 +370,7 @@ impl AssetCache {
         // Acquire or start a future for loading this asset
         let fut = match cache.entry(asset_key.clone()) {
             Entry::Occupied(mut slot) => {
-                let loc = slot.get_mut();
+                let mut loc = slot.get_mut();
 
                 match &mut loc.content {
                     ContentState::Loading { fut } => {
@@ -862,7 +862,7 @@ where
 
             // Update the content state
             let mut cache = p.cache.lock();
-            let loc = cache
+            let mut loc = cache
                 .get_mut(p.asset_key)
                 .expect("Asset loc was removed during loading");
 

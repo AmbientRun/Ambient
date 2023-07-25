@@ -300,7 +300,7 @@ impl ForwardGlobals {
 
     #[tracing::instrument(level = "debug", skip_all, fields(scene = ?self.scene, user = ?world.resource_opt(local_user_id())))]
     pub fn update(&mut self, gpu: &Gpu, world: &World, shadow_cameras: &[ShadowCameraData]) {
-        let p = &mut self.params;
+        let mut p = &mut self.params;
         if let Some(id) = get_active_camera(world, self.scene, world.resource_opt(local_user_id()))
         {
             p.projection_view = world.get(id, projection_view()).unwrap_or_default();
