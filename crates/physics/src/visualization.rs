@@ -15,8 +15,7 @@ use ambient_ecs::{
     generated::components::core::rect::{background_color, line_from, line_to, line_width},
     query, Entity, EntityId, FnSystem, SystemGroup, World,
 };
-use ambient_gizmos::{gizmos, GizmoPrimitive};
-use ambient_std::line_hash;
+use ambient_gizmos::{local_gizmos, GizmoPrimitive};
 
 use glam::{vec4, Vec3};
 use itertools::Itertools;
@@ -29,7 +28,6 @@ pub use ambient_ecs::generated::components::core::physics::visualize_collider;
 
 components!("physics", {
     physx_viz_line: PxDebugLine,
-    shape_primitives: Vec<GizmoPrimitive>,
 });
 
 pub fn run_visualize_collider(world: &mut World, entity: EntityId, enabled: bool) -> Option<()> {
@@ -71,7 +69,7 @@ fn visualize_shape(scene: PxSceneRef, shape: &PxShape, enabled: bool) {
     scene.set_visualization_parameter(PxVisualizationParameter::COLLISION_SHAPES, 1.0);
 }
 
-pub fn server_systems() -> SystemGroup {
+pub(crate) fn server_systems() -> SystemGroup {
     SystemGroup::new(
         "visualization/server",
         vec![
@@ -106,7 +104,7 @@ pub fn server_systems() -> SystemGroup {
 
                     for id in ids {
                         tracing::info!("Removing visualize_collider from {id:?}");
-                        w.remove_component(id, shape_primitives()).ok();
+                        w.remove_component(id, local_gizmos()).ok();
                     }
                 },
             ),
@@ -137,7 +135,7 @@ pub fn server_systems() -> SystemGroup {
                     }
 
                     for (id, p) in primitives {
-                        w.add_component(id, shape_primitives(), p)
+                        w.add_component(id, local_gizmos(), p)
                             .expect("Invalid component");
                     }
                 },
@@ -202,13 +200,6 @@ pub fn client_systems() -> SystemGroup {
                             world.set_if_changed(id, line_to(), to).unwrap();
                         }
                     }
-                }
-            }),
-            query((shape_primitives(),)).to_system(|q, world, qs, _| {
-                ambient_profiling::scope!("shape_gizmo_render");
-                let mut scope = world.resource(gizmos()).scope(line_hash!());
-                for (_, (prim,)) in q.iter(world, qs) {
-                    scope.draw(prim.iter().copied());
                 }
             }),
         ],
