@@ -341,28 +341,6 @@ impl AppBuilder {
             target.append_child(&canvas).unwrap();
         }
 
-        #[cfg(feature = "profile")]
-        let puffin_server = {
-            let puffin_addr = format!(
-                "0.0.0.0:{}",
-                std::env::var("PUFFIN_PORT")
-                    .ok()
-                    .and_then(|port| port.parse::<u16>().ok())
-                    .unwrap_or(puffin_http::DEFAULT_PORT)
-            );
-            match puffin_http::Server::new(&puffin_addr) {
-                Ok(server) => {
-                    tracing::debug!("Puffin server running on {}", puffin_addr);
-                    puffin::set_scopes_on(true);
-                    Some(server)
-                }
-                Err(err) => {
-                    tracing::error!("Failed to start puffin server: {:?}", err);
-                    None
-                }
-            }
-        };
-
         #[cfg(not(target_os = "unknown"))]
         let _ = thread_priority::set_current_thread_priority(thread_priority::ThreadPriority::Max);
 
@@ -448,8 +426,6 @@ impl AppBuilder {
             event_loop,
 
             fps: FpsCounter::new(),
-            #[cfg(feature = "profile")]
-            _puffin: puffin_server,
             modifiers: Default::default(),
             ctl_rx,
             update_title_with_fps_stats: self.update_title_with_fps_stats,
@@ -497,8 +473,6 @@ pub struct App {
     pub window: Option<Arc<Window>>,
     event_loop: Option<EventLoop<()>>,
     fps: FpsCounter,
-    #[cfg(feature = "profile")]
-    _puffin: Option<puffin_http::Server>,
     modifiers: ModifiersState,
 
     window_focused: bool,
@@ -516,11 +490,6 @@ impl std::fmt::Debug for App {
             .field("window", &self.window)
             .field("fps", &self.fps)
             .field("window_focused", &self.window_focused);
-
-        #[cfg(feature = "profile")]
-        d.field("puffin", &true);
-        #[cfg(not(feature = "profile"))]
-        d.field("puffin", &false);
 
         d.finish()
     }

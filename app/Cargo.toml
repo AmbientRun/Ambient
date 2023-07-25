@@ -78,6 +78,8 @@ walkdir = { workspace = true }
 image = { workspace = true }
 tracing = { workspace = true }
 image_hasher = { workspace = true }
+puffin = { workspace = true, optional = true }
+puffin_http = { workspace = true, optional = true }
 
 [dev-dependencies]
 glam = { workspace = true }
@@ -88,7 +90,7 @@ no_bundled_certs = []
 default = ["tls-webpki-roots"]
 slim = ["stackdriver"]
 production = ["assimp"]
-profile = ["ambient_app/profile"]
+profile = ["puffin", "puffin_http", "ambient_app/profile"]
 assimp = ["ambient_model_import/russimp"]
 stackdriver = ["tracing", "tracing-stackdriver"]
 tracing = ["tracing-tree", "tracing-subscriber", "tracing-log"]
