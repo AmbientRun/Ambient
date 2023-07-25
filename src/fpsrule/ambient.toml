@@ -13,6 +13,7 @@ player_health = { type = "I32", attributes = ["Debuggable", "Networked"] }
 
 hit_freeze = { type = "I32", attributes = ["Debuggable", "Networked"] }
 
+heal_timeout = { type = "I32", attributes = ["Debuggable"] }
 
 [messages.shoot.fields]
 ray_origin = { type = "Vec3" }

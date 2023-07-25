@@ -2,6 +2,8 @@
 
 use ambient_api::components::core::{player::player, transform::translation};
 use ambient_api::prelude::*;
+use components::{heal_timeout, player_health};
+
 #[main]
 pub fn main() {
     spawn_query(player()).bind(|results| {
@@ -12,22 +14,26 @@ pub fn main() {
                 entity::add_component(id, components::hit_freeze(), 0);
                 entity::add_component(id, components::player_killcount(), 0);
                 entity::add_component(id, components::player_deathcount(), 0);
+                entity::add_component(id, components::heal_timeout(), 0);
             });
         }
     });
+
     messages::Shoot::subscribe(move |_source, msg| {
         let result = physics::raycast_first(msg.ray_origin, msg.ray_dir);
 
         if let Some(hit) = result {
-            if entity::has_component(hit.entity, components::player_health()) {
-                let old_health = entity::get_component(hit.entity, components::player_health());
-                if old_health.is_none() {
-                    return;
-                }
-                let old_health = old_health.unwrap();
+            if hit.entity == msg.source {
+                eprintln!("self hit");
+                return;
+            }
+
+            if let Some(old_health) = entity::get_component(hit.entity, components::player_health())
+            {
                 if old_health <= 0 {
                     return;
                 }
+
                 let new_health = (old_health - 10).max(0);
                 entity::set_component(hit.entity, components::player_health(), new_health);
 
@@ -46,6 +52,11 @@ pub fn main() {
                     );
                     run_async(async move {
                         sleep(114. / 60.).await;
+
+                        if !entity::exists(hit.entity) {
+                            return;
+                        }
+
                         entity::set_component(
                             hit.entity,
                             translation(),
@@ -56,6 +67,34 @@ pub fn main() {
                     });
                 } else {
                     entity::set_component(hit.entity, components::hit_freeze(), 20);
+                    entity::set_component(hit.entity, heal_timeout(), 150);
+                }
+            }
+        }
+    });
+
+    query((player(), heal_timeout())).each_frame(move |entities| {
+        for (e, (_, old_timeout)) in entities {
+            let new_timeout = old_timeout - 1;
+            entity::set_component(e, heal_timeout(), new_timeout);
+        }
+    });
+
+    let healables = query((player(), player_health())).build();
+    run_async(async move {
+        loop {
+            sleep(1.0).await;
+
+            for (e, (_, old_health)) in healables.evaluate() {
+                if let Some(timeout) = entity::get_component(e, components::heal_timeout()) {
+                    if timeout > 0 {
+                        continue;
+                    }
+                }
+
+                let new_health = old_health + 1;
+                if new_health <= 100 {
+                    entity::set_component(e, components::player_health(), new_health);
                 }
             }
         }
