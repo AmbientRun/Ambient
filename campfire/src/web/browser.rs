@@ -3,6 +3,7 @@ use std::time::Duration;
 use anyhow::Context;
 use base64::Engine;
 use openssl::hash::MessageDigest;
+use tokio::process::Command;
 
 pub async fn open() -> anyhow::Result<()> {
     let cert_file = tokio::fs::read("./localhost.crt")
@@ -30,28 +31,34 @@ pub async fn open() -> anyhow::Result<()> {
 async fn open_browser(spki: &str, url: &str) -> anyhow::Result<()> {
     cfg_if::cfg_if! {
         if #[cfg(target_os = "macos")] {
-            let status = tokio::process::Command::new("open")
+            let mut command = Command::new("open");
+            command
                 .args(["-a", "Google Chrome", url, "--args"])
-                .arg(format!("--ignore-certificate-errors-spki-list={spki}"))
-                .spawn()
-                .context("Failed to spawn browser")?
-                .wait()
-                .await
-                .context("Failed to wait for launch command to exit")?;
-            if !status.success() {
-                anyhow::bail!("Failed to launch browser. Process exited with {status:?}");
-            }
+                .arg(format!("--ignore-certificate-errors-spki-list={spki}"));
+
         }
         else if #[cfg(target_os = "linux")]{
-            std::process::Command::new("google-chrome")
-                // .args(["-a", "Google Chrome", url, "--args"])
-                // .arg(format!("--ignore-certificate-errors-spki-list={spki}"))
+            let _spki = spki;
+            let _url = url;
+            let mut command = Command::new("google-chrome");
+                command.args(["-a", "Google Chrome", url, "--args"])
+                .arg(format!("--ignore-certificate-errors-spki-list={spki}"))
                 .spawn()
                 .context("Failed to spawn browser")?;
 
-            tokio::time::sleep(Duration::from_secs(5)).await;
+            anyhow::bail!("Launching the browser for linux is not supported. This is because cargo will cleanup the browser background process when campfire terminates")
         }
+    }
 
+    let status = command
+        .spawn()
+        .context("Failed to spawn browser")?
+        .wait()
+        .await
+        .context("Failed to wait for launch command to exit")?;
+
+    if !status.success() {
+        anyhow::bail!("Failed to launch browser. Process exited with {status:?}");
     }
 
     Ok(())
