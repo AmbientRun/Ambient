@@ -12,7 +12,9 @@ use ambient_core::{
 };
 use ambient_ecs::{
     components, dont_store, ensure_has_component, ensure_has_component_with_default,
-    generated::components::core::rect::{background_color, line_from, line_to, line_width},
+    generated::components::core::rect::{
+        background_color, line_from, line_to, line_width, pixel_line_from, pixel_line_to,
+    },
     query, Entity, EntityId, FnSystem, SystemGroup, World,
 };
 use ambient_gizmos::{local_gizmos, GizmoPrimitive};
@@ -174,34 +176,29 @@ pub(crate) fn server_systems() -> SystemGroup {
                     }
                 }
             })),
-        ],
-    )
-}
-
-pub fn client_systems() -> SystemGroup {
-    SystemGroup::new(
-        "visualization/client",
-        vec![
-            ensure_has_component_with_default(physx_viz_line(), line_from()),
-            ensure_has_component_with_default(physx_viz_line(), line_to()),
-            ensure_has_component(physx_viz_line(), line_width(), 1.),
-            ensure_has_component(physx_viz_line(), background_color(), vec4(1., 0., 0., 1.)),
-            ensure_has_component_with_default(physx_viz_line(), ui_scene()),
-            ensure_has_component_with_default(physx_viz_line(), local_to_world()),
-            query((physx_viz_line(),)).to_system(|q, world, qs, _| {
-                if let Some(world_cam) = Camera::get_active(world, main_scene(), None) {
-                    if let Some(ui_cam) = Camera::get_active(world, ui_scene(), None) {
-                        let mat = ui_cam.projection_view().inverse() * world_cam.projection_view();
-
+            Box::new(SystemGroup::new(
+                "visualization/server_lines",
+                vec![
+                    ensure_has_component_with_default(physx_viz_line(), pixel_line_from()),
+                    ensure_has_component_with_default(physx_viz_line(), pixel_line_to()),
+                    ensure_has_component(physx_viz_line(), line_width(), 1.),
+                    ensure_has_component(
+                        physx_viz_line(),
+                        background_color(),
+                        vec4(1., 0., 0., 1.),
+                    ),
+                    ensure_has_component_with_default(physx_viz_line(), ui_scene()),
+                    ensure_has_component_with_default(physx_viz_line(), local_to_world()),
+                    query((physx_viz_line(),)).to_system(|q, world, qs, _| {
                         for (id, (line,)) in q.collect_cloned(world, qs) {
-                            let from = mat.project_point3(line.pos0);
-                            let to = mat.project_point3(line.pos1);
-                            world.set_if_changed(id, line_from(), from).unwrap();
-                            world.set_if_changed(id, line_to(), to).unwrap();
+                            let from = line.pos0;
+                            let to = line.pos1;
+                            world.set_if_changed(id, pixel_line_from(), from).unwrap();
+                            world.set_if_changed(id, pixel_line_to(), to).unwrap();
                         }
-                    }
-                }
-            }),
+                    }),
+                ],
+            )),
         ],
     )
 }

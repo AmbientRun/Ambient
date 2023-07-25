@@ -35,6 +35,18 @@ name = "Border thickness"
 description = "Border thickness of an entity with a `rect` component."
 attributes = ["Debuggable", "Networked", "Store"]
 
+[components."core::rect::pixel_line_from"]
+type = "Vec3"
+name = "Pixel Line from"
+description = "Start point of a pixel sized line."
+attributes = ["Debuggable", "Networked", "Store"]
+
+[components."core::rect::pixel_line_to"]
+type = "Vec3"
+name = "Pixel Line to"
+description = "End point of a pixel sized line."
+attributes = ["Debuggable", "Networked", "Store"]
+
 [components."core::rect::line_from"]
 type = "Vec3"
 name = "Line from"

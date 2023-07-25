@@ -334,7 +334,6 @@ fn systems() -> SystemGroup {
             Box::new(ambient_primitives::systems()),
             Box::new(ambient_sky::systems()),
             Box::new(ambient_water::systems()),
-            Box::new(ambient_physics::client_systems()),
             Box::new(ambient_gizmos::client_systems()),
             Box::new(wasm::systems()),
             Box::new(ambient_client_shared::player::systems_final()),
