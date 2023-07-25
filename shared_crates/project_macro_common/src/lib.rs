@@ -1,7 +1,7 @@
 extern crate proc_macro;
 
 use ambient_project::ItemPathBuf;
-use ambient_project_semantic::{ArrayFileProvider, ItemId, ItemMap, Scope, Semantic, TypeInner};
+use ambient_project_semantic::{ArrayFileProvider, Semantic, TypeInner};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use std::{collections::HashMap, path::Path};
@@ -143,28 +143,4 @@ pub fn generate_code(
 
 fn make_path(id: &str) -> syn::Path {
     syn::parse_str(id).unwrap()
-}
-
-fn make_manifest_ref(
-    items: &ItemMap,
-    root_scope_id: ItemId<Scope>,
-    manifest_scope_id: Option<ItemId<Scope>>,
-    presence_check: impl Fn(&Scope) -> bool,
-) -> TokenStream {
-    let Some(manifest_scope_id) = manifest_scope_id else { return quote!{}; };
-    let manifest_scope = items.get(manifest_scope_id).unwrap();
-
-    if !presence_check(&*manifest_scope) {
-        return quote! {};
-    }
-
-    let manifest_path = syn::parse_str::<syn::Path>(
-        &items
-            .fully_qualified_display_path_rust_style(&*manifest_scope, Some(root_scope_id), None)
-            .unwrap(),
-    )
-    .unwrap();
-    quote! {
-        pub use #manifest_path as this;
-    }
 }

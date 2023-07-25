@@ -11,9 +11,14 @@ use ambient_api::{
         rendering::{cast_shadows, color},
         transform::{lookat_target, rotation, scale, translation},
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    concepts::core::{
+        camera::make_perspective_infinite_reverse_camera, transform::make_transformable,
+    },
+    messages::core::{Collision, Frame},
     prelude::*,
 };
+
+use crate::messages::ambient::ambient_example_physics::Bonk;
 
 #[main]
 pub async fn main() {
@@ -46,12 +51,12 @@ pub async fn main() {
         .with(prefab_from_url(), asset::url("assets/Shape.glb").unwrap())
         .spawn();
 
-    ambient_api::messages::Collision::subscribe(move |msg| {
+    Collision::subscribe(move |msg| {
         println!("Bonk! {:?} collided", msg.ids);
-        messages::Bonk::new(cube, camera).send_client_broadcast_unreliable();
+        Bonk::new(cube, camera).send_client_broadcast_unreliable();
     });
 
-    ambient_api::messages::Frame::subscribe(move |_| {
+    Frame::subscribe(move |_| {
         for hit in physics::raycast(Vec3::Z * 20., -Vec3::Z) {
             if hit.entity == cube {
                 println!("The raycast hit the cube: {hit:?}");

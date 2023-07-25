@@ -7,12 +7,16 @@ use ambient_api::{
         rendering::color,
         transform::{lookat_target, scale, translation},
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
+    concepts::core::{
+        camera::make_perspective_infinite_reverse_camera, transform::make_transformable,
+    },
     prelude::*,
 };
 
 mod constants;
+use components::ambient::ambient_example_tictactoe::{cell, cells, owned_by};
 use constants::*;
+use messages::ambient::ambient_example_tictactoe::Input;
 
 #[main]
 pub fn main() {
@@ -27,7 +31,7 @@ pub fn main() {
         )
         .spawn();
 
-    let cells = {
+    let cell_entities = {
         let mut cells = Vec::new();
         for y in 0..SIZE {
             for x in 0..SIZE {
@@ -45,32 +49,31 @@ pub fn main() {
     };
     entity::add_component(
         entity::synchronized_resources(),
-        components::cells(),
-        cells.clone(),
+        cells(),
+        cell_entities.clone(),
     );
 
     spawn_query(core::player::player()).bind(|ids| {
         for (id, _) in ids {
-            entity::add_component(id, components::cell(), 0);
+            entity::add_component(id, cell(), 0);
         }
     });
 
     despawn_query(core::player::player()).bind(|ids| {
-        let cells =
-            entity::get_component(entity::synchronized_resources(), components::cells()).unwrap();
+        let cells = entity::get_component(entity::synchronized_resources(), cells()).unwrap();
 
         for (id, _) in ids {
             for cell in &cells {
-                if entity::get_component(*cell, components::owned_by()) == Some(id) {
-                    entity::remove_component(*cell, components::owned_by());
+                if entity::get_component(*cell, owned_by()) == Some(id) {
+                    entity::remove_component(*cell, owned_by());
                 }
             }
         }
     });
 
-    messages::Input::subscribe(move |source, msg| {
+    Input::subscribe(move |source, msg| {
         let Some(player_id) = source.client_entity_id() else { return; };
-        let Some(cell) = entity::get_component(player_id, components::cell()) else { return; };
+        let Some(cell) = entity::get_component(player_id, cell()) else { return; };
 
         let size = SIZE as i32;
 
@@ -91,14 +94,10 @@ pub fn main() {
         }
 
         let cell = y * size + x;
-        entity::set_component(player_id, components::cell(), cell);
+        entity::set_component(player_id, self::cell(), cell);
 
         if msg.capture {
-            entity::add_component_if_required(
-                cells[cell as usize],
-                components::owned_by(),
-                player_id,
-            );
+            entity::add_component_if_required(cell_entities[cell as usize], owned_by(), player_id);
         }
     });
 }

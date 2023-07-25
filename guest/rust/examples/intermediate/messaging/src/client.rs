@@ -16,6 +16,7 @@ use ambient_api::{
     },
     prelude::*,
 };
+use messages::ambient::ambient_example_messaging::{Hello, Local};
 
 #[main]
 pub fn main() {
@@ -39,11 +40,11 @@ pub fn main() {
         .spawn();
 
     // 1
-    messages::this::Hello::new("Hello, world from the client!", false).send_server_unreliable();
-    messages::this::Hello::new("Hello, world from the client!", true).send_server_reliable();
+    Hello::new("Hello, world from the client!", false).send_server_unreliable();
+    Hello::new("Hello, world from the client!", true).send_server_reliable();
 
     // 2
-    messages::this::Hello::subscribe(|source, data| {
+    Hello::subscribe(|source, data| {
         println!("{source:?}: {:?}", data);
 
         let source_reliable = data.source_reliable;
@@ -68,7 +69,7 @@ pub fn main() {
 
     // 3
     let handled = Arc::new(AtomicBool::new(false));
-    messages::this::Local::subscribe({
+    Local::subscribe({
         let handled = handled.clone();
         move |source, data| {
             handled.store(true, Ordering::SeqCst);
@@ -80,7 +81,7 @@ pub fn main() {
     run_async(async move {
         while !handled.load(Ordering::SeqCst) {
             sleep(1.0).await;
-            messages::this::Local::new("Hello!").send_local_broadcast(false)
+            Local::new("Hello!").send_local_broadcast(false)
         }
     });
 }

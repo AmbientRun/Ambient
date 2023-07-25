@@ -4,7 +4,7 @@ use ambient_project_semantic::{Concept, Item, ItemId, ItemMap, ScalarValue, Scop
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::{make_manifest_ref, make_path, Context};
+use crate::{make_path, Context};
 
 pub fn make_definitions(
     context: &Context,
@@ -25,13 +25,8 @@ pub fn make_definitions(
         manifest_scope_id,
     )?;
 
-    let manifest_ref = make_manifest_ref(items, root_scope_id, manifest_scope_id, |scope| {
-        !scope.concepts.is_empty()
-    });
-
     Ok(quote! {
         #inner
-        #manifest_ref
     })
 }
 

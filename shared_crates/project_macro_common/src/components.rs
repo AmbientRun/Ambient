@@ -4,7 +4,7 @@ use ambient_project_semantic::{Item, ItemId, ItemMap, Scope, Type};
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::{make_manifest_ref, make_path, Context};
+use crate::{make_path, Context};
 
 pub fn make_definitions(
     context: &Context,
@@ -13,7 +13,7 @@ pub fn make_definitions(
     root_scope_id: ItemId<Scope>,
     root_scope: &Scope,
     generate_ambient_types: bool,
-    manifest_scope_id: Option<ItemId<Scope>>,
+    _manifest_scope_id: Option<ItemId<Scope>>,
 ) -> anyhow::Result<TokenStream> {
     let inner = make_definitions_inner(
         context,
@@ -50,14 +50,9 @@ pub fn make_definitions(
         Context::Guest { .. } => quote! {},
     };
 
-    let manifest_ref = make_manifest_ref(items, root_scope_id, manifest_scope_id, |scope| {
-        !scope.components.is_empty()
-    });
-
     Ok(quote! {
         #inner
         #init
-        #manifest_ref
     })
 }
 
