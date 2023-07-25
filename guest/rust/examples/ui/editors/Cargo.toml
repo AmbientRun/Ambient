@@ -8,7 +8,7 @@ version = { workspace = true }
 
 [dependencies]
 ambient_api = { workspace = true }
-indexmap = { version = "1", features = ["serde"] }
+indexmap = { workspace = true }
 
 [[bin]]
 name = "ui_input_client"

@@ -6,6 +6,7 @@ use std::{
     task::{Context, Poll, RawWaker, RawWakerVTable, Waker},
 };
 
+use indexmap::IndexMap;
 use once_cell::sync::Lazy;
 
 use crate::global::ResultEmpty;
@@ -62,7 +63,7 @@ impl Executor {
                     .on
                     .entry(event_name)
                     .or_default()
-                    .extend(&mut new_callbacks.drain());
+                    .extend(&mut new_callbacks.drain(..));
             }
         }
 
@@ -144,5 +145,5 @@ impl Executor {
 
 #[derive(Default)]
 struct Callbacks {
-    on: HashMap<String, HashMap<u128, EventCallbackFn>>,
+    on: HashMap<String, IndexMap<u128, EventCallbackFn>>,
 }
