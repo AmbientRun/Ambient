@@ -1,7 +1,7 @@
 use ambient_api::{
     components::core::{
         app::main_scene,
-        physics::{cube_collider, plane_collider},
+        physics::{cube_collider, dynamic, physics_controlled, plane_collider},
         prefab::prefab_from_url,
         primitives::{cube, quad},
         rendering::{fog_density, light_diffuse, sky, sun},
@@ -23,11 +23,11 @@ pub async fn main() {
         .with_default(sky())
         .spawn();
     Entity::new()
-        .with_merge(make_transformable())
+        .with(translation(), vec3(10., 10., 0.))
         .with_default(cube())
-        .with(translation(), vec3(30., 30., 0.))
-        .with(cube_collider(), vec3(10., 50., 5.))
-        .with(scale(), vec3(10., 50., 5.))
+        .with(cube_collider(), vec3(1., 1., 1.))
+        .with_default(physics_controlled())
+        .with(dynamic(), true)
         .spawn();
     // Entity::new()
     //     .with_merge(make_transformable())

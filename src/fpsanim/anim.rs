@@ -8,6 +8,39 @@ use crate::components as c;
 pub fn register_anim() {
     spawn_query(player()).bind(move |info| {
         for (id, ()) in info {
+            let run_fd = PlayClipFromUrlNode::new(
+                asset::url("assets/anim/Run Forward.fbx/animations/mixamo.com.anim").unwrap(),
+            );
+
+            let run_bk = PlayClipFromUrlNode::new(
+                asset::url("assets/anim/Run Backward.fbx/animations/mixamo.com.anim").unwrap(),
+            );
+
+            let run_lt = PlayClipFromUrlNode::new(
+                asset::url("assets/anim/Run Left.fbx/animations/mixamo.com.anim").unwrap(),
+            );
+
+            let run_rt = PlayClipFromUrlNode::new(
+                asset::url("assets/anim/Run Right.fbx/animations/mixamo.com.anim").unwrap(),
+            );
+
+            let run_fd_lt = PlayClipFromUrlNode::new(
+                asset::url("assets/anim/Run Forward Left.fbx/animations/mixamo.com.anim").unwrap(),
+            );
+
+            let run_fd_rt = PlayClipFromUrlNode::new(
+                asset::url("assets/anim/Run Forward Right.fbx/animations/mixamo.com.anim").unwrap(),
+            );
+
+            let run_bk_lt = PlayClipFromUrlNode::new(
+                asset::url("assets/anim/Run Backward Left.fbx/animations/mixamo.com.anim").unwrap(),
+            );
+
+            let run_bk_rt = PlayClipFromUrlNode::new(
+                asset::url("assets/anim/Run Backward Right.fbx/animations/mixamo.com.anim")
+                    .unwrap(),
+            );
+
             let run = PlayClipFromUrlNode::new(
                 asset::url("assets/anim/Rifle Run.fbx/animations/mixamo.com.anim").unwrap(),
             );
@@ -70,6 +103,15 @@ pub fn register_anim() {
             let idle_bk_lt = BlendNode::new(&idle, &bk_lt, 0.5);
             let idle_bk_rt = BlendNode::new(&idle, &bk_rt, 0.5);
 
+            let run_fd_player = AnimationPlayer::new(&run_fd);
+            let run_bk_player = AnimationPlayer::new(&run_bk);
+            let run_rt_player = AnimationPlayer::new(&run_rt);
+            let run_lt_player = AnimationPlayer::new(&run_lt);
+            let run_fd_lt_player = AnimationPlayer::new(&run_fd_lt);
+            let run_fd_rt_player = AnimationPlayer::new(&run_fd_rt);
+            let run_bk_lt_player = AnimationPlayer::new(&run_bk_lt);
+            let run_bk_rt_player = AnimationPlayer::new(&run_bk_rt);
+
             let run_player = AnimationPlayer::new(&run);
             let jump_player = AnimationPlayer::new(&jump);
             let hit_player = AnimationPlayer::new(&hit);
@@ -90,6 +132,14 @@ pub fn register_anim() {
             entity::add_components(
                 id,
                 Entity::new()
+                    .with(c::run_fd(), vec![run_fd.0 .0, run_fd_player.0])
+                    .with(c::run_bk(), vec![run_bk.0 .0, run_bk_player.0])
+                    .with(c::run_rt(), vec![run_rt.0 .0, run_rt_player.0])
+                    .with(c::run_lt(), vec![run_lt.0 .0, run_lt_player.0])
+                    .with(c::run_fd_rt(), vec![run_fd_rt.0 .0, run_fd_rt_player.0])
+                    .with(c::run_fd_lt(), vec![run_fd_lt.0 .0, run_fd_lt_player.0])
+                    .with(c::run_bk_rt(), vec![run_bk_rt.0 .0, run_bk_rt_player.0])
+                    .with(c::run_bk_lt(), vec![run_bk_lt.0 .0, run_bk_lt_player.0])
                     .with(c::run(), vec![run.0 .0, run_player.0])
                     .with(c::jump(), vec![jump.0 .0, jump_player.0])
                     .with(c::hit(), vec![hit.0 .0, hit_player.0])

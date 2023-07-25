@@ -1,5 +1,46 @@
 [components]
 
+run_fd = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+run_bk = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+run_lt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+run_rt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+run_fd_lt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+run_fd_rt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+run_bk_lt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+run_bk_rt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+
 run = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
     "Debuggable",
     "Networked",

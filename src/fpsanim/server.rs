@@ -50,7 +50,35 @@ pub fn main() {
             };
 
             if is_running {
-                entity::add_component(model, apply_animation_player(), run_anim[1]);
+                let fd = dir.y == -1.0;
+                let bk = dir.y == 1.0;
+                let lt = dir.x == -1.0;
+                let rt = dir.x == 1.0;
+
+                if fd && !lt && !rt {
+                    apply_animation(player_id, components::run_fd());
+                } else if bk && !lt && !rt {
+                    apply_animation(player_id, components::run_bk());
+                } else if lt && !fd && !bk {
+                    apply_animation(player_id, components::run_lt());
+                } else if rt && !fd && !bk {
+                    apply_animation(player_id, components::run_rt());
+                } else if fd && lt {
+                    apply_animation(player_id, components::run_fd_lt());
+                } else if fd && rt {
+                    apply_animation(player_id, components::run_fd_rt());
+                } else if bk && lt {
+                    apply_animation(player_id, components::run_bk_lt());
+                } else if bk && rt {
+                    apply_animation(player_id, components::run_bk_rt());
+                } else {
+                    // TODO: there is a bug on multiple animations playing at the same time
+                    // I cannot use this commented line
+                    // there is a "hijack" bug on the animation player
+                    // have to create anim for each player
+                    apply_anim(player_id, components::idle_fd(), 0.0);
+                    // apply_anim(player_id, components::idle_fd_lt(), 0.0);
+                }
                 continue;
             };
 
@@ -122,4 +150,18 @@ pub fn apply_anim(player_id: EntityId, comp: Component<Vec<EntityId>>, blend_val
     let blend_player = blend_player.unwrap();
     entity::set_component(blend_player[0], blend(), blend_value);
     entity::add_component(model, apply_animation_player(), blend_player[1]);
+}
+
+pub fn apply_animation(player_id: EntityId, comp: Component<Vec<EntityId>>) {
+    let model = entity::get_component(player_id, components::player_model_ref());
+    if model.is_none() {
+        return;
+    }
+    let model = model.unwrap();
+    let anim_player = entity::get_component(player_id, comp);
+    if anim_player.is_none() {
+        return;
+    }
+    let anim_player = anim_player.unwrap();
+    entity::add_component(model, apply_animation_player(), anim_player[1]);
 }
