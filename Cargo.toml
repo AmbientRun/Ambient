@@ -114,7 +114,7 @@ im = "15.1.0"
 axum = "0.6.4"
 tower-http = { version = "0.3.0", features = ["cors", "fs"] }
 tower = "0.4.13"
-indexmap = { version = "1.8.2", features = ["serde"] }
+indexmap = { version = "2.0", features = ["serde"] }
 fixed-vec-deque = "0.1.9"
 hex = "0.4.3"
 ring = "0.16.20"
