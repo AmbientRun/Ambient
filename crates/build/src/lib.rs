@@ -92,10 +92,13 @@ pub async fn build(config: BuildConfiguration) -> anyhow::Result<Metadata> {
 
     if clean_build {
         tracing::info!("Removing build directory: {build_path:?}");
-        tokio::fs::remove_dir_all(&build_path)
-            .await
-            .context("Failed to clean build directory")
-            .unwrap();
+        match tokio::fs::remove_dir_all(&build_path).await {
+            Ok(_) => {}
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
+            Err(err) => {
+                return Err(err).context("Failed to remove build directory");
+            }
+        }
     }
 
     tokio::fs::create_dir_all(&build_path)
