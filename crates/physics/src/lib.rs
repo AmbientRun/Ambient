@@ -228,10 +228,6 @@ pub fn server_systems() -> SystemGroup {
     )
 }
 
-pub fn client_systems() -> SystemGroup {
-    SystemGroup::new("physics", vec![Box::new(visualization::client_systems())])
-}
-
 /// Starts the physx simulation step concurrently.
 ///
 /// Results will be available after [`fetch_simulation_system`]

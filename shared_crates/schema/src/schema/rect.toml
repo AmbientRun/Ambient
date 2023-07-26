@@ -35,6 +35,18 @@ name = "Border thickness"
 description = "Border thickness of an entity with a `rect` component."
 attributes = ["debuggable", "networked", "store"]
 
+[components.pixel-line-from]
+type = "vec3"
+name = "Pixel Line from"
+description = "Start point of a pixel sized line."
+attributes = ["debuggable", "networked", "store"]
+
+[components.pixel-line-to]
+type = "vec3"
+name = "Pixel Line to"
+description = "End point of a pixel sized line."
+attributes = ["debuggable", "networked", "store"]
+
 [components.line-from]
 type = "vec3"
 name = "Line from"

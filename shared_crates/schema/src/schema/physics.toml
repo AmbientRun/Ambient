@@ -157,5 +157,8 @@ attributes = ["debuggable", "networked", "store"]
 [components.visualize-collider]
 type = "empty"
 name = "Visualize collider"
-description = "If attached, the collider will be rendered."
+description = """If attached, the collider will be rendered.
+
+**Note**: this will continuously overwrite the `local_gizmos` component.
+"""
 attributes = ["debuggable", "networked"]

@@ -16,7 +16,7 @@ use ambient_network::{client::ClientState, server::RpcArgs as ServerRpcArgs};
 use ambient_renderer::{RenderTarget, Renderer};
 use ambient_rpc::RpcRegistry;
 use ambient_shared_types::{ModifiersState, VirtualKeyCode};
-use ambient_std::{asset_cache::AssetCache, color::Color, line_hash, Cb};
+use ambient_std::{asset_cache::AssetCache, color::Color, line_uid, Cb};
 use ambient_ui_native::{
     fit_horizontal_impl, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit,
     FlowColumn, FlowRow, Image, UIExt,
@@ -125,7 +125,7 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
                 move |_| {
                     get_state(&mut |_, _, world| {
                         let gizmos = world.resource(gizmos());
-                        let mut g = gizmos.scope(line_hash!());
+                        let mut g = gizmos.scope(line_uid!());
                         let cascades = 5;
                         for (i, cam) in shadow_cameras_from_world(
                             world,
@@ -156,7 +156,7 @@ pub fn Debugger(hooks: &mut Hooks, get_state: GetDebuggerState) -> Element {
                 move |_| {
                     get_state(&mut |_, _, world| {
                         let gizmos = world.resource(gizmos());
-                        let mut g = gizmos.scope(line_hash!());
+                        let mut g = gizmos.scope(line_uid!());
                         for (_, (bounding,)) in query((world_bounding_sphere(),)).iter(world, None)
                         {
                             g.draw(

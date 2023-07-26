@@ -10,7 +10,7 @@ use ambient_gizmos::{gizmos, GizmoPrimitive};
 use ambient_model::bones_to_lines;
 use ambient_model_import::model_crate::ModelCrate;
 use ambient_primitives::Quad;
-use ambient_std::{asset_url::AbsAssetUrl, line_hash, math::SphericalCoords};
+use ambient_std::{asset_url::AbsAssetUrl, line_uid, math::SphericalCoords};
 use glam::*;
 use std::str::FromStr;
 
@@ -35,7 +35,7 @@ async fn init(app: &mut App) {
 
     let id = model.spawn(&gpu, world, &Default::default());
     {
-        let mut scope = world.resource(gizmos()).scope(line_hash!());
+        let mut scope = world.resource(gizmos()).scope(line_uid!());
         for line in bones_to_lines(world, id) {
             scope.draw(GizmoPrimitive::line(line.0, line.1, 0.01));
         }

@@ -6,10 +6,10 @@
         "cmd": "cargo run -p ambient"
     },
     "third-person-camera-release": {
-        "cmd": "cargo run --features profile --release -- run ./guest/rust/examples/basics/third_person_camera"
+        "cmd": "cargo run --features profile --release -- run ./guest/rust/examples/controllers/third_person_camera"
     },
     "third-person-camera": {
-        "cmd": "cargo run --features tracing -- run ./guest/rust/examples/basics/third_person_camera --debugger"
+        "cmd": "cargo run --features tracing -- run ./guest/rust/examples/controllers/third_person_camera --debugger"
     },
     "primitives": {
         "cmd": "cargo build",
@@ -118,6 +118,24 @@
             "RUST_LOG": "ambient_network=debug,info"
         }
     },
+    "debug-physics": {
+        "cmd": [
+            "cargo",
+            "build",
+            "--features",
+            "tracing"
+        ],
+        "components": {
+            "dap": {
+                "program": "./target/debug/ambient",
+                "adapter": "rust",
+                "args": [
+                    "run",
+                    "./guest/rust/examples/basics/physics/"
+                ]
+            }
+        }
+    },
     "debug-samplers": {
         "cmd": [
             "cargo",
@@ -162,7 +180,7 @@
                 "justMyCode": true,
                 "args": [
                     "run",
-                    "./guest/rust/examples/basics/third_person_camera"
+                    "./guest/rust/examples/controllers/third_person_camera"
                 ]
             }
         }
@@ -210,17 +228,11 @@
             "cargo-dap": {}
         }
     },
-    "launch-chrome": {
-        "cmd": "./scripts/launch_chrome.sh"
+    "open-browser": {
+        "cmd": "cargo cf web open-browser"
     },
     "build-web": {
-        "cmd": "wasm-pack build client --dev",
-        "cwd": "web",
-        "components": {
-            "qf": {
-                "compiler": "cargo"
-            }
-        }
+        "cmd": "cargo cf web build"
     },
     "run": {
         "cmd": "npm run dev",

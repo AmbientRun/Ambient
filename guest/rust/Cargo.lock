@@ -51,6 +51,7 @@ dependencies = [
  "data-encoding",
  "futures",
  "glam",
+ "indexmap 2.0.0",
  "once_cell",
  "paste",
  "rand 0.8.5",
@@ -206,7 +207,7 @@ name = "ambient_example_editors"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_api",
- "indexmap 1.9.3",
+ "indexmap 2.0.0",
 ]
 
 [[package]]
@@ -469,7 +470,7 @@ name = "ambient_project"
 version = "0.3.0-dev"
 dependencies = [
  "convert_case",
- "indexmap 1.9.3",
+ "indexmap 2.0.0",
  "proc-macro2",
  "quote",
  "serde",
@@ -514,7 +515,7 @@ dependencies = [
  "convert_case",
  "data-encoding",
  "glam",
- "indexmap 1.9.3",
+ "indexmap 2.0.0",
  "paste",
  "thiserror",
  "toml 0.7.5",
@@ -566,7 +567,7 @@ dependencies = [
  "convert_case",
  "futures",
  "glam",
- "indexmap 1.9.3",
+ "indexmap 2.0.0",
  "itertools",
  "parking_lot",
  "rand 0.8.5",
@@ -1060,6 +1061,7 @@ checksum = "d5477fe2230a79769d8dc68e0eabf5437907c0457a5614a9e8dddb67f65eb65d"
 dependencies = [
  "equivalent",
  "hashbrown 0.14.0",
+ "serde",
 ]
 
 [[package]]

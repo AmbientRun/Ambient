@@ -54,4 +54,4 @@ dyn-clonable = { workspace = true }
 cargo_toml = { workspace = true }
 symphonia = { workspace = true }
 vorbis_rs = { workspace = true }
-rand = { workspace = true }
+optivorbis = { workspace = true }
