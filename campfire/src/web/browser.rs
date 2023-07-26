@@ -33,7 +33,8 @@ async fn open_browser(spki: &str, url: &str) -> anyhow::Result<()> {
         if #[cfg(target_os = "macos")] {
             let mut command = Command::new("open");
             command
-                .args(["-a", "Google Chrome", url, "--args"])
+                // Feeding a url to chrome here makes `--args spki` not be fed to chrome
+                .args(["-a", "Google Chrome", "--args"])
                 .arg(format!("--ignore-certificate-errors-spki-list={spki}"));
 
         }

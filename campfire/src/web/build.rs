@@ -19,86 +19,74 @@ pub(crate) enum Target {
 pub struct BuildOptions {
     #[arg(long, default_value = "dev")]
     pub profile: String,
-    #[arg(long, value_enum)]
+    #[arg(long, value_enum, default_value = "bundler")]
     target: Target,
 }
 
 pub async fn run(opts: BuildOptions) -> anyhow::Result<()> {
+    ensure_wasm_pack().await?;
     let output_path = run_cargo_build(&opts).await?;
-
-    run_wasm_bindgen(&output_path, &opts).await?;
 
     Ok(())
 }
 
-pub async fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
-    let mut command = Command::new("cargo");
+pub async fn ensure_wasm_pack() -> anyhow::Result<()> {
+    match which::which("wasm-pack") {
+        Err(_) => {
+            eprintln!("Installing wasm-pack");
+            let status = Command::new("carg")
+                .args(["install", "wasm-pack"])
+                .spawn()?
+                .wait()
+                .await?;
+            if !status.success() {
+                anyhow::bail!("Failed to install wasm-pack");
+            }
 
-    command
-        .args([
-            "build",
-            "--target",
-            "wasm32-unknown-unknown",
-            "--profile",
-            &opts.profile,
-        ])
-        .current_dir("web");
-
-    eprintln!("Building web client");
-    let res = command.spawn()?.wait().await?;
-    if !res.success() {
-        anyhow::bail!("Building package failed with status code: {res}");
+            Ok(())
+        }
+        Ok(path) => {
+            eprintln!("Found installation of wasm pack at {path:?}");
+            Ok(())
+        }
     }
-
-    // See: https://doc.rust-lang.org/cargo/guide/build-cache.html
-    let output_path = [
-        "web",
-        "target",
-        "wasm32-unknown-unknown",
-        match &opts.profile[..] {
-            "dev" => "debug",
-            v => v,
-        },
-        "ambient_web.wasm",
-    ]
-    .iter()
-    .collect::<PathBuf>()
-    .canonicalize()
-    .context("Produced build artifact does not exist")?;
-
-    assert!(output_path.exists());
-
-    eprintln!("Built package: {:?}", output_path);
-
-    Ok(output_path)
 }
 
-pub async fn run_wasm_bindgen(
-    path: impl AsRef<Path>,
-    opts: &BuildOptions,
-) -> anyhow::Result<PathBuf> {
-    let path = path.as_ref();
+pub async fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
+    let mut command = Command::new("wasm-pack");
 
-    eprintln!("Generating wasm bindings");
+    command.args(["build", "client"]).current_dir("web");
 
-    let mut command = Command::new("wasm-bindgen");
-
-    let output_path = ["web", "pkg"].iter().collect::<PathBuf>();
-
-    command.args(["--out-dir"]).arg(&output_path).arg(path);
+    match &opts.profile[..] {
+        "dev" | "debug" => command.arg("--dev"),
+        "release" => command.arg("--release"),
+        v => anyhow::bail!("Unknown profile: {v:?}"),
+    };
 
     match opts.target {
         Target::Bundler => command.args(["--target", "bundler"]),
         Target::Standalone => command.args(["--target", "no-modules"]),
     };
 
+    // See: https://doc.rust-lang.org/cargo/guide/build-cache.html
+    let output_path = ["web", "pkg"]
+        .iter()
+        .collect::<PathBuf>()
+        .canonicalize()
+        .context("Produced build artifact does not exist")?;
+
+    command.arg("--out-dir").arg(output_path.clone());
+
+    eprintln!("Building web client");
+
     let res = command.spawn()?.wait().await?;
     if !res.success() {
-        anyhow::bail!("Generating wasm bindings for package failed with status code: {res}");
+        anyhow::bail!("Building package failed with status code: {res}");
     }
 
-    let output_path = output_path.canonicalize()?;
+    assert!(output_path.exists());
 
-    eprintln!("Generated wasm package at: {:?}", output_path);
+    eprintln!("Built package: {:?}", output_path);
+
     Ok(output_path)
 }
