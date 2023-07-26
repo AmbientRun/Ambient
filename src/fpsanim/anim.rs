@@ -78,9 +78,9 @@ pub fn register_anim() {
             // let run = PlayClipFromUrlNode::new(
             //     asset::url("assets/anim/Rifle Run.fbx/animations/mixamo.com.anim").unwrap(),
             // );
-            // let jump = PlayClipFromUrlNode::new(
-            //     asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim").unwrap(),
-            // );
+            let jump = PlayClipFromUrlNode::new(
+                asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim").unwrap(),
+            );
 
             // // Looping is buggy
             // jump.looping(false);
@@ -156,7 +156,7 @@ pub fn register_anim() {
             let run_bk_rt_player = AnimationPlayer::new(&run_bk_rt);
 
             // let run_player = AnimationPlayer::new(&run);
-            // let jump_player = AnimationPlayer::new(&jump);
+            let jump_player = AnimationPlayer::new(&jump);
             // let hit_player = AnimationPlayer::new(&hit);
             // let death_player = AnimationPlayer::new(&death);
             // let fire_player = AnimationPlayer::new(&fire);
@@ -193,7 +193,7 @@ pub fn register_anim() {
                     .with(c::run_bk_rt(), vec![run_bk_rt.0 .0, run_bk_rt_player.0])
                     .with(c::run_bk_lt(), vec![run_bk_lt.0 .0, run_bk_lt_player.0])
                     // .with(c::run(), vec![run.0 .0, run_player.0])
-                    // .with(c::jump(), vec![jump.0 .0, jump_player.0])
+                    .with(c::jump(), vec![jump.0 .0, jump_player.0])
                     // .with(c::hit(), vec![hit.0 .0, hit_player.0])
                     // .with(c::death(), vec![death.0 .0, death_player.0])
                     // .with(c::fire(), vec![fire.0 .0, fire_player.0])

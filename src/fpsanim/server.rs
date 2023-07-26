@@ -42,22 +42,25 @@ pub fn main() {
                     asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim").unwrap(),
                 );
                 jump.looping(false);
-                let anim_player =
-                    entity::get_component(model, apply_animation_player()).unwrap_or_default();
-                let p = AnimationPlayer(anim_player);
-                p.play(jump);
+
+                // TODO: This increases the memory usage!!!
+                let jump_player = AnimationPlayer::new(&jump);
+                entity::add_component(model, apply_animation_player(), jump_player.0);
                 entity::add_component(player_id, components::player_jumping(), false);
                 continue;
             }
 
-            // if is_shooting {
-            //     let shoot = PlayClipFromUrlNode::new(
-            //         asset::url("assets/anim/Rifle Firing.fbx/animations/mixamo.com.anim").unwrap(),
-            //     );
-            //     shoot.looping(false);
-            //     play_clip_on_model(model, shoot);
-            //     continue;
-            // }
+            if is_shooting {
+                let fire = PlayClipFromUrlNode::new(
+                    asset::url("assets/anim/Rifle Firing.fbx/animations/mixamo.com.anim").unwrap(),
+                );
+                fire.looping(false);
+
+                // TODO: This increases the memory usage!!!
+                let fire_player = AnimationPlayer::new(&fire);
+                entity::add_component(model, apply_animation_player(), fire_player.0);
+                continue;
+            }
             let fd = dir.y == -1.0;
             let bk = dir.y == 1.0;
             let lt = dir.x == -1.0;
