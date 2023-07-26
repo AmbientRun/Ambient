@@ -1,11 +1,12 @@
 use std::{
     path::{Path, PathBuf},
+    process::Stdio,
     sync::Arc,
 };
 
 use anyhow::Context;
 use clap::{Args, Subcommand, ValueEnum};
-use tokio::process::Command;
+use tokio::{join, process::Command, try_join};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub(crate) enum Target {
@@ -33,20 +34,59 @@ pub async fn run(opts: BuildOptions) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[cfg(not(target_os = "linux"))]
+pub(crate) async fn install_wasm_pack() -> anyhow::Result<()> {
+    eprintln!("Installing wasm-pack from source");
+    let status = Command::new("cargo")
+        .args(["install", "wasm-pack"])
+        .spawn()?
+        .wait()
+        .await?;
+
+    if !status.success() {
+        anyhow::bail!("Failed to install wasm-pack");
+    }
+
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+pub(crate) async fn install_wasm_pack() -> anyhow::Result<()> {
+    eprintln!("Installing wasm-pack");
+    let curl = Command::new("curl")
+        .args([
+            "https://rustwasm.github.io/wasm-pack/installer/init.sh",
+            "-sSf",
+        ])
+        .spawn()
+        .context("Failed to spawn curl")?;
+
+    if !status.success() {
+        anyhow::bail!("Failed to install wasm-pack");
+    }
+
+    let sh = Command::new("sh")
+        .stdin(Stdio::from(curl.stdout.unwrap()))
+        .spawn()
+        .context("Failed to spawn sh")?;
+
+    let (curl, sh) = try_join!(curl.wait(), sh.wait())?;
+
+    if !curl.success() {
+        anyhow::bail!("Failed to fetch install script")
+    }
+
+    if !sh.success() {
+        anyhow::bail!("Failed to run install script for wasm-pack")
+    }
+
+    Ok(())
+}
+
 pub async fn ensure_wasm_pack() -> anyhow::Result<()> {
     match which::which("wasm-pack") {
         Err(_) => {
-            eprintln!("Installing wasm-pack");
-            let status = Command::new("cargo")
-                .args(["install", "wasm-pack"])
-                .spawn()?
-                .wait()
-                .await?;
-
-            if !status.success() {
-                anyhow::bail!("Failed to install wasm-pack");
-            }
-
+            install_wasm_pack().await?;
             assert!(which::which("wasm-pack").is_ok(), "wasm-pack is in PATH");
 
             Ok(())
