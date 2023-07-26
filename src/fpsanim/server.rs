@@ -12,14 +12,14 @@ mod anim;
 
 #[main]
 pub fn main() {
-    let jump = PlayClipFromUrlNode::new(
-        asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim").unwrap(),
-    );
-    jump.looping(false);
-    let jump_player = AnimationPlayer::new(&jump);
-    spawn_query((player(), components::player_model_ref())).bind(move |v| {
+    spawn_query((player(), components::player_model_ref())).bind(|v| {
         for (id, (_, model)) in v {
-            entity::add_component(model, apply_animation_player(), jump_player.clone().0);
+            let jump = PlayClipFromUrlNode::new(
+                asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim").unwrap(),
+            );
+            jump.looping(false);
+            let jump_player = AnimationPlayer::new(&jump);
+            entity::add_component(model, apply_animation_player(), jump_player.0);
             entity::add_component(id, components::player_jumping(), false);
         }
     });
@@ -40,7 +40,12 @@ pub fn main() {
                     asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim").unwrap(),
                 );
                 jump.looping(false);
-                jump_player.play(jump);
+
+                let anim_player =
+                    entity::get_component(model, apply_animation_player()).unwrap_or_default();
+                let p = AnimationPlayer(anim_player);
+                p.play(jump);
+                println!("play jump for id {:?}", player_id);
                 entity::add_component(player_id, components::player_jumping(), false);
                 continue;
             }
