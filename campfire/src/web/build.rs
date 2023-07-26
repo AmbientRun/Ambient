@@ -25,6 +25,7 @@ pub struct BuildOptions {
 
 pub async fn run(opts: BuildOptions) -> anyhow::Result<()> {
     ensure_wasm_pack().await?;
+
     let output_path = run_cargo_build(&opts).await?;
 
     eprintln!("Built package: {:?}", output_path);
@@ -36,14 +37,17 @@ pub async fn ensure_wasm_pack() -> anyhow::Result<()> {
     match which::which("wasm-pack") {
         Err(_) => {
             eprintln!("Installing wasm-pack");
-            let status = Command::new("carg")
+            let status = Command::new("cargo")
                 .args(["install", "wasm-pack"])
                 .spawn()?
                 .wait()
                 .await?;
+
             if !status.success() {
                 anyhow::bail!("Failed to install wasm-pack");
             }
+
+            assert!(which::which("wasm-pack").is_ok(), "wasm-pack is in PATH");
 
             Ok(())
         }
