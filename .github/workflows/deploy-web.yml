@@ -3,7 +3,7 @@ name: "Deploy Web Client"
 on:
   push:
     branches: ["main"]
-    tags: [v*]
+    # tags: [v*]
   # TODO: remove, only for testing
   pull_request:
     branches: ["main"]
