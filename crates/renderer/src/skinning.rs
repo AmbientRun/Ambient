@@ -18,7 +18,7 @@ use glam::{vec4, Mat4};
 use itertools::Itertools;
 use parking_lot::Mutex;
 
-pub use ambient_ecs::generated::components::core::rendering::{joint_matrices, joints};
+pub use ambient_ecs::generated::rendering::components::{joint_matrices, joints};
 
 components!("rendering", {
     @[Networked, Store]

@@ -1,18 +1,23 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        primitives::{
-            capsule_half_height, capsule_latitudes, capsule_longitudes, capsule_radius,
-            capsule_rings, cube, quad, sphere_radius, sphere_sectors, sphere_stacks,
-            torus_inner_radius, torus_loops, torus_outer_radius, torus_slices,
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
         },
-        rendering::color,
-        transform::{lookat_target, scale, translation},
-    },
-    concepts::{
-        make_capsule, make_perspective_infinite_reverse_camera, make_sphere, make_torus,
-        make_transformable,
+        primitives::{
+            components::{
+                capsule_half_height, capsule_latitudes, capsule_longitudes, capsule_radius,
+                capsule_rings, cube, quad, sphere_radius, sphere_sectors, sphere_stacks,
+                torus_inner_radius, torus_loops, torus_outer_radius, torus_slices,
+            },
+            concepts::{make_capsule, make_sphere, make_torus},
+        },
+        rendering::components::color,
+        transform::{
+            components::{lookat_target, scale, translation},
+            concepts::make_transformable,
+        },
     },
     prelude::*,
 };

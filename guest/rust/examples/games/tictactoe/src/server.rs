@@ -1,22 +1,25 @@
 use ambient_api::{
-    components::core::{
+    core::{
         self,
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        primitives::cube,
-        rendering::color,
-        transform::{lookat_target, scale, translation},
+        app::components::main_scene,
+        camera::components::aspect_ratio_from_window,
+        primitives::components::cube,
+        rendering::components::color,
+        transform::components::{lookat_target, scale, translation},
     },
-    concepts::core::{
-        camera::make_perspective_infinite_reverse_camera, transform::make_transformable,
+    core::{
+        camera::concepts::make_perspective_infinite_reverse_camera,
+        transform::concepts::make_transformable,
     },
     prelude::*,
 };
 
 mod constants;
-use components::ambient::ambient_example_tictactoe::{cell, cells, owned_by};
+use ambient::ambient_example_tictactoe::{
+    components::{cell, cells, owned_by},
+    messages::Input,
+};
 use constants::*;
-use messages::ambient::ambient_example_tictactoe::Input;
 
 #[main]
 pub fn main() {
@@ -53,13 +56,13 @@ pub fn main() {
         cell_entities.clone(),
     );
 
-    spawn_query(core::player::player()).bind(|ids| {
+    spawn_query(core::player::components::player()).bind(|ids| {
         for (id, _) in ids {
             entity::add_component(id, cell(), 0);
         }
     });
 
-    despawn_query(core::player::player()).bind(|ids| {
+    despawn_query(core::player::components::player()).bind(|ids| {
         let cells = entity::get_component(entity::synchronized_resources(), cells()).unwrap();
 
         for (id, _) in ids {

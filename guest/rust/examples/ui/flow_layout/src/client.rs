@@ -1,11 +1,11 @@
 use ambient_api::{
-    components::core::{
-        layout::{
+    core::{
+        layout::components::{
             align_horizontal_center, align_horizontal_end, align_vertical_center,
             align_vertical_end, fit_horizontal_children, fit_horizontal_none,
             fit_vertical_children, fit_vertical_none, height, space_between_items, width,
         },
-        text::font_size,
+        text::components::font_size,
     },
     prelude::*,
 };

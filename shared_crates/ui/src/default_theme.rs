@@ -4,8 +4,9 @@ use glam::{vec4, Vec4};
 use crate::UIExt;
 use ambient_color::Color;
 use ambient_element::Element;
-use ambient_guest_bridge::components::{
-    layout::space_between_items, rect::border_radius, rendering::color, text::font_size,
+use ambient_guest_bridge::core::{
+    layout::components::space_between_items, rect::components::border_radius,
+    rendering::components::color, text::components::font_size,
 };
 
 /// The primary color.

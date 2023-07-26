@@ -14,8 +14,8 @@ use ambient_element::{
     element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks,
 };
 use ambient_guest_bridge::{
-    components::{
-        layout::{
+    core::{
+        layout::components::{
             //LEGACY_MISSING_ENUM_SUPPORT: align_vertical_center, fit_horizontal_parent,
             height,
             margin,
@@ -23,12 +23,12 @@ use ambient_guest_bridge::{
             padding,
             space_between_items,
         },
-        rect::{border_color, border_radius, border_thickness},
-        rendering::color,
-        //LEGACY_MISSING_ENUM_SUPPORT: text::font_style,
+        messages,
+        rect::components::{border_color, border_radius, border_thickness},
+        rendering::components::color,
     },
     ecs::World,
-    messages, run_async,
+    run_async,
 };
 use ambient_shared_types::{CursorIcon, ModifiersState, VirtualKeyCode};
 use futures::{future::BoxFuture, Future, FutureExt};

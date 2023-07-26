@@ -1,12 +1,21 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        primitives::{quad, sphere_radius},
-        rendering::{cast_shadows, color, fog_density, light_diffuse, sky, sun, water},
-        transform::{lookat_target, rotation, scale, translation},
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        messages::Frame,
+        primitives::{
+            components::{quad, sphere_radius},
+            concepts::make_sphere,
+        },
+        rendering::components::{cast_shadows, color, fog_density, light_diffuse, sky, sun, water},
+        transform::{
+            components::{lookat_target, rotation, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     prelude::*,
 };
 
@@ -56,7 +65,7 @@ pub fn main() {
         .with(fog_density(), 0.)
         .spawn();
 
-    ambient_api::messages::Frame::subscribe(move |_| {
+    Frame::subscribe(move |_| {
         let rot = entity::get_component(sun, rotation()).unwrap();
         entity::set_component(sun, rotation(), rot * Quat::from_rotation_y(0.01));
     });

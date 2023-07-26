@@ -23,7 +23,7 @@ use ambient_std::{
 };
 use glam::{vec3, Mat4, Quat, Vec3, Vec4};
 
-pub use ambient_ecs::generated::components::core::primitives::{
+pub use ambient_ecs::generated::primitives::components::{
     capsule, capsule_half_height, capsule_latitudes, capsule_longitudes, capsule_radius,
     capsule_rings, cube, quad, sphere, sphere_radius, sphere_sectors, sphere_stacks, torus,
     torus_inner_radius, torus_loops, torus_outer_radius, torus_slices,

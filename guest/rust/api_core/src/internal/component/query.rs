@@ -1,9 +1,11 @@
 use std::marker::PhantomData;
 
 use crate::{
+    core::messages::Frame,
     global::{CallbackReturn, EntityId, OkEmpty},
     internal::{component::ComponentsTuple, conversion::FromBindgen, wit},
     message::Listener,
+    message::RuntimeMessage,
 };
 
 /// Creates a new [GeneralQueryBuilder] that will find entities that have the specified `components`
@@ -258,8 +260,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryImpl<Components>
         self,
         callback: impl Fn(Vec<(EntityId, Components::Data)>) -> R + 'static,
     ) -> Listener {
-        use crate::message::RuntimeMessage;
-        crate::messages::core::Frame::subscribe(move |_| {
+        Frame::subscribe(move |_| {
             let results = self.evaluate();
             if !results.is_empty() {
                 callback(results).into_result()?;

@@ -9,7 +9,7 @@ use glam::{vec3, Mat4, Vec2, Vec3, Vec3Swizzles};
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
 
-pub use ambient_ecs::generated::components::core::camera::{
+pub use ambient_ecs::generated::camera::components::{
     active_camera, aspect_ratio, aspect_ratio_from_window, far, fog, fovy, near, orthographic,
     orthographic_bottom, orthographic_from_window, orthographic_left, orthographic_right,
     orthographic_top, perspective, perspective_infinite_reverse, projection, projection_view,

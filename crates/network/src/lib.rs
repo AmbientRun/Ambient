@@ -10,7 +10,7 @@ use ambient_rpc::RpcError;
 use ambient_std::log_error;
 use thiserror::Error;
 
-pub use ambient_ecs::generated::components::core::network::{
+pub use ambient_ecs::generated::network::components::{
     is_remote_entity, persistent_resources, synced_resources,
 };
 

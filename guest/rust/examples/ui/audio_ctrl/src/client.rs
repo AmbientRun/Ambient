@@ -1,7 +1,7 @@
 use ambient_api::{
-    components::core::{
-        audio::{amplitude, panning, stop_now},
-        layout::space_between_items,
+    core::{
+        audio::components::{amplitude, panning, stop_now},
+        layout::components::space_between_items,
     },
     prelude::*,
 };

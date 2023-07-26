@@ -13,9 +13,9 @@ use glam::{vec2, vec3, vec4, Mat4, Vec2, Vec4};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
-// LEGACY_MISSING_ENUM_SUPPORT: pub use ambient_ecs::generated::components::core::layout::fit_horizontal_parent;
+// LEGACY_MISSING_ENUM_SUPPORT: pub use ambient_ecs::generated::layout::components::fit_horizontal_parent;
 
-pub use ambient_ecs::generated::components::core::layout::{
+pub use ambient_ecs::generated::layout::components::{
     gpu_ui_size, height, is_book_file, margin, max_height, max_width, mesh_to_local_from_size,
     min_height, min_width, padding, screen, space_between_items, width,
 };

@@ -29,7 +29,7 @@ pub fn GameView(hooks: &mut Hooks, show_debug: bool) -> Element {
     let (mouse_on_edge, set_mouse_on_edge) = hooks.use_state(false);
     let (should_track_resize, set_should_track_resize) = hooks.use_state(false);
 
-    hooks.use_runtime_message::<messages::core::WindowMouseInput>({
+    hooks.use_runtime_message::<messages::WindowMouseInput>({
         move |_world, event| {
             let pressed = event.pressed;
             if pressed && mouse_on_edge {

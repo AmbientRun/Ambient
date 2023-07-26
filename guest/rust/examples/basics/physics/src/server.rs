@@ -1,24 +1,27 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        physics::{
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        messages::{Collision, Frame},
+        physics::components::{
             angular_velocity, cube_collider, dynamic, linear_velocity, physics_controlled,
             visualize_collider,
         },
-        prefab::prefab_from_url,
-        primitives::cube,
-        rendering::{cast_shadows, color},
-        transform::{lookat_target, rotation, scale, translation},
+        prefab::components::prefab_from_url,
+        primitives::components::cube,
+        rendering::components::{cast_shadows, color},
+        transform::{
+            components::{lookat_target, rotation, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::core::{
-        camera::make_perspective_infinite_reverse_camera, transform::make_transformable,
-    },
-    messages::core::{Collision, Frame},
     prelude::*,
 };
 
-use crate::messages::ambient::ambient_example_physics::Bonk;
+use crate::ambient::ambient_example_physics::messages::Bonk;
 
 #[main]
 pub async fn main() {

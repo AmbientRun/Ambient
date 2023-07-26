@@ -1,4 +1,4 @@
-use ambient_api::{components::core::prefab::prefab_from_url, prelude::*};
+use ambient_api::{core::prefab::components::prefab_from_url, prelude::*};
 
 #[main]
 pub fn main() {

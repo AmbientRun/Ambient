@@ -99,11 +99,11 @@ mod internal_components {
         world_events: WorldEvents,
     });
 }
-pub use generated::components::core::ecs::*;
+pub use generated::ecs::components::*;
 pub use internal_components::{world_events, WorldEventsExt};
 
 pub fn init_components() {
-    generated::components::init();
+    generated::init();
     internal_components::init_components();
 }
 

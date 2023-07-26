@@ -6,7 +6,9 @@ use std::time::SystemTime;
 
 use ambient_cb::{cb, Cb};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::{layout::space_between_items, rendering::color};
+use ambient_guest_bridge::core::{
+    layout::components::space_between_items, rendering::components::color,
+};
 use ambient_time::parse_duration;
 use glam::vec4;
 

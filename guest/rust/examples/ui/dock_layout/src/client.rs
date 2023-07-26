@@ -1,5 +1,5 @@
 use ambient_api::{
-    components::core::layout::{
+    core::layout::components::{
         docking_bottom, docking_left, fit_horizontal_none, fit_vertical_none, height, width,
     },
     prelude::*,

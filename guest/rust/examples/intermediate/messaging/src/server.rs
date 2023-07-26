@@ -3,18 +3,18 @@ use std::sync::{
     Arc,
 };
 
+use ambient::ambient_example_messaging::messages::{Hello, Local};
 use ambient_api::{
-    components::core::{
-        primitives::cube,
-        rendering::color,
-        transform::{scale, translation},
+    core::{
+        primitives::components::cube,
+        rendering::components::color,
+        transform::{
+            components::{scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::core::transform::make_transformable,
     prelude::*,
 };
-use messages::ambient::ambient_example_messaging::Local;
-
-use crate::messages::ambient::ambient_example_messaging::Hello;
 
 #[main]
 pub fn main() {

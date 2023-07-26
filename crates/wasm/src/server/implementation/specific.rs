@@ -10,7 +10,7 @@ use ambient_core::{
     player::{player, user_id},
     runtime,
 };
-use ambient_ecs::{generated::messages::core::HttpResponse, query, EntityId, Message, World};
+use ambient_ecs::{generated::messages::HttpResponse, query, EntityId, Message, World};
 use ambient_network::server::player_transport;
 use ambient_std::asset_url::AbsAssetUrl;
 use anyhow::Context;

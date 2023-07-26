@@ -4,13 +4,13 @@ use std::{
 };
 
 use crate::{
+    core::messages::WindowFocusChange,
     global::{CursorIcon, Vec2},
     internal::{
         conversion::{FromBindgen, IntoBindgen},
         wit,
     },
     message::Listener,
-    messages::core as messages,
     prelude::RuntimeMessage,
 };
 
@@ -67,7 +67,7 @@ impl CursorLockGuard {
         let inner = Arc::new(Mutex::new(CursorLockGuardInner::new()));
         Self {
             inner: inner.clone(),
-            listener: Some(messages::WindowFocusChange::subscribe(move |msg| {
+            listener: Some(WindowFocusChange::subscribe(move |msg| {
                 inner.lock().unwrap().set_locked(msg.focused)
             })),
         }

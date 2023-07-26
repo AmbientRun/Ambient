@@ -1,6 +1,6 @@
 use ambient_ecs::{query, EntityId, World};
 
-pub use ambient_ecs::generated::components::core::player::{local_user_id, player, user_id};
+pub use ambient_ecs::generated::player::components::{local_user_id, player, user_id};
 
 /// Returns the player entity for the given user ID, if it exists
 pub fn get_by_user_id(world: &World, user_id: &str) -> Option<EntityId> {

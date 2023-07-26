@@ -1,5 +1,11 @@
-use ambient_api::{components::core::layout::space_between_items, prelude::*};
-use components::{ball_ref, player_head_ref};
+use ambient::ambient_example_first_person_camera::{
+    components::{ball_ref, player_head_ref},
+    messages::Input,
+};
+use ambient_api::{
+    core::{layout::components::space_between_items, messages::Frame},
+    prelude::*,
+};
 
 #[main]
 fn main() {
@@ -16,7 +22,7 @@ fn main() {
         }
     });
 
-    ambient_api::messages::Frame::subscribe(move |_| {
+    Frame::subscribe(move |_| {
         let input = input::get();
         if !cursor_lock.auto_unlock_on_escape(&input) {
             return;
@@ -36,7 +42,7 @@ fn main() {
             displace.x += 1.0;
         }
 
-        messages::Input::new(displace, input.mouse_delta).send_server_unreliable();
+        Input::new(displace, input.mouse_delta).send_server_unreliable();
     });
 
     App.el().spawn_interactive();

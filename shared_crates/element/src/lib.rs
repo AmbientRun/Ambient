@@ -70,7 +70,7 @@ components!("app", {
     /// The element tree state for an entity.
     element_tree: ShareableElementTree,
 });
-pub use ambient_guest_bridge::components::app::{element, element_unmanaged_children};
+pub use ambient_guest_bridge::core::app::components::{element, element_unmanaged_children};
 
 #[clonable]
 /// A trait for types that can be converted to `Any` and can also be cloned.
@@ -310,13 +310,12 @@ impl Element {
     /// ```
     #[cfg(feature = "guest")]
     pub fn spawn_interactive(self) {
-        use ambient_guest_bridge::{
-            api::{message::RuntimeMessage, prelude::OkEmpty},
-            messages,
+        use ambient_guest_bridge::api::{
+            core::messages::Frame, message::RuntimeMessage, prelude::OkEmpty,
         };
 
         let mut tree = self.spawn_tree();
-        messages::Frame::subscribe(move |_| {
+        Frame::subscribe(move |_| {
             tree.update(&mut World);
             OkEmpty
         });

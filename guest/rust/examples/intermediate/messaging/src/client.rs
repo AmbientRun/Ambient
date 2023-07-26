@@ -3,20 +3,23 @@ use std::sync::{
     Arc,
 };
 
+use ambient::ambient_example_messaging::messages::{Hello, Local};
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        primitives::cube,
-        rendering::color,
-        transform::{lookat_target, scale, translation},
-    },
-    concepts::core::{
-        camera::make_perspective_infinite_reverse_camera, transform::make_transformable,
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        primitives::components::cube,
+        rendering::components::color,
+        transform::{
+            components::{lookat_target, scale, translation},
+            concepts::make_transformable,
+        },
     },
     prelude::*,
 };
-use messages::ambient::ambient_example_messaging::{Hello, Local};
 
 #[main]
 pub fn main() {

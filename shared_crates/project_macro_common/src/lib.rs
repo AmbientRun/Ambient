@@ -32,20 +32,18 @@ pub fn generate_code(
 ) -> anyhow::Result<TokenStream> {
     let mut semantic = Semantic::new()?;
     semantic.add_ambient_schema(ambient_api_is_ambient)?;
-    // Used to generate a `this` reference to the scope for convenience
-    let manifest_scope_id = manifest
-        .map(|m| {
-            anyhow::Ok(match m {
-                ManifestSource::Path { ember_path } => semantic.add_ember(ember_path)?,
-                ManifestSource::Array(files) => semantic.add_file(
-                    Path::new("ambient.toml"),
-                    &ArrayFileProvider { files },
-                    false,
-                    false,
-                )?,
-            })
-        })
-        .transpose()?;
+
+    if let Some(manifest) = manifest {
+        match manifest {
+            ManifestSource::Path { ember_path } => semantic.add_ember(ember_path),
+            ManifestSource::Array(files) => semantic.add_file(
+                Path::new("ambient.toml"),
+                &ArrayFileProvider { files },
+                false,
+                false,
+            ),
+        }?;
+    }
 
     // let mut printer = ambient_project_semantic::Printer::new();
     semantic.resolve()?;
@@ -90,50 +88,22 @@ pub fn generate_code(
         })
         .unwrap_or(semantic.root_scope_id);
     let generate_from_scope = &*items.get(generate_from_scope_id)?;
-    let components = components::make_definitions(
+
+    let scopes = scopes::make_scopes(
         &context,
         items,
         &type_map,
         generate_from_scope_id,
         generate_from_scope,
         generate_ambient_types,
-        manifest_scope_id,
-    )?;
-    let concepts = concepts::make_definitions(
-        &context,
-        items,
-        &type_map,
-        generate_from_scope_id,
-        generate_from_scope,
-        generate_ambient_types,
-        manifest_scope_id,
-    )?;
-    let messages = messages::make_definitions(
-        &context,
-        items,
-        &type_map,
-        generate_from_scope_id,
-        generate_from_scope,
-        generate_ambient_types,
-        manifest_scope_id,
     )?;
 
+    let components_init =
+        components::make_init(&context, items, generate_from_scope_id, generate_from_scope)?;
+
     let output = quote! {
-        /// Auto-generated component definitions. These come from `ambient.toml` in the root of the project.
-        pub mod components {
-            #components
-        }
-        /// Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept.
-        ///
-        /// They do not have any runtime representation outside of the components that compose them.
-        pub mod concepts {
-            #concepts
-        }
-        /// Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,
-        /// and with other modules.
-        pub mod messages {
-            #messages
-        }
+        #scopes
+        #components_init
     };
 
     // println!("{}", output.to_string());
@@ -143,4 +113,120 @@ pub fn generate_code(
 
 fn make_path(id: &str) -> syn::Path {
     syn::parse_str(id).unwrap()
+}
+mod scopes {
+    use std::collections::HashMap;
+
+    use ambient_project_semantic::{ItemId, ItemMap, Scope, Type};
+    use proc_macro2::TokenStream;
+    use quote::quote;
+
+    use crate::{make_path, Context};
+
+    pub fn make_scopes(
+        context: &Context,
+        items: &ItemMap,
+        type_map: &HashMap<ItemId<Type>, TokenStream>,
+        root_scope_id: ItemId<Scope>,
+        scope: &Scope,
+        generate_ambient_types: bool,
+    ) -> anyhow::Result<TokenStream> {
+        let scopes = scope
+            .scopes
+            .values()
+            .map(|s| {
+                let scope = items.get(*s)?;
+                let id = make_path(&scope.data.id.as_snake_case());
+                let inner = make_scopes(
+                    context,
+                    items,
+                    type_map,
+                    root_scope_id,
+                    &scope,
+                    generate_ambient_types,
+                )?;
+                if !inner.is_empty() {
+                    Ok(quote! {
+                        #[allow(unused)]
+                        pub mod #id {
+                            #inner
+                        }
+                    })
+                } else {
+                    Ok(quote! {})
+                }
+            })
+            .collect::<anyhow::Result<Vec<_>>>()?;
+
+        let components = {
+            let inner = crate::components::make_definitions(
+                &context,
+                items,
+                &type_map,
+                root_scope_id,
+                scope,
+                generate_ambient_types,
+            )?;
+            if inner.is_empty() {
+                quote! {}
+            } else {
+                quote! {
+                    /// Auto-generated component definitions.
+                    pub mod components {
+                        #inner
+                    }
+                }
+            }
+        };
+        let concepts = {
+            let inner = crate::concepts::make_definitions(
+                &context,
+                items,
+                &type_map,
+                root_scope_id,
+                scope,
+                generate_ambient_types,
+            )?;
+            if inner.is_empty() {
+                quote! {}
+            } else {
+                quote! {
+                    /// Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept.
+                    ///
+                    /// They do not have any runtime representation outside of the components that compose them.
+                    pub mod concepts {
+                        #inner
+                    }
+                }
+            }
+        };
+        let messages = {
+            let inner = crate::messages::make_definitions(
+                &context,
+                items,
+                &type_map,
+                scope,
+                generate_ambient_types,
+            )?;
+            if inner.is_empty() {
+                quote! {}
+            } else {
+                quote! {
+                    /// Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,
+                    /// and with other modules.
+                    pub mod messages {
+                        #inner
+                    }
+                }
+            }
+        };
+
+        Ok(quote! {
+            #(#scopes)*
+
+            #components
+            #concepts
+            #messages
+        })
+    }
 }

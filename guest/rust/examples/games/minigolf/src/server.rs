@@ -1,4 +1,4 @@
-use crate::{
+use crate::ambient::ambient_example_minigolf::{
     components::{
         ball, next_player_hue, origin, player_ball, player_camera_state, player_color,
         player_indicator, player_indicator_arrow, player_restore_point, player_stroke_count,
@@ -6,30 +6,39 @@ use crate::{
     },
     concepts::{make_player_camera_state, make_player_state},
 };
+use ambient::ambient_example_minigolf::{
+    components::player_shoot_requested,
+    messages::{Bonk, Hit, Input},
+};
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::{active_camera, aspect_ratio_from_window},
-        ecs::children,
-        model::model_from_url,
-        physics::{
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::{active_camera, aspect_ratio_from_window},
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        ecs::components::children,
+        messages::Collision,
+        model::components::model_from_url,
+        physics::components::{
             angular_velocity, collider_from_url, dynamic, kinematic, linear_velocity,
             physics_controlled, sphere_collider,
         },
-        player::{player, user_id},
-        prefab::prefab_from_url,
-        rendering::{color, fog_density, light_diffuse, sky, sun, water},
-        text::{font_size, text},
+        player::components::{player, user_id},
+        prefab::components::prefab_from_url,
+        rendering::components::{color, fog_density, light_diffuse, sky, sun, water},
+        text::components::{font_size, text},
         transform::{
-            inv_local_to_world, local_to_parent, local_to_world, mesh_to_local, mesh_to_world,
-            rotation, scale, spherical_billboard, translation,
+            components::{
+                inv_local_to_world, local_to_parent, local_to_world, mesh_to_local, mesh_to_world,
+                rotation, scale, spherical_billboard, translation,
+            },
+            concepts::make_transformable,
         },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     entity::resources,
     prelude::*,
 };
-use components::player_shoot_requested;
 use utils::CameraState;
 
 mod utils;
@@ -249,7 +258,7 @@ pub fn main() {
         }
     });
 
-    messages::Input::subscribe(|source, msg| {
+    Input::subscribe(|source, msg| {
         let Some(user_id) = source.client_entity_id() else { return; };
 
         if let Some(player_camera_state) = entity::get_component(user_id, player_camera_state()) {
@@ -266,9 +275,9 @@ pub fn main() {
         }
     });
 
-    ambient_api::messages::Collision::subscribe(move |msg| {
+    Collision::subscribe(move |msg| {
         // TODO: change msg.ids[0] to the bouncing ball
-        messages::Bonk::new(msg.ids[0]).send_client_broadcast_unreliable();
+        Bonk::new(msg.ids[0]).send_client_broadcast_unreliable();
     });
 
     let start_time = game_time();
@@ -370,14 +379,14 @@ pub fn main() {
                         linear_velocity(),
                         camera_direction * 50. * force_multiplier,
                     );
-                    messages::Hit::new(player_ball).send_client_broadcast_unreliable();
+                    Hit::new(player_ball).send_client_broadcast_unreliable();
                     let stroke_count = entity::get_component(player, player_stroke_count())
                         .unwrap_or_default()
                         + 1;
                     entity::set_component(player_text, text(), stroke_count.to_string());
                     entity::set_component(player, player_stroke_count(), stroke_count);
                 }
-                entity::set_component(player, components::player_shoot_requested(), false);
+                entity::set_component(player, self::player_shoot_requested(), false);
             }
 
             // HACK: Artificially slow down ball until https://github.com/AmbientRun/Ambient/issues/182 is available

@@ -1,12 +1,16 @@
 use std::collections::HashMap;
 
+use ambient::ambient_example_tictactoe::{
+    components::{cell, cells, owned_by},
+    messages::Input,
+};
 use ambient_api::{
-    components::core::rendering::{color, outline},
-    messages::core::Frame,
+    core::{
+        messages::Frame,
+        rendering::components::{color, outline},
+    },
     prelude::*,
 };
-use components::ambient::ambient_example_tictactoe::{cell, cells, owned_by};
-use messages::ambient::ambient_example_tictactoe::Input;
 use palette::FromColor;
 
 mod constants;
@@ -47,7 +51,7 @@ fn process_colors(cells: &[EntityId]) {
         entity::remove_component(*cell, outline());
     }
 
-    let players = entity::get_all(ambient_api::components::core::player::player());
+    let players = entity::get_all(ambient_api::core::player::components::player());
     let n_players = players.len();
     let player_colors: HashMap<_, _> = players
         .iter()

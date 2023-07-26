@@ -3,14 +3,14 @@ use std::f32::consts::E;
 use ambient_cb::{cb, Cb};
 use ambient_element::{to_owned, Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_guest_bridge::{
-    components::{
-        app::cursor_position,
-        layout::{height, space_between_items, width},
-        rect::{background_color, border_radius},
-        transform::{local_to_world, translation},
+    core::{
+        app::components::cursor_position,
+        layout::components::{height, space_between_items, width},
+        messages,
+        rect::components::{background_color, border_radius},
+        transform::components::{local_to_world, translation},
     },
     ecs::EntityId,
-    messages,
     window::set_cursor,
 };
 use ambient_math::{interpolate, interpolate_clamped};

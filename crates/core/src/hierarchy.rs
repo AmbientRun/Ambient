@@ -4,7 +4,7 @@ use ambient_ecs::{query, Component, ComponentValue, ECSError, EntityId, World};
 use itertools::Itertools;
 use yaml_rust::YamlEmitter;
 
-pub use ambient_ecs::generated::components::core::ecs::{children, parent};
+pub use ambient_ecs::generated::ecs::components::{children, parent};
 
 use crate::name;
 

@@ -1,5 +1,5 @@
 use ambient_api::{
-    components::core::layout::{height, space_between_items, width},
+    core::layout::components::{height, space_between_items, width},
     prelude::*,
 };
 

@@ -1,8 +1,8 @@
 use crate::{
-    components::core::{
-        app::name,
-        audio::*,
-        ecs::{children, parent},
+    core::{
+        app::components::name,
+        audio::components::*,
+        ecs::components::{children, parent},
     },
     entity,
     prelude::{Entity, EntityId},

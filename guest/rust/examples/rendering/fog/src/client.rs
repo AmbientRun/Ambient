@@ -1,15 +1,20 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::{aspect_ratio_from_window, fog},
-        primitives::{cube, quad},
-        rendering::{
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::{aspect_ratio_from_window, fog},
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        primitives::components::{cube, quad},
+        rendering::components::{
             cast_shadows, color, fog_color, fog_density, fog_height_falloff, light_diffuse, sky,
             sun,
         },
-        transform::{lookat_target, rotation, scale, translation},
+        transform::{
+            components::{lookat_target, rotation, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
 };
 

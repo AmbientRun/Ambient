@@ -1,20 +1,29 @@
+use ambient::ambient_example_third_person_camera::{
+    components::{
+        camera_follow_distance, player_mouse_delta_x, player_movement_direction, player_scroll,
+    },
+    messages::Input,
+};
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        physics::{
+    core::{
+        app::components::main_scene,
+        physics::components::{
             character_controller_height, character_controller_radius, physics_controlled,
             plane_collider, sphere_collider,
         },
-        player::player,
-        primitives::{cube, quad},
-        rendering::{color, fog_density, light_diffuse, sky, sun},
-        transform::{rotation, scale, translation},
+        player::components::player,
+        primitives::{
+            components::{cube, quad},
+            concepts::make_sphere,
+        },
+        rendering::components::{color, fog_density, light_diffuse, sky, sun},
+        transform::{
+            components::{rotation, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_sphere, make_transformable},
     prelude::*,
 };
-
-use components::*;
 
 #[main]
 pub fn main() {
@@ -65,7 +74,7 @@ pub fn main() {
         }
     });
 
-    messages::Input::subscribe(move |source, msg| {
+    Input::subscribe(move |source, msg| {
         let Some(player_id) = source.client_entity_id() else { return; };
 
         entity::set_component(player_id, player_movement_direction(), msg.direction);

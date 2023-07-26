@@ -1,5 +1,5 @@
+use ambient::ambient_example_messaging::messages::Local;
 use ambient_api::prelude::*;
-use messages::ambient::ambient_example_messaging::Local;
 
 #[main]
 pub fn main() {

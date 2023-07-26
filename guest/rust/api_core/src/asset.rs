@@ -27,9 +27,9 @@ pub fn url(path: impl AsRef<str>) -> Result<String, UrlError> {
 ///
 /// NOTE: This may be removed at a later stage. It primarily exists to enable WASM rebuilding.
 pub async fn build_wasm() -> anyhow::Result<()> {
-    use crate::{global, messages};
+    use crate::{core::messages::WasmRebuild, global};
     wit::server_asset::build_wasm();
-    match global::wait_for_runtime_message::<messages::core::WasmRebuild>(|_| true)
+    match global::wait_for_runtime_message::<WasmRebuild>(|_| true)
         .await
         .error
     {

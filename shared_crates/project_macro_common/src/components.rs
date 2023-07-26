@@ -6,24 +6,13 @@ use quote::quote;
 
 use crate::{make_path, Context};
 
-pub fn make_definitions(
+pub fn make_init(
     context: &Context,
     items: &ItemMap,
-    type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
     root_scope_id: ItemId<Scope>,
     root_scope: &Scope,
-    generate_ambient_types: bool,
-    _manifest_scope_id: Option<ItemId<Scope>>,
 ) -> anyhow::Result<TokenStream> {
-    let inner = make_definitions_inner(
-        context,
-        items,
-        type_map,
-        root_scope_id,
-        root_scope,
-        generate_ambient_types,
-    )?;
-    let init = match context {
+    Ok(match context {
         Context::Host => {
             let mut namespaces = vec![];
             root_scope.visit_recursive(items, |scope| {
@@ -42,21 +31,16 @@ pub fn make_definitions(
             quote! {
                 pub fn init() {
                     #(
-                        #namespaces::init_components();
+                        #namespaces::components::init_components();
                     )*
                 }
             }
         }
         Context::Guest { .. } => quote! {},
-    };
-
-    Ok(quote! {
-        #inner
-        #init
     })
 }
 
-fn make_definitions_inner(
+pub fn make_definitions(
     context: &Context,
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
@@ -64,33 +48,6 @@ fn make_definitions_inner(
     scope: &Scope,
     generate_ambient_types: bool,
 ) -> anyhow::Result<TokenStream> {
-    let scopes = scope
-        .scopes
-        .values()
-        .map(|s| {
-            let scope = items.get(*s)?;
-            let id = make_path(&scope.data.id.as_snake_case());
-
-            let inner = make_definitions_inner(
-                context,
-                items,
-                type_map,
-                _root_scope_id,
-                &scope,
-                generate_ambient_types,
-            )?;
-            if inner.is_empty() {
-                return Ok(quote! {});
-            }
-            Ok(quote! {
-                #[allow(unused)]
-                pub mod #id {
-                    #inner
-                }
-            })
-        })
-        .collect::<anyhow::Result<Vec<_>>>()?;
-
     let components = scope
         .components
         .values()
@@ -231,7 +188,6 @@ fn make_definitions_inner(
     };
 
     Ok(quote! {
-        #(#scopes)*
         #inner
     })
 }

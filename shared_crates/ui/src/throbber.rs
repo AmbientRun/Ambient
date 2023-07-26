@@ -2,7 +2,7 @@
 use std::time::Duration;
 
 use ambient_element::ElementComponent;
-use ambient_guest_bridge::components::text::font_family;
+use ambient_guest_bridge::core::text::components::font_family;
 
 use crate::text::Text;
 

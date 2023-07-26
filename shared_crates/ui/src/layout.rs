@@ -10,9 +10,9 @@ use ambient_element::{
     define_el_function_for_vec_element_newtype, element_component, Element, ElementComponent,
     ElementComponentExt, Hooks,
 };
-use ambient_guest_bridge::components::{
-    ecs::children,
-    layout::{
+use ambient_guest_bridge::core::{
+    ecs::components::children,
+    layout::components::{
         //LEGACY_MISSING_ENUM_SUPPORT: align_horizontal_begin, align_horizontal_center, align_vertical_begin,
         //LEGACY_MISSING_ENUM_SUPPORT: align_vertical_center, fit_horizontal_children, fit_horizontal_none, fit_horizontal_parent,
         //LEGACY_MISSING_ENUM_SUPPORT: fit_vertical_children, fit_vertical_none, fit_vertical_parent,
@@ -21,7 +21,7 @@ use ambient_guest_bridge::components::{
         is_book_file,
         width,
     },
-    transform::{local_to_parent, local_to_world, translation},
+    transform::components::{local_to_parent, local_to_world, translation},
 };
 use glam::{vec2, vec3, Mat4, Vec2, Vec3};
 use itertools::Itertools;

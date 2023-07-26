@@ -14,7 +14,7 @@ use physxx::{articulation_reduced_coordinate::*, *};
 
 use crate::helpers::{get_shapes, scale_shape};
 
-pub use ambient_ecs::generated::components::core::physics::*;
+pub use ambient_ecs::generated::physics::components::*;
 
 components!("physics", {
     @[Resource]

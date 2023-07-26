@@ -1,5 +1,8 @@
 use ambient_api::{
-    components::core::{layout::space_between_items, rendering::color, text::font_size},
+    core::{
+        layout::components::space_between_items, rendering::components::color,
+        text::components::font_size,
+    },
     prelude::*,
 };
 

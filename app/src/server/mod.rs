@@ -9,8 +9,8 @@ use std::{
 use ambient_build::BuildConfiguration;
 use ambient_core::{asset_cache, name, no_sync, project_name, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
-    dont_store, generated::messages::core as messages, world_events, ComponentDesc, Entity,
-    Networked, SystemGroup, World, WorldEventsExt, WorldEventsSystem, WorldStreamCompEvent,
+    dont_store, generated::messages, world_events, ComponentDesc, Entity, Networked, SystemGroup,
+    World, WorldEventsExt, WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_network::{
     native::server::{Crypto, GameServer},

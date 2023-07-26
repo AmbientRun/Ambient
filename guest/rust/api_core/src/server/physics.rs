@@ -193,7 +193,7 @@ pub struct CharacterCollision {
 }
 
 /// Move an entity with a character collider on it, by sweeping the collider. This will ensure that it collides with any
-/// objects in its path. You can also update the entity's [translation](crate::components::core::transform::translation) component, but this will teleport it to that location.
+/// objects in its path. You can also update the entity's [translation](crate::components::transform::translation) component, but this will teleport it to that location.
 pub fn move_character(
     entity: EntityId,
     displacement: Vec3,

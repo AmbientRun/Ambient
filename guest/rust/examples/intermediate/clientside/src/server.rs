@@ -1,10 +1,12 @@
+use ambient::ambient_example_clientside::components::{grid_position, grid_side_length};
 use ambient_api::{
-    components::core::{primitives::cube, rendering::color, transform::translation},
-    concepts::make_transformable,
+    core::{
+        primitives::components::cube,
+        rendering::components::color,
+        transform::{components::translation, concepts::make_transformable},
+    },
     prelude::*,
 };
-
-use crate::components::{grid_position, grid_side_length};
 
 #[main]
 pub fn main() {

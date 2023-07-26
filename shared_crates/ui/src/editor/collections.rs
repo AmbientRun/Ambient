@@ -5,8 +5,8 @@ use ambient_color::Color;
 use ambient_element::{
     element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks,
 };
-use ambient_guest_bridge::{
-    components::layout::{height, margin, min_width, padding, space_between_items, width},
+use ambient_guest_bridge::core::{
+    layout::components::{height, margin, min_width, padding, space_between_items, width},
     messages,
 };
 use ambient_shared_types::VirtualKeyCode;

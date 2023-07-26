@@ -37,7 +37,7 @@ use async_trait::async_trait;
 use glam::{uvec4, vec4, Quat, UVec3, UVec4, Vec3, Vec4};
 use wgpu::{BindGroup, BindGroupLayoutEntry, Extent3d};
 
-pub use ambient_ecs::generated::components::core::rect::{
+pub use ambient_ecs::generated::rect::components::{
     background_color, background_url, border_color, border_radius, border_thickness, line_from,
     line_to, line_width, rect, size_from_background_image,
 };

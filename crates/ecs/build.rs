@@ -3,6 +3,8 @@ use std::path::Path;
 fn main() {
     let header = r#"
     #![allow(missing_docs)]
+    #![allow(dead_code)]
+    #![allow(unused)]
     use std::io::Read;
 
     use ambient_project_rt::message_serde::{MessageSerde, MessageSerdeError};
@@ -32,7 +34,7 @@ fn main() {
         false,
         true,
         ambient_project_macro_common::Context::Host,
-        Some("ambient"),
+        Some("ambient/core"),
     )
     .unwrap();
 

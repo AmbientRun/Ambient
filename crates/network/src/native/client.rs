@@ -12,7 +12,7 @@ use crate::{
 };
 use ambient_app::{window_title, world_instance_resources, AppResources};
 use ambient_core::{asset_cache, gpu};
-use ambient_ecs::{generated::messages::core as messages, world_events, Entity, SystemGroup};
+use ambient_ecs::{generated::messages, world_events, Entity, SystemGroup};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;

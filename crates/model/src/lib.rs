@@ -47,7 +47,7 @@ use anyhow::Context;
 
 pub mod loading_material;
 
-pub use ambient_ecs::generated::components::core::model::{
+pub use ambient_ecs::generated::model::components::{
     model_animatable, model_from_url, model_loaded,
 };
 

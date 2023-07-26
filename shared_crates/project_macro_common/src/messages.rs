@@ -10,63 +10,9 @@ pub fn make_definitions(
     context: &Context,
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
-    root_scope_id: ItemId<Scope>,
     scope: &Scope,
     generate_ambient_types: bool,
-    manifest_scope_id: Option<ItemId<Scope>>,
 ) -> anyhow::Result<TokenStream> {
-    let inner = make_definitions_inner(
-        context,
-        items,
-        type_map,
-        root_scope_id,
-        scope,
-        generate_ambient_types,
-        manifest_scope_id,
-    )?;
-
-    Ok(quote! {
-        #inner
-    })
-}
-
-pub fn make_definitions_inner(
-    context: &Context,
-    items: &ItemMap,
-    type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
-    _root_scope_id: ItemId<Scope>,
-    scope: &Scope,
-    generate_ambient_types: bool,
-    manifest_scope_id: Option<ItemId<Scope>>,
-) -> anyhow::Result<TokenStream> {
-    let scopes = scope
-        .scopes
-        .values()
-        .map(|s| {
-            let scope = items.get(*s)?;
-            let id = make_path(&scope.data.id.as_snake_case());
-
-            let inner = make_definitions_inner(
-                context,
-                items,
-                type_map,
-                _root_scope_id,
-                &scope,
-                generate_ambient_types,
-                manifest_scope_id,
-            )?;
-            if inner.is_empty() {
-                return Ok(quote! {});
-            }
-            Ok(quote! {
-                #[allow(unused)]
-                pub mod #id {
-                    #inner
-                }
-            })
-        })
-        .collect::<anyhow::Result<Vec<_>>>()?;
-
     let messages = scope
         .messages
         .values()
@@ -174,7 +120,6 @@ pub fn make_definitions_inner(
     };
 
     Ok(quote! {
-        #(#scopes)*
         #inner
     })
 }

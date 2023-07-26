@@ -4,7 +4,7 @@ use ambient_cb::{cb, Cb};
 use ambient_element::{
     element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks,
 };
-use ambient_guest_bridge::components::layout::space_between_items;
+use ambient_guest_bridge::core::layout::components::space_between_items;
 
 use super::{ChangeCb, Editor, EditorOpts};
 use crate::{

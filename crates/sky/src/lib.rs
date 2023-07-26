@@ -22,7 +22,7 @@ use self::tree::*;
 
 mod tree;
 
-pub use ambient_ecs::generated::components::core::rendering::sky;
+pub use ambient_ecs::generated::rendering::components::sky;
 
 // Temporary hack: expose the source of this shader so that it can be used by ambient_water when published
 pub const ATMOSPHERIC_SCATTERING_SOURCE: &str = include_str!("atmospheric_scattering.wgsl");

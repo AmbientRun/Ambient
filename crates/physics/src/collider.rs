@@ -41,7 +41,7 @@ use crate::{
     wood_physics_material, ColliderScene, PxActorUserData, PxShapeUserData, PxWoodMaterialKey,
 };
 
-pub use ambient_ecs::generated::components::core::physics::*;
+pub use ambient_ecs::generated::physics::components::*;
 
 components!("physics", {
     @[MakeDefault, Store, Debuggable]

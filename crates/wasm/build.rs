@@ -99,7 +99,7 @@ fn main() {
             )
             .unwrap();
 
-            let api_generated_code = format!("#![allow(missing_docs)]\n{api_generated_code}");
+            let api_generated_code = format!("#![allow(missing_docs)]\n#![allow(dead_code)]\n#![allow(unused)]\n{api_generated_code}");
 
             let generated_path = guest_path
                 .join("api_core")

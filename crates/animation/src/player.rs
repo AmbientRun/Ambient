@@ -8,7 +8,7 @@ use std::{
 use ambient_core::{asset_cache, async_ecs::async_run, epoch_time, runtime};
 use ambient_ecs::{
     children, components,
-    generated::components::core::animation::{
+    generated::animation::components::{
         animation_errors, animation_player, apply_animation_player, apply_base_pose, bind_ids,
         blend, clip_duration, freeze_at_percentage, freeze_at_time, looping, mask_bind_ids,
         mask_weights, play_clip_from_url, retarget_animation_scaled, retarget_model_from_url,

@@ -8,7 +8,7 @@ use ambient_core::{
 };
 use ambient_ecs::{
     components,
-    generated::components::core::procedurals::{procedural_material, procedural_mesh},
+    generated::procedurals::components::{procedural_material, procedural_mesh},
     query, Entity, Resource, SystemGroup,
 };
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::TextureView};

@@ -28,7 +28,7 @@ pub mod player;
 pub mod transform;
 pub mod window;
 
-pub use ambient_ecs::generated::components::core::app::{
+pub use ambient_ecs::generated::app::components::{
     delta_time, description, epoch_time, game_time, main_scene, map_seed, name, project_name,
     ref_count, selectable, snap_to_ground, tags, ui_scene,
 };

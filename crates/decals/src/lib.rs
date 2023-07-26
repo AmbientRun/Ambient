@@ -9,7 +9,7 @@ use ambient_core::{
     main_scene, mesh, runtime,
     transform::{local_to_world, mesh_to_world},
 };
-use ambient_ecs::generated::components::core::rendering::decal_from_url;
+use ambient_ecs::generated::rendering::components::decal_from_url;
 use ambient_ecs::{components, query, Entity, MakeDefault, Networked, Store, SystemGroup};
 use ambient_gpu::shader_module::{Shader, ShaderModule};
 use ambient_meshes::UnitCubeMeshKey;

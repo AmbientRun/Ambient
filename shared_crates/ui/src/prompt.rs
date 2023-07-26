@@ -2,7 +2,7 @@
 
 use ambient_cb::{cb, Cb};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::{components::layout::space_between_items, ecs::World};
+use ambient_guest_bridge::{core::layout::components::space_between_items, ecs::World};
 
 use crate::{
     button::{Button, ButtonStyle},

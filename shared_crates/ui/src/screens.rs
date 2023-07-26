@@ -9,7 +9,7 @@ use ambient_element::{
     define_el_function_for_vec_element_newtype, Element, ElementComponent, ElementComponentExt,
     Hooks,
 };
-use ambient_guest_bridge::components::{layout::screen, transform::translation};
+use ambient_guest_bridge::core::{layout::components::screen, transform::components::translation};
 use glam::vec3;
 
 #[derive(Clone, Debug)]

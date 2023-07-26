@@ -15,7 +15,7 @@ use crate::{
     player::local_user_id,
 };
 
-pub use ambient_ecs::generated::components::core::transform::{
+pub use ambient_ecs::generated::transform::components::{
     cylindrical_billboard_z, euler_rotation, inv_local_to_world, local_to_parent, local_to_world,
     lookat_target, lookat_up, mesh_to_local, mesh_to_world, reset_scale, rotation, scale,
     spherical_billboard, translation,

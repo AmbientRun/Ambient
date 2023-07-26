@@ -1,9 +1,14 @@
-use ambient_api::{components::core::app::name, entity::synchronized_resources, prelude::*};
-use components::{bpm, next_player_hue, player_hue, track, track_audio_url, track_note_selection};
-
+use ambient::ambient_example_music_sequencer::{
+    components::{bpm, next_player_hue, player_hue, track, track_audio_url, track_note_selection},
+    messages::{Click, SetBpm},
+};
 use ambient_api::{
-    components::core::player::{player, user_id},
-    entity::resources,
+    core::{
+        app::components::name,
+        player::components::{player, user_id},
+    },
+    entity::{resources, synchronized_resources},
+    prelude::*,
 };
 
 mod common;
@@ -48,12 +53,12 @@ pub async fn main() {
         });
 
     // When a player requests a BPM change, update it.
-    messages::SetBpm::subscribe(|_source, data| {
+    SetBpm::subscribe(|_source, data| {
         entity::set_component(synchronized_resources(), bpm(), data.bpm);
     });
 
     // When a player clicks on a note, toggle it.
-    messages::Click::subscribe(move |source, data| {
+    Click::subscribe(move |source, data| {
         let id = source.client_entity_id().unwrap();
         let color_to_set = entity::get_component(id, player_hue()).unwrap();
 

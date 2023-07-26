@@ -1,17 +1,22 @@
 use ambient_api::{
     animation::{self, AnimationPlayer, BindId, BlendNode, PlayClipFromUrlNode},
-    components::core::{
-        animation::apply_animation_player,
-        app::{main_scene, name},
-        camera::aspect_ratio_from_window,
-        layout::space_between_items,
-        model::model_loaded,
-        prefab::prefab_from_url,
-        primitives::quad,
-        rendering::color,
-        transform::{local_to_parent, lookat_target, reset_scale, scale, translation},
+    core::{
+        animation::components::apply_animation_player,
+        app::components::{main_scene, name},
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        layout::components::space_between_items,
+        model::components::model_loaded,
+        prefab::components::prefab_from_url,
+        primitives::{components::quad, concepts::make_sphere},
+        rendering::components::color,
+        transform::{
+            components::{local_to_parent, lookat_target, reset_scale, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
     prelude::*,
 };
 

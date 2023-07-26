@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
 use ambient_ecs::{
-    components, generated::messages::core as messages, world_events, Debuggable, Entity, Resource,
-    System, SystemGroup, WorldEventsExt,
+    components, generated::messages, world_events, Debuggable, Entity, Resource, System,
+    SystemGroup, WorldEventsExt,
 };
 use glam::{vec2, Vec2};
 use serde::{Deserialize, Serialize};

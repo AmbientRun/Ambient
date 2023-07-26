@@ -34,9 +34,7 @@ use strum::EnumString;
 
 mod text_material;
 
-pub use ambient_ecs::generated::components::core::text::{
-    font_family, font_size, font_style, text,
-};
+pub use ambient_ecs::generated::text::components::{font_family, font_size, font_style, text};
 
 components!("text", {
     @[Debuggable]

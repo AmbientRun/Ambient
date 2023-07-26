@@ -1,8 +1,8 @@
 //! Implements a dropdown element.
 
 use ambient_element::{element_component, to_owned, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::components::{
-    layout::margin, rect::border_radius, transform::translation,
+use ambient_guest_bridge::core::{
+    layout::components::margin, rect::components::border_radius, transform::components::translation,
 };
 use glam::{vec3, Vec4};
 

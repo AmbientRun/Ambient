@@ -12,7 +12,7 @@ pub mod message;
 #[cfg(feature = "wit")]
 pub mod wit;
 
-pub use ambient_ecs::generated::components::core::wasm::*;
+pub use ambient_ecs::generated::wasm::components::*;
 pub use internal::{
     messenger, module_bytecode, module_errors, module_state, module_state_maker, remote_paired_id,
 };
@@ -22,11 +22,11 @@ use std::{path::Path, str::FromStr, sync::Arc};
 
 use ambient_core::{asset_cache, async_ecs::async_run, runtime};
 use ambient_ecs::{
-    dont_despawn_on_unload, generated::messages::core as messages, query, world_events, Entity,
-    EntityId, FnSystem, Message, SystemGroup, World, WorldEventReader,
+    dont_despawn_on_unload, generated::messages, query, world_events, Entity, EntityId, FnSystem,
+    Message, SystemGroup, World, WorldEventReader,
 };
 
-pub use ambient_ecs::generated::components::core::wasm::*;
+pub use ambient_ecs::generated::wasm::components::*;
 
 use ambient_std::{asset_url::AbsAssetUrl, download_asset::download_uncached_bytes};
 use itertools::Itertools;

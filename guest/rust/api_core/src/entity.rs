@@ -1,5 +1,5 @@
 use crate::{
-    components::core::ecs::{children, parent},
+    core::ecs::components::{children, parent},
     global::{EntityId, Vec3},
     internal::{
         component::{Component, Entity, SupportedValue, UntypedComponent},

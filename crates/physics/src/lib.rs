@@ -32,7 +32,7 @@ pub mod physx;
 pub mod rc_asset;
 pub mod visualization;
 
-pub use ambient_ecs::generated::components::core::physics::*;
+pub use ambient_ecs::generated::physics::components::*;
 
 components!("physics", {
     @[Resource]

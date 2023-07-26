@@ -13,64 +13,11 @@ pub fn make_definitions(
     root_scope_id: ItemId<Scope>,
     scope: &Scope,
     generate_ambient_types: bool,
-    manifest_scope_id: Option<ItemId<Scope>>,
-) -> anyhow::Result<TokenStream> {
-    let inner = make_definitions_inner(
-        context,
-        items,
-        type_map,
-        root_scope_id,
-        scope,
-        generate_ambient_types,
-        manifest_scope_id,
-    )?;
-
-    Ok(quote! {
-        #inner
-    })
-}
-
-pub fn make_definitions_inner(
-    context: &Context,
-    items: &ItemMap,
-    type_map: &HashMap<ItemId<Type>, TokenStream>,
-    root_scope_id: ItemId<Scope>,
-    scope: &Scope,
-    generate_ambient_types: bool,
-    manifest_scope_id: Option<ItemId<Scope>>,
 ) -> anyhow::Result<TokenStream> {
     let rust_root_prefix = match context {
         Context::Host => quote! { crate::generated:: },
         Context::Guest { api_path, .. } => quote! { #api_path :: },
     };
-
-    let scopes = scope
-        .scopes
-        .values()
-        .map(|s| {
-            let scope = items.get(*s)?;
-            let id = make_path(&scope.data.id.as_snake_case());
-
-            let inner = make_definitions_inner(
-                context,
-                items,
-                type_map,
-                root_scope_id,
-                &scope,
-                generate_ambient_types,
-                manifest_scope_id,
-            )?;
-            if inner.is_empty() {
-                return Ok(quote! {});
-            }
-            Ok(quote! {
-                #[allow(unused)]
-                pub mod #id {
-                    #inner
-                }
-            })
-        })
-        .collect::<anyhow::Result<Vec<_>>>()?;
 
     let concepts = scope
         .concepts
@@ -134,7 +81,6 @@ pub fn make_definitions_inner(
     };
 
     Ok(quote! {
-        #(#scopes)*
         #inner
     })
 }
@@ -164,10 +110,10 @@ fn generate_make(
             let extend_path = make_path(&items.fully_qualified_display_path_rust_style(
                 concept,
                 Some(root_scope_id),
-                Some("make_"),
+                Some("concepts::make_"),
             )?);
             Ok(quote! {
-                with_merge(#rust_root_prefix concepts :: #extend_path())
+                with_merge(#rust_root_prefix #extend_path())
             })
         })
         .collect::<anyhow::Result<_>>()?;
@@ -180,11 +126,11 @@ fn generate_make(
             let full_path = make_path(&items.fully_qualified_display_path_rust_style(
                 component,
                 Some(root_scope_id),
-                None,
+                Some("components::"),
             )?);
             let default = value_to_token_stream(items, default.as_resolved().unwrap())?;
 
-            Ok(quote! { with(#rust_root_prefix components :: #full_path(), #default) })
+            Ok(quote! { with(#rust_root_prefix #full_path(), #default) })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
@@ -224,10 +170,10 @@ fn generate_is(
             let extend_path = make_path(&items.fully_qualified_display_path_rust_style(
                 concept,
                 Some(root_scope_id),
-                Some("is_"),
+                Some("concepts::is_"),
             )?);
             Ok(quote! {
-                #rust_root_prefix concepts :: #extend_path
+                #rust_root_prefix #extend_path
             })
         })
         .collect::<anyhow::Result<_>>()?;
@@ -240,10 +186,10 @@ fn generate_is(
             let full_path = make_path(&items.fully_qualified_display_path_rust_style(
                 component,
                 Some(root_scope_id),
-                None,
+                Some("components::"),
             )?);
 
-            Ok(quote! { #rust_root_prefix components :: #full_path() })
+            Ok(quote! { #rust_root_prefix #full_path() })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
@@ -295,10 +241,10 @@ fn generate_concept(
             let full_path = make_path(&items.fully_qualified_display_path_rust_style(
                 component,
                 Some(root_scope_id),
-                None,
+                Some("components::"),
             )?);
 
-            Ok(quote! { #rust_root_prefix components :: #full_path() })
+            Ok(quote! { #rust_root_prefix #full_path() })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 

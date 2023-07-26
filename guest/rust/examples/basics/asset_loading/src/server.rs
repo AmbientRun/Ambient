@@ -1,18 +1,26 @@
 use std::f32::consts::TAU;
 
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        prefab::{prefab_from_url, spawned},
-        primitives::quad,
-        rendering::{cast_shadows, light_ambient, light_diffuse, sun},
-        transform::{lookat_target, rotation, scale, translation},
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        messages::Frame,
+        prefab::components::{prefab_from_url, spawned},
+        primitives::components::quad,
+        rendering::components::{cast_shadows, light_ambient, light_diffuse, sun},
+        transform::{
+            components::{lookat_target, rotation, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     glam::EulerRot,
     prelude::*,
 };
+
+use ambient::ambient_example_asset_loading::components::is_the_best;
 
 #[main]
 pub async fn main() {
@@ -45,14 +53,14 @@ pub async fn main() {
         .with_merge(make_transformable())
         .with_default(cast_shadows())
         .with(prefab_from_url(), asset::url("assets/Teapot.glb").unwrap())
-        .with(components::is_the_best(), true)
+        .with(is_the_best(), true)
         .spawn();
 
     entity::wait_for_component(model, spawned()).await;
 
     println!("Entity components: {:?}", entity::get_all_components(model));
 
-    ambient_api::messages::Frame::subscribe(move |_| {
+    Frame::subscribe(move |_| {
         let t = game_time().as_secs_f32();
         entity::set_component(
             model,
