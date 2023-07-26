@@ -6,7 +6,7 @@ mod uncategorized;
 pub use uncategorized::*;
 
 pub mod events;
-pub mod line_hash;
+pub mod line_uid;
 pub mod path;
 pub use ambient_cb::*;
 
