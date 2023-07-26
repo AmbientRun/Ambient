@@ -19,11 +19,17 @@ jobs:
           toolchain: stable
           target: wasm32-unknown-unknown
 
+      - name: "Build campfire"
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --package campfire
+
       - name: "Build web client"
         uses: actions-rs/cargo@v1
         with:
-          command: campfire
-          args: web build --profile release --target standalone
+          command: run
+          args: --package campfire -- web build --profile release --target standalone
 
       - name: Upload package
         uses: actions/upload-artifact@v3
