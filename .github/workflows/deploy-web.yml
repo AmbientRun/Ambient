@@ -18,7 +18,6 @@ jobs:
         with:
           toolchain: stable
           target: wasm32-unknown-unknown
-          profile: minimal
 
       - name: "Build web client"
         uses: actions-rs/cargo@v1
