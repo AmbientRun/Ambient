@@ -228,17 +228,11 @@
             "cargo-dap": {}
         }
     },
-    "launch-chrome": {
-        "cmd": "./scripts/launch_chrome.sh"
+    "open-browser": {
+        "cmd": "cargo cf web open-browser"
     },
     "build-web": {
-        "cmd": "wasm-pack build client --dev",
-        "cwd": "web",
-        "components": {
-            "qf": {
-                "compiler": "cargo"
-            }
-        }
+        "cmd": "cargo cf web build"
     },
     "run": {
         "cmd": "npm run dev",
