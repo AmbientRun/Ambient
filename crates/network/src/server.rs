@@ -129,7 +129,8 @@ impl WorldInstance {
         ed.spawn(&mut self.world)
     }
     pub fn despawn_player(&mut self, user_id: &str) -> Option<Entity> {
-        self.world.despawn(get_by_user_id(&self.world, user_id)?)
+        let id = get_by_user_id(&self.world, user_id)?;
+        ambient_core::hierarchy::despawn_recursive(&mut self.world, id)
     }
     pub fn broadcast_diffs(&mut self) {
         let diff = self.world_stream.next_diff(&self.world);
