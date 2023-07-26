@@ -74,12 +74,13 @@ pub async fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
         Target::Standalone => command.args(["--target", "web", "--no-pack"]),
     };
 
-    // See: https://doc.rust-lang.org/cargo/guide/build-cache.html
-    let output_path = ["web", "pkg"]
+    let mut output_path = ["web"]
         .iter()
         .collect::<PathBuf>()
         .canonicalize()
         .context("Produced build artifact does not exist")?;
+
+    output_path.push("pkg");
 
     command.arg("--out-dir").arg(output_path.clone());
 
