@@ -547,7 +547,7 @@ dependencies = [
  "convert_case",
  "futures",
  "glam",
- "indexmap 1.9.3",
+ "indexmap 2.0.0",
  "itertools",
  "parking_lot",
  "rand 0.8.5",

@@ -17,7 +17,7 @@ pub enum Web {
 
 pub async fn run(command: Web) -> anyhow::Result<()> {
     match command {
-        Web::Build(args) => build::run(args).await,
+        Web::Build(args) => build::run(args),
         Web::OpenBrowser => {
             #[cfg(feature = "openssl")]
             {
