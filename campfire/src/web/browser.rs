@@ -38,16 +38,26 @@ async fn open_browser(spki: &str, url: &str) -> anyhow::Result<()> {
                 .arg(format!("--ignore-certificate-errors-spki-list={spki}"));
 
         }
-        else if #[cfg(target_os = "linux")]{
+        else if #[cfg(target_os = "linux")] {
             let _spki = spki;
             let _url = url;
             let mut command = Command::new("google-chrome");
-                command.args(["-a", "Google Chrome", url, "--args"])
+            command
+                .args(["-a", "Google Chrome", url, "--args"])
                 .arg(format!("--ignore-certificate-errors-spki-list={spki}"))
                 .spawn()
                 .context("Failed to spawn browser")?;
 
             anyhow::bail!("Launching the browser for linux is not supported. This is because cargo will cleanup the browser background process when campfire terminates")
+        }
+        else {
+            let mut command = Command::new("google-chrome");
+            command
+                .arg(format!("--ignore-certificate-errors-spki-list={spki}"))
+                .spawn()
+                .context("Failed to spawn browser")?;
+
+            anyhow::bail!("Launching the browser for windows is not yet supported.")
         }
     }
 
