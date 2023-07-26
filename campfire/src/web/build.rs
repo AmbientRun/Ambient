@@ -53,7 +53,7 @@ pub(crate) async fn install_wasm_pack() -> anyhow::Result<()> {
 #[cfg(target_os = "linux")]
 pub(crate) async fn install_wasm_pack() -> anyhow::Result<()> {
     eprintln!("Installing wasm-pack");
-    let curl = Command::new("curl")
+    let mut curl = std::process::Command::new("curl")
         .args([
             "https://rustwasm.github.io/wasm-pack/installer/init.sh",
             "-sSf",
@@ -61,16 +61,14 @@ pub(crate) async fn install_wasm_pack() -> anyhow::Result<()> {
         .spawn()
         .context("Failed to spawn curl")?;
 
-    if !status.success() {
-        anyhow::bail!("Failed to install wasm-pack");
-    }
-
-    let sh = Command::new("sh")
-        .stdin(Stdio::from(curl.stdout.unwrap()))
+    let mut sh = Command::new("sh")
+        .stdin(Stdio::from(curl.stdout.take().unwrap()))
         .spawn()
         .context("Failed to spawn sh")?;
 
-    let (curl, sh) = try_join!(curl.wait(), sh.wait())?;
+    let sh = sh.wait().await?;
+
+    let curl = tokio::task::block_in_place(|| curl.wait())?;
 
     if !curl.success() {
         anyhow::bail!("Failed to fetch install script")
