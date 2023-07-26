@@ -27,6 +27,8 @@ pub async fn run(opts: BuildOptions) -> anyhow::Result<()> {
     ensure_wasm_pack().await?;
     let output_path = run_cargo_build(&opts).await?;
 
+    eprintln!("Built package: {:?}", output_path);
+
     Ok(())
 }
 
@@ -65,7 +67,7 @@ pub async fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
 
     match opts.target {
         Target::Bundler => command.args(["--target", "bundler"]),
-        Target::Standalone => command.args(["--target", "no-modules"]),
+        Target::Standalone => command.args(["--target", "no-modules", "--no-pack"]),
     };
 
     // See: https://doc.rust-lang.org/cargo/guide/build-cache.html
@@ -85,8 +87,6 @@ pub async fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
     }
 
     assert!(output_path.exists());
-
-    eprintln!("Built package: {:?}", output_path);
 
     Ok(output_path)
 }
