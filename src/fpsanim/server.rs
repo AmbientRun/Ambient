@@ -13,14 +13,14 @@ mod anim;
 #[main]
 pub fn main() {
     anim::register_anim();
-    spawn_query((player(), components::player_model_ref())).bind(|v| {
+
+    spawn_query((player(), components::player_model_ref())).bind(move |v| {
         for (id, (_, model)) in v {
             let jump = PlayClipFromUrlNode::new(
                 asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim").unwrap(),
             );
             jump.looping(false);
             let jump_player = AnimationPlayer::new(&jump);
-
             entity::add_component(model, apply_animation_player(), jump_player.0);
             entity::add_component(id, components::player_jumping(), false);
         }
@@ -42,25 +42,11 @@ pub fn main() {
                     asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim").unwrap(),
                 );
                 jump.looping(false);
-
-                // TODO: This increases the memory usage!!!
-                let jump_player = AnimationPlayer::new(&jump);
-                entity::add_component(model, apply_animation_player(), jump_player.0);
+                play_clip_on_model(model, jump);
                 entity::add_component(player_id, components::player_jumping(), false);
                 continue;
             }
 
-            if is_shooting {
-                let fire = PlayClipFromUrlNode::new(
-                    asset::url("assets/anim/Rifle Firing.fbx/animations/mixamo.com.anim").unwrap(),
-                );
-                fire.looping(false);
-
-                // TODO: This increases the memory usage!!!
-                let fire_player = AnimationPlayer::new(&fire);
-                entity::add_component(model, apply_animation_player(), fire_player.0);
-                continue;
-            }
             let fd = dir.y == -1.0;
             let bk = dir.y == 1.0;
             let lt = dir.x == -1.0;

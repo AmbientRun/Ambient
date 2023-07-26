@@ -83,7 +83,7 @@ pub fn register_anim() {
             );
 
             // // Looping is buggy
-            // jump.looping(false);
+            jump.looping(false);
 
             // let hit = PlayClipFromUrlNode::new(
             //     asset::url("assets/anim/Rifle Hit Reaction.fbx/animations/mixamo.com.anim")
