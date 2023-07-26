@@ -19,7 +19,14 @@ jobs:
           target: wasm32-unknown-unknown
           profile: minimal
 
-      - uses: actions-rs/cargo@v1
+      - name: "Build web client"
+        uses: actions-rs/cargo@v1
         with:
           command: campfire
           args: web build --profile release --target standalone
+
+      - name: Upload package
+        uses: actions/upload-artifact@v3
+        with:
+          name: ambient-web-standalone
+          path: ./web/pkg
