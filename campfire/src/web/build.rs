@@ -67,7 +67,7 @@ pub async fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
 
     match opts.target {
         Target::Bundler => command.args(["--target", "bundler"]),
-        Target::Standalone => command.args(["--target", "no-modules", "--no-pack"]),
+        Target::Standalone => command.args(["--target", "web", "--no-pack"]),
     };
 
     // See: https://doc.rust-lang.org/cargo/guide/build-cache.html
