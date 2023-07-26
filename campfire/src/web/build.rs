@@ -33,23 +33,22 @@ pub fn run(opts: BuildOptions) -> anyhow::Result<()> {
     Ok(())
 }
 
-// #[cfg(not(target_os = "linux"))]
-// pub(crate) async fn install_wasm_pack() -> anyhow::Result<()> {
-//     eprintln!("Installing wasm-pack from source");
-//     let status = Command::new("cargo")
-//         .args(["install", "wasm-pack"])
-//         .spawn()?
-//         .wait()
-//         .await?;
+#[cfg(not(target_os = "linux"))]
+pub(crate) fn install_wasm_pack() -> anyhow::Result<()> {
+    eprintln!("Installing wasm-pack from source");
+    let status = Command::new("cargo")
+        .args(["install", "wasm-pack"])
+        .spawn()?
+        .wait()?;
 
-//     if !status.success() {
-//         anyhow::bail!("Failed to install wasm-pack");
-//     }
+    if !status.success() {
+        anyhow::bail!("Failed to install wasm-pack");
+    }
 
-//     Ok(())
-// }
+    Ok(())
+}
 
-// #[cfg(target_os = "linux")]
+#[cfg(target_os = "linux")]
 pub(crate) fn install_wasm_pack() -> anyhow::Result<()> {
     eprintln!("Installing wasm-pack");
     let mut curl = Command::new("curl")
