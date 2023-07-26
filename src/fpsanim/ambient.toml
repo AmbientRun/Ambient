@@ -1,5 +1,7 @@
 [components]
 
+player_jumping = { type = "Bool", attributes = ["Debuggable", "Networked"] }
+
 run_fd = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
     "Debuggable",
     "Networked",

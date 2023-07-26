@@ -3,6 +3,9 @@ use ambient_api::{
     prelude::*,
 };
 
+const INIT_JUMP_VSPEED: f32 = 0.2;
+const FALLING_VSPEED: f32 = 0.8;
+
 #[main]
 pub fn main() {
     spawn_query(player()).bind(|results| {
@@ -42,7 +45,8 @@ pub fn main() {
         }
 
         if msg.jump {
-            entity::add_component(player_id, components::player_vspeed(), 0.6);
+            entity::add_component(player_id, components::player_jumping(), true);
+            entity::add_component(player_id, components::player_vspeed(), INIT_JUMP_VSPEED);
         }
 
         if msg.running {
@@ -116,7 +120,7 @@ pub fn main() {
                 entity::set_component(player_id, components::player_vspeed(), 0.0);
             } else {
                 entity::mutate_component(player_id, components::player_vspeed(), |vspeed| {
-                    *vspeed -= 3.0 * delta_time(); // 1/60 second for example
+                    *vspeed -= FALLING_VSPEED * delta_time(); // 1/60 second for example
                 });
             }
         }
