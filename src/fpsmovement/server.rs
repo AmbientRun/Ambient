@@ -117,6 +117,7 @@ pub fn main() {
             let displace = rot * (direction.normalize_or_zero() * speed).extend(vspeed);
             let collision = physics::move_character(player_id, displace, 0.01, delta_time());
             if collision.down {
+                entity::add_component(player_id, components::player_jumping(), false);
                 entity::set_component(player_id, components::player_vspeed(), 0.0);
             } else {
                 entity::mutate_component(player_id, components::player_vspeed(), |vspeed| {

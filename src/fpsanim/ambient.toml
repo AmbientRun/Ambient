@@ -1,5 +1,4 @@
 [components]
-
 player_jumping = { type = "Bool", attributes = ["Debuggable", "Networked"] }
 
 walk_fd = { type = { type = "Vec", element_type = "EntityId" }, attributes = [

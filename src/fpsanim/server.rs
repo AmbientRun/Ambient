@@ -10,152 +10,100 @@ use ambient_api::{
 
 mod anim;
 
+fn calculate_blend_from_weight(weights: &[f32]) -> Vec<f32> {
+    assert!(weights.len() >= 2);
+    let mut blend = Vec::with_capacity(weights.len() - 1);
+    let mut total = 0.0;
+    for i in 0..weights.len() {
+        total += weights[i];
+    }
+    let mut left_weight = weights[0];
+    for i in 0..weights.len() - 1 {
+        left_weight += weights[i + 1];
+        let b: f32 = if left_weight != 0.0 {
+            weights[i + 1] / left_weight
+        } else {
+            0.0
+        };
+
+        blend.push(b);
+    }
+    blend
+}
+
+#[derive(Debug, Clone)]
+struct FPSAnimBlend {
+    // clips: Vec<PlayClipFromUrlNode>,
+    pub nodes: Vec<BlendNode>,
+    // pub output: BlendNode,
+}
+
+impl FPSAnimBlend {
+    pub fn new() -> Self {
+        let walk_fd = PlayClipFromUrlNode::new(
+            asset::url("assets/anim/Walk Forward.fbx/animations/mixamo.com.anim").unwrap(),
+        );
+        let jump = PlayClipFromUrlNode::new(
+            asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim").unwrap(),
+        );
+        jump.looping(false);
+        let idle = PlayClipFromUrlNode::new(
+            asset::url("assets/anim/Rifle Aiming Idle.fbx/animations/mixamo.com.anim").unwrap(),
+        );
+        let blend1 = BlendNode::new(&walk_fd, &jump, 0.5);
+        let blend2 = BlendNode::new(&blend1, &idle, 0.5);
+
+        Self {
+            nodes: vec![blend1, blend2],
+        }
+    }
+    pub fn update_weights(&mut self, weights: &[f32]) {
+        let blend = calculate_blend_from_weight(weights);
+        for i in 0..self.nodes.len() {
+            self.nodes[i].set_weight(blend[i]);
+        }
+    }
+}
+
 #[main]
 pub fn main() {
-    anim::register_anim();
+    let anim_lib = std::rc::Rc::new(std::cell::RefCell::new(std::collections::HashMap::new()));
+    let anim_lib_clone = std::rc::Rc::clone(&anim_lib);
 
     spawn_query((player(), components::player_model_ref())).bind(move |v| {
         for (id, (_, model)) in v {
-            let jump = PlayClipFromUrlNode::new(
-                asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim").unwrap(),
-            );
-            jump.looping(false);
-            let jump_player = AnimationPlayer::new(&jump);
-            entity::add_component(model, apply_animation_player(), jump_player.0);
+            let fps_blend = FPSAnimBlend::new();
+            let anim_player = AnimationPlayer::new(fps_blend.nodes.last().unwrap());
+            anim_lib.borrow_mut().insert(id, (fps_blend, anim_player));
+            entity::add_component(model, apply_animation_player(), anim_player.0);
             entity::add_component(id, components::player_jumping(), false);
         }
     });
-
     query((
         player(),
         components::player_model_ref(),
-        components::player_direction(),
-        components::player_shooting_status(),
-        components::player_vspeed(),
-        components::player_running(),
         components::player_jumping(),
+        components::player_direction(),
     ))
-    .each_frame(move |results| {
-        for (player_id, (_, model, dir, is_shooting, vspeed, is_running, is_jumping)) in results {
+    .each_frame(move |res| {
+        for (player_id, (_, _model, is_jumping, dir)) in res {
+            let mut weights = vec![1.0, 0.0, 0.0];
+            let anim_lib = anim_lib_clone.borrow_mut();
+            let (mut blend, _anim_player) = anim_lib.get(&player_id).unwrap().clone();
+
             if is_jumping {
-                let jump = PlayClipFromUrlNode::new(
-                    asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim").unwrap(),
-                );
-                jump.looping(false);
-                play_clip_on_model(model, jump);
-                entity::add_component(player_id, components::player_jumping(), false);
-                continue;
-            }
-
-            let fd = dir.y == -1.0;
-            let bk = dir.y == 1.0;
-            let lt = dir.x == -1.0;
-            let rt = dir.x == 1.0;
-
-            if is_running {
-                if fd && !lt && !rt {
-                    apply_animation(player_id, components::run_fd());
-                } else if bk && !lt && !rt {
-                    apply_animation(player_id, components::run_bk());
-                } else if lt && !fd && !bk {
-                    apply_animation(player_id, components::run_lt());
-                } else if rt && !fd && !bk {
-                    apply_animation(player_id, components::run_rt());
-                } else if fd && lt {
-                    apply_animation(player_id, components::run_fd_lt());
-                } else if fd && rt {
-                    apply_animation(player_id, components::run_fd_rt());
-                } else if bk && lt {
-                    apply_animation(player_id, components::run_bk_lt());
-                } else if bk && rt {
-                    apply_animation(player_id, components::run_bk_rt());
-                } else {
-                    apply_anim_blend(player_id, components::idle_fd(), 0.0);
-                }
-                continue;
+                weights = vec![0.0, 1.0, 0.0];
             } else {
-                if fd && !lt && !rt {
-                    apply_animation(player_id, components::walk_fd());
-                } else if bk && !lt && !rt {
-                    apply_animation(player_id, components::walk_bk());
-                } else if lt && !fd && !bk {
-                    apply_animation(player_id, components::walk_lt());
-                } else if rt && !fd && !bk {
-                    apply_animation(player_id, components::walk_rt());
-                } else if fd && lt {
-                    apply_animation(player_id, components::walk_fd_lt());
-                } else if fd && rt {
-                    apply_animation(player_id, components::walk_fd_rt());
-                } else if bk && lt {
-                    apply_animation(player_id, components::walk_bk_lt());
-                } else if bk && rt {
-                    apply_animation(player_id, components::walk_bk_rt());
+                if dir.x == 0.0 && dir.y == 0.0 {
+                    //idle
+                    weights = vec![0.0, 0.0, 1.0];
                 } else {
-                    apply_anim_blend(player_id, components::idle_fd(), 0.0);
+                    // walk
+                    weights = vec![1.0, 0.0, 0.0];
                 }
-                continue;
             }
+            blend.update_weights(&weights);
+            println!("current frame weight{:?}", weights);
         }
     });
-
-    change_query((
-        player(),
-        components::player_health(),
-        components::player_model_ref(),
-    ))
-    .track_change(components::player_health())
-    .bind(|v| {
-        // play hit animation
-        for (_id, (_, health, model)) in v {
-            if health <= 0 {
-                let death = PlayClipFromUrlNode::new(
-                    asset::url("assets/anim/Rifle Death.fbx/animations/mixamo.com.anim").unwrap(),
-                );
-                death.looping(false);
-                play_clip_on_model(model, death);
-            } else if health < 100 {
-                let hit = PlayClipFromUrlNode::new(
-                    asset::url("assets/anim/Rifle Hit Reaction.fbx/animations/mixamo.com.anim")
-                        .unwrap(),
-                );
-                hit.looping(false);
-                play_clip_on_model(model, hit);
-            }
-        }
-    });
-}
-
-fn play_clip_on_model(model: EntityId, clip: PlayClipFromUrlNode) {
-    let anim_player = entity::get_component(model, apply_animation_player()).unwrap_or_default();
-    let p = AnimationPlayer(anim_player);
-    p.play(clip);
-}
-
-pub fn apply_animation(player_id: EntityId, comp: Component<Vec<EntityId>>) {
-    let model = entity::get_component(player_id, components::player_model_ref());
-    if model.is_none() {
-        return;
-    }
-    let model = model.unwrap();
-    let anim_player = entity::get_component(player_id, comp);
-    if anim_player.is_none() {
-        return;
-    }
-    let anim_player = anim_player.unwrap();
-    entity::add_component(model, apply_animation_player(), anim_player[1]);
-}
-
-pub fn apply_anim_blend(player_id: EntityId, comp: Component<Vec<EntityId>>, blend_value: f32) {
-    let model = entity::get_component(player_id, components::player_model_ref());
-    if model.is_none() {
-        return;
-    }
-    let model = model.unwrap();
-    let blend_player = entity::get_component(player_id, comp);
-    if blend_player.is_none() {
-        return;
-    }
-    let blend_player = blend_player.unwrap();
-    entity::set_component(blend_player[0], blend(), blend_value);
-    entity::add_component(model, apply_animation_player(), blend_player[1]);
 }
