@@ -7,4 +7,4 @@ type = "Game"
 categories = ["Example"]
 
 [components]
-rotating_sun = { type = "bool", name = "Rotating sun", description = "Whether or not rotate the sun automatically" }
+rotating_sun = { type = "Bool", name = "Rotating sun", description = "Whether or not rotate the sun automatically" }

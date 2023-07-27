@@ -4,31 +4,31 @@ name = "Entity Component System"
 description = "Core components for the ECS and entities."
 
 [components.children]
-type = { type = "vec", element_type = "entity_id" }
+type = { type = "Vec", element_type = "EntityId" }
 name = "Children"
 description = "The children of this entity."
-attributes = ["debuggable", "networked", "store", "maybe_resource"]
+attributes = ["Debuggable", "Networked", "Store", "MaybeResource"]
 
 [components.dont_despawn_on_unload]
-type = "empty"
+type = "Empty"
 name = "Don't automatically despawn on module unload"
 description = "Indicates that this entity shouldn't be despawned when the module that spawned it unloads."
-attributes = ["debuggable", "store"]
+attributes = ["Debuggable", "Store"]
 
 [components.dont_store]
-type = "empty"
+type = "Empty"
 name = "Don't store"
 description = "Indicates that this entity shouldn't be stored on disk."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.id]
-type = "entity_id"
+type = "EntityId"
 name = "ID"
 description = "The ID of the entity."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.parent]
-type = "entity_id"
+type = "EntityId"
 name = "Parent"
 description = "The parent of this entity."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]

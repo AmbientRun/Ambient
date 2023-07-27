@@ -62,7 +62,7 @@ fn generate_make(
     root_scope_id: ItemId<Scope>,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
-    let name = concept.data().id.as_snake_case();
+    let name = concept.data().id.as_str();
     let make_comment = format!(
         "Makes a *{}*.\n\n{}\n\n{}",
         concept.name.as_deref().unwrap_or(&name),
@@ -124,7 +124,7 @@ fn generate_is(
     root_scope_id: ItemId<Scope>,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
-    let name = concept.data().id.as_snake_case();
+    let name = concept.data().id.as_str();
     let is_comment = format!(
         "Checks if the entity is a *{}*.\n\n{}\n\n{}",
         concept.name.as_deref().unwrap_or(&name),
@@ -195,7 +195,7 @@ fn generate_concept(
     root_scope_id: ItemId<Scope>,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
-    let name = concept.data().id.as_snake_case();
+    let name = concept.data().id.as_str();
     let fn_comment = format!(
         "Returns the components that comprise *{}* as a tuple.\n\n{}\n\n{}",
         concept.name.as_deref().unwrap_or(&name),

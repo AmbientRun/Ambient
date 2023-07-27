@@ -6,9 +6,9 @@ repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/example
 type = "Game"
 categories = ["Example"]
 
-[messages.input.fields]
-ray_origin = "vec3"
-ray_dir = "vec3"
+[messages.Input.fields]
+ray_origin = "Vec3"
+ray_dir = "Vec3"
 
-[messages.world_position.fields]
-position = "vec3"
+[messages.WorldPosition.fields]
+position = "Vec3"

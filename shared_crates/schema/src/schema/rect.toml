@@ -4,75 +4,75 @@ name = "Rect"
 description = "Rounded corners rectangle rendering components, with an optional border."
 
 [components.background_color]
-type = "vec4"
+type = "Vec4"
 name = "Background color"
 description = "Background color of an entity with a `rect` component."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.background_url]
-type = "string"
+type = "String"
 name = "Background URL"
 description = "URL to an image asset."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.border_color]
-type = "vec4"
+type = "Vec4"
 name = "Border color"
 description = "Border color of an entity with a `rect` component."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.border_radius]
-type = "vec4"
+type = "Vec4"
 name = "Border radius"
 description = """
 Radius for each corner of an entity with a `rect` component.
 `x` = top-left, `y` = top-right, `z` = bottom-left, `w` = bottom-right."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.border_thickness]
-type = "f32"
+type = "F32"
 name = "Border thickness"
 description = "Border thickness of an entity with a `rect` component."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.pixel_line_from]
-type = "vec3"
+type = "Vec3"
 name = "Pixel Line from"
 description = "Start point of a pixel sized line."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.pixel_line_to]
-type = "vec3"
+type = "Vec3"
 name = "Pixel Line to"
 description = "End point of a pixel sized line."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.line_from]
-type = "vec3"
+type = "Vec3"
 name = "Line from"
 description = "Start point of a line."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.line_to]
-type = "vec3"
+type = "Vec3"
 name = "Line to"
 description = "End point of a line."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.line_width]
-type = "f32"
+type = "F32"
 name = "Line width"
 description = "Width of line."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.rect]
-type = "empty"
+type = "Empty"
 name = "Rect"
 description = "If attached to an entity, the entity will be converted to a UI rectangle, with optionally rounded corners and borders."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.size_from_background_image]
-type = "empty"
+type = "Empty"
 name = "Size from background image"
 description = "Resize this rect based on the size of the background image."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]

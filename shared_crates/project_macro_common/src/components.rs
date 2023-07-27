@@ -52,7 +52,7 @@ pub fn make_definitions(
         .values()
         .filter_map(|c| context.extract_item_if_relevant(items, *c))
         .map(|component| {
-            let id = component.data.id.as_snake_case();
+            let id = &component.data.id;
             let type_id = component.type_.as_resolved().expect("type was unresolved");
             let ty = type_map.get(&type_id).unwrap_or_else(|| {
                 panic!(
@@ -78,7 +78,7 @@ pub fn make_definitions(
                 .name
                 .as_ref()
                 .map(|x| x as &str)
-                .unwrap_or_else(|| component.data.id.as_ref());
+                .unwrap_or_else(|| component.data.id.as_str());
             let mut doc_comment = format!("**{}**", name);
 
             if let Some(desc) = &component.description {
@@ -100,10 +100,10 @@ pub fn make_definitions(
 
             match context {
                 Context::Host => {
-                    let ident = make_path(&id);
+                    let ident = make_path(id.as_str());
                     let attributes: Vec<_> = attributes
                         .into_iter()
-                        .map(|s| make_path(&s.as_upper_camel_case()))
+                        .map(|s| make_path(s.as_str()))
                         .collect();
                     let description = component.description.to_owned().unwrap_or_default();
 
@@ -119,8 +119,8 @@ pub fn make_definitions(
                         false,
                         None,
                     )?;
-                    let ident = make_path(&id);
-                    let uppercase_ident = make_path(&id.to_uppercase());
+                    let ident = make_path(id.as_str());
+                    let uppercase_ident = make_path(&id.as_str().to_uppercase());
 
                     let component_init = quote! {
                         Lazy::new(|| __internal_get_component(#component_id))

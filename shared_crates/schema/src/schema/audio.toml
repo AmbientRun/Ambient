@@ -4,110 +4,110 @@ name = "Audio"
 description = "Audio functionality and state."
 
 [components.audio_player]
-type = "empty"
+type = "Empty"
 name = "Audio player"
 description = "The entity is an audio player."
-attributes = ["maybe_resource", "debuggable"]
+attributes = ["MaybeResource", "Debuggable"]
 
 [components.spatial_audio_player]
-type = "empty"
+type = "Empty"
 name = "Spatial audio player"
 description = "The entity is a spatial audio player."
-attributes = ["maybe_resource", "debuggable"]
+attributes = ["MaybeResource", "Debuggable"]
 
 [components.spatial_audio_emitter]
-type = "entity_id"
+type = "EntityId"
 name = "Spatial audio emitter"
 description = "The entity is a spatial audio emitter."
-attributes = ["maybe_resource", "debuggable"]
+attributes = ["MaybeResource", "Debuggable"]
 
 [components.spatial_audio_listener]
-type = "entity_id"
+type = "EntityId"
 name = "Spatial audio listener"
 description = "The entity is a spatial audio listener."
-attributes = ["maybe_resource", "debuggable"]
+attributes = ["MaybeResource", "Debuggable"]
 
 [components.looping]
-type = "bool"
+type = "Bool"
 name = "Looping"
 description = """
 Whether or not the audio should loop.
 """
-attributes = ["maybe_resource", "debuggable"]
+attributes = ["MaybeResource", "Debuggable"]
 
 [components.onepole_lpf]
-type = "f32"
+type = "F32"
 name = "One pole low pass filter"
 description = """
 With this component, the audio will be filtered with a one pole low pass filter.
 """
-attributes = ["maybe_resource", "debuggable"]
+attributes = ["MaybeResource", "Debuggable"]
 
 [components.playing_sound]
-type = "empty"
+type = "Empty"
 name = "Playing sound"
 description = """
 The entity with this comp is a playing sound.
 We can attach other components to it to control the sound parameters.
 """
-attributes = ["maybe_resource", "debuggable"]
+attributes = ["MaybeResource", "Debuggable"]
 
 [components.amplitude]
-type = "f32"
+type = "F32"
 name = "Amplitude"
 description = """
 The amplitude of the audio.
 """
-attributes = ["maybe_resource", "debuggable"]
+attributes = ["MaybeResource", "Debuggable"]
 
 [components.panning]
-type = "f32"
+type = "F32"
 name = "Panning"
 description = """
 The panning of the audio.
 """
-attributes = ["maybe_resource", "debuggable"]
+attributes = ["MaybeResource", "Debuggable"]
 
 [components.lpf]
-type = "vec2"
+type = "Vec2"
 name = "Low_pass filter"
 description = """
 Low pass filter. The first value is the cutoff frequency, the second is the bandwidth.
 """
-attributes = ["maybe_resource", "debuggable"]
+attributes = ["MaybeResource", "Debuggable"]
 
 [components.hpf]
-type = "vec2"
+type = "Vec2"
 name = "High_pass filter"
 description = """
 High pass filter. The first value is the cutoff frequency, the second is the bandwidth.
 """
-attributes = ["maybe_resource", "debuggable"]
+attributes = ["MaybeResource", "Debuggable"]
 
 [components.audio_url]
-type = "string"
+type = "String"
 name = "Audio URL"
 description = """
 The URL of the assets.
 """
-attributes = ["maybe_resource", "debuggable"]
+attributes = ["MaybeResource", "Debuggable"]
 
 [components.play_now]
-type = "empty"
+type = "Empty"
 name = "Trigger at this frame"
 description = """
 The system will watch for this component and PLAY the audio at this frame,
 using the other components as parameters.
 Then set it back to false.
 """
-attributes = ["maybe_resource", "debuggable"]
+attributes = ["MaybeResource", "Debuggable"]
 
 [components.stop_now]
-type = "empty"
+type = "Empty"
 name = "Stop at this frame"
 description = """
 The system will watch for this component and STOP the audio at this frame,
 using the other components as parameters.
 Then set it back to false.
 """
-attributes = ["maybe_resource", "debuggable"]
+attributes = ["MaybeResource", "Debuggable"]

@@ -6,29 +6,29 @@ description = "State related to WASM functionality."
 [components.module]
 name = "Module"
 description = "A module."
-type = "empty"
-attributes = ["networked", "store", "debuggable"]
+type = "Empty"
+attributes = ["Networked", "Store", "Debuggable"]
 
 [components.module_on_server]
 name = "Module on server"
 description = "Whether or not this module is on the server."
-type = "empty"
-attributes = ["networked", "store", "debuggable"]
+type = "Empty"
+attributes = ["Networked", "Store", "Debuggable"]
 
 [components.bytecode_from_url]
 name = "Bytecode from URL"
 description = "Asset URL for the bytecode of a WASM component."
-type = "string"
-attributes = ["networked", "store", "debuggable"]
+type = "String"
+attributes = ["Networked", "Store", "Debuggable"]
 
 [components.module_enabled]
 name = "Module enabled"
 description = "Whether or not this module is enabled."
-type = "bool"
-attributes = ["networked", "store", "debuggable"]
+type = "Bool"
+attributes = ["Networked", "Store", "Debuggable"]
 
 [components.module_name]
 name = "Module name"
 description = "The name of this module."
-type = "string"
-attributes = ["networked", "store", "debuggable"]
+type = "String"
+attributes = ["Networked", "Store", "Debuggable"]

@@ -8,7 +8,7 @@ type = "Game"
 categories = ["Example"]
 
 [components.is_the_best]
-type = "bool"
+type = "Bool"
 name = "Is The Best"
 description = "Declares whether or not the entity this is attached is the best."
-attributes = ["networked", "debuggable"]
+attributes = ["Networked", "Debuggable"]

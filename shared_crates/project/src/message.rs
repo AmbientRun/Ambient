@@ -1,12 +1,12 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
-use crate::{ComponentType, Identifier};
+use crate::{ComponentType, SnakeCaseIdentifier};
 
 #[derive(Clone, PartialEq, Eq, Debug, Deserialize, Serialize)]
 pub struct Message {
     pub description: Option<String>,
-    pub fields: IndexMap<Identifier, ComponentType>,
+    pub fields: IndexMap<SnakeCaseIdentifier, ComponentType>,
 }
 
 #[cfg(test)]
@@ -27,9 +27,9 @@ mod tests {
         assert_eq!(
             message.fields.keys().collect::<Vec<_>>(),
             vec![
-                &Identifier::new("a").unwrap(),
-                &Identifier::new("c").unwrap(),
-                &Identifier::new("b").unwrap(),
+                &SnakeCaseIdentifier::new("a").unwrap(),
+                &SnakeCaseIdentifier::new("c").unwrap(),
+                &SnakeCaseIdentifier::new("b").unwrap(),
             ]
         );
     }

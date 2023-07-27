@@ -78,7 +78,7 @@ pub async fn build(config: BuildConfiguration) -> anyhow::Result<Metadata> {
         .ember
         .name
         .as_deref()
-        .unwrap_or_else(|| manifest.ember.id.as_ref());
+        .unwrap_or_else(|| manifest.ember.id.as_str());
 
     tracing::info!("Building project `{}` ({})", manifest.ember.id, name);
 

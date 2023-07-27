@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 
-use ambient_project::{ComponentType, Identifier, ItemPath, Manifest};
+use ambient_project::{
+    ComponentType, ItemPath, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
+};
 use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
@@ -94,12 +96,12 @@ pub struct Scope {
     pub path: Option<PathBuf>,
     pub manifest: Option<Manifest>,
 
-    pub scopes: IndexMap<Identifier, ItemId<Scope>>,
-    pub components: IndexMap<Identifier, ItemId<Component>>,
-    pub concepts: IndexMap<Identifier, ItemId<Concept>>,
-    pub messages: IndexMap<Identifier, ItemId<Message>>,
-    pub types: IndexMap<Identifier, ItemId<Type>>,
-    pub attributes: IndexMap<Identifier, ItemId<Attribute>>,
+    pub scopes: IndexMap<SnakeCaseIdentifier, ItemId<Scope>>,
+    pub components: IndexMap<SnakeCaseIdentifier, ItemId<Component>>,
+    pub concepts: IndexMap<SnakeCaseIdentifier, ItemId<Concept>>,
+    pub messages: IndexMap<PascalCaseIdentifier, ItemId<Message>>,
+    pub types: IndexMap<PascalCaseIdentifier, ItemId<Type>>,
+    pub attributes: IndexMap<PascalCaseIdentifier, ItemId<Attribute>>,
 }
 impl std::fmt::Debug for Scope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -239,6 +241,7 @@ fn get_type_id(
     path: ItemPath,
 ) -> anyhow::Result<ItemId<Type>> {
     let (scope, item) = path.scope_and_item();
+    let item = item.as_pascal().context("type name must be PascalCase")?;
     items
         .get_scope(self_scope_id, scope.iter())?
         .types
@@ -253,6 +256,9 @@ fn get_attribute_id(
     path: ItemPath,
 ) -> anyhow::Result<ItemId<Attribute>> {
     let (scope, item) = path.scope_and_item();
+    let item = item
+        .as_pascal()
+        .context("attribute name must be PascalCase")?;
     items
         .get_scope(self_scope_id, scope.iter())?
         .attributes
@@ -267,6 +273,7 @@ fn get_concept_id(
     path: ItemPath,
 ) -> anyhow::Result<ItemId<Concept>> {
     let (scope, item) = path.scope_and_item();
+    let item = item.as_snake().context("concept name must be snake_case")?;
     items
         .get_scope(self_scope_id, scope.iter())?
         .concepts
@@ -281,6 +288,7 @@ fn get_component_id(
     path: ItemPath,
 ) -> anyhow::Result<ItemId<Component>> {
     let (scope, item) = path.scope_and_item();
+    let item = item.as_snake().context("concept name must be snake_case")?;
     items
         .get_scope(self_scope_id, scope.iter())?
         .components

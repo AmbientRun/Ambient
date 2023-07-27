@@ -7,24 +7,24 @@ type = "Game"
 categories = ["Example"]
 
 [components]
-cells = { type = { type = "vec", element_type = "entity_id" }, name = "Cells", description = "The cells in the game", attributes = [
-    "debuggable",
-    "networked",
+cells = { type = { type = "Vec", element_type = "EntityId" }, name = "Cells", description = "The cells in the game", attributes = [
+    "Debuggable",
+    "Networked",
 ] }
-cell = { type = "i32", name = "Cell", description = "The ID of the cell this player is in", attributes = [
-    "debuggable",
-    "networked",
+cell = { type = "I32", name = "Cell", description = "The ID of the cell this player is in", attributes = [
+    "Debuggable",
+    "Networked",
 ] }
-owned_by = { type = "entity_id", name = "Owned By", description = "The ID of the player that owns this cell", attributes = [
-    "debuggable",
-    "networked",
+owned_by = { type = "EntityId", name = "Owned By", description = "The ID of the player that owns this cell", attributes = [
+    "Debuggable",
+    "Networked",
 ] }
 
-[messages.input]
+[messages.Input]
 description = "The player's input"
-[messages.input.fields]
-up = "bool"
-down = "bool"
-left = "bool"
-right = "bool"
-capture = "bool"
+[messages.Input.fields]
+up = "Bool"
+down = "Bool"
+left = "Bool"
+right = "Bool"
+capture = "Bool"

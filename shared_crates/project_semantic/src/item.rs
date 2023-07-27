@@ -1,5 +1,4 @@
-use ambient_project::Identifier;
-use convert_case::Case;
+use ambient_project::{Identifier, PascalCaseIdentifier, SnakeCaseIdentifier};
 use ulid::Ulid;
 
 use crate::{Attribute, Component, Concept, Context, Message, Scope, Type, TypeInner};
@@ -28,7 +27,9 @@ impl ItemMap {
 
             let vec_id = self.add_raw(Type::new(
                 ItemData {
-                    id: Identifier::new(format!("vec_{}", data.id)).unwrap(),
+                    id: PascalCaseIdentifier::new(&format!("Vec{}", data.id))
+                        .unwrap()
+                        .into(),
                     ..data
                 },
                 TypeInner::Vec(new_id),
@@ -37,7 +38,9 @@ impl ItemMap {
 
             let option_id = self.add_raw(Type::new(
                 ItemData {
-                    id: Identifier::new(format!("option_{}", data.id)).unwrap(),
+                    id: PascalCaseIdentifier::new(&format!("Option{}", data.id))
+                        .unwrap()
+                        .into(),
                     ..data
                 },
                 TypeInner::Option(new_id),
@@ -123,7 +126,7 @@ impl ItemMap {
     pub fn get_scope_id<'a>(
         &self,
         start_scope_id: ItemId<Scope>,
-        path: impl Iterator<Item = &'a Identifier>,
+        path: impl Iterator<Item = &'a SnakeCaseIdentifier>,
     ) -> anyhow::Result<ItemId<Scope>> {
         let mut scope_id = start_scope_id;
         for segment in path {
@@ -140,7 +143,7 @@ impl ItemMap {
     pub fn get_scope<'a>(
         &self,
         start_scope_id: ItemId<Scope>,
-        path: impl Iterator<Item = &'a Identifier>,
+        path: impl Iterator<Item = &'a SnakeCaseIdentifier>,
     ) -> anyhow::Result<Ref<Scope>> {
         self.get(self.get_scope_id(start_scope_id, path)?)
     }
@@ -149,7 +152,7 @@ impl ItemMap {
         &mut self,
         manifest_path: PathBuf,
         start_scope_id: ItemId<Scope>,
-        path: &[Identifier],
+        path: &[SnakeCaseIdentifier],
     ) -> anyhow::Result<RefMut<Scope>> {
         let mut scope_id = start_scope_id;
         for segment in path.iter() {
@@ -161,7 +164,7 @@ impl ItemMap {
                     let new_id = self.add(Scope::new(
                         ItemData {
                             parent_id: Some(scope_id),
-                            id: segment.clone(),
+                            id: segment.clone().into(),
                             ..parent_scope_data
                         },
                         Some(manifest_path.clone()),
@@ -181,23 +184,17 @@ impl ItemMap {
     pub fn fully_qualified_display_path<T: Item>(
         &self,
         item: &T,
-        (scope_case, function_case, type_case): (Case, Case, Case),
         separator: &str,
         (type_prefix, source_suffix): (bool, bool),
         relative_to: Option<ItemId<Scope>>,
         item_prefix: Option<&str>,
     ) -> anyhow::Result<String> {
         let data = item.data();
-        let item_case = match T::TYPE {
-            ItemType::Component | ItemType::Concept => function_case,
-            ItemType::Message | ItemType::Type | ItemType::Attribute => type_case,
-            ItemType::Scope => scope_case,
-        };
 
         let mut path = vec![format!(
             "{}{}",
             item_prefix.unwrap_or_default(),
-            data.id.to_case(item_case)
+            data.id.as_str()
         )];
         let mut parent_id = data.parent_id;
         while let Some(this_parent_id) = parent_id {
@@ -208,7 +205,7 @@ impl ItemMap {
             }
 
             let parent = self.get(this_parent_id)?;
-            let id = parent.data().id.to_case(scope_case);
+            let id = parent.data().id.to_string();
             if !id.is_empty() {
                 path.push(id);
             }
@@ -242,7 +239,6 @@ impl ItemMap {
     ) -> anyhow::Result<String> {
         self.fully_qualified_display_path(
             item,
-            (Case::Snake, Case::Snake, Case::UpperCamel),
             "::",
             (display_affixes, display_affixes),
             relative_to,
@@ -256,14 +252,7 @@ impl ItemMap {
         relative_to: Option<ItemId<Scope>>,
         item_prefix: Option<&str>,
     ) -> anyhow::Result<String> {
-        self.fully_qualified_display_path(
-            item,
-            (Case::Snake, Case::Snake, Case::UpperCamel),
-            "::",
-            (false, false),
-            relative_to,
-            item_prefix,
-        )
+        self.fully_qualified_display_path(item, "::", (false, false), relative_to, item_prefix)
     }
 }
 

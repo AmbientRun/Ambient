@@ -4,124 +4,124 @@ name = "Camera"
 description = "Camera matrices, types, parameters, and more."
 
 [components.active_camera]
-type = "f32"
+type = "F32"
 name = "Active camera"
 description = """
 The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.
 If there's no `user_id`, the camera is considered global and potentially applies to all users (if its `active_camera` value is high enough)."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.aspect_ratio]
-type = "f32"
+type = "F32"
 name = "Aspect ratio"
 description = """
 The aspect ratio of this camera.
 If `aspect_ratio_from_window` is set, this will be automatically updated to match the window."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.aspect_ratio_from_window]
-type = "entity_id"
+type = "EntityId"
 name = "Aspect ratio from window"
 description = "If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.far]
-type = "f32"
+type = "F32"
 name = "Far plane"
 description = "The far plane of this camera, measured in meters."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.fog]
-type = "empty"
+type = "Empty"
 name = "Fog"
 description = "If attached, this camera will see/render fog."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.fovy]
-type = "f32"
+type = "F32"
 name = "Field of View Y"
 description = "The field of view of this camera in the Y/vertical direction, measured in radians."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.near]
-type = "f32"
+type = "F32"
 name = "Near plane"
 description = "The near plane of this camera, measured in meters."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.orthographic]
-type = "empty"
+type = "Empty"
 name = "Orthographic projection"
 description = """
 If attached, this camera will use a standard orthographic projection matrix.
 Ensure that the `orthographic_` components are set, including `left`, right`, `top` and `bottom`, as well as `near` and `far`."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.orthographic_bottom]
-type = "f32"
+type = "F32"
 name = "Orthographic bottom"
 description = "The bottom bound for this `orthographic` camera."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.orthographic_from_window]
-type = "entity_id"
+type = "EntityId"
 name = "Orthographic from window"
 description = "The bounds of this orthographic camera will be updated to match the window automatically. Should point to an entity with a `window_logical_size` component."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.orthographic_left]
-type = "f32"
+type = "F32"
 name = "Orthographic left"
 description = "The left bound for this `orthographic` camera."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.orthographic_right]
-type = "f32"
+type = "F32"
 name = "Orthographic right"
 description = "The right bound for this `orthographic` camera."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.orthographic_top]
-type = "f32"
+type = "F32"
 name = "Orthographic top"
 description = "The top bound for this `orthographic` camera."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.perspective]
-type = "empty"
+type = "Empty"
 name = "Perspective projection"
 description = """
 If attached, this camera will use a standard perspective projection matrix.
 Ensure that `near` and `far` are set."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.perspective_infinite_reverse]
-type = "empty"
+type = "Empty"
 name = "Perspective-infinite-reverse projection"
 description = """
 If attached, this camera will use a perspective-infinite-reverse projection matrix.
 This is well-suited for rendering large worlds as it has no far plane. Ensure `near` is set."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.projection]
-type = "mat4"
+type = "Mat4"
 name = "Projection"
 description = """
 The projection matrix of this camera.
 This can be driven by other components, including `perspective` and `perspective_infinite_reverse`."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.projection_view]
-type = "mat4"
+type = "Mat4"
 name = "Projection-view"
 description = "The composition of the projection and view (inverse-local-to-world) matrices."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.shadows_far]
-type = "f32"
+type = "F32"
 name = "Shadows far plane"
 description = "The far plane for the shadow camera, measured in meters."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 # Concepts
 

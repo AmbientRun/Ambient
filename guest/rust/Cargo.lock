@@ -469,6 +469,7 @@ dependencies = [
 name = "ambient_project"
 version = "0.3.0-dev"
 dependencies = [
+ "anyhow",
  "convert_case",
  "indexmap 2.0.0",
  "proc-macro2",
@@ -512,7 +513,6 @@ dependencies = [
  "ambient_schema",
  "ambient_shared_types",
  "anyhow",
- "convert_case",
  "data-encoding",
  "glam",
  "indexmap 2.0.0",

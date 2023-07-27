@@ -26,77 +26,77 @@ includes = [
 ]
 
 # Messages
-[messages.frame]
+[messages.Frame]
 name = "Frame"
 description = "Sent to all modules every frame."
 fields = {}
 
-[messages.collision]
+[messages.Collision]
 name = "Collision"
 description = "Sent when a collision occurs."
-fields = { ids = { container_type = "vec", element_type = "entity_id" } }
+fields = { ids = { container_type = "Vec", element_type = "EntityId" } }
 
-[messages.collider_loads]
+[messages.ColliderLoads]
 name = "Collider Loads"
 description = "Sent when colliders load."
-fields = { ids = { container_type = "vec", element_type = "entity_id" } }
+fields = { ids = { container_type = "Vec", element_type = "EntityId" } }
 
-[messages.module_load]
+[messages.ModuleLoad]
 name = "Module Load"
 description = "Sent to a module when it loads."
 fields = {}
 
-[messages.module_unload]
+[messages.ModuleUnload]
 name = "Module Unload"
 description = "Sent to a module when it unloads."
 fields = {}
 
-[messages.window_focus_change]
+[messages.WindowFocusChange]
 name = "Window Focus Change"
 description = "Sent when the window gains or loses focus."
-fields = { focused = "bool" }
+fields = { focused = "Bool" }
 
-[messages.window_close]
+[messages.WindowClose]
 name = "Window Close"
 description = "Sent when the window is closed."
 fields = {}
 
-[messages.window_keyboard_character]
+[messages.WindowKeyboardCharacter]
 name = "Window Keyboard Character"
 description = "Sent when the window receives a character from the keyboard."
-fields = { character = "string" }
+fields = { character = "String" }
 
-[messages.window_keyboard_modifiers_change]
+[messages.WindowKeyboardModifiersChange]
 name = "Window Keyboard Modifiers Change"
 description = "Sent when the window's keyboard modifiers change."
-fields = { modifiers = "u32" }
+fields = { modifiers = "U32" }
 
-[messages.window_keyboard_input]
+[messages.WindowKeyboardInput]
 name = "Window Keyboard Input"
 description = "Sent when the window receives a keyboard input."
-fields = { pressed = "bool", modifiers = "u32", keycode = { type = "option", element_type = "string" } }
+fields = { pressed = "Bool", modifiers = "U32", keycode = { type = "Option", element_type = "String" } }
 
-[messages.window_mouse_input]
+[messages.WindowMouseInput]
 name = "Window Mouse Input"
 description = "Sent when the window receives a mouse input."
-fields = { pressed = "bool", button = "u32" }
+fields = { pressed = "Bool", button = "U32" }
 
-[messages.window_mouse_wheel]
+[messages.WindowMouseWheel]
 name = "Window Mouse Wheel"
 description = "Sent when the window receives a mouse wheel input."
-fields = { delta = "vec2", pixels = "bool" }
+fields = { delta = "Vec2", pixels = "Bool" }
 
-[messages.window_mouse_motion]
+[messages.WindowMouseMotion]
 name = "Window Mouse Motion"
 description = "Sent when the window receives a mouse motion input."
-fields = { delta = "vec2" }
+fields = { delta = "Vec2" }
 
-[messages.http_response]
+[messages.HttpResponse]
 name = "HTTP Response"
 description = "Sent when an HTTP response is received."
-fields = { url = "string", status = "u32", body = { type = "vec", element_type = "u8" }, error = { type = "option", element_type = "string" } }
+fields = { url = "String", status = "U32", body = { type = "Vec", element_type = "U8" }, error = { type = "Option", element_type = "String" } }
 
-[messages.wasm_rebuild]
+[messages.WasmRebuild]
 name = "WASM Rebuild"
 description = "Sent when a request for WASM rebuilding is completed."
-fields = { error = { type = "option", element_type = "string" } }
+fields = { error = { type = "Option", element_type = "String" } }

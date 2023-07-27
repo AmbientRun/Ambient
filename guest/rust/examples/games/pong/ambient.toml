@@ -7,17 +7,17 @@ type = "Game"
 categories = ["Example"]
 
 [components]
-player_movement_direction = { type = "f32", name = "Player Movement Direction", description = "Direction of player movement" }
-track_audio_url = { type = "string", name = "Track Audio URL", description = "URL of the track audio", attributes = [
-    "networked",
-    "debuggable",
+player_movement_direction = { type = "F32", name = "Player Movement Direction", description = "Direction of player movement" }
+track_audio_url = { type = "String", name = "Track Audio URL", description = "URL of the track audio", attributes = [
+    "Networked",
+    "Debuggable",
 ] }
 
-[messages.input]
+[messages.Input]
 description = "Describes the input state of the player."
-[messages.input.fields]
-direction = "f32"
+[messages.Input.fields]
+direction = "F32"
 
-[messages.ping]
+[messages.Ping]
 description = "Time to ping sound."
 fields = {}

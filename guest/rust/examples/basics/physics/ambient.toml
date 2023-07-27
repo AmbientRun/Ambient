@@ -6,6 +6,6 @@ repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/example
 type = "Game"
 categories = ["Example"]
 
-[messages.bonk]
+[messages.Bonk]
 description = "Collision between two objects."
-fields = { emitter = "entity_id", listener = "entity_id" }
+fields = { emitter = "EntityId", listener = "EntityId" }

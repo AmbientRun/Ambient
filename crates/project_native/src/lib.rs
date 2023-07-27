@@ -67,7 +67,7 @@ fn all_defined_components(
                             id, component
                         )
                     }))?;
-                    Ok(attr.data().id.as_upper_camel_case())
+                    Ok(attr.data().id.to_string())
                 })
                 .collect::<anyhow::Result<_>>()?;
 

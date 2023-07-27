@@ -4,15 +4,15 @@ name = "Prefab"
 description = "Prefab-related state, including loading of prefabs."
 
 [components.prefab_from_url]
-type = "string"
+type = "String"
 name = "Prefab from URL"
 description = """
 Load and attach a prefab from a URL or relative path.
 When loaded, the components from this prefab will add to or replace the existing components for the entity."""
-attributes = ["debuggable", "store"]
+attributes = ["Debuggable", "Store"]
 
 [components.spawned]
-type = "empty"
+type = "Empty"
 name = "Spawned"
 description = "If attached, this entity was built from a prefab that has finished spawning."
-attributes = ["debuggable"]
+attributes = ["Debuggable"]

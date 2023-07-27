@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use ambient_project::Identifier;
+use ambient_project::SnakeCaseIdentifier;
 use ambient_std::git_revision;
 use anyhow::Context;
 use convert_case::Casing;
@@ -27,7 +27,7 @@ pub(crate) fn new_project(
     }
 
     let id = name.to_case(convert_case::Case::Snake);
-    let id = Identifier::new(id).map_err(anyhow::Error::msg)?;
+    let id = SnakeCaseIdentifier::new(&id).map_err(anyhow::Error::msg)?;
 
     // Create the folders.
     let dot_cargo_path = project_path.join(".cargo");
@@ -41,7 +41,7 @@ pub(crate) fn new_project(
 
     // Write the files to disk.
     let ambient_toml = include_str!("new_project_template/ambient.toml")
-        .replace("{{id}}", id.as_ref())
+        .replace("{{id}}", id.as_str())
         .replace("{{name}}", name);
 
     let cargo_toml = {
@@ -83,7 +83,7 @@ pub(crate) fn new_project(
         };
 
         let template_cargo_toml = include_str!("new_project_template/Cargo.toml");
-        let mut template_cargo_toml = template_cargo_toml.replace("{{id}}", id.as_ref()).replace(
+        let mut template_cargo_toml = template_cargo_toml.replace("{{id}}", id.as_str()).replace(
             "ambient_api = { path = \"../../../../guest/rust/api\" }",
             &replacement,
         );

@@ -48,7 +48,7 @@ pub async fn deploy(
             .ember
             .name
             .as_deref()
-            .unwrap_or_else(|| manifest.ember.id.as_ref())
+            .unwrap_or_else(|| manifest.ember.id.as_str())
     );
     let base_path = path.as_ref().to_owned();
 

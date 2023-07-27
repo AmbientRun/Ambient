@@ -7,29 +7,28 @@ type = "Game"
 categories = ["Example"]
 
 [components]
-player_camera_ref = { type = "entity_id", name = "Player camera ref", description = "The player's camera.", attributes = [
-    "debuggable",
+player_camera_ref = { type = "EntityId", name = "Player camera ref", description = "The player's camera.", attributes = [
+    "Debuggable",
 ] }
-player_movement_direction = { type = "vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
-    "debuggable",
+player_movement_direction = { type = "Vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
+    "Debuggable",
 ] }
-player_mouse_delta_x = { type = "f32", name = "Player mouse delta X", description = "The player's mouse delta X.", attributes = [
-    "debuggable",
-] }
-
-camera_follow_distance = { type = "f32", name = "Camera follow distance", description = "The distance the camera follows the player.", attributes = [
-    "debuggable",
-    "networked",
+player_mouse_delta_x = { type = "F32", name = "Player mouse delta X", description = "The player's mouse delta X.", attributes = [
+    "Debuggable",
 ] }
 
-player_scroll = { type = "f32", name = "Player mouse scroll", description = "The player's mouse scroll.", attributes = [
-    "debuggable",
+camera_follow_distance = { type = "F32", name = "Camera follow distance", description = "The distance the camera follows the player.", attributes = [
+    "Debuggable",
+    "Networked",
 ] }
 
-[messages.input]
+player_scroll = { type = "F32", name = "Player mouse scroll", description = "The player's mouse scroll.", attributes = [
+    "Debuggable",
+] }
+
+[messages.Input]
 description = "Describes the input state of the player."
-
-[messages.input.fields]
-direction = "vec2"
-mouse_delta_x = "f32"
-scroll = "f32"
+[messages.Input.fields]
+direction = "Vec2"
+mouse_delta_x = "F32"
+scroll = "F32"

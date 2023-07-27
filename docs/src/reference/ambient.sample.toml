@@ -90,12 +90,12 @@ cool_component2 = 1
 # Messages are used to communicate between client and server.
 #
 [messages]
-[messages.input]
+[messages.Input]
 # The name of the message.
 name = "Input"
 # The description of the message.
 description = "Describes the input state of the player."
-[messages.input.fields]
+[messages.Input.fields]
 # Each field in the message must have a type, name and description. The supported types are the same as for components.
 direction = { type = "Vec2", name = "Direction", description = "The movement direction of the player." }
 mouse_delta_x = { type = "F32", name = "Mouse delta X", description = "The mouse delta X." }

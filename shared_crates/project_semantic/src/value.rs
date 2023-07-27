@@ -1,7 +1,7 @@
 use crate::{ItemId, ItemMap, TypeInner};
 
 use super::{PrimitiveType, Type};
-use ambient_project::Identifier;
+use ambient_project::PascalCaseIdentifier;
 use ambient_shared_types::{
     primitive_component_definitions, ProceduralMaterialHandle, ProceduralMeshHandle,
     ProceduralSamplerHandle, ProceduralTextureHandle,
@@ -182,7 +182,7 @@ pub enum Value {
     Scalar(ScalarValue),
     Vec(Vec<ScalarValue>),
     Option(Option<ScalarValue>),
-    Enum(ItemId<Type>, Identifier),
+    Enum(ItemId<Type>, PascalCaseIdentifier),
 }
 impl fmt::Display for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -271,7 +271,7 @@ impl Value {
                 let variant = e
                     .members
                     .iter()
-                    .find(|(name, _description)| name.as_ref() == variant)
+                    .find(|(name, _description)| name.as_str() == variant)
                     .with_context(|| {
                         format!(
                             "Expected enum variant to be one of {:?}, got {:?}",

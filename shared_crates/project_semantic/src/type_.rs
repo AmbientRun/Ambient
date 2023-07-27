@@ -1,4 +1,4 @@
-use ambient_project::{ComponentType, Identifier};
+use ambient_project::{ComponentType, PascalCaseIdentifier};
 use indexmap::IndexMap;
 
 use crate::{
@@ -99,5 +99,5 @@ impl Resolve for Type {
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Enum {
-    pub members: IndexMap<Identifier, String>,
+    pub members: IndexMap<PascalCaseIdentifier, String>,
 }

@@ -4,10 +4,11 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use ambient_project::{Dependency, Identifier, Manifest};
+use ambient_project::{
+    Dependency, Identifier, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
+};
 use ambient_shared_types::primitive_component_definitions;
 use anyhow::Context as AnyhowContext;
-use convert_case::{Boundary, Case, Casing};
 
 mod scope;
 pub use scope::{Context, Scope};
@@ -229,13 +230,13 @@ impl Semantic {
         file_provider: &dyn FileProvider,
         manifest: Manifest,
         manifest_path: PathBuf,
-        id: Identifier,
+        id: SnakeCaseIdentifier,
         source: ItemSource,
     ) -> anyhow::Result<ItemId<Scope>> {
         let scope = Scope::new(
             ItemData {
                 parent_id,
-                id,
+                id: id.into(),
                 source,
             },
             Some(manifest_path.clone()),
@@ -250,7 +251,7 @@ impl Semantic {
             self.items
                 .get_mut(scope_id)?
                 .scopes
-                .insert(id, child_scope_id);
+                .insert(id.as_snake()?.clone(), child_scope_id);
         }
 
         for (_, dependency) in manifest.dependencies.iter() {
@@ -283,7 +284,7 @@ impl Semantic {
             items
                 .get_or_create_scope_mut(manifest_path.clone(), scope_id, scope_path)?
                 .components
-                .insert(item.clone(), value);
+                .insert(item.as_snake()?.clone(), value);
         }
 
         for (path, concept) in manifest.concepts.iter() {
@@ -294,7 +295,7 @@ impl Semantic {
             items
                 .get_or_create_scope_mut(manifest_path.clone(), scope_id, scope_path)?
                 .concepts
-                .insert(item.clone(), value);
+                .insert(item.as_snake()?.clone(), value);
         }
 
         for (path, message) in manifest.messages.iter() {
@@ -305,11 +306,14 @@ impl Semantic {
             items
                 .get_or_create_scope_mut(manifest_path.clone(), scope_id, scope_path)?
                 .messages
-                .insert(item.clone(), value);
+                .insert(item.as_pascal()?.clone(), value);
         }
 
         for (segment, enum_ty) in manifest.enums.iter() {
-            let enum_id = items.add(Type::from_project_enum(make_item_data(segment), enum_ty));
+            let enum_id = items.add(Type::from_project_enum(
+                make_item_data(&Identifier::from(segment.clone())),
+                enum_ty,
+            ));
             items
                 .get_mut(scope_id)?
                 .types
@@ -350,7 +354,7 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
     let root_scope = items.add(Scope::new(
         ItemData {
             parent_id: None,
-            id: Identifier::default(),
+            id: SnakeCaseIdentifier::default().into(),
             source: ItemSource::System,
         },
         None,
@@ -358,22 +362,14 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
     ));
 
     for (id, pt) in primitive_component_definitions!(define_primitive_types) {
-        let id = id
-            .with_boundaries(&[
-                Boundary::LowerUpper,
-                Boundary::DigitUpper,
-                Boundary::DigitLower,
-                Boundary::Acronym,
-            ])
-            .to_case(Case::Snake);
-        let id = Identifier::new(id)
+        let id = PascalCaseIdentifier::new(id)
             .map_err(anyhow::Error::msg)
             .context("standard value was not valid snake-case")?;
 
         let ty = Type::new(
             ItemData {
                 parent_id: Some(root_scope),
-                id: id.clone(),
+                id: id.clone().into(),
                 source: ItemSource::System,
             },
             TypeInner::Primitive(pt),
@@ -383,19 +379,19 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
     }
 
     for name in [
-        "debuggable",
-        "networked",
-        "resource",
-        "maybe_resource",
-        "store",
+        "Debuggable",
+        "Networked",
+        "Resource",
+        "MaybeResource",
+        "Store",
     ] {
-        let id = Identifier::new(name)
+        let id = PascalCaseIdentifier::new(name)
             .map_err(anyhow::Error::msg)
             .context("standard value was not valid snake-case")?;
         let item_id = items.add(Attribute {
             data: ItemData {
                 parent_id: Some(root_scope),
-                id: id.clone(),
+                id: id.clone().into(),
                 source: ItemSource::System,
             },
         });

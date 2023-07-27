@@ -4,8 +4,8 @@ name = "Dependencies (Assets)"
 version = "0.0.1"
 
 [components]
-spin_speed = { type = "f32", name = "Spin speed" }
+spin_speed = { type = "F32", name = "Spin speed" }
 
-[enums.spin_direction]
-forward = "Forward"
-backward = "Backward"
+[enums.SpinDirection]
+Forward = "Forward"
+Backward = "Backward"

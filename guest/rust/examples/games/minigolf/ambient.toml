@@ -7,31 +7,31 @@ type = "Game"
 categories = ["Example"]
 
 [components]
-next_player_hue = { type = "f32", name = "Next Player Hue", description = "Controls the hue (in degrees) to use for the next player's color.", attributes = [
-    "debuggable",
-    "resource",
+next_player_hue = { type = "F32", name = "Next Player Hue", description = "Controls the hue (in degrees) to use for the next player's color.", attributes = [
+    "Debuggable",
+    "Resource",
 ] }
 
-ball = { type = "empty", name = "Ball", description = "Used to tag a ball" }
-origin = { type = "vec3", name = "Origin", description = "An object's origin in world space" }
+ball = { type = "Empty", name = "Ball", description = "Used to tag a ball" }
+origin = { type = "Vec3", name = "Origin", description = "An object's origin in world space" }
 
-player_ball = { type = "entity_id", name = "Player Ball", description = "Used to tag a player's ball" }
-player_restore_point = { type = "vec3", name = "Player Restore Point", description = "A player's restore point" }
-player_stroke_count = { type = "u32", name = "Player Stroke Count", description = "A player's stroke count" }
-player_color = { type = "vec4", name = "Player Color", description = "A player's color" }
-player_shoot_requested = { type = "bool", name = "Player Shoot Requested", description = "Whether or not a player has requested to shoot the ball" }
+player_ball = { type = "EntityId", name = "Player Ball", description = "Used to tag a player's ball" }
+player_restore_point = { type = "Vec3", name = "Player Restore Point", description = "A player's restore point" }
+player_stroke_count = { type = "U32", name = "Player Stroke Count", description = "A player's stroke count" }
+player_color = { type = "Vec4", name = "Player Color", description = "A player's color" }
+player_shoot_requested = { type = "Bool", name = "Player Shoot Requested", description = "Whether or not a player has requested to shoot the ball" }
 
-player_indicator = { type = "entity_id", name = "Player Indicator", description = "EntityId of a player's indicator" }
-player_indicator_arrow = { type = "entity_id", name = "Player Indicator Arrow", description = "EntityId of a player's indicator arrow" }
+player_indicator = { type = "EntityId", name = "Player Indicator", description = "EntityId of a player's indicator" }
+player_indicator_arrow = { type = "EntityId", name = "Player Indicator Arrow", description = "EntityId of a player's indicator arrow" }
 
-player_text = { type = "entity_id", name = "Player Text", description = "EntityId of a player's text" }
-player_text_container = { type = "entity_id", name = "Player Text Container", description = "EntityId of a player's text container" }
+player_text = { type = "EntityId", name = "Player Text", description = "EntityId of a player's text" }
+player_text_container = { type = "EntityId", name = "Player Text Container", description = "EntityId of a player's text container" }
 
-player_camera_pivot = { type = "vec3", name = "Player Camera Pivot", description = "The pivot offset a player's camera pivots around" }
-player_camera_position = { type = "vec3", name = "Player Camera Position", description = "The position at which a player's camera pivots around" }
-player_camera_radius = { type = "f32", name = "Player Camera Radius", description = "The radius at which a player's camera pivots around" }
-player_camera_rotation = { type = "vec2", name = "Player Camera Rotation", description = "The rotation (radians) of a player's camera" }
-player_camera_state = { type = "entity_id", name = "Player Camera State", description = "EntityId of a player's camera state" }
+player_camera_pivot = { type = "Vec3", name = "Player Camera Pivot", description = "The pivot offset a player's camera pivots around" }
+player_camera_position = { type = "Vec3", name = "Player Camera Position", description = "The position at which a player's camera pivots around" }
+player_camera_radius = { type = "F32", name = "Player Camera Radius", description = "The radius at which a player's camera pivots around" }
+player_camera_rotation = { type = "Vec2", name = "Player Camera Rotation", description = "The rotation (radians) of a player's camera" }
+player_camera_state = { type = "EntityId", name = "Player Camera State", description = "EntityId of a player's camera state" }
 
 [concepts.player_state]
 name = "Player State"
@@ -52,17 +52,17 @@ player_camera_position = [0.0, 0.0, 0.0]
 player_camera_radius = 15.0
 player_camera_rotation = [3.141592, 0.610865]
 
-[messages.input]
+[messages.Input]
 description = "Player input"
-[messages.input.fields]
-camera_rotation = "vec2"
-camera_zoom = "f32"
-shoot = "bool"
+[messages.Input.fields]
+camera_rotation = "Vec2"
+camera_zoom = "F32"
+shoot = "Bool"
 
-[messages.hit]
+[messages.Hit]
 description = "Hit."
-fields = { ball = "entity_id" }
+fields = { ball = "EntityId" }
 
-[messages.bonk]
+[messages.Bonk]
 description = "Collision between two objects."
-fields = { ball = "entity_id" }
+fields = { ball = "EntityId" }

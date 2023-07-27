@@ -4,23 +4,23 @@ name = "Player"
 description = "Components that are attached to player entities."
 
 [components.local_user_id]
-type = "string"
+type = "String"
 name = "Local user ID"
 description = "The user ID of the local player."
-attributes = ["debuggable", "networked", "resource", "store"]
+attributes = ["Debuggable", "Networked", "Resource", "Store"]
 
 [components.player]
-type = "empty"
+type = "Empty"
 name = "Player"
 description = """
 This entity is a player.
 Note that this is a logical construct; a player's body may be separate from the player itself."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.user_id]
-type = "string"
+type = "String"
 name = "User ID"
 description = """
 An identifier attached to all things owned by a user, and supplied by the user.
 This can be attached to more than just the player; by convention, it is also attached to related entities, including their camera and body."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]

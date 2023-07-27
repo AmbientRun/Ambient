@@ -4,135 +4,135 @@ name = "Rendering"
 description = "Rendering-related state, including global rendering parameters and per-entity state."
 
 [components.cast_shadows]
-type = "empty"
+type = "Empty"
 name = "Cast shadows"
 description = "If attached, this entity will cast shadows."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.color]
-type = "vec4"
+type = "Vec4"
 name = "Color"
 description = "This entity will be tinted with the specified color if the color is not black."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.double_sided]
-type = "bool"
+type = "Bool"
 name = "Double-sided"
 description = "If this is set, the entity will be rendered with double-sided rendering."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.fog_color]
-type = "vec3"
+type = "Vec3"
 name = "Fog color"
 description = "The color of the fog for this `sun`."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.fog_density]
-type = "f32"
+type = "F32"
 name = "Fog density"
 description = "The density of the fog for this `sun`."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.fog_height_falloff]
-type = "f32"
+type = "F32"
 name = "Fog height fall-off"
 description = "The height at which the fog will fall off (i.e. stop being visible) for this `sun`."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.joint_matrices]
-type = { type = "vec", element_type = "mat4" }
+type = { type = "Vec", element_type = "Mat4" }
 name = "Joint Matrices"
 description = """
 Contains the matrices for each joint of this skinned mesh.
 This should be used in combination with `joints`."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.joints]
-type = { type = "vec", element_type = "entity_id" }
+type = { type = "Vec", element_type = "EntityId" }
 name = "Joints"
 description = "Contains the joints that comprise this skinned mesh."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.light_ambient]
-type = "vec3"
+type = "Vec3"
 name = "Light ambient"
 description = "The ambient light color of the `sun`."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.light_diffuse]
-type = "vec3"
+type = "Vec3"
 name = "Light diffuse"
 description = "The diffuse light color of the `sun`."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.outline]
-type = "vec4"
+type = "Vec4"
 name = "Outline"
 description = "If attached, this entity will be rendered with an outline with the color specified."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.outline_recursive]
-type = "vec4"
+type = "Vec4"
 name = "Outline (recursive)"
 description = """
 If attached, this entity and all of its children will be rendered with an outline with the color specified.
 You do not need to attach `outline` if you have attached `outline_recursive`."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.overlay]
-type = "empty"
+type = "Empty"
 name = "Overlay"
 description = "If attached, this entity will be rendered with an overlay."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.pbr_material_from_url]
-type = "string"
+type = "String"
 name = "PBR material from URL"
 description = "Load a PBR material from the URL and attach it to this entity."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.sky]
-type = "empty"
+type = "Empty"
 name = "Sky"
 description = "Add a realistic skybox to the scene."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.sun]
-type = "f32"
+type = "F32"
 name = "Sun"
 description = """
 Marks this entity as a sun (i.e. its rotation will be used to control the global light direction).
 The entity with the highest `sun` value takes precedence."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.transparency_group]
-type = "i32"
+type = "I32"
 name = "Transparency group"
 description = "Controls when this transparent object will be rendered. Transparent objects are sorted by `(transparency_group, z-depth)`."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.water]
-type = "empty"
+type = "Empty"
 name = "Water"
 description = "Add a realistic water plane to this entity."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.decal_from_url]
-type = "string"
+type = "String"
 name = "Decal material from URL"
 description = "Load a Decal material from the URL and attach it to this entity."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.scissors]
-type = "uvec4"
+type = "Uvec4"
 name = "Scissors"
 description = "Apply a scissors test to this entity (anything outside the rect will be hidden)."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.scissors_recursive]
-type = "uvec4"
+type = "Uvec4"
 name = "Scissors (recursive)"
 description = """
 If attached, this entity and all of its children will be rendered with an scissor with the rect specified.
 You do not need to attach `scissors` if you have attached `scissors_recursive`."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]

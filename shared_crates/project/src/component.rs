@@ -16,9 +16,7 @@ pub struct Component {
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Eq, Serialize)]
 pub enum ContainerType {
-    #[serde(rename = "vec")]
     Vec,
-    #[serde(rename = "option")]
     Option,
 }
 

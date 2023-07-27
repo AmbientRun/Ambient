@@ -4,126 +4,126 @@ name = "Primitives"
 description = "Components that create primitive (in the geometric sense) objects from their attached entities."
 
 [components.cube]
-type = "empty"
+type = "Empty"
 name = "Cube"
 description = """
 If attached to an entity, the entity will be converted to a cube primitive.
 The cube is unit-sized (i.e. 0.5 metres out to each side)."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.quad]
-type = "empty"
+type = "Empty"
 name = "Quad"
 description = """
 If attached to an entity, the entity will be converted to a quad primitive.
 The quad is unit-sized on the XY axes, and flat on the Z axis (i.e. 0.5 metres out to the XY axes)."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.sphere]
-type = "empty"
+type = "Empty"
 name = "Sphere"
 description = """
 If attached to an entity alongside the other `sphere_*` components, the entity will be converted to a sphere primitive.
 To easily instantiate a unit-diameter `sphere`, consider using the `sphere` concept (e.g. `make_sphere`)."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.sphere_radius]
-type = "f32"
+type = "F32"
 name = "Sphere radius"
 description = "Set the radius of a `sphere` entity."
 default = 0.5
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.sphere_sectors]
-type = "u32"
+type = "U32"
 name = "Sphere sectors"
 description = "Set the longitudinal sectors of a `sphere` entity."
 default = 36
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.sphere_stacks]
-type = "u32"
+type = "U32"
 name = "Sphere stacks"
 description = "Set the latitudinal stacks of a `sphere` entity."
 default = 18
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.torus]
-type = "empty"
+type = "Empty"
 name = "Torus"
 description = """
 If attached to an entity alongside the other `torus_*` components, the entity will be converted to a torus primitive.
 To easily instantiate a default `torus`, consider using the `torus` concept (e.g. `make_torus`)."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.torus_inner_radius]
-type = "f32"
+type = "F32"
 name = "Torus inner radius"
 description = "Set the inner radius of a `torus` entity, spanning XY-plane."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.torus_outer_radius]
-type = "f32"
+type = "F32"
 name = "Torus outer radius"
 description = "Set the outer radius of a `torus` entity, spanning XY-plane."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.torus_loops]
-type = "u32"
+type = "U32"
 name = "Torus loops"
 description = "Set the loops of a `torus` entity, spanning XY-plane."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.torus_slices]
-type = "u32"
+type = "U32"
 name = "Torus slices"
 description = "Set the slices of a `torus` entity, spanning XY-plane."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.capsule]
-type = "empty"
+type = "Empty"
 name = "Capsule"
 description = """
 If attached to an entity alongside the other `capsule_*` components, the entity will be converted to a capsule primitive.
 To easily instantiate a default `capsule`, consider using the `capsule` concept (e.g. `make_capsule`)."""
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.capsule_radius]
-type = "f32"
+type = "F32"
 name = "Capsule radius"
 description = "Set the radius of a `capsule` entity, spanning XY-plane."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.capsule_half_height]
-type = "f32"
+type = "F32"
 name = "Capsule half-height"
 description = "Set the half-height of the `capsule` entity, spanning Z-axis, excluding the caps."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.capsule_rings]
-type = "u32"
+type = "U32"
 name = "Capsule rings"
 description = "Set the number of sections between the caps."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.capsule_latitudes]
-type = "u32"
+type = "U32"
 name = "Capsule latitudes"
 description = "Set the number of latitudinal sections. Should be even."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 [components.capsule_longitudes]
-type = "u32"
+type = "U32"
 name = "Capsule longitudes"
 description = "Set the number of longitudinal sections."
-attributes = ["debuggable", "networked", "store"]
+attributes = ["Debuggable", "Networked", "Store"]
 
 # TODO: enums are not supported, see https://github.com/AmbientRun/Ambient/issues/221.
 # [components.capsule_uv_profile]
 # type = "???"
 # name = "Capsule UV profile"
 # description = "Specifies vertical UV distribution."
-# attributes = ["debuggable", "networked", "store"]
+# attributes = ["Debuggable", "Networked", "Store"]
 
 # Concepts
 

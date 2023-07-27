@@ -121,7 +121,12 @@ pub fn generate_code(
         .map(|id| ItemPathBuf::new(id).expect("invalid generate_from_scope_path"))
         .map(|id| {
             items
-                .get_scope_id(semantic.root_scope_id, id.as_path().iter())
+                .get_scope_id(
+                    semantic.root_scope_id,
+                    id.as_path().scope_iter().expect(
+                        "invalid generate_from_scope_path: the last element must be a scope",
+                    ),
+                )
                 .unwrap()
         })
         .unwrap_or(semantic.root_scope_id);
@@ -172,7 +177,7 @@ mod scopes {
             .values()
             .map(|s| {
                 let scope = items.get(*s)?;
-                let id = make_path(&scope.data.id.as_snake_case());
+                let id = make_path(&scope.data.id.as_str());
                 let inner = make_scopes(context, items, type_map, root_scope_id, &scope)?;
                 if !inner.is_empty() {
                     Ok(quote! {

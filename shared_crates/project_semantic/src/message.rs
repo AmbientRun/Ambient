@@ -1,4 +1,4 @@
-use ambient_project::{Identifier, ItemPathBuf};
+use ambient_project::{ItemPathBuf, SnakeCaseIdentifier};
 use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
 
@@ -11,7 +11,7 @@ pub struct Message {
     data: ItemData,
 
     pub description: Option<String>,
-    pub fields: IndexMap<Identifier, ResolvableItemId<Type>>,
+    pub fields: IndexMap<SnakeCaseIdentifier, ResolvableItemId<Type>>,
 }
 
 impl Item for Message {

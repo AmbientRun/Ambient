@@ -4,7 +4,10 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::{Component, Concept, Enum, Identifier, ItemPathBuf, Message, Version};
+use crate::{
+    Component, Concept, Enum, ItemPathBuf, Message, PascalCaseIdentifier, SnakeCaseIdentifier,
+    Version,
+};
 
 #[derive(Error, Debug, PartialEq)]
 pub enum ManifestParseError {
@@ -31,7 +34,7 @@ pub struct Manifest {
     pub messages: IndexMap<ItemPathBuf, Message>,
     #[serde(default)]
     #[serde(alias = "enum")]
-    pub enums: IndexMap<Identifier, Enum>,
+    pub enums: IndexMap<PascalCaseIdentifier, Enum>,
     #[serde(default)]
     pub dependencies: IndexMap<ItemPathBuf, Dependency>,
 }
@@ -48,7 +51,7 @@ impl Manifest {
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
 pub struct Ember {
-    pub id: Identifier,
+    pub id: SnakeCaseIdentifier,
     pub name: Option<String>,
     pub version: Option<Version>,
     pub description: Option<String>,
@@ -115,11 +118,20 @@ mod tests {
 
     use crate::{
         Build, BuildRust, Component, ComponentType, Concept, ContainerType, Dependency, Ember,
-        Enum, Identifier, ItemPathBuf, Manifest, ManifestParseError, Version, VersionSuffix,
+        Enum, Identifier, ItemPathBuf, Manifest, ManifestParseError, PascalCaseIdentifier,
+        SnakeCaseIdentifier, Version, VersionSuffix,
     };
 
     fn i(s: &str) -> Identifier {
         Identifier::new(s).unwrap()
+    }
+
+    fn sci(s: &str) -> SnakeCaseIdentifier {
+        SnakeCaseIdentifier::new(s).unwrap()
+    }
+
+    fn pci(s: &str) -> PascalCaseIdentifier {
+        PascalCaseIdentifier::new(s).unwrap()
     }
 
     fn ipb(s: &str) -> ItemPathBuf {
@@ -139,7 +151,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 ember: Ember {
-                    id: Identifier::new("test").unwrap(),
+                    id: SnakeCaseIdentifier::new("test").unwrap(),
                     name: Some("Test".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     ..Default::default()
@@ -186,7 +198,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 ember: Ember {
-                    id: i("tictactoe"),
+                    id: sci("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     ..Default::default()
@@ -240,7 +252,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 ember: Ember {
-                    id: i("tictactoe"),
+                    id: sci("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     ..Default::default()
@@ -287,7 +299,7 @@ mod tests {
             manifest,
             Manifest {
                 ember: Ember {
-                    id: i("my_project"),
+                    id: sci("my_project"),
                     name: Some("My Project".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     ..Default::default()
@@ -410,16 +422,16 @@ mod tests {
         name = "Tic Tac Toe"
         version = "0.0.1"
 
-        [enums.cell_state]
-        taken = "The cell is taken"
-        free = "The cell is free"
+        [enums.CellState]
+        Taken = "The cell is taken"
+        Free = "The cell is free"
         "#;
 
         assert_eq!(
             Manifest::parse(TOML),
             Ok(Manifest {
                 ember: Ember {
-                    id: i("tictactoe"),
+                    id: sci("tictactoe"),
                     name: Some("Tic Tac Toe".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     ..Default::default()
@@ -429,10 +441,10 @@ mod tests {
                 concepts: Default::default(),
                 messages: Default::default(),
                 enums: IndexMap::from_iter([(
-                    i("cell_state"),
+                    pci("CellState"),
                     Enum(IndexMap::from_iter([
-                        (i("taken"), "The cell is taken".to_string()),
-                        (i("free"), "The cell is free".to_string()),
+                        (pci("Taken"), "The cell is taken".to_string()),
+                        (pci("Free"), "The cell is free".to_string()),
                     ]))
                     .into()
                 )]),
@@ -460,7 +472,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 ember: Ember {
-                    id: i("test"),
+                    id: sci("test"),
                     name: Some("Test".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     ..Default::default()
@@ -537,7 +549,7 @@ mod tests {
             Manifest::parse(TOML),
             Ok(Manifest {
                 ember: Ember {
-                    id: i("dependencies"),
+                    id: sci("dependencies"),
                     name: Some("dependencies".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     ..Default::default()
