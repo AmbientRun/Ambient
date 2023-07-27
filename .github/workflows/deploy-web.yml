@@ -36,3 +36,13 @@ jobs:
         with:
           name: ambient-web-standalone
           path: ./web/pkg
+
+  upload:
+    - id: auth
+      name: Authenticate with Google Cloud
+      uses: google-github-actions/auth@v0
+      with:
+        token_format: access_token
+        workload_identity_provider: projects/549180905870/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+        service_account: github@ambient-733e7.iam.gserviceaccount.com
+        access_token_lifetime: 1800s
