@@ -3,8 +3,8 @@ use ambient_api::{
     prelude::*,
 };
 
-const INIT_JUMP_VSPEED: f32 = 0.2;
-const FALLING_VSPEED: f32 = 0.8;
+const INIT_JUMP_VSPEED: f32 = 0.10;
+const FALLING_VSPEED: f32 = 0.4;
 
 #[main]
 pub fn main() {

@@ -33,9 +33,9 @@ pub async fn main() {
                     .with(parent(), id)
                     .with(user_id(), uid)
                     // this is FPS
-                    // .with(translation(), vec3(0.0, 0.2, 2.0))
+                    .with(translation(), vec3(0.0, 0.2, 2.0))
                     // third person
-                    .with(translation(), vec3(0.0, 4.0, 3.0))
+                    // .with(translation(), vec3(0.0, 4.0, 3.0))
                     .with_default(local_to_parent())
                     // .with_default(local_to_world())
                     .with(

@@ -1,6 +1,12 @@
 // TODO: this should vary based on the game type
 
-use ambient_api::components::core::{player::player, transform::translation};
+use ambient_api::components::core::{
+    player::player,
+    // primitives::cube,
+    // rendering::color,
+    transform::translation, // rotation, scale,
+};
+// use ambient_api::concepts::make_transformable;
 use ambient_api::prelude::*;
 use components::{heal_timeout, player_health};
 
@@ -23,6 +29,31 @@ pub fn main() {
         let result = physics::raycast_first(msg.ray_origin, msg.ray_dir);
 
         if let Some(hit) = result {
+            // Laser gun, not used
+            // run_async(async move {
+            //     let laser_length = (hit.position - msg.ray_origin).length();
+            //     let ray_direction = (hit.position - msg.ray_origin).normalize();
+            //     let up = vec3(0.0, 0.0, 1.0);
+
+            //     let right = up.cross(ray_direction).normalize();
+            //     let up_direction = ray_direction.cross(right).normalize();
+
+            //     let rot_matrix = Mat3::from_cols(right, up_direction, ray_direction);
+            //     let rotation_quat = Quat::from_mat3(&rot_matrix);
+            //     println!("laser length: {}", laser_length);
+            //     let laser_center = (hit.position + msg.ray_origin) / 2.0;
+            //     let laser = Entity::new()
+            //         .with_merge(make_transformable())
+            //         .with_default(cube())
+            //         .with(scale(), vec3(0.01, 0.01, laser_length * 0.6))
+            //         .with(translation(), laser_center)
+            //         .with(rotation(), rotation_quat)
+            //         .with(color(), vec4(0.5, 0.4, 0.7, 0.8))
+            //         .spawn();
+            //     sleep(0.1).await;
+            //     entity::despawn(laser);
+            // });
+
             // TODO: just to test death anim
             // if hit.entity == msg.source {
             //     eprintln!("self hit");
