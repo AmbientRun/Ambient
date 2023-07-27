@@ -8,8 +8,6 @@ use ambient_api::{
     prelude::*,
 };
 
-mod anim;
-
 fn calculate_blend_from_weight(weights: &[f32]) -> Vec<f32> {
     assert!(weights.len() >= 2);
     let mut blend = Vec::with_capacity(weights.len() - 1);
@@ -69,6 +67,7 @@ impl FPSAnimBlend {
 pub fn main() {
     let anim_lib = std::rc::Rc::new(std::cell::RefCell::new(std::collections::HashMap::new()));
     let anim_lib_clone = std::rc::Rc::clone(&anim_lib);
+    let anim_lib_once = std::rc::Rc::clone(&anim_lib);
 
     spawn_query((player(), components::player_model_ref())).bind(move |v| {
         for (id, (_, model)) in v {
@@ -79,29 +78,44 @@ pub fn main() {
             entity::add_component(id, components::player_jumping(), false);
         }
     });
+    change_query((player(), components::player_jumping()))
+        .track_change(components::player_jumping())
+        .bind(move |res| {
+            for (player_id, (_, is_jumping)) in res {
+                let anim_lib = anim_lib_once.borrow_mut();
+                let (mut blend, anim_player) = anim_lib.get(&player_id).unwrap().clone();
+                if is_jumping {
+                    let clip = PlayClipFromUrlNode::new(
+                        asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim")
+                            .unwrap(),
+                    );
+                    clip.looping(false);
+                    anim_player.play(clip);
+                } else {
+                    anim_player.play(blend.nodes.last().unwrap());
+                }
+            }
+        });
     query((
         player(),
         components::player_model_ref(),
-        components::player_jumping(),
+        // components::player_jumping(),
         components::player_direction(),
     ))
     .each_frame(move |res| {
-        for (player_id, (_, _model, is_jumping, dir)) in res {
+        for (player_id, (_, _model, dir)) in res {
             let mut weights = vec![1.0, 0.0, 0.0];
             let anim_lib = anim_lib_clone.borrow_mut();
             let (mut blend, _anim_player) = anim_lib.get(&player_id).unwrap().clone();
 
-            if is_jumping {
-                weights = vec![0.0, 1.0, 0.0];
+            if dir.x == 0.0 && dir.y == 0.0 {
+                //idle
+                weights = vec![0.0, 0.0, 1.0];
             } else {
-                if dir.x == 0.0 && dir.y == 0.0 {
-                    //idle
-                    weights = vec![0.0, 0.0, 1.0];
-                } else {
-                    // walk
-                    weights = vec![1.0, 0.0, 0.0];
-                }
+                // walk
+                weights = vec![1.0, 0.0, 0.0];
             }
+            // }
             blend.update_weights(&weights);
             println!("current frame weight{:?}", weights);
         }

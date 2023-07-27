@@ -44,7 +44,7 @@ dependencies = [
 [[package]]
 name = "ambient_api"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "ambient_api_core",
  "ambient_cb",
@@ -61,7 +61,7 @@ dependencies = [
 [[package]]
 name = "ambient_api_core"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "ambient_api_macros",
  "ambient_project_rt",
@@ -71,6 +71,7 @@ dependencies = [
  "data-encoding",
  "futures",
  "glam",
+ "indexmap 2.0.0",
  "once_cell",
  "paste",
  "rand",
@@ -83,7 +84,7 @@ dependencies = [
 [[package]]
 name = "ambient_api_macros"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "ambient_project",
  "ambient_project_macro_common",
@@ -97,12 +98,12 @@ dependencies = [
 [[package]]
 name = "ambient_cb"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 
 [[package]]
 name = "ambient_color"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "glam",
  "hex",
@@ -113,7 +114,7 @@ dependencies = [
 [[package]]
 name = "ambient_editor_derive"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "convert_case",
  "itertools",
@@ -127,7 +128,7 @@ dependencies = [
 [[package]]
 name = "ambient_element"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "ambient_cb",
  "ambient_element_component",
@@ -147,7 +148,7 @@ dependencies = [
 [[package]]
 name = "ambient_element_component"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "itertools",
  "proc-macro-crate",
@@ -159,7 +160,7 @@ dependencies = [
 [[package]]
 name = "ambient_friendly_id"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "rand",
 ]
@@ -167,7 +168,7 @@ dependencies = [
 [[package]]
 name = "ambient_guest_bridge"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "ambient_api_core",
  "ambient_shared_types",
@@ -177,7 +178,7 @@ dependencies = [
 [[package]]
 name = "ambient_math"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "glam",
  "rand",
@@ -207,7 +208,7 @@ dependencies = [
 [[package]]
 name = "ambient_project"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "anyhow",
  "log",
@@ -222,7 +223,7 @@ dependencies = [
 [[package]]
 name = "ambient_project_macro_common"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "ambient_project",
  "ambient_shared_types",
@@ -238,7 +239,7 @@ dependencies = [
 [[package]]
 name = "ambient_project_rt"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "byteorder",
  "glam",
@@ -248,12 +249,12 @@ dependencies = [
 [[package]]
 name = "ambient_schema"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 
 [[package]]
 name = "ambient_shared_types"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "bitflags 1.3.2",
  "paste",
@@ -265,7 +266,7 @@ dependencies = [
 [[package]]
 name = "ambient_time"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "itertools",
  "thiserror",
@@ -274,7 +275,7 @@ dependencies = [
 [[package]]
 name = "ambient_ui"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35#0fb88c38dfa78deb0fb3b78669d72f1f73b8ba35"
+source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "ambient_cb",
  "ambient_color",
@@ -286,7 +287,7 @@ dependencies = [
  "convert_case",
  "futures",
  "glam",
- "indexmap",
+ "indexmap 2.0.0",
  "itertools",
  "parking_lot",
  "rand",
@@ -477,6 +478,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7fcaabb2fef8c910e7f4c7ce9f67a1283a1715879a7c230ca9d6d1ae31f16d91"
 
 [[package]]
+name = "equivalent"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
+
+[[package]]
 name = "form_urlencoded"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -609,6 +616,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a9ee70c43aaf417c914396645a0fa852624801b24ebb7ae78fe8272889ac888"
 
 [[package]]
+name = "hashbrown"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c6201b9ff9fd90a5a3bac2e56a830d0caa509576f0e503818ee82c181b3437a"
+
+[[package]]
 name = "heck"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -646,7 +659,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd070e393353796e801d209ad339e89596eb4c8d430d18ede6a1cced8fafbd99"
 dependencies = [
  "autocfg",
- "hashbrown",
+ "hashbrown 0.12.3",
+ "serde",
+]
+
+[[package]]
+name = "indexmap"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d5477fe2230a79769d8dc68e0eabf5437907c0457a5614a9e8dddb67f65eb65d"
+dependencies = [
+ "equivalent",
+ "hashbrown 0.14.0",
  "serde",
 ]
 
@@ -1154,7 +1178,7 @@ version = "0.19.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2380d56e8670370eee6566b0bfd4265f65b3f432e8c6d85623f728d4fa31f739"
 dependencies = [
- "indexmap",
+ "indexmap 1.9.3",
  "serde",
  "serde_spanned",
  "toml_datetime",
@@ -1284,7 +1308,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "36e5156581ff4a302405c44ca7c85347563ca431d15f1a773f12c9c7b9a6cdc9"
 dependencies = [
  "anyhow",
- "indexmap",
+ "indexmap 1.9.3",
  "serde",
  "wasm-encoder",
  "wasmparser",
@@ -1296,7 +1320,7 @@ version = "0.107.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29e3ac9b780c7dda0cac7a52a5d6d2d6707cc6e3451c9db209b6c758f40d7acb"
 dependencies = [
- "indexmap",
+ "indexmap 1.9.3",
  "semver",
 ]
 
@@ -1454,7 +1478,7 @@ checksum = "7cbd4c7f8f400327c482c88571f373844b7889e61460650d650fc5881bb3575c"
 dependencies = [
  "anyhow",
  "bitflags 1.3.2",
- "indexmap",
+ "indexmap 1.9.3",
  "log",
  "wasm-encoder",
  "wasm-metadata",
@@ -1470,7 +1494,7 @@ checksum = "6daec9f093dbaea0e94043eeb92ece327bbbe70c86b1f41aca9bbfefd7f050f0"
 dependencies = [
  "anyhow",
  "id-arena",
- "indexmap",
+ "indexmap 1.9.3",
  "log",
  "pulldown-cmark",
  "semver",
