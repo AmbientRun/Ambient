@@ -13,7 +13,9 @@ mod scope;
 pub use scope::{Context, Scope};
 
 mod item;
-pub use item::{Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId};
+pub use item::{
+    Item, ItemData, ItemId, ItemMap, ItemSource, ItemType, ItemValue, ResolvableItemId,
+};
 use item::{Resolve, ResolveClone};
 
 mod component;
@@ -123,8 +125,7 @@ impl Semantic {
         parent_scope: ItemId<Scope>,
         filename: &Path,
         file_provider: &dyn FileProvider,
-        is_ambient: bool,
-        is_ambient_api: bool,
+        source: ItemSource,
     ) -> anyhow::Result<ItemId<Scope>> {
         let manifest = Manifest::parse(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename:?}"))?;
@@ -136,8 +137,7 @@ impl Semantic {
             manifest,
             file_provider.full_path(filename),
             id,
-            is_ambient,
-            is_ambient_api,
+            source,
         )
     }
 
@@ -163,8 +163,7 @@ impl Semantic {
         &mut self,
         filename: &Path,
         file_provider: &dyn FileProvider,
-        is_ambient: bool,
-        is_ambient_api: bool,
+        source: ItemSource,
     ) -> anyhow::Result<ItemId<Scope>> {
         let manifest = Manifest::parse(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename:?}"))?;
@@ -188,8 +187,7 @@ impl Semantic {
                 ItemData {
                     parent_id: Some(self.root_scope_id),
                     id: owner_key.clone(),
-                    is_ambient: false,
-                    is_ambient_api: false,
+                    source,
                 },
                 None,
                 None,
@@ -226,8 +224,7 @@ impl Semantic {
             manifest,
             manifest_path,
             scope_id.clone(),
-            is_ambient,
-            is_ambient_api,
+            source,
         )?;
         self.items
             .get_mut(owner_id)?
@@ -265,15 +262,13 @@ impl Semantic {
         manifest: Manifest,
         manifest_path: PathBuf,
         id: Identifier,
-        is_ambient: bool,
-        is_ambient_api: bool,
+        source: ItemSource,
     ) -> anyhow::Result<ItemId<Scope>> {
         let scope = Scope::new(
             ItemData {
                 parent_id,
                 id,
-                is_ambient,
-                is_ambient_api: false,
+                source,
             },
             Some(manifest_path.clone()),
             Some(manifest.clone()),
@@ -281,13 +276,8 @@ impl Semantic {
         let scope_id = self.items.add(scope);
 
         for include in &manifest.ember.includes {
-            let child_scope_id = self.add_file_at_non_toplevel(
-                scope_id,
-                include,
-                file_provider,
-                is_ambient,
-                is_ambient_api,
-            )?;
+            let child_scope_id =
+                self.add_file_at_non_toplevel(scope_id, include, file_provider, source)?;
             let id = self.items.get(child_scope_id)?.data().id.clone();
             self.items
                 .get_mut(scope_id)?
@@ -303,12 +293,7 @@ impl Semantic {
                         base: path,
                     };
 
-                    self.add_file(
-                        Path::new("ambient.toml"),
-                        &file_provider,
-                        is_ambient,
-                        is_ambient_api,
-                    )?;
+                    self.add_file(Path::new("ambient.toml"), &file_provider, source)?;
                 }
             }
         }
@@ -317,8 +302,7 @@ impl Semantic {
             ItemData {
                 parent_id: Some(scope_id),
                 id: item_id.clone(),
-                is_ambient,
-                is_ambient_api,
+                source,
             }
         };
 
@@ -369,17 +353,11 @@ impl Semantic {
 }
 // public helpers
 impl Semantic {
-    pub fn add_ambient_schema(
-        &mut self,
-        // is_ambient refers to whether or not these should be considered global definitions,
-        // not whether or not they're part of the ambient schema (which is always true with this function)
-        is_ambient: bool,
-    ) -> anyhow::Result<ItemId<Scope>> {
+    pub fn add_ambient_schema(&mut self) -> anyhow::Result<ItemId<Scope>> {
         self.add_file(
             Path::new("ambient.toml"),
             &ArrayFileProvider::from_schema(),
-            is_ambient,
-            true,
+            ItemSource::Ambient,
         )
     }
 
@@ -387,8 +365,7 @@ impl Semantic {
         self.add_file(
             Path::new("ambient.toml"),
             &DiskFileProvider(ember_path.to_owned()),
-            false,
-            false,
+            ItemSource::User,
         )
     }
 }
@@ -406,8 +383,7 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
         ItemData {
             parent_id: None,
             id: Identifier::default(),
-            is_ambient: true,
-            is_ambient_api: false,
+            source: ItemSource::System,
         },
         None,
         None,
@@ -430,8 +406,7 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
             ItemData {
                 parent_id: Some(root_scope),
                 id: id.clone(),
-                is_ambient: true,
-                is_ambient_api: false,
+                source: ItemSource::System,
             },
             TypeInner::Primitive(pt),
         );
@@ -453,8 +428,7 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
             data: ItemData {
                 parent_id: Some(root_scope),
                 id: id.clone(),
-                is_ambient: true,
-                is_ambient_api: false,
+                source: ItemSource::System,
             },
         });
         items.get_mut(root_scope)?.attributes.insert(id, item_id);

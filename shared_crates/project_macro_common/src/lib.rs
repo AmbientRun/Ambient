@@ -1,21 +1,62 @@
 extern crate proc_macro;
 
 use ambient_project::ItemPathBuf;
-use ambient_project_semantic::{ArrayFileProvider, Semantic, TypeInner};
+use ambient_project_semantic::{
+    ArrayFileProvider, Item, ItemData, ItemId, ItemMap, ItemSource, Semantic, TypeInner,
+};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use std::{collections::HashMap, path::Path};
+use std::{cell::Ref, collections::HashMap, path::Path};
 
 mod components;
 mod concepts;
 mod messages;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Context {
+    /// Generating for the Ambient host. Use host definitions.
     Host,
-    Guest {
-        api_path: syn::Path,
-        fully_qualified_path: bool,
-    },
+    /// Generating for the Ambient Rust API. Use guest definitions relative to itself.
+    GuestApi,
+    /// Generating for Ambient Rust guest code. Use guest definitions relative to the API.
+    GuestUser,
+}
+impl Context {
+    pub fn guest_api_path(&self) -> Option<TokenStream> {
+        match self {
+            Context::Host => None,
+            Context::GuestApi => Some(quote! {crate}),
+            Context::GuestUser => Some(quote! {ambient_api}),
+        }
+    }
+
+    pub fn extract_item_if_relevant<'a, T: Item>(
+        &self,
+        items: &'a ItemMap,
+        id: ItemId<T>,
+    ) -> Option<Ref<'a, T>> {
+        let item = items.get(id).unwrap();
+        if *self == Context::GuestUser && item.data().source != ItemSource::User {
+            return None;
+        }
+        Some(item)
+    }
+
+    pub fn path_prefix(&self, data: &ItemData) -> TokenStream {
+        match (self, data.source) {
+            (_, ItemSource::System) => quote! {},
+
+            (Context::Host, ItemSource::Ambient) => quote! { crate::generated:: },
+            (Context::GuestApi, ItemSource::Ambient) => quote! { crate:: },
+
+            (Context::GuestApi | Context::Host, ItemSource::User) => {
+                unreachable!("user items should not be in api or host scope")
+            }
+
+            (Context::GuestUser, ItemSource::Ambient) => quote! { ambient_api::core:: },
+            (Context::GuestUser, ItemSource::User) => quote! { crate:: },
+        }
+    }
 }
 
 pub enum ManifestSource<'a> {
@@ -25,13 +66,11 @@ pub enum ManifestSource<'a> {
 
 pub fn generate_code(
     manifest: Option<ManifestSource<'_>>,
-    ambient_api_is_ambient: bool,
-    generate_ambient_types: bool,
     context: Context,
     generate_from_scope_path: Option<&str>,
 ) -> anyhow::Result<TokenStream> {
     let mut semantic = Semantic::new()?;
-    semantic.add_ambient_schema(ambient_api_is_ambient)?;
+    semantic.add_ambient_schema()?;
 
     if let Some(manifest) = manifest {
         match manifest {
@@ -39,8 +78,7 @@ pub fn generate_code(
             ManifestSource::Array(files) => semantic.add_file(
                 Path::new("ambient.toml"),
                 &ArrayFileProvider { files },
-                false,
-                false,
+                ItemSource::User,
             ),
         }?;
     }
@@ -90,16 +128,15 @@ pub fn generate_code(
     let generate_from_scope = &*items.get(generate_from_scope_id)?;
 
     let scopes = scopes::make_scopes(
-        &context,
+        context,
         items,
         &type_map,
         generate_from_scope_id,
         generate_from_scope,
-        generate_ambient_types,
     )?;
 
     let components_init =
-        components::make_init(&context, items, generate_from_scope_id, generate_from_scope)?;
+        components::make_init(context, items, generate_from_scope_id, generate_from_scope)?;
 
     let output = quote! {
         #scopes
@@ -124,12 +161,11 @@ mod scopes {
     use crate::{make_path, Context};
 
     pub fn make_scopes(
-        context: &Context,
+        context: Context,
         items: &ItemMap,
         type_map: &HashMap<ItemId<Type>, TokenStream>,
         root_scope_id: ItemId<Scope>,
         scope: &Scope,
-        generate_ambient_types: bool,
     ) -> anyhow::Result<TokenStream> {
         let scopes = scope
             .scopes
@@ -137,14 +173,7 @@ mod scopes {
             .map(|s| {
                 let scope = items.get(*s)?;
                 let id = make_path(&scope.data.id.as_snake_case());
-                let inner = make_scopes(
-                    context,
-                    items,
-                    type_map,
-                    root_scope_id,
-                    &scope,
-                    generate_ambient_types,
-                )?;
+                let inner = make_scopes(context, items, type_map, root_scope_id, &scope)?;
                 if !inner.is_empty() {
                     Ok(quote! {
                         #[allow(unused)]
@@ -160,12 +189,11 @@ mod scopes {
 
         let components = {
             let inner = crate::components::make_definitions(
-                &context,
+                context,
                 items,
                 &type_map,
                 root_scope_id,
                 scope,
-                generate_ambient_types,
             )?;
             if inner.is_empty() {
                 quote! {}
@@ -179,14 +207,8 @@ mod scopes {
             }
         };
         let concepts = {
-            let inner = crate::concepts::make_definitions(
-                &context,
-                items,
-                &type_map,
-                root_scope_id,
-                scope,
-                generate_ambient_types,
-            )?;
+            let inner =
+                crate::concepts::make_definitions(context, items, &type_map, root_scope_id, scope)?;
             if inner.is_empty() {
                 quote! {}
             } else {
@@ -201,13 +223,7 @@ mod scopes {
             }
         };
         let messages = {
-            let inner = crate::messages::make_definitions(
-                &context,
-                items,
-                &type_map,
-                scope,
-                generate_ambient_types,
-            )?;
+            let inner = crate::messages::make_definitions(context, items, &type_map, scope)?;
             if inner.is_empty() {
                 quote! {}
             } else {

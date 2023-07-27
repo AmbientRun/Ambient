@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
-use ambient_project_semantic::{Item, ItemId, ItemMap, Scope, Type};
+use ambient_project_semantic::{ItemId, ItemMap, Scope, Type};
 use proc_macro2::TokenStream;
 use quote::quote;
 
 use crate::{make_path, Context};
 
 pub fn make_init(
-    context: &Context,
+    context: Context,
     items: &ItemMap,
     root_scope_id: ItemId<Scope>,
     root_scope: &Scope,
@@ -36,28 +36,21 @@ pub fn make_init(
                 }
             }
         }
-        Context::Guest { .. } => quote! {},
+        Context::GuestApi { .. } | Context::GuestUser { .. } => quote! {},
     })
 }
 
 pub fn make_definitions(
-    context: &Context,
+    context: Context,
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
     _root_scope_id: ItemId<Scope>,
     scope: &Scope,
-    generate_ambient_types: bool,
 ) -> anyhow::Result<TokenStream> {
     let components = scope
         .components
         .values()
-        .filter_map(|c| {
-            let component = items.get(*c).unwrap();
-            if component.data().is_ambient && !generate_ambient_types {
-                return None;
-            }
-            Some(component)
-        })
+        .filter_map(|c| context.extract_item_if_relevant(items, *c))
         .map(|component| {
             let id = component.data.id.as_snake_case();
             let type_id = component.type_.as_resolved().expect("type was unresolved");
@@ -120,7 +113,7 @@ pub fn make_definitions(
                         #ident: #ty,
                     })
                 }
-                Context::Guest { .. } => {
+                Context::GuestApi | Context::GuestUser => {
                     let component_id = items.fully_qualified_display_path_ambient_style(
                         &*component,
                         false,
@@ -165,21 +158,12 @@ pub fn make_definitions(
                     });
                 }
             }
-            Context::Guest {
-                api_path,
-                fully_qualified_path,
-            } => {
-                let fully_qualified_prefix = if *fully_qualified_path {
-                    quote! { #api_path::global }
-                } else {
-                    quote! {}
-                };
+            Context::GuestApi | Context::GuestUser => {
+                let api_path = context.guest_api_path().unwrap();
                 quote! {
-                    use #api_path::{once_cell::sync::Lazy, ecs::{Component, __internal_get_component}};
-                    use #fully_qualified_prefix::{
-                        EntityId, Mat4, Quat, Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, IVec2, IVec3, IVec4,
-                        Duration, ProceduralMeshHandle, ProceduralTextureHandle, ProceduralSamplerHandle,
-                        ProceduralMaterialHandle
+                    use #api_path::{
+                        once_cell::sync::Lazy, ecs::{Component, __internal_get_component},
+                        prelude::*,
                     };
                     #(#components)*
                 }

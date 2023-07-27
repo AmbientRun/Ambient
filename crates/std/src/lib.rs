@@ -7,7 +7,6 @@ pub use uncategorized::*;
 
 pub mod events;
 pub mod line_uid;
-pub mod path;
 pub use ambient_cb::*;
 
 /// Generate a new Ulid based on the current time regardless of platform

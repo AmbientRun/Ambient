@@ -31,8 +31,6 @@ fn main() {
 
     let api_generated_code = ambient_project_macro_common::generate_code(
         None,
-        false,
-        true,
         ambient_project_macro_common::Context::Host,
         Some("ambient/core"),
     )

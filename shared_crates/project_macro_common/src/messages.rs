@@ -1,28 +1,21 @@
 use std::collections::HashMap;
 
-use ambient_project_semantic::{Item, ItemId, ItemMap, Scope, Type};
+use ambient_project_semantic::{Item, ItemId, ItemMap, ItemSource, Scope, Type};
 use proc_macro2::TokenStream;
 use quote::quote;
 
 use crate::{make_path, Context};
 
 pub fn make_definitions(
-    context: &Context,
+    context: Context,
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
     scope: &Scope,
-    generate_ambient_types: bool,
 ) -> anyhow::Result<TokenStream> {
     let messages = scope
         .messages
         .values()
-        .filter_map(|m| {
-            let message = items.get(*m).unwrap();
-            if message.data().is_ambient && !generate_ambient_types {
-                return None;
-            }
-            Some(message)
-        })
+        .filter_map(|m| context.extract_item_if_relevant(items, *m))
         .map(|message| {
             let id = message.data().id.as_upper_camel_case();
 
@@ -62,7 +55,7 @@ pub fn make_definitions(
                 quote! { #name: #ty ::deserialize_message_part(&mut input)? }
             });
 
-            let message_impl = if message.data().is_ambient_api {
+            let message_impl = if message.data().source == ItemSource::Ambient {
                 quote! { RuntimeMessage }
             } else {
                 quote! { ModuleMessage }
@@ -112,10 +105,13 @@ pub fn make_definitions(
                 #(#messages)*
             },
 
-            Context::Guest { api_path, .. } => quote! {
-                use #api_path::{prelude::*, message::{Message, MessageSerde, MessageSerdeError, RuntimeMessage, ModuleMessage}};
-                #(#messages)*
-            },
+            Context::GuestApi | Context::GuestUser => {
+                let api_path = context.guest_api_path().unwrap();
+                quote! {
+                    use #api_path::{prelude::*, message::{Message, MessageSerde, MessageSerdeError, RuntimeMessage, ModuleMessage}};
+                    #(#messages)*
+                }
+            }
         }
     };
 

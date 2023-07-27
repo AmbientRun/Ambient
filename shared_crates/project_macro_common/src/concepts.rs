@@ -7,54 +7,21 @@ use quote::quote;
 use crate::{make_path, Context};
 
 pub fn make_definitions(
-    context: &Context,
+    context: Context,
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, TokenStream>,
     root_scope_id: ItemId<Scope>,
     scope: &Scope,
-    generate_ambient_types: bool,
 ) -> anyhow::Result<TokenStream> {
-    let rust_root_prefix = match context {
-        Context::Host => quote! { crate::generated:: },
-        Context::Guest { api_path, .. } => quote! { #api_path :: },
-    };
-
     let concepts = scope
         .concepts
         .values()
-        .filter_map(|c| {
-            let concept = items.get(*c).unwrap();
-            if concept.data().is_ambient && !generate_ambient_types {
-                return None;
-            }
-            Some(concept)
-        })
+        .filter_map(|c| context.extract_item_if_relevant(items, *c))
         .map(|concept| {
             let concept = &*concept;
-            let make_concept = generate_make(
-                items,
-                type_map,
-                context,
-                &rust_root_prefix,
-                root_scope_id,
-                concept,
-            )?;
-            let is_concept = generate_is(
-                items,
-                type_map,
-                context,
-                &rust_root_prefix,
-                root_scope_id,
-                concept,
-            )?;
-            let concept_fn = generate_concept(
-                items,
-                type_map,
-                context,
-                &rust_root_prefix,
-                root_scope_id,
-                concept,
-            )?;
+            let make_concept = generate_make(items, type_map, context, root_scope_id, concept)?;
+            let is_concept = generate_is(items, type_map, context, root_scope_id, concept)?;
+            let concept_fn = generate_concept(items, type_map, context, root_scope_id, concept)?;
             Ok(quote! {
                 #make_concept
                 #is_concept
@@ -73,10 +40,13 @@ pub fn make_definitions(
                 #(#concepts)*
             },
 
-            Context::Guest { api_path, .. } => quote! {
-                use #api_path::prelude::*;
-                #(#concepts)*
-            },
+            Context::GuestApi | Context::GuestUser => {
+                let api_path = context.guest_api_path().unwrap();
+                quote! {
+                    use #api_path::prelude::*;
+                    #(#concepts)*
+                }
+            }
         }
     };
 
@@ -88,8 +58,7 @@ pub fn make_definitions(
 fn generate_make(
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, TokenStream>,
-    context: &Context,
-    rust_root_prefix: &TokenStream,
+    context: Context,
     root_scope_id: ItemId<Scope>,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
@@ -112,8 +81,10 @@ fn generate_make(
                 Some(root_scope_id),
                 Some("concepts::make_"),
             )?);
+
+            let prefix = context.path_prefix(concept.data());
             Ok(quote! {
-                with_merge(#rust_root_prefix #extend_path())
+                with_merge(#prefix #extend_path())
             })
         })
         .collect::<anyhow::Result<_>>()?;
@@ -128,9 +99,10 @@ fn generate_make(
                 Some(root_scope_id),
                 Some("components::"),
             )?);
+            let prefix = context.path_prefix(component.data());
             let default = value_to_token_stream(items, default.as_resolved().unwrap())?;
 
-            Ok(quote! { with(#rust_root_prefix #full_path(), #default) })
+            Ok(quote! { with(#prefix #full_path(), #default) })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
@@ -148,8 +120,7 @@ fn generate_make(
 fn generate_is(
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, TokenStream>,
-    context: &Context,
-    rust_root_prefix: &TokenStream,
+    context: Context,
     root_scope_id: ItemId<Scope>,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
@@ -172,8 +143,9 @@ fn generate_is(
                 Some(root_scope_id),
                 Some("concepts::is_"),
             )?);
+            let prefix = context.path_prefix(concept.data());
             Ok(quote! {
-                #rust_root_prefix #extend_path
+                #prefix #extend_path
             })
         })
         .collect::<anyhow::Result<_>>()?;
@@ -188,8 +160,9 @@ fn generate_is(
                 Some(root_scope_id),
                 Some("components::"),
             )?);
+            let prefix = context.path_prefix(component.data());
 
-            Ok(quote! { #rust_root_prefix #full_path() })
+            Ok(quote! { #prefix #full_path() })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
@@ -204,7 +177,7 @@ fn generate_is(
                 })
             }
         },
-        Context::Guest { .. } => quote! {
+        Context::GuestApi | Context::GuestUser => quote! {
             #[doc = #is_comment]
             pub fn #is_ident(id: EntityId) -> bool {
                 #(#extends(id) && )* entity::has_components(id, &[
@@ -218,8 +191,7 @@ fn generate_is(
 fn generate_concept(
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, TokenStream>,
-    context: &Context,
-    rust_root_prefix: &TokenStream,
+    context: Context,
     root_scope_id: ItemId<Scope>,
     concept: &Concept,
 ) -> anyhow::Result<TokenStream> {
@@ -243,8 +215,9 @@ fn generate_concept(
                 Some(root_scope_id),
                 Some("components::"),
             )?);
+            let prefix = context.path_prefix(component.data());
 
-            Ok(quote! { #rust_root_prefix #full_path() })
+            Ok(quote! { #prefix #full_path() })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
@@ -271,7 +244,7 @@ fn generate_concept(
 pub fn generate_component_list_doc_comment(
     items: &ItemMap,
     type_map: &HashMap<ItemId<Type>, TokenStream>,
-    context: &Context,
+    context: Context,
     concept: &Concept,
 ) -> anyhow::Result<String> {
     let mut output = "*Definition*:\n\n```ignore\n{\n".to_string();
@@ -279,7 +252,7 @@ pub fn generate_component_list_doc_comment(
     fn write_level(
         items: &ItemMap,
         type_map: &HashMap<ItemId<Type>, TokenStream>,
-        _context: &Context,
+        _context: Context,
         concept: &Concept,
         output: &mut String,
         level: usize,
@@ -318,20 +291,7 @@ pub fn generate_component_list_doc_comment(
         Ok(())
     }
 
-    write_level(
-        items,
-        type_map,
-        &match context {
-            Context::Host => Context::Host,
-            Context::Guest { api_path, .. } => Context::Guest {
-                api_path: api_path.clone(),
-                fully_qualified_path: false,
-            },
-        },
-        concept,
-        &mut output,
-        1,
-    )?;
+    write_level(items, type_map, context, concept, &mut output, 1)?;
 
     output += "}\n```\n";
 

@@ -7,14 +7,10 @@ pub mod core {
     pub mod animation {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static ANIMATION_PLAYER: Lazy<Component<()>> =
                 Lazy::new(|| __internal_get_component("ambient/core/animation/animation-player"));
@@ -134,14 +130,10 @@ pub mod core {
     pub mod app {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static CURSOR_POSITION: Lazy<Component<Vec2>> =
                 Lazy::new(|| __internal_get_component("ambient/core/app/cursor-position"));
@@ -264,14 +256,10 @@ pub mod core {
     pub mod audio {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static AUDIO_PLAYER: Lazy<Component<()>> =
                 Lazy::new(|| __internal_get_component("ambient/core/audio/audio-player"));
@@ -363,14 +351,10 @@ pub mod core {
     pub mod camera {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static ACTIVE_CAMERA: Lazy<Component<f32>> =
                 Lazy::new(|| __internal_get_component("ambient/core/camera/active-camera"));
@@ -690,14 +674,10 @@ pub mod core {
     pub mod ecs {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static CHILDREN: Lazy<Component<Vec<EntityId>>> =
                 Lazy::new(|| __internal_get_component("ambient/core/ecs/children"));
@@ -735,14 +715,10 @@ pub mod core {
     pub mod input {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static MOUSE_OVER: Lazy<Component<u32>> =
                 Lazy::new(|| __internal_get_component("ambient/core/input/mouse-over"));
@@ -768,14 +744,10 @@ pub mod core {
     pub mod layout {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static ALIGN_HORIZONTAL: Lazy<Component<u32>> =
                 Lazy::new(|| __internal_get_component("ambient/core/layout/align-horizontal"));
@@ -904,14 +876,10 @@ pub mod core {
     pub mod model {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static MODEL_ANIMATABLE: Lazy<Component<bool>> =
                 Lazy::new(|| __internal_get_component("ambient/core/model/model-animatable"));
@@ -937,14 +905,10 @@ pub mod core {
     pub mod network {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static IS_REMOTE_ENTITY: Lazy<Component<()>> =
                 Lazy::new(|| __internal_get_component("ambient/core/network/is-remote-entity"));
@@ -970,14 +934,10 @@ pub mod core {
     pub mod physics {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static ANGULAR_VELOCITY: Lazy<Component<Vec3>> =
                 Lazy::new(|| __internal_get_component("ambient/core/physics/angular-velocity"));
@@ -1109,7 +1069,7 @@ pub mod core {
             }
             static VISUALIZE_COLLIDER: Lazy<Component<()>> =
                 Lazy::new(|| __internal_get_component("ambient/core/physics/visualize-collider"));
-            #[doc = "**Visualize collider**: If attached, the collider will be rendered.\n\n*Attributes*: debuggable, networked"]
+            #[doc = "**Visualize collider**: If attached, the collider will be rendered.\n\n\n\n**Note**: this will continuously overwrite the `local_gizmos` component.\n\n\n\n*Attributes*: debuggable, networked"]
             pub fn visualize_collider() -> Component<()> {
                 *VISUALIZE_COLLIDER
             }
@@ -1119,14 +1079,10 @@ pub mod core {
     pub mod player {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static LOCAL_USER_ID: Lazy<Component<String>> =
                 Lazy::new(|| __internal_get_component("ambient/core/player/local-user-id"));
@@ -1152,14 +1108,10 @@ pub mod core {
     pub mod prefab {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static PREFAB_FROM_URL: Lazy<Component<String>> =
                 Lazy::new(|| __internal_get_component("ambient/core/prefab/prefab-from-url"));
@@ -1179,14 +1131,10 @@ pub mod core {
     pub mod primitives {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static CUBE: Lazy<Component<()>> =
                 Lazy::new(|| __internal_get_component("ambient/core/primitives/cube"));
@@ -1441,14 +1389,10 @@ pub mod core {
     pub mod procedurals {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static PROCEDURAL_MESH: Lazy<Component<ProceduralMeshHandle>> =
                 Lazy::new(|| __internal_get_component("ambient/core/procedurals/procedural-mesh"));
@@ -1470,14 +1414,10 @@ pub mod core {
     pub mod rect {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static BACKGROUND_COLOR: Lazy<Component<Vec4>> =
                 Lazy::new(|| __internal_get_component("ambient/core/rect/background-color"));
@@ -1508,6 +1448,18 @@ pub mod core {
             #[doc = "**Border thickness**: Border thickness of an entity with a `rect` component.\n\n*Attributes*: debuggable, networked, store"]
             pub fn border_thickness() -> Component<f32> {
                 *BORDER_THICKNESS
+            }
+            static PIXEL_LINE_FROM: Lazy<Component<Vec3>> =
+                Lazy::new(|| __internal_get_component("ambient/core/rect/pixel-line-from"));
+            #[doc = "**Pixel Line from**: Start point of a pixel sized line.\n\n*Attributes*: debuggable, networked, store"]
+            pub fn pixel_line_from() -> Component<Vec3> {
+                *PIXEL_LINE_FROM
+            }
+            static PIXEL_LINE_TO: Lazy<Component<Vec3>> =
+                Lazy::new(|| __internal_get_component("ambient/core/rect/pixel-line-to"));
+            #[doc = "**Pixel Line to**: End point of a pixel sized line.\n\n*Attributes*: debuggable, networked, store"]
+            pub fn pixel_line_to() -> Component<Vec3> {
+                *PIXEL_LINE_TO
             }
             static LINE_FROM: Lazy<Component<Vec3>> =
                 Lazy::new(|| __internal_get_component("ambient/core/rect/line-from"));
@@ -1546,14 +1498,10 @@ pub mod core {
     pub mod rendering {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static CAST_SHADOWS: Lazy<Component<()>> =
                 Lazy::new(|| __internal_get_component("ambient/core/rendering/cast-shadows"));
@@ -1688,14 +1636,10 @@ pub mod core {
     pub mod text {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static FONT_FAMILY: Lazy<Component<String>> =
                 Lazy::new(|| __internal_get_component("ambient/core/text/font-family"));
@@ -1727,14 +1671,10 @@ pub mod core {
     pub mod transform {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static CYLINDRICAL_BILLBOARD_Z: Lazy<Component<()>> = Lazy::new(|| {
                 __internal_get_component("ambient/core/transform/cylindrical-billboard-z")
@@ -1870,14 +1810,10 @@ pub mod core {
     pub mod wasm {
         #[doc = r" Auto-generated component definitions."]
         pub mod components {
-            use crate::global::{
-                Duration, EntityId, IVec2, IVec3, IVec4, Mat4, ProceduralMaterialHandle,
-                ProceduralMeshHandle, ProceduralSamplerHandle, ProceduralTextureHandle, Quat,
-                UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
-            };
             use crate::{
                 ecs::{Component, __internal_get_component},
                 once_cell::sync::Lazy,
+                prelude::*,
             };
             static MODULE: Lazy<Component<()>> =
                 Lazy::new(|| __internal_get_component("ambient/core/wasm/module"));

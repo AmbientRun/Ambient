@@ -183,7 +183,7 @@ impl ItemMap {
         item: &T,
         (scope_case, function_case, type_case): (Case, Case, Case),
         separator: &str,
-        (type_prefix, ambient_suffix): (bool, bool),
+        (type_prefix, source_suffix): (bool, bool),
         relative_to: Option<ItemId<Scope>>,
         item_prefix: Option<&str>,
     ) -> anyhow::Result<String> {
@@ -225,10 +225,10 @@ impl ItemMap {
             "{}{}{}",
             prefix,
             path.join(separator),
-            if ambient_suffix && data.is_ambient {
-                " [A]"
+            if source_suffix {
+                format!(" ({:?})", data.source)
             } else {
-                ""
+                "".to_string()
             }
         ))
     }
@@ -297,14 +297,20 @@ pub struct ItemData {
     pub parent_id: Option<ItemId<Scope>>,
     /// The identifier of this item
     pub id: Identifier,
-    /// Whether this item is ambient: that is, whether or not generated code should behave as though it's present,
-    /// but not actually generate any code for it.
-    ///
-    /// Similar to [TypeScript ambient modules](https://www.typescriptlang.org/docs/handbook/modules.html#ambient-modules).
-    pub is_ambient: bool,
-    /// Whether or not this item belongs to the Ambient API. Yes, this is confusing with `is_ambient`, but it's
-    /// a different concept.
-    pub is_ambient_api: bool,
+    /// Where this item came from. Used to guide the code generation process.
+    pub source: ItemSource,
+}
+
+#[derive(Copy, Clone, PartialEq, Debug, Eq)]
+pub enum ItemSource {
+    /// This is an item defined by the semantic system that should be present in all languages.
+    /// Example: `String`, etc.
+    System,
+    /// This is an item defined by the Ambient API.
+    /// Example: `Layout`, etc.
+    Ambient,
+    /// This is an item defined by the user.
+    User,
 }
 
 pub trait Item: Clone {

@@ -4,7 +4,7 @@ use ambient_project_semantic::{Printer, Semantic};
 
 pub fn main() -> anyhow::Result<()> {
     let mut semantic = Semantic::new()?;
-    semantic.add_ambient_schema(true)?;
+    semantic.add_ambient_schema()?;
 
     let paths = {
         let arg = std::env::args().nth(1).expect("path or 'all' as first arg");

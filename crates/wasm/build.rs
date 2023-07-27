@@ -89,12 +89,7 @@ fn main() {
             // Generate the API project Rust code.
             let api_generated_code = ambient_project_macro_common::generate_code(
                 None,
-                false,
-                true,
-                ambient_project_macro_common::Context::Guest {
-                    api_path: syn::parse_str::<syn::Path>("crate").unwrap(),
-                    fully_qualified_path: true,
-                },
+                ambient_project_macro_common::Context::GuestApi,
                 Some("ambient"),
             )
             .unwrap();

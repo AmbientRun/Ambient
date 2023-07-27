@@ -9,7 +9,7 @@ pub fn create_semantic_and_register_components(
     ember_path: &Path,
 ) -> anyhow::Result<(Semantic, ItemId<Scope>)> {
     let mut semantic = ambient_project_semantic::Semantic::new()?;
-    semantic.add_ambient_schema(true)?;
+    semantic.add_ambient_schema()?;
     let id = semantic.add_ember(ember_path)?;
     semantic.resolve()?;
 
