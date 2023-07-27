@@ -4,7 +4,10 @@ use ambient_api::{
     core::{
         app::components::name,
         layout::components::{
-            fit_horizontal_children, fit_vertical_children, height, space_between_items, width,
+            //LEGACY_MISSING_ENUM_SUPPORT:   fit_horizontal_children, fit_vertical_children,
+            height,
+            space_between_items,
+            width,
         },
         messages::Frame,
     },
@@ -111,8 +114,8 @@ fn Track(
                 }),
         )
         .with_background(vec4(0.1, 0.1, 0.1, 1.))
-        .with_default(fit_vertical_children())
-        .with_default(fit_horizontal_children())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_children())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_children())
         .with_padding_even(10.)
         .with(space_between_items(), 2.),
     ])

@@ -1,9 +1,12 @@
 use ambient_api::{
     core::{
         layout::components::{
-            align_horizontal_center, align_horizontal_end, align_vertical_center,
-            align_vertical_end, fit_horizontal_children, fit_horizontal_none,
-            fit_vertical_children, fit_vertical_none, height, space_between_items, width,
+            //LEGACY_MISSING_ENUM_SUPPORT: align_horizontal_center, align_horizontal_end, align_vertical_center,
+            //LEGACY_MISSING_ENUM_SUPPORT: align_vertical_end, fit_horizontal_children, fit_horizontal_none,
+            //LEGACY_MISSING_ENUM_SUPPORT: fit_vertical_children, fit_vertical_none,
+            height,
+            space_between_items,
+            width,
         },
         text::components::font_size,
     },
@@ -16,19 +19,19 @@ fn App(_hooks: &mut Hooks) -> Element {
     FlowColumn::el([
         FlowRow::el([Text::el("Basic")])
             .with_background(vec4(0.1, 0.1, 0.1, 1.))
-            .with_default(fit_vertical_children())
-            .with_default(fit_horizontal_children())
+            //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_children())
+            //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_children())
             .with_padding_even(10.),
         FlowRow::el([Text::el("Spacing"), Text::el("between"), Text::el("items")])
             .with_background(vec4(0.1, 0.1, 0.1, 1.))
-            .with_default(fit_vertical_children())
-            .with_default(fit_horizontal_children())
+            //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_children())
+            //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_children())
             .with_padding_even(10.)
             .with(space_between_items(), 50.),
         FlowRow::el([Text::el("Break"), Text::el("line")])
             .with_background(vec4(0.1, 0.1, 0.1, 1.))
-            .with_default(fit_vertical_children())
-            .with_default(fit_horizontal_none())
+            //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_children())
+            //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_none())
             .with(width(), 50.)
             .with_padding_even(10.),
         FlowRow::el([
@@ -36,10 +39,10 @@ fn App(_hooks: &mut Hooks) -> Element {
             background(Text::el("Center").with(font_size(), 30.)),
         ])
         .with_background(vec4(0.1, 0.1, 0.1, 1.))
-        .with_default(fit_vertical_none())
-        .with_default(fit_horizontal_none())
-        .with_default(align_horizontal_center())
-        .with_default(align_vertical_center())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_none())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_none())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_horizontal_center())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_vertical_center())
         .with(width(), 200.)
         .with(height(), 70.)
         .with_padding_even(10.)
@@ -49,10 +52,10 @@ fn App(_hooks: &mut Hooks) -> Element {
             background(Text::el("End").with(font_size(), 30.)),
         ])
         .with_background(vec4(0.1, 0.1, 0.1, 1.))
-        .with_default(fit_vertical_none())
-        .with_default(fit_horizontal_none())
-        .with_default(align_horizontal_end())
-        .with_default(align_vertical_end())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_none())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_none())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_horizontal_end())
+        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_vertical_end())
         .with(width(), 200.)
         .with(height(), 70.)
         .with_padding_even(10.)
