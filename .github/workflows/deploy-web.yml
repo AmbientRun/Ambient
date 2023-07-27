@@ -40,7 +40,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ambient-web-standalone
-          path: ./web/pkg
+          path: ./web/${{ env.PACKAGE_NAME }}
 
       - id: auth
         name: Authenticate with Google Cloud
