@@ -165,7 +165,7 @@ pub fn main() {
                         );
                         clip.looping(false);
                         let dur = clip.clip_duration().await;
-                        std::thread::sleep(std::time::Duration::from_secs_f32(dur));
+                        sleep(dur).await;
                         anim_player.play(blend.nodes.last().unwrap());
                     });
                 };
