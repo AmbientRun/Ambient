@@ -10,6 +10,22 @@ use ambient_api::components::core::{
 use ambient_api::prelude::*;
 use components::{heal_timeout, player_health};
 
+use ambient_api::{
+    components::core::{
+        app::main_scene,
+        camera::aspect_ratio_from_window,
+        physics::{
+            angular_velocity, cube_collider, dynamic, linear_velocity, physics_controlled,
+            plane_collider, sphere_collider,
+        },
+        primitives::{cube, quad, sphere_radius},
+        rendering::{cast_shadows, color, fog_density, light_diffuse, sky, sun, water},
+        transform::{lookat_target, rotation, scale},
+    },
+    concepts::{make_perspective_infinite_reverse_camera, make_sphere, make_transformable},
+    prelude::*,
+};
+
 #[main]
 pub fn main() {
     spawn_query(player()).bind(|results| {
@@ -59,6 +75,44 @@ pub fn main() {
             //     eprintln!("self hit");
             //     return;
             // }
+
+            if entity::has_component(hit.entity, components::player_team()) {
+                let pos = entity::get_component(hit.entity, translation()).unwrap();
+                messages::Explosion { pos }.send_local_broadcast(false);
+                let c = entity::get_component(hit.entity, color()).unwrap();
+                entity::despawn(hit.entity);
+                run_async(async move {
+                    for _ in 0..40 {
+                        let pos =
+                            pos + vec3(random::<f32>(), random::<f32>(), random::<f32>()) * 9.0;
+
+                        let size = random::<Vec3>() * 0.3;
+                        let rot = Quat::from_rotation_y(random::<f32>() * 3.14)
+                            * Quat::from_rotation_x(random::<f32>() * 3.14);
+                        let id = Entity::new()
+                            .with_merge(make_transformable())
+                            .with_default(cube())
+                            .with(rotation(), rot)
+                            .with_default(physics_controlled())
+                            .with_default(cast_shadows())
+                            .with(
+                                linear_velocity(),
+                                vec3(
+                                    random::<f32>() * 3.0,
+                                    random::<f32>() * 5.0,
+                                    random::<f32>() * 10.0,
+                                ),
+                            )
+                            // .with(angular_velocity(), random::<Vec3>() * 1.0)
+                            .with(cube_collider(), Vec3::ONE)
+                            .with(dynamic(), true)
+                            .with(scale(), random::<Vec3>() * size * 2.0)
+                            .with(translation(), pos)
+                            .with(color(), c)
+                            .spawn();
+                    }
+                });
+            }
 
             if let Some(old_health) = entity::get_component(hit.entity, components::player_health())
             {
