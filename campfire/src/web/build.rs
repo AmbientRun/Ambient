@@ -53,12 +53,12 @@ pub(crate) fn install_wasm_pack() -> anyhow::Result<()> {
             "https://rustwasm.github.io/wasm-pack/installer/init.sh",
             "-sSf",
         ])
-        .stdout(Stdio::piped())
+        .stdout(std::process::Stdio::piped())
         .spawn()
         .context("Failed to spawn curl")?;
 
     let mut sh = Command::new("sh")
-        .stdin(Stdio::from(curl.stdout.take().unwrap()))
+        .stdin(std::process::Stdio::from(curl.stdout.take().unwrap()))
         .spawn()
         .context("Failed to spawn sh")?;
 
