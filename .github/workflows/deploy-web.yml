@@ -45,3 +45,11 @@ jobs:
           workload_identity_provider: projects/549180905870/locations/global/workloadIdentityPools/github-pool/providers/github-provider
           service_account: github@ambient-733e7.iam.gserviceaccount.com
           access_token_lifetime: 1800s
+
+      - name: Upload to Google Cloud
+        uses: google-cloud-github-actions/upload-cloud-storage@v1
+        with:
+          path: "./web/pkg"
+          destination: "ambient-artifacts/ambient-web-clients/ambient_web"
+
+
