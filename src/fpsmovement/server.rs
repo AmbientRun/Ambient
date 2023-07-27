@@ -40,7 +40,9 @@ pub fn main() {
                 entity::get_component(player_id, components::player_vspeed()).unwrap_or(0.0);
             if is_jumping <= 0.0 && game_time() - last_walk > dur {
                 last_walk = game_time();
-                messages::FootOnGround { source: player_id }.send_local_broadcast(false);
+                if msg.running {
+                    messages::FootOnGround { source: player_id }.send_local_broadcast(false);
+                } // keep silent when walking
             }
         }
 
@@ -117,7 +119,14 @@ pub fn main() {
             let displace = rot * (direction.normalize_or_zero() * speed).extend(vspeed);
             let collision = physics::move_character(player_id, displace, 0.01, delta_time());
             if collision.down {
-                entity::add_component(player_id, components::player_jumping(), false);
+                if let Some(is_jumping) =
+                    entity::get_component(player_id, components::player_jumping())
+                {
+                    if is_jumping {
+                        entity::add_component(player_id, components::player_jumping(), false);
+                    }
+                }
+
                 entity::set_component(player_id, components::player_vspeed(), 0.0);
             } else {
                 entity::mutate_component(player_id, components::player_vspeed(), |vspeed| {
