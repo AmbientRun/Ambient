@@ -1,6 +1,5 @@
 [ember]
 id = "ambient-example-third-person-camera"
-owner = "ambient"
 name = "Third person camera"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/third_person_camera"

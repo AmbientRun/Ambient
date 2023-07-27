@@ -1,6 +1,5 @@
 [ember]
 id = "ambient-example-minigolf"
-owner = "ambient"
 name = "Minigolf"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/minigolf"

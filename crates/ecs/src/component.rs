@@ -338,7 +338,7 @@ impl<'de> Deserialize<'de> for ComponentDesc {
 
 /// Takes an Ambient namespace and a Rust snake-case identifier and returns the corresponding Ambient path.
 ///
-/// e.g. (`ambient/core`, `my_component`) -> `ambient/core/my-component`
+/// e.g. (`ambient-core`, `my_component`) -> `ambient-core/my-component`
 pub fn rust_component_to_ambient_path(namespace: &str, snake_case_name: &str) -> String {
     format!("{}/{}", namespace, snake_case_name.replace('_', "-"))
 }
@@ -378,7 +378,7 @@ macro_rules! components {
                     static ATTRIBUTES: $crate::OnceCell<$crate::parking_lot::RwLock<$crate::AttributeStore>> = $crate::OnceCell::new();
 
                     // This path will use the wrong convention for the name, but it's only used for debugging
-                    static DEBUG_PATH: &str = concat!("ambient/core/", $ns, "/", stringify!($name));
+                    static DEBUG_PATH: &str = concat!("ambient-core/", $ns, "/", stringify!($name));
                     static VTABLE: &$crate::ComponentVTable<$ty> = &$crate::ComponentVTable::construct(
                         DEBUG_PATH,
                         |desc| $crate::parking_lot::RwLockReadGuard::map(ATTRIBUTES.get_or_init(|| init_attr($crate::Component::new(desc))).read(), |v| v),
@@ -386,7 +386,7 @@ macro_rules! components {
                     );
 
                     *[<comp_ $name>].get_or_init(|| {
-                        reg.register_static(&$crate::rust_component_to_ambient_path(concat!("ambient/core/", $ns), stringify!($name)), unsafe { VTABLE.erase() } )
+                        reg.register_static(&$crate::rust_component_to_ambient_path(concat!("ambient-core/", $ns), stringify!($name)), unsafe { VTABLE.erase() } )
                     })
                 }
 

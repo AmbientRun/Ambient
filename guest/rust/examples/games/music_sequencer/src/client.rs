@@ -1,9 +1,5 @@
 use std::time::Duration;
 
-use ambient::ambient_example_music_sequencer::{
-    components::{bpm, track, track_audio_url, track_note_selection},
-    messages::{Click, SetBpm},
-};
 use ambient_api::{
     core::{
         app::components::name,
@@ -15,6 +11,10 @@ use ambient_api::{
     entity::synchronized_resources,
     global::game_time,
     prelude::*,
+};
+use ambient_example_music_sequencer::{
+    components::{bpm, track, track_audio_url, track_note_selection},
+    messages::{Click, SetBpm},
 };
 
 mod common;

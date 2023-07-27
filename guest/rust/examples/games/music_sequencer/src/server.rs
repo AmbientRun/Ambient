@@ -1,7 +1,3 @@
-use ambient::ambient_example_music_sequencer::{
-    components::{bpm, next_player_hue, player_hue, track, track_audio_url, track_note_selection},
-    messages::{Click, SetBpm},
-};
 use ambient_api::{
     core::{
         app::components::name,
@@ -9,6 +5,10 @@ use ambient_api::{
     },
     entity::{resources, synchronized_resources},
     prelude::*,
+};
+use ambient_example_music_sequencer::{
+    components::{bpm, next_player_hue, player_hue, track, track_audio_url, track_note_selection},
+    messages::{Click, SetBpm},
 };
 
 mod common;

@@ -1,6 +1,5 @@
 [ember]
 id = "ambient-example-input"
-owner = "ambient"
 name = "Input"
 description = "This show how to handle user keyboard and mouse input."
 version = "0.0.1"

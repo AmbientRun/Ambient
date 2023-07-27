@@ -15,7 +15,7 @@ use ambient_api::{
 };
 
 mod constants;
-use ambient::ambient_example_tictactoe::{
+use ambient_example_tictactoe::{
     components::{cell, cells, owned_by},
     messages::Input,
 };

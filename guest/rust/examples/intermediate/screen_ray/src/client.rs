@@ -1,4 +1,3 @@
-use ambient::ambient_example_screen_ray::messages::{Input, WorldPosition};
 use ambient_api::{
     core::{
         app::components::main_scene,
@@ -12,6 +11,7 @@ use ambient_api::{
     },
     prelude::*,
 };
+use ambient_example_screen_ray::messages::{Input, WorldPosition};
 
 #[main]
 pub fn main() {

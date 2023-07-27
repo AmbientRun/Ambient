@@ -1,8 +1,8 @@
-use ambient::ambient_example_todo::{
+use ambient_api::prelude::*;
+use ambient_example_todo::{
     components::{todo_item, todo_time},
     messages::{DeleteItem, NewItem},
 };
-use ambient_api::prelude::*;
 
 #[main]
 pub async fn main() {

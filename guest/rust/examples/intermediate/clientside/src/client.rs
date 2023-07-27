@@ -1,4 +1,3 @@
-use ambient::ambient_example_clientside::components::{grid_position, grid_side_length};
 use ambient_api::{
     core::{
         app::components::main_scene,
@@ -13,6 +12,7 @@ use ambient_api::{
     },
     prelude::*,
 };
+use ambient_example_clientside::components::{grid_position, grid_side_length};
 
 #[main]
 pub async fn main() {

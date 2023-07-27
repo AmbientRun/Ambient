@@ -1,15 +1,3 @@
-use crate::ambient::ambient_example_minigolf::{
-    components::{
-        ball, next_player_hue, origin, player_ball, player_camera_state, player_color,
-        player_indicator, player_indicator_arrow, player_restore_point, player_stroke_count,
-        player_text, player_text_container,
-    },
-    concepts::{make_player_camera_state, make_player_state},
-};
-use ambient::ambient_example_minigolf::{
-    components::player_shoot_requested,
-    messages::{Bonk, Hit, Input},
-};
 use ambient_api::{
     core::{
         app::components::main_scene,
@@ -38,6 +26,18 @@ use ambient_api::{
     },
     entity::resources,
     prelude::*,
+};
+use ambient_example_minigolf::{
+    components::player_shoot_requested,
+    messages::{Bonk, Hit, Input},
+};
+use ambient_example_minigolf::{
+    components::{
+        ball, next_player_hue, origin, player_ball, player_camera_state, player_color,
+        player_indicator, player_indicator_arrow, player_restore_point, player_stroke_count,
+        player_text, player_text_container,
+    },
+    concepts::{make_player_camera_state, make_player_state},
 };
 use utils::CameraState;
 

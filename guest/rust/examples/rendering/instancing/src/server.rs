@@ -19,7 +19,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::ambient::ambient_example_instancing::components::instance_index;
+use ambient_example_instancing::components::instance_index;
 
 #[main]
 pub async fn main() {

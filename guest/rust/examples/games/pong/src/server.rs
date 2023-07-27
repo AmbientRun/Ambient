@@ -1,9 +1,5 @@
 use std::f32::consts::PI;
 
-use ambient::ambient_example_pong::{
-    components::{player_movement_direction, track_audio_url},
-    messages::{Input, Ping},
-};
 use ambient_api::{
     core::{
         messages::Frame,
@@ -14,6 +10,10 @@ use ambient_api::{
         transform::{components::*, concepts::make_transformable},
     },
     prelude::*,
+};
+use ambient_example_pong::{
+    components::{player_movement_direction, track_audio_url},
+    messages::{Input, Ping},
 };
 
 mod constants;

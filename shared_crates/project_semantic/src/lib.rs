@@ -168,43 +168,11 @@ impl Semantic {
         let manifest = Manifest::parse(&file_provider.get(filename)?)
             .with_context(|| format!("failed to parse toml for {filename:?}"))?;
 
-        // Create an owner scope if necessary
-        let owner_key = manifest.ember.owner.as_ref().with_context(|| {
-            format!(
-                "file {:?} has no owner, which is required for a top-level ember",
-                file_provider.full_path(filename)
-            )
-        })?;
-
-        let owner_id = self
-            .items
-            .get(self.root_scope_id)?
-            .scopes
-            .get(owner_key)
-            .copied();
-        let owner_id = owner_id.unwrap_or_else(|| {
-            let id = self.items.add(Scope::new(
-                ItemData {
-                    parent_id: Some(self.root_scope_id),
-                    id: owner_key.clone(),
-                    source,
-                },
-                None,
-                None,
-            ));
-
-            self.items
-                .get_mut(self.root_scope_id)
-                .unwrap()
-                .scopes
-                .insert(owner_key.clone(), id);
-
-            id
-        });
+        let root_id = self.root_scope_id;
 
         // Check that this scope hasn't already been created for this owner
         let scope_id = manifest.ember.id.clone();
-        if let Some(existing_scope_id) = self.items.get(owner_id)?.scopes.get(&scope_id) {
+        if let Some(existing_scope_id) = self.items.get(root_id)?.scopes.get(&scope_id) {
             let existing_path = self.items.get(*existing_scope_id)?.path.clone();
             if existing_path == Some(file_provider.full_path(filename)) {
                 return Ok(*existing_scope_id);
@@ -219,7 +187,7 @@ impl Semantic {
         // Create a new scope and add it to the owner
         let manifest_path = file_provider.full_path(filename);
         let item_id = self.add_scope_from_manifest(
-            Some(owner_id),
+            Some(root_id),
             file_provider,
             manifest,
             manifest_path,
@@ -227,7 +195,7 @@ impl Semantic {
             source,
         )?;
         self.items
-            .get_mut(owner_id)?
+            .get_mut(root_id)?
             .scopes
             .insert(scope_id, item_id);
         Ok(item_id)

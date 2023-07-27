@@ -1,6 +1,5 @@
 [ember]
-id = "core"
-owner = "ambient"
+id = "ambient-core"
 description = "Contains all core components for the Ambient runtime."
 name = "Core Components"
 version = "0.3.0-dev"

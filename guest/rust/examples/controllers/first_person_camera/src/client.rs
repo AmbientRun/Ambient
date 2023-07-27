@@ -1,10 +1,10 @@
-use ambient::ambient_example_first_person_camera::{
-    components::{ball_ref, player_head_ref},
-    messages::Input,
-};
 use ambient_api::{
     core::{layout::components::space_between_items, messages::Frame},
     prelude::*,
+};
+use ambient_example_first_person_camera::{
+    components::{ball_ref, player_head_ref},
+    messages::Input,
 };
 
 #[main]

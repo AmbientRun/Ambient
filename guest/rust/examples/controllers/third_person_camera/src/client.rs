@@ -12,7 +12,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use ambient::ambient_example_third_person_camera::{
+use ambient_example_third_person_camera::{
     components::{camera_follow_distance, player_camera_ref},
     messages::Input,
 };

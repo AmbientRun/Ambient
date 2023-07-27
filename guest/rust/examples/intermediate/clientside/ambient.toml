@@ -1,6 +1,5 @@
 [ember]
 id = "ambient-example-clientside"
-owner = "ambient"
 name = "Clientside"
 description = "How to use client side code."
 version = "0.0.1"

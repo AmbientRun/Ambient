@@ -1,15 +1,15 @@
 use std::collections::HashMap;
 
-use ambient::ambient_example_tictactoe::{
-    components::{cell, cells, owned_by},
-    messages::Input,
-};
 use ambient_api::{
     core::{
         messages::Frame,
         rendering::components::{color, outline},
     },
     prelude::*,
+};
+use ambient_example_tictactoe::{
+    components::{cell, cells, owned_by},
+    messages::Input,
 };
 use palette::FromColor;
 

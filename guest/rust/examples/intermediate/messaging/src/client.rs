@@ -3,7 +3,6 @@ use std::sync::{
     Arc,
 };
 
-use ambient::ambient_example_messaging::messages::{Hello, Local};
 use ambient_api::{
     core::{
         app::components::main_scene,
@@ -20,6 +19,7 @@ use ambient_api::{
     },
     prelude::*,
 };
+use ambient_example_messaging::messages::{Hello, Local};
 
 #[main]
 pub fn main() {

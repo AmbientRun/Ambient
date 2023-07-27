@@ -1,7 +1,3 @@
-use ambient::ambient_example_first_person_camera::{
-    components::{ball_ref, player_head_ref, player_movement_direction, player_pitch, player_yaw},
-    messages::Input,
-};
 use ambient_api::{
     core::{
         app::components::main_scene,
@@ -26,6 +22,10 @@ use ambient_api::{
         },
     },
     prelude::*,
+};
+use ambient_example_first_person_camera::{
+    components::{ball_ref, player_head_ref, player_movement_direction, player_pitch, player_yaw},
+    messages::Input,
 };
 
 use std::f32::consts::{PI, TAU};

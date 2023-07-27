@@ -1,6 +1,5 @@
 [ember]
 id = "ambient-example-image-quad"
-owner = "ambient"
 name = "Image"
 description = "This shows how to load and display images in 3d."
 version = "0.0.1"

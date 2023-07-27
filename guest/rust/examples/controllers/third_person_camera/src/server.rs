@@ -1,9 +1,3 @@
-use ambient::ambient_example_third_person_camera::{
-    components::{
-        camera_follow_distance, player_mouse_delta_x, player_movement_direction, player_scroll,
-    },
-    messages::Input,
-};
 use ambient_api::{
     core::{
         app::components::main_scene,
@@ -23,6 +17,12 @@ use ambient_api::{
         },
     },
     prelude::*,
+};
+use ambient_example_third_person_camera::{
+    components::{
+        camera_follow_distance, player_mouse_delta_x, player_movement_direction, player_scroll,
+    },
+    messages::Input,
 };
 
 #[main]

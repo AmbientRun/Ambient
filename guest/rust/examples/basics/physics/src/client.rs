@@ -1,5 +1,5 @@
-use ambient::ambient_example_physics::messages::Bonk;
 use ambient_api::prelude::*;
+use ambient_example_physics::messages::Bonk;
 
 #[main]
 pub fn main() {

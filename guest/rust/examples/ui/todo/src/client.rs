@@ -1,8 +1,8 @@
-use ambient::ambient_example_todo::{
+use ambient_api::{core::layout::components::space_between_items, prelude::*};
+use ambient_example_todo::{
     components::{todo_item, todo_time},
     messages::{DeleteItem, NewItem},
 };
-use ambient_api::{core::layout::components::space_between_items, prelude::*};
 
 #[element_component]
 fn App(_hooks: &mut Hooks) -> Element {

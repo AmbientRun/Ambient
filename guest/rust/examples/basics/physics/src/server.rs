@@ -21,7 +21,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::ambient::ambient_example_physics::messages::Bonk;
+use ambient_example_physics::messages::Bonk;
 
 #[main]
 pub async fn main() {

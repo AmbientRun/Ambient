@@ -90,7 +90,7 @@ fn main() {
             let api_generated_code = ambient_project_macro_common::generate_code(
                 None,
                 ambient_project_macro_common::Context::GuestApi,
-                Some("ambient"),
+                None,
             )
             .unwrap();
 

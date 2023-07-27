@@ -1,6 +1,5 @@
 [ember]
 id = "ambient-example-deps-assets"
-owner = "ambient"
 name = "Dependencies (Assets)"
 version = "0.0.1"
 

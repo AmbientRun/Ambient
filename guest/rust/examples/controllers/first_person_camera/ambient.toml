@@ -1,6 +1,5 @@
 [ember]
 id = "ambient-example-first-person-camera"
-owner = "ambient"
 name = "First person camera"
 description = "A simple FPS camera and input example."
 version = "0.0.1"

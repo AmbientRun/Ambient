@@ -39,7 +39,8 @@ mod internal;
 
 pub use ambient_api_macros::main;
 
-pub use internal::generated::*;
+use internal::generated::ambient_core;
+pub use internal::generated::ambient_core as core;
 
 #[allow(clippy::single_component_path_imports)]
 use once_cell;

@@ -1,4 +1,3 @@
-use ambient::ambient_example_procedural_generation::components::rotating_sun;
 use ambient_api::{
     client::{material, mesh, sampler, texture},
     core::{
@@ -20,6 +19,7 @@ use ambient_api::{
     },
     prelude::*,
 };
+use ambient_example_procedural_generation::components::rotating_sun;
 use noise::{utils::*, Fbm, Perlin};
 use palette::IntoColor;
 

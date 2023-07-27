@@ -1,8 +1,8 @@
-use ambient::ambient_example_minigolf::messages::{Bonk, Hit, Input};
 use ambient_api::{
     core::{messages::Frame, physics::components::linear_velocity},
     prelude::*,
 };
+use ambient_example_minigolf::messages::{Bonk, Hit, Input};
 
 #[main]
 fn main() {
