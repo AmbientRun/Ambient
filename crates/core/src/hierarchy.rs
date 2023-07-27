@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use ambient_ecs::{query, Component, ComponentValue, ECSError, EntityId, World};
+use ambient_ecs::{query, Component, ComponentValue, ECSError, Entity, EntityId, World};
 use itertools::Itertools;
 use yaml_rust::YamlEmitter;
 
@@ -8,13 +8,9 @@ pub use ambient_ecs::generated::ecs::components::{children, parent};
 
 use crate::name;
 
-pub fn despawn_recursive(world: &mut World, entity: EntityId) {
-    if let Ok(children) = world.set(entity, children(), vec![]) {
-        for c in children {
-            despawn_recursive(world, c);
-        }
-    }
-    world.despawn(entity);
+pub fn despawn_recursive(world: &mut World, entity: EntityId) -> Option<Entity> {
+    despawn_children_recursive(world, entity);
+    world.despawn(entity)
 }
 pub fn despawn_children_recursive(world: &mut World, entity: EntityId) {
     if let Ok(children) = world.set(entity, children(), vec![]) {
