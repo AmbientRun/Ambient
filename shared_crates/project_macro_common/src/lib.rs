@@ -177,7 +177,7 @@ mod scopes {
             .values()
             .map(|s| {
                 let scope = items.get(*s)?;
-                let id = make_path(&scope.data.id.as_str());
+                let id = make_path(scope.data.id.as_str());
                 let inner = make_scopes(context, items, type_map, root_scope_id, &scope)?;
                 if !inner.is_empty() {
                     Ok(quote! {
@@ -196,7 +196,7 @@ mod scopes {
             let inner = crate::components::make_definitions(
                 context,
                 items,
-                &type_map,
+                type_map,
                 root_scope_id,
                 scope,
             )?;
@@ -213,7 +213,7 @@ mod scopes {
         };
         let concepts = {
             let inner =
-                crate::concepts::make_definitions(context, items, &type_map, root_scope_id, scope)?;
+                crate::concepts::make_definitions(context, items, type_map, root_scope_id, scope)?;
             if inner.is_empty() {
                 quote! {}
             } else {
@@ -228,7 +228,7 @@ mod scopes {
             }
         };
         let messages = {
-            let inner = crate::messages::make_definitions(context, items, &type_map, scope)?;
+            let inner = crate::messages::make_definitions(context, items, type_map, scope)?;
             if inner.is_empty() {
                 quote! {}
             } else {

@@ -170,7 +170,7 @@ impl ItemPathBuf {
             .take(segments.len() - 1)
             .map(SnakeCaseIdentifier::new)
             .collect::<Result<_, _>>()?;
-        let item = Identifier::new(*segments.last().unwrap())?;
+        let item = Identifier::new(segments.last().unwrap())?;
 
         Ok(Self { scope, item })
     }
@@ -542,7 +542,7 @@ mod tests {
         assert_eq!(
             IP::new("my::CoolComponent00"),
             Ok(IP {
-                scope: vec![SCI("my".to_string()).into()],
+                scope: vec![SCI("my".to_string())],
                 item: PCI("CoolComponent00".to_string()).into(),
             })
         );
@@ -563,7 +563,7 @@ mod tests {
         assert_eq!(
             IP::new("my::cool_component_c00"),
             Ok(IP {
-                scope: vec![SCI("my".to_string()).into()],
+                scope: vec![SCI("my".to_string())],
                 item: SCI("cool_component_c00".to_string()).into(),
             })
         );

@@ -22,7 +22,7 @@ mod tests {
         b = "b"
         "#;
 
-        let message: Message = toml::from_str(&t).unwrap();
+        let message: Message = toml::from_str(t).unwrap();
 
         assert_eq!(
             message.fields.keys().collect::<Vec<_>>(),

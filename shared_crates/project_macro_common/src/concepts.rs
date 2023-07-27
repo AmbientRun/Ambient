@@ -65,7 +65,7 @@ fn generate_make(
     let name = concept.data().id.as_str();
     let make_comment = format!(
         "Makes a *{}*.\n\n{}\n\n{}",
-        concept.name.as_deref().unwrap_or(&name),
+        concept.name.as_deref().unwrap_or(name),
         concept.description.as_ref().unwrap_or(&"".to_string()),
         generate_component_list_doc_comment(items, type_map, context, concept)?
     );
@@ -127,7 +127,7 @@ fn generate_is(
     let name = concept.data().id.as_str();
     let is_comment = format!(
         "Checks if the entity is a *{}*.\n\n{}\n\n{}",
-        concept.name.as_deref().unwrap_or(&name),
+        concept.name.as_deref().unwrap_or(name),
         concept.description.as_ref().unwrap_or(&"".to_string()),
         generate_component_list_doc_comment(items, type_map, context, concept)?,
     );
@@ -198,7 +198,7 @@ fn generate_concept(
     let name = concept.data().id.as_str();
     let fn_comment = format!(
         "Returns the components that comprise *{}* as a tuple.\n\n{}\n\n{}",
-        concept.name.as_deref().unwrap_or(&name),
+        concept.name.as_deref().unwrap_or(name),
         concept.description.as_ref().unwrap_or(&"".to_string()),
         generate_component_list_doc_comment(items, type_map, context, concept)?,
     );

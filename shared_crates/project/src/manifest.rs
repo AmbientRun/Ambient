@@ -217,7 +217,6 @@ mod tests {
                         attributes: vec![i("store").into()],
                         default: None,
                     }
-                    .into()
                 )]),
                 concepts: IndexMap::from_iter([(
                     ipb("cell"),
@@ -227,7 +226,6 @@ mod tests {
                         extends: vec![],
                         components: IndexMap::from_iter([(ipb("cell"), toml::Value::Integer(0))])
                     }
-                    .into()
                 )]),
                 messages: Default::default(),
                 enums: Default::default(),
@@ -319,7 +317,6 @@ mod tests {
                             attributes: vec![],
                             default: None,
                         }
-                        .into()
                     ),
                     (
                         ipb("core::transform::scale"),
@@ -330,7 +327,6 @@ mod tests {
                             attributes: vec![],
                             default: None,
                         }
-                        .into()
                     ),
                     (
                         ipb("core::transform::spherical_billboard"),
@@ -341,7 +337,6 @@ mod tests {
                             attributes: vec![],
                             default: None,
                         }
-                        .into()
                     ),
                     (
                         ipb("core::transform::translation"),
@@ -352,7 +347,6 @@ mod tests {
                             attributes: vec![],
                             default: None,
                         }
-                        .into()
                     ),
                 ]),
                 concepts: IndexMap::from_iter([(
@@ -389,7 +383,6 @@ mod tests {
                             ),
                         ])
                     }
-                    .into()
                 )]),
                 messages: Default::default(),
                 enums: Default::default(),
@@ -446,7 +439,6 @@ mod tests {
                         (pci("Taken"), "The cell is taken".to_string()),
                         (pci("Free"), "The cell is free".to_string()),
                     ]))
-                    .into()
                 )]),
                 dependencies: Default::default(),
             })
@@ -492,7 +484,6 @@ mod tests {
                             attributes: vec![],
                             default: None,
                         }
-                        .into()
                     ),
                     (
                         ipb("vec_test"),
@@ -506,7 +497,6 @@ mod tests {
                             attributes: vec![],
                             default: None,
                         }
-                        .into()
                     ),
                     (
                         ipb("option_test"),
@@ -520,7 +510,6 @@ mod tests {
                             attributes: vec![],
                             default: None,
                         }
-                        .into()
                     )
                 ]),
                 concepts: Default::default(),

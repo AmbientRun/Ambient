@@ -25,32 +25,32 @@ pub fn make_definitions(
                 format!("**{}**", id)
             };
 
-            let struct_name = make_path(&id);
+            let struct_name = make_path(id);
 
             let fields = message.fields.iter().map(|f| {
-                let name = make_path(&f.0.as_str());
+                let name = make_path(f.0.as_str());
                 let ty = &type_map[&f.1.as_resolved().unwrap()];
                 quote! { pub #name: #ty }
             });
 
             let new_parameters = message.fields.iter().map(|f| {
-                let name = make_path(&f.0.as_str());
+                let name = make_path(f.0.as_str());
                 let ty = &type_map[&f.1.as_resolved().unwrap()];
                 quote! { #name: impl Into<#ty> }
             });
 
             let new_fields = message.fields.iter().map(|f| {
-                let name = make_path(&f.0.as_str());
+                let name = make_path(f.0.as_str());
                 quote! { #name: #name.into() }
             });
 
             let serialize_fields = message.fields.iter().map(|f| {
-                let name = make_path(&f.0.as_str());
+                let name = make_path(f.0.as_str());
                 quote! { self.#name.serialize_message_part(&mut output)? }
             });
 
             let deserialize_fields = message.fields.iter().map(|f| {
-                let name = make_path(&f.0.as_str());
+                let name = make_path(f.0.as_str());
                 let ty = &type_map[&f.1.as_resolved().unwrap()];
                 quote! { #name: #ty ::deserialize_message_part(&mut input)? }
             });
