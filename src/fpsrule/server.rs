@@ -23,10 +23,11 @@ pub fn main() {
         let result = physics::raycast_first(msg.ray_origin, msg.ray_dir);
 
         if let Some(hit) = result {
-            if hit.entity == msg.source {
-                eprintln!("self hit");
-                return;
-            }
+            // TODO: just to test death anim
+            // if hit.entity == msg.source {
+            //     eprintln!("self hit");
+            //     return;
+            // }
 
             if let Some(old_health) = entity::get_component(hit.entity, components::player_health())
             {
@@ -39,6 +40,7 @@ pub fn main() {
 
                 if old_health > 0 && new_health <= 0 {
                     println!("player dead, waiting for respawn");
+                    // 114 is the death anim frame count
                     entity::set_component(hit.entity, components::hit_freeze(), 114);
                     entity::mutate_component(msg.source, components::player_killcount(), |count| {
                         *count += 1;
@@ -50,6 +52,7 @@ pub fn main() {
                             *count += 1;
                         },
                     );
+                    // TODO: wait for anim msg to respawn
                     run_async(async move {
                         sleep(114. / 60.).await;
 
