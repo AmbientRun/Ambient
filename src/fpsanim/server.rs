@@ -116,7 +116,7 @@ impl FPSAnimBlend {
     }
     pub fn update_weights(&mut self, weights: &[f32]) {
         let blend = calculate_blend_from_weight(weights);
-        println!("current frame blend{:?}", blend);
+        // println!("current frame blend{:?}", blend);
         for i in 0..self.nodes.len() {
             self.nodes[i].set_weight(blend[i]);
         }
@@ -128,6 +128,7 @@ pub fn main() {
     let anim_lib = std::rc::Rc::new(std::cell::RefCell::new(std::collections::HashMap::new()));
     let anim_lib_clone = std::rc::Rc::clone(&anim_lib);
     let anim_lib_once = std::rc::Rc::clone(&anim_lib);
+    let anim_lib_once2 = std::rc::Rc::clone(&anim_lib);
 
     spawn_query((player(), components::player_model_ref())).bind(move |v| {
         for (id, (_, model)) in v {
@@ -138,41 +139,59 @@ pub fn main() {
             entity::add_component(id, components::player_jumping(), false);
         }
     });
+
+    change_query((player(), components::player_health()))
+        .track_change(components::player_health())
+        .bind(move |res| {
+            for (player_id, (_, health)) in res {
+                println!("___health:{}", health);
+                let anim_lib = anim_lib_once.borrow_mut();
+                let anim_lib = anim_lib.get(&player_id);
+                if anim_lib.is_none() {
+                    return;
+                }
+                let (blend, anim_player) = anim_lib.unwrap().clone();
+                if health <= 0 {
+                    let death = PlayClipFromUrlNode::new(
+                        asset::url("assets/anim/Rifle Death.fbx/animations/mixamo.com.anim")
+                            .unwrap(),
+                    );
+                    death.looping(false);
+                    anim_player.play(death);
+                    run_async(async move {
+                        let clip = PlayClipFromUrlNode::new(
+                            asset::url("assets/anim/Rifle Death.fbx/animations/mixamo.com.anim")
+                                .unwrap(),
+                        );
+                        clip.looping(false);
+                        let dur = clip.clip_duration().await;
+                        std::thread::sleep(std::time::Duration::from_secs_f32(dur));
+                        anim_player.play(blend.nodes.last().unwrap());
+                    });
+                };
+            }
+        });
+
     change_query((player(), components::player_jumping()))
         .track_change(components::player_jumping())
         .bind(move |res| {
             for (player_id, (_, is_jumping)) in res {
-                let anim_lib = anim_lib_once.borrow_mut();
-                let (blend, anim_player) = anim_lib.get(&player_id).unwrap().clone();
+                let anim_lib = anim_lib_once2.borrow_mut();
+                let anim_lib = anim_lib.get(&player_id);
+                if anim_lib.is_none() {
+                    return;
+                }
+                let (blend, anim_player) = anim_lib.unwrap();
                 if is_jumping {
                     let clip = PlayClipFromUrlNode::new(
                         asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim")
                             .unwrap(),
                     );
                     clip.looping(false);
-
                     anim_player.play(clip);
-
-                    run_async(async move {
-                        let clip = PlayClipFromUrlNode::new(
-                            asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim")
-                                .unwrap(),
-                        );
-                        clip.looping(false);
-                        let dur = clip.clip_duration().await;
-                        std::thread::sleep(std::time::Duration::from_secs_f32(dur));
-                        let another_clip = PlayClipFromUrlNode::new(
-                            asset::url("assets/anim/Rifle Death.fbx/animations/mixamo.com.anim")
-                                .unwrap(),
-                        );
-                        another_clip.looping(false);
-                        anim_player.play(another_clip);
-                    });
-                };
-
-                //  else {
-                //     anim_player.play(blend.nodes.last().unwrap());
-                // }
+                } else {
+                    anim_player.play(blend.nodes.last().unwrap());
+                }
             }
         });
     query((
@@ -180,9 +199,17 @@ pub fn main() {
         components::player_model_ref(),
         components::player_direction(),
         components::player_running(),
+        components::player_health(),
+        components::player_jumping(),
     ))
     .each_frame(move |res| {
-        for (player_id, (_, _model, dir, is_running)) in res {
+        for (player_id, (_, _model, dir, is_running, health, jump)) in res {
+            if health <= 0 {
+                continue;
+            }
+            if jump {
+                continue;
+            }
             let mut weights = vec![0.0; 17];
             let anim_lib = anim_lib_clone.borrow_mut();
             let (mut blend, _anim_player) = anim_lib.get(&player_id).unwrap().clone();
@@ -233,7 +260,7 @@ pub fn main() {
                 }
             }
             blend.update_weights(&weights);
-            println!("current frame weight{:?}", weights);
+            // println!("current frame weight{:?}", weights);
         }
     });
 }
