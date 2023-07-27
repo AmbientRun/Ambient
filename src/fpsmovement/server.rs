@@ -103,8 +103,12 @@ pub fn main() {
             }
             .send_local_broadcast(false);
 
-            // let recoil = Quat::from_rotation_x(
-            // entity::mutate_component(player_id, rotation(), |rot| *rot = *rot + recoil);
+            let _recoil =
+                entity::mutate_component(player_id, components::player_pitch(), |pitch| {
+                    let recoil = random::<f32>() * 0.01;
+                    *pitch = *pitch - recoil;
+                })
+                .unwrap_or_default();
         }
     });
 
