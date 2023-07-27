@@ -1,4 +1,5 @@
 pub mod deploy_proto {
+    #![allow(non_snake_case)]
     include!("../proto/ambient.run.deploy.rs");
 }
 
@@ -26,40 +27,8 @@ use deploy_proto::{
 };
 
 const CHUNK_SIZE: usize = 1024 * 1024 * 3; // 3MB
-
-async fn asset_requests_from_file_path(
-    ember_id: impl AsRef<str>,
-    asset_path: impl AsRef<str>,
-    file_path: impl AsRef<Path>,
-) -> anyhow::Result<Vec<DeployAssetRequest>> {
-    let content = ambient_sys::fs::read(file_path.as_ref()).await?;
-    let total_size = content.len() as u64;
-
-    // handle empty file
-    if content.is_empty() {
-        return Ok(vec![DeployAssetRequest {
-            ember_id: ember_id.as_ref().into(),
-            contents: vec![AssetContent {
-                path: asset_path.as_ref().into(),
-                total_size,
-                content_description: Some(ContentDescription::Chunk(content)),
-            }],
-        }]);
-    }
-
-    // using single AssetContent per chunk because gRPC message has to be <4MB
-    Ok(content
-        .chunks(CHUNK_SIZE)
-        .map(|chunk| DeployAssetRequest {
-            ember_id: ember_id.as_ref().into(),
-            contents: vec![AssetContent {
-                path: asset_path.as_ref().into(),
-                total_size,
-                content_description: Some(ContentDescription::Chunk(chunk.to_vec())),
-            }],
-        })
-        .collect())
-}
+const EXTRA_FILES_FROM_PROJECT_ROOT: &[&str] = &["screenshot.png", "README.md"];
+const REQUIRED_FILES: &[&str] = &["build/ambient.toml"];
 
 /// This takes the path to an Ambient ember and deploys it. An Ambient ember is expected to
 /// be already built.
@@ -86,38 +55,16 @@ pub async fn deploy(
     // create a client and open channel to the server
     let mut client = create_client(api_server, auth_token).await?;
 
-    // collect all files to deploy (everything in the build directory)
-    let asset_path_to_file_path: Option<HashMap<String, PathBuf>> =
-        WalkDir::new(path.as_ref().join("build"))
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
-            .map(|x| {
-                let file_path = x.into_path();
-                let path = file_path
-                    .strip_prefix(&base_path)
-                    .expect("file path should be in base path")
-                    .to_str();
-                if let Some(path) = path {
-                    if path.chars().any(|c| c == '\n' || c == '\r') {
-                        log::error!(
-                            "Path contains Line Feed or Carriage Return character: {:?}",
-                            file_path
-                        );
-                        None
-                    } else {
-                        Some((path.into(), file_path))
-                    }
-                } else {
-                    log::error!("Non-UTF-8 path: {:?}", file_path);
-                    None
-                }
-            })
-            .collect();
-    let Some(asset_path_to_file_path) = asset_path_to_file_path else {
-        anyhow::bail!("Can only deploy files with UTF-8 paths that don't have newline characters");
-    };
+    // collect all files to deploy
+    let asset_path_to_file_path = collect_files_to_deploy(base_path)?;
     log::debug!("Found {} files to deploy", asset_path_to_file_path.len());
+
+    // check that all required files are present
+    for required_file in REQUIRED_FILES {
+        if !asset_path_to_file_path.contains_key(*required_file) {
+            anyhow::bail!("Missing required file: {}", required_file);
+        }
+    }
 
     // create a separate task for reading files
     let (file_request_tx, file_request_rx) = flume::unbounded::<FileRequest>();
@@ -191,6 +138,51 @@ pub async fn deploy(
 
     // this should have arrived in Finished message from the server
     deployment.ok_or_else(|| anyhow::anyhow!("No deployment id returned from deploy"))
+}
+
+// Get all files from "build" and EXTRA_FILES_FROM_PROJECT_ROOT
+fn collect_files_to_deploy(base_path: PathBuf) -> anyhow::Result<HashMap<String, PathBuf>> {
+    // collect all files to deploy (everything in the build directory)
+    let asset_path_to_file_path: Option<HashMap<String, PathBuf>> =
+        WalkDir::new(base_path.join("build"))
+            .into_iter()
+            .filter_map(|e| e.ok())
+            .filter(|e| e.metadata().map(|x| x.is_file()).unwrap_or(false))
+            .map(|x| {
+                let file_path = x.into_path();
+                let path = file_path
+                    .strip_prefix(&base_path)
+                    .expect("file path should be in base path")
+                    .to_str();
+                if let Some(path) = path {
+                    if path.chars().any(|c| c == '\n' || c == '\r') {
+                        log::error!(
+                            "Path contains Line Feed or Carriage Return character: {:?}",
+                            file_path
+                        );
+                        None
+                    } else {
+                        Some((path.into(), file_path))
+                    }
+                } else {
+                    log::error!("Non-UTF-8 path: {:?}", file_path);
+                    None
+                }
+            })
+            .collect();
+    let Some(mut asset_path_to_file_path) = asset_path_to_file_path else {
+        anyhow::bail!("Can only deploy files with UTF-8 paths that don't have newline characters");
+    };
+
+    // check for a few special files in the project root
+    for file_name in EXTRA_FILES_FROM_PROJECT_ROOT {
+        let file_path = base_path.join(file_name);
+        if file_path.exists() && file_path.is_file() {
+            asset_path_to_file_path.insert(file_name.to_string(), file_path);
+        }
+    }
+
+    Ok(asset_path_to_file_path)
 }
 
 /// Created a client for the deploy API server.
@@ -332,6 +324,40 @@ async fn process_file_requests(
     }
     // note: leaving this function drops the tx which will cause the deployer to finish
     anyhow::Ok(())
+}
+
+async fn asset_requests_from_file_path(
+    ember_id: impl AsRef<str>,
+    asset_path: impl AsRef<str>,
+    file_path: impl AsRef<Path>,
+) -> anyhow::Result<Vec<DeployAssetRequest>> {
+    let content = ambient_sys::fs::read(file_path.as_ref()).await?;
+    let total_size = content.len() as u64;
+
+    // handle empty file
+    if content.is_empty() {
+        return Ok(vec![DeployAssetRequest {
+            ember_id: ember_id.as_ref().into(),
+            contents: vec![AssetContent {
+                path: asset_path.as_ref().into(),
+                total_size,
+                content_description: Some(ContentDescription::Chunk(content)),
+            }],
+        }]);
+    }
+
+    // using single AssetContent per chunk because gRPC message has to be <4MB
+    Ok(content
+        .chunks(CHUNK_SIZE)
+        .map(|chunk| DeployAssetRequest {
+            ember_id: ember_id.as_ref().into(),
+            contents: vec![AssetContent {
+                path: asset_path.as_ref().into(),
+                total_size,
+                content_description: Some(ContentDescription::Chunk(chunk.to_vec())),
+            }],
+        })
+        .collect())
 }
 
 fn hex(bytes: &[u8]) -> String {
