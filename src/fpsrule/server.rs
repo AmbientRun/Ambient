@@ -89,7 +89,7 @@ pub fn main() {
                         let size = random::<Vec3>() * 0.3;
                         let rot = Quat::from_rotation_y(random::<f32>() * 3.14)
                             * Quat::from_rotation_x(random::<f32>() * 3.14);
-                        let id = Entity::new()
+                        Entity::new()
                             .with_merge(make_transformable())
                             .with_default(cube())
                             .with(rotation(), rot)
@@ -119,6 +119,20 @@ pub fn main() {
                 if old_health <= 0 {
                     return;
                 }
+
+                let hit_back_dir = (msg.ray_origin - hit.position).normalize();
+                let displace = hit_back_dir * -0.1;
+                physics::move_character(hit.entity, displace, 0.001, delta_time());
+
+                // rotation
+                let forward = (hit.position - msg.ray_origin + random::<Vec3>() * 0.01).normalize();
+
+                let forward_flat = vec3(forward.x, forward.y, 0.0).normalize();
+                let rot = Quat::from_rotation_arc(vec3(0.0, 1.0, 0.0), forward_flat);
+
+                entity::set_component(hit.entity, rotation(), rot);
+
+                entity::set_component(hit.entity, components::player_vspeed(), 0.04);
 
                 let new_health = (old_health - 10).max(0);
                 entity::set_component(hit.entity, components::player_health(), new_health);

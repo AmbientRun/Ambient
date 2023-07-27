@@ -102,6 +102,9 @@ pub fn main() {
                 source: player_id,
             }
             .send_local_broadcast(false);
+
+            // let recoil = Quat::from_rotation_x(
+            // entity::mutate_component(player_id, rotation(), |rot| *rot = *rot + recoil);
         }
     });
 
