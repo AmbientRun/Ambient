@@ -8,6 +8,9 @@ on:
     # tags: [v*]
   # TODO: remove, only for testing
 
+env:
+  PACKAGE_NAME: ambient-web-${{ github.sha }}
+
 jobs:
   build:
     permissions:
@@ -31,7 +34,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: run
-          args: --package campfire -- web build --profile release --target standalone
+          args: --package campfire -- web build --profile release --target standalone --pkg-name ${{ PACKAGE_NAME }}
 
       - name: Upload package
         uses: actions/upload-artifact@v3
@@ -52,6 +55,6 @@ jobs:
         uses: google-github-actions/upload-cloud-storage@v1
         with:
           path: "./web/pkg"
-          destination: "ambient-artifacts/ambient-web-clients/ambient_web"
+          destination: "ambient-artifacts/ambient-web-clients"
 
 

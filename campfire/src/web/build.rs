@@ -6,6 +6,7 @@ use std::{
 
 use anyhow::Context;
 use clap::{Args, Subcommand, ValueEnum};
+use convert_case::{Case, Casing};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub(crate) enum Target {
@@ -19,6 +20,8 @@ pub(crate) enum Target {
 pub struct BuildOptions {
     #[arg(long, default_value = "dev")]
     pub profile: String,
+    #[arg(long, default_value = "pkg")]
+    pub pkg_name: String,
     #[arg(long, value_enum, default_value = "bundler")]
     target: Target,
 }
@@ -97,6 +100,8 @@ pub fn ensure_wasm_pack() -> anyhow::Result<()> {
 }
 
 pub fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
+    let pkg_name = opts.pkg_name.to_case(Case::Kebab);
+
     let mut command = Command::new("wasm-pack");
 
     command.args(["build", "client"]).current_dir("web");
@@ -118,9 +123,13 @@ pub fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
         .canonicalize()
         .context("Produced build artifact does not exist")?;
 
-    output_path.push("pkg");
+    output_path.push(&pkg_name);
 
-    command.arg("--out-dir").arg(output_path.clone());
+    command
+        .arg("--out-dir")
+        .arg(output_path.clone())
+        .arg("--out-name")
+        .arg(pkg_name);
 
     eprintln!("Building web client");
 

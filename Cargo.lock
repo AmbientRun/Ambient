@@ -2249,6 +2249,7 @@ dependencies = [
  "cargo_toml",
  "cfg-if",
  "clap 4.3.3",
+ "convert_case 0.6.0",
  "futures",
  "guppy",
  "home",

@@ -28,6 +28,7 @@ num_cpus = "1.15.0"
 home = "0.5"
 tracing = "0.1"
 cfg-if = "1.0"
+convert_case = "0.6"
 
 [target.'cfg(target_os="windows")'.dependencies]
 openssl = { version = "0.10", features = ["vendored"], optional = true }
