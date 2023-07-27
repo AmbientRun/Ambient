@@ -34,7 +34,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: run
-          args: --package campfire -- web build --profile release --target standalone --pkg-name ${{ PACKAGE_NAME }}
+          args: --package campfire -- web build --profile release --target standalone --pkg-name ${{ env.PACKAGE_NAME }}
 
       - name: Upload package
         uses: actions/upload-artifact@v3
@@ -54,7 +54,7 @@ jobs:
       - name: Upload to Google Cloud
         uses: google-github-actions/upload-cloud-storage@v1
         with:
-          path: "./web/pkg"
+          path: "./web/${{ env.PACKAGE_NAME }}"
           destination: "ambient-artifacts/ambient-web-clients"
 
 
