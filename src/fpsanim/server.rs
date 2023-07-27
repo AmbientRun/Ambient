@@ -70,12 +70,7 @@ pub fn main() {
                 } else if bk && rt {
                     apply_animation(player_id, components::run_bk_rt());
                 } else {
-                    // TODO: there is a bug on multiple animations playing at the same time
-                    // I cannot use this commented line
-                    // there is a "hijack" bug on the animation player
-                    // have to create anim for each player
                     apply_anim_blend(player_id, components::idle_fd(), 0.0);
-                    // apply_anim(player_id, components::idle_fd_lt(), 0.0);
                 }
                 continue;
             } else {
@@ -96,95 +91,10 @@ pub fn main() {
                 } else if bk && rt {
                     apply_animation(player_id, components::walk_bk_rt());
                 } else {
-                    // TODO: there is a bug on multiple animations playing at the same time
-                    // I cannot use this commented line
-                    // there is a "hijack" bug on the animation player
-                    // have to create anim for each player
                     apply_anim_blend(player_id, components::idle_fd(), 0.0);
-                    // apply_anim(player_id, components::idle_fd_lt(), 0.0);
                 }
                 continue;
             }
-
-            // let fd = dir.y == -1.0;
-            // let bk = dir.y == 1.0;
-            // let lt = dir.x == -1.0;
-            // let rt = dir.x == 1.0;
-
-            // if fd && !lt && !rt {
-            //     play_clip_on_model(
-            //         model,
-            //         PlayClipFromUrlNode::new(
-            //             asset::url("assets/anim/Walk Forward.fbx/animations/mixamo.com.anim")
-            //                 .unwrap(),
-            //         ),
-            //     );
-            // } else if bk && !lt && !rt {
-            //     play_clip_on_model(
-            //         model,
-            //         PlayClipFromUrlNode::new(
-            //             asset::url("assets/anim/Walk Backward.fbx/animations/mixamo.com.anim")
-            //                 .unwrap(),
-            //         ),
-            //     );
-            // } else if lt && !fd && !bk {
-            //     play_clip_on_model(
-            //         model,
-            //         PlayClipFromUrlNode::new(
-            //             asset::url("assets/anim/Walk Left.fbx/animations/mixamo.com.anim").unwrap(),
-            //         ),
-            //     );
-            // } else if rt && !fd && !bk {
-            //     play_clip_on_model(
-            //         model,
-            //         PlayClipFromUrlNode::new(
-            //             asset::url("assets/anim/Walk Right.fbx/animations/mixamo.com.anim")
-            //                 .unwrap(),
-            //         ),
-            //     );
-            // } else if fd && lt {
-            //     play_clip_on_model(
-            //         model,
-            //         PlayClipFromUrlNode::new(
-            //             asset::url("assets/anim/Walk Forward Left.fbx/animations/mixamo.com.anim")
-            //                 .unwrap(),
-            //         ),
-            //     );
-            // } else if fd && rt {
-            //     play_clip_on_model(
-            //         model,
-            //         PlayClipFromUrlNode::new(
-            //             asset::url("assets/anim/Walk Forward Right.fbx/animations/mixamo.com.anim")
-            //                 .unwrap(),
-            //         ),
-            //     );
-            // } else if bk && lt {
-            //     play_clip_on_model(
-            //         model,
-            //         PlayClipFromUrlNode::new(
-            //             asset::url("assets/anim/Walk Backward Left.fbx/animations/mixamo.com.anim")
-            //                 .unwrap(),
-            //         ),
-            //     );
-            // } else if bk && rt {
-            //     play_clip_on_model(
-            //         model,
-            //         PlayClipFromUrlNode::new(
-            //             asset::url(
-            //                 "assets/anim/Walk Backward Right.fbx/animations/mixamo.com.anim",
-            //             )
-            //             .unwrap(),
-            //         ),
-            //     );
-            // } else {
-            //     play_clip_on_model(
-            //         model,
-            //         PlayClipFromUrlNode::new(
-            //             asset::url("assets/anim/Rifle Aiming Idle.fbx/animations/mixamo.com.anim")
-            //                 .unwrap(),
-            //         ),
-            //     );
-            // }
         }
     });
 
