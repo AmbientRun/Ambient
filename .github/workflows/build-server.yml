@@ -1,0 +1,80 @@
+name: Build and upload server (Docker image and binary)
+
+on:
+  workflow_dispatch:
+  schedule:
+    # every day at 2am UTC
+    - cron: '0 2 * * *'
+  push:
+    tags: [v*]
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  SERVER_BINARY_NAME: ambient-${{ github.sha }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=schedule
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+            type=sha,format=long
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        with:
+          file: slim-release.Dockerfile
+          context: .
+          push: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      # from some reason `docker create` doesn't like uppercase letters in image name
+      - name: Extract ambient server binary
+        run: |
+          raw_image_name="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}"
+          container_id=$(docker create "${raw_image_name,,}")
+          docker cp "$container_id:/app/ambient" "${{ env.SERVER_BINARY_NAME }}"
+          docker rm "$container_id"
+
+      - name: Authenticate with Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v0
+        with:
+          token_format: access_token
+          workload_identity_provider: projects/549180905870/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github@ambient-733e7.iam.gserviceaccount.com
+          access_token_lifetime: 1800s
+
+      - name: Upload ambient server binary
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: ${{ env.SERVER_BINARY_NAME }}
+          destination: ambient-artifacts/ambient-server-builds
