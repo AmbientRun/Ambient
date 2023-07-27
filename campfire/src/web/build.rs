@@ -117,11 +117,7 @@ pub fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
 
     output_path.push(&opts.pkg_name);
 
-    command
-        .arg("--out-dir")
-        .arg(output_path.clone())
-        .arg("--out-name")
-        .arg(&opts.pkg_name);
+    command.arg("--out-dir").arg(output_path.clone());
 
     eprintln!("Building web client");
 
