@@ -152,22 +152,29 @@ pub fn main() {
                 }
                 let (blend, anim_player) = anim_lib.unwrap().clone();
                 if health <= 0 {
-                    let death = PlayClipFromUrlNode::new(
-                        asset::url("assets/anim/Rifle Death.fbx/animations/mixamo.com.anim")
-                            .unwrap(),
-                    );
-                    death.looping(false);
-                    anim_player.play(death);
                     run_async(async move {
-                        let clip = PlayClipFromUrlNode::new(
+                        let death = PlayClipFromUrlNode::new(
                             asset::url("assets/anim/Rifle Death.fbx/animations/mixamo.com.anim")
                                 .unwrap(),
                         );
-                        clip.looping(false);
-                        let dur = clip.clip_duration().await;
-                        std::thread::sleep(std::time::Duration::from_secs_f32(dur));
-                        anim_player.play(blend.nodes.last().unwrap());
+                        death.looping(false);
+                        println!("death clip loading");
+                        death.wait_for_load().await;
+                        println!("death clip loaded");
+                        anim_player.play(death);
+                        println!("death clip should be playing");
                     });
+
+                    // run_async(async move {
+                    //     let clip = PlayClipFromUrlNode::new(
+                    //         asset::url("assets/anim/Rifle Death.fbx/animations/mixamo.com.anim")
+                    //             .unwrap(),
+                    //     );
+                    //     clip.looping(false);
+                    //     let dur = clip.clip_duration().await;
+                    //     std::thread::sleep(std::time::Duration::from_secs_f32(dur));
+                    //     anim_player.play(blend.nodes.last().unwrap());
+                    // });
                 };
             }
         });
@@ -205,6 +212,7 @@ pub fn main() {
     .each_frame(move |res| {
         for (player_id, (_, _model, dir, is_running, health, jump)) in res {
             if health <= 0 {
+                println!("player is dead, no need to update animation");
                 continue;
             }
             if jump {
