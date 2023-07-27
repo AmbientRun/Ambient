@@ -3,13 +3,13 @@ id = "layout"
 name = "Layout"
 description = "Layout components such as flow, margins etc."
 
-[components.align-horizontal]
+[components.align_horizontal]
 type = "align"
 name = "Align horizontal"
 description = "Layout alignment: horizontal."
 attributes = ["debuggable", "networked", "store"]
 
-[components.align-vertical]
+[components.align_vertical]
 type = "align"
 name = "Align vertical"
 description = "Layout alignment: vertical."
@@ -21,13 +21,13 @@ name = "Docking"
 description = "Layout docking."
 attributes = ["debuggable", "networked", "store"]
 
-[components.fit-horizontal]
+[components.fit_horizontal]
 type = "fit"
 name = "Fit horizontal"
 description = "Layout fit: horizontal."
 attributes = ["debuggable", "networked", "store"]
 
-[components.fit-vertical]
+[components.fit_vertical]
 type = "fit"
 name = "Fit vertical"
 description = "Layout fit: vertical."
@@ -45,10 +45,10 @@ name = "Orientation"
 description = "Layout orientation."
 attributes = ["debuggable", "networked", "store"]
 
-[components.is-book-file]
+[components.is_book_file]
 type = "empty"
 name = "Is book file"
-description = "This is a file in a `layout-bookcase`."
+description = "This is a file in a `layout_bookcase`."
 attributes = ["debuggable", "networked", "store"]
 
 [components.margin]
@@ -63,31 +63,31 @@ name = "Padding"
 description = "Layout padding: [top, right, bottom, left]."
 attributes = ["debuggable", "networked", "store"]
 
-[components.mesh-to-local-from-size]
+[components.mesh_to_local_from_size]
 type = "empty"
 name = "Mesh to local from size"
-description = "Update the `mesh-to-local` based on the width and height of this entity."
+description = "Update the `mesh_to_local` based on the width and height of this entity."
 attributes = ["debuggable", "networked", "store"]
 
-[components.min-height]
+[components.min_height]
 type = "f32"
 name = "Minimum height"
 description = "The minimum height of a UI element."
 attributes = ["debuggable", "networked", "store"]
 
-[components.min-width]
+[components.min_width]
 type = "f32"
 name = "Minimum width"
 description = "The minimum width of a UI element."
 attributes = ["debuggable", "networked", "store"]
 
-[components.max-height]
+[components.max_height]
 type = "f32"
 name = "Maximum height"
 description = "The maximum height of a UI element."
 attributes = ["debuggable", "networked", "store"]
 
-[components.max-width]
+[components.max_width]
 type = "f32"
 name = "Maximum width"
 description = "The maximum width of a UI element."
@@ -99,7 +99,7 @@ name = "Screen"
 description = "This entity will be treated as a screen. Used by the Screen ui component."
 attributes = ["debuggable", "networked", "store"]
 
-[components.space-between-items]
+[components.space_between_items]
 type = "f32"
 name = "Space between items"
 description = "Space between items in a layout."
@@ -117,7 +117,7 @@ name = "Height"
 description = "The height of a UI element."
 attributes = ["debuggable", "networked", "store"]
 
-[components.gpu-ui-size]
+[components.gpu_ui_size]
 type = "vec4"
 name = "GPU UI size"
 description = "Upload the width and height of this UI element to the GPU."
@@ -148,4 +148,4 @@ fill = "Fill"
 flow = "Bottom-up flow layout."
 dock = "Top-down dock layout."
 bookcase = "Min-max bookcase layout."
-width-to-children = "Width to children."
+width_to_children = "Width to children."

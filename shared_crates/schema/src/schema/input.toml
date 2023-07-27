@@ -3,19 +3,19 @@ id = "input"
 name = "Input"
 description = "Mouse, keyboard and controller input."
 
-[components.mouse-over]
+[components.mouse_over]
 type = "u32"
 name = "Mouse over"
 description = "The number of mouse cursors that are currently over this entity."
 attributes = ["debuggable", "networked", "store"]
 
-[components.mouse-pickable-max]
+[components.mouse_pickable_max]
 type = "vec3"
 name = "Mouse pickable max"
 description = "This entity can be clicked by the mouse, and this component defines the max AABB bound of the click area."
 attributes = ["debuggable", "networked", "store"]
 
-[components.mouse-pickable-min]
+[components.mouse_pickable_min]
 type = "vec3"
 name = "Mouse pickable min"
 description = "This entity can be clicked by the mouse, and this component defines the min AABB bound of the click area."

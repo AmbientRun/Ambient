@@ -3,7 +3,7 @@ id = "prefab"
 name = "Prefab"
 description = "Prefab-related state, including loading of prefabs."
 
-[components.prefab-from-url]
+[components.prefab_from_url]
 type = "string"
 name = "Prefab from URL"
 description = """

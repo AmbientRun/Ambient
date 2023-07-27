@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-example-messaging"
+id = "ambient_example_messaging"
 name = "Messaging"
 description = "This shows how to Ambient message passing system works."
 version = "0.0.1"
@@ -10,9 +10,9 @@ categories = ["Example"]
 [messages.hello]
 name = "Hello"
 description = "Sent when a client joins the server, then sent back from the server"
-fields = { text = "string", source-reliable = "bool" }
+fields = { text = "string", source_reliable = "bool" }
 # see all the supported types here:
-# https://ambientrun.github.io/Ambient/reference/project.html#components--components
+# https://ambientrun.github.io/Ambient/reference/project.html#components_-components
 
 [messages.local]
 description = "Sent until it's acknowledged"

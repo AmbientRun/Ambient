@@ -3,7 +3,7 @@ id = "player"
 name = "Player"
 description = "Components that are attached to player entities."
 
-[components.local-user-id]
+[components.local_user_id]
 type = "string"
 name = "Local user ID"
 description = "The user ID of the local player."
@@ -17,7 +17,7 @@ This entity is a player.
 Note that this is a logical construct; a player's body may be separate from the player itself."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.user-id]
+[components.user_id]
 type = "string"
 name = "User ID"
 description = """

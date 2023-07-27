@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-example-physics"
+id = "ambient_example_physics"
 name = "Physics"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/physics"
@@ -8,4 +8,4 @@ categories = ["Example"]
 
 [messages.bonk]
 description = "Collision between two objects."
-fields = { emitter = "entity-id", listener = "entity-id" }
+fields = { emitter = "entity_id", listener = "entity_id" }

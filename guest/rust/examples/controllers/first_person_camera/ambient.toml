@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-example-first-person-camera"
+id = "ambient_example_first_person_camera"
 name = "First person camera"
 description = "A simple FPS camera and input example."
 version = "0.0.1"
@@ -8,21 +8,21 @@ type = "Game"
 categories = ["Example"]
 
 [components]
-ball-ref = { type = "entity-id", name = "Ball ref", description = "The ball entity.", attributes = [
+ball_ref = { type = "entity_id", name = "Ball ref", description = "The ball entity.", attributes = [
     "debuggable",
-    "networked"
+    "networked",
 ] }
-player-head-ref = { type = "entity-id", name = "Player head ref", description = "The player's head.", attributes = [
+player_head_ref = { type = "entity_id", name = "Player head ref", description = "The player's head.", attributes = [
     "debuggable",
-    "networked"
+    "networked",
 ] }
-player-movement-direction = { type = "vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
-    "debuggable",
-] }
-player-yaw = { type = "f32", name = "Player yaw", description = "The player's yaw.", attributes = [
+player_movement_direction = { type = "vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
     "debuggable",
 ] }
-player-pitch = { type = "f32", name = "Player pitch", description = "The player's pitch.", attributes = [
+player_yaw = { type = "f32", name = "Player yaw", description = "The player's yaw.", attributes = [
+    "debuggable",
+] }
+player_pitch = { type = "f32", name = "Player pitch", description = "The player's pitch.", attributes = [
     "debuggable",
 ] }
 
@@ -30,4 +30,4 @@ player-pitch = { type = "f32", name = "Player pitch", description = "The player'
 description = "Describes the input state of the player."
 [messages.input.fields]
 direction = "vec2"
-mouse-delta = "vec2"
+mouse_delta = "vec2"

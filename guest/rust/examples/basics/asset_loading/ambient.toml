@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-example-asset-loading"
+id = "ambient_example_asset_loading"
 name = "Asset Loading"
 description = "This shows how to load assets, and how to work with the asset pipeline."
 version = "0.0.1"
@@ -7,7 +7,7 @@ repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/example
 type = "Game"
 categories = ["Example"]
 
-[components.is-the-best]
+[components.is_the_best]
 type = "bool"
 name = "Is The Best"
 description = "Declares whether or not the entity this is attached is the best."

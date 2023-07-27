@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-example-third-person-camera"
+id = "ambient_example_third_person_camera"
 name = "Third person camera"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/third_person_camera"
@@ -7,22 +7,22 @@ type = "Game"
 categories = ["Example"]
 
 [components]
-player-camera-ref = { type = "entity-id", name = "Player camera ref", description = "The player's camera.", attributes = [
+player_camera_ref = { type = "entity_id", name = "Player camera ref", description = "The player's camera.", attributes = [
     "debuggable",
 ] }
-player-movement-direction = { type = "vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
+player_movement_direction = { type = "vec2", name = "Player movement direction", description = "The player's movement direction.", attributes = [
     "debuggable",
 ] }
-player-mouse-delta-x = { type = "f32", name = "Player mouse delta X", description = "The player's mouse delta X.", attributes = [
+player_mouse_delta_x = { type = "f32", name = "Player mouse delta X", description = "The player's mouse delta X.", attributes = [
     "debuggable",
 ] }
 
-camera-follow-distance = { type = "f32", name = "Camera follow distance", description = "The distance the camera follows the player.", attributes = [
+camera_follow_distance = { type = "f32", name = "Camera follow distance", description = "The distance the camera follows the player.", attributes = [
     "debuggable",
     "networked",
 ] }
 
-player-scroll = { type = "f32", name = "Player mouse scroll", description = "The player's mouse scroll.", attributes = [
+player_scroll = { type = "f32", name = "Player mouse scroll", description = "The player's mouse scroll.", attributes = [
     "debuggable",
 ] }
 
@@ -31,5 +31,5 @@ description = "Describes the input state of the player."
 
 [messages.input.fields]
 direction = "vec2"
-mouse-delta-x = "f32"
+mouse_delta_x = "f32"
 scroll = "f32"

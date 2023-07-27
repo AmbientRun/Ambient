@@ -3,14 +3,14 @@ id = "procedurals"
 name = "Procedurals"
 description = "Procedural asset functionality and related."
 
-[components.procedural-mesh]
-type = "procedural-mesh-handle"
+[components.procedural_mesh]
+type = "procedural_mesh_handle"
 name = "Procedural mesh"
 description = "Attaches a procedural mesh to this entity"
 attributes = ["debuggable", "store"]
 
-[components.procedural-material]
-type = "procedural-material-handle"
+[components.procedural_material]
+type = "procedural_material_handle"
 name = "Procedural material"
 description = "Attaches a procedural material to this entity"
 attributes = ["debuggable", "store"]

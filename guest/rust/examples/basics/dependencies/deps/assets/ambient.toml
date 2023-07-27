@@ -1,11 +1,11 @@
 [ember]
-id = "ambient-example-deps-assets"
+id = "ambient_example_deps_assets"
 name = "Dependencies (Assets)"
 version = "0.0.1"
 
 [components]
-spin-speed = { type = "f32", name = "Spin speed" }
+spin_speed = { type = "f32", name = "Spin speed" }
 
-[enums.spin-direction]
+[enums.spin_direction]
 forward = "Forward"
 backward = "Backward"

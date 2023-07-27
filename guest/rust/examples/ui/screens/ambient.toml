@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-example-screens"
+id = "ambient_example_screens"
 name = "Screens"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/screens"

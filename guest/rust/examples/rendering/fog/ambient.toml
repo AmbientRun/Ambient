@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-example-fog"
+id = "ambient_example_fog"
 name = "Fog"
 description = "A simple example of fog and how to configure it."
 version = "0.0.1"

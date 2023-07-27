@@ -194,7 +194,7 @@ impl ComponentDesc {
     /// The fully qualified component path.
     pub fn path(&self) -> String {
         if let Some(path) = self.vtable.path {
-            path.replace('_', "-")
+            path.to_string()
         } else {
             self.attribute::<ComponentPath>()
                 .expect("No path for component")
@@ -336,13 +336,6 @@ impl<'de> Deserialize<'de> for ComponentDesc {
     }
 }
 
-/// Takes an Ambient namespace and a Rust snake-case identifier and returns the corresponding Ambient path.
-///
-/// e.g. (`ambient-core`, `my_component`) -> `ambient-core/my-component`
-pub fn rust_component_to_ambient_path(namespace: &str, snake_case_name: &str) -> String {
-    format!("{}/{}", namespace, snake_case_name.replace('_', "-"))
-}
-
 #[macro_export]
 /// Defines components to use within the ECS.
 ///
@@ -378,7 +371,7 @@ macro_rules! components {
                     static ATTRIBUTES: $crate::OnceCell<$crate::parking_lot::RwLock<$crate::AttributeStore>> = $crate::OnceCell::new();
 
                     // This path will use the wrong convention for the name, but it's only used for debugging
-                    static DEBUG_PATH: &str = concat!("ambient-core/", $ns, "/", stringify!($name));
+                    static DEBUG_PATH: &str = concat!("ambient_core::", $ns, "::", stringify!($name));
                     static VTABLE: &$crate::ComponentVTable<$ty> = &$crate::ComponentVTable::construct(
                         DEBUG_PATH,
                         |desc| $crate::parking_lot::RwLockReadGuard::map(ATTRIBUTES.get_or_init(|| init_attr($crate::Component::new(desc))).read(), |v| v),
@@ -386,7 +379,7 @@ macro_rules! components {
                     );
 
                     *[<comp_ $name>].get_or_init(|| {
-                        reg.register_static(&$crate::rust_component_to_ambient_path(concat!("ambient-core/", $ns), stringify!($name)), unsafe { VTABLE.erase() } )
+                        reg.register_static(&concat!("ambient_core::", $ns, "::", stringify!($name)), unsafe { VTABLE.erase() } )
                     })
                 }
 
@@ -394,7 +387,7 @@ macro_rules! components {
                 pub fn $name() -> $crate::Component<$ty> {
 
                     let desc = *[<comp_ $name>].get().unwrap_or_else(|| {
-                        panic!("Component {} is not initialized", $crate::rust_component_to_ambient_path($ns, stringify!($ns)))
+                        panic!("Component {} is not initialized", concat!("ambient_core::", $ns, "::", stringify!($name)))
                     });
 
                     $crate::Component::new(desc)

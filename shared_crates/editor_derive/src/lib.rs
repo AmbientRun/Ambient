@@ -92,7 +92,7 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
         Ok(FoundCrate::Itself) => unreachable!(),
         Ok(FoundCrate::Name(name)) => {
             let name = Ident::new(&name, Span::call_site());
-            quote! { #name::components::core::layout }
+            quote! { #name::core::layout::components }
         }
         Err(_) => match crate_name("ambient_ui_native") {
             Ok(FoundCrate::Itself) => unreachable!(),

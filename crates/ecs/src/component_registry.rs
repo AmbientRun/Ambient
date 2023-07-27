@@ -135,16 +135,6 @@ impl ComponentRegistry {
         vtable: &'static ComponentVTable<()>,
         attributes: Option<AttributeStore>,
     ) -> ComponentDesc {
-        if let Some(vpath) = vtable.path {
-            // Underscores must be replaced by dashes as the component path is constructed
-            // at compile-time, where kebab-conversion is not easy
-            assert_eq!(
-                path,
-                vpath.replace('_', "-"),
-                "Static name does not match provided name"
-            );
-        }
-
         let index = match self.component_paths.entry(path.to_owned()) {
             Entry::Occupied(slot) => *slot.get(),
             Entry::Vacant(slot) => {

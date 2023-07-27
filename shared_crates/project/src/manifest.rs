@@ -261,25 +261,25 @@ mod tests {
 
         const TOML: &str = r#"
         [ember]
-        id = "my-project"
+        id = "my_project"
         name = "My Project"
         version = "0.0.1"
 
         [components]
-        "core/transform/rotation" = { type = "quat", name = "Rotation", description = "" }
-        "core/transform/scale" = { type = "vec3", name = "Scale", description = "" }
-        "core/transform/spherical-billboard" = { type = "empty", name = "Spherical billboard", description = "" }
-        "core/transform/translation" = { type = "vec3", name = "Translation", description = "" }
+        "core::transform::rotation" = { type = "quat", name = "Rotation", description = "" }
+        "core::transform::scale" = { type = "vec3", name = "Scale", description = "" }
+        "core::transform::spherical_billboard" = { type = "empty", name = "Spherical billboard", description = "" }
+        "core::transform::translation" = { type = "vec3", name = "Translation", description = "" }
 
-        [concepts."ns/transformable"]
+        [concepts."ns::transformable"]
         name = "Transformable"
         description = "Can be translated, rotated and scaled."
 
-        [concepts."ns/transformable".components]
+        [concepts."ns::transformable".components]
         # This is intentionally out of order to ensure that order is preserved
-        "core/transform/translation" = [0, 0, 0]
-        "core/transform/scale" = [1, 1, 1]
-        "core/transform/rotation" = [0, 0, 0, 1]
+        "core::transform::translation" = [0, 0, 0]
+        "core::transform::scale" = [1, 1, 1]
+        "core::transform::rotation" = [0, 0, 0, 1]
         "#;
 
         let manifest = Manifest::parse(TOML).unwrap();
@@ -287,7 +287,7 @@ mod tests {
             manifest,
             Manifest {
                 ember: Ember {
-                    id: i("my-project"),
+                    id: i("my_project"),
                     name: Some("My Project".to_string()),
                     version: Some(Version::new(0, 0, 1, VersionSuffix::Final)),
                     ..Default::default()
@@ -299,7 +299,7 @@ mod tests {
                 },
                 components: IndexMap::from_iter([
                     (
-                        ipb("core/transform/rotation"),
+                        ipb("core::transform::rotation"),
                         Component {
                             name: Some("Rotation".to_string()),
                             description: Some("".to_string()),
@@ -310,7 +310,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        ipb("core/transform/scale"),
+                        ipb("core::transform::scale"),
                         Component {
                             name: Some("Scale".to_string()),
                             description: Some("".to_string()),
@@ -321,7 +321,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        ipb("core/transform/spherical-billboard"),
+                        ipb("core::transform::spherical_billboard"),
                         Component {
                             name: Some("Spherical billboard".to_string()),
                             description: Some("".to_string()),
@@ -332,7 +332,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        ipb("core/transform/translation"),
+                        ipb("core::transform::translation"),
                         Component {
                             name: Some("Translation".to_string()),
                             description: Some("".to_string()),
@@ -344,14 +344,14 @@ mod tests {
                     ),
                 ]),
                 concepts: IndexMap::from_iter([(
-                    ipb("ns/transformable"),
+                    ipb("ns::transformable"),
                     Concept {
                         name: Some("Transformable".to_string()),
                         description: Some("Can be translated, rotated and scaled.".to_string()),
                         extends: vec![],
                         components: IndexMap::from_iter([
                             (
-                                ipb("core/transform/translation"),
+                                ipb("core::transform::translation"),
                                 Value::Array(vec![
                                     Value::Integer(0),
                                     Value::Integer(0),
@@ -359,7 +359,7 @@ mod tests {
                                 ])
                             ),
                             (
-                                ipb("core/transform/scale"),
+                                ipb("core::transform::scale"),
                                 Value::Array(vec![
                                     Value::Integer(1),
                                     Value::Integer(1),
@@ -367,7 +367,7 @@ mod tests {
                                 ])
                             ),
                             (
-                                ipb("core/transform/rotation"),
+                                ipb("core::transform::rotation"),
                                 Value::Array(vec![
                                     Value::Integer(0),
                                     Value::Integer(0),
@@ -395,9 +395,9 @@ mod tests {
                 .keys()
                 .collect::<Vec<_>>(),
             vec![
-                &ipb("core/transform/translation"),
-                &ipb("core/transform/scale"),
-                &ipb("core/transform/rotation"),
+                &ipb("core::transform::translation"),
+                &ipb("core::transform::scale"),
+                &ipb("core::transform::rotation"),
             ]
         );
     }
@@ -410,7 +410,7 @@ mod tests {
         name = "Tic Tac Toe"
         version = "0.0.1"
 
-        [enums.cell-state]
+        [enums.cell_state]
         taken = "The cell is taken"
         free = "The cell is free"
         "#;
@@ -429,7 +429,7 @@ mod tests {
                 concepts: Default::default(),
                 messages: Default::default(),
                 enums: IndexMap::from_iter([(
-                    i("cell-state"),
+                    i("cell_state"),
                     Enum(IndexMap::from_iter([
                         (i("taken"), "The cell is taken".to_string()),
                         (i("free"), "The cell is free".to_string()),
@@ -451,8 +451,8 @@ mod tests {
 
         [components]
         test = { type = "i32", name = "Test", description = "Test" }
-        vec-test = { type = { container_type = "vec", element_type = "i32" }, name = "Test", description = "Test" }
-        option-test = { type = { container_type = "option", element_type = "i32" }, name = "Test", description = "Test" }
+        vec_test = { type = { container_type = "vec", element_type = "i32" }, name = "Test", description = "Test" }
+        option_test = { type = { container_type = "option", element_type = "i32" }, name = "Test", description = "Test" }
 
         "#;
 
@@ -483,7 +483,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        ipb("vec-test"),
+                        ipb("vec_test"),
                         Component {
                             name: Some("Test".to_string()),
                             description: Some("Test".to_string()),
@@ -497,7 +497,7 @@ mod tests {
                         .into()
                     ),
                     (
-                        ipb("option-test"),
+                        ipb("option_test"),
                         Component {
                             name: Some("Test".to_string()),
                             description: Some("Test".to_string()),
@@ -528,8 +528,8 @@ mod tests {
         version = "0.0.1"
 
         [dependencies]
-        "ambient/deps-assets" = { path = "deps/assets" }
-        "ambient/deps-code" = { path = "deps/code" }
+        "ambient::deps_assets" = { path = "deps/assets" }
+        "ambient::deps_code" = { path = "deps/code" }
 
         "#;
 
@@ -549,13 +549,13 @@ mod tests {
                 enums: Default::default(),
                 dependencies: IndexMap::from_iter([
                     (
-                        ipb("ambient/deps-assets"),
+                        ipb("ambient::deps_assets"),
                         Dependency::Path {
                             path: PathBuf::from("deps/assets")
                         }
                     ),
                     (
-                        ipb("ambient/deps-code"),
+                        ipb("ambient::deps_code"),
                         Dependency::Path {
                             path: PathBuf::from("deps/code")
                         }

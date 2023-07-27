@@ -29,9 +29,7 @@ pub enum ComponentType {
     Contained {
         #[serde(rename = "type")]
         #[serde(alias = "container_type")]
-        #[serde(alias = "container-type")]
         type_: ContainerType,
-        #[serde(alias = "element-type")]
         element_type: ItemPathBuf,
     },
 }

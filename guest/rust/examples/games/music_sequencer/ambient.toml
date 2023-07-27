@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-example-music-sequencer"
+id = "ambient_example_music_sequencer"
 name = "Music sequencer"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/music_sequencer"
@@ -8,9 +8,9 @@ categories = ["Example"]
 
 [messages.click]
 description = "Select or deselect a note."
-fields = { track-id = "entity-id", index = "u32" }
+fields = { track_id = "entity_id", index = "u32" }
 
-[messages.set-bpm]
+[messages.set_bpm]
 description = "Set the BPM."
 fields = { bpm = "u32" }
 
@@ -20,25 +20,25 @@ name = "Track"
 description = "A track is a sequence of notes. The value corresponds to the index of the track."
 attributes = ["networked", "debuggable"]
 
-[components.track-audio-url]
+[components.track_audio_url]
 type = "string"
 name = "Track Audio URL"
 description = "The URL of the audio file to play for a given track."
 attributes = ["networked", "debuggable"]
 
-[components.track-note-selection]
-type = { type = "vec", element-type = "u32" }
+[components.track_note_selection]
+type = { type = "vec", element_type = "u32" }
 name = "Track note selection"
 description = "The notes that are currently selected for a given track."
 attributes = ["networked", "debuggable"]
 
-[components.next-player-hue]
+[components.next_player_hue]
 type = "u32"
 name = "Next Player Hue"
 description = "Controls the hue (in degrees) to use for the next player's color."
 attributes = ["debuggable", "resource"]
 
-[components.player-hue]
+[components.player_hue]
 type = "u32"
 name = "Player Hue"
 attributes = ["networked", "debuggable"]

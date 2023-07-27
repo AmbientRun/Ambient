@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-example-minigolf"
+id = "ambient_example_minigolf"
 name = "Minigolf"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/minigolf"
@@ -7,7 +7,7 @@ type = "Game"
 categories = ["Example"]
 
 [components]
-next-player-hue = { type = "f32", name = "Next Player Hue", description = "Controls the hue (in degrees) to use for the next player's color.", attributes = [
+next_player_hue = { type = "f32", name = "Next Player Hue", description = "Controls the hue (in degrees) to use for the next player's color.", attributes = [
     "debuggable",
     "resource",
 ] }
@@ -15,54 +15,54 @@ next-player-hue = { type = "f32", name = "Next Player Hue", description = "Contr
 ball = { type = "empty", name = "Ball", description = "Used to tag a ball" }
 origin = { type = "vec3", name = "Origin", description = "An object's origin in world space" }
 
-player-ball = { type = "entity-id", name = "Player Ball", description = "Used to tag a player's ball" }
-player-restore-point = { type = "vec3", name = "Player Restore Point", description = "A player's restore point" }
-player-stroke-count = { type = "u32", name = "Player Stroke Count", description = "A player's stroke count" }
-player-color = { type = "vec4", name = "Player Color", description = "A player's color" }
-player-shoot-requested = { type = "bool", name = "Player Shoot Requested", description = "Whether or not a player has requested to shoot the ball" }
+player_ball = { type = "entity_id", name = "Player Ball", description = "Used to tag a player's ball" }
+player_restore_point = { type = "vec3", name = "Player Restore Point", description = "A player's restore point" }
+player_stroke_count = { type = "u32", name = "Player Stroke Count", description = "A player's stroke count" }
+player_color = { type = "vec4", name = "Player Color", description = "A player's color" }
+player_shoot_requested = { type = "bool", name = "Player Shoot Requested", description = "Whether or not a player has requested to shoot the ball" }
 
-player-indicator = { type = "entity-id", name = "Player Indicator", description = "EntityId of a player's indicator" }
-player-indicator-arrow = { type = "entity-id", name = "Player Indicator Arrow", description = "EntityId of a player's indicator arrow" }
+player_indicator = { type = "entity_id", name = "Player Indicator", description = "EntityId of a player's indicator" }
+player_indicator_arrow = { type = "entity_id", name = "Player Indicator Arrow", description = "EntityId of a player's indicator arrow" }
 
-player-text = { type = "entity-id", name = "Player Text", description = "EntityId of a player's text" }
-player-text-container = { type = "entity-id", name = "Player Text Container", description = "EntityId of a player's text container" }
+player_text = { type = "entity_id", name = "Player Text", description = "EntityId of a player's text" }
+player_text_container = { type = "entity_id", name = "Player Text Container", description = "EntityId of a player's text container" }
 
-player-camera-pivot = { type = "vec3", name = "Player Camera Pivot", description = "The pivot offset a player's camera pivots around" }
-player-camera-position = { type = "vec3", name = "Player Camera Position", description = "The position at which a player's camera pivots around" }
-player-camera-radius = { type = "f32", name = "Player Camera Radius", description = "The radius at which a player's camera pivots around" }
-player-camera-rotation = { type = "vec2", name = "Player Camera Rotation", description = "The rotation (radians) of a player's camera" }
-player-camera-state = { type = "entity-id", name = "Player Camera State", description = "EntityId of a player's camera state" }
+player_camera_pivot = { type = "vec3", name = "Player Camera Pivot", description = "The pivot offset a player's camera pivots around" }
+player_camera_position = { type = "vec3", name = "Player Camera Position", description = "The position at which a player's camera pivots around" }
+player_camera_radius = { type = "f32", name = "Player Camera Radius", description = "The radius at which a player's camera pivots around" }
+player_camera_rotation = { type = "vec2", name = "Player Camera Rotation", description = "The rotation (radians) of a player's camera" }
+player_camera_state = { type = "entity_id", name = "Player Camera State", description = "EntityId of a player's camera state" }
 
-[concepts.player-state]
+[concepts.player_state]
 name = "Player State"
 description = "A player's state"
 
-[concepts.player-state.components]
-player-restore-point = [-5.0, 0.0, 20.0]
-player-stroke-count = 0
-player-color = [1.0, 1.0, 1.0, 1.0]
+[concepts.player_state.components]
+player_restore_point = [-5.0, 0.0, 20.0]
+player_stroke_count = 0
+player_color = [1.0, 1.0, 1.0, 1.0]
 
-[concepts.player-camera-state]
+[concepts.player_camera_state]
 name = "Player Camera State"
 description = "A player's camera state"
 
-[concepts.player-camera-state.components]
-player-camera-pivot = [0.0, 0.0, 8.0]
-player-camera-position = [0.0, 0.0, 0.0]
-player-camera-radius = 15.0
-player-camera-rotation = [3.141592, 0.610865]
+[concepts.player_camera_state.components]
+player_camera_pivot = [0.0, 0.0, 8.0]
+player_camera_position = [0.0, 0.0, 0.0]
+player_camera_radius = 15.0
+player_camera_rotation = [3.141592, 0.610865]
 
 [messages.input]
 description = "Player input"
 [messages.input.fields]
-camera-rotation = "vec2"
-camera-zoom = "f32"
+camera_rotation = "vec2"
+camera_zoom = "f32"
 shoot = "bool"
 
 [messages.hit]
 description = "Hit."
-fields = { ball = "entity-id" }
+fields = { ball = "entity_id" }
 
 [messages.bonk]
 description = "Collision between two objects."
-fields = { ball = "entity-id" }
+fields = { ball = "entity_id" }

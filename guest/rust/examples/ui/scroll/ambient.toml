@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-example-scroll"
+id = "ambient_example_scroll"
 name = "Scroll"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/scroll"

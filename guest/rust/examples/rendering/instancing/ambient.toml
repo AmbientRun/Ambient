@@ -1,8 +1,8 @@
 [ember]
-id = "ambient-example-instancing"
+id = "ambient_example_instancing"
 name = "Instancing"
 description = "This show how to render many objects with a single draw call."
 version = "0.0.1"
 
 [components]
-instance-index = { type = "uvec3", name = "Instance Index" }
+instance_index = { type = "uvec3", name = "Instance Index" }

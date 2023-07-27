@@ -3,110 +3,110 @@ id = "animation"
 name = "Animation"
 description = "Components relating to animations."
 
-[components.animation-player]
+[components.animation_player]
 type = "empty"
 name = "Animation player"
 description = "This entity is treated as an animation player. Attach an animation node as a child for it to play."
-attributes = ["maybe-resource", "debuggable", "networked"]
+attributes = ["maybe_resource", "debuggable", "networked"]
 
-[components.animation-errors]
-type = { type = "vec", element-type = "string" }
+[components.animation_errors]
+type = { type = "vec", element_type = "string" }
 name = "Animation errors"
 description = "A list of errors that were produced trying to play the animation."
-attributes = ["maybe-resource", "debuggable"]
+attributes = ["maybe_resource", "debuggable"]
 
-[components.apply-animation-player]
-type = "entity-id"
+[components.apply_animation_player]
+type = "entity_id"
 name = "Apply animation player"
 description = "Apply the designated animation player to this entity and its sub-tree."
-attributes = ["maybe-resource", "debuggable", "networked"]
+attributes = ["maybe_resource", "debuggable", "networked"]
 
-[components.play-clip-from-url]
+[components.play_clip_from_url]
 type = "string"
 name = "Play clip from URL"
 description = "Make this entity a 'play animation clip' node. The value is the URL to the clip we'd like to play."
-attributes = ["maybe-resource", "debuggable", "networked"]
+attributes = ["maybe_resource", "debuggable", "networked"]
 
 [components.looping]
 type = "bool"
 name = "Looping"
 description = "When this is true, the animation clip will repeat infinitely."
-attributes = ["maybe-resource", "debuggable", "networked"]
+attributes = ["maybe_resource", "debuggable", "networked"]
 
 [components.speed]
 type = "f32"
 name = "Speed"
 description = "Animation playback speed. Default is 1, higher values speeds up the animation."
-attributes = ["maybe-resource", "debuggable", "networked"]
+attributes = ["maybe_resource", "debuggable", "networked"]
 
-[components.start-time]
+[components.start_time]
 type = "duration"
 name = "Start time"
 description = "Start time of an animation node."
-attributes = ["maybe-resource", "debuggable", "networked"]
+attributes = ["maybe_resource", "debuggable", "networked"]
 
-[components.freeze-at-percentage]
+[components.freeze_at_percentage]
 type = "f32"
 name = "Freeze at percentage"
 description = "Sample the input animation at a certain percentage of the animation track length."
-attributes = ["maybe-resource", "debuggable", "networked"]
+attributes = ["maybe_resource", "debuggable", "networked"]
 
-[components.freeze-at-time]
+[components.freeze_at_time]
 type = "f32"
 name = "Freeze at time"
 description = "Sample the input animation at a certain time (in seconds)."
-attributes = ["maybe-resource", "debuggable", "networked"]
+attributes = ["maybe_resource", "debuggable", "networked"]
 
-[components.clip-duration]
+[components.clip_duration]
 type = "f32"
 name = "Clip duration"
 description = "The clip duration is loaded from the clip, and then applied to the entity."
-attributes = ["maybe-resource", "debuggable"]
+attributes = ["maybe_resource", "debuggable"]
 
 [components.blend]
 type = "f32"
 name = "Blend"
 description = "Blend two animations together. The values is the blend weight. Use `children` to set the animations. Blend 0 means we only sample from the first animation, 1 means only the second one, and values in between blend between them."
-attributes = ["maybe-resource", "debuggable", "networked"]
+attributes = ["maybe_resource", "debuggable", "networked"]
 
-[components.mask-bind-ids]
-type = { type = "vec", element-type = "string" }
+[components.mask_bind_ids]
+type = { type = "vec", element_type = "string" }
 name = "Mask bind ids"
 description = "List of bind ids that will be masked."
-attributes = ["maybe-resource", "debuggable", "networked"]
+attributes = ["maybe_resource", "debuggable", "networked"]
 
-[components.mask-weights]
-type = { type = "vec", element-type = "f32" }
+[components.mask_weights]
+type = { type = "vec", element_type = "f32" }
 name = "Mask weights"
-description = "Weights for each bind id in `mask-bind-ids`."
-attributes = ["maybe-resource", "debuggable", "networked"]
+description = "Weights for each bind id in `mask_bind_ids`."
+attributes = ["maybe_resource", "debuggable", "networked"]
 
-[components.retarget-model-from-url]
+[components.retarget_model_from_url]
 type = "string"
 name = "Retarget Model from URL"
 description = "Retarget the animation using the model at the given URL."
 attributes = ["debuggable", "networked", "store"]
 
-[components.retarget-animation-scaled]
+[components.retarget_animation_scaled]
 type = "bool"
 name = "Retarget animation scaled"
 description = "Retarget animation scaled. True means normalize hip."
 attributes = ["debuggable", "networked", "store"]
 
-[components.apply-base-pose]
+[components.apply_base_pose]
 type = "empty"
 name = "Apply base pose"
 description = "Apply the base pose to this clip."
 attributes = ["debuggable", "networked", "store"]
 
-[components.bind-id]
+[components.bind_id]
 type = "string"
 name = "Bind id"
 description = "Animation bind ID."
 attributes = ["debuggable", "networked", "store"]
 
-[components.bind-ids]
-type = { type = "vec", element-type = "string" }
+[components.bind_ids]
+type = { type = "vec", element_type = "string" }
 name = "Bind ids"
 description = "Animation bind IDs."
 attributes = ["debuggable", "store"]

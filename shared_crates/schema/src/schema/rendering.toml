@@ -3,7 +3,7 @@ id = "rendering"
 name = "Rendering"
 description = "Rendering-related state, including global rendering parameters and per-entity state."
 
-[components.cast-shadows]
+[components.cast_shadows]
 type = "empty"
 name = "Cast shadows"
 description = "If attached, this entity will cast shadows."
@@ -15,32 +15,32 @@ name = "Color"
 description = "This entity will be tinted with the specified color if the color is not black."
 attributes = ["debuggable", "networked", "store"]
 
-[components.double-sided]
+[components.double_sided]
 type = "bool"
 name = "Double-sided"
 description = "If this is set, the entity will be rendered with double-sided rendering."
 attributes = ["debuggable", "networked", "store"]
 
-[components.fog-color]
+[components.fog_color]
 type = "vec3"
 name = "Fog color"
 description = "The color of the fog for this `sun`."
 attributes = ["debuggable", "networked", "store"]
 
-[components.fog-density]
+[components.fog_density]
 type = "f32"
 name = "Fog density"
 description = "The density of the fog for this `sun`."
 attributes = ["debuggable", "networked", "store"]
 
-[components.fog-height-falloff]
+[components.fog_height_falloff]
 type = "f32"
 name = "Fog height fall-off"
 description = "The height at which the fog will fall off (i.e. stop being visible) for this `sun`."
 attributes = ["debuggable", "networked", "store"]
 
-[components.joint-matrices]
-type = { type = "vec", element-type = "mat4" }
+[components.joint_matrices]
+type = { type = "vec", element_type = "mat4" }
 name = "Joint Matrices"
 description = """
 Contains the matrices for each joint of this skinned mesh.
@@ -48,18 +48,18 @@ This should be used in combination with `joints`."""
 attributes = ["debuggable", "networked", "store"]
 
 [components.joints]
-type = { type = "vec", element-type = "entity-id" }
+type = { type = "vec", element_type = "entity_id" }
 name = "Joints"
 description = "Contains the joints that comprise this skinned mesh."
 attributes = ["debuggable", "networked", "store"]
 
-[components.light-ambient]
+[components.light_ambient]
 type = "vec3"
 name = "Light ambient"
 description = "The ambient light color of the `sun`."
 attributes = ["debuggable", "networked", "store"]
 
-[components.light-diffuse]
+[components.light_diffuse]
 type = "vec3"
 name = "Light diffuse"
 description = "The diffuse light color of the `sun`."
@@ -71,12 +71,12 @@ name = "Outline"
 description = "If attached, this entity will be rendered with an outline with the color specified."
 attributes = ["debuggable", "networked", "store"]
 
-[components.outline-recursive]
+[components.outline_recursive]
 type = "vec4"
 name = "Outline (recursive)"
 description = """
 If attached, this entity and all of its children will be rendered with an outline with the color specified.
-You do not need to attach `outline` if you have attached `outline-recursive`."""
+You do not need to attach `outline` if you have attached `outline_recursive`."""
 attributes = ["debuggable", "networked", "store"]
 
 [components.overlay]
@@ -85,7 +85,7 @@ name = "Overlay"
 description = "If attached, this entity will be rendered with an overlay."
 attributes = ["debuggable", "networked", "store"]
 
-[components.pbr-material-from-url]
+[components.pbr_material_from_url]
 type = "string"
 name = "PBR material from URL"
 description = "Load a PBR material from the URL and attach it to this entity."
@@ -105,10 +105,10 @@ Marks this entity as a sun (i.e. its rotation will be used to control the global
 The entity with the highest `sun` value takes precedence."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.transparency-group]
+[components.transparency_group]
 type = "i32"
 name = "Transparency group"
-description = "Controls when this transparent object will be rendered. Transparent objects are sorted by `(transparency-group, z-depth)`."
+description = "Controls when this transparent object will be rendered. Transparent objects are sorted by `(transparency_group, z-depth)`."
 attributes = ["debuggable", "networked", "store"]
 
 [components.water]
@@ -117,7 +117,7 @@ name = "Water"
 description = "Add a realistic water plane to this entity."
 attributes = ["debuggable", "networked", "store"]
 
-[components.decal-from-url]
+[components.decal_from_url]
 type = "string"
 name = "Decal material from URL"
 description = "Load a Decal material from the URL and attach it to this entity."
@@ -129,10 +129,10 @@ name = "Scissors"
 description = "Apply a scissors test to this entity (anything outside the rect will be hidden)."
 attributes = ["debuggable", "networked", "store"]
 
-[components.scissors-recursive]
+[components.scissors_recursive]
 type = "uvec4"
 name = "Scissors (recursive)"
 description = """
 If attached, this entity and all of its children will be rendered with an scissor with the rect specified.
-You do not need to attach `scissors` if you have attached `scissors-recursive`."""
+You do not need to attach `scissors` if you have attached `scissors_recursive`."""
 attributes = ["debuggable", "networked", "store"]

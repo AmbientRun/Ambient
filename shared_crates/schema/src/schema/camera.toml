@@ -3,26 +3,26 @@ id = "camera"
 name = "Camera"
 description = "Camera matrices, types, parameters, and more."
 
-[components.active-camera]
+[components.active_camera]
 type = "f32"
 name = "Active camera"
 description = """
-The camera with the highest `active-camera` value will be used for rendering. Cameras are also filtered by the `user-id`.
-If there's no `user-id`, the camera is considered global and potentially applies to all users (if its `active-camera` value is high enough)."""
+The camera with the highest `active_camera` value will be used for rendering. Cameras are also filtered by the `user_id`.
+If there's no `user_id`, the camera is considered global and potentially applies to all users (if its `active_camera` value is high enough)."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.aspect-ratio]
+[components.aspect_ratio]
 type = "f32"
 name = "Aspect ratio"
 description = """
 The aspect ratio of this camera.
-If `aspect-ratio-from-window` is set, this will be automatically updated to match the window."""
+If `aspect_ratio_from_window` is set, this will be automatically updated to match the window."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.aspect-ratio-from-window]
-type = "entity-id"
+[components.aspect_ratio_from_window]
+type = "entity_id"
 name = "Aspect ratio from window"
-description = "If attached, the `aspect-ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window-physical-size` component."
+description = "If attached, the `aspect_ratio` component will be automatically updated to match the aspect ratio of the window. Should point to an entity with a `window_physical_size` component."
 attributes = ["debuggable", "networked", "store"]
 
 [components.far]
@@ -54,34 +54,34 @@ type = "empty"
 name = "Orthographic projection"
 description = """
 If attached, this camera will use a standard orthographic projection matrix.
-Ensure that the `orthographic-` components are set, including `left`, right`, `top` and `bottom`, as well as `near` and `far`."""
+Ensure that the `orthographic_` components are set, including `left`, right`, `top` and `bottom`, as well as `near` and `far`."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.orthographic-bottom]
+[components.orthographic_bottom]
 type = "f32"
 name = "Orthographic bottom"
 description = "The bottom bound for this `orthographic` camera."
 attributes = ["debuggable", "networked", "store"]
 
-[components.orthographic-from-window]
-type = "entity-id"
+[components.orthographic_from_window]
+type = "entity_id"
 name = "Orthographic from window"
-description = "The bounds of this orthographic camera will be updated to match the window automatically. Should point to an entity with a `window-logical-size` component."
+description = "The bounds of this orthographic camera will be updated to match the window automatically. Should point to an entity with a `window_logical_size` component."
 attributes = ["debuggable", "networked", "store"]
 
-[components.orthographic-left]
+[components.orthographic_left]
 type = "f32"
 name = "Orthographic left"
 description = "The left bound for this `orthographic` camera."
 attributes = ["debuggable", "networked", "store"]
 
-[components.orthographic-right]
+[components.orthographic_right]
 type = "f32"
 name = "Orthographic right"
 description = "The right bound for this `orthographic` camera."
 attributes = ["debuggable", "networked", "store"]
 
-[components.orthographic-top]
+[components.orthographic_top]
 type = "f32"
 name = "Orthographic top"
 description = "The top bound for this `orthographic` camera."
@@ -95,7 +95,7 @@ If attached, this camera will use a standard perspective projection matrix.
 Ensure that `near` and `far` are set."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.perspective-infinite-reverse]
+[components.perspective_infinite_reverse]
 type = "empty"
 name = "Perspective-infinite-reverse projection"
 description = """
@@ -108,16 +108,16 @@ type = "mat4"
 name = "Projection"
 description = """
 The projection matrix of this camera.
-This can be driven by other components, including `perspective` and `perspective-infinite-reverse`."""
+This can be driven by other components, including `perspective` and `perspective_infinite_reverse`."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.projection-view]
+[components.projection_view]
 type = "mat4"
 name = "Projection-view"
 description = "The composition of the projection and view (inverse-local-to-world) matrices."
 attributes = ["debuggable", "networked", "store"]
 
-[components.shadows-far]
+[components.shadows_far]
 type = "f32"
 name = "Shadows far plane"
 description = "The far plane for the shadow camera, measured in meters."
@@ -128,52 +128,52 @@ attributes = ["debuggable", "networked", "store"]
 [concepts.camera]
 name = "Camera"
 description = "Base components for a camera. You will need other components to make a fully-functioning camera."
-extends = ["transform/transformable"]
+extends = ["transform::transformable"]
 
 [concepts.camera.components]
 near = 0.1
 projection = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-projection-view = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-active-camera = 0.0
-"transform/local-to-world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-"transform/inv-local-to-world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+projection_view = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+active_camera = 0.0
+"transform::local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+"transform::inv_local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 
-[concepts.perspective-common-camera]
+[concepts.perspective_common_camera]
 name = "Perspective Common Camera"
-description = "Base components for a perspective camera. Consider `perspective-camera` or `perspective-infinite-reverse-camera`."
+description = "Base components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`."
 extends = ["camera"]
 
-[concepts.perspective-common-camera.components]
+[concepts.perspective_common_camera.components]
 fovy = 1.0
-aspect-ratio = 1.0
+aspect_ratio = 1.0
 
-[concepts.perspective-camera]
+[concepts.perspective_camera]
 name = "Perspective Camera"
 description = "A perspective camera."
-extends = ["perspective-common-camera"]
+extends = ["perspective_common_camera"]
 
-[concepts.perspective-camera.components]
+[concepts.perspective_camera.components]
 perspective = {}
 far = 1000.0
 
-[concepts.perspective-infinite-reverse-camera]
+[concepts.perspective_infinite_reverse_camera]
 name = "Perspective-Infinite-Reverse Camera"
 description = "A perspective-infinite-reverse camera. This is recommended for most use-cases."
-extends = ["perspective-common-camera"]
+extends = ["perspective_common_camera"]
 
-[concepts.perspective-infinite-reverse-camera.components]
-perspective-infinite-reverse = {}
+[concepts.perspective_infinite_reverse_camera.components]
+perspective_infinite_reverse = {}
 
-[concepts.orthographic-camera]
+[concepts.orthographic_camera]
 name = "Orthographic Camera"
 description = "An orthographic camera."
 extends = ["camera"]
 
-[concepts.orthographic-camera.components]
+[concepts.orthographic_camera.components]
 orthographic = {}
-orthographic-left = -1.0
-orthographic-right = 1.0
-orthographic-top = 1.0
-orthographic-bottom = -1.0
+orthographic_left = -1.0
+orthographic_right = 1.0
+orthographic_top = 1.0
+orthographic_bottom = -1.0
 near = -1.0
 far = 1.0

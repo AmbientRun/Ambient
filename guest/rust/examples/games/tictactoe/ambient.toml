@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-example-tictactoe"
+id = "ambient_example_tictactoe"
 name = "Tic Tac Toe"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/games/tictactoe"
@@ -7,7 +7,7 @@ type = "Game"
 categories = ["Example"]
 
 [components]
-cells = { type = { type = "vec", element_type = "entity-id" }, name = "Cells", description = "The cells in the game", attributes = [
+cells = { type = { type = "vec", element_type = "entity_id" }, name = "Cells", description = "The cells in the game", attributes = [
     "debuggable",
     "networked",
 ] }
@@ -15,7 +15,7 @@ cell = { type = "i32", name = "Cell", description = "The ID of the cell this pla
     "debuggable",
     "networked",
 ] }
-owned-by = { type = "entity-id", name = "Owned By", description = "The ID of the player that owns this cell", attributes = [
+owned_by = { type = "entity_id", name = "Owned By", description = "The ID of the player that owns this cell", attributes = [
     "debuggable",
     "networked",
 ] }

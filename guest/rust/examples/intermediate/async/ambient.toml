@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-example-async"
+id = "ambient_example_async"
 name = "Async"
 description = "An example of using async/await in Ambient."
 version = "0.0.1"

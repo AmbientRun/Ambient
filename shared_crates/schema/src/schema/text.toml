@@ -3,20 +3,20 @@ id = "text"
 name = "Text"
 description = "Text rendering."
 
-[components.font-family]
+[components.font_family]
 type = "string"
 name = "Font family"
 description = "Font family to be used. Can either be 'Default', 'FontAwesome', 'FontAwesomeSolid', 'Code' or a url to a font."
 attributes = ["debuggable", "networked", "store"]
 
-[components.font-size]
+[components.font_size]
 type = "f32"
 name = "Font size"
 description = "Size of the font."
 attributes = ["debuggable", "networked", "store"]
 
-[components.font-style]
-type = "font-style"
+[components.font_style]
+type = "font_style"
 name = "Font style"
 description = "Style of the font."
 attributes = ["debuggable", "networked", "store"]
@@ -27,12 +27,12 @@ name = "Text"
 description = "Create a text mesh on this entity."
 attributes = ["debuggable", "networked", "store"]
 
-[enums.font-style]
+[enums.font_style]
 bold = "Use bold for this text."
-bold-italic = "Use bold italic for this text."
+bold_italic = "Use bold italic for this text."
 medium = "Use medium for this text."
-medium-italic = "Use medium italic for this text."
+medium_italic = "Use medium italic for this text."
 regular = "Use regular for this text."
 italic = "Use italic for this text."
 light = "Use light for this text."
-light-italic = "Use light italic for this text."
+light_italic = "Use light italic for this text."

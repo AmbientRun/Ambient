@@ -1,14 +1,14 @@
 [ember]
-id = "ambient-example-deps-code"
+id = "ambient_example_deps_code"
 name = "Dependencies (Code)"
 version = "0.0.1"
 
 [dependencies]
-"ambient/deps-assets" = { path = "../assets" }
+ambient_example_deps_assets = { path = "../assets" }
 
 [messages.spawn]
 name = "Spawn"
 description = "Spawn the asset."
 [messages.spawn.fields]
-spin-speed = "f32"
-spin-direction = "ambient/ambient-example-deps-assets/spin-direction"
+spin_speed = "f32"
+spin_direction = "ambient_example_deps_assets::spin_direction"

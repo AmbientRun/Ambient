@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-example-audio-ctrl"
+id = "ambient_example_audio_ctrl"
 name = "Audio control"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/audio_ctrl"

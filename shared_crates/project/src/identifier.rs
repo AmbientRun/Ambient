@@ -16,7 +16,7 @@ impl<'a> Display for ItemPath<'a> {
         let mut first = true;
         for id in self.iter() {
             if !first {
-                write!(f, "/")?;
+                write!(f, "::")?;
             }
 
             write!(f, "{}", id)?;
@@ -148,7 +148,7 @@ impl ItemPathBuf {
     }
 
     fn new_impl(path: String) -> Result<Self, &'static str> {
-        let segments: Vec<_> = path.split('/').filter(|s| !s.is_empty()).collect();
+        let segments: Vec<_> = path.split("::").filter(|s| !s.is_empty()).collect();
         if segments.is_empty() {
             return Err("an identifier path must not be empty");
         }
@@ -195,13 +195,13 @@ impl Identifier {
 
         if !id
             .chars()
-            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
         {
-            return Err("identifier must be kebab-case ASCII");
+            return Err("identifier must be snake-case ASCII");
         }
 
         if !id
-            .split('-')
+            .split('_')
             .all(|c| c.chars().next().map(|c| c.is_ascii_lowercase()) == Some(true))
         {
             return Err(
@@ -219,7 +219,7 @@ impl Identifier {
                 Boundary::DigitUpper,
                 Boundary::DigitLower,
                 Boundary::Acronym,
-                Boundary::Hyphen,
+                Boundary::Underscore,
             ])
             .to_case(case)
     }
@@ -277,7 +277,7 @@ mod tests {
     use crate::{Identifier, ItemPathBuf};
 
     #[test]
-    fn can_validate_kebab_case_identifiers() {
+    fn can_validate_snake_case_identifiers() {
         use Identifier as I;
 
         assert_eq!(I::new(""), Err("identifier must not be empty"));
@@ -294,33 +294,33 @@ mod tests {
             Err("identifier must start with a lowercase ASCII character")
         );
         assert_eq!(
-            I::new("mY_COOL_COMPONENT"),
-            Err("identifier must be kebab-case ASCII")
+            I::new("mY-COOL-COMPONENT"),
+            Err("identifier must be snake-case ASCII")
         );
         assert_eq!(
             I::new("cool_component!"),
-            Err("identifier must be kebab-case ASCII")
+            Err("identifier must be snake-case ASCII")
         );
         assert_eq!(
             I::new("cool_component"),
-            Err("identifier must be kebab-case ASCII")
+            Ok(I("cool_component".to_string()))
         );
         assert_eq!(
-            I::new("cool_component_00"),
-            Err("identifier must be kebab-case ASCII")
+            I::new("cool_component_c00"),
+            Ok(I("cool_component_c00".to_string()))
         );
         assert_eq!(
-            I::new("cool-5-component"),
+            I::new("cool_5_component"),
             Err("each segment of an identifier must start with a lowercase ASCII character")
         );
 
         assert_eq!(
             I::new("cool-component"),
-            Ok(I("cool-component".to_string()))
+            Err("identifier must be snake-case ASCII")
         );
         assert_eq!(
             I::new("cool-component-c00"),
-            Ok(I("cool-component-c00".to_string()))
+            Err("identifier must be snake-case ASCII")
         );
     }
 
@@ -350,7 +350,7 @@ mod tests {
         );
 
         assert_eq!(
-            IP::new("my/CoolComponent00"),
+            IP::new("my::CoolComponent00"),
             Err("identifier must start with a lowercase ASCII character")
         );
 
@@ -360,15 +360,15 @@ mod tests {
         );
 
         assert_eq!(
-            IP::new("my/CoolComponent00/lol"),
+            IP::new("my::CoolComponent00::lol"),
             Err("identifier must start with a lowercase ASCII character")
         );
 
         assert_eq!(
-            IP::new("my/cool-component-c00"),
+            IP::new("my::cool_component_c00"),
             Ok(IP {
                 scope: vec![I("my".to_string())],
-                item: I("cool-component-c00".to_string()),
+                item: I("cool_component_c00".to_string()),
             })
         );
     }

@@ -28,7 +28,7 @@ impl ItemMap {
 
             let vec_id = self.add_raw(Type::new(
                 ItemData {
-                    id: Identifier::new(format!("vec-{}", data.id)).unwrap(),
+                    id: Identifier::new(format!("vec_{}", data.id)).unwrap(),
                     ..data
                 },
                 TypeInner::Vec(new_id),
@@ -37,7 +37,7 @@ impl ItemMap {
 
             let option_id = self.add_raw(Type::new(
                 ItemData {
-                    id: Identifier::new(format!("option-{}", data.id)).unwrap(),
+                    id: Identifier::new(format!("option_{}", data.id)).unwrap(),
                     ..data
                 },
                 TypeInner::Option(new_id),
@@ -233,6 +233,7 @@ impl ItemMap {
         ))
     }
 
+    // TODO: unify with [fully_qualified_display_path_rust_style]
     pub fn fully_qualified_display_path_ambient_style<T: Item>(
         &self,
         item: &T,
@@ -241,8 +242,8 @@ impl ItemMap {
     ) -> anyhow::Result<String> {
         self.fully_qualified_display_path(
             item,
-            (Case::Kebab, Case::Kebab, Case::Kebab),
-            "/",
+            (Case::Snake, Case::Snake, Case::UpperCamel),
+            "::",
             (display_affixes, display_affixes),
             relative_to,
             None,

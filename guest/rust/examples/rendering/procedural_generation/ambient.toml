@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-example-procedural-generation"
+id = "ambient_example_procedural_generation"
 name = "Procedural generation"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/procedural_generation"
@@ -7,4 +7,4 @@ type = "Game"
 categories = ["Example"]
 
 [components]
-rotating-sun = { type = "bool", name = "Rotating sun", description = "Whether or not rotate the sun automatically" }
+rotating_sun = { type = "bool", name = "Rotating sun", description = "Whether or not rotate the sun automatically" }

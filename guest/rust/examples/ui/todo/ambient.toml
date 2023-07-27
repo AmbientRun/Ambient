@@ -1,26 +1,26 @@
 [ember]
-id = "ambient-example-todo"
+id = "ambient_example_todo"
 name = "todo"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/ui/todo"
 type = "Game"
 categories = ["Example"]
 
-[messages.new-item]
+[messages.new_item]
 description = "Add a new todo item"
 fields = { description = "string" }
 
-[messages.delete-item]
+[messages.delete_item]
 description = "Remove todo item"
-fields = { id = "entity-id" }
+fields = { id = "entity_id" }
 
-[components.todo-item]
+[components.todo_item]
 type = "string"
 name = "Todo item"
 description = "Item in the todo list."
 attributes = ["networked", "debuggable"]
 
-[components.todo-time]
+[components.todo_time]
 type = "duration"
 name = "Todo time"
 description = "The time the todo was created."

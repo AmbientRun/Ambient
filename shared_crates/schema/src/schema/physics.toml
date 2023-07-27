@@ -3,7 +3,7 @@ id = "physics"
 name = "Physics"
 description = "Physics functionality and state."
 
-[components.angular-velocity]
+[components.angular_velocity]
 type = "vec3"
 name = "Angular velocity"
 description = """
@@ -11,7 +11,7 @@ Angular velocity (radians/second) of this entity in the physics scene.
 Updating this component will update the entity's angular velocity in the physics scene."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.cube-collider]
+[components.cube_collider]
 type = "vec3"
 name = "Cube collider"
 description = """
@@ -19,23 +19,23 @@ If attached, this entity will have a cube physics collider.
 `x, y, z` is the size of the cube."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.character-controller-height]
+[components.character_controller_height]
 type = "f32"
 name = "Character controller height"
 description = """
 The height of the physics character controller attached to this entity.
-If an entity has both this and a `character-controller-radius`, it will be given a physical character collider."""
+If an entity has both this and a `character_controller_radius`, it will be given a physical character collider."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.character-controller-radius]
+[components.character_controller_radius]
 type = "f32"
 name = "Character controller radius"
 description = """
 The radius of the physics character controller attached to this entity.
-If an entity has both this and a `character-controller-height`, it will be given a physical character collider."""
+If an entity has both this and a `character_controller_height`, it will be given a physical character collider."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.collider-from-url]
+[components.collider_from_url]
 type = "string"
 name = "Collider from URL"
 description = """
@@ -43,20 +43,20 @@ This entity will load its physics collider from the URL.
 The value is the URL to load from."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.collider-loaded]
+[components.collider_loaded]
 type = "empty"
 name = "Collider loaded"
 description = """
-This component is automatically attached to an entity once the collider has been loaded (through e.g. `collider-from-url`)."""
+This component is automatically attached to an entity once the collider has been loaded (through e.g. `collider_from_url`)."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.collider-loads]
-type = { type = "vec", element-type = "entity-id" }
+[components.collider_loads]
+type = { type = "vec", element_type = "entity_id" }
 name = "Collider loads"
 description = "Contains all colliders that were loaded in this physics tick."
 attributes = ["debuggable", "networked", "resource", "store"]
 
-[components.contact-offset]
+[components.contact_offset]
 type = "f32"
 name = "Contact offset"
 description = """
@@ -85,7 +85,7 @@ name = "Kinematic"
 description = "If attached, and this entity is dynamic, this entity will also be kinematic (i.e. unable to be affected by other entities motion). Otherwise, it will receive forces normally."
 attributes = ["debuggable", "networked", "store"]
 
-[components.linear-velocity]
+[components.linear_velocity]
 type = "vec3"
 name = "Linear velocity"
 description = """
@@ -93,7 +93,7 @@ Linear velocity (meters/second) of this entity in the physics scene.
 Updating this component will update the entity's linear velocity in the physics scene."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.make-physics-static]
+[components.make_physics_static]
 type = "bool"
 name = "Make physics static"
 description = "All physics objects will be made static when loaded."
@@ -106,7 +106,7 @@ description = "The mass of this entity, measured in kilograms."
 default = 1.0
 attributes = ["debuggable", "networked", "store"]
 
-[components.physics-controlled]
+[components.physics_controlled]
 type = "empty"
 name = "Physics controlled"
 description = """
@@ -114,13 +114,13 @@ If attached, this entity will be controlled by physics.
 Note that this requires the entity to have a collider."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.plane-collider]
+[components.plane_collider]
 type = "empty"
 name = "Plane collider"
 description = "If attached, this entity will have a plane physics collider. A plane is an infinite, flat surface. If you need a bounded flat surface, consider using a cube collider instead."
 attributes = ["debuggable", "networked", "store"]
 
-[components.rest-offset]
+[components.rest_offset]
 type = "f32"
 name = "Rest offset"
 description = """
@@ -128,7 +128,7 @@ Rest offset (in meters) of this entity in the physics scene.
 Updating this component will update the entity's rest offset for each attached shape in the physics scene."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.sphere-collider]
+[components.sphere_collider]
 type = "f32"
 name = "Sphere collider"
 description = """
@@ -136,25 +136,25 @@ If attached, this entity will have a sphere physics collider.
 The value corresponds to the radius of the sphere."""
 attributes = ["debuggable", "networked", "store"]
 
-[components.unit-mass]
+[components.unit_mass]
 type = "f32"
 name = "Unit mass"
 description = "The mass of a character/unit."
 attributes = ["debuggable", "networked", "store"]
 
-[components.unit-velocity]
+[components.unit_velocity]
 type = "vec3"
 name = "Unit velocity"
 description = "The velocity of a character/unit."
 attributes = ["debuggable", "networked", "store"]
 
-[components.unit-yaw]
+[components.unit_yaw]
 type = "f32"
 name = "Unit yaw"
 description = "The yaw of a character/unit."
 attributes = ["debuggable", "networked", "store"]
 
-[components.visualize-collider]
+[components.visualize_collider]
 type = "empty"
 name = "Visualize collider"
 description = """If attached, the collider will be rendered.

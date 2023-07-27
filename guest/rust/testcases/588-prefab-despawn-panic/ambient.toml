@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-testcase-588"
+id = "ambient_testcase-588"
 name = "Test Case 588"
 description = "Reproduces https://github.com/AmbientRun/Ambient/issues/588"
 version = "0.0.1"

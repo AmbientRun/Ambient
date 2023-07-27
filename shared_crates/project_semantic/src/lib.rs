@@ -141,7 +141,7 @@ impl Semantic {
         )
     }
 
-    // TODO(philpax): This merges owners together, which may lead to some degree of semantic conflation,
+    // TODO(philpax): This merges scopes together, which may lead to some degree of semantic conflation,
     // especially with dependencies: a parent may be able to access a child's dependencies.
     //
     // This is a simplifying assumption that will enable the cross-cutting required for Ambient's ecosystem,
@@ -170,7 +170,7 @@ impl Semantic {
 
         let root_id = self.root_scope_id;
 
-        // Check that this scope hasn't already been created for this owner
+        // Check that this scope hasn't already been created for this scope
         let scope_id = manifest.ember.id.clone();
         if let Some(existing_scope_id) = self.items.get(root_id)?.scopes.get(&scope_id) {
             let existing_path = self.items.get(*existing_scope_id)?.path.clone();
@@ -184,7 +184,7 @@ impl Semantic {
             );
         }
 
-        // Create a new scope and add it to the owner
+        // Create a new scope and add it to the scope
         let manifest_path = file_provider.full_path(filename);
         let item_id = self.add_scope_from_manifest(
             Some(root_id),
@@ -365,10 +365,10 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
                 Boundary::DigitLower,
                 Boundary::Acronym,
             ])
-            .to_case(Case::Kebab);
+            .to_case(Case::Snake);
         let id = Identifier::new(id)
             .map_err(anyhow::Error::msg)
-            .context("standard value was not valid kebab-case")?;
+            .context("standard value was not valid snake-case")?;
 
         let ty = Type::new(
             ItemData {
@@ -386,12 +386,12 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
         "debuggable",
         "networked",
         "resource",
-        "maybe-resource",
+        "maybe_resource",
         "store",
     ] {
         let id = Identifier::new(name)
             .map_err(anyhow::Error::msg)
-            .context("standard value was not valid kebab-case")?;
+            .context("standard value was not valid snake-case")?;
         let item_id = items.add(Attribute {
             data: ItemData {
                 parent_id: Some(root_scope),

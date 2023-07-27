@@ -1,5 +1,5 @@
 [ember]
-id = "ambient-example-screen-ray"
+id = "ambient_example_screen_ray"
 name = "Screen Ray"
 version = "0.0.1"
 repository = "https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/screen_ray"
@@ -7,8 +7,8 @@ type = "Game"
 categories = ["Example"]
 
 [messages.input.fields]
-ray-origin = "vec3"
-ray-dir = "vec3"
+ray_origin = "vec3"
+ray_dir = "vec3"
 
-[messages.world-position.fields]
+[messages.world_position.fields]
 position = "vec3"
