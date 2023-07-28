@@ -910,6 +910,30 @@ pub mod ambient_core {
                 #[doc = "End"]
                 End,
             }
+            impl crate::ecs::SupportedValue for Align {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
+            }
+            impl crate::ecs::SupportedValue for Vec<Align> {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
+            }
+            impl crate::ecs::SupportedValue for Option<Align> {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
+            }
             #[derive(
                 Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
             )]
@@ -922,6 +946,30 @@ pub mod ambient_core {
                 #[doc = "Children"]
                 Children,
             }
+            impl crate::ecs::SupportedValue for Fit {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
+            }
+            impl crate::ecs::SupportedValue for Vec<Fit> {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
+            }
+            impl crate::ecs::SupportedValue for Option<Fit> {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
+            }
             #[derive(
                 Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
             )]
@@ -931,6 +979,30 @@ pub mod ambient_core {
                 Horizontal,
                 #[doc = "Vertical"]
                 Vertical,
+            }
+            impl crate::ecs::SupportedValue for Orientation {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
+            }
+            impl crate::ecs::SupportedValue for Vec<Orientation> {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
+            }
+            impl crate::ecs::SupportedValue for Option<Orientation> {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
             }
             #[derive(
                 Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
@@ -948,6 +1020,30 @@ pub mod ambient_core {
                 #[doc = "Fill"]
                 Fill,
             }
+            impl crate::ecs::SupportedValue for Docking {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
+            }
+            impl crate::ecs::SupportedValue for Vec<Docking> {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
+            }
+            impl crate::ecs::SupportedValue for Option<Docking> {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
+            }
             #[derive(
                 Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
             )]
@@ -961,6 +1057,30 @@ pub mod ambient_core {
                 Bookcase,
                 #[doc = "Width to children."]
                 WidthToChildren,
+            }
+            impl crate::ecs::SupportedValue for Layout {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
+            }
+            impl crate::ecs::SupportedValue for Vec<Layout> {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
+            }
+            impl crate::ecs::SupportedValue for Option<Layout> {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
             }
         }
     }
@@ -1807,6 +1927,30 @@ pub mod ambient_core {
                 Light,
                 #[doc = "Use light italic for this text."]
                 LightItalic,
+            }
+            impl crate::ecs::SupportedValue for FontStyle {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
+            }
+            impl crate::ecs::SupportedValue for Vec<FontStyle> {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
+            }
+            impl crate::ecs::SupportedValue for Option<FontStyle> {
+                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
+                    unimplemented!()
+                }
+                fn into_result(self) -> crate::ecs::WitComponentValue {
+                    unimplemented!()
+                }
             }
         }
     }

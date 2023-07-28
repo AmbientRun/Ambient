@@ -5,3 +5,6 @@ pub use crate::internal::component::{
     },
     Component, ComponentsTuple, Entity, SupportedValue, UntypedComponent, __internal_get_component,
 };
+
+#[doc(hidden)]
+pub use crate::internal::wit::component::Value as WitComponentValue;

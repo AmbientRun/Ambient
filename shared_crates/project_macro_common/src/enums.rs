@@ -33,12 +33,51 @@ pub fn make_definitions(
                 }
             });
 
-            Ok(quote! {
+            let main = quote! {
                 #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
                 #[doc = #doc_comment]
                 pub enum #enum_name {
                     #(#members,)*
                 }
+            };
+
+            let supported_value = if let Some(guest_api_path) = context.guest_api_path() {
+                quote! {
+                    impl #guest_api_path::ecs::SupportedValue for #enum_name {
+                        fn from_result(result: #guest_api_path::ecs::WitComponentValue) -> Option<Self> {
+                            unimplemented!()
+                        }
+
+                        fn into_result(self) -> #guest_api_path::ecs::WitComponentValue {
+                            unimplemented!()
+                        }
+                    }
+                    impl #guest_api_path::ecs::SupportedValue for Vec<#enum_name> {
+                        fn from_result(result: #guest_api_path::ecs::WitComponentValue) -> Option<Self> {
+                            unimplemented!()
+                        }
+
+                        fn into_result(self) -> #guest_api_path::ecs::WitComponentValue {
+                            unimplemented!()
+                        }
+                    }
+                    impl #guest_api_path::ecs::SupportedValue for Option<#enum_name> {
+                        fn from_result(result: #guest_api_path::ecs::WitComponentValue) -> Option<Self> {
+                            unimplemented!()
+                        }
+
+                        fn into_result(self) -> #guest_api_path::ecs::WitComponentValue {
+                            unimplemented!()
+                        }
+                    }
+                }
+            } else {
+                quote! {}
+            };
+
+            Ok(quote! {
+                #main
+                #supported_value
             })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
