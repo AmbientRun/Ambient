@@ -112,3 +112,13 @@ impl ComponentsTuple for () {
         Some(())
     }
 }
+
+/// Implemented for component values that can be used as an enum
+pub trait EnumComponent {
+    /// Convert this value to a u32
+    fn to_u32(&self) -> u32;
+    /// Convert a u32 to this value
+    fn from_u32(v: u32) -> Option<Self>
+    where
+        Self: Sized;
+}

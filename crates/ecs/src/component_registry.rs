@@ -92,7 +92,8 @@ define_external_component_attribute![
     (networked, Networked),
     (resource, Resource),
     (store, Store),
-    (maybe_resource, MaybeResource)
+    (maybe_resource, MaybeResource),
+    (enum_, Enum)
 ];
 
 #[derive(Default)]

@@ -30,6 +30,14 @@ impl<T: Send + Sync + 'static> ComponentValueBase for T {}
 pub trait ComponentValue: ComponentValueBase + Clone {}
 impl<T: ComponentValueBase + Clone> ComponentValue for T {}
 
+/// Implemented for component values that can be used as an enum
+pub trait EnumComponent: Clone + Send + Sync {
+    fn to_u32(&self) -> u32;
+    fn from_u32(v: u32) -> Option<Self>
+    where
+        Self: Sized;
+}
+
 /// Component key
 pub struct Component<T: 'static> {
     desc: ComponentDesc,

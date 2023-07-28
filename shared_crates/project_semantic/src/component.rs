@@ -79,6 +79,13 @@ impl Resolve for Component {
                 t => t.clone(),
             });
         }
+
+        // If this is an enum, emit the `Enum` attribute
+        if items.get(type_id)?.inner.as_enum().is_some() {
+            attributes.push(ResolvableItemId::Resolved(
+                context.get_attribute_id(items, ItemPathBuf::new("Enum").unwrap().as_path())?,
+            ));
+        }
         self.attributes = attributes;
 
         if let Some(default) = &mut self.default {

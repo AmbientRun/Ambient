@@ -776,43 +776,43 @@ pub mod ambient_core {
             };
             static ALIGN_HORIZONTAL: Lazy<Component<crate::ambient_core::layout::types::Align>> =
                 Lazy::new(|| __internal_get_component("ambient_core::layout::align_horizontal"));
-            #[doc = "**Align horizontal**: Layout alignment: horizontal.\n\n*Attributes*: Debuggable, Networked, Store"]
+            #[doc = "**Align horizontal**: Layout alignment: horizontal.\n\n*Attributes*: Debuggable, Networked, Store, Enum"]
             pub fn align_horizontal() -> Component<crate::ambient_core::layout::types::Align> {
                 *ALIGN_HORIZONTAL
             }
             static ALIGN_VERTICAL: Lazy<Component<crate::ambient_core::layout::types::Align>> =
                 Lazy::new(|| __internal_get_component("ambient_core::layout::align_vertical"));
-            #[doc = "**Align vertical**: Layout alignment: vertical.\n\n*Attributes*: Debuggable, Networked, Store"]
+            #[doc = "**Align vertical**: Layout alignment: vertical.\n\n*Attributes*: Debuggable, Networked, Store, Enum"]
             pub fn align_vertical() -> Component<crate::ambient_core::layout::types::Align> {
                 *ALIGN_VERTICAL
             }
             static DOCKING: Lazy<Component<crate::ambient_core::layout::types::Docking>> =
                 Lazy::new(|| __internal_get_component("ambient_core::layout::docking"));
-            #[doc = "**Docking**: Layout docking.\n\n*Attributes*: Debuggable, Networked, Store"]
+            #[doc = "**Docking**: Layout docking.\n\n*Attributes*: Debuggable, Networked, Store, Enum"]
             pub fn docking() -> Component<crate::ambient_core::layout::types::Docking> {
                 *DOCKING
             }
             static FIT_HORIZONTAL: Lazy<Component<crate::ambient_core::layout::types::Fit>> =
                 Lazy::new(|| __internal_get_component("ambient_core::layout::fit_horizontal"));
-            #[doc = "**Fit horizontal**: Layout fit: horizontal.\n\n*Attributes*: Debuggable, Networked, Store"]
+            #[doc = "**Fit horizontal**: Layout fit: horizontal.\n\n*Attributes*: Debuggable, Networked, Store, Enum"]
             pub fn fit_horizontal() -> Component<crate::ambient_core::layout::types::Fit> {
                 *FIT_HORIZONTAL
             }
             static FIT_VERTICAL: Lazy<Component<crate::ambient_core::layout::types::Fit>> =
                 Lazy::new(|| __internal_get_component("ambient_core::layout::fit_vertical"));
-            #[doc = "**Fit vertical**: Layout fit: vertical.\n\n*Attributes*: Debuggable, Networked, Store"]
+            #[doc = "**Fit vertical**: Layout fit: vertical.\n\n*Attributes*: Debuggable, Networked, Store, Enum"]
             pub fn fit_vertical() -> Component<crate::ambient_core::layout::types::Fit> {
                 *FIT_VERTICAL
             }
             static LAYOUT: Lazy<Component<crate::ambient_core::layout::types::Layout>> =
                 Lazy::new(|| __internal_get_component("ambient_core::layout::layout"));
-            #[doc = "**Layout**: Layout.\n\n*Attributes*: Debuggable, Networked, Store"]
+            #[doc = "**Layout**: Layout.\n\n*Attributes*: Debuggable, Networked, Store, Enum"]
             pub fn layout() -> Component<crate::ambient_core::layout::types::Layout> {
                 *LAYOUT
             }
             static ORIENTATION: Lazy<Component<crate::ambient_core::layout::types::Orientation>> =
                 Lazy::new(|| __internal_get_component("ambient_core::layout::orientation"));
-            #[doc = "**Orientation**: Layout orientation.\n\n*Attributes*: Debuggable, Networked, Store"]
+            #[doc = "**Orientation**: Layout orientation.\n\n*Attributes*: Debuggable, Networked, Store, Enum"]
             pub fn orientation() -> Component<crate::ambient_core::layout::types::Orientation> {
                 *ORIENTATION
             }
@@ -910,28 +910,62 @@ pub mod ambient_core {
                 #[doc = "End"]
                 End,
             }
+            impl crate::ecs::EnumComponent for Align {
+                fn to_u32(&self) -> u32 {
+                    match self {
+                        Self::Begin => Align::Begin as u32,
+                        Self::Center => Align::Center as u32,
+                        Self::End => Align::End as u32,
+                    }
+                }
+                fn from_u32(value: u32) -> Option<Self> {
+                    if value == Align::Begin as u32 {
+                        return Some(Self::Begin);
+                    }
+                    if value == Align::Center as u32 {
+                        return Some(Self::Center);
+                    }
+                    if value == Align::End as u32 {
+                        return Some(Self::End);
+                    }
+                    None
+                }
+            }
             impl crate::ecs::SupportedValue for Align {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    u32::from_result(result).and_then(Self::from_u32)
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.to_u32().into_result()
                 }
             }
             impl crate::ecs::SupportedValue for Vec<Align> {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    (Vec::<u32>::from_result(result)).and_then(|v| {
+                        v.into_iter()
+                            .map(|v| Align::from_u32(v))
+                            .collect::<Option<Vec<_>>>()
+                    })
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.into_iter()
+                        .map(|v| v.to_u32())
+                        .collect::<Vec<_>>()
+                        .into_result()
                 }
             }
             impl crate::ecs::SupportedValue for Option<Align> {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    u32::from_result(result).map(|v| Align::from_u32(v))
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.map(|v| v.to_u32()).into_result()
                 }
             }
             #[derive(
@@ -946,28 +980,62 @@ pub mod ambient_core {
                 #[doc = "Children"]
                 Children,
             }
+            impl crate::ecs::EnumComponent for Fit {
+                fn to_u32(&self) -> u32 {
+                    match self {
+                        Self::None => Fit::None as u32,
+                        Self::Parent => Fit::Parent as u32,
+                        Self::Children => Fit::Children as u32,
+                    }
+                }
+                fn from_u32(value: u32) -> Option<Self> {
+                    if value == Fit::None as u32 {
+                        return Some(Self::None);
+                    }
+                    if value == Fit::Parent as u32 {
+                        return Some(Self::Parent);
+                    }
+                    if value == Fit::Children as u32 {
+                        return Some(Self::Children);
+                    }
+                    None
+                }
+            }
             impl crate::ecs::SupportedValue for Fit {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    u32::from_result(result).and_then(Self::from_u32)
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.to_u32().into_result()
                 }
             }
             impl crate::ecs::SupportedValue for Vec<Fit> {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    (Vec::<u32>::from_result(result)).and_then(|v| {
+                        v.into_iter()
+                            .map(|v| Fit::from_u32(v))
+                            .collect::<Option<Vec<_>>>()
+                    })
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.into_iter()
+                        .map(|v| v.to_u32())
+                        .collect::<Vec<_>>()
+                        .into_result()
                 }
             }
             impl crate::ecs::SupportedValue for Option<Fit> {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    u32::from_result(result).map(|v| Fit::from_u32(v))
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.map(|v| v.to_u32()).into_result()
                 }
             }
             #[derive(
@@ -980,28 +1048,58 @@ pub mod ambient_core {
                 #[doc = "Vertical"]
                 Vertical,
             }
+            impl crate::ecs::EnumComponent for Orientation {
+                fn to_u32(&self) -> u32 {
+                    match self {
+                        Self::Horizontal => Orientation::Horizontal as u32,
+                        Self::Vertical => Orientation::Vertical as u32,
+                    }
+                }
+                fn from_u32(value: u32) -> Option<Self> {
+                    if value == Orientation::Horizontal as u32 {
+                        return Some(Self::Horizontal);
+                    }
+                    if value == Orientation::Vertical as u32 {
+                        return Some(Self::Vertical);
+                    }
+                    None
+                }
+            }
             impl crate::ecs::SupportedValue for Orientation {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    u32::from_result(result).and_then(Self::from_u32)
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.to_u32().into_result()
                 }
             }
             impl crate::ecs::SupportedValue for Vec<Orientation> {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    (Vec::<u32>::from_result(result)).and_then(|v| {
+                        v.into_iter()
+                            .map(|v| Orientation::from_u32(v))
+                            .collect::<Option<Vec<_>>>()
+                    })
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.into_iter()
+                        .map(|v| v.to_u32())
+                        .collect::<Vec<_>>()
+                        .into_result()
                 }
             }
             impl crate::ecs::SupportedValue for Option<Orientation> {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    u32::from_result(result).map(|v| Orientation::from_u32(v))
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.map(|v| v.to_u32()).into_result()
                 }
             }
             #[derive(
@@ -1020,28 +1118,70 @@ pub mod ambient_core {
                 #[doc = "Fill"]
                 Fill,
             }
+            impl crate::ecs::EnumComponent for Docking {
+                fn to_u32(&self) -> u32 {
+                    match self {
+                        Self::Left => Docking::Left as u32,
+                        Self::Right => Docking::Right as u32,
+                        Self::Top => Docking::Top as u32,
+                        Self::Bottom => Docking::Bottom as u32,
+                        Self::Fill => Docking::Fill as u32,
+                    }
+                }
+                fn from_u32(value: u32) -> Option<Self> {
+                    if value == Docking::Left as u32 {
+                        return Some(Self::Left);
+                    }
+                    if value == Docking::Right as u32 {
+                        return Some(Self::Right);
+                    }
+                    if value == Docking::Top as u32 {
+                        return Some(Self::Top);
+                    }
+                    if value == Docking::Bottom as u32 {
+                        return Some(Self::Bottom);
+                    }
+                    if value == Docking::Fill as u32 {
+                        return Some(Self::Fill);
+                    }
+                    None
+                }
+            }
             impl crate::ecs::SupportedValue for Docking {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    u32::from_result(result).and_then(Self::from_u32)
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.to_u32().into_result()
                 }
             }
             impl crate::ecs::SupportedValue for Vec<Docking> {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    (Vec::<u32>::from_result(result)).and_then(|v| {
+                        v.into_iter()
+                            .map(|v| Docking::from_u32(v))
+                            .collect::<Option<Vec<_>>>()
+                    })
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.into_iter()
+                        .map(|v| v.to_u32())
+                        .collect::<Vec<_>>()
+                        .into_result()
                 }
             }
             impl crate::ecs::SupportedValue for Option<Docking> {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    u32::from_result(result).map(|v| Docking::from_u32(v))
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.map(|v| v.to_u32()).into_result()
                 }
             }
             #[derive(
@@ -1058,28 +1198,66 @@ pub mod ambient_core {
                 #[doc = "Width to children."]
                 WidthToChildren,
             }
+            impl crate::ecs::EnumComponent for Layout {
+                fn to_u32(&self) -> u32 {
+                    match self {
+                        Self::Flow => Layout::Flow as u32,
+                        Self::Dock => Layout::Dock as u32,
+                        Self::Bookcase => Layout::Bookcase as u32,
+                        Self::WidthToChildren => Layout::WidthToChildren as u32,
+                    }
+                }
+                fn from_u32(value: u32) -> Option<Self> {
+                    if value == Layout::Flow as u32 {
+                        return Some(Self::Flow);
+                    }
+                    if value == Layout::Dock as u32 {
+                        return Some(Self::Dock);
+                    }
+                    if value == Layout::Bookcase as u32 {
+                        return Some(Self::Bookcase);
+                    }
+                    if value == Layout::WidthToChildren as u32 {
+                        return Some(Self::WidthToChildren);
+                    }
+                    None
+                }
+            }
             impl crate::ecs::SupportedValue for Layout {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    u32::from_result(result).and_then(Self::from_u32)
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.to_u32().into_result()
                 }
             }
             impl crate::ecs::SupportedValue for Vec<Layout> {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    (Vec::<u32>::from_result(result)).and_then(|v| {
+                        v.into_iter()
+                            .map(|v| Layout::from_u32(v))
+                            .collect::<Option<Vec<_>>>()
+                    })
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.into_iter()
+                        .map(|v| v.to_u32())
+                        .collect::<Vec<_>>()
+                        .into_result()
                 }
             }
             impl crate::ecs::SupportedValue for Option<Layout> {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    u32::from_result(result).map(|v| Layout::from_u32(v))
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.map(|v| v.to_u32()).into_result()
                 }
             }
         }
@@ -1893,7 +2071,7 @@ pub mod ambient_core {
             }
             static FONT_STYLE: Lazy<Component<crate::ambient_core::text::types::FontStyle>> =
                 Lazy::new(|| __internal_get_component("ambient_core::text::font_style"));
-            #[doc = "**Font style**: Style of the font.\n\n*Attributes*: Debuggable, Networked, Store"]
+            #[doc = "**Font style**: Style of the font.\n\n*Attributes*: Debuggable, Networked, Store, Enum"]
             pub fn font_style() -> Component<crate::ambient_core::text::types::FontStyle> {
                 *FONT_STYLE
             }
@@ -1928,28 +2106,82 @@ pub mod ambient_core {
                 #[doc = "Use light italic for this text."]
                 LightItalic,
             }
+            impl crate::ecs::EnumComponent for FontStyle {
+                fn to_u32(&self) -> u32 {
+                    match self {
+                        Self::Bold => FontStyle::Bold as u32,
+                        Self::BoldItalic => FontStyle::BoldItalic as u32,
+                        Self::Medium => FontStyle::Medium as u32,
+                        Self::MediumItalic => FontStyle::MediumItalic as u32,
+                        Self::Regular => FontStyle::Regular as u32,
+                        Self::Italic => FontStyle::Italic as u32,
+                        Self::Light => FontStyle::Light as u32,
+                        Self::LightItalic => FontStyle::LightItalic as u32,
+                    }
+                }
+                fn from_u32(value: u32) -> Option<Self> {
+                    if value == FontStyle::Bold as u32 {
+                        return Some(Self::Bold);
+                    }
+                    if value == FontStyle::BoldItalic as u32 {
+                        return Some(Self::BoldItalic);
+                    }
+                    if value == FontStyle::Medium as u32 {
+                        return Some(Self::Medium);
+                    }
+                    if value == FontStyle::MediumItalic as u32 {
+                        return Some(Self::MediumItalic);
+                    }
+                    if value == FontStyle::Regular as u32 {
+                        return Some(Self::Regular);
+                    }
+                    if value == FontStyle::Italic as u32 {
+                        return Some(Self::Italic);
+                    }
+                    if value == FontStyle::Light as u32 {
+                        return Some(Self::Light);
+                    }
+                    if value == FontStyle::LightItalic as u32 {
+                        return Some(Self::LightItalic);
+                    }
+                    None
+                }
+            }
             impl crate::ecs::SupportedValue for FontStyle {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    u32::from_result(result).and_then(Self::from_u32)
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.to_u32().into_result()
                 }
             }
             impl crate::ecs::SupportedValue for Vec<FontStyle> {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    (Vec::<u32>::from_result(result)).and_then(|v| {
+                        v.into_iter()
+                            .map(|v| FontStyle::from_u32(v))
+                            .collect::<Option<Vec<_>>>()
+                    })
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.into_iter()
+                        .map(|v| v.to_u32())
+                        .collect::<Vec<_>>()
+                        .into_result()
                 }
             }
             impl crate::ecs::SupportedValue for Option<FontStyle> {
                 fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    u32::from_result(result).map(|v| FontStyle::from_u32(v))
                 }
                 fn into_result(self) -> crate::ecs::WitComponentValue {
-                    unimplemented!()
+                    use crate::ecs::EnumComponent;
+                    self.map(|v| v.to_u32()).into_result()
                 }
             }
         }

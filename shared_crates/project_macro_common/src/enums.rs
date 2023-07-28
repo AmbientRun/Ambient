@@ -24,8 +24,8 @@ pub fn make_definitions(
             };
 
             let enum_name = make_path(id);
-
-            let members = enumeration.members.iter().map(|(id, comment)| {
+            let members = enumeration.members.iter().map(|(id, _)| make_path(id.as_str())).collect::<Vec<_>>();
+            let enum_fields = enumeration.members.iter().map(|(id, comment)| {
                 let name = make_path(id.as_str());
                 quote! {
                     #[doc = #comment]
@@ -33,11 +33,35 @@ pub fn make_definitions(
                 }
             });
 
+            let ecs_prefix = context.guest_api_path()
+                .map(|path| quote! { #path::ecs:: })
+                .unwrap_or_else(|| quote! { crate:: });
+
             let main = quote! {
                 #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
                 #[doc = #doc_comment]
                 pub enum #enum_name {
-                    #(#members,)*
+                    #(#enum_fields,)*
+                }
+
+                impl #ecs_prefix EnumComponent for #enum_name {
+                    fn to_u32(&self) -> u32 {
+                        match self {
+                            #(
+                                Self::#members => #enum_name::#members as u32,
+                            )*
+                        }
+                    }
+
+                    fn from_u32(value: u32) -> Option<Self> {
+                        #(
+                            if value == #enum_name::#members as u32 {
+                                return Some(Self::#members);
+                            }
+                        )*
+
+                        None
+                    }
                 }
             };
 
@@ -45,29 +69,37 @@ pub fn make_definitions(
                 quote! {
                     impl #guest_api_path::ecs::SupportedValue for #enum_name {
                         fn from_result(result: #guest_api_path::ecs::WitComponentValue) -> Option<Self> {
-                            unimplemented!()
+                            use #ecs_prefix EnumComponent;
+                            u32::from_result(result).and_then(Self::from_u32)
                         }
 
                         fn into_result(self) -> #guest_api_path::ecs::WitComponentValue {
-                            unimplemented!()
+                            use #ecs_prefix EnumComponent;
+                            self.to_u32().into_result()
                         }
                     }
                     impl #guest_api_path::ecs::SupportedValue for Vec<#enum_name> {
                         fn from_result(result: #guest_api_path::ecs::WitComponentValue) -> Option<Self> {
-                            unimplemented!()
+                            use #ecs_prefix EnumComponent;
+                            (Vec :: <u32> :: from_result(result)).and_then(|v| {
+                                v.into_iter().map(|v| #enum_name::from_u32(v)).collect::<Option<Vec<_>>>()
+                            })
                         }
 
                         fn into_result(self) -> #guest_api_path::ecs::WitComponentValue {
-                            unimplemented!()
+                            use #ecs_prefix EnumComponent;
+                            self.into_iter().map(|v| v.to_u32()).collect::<Vec<_>>().into_result()
                         }
                     }
                     impl #guest_api_path::ecs::SupportedValue for Option<#enum_name> {
                         fn from_result(result: #guest_api_path::ecs::WitComponentValue) -> Option<Self> {
-                            unimplemented!()
+                            use #ecs_prefix EnumComponent;
+                            u32::from_result(result).map(|v| #enum_name ::from_u32(v))
                         }
 
                         fn into_result(self) -> #guest_api_path::ecs::WitComponentValue {
-                            unimplemented!()
+                            use #ecs_prefix EnumComponent;
+                            self.map(|v| v.to_u32()).into_result()
                         }
                     }
                 }

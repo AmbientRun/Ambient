@@ -130,7 +130,7 @@ pub fn make_definitions(
                 quote! {
                     use std::time::Duration;
                     use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
-                    use crate::{EntityId, Debuggable, Networked, Store, Resource, MaybeResource, Name, Description, components};
+                    use crate::{EntityId, Debuggable, Networked, Store, Resource, MaybeResource, Name, Description, Enum, components};
                     use ambient_shared_types::{ProceduralMeshHandle, ProceduralTextureHandle, ProceduralSamplerHandle, ProceduralMaterialHandle};
                     components!(#namespace_path, {
                         #(#components)*

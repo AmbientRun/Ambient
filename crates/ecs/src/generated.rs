@@ -28,7 +28,7 @@ pub mod animation {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -45,7 +45,7 @@ pub mod app {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -62,7 +62,7 @@ pub mod audio {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -79,7 +79,7 @@ pub mod camera {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -308,7 +308,7 @@ pub mod ecs {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -325,7 +325,7 @@ pub mod input {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -342,7 +342,7 @@ pub mod layout {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -351,7 +351,7 @@ pub mod layout {
         };
         use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
         use std::time::Duration;
-        components ! ("layout" , { # [doc = "**Align horizontal**: Layout alignment: horizontal.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Align horizontal"] , Description ["Layout alignment: horizontal."]] align_horizontal : crate :: generated :: layout :: types :: Align , # [doc = "**Align vertical**: Layout alignment: vertical.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Align vertical"] , Description ["Layout alignment: vertical."]] align_vertical : crate :: generated :: layout :: types :: Align , # [doc = "**Docking**: Layout docking.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Docking"] , Description ["Layout docking."]] docking : crate :: generated :: layout :: types :: Docking , # [doc = "**Fit horizontal**: Layout fit: horizontal.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Fit horizontal"] , Description ["Layout fit: horizontal."]] fit_horizontal : crate :: generated :: layout :: types :: Fit , # [doc = "**Fit vertical**: Layout fit: vertical.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Fit vertical"] , Description ["Layout fit: vertical."]] fit_vertical : crate :: generated :: layout :: types :: Fit , # [doc = "**Layout**: Layout.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Layout"] , Description ["Layout."]] layout : crate :: generated :: layout :: types :: Layout , # [doc = "**Orientation**: Layout orientation.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Orientation"] , Description ["Layout orientation."]] orientation : crate :: generated :: layout :: types :: Orientation , # [doc = "**Is book file**: This is a file in a `layout_bookcase`.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Is book file"] , Description ["This is a file in a `layout_bookcase`."]] is_book_file : () , # [doc = "**Margin**: Layout margin: [top, right, bottom, left].\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Margin"] , Description ["Layout margin: [top, right, bottom, left]."]] margin : Vec4 , # [doc = "**Padding**: Layout padding: [top, right, bottom, left].\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Padding"] , Description ["Layout padding: [top, right, bottom, left]."]] padding : Vec4 , # [doc = "**Mesh to local from size**: Update the `mesh_to_local` based on the width and height of this entity.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Mesh to local from size"] , Description ["Update the `mesh_to_local` based on the width and height of this entity."]] mesh_to_local_from_size : () , # [doc = "**Minimum height**: The minimum height of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Minimum height"] , Description ["The minimum height of a UI element."]] min_height : f32 , # [doc = "**Minimum width**: The minimum width of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Minimum width"] , Description ["The minimum width of a UI element."]] min_width : f32 , # [doc = "**Maximum height**: The maximum height of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Maximum height"] , Description ["The maximum height of a UI element."]] max_height : f32 , # [doc = "**Maximum width**: The maximum width of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Maximum width"] , Description ["The maximum width of a UI element."]] max_width : f32 , # [doc = "**Screen**: This entity will be treated as a screen. Used by the Screen ui component.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Screen"] , Description ["This entity will be treated as a screen. Used by the Screen ui component."]] screen : () , # [doc = "**Space between items**: Space between items in a layout.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Space between items"] , Description ["Space between items in a layout."]] space_between_items : f32 , # [doc = "**Width**: The width of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Width"] , Description ["The width of a UI element."]] width : f32 , # [doc = "**Height**: The height of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Height"] , Description ["The height of a UI element."]] height : f32 , # [doc = "**GPU UI size**: Upload the width and height of this UI element to the GPU.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["GPU UI size"] , Description ["Upload the width and height of this UI element to the GPU."]] gpu_ui_size : Vec4 , });
+        components ! ("layout" , { # [doc = "**Align horizontal**: Layout alignment: horizontal.\n\n*Attributes*: Debuggable, Networked, Store, Enum"] @ [Debuggable , Networked , Store , Enum , Name ["Align horizontal"] , Description ["Layout alignment: horizontal."]] align_horizontal : crate :: generated :: layout :: types :: Align , # [doc = "**Align vertical**: Layout alignment: vertical.\n\n*Attributes*: Debuggable, Networked, Store, Enum"] @ [Debuggable , Networked , Store , Enum , Name ["Align vertical"] , Description ["Layout alignment: vertical."]] align_vertical : crate :: generated :: layout :: types :: Align , # [doc = "**Docking**: Layout docking.\n\n*Attributes*: Debuggable, Networked, Store, Enum"] @ [Debuggable , Networked , Store , Enum , Name ["Docking"] , Description ["Layout docking."]] docking : crate :: generated :: layout :: types :: Docking , # [doc = "**Fit horizontal**: Layout fit: horizontal.\n\n*Attributes*: Debuggable, Networked, Store, Enum"] @ [Debuggable , Networked , Store , Enum , Name ["Fit horizontal"] , Description ["Layout fit: horizontal."]] fit_horizontal : crate :: generated :: layout :: types :: Fit , # [doc = "**Fit vertical**: Layout fit: vertical.\n\n*Attributes*: Debuggable, Networked, Store, Enum"] @ [Debuggable , Networked , Store , Enum , Name ["Fit vertical"] , Description ["Layout fit: vertical."]] fit_vertical : crate :: generated :: layout :: types :: Fit , # [doc = "**Layout**: Layout.\n\n*Attributes*: Debuggable, Networked, Store, Enum"] @ [Debuggable , Networked , Store , Enum , Name ["Layout"] , Description ["Layout."]] layout : crate :: generated :: layout :: types :: Layout , # [doc = "**Orientation**: Layout orientation.\n\n*Attributes*: Debuggable, Networked, Store, Enum"] @ [Debuggable , Networked , Store , Enum , Name ["Orientation"] , Description ["Layout orientation."]] orientation : crate :: generated :: layout :: types :: Orientation , # [doc = "**Is book file**: This is a file in a `layout_bookcase`.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Is book file"] , Description ["This is a file in a `layout_bookcase`."]] is_book_file : () , # [doc = "**Margin**: Layout margin: [top, right, bottom, left].\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Margin"] , Description ["Layout margin: [top, right, bottom, left]."]] margin : Vec4 , # [doc = "**Padding**: Layout padding: [top, right, bottom, left].\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Padding"] , Description ["Layout padding: [top, right, bottom, left]."]] padding : Vec4 , # [doc = "**Mesh to local from size**: Update the `mesh_to_local` based on the width and height of this entity.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Mesh to local from size"] , Description ["Update the `mesh_to_local` based on the width and height of this entity."]] mesh_to_local_from_size : () , # [doc = "**Minimum height**: The minimum height of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Minimum height"] , Description ["The minimum height of a UI element."]] min_height : f32 , # [doc = "**Minimum width**: The minimum width of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Minimum width"] , Description ["The minimum width of a UI element."]] min_width : f32 , # [doc = "**Maximum height**: The maximum height of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Maximum height"] , Description ["The maximum height of a UI element."]] max_height : f32 , # [doc = "**Maximum width**: The maximum width of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Maximum width"] , Description ["The maximum width of a UI element."]] max_width : f32 , # [doc = "**Screen**: This entity will be treated as a screen. Used by the Screen ui component.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Screen"] , Description ["This entity will be treated as a screen. Used by the Screen ui component."]] screen : () , # [doc = "**Space between items**: Space between items in a layout.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Space between items"] , Description ["Space between items in a layout."]] space_between_items : f32 , # [doc = "**Width**: The width of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Width"] , Description ["The width of a UI element."]] width : f32 , # [doc = "**Height**: The height of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Height"] , Description ["The height of a UI element."]] height : f32 , # [doc = "**GPU UI size**: Upload the width and height of this UI element to the GPU.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["GPU UI size"] , Description ["Upload the width and height of this UI element to the GPU."]] gpu_ui_size : Vec4 , });
     }
     #[doc = r" Auto-generated type definitions."]
     pub mod types {
@@ -365,6 +365,27 @@ pub mod layout {
             #[doc = "End"]
             End,
         }
+        impl crate::EnumComponent for Align {
+            fn to_u32(&self) -> u32 {
+                match self {
+                    Self::Begin => Align::Begin as u32,
+                    Self::Center => Align::Center as u32,
+                    Self::End => Align::End as u32,
+                }
+            }
+            fn from_u32(value: u32) -> Option<Self> {
+                if value == Align::Begin as u32 {
+                    return Some(Self::Begin);
+                }
+                if value == Align::Center as u32 {
+                    return Some(Self::Center);
+                }
+                if value == Align::End as u32 {
+                    return Some(Self::End);
+                }
+                None
+            }
+        }
         #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
         #[doc = "**Fit**: Layout fit."]
         pub enum Fit {
@@ -375,6 +396,27 @@ pub mod layout {
             #[doc = "Children"]
             Children,
         }
+        impl crate::EnumComponent for Fit {
+            fn to_u32(&self) -> u32 {
+                match self {
+                    Self::None => Fit::None as u32,
+                    Self::Parent => Fit::Parent as u32,
+                    Self::Children => Fit::Children as u32,
+                }
+            }
+            fn from_u32(value: u32) -> Option<Self> {
+                if value == Fit::None as u32 {
+                    return Some(Self::None);
+                }
+                if value == Fit::Parent as u32 {
+                    return Some(Self::Parent);
+                }
+                if value == Fit::Children as u32 {
+                    return Some(Self::Children);
+                }
+                None
+            }
+        }
         #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
         #[doc = "**Orientation**: Layout orientation."]
         pub enum Orientation {
@@ -382,6 +424,23 @@ pub mod layout {
             Horizontal,
             #[doc = "Vertical"]
             Vertical,
+        }
+        impl crate::EnumComponent for Orientation {
+            fn to_u32(&self) -> u32 {
+                match self {
+                    Self::Horizontal => Orientation::Horizontal as u32,
+                    Self::Vertical => Orientation::Vertical as u32,
+                }
+            }
+            fn from_u32(value: u32) -> Option<Self> {
+                if value == Orientation::Horizontal as u32 {
+                    return Some(Self::Horizontal);
+                }
+                if value == Orientation::Vertical as u32 {
+                    return Some(Self::Vertical);
+                }
+                None
+            }
         }
         #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
         #[doc = "**Docking**: The edge to dock to."]
@@ -397,6 +456,35 @@ pub mod layout {
             #[doc = "Fill"]
             Fill,
         }
+        impl crate::EnumComponent for Docking {
+            fn to_u32(&self) -> u32 {
+                match self {
+                    Self::Left => Docking::Left as u32,
+                    Self::Right => Docking::Right as u32,
+                    Self::Top => Docking::Top as u32,
+                    Self::Bottom => Docking::Bottom as u32,
+                    Self::Fill => Docking::Fill as u32,
+                }
+            }
+            fn from_u32(value: u32) -> Option<Self> {
+                if value == Docking::Left as u32 {
+                    return Some(Self::Left);
+                }
+                if value == Docking::Right as u32 {
+                    return Some(Self::Right);
+                }
+                if value == Docking::Top as u32 {
+                    return Some(Self::Top);
+                }
+                if value == Docking::Bottom as u32 {
+                    return Some(Self::Bottom);
+                }
+                if value == Docking::Fill as u32 {
+                    return Some(Self::Fill);
+                }
+                None
+            }
+        }
         #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
         #[doc = "**Layout**: The type of the layout to use."]
         pub enum Layout {
@@ -409,6 +497,31 @@ pub mod layout {
             #[doc = "Width to children."]
             WidthToChildren,
         }
+        impl crate::EnumComponent for Layout {
+            fn to_u32(&self) -> u32 {
+                match self {
+                    Self::Flow => Layout::Flow as u32,
+                    Self::Dock => Layout::Dock as u32,
+                    Self::Bookcase => Layout::Bookcase as u32,
+                    Self::WidthToChildren => Layout::WidthToChildren as u32,
+                }
+            }
+            fn from_u32(value: u32) -> Option<Self> {
+                if value == Layout::Flow as u32 {
+                    return Some(Self::Flow);
+                }
+                if value == Layout::Dock as u32 {
+                    return Some(Self::Dock);
+                }
+                if value == Layout::Bookcase as u32 {
+                    return Some(Self::Bookcase);
+                }
+                if value == Layout::WidthToChildren as u32 {
+                    return Some(Self::WidthToChildren);
+                }
+                None
+            }
+        }
     }
 }
 #[allow(unused)]
@@ -416,7 +529,7 @@ pub mod model {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -433,7 +546,7 @@ pub mod network {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -450,7 +563,7 @@ pub mod physics {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -467,7 +580,7 @@ pub mod player {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -484,7 +597,7 @@ pub mod prefab {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -501,7 +614,7 @@ pub mod primitives {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -675,7 +788,7 @@ pub mod procedurals {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -692,7 +805,7 @@ pub mod rect {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -709,7 +822,7 @@ pub mod rendering {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -726,7 +839,7 @@ pub mod text {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -735,7 +848,7 @@ pub mod text {
         };
         use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
         use std::time::Duration;
-        components ! ("text" , { # [doc = "**Font family**: Font family to be used. Can either be 'Default', 'FontAwesome', 'FontAwesomeSolid', 'Code' or a url to a font.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Font family"] , Description ["Font family to be used. Can either be 'Default', 'FontAwesome', 'FontAwesomeSolid', 'Code' or a url to a font."]] font_family : String , # [doc = "**Font size**: Size of the font.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Font size"] , Description ["Size of the font."]] font_size : f32 , # [doc = "**Font style**: Style of the font.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Font style"] , Description ["Style of the font."]] font_style : crate :: generated :: text :: types :: FontStyle , # [doc = "**Text**: Create a text mesh on this entity.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Text"] , Description ["Create a text mesh on this entity."]] text : String , });
+        components ! ("text" , { # [doc = "**Font family**: Font family to be used. Can either be 'Default', 'FontAwesome', 'FontAwesomeSolid', 'Code' or a url to a font.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Font family"] , Description ["Font family to be used. Can either be 'Default', 'FontAwesome', 'FontAwesomeSolid', 'Code' or a url to a font."]] font_family : String , # [doc = "**Font size**: Size of the font.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Font size"] , Description ["Size of the font."]] font_size : f32 , # [doc = "**Font style**: Style of the font.\n\n*Attributes*: Debuggable, Networked, Store, Enum"] @ [Debuggable , Networked , Store , Enum , Name ["Font style"] , Description ["Style of the font."]] font_style : crate :: generated :: text :: types :: FontStyle , # [doc = "**Text**: Create a text mesh on this entity.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Text"] , Description ["Create a text mesh on this entity."]] text : String , });
     }
     #[doc = r" Auto-generated type definitions."]
     pub mod types {
@@ -759,6 +872,47 @@ pub mod text {
             #[doc = "Use light italic for this text."]
             LightItalic,
         }
+        impl crate::EnumComponent for FontStyle {
+            fn to_u32(&self) -> u32 {
+                match self {
+                    Self::Bold => FontStyle::Bold as u32,
+                    Self::BoldItalic => FontStyle::BoldItalic as u32,
+                    Self::Medium => FontStyle::Medium as u32,
+                    Self::MediumItalic => FontStyle::MediumItalic as u32,
+                    Self::Regular => FontStyle::Regular as u32,
+                    Self::Italic => FontStyle::Italic as u32,
+                    Self::Light => FontStyle::Light as u32,
+                    Self::LightItalic => FontStyle::LightItalic as u32,
+                }
+            }
+            fn from_u32(value: u32) -> Option<Self> {
+                if value == FontStyle::Bold as u32 {
+                    return Some(Self::Bold);
+                }
+                if value == FontStyle::BoldItalic as u32 {
+                    return Some(Self::BoldItalic);
+                }
+                if value == FontStyle::Medium as u32 {
+                    return Some(Self::Medium);
+                }
+                if value == FontStyle::MediumItalic as u32 {
+                    return Some(Self::MediumItalic);
+                }
+                if value == FontStyle::Regular as u32 {
+                    return Some(Self::Regular);
+                }
+                if value == FontStyle::Italic as u32 {
+                    return Some(Self::Italic);
+                }
+                if value == FontStyle::Light as u32 {
+                    return Some(Self::Light);
+                }
+                if value == FontStyle::LightItalic as u32 {
+                    return Some(Self::LightItalic);
+                }
+                None
+            }
+        }
     }
 }
 #[allow(unused)]
@@ -766,7 +920,7 @@ pub mod transform {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{
@@ -825,7 +979,7 @@ pub mod wasm {
     #[doc = r" Auto-generated component definitions."]
     pub mod components {
         use crate::{
-            components, Debuggable, Description, EntityId, MaybeResource, Name, Networked,
+            components, Debuggable, Description, EntityId, Enum, MaybeResource, Name, Networked,
             Resource, Store,
         };
         use ambient_shared_types::{

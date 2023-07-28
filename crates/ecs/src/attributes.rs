@@ -8,7 +8,7 @@ use std::{
 use downcast_rs::{impl_downcast, Downcast};
 use serde::{Deserialize, Serialize};
 
-use crate::{ComponentDesc, ComponentEntry, ComponentValue};
+use crate::{ComponentDesc, ComponentEntry, ComponentValue, EnumComponent};
 
 /// Represents a single attribute attached to a component
 pub trait ComponentAttribute: 'static + Send + Sync + Downcast {
@@ -296,5 +296,23 @@ impl ComponentAttribute for MaybeResource {}
 impl<T: ComponentValue> AttributeConstructor<T, ()> for MaybeResource {
     fn construct(store: &mut AttributeStore, _: ()) {
         store.set(Self)
+    }
+}
+
+/// This component can be converted to/from a U32.
+pub struct Enum {
+    pub to_u32: fn(&dyn Any) -> u32,
+    pub from_u32: fn(ComponentDesc, u32) -> Option<ComponentEntry>,
+}
+impl ComponentAttribute for Enum {}
+impl<T> AttributeConstructor<T, ()> for Enum
+where
+    T: 'static + EnumComponent,
+{
+    fn construct(store: &mut AttributeStore, _: ()) {
+        store.set(Self {
+            to_u32: |entry| entry.downcast_ref::<T>().unwrap().to_u32(),
+            from_u32: |desc, value| Some(ComponentEntry::from_raw_parts(desc, T::from_u32(value)?)),
+        })
     }
 }

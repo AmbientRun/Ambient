@@ -44,7 +44,7 @@ mod stream;
 pub use ambient_project_rt::message_serde::*;
 pub use archetype::*;
 pub use attributes::*;
-pub use component::{Component, ComponentDesc, ComponentValue, ComponentValueBase};
+pub use component::{Component, ComponentDesc, ComponentValue, ComponentValueBase, EnumComponent};
 pub use component_entry::*;
 pub use component_registry::*;
 pub use component_ser::*;

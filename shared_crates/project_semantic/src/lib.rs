@@ -384,6 +384,7 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
         "Resource",
         "MaybeResource",
         "Store",
+        "Enum",
     ] {
         let id = PascalCaseIdentifier::new(name)
             .map_err(anyhow::Error::msg)
