@@ -153,7 +153,7 @@ pub fn main() {
                     );
                     // TODO: wait for anim msg to respawn
                     run_async(async move {
-                        sleep(114. / 60.).await;
+                        sleep(3.).await;
 
                         if !entity::exists(hit.entity) {
                             return;
