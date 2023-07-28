@@ -1,0 +1,66 @@
+name: "deploy-web"
+
+on:
+  workflow_dispatch:
+  push:
+    tags: [v*]
+    branches:
+      - main
+
+env:
+  PACKAGE_NAME: ambient-web-${{ github.sha }}
+
+jobs:
+  build:
+    permissions:
+      id-token: write
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+
+      - name: "Build campfire"
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --package campfire
+
+      - name: "Build web client"
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: --package campfire -- web build --profile release --target standalone --pkg-name ${{ env.PACKAGE_NAME }}
+
+      - name: Upload package
+        uses: actions/upload-artifact@v3
+        with:
+          name: ambient-web-standalone
+          path: ./web/${{ env.PACKAGE_NAME }}
+
+      - id: auth
+        name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v0
+        with:
+          token_format: access_token
+          workload_identity_provider: projects/549180905870/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github@ambient-733e7.iam.gserviceaccount.com
+          access_token_lifetime: 1800s
+
+      - name: Upload to Google Cloud
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: "./web/${{ env.PACKAGE_NAME }}"
+          destination: "ambient-artifacts/ambient-web-clients"
+
+      - name: Upload Canary to Google Cloud
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: "./web/${{ env.PACKAGE_NAME }}"
+          destination: "ambient-artifacts/ambient-web-clients/ambient-canary"
+          parent: false
+
+

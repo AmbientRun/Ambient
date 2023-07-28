@@ -2246,7 +2246,6 @@ name = "campfire"
 version = "0.3.0-dev"
 dependencies = [
  "anyhow",
- "base64 0.21.2",
  "cargo_toml",
  "cfg-if",
  "clap 4.3.3",
