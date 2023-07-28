@@ -103,6 +103,34 @@ jobs:
       - name: Check that guest/rust builds under all configurations
         run: cargo run -p campfire example check-all
 
+  build-web:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+
+      - name: "Build campfire"
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --package campfire
+
+      - name: "Build web client"
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: --package campfire -- web build --profile release --target standalone
+
+      - name: Upload package
+        uses: actions/upload-artifact@v3
+        with:
+          name: ambient-web-standalone
+          path: ./web/pkg
+
   build:
     strategy:
       matrix:
