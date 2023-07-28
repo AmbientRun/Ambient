@@ -27,13 +27,13 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --package campfire
+          args: --package campfire --no-default-features
 
       - name: "Build web client"
         uses: actions-rs/cargo@v1
         with:
           command: run
-          args: --package campfire -- web build --profile release --target standalone --pkg-name ${{ env.PACKAGE_NAME }}
+          args: --package campfire --no-default-features web build --profile release --target standalone --pkg-name ${{ env.PACKAGE_NAME }}
 
       - name: Upload package
         uses: actions/upload-artifact@v3

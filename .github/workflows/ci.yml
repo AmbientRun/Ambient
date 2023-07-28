@@ -101,7 +101,7 @@ jobs:
       - name: Check that guest/rust's documentation is well-formed
         run: cd guest/rust && RUSTDOCFLAGS="-Dwarnings" cargo doc --workspace --all-features --no-deps
       - name: Check that guest/rust builds under all configurations
-        run: cargo run -p campfire example check-all
+        run: cargo run -p campfire-ndf example check-all
 
   build-web:
     runs-on: ubuntu-20.04
@@ -117,13 +117,13 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --package campfire
+          args: --package campfire --no-default-features
 
       - name: "Build web client"
         uses: actions-rs/cargo@v1
         with:
           command: run
-          args: --package campfire -- web build --profile release --target standalone
+          args: --package campfire --no-default-features -- web build --profile release --target standalone
 
       - name: Upload package
         uses: actions/upload-artifact@v3
@@ -214,7 +214,7 @@ jobs:
           sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
 
       - name: Run golden image tests
-        run: cargo cf golden-images --ambient-path=./ambient check
+        run: cargo campfire-ndf golden-images --ambient-path=./ambient check
       - uses: actions/upload-artifact@v3
         if: always()
         with:
