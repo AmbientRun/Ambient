@@ -39,14 +39,16 @@ pub fn init_ambient(logging: bool, panic: bool) {
 }
 
 #[wasm_bindgen]
-/// Starts execution of the ambient client
-pub async fn start(target: Option<web_sys::HtmlElement>) {
-    if let Err(err) = run(target).await {
+/// Starts execution of the ambient client and connects to the specified URL
+///
+/// TODO: The MainApp setup will move to an ember and this will only load the runtime
+pub async fn start(target: Option<web_sys::HtmlElement>, server_url: String) {
+    if let Err(err) = run(target, server_url).await {
         tracing::error!("{err:?}")
     }
 }
 
-async fn run(target: Option<web_sys::HtmlElement>) -> anyhow::Result<()> {
+async fn run(target: Option<web_sys::HtmlElement>, server_url: String) -> anyhow::Result<()> {
     use ambient_sys::timer::TimerWheel;
     ambient_sys::task::spawn(TimerWheel::new().start());
 
@@ -60,7 +62,7 @@ async fn run(target: Option<web_sys::HtmlElement>) -> anyhow::Result<()> {
 
     tracing::info!("Finished building app");
 
-    init(&mut app).await;
+    init(&mut app, server_url).await;
 
     // Spawn the event loop
     app.spawn();
@@ -68,13 +70,13 @@ async fn run(target: Option<web_sys::HtmlElement>) -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn init(app: &mut App) {
+async fn init(app: &mut App, server_url: String) {
     let world = &mut app.world;
 
     Group(vec![
         UICamera.el().with(active_camera(), 0.),
         FocusRoot(vec![WindowSized::el([
-            MainApp::el().with(padding(), Borders::even(10.).into())
+            MainApp::el(server_url).with(padding(), Borders::even(10.).into())
         ])])
         .el(),
     ])

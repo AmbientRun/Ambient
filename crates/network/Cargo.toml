@@ -26,7 +26,6 @@ ambient_world_audio = { path = "../world_audio", version = "0.3.0-dev" }
 
 rustls-native-certs = { workspace = true, optional = true }
 
-url = { workspace = true }
 itertools = { workspace = true }
 dashmap = { workspace = true }
 serde = { workspace = true }

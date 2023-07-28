@@ -581,7 +581,6 @@ dependencies = [
  "tokio",
  "tokio-util",
  "tracing",
- "url",
  "uuid",
  "wasm-bindgen",
  "wasm-bindgen-futures",

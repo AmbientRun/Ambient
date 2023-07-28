@@ -17,7 +17,6 @@ use glam::uvec2;
 use parking_lot::Mutex;
 use std::{sync::Arc, time::Duration};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use url::Url;
 
 use crate::{
     client::{CleanupFunc, ClientState, Control, GameClientRenderTarget, LoadedFunc},
@@ -39,7 +38,7 @@ use super::ProxyMessage;
 #[derive(Debug, Clone)]
 pub struct GameClientView {
     /// The url to connect to
-    pub url: Url,
+    pub url: String,
     pub user_id: String,
     pub systems_and_resources: Cb<dyn Fn() -> (SystemGroup, Entity) + Sync + Send>,
     /// Invoked when the game client is loaded
@@ -102,7 +101,7 @@ impl ElementComponent for GameClientView {
                 tracing::info!("Sleeping for 2 seconds to simulate connection delay");
                 sleep(Duration::from_millis(2000)).await;
 
-                let conn = Connection::connect(url.clone()).await.with_context(|| {
+                let conn = Connection::connect(&url).await.with_context(|| {
                     format!("Failed to establish a WebTransport  session to {url}")
                 })?;
 
