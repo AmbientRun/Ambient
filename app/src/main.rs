@@ -50,6 +50,8 @@ fn setup_logging() -> anyhow::Result<()> {
                 "symphonia_bundle_mp3",
                 "wgpu_core",
                 "wgpu_hal",
+                "optivorbis",
+                "symphonia_format_wav",
             ],
         ),
     ];
