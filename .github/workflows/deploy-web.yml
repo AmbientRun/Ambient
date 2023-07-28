@@ -2,9 +2,6 @@ name: "deploy-web"
 
 on:
   workflow_dispatch:
-  schedule:
-    # every day at 2am UTC
-    - cron: '0 2 * * *'
   push:
     tags: [v*]
     branches:
