@@ -53,7 +53,6 @@ pub use self::image::*;
 use ambient_shared_types::MouseButton;
 
 pub fn init_all_components() {
-    layout::init_all_components();
     layout::init_gpu_components();
     text::init_components();
 }

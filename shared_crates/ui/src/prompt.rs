@@ -2,7 +2,13 @@
 
 use ambient_cb::{cb, Cb};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
-use ambient_guest_bridge::{core::layout::components::space_between_items, ecs::World};
+use ambient_guest_bridge::{
+    core::layout::{
+        components::{align_vertical, space_between_items},
+        types::Align,
+    },
+    ecs::World,
+};
 
 use crate::{
     button::{Button, ButtonStyle},
@@ -118,7 +124,7 @@ pub fn Prompt(
                     Element::new()
                 },
             ])
-            //LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_vertical_center())
+            .with(align_vertical(), Align::Center)
             .with(space_between_items(), STREET),
         ])
         .with(space_between_items(), STREET),
@@ -217,7 +223,7 @@ pub fn EditorPrompt<T: Editor + std::fmt::Debug + Clone + Sync + Send + 'static>
                 },
             ])
             .el()
-            // LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_vertical_center())
+            .with(align_vertical(), Align::Center)
             .with(space_between_items(), STREET),
         ])
         .with(space_between_items(), STREET),

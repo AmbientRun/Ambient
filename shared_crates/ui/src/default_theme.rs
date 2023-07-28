@@ -5,8 +5,13 @@ use crate::UIExt;
 use ambient_color::Color;
 use ambient_element::Element;
 use ambient_guest_bridge::core::{
-    layout::components::space_between_items, rect::components::border_radius,
-    rendering::components::color, text::components::font_size,
+    layout::{
+        components::{align_vertical, space_between_items},
+        types::Align,
+    },
+    rect::components::border_radius,
+    rendering::components::color,
+    text::components::font_size,
 };
 
 /// The primary color.
@@ -85,7 +90,7 @@ impl StylesExt for Element {
     fn keyboard(self) -> Self {
         self.with(space_between_items(), STREET)
             .with_padding_even(STREET)
-        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_vertical_center())
+            .with(align_vertical(), Align::Center)
     }
 }
 

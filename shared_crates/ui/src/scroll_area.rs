@@ -4,10 +4,9 @@ use ambient_guest_bridge::core::{
     app::components::window_scale_factor,
     ecs::components::children,
     input::components::{mouse_over, mouse_pickable_max, mouse_pickable_min},
-    layout::components::{
-        //LEGACY_MISSING_ENUM_SUPPORT: fit_horizontal_children, fit_horizontal_parent, fit_vertical_children,
-        height,
-        width,
+    layout::{
+        components::{fit_horizontal, fit_vertical, height, width},
+        types::Fit,
     },
     messages,
     rect::components::{background_color, border_radius},
@@ -132,12 +131,12 @@ pub fn ScrollArea(
                     .with(translation(), vec3(0., scroll, 0.));
                 match sizing {
                     ScrollAreaSizing::FitParentWidth => flow
-                        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_children())
-                        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_parent())
+                        .with(fit_vertical(), Fit::Children)
+                        .with(fit_horizontal(), Fit::Parent)
                         .with(width(), outer_size.x),
                     ScrollAreaSizing::FitChildrenWidth => flow
-                        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_children())
-                        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_children()),
+                        .with(fit_vertical(), Fit::Children)
+                        .with(fit_horizontal(), Fit::Children),
                 }
             },
             set_inner_size,

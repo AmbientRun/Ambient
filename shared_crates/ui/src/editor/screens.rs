@@ -4,7 +4,10 @@ use ambient_cb::{cb, Cb};
 use ambient_element::{
     element_component, to_owned, Element, ElementComponent, ElementComponentExt, Hooks,
 };
-use ambient_guest_bridge::core::layout::components::space_between_items;
+use ambient_guest_bridge::core::layout::{
+    components::{align_vertical, space_between_items},
+    types::Align,
+};
 
 use super::{ChangeCb, Editor, EditorOpts};
 use crate::{
@@ -109,7 +112,7 @@ fn EditorScreen<T: Debug + Clone + Sync + Send + 'static + Editor>(
                     .el(),
             ])
             .el()
-            //LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_vertical_center())
+            .with(align_vertical(), Align::Center)
             .with(space_between_items(), STREET),
         ])
         .with(space_between_items(), STREET),

@@ -15,17 +15,17 @@ use ambient_element::{
 };
 use ambient_guest_bridge::{
     core::{
-        layout::components::{
-            //LEGACY_MISSING_ENUM_SUPPORT: align_vertical_center, fit_horizontal_parent,
-            height,
-            margin,
-            min_height,
-            padding,
-            space_between_items,
+        layout::{
+            components::{
+                align_vertical, fit_horizontal, height, margin, min_height, padding,
+                space_between_items,
+            },
+            types::{Align, Fit},
         },
         messages,
         rect::components::{border_color, border_radius, border_thickness},
         rendering::components::color,
+        text::{components::font_style, types::FontStyle},
     },
     ecs::World,
     run_async,
@@ -165,14 +165,14 @@ impl ButtonStyle {
                 content,
                 UIBase
                     .el()
-                    // LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_parent())
+                    .with(fit_horizontal(), Fit::Parent)
                     .with(height(), 2.)
                     .with_background(Color::WHITE.into())
                     .with(margin(), vec4(2., 0., 0., 0.)),
             ])
             .with_background(background.into())
         } else {
-            // LEGACY_MISSING_ENUM_SUPPORT: let content = content.with(font_style(), "Bold".to_string());
+            let content = content.with(font_style(), FontStyle::Bold);
             let tooltip = if let Some(hotkey) = hotkey {
                 let modifier = if hotkey_modifier != ModifiersState::empty() {
                     format!("{hotkey_modifier:?} + ")
@@ -207,7 +207,7 @@ impl ButtonStyle {
                         },
                     ),
                 )
-                // LEGACY_MISSING_ENUM_SUPPORT: .with_default(align_vertical_center())
+                .with(align_vertical(), Align::Center)
                 .with_background(background.into())
                 .with(
                     border_radius(),

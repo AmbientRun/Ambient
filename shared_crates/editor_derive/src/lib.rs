@@ -92,7 +92,7 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
         Ok(FoundCrate::Itself) => unreachable!(),
         Ok(FoundCrate::Name(name)) => {
             let name = Ident::new(&name, Span::call_site());
-            quote! { #name::core::layout::components }
+            quote! { #name::ui::layout }
         }
         Err(_) => match crate_name("ambient_ui_native") {
             Ok(FoundCrate::Itself) => unreachable!(),
@@ -187,9 +187,7 @@ fn do_derive_element_editor(input: TokenStream) -> TokenStream {
             fn render(self: Box<Self>, hooks: &mut #element_crate::Hooks) -> #element_crate::Element {
                 use #element_crate::{Element, ElementComponentExt};
                 use #ui_crate::{editor::{Editor, EditorRow, EditorColumn, Slider, IntegerSlider}, select::{ListSelect, DropdownSelect}, layout::{FlowRow, FlowColumn}, text::Text};
-                use #layout_crate::{margin,
-                    //LEGACY_MISSING_ENUM_SUPPORT: fit_horizontal_parent
-                };
+                use #layout_crate::{margin, fit_horizontal, Fit};
                 let Self { value, on_change, opts } = *self;
                 #body
             }
@@ -590,10 +588,10 @@ fn fields_editor(
             quote! {
                 FlowColumn(vec![
                     #(#rows
-                        //LEGACY_MISSING_ENUM_SUPPORT: .set(fit_horizontal_parent(), ())
+                        .set(fit_horizontal(), Fit::Parent)
                     ),*
                 ]).el()
-                    //LEGACY_MISSING_ENUM_SUPPORT: .set(fit_horizontal_parent(), ())
+                .set(fit_horizontal(), Fit::Parent)
             }
         }
     } else {
