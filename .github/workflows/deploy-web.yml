@@ -1,12 +1,14 @@
 name: "deploy-web"
 
 on:
-  pull_request:
-    branches: ["main"]
-  # push:
-  #   branches: ["main"]
-    # tags: [v*]
-  # TODO: remove, only for testing
+  workflow_dispatch:
+  schedule:
+    # every day at 2am UTC
+    - cron: '0 2 * * *'
+  push:
+    tags: [v*]
+    branches:
+      - main
 
 env:
   PACKAGE_NAME: ambient-web-${{ github.sha }}
