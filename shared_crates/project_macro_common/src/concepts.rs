@@ -1,15 +1,13 @@
-use std::collections::HashMap;
-
-use ambient_project_semantic::{Concept, Item, ItemId, ItemMap, ScalarValue, Scope, Type, Value};
+use ambient_project_semantic::{Concept, Item, ItemId, ItemMap, ScalarValue, Scope, Value};
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::{make_path, Context};
+use crate::{Context, TypePrinter};
 
 pub fn make_definitions(
     context: Context,
     items: &ItemMap,
-    type_map: &HashMap<ItemId<Type>, TokenStream>,
+    type_printer: &TypePrinter,
     root_scope_id: ItemId<Scope>,
     scope: &Scope,
 ) -> anyhow::Result<TokenStream> {
@@ -19,9 +17,10 @@ pub fn make_definitions(
         .filter_map(|c| context.extract_item_if_relevant(items, *c))
         .map(|concept| {
             let concept = &*concept;
-            let make_concept = generate_make(items, type_map, context, root_scope_id, concept)?;
-            let is_concept = generate_is(items, type_map, context, root_scope_id, concept)?;
-            let concept_fn = generate_concept(items, type_map, context, root_scope_id, concept)?;
+            let make_concept = generate_make(items, type_printer, context, root_scope_id, concept)?;
+            let is_concept = generate_is(items, type_printer, context, root_scope_id, concept)?;
+            let concept_fn =
+                generate_concept(items, type_printer, context, root_scope_id, concept)?;
             Ok(quote! {
                 #make_concept
                 #is_concept
@@ -57,7 +56,7 @@ pub fn make_definitions(
 
 fn generate_make(
     items: &ItemMap,
-    type_map: &HashMap<ItemId<Type>, TokenStream>,
+    type_printer: &TypePrinter,
     context: Context,
     root_scope_id: ItemId<Scope>,
     concept: &Concept,
@@ -67,7 +66,7 @@ fn generate_make(
         "Makes a *{}*.\n\n{}\n\n{}",
         concept.name.as_deref().unwrap_or(name),
         concept.description.as_ref().unwrap_or(&"".to_string()),
-        generate_component_list_doc_comment(items, type_map, context, concept)?
+        generate_component_list_doc_comment(items, type_printer, context, root_scope_id, concept)?
     );
     let make_ident = quote::format_ident!("make_{}", name);
 
@@ -75,16 +74,15 @@ fn generate_make(
         .extends
         .iter()
         .map(|id| {
-            let concept = &*items.get(id.as_resolved().unwrap())?;
-            let extend_path = make_path(&items.fully_qualified_display_path_rust_style(
-                concept,
-                Some(root_scope_id),
-                Some("concepts::make_"),
-            )?);
+            let path = context.get_path(
+                items,
+                Some("make_"),
+                root_scope_id,
+                id.as_resolved().unwrap(),
+            )?;
 
-            let prefix = context.path_prefix(concept.data());
             Ok(quote! {
-                with_merge(#prefix #extend_path())
+                with_merge(#path())
             })
         })
         .collect::<anyhow::Result<_>>()?;
@@ -93,16 +91,9 @@ fn generate_make(
         .components
         .iter()
         .map(|(id, default)| {
-            let component = &*items.get(id.as_resolved().unwrap())?;
-            let full_path = make_path(&items.fully_qualified_display_path_rust_style(
-                component,
-                Some(root_scope_id),
-                Some("components::"),
-            )?);
-            let prefix = context.path_prefix(component.data());
+            let path = context.get_path(items, None, root_scope_id, id.as_resolved().unwrap())?;
             let default = value_to_token_stream(items, default.as_resolved().unwrap())?;
-
-            Ok(quote! { with(#prefix #full_path(), #default) })
+            Ok(quote! { with(#path(), #default) })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
@@ -119,7 +110,7 @@ fn generate_make(
 
 fn generate_is(
     items: &ItemMap,
-    type_map: &HashMap<ItemId<Type>, TokenStream>,
+    type_printer: &TypePrinter,
     context: Context,
     root_scope_id: ItemId<Scope>,
     concept: &Concept,
@@ -129,40 +120,22 @@ fn generate_is(
         "Checks if the entity is a *{}*.\n\n{}\n\n{}",
         concept.name.as_deref().unwrap_or(name),
         concept.description.as_ref().unwrap_or(&"".to_string()),
-        generate_component_list_doc_comment(items, type_map, context, concept)?,
+        generate_component_list_doc_comment(items, type_printer, context, root_scope_id, concept)?,
     );
     let is_ident = quote::format_ident!("is_{}", name);
 
     let extends: Vec<_> = concept
         .extends
         .iter()
-        .map(|id| {
-            let concept = &*items.get(id.as_resolved().unwrap())?;
-            let extend_path = make_path(&items.fully_qualified_display_path_rust_style(
-                concept,
-                Some(root_scope_id),
-                Some("concepts::is_"),
-            )?);
-            let prefix = context.path_prefix(concept.data());
-            Ok(quote! {
-                #prefix #extend_path
-            })
-        })
+        .map(|id| context.get_path(items, Some("is_"), root_scope_id, id.as_resolved().unwrap()))
         .collect::<anyhow::Result<_>>()?;
 
     let components = concept
         .components
         .iter()
         .map(|(id, _)| {
-            let component = &*items.get(id.as_resolved().unwrap())?;
-            let full_path = make_path(&items.fully_qualified_display_path_rust_style(
-                component,
-                Some(root_scope_id),
-                Some("components::"),
-            )?);
-            let prefix = context.path_prefix(component.data());
-
-            Ok(quote! { #prefix #full_path() })
+            let path = context.get_path(items, None, root_scope_id, id.as_resolved().unwrap())?;
+            Ok(quote! { #path() })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
@@ -190,7 +163,7 @@ fn generate_is(
 
 fn generate_concept(
     items: &ItemMap,
-    type_map: &HashMap<ItemId<Type>, TokenStream>,
+    type_printer: &TypePrinter,
     context: Context,
     root_scope_id: ItemId<Scope>,
     concept: &Concept,
@@ -200,7 +173,7 @@ fn generate_concept(
         "Returns the components that comprise *{}* as a tuple.\n\n{}\n\n{}",
         concept.name.as_deref().unwrap_or(name),
         concept.description.as_ref().unwrap_or(&"".to_string()),
-        generate_component_list_doc_comment(items, type_map, context, concept)?,
+        generate_component_list_doc_comment(items, type_printer, context, root_scope_id, concept)?,
     );
     let fn_ident = quote::format_ident!("{}", name);
 
@@ -209,15 +182,8 @@ fn generate_concept(
         .components
         .iter()
         .map(|(id, _)| {
-            let component = &*items.get(id.as_resolved().unwrap())?;
-            let full_path = make_path(&items.fully_qualified_display_path_rust_style(
-                component,
-                Some(root_scope_id),
-                Some("components::"),
-            )?);
-            let prefix = context.path_prefix(component.data());
-
-            Ok(quote! { #prefix #full_path() })
+            let path = context.get_path(items, None, root_scope_id, id.as_resolved().unwrap())?;
+            Ok(quote! { #path() })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
@@ -226,10 +192,13 @@ fn generate_concept(
         .iter()
         .map(|(id, _)| {
             let component = &*items.get(id.as_resolved().unwrap())?;
-            Ok(type_map
-                .get(&component.type_.as_resolved().unwrap())
-                .cloned()
-                .unwrap())
+            type_printer.get(
+                context,
+                items,
+                None,
+                root_scope_id,
+                component.type_.as_resolved().unwrap(),
+            )
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
@@ -243,16 +212,19 @@ fn generate_concept(
 
 pub fn generate_component_list_doc_comment(
     items: &ItemMap,
-    type_map: &HashMap<ItemId<Type>, TokenStream>,
+    type_printer: &TypePrinter,
     context: Context,
+    root_scope_id: ItemId<Scope>,
     concept: &Concept,
 ) -> anyhow::Result<String> {
     let mut output = "*Definition*:\n\n```ignore\n{\n".to_string();
 
     fn write_level(
         items: &ItemMap,
-        type_map: &HashMap<ItemId<Type>, TokenStream>,
-        _context: Context,
+
+        type_printer: &TypePrinter,
+        context: Context,
+        root_scope_id: ItemId<Scope>,
         concept: &Concept,
         output: &mut String,
         level: usize,
@@ -262,15 +234,20 @@ pub fn generate_component_list_doc_comment(
         let padding = " ".repeat(level * 2);
         for (id, value) in &concept.components {
             let component = &*items.get(id.as_resolved().unwrap())?;
-            let component_path =
-                items.fully_qualified_display_path_ambient_style(component, false, None)?;
+            let component_path = items.fully_qualified_display_path(component, None, None)?;
 
             writeln!(
                 output,
                 "{padding}\"{component_path}\": {} = {},",
                 SemiprettyTokenStream(
-                    type_map
-                        .get(&component.type_.as_resolved().unwrap())
+                    type_printer
+                        .get(
+                            context,
+                            items,
+                            None,
+                            root_scope_id,
+                            component.type_.as_resolved().unwrap()
+                        )
                         .unwrap()
                         .clone()
                 ),
@@ -280,18 +257,33 @@ pub fn generate_component_list_doc_comment(
         for concept_id in &concept.extends {
             let concept_id = concept_id.as_resolved().unwrap();
             let concept = &*items.get(concept_id)?;
-            let concept_path =
-                items.fully_qualified_display_path_ambient_style(concept, false, None)?;
+            let concept_path = items.fully_qualified_display_path(concept, None, None)?;
 
             writeln!(output, "{padding}\"{concept_path}\": {{ // Concept.")?;
-            write_level(items, type_map, _context, concept, output, level + 1)?;
+            write_level(
+                items,
+                type_printer,
+                context,
+                root_scope_id,
+                concept,
+                output,
+                level + 1,
+            )?;
             writeln!(output, "{padding}}},")?;
         }
 
         Ok(())
     }
 
-    write_level(items, type_map, context, concept, &mut output, 1)?;
+    write_level(
+        items,
+        type_printer,
+        context,
+        root_scope_id,
+        concept,
+        &mut output,
+        1,
+    )?;
 
     output += "}\n```\n";
 

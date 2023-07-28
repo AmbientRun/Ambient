@@ -181,7 +181,7 @@ impl ItemMap {
     }
 
     /// Gets the fully qualified display path of an item.
-    pub fn fully_qualified_display_path<T: Item>(
+    pub fn fully_qualified_display_path_impl<T: Item>(
         &self,
         item: &T,
         separator: &str,
@@ -230,29 +230,13 @@ impl ItemMap {
         ))
     }
 
-    // TODO: unify with [fully_qualified_display_path_rust_style]
-    pub fn fully_qualified_display_path_ambient_style<T: Item>(
-        &self,
-        item: &T,
-        display_affixes: bool,
-        relative_to: Option<ItemId<Scope>>,
-    ) -> anyhow::Result<String> {
-        self.fully_qualified_display_path(
-            item,
-            "::",
-            (display_affixes, display_affixes),
-            relative_to,
-            None,
-        )
-    }
-
-    pub fn fully_qualified_display_path_rust_style<T: Item>(
+    pub fn fully_qualified_display_path<T: Item>(
         &self,
         item: &T,
         relative_to: Option<ItemId<Scope>>,
         item_prefix: Option<&str>,
     ) -> anyhow::Result<String> {
-        self.fully_qualified_display_path(item, "::", (false, false), relative_to, item_prefix)
+        self.fully_qualified_display_path_impl(item, "::", (false, false), relative_to, item_prefix)
     }
 }
 

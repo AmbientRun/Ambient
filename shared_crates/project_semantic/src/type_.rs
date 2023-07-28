@@ -55,7 +55,8 @@ impl Type {
         Self::new(
             data,
             TypeInner::Enum(Enum {
-                members: value.0.clone(),
+                description: value.description.clone(),
+                members: value.members.clone(),
             }),
         )
     }
@@ -99,5 +100,6 @@ impl Resolve for Type {
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Enum {
+    pub description: Option<String>,
     pub members: IndexMap<PascalCaseIdentifier, String>,
 }

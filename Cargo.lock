@@ -230,6 +230,7 @@ dependencies = [
  "once_cell",
  "paste",
  "rand 0.8.5",
+ "serde",
  "static_assertions",
  "thiserror",
  "ulid",

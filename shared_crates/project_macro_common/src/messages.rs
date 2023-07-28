@@ -1,15 +1,14 @@
-use std::collections::HashMap;
-
-use ambient_project_semantic::{Item, ItemId, ItemMap, ItemSource, Scope, Type};
+use ambient_project_semantic::{Item, ItemId, ItemMap, ItemSource, Scope};
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::{make_path, Context};
+use crate::{make_path, Context, TypePrinter};
 
 pub fn make_definitions(
     context: Context,
     items: &ItemMap,
-    type_map: &HashMap<ItemId<Type>, proc_macro2::TokenStream>,
+    type_printer: &TypePrinter,
+    root_scope_id: ItemId<Scope>,
     scope: &Scope,
 ) -> anyhow::Result<TokenStream> {
     let messages = scope
@@ -29,13 +28,29 @@ pub fn make_definitions(
 
             let fields = message.fields.iter().map(|f| {
                 let name = make_path(f.0.as_str());
-                let ty = &type_map[&f.1.as_resolved().unwrap()];
+                let ty = type_printer
+                    .get(
+                        context,
+                        items,
+                        None,
+                        root_scope_id,
+                        f.1.as_resolved().unwrap(),
+                    )
+                    .unwrap();
                 quote! { pub #name: #ty }
             });
 
             let new_parameters = message.fields.iter().map(|f| {
                 let name = make_path(f.0.as_str());
-                let ty = &type_map[&f.1.as_resolved().unwrap()];
+                let ty = type_printer
+                    .get(
+                        context,
+                        items,
+                        None,
+                        root_scope_id,
+                        f.1.as_resolved().unwrap(),
+                    )
+                    .unwrap();
                 quote! { #name: impl Into<#ty> }
             });
 
@@ -51,7 +66,15 @@ pub fn make_definitions(
 
             let deserialize_fields = message.fields.iter().map(|f| {
                 let name = make_path(f.0.as_str());
-                let ty = &type_map[&f.1.as_resolved().unwrap()];
+                let ty = type_printer
+                    .get(
+                        context,
+                        items,
+                        None,
+                        root_scope_id,
+                        f.1.as_resolved().unwrap(),
+                    )
+                    .unwrap();
                 quote! { #name: #ty ::deserialize_message_part(&mut input)? }
             });
 

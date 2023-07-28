@@ -33,6 +33,7 @@ wit-bindgen = { workspace = true }
 ulid = { workspace = true }
 static_assertions = { workspace = true }
 indexmap = { workspace = true }
+serde = { workspace = true }
 
 [features]
 client = []

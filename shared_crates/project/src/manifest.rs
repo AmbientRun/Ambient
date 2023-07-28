@@ -416,6 +416,8 @@ mod tests {
         version = "0.0.1"
 
         [enums.CellState]
+        description = "The current cell state"
+        [enums.CellState.members]
         Taken = "The cell is taken"
         Free = "The cell is free"
         "#;
@@ -435,10 +437,13 @@ mod tests {
                 messages: Default::default(),
                 enums: IndexMap::from_iter([(
                     pci("CellState"),
-                    Enum(IndexMap::from_iter([
-                        (pci("Taken"), "The cell is taken".to_string()),
-                        (pci("Free"), "The cell is free".to_string()),
-                    ]))
+                    Enum {
+                        description: Some("The current cell state".to_string()),
+                        members: IndexMap::from_iter([
+                            (pci("Taken"), "The cell is taken".to_string()),
+                            (pci("Free"), "The cell is free".to_string()),
+                        ])
+                    }
                 )]),
                 dependencies: Default::default(),
             })
@@ -454,9 +459,9 @@ mod tests {
         version = "0.0.1"
 
         [components]
-        test = { type = "i32", name = "Test", description = "Test" }
-        vec_test = { type = { container_type = "vec", element_type = "i32" }, name = "Test", description = "Test" }
-        option_test = { type = { container_type = "option", element_type = "i32" }, name = "Test", description = "Test" }
+        test = { type = "I32", name = "Test", description = "Test" }
+        vec_test = { type = { container_type = "Vec", element_type = "I32" }, name = "Test", description = "Test" }
+        option_test = { type = { container_type = "Option", element_type = "I32" }, name = "Test", description = "Test" }
 
         "#;
 
@@ -480,7 +485,7 @@ mod tests {
                         Component {
                             name: Some("Test".to_string()),
                             description: Some("Test".to_string()),
-                            type_: ComponentType::Item(i("i32").into()),
+                            type_: ComponentType::Item(i("I32").into()),
                             attributes: vec![],
                             default: None,
                         }
@@ -492,7 +497,7 @@ mod tests {
                             description: Some("Test".to_string()),
                             type_: ComponentType::Contained {
                                 type_: ContainerType::Vec,
-                                element_type: i("i32").into()
+                                element_type: i("I32").into()
                             },
                             attributes: vec![],
                             default: None,
@@ -505,7 +510,7 @@ mod tests {
                             description: Some("Test".to_string()),
                             type_: ComponentType::Contained {
                                 type_: ContainerType::Option,
-                                element_type: i("i32").into()
+                                element_type: i("I32").into()
                             },
                             attributes: vec![],
                             default: None,

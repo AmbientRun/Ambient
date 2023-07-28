@@ -2,7 +2,8 @@ extern crate proc_macro;
 
 use ambient_project::ItemPathBuf;
 use ambient_project_semantic::{
-    ArrayFileProvider, Item, ItemData, ItemId, ItemMap, ItemSource, Semantic, TypeInner,
+    ArrayFileProvider, Item, ItemData, ItemId, ItemMap, ItemSource, ItemType, Scope, Semantic,
+    Type, TypeInner,
 };
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
@@ -10,7 +11,9 @@ use std::{cell::Ref, collections::HashMap, path::Path};
 
 mod components;
 mod concepts;
+mod enums;
 mod messages;
+mod scopes;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Context {
@@ -42,7 +45,34 @@ impl Context {
         Some(item)
     }
 
-    pub fn path_prefix(&self, data: &ItemData) -> TokenStream {
+    pub fn get_path<T: Item>(
+        &self,
+        items: &ItemMap,
+        prefix: Option<&str>,
+        root_scope_id: ItemId<Scope>,
+        id: ItemId<T>,
+    ) -> anyhow::Result<TokenStream> {
+        let item = items.get(id).unwrap();
+        let path_prefix = self.path_prefix_impl(item.data());
+        let type_namespace = match T::TYPE {
+            ItemType::Component => "components::",
+            ItemType::Concept => "concepts::",
+            ItemType::Message => "messages::",
+            ItemType::Type => "types::",
+            ItemType::Attribute => "attributes::",
+            ItemType::Scope => "scopes::",
+        };
+        let prefix = format!("{type_namespace}{}", prefix.unwrap_or_default());
+        let path = make_path(&items.fully_qualified_display_path(
+            &*item,
+            Some(root_scope_id),
+            Some(prefix.as_str()),
+        )?);
+
+        Ok(quote! { #path_prefix #path })
+    }
+
+    fn path_prefix_impl(&self, data: &ItemData) -> TokenStream {
         match (self, data.source) {
             (_, ItemSource::System) => quote! {},
 
@@ -89,32 +119,18 @@ pub fn generate_code(
 
     let items = &semantic.items;
     let root_scope = &*semantic.root_scope();
-    let type_map = {
-        let mut type_map = HashMap::new();
-
-        // First pass: add all root-level primitive types
+    let type_printer = {
+        let mut map = HashMap::new();
         for type_id in root_scope.types.values() {
             let type_ = items.get(*type_id).expect("type id not in items");
             if let TypeInner::Primitive(pt) = type_.inner {
                 let ty_tokens = syn::parse_str::<syn::Type>(&pt.to_string())?.to_token_stream();
-                type_map.insert(*type_id, ty_tokens.clone());
-                type_map.insert(items.get_vec_id(*type_id), quote! {Vec::<#ty_tokens>});
-                type_map.insert(items.get_option_id(*type_id), quote! {Option::<#ty_tokens>});
+                map.insert(*type_id, ty_tokens.clone());
+                map.insert(items.get_vec_id(*type_id), quote! {Vec::<#ty_tokens>});
+                map.insert(items.get_option_id(*type_id), quote! {Option::<#ty_tokens>});
             }
         }
-
-        // Second pass: traverse the type graph and add all enums
-        root_scope.visit_recursive(items, |scope| {
-            for type_id in scope.types.values() {
-                let type_ = items.get(*type_id).expect("type id not in items");
-                if let TypeInner::Enum { .. } = type_.inner {
-                    type_map.insert(*type_id, quote! {u32});
-                }
-            }
-            Ok(())
-        })?;
-
-        type_map
+        TypePrinter(map)
     };
 
     let generate_from_scope_id = generate_from_scope_path
@@ -135,7 +151,7 @@ pub fn generate_code(
     let scopes = scopes::make_scopes(
         context,
         items,
-        &type_map,
+        &type_printer,
         generate_from_scope_id,
         generate_from_scope,
     )?;
@@ -156,98 +172,20 @@ pub fn generate_code(
 fn make_path(id: &str) -> syn::Path {
     syn::parse_str(id).unwrap()
 }
-mod scopes {
-    use std::collections::HashMap;
 
-    use ambient_project_semantic::{ItemId, ItemMap, Scope, Type};
-    use proc_macro2::TokenStream;
-    use quote::quote;
-
-    use crate::{make_path, Context};
-
-    pub fn make_scopes(
+pub struct TypePrinter(HashMap<ItemId<Type>, TokenStream>);
+impl TypePrinter {
+    pub fn get(
+        &self,
         context: Context,
         items: &ItemMap,
-        type_map: &HashMap<ItemId<Type>, TokenStream>,
+        prefix: Option<&str>,
         root_scope_id: ItemId<Scope>,
-        scope: &Scope,
+        id: ItemId<Type>,
     ) -> anyhow::Result<TokenStream> {
-        let scopes = scope
-            .scopes
-            .values()
-            .map(|s| {
-                let scope = items.get(*s)?;
-                let id = make_path(scope.data.id.as_str());
-                let inner = make_scopes(context, items, type_map, root_scope_id, &scope)?;
-                if !inner.is_empty() {
-                    Ok(quote! {
-                        #[allow(unused)]
-                        pub mod #id {
-                            #inner
-                        }
-                    })
-                } else {
-                    Ok(quote! {})
-                }
-            })
-            .collect::<anyhow::Result<Vec<_>>>()?;
-
-        let components = {
-            let inner = crate::components::make_definitions(
-                context,
-                items,
-                type_map,
-                root_scope_id,
-                scope,
-            )?;
-            if inner.is_empty() {
-                quote! {}
-            } else {
-                quote! {
-                    /// Auto-generated component definitions.
-                    pub mod components {
-                        #inner
-                    }
-                }
-            }
-        };
-        let concepts = {
-            let inner =
-                crate::concepts::make_definitions(context, items, type_map, root_scope_id, scope)?;
-            if inner.is_empty() {
-                quote! {}
-            } else {
-                quote! {
-                    /// Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept.
-                    ///
-                    /// They do not have any runtime representation outside of the components that compose them.
-                    pub mod concepts {
-                        #inner
-                    }
-                }
-            }
-        };
-        let messages = {
-            let inner = crate::messages::make_definitions(context, items, type_map, scope)?;
-            if inner.is_empty() {
-                quote! {}
-            } else {
-                quote! {
-                    /// Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,
-                    /// and with other modules.
-                    pub mod messages {
-                        #inner
-                    }
-                }
-            }
-        };
-
-        Ok(quote! {
-            #(#scopes)*
-
-            #components
-            #concepts
-            #messages
-        })
+        match self.0.get(&id) {
+            Some(ts) => Ok(ts.clone()),
+            None => context.get_path(items, prefix, root_scope_id, id),
+        }
     }
 }

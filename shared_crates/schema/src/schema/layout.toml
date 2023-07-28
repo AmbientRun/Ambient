@@ -124,20 +124,28 @@ description = "Upload the width and height of this UI element to the GPU."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [enums.Align]
+description = "Layout alignment."
+[enums.Align.members]
 Begin = "Begin"
 Center = "Center"
 End = "End"
 
 [enums.Fit]
+description = "Layout fit."
+[enums.Fit.members]
 None = "None"
 Parent = "Parent"
 Children = "Children"
 
 [enums.Orientation]
+description = "Layout orientation."
+[enums.Orientation.members]
 Horizontal = "Horizontal"
 Vertical = "Vertical"
 
 [enums.Docking]
+description = "The edge to dock to."
+[enums.Docking.members]
 Left = "Left"
 Right = "Right"
 Top = "Top"
@@ -145,6 +153,8 @@ Bottom = "Bottom"
 Fill = "Fill"
 
 [enums.Layout]
+description = "The type of the layout to use."
+[enums.Layout.members]
 Flow = "Bottom-up flow layout."
 Dock = "Top-down dock layout."
 Bookcase = "Min-max bookcase layout."

@@ -1,6 +1,6 @@
 use crate::{
-    Attribute, Component, Concept, Item, ItemMap, Message, ResolvableItemId, Scope, Semantic, Type,
-    TypeInner,
+    Attribute, Component, Concept, Item, ItemId, ItemMap, Message, ResolvableItemId, Scope,
+    Semantic, Type, TypeInner,
 };
 
 pub struct Printer {
@@ -21,7 +21,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(scope, true, None)?
+            fully_qualified_display_path_ambient_style(items, scope, true, None)?
         );
 
         self.with_indent(|p| {
@@ -64,7 +64,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(component, true, None)?
+            fully_qualified_display_path_ambient_style(items, component, true, None)?
         );
 
         self.with_indent(|p| {
@@ -101,7 +101,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(concept, true, None)?
+            fully_qualified_display_path_ambient_style(items, concept, true, None)?
         );
 
         self.with_indent(|p| {
@@ -139,7 +139,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(message, true, None)?
+            fully_qualified_display_path_ambient_style(items, message, true, None)?
         );
 
         self.with_indent(|p| {
@@ -167,15 +167,29 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(type_, true, None)?,
+            fully_qualified_display_path_ambient_style(items, type_, true, None)?,
         );
         if let TypeInner::Enum(e) = &type_.inner {
             self.with_indent(|p| {
-                for (name, description) in &e.members {
-                    p.print_indent();
-                    print!("{name}: {description}");
-                    println!();
-                }
+                p.print_indent();
+                println!(
+                    "description: {:?}",
+                    e.description.as_deref().unwrap_or_default()
+                );
+
+                p.print_indent();
+                println!(
+                    "members: {:?}",
+                    e.description.as_deref().unwrap_or_default()
+                );
+                p.with_indent(|p| {
+                    for (name, description) in &e.members {
+                        p.print_indent();
+                        print!("{name}: {description:?}");
+                        println!();
+                    }
+                    Ok(())
+                })?;
                 Ok(())
             })?;
         }
@@ -186,7 +200,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            items.fully_qualified_display_path_ambient_style(attribute, true, None)?
+            fully_qualified_display_path_ambient_style(items, attribute, true, None)?
         );
         Ok(())
     }
@@ -215,7 +229,22 @@ fn write_resolvable_id<T: Item>(
     Ok(match r {
         ResolvableItemId::Unresolved(unresolved) => format!("unresolved({:?})", unresolved),
         ResolvableItemId::Resolved(resolved) => {
-            items.fully_qualified_display_path_ambient_style(&*items.get(*resolved)?, true, None)?
+            fully_qualified_display_path_ambient_style(items, &*items.get(*resolved)?, true, None)?
         }
     })
+}
+
+pub fn fully_qualified_display_path_ambient_style<T: Item>(
+    items: &ItemMap,
+    item: &T,
+    display_affixes: bool,
+    relative_to: Option<ItemId<Scope>>,
+) -> anyhow::Result<String> {
+    items.fully_qualified_display_path_impl(
+        item,
+        "::",
+        (display_affixes, display_affixes),
+        relative_to,
+        None,
+    )
 }

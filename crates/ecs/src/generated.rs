@@ -351,7 +351,64 @@ pub mod layout {
         };
         use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
         use std::time::Duration;
-        components ! ("layout" , { # [doc = "**Align horizontal**: Layout alignment: horizontal.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Align horizontal"] , Description ["Layout alignment: horizontal."]] align_horizontal : u32 , # [doc = "**Align vertical**: Layout alignment: vertical.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Align vertical"] , Description ["Layout alignment: vertical."]] align_vertical : u32 , # [doc = "**Docking**: Layout docking.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Docking"] , Description ["Layout docking."]] docking : u32 , # [doc = "**Fit horizontal**: Layout fit: horizontal.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Fit horizontal"] , Description ["Layout fit: horizontal."]] fit_horizontal : u32 , # [doc = "**Fit vertical**: Layout fit: vertical.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Fit vertical"] , Description ["Layout fit: vertical."]] fit_vertical : u32 , # [doc = "**Layout**: Layout.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Layout"] , Description ["Layout."]] layout : u32 , # [doc = "**Orientation**: Layout orientation.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Orientation"] , Description ["Layout orientation."]] orientation : u32 , # [doc = "**Is book file**: This is a file in a `layout_bookcase`.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Is book file"] , Description ["This is a file in a `layout_bookcase`."]] is_book_file : () , # [doc = "**Margin**: Layout margin: [top, right, bottom, left].\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Margin"] , Description ["Layout margin: [top, right, bottom, left]."]] margin : Vec4 , # [doc = "**Padding**: Layout padding: [top, right, bottom, left].\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Padding"] , Description ["Layout padding: [top, right, bottom, left]."]] padding : Vec4 , # [doc = "**Mesh to local from size**: Update the `mesh_to_local` based on the width and height of this entity.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Mesh to local from size"] , Description ["Update the `mesh_to_local` based on the width and height of this entity."]] mesh_to_local_from_size : () , # [doc = "**Minimum height**: The minimum height of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Minimum height"] , Description ["The minimum height of a UI element."]] min_height : f32 , # [doc = "**Minimum width**: The minimum width of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Minimum width"] , Description ["The minimum width of a UI element."]] min_width : f32 , # [doc = "**Maximum height**: The maximum height of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Maximum height"] , Description ["The maximum height of a UI element."]] max_height : f32 , # [doc = "**Maximum width**: The maximum width of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Maximum width"] , Description ["The maximum width of a UI element."]] max_width : f32 , # [doc = "**Screen**: This entity will be treated as a screen. Used by the Screen ui component.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Screen"] , Description ["This entity will be treated as a screen. Used by the Screen ui component."]] screen : () , # [doc = "**Space between items**: Space between items in a layout.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Space between items"] , Description ["Space between items in a layout."]] space_between_items : f32 , # [doc = "**Width**: The width of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Width"] , Description ["The width of a UI element."]] width : f32 , # [doc = "**Height**: The height of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Height"] , Description ["The height of a UI element."]] height : f32 , # [doc = "**GPU UI size**: Upload the width and height of this UI element to the GPU.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["GPU UI size"] , Description ["Upload the width and height of this UI element to the GPU."]] gpu_ui_size : Vec4 , });
+        components ! ("layout" , { # [doc = "**Align horizontal**: Layout alignment: horizontal.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Align horizontal"] , Description ["Layout alignment: horizontal."]] align_horizontal : crate :: generated :: layout :: types :: Align , # [doc = "**Align vertical**: Layout alignment: vertical.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Align vertical"] , Description ["Layout alignment: vertical."]] align_vertical : crate :: generated :: layout :: types :: Align , # [doc = "**Docking**: Layout docking.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Docking"] , Description ["Layout docking."]] docking : crate :: generated :: layout :: types :: Docking , # [doc = "**Fit horizontal**: Layout fit: horizontal.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Fit horizontal"] , Description ["Layout fit: horizontal."]] fit_horizontal : crate :: generated :: layout :: types :: Fit , # [doc = "**Fit vertical**: Layout fit: vertical.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Fit vertical"] , Description ["Layout fit: vertical."]] fit_vertical : crate :: generated :: layout :: types :: Fit , # [doc = "**Layout**: Layout.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Layout"] , Description ["Layout."]] layout : crate :: generated :: layout :: types :: Layout , # [doc = "**Orientation**: Layout orientation.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Orientation"] , Description ["Layout orientation."]] orientation : crate :: generated :: layout :: types :: Orientation , # [doc = "**Is book file**: This is a file in a `layout_bookcase`.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Is book file"] , Description ["This is a file in a `layout_bookcase`."]] is_book_file : () , # [doc = "**Margin**: Layout margin: [top, right, bottom, left].\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Margin"] , Description ["Layout margin: [top, right, bottom, left]."]] margin : Vec4 , # [doc = "**Padding**: Layout padding: [top, right, bottom, left].\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Padding"] , Description ["Layout padding: [top, right, bottom, left]."]] padding : Vec4 , # [doc = "**Mesh to local from size**: Update the `mesh_to_local` based on the width and height of this entity.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Mesh to local from size"] , Description ["Update the `mesh_to_local` based on the width and height of this entity."]] mesh_to_local_from_size : () , # [doc = "**Minimum height**: The minimum height of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Minimum height"] , Description ["The minimum height of a UI element."]] min_height : f32 , # [doc = "**Minimum width**: The minimum width of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Minimum width"] , Description ["The minimum width of a UI element."]] min_width : f32 , # [doc = "**Maximum height**: The maximum height of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Maximum height"] , Description ["The maximum height of a UI element."]] max_height : f32 , # [doc = "**Maximum width**: The maximum width of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Maximum width"] , Description ["The maximum width of a UI element."]] max_width : f32 , # [doc = "**Screen**: This entity will be treated as a screen. Used by the Screen ui component.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Screen"] , Description ["This entity will be treated as a screen. Used by the Screen ui component."]] screen : () , # [doc = "**Space between items**: Space between items in a layout.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Space between items"] , Description ["Space between items in a layout."]] space_between_items : f32 , # [doc = "**Width**: The width of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Width"] , Description ["The width of a UI element."]] width : f32 , # [doc = "**Height**: The height of a UI element.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Height"] , Description ["The height of a UI element."]] height : f32 , # [doc = "**GPU UI size**: Upload the width and height of this UI element to the GPU.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["GPU UI size"] , Description ["Upload the width and height of this UI element to the GPU."]] gpu_ui_size : Vec4 , });
+    }
+    #[doc = r" Auto-generated type definitions."]
+    pub mod types {
+        #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
+        #[doc = "**Align**: Layout alignment."]
+        pub enum Align {
+            #[doc = "Begin"]
+            Begin,
+            #[doc = "Center"]
+            Center,
+            #[doc = "End"]
+            End,
+        }
+        #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
+        #[doc = "**Fit**: Layout fit."]
+        pub enum Fit {
+            #[doc = "None"]
+            None,
+            #[doc = "Parent"]
+            Parent,
+            #[doc = "Children"]
+            Children,
+        }
+        #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
+        #[doc = "**Orientation**: Layout orientation."]
+        pub enum Orientation {
+            #[doc = "Horizontal"]
+            Horizontal,
+            #[doc = "Vertical"]
+            Vertical,
+        }
+        #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
+        #[doc = "**Docking**: The edge to dock to."]
+        pub enum Docking {
+            #[doc = "Left"]
+            Left,
+            #[doc = "Right"]
+            Right,
+            #[doc = "Top"]
+            Top,
+            #[doc = "Bottom"]
+            Bottom,
+            #[doc = "Fill"]
+            Fill,
+        }
+        #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
+        #[doc = "**Layout**: The type of the layout to use."]
+        pub enum Layout {
+            #[doc = "Bottom-up flow layout."]
+            Flow,
+            #[doc = "Top-down dock layout."]
+            Dock,
+            #[doc = "Min-max bookcase layout."]
+            Bookcase,
+            #[doc = "Width to children."]
+            WidthToChildren,
+        }
     }
 }
 #[allow(unused)]
@@ -678,7 +735,30 @@ pub mod text {
         };
         use glam::{Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
         use std::time::Duration;
-        components ! ("text" , { # [doc = "**Font family**: Font family to be used. Can either be 'Default', 'FontAwesome', 'FontAwesomeSolid', 'Code' or a url to a font.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Font family"] , Description ["Font family to be used. Can either be 'Default', 'FontAwesome', 'FontAwesomeSolid', 'Code' or a url to a font."]] font_family : String , # [doc = "**Font size**: Size of the font.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Font size"] , Description ["Size of the font."]] font_size : f32 , # [doc = "**Font style**: Style of the font.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Font style"] , Description ["Style of the font."]] font_style : u32 , # [doc = "**Text**: Create a text mesh on this entity.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Text"] , Description ["Create a text mesh on this entity."]] text : String , });
+        components ! ("text" , { # [doc = "**Font family**: Font family to be used. Can either be 'Default', 'FontAwesome', 'FontAwesomeSolid', 'Code' or a url to a font.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Font family"] , Description ["Font family to be used. Can either be 'Default', 'FontAwesome', 'FontAwesomeSolid', 'Code' or a url to a font."]] font_family : String , # [doc = "**Font size**: Size of the font.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Font size"] , Description ["Size of the font."]] font_size : f32 , # [doc = "**Font style**: Style of the font.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Font style"] , Description ["Style of the font."]] font_style : crate :: generated :: text :: types :: FontStyle , # [doc = "**Text**: Create a text mesh on this entity.\n\n*Attributes*: Debuggable, Networked, Store"] @ [Debuggable , Networked , Store , Name ["Text"] , Description ["Create a text mesh on this entity."]] text : String , });
+    }
+    #[doc = r" Auto-generated type definitions."]
+    pub mod types {
+        #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
+        #[doc = "**FontStyle**: Style of the font."]
+        pub enum FontStyle {
+            #[doc = "Use bold for this text."]
+            Bold,
+            #[doc = "Use bold italic for this text."]
+            BoldItalic,
+            #[doc = "Use medium for this text."]
+            Medium,
+            #[doc = "Use medium italic for this text."]
+            MediumItalic,
+            #[doc = "Use regular for this text."]
+            Regular,
+            #[doc = "Use italic for this text."]
+            Italic,
+            #[doc = "Use light for this text."]
+            Light,
+            #[doc = "Use light italic for this text."]
+            LightItalic,
+        }
     }
 }
 #[allow(unused)]

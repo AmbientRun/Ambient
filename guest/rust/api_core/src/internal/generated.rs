@@ -774,46 +774,46 @@ pub mod ambient_core {
                 once_cell::sync::Lazy,
                 prelude::*,
             };
-            static ALIGN_HORIZONTAL: Lazy<Component<u32>> =
+            static ALIGN_HORIZONTAL: Lazy<Component<crate::ambient_core::layout::types::Align>> =
                 Lazy::new(|| __internal_get_component("ambient_core::layout::align_horizontal"));
             #[doc = "**Align horizontal**: Layout alignment: horizontal.\n\n*Attributes*: Debuggable, Networked, Store"]
-            pub fn align_horizontal() -> Component<u32> {
+            pub fn align_horizontal() -> Component<crate::ambient_core::layout::types::Align> {
                 *ALIGN_HORIZONTAL
             }
-            static ALIGN_VERTICAL: Lazy<Component<u32>> =
+            static ALIGN_VERTICAL: Lazy<Component<crate::ambient_core::layout::types::Align>> =
                 Lazy::new(|| __internal_get_component("ambient_core::layout::align_vertical"));
             #[doc = "**Align vertical**: Layout alignment: vertical.\n\n*Attributes*: Debuggable, Networked, Store"]
-            pub fn align_vertical() -> Component<u32> {
+            pub fn align_vertical() -> Component<crate::ambient_core::layout::types::Align> {
                 *ALIGN_VERTICAL
             }
-            static DOCKING: Lazy<Component<u32>> =
+            static DOCKING: Lazy<Component<crate::ambient_core::layout::types::Docking>> =
                 Lazy::new(|| __internal_get_component("ambient_core::layout::docking"));
             #[doc = "**Docking**: Layout docking.\n\n*Attributes*: Debuggable, Networked, Store"]
-            pub fn docking() -> Component<u32> {
+            pub fn docking() -> Component<crate::ambient_core::layout::types::Docking> {
                 *DOCKING
             }
-            static FIT_HORIZONTAL: Lazy<Component<u32>> =
+            static FIT_HORIZONTAL: Lazy<Component<crate::ambient_core::layout::types::Fit>> =
                 Lazy::new(|| __internal_get_component("ambient_core::layout::fit_horizontal"));
             #[doc = "**Fit horizontal**: Layout fit: horizontal.\n\n*Attributes*: Debuggable, Networked, Store"]
-            pub fn fit_horizontal() -> Component<u32> {
+            pub fn fit_horizontal() -> Component<crate::ambient_core::layout::types::Fit> {
                 *FIT_HORIZONTAL
             }
-            static FIT_VERTICAL: Lazy<Component<u32>> =
+            static FIT_VERTICAL: Lazy<Component<crate::ambient_core::layout::types::Fit>> =
                 Lazy::new(|| __internal_get_component("ambient_core::layout::fit_vertical"));
             #[doc = "**Fit vertical**: Layout fit: vertical.\n\n*Attributes*: Debuggable, Networked, Store"]
-            pub fn fit_vertical() -> Component<u32> {
+            pub fn fit_vertical() -> Component<crate::ambient_core::layout::types::Fit> {
                 *FIT_VERTICAL
             }
-            static LAYOUT: Lazy<Component<u32>> =
+            static LAYOUT: Lazy<Component<crate::ambient_core::layout::types::Layout>> =
                 Lazy::new(|| __internal_get_component("ambient_core::layout::layout"));
             #[doc = "**Layout**: Layout.\n\n*Attributes*: Debuggable, Networked, Store"]
-            pub fn layout() -> Component<u32> {
+            pub fn layout() -> Component<crate::ambient_core::layout::types::Layout> {
                 *LAYOUT
             }
-            static ORIENTATION: Lazy<Component<u32>> =
+            static ORIENTATION: Lazy<Component<crate::ambient_core::layout::types::Orientation>> =
                 Lazy::new(|| __internal_get_component("ambient_core::layout::orientation"));
             #[doc = "**Orientation**: Layout orientation.\n\n*Attributes*: Debuggable, Networked, Store"]
-            pub fn orientation() -> Component<u32> {
+            pub fn orientation() -> Component<crate::ambient_core::layout::types::Orientation> {
                 *ORIENTATION
             }
             static IS_BOOK_FILE: Lazy<Component<()>> =
@@ -894,6 +894,73 @@ pub mod ambient_core {
             #[doc = "**GPU UI size**: Upload the width and height of this UI element to the GPU.\n\n*Attributes*: Debuggable, Networked, Store"]
             pub fn gpu_ui_size() -> Component<Vec4> {
                 *GPU_UI_SIZE
+            }
+        }
+        #[doc = r" Auto-generated type definitions."]
+        pub mod types {
+            #[derive(
+                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
+            )]
+            #[doc = "**Align**: Layout alignment."]
+            pub enum Align {
+                #[doc = "Begin"]
+                Begin,
+                #[doc = "Center"]
+                Center,
+                #[doc = "End"]
+                End,
+            }
+            #[derive(
+                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
+            )]
+            #[doc = "**Fit**: Layout fit."]
+            pub enum Fit {
+                #[doc = "None"]
+                None,
+                #[doc = "Parent"]
+                Parent,
+                #[doc = "Children"]
+                Children,
+            }
+            #[derive(
+                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
+            )]
+            #[doc = "**Orientation**: Layout orientation."]
+            pub enum Orientation {
+                #[doc = "Horizontal"]
+                Horizontal,
+                #[doc = "Vertical"]
+                Vertical,
+            }
+            #[derive(
+                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
+            )]
+            #[doc = "**Docking**: The edge to dock to."]
+            pub enum Docking {
+                #[doc = "Left"]
+                Left,
+                #[doc = "Right"]
+                Right,
+                #[doc = "Top"]
+                Top,
+                #[doc = "Bottom"]
+                Bottom,
+                #[doc = "Fill"]
+                Fill,
+            }
+            #[derive(
+                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
+            )]
+            #[doc = "**Layout**: The type of the layout to use."]
+            pub enum Layout {
+                #[doc = "Bottom-up flow layout."]
+                Flow,
+                #[doc = "Top-down dock layout."]
+                Dock,
+                #[doc = "Min-max bookcase layout."]
+                Bookcase,
+                #[doc = "Width to children."]
+                WidthToChildren,
             }
         }
     }
@@ -1704,10 +1771,10 @@ pub mod ambient_core {
             pub fn font_size() -> Component<f32> {
                 *FONT_SIZE
             }
-            static FONT_STYLE: Lazy<Component<u32>> =
+            static FONT_STYLE: Lazy<Component<crate::ambient_core::text::types::FontStyle>> =
                 Lazy::new(|| __internal_get_component("ambient_core::text::font_style"));
             #[doc = "**Font style**: Style of the font.\n\n*Attributes*: Debuggable, Networked, Store"]
-            pub fn font_style() -> Component<u32> {
+            pub fn font_style() -> Component<crate::ambient_core::text::types::FontStyle> {
                 *FONT_STYLE
             }
             static TEXT: Lazy<Component<String>> =
@@ -1715,6 +1782,31 @@ pub mod ambient_core {
             #[doc = "**Text**: Create a text mesh on this entity.\n\n*Attributes*: Debuggable, Networked, Store"]
             pub fn text() -> Component<String> {
                 *TEXT
+            }
+        }
+        #[doc = r" Auto-generated type definitions."]
+        pub mod types {
+            #[derive(
+                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
+            )]
+            #[doc = "**FontStyle**: Style of the font."]
+            pub enum FontStyle {
+                #[doc = "Use bold for this text."]
+                Bold,
+                #[doc = "Use bold italic for this text."]
+                BoldItalic,
+                #[doc = "Use medium for this text."]
+                Medium,
+                #[doc = "Use medium italic for this text."]
+                MediumItalic,
+                #[doc = "Use regular for this text."]
+                Regular,
+                #[doc = "Use italic for this text."]
+                Italic,
+                #[doc = "Use light for this text."]
+                Light,
+                #[doc = "Use light italic for this text."]
+                LightItalic,
             }
         }
     }

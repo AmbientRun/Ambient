@@ -28,6 +28,8 @@ description = "Create a text mesh on this entity."
 attributes = ["Debuggable", "Networked", "Store"]
 
 [enums.FontStyle]
+description = "Style of the font."
+[enums.FontStyle.members]
 Bold = "Use bold for this text."
 BoldItalic = "Use bold italic for this text."
 Medium = "Use medium for this text."
