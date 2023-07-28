@@ -1,7 +1,7 @@
 use campfire::{
     cli::Cli,
     doc, example, golden_images, install, release,
-    web::{self, Web},
+    web::{self},
 };
 use clap::Parser;
 

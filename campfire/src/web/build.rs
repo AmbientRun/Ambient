@@ -1,11 +1,6 @@
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
-};
-
 use anyhow::Context;
-use clap::{Args, Subcommand, ValueEnum};
-use tokio::process::Command;
+use clap::{Args, ValueEnum};
+use std::{path::PathBuf, process::Command};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub(crate) enum Target {
@@ -19,31 +14,75 @@ pub(crate) enum Target {
 pub struct BuildOptions {
     #[arg(long, default_value = "dev")]
     pub profile: String,
+    #[arg(long, default_value = "pkg")]
+    pub pkg_name: String,
     #[arg(long, value_enum, default_value = "bundler")]
     target: Target,
 }
 
-pub async fn run(opts: BuildOptions) -> anyhow::Result<()> {
-    ensure_wasm_pack().await?;
-    let output_path = run_cargo_build(&opts).await?;
+pub fn run(opts: BuildOptions) -> anyhow::Result<()> {
+    ensure_wasm_pack()?;
+
+    let output_path = run_cargo_build(&opts)?;
 
     eprintln!("Built package: {:?}", output_path);
 
     Ok(())
 }
 
-pub async fn ensure_wasm_pack() -> anyhow::Result<()> {
+#[cfg(not(target_os = "linux"))]
+pub(crate) fn install_wasm_pack() -> anyhow::Result<()> {
+    eprintln!("Installing wasm-pack from source");
+    let status = Command::new("cargo")
+        .args(["install", "wasm-pack"])
+        .spawn()?
+        .wait()?;
+
+    if !status.success() {
+        anyhow::bail!("Failed to install wasm-pack");
+    }
+
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+pub(crate) fn install_wasm_pack() -> anyhow::Result<()> {
+    eprintln!("Installing wasm-pack");
+    let mut curl = Command::new("curl")
+        .args([
+            "https://rustwasm.github.io/wasm-pack/installer/init.sh",
+            "-sSf",
+        ])
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .context("Failed to spawn curl")?;
+
+    let mut sh = Command::new("sh")
+        .stdin(std::process::Stdio::from(curl.stdout.take().unwrap()))
+        .spawn()
+        .context("Failed to spawn sh")?;
+
+    let sh = sh.wait()?;
+
+    let curl = curl.wait()?;
+
+    if !curl.success() {
+        anyhow::bail!("Failed to fetch install script")
+    }
+
+    if !sh.success() {
+        anyhow::bail!("Failed to run install script for wasm-pack")
+    }
+
+    Ok(())
+}
+
+pub fn ensure_wasm_pack() -> anyhow::Result<()> {
     match which::which("wasm-pack") {
         Err(_) => {
-            eprintln!("Installing wasm-pack");
-            let status = Command::new("carg")
-                .args(["install", "wasm-pack"])
-                .spawn()?
-                .wait()
-                .await?;
-            if !status.success() {
-                anyhow::bail!("Failed to install wasm-pack");
-            }
+            install_wasm_pack()?;
+
+            assert!(which::which("wasm-pack").is_ok(), "wasm-pack is in PATH");
 
             Ok(())
         }
@@ -54,7 +93,7 @@ pub async fn ensure_wasm_pack() -> anyhow::Result<()> {
     }
 }
 
-pub async fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
+pub fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
     let mut command = Command::new("wasm-pack");
 
     command.args(["build", "client"]).current_dir("web");
@@ -67,21 +106,23 @@ pub async fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
 
     match opts.target {
         Target::Bundler => command.args(["--target", "bundler"]),
-        Target::Standalone => command.args(["--target", "no-modules", "--no-pack"]),
+        Target::Standalone => command.args(["--target", "web", "--no-pack"]),
     };
 
-    // See: https://doc.rust-lang.org/cargo/guide/build-cache.html
-    let output_path = ["web", "pkg"]
+    let mut output_path = ["web"]
         .iter()
         .collect::<PathBuf>()
         .canonicalize()
         .context("Produced build artifact does not exist")?;
 
+    output_path.push(&opts.pkg_name);
+
     command.arg("--out-dir").arg(output_path.clone());
 
     eprintln!("Building web client");
 
-    let res = command.spawn()?.wait().await?;
+    let res = command.spawn()?.wait()?;
+
     if !res.success() {
         anyhow::bail!("Building package failed with status code: {res}");
     }
