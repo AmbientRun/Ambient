@@ -3,12 +3,7 @@ use std::time::Duration;
 use ambient_api::{
     core::{
         app::components::name,
-        layout::components::{
-            //LEGACY_MISSING_ENUM_SUPPORT:   fit_horizontal_children, fit_vertical_children,
-            height,
-            space_between_items,
-            width,
-        },
+        layout::components::{fit_horizontal, fit_vertical, height, space_between_items, width},
         messages::Frame,
     },
     entity::synchronized_resources,
@@ -114,8 +109,8 @@ fn Track(
                 }),
         )
         .with_background(vec4(0.1, 0.1, 0.1, 1.))
-        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_vertical_children())
-        //LEGACY_MISSING_ENUM_SUPPORT: .with_default(fit_horizontal_children())
+        .with(fit_vertical(), Fit::Children)
+        .with(fit_horizontal(), Fit::Children)
         .with_padding_even(10.)
         .with(space_between_items(), 2.),
     ])
