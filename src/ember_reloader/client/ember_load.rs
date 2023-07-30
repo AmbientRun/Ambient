@@ -100,10 +100,10 @@ fn EmberViewInner(hooks: &mut Hooks, msg: Option<messages::EmberLoadSuccess>) ->
     fn url_to_name(url: &str) -> String {
         url.rsplit_once('/')
             .map(|(_, name)| name)
-            .unwrap_or(&url)
+            .unwrap_or(url)
             .split_once('.')
             .map(|(name, _)| name)
-            .unwrap_or(&url)
+            .unwrap_or(url)
             .to_string()
     }
 
@@ -130,7 +130,7 @@ fn EmberViewInner(hooks: &mut Hooks, msg: Option<messages::EmberLoadSuccess>) ->
                 None => Element::new(),
             },
             FlowColumn::el([
-                Text::el(name.clone()).with(align_vertical(), Align::Center),
+                Text::el(name).with(align_vertical(), Align::Center),
                 Text::el(match &existing_module {
                     Some((_, existing_url)) => {
                         if *existing_url == url {

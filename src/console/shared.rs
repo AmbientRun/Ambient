@@ -160,12 +160,12 @@ impl TryFrom<u8> for ConsoleLineType {
         }
     }
 }
-impl Into<u8> for ConsoleLineType {
-    fn into(self) -> u8 {
-        match self {
-            Self::Normal => 0,
-            Self::User => 1,
-            Self::Error => 2,
+impl From<ConsoleLineType> for u8 {
+    fn from(val: ConsoleLineType) -> Self {
+        match val {
+            ConsoleLineType::Normal => 0,
+            ConsoleLineType::User => 1,
+            ConsoleLineType::Error => 2,
         }
     }
 }

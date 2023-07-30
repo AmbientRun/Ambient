@@ -1,5 +1,7 @@
 // TODO: this should vary based on the game type
 
+use std::f32::consts::PI;
+
 use ambient_api::{
     core::{
         physics::components::{cube_collider, dynamic, linear_velocity, physics_controlled},
@@ -88,8 +90,8 @@ pub fn main() {
                             pos + vec3(random::<f32>(), random::<f32>(), random::<f32>()) * 9.0;
 
                         let size = random::<Vec3>() * 0.3;
-                        let rot = Quat::from_rotation_y(random::<f32>() * 3.14)
-                            * Quat::from_rotation_x(random::<f32>() * 3.14);
+                        let rot = Quat::from_rotation_y(random::<f32>() * PI)
+                            * Quat::from_rotation_x(random::<f32>() * PI);
                         Entity::new()
                             .with_merge(make_transformable())
                             .with_default(cube())

@@ -115,7 +115,7 @@ pub fn main() {
 
             let _recoil = entity::mutate_component(player_id, player_pitch(), |pitch| {
                 let recoil = random::<f32>() * 0.01;
-                *pitch = *pitch - recoil;
+                *pitch -= recoil;
             })
             .unwrap_or_default();
         }

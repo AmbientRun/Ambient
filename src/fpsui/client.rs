@@ -39,7 +39,7 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
             Text::el("Cube Killer 2089").header_style(),
             Separator { vertical: false }.el(),
             Text::el("enter your name below. press enter to start the game."),
-            TextEditor::new(name.clone(), set_name.clone())
+            TextEditor::new(name, set_name.clone())
                 .auto_focus()
                 .on_submit(|v| StartGame::new(v).send_server_reliable())
                 .el()

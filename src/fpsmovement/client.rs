@@ -147,7 +147,7 @@ impl InputLock {
         }
 
         match &mut self.cursor_lock {
-            Some(lock) => lock.auto_unlock_on_escape(&input),
+            Some(lock) => lock.auto_unlock_on_escape(input),
             _ => false,
         }
     }

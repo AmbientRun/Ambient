@@ -13,10 +13,7 @@ use ambient_api::{
 fn calculate_blend_from_weight(weights: &[f32]) -> Vec<f32> {
     assert!(weights.len() >= 2);
     let mut blend = Vec::with_capacity(weights.len() - 1);
-    let mut total = 0.0;
-    for i in 0..weights.len() {
-        total += weights[i];
-    }
+    let total = weights.iter().sum::<f32>();
     // left weight is used to compare left and right
     let mut left_weight = weights[0] / total;
     for i in 0..weights.len() - 1 {
@@ -119,8 +116,8 @@ impl FPSAnimBlend {
     pub fn update_weights(&mut self, weights: &[f32]) {
         let blend = calculate_blend_from_weight(weights);
         // println!("current frame blend{:?}", blend);
-        for i in 0..self.nodes.len() {
-            self.nodes[i].set_weight(blend[i]);
+        for (node, weight) in self.nodes.iter_mut().zip(blend) {
+            node.set_weight(weight);
         }
     }
 }
@@ -240,26 +237,24 @@ pub fn main() {
                 } else {
                     weights[16] = 1.0;
                 }
+            } else if fd && !lt && !rt {
+                weights[8] = 1.0;
+            } else if bk && !lt && !rt {
+                weights[9] = 1.0;
+            } else if lt && !fd && !bk {
+                weights[10] = 1.0;
+            } else if rt && !fd && !bk {
+                weights[11] = 1.0;
+            } else if fd && lt {
+                weights[12] = 1.0;
+            } else if fd && rt {
+                weights[13] = 1.0;
+            } else if bk && lt {
+                weights[14] = 1.0;
+            } else if bk && rt {
+                weights[15] = 1.0;
             } else {
-                if fd && !lt && !rt {
-                    weights[8] = 1.0;
-                } else if bk && !lt && !rt {
-                    weights[9] = 1.0;
-                } else if lt && !fd && !bk {
-                    weights[10] = 1.0;
-                } else if rt && !fd && !bk {
-                    weights[11] = 1.0;
-                } else if fd && lt {
-                    weights[12] = 1.0;
-                } else if fd && rt {
-                    weights[13] = 1.0;
-                } else if bk && lt {
-                    weights[14] = 1.0;
-                } else if bk && rt {
-                    weights[15] = 1.0;
-                } else {
-                    weights[16] = 1.0;
-                }
+                weights[16] = 1.0;
             }
             blend.update_weights(&weights);
             // println!("weights get updated {:?}", weights);
