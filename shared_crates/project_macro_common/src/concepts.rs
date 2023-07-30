@@ -4,7 +4,7 @@ use quote::quote;
 
 use crate::{Context, TypePrinter};
 
-pub fn make_definitions(
+pub fn generate(
     context: Context,
     items: &ItemMap,
     type_printer: &TypePrinter,
@@ -29,28 +29,33 @@ pub fn make_definitions(
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
-    let inner = if concepts.is_empty() {
-        quote! {}
-    } else {
-        match context {
-            Context::Host => quote! {
-                use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, IVec2, IVec3, IVec4, Mat4, Quat};
-                use crate::{EntityId, Entity, Component};
-                #(#concepts)*
-            },
+    if concepts.is_empty() {
+        return Ok(quote! {});
+    }
 
-            Context::GuestApi | Context::GuestUser => {
-                let api_path = context.guest_api_path().unwrap();
-                quote! {
-                    use #api_path::prelude::*;
-                    #(#concepts)*
-                }
+    let inner = match context {
+        Context::Host => quote! {
+            use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, IVec2, IVec3, IVec4, Mat4, Quat};
+            use crate::{EntityId, Entity, Component};
+            #(#concepts)*
+        },
+
+        Context::GuestApi | Context::GuestUser => {
+            let api_path = context.guest_api_path().unwrap();
+            quote! {
+                use #api_path::prelude::*;
+                #(#concepts)*
             }
         }
     };
 
     Ok(quote! {
-        #inner
+        /// Auto-generated concept definitions. Concepts are collections of components that describe some form of gameplay concept.
+        ///
+        /// They do not have any runtime representation outside of the components that compose them.
+        pub mod concepts {
+            #inner
+        }
     })
 }
 

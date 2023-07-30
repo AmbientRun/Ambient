@@ -4,7 +4,7 @@ use quote::quote;
 
 use crate::{make_path, Context, TypePrinter};
 
-pub fn make_init(
+pub fn generate_init(
     context: Context,
     items: &ItemMap,
     root_scope_id: ItemId<Scope>,
@@ -34,7 +34,7 @@ pub fn make_init(
     })
 }
 
-pub fn make_definitions(
+pub fn generate(
     context: Context,
     items: &ItemMap,
     type_printer: &TypePrinter,
@@ -119,38 +119,40 @@ pub fn make_definitions(
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
-    let inner = if components.is_empty() {
-        quote! {}
-    } else {
-        match context {
-            Context::Host => {
-                let namespace_path = items.fully_qualified_display_path(scope, None, None)?;
-                // lazy hack to get ambient_core components to work
-                let namespace_path = namespace_path.strip_prefix("ambient_core::").unwrap();
-                quote! {
-                    use std::time::Duration;
-                    use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
-                    use crate::{EntityId, Debuggable, Networked, Store, Resource, MaybeResource, Name, Description, Enum, components};
-                    use ambient_shared_types::{ProceduralMeshHandle, ProceduralTextureHandle, ProceduralSamplerHandle, ProceduralMaterialHandle};
-                    components!(#namespace_path, {
-                        #(#components)*
-                    });
-                }
-            }
-            Context::GuestApi | Context::GuestUser => {
-                let api_path = context.guest_api_path().unwrap();
-                quote! {
-                    use #api_path::{
-                        once_cell::sync::Lazy, ecs::{Component, __internal_get_component},
-                        prelude::*,
-                    };
+    if components.is_empty() {
+        return Ok(quote! {});
+    }
+    let inner = match context {
+        Context::Host => {
+            let namespace_path = items.fully_qualified_display_path(scope, None, None)?;
+            // lazy hack to get ambient_core components to work
+            let namespace_path = namespace_path.strip_prefix("ambient_core::").unwrap();
+            quote! {
+                use std::time::Duration;
+                use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
+                use crate::{EntityId, Debuggable, Networked, Store, Resource, MaybeResource, Name, Description, Enum, components};
+                use ambient_shared_types::{ProceduralMeshHandle, ProceduralTextureHandle, ProceduralSamplerHandle, ProceduralMaterialHandle};
+                components!(#namespace_path, {
                     #(#components)*
-                }
+                });
+            }
+        }
+        Context::GuestApi | Context::GuestUser => {
+            let api_path = context.guest_api_path().unwrap();
+            quote! {
+                use #api_path::{
+                    once_cell::sync::Lazy, ecs::{Component, __internal_get_component},
+                    prelude::*,
+                };
+                #(#components)*
             }
         }
     };
 
     Ok(quote! {
-        #inner
+        /// Auto-generated component definitions.
+        pub mod components {
+            #inner
+        }
     })
 }

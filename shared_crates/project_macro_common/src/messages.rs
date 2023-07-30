@@ -4,7 +4,7 @@ use quote::quote;
 
 use crate::{make_path, Context, TypePrinter};
 
-pub fn make_definitions(
+pub fn generate(
     context: Context,
     items: &ItemMap,
     type_printer: &TypePrinter,
@@ -118,28 +118,32 @@ pub fn make_definitions(
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 
-    let inner = if messages.is_empty() {
-        quote! {}
-    } else {
-        match context {
-            Context::Host => quote! {
-                use ambient_project_rt::message_serde::{Message, MessageSerde, MessageSerdeError, RuntimeMessage};
-                use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
-                use crate::{EntityId, Entity};
-                #(#messages)*
-            },
+    if messages.is_empty() {
+        return Ok(quote! {});
+    };
 
-            Context::GuestApi | Context::GuestUser => {
-                let api_path = context.guest_api_path().unwrap();
-                quote! {
-                    use #api_path::{prelude::*, message::{Message, MessageSerde, MessageSerdeError, RuntimeMessage, ModuleMessage}};
-                    #(#messages)*
-                }
+    let inner = match context {
+        Context::Host => quote! {
+            use ambient_project_rt::message_serde::{Message, MessageSerde, MessageSerdeError, RuntimeMessage};
+            use glam::{Vec2, Vec3, Vec4, UVec2, UVec3, UVec4, Mat4, Quat};
+            use crate::{EntityId, Entity};
+            #(#messages)*
+        },
+
+        Context::GuestApi | Context::GuestUser => {
+            let api_path = context.guest_api_path().unwrap();
+            quote! {
+                use #api_path::{prelude::*, message::{Message, MessageSerde, MessageSerdeError, RuntimeMessage, ModuleMessage}};
+                #(#messages)*
             }
         }
     };
 
     Ok(quote! {
-        #inner
+        /// Auto-generated message definitions. Messages are used to communicate with the runtime, the other side of the network,
+        /// and with other modules.
+        pub mod messages {
+            #inner
+        }
     })
 }

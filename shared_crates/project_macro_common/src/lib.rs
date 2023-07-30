@@ -2,92 +2,19 @@ extern crate proc_macro;
 
 use ambient_project::ItemPathBuf;
 use ambient_project_semantic::{
-    ArrayFileProvider, Item, ItemData, ItemId, ItemMap, ItemSource, ItemType, Scope, Semantic,
-    Type, TypeInner,
+    ArrayFileProvider, ItemId, ItemMap, ItemSource, Scope, Semantic, Type, TypeInner,
 };
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use std::{cell::Ref, collections::HashMap, path::Path};
+use std::{collections::HashMap, path::Path};
 
 mod components;
 mod concepts;
+mod context;
 mod enums;
 mod messages;
-mod scopes;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Context {
-    /// Generating for the Ambient host. Use host definitions.
-    Host,
-    /// Generating for the Ambient Rust API. Use guest definitions relative to itself.
-    GuestApi,
-    /// Generating for Ambient Rust guest code. Use guest definitions relative to the API.
-    GuestUser,
-}
-impl Context {
-    pub fn guest_api_path(&self) -> Option<TokenStream> {
-        match self {
-            Context::Host => None,
-            Context::GuestApi => Some(quote! {crate}),
-            Context::GuestUser => Some(quote! {ambient_api}),
-        }
-    }
-
-    pub fn extract_item_if_relevant<'a, T: Item>(
-        &self,
-        items: &'a ItemMap,
-        id: ItemId<T>,
-    ) -> Option<Ref<'a, T>> {
-        let item = items.get(id).unwrap();
-        if *self == Context::GuestUser && item.data().source != ItemSource::User {
-            return None;
-        }
-        Some(item)
-    }
-
-    pub fn get_path<T: Item>(
-        &self,
-        items: &ItemMap,
-        prefix: Option<&str>,
-        root_scope_id: ItemId<Scope>,
-        id: ItemId<T>,
-    ) -> anyhow::Result<TokenStream> {
-        let item = items.get(id).unwrap();
-        let path_prefix = self.path_prefix_impl(item.data());
-        let type_namespace = match T::TYPE {
-            ItemType::Component => "components::",
-            ItemType::Concept => "concepts::",
-            ItemType::Message => "messages::",
-            ItemType::Type => "types::",
-            ItemType::Attribute => "attributes::",
-            ItemType::Scope => "scopes::",
-        };
-        let prefix = format!("{type_namespace}{}", prefix.unwrap_or_default());
-        let path = make_path(&items.fully_qualified_display_path(
-            &*item,
-            Some(root_scope_id),
-            Some(prefix.as_str()),
-        )?);
-
-        Ok(quote! { #path_prefix #path })
-    }
-
-    fn path_prefix_impl(&self, data: &ItemData) -> TokenStream {
-        match (self, data.source) {
-            (_, ItemSource::System) => quote! {},
-
-            (Context::Host, ItemSource::Ambient) => quote! { crate::generated:: },
-            (Context::GuestApi, ItemSource::Ambient) => quote! { crate:: },
-
-            (Context::GuestApi | Context::Host, ItemSource::User) => {
-                unreachable!("user items should not be in api or host scope")
-            }
-
-            (Context::GuestUser, ItemSource::Ambient) => quote! { ambient_api::core:: },
-            (Context::GuestUser, ItemSource::User) => quote! { crate:: },
-        }
-    }
-}
+pub use context::Context;
 
 pub enum ManifestSource<'a> {
     Path { ember_path: &'a Path },
@@ -96,7 +23,7 @@ pub enum ManifestSource<'a> {
 
 pub fn generate_code(
     manifest: Option<ManifestSource<'_>>,
-    context: Context,
+    context: context::Context,
     generate_from_scope_path: Option<&str>,
 ) -> anyhow::Result<TokenStream> {
     let mut semantic = Semantic::new()?;
@@ -148,7 +75,7 @@ pub fn generate_code(
         .unwrap_or(semantic.root_scope_id);
     let generate_from_scope = &*items.get(generate_from_scope_id)?;
 
-    let scopes = scopes::make_scopes(
+    let generated_output = generate(
         context,
         items,
         &type_printer,
@@ -157,16 +84,58 @@ pub fn generate_code(
     )?;
 
     let components_init =
-        components::make_init(context, items, generate_from_scope_id, generate_from_scope)?;
+        components::generate_init(context, items, generate_from_scope_id, generate_from_scope)?;
 
     let output = quote! {
-        #scopes
+        #generated_output
         #components_init
     };
 
     // println!("{}", output.to_string());
 
     Ok(output)
+}
+
+fn generate(
+    context: context::Context,
+    items: &ItemMap,
+    type_printer: &TypePrinter,
+    root_scope_id: ItemId<Scope>,
+    scope: &Scope,
+) -> anyhow::Result<TokenStream> {
+    let scopes = scope
+        .scopes
+        .values()
+        .map(|s| {
+            let scope = items.get(*s)?;
+            let id = make_path(scope.data.id.as_str());
+            let inner = generate(context, items, type_printer, root_scope_id, &scope)?;
+            if !inner.is_empty() {
+                Ok(quote! {
+                    #[allow(unused)]
+                    pub mod #id {
+                        #inner
+                    }
+                })
+            } else {
+                Ok(quote! {})
+            }
+        })
+        .collect::<anyhow::Result<Vec<_>>>()?;
+
+    let components = components::generate(context, items, type_printer, root_scope_id, scope)?;
+    let concepts = concepts::generate(context, items, type_printer, root_scope_id, scope)?;
+    let messages = messages::generate(context, items, type_printer, root_scope_id, scope)?;
+    let types = enums::generate(context, items, scope)?;
+
+    Ok(quote! {
+        #(#scopes)*
+
+        #components
+        #concepts
+        #messages
+        #types
+    })
 }
 
 fn make_path(id: &str) -> syn::Path {
@@ -177,7 +146,7 @@ pub struct TypePrinter(HashMap<ItemId<Type>, TokenStream>);
 impl TypePrinter {
     pub fn get(
         &self,
-        context: Context,
+        context: context::Context,
         items: &ItemMap,
         prefix: Option<&str>,
         root_scope_id: ItemId<Scope>,
