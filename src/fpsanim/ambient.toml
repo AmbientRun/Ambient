@@ -3,6 +3,48 @@ id = "afps_fpsanim"
 name = "AFPS Animation"
 
 [components]
+player_jumping = { type = "Bool", attributes = ["Debuggable", "Networked"] }
+
+walk_fd = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+walk_bk = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+walk_lt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+walk_rt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+walk_fd_lt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+walk_fd_rt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+walk_bk_lt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+walk_bk_rt = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
 
 run_fd = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
     "Debuggable",

@@ -4,6 +4,7 @@ use ambient_api::{
 };
 
 use afps::{
+    afps_fpsanim::components::player_jumping,
     afps_fpsaudio::messages::FootOnGround,
     afps_fpsmodel::components::player_cam_ref,
     afps_fpsmovement::{
@@ -16,6 +17,9 @@ use afps::{
     afps_fpsrule::messages::Shoot,
     afps_fpsui::components::player_name,
 };
+
+const INIT_JUMP_VSPEED: f32 = 0.10;
+const FALLING_VSPEED: f32 = 0.4;
 
 #[main]
 pub fn main() {
@@ -50,12 +54,15 @@ pub fn main() {
             let is_jumping = entity::get_component(player_id, player_vspeed()).unwrap_or(0.0);
             if is_jumping <= 0.0 && game_time() - last_walk > dur {
                 last_walk = game_time();
-                FootOnGround { source: player_id }.send_local_broadcast(false);
+                if msg.running {
+                    FootOnGround { source: player_id }.send_local_broadcast(false);
+                } // keep silent when walking
             }
         }
 
         if msg.jump {
-            entity::add_component(player_id, player_vspeed(), 0.6);
+            entity::add_component(player_id, player_jumping(), true);
+            entity::add_component(player_id, player_vspeed(), INIT_JUMP_VSPEED);
         }
 
         if msg.running {
@@ -105,6 +112,12 @@ pub fn main() {
                 source: player_id,
             }
             .send_local_broadcast(false);
+
+            let _recoil = entity::mutate_component(player_id, player_pitch(), |pitch| {
+                let recoil = random::<f32>() * 0.01;
+                *pitch = *pitch - recoil;
+            })
+            .unwrap_or_default();
         }
     });
 
@@ -122,10 +135,16 @@ pub fn main() {
             let displace = rot * (direction.normalize_or_zero() * speed).extend(vspeed);
             let collision = physics::move_character(player_id, displace, 0.01, delta_time());
             if collision.down {
+                if let Some(is_jumping) = entity::get_component(player_id, player_jumping()) {
+                    if is_jumping {
+                        entity::add_component(player_id, player_jumping(), false);
+                    }
+                }
+
                 entity::set_component(player_id, player_vspeed(), 0.0);
             } else {
                 entity::mutate_component(player_id, player_vspeed(), |vspeed| {
-                    *vspeed -= 3.0 * delta_time(); // 1/60 second for example
+                    *vspeed -= FALLING_VSPEED * delta_time(); // 1/60 second for example
                 });
             }
         }

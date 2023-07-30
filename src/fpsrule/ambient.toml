@@ -4,6 +4,12 @@ name = "AFPS Rule"
 
 [components]
 
+player_team = { type = "U8", description = "", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+
 game_type = { type = "U8", description = "0: zombie mode", attributes = [
     "Debuggable",
     "Networked",

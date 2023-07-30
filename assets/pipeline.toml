@@ -1,5 +1,13 @@
 [[pipelines]]
 type = "Models"
+sources = ["Buildings/**/*"]
+
+[[pipelines]]
+type = "Models"
+sources = ["Props/**/*"]
+
+[[pipelines]]
+type = "Models"
 sources = ["model/**/*"]
 
 [[pipelines]]

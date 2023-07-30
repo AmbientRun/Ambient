@@ -21,7 +21,7 @@ pub fn main() {
     Spraypaint::subscribe(move |_source, msg| {
         println!("Spray got");
         if let Some(hit) = physics::raycast_first(msg.origin, msg.dir) {
-            println!("hiy {:?}", hit.position);
+            // println!("hit {:?}", hit.position);
             let decal_url = asset::url("assets/spray/spray/pipeline.toml/0/mat.json").unwrap();
 
             Entity::new()
