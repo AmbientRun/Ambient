@@ -1,6 +1,6 @@
 use ambient_api::{element::Setter, prelude::*};
 
-use crate::messages;
+use crate::afps::afps_fpsmovement::messages::{ReleaseInput, RequestInput};
 
 pub fn use_hotkey_toggle(
     hooks: &mut Hooks,
@@ -21,9 +21,9 @@ pub fn use_hotkey_toggle(
 
 pub fn use_input_request(hooks: &mut Hooks) {
     hooks.use_spawn(|_| {
-        messages::RequestInput {}.send_local_broadcast(false);
+        RequestInput {}.send_local_broadcast(false);
         |_| {
-            messages::ReleaseInput {}.send_local_broadcast(false);
+            ReleaseInput {}.send_local_broadcast(false);
         }
     });
 }

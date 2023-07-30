@@ -1,10 +1,12 @@
 use ambient_api::{
-    components::core::{
-        layout::fit_horizontal_parent,
-        text::{font_size, font_style},
-        transform::translation,
+    core::{
+        messages::{WindowMouseInput, WindowMouseMotion},
+        text::{
+            components::{font_size, font_style},
+            types::FontStyle,
+        },
+        transform::components::translation,
     },
-    messages::{WindowMouseInput, WindowMouseMotion},
     prelude::*,
 };
 
@@ -48,11 +50,11 @@ pub fn Window(
             .unwrap_or_default(),
         Text::el(title)
             .with_margin_even(4.0)
-            .with(font_style(), "Bold".to_string())
+            .with(font_style(), FontStyle::Bold)
             .with(font_size(), 14.),
     ]))
     .with_background(vec4(0.0, 0.0, 0.0, 0.5))
-    .with_default(fit_horizontal_parent())
+    .with(fit_horizontal(), Fit::Parent)
     .with_clickarea()
     .on_mouse_input(move |_world, _, input, button| {
         if button == MouseButton::Left {

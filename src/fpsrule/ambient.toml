@@ -1,3 +1,7 @@
+[ember]
+id = "afps_fpsrule"
+name = "AFPS Rule"
+
 [components]
 
 game_type = { type = "U8", description = "0: zombie mode", attributes = [
@@ -15,8 +19,8 @@ hit_freeze = { type = "I32", attributes = ["Debuggable", "Networked"] }
 
 heal_timeout = { type = "I32", attributes = ["Debuggable"] }
 
-[messages.shoot.fields]
-ray_origin = { type = "Vec3" }
-ray_dir = { type = "Vec3" }
-source = { type = "EntityId" }
-# type_action = { type = "U8" }
+[messages.Shoot.fields]
+ray_origin = "Vec3"
+ray_dir = "Vec3"
+source = "EntityId"
+# type_action = "U8"

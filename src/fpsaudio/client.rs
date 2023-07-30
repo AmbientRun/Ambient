@@ -1,5 +1,8 @@
-use ambient_api::components::core::transform::{rotation, translation};
-use ambient_api::prelude::*;
+use afps::afps_fpsaudio::messages;
+use ambient_api::{
+    core::transform::components::{rotation, translation},
+    prelude::*,
+};
 
 #[main]
 pub fn main() {

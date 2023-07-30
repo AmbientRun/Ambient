@@ -1,13 +1,16 @@
 // TODO: add menu to choose game type
 
 use ambient_api::{
-    components::core::{
-        layout::{docking_bottom, height, min_height, min_width, space_between_items, width},
-        player::player,
-        rect::{background_color, line_from, line_to, line_width},
-    },
+    core::player::components::player,
+    core::rect::components::{background_color, line_from, line_to, line_width},
     prelude::*,
     ui::ImageFromUrl,
+};
+
+use afps::{
+    afps_fpsmovement::messages::{ReleaseInput, RequestInput},
+    afps_fpsrule::components::{player_deathcount, player_health, player_killcount},
+    afps_fpsui::{components::player_name, messages::StartGame},
 };
 
 #[main]
@@ -17,8 +20,7 @@ pub fn main() {
 
 #[element_component]
 pub fn App(hooks: &mut Hooks) -> Element {
-    let (player_name, _) =
-        hooks.use_entity_component(player::get_local(), components::player_name());
+    let (player_name, _) = hooks.use_entity_component(player::get_local(), player_name());
 
     if player_name.is_none() {
         JoinScreen::el()
@@ -39,7 +41,7 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
             Text::el("enter your name below. press enter to start the game."),
             TextEditor::new(name.clone(), set_name.clone())
                 .auto_focus()
-                .on_submit(|v| messages::StartGame::new(v).send_server_reliable())
+                .on_submit(|v| StartGame::new(v).send_server_reliable())
                 .el()
                 .with(background_color(), vec4(0.3, 0.3, 0.3, 0.6))
                 .with(min_height(), 16.0)
@@ -118,14 +120,14 @@ fn Hud(hooks: &mut Hooks) -> Element {
     let (local_health, set_local_health) = hooks.use_state(100);
     hooks.use_frame(move |world| {
         let local_player = player::get_local();
-        if let Ok(health) = world.get(local_player, components::player_health()) {
+        if let Ok(health) = world.get(local_player, player_health()) {
             set_local_health(health);
         }
     });
 
     WindowSized::el([Dock::el([Text::el(format!("health: {:?}", local_health))
         // .header_style()
-        .with_default(docking_bottom())
+        .with(docking(), Docking::Bottom)
         .with_margin_even(10.)])])
     .with_padding_even(20.)
 }
@@ -136,9 +138,9 @@ fn Scoreboard(hooks: &mut Hooks) -> Element {
 
     let players = hooks.use_query((
         player(),
-        components::player_name(),
-        components::player_killcount(),
-        components::player_deathcount(),
+        player_name(),
+        player_killcount(),
+        player_deathcount(),
     ));
 
     WindowSized::el([FlowColumn::el(
@@ -159,9 +161,9 @@ fn Scoreboard(hooks: &mut Hooks) -> Element {
 /// Requests input from the user, and releases it when the element is unmounted.
 fn use_input_request(hooks: &mut Hooks<'_>) {
     hooks.use_spawn(|_| {
-        messages::RequestInput {}.send_local_broadcast(false);
+        RequestInput {}.send_local_broadcast(false);
         |_| {
-            messages::ReleaseInput {}.send_local_broadcast(false);
+            ReleaseInput {}.send_local_broadcast(false);
         }
     })
 }

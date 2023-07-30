@@ -1,13 +1,15 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        physics::{cube_collider, dynamic, physics_controlled, plane_collider},
-        prefab::prefab_from_url,
-        primitives::{cube, quad},
-        rendering::{fog_density, light_diffuse, sky, sun},
-        transform::{rotation, scale, translation},
+    core::{
+        app::components::main_scene,
+        physics::components::{cube_collider, dynamic, physics_controlled, plane_collider},
+        // prefab::components::prefab_from_url,
+        primitives::components::{cube, quad},
+        rendering::components::{fog_density, light_diffuse, sky, sun},
+        transform::{
+            components::{rotation, scale, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::make_transformable,
     prelude::*,
 };
 

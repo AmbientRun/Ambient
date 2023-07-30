@@ -1,16 +1,20 @@
 use ambient_api::{
     animation::{get_bone_by_bind_id, BindId},
-    components::core::{model::model_loaded, prefab::prefab_from_url, transform::reset_scale},
-    concepts::make_transformable,
+    core::{
+        model::components::model_loaded,
+        player::components::player,
+        prefab::components::prefab_from_url,
+        // primitives::quad,
+        rendering::components::color, //pbr_material_from_url
+        transform::{
+            components::{local_to_parent, reset_scale, rotation, scale, translation},
+            concepts::make_transformable,
+        },
+    },
     prelude::*,
 };
 
-use ambient_api::components::core::{
-    player::player,
-    // primitives::quad,
-    rendering::color, //pbr_material_from_url
-    transform::{local_to_parent, rotation, scale, translation},
-};
+use afps::afps_fpsmodel::components;
 
 #[main]
 pub fn main() {

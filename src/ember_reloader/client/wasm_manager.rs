@@ -1,14 +1,16 @@
 use ambient_api::{
-    components::core::{
-        layout::space_between_items,
-        text::font_style,
-        wasm::{bytecode_from_url, module, module_enabled, module_name, module_on_server},
+    core::{
+        text::{components::font_style, types::FontStyle},
+        wasm::components::{
+            bytecode_from_url, module, module_enabled, module_name, module_on_server,
+        },
     },
     prelude::*,
 };
 
+use crate::afps::afps_ember_reloader::messages::{WasmReload, WasmSetEnabled};
+
 use super::{use_hotkey_toggle, use_input_request, Window};
-use crate::messages::{WasmReload, WasmSetEnabled};
 
 #[element_component]
 pub fn WasmManager(hooks: &mut Hooks) -> Element {
@@ -57,11 +59,11 @@ fn WasmManagerInner(hooks: &mut Hooks) -> Element {
         modules: Vec<(EntityId, (bool, String, bool, String))>,
     ) -> Element {
         FlowColumn::el(Iterator::chain(
-            [Text::el(heading).with(font_style(), "Bold".to_string())].into_iter(),
+            [Text::el(heading).with(font_style(), FontStyle::Bold)].into_iter(),
             modules.into_iter().map(|(id, (_, name, enabled, url))| {
                 FlowRow::el([
                     Checkbox::new(enabled, move |value| {
-                        WasmSetEnabled::new(value, id).send_server_reliable();
+                        WasmSetEnabled::new(id, value).send_server_reliable();
                     })
                     .el(),
                     Button::new(FontAwesomeIcon::el(0xf2f1, true), move |_| {
@@ -73,7 +75,7 @@ fn WasmManagerInner(hooks: &mut Hooks) -> Element {
                         Text::el(name),
                         Text::el(url)
                             .small_style()
-                            .with(font_style(), "Italic".to_string()),
+                            .with(font_style(), FontStyle::Italic),
                     ]),
                 ])
                 .with(space_between_items(), 4.0)

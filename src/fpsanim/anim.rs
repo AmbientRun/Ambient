@@ -1,10 +1,10 @@
 use ambient_api::{
     animation::{AnimationPlayer, AnimationRetargeting, BlendNode, PlayClipFromUrlNode},
-    components::core::player::player,
+    core::player::components::player,
     prelude::*,
 };
 
-use crate::components as c;
+use crate::afps::afps_fpsanim::components as c;
 pub fn register_anim() {
     spawn_query(player()).bind(move |info| {
         for (id, ()) in info {

@@ -1,10 +1,12 @@
-use ambient_api::{anyhow, components::core::wasm::bytecode_from_url, prelude::*};
+use ambient_api::{anyhow, core::wasm::components::bytecode_from_url, prelude::*};
 use serde::{de::DeserializeOwned, Deserialize};
 
-use crate::messages;
+use crate::afps::afps_ember_reloader::messages::{
+    EmberLoad, EmberLoadSuccess, ErrorMessage, WasmReplaceBytecodeUrl,
+};
 
 pub fn main() {
-    messages::EmberLoad::subscribe(|source, msg| {
+    EmberLoad::subscribe(|source, msg| {
         let Some(user_id) = source.client_user_id() else { return; };
         let url = msg.url.strip_suffix('/').unwrap_or(&msg.url).to_owned();
         run_async(async move {
@@ -13,11 +15,15 @@ pub fn main() {
                     let ember = &manifest.ember;
                     let make_url = |suffix: String| format!("{}/build/{}", url, suffix);
 
-                    messages::EmberLoadSuccess {
+                    EmberLoadSuccess {
                         id: ember.id.to_string(),
                         name: ember.name.clone(),
                         authors: ember.authors.clone(),
-                        version: ember.version.to_string(),
+                        version: ember
+                            .version
+                            .as_ref()
+                            .map(|v| v.to_string())
+                            .unwrap_or_default(),
                         client_wasms: metadata
                             .client_component_paths
                             .into_iter()
@@ -32,14 +38,13 @@ pub fn main() {
                     .send_client_targeted_reliable(user_id);
                 }
                 Err(err) => {
-                    messages::ErrorMessage::new(err.to_string())
-                        .send_client_targeted_reliable(user_id);
+                    ErrorMessage::new(err.to_string()).send_client_targeted_reliable(user_id);
                 }
             };
         });
     });
 
-    messages::WasmReplaceBytecodeUrl::subscribe(|_, msg| {
+    WasmReplaceBytecodeUrl::subscribe(|_, msg| {
         entity::set_component(msg.id, bytecode_from_url(), msg.url);
     });
 }

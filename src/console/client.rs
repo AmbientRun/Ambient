@@ -1,14 +1,19 @@
 use std::sync::{Arc, Mutex};
 
 use ambient_api::{
-    components::core::{
-        layout::{docking_bottom, docking_fill, fit_horizontal_parent, margin, min_height},
-        rendering::color,
-        text::font_style,
+    core::{
+        layout::components::{margin, min_height},
+        rendering::components::color,
+        text::{components::font_style, types::FontStyle},
     },
     prelude::*,
 };
 use shared::*;
+
+use afps::{
+    afps_console::messages::{ConsoleServerInput, ConsoleServerOutput},
+    afps_fpsmovement::messages::{ReleaseInput, RequestInput},
+};
 
 mod shared;
 
@@ -19,14 +24,14 @@ pub fn main() {
         let mut console = console.lock().unwrap();
         let engine = console.engine();
         engine.register_fn("server", |input: &str| {
-            messages::ConsoleServerInput {
+            ConsoleServerInput {
                 input: input.to_string(),
             }
             .send_server_reliable();
         });
     }
 
-    messages::ConsoleServerOutput::subscribe({
+    ConsoleServerOutput::subscribe({
         let console = console.clone();
         move |source, msg| {
             if !source.server() {
@@ -66,9 +71,9 @@ pub fn App(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
 #[element_component]
 pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
     hooks.use_spawn(|_| {
-        messages::RequestInput {}.send_local_broadcast(false);
+        RequestInput {}.send_local_broadcast(false);
         |_| {
-            messages::ReleaseInput {}.send_local_broadcast(false);
+            ReleaseInput {}.send_local_broadcast(false);
         }
     });
 
@@ -99,8 +104,8 @@ pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
             .el()
             .with_background(vec4(0.0, 0.0, 0.0, 0.5))
             .with_padding_even(4.0)
-            .with_default(fit_horizontal_parent())
-            .with_default(docking_bottom())
+            .with(fit_horizontal(), Fit::Parent)
+            .with(docking(), Docking::Bottom)
             .with(min_height(), 22.0)
             .with(margin(), vec4(STREET, STREET, 0.0, STREET)),
         // log
@@ -113,7 +118,7 @@ pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
             .with_padding_even(4.0),
         )
         .with_background(vec4(0.0, 0.0, 0.0, 0.5))
-        .with_default(docking_fill())
+        .with(docking(), Docking::Fill)
         .with_margin_even(STREET),
     ]))
     .with_background(vec4(0.0, 0.0, 0.0, 0.5))])
@@ -122,12 +127,16 @@ pub fn ConsoleView(hooks: &mut Hooks, console: Arc<Mutex<Console>>) -> Element {
 
 fn line_to_text(line: &ConsoleLine) -> Element {
     let (line_font_style, line_color) = match line.ty {
-        ConsoleLineType::Normal => ("Regular", vec3(0.8, 0.8, 0.8)),
+        ConsoleLineType::Normal => (FontStyle::Regular, vec3(0.8, 0.8, 0.8)),
         ConsoleLineType::User => (
-            if line.is_server { "Regular" } else { "Bold" },
+            if line.is_server {
+                FontStyle::Regular
+            } else {
+                FontStyle::Bold
+            },
             vec3(0.0, 0.8, 0.0),
         ),
-        ConsoleLineType::Error => ("Regular", vec3(0.8, 0.0, 0.0)),
+        ConsoleLineType::Error => (FontStyle::Regular, vec3(0.8, 0.0, 0.0)),
     };
 
     let line_color = if line.is_server {
@@ -143,6 +152,6 @@ fn line_to_text(line: &ConsoleLine) -> Element {
     };
 
     Text::el(text)
-        .with(font_style(), line_font_style.to_string())
+        .with(font_style(), line_font_style)
         .with(color(), line_color.extend(1.0))
 }

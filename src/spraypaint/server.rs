@@ -5,16 +5,20 @@
 //     prelude::*,
 // };
 use ambient_api::{
-    components::core::{primitives::cube, rendering::decal_from_url, transform::translation},
-    concepts::make_transformable,
+    core::{
+        rendering::components::decal_from_url,
+        transform::{components::translation, concepts::make_transformable},
+    },
     prelude::*,
 };
+
+use afps::afps_spraypaint::messages::Spraypaint;
 
 #[main]
 
 pub fn main() {
     println!("Spraypaint server started");
-    messages::Spraypaint::subscribe(move |source, msg| {
+    Spraypaint::subscribe(move |_source, msg| {
         println!("Spray got");
         if let Some(hit) = physics::raycast_first(msg.origin, msg.dir) {
             println!("hiy {:?}", hit.position);

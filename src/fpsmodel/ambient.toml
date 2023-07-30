@@ -1,3 +1,7 @@
+[ember]
+id = "afps_fpsmodel"
+name = "AFPS Model"
+
 [components]
 
 player_model_ref = { type = "EntityId", description = "The player's whole body model id.", attributes = [

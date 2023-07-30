@@ -1,6 +1,15 @@
 use std::{cell::RefCell, rc::Rc};
 
-use ambient_api::{components::core::app::window_logical_size, input::CursorLockGuard, prelude::*};
+use ambient_api::{
+    core::{app::components::window_logical_size, messages::Frame},
+    input::CursorLockGuard,
+    prelude::*,
+};
+
+use afps::{
+    afps_fpsmodel::components::player_cam_ref,
+    afps_fpsmovement::messages::{Input, ReleaseInput, RequestInput},
+};
 
 #[main]
 pub async fn main() {
@@ -9,7 +18,7 @@ pub async fn main() {
 
     // TODO: fixed?
     let mut input_lock = InputLock::new();
-    ambient_api::messages::Frame::subscribe(move |_| {
+    Frame::subscribe(move |_| {
         let (delta, input) = input::get_delta();
         if !input_lock.update(&input) {
             return;
@@ -64,7 +73,7 @@ pub async fn main() {
         let toggle_zoom = delta.mouse_buttons.contains(&MouseButton::Right);
 
         let player_id = player::get_local();
-        let cam = entity::get_component(player_id, components::player_cam_ref());
+        let cam = entity::get_component(player_id, player_cam_ref());
         if cam.is_none() {
             return;
         }
@@ -77,7 +86,7 @@ pub async fn main() {
             vec2(window_size.x as f32 / 2., window_size.y as f32 / 2.),
         );
 
-        messages::Input {
+        Input {
             direction,
             mouse_delta,
             shoot,
@@ -104,13 +113,13 @@ impl InputLock {
         // so that other embers can't mess with it.
         let refcount = Rc::new(RefCell::new(0));
         let subscribers = vec![
-            messages::RequestInput::subscribe({
+            RequestInput::subscribe({
                 let refcount = refcount.clone();
                 move |_, _| {
                     *refcount.borrow_mut() += 1;
                 }
             }),
-            messages::ReleaseInput::subscribe({
+            ReleaseInput::subscribe({
                 let refcount = refcount.clone();
                 move |_, _| {
                     let mut refcount = refcount.borrow_mut();

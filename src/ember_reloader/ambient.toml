@@ -1,7 +1,11 @@
-[messages.ember_load.fields]
+[ember]
+id = "afps_ember_reloader"
+name = "AFPS Ember Reloader"
+
+[messages.EmberLoad.fields]
 url = "String"
 
-[messages.ember_load_success.fields]
+[messages.EmberLoadSuccess.fields]
 id = "String"
 name = { container_type = "Option", element_type = "String" }
 version = "String"
@@ -9,16 +13,16 @@ authors = { container_type = "Vec", element_type = "String" }
 client_wasms = { container_type = "Vec", element_type = "String" }
 server_wasms = { container_type = "Vec", element_type = "String" }
 
-[messages.error_message.fields]
+[messages.ErrorMessage.fields]
 reason = "String"
 
-[messages.wasm_set_enabled.fields]
+[messages.WasmSetEnabled.fields]
 id = "EntityId"
 enabled = "Bool"
 
-[messages.wasm_reload.fields]
+[messages.WasmReload.fields]
 id = "EntityId"
 
-[messages.wasm_replace_bytecode_url.fields]
+[messages.WasmReplaceBytecodeUrl.fields]
 id = "EntityId"
 url = "String"

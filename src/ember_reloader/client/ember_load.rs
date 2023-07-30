@@ -1,19 +1,16 @@
 use std::collections::HashMap;
 
 use ambient_api::{
-    components::core::{
-        layout::{
-            align_vertical_center, fit_horizontal_parent, margin, min_height, min_width,
-            space_between_items,
-        },
-        text::font_style,
-        wasm::{bytecode_from_url, module_name},
+    core::{
+        text::{components::font_style, types::FontStyle},
+        wasm::components::{bytecode_from_url, module_name},
     },
     prelude::*,
 };
 
+use crate::afps::afps_ember_reloader::messages;
+
 use super::{use_hotkey_toggle, use_input_request, Window};
-use crate::messages;
 
 #[element_component]
 pub fn EmberLoad(_hooks: &mut Hooks) -> Element {
@@ -50,7 +47,7 @@ fn EmberLoadDialogInner(hooks: &mut Hooks, close: Cb<dyn Fn() + Sync + Send>) ->
             .el()
             .with_background(vec4(0.0, 0.0, 0.0, 0.5))
             .with_padding_even(4.0)
-            .with_default(fit_horizontal_parent())
+            .with(fit_horizontal(), Fit::Parent)
             .with(min_height(), 22.0)
             .with(margin(), vec4(0.0, STREET, STREET, STREET)),
     ])
@@ -133,7 +130,7 @@ fn EmberViewInner(hooks: &mut Hooks, msg: Option<messages::EmberLoadSuccess>) ->
                 None => Element::new(),
             },
             FlowColumn::el([
-                Text::el(name.clone()).with_default(align_vertical_center()),
+                Text::el(name.clone()).with(align_vertical(), Align::Center),
                 Text::el(match &existing_module {
                     Some((_, existing_url)) => {
                         if *existing_url == url {
@@ -145,7 +142,7 @@ fn EmberViewInner(hooks: &mut Hooks, msg: Option<messages::EmberLoadSuccess>) ->
                     None => url,
                 })
                 .small_style()
-                .with(font_style(), "Italic".to_string()),
+                .with(font_style(), FontStyle::Italic),
             ]),
         ])
         .with(space_between_items(), STREET)
@@ -153,12 +150,12 @@ fn EmberViewInner(hooks: &mut Hooks, msg: Option<messages::EmberLoadSuccess>) ->
 
     FlowColumn::el([
         FlowColumn::el([
-            Text::el(msg.id).with(font_style(), "Bold".to_string()),
-            Text::el(subtitle).with(font_style(), "Italic".to_string()),
+            Text::el(msg.id).with(font_style(), FontStyle::Bold),
+            Text::el(subtitle).with(font_style(), FontStyle::Italic),
         ])
         .with(space_between_items(), 4.0),
         FlowColumn::el([
-            Text::el("Client WASM").with(font_style(), "Bold".to_string()),
+            Text::el("Client WASM").with(font_style(), FontStyle::Bold),
             FlowColumn::el(
                 msg.client_wasms
                     .into_iter()
@@ -167,7 +164,7 @@ fn EmberViewInner(hooks: &mut Hooks, msg: Option<messages::EmberLoadSuccess>) ->
         ])
         .with(space_between_items(), 4.0),
         FlowColumn::el([
-            Text::el("Server WASM").with(font_style(), "Bold".to_string()),
+            Text::el("Server WASM").with(font_style(), FontStyle::Bold),
             FlowColumn::el(
                 msg.server_wasms
                     .into_iter()

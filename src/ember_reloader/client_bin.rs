@@ -1,7 +1,6 @@
 use ambient_api::prelude::*;
 
 mod shared;
-use shared::*;
 
 mod client;
 use client::{ember_load::EmberLoad, wasm_manager::WasmManager};

@@ -1,9 +1,21 @@
 use ambient_api::{
-    components::core::{
-        animation::{apply_animation_player, blend},
-        player::player,
+    core::{
+        animation::components::{apply_animation_player, blend},
+        player::components::player,
     },
     prelude::*,
+};
+
+use afps::{
+    afps_fpsanim::components::{
+        bk_lt, bk_rt, death, fd_lt, fd_rt, fire, hit, idle_bk, idle_fd, idle_lt, idle_rt, jump,
+        run, run_bk, run_bk_lt, run_bk_rt, run_fd, run_fd_lt, run_fd_rt, run_lt, run_rt,
+    },
+    afps_fpsmodel::components::player_model_ref,
+    afps_fpsmovement::components::{
+        player_direction, player_running, player_shooting_status, player_vspeed,
+    },
+    afps_fpsrule::components::{hit_freeze, player_health},
 };
 
 mod anim;
@@ -13,14 +25,14 @@ pub fn main() {
     anim::register_anim();
     query((
         player(),
-        components::player_model_ref(),
-        components::player_direction(),
-        components::player_shooting_status(),
-        components::player_vspeed(),
-        components::player_running(),
-        components::jump(),
-        components::fire(),
-        components::run(),
+        player_model_ref(),
+        player_direction(),
+        player_shooting_status(),
+        player_vspeed(),
+        player_running(),
+        jump(),
+        fire(),
+        run(),
     ))
     .each_frame(|results| {
         for (
@@ -37,9 +49,9 @@ pub fn main() {
             // the main takeaway is that each mod is not always self contained
             // for example, the hit_freeze is added in a mod called `rule`
             // but for its anim, we should add it here
-            if let Some(freeze) = entity::get_component(player_id, components::hit_freeze()) {
+            if let Some(freeze) = entity::get_component(player_id, hit_freeze()) {
                 if freeze > 0 {
-                    entity::set_component(player_id, components::hit_freeze(), freeze - 1);
+                    entity::set_component(player_id, hit_freeze(), freeze - 1);
                     continue;
                 }
             };
@@ -56,28 +68,28 @@ pub fn main() {
                 let rt = dir.x == 1.0;
 
                 if fd && !lt && !rt {
-                    apply_animation(player_id, components::run_fd());
+                    apply_animation(player_id, run_fd());
                 } else if bk && !lt && !rt {
-                    apply_animation(player_id, components::run_bk());
+                    apply_animation(player_id, run_bk());
                 } else if lt && !fd && !bk {
-                    apply_animation(player_id, components::run_lt());
+                    apply_animation(player_id, run_lt());
                 } else if rt && !fd && !bk {
-                    apply_animation(player_id, components::run_rt());
+                    apply_animation(player_id, run_rt());
                 } else if fd && lt {
-                    apply_animation(player_id, components::run_fd_lt());
+                    apply_animation(player_id, run_fd_lt());
                 } else if fd && rt {
-                    apply_animation(player_id, components::run_fd_rt());
+                    apply_animation(player_id, run_fd_rt());
                 } else if bk && lt {
-                    apply_animation(player_id, components::run_bk_lt());
+                    apply_animation(player_id, run_bk_lt());
                 } else if bk && rt {
-                    apply_animation(player_id, components::run_bk_rt());
+                    apply_animation(player_id, run_bk_rt());
                 } else {
                     // TODO: there is a bug on multiple animations playing at the same time
                     // I cannot use this commented line
                     // there is a "hijack" bug on the animation player
                     // have to create anim for each player
-                    apply_anim(player_id, components::idle_fd(), 0.0);
-                    // apply_anim(player_id, components::idle_fd_lt(), 0.0);
+                    apply_anim(player_id, idle_fd(), 0.0);
+                    // apply_anim(player_id, idle_fd_lt(), 0.0);
                 }
                 continue;
             };
@@ -88,28 +100,28 @@ pub fn main() {
             let rt = dir.x == 1.0;
 
             if fd && !lt && !rt {
-                apply_anim(player_id, components::idle_fd(), 1.0);
+                apply_anim(player_id, idle_fd(), 1.0);
             } else if bk && !lt && !rt {
-                apply_anim(player_id, components::idle_bk(), 1.0);
+                apply_anim(player_id, idle_bk(), 1.0);
             } else if lt && !fd && !bk {
-                apply_anim(player_id, components::idle_lt(), 1.0);
+                apply_anim(player_id, idle_lt(), 1.0);
             } else if rt && !fd && !bk {
-                apply_anim(player_id, components::idle_rt(), 1.0);
+                apply_anim(player_id, idle_rt(), 1.0);
             } else if fd && lt {
-                apply_anim(player_id, components::fd_lt(), 0.5);
+                apply_anim(player_id, fd_lt(), 0.5);
             } else if fd && rt {
-                apply_anim(player_id, components::fd_rt(), 0.5);
+                apply_anim(player_id, fd_rt(), 0.5);
             } else if bk && lt {
-                apply_anim(player_id, components::bk_lt(), 0.5);
+                apply_anim(player_id, bk_lt(), 0.5);
             } else if bk && rt {
-                apply_anim(player_id, components::bk_rt(), 0.5);
+                apply_anim(player_id, bk_rt(), 0.5);
             } else {
                 // TODO: there is a bug on multiple animations playing at the same time
                 // I cannot use this commented line
                 // there is a "hijack" bug on the animation player
                 // have to create anim for each player
-                apply_anim(player_id, components::idle_fd(), 0.0);
-                // apply_anim(player_id, components::idle_fd_lt(), 0.0);
+                apply_anim(player_id, idle_fd(), 0.0);
+                // apply_anim(player_id, idle_fd_lt(), 0.0);
             }
         }
     });
@@ -119,12 +131,12 @@ pub fn main() {
     // play `hit reaction` or `death` animation
     change_query((
         player(),
-        components::player_health(),
-        components::player_model_ref(),
-        components::death(),
-        components::hit(),
+        player_health(),
+        player_model_ref(),
+        death(),
+        hit(),
     ))
-    .track_change(components::player_health())
+    .track_change(player_health())
     .bind(|v| {
         // play hit animation
         for (_id, (_, health, model, death_anim, hit_anim)) in v {
@@ -138,7 +150,7 @@ pub fn main() {
 }
 
 pub fn apply_anim(player_id: EntityId, comp: Component<Vec<EntityId>>, blend_value: f32) {
-    let model = entity::get_component(player_id, components::player_model_ref());
+    let model = entity::get_component(player_id, player_model_ref());
     if model.is_none() {
         return;
     }
@@ -153,7 +165,7 @@ pub fn apply_anim(player_id: EntityId, comp: Component<Vec<EntityId>>, blend_val
 }
 
 pub fn apply_animation(player_id: EntityId, comp: Component<Vec<EntityId>>) {
-    let model = entity::get_component(player_id, components::player_model_ref());
+    let model = entity::get_component(player_id, player_model_ref());
     if model.is_none() {
         return;
     }

@@ -1,3 +1,7 @@
+[ember]
+id = "afps_fpsanim"
+name = "AFPS Animation"
+
 [components]
 
 run_fd = { type = { type = "Vec", element_type = "EntityId" }, attributes = [

@@ -1,10 +1,14 @@
-[messages.fire_sound.fields]
-source = { type = "EntityId" }
+[ember]
+id = "afps_fpsaudio"
+name = "AFPS Audio"
+
+[messages.FireSound.fields]
+source = "EntityId"
 
 # this is to receive the walk trigger source from other server
-[messages.foot_on_ground.fields]
-source = { type = "EntityId" }
+[messages.FootOnGround.fields]
+source = "EntityId"
 
 # send from audio server to audio client
-[messages.walk_sound.fields]
-source = { type = "EntityId" }
+[messages.WalkSound.fields]
+source = "EntityId"

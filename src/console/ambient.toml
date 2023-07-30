@@ -1,7 +1,11 @@
-[messages.console_server_input.fields]
+[ember]
+id = "afps_console"
+name = "AFPS Console"
+
+[messages.ConsoleServerInput.fields]
 input = "String"
 
-[messages.console_server_output.fields]
+[messages.ConsoleServerOutput.fields]
 text = "String"
 ty = "U8"
 is_server = "Bool"

@@ -1,23 +1,22 @@
+[ember]
+id = "afps_zombie"
+name = "AFPS Zombie"
+
 [components]
-
-is_zombie = { type = "Empty", attributs = ["Networked", "Debuggable"] }
-
-zombie_step_frame_count = { type = "U32", attributs = [
+is_zombie = { type = "Empty", attributes = ["Networked", "Debuggable"] }
+zombie_step_frame_count = { type = "U32", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+zombie_hit_reaction_count = { type = "I32", attributes = [
+    "Networked",
+    "Debuggable",
+] }
+zombie_health = { type = "I32", attributes = ["Networked", "Debuggable"] }
+zombie_model_ref = { type = "EntityId", attributes = [
     "Networked",
     "Debuggable",
 ] }
 
-zombie_hit_reaction_count = { type = "I32", attributs = [
-    "Networked",
-    "Debuggable",
-] }
-
-zombie_health = { type = "I32", attributs = ["Networked", "Debuggable"] }
-
-zombie_model_ref = { type = "EntityId", attributs = [
-    "Networked",
-    "Debuggable",
-] }
-
-[messages.hit_zombie.fields]
-id = { type = "EntityId" }
+[messages.HitZombie.fields]
+id = "EntityId"

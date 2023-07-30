@@ -1,5 +1,9 @@
-[messages.spraypaint.fields]
-origin = { type = "Vec3" }
-dir = { type = "Vec3" }
+[ember]
+id = "afps_spraypaint"
+name = "AFPS Spraypaint"
 
-# source = { type = "EntityId" }
+[messages.Spraypaint.fields]
+origin = "Vec3"
+dir = "Vec3"
+
+# source = "EntityId"

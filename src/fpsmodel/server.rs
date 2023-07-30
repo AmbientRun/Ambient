@@ -1,17 +1,29 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::{aspect_ratio_from_window, fovy},
-        ecs::{children, parent},
-        physics::{character_controller_height, character_controller_radius, physics_controlled},
-        player::{player, user_id},
-        prefab::prefab_from_url,
-        transform::{local_to_parent, local_to_world, rotation, translation},
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::{aspect_ratio_from_window, fovy},
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        ecs::components::{children, parent},
+        physics::components::{
+            character_controller_height, character_controller_radius, physics_controlled,
+        },
+        player::components::{player, user_id},
+        prefab::components::prefab_from_url,
+        transform::{
+            components::{local_to_parent, local_to_world, rotation, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
 };
-use components::{player_cam_ref, player_zoomed};
+
+use afps::{
+    afps_fpsmodel::components::{player_cam_ref, player_model_ref},
+    afps_fpsmovement::components::player_zoomed,
+    afps_fpsui::components::player_name,
+};
 
 #[main]
 pub async fn main() {
@@ -23,7 +35,7 @@ pub async fn main() {
     spawn_query((player(), user_id())).bind(move |players| {
         for (id, (_, uid)) in players {
             run_async(async move {
-                entity::wait_for_component(id, components::player_name()).await;
+                entity::wait_for_component(id, player_name()).await;
 
                 // refer to the first person example in Ambient repo
                 let cam = Entity::new()
@@ -69,8 +81,8 @@ pub async fn main() {
                             vec3(random::<f32>() * 20., random::<f32>() * 20., 2.0),
                         )
                         .with(children(), vec![model, cam])
-                        .with(components::player_cam_ref(), cam)
-                        .with(components::player_model_ref(), model),
+                        .with(player_cam_ref(), cam)
+                        .with(player_model_ref(), model),
                 );
             });
         }

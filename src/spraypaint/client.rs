@@ -1,16 +1,17 @@
-use std::{cell::RefCell, rc::Rc};
+use ambient_api::{
+    core::{app::components::window_logical_size, messages::Frame},
+    prelude::*,
+};
 
-use ambient_api::{components::core::app::window_logical_size, input::CursorLockGuard, prelude::*};
+use afps::{afps_fpsmodel::components::player_cam_ref, afps_spraypaint::messages::Spraypaint};
 
 #[main]
 pub async fn main() {
-    ambient_api::messages::Frame::subscribe(move |_| {
+    Frame::subscribe(move |_| {
         let (delta, _input) = input::get_delta();
         if delta.keys.contains(&KeyCode::T) {
-            let input = input::get();
-
             let player_id = player::get_local();
-            let cam = entity::get_component(player_id, components::player_cam_ref());
+            let cam = entity::get_component(player_id, player_cam_ref());
 
             let cam = if let Some(cam) = cam {
                 cam
@@ -27,7 +28,7 @@ pub async fn main() {
             );
 
             // Send screen ray to server
-            messages::Spraypaint {
+            Spraypaint {
                 origin: ray.origin,
                 dir: ray.dir,
             }

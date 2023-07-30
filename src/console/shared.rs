@@ -1,4 +1,8 @@
-use ambient_api::{components::core, ecs::GeneralQuery, prelude::*};
+use ambient_api::{
+    core::wasm::components::{bytecode_from_url, module_enabled, module_name},
+    ecs::GeneralQuery,
+    prelude::*,
+};
 use rhai::plugin::*;
 use std::sync::{Arc, Mutex};
 
@@ -181,12 +185,7 @@ struct ConsoleContext {
 impl ConsoleContext {
     fn new(is_server: bool, incoming_lines: Arc<Mutex<Vec<ConsoleLine>>>) -> Self {
         ConsoleContext {
-            module_query: query((
-                core::wasm::module_name(),
-                core::wasm::bytecode_from_url(),
-                core::wasm::module_enabled(),
-            ))
-            .build(),
+            module_query: query((module_name(), bytecode_from_url(), module_enabled())).build(),
             is_server,
             incoming_lines,
         }
@@ -220,7 +219,7 @@ mod wasm {
         enabled: bool,
     ) -> Result<(), Box<EvalAltResult>> {
         update_module(ctx, name, |id| {
-            entity::set_component(id, core::wasm::module_enabled(), enabled);
+            entity::set_component(id, module_enabled(), enabled);
             Ok(())
         })
     }
@@ -230,10 +229,10 @@ mod wasm {
         update_module(ctx, name, |id| {
             entity::set_component(
                 id,
-                core::wasm::bytecode_from_url(),
-                entity::get_component(id, core::wasm::bytecode_from_url()).unwrap(),
+                bytecode_from_url(),
+                entity::get_component(id, bytecode_from_url()).unwrap(),
             );
-            entity::set_component(id, core::wasm::module_enabled(), true);
+            entity::set_component(id, module_enabled(), true);
             Ok(())
         })
     }
@@ -245,7 +244,7 @@ mod wasm {
         bytecode_url: &str,
     ) -> Result<(), Box<EvalAltResult>> {
         update_module(ctx, name, |id| {
-            entity::set_component(id, core::wasm::bytecode_from_url(), bytecode_url.to_owned());
+            entity::set_component(id, bytecode_from_url(), bytecode_url.to_owned());
             Ok(())
         })
     }
@@ -293,7 +292,10 @@ mod wasm {
         let ctx = console_context(&ctx);
         for (_, (name, bytecode_url, enabled)) in
             ctx.module_query.evaluate().into_iter().filter(|(id, _)| {
-                let on_server = entity::has_component(*id, core::wasm::module_on_server());
+                let on_server = entity::has_component(
+                    *id,
+                    ambient_api::core::wasm::components::module_on_server(),
+                );
                 match filter {
                     ListFilter::Client => !on_server,
                     ListFilter::Server => on_server,
