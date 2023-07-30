@@ -22,7 +22,7 @@ pub fn main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     match ts {
         Ok(ts) => ts.into(),
         Err(e) => {
-            let msg = format!("Error while running Ambient ember macro: {e}");
+            let msg = format!("Error while running Ambient ember macro: {e:?}");
             quote::quote! {
                 compile_error!(#msg);
                 #[no_mangle]
