@@ -20,6 +20,7 @@ impl std::fmt::Debug for Console {
             .finish()
     }
 }
+#[allow(dead_code)]
 impl Console {
     pub fn new(is_server: bool) -> Arc<Mutex<Self>> {
         let incoming_lines = Arc::new(Mutex::new(Vec::new()));
