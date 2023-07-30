@@ -10,6 +10,8 @@ members = [
     "examples/basics/physics",
     "examples/basics/primitives",
     "examples/basics/skinmesh",
+    "examples/basics/dependencies",
+    "examples/basics/dependencies/deps/code",
 
     # Intermediate
     "examples/intermediate/messaging",

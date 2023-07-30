@@ -86,9 +86,14 @@ pub fn make_scopes(
         if inner.is_empty() {
             quote! {}
         } else {
+            let includes = context
+                .guest_api_path()
+                .map(|s| quote! { use #s::{global::serde, message::*}; })
+                .unwrap_or(quote! { use serde; use ambient_project_rt::message_serde::*; });
             quote! {
                 /// Auto-generated type definitions.
                 pub mod types {
+                    #includes
                     #inner
                 }
             }

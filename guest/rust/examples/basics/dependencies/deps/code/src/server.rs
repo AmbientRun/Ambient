@@ -1,11 +1,16 @@
 use ambient_api::{
-    components::core::{
-        app::main_scene,
-        camera::aspect_ratio_from_window,
-        primitives::quad,
-        transform::{lookat_target, translation},
+    core::{
+        app::components::main_scene,
+        camera::{
+            components::aspect_ratio_from_window,
+            concepts::make_perspective_infinite_reverse_camera,
+        },
+        primitives::components::quad,
+        transform::{
+            components::{lookat_target, translation},
+            concepts::make_transformable,
+        },
     },
-    concepts::{make_perspective_infinite_reverse_camera, make_transformable},
     prelude::*,
 };
 

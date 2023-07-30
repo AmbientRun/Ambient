@@ -898,11 +898,14 @@ pub mod ambient_core {
         }
         #[doc = r" Auto-generated type definitions."]
         pub mod types {
+            use crate::{global::serde, message::*};
             #[derive(
-                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
+                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
             )]
+            #[serde(crate = "self::serde")]
             #[doc = "**Align**: Layout alignment."]
             pub enum Align {
+                #[default]
                 #[doc = "Begin"]
                 Begin,
                 #[doc = "Center"]
@@ -941,38 +944,27 @@ pub mod ambient_core {
                     self.to_u32().into_result()
                 }
             }
-            impl crate::ecs::SupportedValue for Vec<Align> {
-                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    use crate::ecs::EnumComponent;
-                    (Vec::<u32>::from_result(result)).and_then(|v| {
-                        v.into_iter()
-                            .map(|v| Align::from_u32(v))
-                            .collect::<Option<Vec<_>>>()
-                    })
+            impl MessageSerde for Align {
+                fn serialize_message_part(
+                    &self,
+                    output: &mut Vec<u8>,
+                ) -> Result<(), MessageSerdeError> {
+                    crate::ecs::EnumComponent::to_u32(self).serialize_message_part(output)
                 }
-                fn into_result(self) -> crate::ecs::WitComponentValue {
-                    use crate::ecs::EnumComponent;
-                    self.into_iter()
-                        .map(|v| v.to_u32())
-                        .collect::<Vec<_>>()
-                        .into_result()
-                }
-            }
-            impl crate::ecs::SupportedValue for Option<Align> {
-                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    use crate::ecs::EnumComponent;
-                    u32::from_result(result).map(|v| Align::from_u32(v))
-                }
-                fn into_result(self) -> crate::ecs::WitComponentValue {
-                    use crate::ecs::EnumComponent;
-                    self.map(|v| v.to_u32()).into_result()
+                fn deserialize_message_part(
+                    input: &mut dyn std::io::Read,
+                ) -> Result<Self, MessageSerdeError> {
+                    crate::ecs::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                        .ok_or(MessageSerdeError::InvalidValue)
                 }
             }
             #[derive(
-                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
+                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
             )]
+            #[serde(crate = "self::serde")]
             #[doc = "**Fit**: Layout fit."]
             pub enum Fit {
+                #[default]
                 #[doc = "None"]
                 None,
                 #[doc = "Parent"]
@@ -1011,38 +1003,27 @@ pub mod ambient_core {
                     self.to_u32().into_result()
                 }
             }
-            impl crate::ecs::SupportedValue for Vec<Fit> {
-                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    use crate::ecs::EnumComponent;
-                    (Vec::<u32>::from_result(result)).and_then(|v| {
-                        v.into_iter()
-                            .map(|v| Fit::from_u32(v))
-                            .collect::<Option<Vec<_>>>()
-                    })
+            impl MessageSerde for Fit {
+                fn serialize_message_part(
+                    &self,
+                    output: &mut Vec<u8>,
+                ) -> Result<(), MessageSerdeError> {
+                    crate::ecs::EnumComponent::to_u32(self).serialize_message_part(output)
                 }
-                fn into_result(self) -> crate::ecs::WitComponentValue {
-                    use crate::ecs::EnumComponent;
-                    self.into_iter()
-                        .map(|v| v.to_u32())
-                        .collect::<Vec<_>>()
-                        .into_result()
-                }
-            }
-            impl crate::ecs::SupportedValue for Option<Fit> {
-                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    use crate::ecs::EnumComponent;
-                    u32::from_result(result).map(|v| Fit::from_u32(v))
-                }
-                fn into_result(self) -> crate::ecs::WitComponentValue {
-                    use crate::ecs::EnumComponent;
-                    self.map(|v| v.to_u32()).into_result()
+                fn deserialize_message_part(
+                    input: &mut dyn std::io::Read,
+                ) -> Result<Self, MessageSerdeError> {
+                    crate::ecs::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                        .ok_or(MessageSerdeError::InvalidValue)
                 }
             }
             #[derive(
-                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
+                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
             )]
+            #[serde(crate = "self::serde")]
             #[doc = "**Orientation**: Layout orientation."]
             pub enum Orientation {
+                #[default]
                 #[doc = "Horizontal"]
                 Horizontal,
                 #[doc = "Vertical"]
@@ -1075,38 +1056,27 @@ pub mod ambient_core {
                     self.to_u32().into_result()
                 }
             }
-            impl crate::ecs::SupportedValue for Vec<Orientation> {
-                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    use crate::ecs::EnumComponent;
-                    (Vec::<u32>::from_result(result)).and_then(|v| {
-                        v.into_iter()
-                            .map(|v| Orientation::from_u32(v))
-                            .collect::<Option<Vec<_>>>()
-                    })
+            impl MessageSerde for Orientation {
+                fn serialize_message_part(
+                    &self,
+                    output: &mut Vec<u8>,
+                ) -> Result<(), MessageSerdeError> {
+                    crate::ecs::EnumComponent::to_u32(self).serialize_message_part(output)
                 }
-                fn into_result(self) -> crate::ecs::WitComponentValue {
-                    use crate::ecs::EnumComponent;
-                    self.into_iter()
-                        .map(|v| v.to_u32())
-                        .collect::<Vec<_>>()
-                        .into_result()
-                }
-            }
-            impl crate::ecs::SupportedValue for Option<Orientation> {
-                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    use crate::ecs::EnumComponent;
-                    u32::from_result(result).map(|v| Orientation::from_u32(v))
-                }
-                fn into_result(self) -> crate::ecs::WitComponentValue {
-                    use crate::ecs::EnumComponent;
-                    self.map(|v| v.to_u32()).into_result()
+                fn deserialize_message_part(
+                    input: &mut dyn std::io::Read,
+                ) -> Result<Self, MessageSerdeError> {
+                    crate::ecs::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                        .ok_or(MessageSerdeError::InvalidValue)
                 }
             }
             #[derive(
-                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
+                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
             )]
+            #[serde(crate = "self::serde")]
             #[doc = "**Docking**: The edge to dock to."]
             pub enum Docking {
+                #[default]
                 #[doc = "Left"]
                 Left,
                 #[doc = "Right"]
@@ -1157,38 +1127,27 @@ pub mod ambient_core {
                     self.to_u32().into_result()
                 }
             }
-            impl crate::ecs::SupportedValue for Vec<Docking> {
-                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    use crate::ecs::EnumComponent;
-                    (Vec::<u32>::from_result(result)).and_then(|v| {
-                        v.into_iter()
-                            .map(|v| Docking::from_u32(v))
-                            .collect::<Option<Vec<_>>>()
-                    })
+            impl MessageSerde for Docking {
+                fn serialize_message_part(
+                    &self,
+                    output: &mut Vec<u8>,
+                ) -> Result<(), MessageSerdeError> {
+                    crate::ecs::EnumComponent::to_u32(self).serialize_message_part(output)
                 }
-                fn into_result(self) -> crate::ecs::WitComponentValue {
-                    use crate::ecs::EnumComponent;
-                    self.into_iter()
-                        .map(|v| v.to_u32())
-                        .collect::<Vec<_>>()
-                        .into_result()
-                }
-            }
-            impl crate::ecs::SupportedValue for Option<Docking> {
-                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    use crate::ecs::EnumComponent;
-                    u32::from_result(result).map(|v| Docking::from_u32(v))
-                }
-                fn into_result(self) -> crate::ecs::WitComponentValue {
-                    use crate::ecs::EnumComponent;
-                    self.map(|v| v.to_u32()).into_result()
+                fn deserialize_message_part(
+                    input: &mut dyn std::io::Read,
+                ) -> Result<Self, MessageSerdeError> {
+                    crate::ecs::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                        .ok_or(MessageSerdeError::InvalidValue)
                 }
             }
             #[derive(
-                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
+                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
             )]
+            #[serde(crate = "self::serde")]
             #[doc = "**Layout**: The type of the layout to use."]
             pub enum Layout {
+                #[default]
                 #[doc = "Bottom-up flow layout."]
                 Flow,
                 #[doc = "Top-down dock layout."]
@@ -1233,31 +1192,18 @@ pub mod ambient_core {
                     self.to_u32().into_result()
                 }
             }
-            impl crate::ecs::SupportedValue for Vec<Layout> {
-                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    use crate::ecs::EnumComponent;
-                    (Vec::<u32>::from_result(result)).and_then(|v| {
-                        v.into_iter()
-                            .map(|v| Layout::from_u32(v))
-                            .collect::<Option<Vec<_>>>()
-                    })
+            impl MessageSerde for Layout {
+                fn serialize_message_part(
+                    &self,
+                    output: &mut Vec<u8>,
+                ) -> Result<(), MessageSerdeError> {
+                    crate::ecs::EnumComponent::to_u32(self).serialize_message_part(output)
                 }
-                fn into_result(self) -> crate::ecs::WitComponentValue {
-                    use crate::ecs::EnumComponent;
-                    self.into_iter()
-                        .map(|v| v.to_u32())
-                        .collect::<Vec<_>>()
-                        .into_result()
-                }
-            }
-            impl crate::ecs::SupportedValue for Option<Layout> {
-                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    use crate::ecs::EnumComponent;
-                    u32::from_result(result).map(|v| Layout::from_u32(v))
-                }
-                fn into_result(self) -> crate::ecs::WitComponentValue {
-                    use crate::ecs::EnumComponent;
-                    self.map(|v| v.to_u32()).into_result()
+                fn deserialize_message_part(
+                    input: &mut dyn std::io::Read,
+                ) -> Result<Self, MessageSerdeError> {
+                    crate::ecs::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                        .ok_or(MessageSerdeError::InvalidValue)
                 }
             }
         }
@@ -2084,11 +2030,14 @@ pub mod ambient_core {
         }
         #[doc = r" Auto-generated type definitions."]
         pub mod types {
+            use crate::{global::serde, message::*};
             #[derive(
-                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize,
+                Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
             )]
+            #[serde(crate = "self::serde")]
             #[doc = "**FontStyle**: Style of the font."]
             pub enum FontStyle {
+                #[default]
                 #[doc = "Use bold for this text."]
                 Bold,
                 #[doc = "Use bold italic for this text."]
@@ -2157,31 +2106,18 @@ pub mod ambient_core {
                     self.to_u32().into_result()
                 }
             }
-            impl crate::ecs::SupportedValue for Vec<FontStyle> {
-                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    use crate::ecs::EnumComponent;
-                    (Vec::<u32>::from_result(result)).and_then(|v| {
-                        v.into_iter()
-                            .map(|v| FontStyle::from_u32(v))
-                            .collect::<Option<Vec<_>>>()
-                    })
+            impl MessageSerde for FontStyle {
+                fn serialize_message_part(
+                    &self,
+                    output: &mut Vec<u8>,
+                ) -> Result<(), MessageSerdeError> {
+                    crate::ecs::EnumComponent::to_u32(self).serialize_message_part(output)
                 }
-                fn into_result(self) -> crate::ecs::WitComponentValue {
-                    use crate::ecs::EnumComponent;
-                    self.into_iter()
-                        .map(|v| v.to_u32())
-                        .collect::<Vec<_>>()
-                        .into_result()
-                }
-            }
-            impl crate::ecs::SupportedValue for Option<FontStyle> {
-                fn from_result(result: crate::ecs::WitComponentValue) -> Option<Self> {
-                    use crate::ecs::EnumComponent;
-                    u32::from_result(result).map(|v| FontStyle::from_u32(v))
-                }
-                fn into_result(self) -> crate::ecs::WitComponentValue {
-                    use crate::ecs::EnumComponent;
-                    self.map(|v| v.to_u32()).into_result()
+                fn deserialize_message_part(
+                    input: &mut dyn std::io::Read,
+                ) -> Result<Self, MessageSerdeError> {
+                    crate::ecs::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                        .ok_or(MessageSerdeError::InvalidValue)
                 }
             }
         }

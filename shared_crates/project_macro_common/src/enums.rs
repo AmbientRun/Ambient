@@ -38,9 +38,11 @@ pub fn make_definitions(
                 .unwrap_or_else(|| quote! { crate:: });
 
             let main = quote! {
-                #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+                #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize, Default)]
+                #[serde(crate = "self::serde")]
                 #[doc = #doc_comment]
                 pub enum #enum_name {
+                    #[default]
                     #(#enum_fields,)*
                 }
 
@@ -78,38 +80,59 @@ pub fn make_definitions(
                             self.to_u32().into_result()
                         }
                     }
-                    impl #guest_api_path::ecs::SupportedValue for Vec<#enum_name> {
-                        fn from_result(result: #guest_api_path::ecs::WitComponentValue) -> Option<Self> {
-                            use #ecs_prefix EnumComponent;
-                            (Vec :: <u32> :: from_result(result)).and_then(|v| {
-                                v.into_iter().map(|v| #enum_name::from_u32(v)).collect::<Option<Vec<_>>>()
-                            })
-                        }
+                    // Code generation for Vec/Option is disabled as you cannot implement foreign traits on foreign types
+                    // Need to think about how to best solve this
+                    // impl #guest_api_path::ecs::SupportedValue for Vec<#enum_name> {
+                    //     fn from_result(result: #guest_api_path::ecs::WitComponentValue) -> Option<Self> {
+                    //         use #ecs_prefix EnumComponent;
+                    //         (Vec :: <u32> :: from_result(result)).and_then(|v| {
+                    //             v.into_iter().map(|v| #enum_name::from_u32(v)).collect::<Option<Vec<_>>>()
+                    //         })
+                    //     }
 
-                        fn into_result(self) -> #guest_api_path::ecs::WitComponentValue {
-                            use #ecs_prefix EnumComponent;
-                            self.into_iter().map(|v| v.to_u32()).collect::<Vec<_>>().into_result()
-                        }
-                    }
-                    impl #guest_api_path::ecs::SupportedValue for Option<#enum_name> {
-                        fn from_result(result: #guest_api_path::ecs::WitComponentValue) -> Option<Self> {
-                            use #ecs_prefix EnumComponent;
-                            u32::from_result(result).map(|v| #enum_name ::from_u32(v))
-                        }
+                    //     fn into_result(self) -> #guest_api_path::ecs::WitComponentValue {
+                    //         use #ecs_prefix EnumComponent;
+                    //         self.into_iter().map(|v| v.to_u32()).collect::<Vec<_>>().into_result()
+                    //     }
+                    // }
+                    // impl #guest_api_path::ecs::SupportedValue for Option<#enum_name> {
+                    //     fn from_result(result: #guest_api_path::ecs::WitComponentValue) -> Option<Self> {
+                    //         use #ecs_prefix EnumComponent;
+                    //         u32::from_result(result).map(|v| #enum_name ::from_u32(v))
+                    //     }
 
-                        fn into_result(self) -> #guest_api_path::ecs::WitComponentValue {
-                            use #ecs_prefix EnumComponent;
-                            self.map(|v| v.to_u32()).into_result()
-                        }
-                    }
+                    //     fn into_result(self) -> #guest_api_path::ecs::WitComponentValue {
+                    //         use #ecs_prefix EnumComponent;
+                    //         self.map(|v| v.to_u32()).into_result()
+                    //     }
+                    // }
                 }
             } else {
                 quote! {}
             };
 
+            let message_serde_impl = quote! {
+                impl MessageSerde for #enum_name {
+                    fn serialize_message_part(
+                        &self,
+                        output: &mut Vec<u8>,
+                    ) -> Result<(), MessageSerdeError> {
+                        #ecs_prefix EnumComponent::to_u32(self).serialize_message_part(output)
+                    }
+
+                    fn deserialize_message_part(
+                        input: &mut dyn std::io::Read,
+                    ) -> Result<Self, MessageSerdeError> {
+                        #ecs_prefix EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                            .ok_or(MessageSerdeError::InvalidValue)
+                    }
+                }
+            };
+
             Ok(quote! {
                 #main
                 #supported_value
+                #message_serde_impl
             })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;

@@ -355,9 +355,15 @@ pub mod layout {
     }
     #[doc = r" Auto-generated type definitions."]
     pub mod types {
-        #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
+        use ambient_project_rt::message_serde::*;
+        use serde;
+        #[derive(
+            Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
+        )]
+        #[serde(crate = "self::serde")]
         #[doc = "**Align**: Layout alignment."]
         pub enum Align {
+            #[default]
             #[doc = "Begin"]
             Begin,
             #[doc = "Center"]
@@ -386,9 +392,27 @@ pub mod layout {
                 None
             }
         }
-        #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
+        impl MessageSerde for Align {
+            fn serialize_message_part(
+                &self,
+                output: &mut Vec<u8>,
+            ) -> Result<(), MessageSerdeError> {
+                crate::EnumComponent::to_u32(self).serialize_message_part(output)
+            }
+            fn deserialize_message_part(
+                input: &mut dyn std::io::Read,
+            ) -> Result<Self, MessageSerdeError> {
+                crate::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                    .ok_or(MessageSerdeError::InvalidValue)
+            }
+        }
+        #[derive(
+            Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
+        )]
+        #[serde(crate = "self::serde")]
         #[doc = "**Fit**: Layout fit."]
         pub enum Fit {
+            #[default]
             #[doc = "None"]
             None,
             #[doc = "Parent"]
@@ -417,9 +441,27 @@ pub mod layout {
                 None
             }
         }
-        #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
+        impl MessageSerde for Fit {
+            fn serialize_message_part(
+                &self,
+                output: &mut Vec<u8>,
+            ) -> Result<(), MessageSerdeError> {
+                crate::EnumComponent::to_u32(self).serialize_message_part(output)
+            }
+            fn deserialize_message_part(
+                input: &mut dyn std::io::Read,
+            ) -> Result<Self, MessageSerdeError> {
+                crate::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                    .ok_or(MessageSerdeError::InvalidValue)
+            }
+        }
+        #[derive(
+            Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
+        )]
+        #[serde(crate = "self::serde")]
         #[doc = "**Orientation**: Layout orientation."]
         pub enum Orientation {
+            #[default]
             #[doc = "Horizontal"]
             Horizontal,
             #[doc = "Vertical"]
@@ -442,9 +484,27 @@ pub mod layout {
                 None
             }
         }
-        #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
+        impl MessageSerde for Orientation {
+            fn serialize_message_part(
+                &self,
+                output: &mut Vec<u8>,
+            ) -> Result<(), MessageSerdeError> {
+                crate::EnumComponent::to_u32(self).serialize_message_part(output)
+            }
+            fn deserialize_message_part(
+                input: &mut dyn std::io::Read,
+            ) -> Result<Self, MessageSerdeError> {
+                crate::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                    .ok_or(MessageSerdeError::InvalidValue)
+            }
+        }
+        #[derive(
+            Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
+        )]
+        #[serde(crate = "self::serde")]
         #[doc = "**Docking**: The edge to dock to."]
         pub enum Docking {
+            #[default]
             #[doc = "Left"]
             Left,
             #[doc = "Right"]
@@ -485,9 +545,27 @@ pub mod layout {
                 None
             }
         }
-        #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
+        impl MessageSerde for Docking {
+            fn serialize_message_part(
+                &self,
+                output: &mut Vec<u8>,
+            ) -> Result<(), MessageSerdeError> {
+                crate::EnumComponent::to_u32(self).serialize_message_part(output)
+            }
+            fn deserialize_message_part(
+                input: &mut dyn std::io::Read,
+            ) -> Result<Self, MessageSerdeError> {
+                crate::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                    .ok_or(MessageSerdeError::InvalidValue)
+            }
+        }
+        #[derive(
+            Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
+        )]
+        #[serde(crate = "self::serde")]
         #[doc = "**Layout**: The type of the layout to use."]
         pub enum Layout {
+            #[default]
             #[doc = "Bottom-up flow layout."]
             Flow,
             #[doc = "Top-down dock layout."]
@@ -520,6 +598,20 @@ pub mod layout {
                     return Some(Self::WidthToChildren);
                 }
                 None
+            }
+        }
+        impl MessageSerde for Layout {
+            fn serialize_message_part(
+                &self,
+                output: &mut Vec<u8>,
+            ) -> Result<(), MessageSerdeError> {
+                crate::EnumComponent::to_u32(self).serialize_message_part(output)
+            }
+            fn deserialize_message_part(
+                input: &mut dyn std::io::Read,
+            ) -> Result<Self, MessageSerdeError> {
+                crate::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                    .ok_or(MessageSerdeError::InvalidValue)
             }
         }
     }
@@ -852,9 +944,15 @@ pub mod text {
     }
     #[doc = r" Auto-generated type definitions."]
     pub mod types {
-        #[derive(Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize)]
+        use ambient_project_rt::message_serde::*;
+        use serde;
+        #[derive(
+            Copy, Clone, Debug, PartialEq, Eq, serde :: Serialize, serde :: Deserialize, Default,
+        )]
+        #[serde(crate = "self::serde")]
         #[doc = "**FontStyle**: Style of the font."]
         pub enum FontStyle {
+            #[default]
             #[doc = "Use bold for this text."]
             Bold,
             #[doc = "Use bold italic for this text."]
@@ -911,6 +1009,20 @@ pub mod text {
                     return Some(Self::LightItalic);
                 }
                 None
+            }
+        }
+        impl MessageSerde for FontStyle {
+            fn serialize_message_part(
+                &self,
+                output: &mut Vec<u8>,
+            ) -> Result<(), MessageSerdeError> {
+                crate::EnumComponent::to_u32(self).serialize_message_part(output)
+            }
+            fn deserialize_message_part(
+                input: &mut dyn std::io::Read,
+            ) -> Result<Self, MessageSerdeError> {
+                crate::EnumComponent::from_u32(u32::deserialize_message_part(input)?)
+                    .ok_or(MessageSerdeError::InvalidValue)
             }
         }
     }

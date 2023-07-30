@@ -19,7 +19,7 @@ use itertools::Itertools;
 
 pub use ambient_guest_bridge::core::layout::{
     components::*,
-    types::{Align, Fit, Layout, Orientation},
+    types::{Align, Docking, Fit, Layout, Orientation},
 };
 
 #[derive(Debug, Clone)]
