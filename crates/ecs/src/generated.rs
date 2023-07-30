@@ -1115,6 +1115,7 @@ pub mod messages {
     #[doc = "**Frame**: Sent to all modules every frame."]
     pub struct Frame {}
     impl Frame {
+        #[allow(clippy::too_many_arguments)]
         pub fn new() -> Self {
             Self {}
         }
@@ -1138,6 +1139,7 @@ pub mod messages {
         pub ids: Vec<EntityId>,
     }
     impl Collision {
+        #[allow(clippy::too_many_arguments)]
         pub fn new(ids: impl Into<Vec<EntityId>>) -> Self {
             Self { ids: ids.into() }
         }
@@ -1164,6 +1166,7 @@ pub mod messages {
         pub ids: Vec<EntityId>,
     }
     impl ColliderLoads {
+        #[allow(clippy::too_many_arguments)]
         pub fn new(ids: impl Into<Vec<EntityId>>) -> Self {
             Self { ids: ids.into() }
         }
@@ -1188,6 +1191,7 @@ pub mod messages {
     #[doc = "**ModuleLoad**: Sent to a module when it loads."]
     pub struct ModuleLoad {}
     impl ModuleLoad {
+        #[allow(clippy::too_many_arguments)]
         pub fn new() -> Self {
             Self {}
         }
@@ -1209,6 +1213,7 @@ pub mod messages {
     #[doc = "**ModuleUnload**: Sent to a module when it unloads."]
     pub struct ModuleUnload {}
     impl ModuleUnload {
+        #[allow(clippy::too_many_arguments)]
         pub fn new() -> Self {
             Self {}
         }
@@ -1232,6 +1237,7 @@ pub mod messages {
         pub focused: bool,
     }
     impl WindowFocusChange {
+        #[allow(clippy::too_many_arguments)]
         pub fn new(focused: impl Into<bool>) -> Self {
             Self {
                 focused: focused.into(),
@@ -1258,6 +1264,7 @@ pub mod messages {
     #[doc = "**WindowClose**: Sent when the window is closed."]
     pub struct WindowClose {}
     impl WindowClose {
+        #[allow(clippy::too_many_arguments)]
         pub fn new() -> Self {
             Self {}
         }
@@ -1281,6 +1288,7 @@ pub mod messages {
         pub character: String,
     }
     impl WindowKeyboardCharacter {
+        #[allow(clippy::too_many_arguments)]
         pub fn new(character: impl Into<String>) -> Self {
             Self {
                 character: character.into(),
@@ -1309,6 +1317,7 @@ pub mod messages {
         pub modifiers: u32,
     }
     impl WindowKeyboardModifiersChange {
+        #[allow(clippy::too_many_arguments)]
         pub fn new(modifiers: impl Into<u32>) -> Self {
             Self {
                 modifiers: modifiers.into(),
@@ -1339,6 +1348,7 @@ pub mod messages {
         pub keycode: Option<String>,
     }
     impl WindowKeyboardInput {
+        #[allow(clippy::too_many_arguments)]
         pub fn new(
             pressed: impl Into<bool>,
             modifiers: impl Into<u32>,
@@ -1378,6 +1388,7 @@ pub mod messages {
         pub button: u32,
     }
     impl WindowMouseInput {
+        #[allow(clippy::too_many_arguments)]
         pub fn new(pressed: impl Into<bool>, button: impl Into<u32>) -> Self {
             Self {
                 pressed: pressed.into(),
@@ -1410,6 +1421,7 @@ pub mod messages {
         pub pixels: bool,
     }
     impl WindowMouseWheel {
+        #[allow(clippy::too_many_arguments)]
         pub fn new(delta: impl Into<Vec2>, pixels: impl Into<bool>) -> Self {
             Self {
                 delta: delta.into(),
@@ -1441,6 +1453,7 @@ pub mod messages {
         pub delta: Vec2,
     }
     impl WindowMouseMotion {
+        #[allow(clippy::too_many_arguments)]
         pub fn new(delta: impl Into<Vec2>) -> Self {
             Self {
                 delta: delta.into(),
@@ -1472,6 +1485,7 @@ pub mod messages {
         pub error: Option<String>,
     }
     impl HttpResponse {
+        #[allow(clippy::too_many_arguments)]
         pub fn new(
             url: impl Into<String>,
             status: impl Into<u32>,
@@ -1514,6 +1528,7 @@ pub mod messages {
         pub error: Option<String>,
     }
     impl WasmRebuild {
+        #[allow(clippy::too_many_arguments)]
         pub fn new(error: impl Into<Option<String>>) -> Self {
             Self {
                 error: error.into(),

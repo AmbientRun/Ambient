@@ -91,6 +91,7 @@ pub fn make_definitions(
                     #(#fields,)*
                 }
                 impl #struct_name {
+                    #[allow(clippy::too_many_arguments)]
                     pub fn new(#(#new_parameters,)*) -> Self {
                         Self {
                             #(#new_fields,)*
