@@ -79,6 +79,9 @@ macro_rules! define_external_component_attribute {
                 for flag_str in iter {
                     match flag_str {
                         $(stringify!($type_name) => { flags.$field_name = true; },)*
+                        "Enum" => {
+                            log::warn!("The Enum attribute is not currently supported for external components");
+                        }
                         _ => panic!("Unexpected attribute flag: {flag_str}"),
                     }
                 }
@@ -92,8 +95,7 @@ define_external_component_attribute![
     (networked, Networked),
     (resource, Resource),
     (store, Store),
-    (maybe_resource, MaybeResource),
-    (enum_, Enum)
+    (maybe_resource, MaybeResource) // ,(enum_, Enum)
 ];
 
 #[derive(Default)]
