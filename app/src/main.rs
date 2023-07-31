@@ -202,7 +202,7 @@ async fn main() -> anyhow::Result<()> {
 
     let project = cli.project();
 
-    if let Some(project) = &project {
+    if let Some(project) = project {
         if project.project {
             log::warn!("`-p`/`--project` has no semantic meaning - the path is always treated as a project path.");
             log::warn!("You do not need to use `-p`/`--project` - `ambient run project` is the same as `ambient run -p project`.");

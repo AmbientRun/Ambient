@@ -128,8 +128,13 @@ impl Semantic {
         file_provider: &dyn FileProvider,
         source: ItemSource,
     ) -> anyhow::Result<ItemId<Scope>> {
-        let manifest = Manifest::parse(&file_provider.get(filename)?)
-            .with_context(|| format!("failed to parse toml for {filename:?}"))?;
+        let manifest = Manifest::parse(&file_provider.get(filename).with_context(|| {
+            format!(
+                "failed to read file {:?} within parent scope {parent_scope:?}",
+                file_provider.get(filename)
+            )
+        })?)
+        .with_context(|| format!("failed to parse toml for {:?}", file_provider.get(filename)))?;
 
         let id = manifest.ember.id.clone();
         self.add_scope_from_manifest(
@@ -166,8 +171,18 @@ impl Semantic {
         file_provider: &dyn FileProvider,
         source: ItemSource,
     ) -> anyhow::Result<ItemId<Scope>> {
-        let manifest = Manifest::parse(&file_provider.get(filename)?)
-            .with_context(|| format!("failed to parse toml for {filename:?}"))?;
+        let manifest = Manifest::parse(&file_provider.get(filename).with_context(|| {
+            format!(
+                "failed to read top-level file {:?}",
+                file_provider.full_path(filename)
+            )
+        })?)
+        .with_context(|| {
+            format!(
+                "failed to parse toml for {:?}",
+                file_provider.full_path(filename)
+            )
+        })?;
 
         let root_id = self.root_scope_id;
 
@@ -254,7 +269,7 @@ impl Semantic {
                 .insert(id.as_snake()?.clone(), child_scope_id);
         }
 
-        for (_, dependency) in manifest.dependencies.iter() {
+        for (dependency_path, dependency) in manifest.dependencies.iter() {
             match dependency {
                 Dependency::Path { path } => {
                     let file_provider = ProxyFileProvider {
@@ -262,7 +277,15 @@ impl Semantic {
                         base: path,
                     };
 
-                    self.add_file(Path::new("ambient.toml"), &file_provider, source)?;
+                    let ambient_toml = Path::new("ambient.toml");
+                    self.add_file(ambient_toml, &file_provider, source)
+                        .with_context(|| {
+                            format!(
+                                "failed to add dependency `{dependency_path}` ({:?}) for manifest {:?}",
+                                file_provider.full_path(ambient_toml),
+                                manifest_path
+                            )
+                        })?;
                 }
             }
         }
