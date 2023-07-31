@@ -16,6 +16,7 @@ fpsui = { path = "embers/fpsui" }
 scene = { path = "embers/scene" }
 spraypaint = { path = "embers/spraypaint" }
 zombie = { path = "embers/zombie" }
+world_latency = { path = "embers/world_latency" }
 
 console = { path = "tool_embers/console" }
 ember_reloader = { path = "tool_embers/ember_reloader" }

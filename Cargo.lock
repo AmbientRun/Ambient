@@ -74,6 +74,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "afps_world_latency"
+version = "0.0.1"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "afps_zombie"
 version = "0.0.1"
 dependencies = [
