@@ -1,0 +1,10 @@
+[ember]
+id = "input_schema"
+name = "Input Schema"
+description = "Probably something to standardize"
+
+[messages.RequestInput]
+fields = {}
+
+[messages.ReleaseInput]
+fields = {}

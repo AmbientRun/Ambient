@@ -1,0 +1,14 @@
+[ember]
+id = "console"
+name = "Console"
+
+[messages.ConsoleServerInput.fields]
+input = "String"
+
+[messages.ConsoleServerOutput.fields]
+text = "String"
+ty = "U8"
+is_server = "Bool"
+
+[dependencies]
+input_schema = { path = "../../schema/input" }

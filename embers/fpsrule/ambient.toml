@@ -1,0 +1,6 @@
+[ember]
+id = "afps_fpsrule"
+name = "AFPS Rule"
+
+[dependencies]
+afps_schema = { path = "../../schema/afps" }

@@ -1,9 +1,0 @@
-[ember]
-id = "afps_spraypaint"
-name = "AFPS Spraypaint"
-
-[messages.Spraypaint.fields]
-origin = "Vec3"
-dir = "Vec3"
-
-# source = "EntityId"

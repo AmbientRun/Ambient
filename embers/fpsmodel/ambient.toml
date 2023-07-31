@@ -1,0 +1,6 @@
+[ember]
+id = "afps_fpsmodel"
+name = "AFPS Model"
+
+[dependencies]
+afps_schema = { path = "../../schema/afps" }

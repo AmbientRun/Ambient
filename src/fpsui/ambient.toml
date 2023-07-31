@@ -1,9 +1,0 @@
-[ember]
-id = "afps_fpsui"
-name = "AFPS UI"
-
-[components]
-player_name = { type = "String", attributes = ["Networked", "Debuggable"] }
-
-[messages.StartGame.fields]
-name = "String"

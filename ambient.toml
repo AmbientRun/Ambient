@@ -3,16 +3,19 @@ id = "afps"
 name = "afps"
 version = "0.0.1"
 
-includes = [
-    "src/zombie/ambient.toml",
-    "src/fpsmodel/ambient.toml",
-    "src/fpsmovement/ambient.toml",
-    "src/fpsrule/ambient.toml",
-    "src/fpsanim/ambient.toml",
-    "src/fpsui/ambient.toml",
-    "src/fpsaudio/ambient.toml",
+[dependencies]
+afps_schema = { path = "schema/fps" }
+input_schema = { path = "schema/input" }
 
-    "src/console/ambient.toml",
-    "src/ember_reloader/ambient.toml",
-    "src/spraypaint/ambient.toml",
-]
+fpsanim = { path = "embers/fpsanim" }
+fpsaudio = { path = "embers/fpsaudio" }
+fpsmodel = { path = "embers/fpsmodel" }
+fpsmovement = { path = "embers/fpsmovement" }
+fpsrule = { path = "embers/fpsrule" }
+fpsui = { path = "embers/fpsui" }
+scene = { path = "embers/scene" }
+spraypaint = { path = "embers/spraypaint" }
+zombie = { path = "embers/zombie" }
+
+console = { path = "tool_embers/console" }
+ember_reloader = { path = "tool_embers/ember_reloader" }
