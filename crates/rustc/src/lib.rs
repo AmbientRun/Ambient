@@ -51,27 +51,27 @@ impl Rust {
             vec!["--features".to_string(), features.iter().join(",")]
         };
 
-        parse_command_result_for_filenames(
-            self.0.run(
-                "cargo",
-                [
-                    "build",
-                    if optimize { "--release" } else { "" },
-                    "--message-format",
-                    "json",
-                    "--target",
-                    "wasm32-wasi",
-                ]
-                .into_iter()
-                .chain(features.iter().map(|s| s.as_str()))
-                .filter(|a| !a.is_empty()),
-                Some(working_directory),
-            ),
-        )?
-        .into_iter()
-        .filter(|p| p.extension().unwrap_or_default() == "wasm")
-        .map(|p| anyhow::Ok((p.clone(), std::fs::read(&p)?)))
-        .collect()
+        let result = self.0.run(
+            "cargo",
+            [
+                "build",
+                if optimize { "--release" } else { "" },
+                "--message-format",
+                "json",
+                "--target",
+                "wasm32-wasi",
+            ]
+            .into_iter()
+            .chain(features.iter().map(|s| s.as_str()))
+            .filter(|a| !a.is_empty()),
+            Some(working_directory),
+        );
+
+        parse_command_result_for_filenames(working_directory, result)?
+            .into_iter()
+            .filter(|p| p.extension().unwrap_or_default() == "wasm")
+            .map(|p| anyhow::Ok((p.clone(), std::fs::read(&p)?)))
+            .collect()
     }
 }
 
@@ -142,6 +142,7 @@ impl Installation {
 }
 
 fn parse_command_result_for_filenames(
+    working_directory: &Path,
     result: anyhow::Result<(bool, String, String)>,
 ) -> anyhow::Result<Vec<PathBuf>> {
     let (success, stdout, stderr) = result?;
@@ -155,12 +156,18 @@ fn parse_command_result_for_filenames(
         })
         .collect();
 
+    let target_manifest = working_directory.join("Cargo.toml");
     if success {
         let compiler_artifacts = messages
             .iter()
             .filter(|v| v.get("reason").and_then(|v| v.as_str()) == Some("compiler-artifact"));
 
         let filenames = compiler_artifacts
+            .filter(|a| {
+                a.get("manifest_path")
+                    .and_then(|p| p.as_str())
+                    .is_some_and(|p| Path::new(p) == target_manifest.as_path())
+            })
             .flat_map(|a| {
                 a.get("filenames")
                     .and_then(|f| f.as_array())
