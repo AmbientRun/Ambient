@@ -135,7 +135,7 @@ pub fn main() {
 
                 entity::set_component(hit.entity, components::player_vspeed(), 0.04);
 
-                let new_health = (old_health - 10).max(0);
+                let new_health = (old_health - 30).max(0);
                 entity::set_component(hit.entity, components::player_health(), new_health);
 
                 if old_health > 0 && new_health <= 0 {
@@ -152,10 +152,61 @@ pub fn main() {
                             *count += 1;
                         },
                     );
-                    entity::mutate_component(entity::resources(), components::kill_log(), |v| {
-                        v.push(msg.source);
-                        v.push(hit.entity);
+
+                    if entity::has_component(
+                        entity::synchronized_resources(),
+                        components::kill_log(),
+                    ) {
+                        entity::mutate_component(
+                            entity::synchronized_resources(),
+                            components::kill_log(),
+                            |v| {
+                                v.push(format!(
+                                    "\u{f118} {} gains a point on \u{f119} {}",
+                                    entity::get_component(msg.source, components::player_name())
+                                        .unwrap_or("unknown".to_string()),
+                                    entity::get_component(hit.entity, components::player_name())
+                                        .unwrap_or("unknown".to_string())
+                                ));
+                                if v.len() >= 4 {
+                                    v.remove(0);
+                                }
+                            },
+                        );
+                    } else {
+                        entity::add_component(
+                            entity::synchronized_resources(),
+                            components::kill_log(),
+                            vec![format!(
+                                "\u{f118} {} gains a point on \u{f119} {}",
+                                entity::get_component(msg.source, components::player_name())
+                                    .unwrap_or("unknown".to_string()),
+                                entity::get_component(hit.entity, components::player_name())
+                                    .unwrap_or("unknown".to_string())
+                            )],
+                        );
+                    }
+
+                    run_async(async move {
+                        loop {
+                            sleep(20.).await;
+                            if entity::has_component(
+                                entity::synchronized_resources(),
+                                components::kill_log(),
+                            ) {
+                                entity::mutate_component(
+                                    entity::synchronized_resources(),
+                                    components::kill_log(),
+                                    |v| {
+                                        if v.len() >= 1 {
+                                            v.remove(0);
+                                        }
+                                    },
+                                );
+                            }
+                        }
                     });
+
                     // TODO: wait for anim msg to respawn
                     run_async(async move {
                         sleep(3.).await;

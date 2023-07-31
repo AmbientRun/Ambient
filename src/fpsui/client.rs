@@ -87,7 +87,7 @@ fn GameUI(hooks: &mut Hooks) -> Element {
         if scoreboard_open {
             Scoreboard::el()
         } else {
-            Element::new()
+            KillHistory::el()
         },
     ])
 }
@@ -127,6 +127,25 @@ fn Hud(hooks: &mut Hooks) -> Element {
         // .header_style()
         .with_default(docking_bottom())
         .with_margin_even(10.)])])
+    .with_padding_even(20.)
+}
+
+#[element_component]
+fn KillHistory(hooks: &mut Hooks) -> Element {
+    let history = hooks.use_query(components::kill_log());
+    let history = if history.len() >= 1 {
+        history[0].1.clone()
+    } else {
+        vec![]
+    };
+
+    WindowSized::el([FlowColumn::el(
+        history
+            .iter()
+            .map(|killlog| Text::el(format!("{}", killlog)))
+            .collect::<Vec<_>>(),
+    )
+    .with(space_between_items(), STREET)])
     .with_padding_even(20.)
 }
 

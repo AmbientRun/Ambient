@@ -1,6 +1,9 @@
 [components]
 
-kill_log = { type = { type = "Vec", element_type = "EntityId" }, description = "killer, victim, killer, victim" }
+kill_log = { type = { type = "Vec", element_type = "String" }, description = "killer, victim, killer, victim", attributes = [
+    "Debuggable",
+    "Networked",
+] }
 
 player_team = { type = "U8", description = "", attributes = [
     "Debuggable",
