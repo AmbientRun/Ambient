@@ -6,6 +6,7 @@ use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
 use ambient_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
+    download_asset::ReqwestClientKey,
     Cb,
 };
 use ambient_sys::{task::RuntimeHandle, time::sleep};
@@ -17,6 +18,7 @@ use glam::uvec2;
 use parking_lot::Mutex;
 use std::{sync::Arc, time::Duration};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use url::Url;
 
 use crate::{
     client::{CleanupFunc, ClientState, Control, GameClientRenderTarget, LoadedFunc},
@@ -61,6 +63,8 @@ impl ElementComponent for GameClientView {
             inner,
         } = *self;
 
+        let assets = hooks.world.resource(asset_cache()).clone();
+
         let gpu = hooks.world.resource(gpu()).clone();
 
         hooks.provide_context(|| {
@@ -68,8 +72,6 @@ impl ElementComponent for GameClientView {
         });
 
         let (render_target, _) = hooks.consume_context::<GameClientRenderTarget>().unwrap();
-
-        let assets = hooks.world.resource(asset_cache()).clone();
 
         // The game client will be set once a connection establishes
         let (client_state, set_client_state) = hooks.use_state(None as Option<ClientState>);
@@ -94,14 +96,15 @@ impl ElementComponent for GameClientView {
                 .with(game_screen_render_target(), render_target.0.clone());
 
             let task = async move {
-                // NOTE: this is here to simulate a little connection delay to test the
-                // robustness for execution before connect etc
-                //
-                // TODO: remove once the web is fully working
-                tracing::info!("Sleeping for 2 seconds to simulate connection delay");
-                sleep(Duration::from_millis(2000)).await;
+                let mut url = Url::parse(&url).context("Malformed Url")?;
 
-                let conn = Connection::connect(&url).await.with_context(|| {
+                if url.path() == "/servers/ensure-running" {
+                    url = resolve_hosted_server(&assets, url).await?;
+                }
+
+                sleep(Duration::from_millis(1000)).await;
+
+                let conn = Connection::connect(&url.as_str()).await.with_context(|| {
                     format!("Failed to establish a WebTransport  session to {url}")
                 })?;
 
@@ -423,4 +426,22 @@ async fn handle_request(
             Ok(())
         }
     }
+}
+
+async fn resolve_hosted_server(assets: &AssetCache, url: Url) -> anyhow::Result<Url> {
+    tracing::debug!("Resolving hosted server at {url}");
+
+    let client = ReqwestClientKey.get(assets);
+
+    let res = client
+        .get(url)
+        .send()
+        .await
+        .context("Failed to resolve hosted server")?
+        .text()
+        .await
+        .context("Failed to get result for request")?;
+
+    Url::parse(&format!("https://{}", res.trim()))
+        .context("Expected a valid URL for host resolution")
 }

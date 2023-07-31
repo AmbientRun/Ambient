@@ -12,6 +12,7 @@ use url::Url;
 #[element_component]
 pub fn MainApp(_hooks: &mut Hooks, server_url: String) -> Element {
     tracing::info!("Connecting to {server_url:?}");
+
     GameClientView {
         url: server_url,
         user_id: friendly_id(),

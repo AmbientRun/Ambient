@@ -364,6 +364,7 @@ async fn main() -> anyhow::Result<()> {
         if let Some(mut host) = host.clone() {
             if host.starts_with("http://") || host.starts_with("https://") {
                 tracing::info!("NOTE: Joining server by http url is still experimental and can be removed without warning.");
+
                 host = ReqwestClientKey
                     .get(&assets)
                     .get(host)
