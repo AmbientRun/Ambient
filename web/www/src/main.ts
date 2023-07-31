@@ -83,6 +83,6 @@ import("ambient_web")
     }
 
     ambient.init_ambient(true, true);
-    ambient.start();
+    ambient.start(null, "https://api.ambient.run/servers/ensure-running?deployment_id=17zKiSVwEBHXiC0d8avbro");
     // setupAudio();
   });

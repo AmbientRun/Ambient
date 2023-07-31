@@ -18,5 +18,5 @@ rustflags = ["--cfg=web_sys_unstable_apis"]
 
 [alias]
 campfire = "run --package campfire --"
+campfire-ndf = "run --package campfire --no-default-features --"
 cf = "run --package campfire --"
-
