@@ -146,7 +146,7 @@ pub enum MissedTickBehavior {
     /// In code:
     ///
     /// ```
-    /// use ambient_sys::time::{interval, Duration, MissedTickBehavior};
+    /// use ambient_sys::{time::{interval, Duration}, MissedTickBehavior};
     /// # async fn task_that_takes_more_than_50_millis() {}
     ///
     /// # #[tokio::main(flavor = "current_thread")]
@@ -197,7 +197,7 @@ pub enum MissedTickBehavior {
     /// In code:
     ///
     /// ```
-    /// use ambient_sys::time::{interval, Duration, MissedTickBehavior};
+    /// use ambient_sys::{time::{interval, Duration}, MissedTickBehavior};
     /// # async fn task_that_takes_75_millis() {}
     ///
     /// # #[tokio::main(flavor = "current_thread")]
