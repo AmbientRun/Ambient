@@ -407,7 +407,7 @@ mod test {
         init_components();
         let source = Entity::new().with(ser_test2(), "hello".to_string());
         let ser = serde_json::to_string(&source).unwrap();
-        assert_eq!(&ser, "{\"core::test::ser_test2\":\"hello\"}");
+        assert_eq!(&ser, "{\"ambient_core::test::ser_test2\":\"hello\"}");
         let deser: Entity = serde_json::from_str(&ser).unwrap();
         assert_eq!(source.get_ref(ser_test2()), deser.get_ref(ser_test2()));
     }

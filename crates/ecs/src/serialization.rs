@@ -185,7 +185,7 @@ mod test {
         assert_eq!(
             &ser,
             &format!(
-                "{{\"AQAAAAAAAAAAAAAAAAAAAA\":{{}},\"{id}\":{{\"core::test::ser_test3\":\"hi\"}}}}"
+                "{{\"AQAAAAAAAAAAAAAAAAAAAA\":{{}},\"{id}\":{{\"ambient_core::test::ser_test3\":\"hi\"}}}}"
             )
         );
 
@@ -204,7 +204,7 @@ mod test {
         let ser = serde_json::to_string(&world).unwrap();
         assert_eq!(
             &ser,
-            r#"{"AQAAAAAAAAAAAAAAAAAAAA":{"core::test::ser_test3":"hi"}}"#
+            r#"{"AQAAAAAAAAAAAAAAAAAAAA":{"ambient_core::test::ser_test3":"hi"}}"#
         );
         let deser: World = serde_json::from_str(&ser).unwrap();
         assert_eq!(deser.resource(ser_test3()), "hi");
@@ -223,7 +223,7 @@ mod test {
     #[test]
     pub fn test_deserialize_bad_world() {
         init();
-        let source = r#"{"AQAAAAAAAAAAAAAAAAAAAA":{},"L9wH6h4qgcNBfRv2Rv2FIQ":{"core::test::ser_test3":{"bad":3},"missing":{"hi":5},"core::test::ser_test4":"hello"}}"#;
+        let source = r#"{"AQAAAAAAAAAAAAAAAAAAAA":{},"L9wH6h4qgcNBfRv2Rv2FIQ":{"ambient_core::test::ser_test3":{"bad":3},"missing":{"hi":5},"ambient_core::test::ser_test4":"hello"}}"#;
 
         let deser: DeserWorldWithWarnings = serde_json::from_str(source).unwrap();
         assert_eq!(
@@ -240,7 +240,7 @@ mod test {
         let ser = serde_json::to_string(&deser.world).unwrap();
         assert_eq!(
             &ser,
-            r#"{"AQAAAAAAAAAAAAAAAAAAAA":{},"L9wH6h4qgcNBfRv2Rv2FIQ":{"core::test::ser_test4":"hello"}}"#
+            r#"{"AQAAAAAAAAAAAAAAAAAAAA":{},"L9wH6h4qgcNBfRv2Rv2FIQ":{"ambient_core::test::ser_test4":"hello"}}"#
         );
 
         assert!(serde_json::from_str::<World>(source).is_err());
