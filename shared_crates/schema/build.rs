@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 
 fn main() {
+    println!("cargo:rerun-if-changed=src");
+
     let files = std::iter::once(PathBuf::from("src/ambient.toml"))
         .chain(
             std::fs::read_dir("src/schema")

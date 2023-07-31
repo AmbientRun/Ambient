@@ -1,6 +1,8 @@
 use std::path::Path;
 
 fn main() {
+    println!("cargo:rerun-if-changed=../../shared_crates/schema");
+
     let header = r#"
     #![allow(missing_docs)]
     #![allow(dead_code)]
