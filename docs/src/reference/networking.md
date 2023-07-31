@@ -14,7 +14,7 @@ The Ambient runtime synchronizes all entities with at least one component marked
 
 The client is fundamentally designed around runtime flexibility of logic, which is non-ideal for avoiding cheaters. Further research and development are required, but it is likely that there is no silver bullet, and the solution will be game-dependent.
 
-If on 0.2 or above, consult the [clientside](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/basics/clientside/ambient.toml) example to see how to define networked components.
+If on 0.2 or above, consult the [clientside](https://github.com/AmbientRun/Ambient/blob/main/guest/rust/examples/intermediate/clientside/ambient.toml) example to see how to define networked components.
 
 ## Logic and Prediction
 
@@ -26,7 +26,7 @@ Our plan is to introduce clientside and shared logic that can be used for user-d
 
 The Ambient runtime supports messaging from the client to the server and vice versa through structured messages. These messages are defined ahead of time in `ambient.toml` and made accessible to code that consumes that `ambient.toml`. This messaging can be reliable (QUIC unistream) or unreliable (QUIC datagram). Developers can use this to define their networked behavior, including customized prediction.
 
-If on 0.2 or above, consult the [messaging](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/messaging) example to see how to use the messaging functionality.
+If on 0.2 or above, consult the [messaging](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/intermediate/messaging) example to see how to use the messaging functionality.
 
 ## Proxy
 
