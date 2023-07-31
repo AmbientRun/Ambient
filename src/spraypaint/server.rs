@@ -5,7 +5,12 @@
 //     prelude::*,
 // };
 use ambient_api::{
-    components::core::{player::player, rendering::decal_from_url, transform::translation},
+    components::core::{
+        player::player,
+        prefab::prefab_from_url,
+        rendering::decal_from_url,
+        transform::{scale, translation},
+    },
     concepts::make_transformable,
     prelude::*,
 };
@@ -25,6 +30,17 @@ pub fn main() {
                 .with(translation(), hit.position)
                 .with_default(components::claymore())
                 .with(decal_from_url(), decal_url)
+                .spawn();
+
+            Entity::new()
+                .with_merge(make_transformable())
+                .with(
+                    prefab_from_url(),
+                    asset::url("assets/map/claymore.glb").unwrap(),
+                )
+                .with_default(components::claymore())
+                .with(translation(), hit.position + vec3(0., 0., 0.2))
+                .with(scale(), Vec3::ONE * 1.0)
                 .spawn();
         }
     });
