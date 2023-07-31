@@ -4,7 +4,7 @@ name = "afps"
 version = "0.0.1"
 
 [dependencies]
-afps_schema = { path = "schema/fps" }
+afps_schema = { path = "schema/afps" }
 input_schema = { path = "schema/input" }
 
 fpsanim = { path = "embers/fpsanim" }
