@@ -231,16 +231,12 @@ pub fn main() {
         }
     });
 
-    // query((player(), heal_timeout())).each_frame(move |entities| {
-    //     for (e, (_, old_timeout)) in entities {
-    //         let hit_freeze = entity::get_component(e, components::hit_freeze()).unwrap_or(0);
-    //         if hit_freeze > 0 {
-    //             continue;
-    //         }
-    //         let new_timeout = old_timeout - 1;
-    //         entity::set_component(e, heal_timeout(), new_timeout);
-    //     }
-    // });
+    query((player(), heal_timeout())).each_frame(move |entities| {
+        for (e, (_, old_timeout)) in entities {
+            let new_timeout = old_timeout - 1;
+            entity::set_component(e, heal_timeout(), new_timeout);
+        }
+    });
 
     let healables = query((player(), player_health())).build();
     run_async(async move {
@@ -248,6 +244,10 @@ pub fn main() {
             sleep(1.0).await;
 
             for (e, (_, old_health)) in healables.evaluate() {
+                let hit_freeze = entity::get_component(e, components::hit_freeze()).unwrap_or(0);
+                if hit_freeze > 0 {
+                    continue;
+                }
                 if let Some(timeout) = entity::get_component(e, components::heal_timeout()) {
                     if timeout > 0 {
                         continue;
