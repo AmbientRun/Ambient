@@ -72,7 +72,7 @@ fn all_defined_components(
                 .collect::<anyhow::Result<_>>()?;
 
             components.push(ExternalComponentDesc {
-                path: items.fully_qualified_display_path(&*component, None, None)?,
+                path: items.fully_qualified_display_path(&*component, true, None, None)?,
                 ty: type_map[&component.type_.as_resolved().unwrap_or_else(|| {
                     panic!(
                         "type id {:?} not resolved in component {:?}",

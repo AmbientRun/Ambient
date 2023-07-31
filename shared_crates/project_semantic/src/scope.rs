@@ -97,6 +97,8 @@ pub struct Scope {
     pub path: Option<PathBuf>,
     pub manifest: Option<Manifest>,
 
+    pub dependencies: Vec<ItemId<Scope>>,
+
     pub scopes: IndexMap<SnakeCaseIdentifier, ItemId<Scope>>,
     pub components: IndexMap<SnakeCaseIdentifier, ItemId<Component>>,
     pub concepts: IndexMap<SnakeCaseIdentifier, ItemId<Concept>>,
@@ -112,8 +114,12 @@ impl std::fmt::Debug for Scope {
         ds.field("path", &self.path);
         ds.field("manifest", &self.manifest);
 
-        if let Some(path) = &self.path {
-            ds.field("path", &path);
+        if !self.dependencies.is_empty() {
+            ds.field("dependencies", &self.dependencies);
+        }
+
+        if !self.scopes.is_empty() {
+            ds.field("scopes", &self.scopes);
         }
         if !self.components.is_empty() {
             ds.field("components", &self.components);
@@ -129,9 +135,6 @@ impl std::fmt::Debug for Scope {
         }
         if !self.attributes.is_empty() {
             ds.field("attributes", &self.attributes);
-        }
-        if !self.scopes.is_empty() {
-            ds.field("scopes", &self.scopes);
         }
 
         ds.finish()
@@ -213,6 +216,9 @@ impl Scope {
             original_id,
             path,
             manifest,
+
+            dependencies: Default::default(),
+
             scopes: Default::default(),
             components: Default::default(),
             concepts: Default::default(),

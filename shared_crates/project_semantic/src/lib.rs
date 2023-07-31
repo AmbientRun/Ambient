@@ -271,6 +271,7 @@ impl Semantic {
                 .insert(id.as_snake()?.clone(), child_scope_id);
         }
 
+        let mut dependency_scopes = vec![];
         for (dependency_name, dependency) in manifest.dependencies.iter() {
             match dependency {
                 Dependency::Path { path } => {
@@ -280,22 +281,30 @@ impl Semantic {
                     };
 
                     let ambient_toml = Path::new("ambient.toml");
-                    self.add_file(
-                        ambient_toml,
-                        &file_provider,
-                        source,
-                        Some(dependency_name.clone()),
-                    )
-                    .with_context(|| {
-                        format!(
+                    let new_scope_id = self
+                        .add_file(
+                            ambient_toml,
+                            &file_provider,
+                            source,
+                            Some(dependency_name.clone()),
+                        )
+                        .with_context(|| {
+                            format!(
                             "failed to add dependency `{dependency_name}` ({:?}) for manifest {:?}",
                             file_provider.full_path(ambient_toml),
                             manifest_path
                         )
-                    })?;
+                        })?;
+
+                    dependency_scopes.push(new_scope_id);
                 }
             }
         }
+
+        self.items
+            .get_mut(scope_id)?
+            .dependencies
+            .append(&mut dependency_scopes);
 
         let make_item_data = |item_id: &Identifier| -> ItemData {
             ItemData {

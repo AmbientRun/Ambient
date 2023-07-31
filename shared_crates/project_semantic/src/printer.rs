@@ -30,6 +30,26 @@ impl Printer {
                 println!("path: {}", path.display());
             }
 
+            p.print_indent();
+            print!("dependencies: ");
+            for (idx, id) in scope.dependencies.iter().copied().enumerate() {
+                if idx > 0 {
+                    print!(", ");
+                }
+
+                print!(
+                    "{}",
+                    fully_qualified_display_path_ambient_style(
+                        items,
+                        &*items.get(id)?,
+                        false,
+                        false,
+                        None
+                    )?
+                );
+            }
+            println!();
+
             for id in scope.components.values() {
                 p.print_component(items, &*items.get(*id)?)?;
             }
