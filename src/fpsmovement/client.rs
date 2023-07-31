@@ -64,6 +64,11 @@ pub async fn main() {
         let toggle_zoom = delta.mouse_buttons.contains(&MouseButton::Right);
 
         let player_id = player::get_local();
+        let hit_freeze = entity::get_component(player_id, components::hit_freeze()).unwrap_or(0);
+        if hit_freeze > 0 {
+            entity::set_component(player_id, components::hit_freeze(), hit_freeze - 1);
+            return;
+        }
         let cam = entity::get_component(player_id, components::player_cam_ref());
         if cam.is_none() {
             return;

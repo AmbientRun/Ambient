@@ -1,3 +1,6 @@
+[components]
+claymore = { type = "Empty" }
+
 [messages.spraypaint.fields]
 origin = { type = "Vec3" }
 dir = { type = "Vec3" }

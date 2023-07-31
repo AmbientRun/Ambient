@@ -141,7 +141,7 @@ pub fn main() {
                 if old_health > 0 && new_health <= 0 {
                     println!("player dead, waiting for respawn");
                     // 114 is the death anim frame count
-                    entity::set_component(hit.entity, components::hit_freeze(), 114);
+                    entity::set_component(hit.entity, components::hit_freeze(), 180);
                     entity::mutate_component(msg.source, components::player_killcount(), |count| {
                         *count += 1;
                     });
@@ -152,6 +152,10 @@ pub fn main() {
                             *count += 1;
                         },
                     );
+                    entity::mutate_component(entity::resources(), components::kill_log(), |v| {
+                        v.push(msg.source);
+                        v.push(hit.entity);
+                    });
                     // TODO: wait for anim msg to respawn
                     run_async(async move {
                         sleep(3.).await;
@@ -178,6 +182,10 @@ pub fn main() {
 
     query((player(), heal_timeout())).each_frame(move |entities| {
         for (e, (_, old_timeout)) in entities {
+            let hit_freeze = entity::get_component(e, components::hit_freeze()).unwrap_or(0);
+            if hit_freeze > 0 {
+                continue;
+            }
             let new_timeout = old_timeout - 1;
             entity::set_component(e, heal_timeout(), new_timeout);
         }
