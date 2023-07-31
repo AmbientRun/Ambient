@@ -327,6 +327,8 @@ async fn handle_connection(
                     latency_ms: conn.rtt().as_millis() as u64,
                     bytes_sent: (stats.udp_tx.bytes - prev_stats.udp_tx.bytes) / stats_interval,
                     bytes_received: (stats.udp_rx.bytes - prev_stats.udp_rx.bytes) / stats_interval,
+                    packets_sent: (stats.path.sent_packets - prev_stats.path.sent_packets),
+                    packets_lost: (stats.path.lost_packets - prev_stats.path.lost_packets),
                 });
 
                 prev_stats = stats;
