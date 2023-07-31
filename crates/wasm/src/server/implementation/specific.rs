@@ -127,7 +127,7 @@ impl shared::wit::server_http::Host for Bindings {
         }
 
         let resolved_url = AbsAssetUrl::from_str(&url)?
-            .to_download_url(&assets)?
+            .to_download_url(assets)?
             .to_string();
 
         runtime.spawn(async move {

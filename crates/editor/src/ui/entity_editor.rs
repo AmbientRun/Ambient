@@ -14,8 +14,8 @@ use ambient_network::{client::ClientState, hooks::use_remote_component};
 use ambient_physics::collider::{character_controller_height, character_controller_radius, mass};
 use ambient_std::{cb, Cb};
 use ambient_ui_native::{
-    align_horizontal_impl, align_vertical_impl,
-    layout::{fit_horizontal_impl, margin, Borders, Fit},
+    align_horizontal, align_vertical,
+    layout::{fit_horizontal, margin, Borders, Fit},
     space_between_items, Align, Button, ButtonStyle, DropdownSelect, Editor, EditorPrompt,
     FlowColumn, FlowRow, ScreenContainer, StylesExt, Text, STREET,
 };
@@ -71,7 +71,7 @@ pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
                 }),
             }
             .el()
-            .with(fit_horizontal_impl(), Fit::Parent),
+            .with(fit_horizontal(), Fit::Parent),
             // if let Some(translation) = translation {
             //     Button::new("Teleport to entity", {
             //         move |_| {
@@ -401,10 +401,10 @@ fn ComponentEditor<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync +
             .el()
         }])
         .el()
-        .with(align_horizontal_impl(), Align::End)
-        .with(fit_horizontal_impl(), Fit::Parent),
+        .with(align_horizontal(), Align::End)
+        .with(fit_horizontal(), Fit::Parent),
     ])
     .el()
-    .with(align_vertical_impl(), Align::Center)
-    .with(fit_horizontal_impl(), Fit::Parent)
+    .with(align_vertical(), Align::Center)
+    .with(fit_horizontal(), Fit::Parent)
 }

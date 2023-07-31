@@ -78,6 +78,18 @@ pub fn generate(
                 quote! { #name: #ty ::deserialize_message_part(&mut input)? }
             });
 
+            let default_impl = if message.fields.is_empty() {
+                quote! {
+                    impl Default for #struct_name {
+                        fn default() -> Self {
+                            Self::new()
+                        }
+                    }
+                }
+            } else {
+                quote! {}
+            };
+
             let message_impl = if message.data().source == ItemSource::Ambient {
                 quote! { RuntimeMessage }
             } else {
@@ -114,6 +126,7 @@ pub fn generate(
                     }
                 }
                 impl #message_impl for #struct_name {}
+                #default_impl
             })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;

@@ -209,6 +209,7 @@ fn generate_concept(
 
     Ok(quote! {
         #[doc = #fn_comment]
+        #[allow(clippy::type_complexity)]
         pub fn #fn_ident() -> (#(Component<#fn_ret>),*) {
            (#(#components),*)
         }

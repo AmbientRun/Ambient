@@ -531,6 +531,7 @@ pub mod ambient_core {
                     )
             }
             #[doc = "Returns the components that comprise *Camera* as a tuple.\n\nBase components for a camera. You will need other components to make a fully-functioning camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::near\": f32 = 0.1,\n  \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::camera::active_camera\": f32 = 0.0,\n  \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n  \"ambient_core::transform::transformable\": { // Concept.\n    \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n    \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n    \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n  },\n}\n```\n"]
+            #[allow(clippy::type_complexity)]
             pub fn camera() -> (
                 Component<f32>,
                 Component<Mat4>,
@@ -571,6 +572,7 @@ pub mod ambient_core {
                     )
             }
             #[doc = "Returns the components that comprise *Perspective Common Camera* as a tuple.\n\nBase components for a perspective camera. Consider `perspective_camera` or `perspective_infinite_reverse_camera`.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::fovy\": f32 = 1.0,\n  \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n  \"ambient_core::camera::camera\": { // Concept.\n    \"ambient_core::camera::near\": f32 = 0.1,\n    \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::active_camera\": f32 = 0.0,\n    \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::transformable\": { // Concept.\n      \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n      \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n      \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n    },\n  },\n}\n```\n"]
+            #[allow(clippy::type_complexity)]
             pub fn perspective_common_camera() -> (Component<f32>, Component<f32>) {
                 (
                     crate::ambient_core::camera::components::fovy(),
@@ -599,6 +601,7 @@ pub mod ambient_core {
                     )
             }
             #[doc = "Returns the components that comprise *Perspective Camera* as a tuple.\n\nA perspective camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::perspective\": () = (),\n  \"ambient_core::camera::far\": f32 = 1000.0,\n  \"ambient_core::camera::perspective_common_camera\": { // Concept.\n    \"ambient_core::camera::fovy\": f32 = 1.0,\n    \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n    \"ambient_core::camera::camera\": { // Concept.\n      \"ambient_core::camera::near\": f32 = 0.1,\n      \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::active_camera\": f32 = 0.0,\n      \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::transformable\": { // Concept.\n        \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n        \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n        \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n      },\n    },\n  },\n}\n```\n"]
+            #[allow(clippy::type_complexity)]
             pub fn perspective_camera() -> (Component<()>, Component<f32>) {
                 (
                     crate::ambient_core::camera::components::perspective(),
@@ -629,6 +632,7 @@ pub mod ambient_core {
                     )
             }
             #[doc = "Returns the components that comprise *Perspective-Infinite-Reverse Camera* as a tuple.\n\nA perspective-infinite-reverse camera. This is recommended for most use-cases.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::perspective_infinite_reverse\": () = (),\n  \"ambient_core::camera::perspective_common_camera\": { // Concept.\n    \"ambient_core::camera::fovy\": f32 = 1.0,\n    \"ambient_core::camera::aspect_ratio\": f32 = 1.0,\n    \"ambient_core::camera::camera\": { // Concept.\n      \"ambient_core::camera::near\": f32 = 0.1,\n      \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::camera::active_camera\": f32 = 0.0,\n      \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n      \"ambient_core::transform::transformable\": { // Concept.\n        \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n        \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n        \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n      },\n    },\n  },\n}\n```\n"]
+            #[allow(clippy::type_complexity)]
             pub fn perspective_infinite_reverse_camera() -> (Component<()>) {
                 (crate::ambient_core::camera::components::perspective_infinite_reverse())
             }
@@ -674,6 +678,7 @@ pub mod ambient_core {
                     )
             }
             #[doc = "Returns the components that comprise *Orthographic Camera* as a tuple.\n\nAn orthographic camera.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::camera::orthographic\": () = (),\n  \"ambient_core::camera::orthographic_left\": f32 = -1.0,\n  \"ambient_core::camera::orthographic_right\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_top\": f32 = 1.0,\n  \"ambient_core::camera::orthographic_bottom\": f32 = -1.0,\n  \"ambient_core::camera::near\": f32 = -1.0,\n  \"ambient_core::camera::far\": f32 = 1.0,\n  \"ambient_core::camera::camera\": { // Concept.\n    \"ambient_core::camera::near\": f32 = 0.1,\n    \"ambient_core::camera::projection\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::projection_view\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::camera::active_camera\": f32 = 0.0,\n    \"ambient_core::transform::local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::inv_local_to_world\": Mat4 = Mat4 { x_axis: Vec4(1.0, 0.0, 0.0, 0.0), y_axis: Vec4(0.0, 1.0, 0.0, 0.0), z_axis: Vec4(0.0, 0.0, 1.0, 0.0), w_axis: Vec4(0.0, 0.0, 0.0, 1.0) },\n    \"ambient_core::transform::transformable\": { // Concept.\n      \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n      \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n      \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n    },\n  },\n}\n```\n"]
+            #[allow(clippy::type_complexity)]
             pub fn orthographic_camera() -> (
                 Component<()>,
                 Component<f32>,
@@ -1618,6 +1623,7 @@ pub mod ambient_core {
                 )
             }
             #[doc = "Returns the components that comprise *Sphere* as a tuple.\n\nA primitive sphere.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::primitives::sphere\": () = (),\n  \"ambient_core::primitives::sphere_radius\": f32 = 0.5,\n  \"ambient_core::primitives::sphere_sectors\": u32 = 36,\n  \"ambient_core::primitives::sphere_stacks\": u32 = 18,\n}\n```\n"]
+            #[allow(clippy::type_complexity)]
             pub fn sphere() -> (
                 Component<()>,
                 Component<f32>,
@@ -1672,6 +1678,7 @@ pub mod ambient_core {
                 )
             }
             #[doc = "Returns the components that comprise *Capsule* as a tuple.\n\nA primitive capsule. Defined as a cylinder capped by hemispheres.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::primitives::capsule\": () = (),\n  \"ambient_core::primitives::capsule_radius\": f32 = 0.5,\n  \"ambient_core::primitives::capsule_half_height\": f32 = 0.5,\n  \"ambient_core::primitives::capsule_rings\": u32 = 0,\n  \"ambient_core::primitives::capsule_latitudes\": u32 = 16,\n  \"ambient_core::primitives::capsule_longitudes\": u32 = 32,\n}\n```\n"]
+            #[allow(clippy::type_complexity)]
             pub fn capsule() -> (
                 Component<()>,
                 Component<f32>,
@@ -1725,6 +1732,7 @@ pub mod ambient_core {
                 )
             }
             #[doc = "Returns the components that comprise *Torus* as a tuple.\n\nA primitive Torus, surface of revolution generated by revolving a circle in three-dimensional space one full revolution.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::primitives::torus\": () = (),\n  \"ambient_core::primitives::torus_inner_radius\": f32 = 0.25,\n  \"ambient_core::primitives::torus_outer_radius\": f32 = 0.35,\n  \"ambient_core::primitives::torus_slices\": u32 = 32,\n  \"ambient_core::primitives::torus_loops\": u32 = 16,\n}\n```\n"]
+            #[allow(clippy::type_complexity)]
             pub fn torus() -> (
                 Component<()>,
                 Component<f32>,
@@ -2253,6 +2261,7 @@ pub mod ambient_core {
                 )
             }
             #[doc = "Returns the components that comprise *Transformable* as a tuple.\n\nCan be translated, rotated and scaled.\n\n*Definition*:\n\n```ignore\n{\n  \"ambient_core::transform::translation\": Vec3 = Vec3(0.0, 0.0, 0.0),\n  \"ambient_core::transform::rotation\": Quat = Quat(0.0, 0.0, 0.0, 1.0),\n  \"ambient_core::transform::scale\": Vec3 = Vec3(1.0, 1.0, 1.0),\n}\n```\n"]
+            #[allow(clippy::type_complexity)]
             pub fn transformable() -> (Component<Vec3>, Component<Quat>, Component<Vec3>) {
                 (
                     crate::ambient_core::transform::components::translation(),
@@ -2332,6 +2341,11 @@ pub mod ambient_core {
             }
         }
         impl RuntimeMessage for Frame {}
+        impl Default for Frame {
+            fn default() -> Self {
+                Self::new()
+            }
+        }
         #[derive(Clone, Debug)]
         #[doc = "**Collision**: Sent when a collision occurs."]
         pub struct Collision {
@@ -2408,6 +2422,11 @@ pub mod ambient_core {
             }
         }
         impl RuntimeMessage for ModuleLoad {}
+        impl Default for ModuleLoad {
+            fn default() -> Self {
+                Self::new()
+            }
+        }
         #[derive(Clone, Debug)]
         #[doc = "**ModuleUnload**: Sent to a module when it unloads."]
         pub struct ModuleUnload {}
@@ -2430,6 +2449,11 @@ pub mod ambient_core {
             }
         }
         impl RuntimeMessage for ModuleUnload {}
+        impl Default for ModuleUnload {
+            fn default() -> Self {
+                Self::new()
+            }
+        }
         #[derive(Clone, Debug)]
         #[doc = "**WindowFocusChange**: Sent when the window gains or loses focus."]
         pub struct WindowFocusChange {
@@ -2481,6 +2505,11 @@ pub mod ambient_core {
             }
         }
         impl RuntimeMessage for WindowClose {}
+        impl Default for WindowClose {
+            fn default() -> Self {
+                Self::new()
+            }
+        }
         #[derive(Clone, Debug)]
         #[doc = "**WindowKeyboardCharacter**: Sent when the window receives a character from the keyboard."]
         pub struct WindowKeyboardCharacter {

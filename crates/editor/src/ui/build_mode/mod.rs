@@ -3,7 +3,7 @@ use std::{sync::Arc, time::Duration};
 use ambient_core::{
     asset_cache, async_ecs::async_run, runtime, window::get_mouse_clip_space_position,
 };
-use ambient_ecs::{generated::messages, Component, ComponentValue, EntityId};
+use ambient_ecs::{Component, ComponentValue, EntityId};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_intent::{client_push_intent, rpc_undo_head_exact};
 use ambient_network::client::ClientState;
@@ -213,7 +213,7 @@ impl ElementComponent for EditorBuildMode {
                 SelectionPanel { selection: selection.clone(), set_selection: set_selection.clone() }
                     .el()
                     .with(width(), 300.)
-                    .with(docking_impl(), Docking::Right)
+                    .with(docking(), Docking::Right)
                     .floating_panel()
                     .with(margin(), Borders::even(STREET).into())
                     .with(padding(), Borders::even(STREET).into())
@@ -331,7 +331,7 @@ impl ElementComponent for EditorBuildMode {
             })
                 .el()
                 .floating_panel()
-                .with(docking_impl(), Docking::Top)
+                .with(docking(), Docking::Top)
                 .with(space_between_items(), STREET)
                 .with(margin(), Borders::even(STREET).into())
                 .with(padding(), Borders::even(STREET).into()),

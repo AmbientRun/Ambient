@@ -41,6 +41,7 @@ use crate::{
 
 pub mod wasm;
 
+#[allow(clippy::too_many_arguments)]
 pub async fn start(
     runtime: &tokio::runtime::Handle,
     assets: AssetCache,

@@ -8,7 +8,7 @@ use ambient_network::{
 };
 use ambient_std::{cb, Cb};
 use ambient_ui_native::{
-    fit_horizontal_impl, space_between_items, Button, ButtonStyle, DialogScreen, Fit, FlowColumn,
+    fit_horizontal, space_between_items, Button, ButtonStyle, DialogScreen, Fit, FlowColumn,
     FlowRow, ScrollArea, ScrollAreaSizing, STREET,
 };
 use itertools::Itertools;
@@ -149,9 +149,9 @@ impl ElementComponent for EntityBrowserScreen {
                     },
                 ])
                 .with(space_between_items(), STREET)
-                .with(fit_horizontal_impl(), Fit::Parent),
+                .with(fit_horizontal(), Fit::Parent),
             )
-            .with(fit_horizontal_impl(), Fit::Parent),
+            .with(fit_horizontal(), Fit::Parent),
         )
         .el()
     }

@@ -442,6 +442,8 @@ mod test {
 
         let value = ComponentEntry::new(component, "Hello, World".into());
 
+        // Clone is for purpose of comparison
+        #[allow(clippy::redundant_clone)]
         let value2 = value.clone();
 
         let s = value.downcast_ref::<String>();
