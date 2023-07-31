@@ -59,7 +59,7 @@ pub(crate) struct DrawCountState {
 impl DrawCountState {
     pub fn update(&mut self, counts: Vec<u32>, tick: u64) {
         if self.last_tick > tick {
-            tracing::warn!("Skipping count update because it's out of date");
+            tracing::debug!("Skipping count update because it's out of date");
             return;
         }
 
