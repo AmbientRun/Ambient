@@ -1,6 +1,6 @@
 use ambient_api::prelude::*;
 
-use afps_schema::messages::*;
+use afps_schema::{components, messages::*};
 
 #[main]
 pub fn main() {
@@ -9,7 +9,13 @@ pub fn main() {
     });
 
     FootOnGround::subscribe(move |_, msg| {
-        WalkSound::new(msg.source).send_client_broadcast_unreliable();
+        if entity::has_component(msg.source, components::player_jumping()) {
+            if entity::get_component(msg.source, components::player_jumping()).unwrap() {
+                return;
+            } else {
+                WalkSound::new(msg.source).send_client_broadcast_unreliable();
+            }
+        }
     });
 
     Explosion::subscribe(move |_, msg| {
