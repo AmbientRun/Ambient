@@ -77,14 +77,20 @@ pub fn main() {
             // }
 
             if entity::has_component(hit.entity, components::player_team()) {
-                let pos = entity::get_component(hit.entity, translation()).unwrap();
+                // let pos = entity::get_component(hit.entity, translation()).unwrap();
+                let pos = hit.position;
                 messages::Explosion { pos }.send_local_broadcast(false);
                 let c = entity::get_component(hit.entity, color()).unwrap();
                 entity::despawn(hit.entity);
                 run_async(async move {
                     for _ in 0..40 {
-                        let pos =
-                            pos + vec3(random::<f32>(), random::<f32>(), random::<f32>()) * 9.0;
+                        let max_linear_velocity = 2.5;
+                        let max_angular_velocity = 360.0f32.to_radians();
+                        let new_linear_velocity =
+                            (random::<Vec3>() - 0.5) * 2. * max_linear_velocity;
+                        let new_angular_velocity =
+                            (random::<Vec3>() - 0.5) * 2. * max_angular_velocity;
+                        let pos = pos + random::<Vec3>() * 6.0 - 3.0;
 
                         let size = random::<Vec3>() * 0.3;
                         let rot = Quat::from_rotation_y(random::<f32>() * 3.14)
@@ -95,14 +101,9 @@ pub fn main() {
                             .with(rotation(), rot)
                             .with_default(physics_controlled())
                             .with_default(cast_shadows())
-                            .with(
-                                linear_velocity(),
-                                vec3(
-                                    random::<f32>() * 3.0,
-                                    random::<f32>() * 5.0,
-                                    random::<f32>() * 10.0,
-                                ),
-                            )
+                            .with(linear_velocity(), new_linear_velocity)
+                            .with(angular_velocity(), new_angular_velocity)
+                            // .with(linear_velocity(), vec3(0.0, 0.0, 10.0)) //random::<Vec3>() * 20.0 - 10.0)
                             // .with(angular_velocity(), random::<Vec3>() * 1.0)
                             .with(cube_collider(), Vec3::ONE)
                             .with(dynamic(), true)

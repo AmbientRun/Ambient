@@ -7,7 +7,13 @@ pub fn main() {
     });
 
     messages::FootOnGround::subscribe(move |_, msg| {
-        messages::WalkSound::new(msg.source).send_client_broadcast_unreliable();
+        if entity::has_component(msg.source, components::player_jumping()) {
+            if entity::get_component(msg.source, components::player_jumping()).unwrap() {
+                return;
+            } else {
+                messages::WalkSound::new(msg.source).send_client_broadcast_unreliable();
+            }
+        }
     });
 
     messages::Explosion::subscribe(move |_, msg| {
