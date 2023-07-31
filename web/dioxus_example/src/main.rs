@@ -31,7 +31,7 @@ fn Ambient(cx: Scope) -> Element {
                     .unwrap()
                     .dyn_into::<web_sys::HtmlElement>()
                     .unwrap();
-                ambient_web::start(Some(element)).await;
+                ambient_web::start(Some(element), "127.0.0.1:9000".into()).await;
             }
         }
     });
