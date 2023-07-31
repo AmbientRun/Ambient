@@ -93,6 +93,7 @@ impl Context {
 #[derive(Clone, PartialEq)]
 pub struct Scope {
     pub data: ItemData,
+    pub original_id: SnakeCaseIdentifier,
     pub path: Option<PathBuf>,
     pub manifest: Option<Manifest>,
 
@@ -107,6 +108,9 @@ impl std::fmt::Debug for Scope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut ds = f.debug_struct("Scope");
         ds.field("data", &self.data);
+        ds.field("original_id", &self.original_id);
+        ds.field("path", &self.path);
+        ds.field("manifest", &self.manifest);
 
         if let Some(path) = &self.path {
             ds.field("path", &path);
@@ -198,9 +202,15 @@ impl ResolveClone for Scope {
 }
 impl Scope {
     /// Creates a new empty scope with the specified data.
-    pub fn new(data: ItemData, path: Option<PathBuf>, manifest: Option<Manifest>) -> Self {
+    pub fn new(
+        data: ItemData,
+        original_id: SnakeCaseIdentifier,
+        path: Option<PathBuf>,
+        manifest: Option<Manifest>,
+    ) -> Self {
         Self {
             data,
+            original_id,
             path,
             manifest,
             scopes: Default::default(),

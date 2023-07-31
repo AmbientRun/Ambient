@@ -4,5 +4,5 @@ name = "dependencies"
 version = "0.0.1"
 
 [dependencies]
-ambient_example_deps_assets = { path = "deps/assets" }
-ambient_example_deps_code = { path = "deps/code" }
+deps_assets = { path = "deps/assets" }
+deps_code = { path = "deps/code" }

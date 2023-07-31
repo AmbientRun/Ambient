@@ -36,7 +36,7 @@ pub struct Manifest {
     #[serde(alias = "enum")]
     pub enums: IndexMap<PascalCaseIdentifier, Enum>,
     #[serde(default)]
-    pub dependencies: IndexMap<ItemPathBuf, Dependency>,
+    pub dependencies: IndexMap<SnakeCaseIdentifier, Dependency>,
 }
 impl Manifest {
     pub fn parse(manifest: &str) -> Result<Self, ManifestParseError> {
@@ -534,8 +534,8 @@ mod tests {
         version = "0.0.1"
 
         [dependencies]
-        "ambient::deps_assets" = { path = "deps/assets" }
-        "ambient::deps_code" = { path = "deps/code" }
+        deps_assets = { path = "deps/assets" }
+        deps_code = { path = "deps/code" }
 
         "#;
 
@@ -555,13 +555,13 @@ mod tests {
                 enums: Default::default(),
                 dependencies: IndexMap::from_iter([
                     (
-                        ipb("ambient::deps_assets"),
+                        sci("deps_assets"),
                         Dependency::Path {
                             path: PathBuf::from("deps/assets")
                         }
                     ),
                     (
-                        ipb("ambient::deps_code"),
+                        sci("deps_code"),
                         Dependency::Path {
                             path: PathBuf::from("deps/code")
                         }

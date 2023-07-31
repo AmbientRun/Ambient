@@ -21,7 +21,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, scope, true, None)?
+            fully_qualified_display_path_ambient_style(items, scope, false, true, None)?
         );
 
         self.with_indent(|p| {
@@ -64,7 +64,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, component, true, None)?
+            fully_qualified_display_path_ambient_style(items, component, true, true, None)?
         );
 
         self.with_indent(|p| {
@@ -101,7 +101,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, concept, true, None)?
+            fully_qualified_display_path_ambient_style(items, concept, false, true, None)?
         );
 
         self.with_indent(|p| {
@@ -139,7 +139,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, message, true, None)?
+            fully_qualified_display_path_ambient_style(items, message, false, true, None)?
         );
 
         self.with_indent(|p| {
@@ -167,7 +167,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, type_, true, None)?,
+            fully_qualified_display_path_ambient_style(items, type_, false, true, None)?,
         );
         if let TypeInner::Enum(e) = &type_.inner {
             self.with_indent(|p| {
@@ -200,7 +200,7 @@ impl Printer {
         self.print_indent();
         println!(
             "{}",
-            fully_qualified_display_path_ambient_style(items, attribute, true, None)?
+            fully_qualified_display_path_ambient_style(items, attribute, false, true, None)?
         );
         Ok(())
     }
@@ -228,21 +228,27 @@ fn write_resolvable_id<T: Item>(
 ) -> anyhow::Result<String> {
     Ok(match r {
         ResolvableItemId::Unresolved(unresolved) => format!("unresolved({:?})", unresolved),
-        ResolvableItemId::Resolved(resolved) => {
-            fully_qualified_display_path_ambient_style(items, &*items.get(*resolved)?, true, None)?
-        }
+        ResolvableItemId::Resolved(resolved) => fully_qualified_display_path_ambient_style(
+            items,
+            &*items.get(*resolved)?,
+            true,
+            true,
+            None,
+        )?,
     })
 }
 
 pub fn fully_qualified_display_path_ambient_style<T: Item>(
     items: &ItemMap,
     item: &T,
+    use_original_scope_ids: bool,
     display_affixes: bool,
     relative_to: Option<ItemId<Scope>>,
 ) -> anyhow::Result<String> {
     items.fully_qualified_display_path_impl(
         item,
         "::",
+        use_original_scope_ids,
         (display_affixes, display_affixes),
         relative_to,
         None,

@@ -57,6 +57,7 @@ impl Context {
         let prefix = format!("{type_namespace}{}", prefix.unwrap_or_default());
         let path = make_path(&items.fully_qualified_display_path(
             &*item,
+            false,
             Some(root_scope_id),
             Some(prefix.as_str()),
         )?);

@@ -170,6 +170,7 @@ impl Semantic {
         filename: &Path,
         file_provider: &dyn FileProvider,
         source: ItemSource,
+        scope_name: Option<SnakeCaseIdentifier>,
     ) -> anyhow::Result<ItemId<Scope>> {
         let manifest = Manifest::parse(&file_provider.get(filename).with_context(|| {
             format!(
@@ -187,15 +188,15 @@ impl Semantic {
         let root_id = self.root_scope_id;
 
         // Check that this scope hasn't already been created for this scope
-        let scope_id = manifest.ember.id.clone();
-        if let Some(existing_scope_id) = self.items.get(root_id)?.scopes.get(&scope_id) {
+        let scope_name = scope_name.unwrap_or_else(|| manifest.ember.id.clone());
+        if let Some(existing_scope_id) = self.items.get(root_id)?.scopes.get(&scope_name) {
             let existing_path = self.items.get(*existing_scope_id)?.path.clone();
             if existing_path == Some(file_provider.full_path(filename)) {
                 return Ok(*existing_scope_id);
             }
 
             anyhow::bail!(
-                "attempted to add {:?}, but a scope already exists at `{scope_id}`",
+                "attempted to add {:?}, but a scope already exists at `{scope_name}`",
                 file_provider.full_path(filename)
             );
         }
@@ -207,13 +208,13 @@ impl Semantic {
             file_provider,
             manifest,
             manifest_path,
-            scope_id.clone(),
+            scope_name.clone(),
             source,
         )?;
         self.items
             .get_mut(root_id)?
             .scopes
-            .insert(scope_id, item_id);
+            .insert(scope_name, item_id);
         Ok(item_id)
     }
 
@@ -254,6 +255,7 @@ impl Semantic {
                 id: id.into(),
                 source,
             },
+            manifest.ember.id.clone(),
             Some(manifest_path.clone()),
             Some(manifest.clone()),
         );
@@ -269,7 +271,7 @@ impl Semantic {
                 .insert(id.as_snake()?.clone(), child_scope_id);
         }
 
-        for (dependency_path, dependency) in manifest.dependencies.iter() {
+        for (dependency_name, dependency) in manifest.dependencies.iter() {
             match dependency {
                 Dependency::Path { path } => {
                     let file_provider = ProxyFileProvider {
@@ -278,14 +280,19 @@ impl Semantic {
                     };
 
                     let ambient_toml = Path::new("ambient.toml");
-                    self.add_file(ambient_toml, &file_provider, source)
-                        .with_context(|| {
-                            format!(
-                                "failed to add dependency `{dependency_path}` ({:?}) for manifest {:?}",
-                                file_provider.full_path(ambient_toml),
-                                manifest_path
-                            )
-                        })?;
+                    self.add_file(
+                        ambient_toml,
+                        &file_provider,
+                        source,
+                        Some(dependency_name.clone()),
+                    )
+                    .with_context(|| {
+                        format!(
+                            "failed to add dependency `{dependency_name}` ({:?}) for manifest {:?}",
+                            file_provider.full_path(ambient_toml),
+                            manifest_path
+                        )
+                    })?;
                 }
             }
         }
@@ -353,6 +360,7 @@ impl Semantic {
             Path::new("ambient.toml"),
             &ArrayFileProvider::from_schema(),
             ItemSource::Ambient,
+            None,
         )
     }
 
@@ -361,6 +369,7 @@ impl Semantic {
             Path::new("ambient.toml"),
             &DiskFileProvider(ember_path.to_owned()),
             ItemSource::User,
+            None,
         )
     }
 }
@@ -380,6 +389,7 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
             id: SnakeCaseIdentifier::default().into(),
             source: ItemSource::System,
         },
+        SnakeCaseIdentifier::default(),
         None,
         None,
     ));

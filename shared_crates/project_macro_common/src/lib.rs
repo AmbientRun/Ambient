@@ -36,6 +36,7 @@ pub fn generate_code(
                 Path::new("ambient.toml"),
                 &ArrayFileProvider { files },
                 ItemSource::User,
+                None,
             ),
         }?;
     }

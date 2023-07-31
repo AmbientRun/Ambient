@@ -167,6 +167,7 @@ impl ItemMap {
                             id: segment.clone().into(),
                             ..parent_scope_data
                         },
+                        segment.clone(),
                         Some(manifest_path.clone()),
                         None,
                     ));
@@ -185,6 +186,7 @@ impl ItemMap {
         &self,
         item: &T,
         separator: &str,
+        use_original_scope_ids: bool,
         (type_prefix, source_suffix): (bool, bool),
         relative_to: Option<ItemId<Scope>>,
         item_prefix: Option<&str>,
@@ -205,7 +207,11 @@ impl ItemMap {
             }
 
             let parent = self.get(this_parent_id)?;
-            let id = parent.data().id.to_string();
+            let id = if use_original_scope_ids {
+                parent.original_id.to_string()
+            } else {
+                parent.data().id.to_string()
+            };
             if !id.is_empty() {
                 path.push(id);
             }
@@ -233,10 +239,18 @@ impl ItemMap {
     pub fn fully_qualified_display_path<T: Item>(
         &self,
         item: &T,
+        use_original_scope_ids: bool,
         relative_to: Option<ItemId<Scope>>,
         item_prefix: Option<&str>,
     ) -> anyhow::Result<String> {
-        self.fully_qualified_display_path_impl(item, "::", (false, false), relative_to, item_prefix)
+        self.fully_qualified_display_path_impl(
+            item,
+            "::",
+            use_original_scope_ids,
+            (false, false),
+            relative_to,
+            item_prefix,
+        )
     }
 }
 
