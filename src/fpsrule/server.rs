@@ -163,7 +163,7 @@ pub fn main() {
                         entity::set_component(
                             hit.entity,
                             translation(),
-                            vec3(random::<f32>() * 10.0, random::<f32>() * 10.0, 2.0),
+                            vec3(random::<f32>() * 10.0, random::<f32>() * 60.0 - 30., 2.0),
                         );
                         entity::set_component(hit.entity, components::player_health(), 100);
                         entity::set_component(hit.entity, components::hit_freeze(), 0);
