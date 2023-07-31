@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     # 5am UTC on Monday
-    - cron: '0 5 * * 1'
+    - cron: "0 5 * * 1"
 
 env:
   CARGO_TERM_COLOR: always
@@ -29,7 +29,7 @@ jobs:
         env:
           CARGO_INCREMENTAL: 0
           RUSTFLAGS: "-C debuginfo=0"
-      - name: Cache ambient exectuable artifact
+      - name: Cache ambient executable artifact
         uses: actions/cache/save@v3
         with:
           path: target/release/ambient
@@ -73,7 +73,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown,wasm32-wasi
-      - name: Fetch ambient exectuable artifact from cache
+      - name: Fetch ambient executable artifact from cache
         uses: actions/cache/restore@v3
         with:
           path: target/release/ambient

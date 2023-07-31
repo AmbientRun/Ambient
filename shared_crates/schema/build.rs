@@ -13,9 +13,10 @@ fn main() {
             (
                 path.strip_prefix("src")
                     .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .to_owned(),
+                    .iter()
+                    .map(|s| s.to_string_lossy())
+                    .collect::<Vec<_>>()
+                    .join("/"),
                 std::fs::read_to_string(&path).unwrap(),
             )
         })
