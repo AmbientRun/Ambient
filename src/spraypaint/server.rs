@@ -28,7 +28,6 @@ pub fn main() {
             Entity::new()
                 .with_merge(make_transformable())
                 .with(translation(), hit.position)
-                .with_default(components::claymore())
                 .with(decal_from_url(), decal_url)
                 .spawn();
 
@@ -39,7 +38,7 @@ pub fn main() {
                     asset::url("assets/map/claymore.glb").unwrap(),
                 )
                 .with_default(components::claymore())
-                .with(translation(), hit.position + vec3(0., 0., 0.2))
+                .with(translation(), hit.position + vec3(0., 0., 0.15))
                 .with(scale(), Vec3::ONE * 1.0)
                 .spawn();
         }
