@@ -12,6 +12,7 @@ includes = [
     "src/fpsui/ambient.toml",
     "src/fpsaudio/ambient.toml",
 
+    "src/world_latency/ambient.toml",
     "src/console/ambient.toml",
     "src/ember_reloader/ambient.toml",
     "src/spraypaint/ambient.toml",

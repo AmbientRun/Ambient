@@ -118,6 +118,19 @@ required-features = ["server"]
 # required-features = ["client"]
 
 # ----------------------------------------------------------------
+# World latency is a simple utility that displays the relative latency
+# of world streamed from the server as seen by all players in the world.
+[[bin]]
+name = "world_latency_client"
+path = "src/world_latency/client.rs"
+required-features = ["client"]
+
+[[bin]]
+name = "world_latency_server"
+path = "src/world_latency/server.rs"
+required-features = ["server"]
+
+# ----------------------------------------------------------------
 # The console is a temporary debugging utility that lives in-game.
 # It should hopefully be moved to its own separate ember in the future.
 [[bin]]

@@ -1,0 +1,6 @@
+[components]
+player_last_frame = { type = "U64", description = "Last frame number reported by player", attributes = ["Debuggable", "Networked"] }
+server_frame = { type = "U64", description = "Current server frame number", attributes = ["Debuggable", "Networked"] }
+
+[messages.frame_seen.fields]
+frame = { type = "U64", description = "Server frame number seen by player" }

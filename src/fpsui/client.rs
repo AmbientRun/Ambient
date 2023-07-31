@@ -139,15 +139,26 @@ fn Scoreboard(hooks: &mut Hooks) -> Element {
         components::player_name(),
         components::player_killcount(),
         components::player_deathcount(),
+        components::player_last_frame(),
     ));
+
+    let latest_frame = players
+        .iter()
+        .map(|(_, (_, _, _, _, frame))| frame)
+        .copied()
+        .max()
+        .unwrap_or(0);
 
     WindowSized::el([FlowColumn::el(
         players
             .iter()
-            .map(|(_id, (_, name, kill, death))| {
+            .map(|(_id, (_, name, kill, death, frame))| {
                 Text::el(format!(
-                    "\u{f007} {}    \u{f118} {}    \u{f119} {}",
-                    name, kill, death
+                    "\u{f007} {}    \u{f118} {}    \u{f119} {}    \u{f251} {}",
+                    name,
+                    kill,
+                    death,
+                    latest_frame - frame,
                 ))
             })
             .collect::<Vec<_>>(),
