@@ -57,7 +57,14 @@ impl AnimationPlayer {
 
 /// An animation node. Used in the animation player. It keeps an internal ref count.
 #[derive(Debug)]
-pub struct AnimationNode(pub EntityId);
+pub struct AnimationNode(EntityId);
+impl AnimationNode {
+    /// Use an existing node
+    pub fn from_entity(entity: EntityId) -> Self {
+        entity::mutate_component(entity, ref_count(), |x| *x += 1);
+        Self(entity)
+    }
+}
 impl Clone for AnimationNode {
     fn clone(&self) -> Self {
         entity::mutate_component(self.0, ref_count(), |x| *x += 1);
@@ -85,6 +92,10 @@ impl PlayClipFromUrlNode {
             .with(ref_count(), 1)
             .spawn();
         Self(AnimationNode(node))
+    }
+    /// Use an existing node
+    pub fn from_entity(entity: EntityId) -> Self {
+        Self(AnimationNode::from_entity(entity))
     }
     /// Set if the animation should loop or not
     pub fn looping(&self, value: bool) {
@@ -191,6 +202,10 @@ impl BlendNode {
         entity::add_component(left.0, parent(), node);
         entity::add_component(right.0, parent(), node);
         Self(AnimationNode(node))
+    }
+    /// Use an existing node
+    pub fn from_entity(entity: EntityId) -> Self {
+        Self(AnimationNode::from_entity(entity))
     }
     /// Set the weight of this blend node.
     ///
