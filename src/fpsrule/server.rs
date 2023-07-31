@@ -231,16 +231,16 @@ pub fn main() {
         }
     });
 
-    query((player(), heal_timeout())).each_frame(move |entities| {
-        for (e, (_, old_timeout)) in entities {
-            let hit_freeze = entity::get_component(e, components::hit_freeze()).unwrap_or(0);
-            if hit_freeze > 0 {
-                continue;
-            }
-            let new_timeout = old_timeout - 1;
-            entity::set_component(e, heal_timeout(), new_timeout);
-        }
-    });
+    // query((player(), heal_timeout())).each_frame(move |entities| {
+    //     for (e, (_, old_timeout)) in entities {
+    //         let hit_freeze = entity::get_component(e, components::hit_freeze()).unwrap_or(0);
+    //         if hit_freeze > 0 {
+    //             continue;
+    //         }
+    //         let new_timeout = old_timeout - 1;
+    //         entity::set_component(e, heal_timeout(), new_timeout);
+    //     }
+    // });
 
     let healables = query((player(), player_health())).build();
     run_async(async move {

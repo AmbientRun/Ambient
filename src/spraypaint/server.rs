@@ -42,9 +42,39 @@ pub fn main() {
                     println!("claymore hit");
                     messages::Explosion::new(cm_pos).send_local_broadcast(false);
                     entity::despawn(e);
-                    entity::set_component(player, components::hit_freeze(), 180);
+                    entity::add_component(player, components::hit_freeze(), 180);
                     entity::set_component(player, components::player_health(), 0);
-                    entity::set_component(player, components::player_vspeed(), 0.9);
+                    entity::set_component(player, components::player_vspeed(), 0.8);
+
+                    if entity::has_component(
+                        entity::synchronized_resources(),
+                        components::kill_log(),
+                    ) {
+                        entity::mutate_component(
+                            entity::synchronized_resources(),
+                            components::kill_log(),
+                            |v| {
+                                v.push(format!(
+                                    "\u{f119} {} was blown up",
+                                    entity::get_component(player, components::player_name())
+                                        .unwrap_or("unknown".to_string())
+                                ));
+                                if v.len() >= 4 {
+                                    v.remove(0);
+                                }
+                            },
+                        );
+                    } else {
+                        entity::add_component(
+                            entity::synchronized_resources(),
+                            components::kill_log(),
+                            vec![format!(
+                                "\u{f119} {} was blown up",
+                                entity::get_component(player, components::player_name())
+                                    .unwrap_or("unknown".to_string())
+                            )],
+                        );
+                    }
                     run_async(async move {
                         sleep(3.).await;
                         entity::set_component(
