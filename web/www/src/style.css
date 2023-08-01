@@ -22,3 +22,9 @@ h1 {
   border-radius: 5px;
   font-family: monospace;
 }
+
+.instance-container {
+  position:fixed;
+  width: 100%;
+  height: 100%;
+}

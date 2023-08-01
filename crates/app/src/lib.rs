@@ -335,7 +335,7 @@ impl AppBuilder {
             // Set a background color for the canvas to make it easier to tell where the canvas is for debugging purposes.
             // Use the maximum available width and height as the canvas dimensions.
             canvas.style().set_css_text(&format!(
-                "position: fixed; background-color: black; width: {}px; height: {}px; z-index: 50",
+                "background-color: black; width: {}px; height: {}px; z-index: 50",
                 max_width, max_height
             ));
             target.append_child(&canvas).unwrap();
