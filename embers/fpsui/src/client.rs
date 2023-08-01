@@ -9,7 +9,7 @@ use ambient_api::{
 
 use afps_schema::{
     components::player_name,
-    components::{player_deathcount, player_health, player_killcount, player_last_frame},
+    components::{kill_log, player_deathcount, player_health, player_killcount, player_last_frame},
     messages::StartGame,
 };
 use input_schema::messages::{ReleaseInput, RequestInput};
@@ -37,7 +37,7 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
 
     FocusRoot::el([
         WindowSized::el([FlowColumn::el([
-            Text::el("Cube Killer 2089").header_style(),
+            Text::el("A Drill").header_style(),
             Separator { vertical: false }.el(),
             Text::el("enter your name below. press enter to start the game."),
             TextEditor::new(name, set_name.clone())
@@ -67,7 +67,7 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
         .with(space_between_items(), STREET)])
         .with_padding_even(20.),
         ImageFromUrl {
-            url: asset::url("assets/afps.png").unwrap(),
+            url: asset::url("afps_fpsui/assets/afps.png").unwrap(),
         }
         .el()
         .with(width(), hooks.use_window_logical_resolution().x as f32)
@@ -90,7 +90,7 @@ fn GameUI(hooks: &mut Hooks) -> Element {
         if scoreboard_open {
             Scoreboard::el()
         } else {
-            Element::new()
+            KillHistory::el()
         },
     ])
 }
@@ -130,6 +130,35 @@ fn Hud(hooks: &mut Hooks) -> Element {
         // .header_style()
         .with(docking(), Docking::Bottom)
         .with_margin_even(10.)])])
+    .with_padding_even(20.)
+}
+
+#[element_component]
+fn KillHistory(hooks: &mut Hooks) -> Element {
+    let history = hooks.use_query(kill_log());
+    let history = if history.len() >= 1 {
+        history[0].1.clone()
+    } else {
+        vec![]
+    };
+
+    WindowSized::el([FlowColumn::el({
+        let mut v = vec![];
+        let mut iter = history
+            .into_iter()
+            .rev()
+            .map(|killlog| Text::el(format!("{}", killlog)));
+        for _ in 0..3 {
+            let n = iter.next();
+            if let Some(n) = n {
+                v.push(n);
+            } else {
+                break;
+            }
+        }
+        v
+    })
+    .with(space_between_items(), STREET)])
     .with_padding_even(20.)
 }
 

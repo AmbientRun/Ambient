@@ -35,56 +35,65 @@ struct FPSAnimBlend {
 impl FPSAnimBlend {
     pub fn new() -> Self {
         let walk_fd = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Forward.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Walk Forward.fbx/animations/mixamo.com.anim").unwrap(),
         );
         let walk_bk = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Backward.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Walk Backward.fbx/animations/mixamo.com.anim").unwrap(),
         );
         let walk_lt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Left.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Walk Left.fbx/animations/mixamo.com.anim").unwrap(),
         );
         let walk_rt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Right.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Walk Right.fbx/animations/mixamo.com.anim").unwrap(),
         );
         let walk_fd_lt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Forward Left.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Walk Forward Left.fbx/animations/mixamo.com.anim")
+                .unwrap(),
         );
         let walk_fd_rt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Forward Right.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Walk Forward Right.fbx/animations/mixamo.com.anim")
+                .unwrap(),
         );
         let walk_bk_lt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Backward Left.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Walk Backward Left.fbx/animations/mixamo.com.anim")
+                .unwrap(),
         );
         let walk_bk_rt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Backward Right.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Walk Backward Right.fbx/animations/mixamo.com.anim")
+                .unwrap(),
         );
         let run_fd = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Forward.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Run Forward.fbx/animations/mixamo.com.anim").unwrap(),
         );
         let run_bk = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Backward.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Run Backward.fbx/animations/mixamo.com.anim").unwrap(),
         );
         let run_lt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Left.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Run Left.fbx/animations/mixamo.com.anim").unwrap(),
         );
         let run_rt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Right.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Run Right.fbx/animations/mixamo.com.anim").unwrap(),
         );
         let run_fd_lt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Forward Left.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Run Forward Left.fbx/animations/mixamo.com.anim")
+                .unwrap(),
         );
         let run_fd_rt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Forward Right.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Run Forward Right.fbx/animations/mixamo.com.anim")
+                .unwrap(),
         );
         let run_bk_lt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Backward Left.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Run Backward Left.fbx/animations/mixamo.com.anim")
+                .unwrap(),
         );
         let run_bk_rt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Backward Right.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Run Backward Right.fbx/animations/mixamo.com.anim")
+                .unwrap(),
         );
 
         let idle = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Rifle Aiming Idle.fbx/animations/mixamo.com.anim").unwrap(),
+            asset::url("afps_fpsanim/assets/Rifle Aiming Idle.fbx/animations/mixamo.com.anim")
+                .unwrap(),
         );
         let blend1 = BlendNode::new(&walk_fd, &walk_bk, 0.0);
         let blend2 = BlendNode::new(&blend1, &walk_lt, 0.0);
@@ -148,16 +157,20 @@ pub fn main() {
                 let (blend, anim_player) = anim_lib.unwrap().clone();
                 if health <= 0 {
                     let death = PlayClipFromUrlNode::new(
-                        asset::url("assets/anim/Rifle Death.fbx/animations/mixamo.com.anim")
-                            .unwrap(),
+                        asset::url(
+                            "afps_fpsanim/assets/Rifle Death.fbx/animations/mixamo.com.anim",
+                        )
+                        .unwrap(),
                     );
                     death.looping(false);
                     anim_player.play(death);
 
                     run_async(async move {
                         let clip = PlayClipFromUrlNode::new(
-                            asset::url("assets/anim/Rifle Death.fbx/animations/mixamo.com.anim")
-                                .unwrap(),
+                            asset::url(
+                                "afps_fpsanim/assets/Rifle Death.fbx/animations/mixamo.com.anim",
+                            )
+                            .unwrap(),
                         );
                         clip.looping(false);
                         let dur = clip.clip_duration().await;
@@ -180,7 +193,7 @@ pub fn main() {
                 let (blend, anim_player) = anim_lib.unwrap();
                 if is_jumping {
                     let clip = PlayClipFromUrlNode::new(
-                        asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim")
+                        asset::url("afps_fpsanim/assets/Rifle Jump.fbx/animations/mixamo.com.anim")
                             .unwrap(),
                     );
                     clip.looping(false);

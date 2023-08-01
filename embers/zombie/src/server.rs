@@ -21,9 +21,9 @@ use afps_zombie::components;
 #[main]
 pub async fn main() {
     let chars = vec![
-        asset::url("assets/model/Zombiegirl W Kurniawan.fbx").unwrap(),
-        asset::url("assets/model/copzombie_l_actisdato.fbx").unwrap(),
-        asset::url("assets/model/Yaku J Ignite.fbx").unwrap(),
+        asset::url("afps_fpsmodel/assets/Zombiegirl W Kurniawan.fbx").unwrap(),
+        asset::url("afps_fpsmodel/assets/copzombie_l_actisdato.fbx").unwrap(),
+        asset::url("afps_fpsmodel/assets/Yaku J Ignite.fbx").unwrap(),
     ];
 
     run_async(async move {

@@ -57,6 +57,10 @@ game_type = { type = "U8", description = "0: zombie mode", attributes = [
     "Networked",
 ] }
 
+kill_log = { type = { type = "Vec", element_type = "String" }, description = "killer, victim, killer, victim", attributes = [
+    "Debuggable",
+    "Networked",
+] }
 
 [messages]
 [messages.Input.fields]

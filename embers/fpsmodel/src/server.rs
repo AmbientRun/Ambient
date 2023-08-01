@@ -55,7 +55,7 @@ pub async fn main() {
                     .with_merge(make_transformable())
                     .with(
                         prefab_from_url(),
-                        asset::url("assets/model/Y Bot.fbx").unwrap(),
+                        asset::url("afps_fpsmodel/assets/Y Bot.fbx").unwrap(),
                     )
                     .with(rotation(), Quat::from_rotation_z(-std::f32::consts::PI))
                     .with_default(local_to_parent())

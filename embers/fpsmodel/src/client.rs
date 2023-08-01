@@ -32,7 +32,7 @@ pub fn main() {
                     .with_merge(make_transformable())
                     .with(
                         prefab_from_url(),
-                        asset::url("assets/gun/m4a1_carbine.glb").unwrap(),
+                        asset::url("afps_fpsmodel/assets/m4a1_carbine.glb").unwrap(),
                     )
                     // y => far from body; need more tuning
                     .with(translation(), vec3(0.0, 0.2, 0.0))

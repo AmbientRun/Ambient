@@ -6,7 +6,10 @@ use ambient_api::{
     prelude::*,
 };
 
-use afps_schema::{components::player_cam_ref, messages::Input};
+use afps_schema::{
+    components::{hit_freeze, player_cam_ref},
+    messages::Input,
+};
 use input_schema::messages::{ReleaseInput, RequestInput};
 
 #[main]
@@ -71,6 +74,11 @@ pub async fn main() {
         let toggle_zoom = delta.mouse_buttons.contains(&MouseButton::Right);
 
         let player_id = player::get_local();
+        let hit_freeze_factor = entity::get_component(player_id, hit_freeze()).unwrap_or(0);
+        if hit_freeze_factor > 0 {
+            entity::set_component(player_id, hit_freeze(), hit_freeze_factor - 1);
+            return;
+        }
         let cam = entity::get_component(player_id, player_cam_ref());
         if cam.is_none() {
             return;

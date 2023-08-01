@@ -20,8 +20,8 @@ use ambient_api::{
 
 use afps_schema::{
     components::{
-        heal_timeout, hit_freeze, player_deathcount, player_health, player_killcount, player_name,
-        player_team, player_vspeed,
+        self, heal_timeout, hit_freeze, player_deathcount, player_health, player_killcount,
+        player_name, player_team, player_vspeed,
     },
     messages::{Explosion, Shoot},
 };
@@ -134,19 +134,57 @@ pub fn main() {
 
                 entity::set_component(hit.entity, player_vspeed(), 0.04);
 
-                let new_health = (old_health - 10).max(0);
-                entity::set_component(hit.entity, player_health(), new_health);
+                let new_health = (old_health - 30).max(0);
+                entity::set_component(hit.entity, components::player_health(), new_health);
 
                 if old_health > 0 && new_health <= 0 {
                     println!("player dead, waiting for respawn");
                     // 114 is the death anim frame count
-                    entity::set_component(hit.entity, hit_freeze(), 114);
-                    entity::mutate_component(msg.source, player_killcount(), |count| {
+                    entity::set_component(hit.entity, components::hit_freeze(), 180);
+                    entity::mutate_component(msg.source, components::player_killcount(), |count| {
                         *count += 1;
                     });
-                    entity::mutate_component(hit.entity, player_deathcount(), |count| {
-                        *count += 1;
-                    });
+                    entity::mutate_component(
+                        hit.entity,
+                        components::player_deathcount(),
+                        |count| {
+                            *count += 1;
+                        },
+                    );
+
+                    if entity::has_component(
+                        entity::synchronized_resources(),
+                        components::kill_log(),
+                    ) {
+                        entity::mutate_component(
+                            entity::synchronized_resources(),
+                            components::kill_log(),
+                            |v| {
+                                v.push(format!(
+                                    "[{}] \u{e231} \u{f061} [{}]",
+                                    entity::get_component(msg.source, components::player_name())
+                                        .unwrap_or("unknown".to_string()),
+                                    entity::get_component(hit.entity, components::player_name())
+                                        .unwrap_or("unknown".to_string()),
+                                ));
+                            },
+                        );
+                        remove_last_history();
+                    } else {
+                        entity::add_component(
+                            entity::synchronized_resources(),
+                            components::kill_log(),
+                            vec![format!(
+                                "[{}] \u{e231} \u{f061} [{}]",
+                                entity::get_component(msg.source, components::player_name())
+                                    .unwrap_or("unknown".to_string()),
+                                entity::get_component(hit.entity, components::player_name())
+                                    .unwrap_or("unknown".to_string()),
+                            )],
+                        );
+                        remove_last_history();
+                    }
+
                     // TODO: wait for anim msg to respawn
                     run_async(async move {
                         sleep(3.).await;
@@ -171,6 +209,44 @@ pub fn main() {
         }
     });
 
+    // change_query(components::kill_log())
+    //     .track_change(components::kill_log())
+    //     .bind(move |v| {
+    //         println!("kill log changed: {:?}", v);
+    //         run_async(async move {
+    //             sleep(5.0).await;
+    //             entity::mutate_component(
+    //                 entity::synchronized_resources(),
+    //                 components::kill_log(),
+    //                 |v| {
+    //                     if v.len() >= 1 {
+    //                         v.remove(0);
+    //                     }
+    //                 },
+    //             );
+    //         });
+    //     });
+
+    // run_async(async move {
+    //     loop {
+    //         sleep(20.).await;
+    //         if entity::has_component(
+    //             entity::synchronized_resources(),
+    //             components::kill_log(),
+    //         ) {
+    //             entity::mutate_component(
+    //                 entity::synchronized_resources(),
+    //                 components::kill_log(),
+    //                 |v| {
+    //                     if v.len() >= 1 {
+    //                         v.remove(0);
+    //                     }
+    //                 },
+    //             );
+    //         }
+    //     }
+    // });
+
     query((player(), heal_timeout())).each_frame(move |entities| {
         for (e, (_, old_timeout)) in entities {
             let new_timeout = old_timeout - 1;
@@ -184,7 +260,11 @@ pub fn main() {
             sleep(1.0).await;
 
             for (e, (_, old_health)) in healables.evaluate() {
-                if let Some(timeout) = entity::get_component(e, heal_timeout()) {
+                let hit_freeze = entity::get_component(e, components::hit_freeze()).unwrap_or(0);
+                if hit_freeze > 0 {
+                    continue;
+                }
+                if let Some(timeout) = entity::get_component(e, components::heal_timeout()) {
                     if timeout > 0 {
                         continue;
                     }
@@ -196,5 +276,20 @@ pub fn main() {
                 }
             }
         }
+    });
+}
+
+fn remove_last_history() {
+    run_async(async move {
+        sleep(10.0).await;
+        entity::mutate_component(
+            entity::synchronized_resources(),
+            components::kill_log(),
+            |v| {
+                if v.len() >= 1 {
+                    v.remove(0);
+                }
+            },
+        );
     });
 }
