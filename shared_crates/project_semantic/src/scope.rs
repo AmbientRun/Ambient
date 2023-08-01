@@ -93,6 +93,8 @@ impl Context {
 #[derive(Clone)]
 pub struct BuildMetadata(pub Arc<dyn Any>);
 impl PartialEq for BuildMetadata {
+    // We don't care that much about equality, so we can be loose with it
+    #[allow(clippy::vtable_address_comparisons)]
     fn eq(&self, other: &Self) -> bool {
         // HACK! We can't compare the contents of the build metadata, so we just compare the
         // pointers.

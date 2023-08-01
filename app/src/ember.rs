@@ -8,7 +8,7 @@ use ambient_project_semantic::{Item, ItemId, PrimitiveType, Scope, Semantic, Typ
 pub fn add(semantic: &mut Semantic, path: &Path) -> anyhow::Result<ItemId<Scope>> {
     let id = semantic.add_ember(path)?;
     semantic.resolve()?;
-    ComponentRegistry::get_mut().add_external(all_defined_components(&semantic)?);
+    ComponentRegistry::get_mut().add_external(all_defined_components(semantic)?);
 
     Ok(id)
 }

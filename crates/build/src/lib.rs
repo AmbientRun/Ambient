@@ -152,8 +152,7 @@ async fn build_ember(
     store_manifest(&manifest, &build_path).await?;
     let metadata = store_metadata(&build_path).await?;
 
-    semantic.items.get_mut(ember_id)?.build_metadata =
-        Some(BuildMetadata(Arc::new(metadata.clone())));
+    semantic.items.get_mut(ember_id)?.build_metadata = Some(BuildMetadata(Arc::new(metadata)));
 
     Ok(())
 }
