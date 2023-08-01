@@ -46,3 +46,6 @@ erased-serde = "0.3"
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 tokio = { workspace = true }
+
+[dev-dependencies]
+bincode = { workspace = true }
