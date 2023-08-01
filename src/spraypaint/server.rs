@@ -62,6 +62,13 @@ pub fn main() {
                     entity::set_component(player, components::player_health(), 0);
                     entity::set_component(player, components::player_vspeed(), 0.8);
 
+                    entity::mutate_component(source_id, components::player_killcount(), |count| {
+                        *count += 1;
+                    });
+                    entity::mutate_component(player, components::player_deathcount(), |count| {
+                        *count += 1;
+                    });
+
                     if entity::has_component(
                         entity::synchronized_resources(),
                         components::kill_log(),
