@@ -1,11 +1,13 @@
 use std::sync::Arc;
 
 use ambient_ecs::{
-    components, ArchetypeFilter, Entity, Query, World, WorldDiff, WorldStream, WorldStreamFilter,
+    components, ArchetypeFilter, Entity, EntityId, FrozenWorldDiff, Query, Serializable, World,
+    WorldDiff, WorldStream, WorldStreamFilter,
 };
 use itertools::Itertools;
 
 components!("test", {
+    @[Serializable]
     a: f32,
     b: f32,
     c: f32,
@@ -104,4 +106,27 @@ fn dump_content_string(world: &World) -> String {
             }
         })
         .join(" ")
+}
+
+#[test]
+fn serialization_of_worlddiff_variants() {
+    // Arrange
+    init();
+    let some_entity = EntityId::new();
+    let diff = WorldDiff::new()
+        .add_component(some_entity, a(), 5.)
+        .add_component(EntityId::new(), a(), 42.)
+        .set(some_entity, a(), 10.0);
+    let frozen_diff: FrozenWorldDiff = diff.clone().into();
+    let frozen_diffs = vec![frozen_diff.clone()];
+    let diff_view = FrozenWorldDiff::merge(&frozen_diffs);
+
+    // Act
+    let serialized = bincode::serialize(&diff).unwrap();
+    let frozen_serialized = bincode::serialize(&frozen_diff).unwrap();
+    let view_serialized = bincode::serialize(&diff_view).unwrap();
+
+    // Assert
+    assert_eq!(serialized, frozen_serialized);
+    assert_eq!(serialized, view_serialized);
 }

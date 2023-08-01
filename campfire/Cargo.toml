@@ -34,3 +34,6 @@ openssl = { version = "0.10", features = ["vendored"], optional = true }
 
 [target.'cfg(not(target_os="windows"))'.dependencies]
 openssl = { version = "0.10", optional = true }
+
+[features]
+default = ["openssl"]

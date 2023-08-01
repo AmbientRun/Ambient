@@ -9,7 +9,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "ambient_web": "file:../client/pkg"
+        "ambient_web": "file:../pkg"
     },
     "devDependencies": {
         "@types/audioworklet": "^0.0.47",

@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use anyhow::Context;
-use base64::Engine;
 use openssl::hash::MessageDigest;
 use tokio::process::Command;
 

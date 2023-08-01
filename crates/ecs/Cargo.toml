@@ -48,3 +48,6 @@ ambient_project_macro_common = { path = "../../shared_crates/project_macro_commo
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 tokio = { workspace = true }
+
+[dev-dependencies]
+bincode = { workspace = true }

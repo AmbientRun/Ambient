@@ -585,6 +585,7 @@ dependencies = [
  "ambient_std",
  "anyhow",
  "atomic_refcell",
+ "bincode",
  "bit-set",
  "bit-vec",
  "byteorder",
