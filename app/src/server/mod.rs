@@ -1,16 +1,15 @@
 use std::{
     collections::HashMap,
     net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr},
-    path::Path,
+    path::{Path, PathBuf},
     str::FromStr,
     sync::Arc,
 };
 
-use ambient_build::BuildConfiguration;
 use ambient_core::{asset_cache, name, no_sync, project_name, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
-    dont_store, generated::messages, world_events, ComponentDesc, Entity, Networked, SystemGroup,
-    World, WorldEventsExt, WorldEventsSystem, WorldStreamCompEvent,
+    dont_store, world_events, ComponentDesc, Entity, Networked, SystemGroup, World,
+    WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_network::{
     native::server::{Crypto, GameServer},
@@ -19,10 +18,10 @@ use ambient_network::{
     synced_resources,
 };
 use ambient_prefab::PrefabFromUrl;
+use ambient_project_semantic::{ItemId, Scope, Semantic};
 use ambient_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ContentBaseUrlKey, ServerBaseUrlKey},
-    cb, Cb,
 };
 use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
@@ -46,25 +45,31 @@ pub async fn start(
     runtime: &tokio::runtime::Handle,
     assets: AssetCache,
     cli: Cli,
-    ember_path: AbsAssetUrl,
-    manifest: &ambient_project::Manifest,
-    metadata: &ambient_build::Metadata,
+    working_directory: PathBuf,
+    build_path: AbsAssetUrl,
+    semantic: &Semantic,
+    primary_ember_id: ItemId<Scope>,
     crypto: Crypto,
-    build_config: Option<BuildConfiguration>,
 ) -> SocketAddr {
     let host_cli = cli.host().unwrap();
     let quic_interface_port = host_cli.quic_interface_port;
-    let proxy_settings = (!host_cli.no_proxy).then(|| {
-        ProxySettings {
-            // default to getting a proxy from the dims-web Google App Engine app
-            endpoint: host_cli
-                .proxy
-                .clone()
-                .unwrap_or("http://proxy.ambient.run/proxy".to_string()),
-            project_path: ember_path.clone(),
-            pre_cache_assets: host_cli.proxy_pre_cache_assets,
-            project_id: manifest.ember.id.to_string(),
-        }
+    let manifest = semantic
+        .items
+        .get(primary_ember_id)
+        .unwrap()
+        .manifest
+        .clone()
+        .expect("primary ember must have manifest");
+
+    let proxy_settings = (!host_cli.no_proxy).then(|| ProxySettings {
+        // default to getting a proxy from the dims-web Google App Engine app
+        endpoint: host_cli
+            .proxy
+            .clone()
+            .unwrap_or("http://proxy.ambient.run/proxy".to_string()),
+        build_path: build_path.clone(),
+        pre_cache_assets: host_cli.proxy_pre_cache_assets,
+        primary_ember_id: manifest.ember.id.to_string(),
     });
 
     let server = if let Some(port) = quic_interface_port {
@@ -118,15 +123,15 @@ pub async fn start(
     };
 
     // here the key is inserted into the asset cache
-    if let Ok(Some(project_path_fs)) = ember_path.to_file_path() {
+    if let Ok(Some(build_path_fs)) = build_path.to_file_path() {
         let key = format!("http://{public_host}:{http_interface_port}/content/");
         let base_url = AbsAssetUrl::from_str(&key).unwrap();
         ServerBaseUrlKey.insert(&assets, base_url.clone());
         ContentBaseUrlKey.insert(&assets, base_url);
 
-        start_http_interface(runtime, Some(&project_path_fs), http_interface_port);
+        start_http_interface(runtime, Some(&build_path_fs), http_interface_port);
     } else {
-        let base_url = ember_path.push("build/").unwrap();
+        let base_url = build_path.clone();
 
         ServerBaseUrlKey.insert(&assets, base_url.clone());
         ContentBaseUrlKey.insert(&assets, base_url);
@@ -134,8 +139,6 @@ pub async fn start(
         start_http_interface(runtime, None, http_interface_port);
     }
 
-    let manifest = manifest.clone();
-    let metadata = metadata.clone();
     runtime.spawn(async move {
         let mut server_world = World::new_with_config("server", true);
         server_world.init_shape_change_tracking();
@@ -173,45 +176,44 @@ pub async fn start(
 
         wasm::initialize(
             &mut server_world,
-            ember_path.clone(),
-            &metadata,
-            build_config.map(|config| {
-                // HACK: provide a callback to rebuild the project to WASM.
-                // this is not done directly within WASM due to circular dependencies.
-                cb(move |world: &mut World| {
-                    let runtime = world.resource(ambient_core::runtime()).clone();
-                    let async_run = world.resource(ambient_core::async_ecs::async_run()).clone();
-                    let (path, manifest, build_path, optimize) = (
-                        config.path.clone(),
-                        config.manifest.clone(),
-                        config.build_path(),
-                        config.optimize,
-                    );
-                    runtime.spawn(async move {
-                        let result = ambient_build::build_rust_if_available(
-                            &path,
-                            &manifest,
-                            &build_path,
-                            optimize,
-                        )
-                        .await;
+            working_directory.join("data"),
+            // TODO: do not support rebuilds with ember yet
+            None,
+            // build_config.map(|config| {
+            //     // HACK: provide a callback to rebuild the project to WASM.
+            //     // this is not done directly within WASM due to circular dependencies.
+            //     cb(move |world: &mut World| {
+            //         let runtime = world.resource(ambient_core::runtime()).clone();
+            //         let async_run = world.resource(ambient_core::async_ecs::async_run()).clone();
+            //         let (path, manifest, build_path, optimize) = (
+            //             config.path.clone(),
+            //             config.manifest.clone(),
+            //             config.build_path(),
+            //             config.optimize,
+            //         );
+            //         runtime.spawn(async move {
+            //             let result = ambient_build::build_rust_if_available(
+            //                 &path,
+            //                 &manifest,
+            //                 &build_path,
+            //                 optimize,
+            //             )
+            //             .await;
 
-                        async_run.run(|world| {
-                            world.resource_mut(ambient_ecs::world_events()).add_message(
-                                messages::WasmRebuild::new(result.err().map(|err| err.to_string())),
-                            );
-                        });
-                    });
-                }) as Cb<dyn Fn(&mut World) + Send + Sync>
-            }),
+            //             async_run.run(|world| {
+            //                 world.resource_mut(ambient_ecs::world_events()).add_message(
+            //                     messages::WasmRebuild::new(result.err().map(|err| err.to_string())),
+            //                 );
+            //             });
+            //         });
+            //     }) as Cb<dyn Fn(&mut World) + Send + Sync>
+            // }),
         )
         .await
         .unwrap();
 
         if let Commands::View { asset_path, .. } = cli.command.clone() {
-            let asset_path = ember_path
-                .push("build")
-                .expect("pushing 'build' shouldn't fail")
+            let asset_path = build_path
                 .push(asset_path.to_string_lossy())
                 .expect("FIXME")
                 .push("prefabs/main.json")
@@ -318,15 +320,15 @@ pub const HTTP_INTERFACE_PORT: u16 = 8999;
 pub const QUIC_INTERFACE_PORT: u16 = 9000;
 fn start_http_interface(
     runtime: &tokio::runtime::Handle,
-    project_path: Option<&Path>,
+    build_path: Option<&Path>,
     http_interface_port: u16,
 ) {
     let mut router = Router::new().route("/ping", get(|| async move { "ok" }));
 
-    if let Some(project_path) = project_path {
+    if let Some(build_path) = build_path {
         router = router.nest_service(
             "/content",
-            get_service(ServeDir::new(project_path.join("build"))).handle_error(handle_error),
+            get_service(ServeDir::new(build_path)).handle_error(handle_error),
         );
     };
 
@@ -345,12 +347,12 @@ fn start_http_interface(
         Ok::<_, anyhow::Error>(())
     };
 
-    let project_path = project_path.map(ToOwned::to_owned);
+    let build_path = build_path.map(ToOwned::to_owned);
 
     runtime.spawn(async move {
         let addr = SocketAddr::from(([0, 0, 0, 0], http_interface_port));
 
-        tracing::debug!(?project_path, "Starting HTTP interface on: {addr}");
+        tracing::debug!(?build_path, "Starting HTTP interface on: {addr}");
 
         if let Err(err) = serve(addr)
             .await

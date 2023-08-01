@@ -25,7 +25,7 @@ impl Printer {
         );
 
         self.with_indent(|p| {
-            if let Some(path) = scope.path.as_deref() {
+            if let Some(path) = scope.manifest_path.as_deref() {
                 p.print_indent();
                 println!("path: {}", path.display());
             }

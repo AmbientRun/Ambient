@@ -147,7 +147,6 @@ dependencies = [
  "ambient_prefab",
  "ambient_primitives",
  "ambient_project",
- "ambient_project_native",
  "ambient_project_semantic",
  "ambient_renderer",
  "ambient_rpc",
@@ -383,7 +382,6 @@ dependencies = [
  "ambient_physics",
  "ambient_pipeline_types",
  "ambient_project",
- "ambient_project_native",
  "ambient_project_semantic",
  "ambient_renderer",
  "ambient_rustc",
@@ -1200,19 +1198,6 @@ dependencies = [
  "syn 1.0.109",
  "thiserror",
  "toml 0.7.4",
-]
-
-[[package]]
-name = "ambient_project_native"
-version = "0.3.0-dev"
-dependencies = [
- "ambient_ecs",
- "ambient_project",
- "ambient_project_semantic",
- "ambient_shared_types",
- "anyhow",
- "paste",
- "serde_json",
 ]
 
 [[package]]

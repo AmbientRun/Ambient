@@ -259,7 +259,7 @@ impl ServerState {
 #[derive(Debug, Clone)]
 pub struct ProxySettings {
     pub endpoint: String,
-    pub project_path: AbsAssetUrl,
+    pub build_path: AbsAssetUrl,
     pub pre_cache_assets: bool,
-    pub project_id: String,
+    pub primary_ember_id: String,
 }

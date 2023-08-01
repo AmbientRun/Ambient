@@ -231,14 +231,16 @@ async fn main() -> anyhow::Result<()> {
     }
 
     // If a project was specified, prepare its semantic state
-    let semantic_and_scope = match project {
+    let mut semantic = ambient_project_semantic::Semantic::new()?;
+    semantic.add_ambient_schema()?;
+    let primary_ember_scope_id = match project {
         Some(_) => {
             let path = project_path
                 .fs_path
                 .as_ref()
                 .context("project path must be local for now")?;
 
-            Some(ambient_project_native::create_semantic_and_register_components(path)?)
+            Some(embers::add(&mut semantic, path)?)
         }
         None => None,
     };
@@ -257,10 +259,10 @@ async fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    let manifest = if let Some((semantic, scope)) = semantic_and_scope.as_ref() {
+    let manifest = if let Some(scope) = primary_ember_scope_id {
         let manifest = semantic
             .items
-            .get(*scope)?
+            .get(scope)?
             .manifest
             .clone()
             .context("no manifest for scope")?;
@@ -270,43 +272,43 @@ async fn main() -> anyhow::Result<()> {
         None
     };
 
-    let build_config = match (&project, &manifest, project_path.fs_path.clone()) {
-        (Some(project), Some(manifest), Some(fs_path)) => Some(ambient_build::BuildConfiguration {
-            physics: PhysicsKey.get(&assets),
-            path: fs_path,
-            manifest: manifest.clone(),
-            optimize: project.release,
-            clean_build: project.clean_build,
-            build_wasm_only: project.build_wasm_only,
-        }),
-        _ => None,
-    };
-
-    let metadata = if let Some(manifest) = manifest.as_ref() {
+    let build_path = project_path.push("build");
+    if let Some(manifest) = manifest.as_ref() {
         let project = project.unwrap();
 
-        if let (false, Some(build_config)) = (project.no_build, build_config.clone()) {
-            let project_name = manifest.ember.name.as_deref().unwrap_or("project");
+        if !project.no_build {
+            let build_config = ambient_build::BuildConfiguration {
+                build_path: build_path
+                    .to_file_path()?
+                    .context("no file path for build path")?,
+                semantic: &mut semantic,
+                optimize: project.release,
+                clean_build: project.clean_build,
+                build_wasm_only: project.build_wasm_only,
+            };
+
+            let project_name = manifest
+                .ember
+                .name
+                .as_deref()
+                .unwrap_or_else(|| manifest.ember.id.as_str());
 
             tracing::info!("Building project {:?}", project_name);
 
-            let metadata = ambient_build::build(build_config)
+            ambient_build::build(build_config, primary_ember_scope_id.unwrap())
                 .await
                 .context("Failed to build project")?;
-
-            Some(metadata)
         } else {
-            let metadata_url = project_path.push("build/metadata.toml");
-            let metadata_data = metadata_url
-                .download_string(&assets)
-                .await
-                .context("Failed to load build/metadata.toml.")?;
+            todo!("Ember does not currently support remote manifests");
+            // let metadata_url = build_path.push("metadata.toml")?;
+            // let metadata_data = metadata_url
+            //     .download_string(&assets)
+            //     .await
+            //     .context("Failed to load build/metadata.toml.")?;
 
-            Some(ambient_build::Metadata::parse(&metadata_data)?)
+            // Some(ambient_build::Metadata::parse(&metadata_data)?)
         }
-    } else {
-        None
-    };
+    }
 
     // If this is just a build, exit now
     if matches!(&cli.command, Commands::Build { .. }) {
@@ -419,15 +421,23 @@ async fn main() -> anyhow::Result<()> {
             }
         };
 
+        let working_directory = project_path
+            .fs_path
+            .clone()
+            .unwrap_or(std::env::current_dir()?);
+
+        let primary_ember_id = primary_ember_scope_id
+            .as_ref()
+            .context("non-local deployments are not currently supported")?;
         let addr = server::start(
             &runtime,
             assets.clone(),
             cli.clone(),
-            project_path.url,
-            manifest.as_ref().expect("no manifest"),
-            metadata.as_ref().expect("no build metadata"),
+            working_directory,
+            build_path,
+            &semantic,
+            *primary_ember_id,
             crypto,
-            build_config,
         )
         .await;
 
@@ -453,4 +463,105 @@ async fn main() -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+mod embers {
+    use std::{collections::HashMap, path::Path};
+
+    use ambient_ecs::{
+        ComponentRegistry, ExternalComponentAttributes, ExternalComponentDesc,
+        PrimitiveComponentType,
+    };
+    use ambient_project_semantic::{Item, ItemId, PrimitiveType, Scope, Semantic, TypeInner};
+
+    pub fn add(semantic: &mut Semantic, path: &Path) -> anyhow::Result<ItemId<Scope>> {
+        let id = semantic.add_ember(path)?;
+        semantic.resolve()?;
+        ComponentRegistry::get_mut().add_external(all_defined_components(&semantic)?);
+
+        Ok(id)
+    }
+
+    fn all_defined_components(semantic: &Semantic) -> anyhow::Result<Vec<ExternalComponentDesc>> {
+        let items = &semantic.items;
+        let root_scope = &semantic.root_scope();
+
+        let type_map = {
+            let mut type_map = HashMap::new();
+
+            // First pass: add all root-level primitive types
+            for type_id in root_scope.types.values() {
+                let type_ = items.get(*type_id).expect("type id not in items");
+                if let TypeInner::Primitive(pt) = type_.inner {
+                    let ty = primitive_type_to_primitive_component_type(pt);
+                    type_map.insert(*type_id, ty);
+                    type_map.insert(items.get_vec_id(*type_id), ty.to_vec_type().unwrap());
+                    type_map.insert(items.get_option_id(*type_id), ty.to_option_type().unwrap());
+                }
+            }
+
+            // Second pass: traverse the type graph and add all enums
+            root_scope.visit_recursive(items, |scope| {
+                for type_id in scope.types.values() {
+                    let type_ = items.get(*type_id).expect("type id not in items");
+                    if let TypeInner::Enum { .. } = type_.inner {
+                        type_map.insert(*type_id, PrimitiveComponentType::U32);
+                    }
+                }
+                Ok(())
+            })?;
+
+            type_map
+        };
+
+        let mut components = vec![];
+        root_scope.visit_recursive(items, |scope| {
+            for id in scope.components.values().copied() {
+                let component = items.get(id)?;
+
+                let attributes: Vec<_> = component
+                    .attributes
+                    .iter()
+                    .map(|id| {
+                        let attr = items.get(id.as_resolved().unwrap_or_else(|| {
+                            panic!(
+                                "attribute id {:?} not resolved in component {:?}",
+                                id, component
+                            )
+                        }))?;
+                        Ok(attr.data().id.to_string())
+                    })
+                    .collect::<anyhow::Result<_>>()?;
+
+                components.push(ExternalComponentDesc {
+                    path: items.fully_qualified_display_path(&*component, true, None, None)?,
+                    ty: type_map[&component.type_.as_resolved().unwrap_or_else(|| {
+                        panic!(
+                            "type id {:?} not resolved in component {:?}",
+                            component.type_, component
+                        )
+                    })],
+                    name: component.name.clone(),
+                    description: component.description.clone(),
+                    attributes: ExternalComponentAttributes::from_iter(
+                        attributes.iter().map(|s| s.as_str()),
+                    ),
+                });
+            }
+            Ok(())
+        })?;
+        Ok(components)
+    }
+
+    fn primitive_type_to_primitive_component_type(pt: PrimitiveType) -> PrimitiveComponentType {
+        macro_rules! convert {
+        ($(($value:ident, $_type:ty)),*) => {
+            match pt {
+                $(PrimitiveType::$value => PrimitiveComponentType::$value,)*
+            }
+        };
+    }
+
+        ambient_shared_types::primitive_component_definitions!(convert)
+    }
 }

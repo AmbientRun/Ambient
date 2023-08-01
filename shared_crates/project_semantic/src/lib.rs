@@ -11,7 +11,7 @@ use ambient_shared_types::primitive_component_definitions;
 use anyhow::Context as AnyhowContext;
 
 mod scope;
-pub use scope::{Context, Scope};
+pub use scope::{BuildMetadata, Context, Scope};
 
 mod item;
 pub use item::{
@@ -190,7 +190,7 @@ impl Semantic {
         // Check that this scope hasn't already been created for this scope
         let scope_name = scope_name.unwrap_or_else(|| manifest.ember.id.clone());
         if let Some(existing_scope_id) = self.items.get(root_id)?.scopes.get(&scope_name) {
-            let existing_path = self.items.get(*existing_scope_id)?.path.clone();
+            let existing_path = self.items.get(*existing_scope_id)?.manifest_path.clone();
             if existing_path == Some(file_provider.full_path(filename)) {
                 return Ok(*existing_scope_id);
             }

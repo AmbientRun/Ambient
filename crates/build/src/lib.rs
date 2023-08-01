@@ -1,4 +1,5 @@
 use std::{
+    collections::HashSet,
     path::{Path, PathBuf},
     sync::{
         atomic::{AtomicBool, Ordering},
@@ -7,8 +8,8 @@ use std::{
 };
 
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
-use ambient_physics::physx::{Physics, PhysicsKey};
 use ambient_project::{Manifest as ProjectManifest, Version};
+use ambient_project_semantic::{BuildMetadata, ItemId, ItemMap, Scope, Semantic};
 use ambient_shared_types::path::path_to_unix_string;
 use ambient_std::{asset_url::AbsAssetUrl, git_revision_full};
 use anyhow::Context;
@@ -42,48 +43,51 @@ impl Metadata {
     }
 }
 
-#[derive(Clone)]
-pub struct BuildConfiguration {
-    pub physics: Physics,
-    pub path: PathBuf,
-    pub manifest: ProjectManifest,
+pub struct BuildConfiguration<'a> {
+    pub build_path: PathBuf,
+    pub semantic: &'a mut Semantic,
     pub optimize: bool,
     pub clean_build: bool,
     pub build_wasm_only: bool,
 }
-impl BuildConfiguration {
-    pub fn build_path(&self) -> PathBuf {
-        self.path.join("build")
-    }
-}
 
-/// This takes the path to an Ambient project and builds it. An Ambient project is expected to
-/// have the following structure:
-///
-/// assets/**  Here assets such as .glb files are stored. Any files found in this directory will be processed
-/// src/**  This is where you store Rust source files
-/// build  This is the output directory, and is created when building
-/// ambient.toml  This is a metadata file to describe the project
-pub async fn build(config: BuildConfiguration) -> anyhow::Result<Metadata> {
-    let build_path = config.build_path();
+pub async fn build(
+    config: BuildConfiguration<'_>,
+    root_ember_id: ItemId<Scope>,
+) -> anyhow::Result<()> {
     let BuildConfiguration {
-        physics,
-        path,
-        manifest,
+        build_path,
+        semantic,
         optimize,
         clean_build,
         build_wasm_only,
     } = config;
 
-    let name = manifest
-        .ember
-        .name
-        .as_deref()
-        .unwrap_or_else(|| manifest.ember.id.as_str());
+    // TODO: Not a proper topological sort - it's just DFS.
+    // This also won't handle cycles, or duplicate dependencies.
+    fn populate_queue(
+        queue: &mut Vec<ItemId<Scope>>,
+        visited: &mut HashSet<ItemId<Scope>>,
+        items: &ItemMap,
+        scope_id: ItemId<Scope>,
+    ) {
+        let scope = items.get(scope_id).unwrap();
+        for &child_scope_id in scope.dependencies.iter() {
+            populate_queue(queue, visited, items, child_scope_id);
+        }
 
-    tracing::info!("Building project `{}` ({})", manifest.ember.id, name);
+        if visited.insert(scope_id) {
+            queue.push(scope_id);
+        }
+    }
 
-    let assets_path = path.join("assets");
+    let mut queue = vec![];
+    populate_queue(
+        &mut queue,
+        &mut Default::default(),
+        &semantic.items,
+        root_ember_id,
+    );
 
     if clean_build {
         tracing::info!("Removing build directory: {build_path:?}");
@@ -96,12 +100,79 @@ pub async fn build(config: BuildConfiguration) -> anyhow::Result<Metadata> {
         }
     }
 
+    while let Some(ember_id) = queue.pop() {
+        let id = semantic.items.get(ember_id)?.data.id.clone();
+        build_ember(
+            BuildConfiguration {
+                build_path: if ember_id == root_ember_id {
+                    build_path.clone()
+                } else {
+                    build_path.join(id.as_str())
+                },
+                semantic,
+                optimize,
+                clean_build,
+                build_wasm_only,
+            },
+            ember_id,
+        )
+        .await?;
+    }
+
+    Ok(())
+}
+
+/// This takes the path to an Ambient ember and builds it. An Ambient ember is expected to
+/// have the following structure:
+///
+/// assets/**  Here assets such as .glb files are stored. Any files found in this directory will be processed
+/// src/**  This is where you store Rust source files
+/// build  This is the output directory, and is created when building
+/// ambient.toml  This is a metadata file to describe the ember
+async fn build_ember(
+    config: BuildConfiguration<'_>,
+    ember_id: ItemId<Scope>,
+) -> anyhow::Result<()> {
+    let BuildConfiguration {
+        build_path,
+        semantic,
+        optimize,
+        build_wasm_only,
+        ..
+    } = config;
+
+    let (manifest, path) = {
+        let scope = semantic.items.get(ember_id)?;
+        (
+            scope
+                .manifest
+                .clone()
+                .context("the ember has no manifest")?,
+            scope
+                .manifest_path
+                .as_ref()
+                .context("the ember has no path")?
+                .parent()
+                .context("the ember path has no parent")?
+                .to_owned(),
+        )
+    };
+
+    let name = manifest
+        .ember
+        .name
+        .as_deref()
+        .unwrap_or_else(|| manifest.ember.id.as_str());
+
+    tracing::info!("Building project `{}` ({})", manifest.ember.id, name);
+
+    let assets_path = path.join("assets");
     tokio::fs::create_dir_all(&build_path)
         .await
         .context("Failed to create build directory")?;
 
     if !build_wasm_only {
-        build_assets(physics, &assets_path, &build_path).await?;
+        build_assets(&assets_path, &build_path).await?;
     }
 
     build_rust_if_available(&path, &manifest, &build_path, optimize)
@@ -109,7 +180,12 @@ pub async fn build(config: BuildConfiguration) -> anyhow::Result<Metadata> {
         .with_context(|| format!("Failed to build rust {build_path:?}"))?;
 
     store_manifest(&manifest, &build_path).await?;
-    store_metadata(&build_path).await
+    let metadata = store_metadata(&build_path).await?;
+
+    semantic.items.get_mut(ember_id)?.build_metadata =
+        Some(BuildMetadata(Arc::new(metadata.clone())));
+
+    Ok(())
 }
 
 fn get_asset_files(assets_path: &Path) -> impl Iterator<Item = PathBuf> {
@@ -120,18 +196,13 @@ fn get_asset_files(assets_path: &Path) -> impl Iterator<Item = PathBuf> {
         .map(|x| x.into_path())
 }
 
-async fn build_assets(
-    physics: Physics,
-    assets_path: &Path,
-    build_path: &Path,
-) -> anyhow::Result<()> {
+async fn build_assets(assets_path: &Path, build_path: &Path) -> anyhow::Result<()> {
     let files = get_asset_files(assets_path).map(Into::into).collect_vec();
 
     let assets = AssetCache::new_with_config(tokio::runtime::Handle::current(), None);
 
     let has_errored = Arc::new(AtomicBool::new(false));
 
-    PhysicsKey.insert(&assets, physics);
     let ctx = ProcessCtx {
         assets: assets.clone(),
         files: FileCollection(Arc::new(files)),

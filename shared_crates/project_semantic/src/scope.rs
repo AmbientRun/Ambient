@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{any::Any, path::PathBuf, sync::Arc};
 
 use ambient_project::{
     ComponentType, ItemPath, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
@@ -90,14 +90,26 @@ impl Context {
     }
 }
 
+#[derive(Clone)]
+pub struct BuildMetadata(pub Arc<dyn Any>);
+impl PartialEq for BuildMetadata {
+    fn eq(&self, other: &Self) -> bool {
+        // HACK! We can't compare the contents of the build metadata, so we just compare the
+        // pointers.
+        Arc::ptr_eq(&self.0, &other.0)
+    }
+}
+
 #[derive(Clone, PartialEq)]
 pub struct Scope {
     pub data: ItemData,
     pub original_id: SnakeCaseIdentifier,
-    pub path: Option<PathBuf>,
+    pub manifest_path: Option<PathBuf>,
     pub manifest: Option<Manifest>,
 
     pub dependencies: Vec<ItemId<Scope>>,
+    /// This is type-erased as ambient_build depends on this crate, so we can't use the type here.
+    pub build_metadata: Option<BuildMetadata>,
 
     pub scopes: IndexMap<SnakeCaseIdentifier, ItemId<Scope>>,
     pub components: IndexMap<SnakeCaseIdentifier, ItemId<Component>>,
@@ -111,7 +123,7 @@ impl std::fmt::Debug for Scope {
         let mut ds = f.debug_struct("Scope");
         ds.field("data", &self.data);
         ds.field("original_id", &self.original_id);
-        ds.field("path", &self.path);
+        ds.field("path", &self.manifest_path);
         ds.field("manifest", &self.manifest);
 
         if !self.dependencies.is_empty() {
@@ -214,10 +226,11 @@ impl Scope {
         Self {
             data,
             original_id,
-            path,
+            manifest_path: path,
             manifest,
 
             dependencies: Default::default(),
+            build_metadata: Default::default(),
 
             scopes: Default::default(),
             components: Default::default(),

@@ -3,8 +3,8 @@ use ambient_ecs::{
     components, generated::messages, query, EntityId, FnSystem, Resource, SystemGroup, World,
 };
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
-use ambient_std::{asset_url::AbsAssetUrl, Cb};
-use std::sync::Arc;
+use ambient_std::Cb;
+use std::{path::PathBuf, sync::Arc};
 
 mod implementation;
 mod network;
@@ -16,19 +16,11 @@ components!("wasm::server", {
 
 pub fn initialize(
     world: &mut World,
-    project_path: AbsAssetUrl,
+    data_path: PathBuf,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
     build_project: Option<Cb<dyn Fn(&mut World) + Send + Sync>>,
 ) -> anyhow::Result<()> {
     init_components();
-
-    let data_path = match project_path.to_file_path().ok().flatten() {
-        Some(path) => Some(path.join("data")),
-        None => {
-            log::warn!("No data path for project at {project_path:?} (invalid local filepath)");
-            None
-        }
-    };
 
     if let Some(build_project) = build_project {
         world.add_component(world.resource_entity(), self::build_wasm(), build_project)?;
@@ -42,7 +34,7 @@ pub fn initialize(
             world_ref: Default::default(),
             id,
         },
-        data_path.as_deref(),
+        Some(data_path.as_ref()),
     )?;
 
     network::initialize(world);

@@ -1,6 +1,11 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 use ambient_ecs::{EntityId, SystemGroup, World};
+use ambient_project_semantic::{ItemId, Scope, Semantic};
 use ambient_std::{asset_url::AbsAssetUrl, Cb};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{module_name, remote_paired_id, spawn_module, MessageType};
@@ -12,8 +17,7 @@ pub fn systems() -> SystemGroup {
 
 pub async fn initialize(
     world: &mut World,
-    project_path: AbsAssetUrl,
-    build_metadata: &ambient_build::Metadata,
+    data_path: PathBuf,
     build_project: Option<Cb<dyn Fn(&mut World) + Send + Sync>>,
 ) -> anyhow::Result<()> {
     let messenger = Arc::new(
@@ -35,19 +39,35 @@ pub async fn initialize(
         },
     );
 
-    ambient_wasm::server::initialize(world, project_path.clone(), messenger, build_project)?;
+    ambient_wasm::server::initialize(world, data_path, messenger, build_project)?;
 
-    let build_dir = project_path.push("build").unwrap();
+    Ok(())
+}
 
+pub fn instantiate_ember(
+    world: &mut World,
+    semantic: &Semantic,
+    ember_id: ItemId<Scope>,
+) -> anyhow::Result<()> {
     let mut modules_to_entity_ids = HashMap::new();
     for target in ["client", "server"] {
+        let scope = semantic.items.get(ember_id)?;
+        let build_metadata = scope
+            .build_metadata
+            .as_ref()
+            .context("no build metadata in ember")?
+            .0
+            .clone();
+        let build_metadata = build_metadata
+            .downcast_ref::<ambient_build::Metadata>()
+            .context("failed to retrieve build metadata")?;
         let wasm_component_paths: &[String] = build_metadata.component_paths(target);
 
         for path in wasm_component_paths {
-            let component_url = build_dir.push(path).unwrap();
-            let name = component_url
+            let name = Path::new(path)
                 .file_stem()
-                .context("no file stem for {path:?}")?;
+                .context("no file stem for {path:?}")?
+                .to_string_lossy();
 
             let bytecode_url = AbsAssetUrl::from_asset_key(path)?;
             let id = spawn_module(world, bytecode_url, true, target == "server");
@@ -57,7 +77,7 @@ pub async fn initialize(
                     // Support `client_module`, `module_client` and `module`
                     name.strip_prefix(target)
                         .or_else(|| name.strip_suffix(target))
-                        .unwrap_or(name)
+                        .unwrap_or(name.as_ref())
                         .trim_matches('_')
                         .to_string(),
                 ),

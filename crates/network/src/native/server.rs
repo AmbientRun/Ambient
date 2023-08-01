@@ -423,13 +423,10 @@ async fn start_proxy_connection(
     let builder = ambient_proxy::client::builder()
         .endpoint(endpoint.clone())
         .proxy_server(settings.endpoint.clone())
-        .project_id(settings.project_id.clone())
+        .project_id(settings.primary_ember_id.clone())
         .user_agent(APP_USER_AGENT.to_string());
 
-    let assets_path = settings
-        .project_path
-        .push("build")
-        .expect("Pushing to path cannot fail");
+    let assets_path = settings.build_path;
     let builder = if let Ok(Some(assets_file_path)) = assets_path.to_file_path() {
         builder.assets_path(assets_file_path)
     } else {
