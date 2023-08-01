@@ -139,12 +139,22 @@ fn KillHistory(hooks: &mut Hooks) -> Element {
         vec![]
     };
 
-    WindowSized::el([FlowColumn::el(
-        history
-            .iter()
-            .map(|killlog| Text::el(format!("{}", killlog)))
-            .collect::<Vec<_>>(),
-    )
+    WindowSized::el([FlowColumn::el({
+        let mut v = vec![];
+        let mut iter = history
+            .into_iter()
+            .rev()
+            .map(|killlog| Text::el(format!("{}", killlog)));
+        for _ in 0..3 {
+            let n = iter.next();
+            if let Some(n) = n {
+                v.push(n);
+            } else {
+                break;
+            }
+        }
+        v
+    })
     .with(space_between_items(), STREET)])
     .with_padding_even(20.)
 }

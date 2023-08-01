@@ -37,7 +37,7 @@ pub fn main() {
                     prefab_from_url(),
                     asset::url("assets/map/claymore.glb").unwrap(),
                 )
-                .with_default(components::claymore())
+                .with(components::claymore(), msg.source)
                 .with(translation(), hit.position + vec3(0., 0., 0.15))
                 .with(scale(), Vec3::ONE * 1.0)
                 .spawn();
@@ -47,8 +47,9 @@ pub fn main() {
     // claymore
     let player_query = query(translation()).requires(player()).build();
     query((components::claymore(), translation())).each_frame(move |entities| {
-        for (e, (_, cm_pos)) in entities {
-            // let cm_pos = vec2(cm_pos3.x, cm_pos3.y);
+        for (e, (source_id, cm_pos)) in entities {
+            let source = entity::get_component(source_id, components::player_name())
+                .unwrap_or("unknown".to_string());
             let players: Vec<(EntityId, Vec3)> = player_query.evaluate();
             for (player, player_pos) in players {
                 // let player_pos = vec2(pos.x, pos.y);
@@ -70,25 +71,28 @@ pub fn main() {
                             components::kill_log(),
                             |v| {
                                 v.push(format!(
-                                    "\u{f119} {} was blown up",
+                                    // "\u{f119} {} was blown up by \u{f118} {}",
+                                    "[{}] \u{f1e2} \u{f061} [{}]",
+                                    source,
                                     entity::get_component(player, components::player_name())
-                                        .unwrap_or("unknown".to_string())
+                                        .unwrap_or("unknown".to_string()),
                                 ));
-                                if v.len() >= 4 {
-                                    v.remove(0);
-                                }
                             },
                         );
+                        remove_last_history();
                     } else {
                         entity::add_component(
                             entity::synchronized_resources(),
                             components::kill_log(),
                             vec![format!(
-                                "\u{f119} {} was blown up",
+                                // "\u{f119} {} was blown up by \u{f118} {}",
+                                "[{}] \u{f1e2} \u{f061} [{}]",
+                                source,
                                 entity::get_component(player, components::player_name())
-                                    .unwrap_or("unknown".to_string())
+                                    .unwrap_or("unknown".to_string()),
                             )],
                         );
+                        remove_last_history();
                     }
                     run_async(async move {
                         sleep(3.).await;
@@ -103,5 +107,20 @@ pub fn main() {
                 }
             }
         }
+    });
+}
+
+fn remove_last_history() {
+    run_async(async move {
+        sleep(10.0).await;
+        entity::mutate_component(
+            entity::synchronized_resources(),
+            components::kill_log(),
+            |v| {
+                if v.len() >= 1 {
+                    v.remove(0);
+                }
+            },
+        );
     });
 }

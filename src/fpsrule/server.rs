@@ -162,50 +162,29 @@ pub fn main() {
                             components::kill_log(),
                             |v| {
                                 v.push(format!(
-                                    "\u{f118} {} gains a point on \u{f119} {}",
+                                    "[{}] \u{e231} \u{f061} [{}]",
                                     entity::get_component(msg.source, components::player_name())
                                         .unwrap_or("unknown".to_string()),
                                     entity::get_component(hit.entity, components::player_name())
-                                        .unwrap_or("unknown".to_string())
+                                        .unwrap_or("unknown".to_string()),
                                 ));
-                                if v.len() >= 4 {
-                                    v.remove(0);
-                                }
                             },
                         );
+                        remove_last_history();
                     } else {
                         entity::add_component(
                             entity::synchronized_resources(),
                             components::kill_log(),
                             vec![format!(
-                                "\u{f118} {} gains a point on \u{f119} {}",
+                                "[{}] \u{e231} \u{f061} [{}]",
                                 entity::get_component(msg.source, components::player_name())
                                     .unwrap_or("unknown".to_string()),
                                 entity::get_component(hit.entity, components::player_name())
-                                    .unwrap_or("unknown".to_string())
+                                    .unwrap_or("unknown".to_string()),
                             )],
                         );
+                        remove_last_history();
                     }
-
-                    run_async(async move {
-                        loop {
-                            sleep(20.).await;
-                            if entity::has_component(
-                                entity::synchronized_resources(),
-                                components::kill_log(),
-                            ) {
-                                entity::mutate_component(
-                                    entity::synchronized_resources(),
-                                    components::kill_log(),
-                                    |v| {
-                                        if v.len() >= 1 {
-                                            v.remove(0);
-                                        }
-                                    },
-                                );
-                            }
-                        }
-                    });
 
                     // TODO: wait for anim msg to respawn
                     run_async(async move {
@@ -230,6 +209,44 @@ pub fn main() {
             }
         }
     });
+
+    // change_query(components::kill_log())
+    //     .track_change(components::kill_log())
+    //     .bind(move |v| {
+    //         println!("kill log changed: {:?}", v);
+    //         run_async(async move {
+    //             sleep(5.0).await;
+    //             entity::mutate_component(
+    //                 entity::synchronized_resources(),
+    //                 components::kill_log(),
+    //                 |v| {
+    //                     if v.len() >= 1 {
+    //                         v.remove(0);
+    //                     }
+    //                 },
+    //             );
+    //         });
+    //     });
+
+    // run_async(async move {
+    //     loop {
+    //         sleep(20.).await;
+    //         if entity::has_component(
+    //             entity::synchronized_resources(),
+    //             components::kill_log(),
+    //         ) {
+    //             entity::mutate_component(
+    //                 entity::synchronized_resources(),
+    //                 components::kill_log(),
+    //                 |v| {
+    //                     if v.len() >= 1 {
+    //                         v.remove(0);
+    //                     }
+    //                 },
+    //             );
+    //         }
+    //     }
+    // });
 
     query((player(), heal_timeout())).each_frame(move |entities| {
         for (e, (_, old_timeout)) in entities {
@@ -260,5 +277,20 @@ pub fn main() {
                 }
             }
         }
+    });
+}
+
+fn remove_last_history() {
+    run_async(async move {
+        sleep(10.0).await;
+        entity::mutate_component(
+            entity::synchronized_resources(),
+            components::kill_log(),
+            |v| {
+                if v.len() >= 1 {
+                    v.remove(0);
+                }
+            },
+        );
     });
 }

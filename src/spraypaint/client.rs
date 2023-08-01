@@ -30,6 +30,7 @@ pub async fn main() {
             messages::Spraypaint {
                 origin: ray.origin,
                 dir: ray.dir,
+                source: player_id,
             }
             .send_server_unreliable();
             println!("Spray paint ray sent ");
