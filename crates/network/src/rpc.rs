@@ -146,8 +146,7 @@ pub async fn rpc_join_instance(args: ServerRpcArgs, new_instance_id: String) {
         ));
     state.players.get_mut(&args.user_id).unwrap().instance = new_instance_id.to_string();
 
-    let msg = bincode::serialize(&diff).unwrap().into();
-    entities_tx.send(msg).ok();
+    entities_tx.send(diff.into()).ok();
 
     // Remove old instance
     if old_player_count == 1 && old_instance_id != MAIN_INSTANCE_ID {

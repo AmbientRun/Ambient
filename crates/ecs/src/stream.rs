@@ -192,6 +192,60 @@ impl Display for WorldDiff {
     }
 }
 
+#[derive(Serialize, Clone, Debug)]
+pub struct WorldDiffView<'a> {
+    changes: Vec<&'a WorldChange>,
+}
+
+/// Immutable version of WorldDiff, cheap to clone
+#[derive(Serialize, Clone, Debug)]
+pub struct FrozenWorldDiff {
+    changes: Arc<[WorldChange]>,
+}
+impl FrozenWorldDiff {
+    pub fn merge(diffs: &[Self]) -> WorldDiffView<'_> {
+        // only keep the last of WorldChange::Set for given EntityId and component path
+        let mut overwritten: HashSet<(EntityId, &str)> = HashSet::new();
+        let mut rev_changes = Vec::new();
+
+        // going backwards because it's easier to keep the first instead of removing/overwriting the previous ones
+        for change in diffs
+            .iter()
+            .rev()
+            .flat_map(|diff| diff.changes.iter().rev())
+        {
+            if let WorldChange::Set(entity_id, entry) = change {
+                if let Some(path) = entry.vtable.path {
+                    if !overwritten.insert((*entity_id, path)) {
+                        // not inserted -> we already have a Set for this entity_id and path
+                        continue;
+                    }
+                }
+            }
+            rev_changes.push(change);
+        }
+
+        tracing::debug!(
+            "Merged {} changes into {}",
+            diffs.iter().map(|diff| diff.changes.len()).sum::<usize>(),
+            rev_changes.len(),
+        );
+
+        // reverse to get the correct order back
+        rev_changes.reverse();
+        WorldDiffView {
+            changes: rev_changes,
+        }
+    }
+}
+impl From<WorldDiff> for FrozenWorldDiff {
+    fn from(diff: WorldDiff) -> Self {
+        Self {
+            changes: diff.changes.into(),
+        }
+    }
+}
+
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum WorldStreamCompEvent {
     Init,

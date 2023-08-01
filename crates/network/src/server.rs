@@ -10,8 +10,8 @@ use ambient_core::{
     FIXED_SERVER_TICK_TIME,
 };
 use ambient_ecs::{
-    components, dont_store, query, ArchetypeFilter, Entity, EntityId, FrameEvent, Networked,
-    Resource, System, SystemGroup, World, WorldStream, WorldStreamFilter,
+    components, dont_store, query, ArchetypeFilter, Entity, EntityId, FrameEvent, FrozenWorldDiff,
+    Networked, Resource, System, SystemGroup, World, WorldStream, WorldStreamFilter,
 };
 use ambient_rpc::RpcRegistry;
 use ambient_std::{
@@ -32,7 +32,7 @@ components!("network::server", {
     @[Resource]
     datagram_handlers: DatagramHandlers,
 
-    player_entity_stream: Sender<Bytes>,
+    player_entity_stream: Sender<FrozenWorldDiff>,
     player_connection_id: Uuid,
     player_transport: Arc<dyn NetworkTransport>,
     // synced resource
@@ -78,7 +78,7 @@ impl RpcArgs {
 pub fn create_player_entity_data(
     transport: Arc<dyn NetworkTransport>,
     user_id: String,
-    entities_tx: Sender<Bytes>,
+    entities_tx: Sender<FrozenWorldDiff>,
     connection_id: Uuid,
 ) -> Entity {
     Entity::new()
@@ -137,12 +137,12 @@ impl WorldInstance {
         if diff.is_empty() {
             return;
         }
-        let msg: Bytes = bincode::serialize(&diff).unwrap().into();
+        let diff: FrozenWorldDiff = diff.into();
 
         ambient_profiling::scope!("Send MsgEntities");
 
         for (_, (entity_stream,)) in query((player_entity_stream(),)).iter(&self.world, None) {
-            if let Err(err) = entity_stream.send(msg.clone()) {
+            if let Err(err) = entity_stream.send(diff.clone()) {
                 log::warn!("Failed to broadcast diff to player: {err:?}");
             }
         }
