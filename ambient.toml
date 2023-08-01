@@ -13,10 +13,11 @@ fpsmodel = { path = "embers/fpsmodel" }
 fpsmovement = { path = "embers/fpsmovement" }
 fpsrule = { path = "embers/fpsrule" }
 fpsui = { path = "embers/fpsui" }
-scene = { path = "embers/scene" }
-spraypaint = { path = "embers/spraypaint" }
-zombie = { path = "embers/zombie" }
-world_latency = { path = "embers/world_latency" }
 
 console = { path = "tool_embers/console" }
 ember_reloader = { path = "tool_embers/ember_reloader" }
+
+scene = { path = "mods/scene" }
+spraypaint = { path = "mods/spraypaint" }
+# zombie = { path = "mods/zombie" }
+world_latency = { path = "mods/world_latency" }
