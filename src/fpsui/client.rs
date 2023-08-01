@@ -34,7 +34,7 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
 
     FocusRoot::el([
         WindowSized::el([FlowColumn::el([
-            Text::el("Cube Killer 2089").header_style(),
+            Text::el("A Drill").header_style(),
             Separator { vertical: false }.el(),
             Text::el("enter your name below. press enter to start the game."),
             TextEditor::new(name.clone(), set_name.clone())
