@@ -1,5 +1,4 @@
 use std::{
-    collections::HashSet,
     path::{Path, PathBuf},
     sync::{
         atomic::{AtomicBool, Ordering},
@@ -9,7 +8,7 @@ use std::{
 
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_project::{Manifest as ProjectManifest, Version};
-use ambient_project_semantic::{BuildMetadata, ItemId, ItemMap, Scope, Semantic};
+use ambient_project_semantic::{BuildMetadata, ItemId, Scope, Semantic};
 use ambient_shared_types::path::path_to_unix_string;
 use ambient_std::{asset_url::AbsAssetUrl, git_revision_full};
 use anyhow::Context;
@@ -63,32 +62,6 @@ pub async fn build(
         build_wasm_only,
     } = config;
 
-    // TODO: Not a proper topological sort - it's just DFS.
-    // This also won't handle cycles, or duplicate dependencies.
-    fn populate_queue(
-        queue: &mut Vec<ItemId<Scope>>,
-        visited: &mut HashSet<ItemId<Scope>>,
-        items: &ItemMap,
-        scope_id: ItemId<Scope>,
-    ) {
-        let scope = items.get(scope_id).unwrap();
-        for &child_scope_id in scope.dependencies.iter() {
-            populate_queue(queue, visited, items, child_scope_id);
-        }
-
-        if visited.insert(scope_id) {
-            queue.push(scope_id);
-        }
-    }
-
-    let mut queue = vec![];
-    populate_queue(
-        &mut queue,
-        &mut Default::default(),
-        &semantic.items,
-        root_ember_id,
-    );
-
     if clean_build {
         tracing::info!("Removing build directory: {build_path:?}");
         match tokio::fs::remove_dir_all(&build_path).await {
@@ -100,15 +73,12 @@ pub async fn build(
         }
     }
 
+    let mut queue = semantic.items.scope_and_dependencies(root_ember_id);
     while let Some(ember_id) = queue.pop() {
-        let id = semantic.items.get(ember_id)?.data.id.clone();
+        let id = semantic.items.get(ember_id)?.original_id.clone();
         build_ember(
             BuildConfiguration {
-                build_path: if ember_id == root_ember_id {
-                    build_path.clone()
-                } else {
-                    build_path.join(id.as_str())
-                },
+                build_path: build_path.join(id.as_str()),
                 semantic,
                 optimize,
                 clean_build,

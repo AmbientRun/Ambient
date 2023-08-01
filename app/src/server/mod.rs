@@ -3,13 +3,13 @@ use std::{
     net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr},
     path::{Path, PathBuf},
     str::FromStr,
-    sync::Arc,
+    sync::{Arc, Mutex},
 };
 
 use ambient_core::{asset_cache, name, no_sync, project_name, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
-    dont_store, world_events, ComponentDesc, Entity, Networked, SystemGroup, World,
-    WorldEventsSystem, WorldStreamCompEvent,
+    components, dont_store, world_events, ComponentDesc, Entity, Networked, Resource, SystemGroup,
+    World, WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_network::{
     native::server::{Crypto, GameServer},
@@ -40,6 +40,11 @@ use crate::{
 
 pub mod wasm;
 
+components!("server", {
+    @[Resource]
+    semantic: Arc<Mutex<Semantic>>,
+});
+
 #[allow(clippy::too_many_arguments)]
 pub async fn start(
     runtime: &tokio::runtime::Handle,
@@ -47,10 +52,12 @@ pub async fn start(
     cli: Cli,
     working_directory: PathBuf,
     build_path: AbsAssetUrl,
-    semantic: &Semantic,
+    semantic: Semantic,
     primary_ember_id: ItemId<Scope>,
     crypto: Crypto,
 ) -> SocketAddr {
+    self::init_components();
+
     let host_cli = cli.host().unwrap();
     let quic_interface_port = host_cli.quic_interface_port;
     let manifest = semantic
@@ -139,6 +146,7 @@ pub async fn start(
         start_http_interface(runtime, None, http_interface_port);
     }
 
+    let queue = semantic.items.scope_and_dependencies(primary_ember_id);
     runtime.spawn(async move {
         let mut server_world = World::new_with_config("server", true);
         server_world.init_shape_change_tracking();
@@ -159,7 +167,9 @@ pub async fn start(
         server_world
             .add_components(
                 server_world.resource_entity(),
-                Entity::new().with(project_name(), name),
+                Entity::new()
+                    .with(project_name(), name)
+                    .with(self::semantic(), Arc::new(Mutex::new(semantic))),
             )
             .unwrap();
 
@@ -211,6 +221,11 @@ pub async fn start(
         )
         .await
         .unwrap();
+
+        let mut queue = queue.clone();
+        while let Some(ember_id) = queue.pop() {
+            wasm::instantiate_ember(&mut server_world, ember_id).unwrap();
+        }
 
         if let Commands::View { asset_path, .. } = cli.command.clone() {
             let asset_path = build_path

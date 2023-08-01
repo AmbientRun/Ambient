@@ -5,7 +5,7 @@ use crate::{Attribute, Component, Concept, Context, Message, Scope, Type, TypeIn
 use anyhow::Context as AnyhowContext;
 use std::{
     cell::{Ref, RefCell, RefMut},
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fmt::{self, Debug, Display},
     marker::PhantomData,
     path::PathBuf,
@@ -251,6 +251,34 @@ impl ItemMap {
             relative_to,
             item_prefix,
         )
+    }
+
+    /// Returns a semi-topological sort of `id` and its dependencies.
+    ///
+    /// Not actually topological yet.
+    pub fn scope_and_dependencies(&self, id: ItemId<Scope>) -> Vec<ItemId<Scope>> {
+        // TODO: Not a proper topological sort - it's just DFS.
+        // This also won't handle cycles, or duplicate dependencies.
+        fn populate_queue(
+            items: &ItemMap,
+            queue: &mut Vec<ItemId<Scope>>,
+            visited: &mut HashSet<ItemId<Scope>>,
+            scope_id: ItemId<Scope>,
+        ) {
+            let scope = items.get(scope_id).unwrap();
+            for &child_scope_id in scope.dependencies.iter() {
+                populate_queue(items, queue, visited, child_scope_id);
+            }
+
+            if visited.insert(scope_id) {
+                queue.push(scope_id);
+            }
+        }
+
+        let mut queue = vec![];
+        populate_queue(self, &mut queue, &mut Default::default(), id);
+
+        queue
     }
 }
 

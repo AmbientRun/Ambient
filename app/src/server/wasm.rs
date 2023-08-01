@@ -5,7 +5,7 @@ use std::{
 };
 
 use ambient_ecs::{EntityId, SystemGroup, World};
-use ambient_project_semantic::{ItemId, Scope, Semantic};
+use ambient_project_semantic::{ItemId, Scope};
 use ambient_std::{asset_url::AbsAssetUrl, Cb};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{module_name, remote_paired_id, spawn_module, MessageType};
@@ -44,11 +44,10 @@ pub async fn initialize(
     Ok(())
 }
 
-pub fn instantiate_ember(
-    world: &mut World,
-    semantic: &Semantic,
-    ember_id: ItemId<Scope>,
-) -> anyhow::Result<()> {
+pub fn instantiate_ember(world: &mut World, ember_id: ItemId<Scope>) -> anyhow::Result<()> {
+    let semantic = world.resource(super::semantic()).clone();
+    let semantic = semantic.lock().unwrap();
+
     let mut modules_to_entity_ids = HashMap::new();
     for target in ["client", "server"] {
         let scope = semantic.items.get(ember_id)?;
@@ -64,12 +63,13 @@ pub fn instantiate_ember(
         let wasm_component_paths: &[String] = build_metadata.component_paths(target);
 
         for path in wasm_component_paths {
-            let name = Path::new(path)
+            let path = Path::new(scope.original_id.as_str()).join(path);
+            let name = path
                 .file_stem()
                 .context("no file stem for {path:?}")?
                 .to_string_lossy();
 
-            let bytecode_url = AbsAssetUrl::from_asset_key(path)?;
+            let bytecode_url = AbsAssetUrl::from_asset_key(path.to_string_lossy())?;
             let id = spawn_module(world, bytecode_url, true, target == "server");
             modules_to_entity_ids.insert(
                 (

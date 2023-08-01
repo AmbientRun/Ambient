@@ -99,6 +99,9 @@ impl PartialEq for BuildMetadata {
         Arc::ptr_eq(&self.0, &other.0)
     }
 }
+// This is immutable after construction, so it's safe to send and share across threads.
+unsafe impl Send for BuildMetadata {}
+unsafe impl Sync for BuildMetadata {}
 
 #[derive(Clone, PartialEq)]
 pub struct Scope {
