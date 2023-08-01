@@ -6,8 +6,10 @@
 // };
 use ambient_api::{
     components::core::{
+        physics::{cube_collider, plane_collider},
         player::player,
         prefab::prefab_from_url,
+        primitives::{cube, quad},
         rendering::decal_from_url,
         transform::{scale, translation},
     },
@@ -18,11 +20,22 @@ use ambient_api::{
 #[main]
 
 pub fn main() {
-    println!("Spraypaint server started");
     messages::Spraypaint::subscribe(move |source, msg| {
-        println!("Spray got");
         if let Some(hit) = physics::raycast_first(msg.origin, msg.dir) {
-            // println!("hit {:?}", hit.position);
+            let player_pos = entity::get_component(msg.source, translation()).unwrap();
+            let distance = (player_pos - hit.position).length();
+            if distance > 12. {
+                // too far
+                return;
+            }
+
+            if !entity::has_component(hit.entity, cube())
+                && !entity::has_component(hit.entity, quad())
+            {
+                println!("not a valid surface");
+                return;
+            }
+
             let decal_url = asset::url("assets/spray/spray/pipeline.toml/0/mat.json").unwrap();
 
             Entity::new()

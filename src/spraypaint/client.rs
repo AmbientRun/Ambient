@@ -32,8 +32,7 @@ pub async fn main() {
                 dir: ray.dir,
                 source: player_id,
             }
-            .send_server_unreliable();
-            println!("Spray paint ray sent ");
+            .send_server_reliable();
         }
     });
 }
