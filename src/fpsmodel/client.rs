@@ -27,7 +27,7 @@ pub fn main() {
                 let gun = Entity::new()
                     .with_merge(make_transformable())
                     .with(prefab_from_url(), asset::url("assets/gun/red.glb").unwrap())
-                    .with(translation(), vec3(-0.1, 0.2, 0.0))
+                    .with(translation(), vec3(-0.06, 0.2, 0.0))
                     .with(
                         rotation(),
                         Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2)
@@ -38,18 +38,8 @@ pub fn main() {
                     .with_default(local_to_parent())
                     .with_default(reset_scale())
                     .spawn();
-                // let f = Entity::new()
-                //     .with_merge(make_transformable())
-                //     .with_default(quad())
-                //     .with(scale(), Vec3::ONE * 100.)
-                //     .with(
-                //         pbr_material_from_url(),
-                //         asset::url("assets/pipeline.toml/5/mat.json").unwrap(),
-                //     )
-                //     .with_default(local_to_parent())
-                //     .spawn();
+
                 entity::add_child(hand, gun);
-                // entity::add_child(hand, f);
             });
         }
     });
