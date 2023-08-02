@@ -15,7 +15,7 @@ fpsrule = { path = "core/fpsrule" }
 fpsui = { path = "core/fpsui" }
 
 console = { path = "tools/console" }
-ember_reloader = { path = "tools/ember_reloader" }
+ember_manager = { path = "tools/ember_manager" }
 
 scene = { path = "mods/scene" }
 spraypaint = { path = "mods/spraypaint" }

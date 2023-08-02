@@ -8,7 +8,7 @@ use ambient_api::{
     prelude::*,
 };
 
-use crate::ember_reloader::messages::{WasmReload, WasmSetEnabled};
+use crate::ember_manager::messages::{WasmReload, WasmSetEnabled};
 
 use super::{use_hotkey_toggle, use_input_request, Window};
 

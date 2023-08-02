@@ -1,7 +1,7 @@
 use ambient_api::{anyhow, core::wasm::components::bytecode_from_url, prelude::*};
 use serde::{de::DeserializeOwned, Deserialize};
 
-use crate::ember_reloader::messages::{
+use crate::ember_manager::messages::{
     EmberLoad, EmberLoadSuccess, ErrorMessage, WasmReplaceBytecodeUrl,
 };
 
