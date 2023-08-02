@@ -19,5 +19,5 @@ ember_reloader = { path = "tools/ember_reloader" }
 
 scene = { path = "mods/scene" }
 spraypaint = { path = "mods/spraypaint" }
-# zombie = { path = "mods/zombie" }
+zombie = { path = "mods/zombie" }
 world_latency = { path = "mods/world_latency" }

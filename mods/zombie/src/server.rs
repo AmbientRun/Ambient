@@ -21,9 +21,9 @@ use afps_zombie::components;
 #[main]
 pub async fn main() {
     let chars = vec![
-        asset::url("afps_fpsmodel/assets/Zombiegirl W Kurniawan.fbx").unwrap(),
-        asset::url("afps_fpsmodel/assets/copzombie_l_actisdato.fbx").unwrap(),
-        asset::url("afps_fpsmodel/assets/Yaku J Ignite.fbx").unwrap(),
+        asset::url("afps_zombie/assets/Zombiegirl W Kurniawan.fbx").unwrap(),
+        asset::url("afps_zombie/assets/copzombie_l_actisdato.fbx").unwrap(),
+        asset::url("afps_zombie/assets/Yaku J Ignite.fbx").unwrap(),
     ];
 
     run_async(async move {
@@ -55,7 +55,7 @@ pub async fn main() {
             );
 
             let run = PlayClipFromUrlNode::new(
-                asset::url("assets/anim/Zombie Run.fbx/animations/mixamo.com.anim").unwrap(),
+                asset::url("afps_zombie/assets/Zombie Run.fbx/animations/mixamo.com.anim").unwrap(),
             );
 
             let blend = BlendNode::new(&run, &run, 0.);
