@@ -1,5 +1,5 @@
 [workspace]
-members = ["embers/*", "tool_embers/*", "mods/*"]
+members = ["core/*", "tools/*", "mods/*"]
 
 [workspace.dependencies]
 ambient_api = { path = "../Ambient/guest/rust/api" }
