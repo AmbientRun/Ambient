@@ -15,10 +15,10 @@ pub fn main() {
         let id = msg.id;
 
         run_async(async move {
-            if let Err(err) = asset::build_wasm().await {
-                ErrorMessage::new(err.to_string()).send_client_targeted_reliable(user_id);
-                return;
-            }
+            // if let Err(err) = asset::build_wasm().await {
+            //     ErrorMessage::new(err.to_string()).send_client_targeted_reliable(user_id);
+            //     return;
+            // }
 
             if let Some(url) = entity::get_component(id, bytecode_from_url()) {
                 entity::set_component(id, bytecode_from_url(), url);
