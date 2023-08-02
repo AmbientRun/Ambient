@@ -282,6 +282,7 @@ async fn main() -> anyhow::Result<()> {
                 build_path: build_path
                     .to_file_path()?
                     .context("no file path for build path")?,
+                assets: assets.clone(),
                 semantic: &mut semantic,
                 optimize: project.release,
                 clean_build: project.clean_build,

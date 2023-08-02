@@ -44,6 +44,7 @@ impl Metadata {
 
 pub struct BuildConfiguration<'a> {
     pub build_path: PathBuf,
+    pub assets: AssetCache,
     pub semantic: &'a mut Semantic,
     pub optimize: bool,
     pub clean_build: bool,
@@ -56,6 +57,7 @@ pub async fn build(
 ) -> anyhow::Result<()> {
     let BuildConfiguration {
         build_path,
+        assets,
         semantic,
         optimize,
         clean_build,
@@ -79,6 +81,7 @@ pub async fn build(
         build_ember(
             BuildConfiguration {
                 build_path: build_path.join(id.as_str()),
+                assets: assets.clone(),
                 semantic,
                 optimize,
                 clean_build,
@@ -105,6 +108,7 @@ async fn build_ember(
 ) -> anyhow::Result<()> {
     let BuildConfiguration {
         build_path,
+        assets,
         semantic,
         optimize,
         build_wasm_only,
@@ -142,7 +146,7 @@ async fn build_ember(
         .context("Failed to create build directory")?;
 
     if !build_wasm_only {
-        build_assets(&assets_path, &build_path).await?;
+        build_assets(&assets, &assets_path, &build_path).await?;
     }
 
     build_rust_if_available(&path, &manifest, &build_path, optimize)
@@ -165,10 +169,12 @@ fn get_asset_files(assets_path: &Path) -> impl Iterator<Item = PathBuf> {
         .map(|x| x.into_path())
 }
 
-async fn build_assets(assets_path: &Path, build_path: &Path) -> anyhow::Result<()> {
+async fn build_assets(
+    assets: &AssetCache,
+    assets_path: &Path,
+    build_path: &Path,
+) -> anyhow::Result<()> {
     let files = get_asset_files(assets_path).map(Into::into).collect_vec();
-
-    let assets = AssetCache::new_with_config(tokio::runtime::Handle::current(), None);
 
     let has_errored = Arc::new(AtomicBool::new(false));
 
