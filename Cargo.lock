@@ -776,6 +776,7 @@ version = "0.3.0-dev"
 dependencies = [
  "aho-corasick 0.7.20",
  "ambient_native_std",
+ "ambient_std",
  "ambient_sys",
  "anyhow",
  "async-trait",
@@ -1429,6 +1430,7 @@ name = "ambient_std"
 version = "0.3.0-dev"
 dependencies = [
  "itertools",
+ "thiserror",
 ]
 
 [[package]]

@@ -9,3 +9,4 @@ version = { workspace = true }
 
 [dependencies]
 itertools = { workspace = true }
+thiserror = { workspace = true }
