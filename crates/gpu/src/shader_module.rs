@@ -9,6 +9,7 @@ use aho_corasick::AhoCorasick;
 use ambient_std::{asset_cache::*, CowStr};
 use anyhow::Context;
 use itertools::Itertools;
+use thiserror::Error;
 use wgpu::{
     BindGroupLayout, BindGroupLayoutEntry, ComputePipelineDescriptor, DepthBiasState, TextureFormat,
 };
@@ -202,14 +203,19 @@ impl<'a> SyncAssetKey<Arc<wgpu::BindGroupLayout>> for BindGroupDesc<'a> {
     }
 }
 
-/// Returns all shader modules in the dependency graph in topological order
-///
-/// # Panics
-///
-/// If the dependency graph contains a cycle
-fn resolve_module_graph<'a>(
-    roots: impl IntoIterator<Item = &'a ShaderModule>,
-) -> Vec<&'a ShaderModule> {
+trait TopologicalSortable<'a> {
+    fn dependencies(&self) -> Vec<&Self>;
+    fn id(&'a self) -> &'a str;
+}
+#[derive(Error, Debug)]
+enum TopologicalSortError {
+    #[error("Circular dependency for {id:?} in {backtrace:?}")]
+    CircularDependency { id: String, backtrace: Vec<String> },
+}
+
+fn topological_sort<'a, T: TopologicalSortable<'a>>(
+    roots: impl Iterator<Item = &'a T>,
+) -> Result<Vec<&'a T>, TopologicalSortError> {
     enum VisitedState {
         Pending,
         Visited,
@@ -217,47 +223,66 @@ fn resolve_module_graph<'a>(
 
     let mut visited = BTreeMap::new();
 
-    fn visit<'a>(
+    fn visit<'a, T: TopologicalSortable<'a>>(
         visited: &mut BTreeMap<&'a str, VisitedState>,
-        result: &mut Vec<&'a ShaderModule>,
-        module: &'a ShaderModule,
-        backtrace: &[&str],
-    ) {
-        match visited.entry(&module.name) {
+        result: &mut Vec<&'a T>,
+        item: &'a T,
+        backtrace: &mut Vec<String>,
+    ) -> Result<(), TopologicalSortError> {
+        match visited.entry(item.id()) {
             btree_map::Entry::Vacant(slot) => {
                 slot.insert(VisitedState::Pending);
             }
             btree_map::Entry::Occupied(slot) => match slot.get() {
-                VisitedState::Pending => panic!(
-                    "Circular dependency for module: {:?} in {:?}",
-                    module.name, backtrace
-                ),
-                VisitedState::Visited => return,
+                VisitedState::Pending => {
+                    return Err(TopologicalSortError::CircularDependency {
+                        id: item.id().to_string(),
+                        backtrace: backtrace.clone(),
+                    })
+                }
+                VisitedState::Visited => return Ok(()),
             },
         }
 
-        let backtrace = backtrace
-            .iter()
-            .copied()
-            .chain([&*module.name])
-            .collect_vec();
-
         // Ensure dependencies are satisfied first
-        for module in &module.dependencies {
-            visit(visited, result, module, &backtrace)
+        backtrace.push(item.id().to_string());
+        for module in item.dependencies() {
+            visit(visited, result, module, backtrace)?;
         }
+        backtrace.pop();
 
-        visited.insert(&module.name, VisitedState::Visited);
+        visited.insert(&item.id(), VisitedState::Visited);
 
-        result.push(module);
+        result.push(item);
+
+        Ok(())
     }
 
     let mut result = Vec::new();
     for root in roots {
-        visit(&mut visited, &mut result, root, &[]);
+        visit(&mut visited, &mut result, root, &mut vec![])?;
     }
 
-    result
+    Ok(result)
+}
+
+/// Returns all shader modules in the dependency graph in topological order
+///
+/// # Panics
+///
+/// If the dependency graph contains a cycle
+fn resolve_module_graph<'a>(roots: &[&'a ShaderModule]) -> Vec<&'a ShaderModule> {
+    impl<'a> TopologicalSortable<'a> for ShaderModule {
+        fn dependencies(&self) -> Vec<&Self> {
+            self.dependencies.iter().map(|v| v.as_ref()).collect()
+        }
+
+        fn id(&'a self) -> &'a str {
+            &self.name
+        }
+    }
+
+    topological_sort(roots.iter().copied()).unwrap()
 }
 
 /// Represents a shader and its layout
@@ -289,7 +314,7 @@ impl Shader {
         let _span = tracing::info_span!("Shader::from_modules", ?label).entered();
 
         // The complete dependency graph, in the correct order
-        let modules = resolve_module_graph([module]);
+        let modules = resolve_module_graph(&[module]);
 
         // Resolve all bind groups, resolving the names to an index
         let bind_group_index: BTreeMap<_, _> = bind_group_names
