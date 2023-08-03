@@ -6,7 +6,7 @@ use ambient_core::{
     window::{cursor_position, window_logical_size},
 };
 use ambient_ecs::{components, query, Debuggable, Entity, EntityId, MaybeResource, SystemGroup};
-use ambient_std::shapes::{RayIntersectable, AABB};
+use ambient_native_std::shapes::{RayIntersectable, AABB};
 use glam::Vec2;
 
 pub use ambient_ecs::generated::input::components::{

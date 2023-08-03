@@ -17,6 +17,7 @@ tests = [
     "rendering/transparency",
 
     "games/tictactoe",
+    "games/arkanoid",
 
     "ui/auto_editor",
     "ui/button",

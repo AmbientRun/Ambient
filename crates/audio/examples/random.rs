@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use ambient_audio::{track::Track, AudioStream, Source};
-use ambient_std::time::IntoDuration;
+use ambient_native_std::time::IntoDuration;
 use rand::{seq::SliceRandom, thread_rng};
 
 fn main() -> color_eyre::Result<()> {

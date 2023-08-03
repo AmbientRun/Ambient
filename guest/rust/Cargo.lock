@@ -134,6 +134,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_example_arkanoid"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_api",
+]
+
+[[package]]
 name = "ambient_example_asset_loading"
 version = "0.3.0-dev"
 dependencies = [
@@ -513,6 +520,7 @@ dependencies = [
  "ambient_project",
  "ambient_schema",
  "ambient_shared_types",
+ "ambient_std",
  "anyhow",
  "data-encoding",
  "glam",
@@ -537,6 +545,13 @@ dependencies = [
  "serde",
  "strum",
  "ulid",
+]
+
+[[package]]
+name = "ambient_std"
+version = "0.3.0-dev"
+dependencies = [
+ "itertools",
 ]
 
 [[package]]

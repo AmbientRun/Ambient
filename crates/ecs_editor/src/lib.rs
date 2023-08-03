@@ -4,8 +4,8 @@ use ambient_core::name;
 use ambient_ecs::{query, EntityId, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_layout::{fit_horizontal, max_width, width, Fit};
+use ambient_native_std::{cb, Cb};
 use ambient_renderer::color;
-use ambient_std::{cb, Cb};
 use ambient_ui_native::{
     margin, Borders, Button, ButtonStyle, FlowColumn, FlowRow, Text, TextEditor, UIExt,
     CHEVRON_DOWN, CHEVRON_RIGHT, STREET,
@@ -43,7 +43,7 @@ impl InspectableWorld for InspectableAsyncWorld {
     fn get_entities(
         &self,
         parent: Option<ambient_ecs::EntityId>,
-        callback: ambient_std::Cb<dyn Fn(Vec<InspectedEntity>) + Sync + Send>,
+        callback: ambient_native_std::Cb<dyn Fn(Vec<InspectedEntity>) + Sync + Send>,
         filter: String,
     ) {
         (self.0)(cb(move |world| {

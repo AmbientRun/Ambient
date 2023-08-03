@@ -11,13 +11,13 @@ use ambient_ecs::{
     ArchetypeFilter, ComponentDesc, System, SystemGroup, World, WorldStream, WorldStreamCompEvent,
     WorldStreamFilter,
 };
-use ambient_proxy::client::AllocatedEndpoint;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ServerBaseUrlKey},
     fps_counter::FpsCounter,
     log_result,
 };
+use ambient_proxy::client::AllocatedEndpoint;
 use ambient_sys::time::Instant;
 use anyhow::Context;
 use colored::Colorize;

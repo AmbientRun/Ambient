@@ -1,11 +1,11 @@
 use std::time::Duration;
 
 use ambient_ecs::EntityId;
+use ambient_native_std::shapes::Ray;
 use ambient_shared_types::{
     procedural_storage_handle_definitions, ProceduralMaterialHandle, ProceduralMeshHandle,
     ProceduralSamplerHandle, ProceduralTextureHandle,
 };
-use ambient_std::shapes::Ray;
 use glam::{IVec2, IVec3, IVec4, Mat4, Quat, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4};
 use paste::paste;
 use ulid::Ulid;

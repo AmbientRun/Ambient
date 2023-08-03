@@ -13,7 +13,7 @@ use ambient_gpu::{
     shader_module::{BindGroupDesc, DEPTH_FORMAT},
     texture::{Texture, TextureView},
 };
-use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use glam::{vec3, Mat4, UVec2, Vec3, Vec4};
 use wgpu::{BindGroup, BindGroupLayout, Buffer, Sampler};
 

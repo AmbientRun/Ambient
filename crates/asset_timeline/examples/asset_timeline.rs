@@ -6,7 +6,9 @@ use ambient_cameras::UICamera;
 use ambient_core::{asset_cache, runtime};
 use ambient_ecs::World;
 use ambient_element::{ElementComponentExt, Group};
-use ambient_std::asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt};
+use ambient_native_std::asset_cache::{
+    AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt,
+};
 use ambient_sys::task::JoinHandle;
 use ambient_ui_native::{Button, FocusRoot, WindowSized};
 use async_trait::async_trait;

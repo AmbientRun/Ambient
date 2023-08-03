@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use wgpu::{
     BindGroupLayoutDescriptor, BindGroupLayoutEntry, FilterMode, PipelineLayoutDescriptor,
     ShaderStages, TextureSampleType,

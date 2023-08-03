@@ -12,11 +12,11 @@ use ambient_core::{
 use ambient_ecs::{components, query, Entity, EntityId, FnSystem, SystemGroup};
 use ambient_gpu::gpu::GpuKey;
 use ambient_model::{Model, ModelFromUrl, ModelSpawnOpts, ModelSpawnRoot};
-use ambient_renderer::color;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     log_result,
 };
+use ambient_renderer::color;
 use ambient_terrain::{terrain_cell_version, terrain_state, TerrainState};
 use glam::{vec4, EulerRot, Mat4, Quat, UVec3, Vec3, Vec4};
 use itertools::Itertools;

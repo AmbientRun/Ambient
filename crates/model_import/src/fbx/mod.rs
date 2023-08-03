@@ -11,8 +11,8 @@ use ambient_core::{
 };
 use ambient_ecs::World;
 use ambient_model::{model_skins, Model, ModelSkin};
+use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use ambient_renderer::skinning;
-use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use anyhow::Context;
 use fbxcel::tree::{
     any::AnyTree,

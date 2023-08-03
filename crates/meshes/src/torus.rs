@@ -1,4 +1,4 @@
-use ambient_std::mesh::{generate_tangents, Mesh, MeshBuilder};
+use ambient_native_std::mesh::{generate_tangents, Mesh, MeshBuilder};
 use glam::*;
 use serde::{Deserialize, Serialize};
 

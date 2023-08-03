@@ -7,12 +7,12 @@ use ambient_core::{
 use ambient_ecs::{Entity, EntityId, World};
 use ambient_element::{Element, ElementComponent};
 use ambient_meshes::QuadMeshKey;
+use ambient_native_std::{asset_cache::SyncAssetKeyExt, cb, shapes::AABB};
 use ambient_network::client::ClientState;
 use ambient_renderer::{
     color, double_sided, gpu_primitives_lod, gpu_primitives_mesh, material, primitives,
     renderer_shader, SharedMaterial, StandardShaderKey,
 };
-use ambient_std::{asset_cache::SyncAssetKeyExt, cb, shapes::AABB};
 use glam::{vec2, vec3, vec4, EulerRot, Mat4, Quat, Vec2, Vec3};
 
 use super::grid_material::{GridMaterialKey, GridShaderKey};

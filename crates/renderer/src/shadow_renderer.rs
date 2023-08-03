@@ -9,7 +9,7 @@ use ambient_gpu::{
     shader_module::DEPTH_FORMAT,
     texture::{Texture, TextureView},
 };
-use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use bytemuck::{Pod, Zeroable};
 use glam::{Mat4, Vec3};
 use itertools::Itertools;

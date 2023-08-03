@@ -6,8 +6,8 @@ use std::{io::ErrorKind, pin::Pin};
 use stream::FrameError;
 use tokio::io::{AsyncRead, AsyncWrite};
 
+use ambient_native_std::log_error;
 use ambient_rpc::RpcError;
-use ambient_std::log_error;
 use thiserror::Error;
 
 pub use ambient_ecs::generated::network::components::{

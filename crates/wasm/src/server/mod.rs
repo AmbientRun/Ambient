@@ -2,8 +2,8 @@ use crate::shared::{self, message::RuntimeMessageExt};
 use ambient_ecs::{
     components, generated::messages, query, EntityId, FnSystem, Resource, SystemGroup, World,
 };
+use ambient_native_std::Cb;
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
-use ambient_std::Cb;
 use std::{path::PathBuf, sync::Arc};
 
 mod implementation;

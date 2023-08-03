@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use ambient_editor_derive::ElementEditor;
 use ambient_gpu::{gpu::Gpu, texture::TextureView};
-use ambient_std::include_file;
+use ambient_native_std::include_file;
 use glam::UVec2;
 use serde::{Deserialize, Serialize};
 use wgpu::util::DeviceExt;

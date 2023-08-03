@@ -12,7 +12,7 @@ use anyhow::Context;
 use glam::{Mat4, Vec3, Vec3Swizzles};
 use itertools::{izip, process_results, Itertools};
 
-use ambient_std::shapes::{Ray, Shape, AABB};
+use ambient_native_std::shapes::{Ray, Shape, AABB};
 use ambient_terrain::get_terrain_height;
 use ordered_float::OrderedFloat;
 use physxx::{PxActor, PxQueryFilterData, PxRaycastCallback, PxTransform, PxUserData};

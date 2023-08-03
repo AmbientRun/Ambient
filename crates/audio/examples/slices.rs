@@ -1,7 +1,7 @@
 use ambient_sys::time::Instant;
 
 use ambient_audio::{track::Track, AudioStream, Source};
-use ambient_std::IntoDuration;
+use ambient_native_std::IntoDuration;
 
 fn main() -> color_eyre::Result<()> {
     let stream = AudioStream::new()?;

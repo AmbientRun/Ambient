@@ -10,14 +10,14 @@ use ambient_gpu::{
     texture_loaders::TextureFromUrl,
 };
 use ambient_meshes::QuadMeshKey;
-use ambient_renderer::{
-    color, material, renderer_shader, Material, MaterialShader, RendererConfig, RendererShader,
-    SharedMaterial, StandardShaderKey, MATERIAL_BIND_GROUP,
-};
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     cb, friendly_id,
+};
+use ambient_renderer::{
+    color, material, renderer_shader, Material, MaterialShader, RendererConfig, RendererShader,
+    SharedMaterial, StandardShaderKey, MATERIAL_BIND_GROUP,
 };
 use glam::Vec4;
 use wgpu::BindGroup;

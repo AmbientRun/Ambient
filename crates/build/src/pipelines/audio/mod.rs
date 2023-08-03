@@ -1,5 +1,5 @@
+use ambient_native_std::asset_url::AssetType;
 use ambient_pipeline_types::audio::AudioPipeline;
-use ambient_std::asset_url::AssetType;
 use ambient_world_audio::AudioNode;
 use anyhow::Context;
 use optivorbis::Remuxer;

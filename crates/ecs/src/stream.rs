@@ -64,13 +64,13 @@ impl WorldDiff {
     pub fn apply(
         self,
         world: &mut World,
-        spanwed_extra_data: Entity,
+        spawned_extra_data: Entity,
         create_revert: bool,
     ) -> Option<Self> {
         let revert_changes = self
             .changes
             .into_iter()
-            .map(|change| change.apply(world, &spanwed_extra_data, false, create_revert))
+            .map(|change| change.apply(world, &spawned_extra_data, false, create_revert))
             .collect_vec();
         if create_revert {
             Some(Self {
@@ -106,7 +106,7 @@ impl WorldDiff {
         let spawned = spawned
             .into_iter()
             .map(|id| WorldChange::Spawn(Some(id), filter.read_entity_components(to, id).into()));
-        let despanwed = despawned.into_iter().map(WorldChange::Despawn);
+        let despawned = despawned.into_iter().map(WorldChange::Despawn);
         let updated = in_both.into_iter().flat_map(|id| {
             let from_comps: HashMap<_, _> = filter
                 .get_entity_components(from, id)
@@ -171,7 +171,7 @@ impl WorldDiff {
         });
 
         Self {
-            changes: despanwed.chain(spawned).chain(updated).collect_vec(),
+            changes: despawned.chain(spawned).chain(updated).collect_vec(),
         }
     }
 
@@ -331,14 +331,14 @@ impl WorldChange {
     fn apply(
         self,
         world: &mut World,
-        spanwed_extra_data: &Entity,
+        spawned_extra_data: &Entity,
         panic_on_error: bool,
         create_revert: bool,
     ) -> Option<Self> {
         match self {
             Self::Spawn(id, data) => {
                 if let Some(id) = id {
-                    if !world.spawn_with_id(id, data.with_merge(spanwed_extra_data.clone())) {
+                    if !world.spawn_with_id(id, data.with_merge(spawned_extra_data.clone())) {
                         if panic_on_error {
                             panic!("WorldChange::apply spawn_mirror entity already exists: {id:?}");
                         } else {
@@ -351,7 +351,7 @@ impl WorldChange {
                         return Some(Self::Despawn(id));
                     }
                 } else {
-                    let id = world.spawn(data.with_merge(spanwed_extra_data.clone()));
+                    let id = world.spawn(data.with_merge(spawned_extra_data.clone()));
                     if create_revert {
                         return Some(Self::Despawn(id));
                     }

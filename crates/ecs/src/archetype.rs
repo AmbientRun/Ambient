@@ -1,6 +1,6 @@
 use std::cell::UnsafeCell;
 
-use ambient_std::sparse_vec::SparseVec;
+use ambient_native_std::sparse_vec::SparseVec;
 use atomic_refcell::AtomicRefCell;
 
 use super::*;

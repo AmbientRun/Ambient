@@ -22,18 +22,18 @@ use ambient_gpu::{
 };
 use ambient_layout::{gpu_ui_size, height, mesh_to_local_from_size, width};
 use ambient_meshes::{UIRectMeshKey, UnitQuadMeshKey};
-use ambient_renderer::{
-    gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, Material,
-    MaterialShader, RendererConfig, RendererShader, SharedMaterial, StandardShaderKey,
-    MATERIAL_BIND_GROUP,
-};
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     cb,
     color::Color,
     download_asset::AssetResult,
     friendly_id, include_file,
+};
+use ambient_renderer::{
+    gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, Material,
+    MaterialShader, RendererConfig, RendererShader, SharedMaterial, StandardShaderKey,
+    MATERIAL_BIND_GROUP,
 };
 use async_trait::async_trait;
 use glam::{uvec4, vec4, Quat, UVec3, UVec4, Vec3, Vec4};

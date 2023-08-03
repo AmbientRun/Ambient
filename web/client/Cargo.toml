@@ -17,7 +17,7 @@ crate-type = ["cdylib", "rlib"]
 ambient_sys = { workspace = true }
 ambient_rpc = { workspace = true }
 ambient_core = { workspace = true }
-ambient_std = { workspace = true }
+ambient_native_std = { workspace = true }
 ambient_ecs = { workspace = true }
 ambient_app = { workspace = true }
 ambient_ui_native = { workspace = true }

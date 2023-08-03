@@ -11,6 +11,10 @@ use ambient_ecs::{
     components, dont_store, world_events, ComponentDesc, Entity, Networked, Resource, SystemGroup,
     World, WorldEventsSystem, WorldStreamCompEvent,
 };
+use ambient_native_std::{
+    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, ContentBaseUrlKey, ServerBaseUrlKey},
+};
 use ambient_network::{
     native::server::{Crypto, GameServer},
     persistent_resources,
@@ -19,10 +23,6 @@ use ambient_network::{
 };
 use ambient_prefab::PrefabFromUrl;
 use ambient_project_semantic::{ItemId, Scope, Semantic};
-use ambient_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
-    asset_url::{AbsAssetUrl, ContentBaseUrlKey, ServerBaseUrlKey},
-};
 use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
 use axum::{

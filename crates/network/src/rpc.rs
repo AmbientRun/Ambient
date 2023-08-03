@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use ambient_ecs::{query, Entity, System, WorldDiff};
+use ambient_native_std::friendly_id;
 use ambient_rpc::RpcRegistry;
-use ambient_std::friendly_id;
 use serde::{Deserialize, Serialize};
 
 use crate::{

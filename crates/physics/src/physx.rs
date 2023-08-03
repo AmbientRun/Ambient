@@ -7,7 +7,7 @@ use ambient_core::{
 use ambient_ecs::{
     components, ensure_has_component, query, FnSystem, QueryState, Resource, SystemGroup,
 };
-use ambient_std::asset_cache::SyncAssetKey;
+use ambient_native_std::asset_cache::SyncAssetKey;
 use glam::{EulerRot, Quat, Vec3};
 use parking_lot::Mutex;
 use physxx::{articulation_reduced_coordinate::*, *};
@@ -35,7 +35,7 @@ components!("physics", {
 #[derive(Debug)]
 pub struct PhysicsKey;
 impl SyncAssetKey<Physics> for PhysicsKey {
-    fn load(&self, _assets: ambient_std::asset_cache::AssetCache) -> Physics {
+    fn load(&self, _assets: ambient_native_std::asset_cache::AssetCache) -> Physics {
         Physics::new()
     }
 }

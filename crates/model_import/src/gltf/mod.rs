@@ -13,13 +13,13 @@ use ambient_model::{
     model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model, ModelSkin,
     PbrRenderPrimitiveFromUrl,
 };
-use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::AssetCache,
     asset_url::AbsAssetUrl,
     mesh::{flip_winding, generate_tangents, MeshBuilder},
     shapes::AABB,
 };
+use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
 use anyhow::Context;
 use glam::{uvec4, Mat4, Quat, Vec2, Vec3, Vec4, Vec4Swizzles};
 use gltf::animation::util::ReadOutputs;

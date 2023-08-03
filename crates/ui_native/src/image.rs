@@ -9,16 +9,16 @@ use ambient_gpu::{
     texture_loaders::TextureFromBytes,
 };
 use ambient_meshes::UIRectMeshKey;
+use ambient_native_std::{
+    asset_cache::{AsyncAssetKeyExt, SyncAssetKeyExt},
+    cb, CowStr,
+};
 use ambient_renderer::{
     color, gpu_primitives_lod, gpu_primitives_mesh, material,
     materials::pbr_material::{
         get_pbr_shader_unlit, PbrMaterial, PbrMaterialConfig, PbrMaterialParams,
     },
     primitives, renderer_shader, SharedMaterial,
-};
-use ambient_std::{
-    asset_cache::{AsyncAssetKeyExt, SyncAssetKeyExt},
-    cb, CowStr,
 };
 use glam::*;
 

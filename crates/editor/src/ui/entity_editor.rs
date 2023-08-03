@@ -10,9 +10,9 @@ use ambient_ecs::{
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_intent::client_push_intent;
+use ambient_native_std::{cb, Cb};
 use ambient_network::{client::ClientState, hooks::use_remote_component};
 use ambient_physics::collider::{character_controller_height, character_controller_radius, mass};
-use ambient_std::{cb, Cb};
 use ambient_ui_native::{
     align_horizontal, align_vertical,
     layout::{fit_horizontal, margin, Borders, Fit},

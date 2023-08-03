@@ -8,7 +8,8 @@ use std::{
 use ambient_project::{
     Dependency, Identifier, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
 };
-use ambient_shared_types::{path, primitive_component_definitions};
+use ambient_shared_types::primitive_component_definitions;
+use ambient_std::path;
 use anyhow::Context as AnyhowContext;
 
 mod scope;

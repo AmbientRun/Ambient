@@ -15,7 +15,7 @@ use ambient_ecs::{
 };
 use ambient_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
-use ambient_std::asset_cache::{AssetCache, SyncAssetKey};
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKey};
 pub use paste;
 use serde::{Deserialize, Serialize};
 

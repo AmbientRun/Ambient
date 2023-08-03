@@ -5,8 +5,8 @@ use ambient_ecs::{
     components, query, Debuggable, DynSystem, Entity, EntityId, FnSystem, Resource, SystemGroup,
     World,
 };
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
-use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use collider::{collider_shapes, collider_shapes_convex};
 use glam::{vec3, Mat4};
 use helpers::release_px_scene;

@@ -8,7 +8,7 @@ use ambient_gpu::{
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
 use ambient_meshes::QuadMeshKey;
-use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use ordered_float::OrderedFloat;
 use wgpu::{
     ColorTargetState, CommandEncoder, IndexFormat, RenderPassColorAttachment,

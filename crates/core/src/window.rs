@@ -1,5 +1,5 @@
 use ambient_ecs::{components, Description, Name, Resource, World};
-use ambient_std::math::interpolate;
+use ambient_native_std::math::interpolate;
 use glam::{uvec2, vec2, UVec2, Vec2};
 use winit::window::{CursorGrabMode, CursorIcon, Window};
 

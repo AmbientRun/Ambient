@@ -8,11 +8,11 @@ use ambient_intent::{
     logic::{create_intent, push_intent, redo_intent, undo_head},
     use_old_state, IntentRegistry,
 };
+use ambient_native_std::{asset_cache::AssetCache, friendly_id};
 use ambient_network::{
     proto::server::Player,
     server::{ServerState, SharedServerState, MAIN_INSTANCE_ID},
 };
-use ambient_std::{asset_cache::AssetCache, friendly_id};
 use anyhow::bail;
 use itertools::Itertools;
 use parking_lot::Mutex;

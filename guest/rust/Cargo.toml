@@ -56,6 +56,7 @@ members = [
     "examples/games/music_sequencer",
     "examples/games/pong",
     "examples/games/tictactoe",
+    "examples/games/arkanoid",
     # Test cases
     "testcases/588-prefab-despawn-panic",
 ]

@@ -17,7 +17,7 @@ use ambient_ecs::{
     query, ComponentDesc, Debuggable, EntityId, SystemGroup, World,
 };
 use ambient_model::{animation_binder, ModelFromUrl};
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt},
     asset_url::{AnimationAssetType, TypedAssetUrl},
 };

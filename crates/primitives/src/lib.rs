@@ -11,15 +11,15 @@ use ambient_meshes::{
     CapsuleMesh, CapsuleMeshKey, SphereMeshKey, TorusMesh, TorusMeshKey, UnitCubeMeshKey,
     UnitQuadMeshKey,
 };
+use ambient_native_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    cb,
+    shapes::{Sphere, AABB},
+};
 use ambient_renderer::{
     color, gpu_primitives_lod, gpu_primitives_mesh, material,
     materials::flat_material::{get_flat_shader, FlatMaterialKey},
     primitives, renderer_shader,
-};
-use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt},
-    cb,
-    shapes::{Sphere, AABB},
 };
 use glam::{vec3, Mat4, Quat, Vec3, Vec4};
 

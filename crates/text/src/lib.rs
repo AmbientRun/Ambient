@@ -11,16 +11,16 @@ use ambient_ecs::{
 };
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::Texture};
 use ambient_layout::{height, max_height, max_width, min_height, min_width, width};
-use ambient_renderer::{
-    gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, SharedMaterial,
-};
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     cb,
     download_asset::{AssetResult, BytesFromUrl},
     mesh::*,
     unwrap_log_warn,
+};
+use ambient_renderer::{
+    gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, SharedMaterial,
 };
 use anyhow::Context;
 use async_trait::async_trait;
@@ -527,7 +527,10 @@ pub struct FontFromUrl(AbsAssetUrl);
 
 #[async_trait]
 impl AsyncAssetKey<AssetResult<Arc<FontArc>>> for FontFromUrl {
-    async fn load(self, assets: ambient_std::asset_cache::AssetCache) -> AssetResult<Arc<FontArc>> {
+    async fn load(
+        self,
+        assets: ambient_native_std::asset_cache::AssetCache,
+    ) -> AssetResult<Arc<FontArc>> {
         info!("Downloading font: {}", self.0);
         let data = BytesFromUrl::new(self.0, true).get(&assets).await?;
         let brush = FontArc::try_from_vec(data.deref().clone()).context("Failed to parse font")?;

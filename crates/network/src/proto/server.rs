@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use ambient_core::player::get_by_user_id;
 use ambient_ecs::{FrozenWorldDiff, WorldDiff, WorldStreamFilter};
-use ambient_std::{fps_counter::FpsSample, log_result};
+use ambient_native_std::{fps_counter::FpsSample, log_result};
 use anyhow::Context;
 use bytes::Bytes;
 use futures::{Stream, StreamExt};

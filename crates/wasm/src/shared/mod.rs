@@ -28,7 +28,7 @@ use ambient_ecs::{
 
 pub use ambient_ecs::generated::wasm::components::*;
 
-use ambient_std::{asset_url::AbsAssetUrl, download_asset::download_uncached_bytes};
+use ambient_native_std::{asset_url::AbsAssetUrl, download_asset::download_uncached_bytes};
 use itertools::Itertools;
 #[cfg(feature = "wit")]
 use wasi_cap_std_sync::Dir;

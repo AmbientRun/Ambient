@@ -13,11 +13,11 @@ use derive_more::Display;
 use futures_signals::signal::SignalExt;
 use itertools::Itertools;
 
-use ambient_shared_types::VirtualKeyCode;
-use ambient_std::{
+use ambient_native_std::{
     asset_url::{select_asset, AssetType},
     cb, friendly_id, Cb,
 };
+use ambient_shared_types::VirtualKeyCode;
 use ambient_ui_native::{
     command_modifier,
     layout::{docking, width, Docking},

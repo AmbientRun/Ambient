@@ -4,8 +4,6 @@ pub use crate::winit::*;
 mod procedurals;
 pub use crate::procedurals::*;
 
-pub mod path;
-
 /// A mapping from enum names to Rust types. Instantiate this with a macro that takes `$(($value:ident, $type:ty)),*`.
 #[macro_export]
 macro_rules! primitive_component_definitions {

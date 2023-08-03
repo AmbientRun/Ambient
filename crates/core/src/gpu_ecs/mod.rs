@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use ambient_ecs::{components, ArchetypeId, Resource, System, World};
 use ambient_gpu::{gpu::Gpu, shader_module::ShaderModule, typed_buffer::TypedBuffer};
-use ambient_std::asset_cache::{AssetCache, SyncAssetKey};
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKey};
 use itertools::Itertools;
 use parking_lot::Mutex;
 
@@ -10,7 +10,7 @@ mod component;
 mod sync;
 mod update;
 use ambient_gpu::gpu::GpuKey;
-use ambient_std::asset_cache::SyncAssetKeyExt;
+use ambient_native_std::asset_cache::SyncAssetKeyExt;
 pub use component::*;
 pub use sync::*;
 pub use update::*;

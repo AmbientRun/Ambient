@@ -11,7 +11,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
 ambient_sys = { path = "../sys" , version = "0.3.0-dev" }
-ambient_std = { path = "../std" , version = "0.3.0-dev" }
+ambient_native_std = { path = "../native_std" , version = "0.3.0-dev" }
 ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
 ambient_gpu = { path = "../gpu" , version = "0.3.0-dev" }
 ambient_core = { path = "../core" , version = "0.3.0-dev" }
@@ -57,7 +57,7 @@ env_logger = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 
 [features]
-hotload-includes = ['ambient_std/hotload-includes']
+hotload-includes = ['ambient_native_std/hotload-includes']
 
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]

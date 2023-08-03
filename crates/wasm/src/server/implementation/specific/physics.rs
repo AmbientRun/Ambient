@@ -4,8 +4,8 @@ use crate::shared::{
     conversion::{FromBindgen, IntoBindgen},
     wit,
 };
+use ambient_native_std::shapes::Ray;
 use ambient_physics::physx::character_controller;
-use ambient_std::shapes::Ray;
 use anyhow::Context;
 use physxx::{PxControllerCollisionFlag, PxControllerFilters};
 

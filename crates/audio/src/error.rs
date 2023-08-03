@@ -1,6 +1,6 @@
 use std::{io, path::PathBuf};
 
-use ambient_std::download_asset::AssetError;
+use ambient_native_std::download_asset::AssetError;
 use cpal::{BuildStreamError, PlayStreamError};
 use lewton::VorbisError;
 use thiserror::Error;

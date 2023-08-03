@@ -11,13 +11,13 @@ use ambient_core::{
 };
 use ambient_gpu::texture::Texture;
 use ambient_input::{player_prev_raw_input, player_raw_input};
+use ambient_native_std::mesh::MeshBuilder;
 use ambient_network::client::client_state;
 use ambient_procedurals::{
     new_material_handle, new_mesh_handle, new_sampler_handle, new_texture_handle,
     procedural_storage,
 };
 use ambient_renderer::pbr_material::{PbrMaterialConfig, PbrMaterialParams};
-use ambient_std::mesh::MeshBuilder;
 
 use anyhow::Context;
 use glam::Vec4;
