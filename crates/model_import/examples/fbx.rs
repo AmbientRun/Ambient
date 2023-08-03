@@ -9,8 +9,9 @@ use ambient_element::ElementComponentExt;
 use ambient_gizmos::{gizmos, GizmoPrimitive};
 use ambient_model::bones_to_lines;
 use ambient_model_import::model_crate::ModelCrate;
-use ambient_native_std::{asset_url::AbsAssetUrl, line_uid, math::SphericalCoords};
+use ambient_native_std::{asset_url::AbsAssetUrl, math::SphericalCoords};
 use ambient_primitives::Quad;
+use ambient_std::line_uid;
 use glam::*;
 use std::str::FromStr;
 

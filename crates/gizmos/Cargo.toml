@@ -28,6 +28,7 @@ ambient_profiling = { workspace = true }
 [dev-dependencies]
 ambient_app = { path = "../app" }
 ambient_cameras = { path = "../cameras" }
+ambient_std = { path = "../../shared_crates/std" }
 
 [features]
 hotload-includes = ['ambient_native_std/hotload-includes']

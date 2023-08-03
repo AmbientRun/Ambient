@@ -47,8 +47,11 @@ convert_case = { workspace = true }
 
 [dev-dependencies]
 ambient_app = { path = "../app" }
-ambient_element = { path = "../../shared_crates/element" }
 ambient_gizmos = { path = "../gizmos" }
 ambient_primitives = { path = "../primitives" }
 ambient_cameras = { path = "../cameras" }
+
+ambient_element = { path = "../../shared_crates/element" }
+ambient_std = { path = "../../shared_crates/std" }
+
 winit = { workspace = true }
