@@ -1,7 +1,7 @@
 use ambient_core::{camera::*, transform::*, ui_scene};
 use ambient_ecs::{components, EntityId, Networked, Store, SystemGroup};
 use ambient_element::{element_component, Element, Hooks};
-use ambient_std::shapes::BoundingBox;
+use ambient_native_std::shapes::BoundingBox;
 use glam::{Quat, Vec3};
 use winit::event::Event;
 

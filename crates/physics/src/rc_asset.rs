@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use ambient_std::asset_cache::Asset;
+use ambient_native_std::asset_cache::Asset;
 use physxx::PxReferenceCounted;
 
 /// This is a wrapper for working with physx reference counted objects in the AssetCache.

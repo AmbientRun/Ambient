@@ -8,7 +8,7 @@ use std::{
     },
 };
 
-use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use bytemuck::Pod;
 use byteorder::{ByteOrder, LittleEndian};
 use glam::{uvec2, UVec4, Vec4};

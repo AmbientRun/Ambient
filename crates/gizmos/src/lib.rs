@@ -5,7 +5,7 @@ use glam::{Mat4, Vec2};
 
 pub mod render;
 mod traits;
-use ambient_std::{math::Line, CowStr};
+use ambient_native_std::{math::Line, CowStr};
 use dashmap::{mapref::one::RefMut, DashMap};
 use glam::Vec3;
 pub use traits::*;

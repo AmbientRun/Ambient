@@ -1,8 +1,8 @@
 use ambient_ecs::{
     query, Component, ComponentValue, Entity, EntityId, IndexField, IndexKey, World,
 };
+use ambient_native_std::friendly_id;
 use ambient_network::server::SharedServerState;
-use ambient_std::friendly_id;
 use chrono::Utc;
 
 use crate::{

@@ -8,7 +8,7 @@ use ambient_gpu::{
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo, DEPTH_FORMAT},
     typed_buffer::TypedBuffer,
 };
-use ambient_std::asset_cache::AssetCache;
+use ambient_native_std::asset_cache::AssetCache;
 use glam::{Mat4, UVec4, Vec3};
 use itertools::Itertools;
 use ordered_float::OrderedFloat;

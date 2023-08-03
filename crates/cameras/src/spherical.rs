@@ -1,5 +1,5 @@
 use ambient_ecs::{components, query_mut, Entity, SystemGroup};
-use ambient_std::math::SphericalCoords;
+use ambient_native_std::math::SphericalCoords;
 use derive_more::Display;
 use winit::event::{
     DeviceEvent, ElementState, Event, MouseScrollDelta, VirtualKeyCode, WindowEvent,

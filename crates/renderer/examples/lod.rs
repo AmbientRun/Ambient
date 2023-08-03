@@ -14,15 +14,15 @@ use ambient_core::{
 };
 use ambient_ecs::Entity;
 use ambient_meshes::{SphereMeshKey, UVSphereMesh};
+use ambient_native_std::{
+    asset_cache::SyncAssetKeyExt, cb, color::Color, math::SphericalCoords, shapes::AABB,
+};
 use ambient_renderer::{
     color,
     flat_material::{get_flat_shader, FlatMaterialKey},
     gpu_primitives_lod, gpu_primitives_mesh,
     lod::{gpu_lod, lod_cutoffs, LodCutoffs},
     primitives, RenderPrimitive,
-};
-use ambient_std::{
-    asset_cache::SyncAssetKeyExt, cb, color::Color, math::SphericalCoords, shapes::AABB,
 };
 use glam::*;
 

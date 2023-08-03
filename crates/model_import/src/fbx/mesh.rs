@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use ambient_std::mesh::{generate_tangents, Mesh, MeshBuilder};
+use ambient_native_std::mesh::{generate_tangents, Mesh, MeshBuilder};
 use fbxcel::tree::v7400::NodeHandle;
 use glam::{uvec4, vec2, vec3, vec4, Mat4, Vec2, Vec3};
 use indexmap::IndexMap;

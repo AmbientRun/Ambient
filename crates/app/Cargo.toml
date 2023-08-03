@@ -11,7 +11,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
 ambient_sys = { path = "../sys" , version = "0.3.0-dev" }
-ambient_std = { path = "../std" , version = "0.3.0-dev" }
+ambient_native_std = { path = "../native_std" , version = "0.3.0-dev" }
 ambient_core = { path = "../core" , version = "0.3.0-dev" }
 ambient_gizmos = { path = "../gizmos" , version = "0.3.0-dev" }
 ambient_gpu = { path = "../gpu" , version = "0.3.0-dev" }
@@ -44,7 +44,7 @@ ambient_primitives = { path = "../primitives" }
 [features]
 profile = ["puffin", "puffin_http", "ambient_profiling/profile-with-puffin"]
 hotload-includes = [
-    "ambient_std/hotload-includes",
+    "ambient_native_std/hotload-includes",
     'ambient_gpu/hotload-includes',
     'ambient_renderer/hotload-includes',
     'ambient_gizmos/hotload-includes',

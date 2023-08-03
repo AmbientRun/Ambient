@@ -8,7 +8,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_std = { path = "../std" }
+ambient_native_std = { path = "../native_std" }
 ambient_ecs = { path = "../ecs" }
 ambient_network = { path = "../network" }
 ambient_rpc = { path = "../rpc" }

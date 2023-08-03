@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-use ambient_std::mesh::Mesh;
+use ambient_native_std::mesh::Mesh;
 use glam::*;
 
 use crate::cuboid::CuboidMesh;

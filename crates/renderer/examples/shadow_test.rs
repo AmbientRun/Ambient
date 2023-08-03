@@ -9,9 +9,9 @@ use ambient_core::{
 use ambient_ecs::{query, FnSystem, Resource, World};
 use ambient_element::ElementComponentExt;
 use ambient_gizmos::{gizmos, GizmoPrimitive};
+use ambient_native_std::{line_uid, math::SphericalCoords};
 use ambient_primitives::Cube;
 use ambient_renderer::{cast_shadows, color, RendererConfig};
-use ambient_std::{line_uid, math::SphericalCoords};
 use env_logger::Env;
 use glam::*;
 use winit::event::{ElementState, Event, VirtualKeyCode, WindowEvent};

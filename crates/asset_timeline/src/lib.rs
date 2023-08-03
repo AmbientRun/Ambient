@@ -2,12 +2,12 @@ use std::{collections::HashMap, sync::Arc};
 
 use ambient_core::{asset_cache, transform::translation};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_renderer::color;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetKey, AssetLifetime, AssetTimeline, AssetsTimeline},
     color::Color,
     pretty_duration, to_byte_unit,
 };
+use ambient_renderer::color;
 use ambient_ui_native::{
     docking, fit_horizontal, height, margin, width, Borders, Button, ButtonStyle, Dock, Docking,
     Editor, Fit, FlowColumn, FlowRow, Rectangle, StylesExt, Text, Tooltip, UIBase, UIExt, STREET,

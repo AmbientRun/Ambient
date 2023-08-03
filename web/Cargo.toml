@@ -14,7 +14,7 @@ ambient_sys = { path = "../crates/sys", features = [
     "console_error_panic_hook",
 ] }
 ambient_core = { path = "../crates/core" }
-ambient_std = { path = "../crates/std" }
+ambient_native_std = { path = "../crates/native_std" }
 ambient_ecs = { path = "../crates/ecs" }
 ambient_app = { path = "../crates/app" }
 ambient_ui_native = { path = "../crates/ui_native" }

@@ -7,7 +7,7 @@ use std::{
 };
 
 use ambient_gizmos::{Cuboid, Gizmo, GizmoPrimitive, DEFAULT_RADIUS};
-use ambient_std::{color::Color, shapes::Ray};
+use ambient_native_std::{color::Color, shapes::Ray};
 use bytemuck::{Pod, Zeroable};
 use derive_more::Deref;
 use glam::{vec3, Vec3};

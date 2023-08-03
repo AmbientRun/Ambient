@@ -4,7 +4,7 @@ use ambient_ecs::{
     components, query_mut, Debuggable, EntityId, FramedEventsReader, MaybeResource, Networked,
     Store, System, SystemGroup, World,
 };
-use ambient_std::{
+use ambient_native_std::{
     shapes::{Sphere, AABB},
     sparse_vec::SparseVec,
 };

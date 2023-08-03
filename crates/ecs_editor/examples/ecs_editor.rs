@@ -4,7 +4,7 @@ use ambient_core::async_ecs::async_run;
 use ambient_ecs::World;
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
 use ambient_element::{element_component, Element, ElementComponentExt, Group, Hooks};
-use ambient_std::cb;
+use ambient_native_std::cb;
 use ambient_ui_native::{FocusRoot, ScrollArea, ScrollAreaSizing, WindowSized};
 use std::sync::Arc;
 

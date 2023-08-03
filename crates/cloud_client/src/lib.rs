@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context};
 
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
-use ambient_std::download_asset::ReqwestClientKey;
+use ambient_native_std::download_asset::ReqwestClientKey;
 use ambient_sys::task::wasm_nonsend;
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]

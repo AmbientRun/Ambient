@@ -1,7 +1,7 @@
 use ambient_app::{App, AppBuilder};
 use ambient_core::{camera::active_camera, main_scene};
 use ambient_gizmos::{gizmos, GizmoPrimitive};
-use ambient_std::{line_uid, math::SphericalCoords};
+use ambient_native_std::{line_uid, math::SphericalCoords};
 use glam::*;
 
 async fn init(app: &mut App) {

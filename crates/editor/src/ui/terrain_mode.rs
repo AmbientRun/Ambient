@@ -13,6 +13,10 @@ use ambient_gpu::{
     shader_module::{BindGroupDesc, ShaderModule},
 };
 use ambient_intent::client_push_intent;
+use ambient_native_std::{
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
+    cb, friendly_id,
+};
 use ambient_network::client::ClientState;
 use ambient_physics::{
     intersection::{rpc_pick, RaycastFilter},
@@ -23,10 +27,6 @@ use ambient_renderer::{
     color, material, renderer_shader, Material, MaterialShader, SharedMaterial, MATERIAL_BIND_GROUP,
 };
 use ambient_shared_types::{MouseButton, VirtualKeyCode};
-use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
-    cb, friendly_id,
-};
 use ambient_terrain::{
     brushes::{
         Brush, BrushShape, BrushSize, BrushSmoothness, BrushStrength, HydraulicErosionConfig,

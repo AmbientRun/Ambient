@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use ambient_ecs::{
     Archetype, ArchetypeFilter, Component, ComponentDesc, ComponentValue, EntityId, System, World,
 };
-use ambient_std::sparse_vec::SparseVec;
+use ambient_native_std::sparse_vec::SparseVec;
 use itertools::Itertools;
 
 use super::{gpu_world, GpuComponentFormat, GpuComponentId};

@@ -83,11 +83,11 @@ pub fn find_child_with_name_ending(
 fn dump_world_hierarchy_to_tmp_file(world: &World) {
     use std::{fs::File, path::PathBuf};
 
-    use ambient_std::asset_cache::SyncAssetKeyExt;
+    use ambient_native_std::asset_cache::SyncAssetKeyExt;
 
     let cache_dir = world
         .resource_opt(crate::asset_cache())
-        .map(|a| ambient_std::download_asset::AssetsCacheDir.get(a))
+        .map(|a| ambient_native_std::download_asset::AssetsCacheDir.get(a))
         .unwrap_or(PathBuf::from("tmp"));
     std::fs::create_dir_all(&cache_dir).ok();
     let path = cache_dir.join("hierarchy.yml");

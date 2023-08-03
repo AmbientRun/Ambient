@@ -7,11 +7,11 @@ use ambient_core::{
 };
 use ambient_element::{Element, ElementComponent, ElementComponentExt};
 use ambient_gpu::{self, mesh_buffer::MeshBufferKey};
+use ambient_native_std::{asset_cache::SyncAssetKeyExt, cb, mesh::MeshBuilder};
 use ambient_renderer::{
     color, flat_material::get_flat_shader_unlit, gpu_primitives_lod, gpu_primitives_mesh, material,
     materials::flat_material::FlatMaterial, primitives, renderer_shader, SharedMaterial,
 };
-use ambient_std::{asset_cache::SyncAssetKeyExt, cb, mesh::MeshBuilder};
 use glam::{vec2, vec3, Quat, Vec2, Vec3, Vec4};
 use itertools::Itertools;
 

@@ -2,11 +2,11 @@ use ambient_core::{name, selectable, tags};
 use ambient_ecs::{query, EntityId};
 use ambient_ecs_editor::{ECSEditor, InspectableAsyncWorld};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_native_std::{cb, Cb};
 use ambient_network::{
     client::{client_state, ClientState},
     is_remote_entity,
 };
-use ambient_std::{cb, Cb};
 use ambient_ui_native::{
     fit_horizontal, space_between_items, Button, ButtonStyle, DialogScreen, Fit, FlowColumn,
     FlowRow, ScrollArea, ScrollAreaSizing, STREET,

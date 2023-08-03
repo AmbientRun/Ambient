@@ -2,13 +2,13 @@ use std::{f32::consts::PI, path::PathBuf, sync::Arc};
 
 use ambient_animation::AnimationOutputs;
 use ambient_core::{bounding::local_bounding_aabb, transform::translation};
-use ambient_pipeline_types::models::{MaterialFilter, ModelTextureSize, ModelTransform};
-use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     download_asset::AssetsCacheDir,
 };
+use ambient_pipeline_types::models::{MaterialFilter, ModelTextureSize, ModelTransform};
+use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
 use anyhow::{anyhow, Context};
 use async_recursion::async_recursion;
 use futures::FutureExt;

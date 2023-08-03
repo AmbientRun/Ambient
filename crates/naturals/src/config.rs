@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use ambient_editor_derive::ElementEditor;
 use ambient_model::Model;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::AsyncAssetKeyExt,
     asset_url::{AssetUrlCollection, PrefabAssetType},
     download_asset::AssetError,

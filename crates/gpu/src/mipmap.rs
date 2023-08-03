@@ -1,4 +1,4 @@
-use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 
 use crate::gpu::Gpu;
 

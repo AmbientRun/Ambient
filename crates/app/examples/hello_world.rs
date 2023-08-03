@@ -5,9 +5,9 @@ use ambient_core::{
     transform::{scale, translation},
 };
 use ambient_element::ElementComponentExt;
+use ambient_native_std::math::SphericalCoords;
 use ambient_primitives::{Cube, Quad};
 use ambient_renderer::{cast_shadows, color, outline};
-use ambient_std::math::SphericalCoords;
 use glam::{vec3, vec4, Vec3, Vec4};
 
 async fn init(app: &mut App) {

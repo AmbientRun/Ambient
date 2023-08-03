@@ -18,7 +18,7 @@ use ambient_gpu::{
     shader_module::BindGroupDesc,
 };
 use ambient_gpu::{mesh_buffer::MeshBufferKey, settings::SettingsKey};
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     color::Color,
 };

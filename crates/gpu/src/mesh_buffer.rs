@@ -7,7 +7,7 @@ use std::{
     },
 };
 
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     download_asset::{AssetResult, MeshFromUrl},

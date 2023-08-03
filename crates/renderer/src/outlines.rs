@@ -12,7 +12,7 @@ use ambient_gpu::{
     shader_module::{BindGroupDesc, GraphicsPipeline, GraphicsPipelineInfo, Shader},
     texture::Texture,
 };
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     include_file,
 };

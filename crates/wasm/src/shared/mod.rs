@@ -26,7 +26,7 @@ use ambient_ecs::{
     Message, SystemGroup, World, WorldEventReader,
 };
 
-use ambient_std::{asset_url::AbsAssetUrl, download_asset::download_uncached_bytes};
+use ambient_native_std::{asset_url::AbsAssetUrl, download_asset::download_uncached_bytes};
 use itertools::Itertools;
 #[cfg(feature = "wit")]
 use wasi_cap_std_sync::Dir;

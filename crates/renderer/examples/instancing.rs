@@ -1,9 +1,9 @@
 use ambient_app::{App, AppBuilder};
 use ambient_core::{camera::active_camera, main_scene, transform::*};
 use ambient_element::ElementComponentExt;
+use ambient_native_std::math::SphericalCoords;
 use ambient_primitives::Cube;
 use ambient_renderer::{cast_shadows, color};
-use ambient_std::math::SphericalCoords;
 use glam::*;
 
 async fn init(app: &mut App) {

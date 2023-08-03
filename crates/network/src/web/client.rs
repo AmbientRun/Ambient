@@ -2,13 +2,13 @@ use ambient_app::{world_instance_resources, AppResources};
 use ambient_core::{asset_cache, gpu, RuntimeKey};
 use ambient_ecs::{world_events, Entity, SystemGroup};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_renderer::RenderTarget;
-use ambient_rpc::RpcRegistry;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     download_asset::ReqwestClientKey,
     Cb,
 };
+use ambient_renderer::RenderTarget;
+use ambient_rpc::RpcRegistry;
 use ambient_sys::{task::RuntimeHandle, time::sleep};
 use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Throbber};
 use anyhow::Context;

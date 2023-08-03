@@ -9,12 +9,12 @@ use ambient_core::{
 };
 use ambient_ecs::{Entity, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_native_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_network::{
     client::{client_network_stats, GameClientRenderTarget},
     hooks::use_remote_resource,
     native::client::{ClientView, ResolvedAddr},
 };
-use ambient_std::{asset_cache::AssetCache, cb, friendly_id};
 use ambient_sys::time::Instant;
 use ambient_ui_native::{Dock, FocusRoot, WindowSized};
 use glam::uvec2;

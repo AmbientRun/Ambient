@@ -38,7 +38,7 @@ ambient_wasm = { path = "../crates/wasm", features = [
     "wit",
     "physics",
 ] }
-ambient_std = { path = "../crates/std" }
+ambient_native_std = { path = "../crates/native_std" }
 ambient_ui_native = { path = "../crates/ui_native" }
 ambient_world_audio = { path = "../crates/world_audio" }
 ambient_sky = { path = "../crates/sky" }

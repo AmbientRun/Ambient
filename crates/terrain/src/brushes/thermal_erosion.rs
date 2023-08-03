@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use ambient_gpu::{gpu::Gpu, texture::TextureView};
-use ambient_std::include_file;
+use ambient_native_std::include_file;
 use glam::{IVec2, UVec2, Vec2};
 use serde::{Deserialize, Serialize};
 use wgpu::util::DeviceExt;

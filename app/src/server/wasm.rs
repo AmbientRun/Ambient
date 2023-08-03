@@ -1,8 +1,8 @@
 use std::{collections::HashMap, sync::Arc};
 
 use ambient_ecs::{EntityId, SystemGroup, World};
+use ambient_native_std::{asset_url::AbsAssetUrl, Cb};
 use ambient_project::Identifier;
-use ambient_std::{asset_url::AbsAssetUrl, Cb};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{module_name, remote_paired_id, spawn_module, MessageType};
 use anyhow::Context;

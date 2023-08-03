@@ -29,12 +29,12 @@ use ambient_gpu::{
     mesh_buffer::MeshBufferKey,
     settings::SettingsKey,
 };
-use ambient_procedurals::{procedural_storage, ProceduralStorage};
-use ambient_renderer::lod::lod_system;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     fps_counter::{FpsCounter, FpsSample},
 };
+use ambient_procedurals::{procedural_storage, ProceduralStorage};
+use ambient_renderer::lod::lod_system;
 use ambient_sys::task::RuntimeHandle;
 use glam::{uvec2, vec2, UVec2, Vec2};
 use parking_lot::Mutex;

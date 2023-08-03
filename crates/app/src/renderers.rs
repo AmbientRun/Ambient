@@ -9,8 +9,8 @@ use ambient_gpu::{
     shader_module::DEPTH_FORMAT,
     texture::{Texture, TextureView},
 };
+use ambient_native_std::{asset_cache::SyncAssetKeyExt, color::Color};
 use ambient_renderer::{renderer_stats, RenderTarget, Renderer, RendererConfig, RendererTarget};
-use ambient_std::{asset_cache::SyncAssetKeyExt, color::Color};
 use ambient_ui_native::app_background_color;
 use glam::{uvec2, UVec2};
 use parking_lot::Mutex;

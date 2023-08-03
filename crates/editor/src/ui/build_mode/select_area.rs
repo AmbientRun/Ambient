@@ -6,8 +6,8 @@ use ambient_core::{
 };
 use ambient_ecs::generated::messages;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_native_std::{color::Color, math::interpolate};
 use ambient_network::{client::ClientState, log_network_result};
-use ambient_std::{color::Color, math::interpolate};
 use ambient_ui_native::{
     layout::{height, width},
     UIBase, UIExt,

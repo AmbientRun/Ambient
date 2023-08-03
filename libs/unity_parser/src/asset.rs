@@ -1,4 +1,4 @@
-use ambient_std::mesh::{Mesh, MeshBuilder};
+use ambient_native_std::mesh::{Mesh, MeshBuilder};
 use anyhow::bail;
 use glam::{vec2, vec3};
 use itertools::Itertools;

@@ -12,11 +12,11 @@ use ambient_core::{
 use ambient_ecs::{query, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_gizmos::{gizmos, GizmoPrimitive};
+use ambient_native_std::{asset_cache::AssetCache, color::Color, line_uid, Cb};
 use ambient_network::{client::ClientState, server::RpcArgs as ServerRpcArgs};
 use ambient_renderer::{RenderTarget, Renderer};
 use ambient_rpc::RpcRegistry;
 use ambient_shared_types::{ModifiersState, VirtualKeyCode};
-use ambient_std::{asset_cache::AssetCache, color::Color, line_uid, Cb};
 use ambient_ui_native::{
     fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit,
     FlowColumn, FlowRow, Image, UIExt,
@@ -48,9 +48,12 @@ fn dump_to_user(_assets: &AssetCache, _label: &'static str, s: String) {
     }
     #[cfg(not(target_os = "unknown"))]
     {
-        let rt = ambient_std::asset_cache::SyncAssetKeyExt::get(&ambient_core::RuntimeKey, _assets);
-        let cache_dir = ambient_std::asset_cache::SyncAssetKeyExt::get(
-            &ambient_std::download_asset::AssetsCacheDir,
+        let rt = ambient_native_std::asset_cache::SyncAssetKeyExt::get(
+            &ambient_core::RuntimeKey,
+            _assets,
+        );
+        let cache_dir = ambient_native_std::asset_cache::SyncAssetKeyExt::get(
+            &ambient_native_std::download_asset::AssetsCacheDir,
             _assets,
         );
 

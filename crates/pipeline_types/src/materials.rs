@@ -1,5 +1,5 @@
 use ambient_gpu::sampler::SamplerKey;
-use ambient_std::asset_url::{AbsAssetUrl, AssetUrl};
+use ambient_native_std::asset_url::{AbsAssetUrl, AssetUrl};
 use glam::Vec4;
 use serde::{Deserialize, Serialize};
 

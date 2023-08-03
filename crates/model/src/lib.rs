@@ -14,6 +14,14 @@ use ambient_ecs::{
     Store, SystemGroup, World,
 };
 use ambient_gpu::mesh_buffer::GpuMeshFromUrl;
+use ambient_native_std::{
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
+    asset_url::{AbsAssetUrl, AssetUrl, ModelAssetType, TypedAssetUrl},
+    cb,
+    download_asset::{AssetError, BytesFromUrl},
+    log_result,
+    math::Line,
+};
 use ambient_renderer::{
     color, gpu_primitives_lod, gpu_primitives_mesh,
     materials::{
@@ -22,14 +30,6 @@ use ambient_renderer::{
     },
     pbr_material::PbrMaterialFromUrl,
     primitives, RenderPrimitive, StandardShaderKey,
-};
-use ambient_std::{
-    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
-    asset_url::{AbsAssetUrl, AssetUrl, ModelAssetType, TypedAssetUrl},
-    cb,
-    download_asset::{AssetError, BytesFromUrl},
-    log_result,
-    math::Line,
 };
 use async_trait::async_trait;
 use futures::StreamExt;

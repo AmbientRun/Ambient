@@ -4,7 +4,7 @@ use std::{borrow::Cow, f32::consts::PI};
 
 use ambient_editor_derive::ElementEditor;
 use ambient_gpu::{gpu::Gpu, texture::TextureView};
-use ambient_std::include_file;
+use ambient_native_std::include_file;
 use glam::{ivec2, vec2, IVec2, IVec3, UVec2, Vec2};
 use itertools::Itertools;
 use rand::prelude::*;

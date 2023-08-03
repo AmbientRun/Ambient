@@ -1,4 +1,4 @@
-use ambient_std::asset_cache::SyncAssetKey;
+use ambient_native_std::asset_cache::SyncAssetKey;
 use anyhow::{bail, Context, Result};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
@@ -99,7 +99,7 @@ impl Settings {
 pub struct SettingsKey;
 
 impl SyncAssetKey<Settings> for SettingsKey {
-    fn load(&self, _assets: ambient_std::asset_cache::AssetCache) -> Settings {
+    fn load(&self, _assets: ambient_native_std::asset_cache::AssetCache) -> Settings {
         #[cfg(target_os = "unknown")]
         {
             Settings {

@@ -1,12 +1,12 @@
 use std::{path::PathBuf, str::FromStr};
 
 use ambient_core::window::ExitStatus;
-use ambient_network::native::client::ResolvedAddr;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ContentBaseUrlKey},
     download_asset::{AssetsCacheOnDisk, ReqwestClientKey},
 };
+use ambient_network::native::client::ResolvedAddr;
 use clap::Parser;
 
 mod cli;
@@ -42,7 +42,7 @@ fn setup_logging() -> anyhow::Result<()> {
                 "ambient_gpu",
                 "ambient_model",
                 "ambient_physics",
-                "ambient_std",
+                "ambient_native_std",
                 "cranelift_codegen",
                 "naga",
                 "tracing",
@@ -142,7 +142,7 @@ impl ProjectPath {
         let path = if path.is_absolute() {
             path
         } else {
-            ambient_std::path::normalize(&current_dir.join(path))
+            ambient_native_std::path::normalize(&current_dir.join(path))
         };
 
         if path.exists() && !path.is_dir() {

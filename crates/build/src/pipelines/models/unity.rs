@@ -13,13 +13,13 @@ use ambient_model_import::{
     model_crate::{cap_texture_size, ModelCrate},
     ModelImportPipeline, ModelImportTransform, RelativePathBufExt,
 };
+use ambient_native_std::{
+    asset_cache::AssetCache,
+    asset_url::{AbsAssetUrl, AssetType, ModelCrateAssetType, TypedAssetUrl},
+};
 use ambient_renderer::{
     lod::{gpu_lod, lod_cutoffs, LodCutoffs},
     materials::pbr_material::PbrMaterialDesc,
-};
-use ambient_std::{
-    asset_cache::AssetCache,
-    asset_url::{AbsAssetUrl, AssetType, ModelCrateAssetType, TypedAssetUrl},
 };
 use ambient_unity_parser as unity_parser;
 use anyhow::Context;

@@ -1,4 +1,4 @@
-use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
+use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use relative_path::RelativePathBuf;
 #[cfg(feature = "russimp")]
 use russimp::{
@@ -143,7 +143,7 @@ fn import_sync(
     use ambient_core::transform::{local_to_parent, local_to_world, rotation, scale, translation};
     use ambient_ecs::{Entity, EntityId, World};
     use ambient_model::{pbr_renderer_primitives_from_url, Model, PbrRenderPrimitiveFromUrl};
-    use ambient_std::mesh::MeshBuilder;
+    use ambient_native_std::mesh::MeshBuilder;
     use glam::*;
     use itertools::Itertools;
     use std::{cell::RefCell, rc::Rc};

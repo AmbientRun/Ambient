@@ -97,7 +97,7 @@ fn copy_files(guest_path: &Path, files: &[File], working_dir: &Path) {
     let target_wit_dir = guest_path.join("api").join("wit");
 
     for file in files {
-        let target_path = ambient_std::path::normalize(
+        let target_path = ambient_native_std::path::normalize(
             &working_dir.join(target_wit_dir.join(&file.relative_path)),
         );
 

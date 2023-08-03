@@ -4,7 +4,7 @@ use std::{
     iter::Flatten,
 };
 
-use ambient_std::sparse_vec::SparseVec;
+use ambient_native_std::sparse_vec::SparseVec;
 use itertools::Itertools;
 use serde::{
     de::{self, DeserializeSeed, MapAccess, Visitor},

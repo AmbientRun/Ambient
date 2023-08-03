@@ -1,7 +1,7 @@
 use crate::shared::{self, message::RuntimeMessageExt};
 use ambient_ecs::{components, query, EntityId, FnSystem, Resource, SystemGroup, World};
+use ambient_native_std::{asset_url::AbsAssetUrl, Cb};
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
-use ambient_std::{asset_url::AbsAssetUrl, Cb};
 use std::sync::Arc;
 
 mod implementation;

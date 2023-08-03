@@ -6,12 +6,12 @@ use ambient_gpu::{
     std_assets::{DefaultNormalMapViewKey, PixelTextureViewKey},
 };
 use ambient_meshes::{CubeMeshKey, SphereMeshKey};
+use ambient_native_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, math::SphericalCoords};
 use ambient_renderer::{
     color, gpu_primitives_lod, gpu_primitives_mesh,
     materials::pbr_material::{get_pbr_shader, PbrMaterial, PbrMaterialConfig, PbrMaterialParams},
     primitives, RenderPrimitive, SharedMaterial,
 };
-use ambient_std::{asset_cache::SyncAssetKeyExt, cb, color::Color, math::SphericalCoords};
 use ambient_sys::time::Instant;
 use glam::*;
 
