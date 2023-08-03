@@ -12,11 +12,12 @@ use ambient_core::{
 use ambient_ecs::{query, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_gizmos::{gizmos, GizmoPrimitive};
-use ambient_native_std::{asset_cache::AssetCache, color::Color, line_uid, Cb};
+use ambient_native_std::{asset_cache::AssetCache, color::Color, Cb};
 use ambient_network::{client::ClientState, server::RpcArgs as ServerRpcArgs};
 use ambient_renderer::{RenderTarget, Renderer};
 use ambient_rpc::RpcRegistry;
 use ambient_shared_types::{ModifiersState, VirtualKeyCode};
+use ambient_std::line_uid;
 use ambient_ui_native::{
     fit_horizontal, height, space_between_items, width, Button, ButtonStyle, Dropdown, Fit,
     FlowColumn, FlowRow, Image, UIExt,

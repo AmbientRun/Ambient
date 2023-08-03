@@ -142,7 +142,7 @@ impl ProjectPath {
         let path = if path.is_absolute() {
             path
         } else {
-            ambient_native_std::path::normalize(&current_dir.join(path))
+            ambient_std::path::normalize(&current_dir.join(path))
         };
 
         if path.exists() && !path.is_dir() {

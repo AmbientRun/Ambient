@@ -24,6 +24,7 @@ ambient_wasm = { path = "../wasm" }
 ambient_pipeline_types = { path = "../pipeline_types" }
 
 ambient_project = { path = "../../shared_crates/project" }
+ambient_std = { path = "../../shared_crates/std" }
 
 ambient_unity_parser = { path = "../../libs/unity_parser" }
 

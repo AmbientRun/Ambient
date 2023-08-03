@@ -1,0 +1,11 @@
+[package]
+name = "ambient_std"
+edition = "2021"
+description = "Ambient standard library extensions"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AmbientRun/Ambient"
+rust-version = { workspace = true }
+version = { workspace = true }
+
+[dependencies]
+itertools = { workspace = true }

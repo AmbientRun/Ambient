@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use anyhow::Context;
 use openssl::hash::MessageDigest;
 use tokio::process::Command;
@@ -27,6 +25,7 @@ pub async fn open() -> anyhow::Result<()> {
     Ok(())
 }
 
+#[allow(unused_variables)]
 async fn open_browser(spki: &str, url: &str) -> anyhow::Result<()> {
     cfg_if::cfg_if! {
         if #[cfg(target_os = "macos")] {
