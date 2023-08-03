@@ -1,0 +1,7 @@
+[ember]
+id = "dependency_cycle"
+name = "dependency-cycle"
+version = "0.0.1"
+
+[dependencies]
+child = { path = "child" }

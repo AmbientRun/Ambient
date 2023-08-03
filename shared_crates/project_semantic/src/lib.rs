@@ -1,5 +1,6 @@
 use std::{
     cell::Ref,
+    collections::HashSet,
     fmt::Debug,
     path::{Path, PathBuf},
 };
@@ -7,7 +8,7 @@ use std::{
 use ambient_project::{
     Dependency, Identifier, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
 };
-use ambient_shared_types::primitive_component_definitions;
+use ambient_shared_types::{path, primitive_component_definitions};
 use anyhow::Context as AnyhowContext;
 
 mod scope;
@@ -56,7 +57,7 @@ impl FileProvider for DiskFileProvider {
     }
 
     fn full_path(&self, path: &Path) -> PathBuf {
-        self.0.join(path)
+        path::normalize(&self.0.join(path))
     }
 }
 
@@ -102,7 +103,7 @@ impl FileProvider for ProxyFileProvider<'_> {
     }
 
     fn full_path(&self, path: &Path) -> PathBuf {
-        ambient_shared_types::path::normalize(&self.provider.full_path(&self.base.join(path)))
+        path::normalize(&self.provider.full_path(&self.base.join(path)))
     }
 }
 
@@ -121,32 +122,43 @@ impl Semantic {
         })
     }
 
-    pub fn add_file_at_non_toplevel(
+    pub fn add_file(
         &mut self,
-        parent_scope: ItemId<Scope>,
         filename: &Path,
         file_provider: &dyn FileProvider,
         source: ItemSource,
+        scope_name: Option<SnakeCaseIdentifier>,
     ) -> anyhow::Result<ItemId<Scope>> {
-        let manifest = Manifest::parse(&file_provider.get(filename).with_context(|| {
-            format!(
-                "failed to read file {:?} within parent scope {parent_scope:?}",
-                file_provider.get(filename)
-            )
-        })?)
-        .with_context(|| format!("failed to parse toml for {:?}", file_provider.get(filename)))?;
-
-        let id = manifest.ember.id.clone();
-        self.add_scope_from_manifest(
-            Some(parent_scope),
+        self.add_file_internal(
+            filename,
             file_provider,
-            manifest,
-            file_provider.full_path(filename),
-            id,
+            &mut HashSet::new(),
             source,
+            scope_name,
         )
     }
 
+    pub fn resolve(&mut self) -> anyhow::Result<()> {
+        let root_scopes = self
+            .items
+            .get(self.root_scope_id)?
+            .scopes
+            .values()
+            .copied()
+            .collect::<Vec<_>>();
+
+        for scope_id in root_scopes {
+            self.items
+                .resolve_clone(scope_id, &Context::new(self.root_scope_id))?;
+        }
+        Ok(())
+    }
+
+    pub fn root_scope(&self) -> Ref<'_, Scope> {
+        self.items.get(self.root_scope_id).unwrap()
+    }
+}
+impl Semantic {
     // TODO(philpax): This merges scopes together, which may lead to some degree of semantic conflation,
     // especially with dependencies: a parent may be able to access a child's dependencies.
     //
@@ -165,10 +177,11 @@ impl Semantic {
     //   a change occurs to C, there should be absolutely no impact on P if P does not depend on C.
     //
     // At the present, there's just one big island, so P can see C, and changes to C will affect P.
-    pub fn add_file(
+    fn add_file_internal(
         &mut self,
         filename: &Path,
         file_provider: &dyn FileProvider,
+        visited_files: &mut HashSet<PathBuf>,
         source: ItemSource,
         scope_name: Option<SnakeCaseIdentifier>,
     ) -> anyhow::Result<ItemId<Scope>> {
@@ -206,6 +219,7 @@ impl Semantic {
         let item_id = self.add_scope_from_manifest(
             Some(root_id),
             file_provider,
+            visited_files,
             manifest,
             manifest_path,
             scope_name.clone(),
@@ -218,32 +232,40 @@ impl Semantic {
         Ok(item_id)
     }
 
-    pub fn resolve(&mut self) -> anyhow::Result<()> {
-        let root_scopes = self
-            .items
-            .get(self.root_scope_id)?
-            .scopes
-            .values()
-            .copied()
-            .collect::<Vec<_>>();
+    fn add_file_at_non_toplevel(
+        &mut self,
+        parent_scope: ItemId<Scope>,
+        filename: &Path,
+        file_provider: &dyn FileProvider,
+        visited_files: &mut HashSet<PathBuf>,
+        source: ItemSource,
+    ) -> anyhow::Result<ItemId<Scope>> {
+        let manifest = Manifest::parse(&file_provider.get(filename).with_context(|| {
+            format!(
+                "failed to read file {:?} within parent scope {parent_scope:?}",
+                file_provider.get(filename)
+            )
+        })?)
+        .with_context(|| format!("failed to parse toml for {:?}", file_provider.get(filename)))?;
 
-        for scope_id in root_scopes {
-            self.items
-                .resolve_clone(scope_id, &Context::new(self.root_scope_id))?;
-        }
-        Ok(())
+        let id = manifest.ember.id.clone();
+        self.add_scope_from_manifest(
+            Some(parent_scope),
+            file_provider,
+            visited_files,
+            manifest,
+            file_provider.full_path(filename),
+            id,
+            source,
+        )
     }
 
-    pub fn root_scope(&self) -> Ref<'_, Scope> {
-        self.items.get(self.root_scope_id).unwrap()
-    }
-}
-impl Semantic {
     #[allow(clippy::too_many_arguments)]
     fn add_scope_from_manifest(
         &mut self,
         parent_id: Option<ItemId<Scope>>,
         file_provider: &dyn FileProvider,
+        visited_files: &mut HashSet<PathBuf>,
         manifest: Manifest,
         manifest_path: PathBuf,
         id: SnakeCaseIdentifier,
@@ -261,9 +283,19 @@ impl Semantic {
         );
         let scope_id = self.items.add(scope);
 
+        let full_path = file_provider.full_path(&manifest_path);
+        if !visited_files.insert(full_path.clone()) {
+            anyhow::bail!("circular dependency detected at {manifest_path:?}; previously visited files: {visited_files:?}");
+        }
+
         for include in &manifest.ember.includes {
-            let child_scope_id =
-                self.add_file_at_non_toplevel(scope_id, include, file_provider, source)?;
+            let child_scope_id = self.add_file_at_non_toplevel(
+                scope_id,
+                include,
+                file_provider,
+                visited_files,
+                source,
+            )?;
             let id = self.items.get(child_scope_id)?.data().id.clone();
             self.items
                 .get_mut(scope_id)?
@@ -282,17 +314,16 @@ impl Semantic {
 
                     let ambient_toml = Path::new("ambient.toml");
                     let new_scope_id = self
-                        .add_file(
+                        .add_file_internal(
                             ambient_toml,
                             &file_provider,
+                            visited_files,
                             source,
                             Some(dependency_name.clone()),
                         )
                         .with_context(|| {
                             format!(
-                            "failed to add dependency `{dependency_name}` ({:?}) for manifest {:?}",
-                            file_provider.full_path(ambient_toml),
-                            manifest_path
+                            "failed to add dependency `{dependency_name}` ({full_path:?}) for manifest {manifest_path:?}"
                         )
                         })?;
 
@@ -358,6 +389,8 @@ impl Semantic {
                 .types
                 .insert(segment.clone(), enum_id);
         }
+
+        visited_files.remove(&full_path);
 
         Ok(scope_id)
     }
