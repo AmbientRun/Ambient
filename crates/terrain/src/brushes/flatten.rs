@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use ambient_gpu::{gpu::Gpu, texture::TextureView, wgsl_utils::wgsl_interpolate};
-use ambient_std::include_file;
+use ambient_native_std::include_file;
 use glam::{UVec2, Vec2};
 use wgpu::{
     util::DeviceExt, BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType,

@@ -13,10 +13,10 @@ use ambient_ecs::{
     components, dont_store, query, ArchetypeFilter, Entity, EntityId, FrameEvent, FrozenWorldDiff,
     Networked, Resource, System, SystemGroup, World, WorldStream, WorldStreamFilter,
 };
-use ambient_rpc::RpcRegistry;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::AssetCache, asset_url::AbsAssetUrl, fps_counter::FpsSample, log_result,
 };
+use ambient_rpc::RpcRegistry;
 use ambient_sys::time::Instant;
 use bytes::Bytes;
 use flume::Sender;

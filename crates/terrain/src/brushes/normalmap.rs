@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use ambient_gpu::{gpu::Gpu, texture::TextureView};
-use ambient_std::include_file;
+use ambient_native_std::include_file;
 use glam::UVec2;
 
 use crate::wgsl_terrain_preprocess;

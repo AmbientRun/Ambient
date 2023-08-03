@@ -1,4 +1,4 @@
-use ambient_std::mesh::{generate_tangents, Mesh, MeshBuilder};
+use ambient_native_std::mesh::{generate_tangents, Mesh, MeshBuilder};
 use glam::{vec2, vec3, Vec3, Vec4};
 
 pub struct CuboidMesh {

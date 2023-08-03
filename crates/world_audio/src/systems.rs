@@ -13,7 +13,7 @@ use ambient_core::{
 use ambient_ecs::{
     children, generated::components::core::audio::*, parent, query, SystemGroup, World,
 };
-use ambient_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl};
+use ambient_native_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl};
 use glam::{vec4, Mat4};
 use parking_lot::Mutex;
 use std::str::FromStr;

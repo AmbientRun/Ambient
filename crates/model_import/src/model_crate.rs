@@ -14,6 +14,13 @@ use ambient_model::{
     model_from_url, model_skin_ix, model_skins, pbr_renderer_primitives_from_url, Model,
     PbrRenderPrimitiveFromUrl,
 };
+use ambient_native_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    asset_url::AbsAssetUrl,
+    download_asset::AssetsCacheDir,
+    mesh::Mesh,
+    shapes::AABB,
+};
 use ambient_physics::{
     collider::{
         character_controller_height, character_controller_radius, collider, ColliderDef,
@@ -26,13 +33,6 @@ use ambient_renderer::{
     double_sided,
     lod::{gpu_lod, lod_cutoffs, LodCutoffs},
     materials::pbr_material::PbrMaterialDesc,
-};
-use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt},
-    asset_url::AbsAssetUrl,
-    download_asset::AssetsCacheDir,
-    mesh::Mesh,
-    shapes::AABB,
 };
 use anyhow::Context;
 use futures::FutureExt;

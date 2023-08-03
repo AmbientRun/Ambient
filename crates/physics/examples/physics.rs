@@ -5,12 +5,12 @@ use ambient_core::{
 };
 use ambient_ecs::{FnSystem, World};
 use ambient_element::ElementComponentExt;
+use ambient_native_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};
 use ambient_physics::physx::{
     physics_controlled, rigid_dynamic, rigid_static, sync_ecs_physics, PhysicsKey,
 };
 use ambient_primitives::{Cube, Quad};
 use ambient_renderer::color;
-use ambient_std::{asset_cache::SyncAssetKeyExt, math::SphericalCoords};
 use glam::*;
 use physxx::*;
 use rand::random;

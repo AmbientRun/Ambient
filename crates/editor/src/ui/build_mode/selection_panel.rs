@@ -1,6 +1,6 @@
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
+use ambient_native_std::Cb;
 use ambient_network::{client::ClientState, log_network_result};
-use ambient_std::Cb;
 use ambient_ui_native::{
     layout::{fit_horizontal, fit_vertical, space_between_items, Fit},
     Button, FlowColumn, Text, UIExt, STREET,

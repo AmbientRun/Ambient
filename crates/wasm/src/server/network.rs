@@ -1,12 +1,12 @@
 use ambient_core::{async_ecs::async_run, runtime};
 use ambient_ecs::World;
+use ambient_native_std::asset_cache::AssetCache;
 use ambient_network::{
     log_network_result,
     server::{bi_stream_handlers, datagram_handlers, uni_stream_handlers, SharedServerState},
     unwrap_log_network_err, DynRecv, DynSend, WASM_BISTREAM_ID, WASM_DATAGRAM_ID,
     WASM_UNISTREAM_ID,
 };
-use ambient_std::asset_cache::AssetCache;
 
 use anyhow::Context;
 use bytes::Bytes;

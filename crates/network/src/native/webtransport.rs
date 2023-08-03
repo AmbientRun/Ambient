@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ambient_ecs::WorldStreamFilter;
-use ambient_std::asset_url::AbsAssetUrl;
+use ambient_native_std::asset_url::AbsAssetUrl;
 use anyhow::Context;
 use bytes::Bytes;
 use futures::{SinkExt, StreamExt};

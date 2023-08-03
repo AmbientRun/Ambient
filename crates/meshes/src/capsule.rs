@@ -2,7 +2,7 @@
 //
 // https://github.com/bevyengine/bevy/blob/695d30bd54af2978dc99f214dda34b568348cf86/crates/bevy_render/src/mesh/shape/capsule.rs
 
-use ambient_std::mesh::{generate_tangents, Mesh, MeshBuilder};
+use ambient_native_std::mesh::{generate_tangents, Mesh, MeshBuilder};
 use glam::*;
 use serde::{Deserialize, Serialize};
 

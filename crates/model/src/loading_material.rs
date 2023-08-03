@@ -4,12 +4,12 @@ use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
 };
-use ambient_renderer::{
-    Material, MaterialShader, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP,
-};
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     friendly_id, include_file,
+};
+use ambient_renderer::{
+    Material, MaterialShader, RendererShader, SharedMaterial, MATERIAL_BIND_GROUP,
 };
 use wgpu::{util::DeviceExt, BindGroup};
 

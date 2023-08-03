@@ -10,7 +10,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_std = { path = "../std", version = "0.3.0-dev" }
+ambient_native_std = { path = "../native_std", version = "0.3.0-dev" }
 ambient_core = { path = "../core", version = "0.3.0-dev" }
 ambient_ecs = { path = "../ecs", version = "0.3.0-dev" }
 ambient_gpu = { path = "../gpu", version = "0.3.0-dev" }
@@ -47,8 +47,11 @@ convert_case = { workspace = true }
 
 [dev-dependencies]
 ambient_app = { path = "../app" }
-ambient_element = { path = "../../shared_crates/element" }
 ambient_gizmos = { path = "../gizmos" }
 ambient_primitives = { path = "../primitives" }
 ambient_cameras = { path = "../cameras" }
+
+ambient_element = { path = "../../shared_crates/element" }
+ambient_std = { path = "../../shared_crates/std" }
+
 winit = { workspace = true }

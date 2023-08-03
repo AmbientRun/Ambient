@@ -7,7 +7,7 @@ use ambient_gpu::{
     texture_loaders::TextureFromUrl,
     wgsl_utils::wgsl_interpolate,
 };
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     include_file,

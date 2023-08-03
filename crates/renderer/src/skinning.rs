@@ -13,7 +13,7 @@ use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     typed_buffer::TypedBuffer,
 };
-use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use glam::{vec4, Mat4};
 use itertools::Itertools;
 use parking_lot::Mutex;

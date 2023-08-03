@@ -1,7 +1,7 @@
 use ambient_ecs::{
     components, query, query_mut, Component, ECSError, Entity, EntityId, SystemGroup, World,
 };
-use ambient_std::{
+use ambient_native_std::{
     math::Line,
     shapes::{BoundingBox, Plane, Ray, AABB},
 };

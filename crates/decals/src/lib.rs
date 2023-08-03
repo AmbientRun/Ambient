@@ -13,17 +13,17 @@ use ambient_ecs::generated::components::core::rendering::decal_from_url;
 use ambient_ecs::{components, query, Entity, MakeDefault, Networked, Store, SystemGroup};
 use ambient_gpu::shader_module::{Shader, ShaderModule};
 use ambient_meshes::UnitCubeMeshKey;
+use ambient_native_std::{
+    asset_url::{AbsAssetUrl, MaterialAssetType, TypedAssetUrl},
+    cb, include_file,
+    shapes::AABB,
+    unwrap_log_warn,
+};
 use ambient_renderer::{
     color, get_forward_modules, gpu_primitives_lod, gpu_primitives_mesh, material,
     pbr_material::{PbrMaterialFromUrl, PbrMaterialShaderKey},
     primitives, renderer_shader, MaterialShader, RendererShader, GLOBALS_BIND_GROUP,
     MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP,
-};
-use ambient_std::{
-    asset_url::{AbsAssetUrl, MaterialAssetType, TypedAssetUrl},
-    cb, include_file,
-    shapes::AABB,
-    unwrap_log_warn,
 };
 use glam::{Vec3, Vec4};
 

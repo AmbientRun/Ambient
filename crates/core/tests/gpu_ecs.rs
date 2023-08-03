@@ -17,7 +17,7 @@ use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     gpu_run::GpuRun,
 };
-use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use glam::{vec4, Vec4};
 use parking_lot::Mutex;
 use tokio::runtime::Runtime;

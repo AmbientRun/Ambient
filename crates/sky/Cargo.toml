@@ -11,7 +11,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
 ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
-ambient_std = { path = "../std" , version = "0.3.0-dev" }
+ambient_native_std = { path = "../native_std" , version = "0.3.0-dev" }
 ambient_core = { path = "../core" , version = "0.3.0-dev" }
 ambient_gpu = { path = "../gpu" , version = "0.3.0-dev" }
 ambient_gizmos = { path = "../gizmos" , version = "0.3.0-dev" }
@@ -30,4 +30,4 @@ ambient_cameras = { path = "../cameras" }
 tokio = { workspace = true }
 
 [features]
-hotload-includes = ['ambient_std/hotload-includes']
+hotload-includes = ['ambient_native_std/hotload-includes']

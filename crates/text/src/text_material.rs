@@ -6,13 +6,13 @@ use ambient_gpu::{
     shader_module::{BindGroupDesc, ShaderModule},
     texture::TextureView,
 };
+use ambient_native_std::{
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
+    friendly_id, include_file,
+};
 use ambient_renderer::{
     Material, MaterialShader, RendererConfig, RendererShader, StandardShaderKey,
     MATERIAL_BIND_GROUP,
-};
-use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
-    friendly_id, include_file,
 };
 use wgpu::BindGroup;
 

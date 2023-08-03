@@ -10,7 +10,7 @@ edition = "2021"
 [dependencies]
 ambient_sys = { path = "../sys" }
 ambient_app = { path = "../app" }
-ambient_std = { path = "../std" }
+ambient_native_std = { path = "../native_std" }
 ambient_ecs = { path = "../ecs" }
 ambient_gpu = { path = "../gpu" }
 ambient_core = { path = "../core" }
@@ -44,4 +44,4 @@ flume = { workspace = true }
 tracing = { workspace = true }
 
 [features]
-hotload-includes = ['ambient_std/hotload-includes']
+hotload-includes = ['ambient_native_std/hotload-includes']

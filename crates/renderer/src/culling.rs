@@ -13,7 +13,7 @@ use ambient_gpu::{
     shader_module::{BindGroupDesc, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
 };
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     include_file,
     shapes::Plane,

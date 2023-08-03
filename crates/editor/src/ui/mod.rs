@@ -10,6 +10,7 @@ use ambient_element::{
     element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks, Setter,
 };
 use ambient_intent::{rpc_redo, rpc_undo_head, IntentHistoryVisualizer};
+use ambient_native_std::{cb, color::Color, Cb};
 use ambient_naturals::{get_default_natural_layers, natural_layers, NaturalsPreset};
 use ambient_network::{
     client::ClientState,
@@ -21,7 +22,6 @@ use ambient_network::{
 };
 use ambient_physics::make_physics_static;
 use ambient_shared_types::{ModifiersState, VirtualKeyCode};
-use ambient_std::{cb, color::Color, Cb};
 use ambient_terrain::{
     brushes::{
         Brush, BrushShape, BrushSize, BrushSmoothness, BrushStrength, HydraulicErosionConfig,

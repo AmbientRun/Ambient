@@ -3,7 +3,7 @@ use ambient_cameras::UICamera;
 use ambient_core::{asset_cache, runtime};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
 use ambient_gpu::std_assets::PixelTextureViewKey;
-use ambient_std::{asset_cache::SyncAssetKeyExt, color::Color};
+use ambient_native_std::{asset_cache::SyncAssetKeyExt, color::Color};
 use ambient_ui_native::{FlowColumn, Image, Text, UIExt};
 
 #[derive(Debug, Clone)]
@@ -19,7 +19,7 @@ impl ElementComponent for Example {
         hooks.use_memo_with((), move |_, _| {
             runtime.spawn(async move {
                 log::info!("Spawning task");
-                use ambient_std::IntoDuration;
+                use ambient_native_std::IntoDuration;
                 tokio::time::sleep(5.secs()).await;
                 set_k(5.0)
             });

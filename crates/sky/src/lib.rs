@@ -12,8 +12,8 @@ use ambient_gpu::{
     typed_buffer::TypedBuffer,
 };
 use ambient_meshes::QuadMeshKey;
+use ambient_native_std::{asset_cache::*, cb, friendly_id, include_file};
 use ambient_renderer::{self, *};
-use ambient_std::{asset_cache::*, cb, friendly_id, include_file};
 use glam::*;
 use noise::OpenSimplex;
 use wgpu::{BindGroup, BufferUsages};

@@ -1,5 +1,5 @@
 [package]
-name = "ambient_std"
+name = "ambient_native_std"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"

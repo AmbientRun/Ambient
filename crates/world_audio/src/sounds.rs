@@ -7,7 +7,7 @@ use ambient_audio::{
 };
 use ambient_ecs::{components, query, EntityId, Resource, World};
 use ambient_element::ElementComponentExt;
-use ambient_std::{asset_url::AbsAssetUrl, cb, Cb};
+use ambient_native_std::{asset_url::AbsAssetUrl, cb, Cb};
 use ambient_ui_native::{
     graph::{Graph, GraphStyle},
     Editor, FlowColumn,

@@ -1,8 +1,8 @@
 use std::{collections::HashSet, sync::Arc};
 
 use ambient_asset_cache::SyncAssetKey;
+use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use ambient_pipeline_types::{models::ModelsPipeline, Pipeline, PipelineProcessor, PipelinesFile};
-use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use anyhow::Context;
 use context::PipelineCtx;
 use futures::{

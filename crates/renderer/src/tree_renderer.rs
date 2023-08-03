@@ -12,7 +12,7 @@ use ambient_gpu::{
     settings::RenderMode,
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
-use ambient_std::asset_cache::AssetCache;
+use ambient_native_std::asset_cache::AssetCache;
 use bytemuck::Zeroable;
 use glam::UVec4;
 use itertools::Itertools;

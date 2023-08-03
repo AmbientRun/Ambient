@@ -3,7 +3,7 @@ use ambient_ecs::{components, query, SystemGroup};
 use ambient_intent::{
     intent_applied, intent_reverted, intent_timestamp, use_old_state, IntentRegistry,
 };
-use ambient_std::asset_cache::AsyncAssetKeyExt;
+use ambient_native_std::asset_cache::AsyncAssetKeyExt;
 use itertools::Itertools;
 
 use crate::brushes::{TerrainBrushKey, TerrainBrushStroke};

@@ -8,7 +8,7 @@ pub mod uvsphere;
 use std::sync::Arc;
 
 use ambient_gpu::{gpu::GpuKey, mesh_buffer::GpuMesh};
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     mesh::{generate_tangents, Mesh, MeshBuilder},
 };

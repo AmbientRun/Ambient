@@ -12,8 +12,8 @@ use ambient_core::{
 use ambient_ecs::{components, query, Entity, FrameEvent, System, SystemGroup, World};
 use ambient_gizmos::render::GizmoRenderer;
 use ambient_gpu::gpu::Gpu;
+use ambient_native_std::{asset_cache::AssetCache, color::Color, math::interpolate, shapes::Ray};
 use ambient_renderer::{RenderTarget, Renderer, RendererConfig, RendererTarget};
-use ambient_std::{asset_cache::AssetCache, color::Color, math::interpolate, shapes::Ray};
 use ambient_world_audio::systems::{setup_audio, spatial_audio_systems};
 use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
 

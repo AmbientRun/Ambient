@@ -4,8 +4,8 @@ use ambient_app::gpu;
 use ambient_core::{asset_cache, frame_index, map_seed};
 use ambient_ecs::{EntityId, World};
 use ambient_gpu::{gpu::GpuKey, std_assets::PixelTextureViewKey, texture::Texture};
+use ambient_native_std::asset_cache::{AssetCache, AsyncAssetKey, SyncAssetKeyExt};
 use ambient_network::ServerWorldExt;
-use ambient_std::asset_cache::{AssetCache, AsyncAssetKey, SyncAssetKeyExt};
 use glam::{ivec2, IVec2, UVec2, Vec2, Vec3, Vec3Swizzles};
 use serde::{Deserialize, Serialize};
 

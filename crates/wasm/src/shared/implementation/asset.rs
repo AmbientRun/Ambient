@@ -1,6 +1,6 @@
 use ambient_core::asset_cache;
 use ambient_ecs::World;
-use ambient_std::asset_url::{AbsAssetUrl, ParseError};
+use ambient_native_std::asset_url::{AbsAssetUrl, ParseError};
 
 use crate::shared::wit;
 

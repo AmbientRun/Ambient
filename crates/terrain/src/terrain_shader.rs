@@ -13,15 +13,15 @@ use ambient_gpu::{
     texture::{Texture, TextureView},
     texture_loaders::TextureArrayFromUrls,
 };
-use ambient_renderer::{
-    materials::pbr_material::PbrMaterialDesc, Material, RendererShader, GLOBALS_BIND_GROUP,
-    MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP,
-};
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, MaterialAssetType, TypedAssetUrl},
     download_asset::{AssetError, JsonFromUrl},
     friendly_id, include_file,
+};
+use ambient_renderer::{
+    materials::pbr_material::PbrMaterialDesc, Material, RendererShader, GLOBALS_BIND_GROUP,
+    MATERIAL_BIND_GROUP, PRIMITIVES_BIND_GROUP,
 };
 use futures::future::join_all;
 use glam::{UVec2, Vec3};

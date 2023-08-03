@@ -12,9 +12,9 @@ use ambient_core::{
     transform::{scale, translation},
 };
 use ambient_element::ElementComponentExt;
+use ambient_native_std::math::SphericalCoords;
 use ambient_primitives::Cube;
 use ambient_renderer::{cast_shadows, color};
-use ambient_std::math::SphericalCoords;
 use ambient_ui_native::World;
 use ambient_world_audio::{
     audio_emitter, audio_listener, audio_mixer, play_sound_on_entity, systems::setup_audio,

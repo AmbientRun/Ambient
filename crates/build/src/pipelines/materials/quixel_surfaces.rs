@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
 use ambient_model_import::{dotdot_path, model_crate::ModelCrate};
-use ambient_pipeline_types::materials::{MaterialsPipeline, QuixelSurfaceDef};
-use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::AssetCache,
     asset_url::{AbsAssetUrl, AssetType},
 };
+use ambient_pipeline_types::materials::{MaterialsPipeline, QuixelSurfaceDef};
+use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
 use convert_case::{Case, Casing};
 use futures::future::join_all;
 use itertools::Itertools;
