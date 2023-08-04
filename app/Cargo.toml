@@ -57,7 +57,6 @@ tracing-stackdriver = { workspace = true, optional = true }
 tracing-subscriber = { workspace = true, optional = true }
 tracing-log = { workspace = true, optional = true }
 time = { workspace = true }
-
 anyhow = { workspace = true }
 bincode = { workspace = true }
 byteorder = { workspace = true }
