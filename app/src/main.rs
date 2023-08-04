@@ -277,6 +277,7 @@ async fn main() -> anyhow::Result<()> {
                         )
                         .context("failed to import models")?;
                     } else if ext == "jpg" || ext == "png" || ext == "gif" || ext == "webp" {
+                        // TODO: import textures API may change, so this is just a placeholder
                         todo!();
                     } else {
                         eprintln!("Unsupported file type");
