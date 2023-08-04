@@ -6,7 +6,8 @@ use std::{
 };
 
 use ambient_project::{
-    Dependency, Identifier, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
+    activate_identifier_bans, Dependency, Identifier, Manifest, PascalCaseIdentifier,
+    SnakeCaseIdentifier,
 };
 use ambient_shared_types::primitive_component_definitions;
 use ambient_std::path;
@@ -112,15 +113,28 @@ impl FileProvider for ProxyFileProvider<'_> {
 pub struct Semantic {
     pub items: ItemMap,
     pub root_scope_id: ItemId<Scope>,
+    pub standard_definitions: StandardDefinitions,
 }
 impl Semantic {
     pub fn new() -> anyhow::Result<Self> {
         let mut items = ItemMap::default();
-        let root_scope_id = create_root_scope(&mut items)?;
-        Ok(Self {
+        let (root_scope_id, standard_definitions) = create_root_scope(&mut items)?;
+        let mut semantic = Self {
             items,
             root_scope_id,
-        })
+            standard_definitions,
+        };
+
+        semantic.add_file(
+            Path::new("ambient.toml"),
+            &ArrayFileProvider::from_schema(),
+            ItemSource::Ambient,
+            None,
+        )?;
+
+        activate_identifier_bans();
+
+        Ok(semantic)
     }
 
     pub fn add_file(
@@ -138,6 +152,14 @@ impl Semantic {
             scope_name,
         )
     }
+    pub fn add_ember(&mut self, ember_path: &Path) -> anyhow::Result<ItemId<Scope>> {
+        self.add_file(
+            Path::new("ambient.toml"),
+            &DiskFileProvider(ember_path.to_owned()),
+            ItemSource::User,
+            None,
+        )
+    }
 
     pub fn resolve(&mut self) -> anyhow::Result<()> {
         let root_scopes = self
@@ -149,8 +171,11 @@ impl Semantic {
             .collect::<Vec<_>>();
 
         for scope_id in root_scopes {
-            self.items
-                .resolve_clone(scope_id, &Context::new(self.root_scope_id))?;
+            self.items.resolve_clone(
+                &Context::new(self.root_scope_id),
+                &self.standard_definitions,
+                scope_id,
+            )?;
         }
         Ok(())
     }
@@ -396,28 +421,23 @@ impl Semantic {
         Ok(scope_id)
     }
 }
-// public helpers
-impl Semantic {
-    pub fn add_ambient_schema(&mut self) -> anyhow::Result<ItemId<Scope>> {
-        self.add_file(
-            Path::new("ambient.toml"),
-            &ArrayFileProvider::from_schema(),
-            ItemSource::Ambient,
-            None,
-        )
-    }
 
-    pub fn add_ember(&mut self, ember_path: &Path) -> anyhow::Result<ItemId<Scope>> {
-        self.add_file(
-            Path::new("ambient.toml"),
-            &DiskFileProvider(ember_path.to_owned()),
-            ItemSource::User,
-            None,
-        )
-    }
+#[derive(Clone, PartialEq, Debug)]
+pub struct StandardDefinitions {
+    pub attributes: StandardAttributes,
 }
 
-fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
+#[derive(Clone, PartialEq, Debug)]
+pub struct StandardAttributes {
+    pub debuggable: ItemId<Attribute>,
+    pub networked: ItemId<Attribute>,
+    pub resource: ItemId<Attribute>,
+    pub maybe_resource: ItemId<Attribute>,
+    pub store: ItemId<Attribute>,
+    pub enum_: ItemId<Attribute>,
+}
+
+fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<(ItemId<Scope>, StandardDefinitions)> {
     macro_rules! define_primitive_types {
         ($(($value:ident, $_type:ty)),*) => {
             [
@@ -454,14 +474,11 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
         items.get_mut(root_scope)?.types.insert(id, item_id);
     }
 
-    for name in [
-        "Debuggable",
-        "Networked",
-        "Resource",
-        "MaybeResource",
-        "Store",
-        "Enum",
-    ] {
+    fn make_attribute(
+        items: &mut ItemMap,
+        root_scope: ItemId<Scope>,
+        name: &str,
+    ) -> anyhow::Result<ItemId<Attribute>> {
         let id = PascalCaseIdentifier::new(name)
             .map_err(anyhow::Error::msg)
             .context("standard value was not valid snake-case")?;
@@ -473,7 +490,18 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<ItemId<Scope>> {
             },
         });
         items.get_mut(root_scope)?.attributes.insert(id, item_id);
+        Ok(item_id)
     }
 
-    Ok(root_scope)
+    let attributes = StandardAttributes {
+        debuggable: make_attribute(items, root_scope, "Debuggable")?,
+        networked: make_attribute(items, root_scope, "Networked")?,
+        resource: make_attribute(items, root_scope, "Resource")?,
+        maybe_resource: make_attribute(items, root_scope, "MaybeResource")?,
+        store: make_attribute(items, root_scope, "Store")?,
+        enum_: make_attribute(items, root_scope, "Enum")?,
+    };
+
+    let standard_definitions = StandardDefinitions { attributes };
+    Ok((root_scope, standard_definitions))
 }

@@ -3,6 +3,7 @@ use indexmap::IndexMap;
 
 use crate::{
     Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, PrimitiveType, Resolve,
+    StandardDefinitions,
 };
 
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -91,8 +92,9 @@ impl Resolve for Type {
     fn resolve(
         &mut self,
         _items: &ItemMap,
-        _self_id: ItemId<Self>,
         _context: &Context,
+        _definitions: &StandardDefinitions,
+        _self_id: ItemId<Self>,
     ) -> anyhow::Result<()> {
         Ok(())
     }

@@ -3,7 +3,7 @@ use anyhow::Context as AnyhowContext;
 
 use crate::{
     Attribute, Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
-    ResolvableValue, Resolve, Type,
+    ResolvableValue, Resolve, StandardDefinitions, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -46,8 +46,9 @@ impl Resolve for Component {
     fn resolve(
         &mut self,
         items: &ItemMap,
-        _self_id: ItemId<Self>,
         context: &Context,
+        definitions: &StandardDefinitions,
+        _self_id: ItemId<Self>,
     ) -> anyhow::Result<()> {
         let type_id = match &self.type_ {
             ResolvableItemId::Unresolved(ty) => {
@@ -82,9 +83,7 @@ impl Resolve for Component {
 
         // If this is an enum, emit the `Enum` attribute
         if items.get(type_id)?.inner.as_enum().is_some() {
-            attributes.push(ResolvableItemId::Resolved(
-                context.get_attribute_id(items, ItemPathBuf::new("Enum").unwrap().as_path())?,
-            ));
+            attributes.push(ResolvableItemId::Resolved(definitions.attributes.enum_));
         }
         self.attributes = attributes;
 

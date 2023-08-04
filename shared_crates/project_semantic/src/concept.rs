@@ -4,7 +4,7 @@ use indexmap::IndexMap;
 
 use crate::{
     Component, Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, ResolvableItemId,
-    ResolvableValue, Resolve,
+    ResolvableValue, Resolve, StandardDefinitions,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -46,8 +46,9 @@ impl Resolve for Concept {
     fn resolve(
         &mut self,
         items: &ItemMap,
-        _self_id: ItemId<Self>,
         context: &Context,
+        definitions: &StandardDefinitions,
+        _self_id: ItemId<Self>,
     ) -> anyhow::Result<()> {
         let mut extends = vec![];
         for extend in &self.extends {
@@ -82,7 +83,7 @@ impl Resolve for Concept {
                 ResolvableItemId::Resolved(id) => *id,
             };
             let component_type = {
-                let component = items.resolve(component_id, context)?;
+                let component = items.resolve(context, definitions, component_id)?;
                 component.type_.as_resolved().with_context(|| {
                     format!(
                         "Failed to get type for component `{}` for concept `{}`",

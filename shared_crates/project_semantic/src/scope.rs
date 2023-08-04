@@ -8,7 +8,7 @@ use indexmap::IndexMap;
 
 use crate::{
     Attribute, Component, Concept, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, Message,
-    Resolve, ResolveClone, Type,
+    Resolve, ResolveClone, StandardDefinitions, Type,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -190,16 +190,18 @@ impl ResolveClone for Scope {
     fn resolve_clone(
         self,
         items: &mut ItemMap,
-        self_id: ItemId<Self>,
         context: &Context,
+        definitions: &StandardDefinitions,
+        self_id: ItemId<Self>,
     ) -> anyhow::Result<Self> {
         fn resolve<T: Resolve, U>(
-            item_ids: &IndexMap<U, ItemId<T>>,
             items: &ItemMap,
             context: &Context,
+            definitions: &StandardDefinitions,
+            item_ids: &IndexMap<U, ItemId<T>>,
         ) -> anyhow::Result<()> {
             for id in item_ids.values().copied() {
-                items.resolve(id, context)?;
+                items.resolve(context, definitions, id)?;
             }
 
             Ok(())
@@ -209,13 +211,13 @@ impl ResolveClone for Scope {
         context.push(self_id);
 
         for id in self.scopes.values() {
-            items.resolve_clone(*id, &context)?;
+            items.resolve_clone(&context, definitions, *id)?;
         }
-        resolve(&self.components, items, &context)?;
-        resolve(&self.concepts, items, &context)?;
-        resolve(&self.messages, items, &context)?;
-        resolve(&self.types, items, &context)?;
-        resolve(&self.attributes, items, &context)?;
+        resolve(items, &context, definitions, &self.components)?;
+        resolve(items, &context, definitions, &self.concepts)?;
+        resolve(items, &context, definitions, &self.messages)?;
+        resolve(items, &context, definitions, &self.types)?;
+        resolve(items, &context, definitions, &self.attributes)?;
 
         Ok(self)
     }

@@ -1,7 +1,9 @@
 use ambient_project::{Identifier, PascalCaseIdentifier, SnakeCaseIdentifier};
 use ulid::Ulid;
 
-use crate::{Attribute, Component, Concept, Context, Message, Scope, Type, TypeInner};
+use crate::{
+    Attribute, Component, Concept, Context, Message, Scope, StandardDefinitions, Type, TypeInner,
+};
 use anyhow::Context as AnyhowContext;
 use std::{
     cell::{Ref, RefCell, RefMut},
@@ -95,22 +97,24 @@ impl ItemMap {
     /// Resolve the item with the given id in-place, and return a mutable reference to it.
     pub(crate) fn resolve<T: Resolve>(
         &self,
-        id: ItemId<T>,
         context: &Context,
+        definitions: &StandardDefinitions,
+        id: ItemId<T>,
     ) -> anyhow::Result<RefMut<T>> {
         let mut item = self.get_mut(id)?;
-        item.resolve(self, id, context)?;
+        item.resolve(self, context, definitions, id)?;
         Ok(item)
     }
 
     /// Resolve the item with the given id by cloning it, avoiding borrowing issues.
     pub(crate) fn resolve_clone<T: ResolveClone>(
         &mut self,
-        id: ItemId<T>,
         context: &Context,
+        definitions: &StandardDefinitions,
+        id: ItemId<T>,
     ) -> anyhow::Result<()> {
         let item = self.get(id)?.clone();
-        let new_item = item.resolve_clone(self, id, context)?;
+        let new_item = item.resolve_clone(self, context, definitions, id)?;
         self.insert(id, new_item);
         Ok(())
     }
@@ -345,8 +349,9 @@ pub(crate) trait Resolve: Item {
     fn resolve(
         &mut self,
         items: &ItemMap,
-        self_id: ItemId<Self>,
         context: &Context,
+        definitions: &StandardDefinitions,
+        self_id: ItemId<Self>,
     ) -> anyhow::Result<()>;
 }
 
@@ -355,8 +360,9 @@ pub(crate) trait ResolveClone: Item {
     fn resolve_clone(
         self,
         items: &mut ItemMap,
-        self_id: ItemId<Self>,
         context: &Context,
+        definitions: &StandardDefinitions,
+        self_id: ItemId<Self>,
     ) -> anyhow::Result<Self>;
 }
 

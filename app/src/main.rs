@@ -233,7 +233,6 @@ async fn main() -> anyhow::Result<()> {
 
     // If a project was specified, prepare its semantic state
     let mut semantic = ambient_project_semantic::Semantic::new()?;
-    semantic.add_ambient_schema()?;
     let primary_ember_scope_id = match project {
         Some(_) => {
             let path = project_path

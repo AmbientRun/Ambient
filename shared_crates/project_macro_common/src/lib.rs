@@ -27,7 +27,6 @@ pub fn generate_code(
     generate_from_scope_path: Option<&str>,
 ) -> anyhow::Result<TokenStream> {
     let mut semantic = Semantic::new()?;
-    semantic.add_ambient_schema()?;
 
     if let Some(manifest) = manifest {
         match manifest {

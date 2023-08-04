@@ -1,6 +1,8 @@
 use ambient_project::ItemPathBuf;
 
-use crate::{Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, Resolve};
+use crate::{
+    Context, Item, ItemData, ItemId, ItemMap, ItemType, ItemValue, Resolve, StandardDefinitions,
+};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Attribute {
@@ -36,8 +38,9 @@ impl Resolve for Attribute {
     fn resolve(
         &mut self,
         _items: &ItemMap,
-        _self_id: ItemId<Self>,
         _context: &Context,
+        _definitions: &StandardDefinitions,
+        _self_id: ItemId<Self>,
     ) -> anyhow::Result<()> {
         Ok(())
     }

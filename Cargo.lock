@@ -1227,6 +1227,7 @@ dependencies = [
  "anyhow",
  "convert_case 0.6.0",
  "indexmap 2.0.0",
+ "once_cell",
  "paste",
  "proc-macro2 1.0.64",
  "quote 1.0.28",
