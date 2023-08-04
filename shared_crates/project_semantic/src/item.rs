@@ -1,4 +1,5 @@
 use ambient_project::{Identifier, PascalCaseIdentifier, SnakeCaseIdentifier};
+use ambient_std::topological_sort::{topological_sort, TopologicalSortable};
 use ulid::Ulid;
 
 use crate::{
@@ -7,7 +8,7 @@ use crate::{
 use anyhow::Context as AnyhowContext;
 use std::{
     cell::{Ref, RefCell, RefMut},
-    collections::{HashMap, HashSet},
+    collections::HashMap,
     fmt::{self, Debug, Display},
     marker::PhantomData,
     path::PathBuf,
@@ -257,32 +258,19 @@ impl ItemMap {
         )
     }
 
-    /// Returns a semi-topological sort of `id` and its dependencies.
-    ///
-    /// Not actually topological yet.
+    /// Returns a topological sort of `id` and its dependencies.
     pub fn scope_and_dependencies(&self, id: ItemId<Scope>) -> Vec<ItemId<Scope>> {
-        // TODO: Not a proper topological sort - it's just DFS.
-        // This also won't handle cycles, or duplicate dependencies.
-        fn populate_queue(
-            items: &ItemMap,
-            queue: &mut Vec<ItemId<Scope>>,
-            visited: &mut HashSet<ItemId<Scope>>,
-            scope_id: ItemId<Scope>,
-        ) {
-            let scope = items.get(scope_id).unwrap();
-            for &child_scope_id in scope.dependencies.iter() {
-                populate_queue(items, queue, visited, child_scope_id);
+        impl TopologicalSortable<ItemMap> for ItemId<Scope> {
+            fn dependencies(&self, items: &ItemMap) -> Vec<Self> {
+                items.get(*self).unwrap().dependencies.clone()
             }
 
-            if visited.insert(scope_id) {
-                queue.push(scope_id);
+            fn id(&self, items: &ItemMap) -> String {
+                items.get(*self).unwrap().original_id.to_string()
             }
         }
 
-        let mut queue = vec![];
-        populate_queue(self, &mut queue, &mut Default::default(), id);
-
-        queue
+        topological_sort(std::iter::once(id), self).unwrap()
     }
 }
 

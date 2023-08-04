@@ -204,17 +204,17 @@ impl<'a> SyncAssetKey<Arc<wgpu::BindGroupLayout>> for BindGroupDesc<'a> {
 ///
 /// If the dependency graph contains a cycle
 fn resolve_module_graph<'a>(roots: &[&'a ShaderModule]) -> Vec<&'a ShaderModule> {
-    impl<'a> TopologicalSortable<'a> for ShaderModule {
-        fn dependencies(&self) -> Vec<&Self> {
+    impl<'a> TopologicalSortable<()> for &'a ShaderModule {
+        fn dependencies(&self, _ctx: &()) -> Vec<Self> {
             self.dependencies.iter().map(|v| v.as_ref()).collect()
         }
 
-        fn id(&'a self) -> &'a str {
-            &self.name
+        fn id(&self, _ctx: &()) -> String {
+            self.name.to_string()
         }
     }
 
-    topological_sort(roots.iter().copied()).unwrap()
+    topological_sort(roots.iter().copied(), &()).unwrap()
 }
 
 /// Represents a shader and its layout

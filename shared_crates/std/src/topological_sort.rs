@@ -1,9 +1,11 @@
 use std::collections::{btree_map::Entry, BTreeMap};
 use thiserror::Error;
 
-pub trait TopologicalSortable<'a> {
-    fn dependencies(&self) -> Vec<&Self>;
-    fn id(&'a self) -> &'a str;
+pub trait TopologicalSortable<Context> {
+    fn dependencies(&self, ctx: &Context) -> Vec<Self>
+    where
+        Self: Sized;
+    fn id(&self, ctx: &Context) -> String;
 }
 
 #[derive(Error, Debug)]
@@ -12,9 +14,10 @@ pub enum TopologicalSortError {
     CircularDependency { id: String, backtrace: Vec<String> },
 }
 
-pub fn topological_sort<'a, T: TopologicalSortable<'a>>(
-    roots: impl Iterator<Item = &'a T>,
-) -> Result<Vec<&'a T>, TopologicalSortError> {
+pub fn topological_sort<Context, T: TopologicalSortable<Context>>(
+    roots: impl Iterator<Item = T>,
+    ctx: &Context,
+) -> Result<Vec<T>, TopologicalSortError> {
     enum VisitedState {
         Pending,
         Visited,
@@ -22,20 +25,21 @@ pub fn topological_sort<'a, T: TopologicalSortable<'a>>(
 
     let mut visited = BTreeMap::new();
 
-    fn visit<'a, T: TopologicalSortable<'a>>(
-        visited: &mut BTreeMap<&'a str, VisitedState>,
-        result: &mut Vec<&'a T>,
-        item: &'a T,
+    fn visit<Context, T: TopologicalSortable<Context>>(
+        visited: &mut BTreeMap<String, VisitedState>,
+        result: &mut Vec<T>,
+        ctx: &Context,
+        item: T,
         backtrace: &mut Vec<String>,
     ) -> Result<(), TopologicalSortError> {
-        match visited.entry(item.id()) {
+        match visited.entry(item.id(ctx)) {
             Entry::Vacant(slot) => {
                 slot.insert(VisitedState::Pending);
             }
             Entry::Occupied(slot) => match slot.get() {
                 VisitedState::Pending => {
                     return Err(TopologicalSortError::CircularDependency {
-                        id: item.id().to_string(),
+                        id: item.id(ctx),
                         backtrace: backtrace.clone(),
                     })
                 }
@@ -44,13 +48,13 @@ pub fn topological_sort<'a, T: TopologicalSortable<'a>>(
         }
 
         // Ensure dependencies are satisfied first
-        backtrace.push(item.id().to_string());
-        for module in item.dependencies() {
-            visit(visited, result, module, backtrace)?;
+        backtrace.push(item.id(ctx));
+        for dep in item.dependencies(ctx) {
+            visit(visited, result, ctx, dep, backtrace)?;
         }
         backtrace.pop();
 
-        visited.insert(&item.id(), VisitedState::Visited);
+        visited.insert(item.id(ctx), VisitedState::Visited);
 
         result.push(item);
 
@@ -59,7 +63,7 @@ pub fn topological_sort<'a, T: TopologicalSortable<'a>>(
 
     let mut result = Vec::new();
     for root in roots {
-        visit(&mut visited, &mut result, root, &mut vec![])?;
+        visit(&mut visited, &mut result, ctx, root, &mut vec![])?;
     }
 
     Ok(result)
