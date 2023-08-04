@@ -280,10 +280,10 @@ async fn main() -> anyhow::Result<()> {
                         // TODO: import textures API may change, so this is just a placeholder
                         todo!();
                     } else {
-                        eprintln!("Unsupported file type");
+                        bail!("Unsupported file type");
                     }
                 }
-                None => eprintln!("Unknown file type"),
+                None => bail!("Unknown file type"),
             },
         }
 
