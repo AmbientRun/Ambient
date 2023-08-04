@@ -262,7 +262,7 @@ impl World {
             self.despawn(id);
         }
     }
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn next_frame(&mut self) {
         for arch in &mut self.archetypes {
             arch.next_frame();

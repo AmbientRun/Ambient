@@ -98,7 +98,7 @@ impl VisibilityFromToGpuSystem {
 }
 impl System<GpuWorldSyncEvent> for VisibilityFromToGpuSystem {
     fn run(&mut self, world: &mut World, _: &GpuWorldSyncEvent) {
-        ambient_profiling::scope!("VisibilityFromToGpu.run");
+        profiling::scope!("VisibilityFromToGpu.run");
         let gpu_world = world.resource(gpu_world()).lock();
         let gpu = world.resource(gpu());
         for arch in world.archetypes() {

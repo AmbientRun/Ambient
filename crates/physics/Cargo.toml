@@ -31,7 +31,7 @@ async-trait = { workspace = true }
 parking_lot = { workspace = true }
 tracing = { workspace = true }
 anyhow = { workspace = true }
-ambient_profiling = { workspace = true }
+profiling = { workspace = true }
 ordered-float = { workspace = true }
 once_cell = { workspace = true }
 tokio = { workspace = true }

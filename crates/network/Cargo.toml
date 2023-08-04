@@ -36,7 +36,7 @@ thiserror = { workspace = true }
 bincode = { workspace = true }
 glam = { workspace = true }
 winit = { workspace = true }
-ambient_profiling = { workspace = true }
+profiling = { workspace = true }
 log = { workspace = true }
 bytes = { workspace = true }
 parking_lot = { workspace = true }

@@ -24,7 +24,7 @@ ordered-float = { workspace = true }
 serde = { workspace = true }
 derive_more = { workspace = true }
 downcast-rs = { workspace = true }
-ambient_profiling = { workspace = true }
+profiling = { workspace = true }
 bytemuck = { workspace = true }
 smallvec = { workspace = true }
 log = { workspace = true }

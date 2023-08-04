@@ -90,7 +90,7 @@ impl GizmoRenderer {
 }
 
 impl SubRenderer for GizmoRenderer {
-    #[ambient_profiling::function]
+    #[profiling::function]
     fn render<'a>(
         &'a mut self,
         gpu: &Gpu,

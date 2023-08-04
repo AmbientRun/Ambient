@@ -260,7 +260,7 @@ impl ElementTree {
         let instance = self.instances.get(instance_id).unwrap();
         let key = instance.config.get_element_key(true);
 
-        ambient_profiling::scope!("render_instance", &key);
+        profiling::scope!("render_instance", &key);
         let part = instance.config.part.clone();
 
         let entity = if let Some(part) = part {
@@ -504,12 +504,12 @@ impl ElementTree {
         }
     }
 
-    #[ambient_profiling::function]
+    #[profiling::function]
     /// Update the tree and re-render instances as required.
     pub fn update(&mut self, world: &mut World) {
         let frame_listeners = self.hooks_env.lock().frame_listeners.clone();
         for listeners in frame_listeners.values() {
-            ambient_profiling::scope!("frame_listeners");
+            profiling::scope!("frame_listeners");
             for listener in listeners {
                 listener.0(world);
             }
@@ -523,7 +523,7 @@ impl ElementTree {
             value,
         } in state_updates.into_iter()
         {
-            ambient_profiling::scope!("state_updates");
+            profiling::scope!("state_updates");
             if let Some(instance) = self.instances.get_mut(&instance_id) {
                 let _key = &instance.config.get_element_key(true);
                 instance.hooks_state[index] = value;
@@ -537,7 +537,7 @@ impl ElementTree {
             value,
         } in context_updates.into_iter()
         {
-            ambient_profiling::scope!("state_updates");
+            profiling::scope!("state_updates");
 
             if let Some(instance) = self.instances.get_mut(&instance_id) {
                 let key = &instance.config.get_element_key(true);
@@ -548,7 +548,7 @@ impl ElementTree {
             }
         }
         for instance_id in to_update.into_iter() {
-            ambient_profiling::scope!("rerender_instance", &instance_id);
+            profiling::scope!("rerender_instance", &instance_id);
             self.rerender_instance(world, &instance_id);
         }
     }

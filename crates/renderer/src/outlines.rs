@@ -177,7 +177,7 @@ impl Outlines {
         );
 
         {
-            ambient_profiling::scope!("Outlines stencil");
+            profiling::scope!("Outlines stencil");
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Outlines"),
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
@@ -205,7 +205,7 @@ impl Outlines {
                 target.size(),
             );
             {
-                ambient_profiling::scope!("Drop render pass");
+                profiling::scope!("Drop render pass");
                 drop(render_pass);
             }
         }
