@@ -6,8 +6,7 @@ use std::{
 };
 
 use ambient_project::{
-    activate_identifier_bans, Dependency, Identifier, Manifest, PascalCaseIdentifier,
-    SnakeCaseIdentifier,
+    Dependency, Identifier, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
 };
 use ambient_shared_types::primitive_component_definitions;
 use ambient_std::path;
@@ -131,8 +130,6 @@ impl Semantic {
             ItemSource::Ambient,
             None,
         )?;
-
-        activate_identifier_bans();
 
         Ok(semantic)
     }

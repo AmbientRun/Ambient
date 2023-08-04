@@ -4,7 +4,7 @@ use std::{
 };
 
 use convert_case::{Case, Casing};
-use once_cell::sync::OnceCell;
+use once_cell::sync::Lazy;
 use proc_macro2::TokenStream;
 use quote::{ToTokens, TokenStreamExt};
 use serde::{Deserialize, Serialize};
@@ -311,10 +311,8 @@ impl SnakeCaseIdentifier {
             );
         }
 
-        if let Some(bans) = BANNED_SNAKE_CASE_IDENTIFIERS.get() {
-            if bans.contains(id) {
-                return Err("identifier is banned");
-            }
+        if BANNED_SNAKE_CASE_IDENTIFIERS.contains(id) {
+            return Err("identifier is banned");
         }
 
         Ok(id)
@@ -388,10 +386,8 @@ impl PascalCaseIdentifier {
             return Err("identifier must be PascalCase ASCII");
         }
 
-        if let Some(bans) = BANNED_PASCAL_CASE_IDENTIFIERS.get() {
-            if bans.contains(id) {
-                return Err("identifier is banned");
-            }
+        if BANNED_PASCAL_CASE_IDENTIFIERS.contains(id) {
+            return Err("identifier is banned");
         }
 
         Ok(id)
@@ -441,18 +437,7 @@ const BANNED_IDENTIFIERS: &[(&str, &str)] = &[
     //
     // Ambient
     //
-    ("client", "Client"),
-    ("server", "Server"),
     ("ember", "Ember"),
-    ("component", "Component"),
-    ("message", "Message"),
-    ("concept", "Concept"),
-    ("attribute", "Attribute"),
-    ("enum", "Enum"),
-    ("core", "Core"),
-    ("ambient", "Ambient"),
-    ("ecs", "ECS"),
-    ("prefab", "Prefab"),
     //
     // Rust
     //
@@ -462,7 +447,6 @@ const BANNED_IDENTIFIERS: &[(&str, &str)] = &[
     ("continue", "Continue"),
     ("crate", "Crate"),
     ("else", "Else"),
-    ("enum", "Enum"),
     ("extern", "Extern"),
     ("false", "False"),
     ("fn", "Fn"),
@@ -480,7 +464,6 @@ const BANNED_IDENTIFIERS: &[(&str, &str)] = &[
     ("ref", "Ref"),
     ("return", "Return"),
     ("self", "Self"),
-    ("Self", "Self"),
     ("static", "Static"),
     ("struct", "Struct"),
     ("super", "Super"),
@@ -509,32 +492,10 @@ const BANNED_IDENTIFIERS: &[(&str, &str)] = &[
     ("try", "Try"),
 ];
 
-static BANNED_SNAKE_CASE_IDENTIFIERS: OnceCell<HashSet<&'static str>> = OnceCell::new();
-static BANNED_PASCAL_CASE_IDENTIFIERS: OnceCell<HashSet<&'static str>> = OnceCell::new();
-
-/// Activates the identifier bans. By default, these are off to enable adding standard types
-/// and the schema.
-///
-/// Panics if the bans have already been activated.
-pub fn activate_identifier_bans() {
-    BANNED_SNAKE_CASE_IDENTIFIERS
-        .set(
-            BANNED_IDENTIFIERS
-                .iter()
-                .map(|(snake_case, _)| *snake_case)
-                .collect(),
-        )
-        .unwrap();
-
-    BANNED_PASCAL_CASE_IDENTIFIERS
-        .set(
-            BANNED_IDENTIFIERS
-                .iter()
-                .map(|(_, pascal_case)| *pascal_case)
-                .collect(),
-        )
-        .unwrap();
-}
+static BANNED_SNAKE_CASE_IDENTIFIERS: Lazy<HashSet<&'static str>> =
+    Lazy::new(|| HashSet::from_iter(BANNED_IDENTIFIERS.iter().map(|p| p.0)));
+static BANNED_PASCAL_CASE_IDENTIFIERS: Lazy<HashSet<&'static str>> =
+    Lazy::new(|| HashSet::from_iter(BANNED_IDENTIFIERS.iter().map(|p| p.1)));
 
 #[cfg(test)]
 mod tests {
