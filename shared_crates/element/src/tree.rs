@@ -260,7 +260,7 @@ impl ElementTree {
         let instance = self.instances.get(instance_id).unwrap();
         let key = instance.config.get_element_key(true);
 
-        ambient_profiling::scope!("render_instance", key.clone());
+        ambient_profiling::scope!("render_instance", &key);
         let part = instance.config.part.clone();
 
         let entity = if let Some(part) = part {

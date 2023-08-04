@@ -382,6 +382,7 @@ fn run(
             world.get_cloned(id, module_name()).unwrap_or_default(),
             message_name
         )
+        .as_str()
     );
 
     // If it's not in the subscribed events, skip over it
