@@ -1,5 +1,6 @@
 target
 **/tmp/**
+**/.vs/**
 .DS_Store
 /example_assets
 /rust
