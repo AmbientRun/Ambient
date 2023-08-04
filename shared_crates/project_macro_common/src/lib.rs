@@ -108,18 +108,22 @@ fn generate(
         .values()
         .map(|s| {
             let scope = items.get(*s)?;
+            if !context.should_generate(scope.data()) {
+                return Ok(quote! {});
+            }
+
             let id = make_path(scope.data.id.as_str());
             let inner = generate(context, items, type_printer, root_scope_id, &scope)?;
-            if !inner.is_empty() {
-                Ok(quote! {
-                    #[allow(unused)]
-                    pub mod #id {
-                        #inner
-                    }
-                })
-            } else {
-                Ok(quote! {})
+            if inner.is_empty() {
+                return Ok(quote! {});
             }
+
+            Ok(quote! {
+                #[allow(unused)]
+                pub mod #id {
+                    #inner
+                }
+            })
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
 

@@ -80,4 +80,20 @@ impl Context {
             (Context::GuestUser, ItemSource::User) => quote! { crate:: },
         }
     }
+
+    pub fn should_generate(&self, data: &ItemData) -> bool {
+        match (self, data.source) {
+            (_, ItemSource::System) => false,
+            (Context::Host, ItemSource::Ambient) => true,
+            (Context::Host, ItemSource::User) => {
+                unreachable!("user items should not be in host scope")
+            }
+            (Context::GuestApi, ItemSource::Ambient) => true,
+            (Context::GuestApi, ItemSource::User) => {
+                unreachable!("user items should not be in api scope")
+            }
+            (Context::GuestUser, ItemSource::Ambient) => false,
+            (Context::GuestUser, ItemSource::User) => true,
+        }
+    }
 }
