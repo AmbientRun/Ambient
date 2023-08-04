@@ -1,10 +1,11 @@
 use clap::Subcommand;
 
-use self::build::BuildOptions;
+use self::{build::BuildOptions, serve::Serve};
 
 #[cfg(feature = "openssl")]
 mod browser;
 mod build;
+mod serve;
 
 #[derive(Debug, Subcommand, Clone)]
 pub enum Web {
@@ -13,6 +14,7 @@ pub enum Web {
     /// Launches chrome with the correct flags to explicitly trust
     /// the self-signed certificate
     OpenBrowser,
+    Serve(Serve),
 }
 
 pub async fn run(command: Web) -> anyhow::Result<()> {
@@ -28,5 +30,6 @@ pub async fn run(command: Web) -> anyhow::Result<()> {
                 anyhow::bail!("The `openssl` feature must be enabled to use this command")
             }
         }
+        Web::Serve(args) => args.run().await,
     }
 }
