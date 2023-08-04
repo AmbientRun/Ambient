@@ -183,6 +183,8 @@ pub(crate) fn all_examples(with_testcases: bool) -> anyhow::Result<Vec<(PathBuf,
         }
     }
 
+    examples.sort_by_key(|(path, _)| path.clone());
+
     Ok(examples)
 }
 
