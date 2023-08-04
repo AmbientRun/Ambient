@@ -343,7 +343,7 @@ pub fn client_systems() -> SystemGroup {
             ))
             .incl(terrain_cell())
             .to_system(|q, world, qs, _| {
-                ambient_profiling::scope!("terrain.lod");
+                profiling::scope!("terrain.lod");
                 if let Some(main_camera) =
                     get_active_camera(world, main_scene(), world.resource_opt(local_user_id()))
                 {

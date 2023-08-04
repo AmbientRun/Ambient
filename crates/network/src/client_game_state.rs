@@ -102,7 +102,7 @@ impl ClientGameState {
             user_id: player_id,
         }
     }
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn on_frame(&mut self, gpu: &Gpu, target: &RenderTarget) {
         let _span = debug_span!("ClientGameState.on_frame").entered();
 

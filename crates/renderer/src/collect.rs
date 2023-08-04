@@ -276,7 +276,7 @@ impl RendererCollect {
     }
 
     /// Computes indirect draw commands using culling
-    #[ambient_profiling::function]
+    #[profiling::function]
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn compute_indirect(
         &self,

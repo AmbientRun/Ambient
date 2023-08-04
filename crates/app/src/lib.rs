@@ -688,11 +688,11 @@ impl App {
                     }
                 }
 
-                ambient_profiling::scope!("frame");
+                profiling::scope!("frame");
                 world.next_frame();
 
                 {
-                    ambient_profiling::scope!("systems");
+                    profiling::scope!("systems");
                     systems.run(world, &FrameEvent);
                     gpu_world_sync_systems.run(world, &GpuWorldSyncEvent);
                 }
@@ -716,7 +716,7 @@ impl App {
                 if let Some(window) = &self.window {
                     window.request_redraw();
                 }
-                ambient_profiling::finish_frame!();
+                profiling::finish_frame!();
             }
 
             Event::WindowEvent { event, .. } => match event {
@@ -825,7 +825,7 @@ impl System<Event<'static, ()>> for ExamplesSystem {
 pub struct MeshBufferUpdate;
 impl System for MeshBufferUpdate {
     fn run(&mut self, world: &mut World, _event: &FrameEvent) {
-        ambient_profiling::scope!("MeshBufferUpdate.run");
+        profiling::scope!("MeshBufferUpdate.run");
         let assets = world.resource(asset_cache()).clone();
         let gpu = world.resource(gpu()).clone();
         let mesh_buffer = MeshBufferKey.get(&assets);

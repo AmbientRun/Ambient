@@ -228,7 +228,7 @@ impl GpuComponentsBuffer {
 pub struct GpuWorldUpdate;
 impl System<GpuWorldSyncEvent> for GpuWorldUpdate {
     fn run(&mut self, world: &mut World, _event: &GpuWorldSyncEvent) {
-        ambient_profiling::scope!("GpuWorldUpdate.run");
+        profiling::scope!("GpuWorldUpdate.run");
         let gpu = world.resource(gpu()).clone();
         world
             .resource_mut(gpu_world())

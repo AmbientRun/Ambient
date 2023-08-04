@@ -138,7 +138,7 @@ impl Culling {
         }
     }
 
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn run<'a>(&mut self, gpu: &Gpu, encoder: &'a mut wgpu::CommandEncoder, world: &World) {
         let main_camera = if let Some(camera) = Camera::get_active(
             world,

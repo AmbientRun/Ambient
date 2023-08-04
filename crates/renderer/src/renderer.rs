@@ -296,7 +296,7 @@ impl Renderer {
         clear: Option<Color>,
     ) {
         let _span = debug_span!("Renderer.render", label = world.name()).entered();
-        ambient_profiling::scope!("Renderer.render", world.name());
+        profiling::scope!("Renderer.render", world.name());
 
         if let RendererTarget::Target(target) = &target {
             if self.solids_frame.color_buffer.size != target.color_buffer.size {
@@ -338,7 +338,7 @@ impl Renderer {
         )
         .unwrap_or_default();
         {
-            ambient_profiling::scope!("Update");
+            profiling::scope!("Update");
             self.culling.run(gpu, encoder, world);
 
             self.forward_collect_state.set_camera(gpu, 0);
@@ -411,7 +411,7 @@ impl Renderer {
         }
 
         {
-            ambient_profiling::scope!("Forward");
+            profiling::scope!("Forward");
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Forward"),
                 color_attachments: &[
@@ -473,7 +473,7 @@ impl Renderer {
             }
 
             {
-                ambient_profiling::scope!("Drop render pass");
+                profiling::scope!("Drop render pass");
                 drop(render_pass);
             }
         }
@@ -512,7 +512,7 @@ impl Renderer {
         }
 
         {
-            ambient_profiling::scope!("Transparent");
+            profiling::scope!("Transparent");
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Transparent"),
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
@@ -542,7 +542,7 @@ impl Renderer {
                 .render(world, &mut render_pass, &bind_groups, target.size());
 
             {
-                ambient_profiling::scope!("Drop render pass");
+                profiling::scope!("Drop render pass");
                 drop(render_pass);
             }
         }

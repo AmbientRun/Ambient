@@ -392,7 +392,7 @@ impl<'a> Hooks<'a> {
         x
     }
 
-    #[ambient_profiling::function]
+    #[profiling::function]
     /// Executes a function each frame.
     pub fn use_frame<F: Fn(&mut World) + Sync + Send + 'static>(&mut self, on_frame: F) {
         let mut env = self.environment.lock();
@@ -418,7 +418,7 @@ impl<'a> Hooks<'a> {
             .0
     }
 
-    #[ambient_profiling::function]
+    #[profiling::function]
 
     /// A computation that runs once on spawn, and when `dependencies` change. The computation is not re-run
     /// if the `dependencies` are the same - that is, the computation is [memoized](https://en.wikipedia.org/wiki/Memoization).
@@ -450,7 +450,7 @@ impl<'a> Hooks<'a> {
         }
     }
 
-    #[ambient_profiling::function]
+    #[profiling::function]
     /// Run a function for its side effects each time a dependency changes.
     ///
     /// The function should return another function; that function will be called when the [Element](crate::Element) is unmounted.
@@ -489,7 +489,7 @@ impl<'a> Hooks<'a> {
             if let Some(cleanup_prev) = (*cleanup_prev).take() {
                 cleanup_prev.0(self.world);
             }
-            ambient_profiling::scope!("use_effect_run");
+            profiling::scope!("use_effect_run");
             *cleanup_prev = Some(Cleanup(Box::new(run(self.world, &dependencies))));
             *prev_deps = Some(dependencies);
         }
