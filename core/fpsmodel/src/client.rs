@@ -30,10 +30,7 @@ pub fn main() {
                 let hand = hand.unwrap();
                 let gun = Entity::new()
                     .with_merge(make_transformable())
-                    .with(
-                        prefab_from_url(),
-                        asset::url("afps_fpsmodel/assets/red.glb").unwrap(),
-                    )
+                    .with(prefab_from_url(), afps_fpsmodel::assets::url("red.glb"))
                     .with(translation(), vec3(-0.06, 0.2, 0.0))
                     .with(
                         rotation(),

@@ -53,10 +53,7 @@ pub async fn main() {
                     .spawn();
                 let model = Entity::new()
                     .with_merge(make_transformable())
-                    .with(
-                        prefab_from_url(),
-                        asset::url("afps_fpsmodel/assets/Y Bot.fbx").unwrap(),
-                    )
+                    .with(prefab_from_url(), afps_fpsmodel::assets::url("Y Bot.fbx"))
                     .with(rotation(), Quat::from_rotation_z(-std::f32::consts::PI))
                     .with_default(local_to_parent())
                     .with(parent(), id)

@@ -42,7 +42,7 @@ pub fn main() {
                 return;
             }
 
-            let decal_url = asset::url("afps_spraypaint/assets/pipeline.toml/0/mat.json").unwrap();
+            let decal_url = afps_spraypaint::assets::url("pipeline.toml/0/mat.json");
 
             Entity::new()
                 .with_merge(make_transformable())
@@ -54,7 +54,7 @@ pub fn main() {
                 .with_merge(make_transformable())
                 .with(
                     prefab_from_url(),
-                    asset::url("afps_scene/assets/claymore.glb").unwrap(),
+                    afps_spraypaint::assets::url("claymore.glb"),
                 )
                 .with(claymore(), msg.source)
                 .with(translation(), hit.position + vec3(0., 0., 0.15))

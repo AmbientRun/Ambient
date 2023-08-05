@@ -8,7 +8,7 @@ use ambient_api::{
 pub fn main() {
     let firesound = audio::AudioPlayer::new();
     messages::FireSound::subscribe(move |_, msg| {
-        let fire_sound_url = asset::url("afps_fpsaudio/assets/laser.ogg").unwrap();
+        let fire_sound_url = afps_fpsaudio::assets::url("laser.ogg");
         let whoshoot = msg.source;
         let listener = player::get_local();
         let pos_shoot = entity::get_component(whoshoot, translation());
@@ -59,7 +59,7 @@ pub fn main() {
     let walksound = audio::AudioPlayer::new();
 
     messages::WalkSound::subscribe(move |_, msg| {
-        let fire_sound_url = asset::url("afps_fpsaudio/assets/walk.ogg").unwrap();
+        let fire_sound_url = afps_fpsaudio::assets::url("walk.ogg");
         let whoshoot = msg.source;
         let listener = player::get_local();
         let pos_shoot = entity::get_component(whoshoot, translation());
@@ -110,7 +110,7 @@ pub fn main() {
 
     messages::Explosion::subscribe(move |_, msg| {
         println!("explosion msg got from local server to client");
-        let sound_url = asset::url("afps_fpsaudio/assets/explosion.ogg").unwrap();
+        let sound_url = afps_fpsaudio::assets::url("explosion.ogg");
         let listener = player::get_local();
         let pos_shoot = msg.pos;
         let pos_listen = entity::get_component(listener, translation());

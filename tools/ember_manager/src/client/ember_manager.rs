@@ -11,7 +11,10 @@ use ambient_api::{
     ui::ImageFromUrl,
 };
 
-use crate::ember_manager::messages::{WasmReload, WasmSetEnabled};
+use crate::ember_manager::{
+    self,
+    messages::{WasmReload, WasmSetEnabled},
+};
 
 use super::{use_hotkey_toggle, use_input_request, Window};
 
@@ -100,7 +103,7 @@ fn EmberManagerInner(hooks: &mut Hooks) -> Element {
 
         FlowRow::el([
             ImageFromUrl {
-                url: asset::url("ember_manager/assets/construction.png").unwrap(),
+                url: ember_manager::assets::url("construction.png"),
             }
             .el()
             .with(width(), 48.0)

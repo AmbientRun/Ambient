@@ -6,3 +6,7 @@ output_decals = false
 type = "Single"
 name = "decals"
 base_color = "heart.png"
+
+[[pipelines]]
+type = "Models"
+sources = ["*"]

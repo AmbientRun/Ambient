@@ -67,7 +67,7 @@ fn JoinScreen(hooks: &mut Hooks) -> Element {
         .with(space_between_items(), STREET)])
         .with_padding_even(20.),
         ImageFromUrl {
-            url: asset::url("afps_fpsui/assets/afps.png").unwrap(),
+            url: afps_fpsui::assets::url("afps.png"),
         }
         .el()
         .with(width(), hooks.use_window_logical_resolution().x as f32)
