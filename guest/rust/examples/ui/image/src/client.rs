@@ -14,7 +14,7 @@ use ambient_api::{
 fn App(_hooks: &mut Hooks) -> Element {
     Group::el([FlowColumn::el([
         ImageFromUrl {
-            url: asset::url("assets/squirrel.png").unwrap(),
+            url: ambient_example_image::assets::url("squirrel.png"),
         }
         .el()
         .with_default(size_from_background_image()),

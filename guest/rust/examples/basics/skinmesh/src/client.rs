@@ -42,17 +42,17 @@ pub async fn main() {
         .with_merge(make_transformable())
         .with(
             prefab_from_url(),
-            asset::url("assets/Peasant Man.fbx").unwrap(),
+            ambient_example_skinmesh::assets::url("Peasant Man.fbx"),
         )
         .with(name(), "Peasant".to_string())
         .spawn();
 
-    let capoeira = PlayClipFromUrlNode::new(
-        asset::url("assets/Capoeira.fbx/animations/mixamo.com.anim").unwrap(),
-    );
-    let robot = PlayClipFromUrlNode::new(
-        asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim").unwrap(),
-    );
+    let capoeira = PlayClipFromUrlNode::new(ambient_example_skinmesh::assets::url(
+        "Capoeira.fbx/animations/mixamo.com.anim",
+    ));
+    let robot = PlayClipFromUrlNode::new(ambient_example_skinmesh::assets::url(
+        "Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+    ));
     let blend = BlendNode::new(&capoeira, &robot, 0.);
     let anim_player = AnimationPlayer::new(&blend);
     entity::add_component(unit_id, apply_animation_player(), anim_player.0);
@@ -130,10 +130,9 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
         ]),
         FlowRow::el([
             Button::new("Play single animation", move |_| {
-                let robot = PlayClipFromUrlNode::new(
-                    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
-                        .unwrap(),
-                );
+                let robot = PlayClipFromUrlNode::new(ambient_example_skinmesh::assets::url(
+                    "Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+                ));
                 robot.looping(false);
                 anim_player.play(robot);
             })
@@ -143,10 +142,9 @@ fn App(hooks: &mut Hooks, blend_node: BlendNode, anim_player: AnimationPlayer) -
             })
             .el(),
             Button::new("Freeze animation", move |_| {
-                let robot = PlayClipFromUrlNode::new(
-                    asset::url("assets/Robot Hip Hop Dance.fbx/animations/mixamo.com.anim")
-                        .unwrap(),
-                );
+                let robot = PlayClipFromUrlNode::new(ambient_example_skinmesh::assets::url(
+                    "Robot Hip Hop Dance.fbx/animations/mixamo.com.anim",
+                ));
                 robot.looping(false);
                 robot.freeze_at_percentage(0.5);
                 anim_player.play(robot);

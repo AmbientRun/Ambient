@@ -51,7 +51,10 @@ pub async fn main() {
 
     Entity::new()
         .with_merge(make_transformable())
-        .with(prefab_from_url(), asset::url("assets/Shape.glb").unwrap())
+        .with(
+            prefab_from_url(),
+            ambient_example_physics::assets::url("shape.glb"),
+        )
         .spawn();
 
     Collision::subscribe(move |msg| {

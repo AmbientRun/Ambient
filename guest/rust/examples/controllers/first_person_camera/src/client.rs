@@ -16,7 +16,9 @@ fn main() {
         for (_id, (head, ball)) in v {
             spatial_audio_player.set_listener(head);
             spatial_audio_player.play_sound_on_entity(
-                asset::url("assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg").unwrap(),
+                ambient_example_first_person_camera::assets::url(
+                    "Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg",
+                ),
                 ball,
             );
         }

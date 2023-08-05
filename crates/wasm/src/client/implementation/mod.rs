@@ -206,7 +206,11 @@ impl wit::player::Host for Bindings {
 }
 #[async_trait::async_trait]
 impl wit::asset::Host for Bindings {
-    async fn url(&mut self, path: String) -> anyhow::Result<Result<String, wit::asset::UrlError>> {
-        shared::implementation::asset::url(self.world(), path, true)
+    async fn url(
+        &mut self,
+        ember_id: String,
+        path: String,
+    ) -> anyhow::Result<Result<String, wit::asset::UrlError>> {
+        shared::implementation::asset::url(self.world(), ember_id, path, true)
     }
 }

@@ -52,7 +52,10 @@ pub async fn main() {
     let model = Entity::new()
         .with_merge(make_transformable())
         .with_default(cast_shadows())
-        .with(prefab_from_url(), asset::url("assets/Teapot.glb").unwrap())
+        .with(
+            prefab_from_url(),
+            ambient_example_asset_loading::assets::url("Teapot.glb"),
+        )
         .with(is_the_best(), true)
         .spawn();
 

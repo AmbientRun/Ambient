@@ -62,13 +62,22 @@ fn create_environment() {
     make_transformable().with_default(sky()).spawn();
 
     make_transformable()
-        .with(prefab_from_url(), asset::url("assets/level.glb").unwrap())
+        .with(
+            prefab_from_url(),
+            ambient_example_minigolf::assets::url("level.glb"),
+        )
         .with(translation(), Vec3::Z * -0.25)
         .spawn();
 
     make_transformable()
-        .with(model_from_url(), asset::url("assets/fan.glb").unwrap())
-        .with(collider_from_url(), asset::url("assets/fan.glb").unwrap())
+        .with(
+            model_from_url(),
+            ambient_example_minigolf::assets::url("fan.glb"),
+        )
+        .with(
+            collider_from_url(),
+            ambient_example_minigolf::assets::url("fan.glb"),
+        )
         .with(kinematic(), ())
         .with(dynamic(), true)
         .with(angular_velocity(), vec3(0., 90_f32.to_radians(), 0.))
@@ -83,7 +92,10 @@ fn make_golf_ball() -> Entity {
         .with_default(physics_controlled())
         .with(dynamic(), true)
         .with(sphere_collider(), BALL_RADIUS)
-        .with(model_from_url(), asset::url("assets/ball.glb").unwrap())
+        .with(
+            model_from_url(),
+            ambient_example_minigolf::assets::url("ball.glb"),
+        )
 }
 
 fn make_text() -> Entity {
@@ -177,7 +189,7 @@ pub fn main() {
                         .with(user_id(), player_user_id.clone())
                         .with(
                             model_from_url(),
-                            asset::url("assets/indicator.glb").unwrap(),
+                            ambient_example_minigolf::assets::url("indicator.glb"),
                         )
                         .spawn(),
                 );
@@ -190,7 +202,7 @@ pub fn main() {
                         .with(user_id(), player_user_id.clone())
                         .with(
                             model_from_url(),
-                            asset::url("assets/indicator_arrow.glb").unwrap(),
+                            ambient_example_minigolf::assets::url("indicator_arrow.glb"),
                         )
                         .spawn(),
                 );
@@ -200,8 +212,14 @@ pub fn main() {
         });
 
     let flag = make_transformable()
-        .with(model_from_url(), asset::url("assets/flag.glb").unwrap())
-        .with(collider_from_url(), asset::url("assets/flag.glb").unwrap())
+        .with(
+            model_from_url(),
+            ambient_example_minigolf::assets::url("flag.glb"),
+        )
+        .with(
+            collider_from_url(),
+            ambient_example_minigolf::assets::url("flag.glb"),
+        )
         .with(dynamic(), true)
         .with(kinematic(), ())
         .with(origin(), vec3(-35., 205., 0.3166))

@@ -35,7 +35,10 @@ pub async fn main() {
         Entity::new()
             .with(name(), track_name.to_string())
             .with(track(), idx as u32)
-            .with(track_audio_url(), track_url.to_string())
+            .with(
+                track_audio_url(),
+                ambient_example_music_sequencer::assets::url(track_url),
+            )
             .with(track_note_selection(), vec![0; common::NOTE_COUNT])
             .spawn();
     }

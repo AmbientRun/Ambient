@@ -45,7 +45,7 @@ fn gen_ball_velocity() -> Vec3 {
 
 #[main]
 pub fn main() {
-    let bounce_url = asset::url("assets/paddle_bounce.wav").unwrap();
+    let bounce_url = ambient_example_arkanoid::assets::url("paddle_bounce.wav");
 
     entity::add_component(
         entity::synchronized_resources(),

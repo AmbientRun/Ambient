@@ -29,7 +29,7 @@ pub fn main() {
         .with(translation(), vec3(-1.25, 0.0, 0.0))
         .with(
             prefab_from_url(),
-            asset::url("assets/quad-linear.glb").unwrap(),
+            ambient_example_samplers::assets::url("quad-linear.glb"),
         )
         .spawn();
 
@@ -38,7 +38,7 @@ pub fn main() {
         .with(translation(), vec3(1.25, 0.0, 0.0))
         .with(
             prefab_from_url(),
-            asset::url("assets/quad-nearest.glb").unwrap(),
+            ambient_example_samplers::assets::url("quad-nearest.glb"),
         )
         .spawn();
 }

@@ -32,7 +32,7 @@ fn main() {
         amp = amp.sqrt().clamp(0.0, 1.0);
         amp = amp * amp;
         ball_hit_player.set_amplitude(amp);
-        ball_hit_player.play(asset::url("assets/ball-hit.ogg").unwrap());
+        ball_hit_player.play(ambient_example_minigolf::assets::url("ball-hit.ogg"));
     });
 
     Bonk::subscribe(move |_source, data| {
@@ -44,6 +44,6 @@ fn main() {
         amp = amp.sqrt().clamp(0.0, 1.0);
         amp = amp * amp;
         ball_drop_player.set_amplitude(amp);
-        ball_drop_player.play(asset::url("assets/ball-drop.ogg").unwrap());
+        ball_drop_player.play(ambient_example_minigolf::assets::url("ball-drop.ogg"));
     });
 }

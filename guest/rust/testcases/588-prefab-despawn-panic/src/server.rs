@@ -6,7 +6,10 @@ pub fn main() {
     run_async(async move {
         loop {
             let model = Entity::new()
-                .with(prefab_from_url(), asset::url("assets/Teapot.glb").unwrap())
+                .with(
+                    prefab_from_url(),
+                    ambient_testcase_i588::assets::url("Teapot.glb"),
+                )
                 .spawn();
 
             sleep(0.01).await;

@@ -43,9 +43,9 @@ pub async fn main() {
                 let index = k * INSTANCES.z * j * INSTANCES.y * INSTANCES.y + i;
 
                 let model = if index % 2 == 0 {
-                    asset::url("assets/Teapot.glb").unwrap()
+                    ambient_example_instancing::assets::url("Teapot.glb")
                 } else {
-                    asset::url("assets/Monkey.glb").unwrap()
+                    ambient_example_instancing::assets::url("Monkey.glb")
                 };
 
                 Entity::new()

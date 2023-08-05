@@ -78,10 +78,8 @@ fn Track(
 ) -> Element {
     let track_name = entity::get_component(track_id, name()).unwrap_or_default();
 
-    let (sound, _) = hooks.use_state_with(|_| {
-        let url = entity::get_component(track_id, track_audio_url()).unwrap();
-        asset::url(url).unwrap()
-    });
+    let (sound, _) =
+        hooks.use_state_with(|_| entity::get_component(track_id, track_audio_url()).unwrap());
 
     let (audio_player, _) = hooks.use_state(audio::AudioPlayer::new());
 

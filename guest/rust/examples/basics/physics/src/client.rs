@@ -7,7 +7,9 @@ pub fn main() {
 
     Bonk::subscribe(move |_source, data| {
         spatial_audio_player.set_listener(data.listener);
-        spatial_audio_player
-            .play_sound_on_entity(asset::url("assets/bonk.ogg").unwrap(), data.emitter);
+        spatial_audio_player.play_sound_on_entity(
+            ambient_example_physics::assets::url("bonk.ogg"),
+            data.emitter,
+        );
     });
 }

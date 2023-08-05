@@ -41,7 +41,7 @@ fn gen_ball_velocity() -> Vec3 {
 
 #[main]
 pub fn main() {
-    let bgm_url = asset::url("assets/Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg").unwrap();
+    let bgm_url = ambient_example_pong::assets::url("Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg");
 
     entity::add_component(entity::synchronized_resources(), track_audio_url(), bgm_url);
     // Spawn field, paddles and ball

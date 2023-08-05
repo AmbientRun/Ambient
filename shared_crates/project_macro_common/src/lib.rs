@@ -2,12 +2,13 @@ extern crate proc_macro;
 
 use ambient_project::ItemPathBuf;
 use ambient_project_semantic::{
-    ArrayFileProvider, ItemId, ItemMap, ItemSource, Scope, Semantic, Type, TypeInner,
+    ArrayFileProvider, Item, ItemId, ItemMap, ItemSource, Scope, Semantic, Type, TypeInner,
 };
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use std::{collections::HashMap, path::Path};
 
+mod assets;
 mod components;
 mod concepts;
 mod context;
@@ -131,6 +132,7 @@ fn generate(
     let concepts = concepts::generate(context, items, type_printer, root_scope_id, scope)?;
     let messages = messages::generate(context, items, type_printer, root_scope_id, scope)?;
     let types = enums::generate(context, items, scope)?;
+    let assets = assets::generate(context, items, scope)?;
 
     Ok(quote! {
         #(#scopes)*
@@ -139,6 +141,7 @@ fn generate(
         #concepts
         #messages
         #types
+        #assets
     })
 }
 

@@ -18,8 +18,9 @@ impl From<wit::asset::UrlError> for UrlError {
 }
 
 /// Resolves a asset path for an Ambient asset in this project to an absolute URL.
-pub fn url(path: impl AsRef<str>) -> Result<String, UrlError> {
-    Ok(wit::asset::url(path.as_ref())?)
+#[doc(hidden)]
+pub fn url(ember_id: &str, path: &str) -> Result<String, UrlError> {
+    Ok(wit::asset::url(ember_id, path)?)
 }
 
 #[cfg(feature = "server")]
