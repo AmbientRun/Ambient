@@ -59,6 +59,11 @@ impl AnimationPlayer {
 #[derive(Debug)]
 pub struct AnimationNode(EntityId);
 impl AnimationNode {
+    /// Get the entity id of this node
+    pub fn to_entity(&self) -> EntityId {
+        entity::mutate_component(self.0, ref_count(), |x| *x += 1);
+        self.0
+    }
     /// Use an existing node
     pub fn from_entity(entity: EntityId) -> Self {
         entity::mutate_component(entity, ref_count(), |x| *x += 1);
