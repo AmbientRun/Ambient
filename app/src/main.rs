@@ -231,20 +231,6 @@ async fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    // If a project was specified, prepare its semantic state
-    let mut semantic = ambient_project_semantic::Semantic::new()?;
-    let primary_ember_scope_id = match project {
-        Some(_) => {
-            let path = project_path
-                .fs_path
-                .as_ref()
-                .context("project path must be local for now")?;
-
-            Some(ember::add(&mut semantic, path)?)
-        }
-        None => None,
-    };
-
     if let Commands::Assets { command } = &cli.command {
         match command {
             AssetCommand::MigratePipelinesToml(opt) => {
@@ -280,24 +266,29 @@ async fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    let manifest = if let Some(scope) = primary_ember_scope_id {
-        let manifest = semantic
-            .items
-            .get(scope)?
-            .manifest
-            .clone()
-            .context("no manifest for scope")?;
-
-        Some(manifest)
-    } else {
-        None
-    };
-
     let build_path = project_path.push("build");
-    if let Some(manifest) = manifest.as_ref() {
-        let project = project.unwrap();
-
+    if let Some(project) = project.as_ref() {
         if !project.no_build {
+            // If a project was specified, prepare its semantic state.
+            // The build step uses its own semantic to ensure that there is
+            // no contamination, so that the built project can use its own
+            // semantic based on the flat hierarchy.
+            let mut semantic = ambient_project_semantic::Semantic::new()?;
+            let primary_ember_scope_id = ember::add(
+                &mut semantic,
+                project_path
+                    .fs_path
+                    .as_ref()
+                    .context("project path must be local for now")?,
+            )?;
+
+            let manifest = semantic
+                .items
+                .get(primary_ember_scope_id)?
+                .manifest
+                .clone()
+                .context("no manifest for scope")?;
+
             let build_config = ambient_build::BuildConfiguration {
                 build_path: build_path
                     .to_file_path()?
@@ -317,18 +308,9 @@ async fn main() -> anyhow::Result<()> {
 
             tracing::info!("Building project {:?}", project_name);
 
-            ambient_build::build(build_config, primary_ember_scope_id.unwrap())
+            ambient_build::build(build_config, primary_ember_scope_id)
                 .await
                 .context("Failed to build project")?;
-        } else {
-            todo!("Ember does not currently support remote manifests");
-            // let metadata_url = build_path.push("metadata.toml")?;
-            // let metadata_data = metadata_url
-            //     .download_string(&assets)
-            //     .await
-            //     .context("Failed to load build/metadata.toml.")?;
-
-            // Some(ambient_build::Metadata::parse(&metadata_data)?)
         }
     }
 

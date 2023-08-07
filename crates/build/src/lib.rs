@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     path::{Path, PathBuf},
     sync::{
         atomic::{AtomicBool, Ordering},
@@ -29,6 +30,8 @@ pub struct Metadata {
 }
 
 impl Metadata {
+    pub const FILENAME: &'static str = "metadata.toml";
+
     pub fn component_paths(&self, target: &str) -> &[String] {
         match target {
             "client" => &self.client_component_paths,
@@ -39,6 +42,19 @@ impl Metadata {
 
     pub fn parse(contents: &str) -> anyhow::Result<Self> {
         toml::from_str(contents).context("failed to parse build metadata")
+    }
+
+    async fn store(build_path: &Path) -> anyhow::Result<Self> {
+        let metadata = Metadata {
+            ambient_version: Version::new_from_str(env!("CARGO_PKG_VERSION"))
+                .expect("Failed to parse CARGO_PKG_VERSION"),
+            ambient_revision: git_revision_full().unwrap_or_default(),
+            client_component_paths: get_component_paths("client", build_path),
+            server_component_paths: get_component_paths("server", build_path),
+        };
+        let metadata_path = build_path.join(Self::FILENAME);
+        tokio::fs::write(&metadata_path, toml::to_string(&metadata)?).await?;
+        Ok(metadata)
     }
 }
 
@@ -115,7 +131,7 @@ async fn build_ember(
         ..
     } = config;
 
-    let (manifest, path) = {
+    let (mut manifest, path) = {
         let scope = semantic.items.get(ember_id)?;
         (
             scope
@@ -153,8 +169,29 @@ async fn build_ember(
         .await
         .with_context(|| format!("Failed to build rust {build_path:?}"))?;
 
+    // Bodge: for local builds, rewrite the dependencies to be relative to this ember,
+    // assuming that they are all in the same folder
+    {
+        let scope = semantic.items.get(ember_id)?;
+        let orig_name_to_dep = scope
+            .dependencies
+            .iter()
+            .copied()
+            .map(|d| anyhow::Ok((semantic.items.get(d)?.data.id.as_snake()?.to_owned(), d)))
+            .collect::<Result<HashMap<_, _>, _>>()?;
+
+        for (orig_name, dep) in manifest.dependencies.iter_mut() {
+            let ambient_project::Dependency::Path { path, .. } = dep;
+
+            if let Some(orig_dep) = orig_name_to_dep.get(orig_name) {
+                let dep_scope = semantic.items.get(*orig_dep)?;
+                *path = Path::new("..").join(dep_scope.original_id.as_str());
+            }
+        }
+    }
+
     store_manifest(&manifest, &build_path).await?;
-    let metadata = store_metadata(&build_path).await?;
+    let metadata = Metadata::store(&build_path).await?;
 
     semantic.items.get_mut(ember_id)?.build_metadata = Some(BuildMetadata(Arc::new(metadata)));
 
@@ -269,17 +306,4 @@ async fn store_manifest(manifest: &ProjectManifest, build_path: &Path) -> anyhow
     let manifest_path = build_path.join("ambient.toml");
     tokio::fs::write(&manifest_path, toml::to_string(&manifest)?).await?;
     Ok(())
-}
-
-async fn store_metadata(build_path: &Path) -> anyhow::Result<Metadata> {
-    let metadata = Metadata {
-        ambient_version: Version::new_from_str(env!("CARGO_PKG_VERSION"))
-            .expect("Failed to parse CARGO_PKG_VERSION"),
-        ambient_revision: git_revision_full().unwrap_or_default(),
-        client_component_paths: get_component_paths("client", build_path),
-        server_component_paths: get_component_paths("server", build_path),
-    };
-    let metadata_path = build_path.join("metadata.toml");
-    tokio::fs::write(&metadata_path, toml::to_string(&metadata)?).await?;
-    Ok(metadata)
 }
