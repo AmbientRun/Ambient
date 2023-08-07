@@ -7,7 +7,7 @@ version = "0.0.1"
 
 [dependencies]
 # ambient_api = { path = "../Ambient/guest/rust/api" }
-ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", rev = "8ec06c7" }
+ambient_api = { git = "https://github.com/AmbientRun/Ambient.git", rev = "90ee0fd" }
 
 # Console-only
 rhai = { version = "1.15", features = ["sync"] }
@@ -16,7 +16,7 @@ rhai = { version = "1.15", features = ["sync"] }
 toml = "0.7"
 serde = { version = "1.0", features = ["derive"] }
 # ambient_project = { path = "../Ambient/shared_crates/project" }
-ambient_project = { git = "https://github.com/AmbientRun/Ambient.git", rev = "8ec06c7" }
+ambient_project = { git = "https://github.com/AmbientRun/Ambient.git", rev = "90ee0fd" }
 
 # Group 1: show the UI
 # This include the aiming cross in the middle of the screen

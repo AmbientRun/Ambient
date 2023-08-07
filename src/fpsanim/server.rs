@@ -1,5 +1,7 @@
+use std::process::Output;
+
 use ambient_api::{
-    animation::{AnimationPlayer, AnimationRetargeting, BlendNode, PlayClipFromUrlNode},
+    animation::{AnimationNode, AnimationPlayer, BlendNode, PlayClipFromUrlNode},
     components::core::{
         animation::{apply_animation_player, blend},
         player::player,
@@ -29,171 +31,202 @@ fn calculate_blend_from_weight(weights: &[f32]) -> Vec<f32> {
     blend
 }
 
-#[derive(Debug, Clone)]
-struct FPSAnimBlend {
-    // clips: Vec<PlayClipFromUrlNode>,
-    pub nodes: Vec<BlendNode>,
-    // pub output: BlendNode,
+fn add_anim_clip_and_blend_to_player(id: EntityId) {
+    let walk_fd = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Walk Forward.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let walk_bk = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Walk Backward.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let walk_lt = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Walk Left.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let walk_rt = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Walk Right.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let walk_fd_lt = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Walk Forward Left.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let walk_fd_rt = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Walk Forward Right.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let walk_bk_lt = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Walk Backward Left.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let walk_bk_rt = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Walk Backward Right.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let run_fd = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Run Forward.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let run_bk = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Run Backward.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let run_lt = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Run Left.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let run_rt = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Run Right.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let run_fd_lt = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Run Forward Left.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let run_fd_rt = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Run Forward Right.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let run_bk_lt = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Run Backward Left.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let run_bk_rt = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Run Backward Right.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+
+    let idle = PlayClipFromUrlNode::new(
+        asset::url("assets/anim/Rifle Aiming Idle.fbx/animations/mixamo.com.anim").unwrap(),
+    );
+    let blend1 = BlendNode::new(&walk_fd, &walk_bk, 0.0);
+    let blend2 = BlendNode::new(&blend1, &walk_lt, 0.0);
+    let blend3 = BlendNode::new(&blend2, &walk_rt, 0.0);
+    let blend4 = BlendNode::new(&blend3, &walk_fd_lt, 0.0);
+    let blend5 = BlendNode::new(&blend4, &walk_fd_rt, 0.0);
+    let blend6 = BlendNode::new(&blend5, &walk_bk_lt, 0.0);
+    let blend7 = BlendNode::new(&blend6, &walk_bk_rt, 0.0);
+    let blend8 = BlendNode::new(&blend7, &run_fd, 0.0);
+    let blend9 = BlendNode::new(&blend8, &run_bk, 0.0);
+    let blend10 = BlendNode::new(&blend9, &run_lt, 0.0);
+    let blend11 = BlendNode::new(&blend10, &run_rt, 0.0);
+    let blend12 = BlendNode::new(&blend11, &run_fd_lt, 0.0);
+    let blend13 = BlendNode::new(&blend12, &run_fd_rt, 0.0);
+    let blend14 = BlendNode::new(&blend13, &run_bk_lt, 0.0);
+    let blend15 = BlendNode::new(&blend14, &run_bk_rt, 0.0);
+    let blend16 = BlendNode::new(&blend15, &idle, 0.0);
+    entity::add_component(
+        id,
+        components::player_output_blend_node(),
+        blend16.0.to_entity(),
+    );
+    entity::add_component(
+        id,
+        components::player_anim_blend(),
+        vec![
+            blend1.0.to_entity(),
+            blend2.0.to_entity(),
+            blend3.0.to_entity(),
+            blend4.0.to_entity(),
+            blend5.0.to_entity(),
+            blend6.0.to_entity(),
+            blend7.0.to_entity(),
+            blend8.0.to_entity(),
+            blend9.0.to_entity(),
+            blend10.0.to_entity(),
+            blend11.0.to_entity(),
+            blend12.0.to_entity(),
+            blend13.0.to_entity(),
+            blend14.0.to_entity(),
+            blend15.0.to_entity(),
+            blend16.0.to_entity(),
+        ],
+    );
 }
 
-impl FPSAnimBlend {
-    pub fn new() -> Self {
-        let walk_fd = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Forward.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let walk_bk = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Backward.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let walk_lt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Left.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let walk_rt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Right.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let walk_fd_lt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Forward Left.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let walk_fd_rt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Forward Right.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let walk_bk_lt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Backward Left.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let walk_bk_rt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Walk Backward Right.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let run_fd = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Forward.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let run_bk = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Backward.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let run_lt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Left.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let run_rt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Right.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let run_fd_lt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Forward Left.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let run_fd_rt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Forward Right.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let run_bk_lt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Backward Left.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let run_bk_rt = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Run Backward Right.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-
-        let idle = PlayClipFromUrlNode::new(
-            asset::url("assets/anim/Rifle Aiming Idle.fbx/animations/mixamo.com.anim").unwrap(),
-        );
-        let blend1 = BlendNode::new(&walk_fd, &walk_bk, 0.0);
-        let blend2 = BlendNode::new(&blend1, &walk_lt, 0.0);
-        let blend3 = BlendNode::new(&blend2, &walk_rt, 0.0);
-        let blend4 = BlendNode::new(&blend3, &walk_fd_lt, 0.0);
-        let blend5 = BlendNode::new(&blend4, &walk_fd_rt, 0.0);
-        let blend6 = BlendNode::new(&blend5, &walk_bk_lt, 0.0);
-        let blend7 = BlendNode::new(&blend6, &walk_bk_rt, 0.0);
-        let blend8 = BlendNode::new(&blend7, &run_fd, 0.0);
-        let blend9 = BlendNode::new(&blend8, &run_bk, 0.0);
-        let blend10 = BlendNode::new(&blend9, &run_lt, 0.0);
-        let blend11 = BlendNode::new(&blend10, &run_rt, 0.0);
-        let blend12 = BlendNode::new(&blend11, &run_fd_lt, 0.0);
-        let blend13 = BlendNode::new(&blend12, &run_fd_rt, 0.0);
-        let blend14 = BlendNode::new(&blend13, &run_bk_lt, 0.0);
-        let blend15 = BlendNode::new(&blend14, &run_bk_rt, 0.0);
-        let blend16 = BlendNode::new(&blend15, &idle, 0.0);
-
-        Self {
-            nodes: vec![
-                blend1, blend2, blend3, blend4, blend5, blend6, blend7, blend8, blend9, blend10,
-                blend11, blend12, blend13, blend14, blend15, blend16,
-            ],
-        }
+fn get_blend_node_for_playing(id: EntityId, index: usize) -> Option<BlendNode> {
+    let node = entity::get_component(id, components::player_anim_blend());
+    if node.is_none() {
+        return None;
     }
-    pub fn update_weights(&mut self, weights: &[f32]) {
-        let blend = calculate_blend_from_weight(weights);
-        // println!("current frame blend{:?}", blend);
-        for i in 0..self.nodes.len() {
-            self.nodes[i].set_weight(blend[i]);
-        }
+    let node = node.unwrap();
+    if node.len() <= index {
+        return None;
+    }
+    let init_node = node[index];
+    let node = AnimationNode::from_entity(init_node);
+    let blend_node = BlendNode(node);
+    return Some(blend_node);
+}
+
+fn set_blend_weight_on_entity(id: EntityId, blend_weights: Vec<f32>) {
+    for (i, weight) in blend_weights.iter().enumerate() {
+        let blend_node = get_blend_node_for_playing(id, i).unwrap();
+        blend_node.set_weight(*weight);
     }
 }
 
 #[main]
 pub fn main() {
-    let anim_lib = std::rc::Rc::new(std::cell::RefCell::new(std::collections::HashMap::new()));
-    let anim_lib_clone = std::rc::Rc::clone(&anim_lib);
-    let anim_lib_once = std::rc::Rc::clone(&anim_lib);
-    let anim_lib_once2 = std::rc::Rc::clone(&anim_lib);
-
     spawn_query((player(), components::player_model_ref())).bind(move |v| {
         for (id, (_, model)) in v {
-            let fps_blend = FPSAnimBlend::new();
-            let anim_player = AnimationPlayer::new(fps_blend.nodes.last().unwrap());
-            anim_lib.borrow_mut().insert(id, (fps_blend, anim_player));
+            add_anim_clip_and_blend_to_player(id);
+            let output_blend_node =
+                entity::get_component(id, components::player_output_blend_node()).unwrap();
+            let blend_node = BlendNode::from_entity(output_blend_node);
+            let anim_player = AnimationPlayer::new(blend_node);
             entity::add_component(model, apply_animation_player(), anim_player.0);
             entity::add_component(id, components::player_jumping(), false);
         }
     });
 
-    change_query((player(), components::player_health()))
-        .track_change(components::player_health())
-        .bind(move |res| {
-            for (player_id, (_, health)) in res {
-                let anim_lib = anim_lib_once2.borrow_mut();
-                let anim_lib = anim_lib.get(&player_id);
-                if anim_lib.is_none() {
-                    return;
-                }
-                let (blend, anim_player) = anim_lib.unwrap().clone();
-                if health <= 0 {
-                    let death = PlayClipFromUrlNode::new(
+    change_query((
+        player(),
+        components::player_health(),
+        components::player_model_ref(),
+        components::player_output_blend_node(),
+    ))
+    .track_change(components::player_health())
+    .bind(move |res| {
+        for (player_id, (_, health, model, output_node)) in res {
+            if health <= 0 {
+                let death = PlayClipFromUrlNode::new(
+                    asset::url("assets/anim/Rifle Death.fbx/animations/mixamo.com.anim").unwrap(),
+                );
+                death.looping(false);
+
+                let anim_player_entity =
+                    entity::get_component(model, apply_animation_player()).unwrap();
+                let anim_player = AnimationPlayer(anim_player_entity);
+                anim_player.play(death);
+
+                run_async(async move {
+                    let clip = PlayClipFromUrlNode::new(
                         asset::url("assets/anim/Rifle Death.fbx/animations/mixamo.com.anim")
                             .unwrap(),
                     );
-                    death.looping(false);
-                    anim_player.play(death);
-
-                    run_async(async move {
-                        let clip = PlayClipFromUrlNode::new(
-                            asset::url("assets/anim/Rifle Death.fbx/animations/mixamo.com.anim")
-                                .unwrap(),
-                        );
-                        clip.looping(false);
-                        let dur = clip.clip_duration().await;
-                        sleep(dur).await;
-                        anim_player.play(blend.nodes.last().unwrap());
-                    });
-                };
-            }
-        });
-
-    change_query((player(), components::player_jumping()))
-        .track_change(components::player_jumping())
-        .bind(move |res| {
-            for (player_id, (_, is_jumping)) in res {
-                let anim_lib = anim_lib_once.borrow_mut();
-                let anim_lib = anim_lib.get(&player_id);
-                if anim_lib.is_none() {
-                    return;
-                }
-                let (blend, anim_player) = anim_lib.unwrap();
-                if is_jumping {
-                    let clip = PlayClipFromUrlNode::new(
-                        asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim")
-                            .unwrap(),
-                    );
                     clip.looping(false);
-                    anim_player.play(clip);
-                } else {
-                    anim_player.play(blend.nodes.last().unwrap());
-                }
+                    let dur = clip.clip_duration().await;
+                    sleep(dur).await;
+                    // after death animation, play the blend node again
+                    let blend_node = BlendNode::from_entity(output_node);
+                    anim_player.play(blend_node);
+                });
+            };
+        }
+    });
+
+    change_query((
+        player(),
+        components::player_jumping(),
+        components::player_model_ref(),
+        components::player_output_blend_node(),
+    ))
+    .track_change(components::player_jumping())
+    .bind(move |res| {
+        for (player_id, (_, is_jumping, model, output_node)) in res {
+            let anim_player_entity =
+                entity::get_component(model, apply_animation_player()).unwrap();
+            let anim_player = AnimationPlayer(anim_player_entity);
+            if is_jumping {
+                let clip = PlayClipFromUrlNode::new(
+                    asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim").unwrap(),
+                );
+                clip.looping(false);
+
+                anim_player.play(clip);
+            } else {
+                // let output_node = get_output_blend_node_for_playing(player_id).unwrap();
+                let blend_node = BlendNode::from_entity(output_node);
+                anim_player.play(blend_node);
             }
-        });
+        }
+    });
     query((
         player(),
         components::player_model_ref(),
@@ -211,8 +244,7 @@ pub fn main() {
                 continue;
             }
             let mut weights = vec![0.0; 17];
-            let anim_lib = anim_lib_clone.borrow_mut();
-            let (mut blend, _anim_player) = anim_lib.get(&player_id).unwrap().clone();
+
             let fd = dir.y == -1.0;
             let bk = dir.y == 1.0;
             let lt = dir.x == -1.0;
@@ -259,9 +291,8 @@ pub fn main() {
                     weights[16] = 1.0;
                 }
             }
-            blend.update_weights(&weights);
-            // println!("weights get updated {:?}", weights);
-            // println!("current frame weight{:?}", weights);
+            let blend_weight = calculate_blend_from_weight(&weights);
+            set_blend_weight_on_entity(player_id, blend_weight);
         }
     });
 }

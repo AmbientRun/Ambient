@@ -1,4 +1,20 @@
 [components]
+
+player_output_blend_node = { type = "EntityId", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+player_anim_blend_weights = { type = { type = "Vec", element_type = "F32" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+player_anim_blend = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
 player_jumping = { type = "Bool", attributes = ["Debuggable", "Networked"] }
 
 walk_fd = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
