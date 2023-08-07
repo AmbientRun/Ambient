@@ -1283,7 +1283,7 @@ pub mod ambient_core {
             };
             static ANGULAR_VELOCITY: Lazy<Component<Vec3>> =
                 Lazy::new(|| __internal_get_component("ambient_core::physics::angular_velocity"));
-            #[doc = "**Angular velocity**: Angular velocity (radians/second) of this entity in the physics scene.\n\nUpdating this component will update the entity's angular velocity in the physics scene.\n\n*Attributes*: Debuggable, Networked, Store"]
+            #[doc = "**Angular velocity**: Angular velocity (radians/second) of this entity in the physics scene.\n\nUpdating this component will update the entity's angular velocity in the physics scene.\n\n\n\nNote that changing this component will forcibly set the velocity; changing the velocity every frame may lead to unexpected behavior, like improper physics or collisions failing.\n\n\n\nIf you need to adjust the velocity each frame, consider applying an impulse using `physics` functions instead.\n\n*Attributes*: Debuggable, Networked, Store"]
             pub fn angular_velocity() -> Component<Vec3> {
                 *ANGULAR_VELOCITY
             }
@@ -1351,7 +1351,7 @@ pub mod ambient_core {
             }
             static LINEAR_VELOCITY: Lazy<Component<Vec3>> =
                 Lazy::new(|| __internal_get_component("ambient_core::physics::linear_velocity"));
-            #[doc = "**Linear velocity**: Linear velocity (meters/second) of this entity in the physics scene.\n\nUpdating this component will update the entity's linear velocity in the physics scene.\n\n*Attributes*: Debuggable, Networked, Store"]
+            #[doc = "**Linear velocity**: Linear velocity (meters/second) of this entity in the physics scene.\n\nUpdating this component will update the entity's linear velocity in the physics scene.\n\n\n\nNote that changing this component will forcibly set the velocity; changing the velocity every frame may lead to unexpected behavior, like gravity not working or collisions failing.\n\n\n\nIf you need to adjust the velocity each frame, consider applying a force using `physics` functions instead.\n\n*Attributes*: Debuggable, Networked, Store"]
             pub fn linear_velocity() -> Component<Vec3> {
                 *LINEAR_VELOCITY
             }
