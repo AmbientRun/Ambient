@@ -8,7 +8,11 @@ type = "Vec3"
 name = "Angular velocity"
 description = """
 Angular velocity (radians/second) of this entity in the physics scene.
-Updating this component will update the entity's angular velocity in the physics scene."""
+Updating this component will update the entity's angular velocity in the physics scene.
+
+Note that changing this component will forcibly set the velocity; changing the velocity every frame may lead to unexpected behavior, like improper physics or collisions failing.
+
+If you need to adjust the velocity each frame, consider applying an impulse using `physics` functions instead."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::cube_collider"]
@@ -90,7 +94,11 @@ type = "Vec3"
 name = "Linear velocity"
 description = """
 Linear velocity (meters/second) of this entity in the physics scene.
-Updating this component will update the entity's linear velocity in the physics scene."""
+Updating this component will update the entity's linear velocity in the physics scene.
+
+Note that changing this component will forcibly set the velocity; changing the velocity every frame may lead to unexpected behavior, like gravity not working or collisions failing.
+
+If you need to adjust the velocity each frame, consider applying a force using `physics` functions instead."""
 attributes = ["Debuggable", "Networked", "Store"]
 
 [components."core::physics::make_physics_static"]

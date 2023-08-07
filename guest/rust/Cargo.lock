@@ -110,7 +110,6 @@ dependencies = [
  "ambient_element_component",
  "ambient_friendly_id",
  "ambient_guest_bridge",
- "ambient_profiling",
  "as-any",
  "atomic_refcell",
  "derivative",
@@ -118,6 +117,7 @@ dependencies = [
  "futures",
  "itertools",
  "parking_lot",
+ "profiling",
  "tracing",
 ]
 
@@ -450,26 +450,6 @@ dependencies = [
  "glam",
  "rand 0.8.5",
  "serde",
-]
-
-[[package]]
-name = "ambient_profiling"
-version = "1.0.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd78220128ea4004eb8072b6df5949dfa367ff16ef1a23e23b2d95f95e5db489"
-dependencies = [
- "ambient_profiling_procmacros",
- "puffin",
-]
-
-[[package]]
-name = "ambient_profiling_procmacros"
-version = "1.0.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7086fcbaeb14e6b1b49d58158591c1f39b24bcc5ea634748bebae76a71ead310"
-dependencies = [
- "quote",
- "syn 1.0.109",
 ]
 
 [[package]]
@@ -1435,12 +1415,34 @@ dependencies = [
 ]
 
 [[package]]
-name = "puffin"
-version = "0.14.3"
+name = "profiling"
+version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7b2c7a01f569fb03e2ff1f5376537f294001447bd23ce75ca51054fcd223fe4"
+checksum = "46b2164ebdb1dfeec5e337be164292351e11daf63a05174c6776b2f47460f0c9"
 dependencies = [
+ "profiling-procmacros",
+ "puffin",
+]
+
+[[package]]
+name = "profiling-procmacros"
+version = "1.0.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "097bf8b99121dfb8c75eed54dfbdbdb1d53e372c53d2353e8a15aad2a479249d"
+dependencies = [
+ "quote",
+ "syn 2.0.23",
+]
+
+[[package]]
+name = "puffin"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "76425abd4e1a0ad4bd6995dd974b52f414fca9974171df8e3708b3e660d05a21"
+dependencies = [
+ "anyhow",
  "byteorder",
+ "cfg-if",
  "instant",
  "once_cell",
 ]
