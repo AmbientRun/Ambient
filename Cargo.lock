@@ -44,7 +44,6 @@ dependencies = [
 [[package]]
 name = "ambient_api"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "ambient_api_core",
  "ambient_cb",
@@ -61,7 +60,6 @@ dependencies = [
 [[package]]
 name = "ambient_api_core"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "ambient_api_macros",
  "ambient_project_rt",
@@ -84,7 +82,6 @@ dependencies = [
 [[package]]
 name = "ambient_api_macros"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "ambient_project",
  "ambient_project_macro_common",
@@ -98,12 +95,10 @@ dependencies = [
 [[package]]
 name = "ambient_cb"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 
 [[package]]
 name = "ambient_color"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "glam",
  "hex",
@@ -114,7 +109,6 @@ dependencies = [
 [[package]]
 name = "ambient_editor_derive"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "convert_case",
  "itertools",
@@ -128,13 +122,11 @@ dependencies = [
 [[package]]
 name = "ambient_element"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "ambient_cb",
  "ambient_element_component",
  "ambient_friendly_id",
  "ambient_guest_bridge",
- "ambient_profiling",
  "as-any",
  "atomic_refcell",
  "derivative",
@@ -142,13 +134,13 @@ dependencies = [
  "futures",
  "itertools",
  "parking_lot",
+ "profiling",
  "tracing",
 ]
 
 [[package]]
 name = "ambient_element_component"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "itertools",
  "proc-macro-crate",
@@ -160,7 +152,6 @@ dependencies = [
 [[package]]
 name = "ambient_friendly_id"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "rand",
 ]
@@ -168,7 +159,6 @@ dependencies = [
 [[package]]
 name = "ambient_guest_bridge"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "ambient_api_core",
  "ambient_shared_types",
@@ -178,7 +168,6 @@ dependencies = [
 [[package]]
 name = "ambient_math"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "glam",
  "rand",
@@ -186,29 +175,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_profiling"
-version = "1.0.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd78220128ea4004eb8072b6df5949dfa367ff16ef1a23e23b2d95f95e5db489"
-dependencies = [
- "ambient_profiling_procmacros",
- "puffin",
-]
-
-[[package]]
-name = "ambient_profiling_procmacros"
-version = "1.0.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7086fcbaeb14e6b1b49d58158591c1f39b24bcc5ea634748bebae76a71ead310"
-dependencies = [
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "ambient_project"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "anyhow",
  "log",
@@ -223,7 +191,6 @@ dependencies = [
 [[package]]
 name = "ambient_project_macro_common"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "ambient_project",
  "ambient_shared_types",
@@ -239,7 +206,6 @@ dependencies = [
 [[package]]
 name = "ambient_project_rt"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "byteorder",
  "glam",
@@ -249,12 +215,10 @@ dependencies = [
 [[package]]
 name = "ambient_schema"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 
 [[package]]
 name = "ambient_shared_types"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "bitflags 1.3.2",
  "paste",
@@ -266,7 +230,6 @@ dependencies = [
 [[package]]
 name = "ambient_time"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "itertools",
  "thiserror",
@@ -275,7 +238,6 @@ dependencies = [
 [[package]]
 name = "ambient_ui"
 version = "0.3.0-dev"
-source = "git+https://github.com/AmbientRun/Ambient.git?rev=8ec06c7#8ec06c78030d2285802db71ced9265127629dab5"
 dependencies = [
  "ambient_cb",
  "ambient_color",
@@ -866,12 +828,34 @@ dependencies = [
 ]
 
 [[package]]
-name = "puffin"
-version = "0.14.3"
+name = "profiling"
+version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7b2c7a01f569fb03e2ff1f5376537f294001447bd23ce75ca51054fcd223fe4"
+checksum = "46b2164ebdb1dfeec5e337be164292351e11daf63a05174c6776b2f47460f0c9"
 dependencies = [
+ "profiling-procmacros",
+ "puffin",
+]
+
+[[package]]
+name = "profiling-procmacros"
+version = "1.0.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "097bf8b99121dfb8c75eed54dfbdbdb1d53e372c53d2353e8a15aad2a479249d"
+dependencies = [
+ "quote",
+ "syn 2.0.18",
+]
+
+[[package]]
+name = "puffin"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "76425abd4e1a0ad4bd6995dd974b52f414fca9974171df8e3708b3e660d05a21"
+dependencies = [
+ "anyhow",
  "byteorder",
+ "cfg-if",
  "instant",
  "once_cell",
 ]
