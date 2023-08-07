@@ -82,15 +82,37 @@ pub enum Commands {
     Assets {
         #[command(subcommand)]
         command: AssetCommand,
-        path: PathBuf,
     },
+}
+
+#[derive(Args, Clone, Debug)]
+pub struct MigrateOptions {
+    #[arg(index = 1, default_value = "./assets")]
+    /// The path to the assets folder
+    pub path: PathBuf,
+}
+
+#[derive(Args, Clone, Debug)]
+pub struct ImportOptions {
+    #[arg(index = 1)]
+    /// The path to the assets you want to import
+    pub path: PathBuf,
+    #[arg(long)]
+    /// Whether to convert audio files to OGG
+    pub convert_audio: bool,
+    /// Whether to generate a collider from the model
+    #[arg(long)]
+    pub collider_from_model: bool,
 }
 
 #[derive(Subcommand, Clone, Debug)]
 pub enum AssetCommand {
     /// Migrate json pipelines to toml
     #[command(name = "migrate-pipelines-toml")]
-    MigratePipelinesToml,
+    MigratePipelinesToml(MigrateOptions),
+    /// Import new assets with interactive prompts
+    #[command(name = "import")]
+    Import(ImportOptions),
 }
 
 #[derive(Subcommand, Clone, Copy, Debug)]

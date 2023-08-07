@@ -421,7 +421,7 @@ impl TransformSystem {
         }
     }
 
-    #[ambient_profiling::function]
+    #[profiling::function]
     fn parented(&mut self, world: &mut World) {
         let mut changed_roots = HashSet::<EntityId>::new();
         for (id, _) in
@@ -461,7 +461,7 @@ impl TransformSystem {
 }
 impl System for TransformSystem {
     fn run(&mut self, world: &mut World, event: &FrameEvent) {
-        ambient_profiling::scope!("TransformSystem::run");
+        profiling::scope!("TransformSystem::run");
         self.systems.run(world, event);
         if let Some(camera) =
             get_active_camera(world, main_scene(), world.resource_opt(local_user_id()))

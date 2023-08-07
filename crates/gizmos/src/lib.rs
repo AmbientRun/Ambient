@@ -343,7 +343,7 @@ pub fn client_systems() -> SystemGroup {
         "visualization/client",
         vec![
             query(local_gizmos()).to_system(|q, world, qs, _| {
-                ambient_profiling::scope!("local_gizmos");
+                profiling::scope!("local_gizmos");
                 for (id, prim) in q.iter(world, qs) {
                     let mut scope = world.resource(gizmos()).scope(id.to_string());
                     scope.draw(prim.iter().copied());
@@ -352,7 +352,7 @@ pub fn client_systems() -> SystemGroup {
             query(local_gizmos())
                 .despawned()
                 .to_system(|q, world, qs, _| {
-                    ambient_profiling::scope!("local_gizmos_despawned");
+                    profiling::scope!("local_gizmos_despawned");
                     for (id, _) in q.iter(world, qs) {
                         world.resource(gizmos()).remove_scope(id.to_string());
                     }

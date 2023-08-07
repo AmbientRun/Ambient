@@ -245,15 +245,36 @@ async fn main() -> anyhow::Result<()> {
         None => None,
     };
 
-    if let Commands::Assets { command, path } = &cli.command {
-        let path = ProjectPath::new_local(path.clone())?;
-
+    if let Commands::Assets { command } = &cli.command {
         match command {
-            AssetCommand::MigratePipelinesToml => {
+            AssetCommand::MigratePipelinesToml(opt) => {
+                let path = ProjectPath::new_local(opt.path.clone())?;
                 ambient_build::migrate::toml::process(path.fs_path.unwrap())
                     .await
                     .context("Failed to migrate pipelines")?;
             }
+            AssetCommand::Import(opt) => match opt.path.extension() {
+                Some(ext) => {
+                    if ext == "wav" || ext == "mp3" || ext == "ogg" {
+                        let convert = opt.convert_audio;
+                        ambient_build::pipelines::import_audio(opt.path.clone(), convert)
+                            .context("failed to import audio")?;
+                    } else if ext == "fbx" || ext == "glb" || ext == "gltf" || ext == "obj" {
+                        let collider_from_model = opt.collider_from_model;
+                        ambient_build::pipelines::import_model(
+                            opt.path.clone(),
+                            collider_from_model,
+                        )
+                        .context("failed to import models")?;
+                    } else if ext == "jpg" || ext == "png" || ext == "gif" || ext == "webp" {
+                        // TODO: import textures API may change, so this is just a placeholder
+                        todo!();
+                    } else {
+                        bail!("Unsupported file type");
+                    }
+                }
+                None => bail!("Unknown file type"),
+            },
         }
 
         return Ok(());

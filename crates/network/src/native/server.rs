@@ -174,8 +174,8 @@ impl GameServer {
                     fps_counter.frame_start();
                     let mut state = state.lock();
                     tokio::task::block_in_place(|| {
-                        ambient_profiling::finish_frame!();
-                        ambient_profiling::scope!("sim_tick");
+                        profiling::finish_frame!();
+                        profiling::scope!("sim_tick");
                         state.step();
                         state.broadcast_diffs();
                         if let Some(sample) = fps_counter.frame_end() {

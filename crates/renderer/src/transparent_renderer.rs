@@ -71,7 +71,7 @@ impl TransparentRenderer {
             despawn_qs: QueryState::new(),
         }
     }
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn update(
         &mut self,
         gpu: &Gpu,
@@ -188,7 +188,7 @@ impl TransparentRenderer {
             .retain(|x| !(x.id == id && x.primitive_index == primitive_index));
     }
 
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn render<'a>(
         &'a self,
         world: &World,

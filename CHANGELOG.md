@@ -52,6 +52,7 @@ These PRs are not directly user-facing, but improve the development experience. 
 - **ECS**: `Duration` is now a supported primitive type.
 - **ECS**: All integer types from 8-bit to 64-bit are now supported as component types, including signed and unsigned variants. Additionally, all signed and unsigned integer vector types are now supported. This includes `U16`, `IVec2`, `UVec3`, etc.
 - **Docs**: The IDE documentation has been improved, including information on how to set up Emacs for Ambient development (thanks to [@kevzettler](https://github.com/kevzettler) in [#505](https://github.com/AmbientRun/Ambient/pull/505)).
+- **Assets**: Now you can use `ambient assets import` to import asset one by one. This will create or modify the `pipeline.toml` file for you.
 
 #### Examples
 

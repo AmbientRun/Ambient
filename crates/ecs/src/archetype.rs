@@ -343,7 +343,7 @@ impl Archetype {
         }
     }
 
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn next_frame(&mut self) {
         self.movein_events.next_frame();
         self.moveout_events.next_frame();

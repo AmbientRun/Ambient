@@ -231,7 +231,7 @@ pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
 
 const Z_DELTA: f32 = -0.00001;
 
-#[ambient_profiling::function]
+#[profiling::function]
 fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     let padding: Borders = world
         .get(id, padding())
@@ -375,7 +375,7 @@ fn dock_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     }
 }
 
-#[ambient_profiling::function]
+#[profiling::function]
 fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     let orientation = world
         .get(id, orientation())
@@ -556,7 +556,7 @@ fn flow_layout(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     }
 }
 
-#[ambient_profiling::function]
+#[profiling::function]
 fn bookcase_layout(world: &mut World, id: EntityId, files: Vec<EntityId>) {
     let orientation = world
         .get(id, orientation())
@@ -630,7 +630,7 @@ fn bookcase_layout(world: &mut World, id: EntityId, files: Vec<EntityId>) {
     }
 }
 
-#[ambient_profiling::function]
+#[profiling::function]
 fn width_to_children(world: &mut World, id: EntityId, children: Vec<EntityId>) {
     let self_width = world.get(id, width()).unwrap_or(0.);
     for c in children {

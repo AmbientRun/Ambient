@@ -509,7 +509,7 @@ impl WorldStream {
     pub fn filter(&self) -> &WorldStreamFilter {
         &self.filter
     }
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn next_diff(&mut self, world: &World) -> WorldDiff {
         let shape_changes = self
             .shape_stream_reader

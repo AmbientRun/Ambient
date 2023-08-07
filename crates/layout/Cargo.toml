@@ -17,4 +17,4 @@ glam = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
 serde = { workspace = true }
-ambient_profiling = { workspace = true }
+profiling = { workspace = true }

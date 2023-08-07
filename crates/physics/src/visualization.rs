@@ -94,7 +94,7 @@ pub(crate) fn server_systems() -> SystemGroup {
             query(visualize_collider()).despawned().to_system_with_name(
                 "visualization/despawned",
                 |q, w, qs, _| {
-                    ambient_profiling::scope!("server_shape_visualize_remove");
+                    profiling::scope!("server_shape_visualize_remove");
                     let mut ids = Vec::new();
                     for (id, _) in q.iter(w, qs) {
                         ids.push(id);
@@ -109,7 +109,7 @@ pub(crate) fn server_systems() -> SystemGroup {
             query(visualize_collider()).to_system_with_name(
                 "visualization/shapes",
                 |q, w, qs, _| {
-                    ambient_profiling::scope!("server_shape_visualize");
+                    profiling::scope!("server_shape_visualize");
                     let mut primitives = Vec::new();
 
                     for (id, ()) in q.iter(w, qs) {

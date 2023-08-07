@@ -139,7 +139,7 @@ impl WorldInstance {
         }
         let diff: FrozenWorldDiff = diff.into();
 
-        ambient_profiling::scope!("Send MsgEntities");
+        profiling::scope!("Send MsgEntities");
 
         for (_, (entity_stream,)) in query((player_entity_stream(),)).iter(&self.world, None) {
             if let Err(err) = entity_stream.send(diff.clone()) {
