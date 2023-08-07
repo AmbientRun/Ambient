@@ -1,9 +1,7 @@
 use std::{marker::PhantomData, path::PathBuf, sync::Arc, time::Duration};
 
 use crate::{
-    asset_cache::{
-        AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt,
-    },
+    asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     mesh::Mesh,
 };
@@ -181,6 +179,7 @@ pub async fn download_uncached_bytes(
 #[async_trait]
 impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<Vec<u8>>> {
+        #[cfg(not(target_os = "unknown"))]
         if self.cache_on_disk && AssetsCacheOnDisk.get(&assets) {
             let path = BytesFromUrlCachedPath {
                 url: self.url.clone(),
@@ -209,9 +208,12 @@ impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
 
 /// Get the local cache file location of a resource, and ensure the resource is downloaded to that cache file
 #[derive(Clone, Debug)]
+#[cfg(not(target_os = "unknown"))]
 pub struct BytesFromUrlCachedPath {
     pub url: AbsAssetUrl,
 }
+
+#[cfg(not(target_os = "unknown"))]
 impl BytesFromUrlCachedPath {
     pub fn parse_url(url: impl AsRef<str>) -> anyhow::Result<Self> {
         Ok(Self {
@@ -221,22 +223,10 @@ impl BytesFromUrlCachedPath {
 }
 
 #[async_trait]
-#[cfg(target_os = "unknown")]
-impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
-    fn keepalive(&self) -> AssetKeepalive {
-        AssetKeepalive::Forever
-    }
-
-    async fn load(self, _: AssetCache) -> AssetResult<Arc<PathBuf>> {
-        return Err(anyhow::anyhow!("Asset caching is not supported on wasm").into());
-    }
-}
-
-#[async_trait]
 #[cfg(not(target_os = "unknown"))]
 impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
-    fn keepalive(&self) -> AssetKeepalive {
-        AssetKeepalive::Forever
+    fn keepalive(&self) -> ambient_asset_cache::AssetKeepalive {
+        ambient_asset_cache::AssetKeepalive::Forever
     }
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<PathBuf>> {
         if let Some(path) = self.url.to_file_path()? {
@@ -290,7 +280,7 @@ impl AsyncAssetKey<AssetResult<Arc<PathBuf>>> for BytesFromUrlCachedPath {
     }
 }
 
-/// Limit the number of concurent file reads to 10
+/// Limit the number of conccurent file reads to 10
 #[derive(Debug)]
 struct FileReadSemaphore;
 impl SyncAssetKey<Arc<Semaphore>> for FileReadSemaphore {
