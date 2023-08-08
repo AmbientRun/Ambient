@@ -109,6 +109,7 @@ async fn main() -> anyhow::Result<()> {
     // Build the project if required. Note that this only runs if the project is local.
     //
     // Update the project path to match the build path if necessary.
+    let original_project_path = project_path.clone();
     let (project_path, build_path) = if let Some((project, project_path)) = project
         .as_ref()
         .filter(|p| !p.no_build)
@@ -303,7 +304,8 @@ async fn main() -> anyhow::Result<()> {
 
     if let Some(run) = cli.run() {
         // If we have run parameters, start a client and join a server
-        let exit_status = client::run(assets, server_addr, run, project_path.fs_path).await;
+        let exit_status =
+            client::run(assets, server_addr, run, original_project_path.fs_path).await;
         if exit_status == ExitStatus::FAILURE {
             bail!("client::run failed with {exit_status:?}");
         }
