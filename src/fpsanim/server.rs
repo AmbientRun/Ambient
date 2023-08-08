@@ -4,6 +4,7 @@ use ambient_api::{
     animation::{AnimationNode, AnimationPlayer, BlendNode, PlayClipFromUrlNode},
     components::core::{
         animation::{apply_animation_player, blend},
+        ecs::{children, parent},
         player::player,
     },
     entity::spawn,
@@ -100,31 +101,39 @@ fn add_anim_clip_and_blend_to_player(id: EntityId) {
     let blend14 = BlendNode::new(&blend13, &run_bk_lt, 0.0);
     let blend15 = BlendNode::new(&blend14, &run_bk_rt, 0.0);
     let blend16 = BlendNode::new(&blend15, &idle, 0.0);
+    let output = BlendNode::new(&blend16, &blend16, 0.0); // the right one is dummy
     entity::add_component(
         id,
         components::player_output_blend_node(),
-        blend16.0.to_entity(),
+        output.0.get_entity_id(),
     );
+
+    entity::add_component(
+        id,
+        components::player_persistant_anim_node(),
+        blend16.0.get_entity_id(),
+    );
+
     entity::add_component(
         id,
         components::player_anim_blend(),
         vec![
-            blend1.0.to_entity(),
-            blend2.0.to_entity(),
-            blend3.0.to_entity(),
-            blend4.0.to_entity(),
-            blend5.0.to_entity(),
-            blend6.0.to_entity(),
-            blend7.0.to_entity(),
-            blend8.0.to_entity(),
-            blend9.0.to_entity(),
-            blend10.0.to_entity(),
-            blend11.0.to_entity(),
-            blend12.0.to_entity(),
-            blend13.0.to_entity(),
-            blend14.0.to_entity(),
-            blend15.0.to_entity(),
-            blend16.0.to_entity(),
+            blend1.0.get_entity_id(),
+            blend2.0.get_entity_id(),
+            blend3.0.get_entity_id(),
+            blend4.0.get_entity_id(),
+            blend5.0.get_entity_id(),
+            blend6.0.get_entity_id(),
+            blend7.0.get_entity_id(),
+            blend8.0.get_entity_id(),
+            blend9.0.get_entity_id(),
+            blend10.0.get_entity_id(),
+            blend11.0.get_entity_id(),
+            blend12.0.get_entity_id(),
+            blend13.0.get_entity_id(),
+            blend14.0.get_entity_id(),
+            blend15.0.get_entity_id(),
+            blend16.0.get_entity_id(),
         ],
     );
 }
@@ -139,12 +148,12 @@ fn get_blend_node_for_playing(id: EntityId, index: usize) -> Option<BlendNode> {
         return None;
     }
     let init_node = node[index];
-    let node = AnimationNode::from_entity(init_node);
-    let blend_node = BlendNode(node);
+    // let node = AnimationNode::from_entity(init_node);
+    let blend_node = BlendNode::from_entity(init_node);
     return Some(blend_node);
 }
 
-fn set_blend_weight_on_entity(id: EntityId, blend_weights: Vec<f32>) {
+fn set_blend_weights_on_entity(id: EntityId, blend_weights: Vec<f32>) {
     for (i, weight) in blend_weights.iter().enumerate() {
         let blend_node = get_blend_node_for_playing(id, i).unwrap();
         blend_node.set_weight(*weight);
@@ -168,22 +177,24 @@ pub fn main() {
     change_query((
         player(),
         components::player_health(),
-        components::player_model_ref(),
         components::player_output_blend_node(),
+        components::player_persistant_anim_node(),
     ))
     .track_change(components::player_health())
     .bind(move |res| {
-        for (player_id, (_, health, model, output_node)) in res {
+        for (_, (_, health, output_node, persistant_node)) in res {
             if health <= 0 {
-                let death = PlayClipFromUrlNode::new(
+                let clip = PlayClipFromUrlNode::new(
                     asset::url("assets/anim/Rifle Death.fbx/animations/mixamo.com.anim").unwrap(),
                 );
-                death.looping(false);
+                clip.looping(false);
 
-                let anim_player_entity =
-                    entity::get_component(model, apply_animation_player()).unwrap();
-                let anim_player = AnimationPlayer(anim_player_entity);
-                anim_player.play(death);
+                entity::mutate_component(output_node, children(), |v| {
+                    v.clear();
+                    v.push(clip.0.get_entity_id());
+                    v.push(clip.0.get_entity_id());
+                });
+                entity::add_component(clip.0.get_entity_id(), parent(), output_node);
 
                 run_async(async move {
                     let clip = PlayClipFromUrlNode::new(
@@ -194,8 +205,12 @@ pub fn main() {
                     let dur = clip.clip_duration().await;
                     sleep(dur).await;
                     // after death animation, play the blend node again
-                    let blend_node = BlendNode::from_entity(output_node);
-                    anim_player.play(blend_node);
+                    entity::mutate_component(output_node, children(), |v| {
+                        v.clear();
+                        v.push(persistant_node);
+                        v.push(persistant_node);
+                    });
+                    entity::add_component(persistant_node, parent(), output_node);
                 });
             };
         }
@@ -204,26 +219,30 @@ pub fn main() {
     change_query((
         player(),
         components::player_jumping(),
-        components::player_model_ref(),
         components::player_output_blend_node(),
+        components::player_persistant_anim_node(),
     ))
     .track_change(components::player_jumping())
     .bind(move |res| {
-        for (player_id, (_, is_jumping, model, output_node)) in res {
-            let anim_player_entity =
-                entity::get_component(model, apply_animation_player()).unwrap();
-            let anim_player = AnimationPlayer(anim_player_entity);
+        for (_, (_, is_jumping, output_node, persistant_node)) in res {
             if is_jumping {
                 let clip = PlayClipFromUrlNode::new(
                     asset::url("assets/anim/Rifle Jump.fbx/animations/mixamo.com.anim").unwrap(),
                 );
                 clip.looping(false);
-
-                anim_player.play(clip);
+                entity::mutate_component(output_node, children(), |v| {
+                    v.clear();
+                    v.push(clip.0.get_entity_id());
+                    v.push(clip.0.get_entity_id());
+                });
+                entity::add_component(clip.0.get_entity_id(), parent(), output_node);
             } else {
-                // let output_node = get_output_blend_node_for_playing(player_id).unwrap();
-                let blend_node = BlendNode::from_entity(output_node);
-                anim_player.play(blend_node);
+                entity::mutate_component(output_node, children(), |v| {
+                    v.clear();
+                    v.push(persistant_node);
+                    v.push(persistant_node); // we had to add the second one for blend node to work
+                });
+                entity::add_component(persistant_node, parent(), output_node);
             }
         }
     });
@@ -292,7 +311,7 @@ pub fn main() {
                 }
             }
             let blend_weight = calculate_blend_from_weight(&weights);
-            set_blend_weight_on_entity(player_id, blend_weight);
+            set_blend_weights_on_entity(player_id, blend_weight);
         }
     });
 }
