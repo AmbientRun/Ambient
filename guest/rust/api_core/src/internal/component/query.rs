@@ -102,7 +102,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> GeneralQueryBuilder<C
     /// Builds a [GeneralQuery].
     pub fn build(self) -> GeneralQuery<Components> {
         GeneralQuery(QueryImpl::new(
-            self.0.build_impl(&[], wit::component::QueryEvent::Frame),
+            self.0.build_impl(vec![], wit::component::QueryEvent::Frame),
         ))
     }
 
@@ -184,7 +184,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> ChangeQuery<Component
         QueryImpl::new(
             self.0
                  .0
-                .build_impl(&self.0 .1, wit::component::QueryEvent::Frame),
+                .build_impl(self.0 .1, wit::component::QueryEvent::Frame),
         )
     }
 }
@@ -224,7 +224,7 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> EventQuery<Components
 
     fn build(self) -> QueryImpl<Components> {
         QueryImpl::new(self.0.build_impl(
-            &[],
+            vec![],
             match self.1 {
                 QueryEvent::Spawn => wit::component::QueryEvent::Spawn,
                 QueryEvent::Despawn => wit::component::QueryEvent::Despawn,
@@ -291,12 +291,12 @@ impl<Components: ComponentsTuple + Copy + Clone + 'static> QueryBuilderImpl<Comp
     pub fn excludes(&mut self, exclude: impl ComponentsTuple) {
         self.exclude.extend_from_slice(&exclude.as_indices());
     }
-    fn build_impl(self, changed: &[u32], event: wit::component::QueryEvent) -> u64 {
+    fn build_impl(self, changed: Vec<u32>, event: wit::component::QueryEvent) -> u64 {
         wit::component::query(
-            wit::component::QueryBuild {
-                components: &self.components,
-                include: &self.include,
-                exclude: &self.exclude,
+            &wit::component::QueryBuild {
+                components: self.components,
+                includes: self.include,
+                excludes: self.exclude,
                 changed,
             },
             event,

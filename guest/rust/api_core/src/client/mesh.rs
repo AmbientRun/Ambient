@@ -1,7 +1,3 @@
-use std::mem::size_of;
-
-use static_assertions::const_assert_eq;
-
 use crate::global::{ProceduralMeshHandle, Vec2, Vec3};
 use crate::internal::conversion::*;
 use crate::internal::wit;
@@ -14,32 +10,37 @@ pub struct Vertex {
     pub tangent: Vec3,
     pub texcoord0: Vec2,
 }
+impl IntoBindgen for Vertex {
+    type Item = wit::client_mesh::Vertex;
+
+    fn into_bindgen(self) -> Self::Item {
+        Self::Item {
+            position: self.position.into_bindgen(),
+            normal: self.normal.into_bindgen(),
+            tangent: self.tangent.into_bindgen(),
+            texcoord0: self.texcoord0.into_bindgen(),
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct Descriptor<'a> {
     pub vertices: &'a [Vertex],
     pub indices: &'a [u32],
 }
-
-impl<'a> IntoBindgen for Descriptor<'a> {
-    type Item = wit::client_mesh::Descriptor<'a>;
+impl<'a> IntoBindgen for &'a Descriptor<'a> {
+    type Item = wit::client_mesh::Descriptor;
 
     fn into_bindgen(self) -> Self::Item {
-        const_assert_eq!(size_of::<Vertex>(), size_of::<wit::client_mesh::Vertex>());
         Self::Item {
-            vertices: unsafe {
-                std::slice::from_raw_parts(
-                    self.vertices.as_ptr().cast::<wit::client_mesh::Vertex>(),
-                    self.vertices.len(),
-                )
-            },
-            indices: self.indices,
+            vertices: self.vertices.iter().map(|v| v.into_bindgen()).collect(),
+            indices: self.indices.to_vec(),
         }
     }
 }
 
 pub fn create(desc: &Descriptor) -> ProceduralMeshHandle {
-    wit::client_mesh::create(desc.clone().into_bindgen()).from_bindgen()
+    wit::client_mesh::create(&desc.into_bindgen()).from_bindgen()
 }
 
 pub fn destroy(handle: ProceduralMeshHandle) {

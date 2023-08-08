@@ -443,5 +443,5 @@ async fn resolve_hosted_server(assets: &AssetCache, url: Url) -> anyhow::Result<
         .context("Failed to get result for request")?;
 
     Url::parse(&format!("https://{}", res.trim()))
-        .context("Expected a valid URL for host resolution")
+        .with_context(|| format!("Expected a valid URL for host resolution. Got: {res}"))
 }

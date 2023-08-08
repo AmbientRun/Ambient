@@ -91,6 +91,6 @@ import("ambient_web")
       return;
     }
 
-    ambient.start(target, "https://api.ambient.run/servers/ensure-running?deployment_id=17zKiSVwEBHXiC0d8avbro");
+    ambient.start(target, "https://api.ambient.run/servers/ensure-running?ember_id=ambient_example_asset_loading");
     // setupAudio();
   });
