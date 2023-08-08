@@ -70,7 +70,7 @@ pub struct BuildConfiguration<'a> {
 pub async fn build(
     config: BuildConfiguration<'_>,
     root_ember_id: ItemId<Scope>,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<PathBuf> {
     let BuildConfiguration {
         build_path,
         assets,
@@ -92,11 +92,14 @@ pub async fn build(
     }
 
     let mut queue = semantic.items.scope_and_dependencies(root_ember_id);
+
+    let mut output_path = build_path.clone();
     while let Some(ember_id) = queue.pop() {
         let id = semantic.items.get(ember_id)?.original_id.clone();
+        let build_path = build_path.join(id.as_str());
         build_ember(
             BuildConfiguration {
-                build_path: build_path.join(id.as_str()),
+                build_path: build_path.clone(),
                 assets: assets.clone(),
                 semantic,
                 optimize,
@@ -106,9 +109,13 @@ pub async fn build(
             ember_id,
         )
         .await?;
+
+        if ember_id == root_ember_id {
+            output_path = build_path;
+        }
     }
 
-    Ok(())
+    Ok(output_path)
 }
 
 /// This takes the path to an Ambient ember and builds it. An Ambient ember is expected to

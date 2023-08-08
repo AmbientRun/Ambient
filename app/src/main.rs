@@ -266,58 +266,67 @@ async fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    let build_path = project_path.push("build");
-    if let Some(project) = project.as_ref() {
-        if !project.no_build {
-            // If a project was specified, prepare its semantic state.
-            // The build step uses its own semantic to ensure that there is
-            // no contamination, so that the built project can use its own
-            // semantic based on the flat hierarchy.
-            let mut semantic = ambient_project_semantic::Semantic::new()?;
-            let primary_ember_scope_id = ember::add(
-                &mut semantic,
-                project_path
-                    .fs_path
-                    .as_ref()
-                    .context("project path must be local for now")?,
-            )?;
+    // Build the project if required. Note that this only runs if the project is local.
+    //
+    // Update the project path to match the build path if necessary.
+    let project_path = if let Some((project, project_path)) = project
+        .as_ref()
+        .filter(|p| !p.no_build)
+        .zip(project_path.fs_path.as_deref())
+    {
+        let build_path = project_path.join("build");
+        // The build step uses its own semantic to ensure that there is
+        // no contamination, so that the built project can use its own
+        // semantic based on the flat hierarchy.
+        let mut semantic = ambient_project_semantic::Semantic::new()?;
+        let primary_ember_scope_id = ember::add(&mut semantic, project_path)?;
 
-            let manifest = semantic
-                .items
-                .get(primary_ember_scope_id)?
-                .manifest
-                .clone()
-                .context("no manifest for scope")?;
+        let manifest = semantic
+            .items
+            .get(primary_ember_scope_id)?
+            .manifest
+            .clone()
+            .context("no manifest for scope")?;
 
-            let build_config = ambient_build::BuildConfiguration {
-                build_path: build_path
-                    .to_file_path()?
-                    .context("no file path for build path")?,
-                assets: assets.clone(),
-                semantic: &mut semantic,
-                optimize: project.release,
-                clean_build: project.clean_build,
-                build_wasm_only: project.build_wasm_only,
-            };
+        let build_config = ambient_build::BuildConfiguration {
+            build_path,
+            assets: assets.clone(),
+            semantic: &mut semantic,
+            optimize: project.release,
+            clean_build: project.clean_build,
+            build_wasm_only: project.build_wasm_only,
+        };
 
-            let project_name = manifest
-                .ember
-                .name
-                .as_deref()
-                .unwrap_or_else(|| manifest.ember.id.as_str());
+        let project_name = manifest
+            .ember
+            .name
+            .as_deref()
+            .unwrap_or_else(|| manifest.ember.id.as_str());
 
-            tracing::info!("Building project {:?}", project_name);
+        tracing::info!("Building project {:?}", project_name);
 
-            ambient_build::build(build_config, primary_ember_scope_id)
-                .await
-                .context("Failed to build project")?;
-        }
-    }
+        let output_path = ambient_build::build(build_config, primary_ember_scope_id)
+            .await
+            .context("Failed to build project")?;
+
+        ProjectPath::new_local(output_path)?
+    } else {
+        project_path
+    };
 
     // If this is just a build, exit now
     if matches!(&cli.command, Commands::Build { .. }) {
         return Ok(());
     }
+
+    // Read the project manifest from the project path (which may have been updated by the build step)
+    // We do not establish the semantic until the server has started up to unify the codepaths.
+    let manifest = ambient_project::Manifest::parse(
+        &project_path
+            .push("ambient.toml")
+            .download_string(&assets)
+            .await?,
+    )?;
 
     // If this is just a deploy then deploy and exit
     if let Commands::Deploy {
@@ -332,13 +341,12 @@ async fn main() -> anyhow::Result<()> {
         let Some(project_fs_path) = &project_path.fs_path else {
             anyhow::bail!("Can only deploy a local project");
         };
-        let manifest = manifest.as_ref().expect("no manifest");
         let deployment_id = ambient_deploy::deploy(
             &runtime,
             api_server,
             token,
             project_fs_path,
-            manifest,
+            &manifest,
             *force_upload,
         )
         .await?;
@@ -431,17 +439,13 @@ async fn main() -> anyhow::Result<()> {
             .clone()
             .unwrap_or(std::env::current_dir()?);
 
-        let primary_ember_id = primary_ember_scope_id
-            .as_ref()
-            .context("non-local deployments are not currently supported")?;
         let addr = server::start(
             &runtime,
             assets.clone(),
             cli.clone(),
             working_directory,
             build_path,
-            semantic,
-            *primary_ember_id,
+            manifest,
             crypto,
         )
         .await;
