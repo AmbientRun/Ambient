@@ -180,7 +180,6 @@ pub async fn download_uncached_bytes(
 impl AsyncAssetKey<AssetResult<Arc<Vec<u8>>>> for BytesFromUrl {
     async fn load(self, assets: AssetCache) -> AssetResult<Arc<Vec<u8>>> {
         #[cfg(not(target_os = "unknown"))]
-        assert!(!AssetsCacheOnDisk.get(&assets));
         if self.cache_on_disk && AssetsCacheOnDisk.get(&assets) {
             let path = BytesFromUrlCachedPath {
                 url: self.url.clone(),
