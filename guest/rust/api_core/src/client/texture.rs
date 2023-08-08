@@ -107,21 +107,21 @@ pub struct Descriptor2D<'a> {
     pub data: &'a [u8],
 }
 
-impl<'a> IntoBindgen for Descriptor2D<'a> {
-    type Item = wit::client_texture::Descriptor2d<'a>;
+impl<'a> IntoBindgen for &'a Descriptor2D<'a> {
+    type Item = wit::client_texture::Descriptor2d;
 
     fn into_bindgen(self) -> Self::Item {
         Self::Item {
             width: self.width,
             height: self.height,
             format: self.format.into_bindgen(),
-            data: self.data,
+            data: self.data.to_vec(),
         }
     }
 }
 
 pub fn create_2d(desc: &Descriptor2D) -> ProceduralTextureHandle {
-    wit::client_texture::create2d(desc.clone().into_bindgen()).from_bindgen()
+    wit::client_texture::create2d(&desc.into_bindgen()).from_bindgen()
 }
 
 pub fn destroy(handle: ProceduralTextureHandle) {

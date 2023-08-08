@@ -199,8 +199,8 @@ wasmtime = { version = "11.0.1", features = ["component-model"] }
 wasmtime-wasi = "11.0.1"
 wasi-cap-std-sync = "11.0.1"
 wasi-common = "11.0.1"
-wit-bindgen-core = "0.7.0"
-wit-bindgen-rust = "0.7.0"
+wit-bindgen-core = "0.9.0"
+wit-bindgen-rust = "0.9.0"
 wit-component = "0.11.0"
 
 # Required since the webtransport stuff is yet on crates.io
