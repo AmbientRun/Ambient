@@ -37,7 +37,7 @@ impl<W: Watcher> WatcherState<W> {
             .context("Failed to canonicalize path")?;
 
         if self.watching.insert(path.to_path_buf()) {
-            log::info!("Watching new entry: {path:?}");
+            log::debug!("Watching new entry: {path:?}");
             self.watcher
                 .watcher()
                 .watch(&path, RecursiveMode::NonRecursive)?;
@@ -50,7 +50,7 @@ impl<W: Watcher> WatcherState<W> {
         let path = path.as_ref().canonicalize()?;
 
         if self.watching.remove(&path) {
-            log::info!("Watching new entry: {path:?}");
+            log::debug!("Watching new entry: {path:?}");
             self.watcher.watcher().unwatch(&path)?;
         }
 
@@ -89,9 +89,11 @@ impl Serve {
 
         let mut watcher = WatcherState::new(watcher);
 
-        log::info!("Created watcher");
+        build::run(&self.build).await?;
 
-        process_results(find_watched_dirs("campfire"), |mut v| {
+        log::debug!("Created watcher");
+
+        process_results(find_watched_dirs("."), |mut v| {
             v.try_for_each(|v| watcher.add(v.path()))
         })
         .context("Failed to watch initial root")??;
@@ -100,6 +102,8 @@ impl Serve {
 
         while let Some(events) = rx.next().await {
             let events = events.map_err(|v| anyhow::anyhow!("File watch error: {v:?}"))?;
+
+            let mut needs_rebuild = false;
             for event in events {
                 match event.event.kind {
                     EventKind::Create(CreateKind::File) => {
@@ -107,30 +111,40 @@ impl Serve {
                             log::info!("File created: {path:?}");
                             watcher.add(path)?;
                         }
+                        needs_rebuild = true;
                     }
                     EventKind::Create(CreateKind::Folder) => {
                         for path in &event.paths {
-                            log::info!("Folder created: {path:?}");
+                            log::debug!("Folder created: {path:?}");
 
                             process_results(find_watched_dirs(path), |mut v| {
                                 v.try_for_each(|v| watcher.add(v.path()))
                             })
                             .context("Failed to watch new folder")??;
                         }
+                        needs_rebuild = true;
                     }
 
                     EventKind::Modify(v) => {
-                        log::info!("Modified {v:?}");
+                        log::debug!("Modified {v:?}");
+                        needs_rebuild = true;
                     }
                     EventKind::Remove(RemoveKind::Folder) => {
                         for path in &event.paths {
                             watcher.remove(path)?;
                         }
+                        needs_rebuild = true;
                     }
                     v => {
-                        log::info!("Other event: {v:?}");
+                        log::debug!("Other event: {v:?}");
                     }
                 }
+            }
+
+            if needs_rebuild {
+                log::debug!("Rebuilding...");
+                build::run(&self.build).await?;
+                log::debug!("Finished building the web client");
             }
         }
 
@@ -176,7 +190,7 @@ pub fn find_watched_dirs(
                 log::error!("Path is not UTF-8: {path:?}");
                 false
             }
-            Some("node_modules" | "target" | ".git" | "build" | "tmp") => false,
+            Some("node_modules" | "target" | ".git" | "build" | "tmp" | "pkg") => false,
             Some(_) => true,
         }
     })
