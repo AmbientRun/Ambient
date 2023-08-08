@@ -182,7 +182,7 @@ impl SyncAssetKey<PxMaterial> for PxWoodMaterialKey {
 }
 
 unsafe extern "C" fn main_physx_scene_filter_shader(
-    mut info: *mut physxx::sys::FilterShaderCallbackInfo,
+    info: *mut physxx::sys::FilterShaderCallbackInfo,
 ) -> u16 {
     (*(*info).pairFlags).mBits |= (physxx::sys::PxPairFlag::eSOLVE_CONTACT
         | physxx::sys::PxPairFlag::eDETECT_DISCRETE_CONTACT
