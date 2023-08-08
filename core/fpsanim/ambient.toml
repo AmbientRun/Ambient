@@ -159,5 +159,25 @@ idle_bk_rt = { type = { type = "Vec", element_type = "EntityId" }, name = "fd_rt
     "Networked",
 ] }
 
+player_persistant_anim_node = { type = "EntityId", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+player_output_blend_node = { type = "EntityId", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+player_anim_blend_weights = { type = { type = "Vec", element_type = "F32" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
+player_anim_blend = { type = { type = "Vec", element_type = "EntityId" }, attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
 [dependencies]
 afps_schema = { path = "../../schema/afps" }
