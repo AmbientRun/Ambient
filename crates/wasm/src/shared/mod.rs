@@ -42,7 +42,7 @@ mod internal {
 
     use super::{MessageType, ModuleBytecode, ModuleErrors, ModuleState, ModuleStateArgs};
 
-    components!("wasm/shared", {
+    components!("wasm::shared", {
         module_state: ModuleState,
         @[Store, Description["Bytecode of a WASM component; if attached, will be run."]]
         module_bytecode: ModuleBytecode,

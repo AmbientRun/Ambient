@@ -23,7 +23,7 @@ use crate::{
     server, NetworkError, RPC_BISTREAM_ID,
 };
 
-components!("network/client", {
+components!("network::client", {
     @[Resource]
     client_state: Option<ClientState>,
     @[Resource]
