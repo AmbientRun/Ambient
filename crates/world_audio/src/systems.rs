@@ -123,14 +123,14 @@ pub fn audio_systems() -> SystemGroup {
                         .unwrap();
                     let p = world.get(playing_entity, parent());
                     if p.is_err() {
-                        eprintln!("No parent component on playing entity; cannot stop audio.");
+                        log::error!("No parent component on playing entity; cannot stop audio.");
                         continue;
                     }
                     let parent_entity = p.unwrap();
 
                     let c = world.get_ref(parent_entity, children());
                     if c.is_err() {
-                        eprintln!("No children component on parent entity; cannot stop audio.");
+                        log::error!("No children component on parent entity; cannot stop audio.");
                         continue;
                     }
                     let new_children = c
@@ -203,12 +203,16 @@ pub fn audio_systems() -> SystemGroup {
                             let sender = world.resource(crate::audio_sender());
                             let id_vec = world.get_ref(audio_entity, children());
                             if id_vec.is_err() {
-                                eprintln!("No children component on parent entity; cannot play audio.");
+                                log::error!(
+                                    "No children component on parent entity; cannot play audio."
+                                );
                                 return;
                             }
                             let id_vec = id_vec.unwrap();
                             if id_vec.is_empty() {
-                                eprintln!("No children component on parent entity; cannot play audio.");
+                                log::error!(
+                                    "No children component on parent entity; cannot play audio."
+                                );
                                 return;
                             }
                             let id = id_vec.last().unwrap();
@@ -224,40 +228,46 @@ pub fn audio_systems() -> SystemGroup {
                                 fx.push(crate::AudioFx::Looping);
                             }
 
-                            sender
-                                .send(crate::AudioMessage::Track {
-                                    track: move_track,
-                                    url,
-                                    fx,
-                                    uid: id.to_base64(),
-                                })
-                                .unwrap();
+                            let mixer = world.resource(crate::audio_mixer());
+                            log::info!("mixer is {:?}", mixer);
+                            let t = Box::new(track.decode().repeat());
+                            let sound = mixer.play(t);
+                            // sound.wait();
+
+                            // sender
+                            //     .send(crate::AudioMessage::Track {
+                            //         track: move_track,
+                            //         url,
+                            //         fx,
+                            //         uid: id.to_base64(),
+                            //     })
+                            //     .unwrap();
                         });
-                        if !looping {
-                            let decoded = track.decode();
-                            let count = decoded.sample_count().unwrap();
-                            let sr = decoded.sample_rate();
-                            let dur = count as f32 / sr as f32 * 1.001;
-                            ambient_sys::time::sleep(std::time::Duration::from_secs_f32(dur)).await;
-                            async_run.run(move |world| {
-                                world.despawn(id_share_clone.lock().unwrap());
-                                if !world.exists(audio_entity) {
-                                    return;
-                                }
-                                let child = world.get_ref(audio_entity, children());
-                                if child.is_err() {
-                                    eprintln!("No children component on parent entity; cannot auto stop audio.");
-                                    return;
-                                }
-                                let new_child = child
-                                    .unwrap()
-                                    .iter()
-                                    .filter(|c| *c != &id_share_clone.lock().unwrap())
-                                    .cloned()
-                                    .collect();
-                                world.set(audio_entity, children(), new_child).unwrap();
-                            });
-                        };
+                        // if !looping {
+                        //     let decoded = track.decode();
+                        //     let count = decoded.sample_count().unwrap();
+                        //     let sr = decoded.sample_rate();
+                        //     let dur = count as f32 / sr as f32 * 1.001;
+                        //     ambient_sys::time::sleep(std::time::Duration::from_secs_f32(dur)).await;
+                        //     async_run.run(move |world| {
+                        //         world.despawn(id_share_clone.lock().unwrap());
+                        //         if !world.exists(audio_entity) {
+                        //             return;
+                        //         }
+                        //         let child = world.get_ref(audio_entity, children());
+                        //         if child.is_err() {
+                        //             log::error!("No children component on parent entity; cannot auto stop audio.");
+                        //             return;
+                        //         }
+                        //         let new_child = child
+                        //             .unwrap()
+                        //             .iter()
+                        //             .filter(|c| *c != &id_share_clone.lock().unwrap())
+                        //             .cloned()
+                        //             .collect();
+                        //         world.set(audio_entity, children(), new_child).unwrap();
+                        //     });
+                        // };
                     });
                 }
             }),

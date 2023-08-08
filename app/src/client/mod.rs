@@ -1,6 +1,7 @@
 use std::{collections::HashMap, path::PathBuf, sync::Arc, time::Duration};
 
 use ambient_app::{fps_stats, window_title, AppBuilder};
+use ambient_audio::AudioMixer;
 use ambient_cameras::UICamera;
 use ambient_client_shared::game_view::GameView;
 use ambient_core::{
@@ -32,6 +33,7 @@ pub async fn run(
     server_addr: ResolvedAddr,
     run: &RunCli,
     golden_image_output_dir: Option<PathBuf>,
+    mixer: Option<AudioMixer>,
 ) -> ExitStatus {
     let user_id = run
         .user_id
@@ -80,7 +82,7 @@ pub async fn run(
                 golden_image_cmd: run.golden_image,
                 golden_image_output_dir,
                 cert,
-                mute_audio,
+                mixer,
             }
             .el()
             .spawn_interactive(&mut app.world);
@@ -122,7 +124,7 @@ fn MainApp(
     show_debug: bool,
     golden_image_cmd: Option<GoldenImageCommand>,
     cert: Option<Vec<u8>>,
-    mute_audio: bool,
+    mixer: Option<AudioMixer>,
 ) -> Element {
     let (loaded, set_loaded) = hooks.use_state(false);
 
@@ -141,7 +143,7 @@ fn MainApp(
             on_loaded: cb(move |_, game_state| {
                 let world = &mut game_state.world;
 
-                wasm::initialize(world, mute_audio).unwrap();
+                wasm::initialize(world, mixer.clone()).unwrap();
 
                 UICamera.el().spawn_static(world);
                 set_loaded(true);
