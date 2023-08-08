@@ -25,7 +25,7 @@ pub async fn open() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[cfg(unix)]
+#[cfg(target_os = "linux")]
 fn detach_process(child: &mut Command) -> &mut Command {
     use std::os::unix::process::CommandExt;
     // Safety
