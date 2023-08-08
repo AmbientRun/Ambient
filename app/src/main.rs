@@ -26,165 +26,6 @@ const CERT: &[u8] = include_bytes!("../../localhost.crt");
 #[cfg(not(feature = "no_bundled_certs"))]
 const CERT_KEY: &[u8] = include_bytes!("../../localhost.key");
 
-fn setup_logging() -> anyhow::Result<()> {
-    const MODULES: &[(LevelFilter, &[&str])] = &[
-        (
-            LevelFilter::Error,
-            &[
-                // Warns about extra syntactic elements; we are not concerned with these.
-                "fbxcel",
-            ],
-        ),
-        (
-            LevelFilter::Warn,
-            &[
-                "ambient_build",
-                "ambient_gpu",
-                "ambient_model",
-                "ambient_physics",
-                "ambient_native_std",
-                "cranelift_codegen",
-                "naga",
-                "tracing",
-                "symphonia_core",
-                "symphonia_bundle_mp3",
-                "wgpu_core",
-                "wgpu_hal",
-                "optivorbis",
-                "symphonia_format_wav",
-            ],
-        ),
-    ];
-
-    // Initialize the logger and lower the log level for modules we don't need to hear from by default.
-    #[cfg(not(feature = "tracing"))]
-    {
-        let mut builder = env_logger::builder();
-        builder.filter_level(LevelFilter::Info);
-
-        for (level, modules) in MODULES {
-            for module in *modules {
-                builder.filter_module(module, *level);
-            }
-        }
-
-        builder.parse_default_env().try_init()?;
-
-        Ok(())
-    }
-
-    #[cfg(feature = "tracing")]
-    {
-        use tracing::metadata::Level;
-        use tracing_log::AsTrace;
-        use tracing_subscriber::prelude::*;
-        use tracing_subscriber::{registry, EnvFilter};
-
-        let mut filter = tracing_subscriber::filter::Targets::new()
-            .with_default(tracing::metadata::LevelFilter::DEBUG);
-        for (level, modules) in MODULES {
-            for &module in *modules {
-                filter = filter.with_target(module, level.as_trace());
-            }
-        }
-
-        // BLOCKING: pending https://github.com/tokio-rs/tracing/issues/2507
-        // let modules: Vec<_> = MODULES.iter().flat_map(|&(level, modules)| modules.iter().map(move |&v| format!("{v}={level}"))).collect();
-
-        // eprintln!("{modules:#?}");
-        // let mut filter = tracing_subscriber::filter::EnvFilter::builder().with_default_directive(Level::INFO.into()).from_env_lossy();
-
-        // for module in modules {
-        //     filter = filter.add_directive(module.parse().unwrap());
-        // }
-
-        // let mut filter = std::env::var("RUST_LOG").unwrap_or_default().parse::<tracing_subscriber::filter::Targets>().unwrap_or_default();
-        // filter.extend(MODULES.iter().flat_map(|&(level, modules)| modules.iter().map(move |&v| (v, level.as_trace()))));
-
-        let env_filter = EnvFilter::builder()
-            .with_default_directive(Level::INFO.into())
-            .from_env_lossy();
-
-        let layered_registry = registry().with(filter).with(env_filter);
-
-        // use stackdriver format if available and requested
-        #[cfg(feature = "stackdriver")]
-        if std::env::var("LOG_FORMAT").unwrap_or_default() == "stackdriver" {
-            layered_registry
-                .with(tracing_stackdriver::layer().with_writer(std::io::stdout))
-                .try_init()?;
-            return Ok(());
-        }
-
-        // otherwise use the default format
-        layered_registry
-            .with(tracing_subscriber::fmt::Layer::new().with_timer(
-                tracing_subscriber::fmt::time::LocalTime::new(time::macros::format_description!(
-                    "[hour]:[minute]:[second]"
-                )),
-            ))
-            .try_init()?;
-
-        Ok(())
-    }
-}
-
-#[derive(Debug, Clone)]
-struct ProjectPath {
-    url: AbsAssetUrl,
-    fs_path: Option<std::path::PathBuf>,
-}
-
-impl ProjectPath {
-    fn new_local(path: impl Into<PathBuf>) -> anyhow::Result<Self> {
-        let path = path.into();
-        let current_dir = std::env::current_dir().context("Error getting current directory")?;
-        let path = if path.is_absolute() {
-            path
-        } else {
-            ambient_std::path::normalize(&current_dir.join(path))
-        };
-
-        if path.exists() && !path.is_dir() {
-            anyhow::bail!("Project path {path:?} exists and is not a directory.");
-        }
-        let url = AbsAssetUrl::from_directory_path(path);
-        let fs_path = url.to_file_path().ok().flatten();
-
-        Ok(Self { url, fs_path })
-    }
-
-    fn is_remote(&self) -> bool {
-        self.fs_path.is_none()
-    }
-
-    // 'static to limit only to compile-time known paths
-    fn push(&self, path: &'static str) -> AbsAssetUrl {
-        self.url.push(path).unwrap()
-    }
-}
-
-impl TryFrom<Option<String>> for ProjectPath {
-    type Error = anyhow::Error;
-
-    fn try_from(project_path: Option<String>) -> anyhow::Result<Self> {
-        match project_path {
-            Some(project_path)
-                if project_path.starts_with("http://") || project_path.starts_with("https://") =>
-            {
-                let url = AbsAssetUrl::from_str(&project_path)?;
-                Ok(Self { url, fs_path: None })
-            }
-            Some(project_path) => Self::new_local(project_path),
-            None => {
-                let url = AbsAssetUrl::from_directory_path(std::env::current_dir()?);
-                let fs_path = url.to_file_path().ok().flatten();
-                Ok(Self { url, fs_path })
-            }
-        }
-    }
-}
-
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     setup_logging()?;
@@ -475,4 +316,163 @@ async fn main() -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+fn setup_logging() -> anyhow::Result<()> {
+    const MODULES: &[(LevelFilter, &[&str])] = &[
+        (
+            LevelFilter::Error,
+            &[
+                // Warns about extra syntactic elements; we are not concerned with these.
+                "fbxcel",
+            ],
+        ),
+        (
+            LevelFilter::Warn,
+            &[
+                "ambient_build",
+                "ambient_gpu",
+                "ambient_model",
+                "ambient_physics",
+                "ambient_native_std",
+                "cranelift_codegen",
+                "naga",
+                "tracing",
+                "symphonia_core",
+                "symphonia_bundle_mp3",
+                "wgpu_core",
+                "wgpu_hal",
+                "optivorbis",
+                "symphonia_format_wav",
+            ],
+        ),
+    ];
+
+    // Initialize the logger and lower the log level for modules we don't need to hear from by default.
+    #[cfg(not(feature = "tracing"))]
+    {
+        let mut builder = env_logger::builder();
+        builder.filter_level(LevelFilter::Info);
+
+        for (level, modules) in MODULES {
+            for module in *modules {
+                builder.filter_module(module, *level);
+            }
+        }
+
+        builder.parse_default_env().try_init()?;
+
+        Ok(())
+    }
+
+    #[cfg(feature = "tracing")]
+    {
+        use tracing::metadata::Level;
+        use tracing_log::AsTrace;
+        use tracing_subscriber::prelude::*;
+        use tracing_subscriber::{registry, EnvFilter};
+
+        let mut filter = tracing_subscriber::filter::Targets::new()
+            .with_default(tracing::metadata::LevelFilter::DEBUG);
+        for (level, modules) in MODULES {
+            for &module in *modules {
+                filter = filter.with_target(module, level.as_trace());
+            }
+        }
+
+        // BLOCKING: pending https://github.com/tokio-rs/tracing/issues/2507
+        // let modules: Vec<_> = MODULES.iter().flat_map(|&(level, modules)| modules.iter().map(move |&v| format!("{v}={level}"))).collect();
+
+        // eprintln!("{modules:#?}");
+        // let mut filter = tracing_subscriber::filter::EnvFilter::builder().with_default_directive(Level::INFO.into()).from_env_lossy();
+
+        // for module in modules {
+        //     filter = filter.add_directive(module.parse().unwrap());
+        // }
+
+        // let mut filter = std::env::var("RUST_LOG").unwrap_or_default().parse::<tracing_subscriber::filter::Targets>().unwrap_or_default();
+        // filter.extend(MODULES.iter().flat_map(|&(level, modules)| modules.iter().map(move |&v| (v, level.as_trace()))));
+
+        let env_filter = EnvFilter::builder()
+            .with_default_directive(Level::INFO.into())
+            .from_env_lossy();
+
+        let layered_registry = registry().with(filter).with(env_filter);
+
+        // use stackdriver format if available and requested
+        #[cfg(feature = "stackdriver")]
+        if std::env::var("LOG_FORMAT").unwrap_or_default() == "stackdriver" {
+            layered_registry
+                .with(tracing_stackdriver::layer().with_writer(std::io::stdout))
+                .try_init()?;
+            return Ok(());
+        }
+
+        // otherwise use the default format
+        layered_registry
+            .with(tracing_subscriber::fmt::Layer::new().with_timer(
+                tracing_subscriber::fmt::time::LocalTime::new(time::macros::format_description!(
+                    "[hour]:[minute]:[second]"
+                )),
+            ))
+            .try_init()?;
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone)]
+struct ProjectPath {
+    url: AbsAssetUrl,
+    fs_path: Option<std::path::PathBuf>,
+}
+
+impl ProjectPath {
+    fn new_local(path: impl Into<PathBuf>) -> anyhow::Result<Self> {
+        let path = path.into();
+        let current_dir = std::env::current_dir().context("Error getting current directory")?;
+        let path = if path.is_absolute() {
+            path
+        } else {
+            ambient_std::path::normalize(&current_dir.join(path))
+        };
+
+        if path.exists() && !path.is_dir() {
+            anyhow::bail!("Project path {path:?} exists and is not a directory.");
+        }
+        let url = AbsAssetUrl::from_directory_path(path);
+        let fs_path = url.to_file_path().ok().flatten();
+
+        Ok(Self { url, fs_path })
+    }
+
+    fn is_remote(&self) -> bool {
+        self.fs_path.is_none()
+    }
+
+    // 'static to limit only to compile-time known paths
+    fn push(&self, path: &'static str) -> AbsAssetUrl {
+        self.url.push(path).unwrap()
+    }
+}
+
+impl TryFrom<Option<String>> for ProjectPath {
+    type Error = anyhow::Error;
+
+    fn try_from(project_path: Option<String>) -> anyhow::Result<Self> {
+        match project_path {
+            Some(project_path)
+                if project_path.starts_with("http://") || project_path.starts_with("https://") =>
+            {
+                let url = AbsAssetUrl::from_str(&project_path)?;
+                Ok(Self { url, fs_path: None })
+            }
+            Some(project_path) => Self::new_local(project_path),
+            None => {
+                let url = AbsAssetUrl::from_directory_path(std::env::current_dir()?);
+                let fs_path = url.to_file_path().ok().flatten();
+                Ok(Self { url, fs_path })
+            }
+        }
+    }
 }
