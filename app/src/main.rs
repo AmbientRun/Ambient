@@ -11,7 +11,6 @@ use clap::Parser;
 
 mod cli;
 mod client;
-mod ember;
 mod server;
 mod shared;
 
@@ -130,7 +129,7 @@ fn setup_logging() -> anyhow::Result<()> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct ProjectPath {
     url: AbsAssetUrl,
     fs_path: Option<std::path::PathBuf>,
@@ -269,7 +268,7 @@ async fn main() -> anyhow::Result<()> {
     // Build the project if required. Note that this only runs if the project is local.
     //
     // Update the project path to match the build path if necessary.
-    let project_path = if let Some((project, project_path)) = project
+    let (project_path, build_path) = if let Some((project, project_path)) = project
         .as_ref()
         .filter(|p| !p.no_build)
         .zip(project_path.fs_path.as_deref())
@@ -279,7 +278,7 @@ async fn main() -> anyhow::Result<()> {
         // no contamination, so that the built project can use its own
         // semantic based on the flat hierarchy.
         let mut semantic = ambient_project_semantic::Semantic::new()?;
-        let primary_ember_scope_id = ember::add(&mut semantic, project_path)?;
+        let primary_ember_scope_id = shared::ember::add(&mut semantic, project_path)?;
 
         let manifest = semantic
             .items
@@ -289,7 +288,7 @@ async fn main() -> anyhow::Result<()> {
             .context("no manifest for scope")?;
 
         let build_config = ambient_build::BuildConfiguration {
-            build_path,
+            build_path: build_path.clone(),
             assets: assets.clone(),
             semantic: &mut semantic,
             optimize: project.release,
@@ -309,9 +308,12 @@ async fn main() -> anyhow::Result<()> {
             .await
             .context("Failed to build project")?;
 
-        ProjectPath::new_local(output_path)?
+        (
+            ProjectPath::new_local(output_path)?,
+            AbsAssetUrl::from_file_path(build_path),
+        )
     } else {
-        project_path
+        (project_path.clone(), project_path.push("build"))
     };
 
     // If this is just a build, exit now
@@ -444,6 +446,7 @@ async fn main() -> anyhow::Result<()> {
             assets.clone(),
             cli.clone(),
             working_directory,
+            project_path.url.clone(),
             build_path,
             manifest,
             crypto,

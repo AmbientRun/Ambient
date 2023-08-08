@@ -54,12 +54,7 @@ pub fn instantiate_ember(world: &mut World, ember_id: ItemId<Scope>) -> anyhow::
         let build_metadata = scope
             .build_metadata
             .as_ref()
-            .context("no build metadata in ember")?
-            .0
-            .clone();
-        let build_metadata = build_metadata
-            .downcast_ref::<ambient_build::Metadata>()
-            .context("failed to retrieve build metadata")?;
+            .context("no build metadata in ember")?;
         let wasm_component_paths: &[String] = build_metadata.component_paths(target);
 
         for path in wasm_component_paths {

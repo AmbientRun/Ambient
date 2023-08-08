@@ -22,7 +22,7 @@ use ambient_network::{
     synced_resources,
 };
 use ambient_prefab::PrefabFromUrl;
-use ambient_project_semantic::{ItemId, Scope, Semantic};
+use ambient_project_semantic::Semantic;
 use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
 use axum::{
@@ -51,22 +51,15 @@ pub async fn start(
     assets: AssetCache,
     cli: Cli,
     working_directory: PathBuf,
+    project_path: AbsAssetUrl,
     build_path: AbsAssetUrl,
-    semantic: Semantic,
-    primary_ember_id: ItemId<Scope>,
+    manifest: ambient_project::Manifest,
     crypto: Crypto,
 ) -> SocketAddr {
     self::init_components();
 
     let host_cli = cli.host().unwrap();
     let quic_interface_port = host_cli.quic_interface_port;
-    let manifest = semantic
-        .items
-        .get(primary_ember_id)
-        .unwrap()
-        .manifest
-        .clone()
-        .expect("primary ember must have manifest");
 
     let proxy_settings = (!host_cli.no_proxy).then(|| ProxySettings {
         // default to getting a proxy from the dims-web Google App Engine app
@@ -146,7 +139,6 @@ pub async fn start(
         start_http_interface(runtime, None, http_interface_port);
     }
 
-    let queue = semantic.items.scope_and_dependencies(primary_ember_id);
     runtime.spawn(async move {
         let mut server_world = World::new_with_config("server", true);
         server_world.init_shape_change_tracking();
@@ -167,9 +159,7 @@ pub async fn start(
         server_world
             .add_components(
                 server_world.resource_entity(),
-                Entity::new()
-                    .with(project_name(), name)
-                    .with(self::semantic(), Arc::new(Mutex::new(semantic))),
+                Entity::new().with(project_name(), name),
             )
             .unwrap();
 
@@ -222,7 +212,27 @@ pub async fn start(
         .await
         .unwrap();
 
-        let mut queue = queue.clone();
+        let mut semantic = ambient_project_semantic::Semantic::new().unwrap();
+        let primary_ember_scope_id = shared::ember::add(
+            &mut semantic,
+            &project_path
+                .to_file_path()
+                .unwrap()
+                .expect("todo: project path must currently be local"),
+        )
+        .unwrap();
+
+        let mut queue = semantic
+            .items
+            .scope_and_dependencies(primary_ember_scope_id);
+        server_world
+            .add_component(
+                server_world.resource_entity(),
+                self::semantic(),
+                Arc::new(Mutex::new(semantic)),
+            )
+            .unwrap();
+
         while let Some(ember_id) = queue.pop() {
             wasm::instantiate_ember(&mut server_world, ember_id).unwrap();
         }

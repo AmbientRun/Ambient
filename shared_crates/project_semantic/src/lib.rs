@@ -6,14 +6,14 @@ use std::{
 };
 
 use ambient_project::{
-    Dependency, Identifier, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
+    BuildMetadata, Dependency, Identifier, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
 };
 use ambient_shared_types::primitive_component_definitions;
 use ambient_std::path;
 use anyhow::Context as AnyhowContext;
 
 mod scope;
-pub use scope::{BuildMetadata, Context, Scope};
+pub use scope::{Context, Scope};
 
 mod item;
 pub use item::{
@@ -221,6 +221,19 @@ impl Semantic {
             )
         })?;
 
+        let build_metadata_path = Path::new(BuildMetadata::FILENAME);
+        let build_metadata = file_provider
+            .get(build_metadata_path)
+            .ok()
+            .map(|f| BuildMetadata::parse(&f))
+            .transpose()
+            .with_context(|| {
+                format!(
+                    "failed to parse build metadata for {:?}",
+                    file_provider.full_path(build_metadata_path)
+                )
+            })?;
+
         let root_id = self.root_scope_id;
 
         // Check that this scope hasn't already been created for this scope
@@ -237,7 +250,7 @@ impl Semantic {
             );
         }
 
-        // Create a new scope and add it to the scope
+        // Create a new scope and add it to the root scope
         let manifest_path = file_provider.full_path(filename);
         let item_id = self.add_scope_from_manifest(
             Some(root_id),
@@ -245,6 +258,7 @@ impl Semantic {
             visited_files,
             manifest,
             manifest_path,
+            build_metadata,
             scope_name.clone(),
             source,
         )?;
@@ -278,6 +292,7 @@ impl Semantic {
             visited_files,
             manifest,
             file_provider.full_path(filename),
+            None,
             id,
             source,
         )
@@ -291,10 +306,11 @@ impl Semantic {
         visited_files: &mut HashSet<PathBuf>,
         manifest: Manifest,
         manifest_path: PathBuf,
+        build_metadata: Option<BuildMetadata>,
         id: SnakeCaseIdentifier,
         source: ItemSource,
     ) -> anyhow::Result<ItemId<Scope>> {
-        let scope = Scope::new(
+        let mut scope = Scope::new(
             ItemData {
                 parent_id,
                 id: id.into(),
@@ -304,6 +320,7 @@ impl Semantic {
             Some(manifest_path.clone()),
             Some(manifest.clone()),
         );
+        scope.build_metadata = build_metadata;
         let scope_id = self.items.add(scope);
 
         let full_path = file_provider.full_path(&manifest_path);

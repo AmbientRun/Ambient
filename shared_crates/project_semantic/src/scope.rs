@@ -1,7 +1,7 @@
-use std::{any::Any, path::PathBuf, sync::Arc};
+use std::path::PathBuf;
 
 use ambient_project::{
-    ComponentType, ItemPath, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
+    BuildMetadata, ComponentType, ItemPath, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
 };
 use anyhow::Context as AnyhowContext;
 use indexmap::IndexMap;
@@ -90,21 +90,6 @@ impl Context {
     }
 }
 
-#[derive(Clone)]
-pub struct BuildMetadata(pub Arc<dyn Any>);
-impl PartialEq for BuildMetadata {
-    // We don't care that much about equality, so we can be loose with it
-    #[allow(clippy::vtable_address_comparisons)]
-    fn eq(&self, other: &Self) -> bool {
-        // HACK! We can't compare the contents of the build metadata, so we just compare the
-        // pointers.
-        Arc::ptr_eq(&self.0, &other.0)
-    }
-}
-// This is immutable after construction, so it's safe to send and share across threads.
-unsafe impl Send for BuildMetadata {}
-unsafe impl Sync for BuildMetadata {}
-
 #[derive(Clone, PartialEq)]
 pub struct Scope {
     pub data: ItemData,
@@ -113,7 +98,6 @@ pub struct Scope {
     pub manifest: Option<Manifest>,
 
     pub dependencies: Vec<ItemId<Scope>>,
-    /// This is type-erased as ambient_build depends on this crate, so we can't use the type here.
     pub build_metadata: Option<BuildMetadata>,
 
     pub scopes: IndexMap<SnakeCaseIdentifier, ItemId<Scope>>,

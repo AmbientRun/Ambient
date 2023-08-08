@@ -9,8 +9,8 @@ use std::{
 
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
 use ambient_native_std::{asset_url::AbsAssetUrl, git_revision_full};
-use ambient_project::{Manifest as ProjectManifest, Version};
-use ambient_project_semantic::{BuildMetadata, ItemId, Scope, Semantic};
+use ambient_project::{BuildMetadata, Manifest as ProjectManifest, Version};
+use ambient_project_semantic::{ItemId, Scope, Semantic};
 use ambient_std::path::path_to_unix_string;
 use anyhow::Context;
 use futures::FutureExt;
@@ -20,43 +20,6 @@ use walkdir::WalkDir;
 
 pub mod migrate;
 pub mod pipelines;
-
-#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
-pub struct Metadata {
-    ambient_version: Version,
-    ambient_revision: String,
-    client_component_paths: Vec<String>,
-    server_component_paths: Vec<String>,
-}
-
-impl Metadata {
-    pub const FILENAME: &'static str = "metadata.toml";
-
-    pub fn component_paths(&self, target: &str) -> &[String] {
-        match target {
-            "client" => &self.client_component_paths,
-            "server" => &self.server_component_paths,
-            _ => panic!("Unknown target `{}`", target),
-        }
-    }
-
-    pub fn parse(contents: &str) -> anyhow::Result<Self> {
-        toml::from_str(contents).context("failed to parse build metadata")
-    }
-
-    async fn store(build_path: &Path) -> anyhow::Result<Self> {
-        let metadata = Metadata {
-            ambient_version: Version::new_from_str(env!("CARGO_PKG_VERSION"))
-                .expect("Failed to parse CARGO_PKG_VERSION"),
-            ambient_revision: git_revision_full().unwrap_or_default(),
-            client_component_paths: get_component_paths("client", build_path),
-            server_component_paths: get_component_paths("server", build_path),
-        };
-        let metadata_path = build_path.join(Self::FILENAME);
-        tokio::fs::write(&metadata_path, toml::to_string(&metadata)?).await?;
-        Ok(metadata)
-    }
-}
 
 pub struct BuildConfiguration<'a> {
     pub build_path: PathBuf,
@@ -198,9 +161,7 @@ async fn build_ember(
     }
 
     store_manifest(&manifest, &build_path).await?;
-    let metadata = Metadata::store(&build_path).await?;
-
-    semantic.items.get_mut(ember_id)?.build_metadata = Some(BuildMetadata(Arc::new(metadata)));
+    store_metadata(&build_path).await?;
 
     Ok(())
 }
@@ -313,4 +274,17 @@ async fn store_manifest(manifest: &ProjectManifest, build_path: &Path) -> anyhow
     let manifest_path = build_path.join("ambient.toml");
     tokio::fs::write(&manifest_path, toml::to_string(&manifest)?).await?;
     Ok(())
+}
+
+async fn store_metadata(build_path: &Path) -> anyhow::Result<BuildMetadata> {
+    let metadata = BuildMetadata {
+        ambient_version: Version::new_from_str(env!("CARGO_PKG_VERSION"))
+            .expect("Failed to parse CARGO_PKG_VERSION"),
+        ambient_revision: git_revision_full().unwrap_or_default(),
+        client_component_paths: get_component_paths("client", build_path),
+        server_component_paths: get_component_paths("server", build_path),
+    };
+    let metadata_path = build_path.join(BuildMetadata::FILENAME);
+    tokio::fs::write(&metadata_path, toml::to_string(&metadata)?).await?;
+    Ok(metadata)
 }

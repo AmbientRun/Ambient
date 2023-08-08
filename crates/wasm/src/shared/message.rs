@@ -1,7 +1,7 @@
 use super::module_name;
 use ambient_ecs::{components, Debuggable, EntityId, Resource, World};
 
-components!("wasm/message", {
+components!("wasm::message", {
     @[Debuggable, Resource]
     pending_messages: Vec<SerializedMessage>,
 });
