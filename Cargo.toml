@@ -195,10 +195,10 @@ http = { version = "0.2.9" }
 #
 # WASM
 #
-wasmtime = { version = "10.0.1", features = ["component-model"] }
-wasmtime-wasi = "10.0.1"
-wasi-cap-std-sync = "10.0.1"
-wasi-common = "10.0.1"
+wasmtime = { version = "11.0.1", features = ["component-model"] }
+wasmtime-wasi = "11.0.1"
+wasi-cap-std-sync = "11.0.1"
+wasi-common = "11.0.1"
 wit-bindgen-core = "0.7.0"
 wit-bindgen-rust = "0.7.0"
 wit-component = "0.11.0"
