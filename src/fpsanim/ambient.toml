@@ -1,5 +1,10 @@
 [components]
 
+player_persistant_anim_node = { type = "EntityId", attributes = [
+    "Debuggable",
+    "Networked",
+] }
+
 player_output_blend_node = { type = "EntityId", attributes = [
     "Debuggable",
     "Networked",
