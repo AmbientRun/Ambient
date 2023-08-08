@@ -20,6 +20,7 @@ pub mod bytes_ext;
 pub mod client;
 pub mod client_game_state;
 pub mod codec;
+pub mod diff_serialization;
 pub mod hooks;
 pub mod proto;
 pub mod rpc;

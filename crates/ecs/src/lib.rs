@@ -203,7 +203,7 @@ impl World {
         if let Some(events) = &mut self.shape_change_events {
             events.add_events(
                 ids.iter()
-                    .map(|id| WorldChange::Spawn(Some(*id), entity_data.clone())),
+                    .map(|id| WorldChange::Spawn(*id, entity_data.clone())),
             );
         }
         let version = self.inc_version();
