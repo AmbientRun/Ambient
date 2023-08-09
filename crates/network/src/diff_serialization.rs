@@ -9,7 +9,6 @@ pub struct WorldDiffDeduplicator {
 }
 
 impl WorldDiffDeduplicator {
-    #[profiling::function]
     pub fn deduplicate<'a>(&mut self, mut diff: WorldDiffView<'a>) -> WorldDiffView<'a> {
         let mut new_diff = HashMap::new();
         diff.changes.retain_mut(|change| {
