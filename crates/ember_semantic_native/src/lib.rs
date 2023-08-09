@@ -1,16 +1,21 @@
 use std::{
+    collections::HashMap,
     path::Path,
     str::FromStr,
     sync::{Arc, Mutex},
 };
 
-use ambient_ecs::{components, Resource, World};
+use ambient_ecs::{components, Networked, Resource, World};
 use ambient_native_std::asset_url::AbsAssetUrl;
-use ambient_project_semantic::{ItemId, Scope, Semantic};
+use ambient_network::ServerWorldExt;
+use ambient_project_semantic::Semantic;
 
 components!("semantic", {
     @[Resource]
     semantic: Arc<Mutex<Semantic>>,
+
+    @[Resource, Networked]
+    ember_name_to_url: HashMap<String, String>,
 });
 
 pub fn world_semantic(world: &World) -> Arc<Mutex<Semantic>> {
@@ -22,13 +27,12 @@ pub fn world_semantic(world: &World) -> Arc<Mutex<Semantic>> {
 ///
 /// Note that `path` is relative to the root of the ember's build directory, so an
 /// asset will require `assets/` prefixed to the path.
-pub fn file_path(
-    semantic: &Semantic,
-    ember_id: ItemId<Scope>,
-    path: &Path,
-) -> anyhow::Result<AbsAssetUrl> {
-    let item = semantic.items.get(ember_id)?;
-    if let Some(url) = item.url.as_ref() {
+pub fn file_path(world: &World, ember_name: &str, path: &Path) -> anyhow::Result<AbsAssetUrl> {
+    let url = world
+        .synced_resource(ember_name_to_url())
+        .unwrap()
+        .get(ember_name);
+    if let Some(url) = url {
         Ok(AbsAssetUrl::from_str(&format!("{url}/{}", path.display()))?)
     } else {
         Ok(AbsAssetUrl::from_asset_key(path.to_string_lossy())?)

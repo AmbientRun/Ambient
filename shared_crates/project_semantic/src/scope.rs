@@ -100,9 +100,6 @@ pub struct Scope {
 
     pub dependencies: Vec<ItemId<Scope>>,
 
-    // Runtime-supplied state, not provided by the semantic state
-    pub url: Option<String>,
-
     pub scopes: IndexMap<SnakeCaseIdentifier, ItemId<Scope>>,
     pub components: IndexMap<SnakeCaseIdentifier, ItemId<Component>>,
     pub concepts: IndexMap<SnakeCaseIdentifier, ItemId<Concept>>,
@@ -225,8 +222,6 @@ impl Scope {
             build_metadata: Default::default(),
 
             dependencies: Default::default(),
-
-            url: None,
 
             scopes: Default::default(),
             components: Default::default(),

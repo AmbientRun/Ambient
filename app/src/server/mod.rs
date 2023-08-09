@@ -158,8 +158,9 @@ pub async fn start(
 
         Entity::new()
             .with(ambient_core::name(), "Synced resources".to_string())
-            .with(synced_resources(), ())
-            .with(dont_store(), ())
+            .with_default(synced_resources())
+            .with_default(dont_store())
+            .with_default(ambient_ember_semantic_native::ember_name_to_url())
             .spawn(&mut server_world);
         // Note: this should not be reset every time the server is created. Remove this when it becomes possible to load/save worlds.
         Entity::new()
@@ -207,9 +208,11 @@ pub async fn start(
 
         let mut semantic = ambient_project_semantic::Semantic::new().await.unwrap();
         let primary_ember_scope_id = match project_path.to_file_path().unwrap() {
-            Some(local_path) => shared::ember::add(&mut semantic, &local_path)
-                .await
-                .unwrap(),
+            Some(local_path) => {
+                shared::ember::add(Some(&mut server_world), &mut semantic, &local_path)
+                    .await
+                    .unwrap()
+            }
 
             None => {
                 let metadata = BuildMetadata::parse(

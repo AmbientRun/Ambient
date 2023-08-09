@@ -747,6 +747,7 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_ecs",
  "ambient_native_std",
+ "ambient_network",
  "ambient_project_semantic",
  "anyhow",
 ]

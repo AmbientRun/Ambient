@@ -45,16 +45,22 @@ pub async fn initialize(
 }
 
 pub fn instantiate_ember(world: &mut World, ember_id: ItemId<Scope>) -> anyhow::Result<()> {
-    let semantic = ambient_ember_semantic_native::world_semantic(world);
-    let semantic = semantic.lock().unwrap();
-
     let mut modules_to_entity_ids = HashMap::new();
     for target in ["client", "server"] {
-        let scope = semantic.items.get(ember_id)?;
-        let build_metadata = scope
-            .build_metadata
-            .as_ref()
-            .context("no build metadata in ember")?;
+        let (ember_name, build_metadata) = {
+            let semantic = ambient_ember_semantic_native::world_semantic(world);
+            let semantic = semantic.lock().unwrap();
+            let scope = semantic.items.get(ember_id)?;
+
+            (
+                scope.original_id.to_string(),
+                scope
+                    .build_metadata
+                    .as_ref()
+                    .context("no build metadata in ember")?
+                    .clone(),
+            )
+        };
         let wasm_component_paths: &[String] = build_metadata.component_paths(target);
 
         for path in wasm_component_paths {
@@ -64,7 +70,7 @@ pub fn instantiate_ember(world: &mut World, ember_id: ItemId<Scope>) -> anyhow::
                 .context("no file stem for {path:?}")?
                 .to_string_lossy();
 
-            let bytecode_url = ambient_ember_semantic_native::file_path(&semantic, ember_id, path)?;
+            let bytecode_url = ambient_ember_semantic_native::file_path(world, &ember_name, path)?;
             let id = spawn_module(world, bytecode_url, true, target == "server");
             modules_to_entity_ids.insert(
                 (

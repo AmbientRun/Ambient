@@ -2,22 +2,36 @@ use std::{collections::HashMap, path::Path};
 
 use ambient_ecs::{
     ComponentRegistry, ExternalComponentAttributes, ExternalComponentDesc, PrimitiveComponentType,
+    World,
 };
 use ambient_native_std::asset_url::AbsAssetUrl;
+use ambient_network::ServerWorldExt;
 use ambient_project::{BuildMetadata, Manifest};
 use ambient_project_semantic::{Item, ItemId, PrimitiveType, Scope, Semantic, TypeInner};
 
-pub async fn add(semantic: &mut Semantic, path: &Path) -> anyhow::Result<ItemId<Scope>> {
+pub async fn add(
+    world: Option<&mut World>,
+    semantic: &mut Semantic,
+    path: &Path,
+) -> anyhow::Result<ItemId<Scope>> {
     let id = semantic.add_ember(path).await?;
     // HACK: think about how this could be supplied in the right place
-    for id in semantic.items.scope_and_dependencies(id) {
-        let mut item = semantic.items.get_mut(id)?;
-        item.url = Some(
-            AbsAssetUrl::from_asset_key(item.original_id.to_string())?
-                .0
-                .to_string(),
-        );
+    if let Some(world) = world {
+        let ember_name_to_url = world
+            .synced_resource_mut(ambient_ember_semantic_native::ember_name_to_url())
+            .unwrap();
+
+        for id in semantic.items.scope_and_dependencies(id) {
+            let item = semantic.items.get(id)?;
+            let original_id = item.original_id.to_string();
+
+            ember_name_to_url.insert(
+                original_id.clone(),
+                AbsAssetUrl::from_asset_key(original_id)?.0.to_string(),
+            );
+        }
     }
+
     finish_add(semantic, id)
 }
 
