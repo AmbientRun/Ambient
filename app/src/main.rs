@@ -382,27 +382,6 @@ async fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    let _puffin_server = {
-        let puffin_addr = format!(
-            "0.0.0.0:{}",
-            std::env::var("PUFFIN_PORT")
-                .ok()
-                .and_then(|port| port.parse::<u16>().ok())
-                .unwrap_or(puffin_http::DEFAULT_PORT)
-        );
-        match puffin_http::Server::new(&puffin_addr) {
-            Ok(server) => {
-                tracing::debug!("Puffin server running on {}", puffin_addr);
-                puffin::set_scopes_on(true);
-                Some(server)
-            }
-            Err(err) => {
-                tracing::error!("Failed to start puffin server: {:?}", err);
-                None
-            }
-        }
-    };
-
     // Otherwise, either connect to a server or host one
     let server_addr = if let Commands::Join { host, .. } = &cli.command {
         if let Some(mut host) = host.clone() {
