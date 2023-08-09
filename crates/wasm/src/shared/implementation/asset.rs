@@ -12,7 +12,7 @@ pub(crate) fn url(
 ) -> anyhow::Result<Result<String, wit::asset::UrlError>> {
     ok_wrap(move || {
         let assets = world.resource(asset_cache()).clone();
-        let asset_url = AbsAssetUrl::from_asset_key(format!("{ember_id}/assets/{path}"))
+        let asset_url = AbsAssetUrl::from_asset_key(format!("{ember_id}/build/assets/{path}"))
             .map_err(parse_error_to_url_error)?;
         let asset_url = if resolve {
             asset_url

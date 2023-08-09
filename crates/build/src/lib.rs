@@ -101,7 +101,16 @@ async fn build_ember(
         ..
     } = config;
 
-    let (mut manifest, path) = {
+    // Remap the build path so that all assets are written to a subdirectory inside the
+    // ember's output directory:
+    //  build/my_ember/{ambient.toml, build/assets/}
+    //
+    // This is for compatibility with the existing deployment scheme. We may adjust this
+    // in the future.
+    let original_build_path = build_path.clone();
+    let build_path = build_path.join("build");
+
+    let (mut manifest, ember_path) = {
         let scope = semantic.items.get(ember_id)?;
         (
             scope
@@ -126,7 +135,7 @@ async fn build_ember(
 
     tracing::info!("Building project `{}` ({})", manifest.ember.id, name);
 
-    let assets_path = path.join("assets");
+    let assets_path = ember_path.join("assets");
     tokio::fs::create_dir_all(&build_path)
         .await
         .context("Failed to create build directory")?;
@@ -135,7 +144,7 @@ async fn build_ember(
         build_assets(&assets, &assets_path, &build_path).await?;
     }
 
-    build_rust_if_available(&path, &manifest, &build_path, optimize)
+    build_rust_if_available(&ember_path, &manifest, &build_path, optimize)
         .await
         .with_context(|| format!("Failed to build rust {build_path:?}"))?;
 
@@ -160,8 +169,8 @@ async fn build_ember(
         }
     }
 
-    store_manifest(&manifest, &build_path).await?;
-    store_metadata(&build_path).await?;
+    store_manifest(&manifest, &original_build_path).await?;
+    store_metadata(&original_build_path, &build_path).await?;
 
     Ok(())
 }
@@ -264,7 +273,11 @@ fn get_component_paths(target: &str, build_path: &Path) -> Vec<String> {
             rd.filter_map(Result::ok)
                 .map(|p| p.path())
                 .filter(|p| p.extension().unwrap_or_default() == "wasm")
-                .map(|p| path_to_unix_string(p.strip_prefix(build_path).unwrap()))
+                .map(|p| {
+                    path_to_unix_string(
+                        Path::new("build").join(p.strip_prefix(build_path).unwrap()),
+                    )
+                })
                 .collect()
         })
         .unwrap_or_default()
@@ -276,7 +289,10 @@ async fn store_manifest(manifest: &ProjectManifest, build_path: &Path) -> anyhow
     Ok(())
 }
 
-async fn store_metadata(build_path: &Path) -> anyhow::Result<BuildMetadata> {
+async fn store_metadata(
+    original_build_path: &Path,
+    build_path: &Path,
+) -> anyhow::Result<BuildMetadata> {
     let metadata = BuildMetadata {
         ambient_version: Version::new_from_str(env!("CARGO_PKG_VERSION"))
             .expect("Failed to parse CARGO_PKG_VERSION"),
@@ -284,7 +300,7 @@ async fn store_metadata(build_path: &Path) -> anyhow::Result<BuildMetadata> {
         client_component_paths: get_component_paths("client", build_path),
         server_component_paths: get_component_paths("server", build_path),
     };
-    let metadata_path = build_path.join(BuildMetadata::FILENAME);
+    let metadata_path = original_build_path.join(BuildMetadata::FILENAME);
     tokio::fs::write(&metadata_path, toml::to_string(&metadata)?).await?;
     Ok(metadata)
 }
