@@ -13,6 +13,7 @@ use notify::{
     EventKind, RecursiveMode, Watcher,
 };
 use notify_debouncer_full::{DebounceEventResult, Debouncer, FileIdMap};
+use tokio::select;
 use walkdir::DirEntry;
 
 use super::build::{self, BuildOptions};
@@ -77,6 +78,40 @@ pub struct Serve {
 
 impl Serve {
     pub async fn run(&self) -> anyhow::Result<()> {
+        build::run(&self.build).await?;
+
+        let watch = self.watch_and_build();
+        let serve = self.serve();
+
+        select! {
+            v = serve => v?,
+            v = watch => v?,
+        }
+
+        Ok(())
+    }
+
+    pub async fn serve(&self) -> anyhow::Result<()> {
+        let dir = Path::new("web/www")
+            .canonicalize()
+            .context("Web server directory does not exist")?;
+
+        let status = tokio::process::Command::new("npm")
+            .args(["run", "dev"])
+            .current_dir(dir)
+            .spawn()
+            .context("Failed to spawn npm")?
+            .wait()
+            .await
+            .context("Failed to run dev web server")?;
+
+        if !status.success() {
+            anyhow::bail!("Web server exited with non-zero status: {status:?}")
+        }
+
+        Ok(())
+    }
+    pub async fn watch_and_build(&self) -> anyhow::Result<()> {
         let (tx, rx) = flume::unbounded();
 
         let watcher = notify_debouncer_full::new_debouncer(
@@ -89,8 +124,6 @@ impl Serve {
 
         let mut watcher = WatcherState::new(watcher);
 
-        build::run(&self.build).await?;
-
         log::debug!("Created watcher");
 
         process_results(find_watched_dirs("."), |mut v| {
@@ -99,7 +132,6 @@ impl Serve {
         .context("Failed to watch initial root")??;
 
         let mut rx = rx.into_stream();
-
         while let Some(events) = rx.next().await {
             let events = events.map_err(|v| anyhow::anyhow!("File watch error: {v:?}"))?;
 
