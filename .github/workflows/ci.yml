@@ -164,7 +164,7 @@ jobs:
         env:
           CARGO_INCREMENTAL: 0
           RUSTFLAGS: "-C debuginfo=0"
-      - name: Upload ambient exectuable artifact
+      - name: Upload ambient executable artifact
         uses: actions/upload-artifact@v3
         with:
           name: ambient-${{ matrix.os }}

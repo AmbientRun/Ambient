@@ -27,7 +27,6 @@ ambient_project = { path = "../../shared_crates/project" }
 ambient_std = { path = "../../shared_crates/std" }
 
 ambient_unity_parser = { path = "../../libs/unity_parser" }
-
 walkdir = { workspace = true }
 futures = { workspace = true }
 tokio = { workspace = true }

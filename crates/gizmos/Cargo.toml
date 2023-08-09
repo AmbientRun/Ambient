@@ -23,7 +23,7 @@ wgpu = { workspace = true }
 log = { workspace = true }
 serde = { workspace = true }
 once_cell = "1.13.0"
-ambient_profiling = { workspace = true }
+profiling = { workspace = true }
 
 [dev-dependencies]
 ambient_app = { path = "../app" }

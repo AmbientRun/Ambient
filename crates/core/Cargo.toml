@@ -20,7 +20,7 @@ yaml-rust = { workspace = true }
 tracing = { workspace = true }
 glam = { workspace = true }
 wgpu = { workspace = true }
-ambient_profiling = { workspace = true }
+profiling = { workspace = true }
 derive_more = { workspace = true }
 bytemuck = { workspace = true }
 lazy_static = { workspace = true }

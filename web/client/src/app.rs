@@ -7,7 +7,6 @@ use ambient_network::{server::RpcArgs, web::client::GameClientView};
 use ambient_rpc::RpcRegistry;
 use ambient_ui_native::{cb, Dock};
 use std::collections::HashMap;
-use url::Url;
 
 #[element_component]
 pub fn MainApp(_hooks: &mut Hooks, server_url: String) -> Element {

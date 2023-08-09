@@ -16,7 +16,7 @@ pub struct SelectionPanel {
 }
 
 impl ElementComponent for SelectionPanel {
-    #[ambient_profiling::function]
+    #[profiling::function]
     fn render(self: Box<Self>, hooks: &mut Hooks) -> Element {
         let Self {
             selection,

@@ -158,7 +158,7 @@ impl ElementComponent for EditorBuildMode {
             let mut prev = None;
 
             let update_targets = move |selection: &Selection| {
-                ambient_profiling::scope!("update_targets");
+                profiling::scope!("update_targets");
                 let state = game_state.lock();
 
                 let res = selection

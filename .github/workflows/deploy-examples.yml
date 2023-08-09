@@ -73,7 +73,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown,wasm32-wasi
-      - name: Fetch ambient exectuable artifact from cache
+      - name: Fetch ambient executable artifact from cache
         uses: actions/cache/restore@v3
         with:
           path: target/release/ambient

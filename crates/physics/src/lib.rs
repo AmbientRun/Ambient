@@ -182,7 +182,7 @@ impl SyncAssetKey<PxMaterial> for PxWoodMaterialKey {
 }
 
 unsafe extern "C" fn main_physx_scene_filter_shader(
-    mut info: *mut physxx::sys::FilterShaderCallbackInfo,
+    info: *mut physxx::sys::FilterShaderCallbackInfo,
 ) -> u16 {
     (*(*info).pairFlags).mBits |= (physxx::sys::PxPairFlag::eSOLVE_CONTACT
         | physxx::sys::PxPairFlag::eDETECT_DISCRETE_CONTACT
@@ -233,7 +233,7 @@ pub fn server_systems() -> SystemGroup {
 /// Results will be available after [`fetch_simulation_system`]
 pub fn run_simulation_system() -> DynSystem {
     Box::new(FnSystem::new(|world, _| {
-        ambient_profiling::scope!("run_simulation_system");
+        profiling::scope!("run_simulation_system");
         let scene = world.resource(main_physics_scene());
         scene.simulate(FIXED_SERVER_TICK_TIME.as_secs_f32());
     }))
@@ -244,7 +244,7 @@ pub fn run_simulation_system() -> DynSystem {
 /// Must only be called once per [`run_simulation_system`]
 pub fn fetch_simulation_system() -> DynSystem {
     Box::new(FnSystem::new(|world, _| {
-        ambient_profiling::scope!("fetch_simulation_system");
+        profiling::scope!("fetch_simulation_system");
 
         world.resource(collisions()).lock().clear();
         world.resource_mut(collider_loads()).clear();

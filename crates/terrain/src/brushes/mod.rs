@@ -239,7 +239,7 @@ impl TerrainBrush {
             )),
         }
     }
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn apply(&self, world: &mut World, stroke: TerrainBrushStroke) -> Vec<EntityId> {
         let map_globals = world.persisted_resource_entity().unwrap();
         let seed = world.get(map_globals, map_seed()).unwrap();
