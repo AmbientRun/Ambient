@@ -6,6 +6,9 @@ use futures::FutureExt;
 use crate::{control::ControlHandle, platform};
 pub use platform::task::wasm_nonsend;
 
+#[cfg(not(target_os = "unknown"))]
+pub use platform::task::make_native_multithreaded_runtime;
+
 /// Spawns a new background task in the current runtime
 pub fn spawn<F, T>(fut: F) -> JoinHandle<T>
 where

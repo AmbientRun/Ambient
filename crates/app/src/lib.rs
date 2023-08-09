@@ -459,10 +459,7 @@ impl AppBuilder {
     /// Runs the app by blocking the main thread
     #[cfg(not(target_os = "unknown"))]
     pub fn block_on(self, init: impl for<'x> AsyncInit<'x>) {
-        let rt = tokio::runtime::Builder::new_multi_thread()
-            .enable_all()
-            .build()
-            .unwrap();
+        let rt = ambient_sys::task::make_native_multithreaded_runtime().unwrap();
 
         rt.block_on(async move {
             let mut app = self.build().await.unwrap();

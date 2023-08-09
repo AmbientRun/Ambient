@@ -160,7 +160,7 @@ impl World {
     #[cfg(not(target_os = "unknown"))]
     pub async fn from_file(path: impl AsRef<std::path::Path>) -> anyhow::Result<Self> {
         use anyhow::Context;
-        let content = tokio::fs::read(&path)
+        let content = ambient_sys::fs::read(path.as_ref())
             .await
             .with_context(|| format!("No such file: {:?}", path.as_ref()))?;
         Self::from_slice(&content)

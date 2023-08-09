@@ -28,9 +28,7 @@ const CERT: &[u8] = include_bytes!("../../localhost.crt");
 const CERT_KEY: &[u8] = include_bytes!("../../localhost.key");
 
 fn main() -> anyhow::Result<()> {
-    let rt = tokio::runtime::Builder::new_multi_thread()
-        .enable_all()
-        .build()?;
+    let rt = ambient_sys::task::make_native_multithreaded_runtime()?;
 
     setup_logging()?;
 
