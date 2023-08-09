@@ -7,9 +7,10 @@ use std::{
 };
 
 use ambient_asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_native_std::{asset_url::AbsAssetUrl, git_revision_full};
 use ambient_physics::physx::{Physics, PhysicsKey};
 use ambient_project::{Manifest as ProjectManifest, Version};
-use ambient_std::{asset_url::AbsAssetUrl, path::path_to_unix_string};
+use ambient_std::path::path_to_unix_string;
 use anyhow::Context;
 use futures::FutureExt;
 use itertools::Itertools;
@@ -22,6 +23,7 @@ pub mod pipelines;
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub struct Metadata {
     ambient_version: Version,
+    ambient_revision: String,
     client_component_paths: Vec<String>,
     server_component_paths: Vec<String>,
 }
@@ -92,10 +94,13 @@ pub async fn build(config: BuildConfiguration) -> anyhow::Result<Metadata> {
 
     if clean_build {
         tracing::info!("Removing build directory: {build_path:?}");
-        tokio::fs::remove_dir_all(&build_path)
-            .await
-            .context("Failed to clean build directory")
-            .unwrap();
+        match tokio::fs::remove_dir_all(&build_path).await {
+            Ok(_) => {}
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
+            Err(err) => {
+                return Err(err).context("Failed to remove build directory");
+            }
+        }
     }
 
     tokio::fs::create_dir_all(&build_path)
@@ -252,7 +257,7 @@ async fn store_metadata(build_path: &Path) -> anyhow::Result<Metadata> {
     let metadata = Metadata {
         ambient_version: Version::new_from_str(env!("CARGO_PKG_VERSION"))
             .expect("Failed to parse CARGO_PKG_VERSION"),
-
+        ambient_revision: git_revision_full().unwrap_or_default(),
         client_component_paths: get_component_paths("client", build_path),
         server_component_paths: get_component_paths("server", build_path),
     };

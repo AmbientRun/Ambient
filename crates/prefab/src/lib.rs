@@ -4,7 +4,7 @@ use ambient_core::{asset_cache, async_ecs::async_run, hierarchy::children, runti
 use ambient_decals::decal;
 use ambient_ecs::{query, query_mut, DeserWorldWithWarnings, EntityId, SystemGroup, World};
 use ambient_model::model_from_url;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt},
     asset_url::AssetUrl,
     download_asset::{AssetError, BytesFromUrl},

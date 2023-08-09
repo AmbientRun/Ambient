@@ -13,7 +13,7 @@ use ambient_gpu::{
     shader_module::{BindGroupDesc, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
 };
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     include_file,
     shapes::Plane,
@@ -138,7 +138,7 @@ impl Culling {
         }
     }
 
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn run<'a>(&mut self, gpu: &Gpu, encoder: &'a mut wgpu::CommandEncoder, world: &World) {
         let main_camera = if let Some(camera) = Camera::get_active(
             world,

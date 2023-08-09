@@ -8,7 +8,7 @@ use ambient_gpu::{
     texture::{Texture, TextureView},
     texture_loaders::{SplitTextureFromUrl, TextureFromUrl},
 };
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, AssetUrl},
     download_asset::{AssetError, JsonFromUrl},

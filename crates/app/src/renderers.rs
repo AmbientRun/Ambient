@@ -9,8 +9,8 @@ use ambient_gpu::{
     shader_module::DEPTH_FORMAT,
     texture::{Texture, TextureView},
 };
+use ambient_native_std::{asset_cache::SyncAssetKeyExt, color::Color};
 use ambient_renderer::{renderer_stats, RenderTarget, Renderer, RendererConfig, RendererTarget};
-use ambient_std::{asset_cache::SyncAssetKeyExt, color::Color};
 use ambient_ui_native::app_background_color;
 use glam::{uvec2, UVec2};
 use parking_lot::Mutex;
@@ -196,7 +196,7 @@ impl std::fmt::Debug for MainRenderer {
 
 impl System for MainRenderer {
     fn run(&mut self, world: &mut World, _: &FrameEvent) {
-        ambient_profiling::scope!("Renderers.run");
+        profiling::scope!("Renderers.run");
         let gpu = world.resource(gpu()).clone();
         let mut encoder = gpu
             .device
@@ -204,7 +204,7 @@ impl System for MainRenderer {
         let mut post_submit = Vec::new();
 
         if let Some(main) = &mut self.main {
-            ambient_profiling::scope!("Main");
+            profiling::scope!("Main");
             main.render(
                 &gpu,
                 world,
@@ -217,7 +217,7 @@ impl System for MainRenderer {
 
         if let Some(ui) = &mut self.ui {
             // tracing::info!("Drawing UI");
-            ambient_profiling::scope!("UI");
+            profiling::scope!("UI");
             ui.render(
                 &gpu,
                 world,
@@ -235,7 +235,7 @@ impl System for MainRenderer {
         if let Some(surface) = &gpu.surface {
             if self.size.x > 0 && self.size.y > 0 {
                 let frame = {
-                    ambient_profiling::scope!("Get swapchain texture");
+                    profiling::scope!("Get swapchain texture");
                     match surface.get_current_texture() {
                         Ok(v) => v,
                         // Reconfigure the surface if lost
@@ -267,20 +267,20 @@ impl System for MainRenderer {
                 );
 
                 {
-                    ambient_profiling::scope!("Submit");
+                    profiling::scope!("Submit");
                     gpu.queue.submit(Some(encoder.finish()));
                 }
                 {
-                    ambient_profiling::scope!("Present");
+                    profiling::scope!("Present");
                     frame.present();
                 }
             } else {
-                ambient_profiling::scope!("Submit");
+                profiling::scope!("Submit");
                 gpu.queue.submit(Some(encoder.finish()));
             }
         } else {
             {
-                ambient_profiling::scope!("Submit");
+                profiling::scope!("Submit");
                 gpu.queue.submit(Some(encoder.finish()));
             }
         }
@@ -383,7 +383,7 @@ impl UiRenderer {
                 label: Some("UIRenderer"),
             });
         let frame = {
-            ambient_profiling::scope!("Get swapchain texture");
+            profiling::scope!("Get swapchain texture");
             gpu.surface
                 .as_ref()
                 .unwrap()
@@ -417,11 +417,11 @@ impl UiRenderer {
             Some(app_background_color()),
         );
         {
-            ambient_profiling::scope!("Submit");
+            profiling::scope!("Submit");
             gpu.queue.submit(Some(encoder.finish()));
         }
         {
-            ambient_profiling::scope!("Present");
+            profiling::scope!("Present");
             frame.present();
         }
         for action in post_submit {

@@ -1,12 +1,12 @@
 use std::{path::PathBuf, str::FromStr};
 
 use ambient_core::window::ExitStatus;
-use ambient_network::native::client::ResolvedAddr;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ContentBaseUrlKey},
     download_asset::{AssetsCacheOnDisk, ReqwestClientKey},
 };
+use ambient_network::native::client::ResolvedAddr;
 use clap::Parser;
 
 mod cli;
@@ -42,7 +42,7 @@ fn setup_logging() -> anyhow::Result<()> {
                 "ambient_gpu",
                 "ambient_model",
                 "ambient_physics",
-                "ambient_std",
+                "ambient_native_std",
                 "cranelift_codegen",
                 "naga",
                 "tracing",
@@ -50,6 +50,8 @@ fn setup_logging() -> anyhow::Result<()> {
                 "symphonia_bundle_mp3",
                 "wgpu_core",
                 "wgpu_hal",
+                "optivorbis",
+                "symphonia_format_wav",
             ],
         ),
     ];
@@ -252,16 +254,37 @@ async fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    if let Commands::Assets { command, path } = &cli.command {
-        let path = ProjectPath::new_local(path.clone())?;
-        let manifest = load_manifest(&assets, &path).await?;
-
+    if let Commands::Assets { command } = &cli.command {
         match command {
-            AssetCommand::MigratePipelinesToml => {
+            AssetCommand::MigratePipelinesToml(opt) => {
+                let path = ProjectPath::new_local(opt.path.clone())?;
+                let manifest = load_manifest(&assets, &path).await?;
                 ambient_build::migrate::toml::process(&manifest, path.fs_path.unwrap())
                     .await
                     .context("Failed to migrate pipelines")?;
             }
+            AssetCommand::Import(opt) => match opt.path.extension() {
+                Some(ext) => {
+                    if ext == "wav" || ext == "mp3" || ext == "ogg" {
+                        let convert = opt.convert_audio;
+                        ambient_build::pipelines::import_audio(opt.path.clone(), convert)
+                            .context("failed to import audio")?;
+                    } else if ext == "fbx" || ext == "glb" || ext == "gltf" || ext == "obj" {
+                        let collider_from_model = opt.collider_from_model;
+                        ambient_build::pipelines::import_model(
+                            opt.path.clone(),
+                            collider_from_model,
+                        )
+                        .context("failed to import models")?;
+                    } else if ext == "jpg" || ext == "png" || ext == "gif" || ext == "webp" {
+                        // TODO: import textures API may change, so this is just a placeholder
+                        todo!();
+                    } else {
+                        bail!("Unsupported file type");
+                    }
+                }
+                None => bail!("Unknown file type"),
+            },
         }
 
         return Ok(());
@@ -386,6 +409,7 @@ async fn main() -> anyhow::Result<()> {
         if let Some(mut host) = host.clone() {
             if host.starts_with("http://") || host.starts_with("https://") {
                 tracing::info!("NOTE: Joining server by http url is still experimental and can be removed without warning.");
+
                 host = ReqwestClientKey
                     .get(&assets)
                     .get(host)

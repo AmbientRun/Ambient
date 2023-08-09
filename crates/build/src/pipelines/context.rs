@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ambient_model_import::model_crate::ModelCrate;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ModelCrateAssetType, TypedAssetUrl},
 };

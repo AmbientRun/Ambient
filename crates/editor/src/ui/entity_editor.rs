@@ -10,9 +10,9 @@ use ambient_ecs::{
 };
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
 use ambient_intent::client_push_intent;
+use ambient_native_std::{cb, Cb};
 use ambient_network::{client::ClientState, hooks::use_remote_component};
 use ambient_physics::collider::{character_controller_height, character_controller_radius, mass};
-use ambient_std::{cb, Cb};
 use ambient_ui_native::{
     align_horizontal, align_vertical,
     layout::{fit_horizontal, margin, Borders, Fit},
@@ -39,7 +39,7 @@ pub fn EntityEditor(hooks: &mut Hooks, entity_id: EntityId) -> Element {
         false,
         entity_id,
         closure!(clone set_entity, clone client_state, |&entity_id| {
-            ambient_profiling::scope!("EntityEditor::update_entity_data");
+            profiling::scope!("EntityEditor::update_entity_data");
             let client_state = client_state.game_state.lock();
             set_entity(client_state.world.clone_entity(entity_id).ok());
         }),
@@ -130,7 +130,7 @@ impl EntityComponentChange {
 }
 
 #[tracing::instrument(level = "info", skip_all)]
-#[ambient_profiling::function]
+#[profiling::function]
 #[element_component]
 fn EntityComponentsEditor(
     _hooks: &mut Hooks,
@@ -221,7 +221,7 @@ fn EntityComponentsEditor(
     .collect_vec();
 
     with_component_registry(|cr| {
-        ambient_profiling::scope!("setup_component_editors");
+        profiling::scope!("setup_component_editors");
         fn register_dynamic_component<
             T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync + Send + Default + 'static,
         >(
@@ -346,7 +346,7 @@ fn EntityComponentsEditor(
     .with(space_between_items(), STREET)
 }
 
-#[ambient_profiling::function]
+#[profiling::function]
 #[element_component]
 fn ComponentEditor<T: ComponentValue + Editor + std::fmt::Debug + Clone + Sync + Send + 'static>(
     hooks: &mut Hooks,

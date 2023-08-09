@@ -83,6 +83,14 @@ import("ambient_web")
     }
 
     ambient.init_ambient(true, true);
-    ambient.start();
+
+    let target = window.document.getElementById("instance-container");
+
+    if (!target) {
+      console.error("No target");
+      return;
+    }
+
+    ambient.start(target, "https://api.ambient.run/servers/ensure-running?ember_id=ambient_example_asset_loading");
     // setupAudio();
   });

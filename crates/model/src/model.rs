@@ -16,17 +16,17 @@ use ambient_ecs::{
     generated::components::core::animation::bind_id, query, ComponentDesc, Entity, EntityId, World,
 };
 use ambient_gpu::gpu::Gpu;
+use ambient_native_std::{
+    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
+    asset_url::AbsAssetUrl,
+    download_asset::AssetError,
+    shapes::AABB,
+};
 use ambient_renderer::{
     cast_shadows, color, gpu_primitives_lod, gpu_primitives_mesh,
     lod::cpu_lod_visible,
     primitives,
     skinning::{self, Skin, SkinsBuffer, SkinsBufferKey},
-};
-use ambient_std::{
-    asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
-    asset_url::AbsAssetUrl,
-    download_asset::AssetError,
-    shapes::AABB,
 };
 use futures::future::join_all;
 use glam::{Mat4, Vec3, Vec4};

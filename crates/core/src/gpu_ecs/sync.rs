@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use ambient_ecs::{
     Archetype, ArchetypeFilter, Component, ComponentDesc, ComponentValue, EntityId, System, World,
 };
-use ambient_std::sparse_vec::SparseVec;
+use ambient_native_std::sparse_vec::SparseVec;
 use itertools::Itertools;
 
 use super::{gpu_world, GpuComponentFormat, GpuComponentId};
@@ -70,7 +70,7 @@ impl<T: ComponentValue + bytemuck::Pod> ComponentToGpuSystem<T> {
 }
 impl<T: ComponentValue + bytemuck::Pod> System<GpuWorldSyncEvent> for ComponentToGpuSystem<T> {
     fn run(&mut self, world: &mut World, _: &GpuWorldSyncEvent) {
-        ambient_profiling::scope!("ComponentToGpuSystem.run");
+        profiling::scope!("ComponentToGpuSystem.run");
         let gpu_world = world.resource(gpu_world()).lock();
         let gpu = world.resource(gpu()).clone();
         for arch in self.source_archetypes.iter_archetypes(world) {
@@ -123,7 +123,7 @@ impl<A: ComponentValue, B: bytemuck::Pod> System<GpuWorldSyncEvent>
     for MappedComponentToGpuSystem<A, B>
 {
     fn run(&mut self, world: &mut World, _: &GpuWorldSyncEvent) {
-        ambient_profiling::scope!("MappedComponentToGpu.run");
+        profiling::scope!("MappedComponentToGpu.run");
         let gpu_world = world.resource(gpu_world()).lock();
         let gpu = world.resource(gpu());
         for arch in world.archetypes() {

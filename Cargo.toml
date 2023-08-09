@@ -10,7 +10,7 @@ rust-version = "1.67.0"
 
 [workspace.dependencies]
 aho-corasick = "0.7.20"
-ambient_profiling = { version = "1.0.9", features = ["profile-with-puffin"] }
+profiling = { version = "1.0.9", features = ["profile-with-puffin"] }
 tracing = "0.1.35"
 tracing-tree = { version = "0.2" }
 tracing-stackdriver = "0.6.2"
@@ -53,11 +53,11 @@ strum = { version = "0.24", features = ["derive"] }
 derivative = "2.2.0"
 async-trait = "0.1.56"
 png = "0.17.2"
-puffin = "0.14.3"
+puffin = "0.16.0"
+puffin_http = "0.13.0"
 futures-signals = "0.3"
 open = "2.0.2"
 which = "4.3.0"
-puffin_http = "0.11.1"
 fbxcel = { version = "0.9.0", features = ["tree"] }
 reqwest = { version = "0.11.11", default-features = false, features = [
     'blocking',
@@ -114,7 +114,7 @@ im = "15.1.0"
 axum = "0.6.4"
 tower-http = { version = "0.3.0", features = ["cors", "fs"] }
 tower = "0.4.13"
-indexmap = { version = "1.8.2", features = ["serde"] }
+indexmap = { version = "2.0", features = ["serde"] }
 fixed-vec-deque = "0.1.9"
 hex = "0.4.3"
 ring = "0.16.20"
@@ -145,6 +145,7 @@ symphonia = { version = "0.5", default-features = false, features = [
     "wav",
 ] }
 vorbis_rs = "0.3.0"
+optivorbis = "0.1.4"
 colored = "2.0.0"
 directories = "5.0.1"
 ulid = { version = "1.0.0", features = ["serde"] }
@@ -194,12 +195,12 @@ http = { version = "0.2.9" }
 #
 # WASM
 #
-wasmtime = { version = "10.0.1", features = ["component-model"] }
-wasmtime-wasi = "10.0.1"
-wasi-cap-std-sync = "10.0.1"
-wasi-common = "10.0.1"
-wit-bindgen-core = "0.7.0"
-wit-bindgen-rust = "0.7.0"
+wasmtime = { version = "11.0.1", features = ["component-model"] }
+wasmtime-wasi = "11.0.1"
+wasi-cap-std-sync = "11.0.1"
+wasi-common = "11.0.1"
+wit-bindgen-core = "0.9.0"
+wit-bindgen-rust = "0.9.0"
 wit-component = "0.11.0"
 
 # Required since the webtransport stuff is yet on crates.io

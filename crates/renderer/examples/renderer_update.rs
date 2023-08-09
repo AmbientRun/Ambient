@@ -2,12 +2,12 @@ use ambient_app::{gpu, App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, main_scene, transform::*};
 use ambient_ecs::{Entity, EntityId, FnSystem, World};
 use ambient_meshes::{CubeMeshKey, QuadMeshKey};
+use ambient_native_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords};
 use ambient_renderer::{
     gpu_primitives_lod, gpu_primitives_mesh,
     materials::flat_material::{get_flat_shader, FlatMaterial},
     primitives, RenderPrimitive, SharedMaterial,
 };
-use ambient_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords};
 use glam::*;
 use winit::event::{Event, VirtualKeyCode, WindowEvent};
 

@@ -3,11 +3,15 @@ use std::{str::FromStr, sync::Arc};
 use ambient_core::{
     asset_cache,
     async_ecs::async_run,
-    mesh, runtime,
+    camera::Camera,
+    main_scene, mesh, runtime,
     transform::{local_to_world, mesh_to_local, mesh_to_world, rotation, scale, translation},
+    ui_scene,
 };
 use ambient_ecs::{
-    ensure_has_component, ensure_has_component_with_default, query, Entity, SystemGroup,
+    ensure_has_component, ensure_has_component_with_default,
+    generated::components::core::rect::{pixel_line_from, pixel_line_to},
+    query, query_mut, Entity, SystemGroup,
 };
 use ambient_gpu::{
     gpu::{Gpu, GpuKey},
@@ -20,18 +24,18 @@ use ambient_gpu::{
 };
 use ambient_layout::{gpu_ui_size, height, mesh_to_local_from_size, width};
 use ambient_meshes::{UIRectMeshKey, UnitQuadMeshKey};
-use ambient_renderer::{
-    gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, Material,
-    MaterialShader, RendererConfig, RendererShader, SharedMaterial, StandardShaderKey,
-    MATERIAL_BIND_GROUP,
-};
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKey, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     cb,
     color::Color,
     download_asset::AssetResult,
     friendly_id, include_file,
+};
+use ambient_renderer::{
+    gpu_primitives_lod, gpu_primitives_mesh, material, primitives, renderer_shader, Material,
+    MaterialShader, RendererConfig, RendererShader, SharedMaterial, StandardShaderKey,
+    MATERIAL_BIND_GROUP,
 };
 use async_trait::async_trait;
 use glam::{uvec4, vec4, Quat, UVec3, UVec4, Vec3, Vec4};
@@ -85,6 +89,24 @@ pub fn systems() -> SystemGroup {
     SystemGroup::new(
         "ui/rect",
         vec![
+            ensure_has_component_with_default(pixel_line_from(), line_from()),
+            ensure_has_component_with_default(pixel_line_to(), line_to()),
+            query_mut(
+                (line_from(), line_to()),
+                (pixel_line_from().changed(), pixel_line_to().changed()),
+            )
+            .to_system(|q, world, qs, _| {
+                if let Some(world_cam) = Camera::get_active(world, main_scene(), None) {
+                    if let Some(ui_cam) = Camera::get_active(world, ui_scene(), None) {
+                        let mat = ui_cam.projection_view().inverse() * world_cam.projection_view();
+
+                        for (_, (line_from, line_to), (&p_from, &p_to)) in q.iter(world, qs) {
+                            *line_from = mat.project_point3(p_from);
+                            *line_to = mat.project_point3(p_to);
+                        }
+                    }
+                }
+            }),
             query((
                 line_from().changed(),
                 line_to().changed(),

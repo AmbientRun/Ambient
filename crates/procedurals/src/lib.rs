@@ -12,6 +12,7 @@ use ambient_ecs::{
     query, Entity, Resource, SystemGroup,
 };
 use ambient_gpu::{mesh_buffer::GpuMesh, texture::TextureView};
+use ambient_native_std::{cb, mesh::Mesh};
 use ambient_renderer::{
     gpu_primitives_lod, gpu_primitives_mesh,
     pbr_material::{get_pbr_shader, PbrMaterial, PbrMaterialConfig},
@@ -21,7 +22,6 @@ use ambient_shared_types::{
     procedural_storage_handle_definitions, ProceduralMaterialHandle, ProceduralMeshHandle,
     ProceduralSamplerHandle, ProceduralTextureHandle,
 };
-use ambient_std::{cb, mesh::Mesh};
 use paste::paste;
 
 components!("procedurals", {
@@ -88,7 +88,7 @@ macro_rules! make_procedural_storage_new_fns {
     ($($name:ident),*) => { paste!{$(
         #[must_use]
         pub fn [<new_ $name _handle>]() -> [<Procedural $name:camel Handle>] {
-            ambient_std::ulid().into()
+            ambient_native_std::ulid().into()
         }
     )*}};
 }

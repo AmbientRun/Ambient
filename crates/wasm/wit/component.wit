@@ -132,8 +132,8 @@ interface component {
 
     record query-build {
         components: list<u32>,
-        include: list<u32>,
-        exclude: list<u32>,
+        includes: list<u32>,
+        excludes: list<u32>,
         changed: list<u32>,
     }
 

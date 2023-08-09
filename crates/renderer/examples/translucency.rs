@@ -1,9 +1,9 @@
 use ambient_app::{App, AppBuilder};
 use ambient_core::{asset_cache, camera::active_camera, gpu, main_scene, transform::*};
 use ambient_element::ElementComponentExt;
+use ambient_native_std::math::SphericalCoords;
 use ambient_primitives::{Cube, Quad};
 use ambient_renderer::{material, materials::flat_material::FlatMaterial, SharedMaterial};
-use ambient_std::math::SphericalCoords;
 use glam::*;
 
 async fn init(app: &mut App) {

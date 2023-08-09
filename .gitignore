@@ -1,11 +1,12 @@
 target
 **/tmp/**
+**/.vs/**
 .DS_Store
 /example_assets
 /rust
 
 # WASM
-pkg/
+web/pkg/
 node_modules/
 bin/
 wasm-pack.log

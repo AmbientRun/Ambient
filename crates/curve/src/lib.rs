@@ -1,6 +1,6 @@
 use std::ops::{Add, Mul, Sub};
 
-use ambient_std::math::interpolate;
+use ambient_native_std::math::interpolate;
 
 pub struct CurvePoint<T> {
     pub input: f32,
@@ -96,7 +96,7 @@ where
 
 #[test]
 fn test() {
-    use ambient_std::math::Round100;
+    use ambient_native_std::math::Round100;
     use glam::{vec3, Vec3};
     assert_eq!(
         Curve::new_looping(vec![CurvePoint::new(5., Vec3::X)], 24.)

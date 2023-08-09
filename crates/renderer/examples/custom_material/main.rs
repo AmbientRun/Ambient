@@ -12,17 +12,17 @@ use ambient_gpu::{
 };
 use ambient_meshes::QuadMeshKey;
 use ambient_model_import::model_crate::ModelCrate;
+use ambient_native_std::{
+    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
+    asset_url::AbsAssetUrl,
+    cb, friendly_id,
+    math::SphericalCoords,
+};
 use ambient_renderer::{
     gpu_primitives_lod, gpu_primitives_mesh, material,
     materials::flat_material::{get_flat_shader, FlatMaterial},
     primitives, renderer_shader, Material, MaterialShader, SharedMaterial, StandardShaderKey,
     MATERIAL_BIND_GROUP,
-};
-use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
-    asset_url::AbsAssetUrl,
-    cb, friendly_id,
-    math::SphericalCoords,
 };
 use glam::*;
 use wgpu::BindGroup;

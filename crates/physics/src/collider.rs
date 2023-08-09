@@ -11,7 +11,7 @@ use ambient_ecs::{
     MakeDefault, QueryEvent, QueryState, Store, SystemGroup, TypedReadQuery, World,
 };
 use ambient_model::model_from_url;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ColliderAssetType, TypedAssetUrl},
     download_asset::{AssetError, JsonFromUrl},

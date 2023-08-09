@@ -1,6 +1,6 @@
 use std::cell::UnsafeCell;
 
-use ambient_std::sparse_vec::SparseVec;
+use ambient_native_std::sparse_vec::SparseVec;
 use atomic_refcell::AtomicRefCell;
 
 use super::*;
@@ -343,7 +343,7 @@ impl Archetype {
         }
     }
 
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn next_frame(&mut self) {
         self.movein_events.next_frame();
         self.moveout_events.next_frame();

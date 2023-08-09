@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use ambient_core::transform::{rotation, translation};
 use ambient_model::{Model, ModelFromUrl};
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt},
     asset_url::{AnimationAssetType, ModelAssetType, TypedAssetUrl},
     download_asset::AssetError,

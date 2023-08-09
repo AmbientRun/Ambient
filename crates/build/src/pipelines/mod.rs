@@ -1,8 +1,8 @@
 use std::{collections::HashSet, sync::Arc};
 
 use ambient_asset_cache::SyncAssetKey;
+use ambient_native_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use ambient_pipeline_types::{models::ModelsPipeline, Pipeline, PipelineProcessor, PipelinesFile};
-use ambient_std::{asset_cache::AssetCache, asset_url::AbsAssetUrl};
 use anyhow::Context;
 use context::PipelineCtx;
 use futures::{
@@ -14,9 +14,12 @@ use out_asset::{OutAsset, OutAssetContent, OutAssetPreview};
 
 pub mod audio;
 pub mod context;
+pub mod importer;
 pub mod materials;
 pub mod models;
 pub mod out_asset;
+
+pub use importer::*;
 
 pub async fn process_pipeline(pipeline: &Pipeline, ctx: PipelineCtx) -> Vec<OutAsset> {
     log::info!("Processing pipeline: {:?}", ctx.pipeline_path());

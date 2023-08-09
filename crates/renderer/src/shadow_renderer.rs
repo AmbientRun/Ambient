@@ -9,7 +9,7 @@ use ambient_gpu::{
     shader_module::DEPTH_FORMAT,
     texture::{Texture, TextureView},
 };
-use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use bytemuck::{Pod, Zeroable};
 use glam::{Mat4, Vec3};
 use itertools::Itertools;
@@ -129,7 +129,7 @@ impl ShadowsRenderer {
         self.cascades.len()
     }
 
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn update(&mut self, gpu: &Gpu, assets: &AssetCache, world: &mut World) {
         let main_camera =
             Camera::get_active(world, main_scene(), world.resource_opt(local_user_id()))
@@ -144,7 +144,7 @@ impl ShadowsRenderer {
         self.renderer.update(gpu, assets, world);
 
         for (i, cascade) in self.cascades.iter_mut().enumerate() {
-            ambient_profiling::scope!("Shadow cascade update");
+            profiling::scope!("Shadow cascade update");
             let new_camera = main_camera.create_snapping_shadow_camera(
                 sun_direction,
                 i as u32,
@@ -187,7 +187,7 @@ impl ShadowsRenderer {
         post_submit: &mut Vec<PostSubmitFunc>,
     ) {
         for (i, cascade) in self.cascades.iter_mut().enumerate() {
-            ambient_profiling::scope!("Shadow dynamic render");
+            profiling::scope!("Shadow dynamic render");
             self.renderer.run_collect(
                 gpu,
                 world,
@@ -233,7 +233,7 @@ impl ShadowsRenderer {
                 cascade.dynamic_target.texture.size,
             );
             {
-                ambient_profiling::scope!("Drop render pass");
+                profiling::scope!("Drop render pass");
                 drop(render_pass);
             }
         }

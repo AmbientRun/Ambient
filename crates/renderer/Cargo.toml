@@ -11,7 +11,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
 ambient_sys = { path = "../sys" , version = "0.3.0-dev" }
-ambient_std = { path = "../std" , version = "0.3.0-dev" }
+ambient_native_std = { path = "../native_std" , version = "0.3.0-dev" }
 ambient_ecs = { path = "../ecs" , version = "0.3.0-dev" }
 ambient_gpu = { path = "../gpu" , version = "0.3.0-dev" }
 ambient_core = { path = "../core" , version = "0.3.0-dev" }
@@ -24,7 +24,7 @@ ordered-float = { workspace = true }
 serde = { workspace = true }
 derive_more = { workspace = true }
 downcast-rs = { workspace = true }
-ambient_profiling = { workspace = true }
+profiling = { workspace = true }
 bytemuck = { workspace = true }
 smallvec = { workspace = true }
 log = { workspace = true }
@@ -36,14 +36,17 @@ ulid = { workspace = true }
 
 [dev-dependencies]
 ambient_app = { path = "../app" }
-ambient_element = { path = "../../shared_crates/element" }
 ambient_gizmos = { path = "../gizmos" }
 ambient_model_import = { path = "../model_import" }
 ambient_cameras = { path = "../cameras" }
 ambient_primitives = { path = "../primitives" }
+
+ambient_element = { path = "../../shared_crates/element" }
+ambient_std = { path = "../../shared_crates/std" }
+
 env_logger = { workspace = true }
 winit = { workspace = true }
 tracing-subscriber = { workspace = true }
 
 [features]
-hotload-includes = ['ambient_std/hotload-includes']
+hotload-includes = ['ambient_native_std/hotload-includes']

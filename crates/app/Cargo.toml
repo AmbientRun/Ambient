@@ -11,7 +11,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
 ambient_sys = { path = "../sys" , version = "0.3.0-dev" }
-ambient_std = { path = "../std" , version = "0.3.0-dev" }
+ambient_native_std = { path = "../native_std" , version = "0.3.0-dev" }
 ambient_core = { path = "../core" , version = "0.3.0-dev" }
 ambient_gizmos = { path = "../gizmos" , version = "0.3.0-dev" }
 ambient_gpu = { path = "../gpu" , version = "0.3.0-dev" }
@@ -30,7 +30,7 @@ winit = { workspace = true }
 flume = { workspace = true }
 glam = { workspace = true }
 tokio = { workspace = true }
-ambient_profiling = { workspace = true }
+profiling = { workspace = true }
 anyhow = { workspace = true }
 wgpu = { workspace = true }
 tracing = { workspace = true }
@@ -40,9 +40,9 @@ parking_lot = { workspace = true }
 ambient_primitives = { path = "../primitives" }
 
 [features]
-profile = ["ambient_profiling/profile-with-puffin"]
+profile = ["profiling/profile-with-puffin"]
 hotload-includes = [
-    "ambient_std/hotload-includes",
+    "ambient_native_std/hotload-includes",
     'ambient_gpu/hotload-includes',
     'ambient_renderer/hotload-includes',
     'ambient_gizmos/hotload-includes',

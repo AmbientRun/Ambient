@@ -12,7 +12,7 @@ use ambient_gpu::{
     settings::RenderMode,
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo},
 };
-use ambient_std::asset_cache::AssetCache;
+use ambient_native_std::asset_cache::AssetCache;
 use bytemuck::Zeroable;
 use glam::UVec4;
 use itertools::Itertools;
@@ -107,7 +107,7 @@ impl TreeRenderer {
             label: Some("TreeRenderer.primitives"),
         })
     }
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn update(&mut self, gpu: &Gpu, assets: &AssetCache, world: &mut World) {
         let mut to_update = HashSet::new();
         let mut spawn_qs = std::mem::replace(&mut self.spawn_qs, QueryState::new());
@@ -494,7 +494,7 @@ impl TreeRenderer {
         self.tree.retain(|_, v| !v.is_empty());
     }
 
-    #[ambient_profiling::function]
+    #[profiling::function]
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn render<'a>(
         &'a self,

@@ -8,7 +8,7 @@ use ambient_gpu::{
     shader_module::{GraphicsPipeline, GraphicsPipelineInfo, DEPTH_FORMAT},
     typed_buffer::TypedBuffer,
 };
-use ambient_std::asset_cache::AssetCache;
+use ambient_native_std::asset_cache::AssetCache;
 use glam::{Mat4, UVec4, Vec3};
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
@@ -71,7 +71,7 @@ impl TransparentRenderer {
             despawn_qs: QueryState::new(),
         }
     }
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn update(
         &mut self,
         gpu: &Gpu,
@@ -188,7 +188,7 @@ impl TransparentRenderer {
             .retain(|x| !(x.id == id && x.primitive_index == primitive_index));
     }
 
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn render<'a>(
         &'a self,
         world: &World,

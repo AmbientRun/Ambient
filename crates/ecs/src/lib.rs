@@ -6,7 +6,7 @@ use std::{
     sync::atomic::{AtomicU64, Ordering},
 };
 
-use ambient_std::sparse_vec::SparseVec;
+use ambient_native_std::sparse_vec::SparseVec;
 use bit_set::BitSet;
 use bit_vec::BitVec;
 use itertools::Itertools;
@@ -262,7 +262,7 @@ impl World {
             self.despawn(id);
         }
     }
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn next_frame(&mut self) {
         for arch in &mut self.archetypes {
             arch.next_frame();

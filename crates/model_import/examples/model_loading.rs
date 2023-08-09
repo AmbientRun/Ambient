@@ -9,14 +9,14 @@ use ambient_ecs::Entity;
 use ambient_element::ElementComponentExt;
 use ambient_model::{model_from_url, ModelFromUrl};
 use ambient_model_import::{ModelImportPipeline, ModelImportTransform};
-use ambient_pipeline_types::models::{MaterialFilter, ModelTransform};
-use ambient_primitives::{Cube, Quad};
-use ambient_renderer::{color, materials::pbr_material::PbrMaterialDesc};
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::AsyncAssetKeyExt,
     asset_url::{AbsAssetUrl, AssetUrl, TypedAssetUrl},
     math::SphericalCoords,
 };
+use ambient_pipeline_types::models::{MaterialFilter, ModelTransform};
+use ambient_primitives::{Cube, Quad};
+use ambient_renderer::{color, materials::pbr_material::PbrMaterialDesc};
 use glam::*;
 use reqwest::Url;
 use std::str::FromStr;

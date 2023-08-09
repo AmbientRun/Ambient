@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{ops::Deref, sync::Arc};
 
 use ambient_app::{gpu, App, AppBuilder};
 use ambient_cameras::UICamera;
@@ -17,7 +17,7 @@ async fn init(app: &mut App) {
         Image {
             texture: Some(Arc::new(
                 Arc::new(Texture::new_single_color_texture(
-                    &world.resource(gpu()),
+                    world.resource(gpu()).deref(),
                     uvec4(255, 200, 200, 255),
                 ))
                 .create_view(&Default::default()),

@@ -7,7 +7,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ambient_std = { path = "../std" }
+ambient_native_std = { path = "../native_std" }
 ambient_asset_cache = { path = "../asset_cache" }
 ambient_model_import = { path = "../model_import" }
 ambient_model = { path = "../model" }
@@ -24,9 +24,9 @@ ambient_wasm = { path = "../wasm" }
 ambient_pipeline_types = { path = "../pipeline_types" }
 
 ambient_project = { path = "../../shared_crates/project" }
+ambient_std = { path = "../../shared_crates/std" }
 
 ambient_unity_parser = { path = "../../libs/unity_parser" }
-
 walkdir = { workspace = true }
 futures = { workspace = true }
 tokio = { workspace = true }
@@ -52,4 +52,4 @@ dyn-clonable = { workspace = true }
 cargo_toml = { workspace = true }
 symphonia = { workspace = true }
 vorbis_rs = { workspace = true }
-rand = { workspace = true }
+optivorbis = { workspace = true }

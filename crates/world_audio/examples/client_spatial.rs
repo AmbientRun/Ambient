@@ -12,9 +12,9 @@ use ambient_core::{
     transform::{scale, translation},
 };
 use ambient_element::ElementComponentExt;
+use ambient_native_std::math::SphericalCoords;
 use ambient_primitives::Cube;
 use ambient_renderer::{cast_shadows, color};
-use ambient_std::math::SphericalCoords;
 use ambient_ui_native::World;
 use ambient_world_audio::{
     audio_emitter, audio_listener, audio_mixer, play_sound_on_entity, systems::setup_audio,
@@ -62,9 +62,8 @@ fn spawn_emitters(world: &mut World) {
 }
 
 fn init(app: &mut App) {
-    app.systems.add(Box::new(
-        ambient_world_audio::systems::spatial_audio_systems(),
-    ));
+    app.systems
+        .add(Box::new(ambient_world_audio::systems::audio_systems()));
 
     let world = &mut app.world;
     let _assets = world.resource(asset_cache()).clone();

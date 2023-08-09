@@ -51,7 +51,7 @@ pub enum Release {
     },
 }
 
-pub(crate) fn main(args: &Release) -> anyhow::Result<()> {
+pub fn main(args: &Release) -> anyhow::Result<()> {
     match args {
         Release::UpdateVersion { new_version } => update_version(new_version),
         Release::UpdateMsrv { new_version } => update_msrv(new_version),

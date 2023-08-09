@@ -38,26 +38,26 @@ ambient_wasm = { path = "../crates/wasm", features = [
     "wit",
     "physics",
 ] }
-ambient_std = { path = "../crates/std" }
+ambient_native_std = { path = "../crates/native_std" }
 ambient_ui_native = { path = "../crates/ui_native" }
 ambient_world_audio = { path = "../crates/world_audio" }
 ambient_sky = { path = "../crates/sky" }
 ambient_water = { path = "../crates/water" }
+ambient_client_shared = { path = "../crates/client_shared/" }
 
 ambient_editor_derive = { path = "../shared_crates/editor_derive" }
 ambient_element = { path = "../shared_crates/element" }
 ambient_project = { path = "../shared_crates/project" }
+ambient_std = { path = "../shared_crates/std" }
 ambient_shared_types = { path = "../shared_crates/shared_types", features = [
     "native",
 ] }
-ambient_client_shared = { path = "../crates/client_shared/" }
 
 tracing-tree = { workspace = true, optional = true }
 tracing-stackdriver = { workspace = true, optional = true }
 tracing-subscriber = { workspace = true, optional = true }
 tracing-log = { workspace = true, optional = true }
 time = { workspace = true }
-
 anyhow = { workspace = true }
 bincode = { workspace = true }
 byteorder = { workspace = true }

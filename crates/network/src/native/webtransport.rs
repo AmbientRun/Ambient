@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use ambient_ecs::WorldStreamFilter;
-use ambient_std::asset_url::AbsAssetUrl;
+use ambient_native_std::asset_url::AbsAssetUrl;
 use anyhow::Context;
 use bytes::Bytes;
 use futures::{SinkExt, StreamExt};
@@ -91,8 +91,6 @@ async fn handle_webtransport_session(
     );
 
     let mut push_send = FramedSendStream::new(conn.open_uni(sid).await?);
-
-    let diffs_rx = diffs_rx.into_stream();
 
     // Send who we are
     push_send.send(ServerPush::ServerInfo(server_info)).await?;

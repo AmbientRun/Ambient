@@ -9,12 +9,12 @@ use ambient_gpu::{
     texture::Texture,
 };
 use ambient_meshes::CubeMeshKey;
+use ambient_native_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords};
 use ambient_renderer::{
     gpu_primitives_lod, gpu_primitives_mesh,
     materials::pbr_material::{get_pbr_shader, PbrMaterial, PbrMaterialConfig, PbrMaterialParams},
     primitives, RenderPrimitive, SharedMaterial,
 };
-use ambient_std::{asset_cache::SyncAssetKeyExt, cb, math::SphericalCoords};
 use glam::*;
 
 async fn init(app: &mut App) {

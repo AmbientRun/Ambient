@@ -15,7 +15,7 @@ use ambient_ecs::{
 };
 use ambient_gpu::{gpu::Gpu, mesh_buffer::GpuMesh};
 
-use ambient_std::asset_cache::{AssetCache, SyncAssetKey};
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKey};
 pub use paste;
 use serde::{Deserialize, Serialize};
 
@@ -163,7 +163,7 @@ impl FixedTimestepSystem {
     }
 }
 impl System for FixedTimestepSystem {
-    #[ambient_profiling::function]
+    #[profiling::function]
     fn run(&mut self, world: &mut World, event: &FrameEvent) {
         let delta_time = *world.resource(self::delta_time());
         self.acc += delta_time;

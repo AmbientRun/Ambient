@@ -1,9 +1,9 @@
 use ambient_core::{gpu, window::window_scale_factor};
 use ambient_ecs::{components, ComponentValueBase, Resource, World};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_native_std::{asset_cache::AssetCache, cb, friendly_id, to_byte_unit, Cb};
 use ambient_renderer::RenderTarget;
 use ambient_rpc::RpcRegistry;
-use ambient_std::{asset_cache::AssetCache, cb, friendly_id, to_byte_unit, Cb};
 use ambient_sys::task::{PlatformBoxFuture, RuntimeHandle};
 use ambient_ui_native::{Image, MeasureSize};
 use bytes::Bytes;
@@ -229,16 +229,20 @@ pub struct NetworkStats {
     pub latency_ms: u64,
     pub bytes_sent: u64,
     pub bytes_received: u64,
+    pub packets_sent: u64,
+    pub packets_lost: u64,
 }
 
 impl Display for NetworkStats {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let loss = self.packets_lost as f32 / self.packets_sent as f32;
         write!(
             f,
-            "{:?} ms rtt, {}/s out, {}/s in",
+            "{:?} ms rtt, {}/s out, {}/s in, {:.03} loss",
             self.latency_ms,
             to_byte_unit(self.bytes_sent),
-            to_byte_unit(self.bytes_received)
+            to_byte_unit(self.bytes_received),
+            if loss.is_nan() { 0.0 } else { loss },
         )
     }
 }

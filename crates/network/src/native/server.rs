@@ -11,13 +11,13 @@ use ambient_ecs::{
     ArchetypeFilter, ComponentDesc, System, SystemGroup, World, WorldStream, WorldStreamCompEvent,
     WorldStreamFilter,
 };
-use ambient_proxy::client::AllocatedEndpoint;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, ServerBaseUrlKey},
     fps_counter::FpsCounter,
     log_result,
 };
+use ambient_proxy::client::AllocatedEndpoint;
 use ambient_sys::time::Instant;
 use anyhow::Context;
 use colored::Colorize;
@@ -174,8 +174,8 @@ impl GameServer {
                     fps_counter.frame_start();
                     let mut state = state.lock();
                     tokio::task::block_in_place(|| {
-                        ambient_profiling::finish_frame!();
-                        ambient_profiling::scope!("sim_tick");
+                        profiling::finish_frame!();
+                        profiling::scope!("sim_tick");
                         state.step();
                         state.broadcast_diffs();
                         if let Some(sample) = fps_counter.frame_end() {
@@ -298,8 +298,6 @@ async fn handle_quinn_connection(
 
     let mut request_recv = FramedRecvStream::new(conn.accept_uni().await?);
     let mut push_send = FramedSendStream::new(conn.open_uni().await?);
-
-    let diffs_rx = diffs_rx.into_stream();
 
     // Send who we are
     push_send.send(ServerPush::ServerInfo(server_info)).await?;

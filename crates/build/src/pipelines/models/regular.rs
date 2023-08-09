@@ -1,5 +1,5 @@
 use ambient_model_import::{model_crate::ModelCrate, MODEL_EXTENSIONS};
-use ambient_std::asset_url::AssetType;
+use ambient_native_std::asset_url::AssetType;
 use anyhow::Context;
 
 use super::{

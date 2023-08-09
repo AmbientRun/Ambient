@@ -14,13 +14,13 @@ use ambient_app::{window_title, world_instance_resources, AppResources};
 use ambient_core::{asset_cache, gpu};
 use ambient_ecs::{generated::messages, world_events, Entity, SystemGroup};
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_renderer::RenderTarget;
-use ambient_rpc::RpcRegistry;
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     asset_url::ContentBaseUrlKey,
     Cb,
 };
+use ambient_renderer::RenderTarget;
+use ambient_rpc::RpcRegistry;
 use ambient_ui_native::{Centered, Dock, FlowColumn, FlowRow, StylesExt, Text, Throbber};
 use anyhow::Context;
 use futures::{SinkExt, StreamExt};
@@ -327,6 +327,8 @@ async fn handle_connection(
                     latency_ms: conn.rtt().as_millis() as u64,
                     bytes_sent: (stats.udp_tx.bytes - prev_stats.udp_tx.bytes) / stats_interval,
                     bytes_received: (stats.udp_rx.bytes - prev_stats.udp_rx.bytes) / stats_interval,
+                    packets_sent: (stats.path.sent_packets - prev_stats.path.sent_packets),
+                    packets_lost: (stats.path.lost_packets - prev_stats.path.lost_packets),
                 });
 
                 prev_stats = stats;

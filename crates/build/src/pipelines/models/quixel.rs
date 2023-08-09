@@ -1,7 +1,7 @@
 use ambient_asset_cache::AsyncAssetKeyExt;
 use ambient_model_import::{fbx::FbxDoc, ModelImportPipeline, ModelImportTransform};
+use ambient_native_std::asset_url::{AbsAssetUrl, AssetType, AssetUrl};
 use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
-use ambient_std::asset_url::{AbsAssetUrl, AssetType, AssetUrl};
 use convert_case::{Case, Casing};
 use futures::{future::BoxFuture, FutureExt};
 use image::RgbaImage;

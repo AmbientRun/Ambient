@@ -9,13 +9,13 @@ use ambient_gpu::{
     typed_buffer::TypedBuffer,
 };
 use ambient_meshes::QuadMeshKey;
+use ambient_native_std::{
+    asset_cache::{AssetCache, SyncAssetKeyExt},
+    include_file,
+};
 use ambient_renderer::{
     bind_groups::BindGroups, get_mesh_data_module, get_overlay_modules, PostSubmitFunc,
     RendererTarget, SubRenderer, GLOBALS_BIND_GROUP, GLOBALS_BIND_GROUP_SIZE,
-};
-use ambient_std::{
-    asset_cache::{AssetCache, SyncAssetKeyExt},
-    include_file,
 };
 use bytemuck::{Pod, Zeroable};
 use glam::{vec2, Mat4, Quat, Vec2, Vec3};
@@ -90,7 +90,7 @@ impl GizmoRenderer {
 }
 
 impl SubRenderer for GizmoRenderer {
-    #[ambient_profiling::function]
+    #[profiling::function]
     fn render<'a>(
         &'a mut self,
         gpu: &Gpu,

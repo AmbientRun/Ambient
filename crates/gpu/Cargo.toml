@@ -12,7 +12,7 @@ repository = "https://github.com/AmbientRun/Ambient"
 
 [dependencies]
 ambient_sys = { path = "../sys", version = "0.3.0-dev" }
-ambient_std = { path = "../std", version = "0.3.0-dev" }
+ambient_native_std = { path = "../native_std", version = "0.3.0-dev" }
 
 aho-corasick = { workspace = true }
 bytemuck = { workspace = true }
@@ -39,7 +39,7 @@ ulid = { workspace = true }
 cfg-if = { workspace = true }
 
 [features]
-hotload-includes = ['ambient_std/hotload-includes']
+hotload-includes = ['ambient_native_std/hotload-includes']
 
 
 [target.'cfg(target_os = "unknown")'.dev-dependencies]

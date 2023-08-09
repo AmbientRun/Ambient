@@ -1,5 +1,5 @@
 [package]
-name = "ambient_std"
+name = "ambient_native_std"
 version = { workspace = true }
 rust-version = { workspace = true }
 edition = "2021"
@@ -44,7 +44,7 @@ thiserror = { workspace = true, optional = true }
 yaml-rust = { workspace = true, optional = true }
 sentry-anyhow = { workspace = true, optional = true }
 parking_lot = { workspace = true, optional = true }
-ambient_profiling = { workspace = true, optional = true }
+profiling = { workspace = true, optional = true }
 ring = { workspace = true, optional = true }
 data-encoding = { workspace = true, optional = true }
 chrono = { workspace = true, optional = true }
@@ -83,7 +83,7 @@ uncategorized = [
     "dep:thiserror",
     "dep:sentry-anyhow",
     "dep:parking_lot",
-    "dep:ambient_profiling",
+    "dep:profiling",
     "dep:ring",
     "dep:data-encoding",
     "dep:chrono",

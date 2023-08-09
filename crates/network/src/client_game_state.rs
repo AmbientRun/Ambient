@@ -12,9 +12,9 @@ use ambient_core::{
 use ambient_ecs::{components, query, Entity, FrameEvent, System, SystemGroup, World};
 use ambient_gizmos::render::GizmoRenderer;
 use ambient_gpu::gpu::Gpu;
+use ambient_native_std::{asset_cache::AssetCache, color::Color, math::interpolate, shapes::Ray};
 use ambient_renderer::{RenderTarget, Renderer, RendererConfig, RendererTarget};
-use ambient_std::{asset_cache::AssetCache, color::Color, math::interpolate, shapes::Ray};
-use ambient_world_audio::systems::{setup_audio, spatial_audio_systems};
+use ambient_world_audio::systems::{audio_systems, setup_audio};
 use glam::{vec2, Mat4, Vec2, Vec3, Vec3Swizzles};
 
 use ambient_core::player::{player, user_id};
@@ -65,8 +65,7 @@ impl ClientGameState {
             vec![
                 Box::new(client_systems),
                 Box::new(world_instance_systems(true)),
-                Box::new(spatial_audio_systems()),
-                Box::new(ambient_world_audio::systems::audio_systems()),
+                Box::new(audio_systems()),
             ],
         );
         let mut renderer = Renderer::new(
@@ -102,7 +101,7 @@ impl ClientGameState {
             user_id: player_id,
         }
     }
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn on_frame(&mut self, gpu: &Gpu, target: &RenderTarget) {
         let _span = debug_span!("ClientGameState.on_frame").entered();
 

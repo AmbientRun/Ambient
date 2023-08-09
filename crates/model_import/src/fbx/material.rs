@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use ambient_gpu::sampler::SamplerKey;
+use ambient_native_std::asset_url::AssetUrl;
 use ambient_renderer::materials::pbr_material::PbrMaterialDesc;
-use ambient_std::asset_url::AssetUrl;
 use fbxcel::tree::v7400::NodeHandle;
 use glam::{vec3, Vec3};
 

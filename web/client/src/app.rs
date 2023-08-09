@@ -2,35 +2,18 @@ use ambient_cameras::UICamera;
 use ambient_client_shared::{game_view::GameView, player};
 use ambient_ecs::{Entity, SystemGroup};
 use ambient_element::{element_component, Element, ElementComponentExt, Hooks};
+use ambient_native_std::friendly_id;
 use ambient_network::{server::RpcArgs, web::client::GameClientView};
 use ambient_rpc::RpcRegistry;
-use ambient_std::friendly_id;
 use ambient_ui_native::{cb, Dock};
 use std::collections::HashMap;
-use url::Url;
 
 #[element_component]
-pub fn MainApp(_hooks: &mut Hooks) -> Element {
-    let url = Url::parse("https://127.0.0.1:9000").unwrap();
+pub fn MainApp(_hooks: &mut Hooks, server_url: String) -> Element {
+    tracing::info!("Connecting to {server_url:?}");
 
-    // FlowColumn(vec![
-    // Button::new("Dump native UI", |w| {
-    //     let mut buf = Vec::new();
-    //     dump_world_hierarchy(w, &mut buf);
-    //     let s = String::from_utf8(buf).unwrap();
-    //
-    //     tracing::info!("Dumping native UI: {}", s.len());
-    //     ambient_sys::task::RuntimeHandle::current().spawn_local({
-    //         async move {
-    //             let s = s;
-    //             ambient_sys::clipboard::set(&s).await;
-    //         }
-    //     });
-    // })
-    // .el(),
-    // Text::el(format!("Url: {url}")),
     GameClientView {
-        url,
+        url: server_url,
         user_id: friendly_id(),
         systems_and_resources: cb(|| {
             let mut resources = Entity::new();
@@ -68,9 +51,6 @@ pub fn MainApp(_hooks: &mut Hooks) -> Element {
         inner: Dock::el(vec![GameView { show_debug: true }.el()]),
     }
     .el()
-    // ])
-    // .el()
-    // .with(space_between_items(), 10.)
 }
 
 /// Declares the systems to run in the network client world

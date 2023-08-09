@@ -1,7 +1,7 @@
 use std::{fmt::Debug, str::FromStr};
 
 use ambient_audio::{Source, VorbisFromUrl};
-use ambient_std::{
+use ambient_native_std::{
     self,
     asset_cache::{AssetCache, AsyncAssetKeyExt},
     asset_url::AbsAssetUrl,

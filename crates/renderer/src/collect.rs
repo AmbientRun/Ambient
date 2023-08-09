@@ -8,7 +8,7 @@ use ambient_gpu::{
     shader_module::{BindGroupDesc, ComputePipeline, Shader, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
 };
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     include_file,
 };
@@ -59,7 +59,7 @@ pub(crate) struct DrawCountState {
 impl DrawCountState {
     pub fn update(&mut self, counts: Vec<u32>, tick: u64) {
         if self.last_tick > tick {
-            tracing::warn!("Skipping count update because it's out of date");
+            tracing::debug!("Skipping count update because it's out of date");
             return;
         }
 
@@ -276,7 +276,7 @@ impl RendererCollect {
     }
 
     /// Computes indirect draw commands using culling
-    #[ambient_profiling::function]
+    #[profiling::function]
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn compute_indirect(
         &self,

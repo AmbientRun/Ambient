@@ -7,13 +7,13 @@ use ambient_ecs::{EntityId, World};
 use ambient_element::{
     element_component, Element, ElementComponent, ElementComponentExt, Group, Hooks,
 };
-use ambient_network::client::ClientState;
-use ambient_shared_types::{ModifiersState, MouseButton, VirtualKeyCode};
-use ambient_std::{
+use ambient_native_std::{
     cb,
     shapes::{Plane, Ray, RayIntersectable},
     Cb,
 };
+use ambient_network::client::ClientState;
+use ambient_shared_types::{ModifiersState, MouseButton, VirtualKeyCode};
 use ambient_ui_native::{
     space_between_items, Button, FlowRow, HighjackMouse, Hotkey, Separator, STREET,
 };

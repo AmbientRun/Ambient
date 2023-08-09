@@ -643,7 +643,7 @@ impl Query {
     ) -> Box<dyn System<E> + Sync + Send> {
         let mut state = QueryState::new();
         Box::new(FnSystem(Box::new(move |world, event| {
-            ambient_profiling::scope!(name);
+            profiling::scope!(name);
             update(&self, world, &mut state, event);
         })))
     }
@@ -875,7 +875,7 @@ impl<'a, R: ComponentQuery<'a> + Clone + 'static> TypedReadQuery<R> {
     ) -> DynSystem<E> {
         let mut state = QueryState::new();
         Box::new(FnSystem(Box::new(move |world, event| {
-            ambient_profiling::scope!(name);
+            profiling::scope!(name);
             update(&self, world, Some(&mut state), event);
         })))
     }
@@ -1028,7 +1028,7 @@ impl<'a, RW: ComponentQuery<'a> + Clone + 'static, R: ComponentQuery<'a> + Clone
     ) -> DynSystem<E> {
         let mut state = QueryState::new();
         Box::new(FnSystem(Box::new(move |world, event| {
-            ambient_profiling::scope!(name);
+            profiling::scope!(name);
             update(&self, world, Some(&mut state), event);
         })))
     }
@@ -1095,7 +1095,7 @@ impl<E> SystemGroup<E> {
 
 impl<E> System<E> for SystemGroup<E> {
     fn run(&mut self, world: &mut World, event: &E) {
-        ambient_profiling::scope!("SystemGroup::run", &self.0);
+        profiling::scope!("SystemGroup::run", &self.0);
         let _span = tracing::debug_span!("SystemGroup::run", "{}", &self.0).entered();
         for system in self.1.iter_mut() {
             system.run(world, event);

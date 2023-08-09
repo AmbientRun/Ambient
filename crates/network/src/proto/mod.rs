@@ -1,6 +1,6 @@
 use ambient_core::project_name;
 use ambient_ecs::{ComponentRegistry, ExternalComponentDesc};
-use ambient_std::asset_url::AbsAssetUrl;
+use ambient_native_std::asset_url::AbsAssetUrl;
 
 pub mod client;
 pub mod server;
@@ -28,7 +28,7 @@ pub fn get_version_with_revision() -> String {
     format!(
         "{}-{}",
         VERSION,
-        ambient_std::git_revision()
+        ambient_native_std::git_revision()
             .expect("Failed to find git revision. Please open an issue with `git describe`")
     )
 }

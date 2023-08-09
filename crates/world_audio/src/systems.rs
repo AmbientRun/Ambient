@@ -13,141 +13,10 @@ use ambient_core::{
 use ambient_ecs::{
     children, generated::components::core::audio::*, parent, query, SystemGroup, World,
 };
-use ambient_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl};
+use ambient_native_std::{asset_cache::AsyncAssetKeyExt, asset_url::AbsAssetUrl};
 use glam::{vec4, Mat4};
 use parking_lot::Mutex;
 use std::str::FromStr;
-
-pub fn audio_systems() -> SystemGroup {
-    SystemGroup::new(
-        "audio",
-        vec![
-            query((playing_sound(), stop_now())).to_system(|q, world, qs, _| {
-                for (playing_entity, _) in q.collect_cloned(world, qs) {
-                    let sender = world.resource(crate::audio_sender());
-                    sender
-                        .send(crate::AudioMessage::StopById(playing_entity.to_base64()))
-                        .unwrap();
-                    let p = world.get(playing_entity, parent()).unwrap();
-                    let c = world.get_ref(p, children()).unwrap();
-                    let new_c = c
-                        .iter()
-                        .filter(|&&e| e != playing_entity)
-                        .cloned()
-                        .collect::<Vec<_>>();
-                    world.set(p, children(), new_c).unwrap();
-                    world.despawn(playing_entity);
-                }
-            }),
-            query((playing_sound(), amplitude())).to_system(|q, world, qs, _| {
-                for (playing_entity, (_, amp)) in q.iter(world, qs) {
-                    let sender = world.resource(crate::audio_sender());
-                    sender
-                        .send(crate::AudioMessage::UpdateVolume(
-                            playing_entity.to_base64(),
-                            *amp,
-                        ))
-                        .unwrap();
-                }
-            }),
-            query((playing_sound(), panning())).to_system(|q, world, qs, _| {
-                for (playing_entity, (_, pan)) in q.iter(world, qs) {
-                    let sender = world.resource(crate::audio_sender());
-                    sender
-                        .send(crate::AudioMessage::UpdatePanning(
-                            playing_entity.to_base64(),
-                            *pan,
-                        ))
-                        .unwrap();
-                }
-            }),
-            query((playing_sound(), onepole_lpf())).to_system(|q, world, qs, _| {
-                for (playing_entity, (_, freq)) in q.iter(world, qs) {
-                    let sender = world.resource(crate::audio_sender());
-                    sender
-                        .send(crate::AudioMessage::AddOnePoleLpf(
-                            playing_entity.to_base64(),
-                            *freq,
-                        ))
-                        .unwrap();
-                }
-            }),
-            query((audio_player(), play_now())).to_system(|q, world, qs, _| {
-                for (audio_entity, _) in q.collect_cloned(world, qs) {
-                    // TODO: should check if these components exist
-                    let amp = world.get(audio_entity, amplitude()).unwrap_or(1.0);
-                    let pan = world.get(audio_entity, panning()).unwrap_or(0.0);
-                    let freq = world.get(audio_entity, onepole_lpf()).unwrap_or(20000.0);
-                    let looping = world.get(audio_entity, looping()).unwrap_or(false);
-
-                    world.remove_component(audio_entity, play_now()).unwrap();
-
-                    let assets = world.resource(asset_cache()).clone();
-                    let runtime = world.resource(runtime()).clone();
-                    let async_run = world.resource(async_run()).clone();
-                    let url = world.get_ref(audio_entity, audio_url()).unwrap();
-                    let url = AbsAssetUrl::from_str(url)
-                        .unwrap()
-                        .to_download_url(&assets)
-                        .unwrap();
-
-                    runtime.spawn(async move {
-                        let track = AudioFromUrl { url: url.clone() }.get(&assets).await;
-                        let track = track.unwrap();
-                        let move_track = track.clone();
-                        let id_share = Arc::new(Mutex::new(None));
-                        let id_share_clone = id_share.clone();
-                        async_run.run(move |world| {
-                            let sender = world.resource(crate::audio_sender());
-                            let id_vec = world.get_ref(audio_entity, children()).unwrap();
-                            let id = id_vec.last().unwrap();
-                            id_share.lock().replace(*id);
-
-                            let mut fx = vec![
-                                crate::AudioFx::Amplitude(amp),
-                                crate::AudioFx::Panning(pan),
-                                crate::AudioFx::OnePole(freq),
-                            ];
-
-                            if looping {
-                                fx.push(crate::AudioFx::Looping);
-                            }
-
-                            sender
-                                .send(crate::AudioMessage::Track {
-                                    track: move_track,
-                                    url,
-                                    fx,
-                                    uid: id.to_base64(),
-                                })
-                                .unwrap();
-                        });
-                        if !looping {
-                            let decoded = track.decode();
-                            let count = decoded.sample_count().unwrap();
-                            let sr = decoded.sample_rate();
-                            let dur = count as f32 / sr as f32 * 1.001;
-                            ambient_sys::time::sleep(std::time::Duration::from_secs_f32(dur)).await;
-                            async_run.run(move |world| {
-                                world.despawn(id_share_clone.lock().unwrap());
-                                if !world.exists(audio_entity) {
-                                    return;
-                                }
-                                let child = world.get_ref(audio_entity, children()).unwrap();
-                                let new_child = child
-                                    .iter()
-                                    .filter(|c| *c != &id_share_clone.lock().unwrap())
-                                    .cloned()
-                                    .collect();
-                                world.set(audio_entity, children(), new_child).unwrap();
-                            });
-                        };
-                    });
-                }
-            }),
-        ],
-    )
-}
 
 /// Initializes the HRTF sphere and adds the appropriate resources
 ///
@@ -169,9 +38,9 @@ pub const Y_UP_LHS: Mat4 = Mat4::from_cols(
     vec4(0.0, 0.0, 0.0, 1.0),
 );
 
-pub fn spatial_audio_systems() -> SystemGroup {
+pub fn audio_systems() -> SystemGroup {
     SystemGroup::new(
-        "spatial_audio",
+        "audio",
         vec![
             query((spatial_audio_player(), play_now())).to_system(|q, world, qs, _| {
                 for (audio_entity, _) in q.collect_cloned(world, qs) {
@@ -246,10 +115,156 @@ pub fn spatial_audio_systems() -> SystemGroup {
                     }
                 },
             ),
+            query((playing_sound(), stop_now())).to_system(|q, world, qs, _| {
+                for (playing_entity, _) in q.collect_cloned(world, qs) {
+                    let sender = world.resource(crate::audio_sender());
+                    sender
+                        .send(crate::AudioMessage::StopById(playing_entity.to_base64()))
+                        .unwrap();
+                    let p = world.get(playing_entity, parent());
+                    if p.is_err() {
+                        eprintln!("No parent component on playing entity; cannot stop audio.");
+                        continue;
+                    }
+                    let parent_entity = p.unwrap();
+
+                    let c = world.get_ref(parent_entity, children());
+                    if c.is_err() {
+                        eprintln!("No children component on parent entity; cannot stop audio.");
+                        continue;
+                    }
+                    let new_children = c
+                        .unwrap()
+                        .iter()
+                        .filter(|&&e| e != playing_entity)
+                        .cloned()
+                        .collect::<Vec<_>>();
+                    world.set(parent_entity, children(), new_children).unwrap();
+                    world.despawn(playing_entity);
+                }
+            }),
+            query((playing_sound(), amplitude())).to_system(|q, world, qs, _| {
+                for (playing_entity, (_, amp)) in q.iter(world, qs) {
+                    let sender = world.resource(crate::audio_sender());
+                    sender
+                        .send(crate::AudioMessage::UpdateVolume(
+                            playing_entity.to_base64(),
+                            *amp,
+                        ))
+                        .unwrap();
+                }
+            }),
+            query((playing_sound(), panning())).to_system(|q, world, qs, _| {
+                for (playing_entity, (_, pan)) in q.iter(world, qs) {
+                    let sender = world.resource(crate::audio_sender());
+                    sender
+                        .send(crate::AudioMessage::UpdatePanning(
+                            playing_entity.to_base64(),
+                            *pan,
+                        ))
+                        .unwrap();
+                }
+            }),
+            query((playing_sound(), onepole_lpf())).to_system(|q, world, qs, _| {
+                for (playing_entity, (_, freq)) in q.iter(world, qs) {
+                    let sender = world.resource(crate::audio_sender());
+                    sender
+                        .send(crate::AudioMessage::AddOnePoleLpf(
+                            playing_entity.to_base64(),
+                            *freq,
+                        ))
+                        .unwrap();
+                }
+            }),
+            query((audio_player(), play_now(), audio_url())).to_system(|q, world, qs, _| {
+                for (audio_entity, (_, _, url)) in q.collect_cloned(world, qs) {
+                    let amp = world.get(audio_entity, amplitude()).unwrap_or(1.0);
+                    let pan = world.get(audio_entity, panning()).unwrap_or(0.0);
+                    let freq = world.get(audio_entity, onepole_lpf()).unwrap_or(20000.0);
+                    let looping = world.get(audio_entity, looping()).unwrap_or(false);
+
+                    world.remove_component(audio_entity, play_now()).unwrap();
+
+                    let assets = world.resource(asset_cache()).clone();
+                    let runtime = world.resource(runtime()).clone();
+                    let async_run = world.resource(async_run()).clone();
+                    let url = AbsAssetUrl::from_str(&url)
+                        .unwrap()
+                        .to_download_url(&assets)
+                        .unwrap();
+
+                    runtime.spawn(async move {
+                        let track = AudioFromUrl { url: url.clone() }.get(&assets).await;
+                        let track = track.unwrap();
+                        let move_track = track.clone();
+                        let id_share = Arc::new(Mutex::new(None));
+                        let id_share_clone = id_share.clone();
+                        async_run.run(move |world| {
+                            let sender = world.resource(crate::audio_sender());
+                            let id_vec = world.get_ref(audio_entity, children());
+                            if id_vec.is_err() {
+                                eprintln!("No children component on parent entity; cannot play audio.");
+                                return;
+                            }
+                            let id_vec = id_vec.unwrap();
+                            if id_vec.is_empty() {
+                                eprintln!("No children component on parent entity; cannot play audio.");
+                                return;
+                            }
+                            let id = id_vec.last().unwrap();
+                            id_share.lock().replace(*id);
+
+                            let mut fx = vec![
+                                crate::AudioFx::Amplitude(amp),
+                                crate::AudioFx::Panning(pan),
+                                crate::AudioFx::OnePole(freq),
+                            ];
+
+                            if looping {
+                                fx.push(crate::AudioFx::Looping);
+                            }
+
+                            sender
+                                .send(crate::AudioMessage::Track {
+                                    track: move_track,
+                                    url,
+                                    fx,
+                                    uid: id.to_base64(),
+                                })
+                                .unwrap();
+                        });
+                        if !looping {
+                            let decoded = track.decode();
+                            let count = decoded.sample_count().unwrap();
+                            let sr = decoded.sample_rate();
+                            let dur = count as f32 / sr as f32 * 1.001;
+                            ambient_sys::time::sleep(std::time::Duration::from_secs_f32(dur)).await;
+                            async_run.run(move |world| {
+                                world.despawn(id_share_clone.lock().unwrap());
+                                if !world.exists(audio_entity) {
+                                    return;
+                                }
+                                let child = world.get_ref(audio_entity, children());
+                                if child.is_err() {
+                                    eprintln!("No children component on parent entity; cannot auto stop audio.");
+                                    return;
+                                }
+                                let new_child = child
+                                    .unwrap()
+                                    .iter()
+                                    .filter(|c| *c != &id_share_clone.lock().unwrap())
+                                    .cloned()
+                                    .collect();
+                                world.set(audio_entity, children(), new_child).unwrap();
+                            });
+                        };
+                    });
+                }
+            }),
         ],
     )
 }
 
 pub fn client_systems() -> SystemGroup {
-    SystemGroup::new("Spatial audio", vec![Box::new(spatial_audio_systems())])
+    SystemGroup::new("audio", vec![Box::new(audio_systems())])
 }

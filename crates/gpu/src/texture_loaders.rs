@@ -1,6 +1,6 @@
 use std::{borrow::Cow, fmt, io::Cursor, sync::Arc};
 
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     download_asset::{AssetError, AssetResult, BytesFromUrl},

@@ -6,7 +6,7 @@ use std::{
 };
 
 use aho_corasick::AhoCorasick;
-use ambient_std::{asset_cache::*, CowStr};
+use ambient_native_std::{asset_cache::*, CowStr};
 use anyhow::Context;
 use itertools::Itertools;
 use wgpu::{

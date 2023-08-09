@@ -64,13 +64,13 @@ impl WorldDiff {
     pub fn apply(
         self,
         world: &mut World,
-        spanwed_extra_data: Entity,
+        spawned_extra_data: Entity,
         create_revert: bool,
     ) -> Option<Self> {
         let revert_changes = self
             .changes
             .into_iter()
-            .map(|change| change.apply(world, &spanwed_extra_data, false, create_revert))
+            .map(|change| change.apply(world, &spawned_extra_data, false, create_revert))
             .collect_vec();
         if create_revert {
             Some(Self {
@@ -106,7 +106,7 @@ impl WorldDiff {
         let spawned = spawned
             .into_iter()
             .map(|id| WorldChange::Spawn(Some(id), filter.read_entity_components(to, id).into()));
-        let despanwed = despawned.into_iter().map(WorldChange::Despawn);
+        let despawned = despawned.into_iter().map(WorldChange::Despawn);
         let updated = in_both.into_iter().flat_map(|id| {
             let from_comps: HashMap<_, _> = filter
                 .get_entity_components(from, id)
@@ -171,7 +171,7 @@ impl WorldDiff {
         });
 
         Self {
-            changes: despanwed.chain(spawned).chain(updated).collect_vec(),
+            changes: despawned.chain(spawned).chain(updated).collect_vec(),
         }
     }
 
@@ -189,6 +189,60 @@ impl Display for WorldDiff {
             write!(f, "...{} more", self.changes.len() - 3).unwrap();
         }
         Ok(())
+    }
+}
+
+#[derive(Serialize, Clone, Debug)]
+pub struct WorldDiffView<'a> {
+    changes: Vec<&'a WorldChange>,
+}
+
+/// Immutable version of WorldDiff, cheap to clone
+#[derive(Serialize, Clone, Debug)]
+pub struct FrozenWorldDiff {
+    changes: Arc<[WorldChange]>,
+}
+impl FrozenWorldDiff {
+    pub fn merge(diffs: &[Self]) -> WorldDiffView<'_> {
+        // only keep the last of WorldChange::Set for given EntityId and component path
+        let mut overwritten: HashSet<(EntityId, &str)> = HashSet::new();
+        let mut rev_changes = Vec::new();
+
+        // going backwards because it's easier to keep the first instead of removing/overwriting the previous ones
+        for change in diffs
+            .iter()
+            .rev()
+            .flat_map(|diff| diff.changes.iter().rev())
+        {
+            if let WorldChange::Set(entity_id, entry) = change {
+                if let Some(path) = entry.vtable.path {
+                    if !overwritten.insert((*entity_id, path)) {
+                        // not inserted -> we already have a Set for this entity_id and path
+                        continue;
+                    }
+                }
+            }
+            rev_changes.push(change);
+        }
+
+        tracing::debug!(
+            "Merged {} changes into {}",
+            diffs.iter().map(|diff| diff.changes.len()).sum::<usize>(),
+            rev_changes.len(),
+        );
+
+        // reverse to get the correct order back
+        rev_changes.reverse();
+        WorldDiffView {
+            changes: rev_changes,
+        }
+    }
+}
+impl From<WorldDiff> for FrozenWorldDiff {
+    fn from(diff: WorldDiff) -> Self {
+        Self {
+            changes: diff.changes.into(),
+        }
     }
 }
 
@@ -277,14 +331,14 @@ impl WorldChange {
     fn apply(
         self,
         world: &mut World,
-        spanwed_extra_data: &Entity,
+        spawned_extra_data: &Entity,
         panic_on_error: bool,
         create_revert: bool,
     ) -> Option<Self> {
         match self {
             Self::Spawn(id, data) => {
                 if let Some(id) = id {
-                    if !world.spawn_with_id(id, data.with_merge(spanwed_extra_data.clone())) {
+                    if !world.spawn_with_id(id, data.with_merge(spawned_extra_data.clone())) {
                         if panic_on_error {
                             panic!("WorldChange::apply spawn_mirror entity already exists: {id:?}");
                         } else {
@@ -297,7 +351,7 @@ impl WorldChange {
                         return Some(Self::Despawn(id));
                     }
                 } else {
-                    let id = world.spawn(data.with_merge(spanwed_extra_data.clone()));
+                    let id = world.spawn(data.with_merge(spawned_extra_data.clone()));
                     if create_revert {
                         return Some(Self::Despawn(id));
                     }
@@ -455,7 +509,7 @@ impl WorldStream {
     pub fn filter(&self) -> &WorldStreamFilter {
         &self.filter
     }
-    #[ambient_profiling::function]
+    #[profiling::function]
     pub fn next_diff(&mut self, world: &World) -> WorldDiff {
         let shape_changes = self
             .shape_stream_reader

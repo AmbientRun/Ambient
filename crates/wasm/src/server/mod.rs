@@ -1,7 +1,7 @@
 use crate::shared::{self, message::RuntimeMessageExt};
 use ambient_ecs::{components, query, EntityId, FnSystem, Resource, SystemGroup, World};
+use ambient_native_std::{asset_url::AbsAssetUrl, Cb};
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
-use ambient_std::{asset_url::AbsAssetUrl, Cb};
 use std::sync::Arc;
 
 mod implementation;
@@ -53,7 +53,7 @@ pub fn systems() -> SystemGroup {
         "core/wasm/server",
         vec![
             Box::new(FnSystem::new(move |world, _| {
-                ambient_profiling::scope!("WASM module collision event");
+                profiling::scope!("WASM module collision event");
                 // trigger collision event
                 let collisions = match world.resource_opt(ambient_physics::collisions()) {
                     Some(collisions) => collisions.lock().clone(),
@@ -66,7 +66,7 @@ pub fn systems() -> SystemGroup {
                 }
             })),
             Box::new(FnSystem::new(move |world, _| {
-                ambient_profiling::scope!("WASM module collider loads");
+                profiling::scope!("WASM module collider loads");
                 // trigger collider loads
                 let collider_loads = match world.resource_opt(ambient_physics::collider_loads()) {
                     Some(collider_loads) => collider_loads.clone(),

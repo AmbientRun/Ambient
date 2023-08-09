@@ -12,7 +12,7 @@ use anyhow::Context;
 use glam::{Mat4, Vec3, Vec3Swizzles};
 use itertools::{izip, process_results, Itertools};
 
-use ambient_std::shapes::{Ray, Shape, AABB};
+use ambient_native_std::shapes::{Ray, Shape, AABB};
 use ambient_terrain::get_terrain_height;
 use ordered_float::OrderedFloat;
 use physxx::{PxActor, PxQueryFilterData, PxRaycastCallback, PxTransform, PxUserData};
@@ -190,7 +190,7 @@ fn axis_aligned_plane(normal: Vec3) -> (Vec3, Vec3) {
     }
 }
 
-#[ambient_profiling::function]
+#[profiling::function]
 fn resolve_clipping(
     world: &mut World,
     entities: &[EntityId],
@@ -221,7 +221,7 @@ fn resolve_clipping(
         .iter()
         .zip_eq(ids)
         .flat_map(|(_, &id)| -> Option<_> {
-            ambient_profiling::scope!("query_intersection");
+            profiling::scope!("query_intersection");
             // let id = *world.resource(uid_lookup()).get(&entity.id)?;
 
             let transform = get_world_transform(world, id).ok()?;
@@ -279,7 +279,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         intent_place_ray(),
         intent_place_ray_undo(),
         |ctx, IntentPlaceRay { targets, ray, snap }| {
-            ambient_profiling::scope!("handle_intent_move");
+            profiling::scope!("handle_intent_move");
             let world = ctx.world;
 
             #[allow(dead_code)]
@@ -307,7 +307,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
                 .fold(Vec3::ZERO, |acc, x| acc + x)
                 / transforms.len().max(1) as f32;
 
-            ambient_profiling::scope!("intent_move");
+            profiling::scope!("intent_move");
             // tracing::info!("Bounding box: {bounds:?}");
 
             let intersect = find_world_intersection_without_entities(world, ray, &ids, 500.);
@@ -385,7 +385,7 @@ pub fn register_intents(reg: &mut IntentRegistry) {
         intent_translate(),
         intent_translate_undo(),
         |ctx, IntentTranslate { targets, position }| {
-            ambient_profiling::scope!("handle_intent_move");
+            profiling::scope!("handle_intent_move");
             let world = ctx.world;
 
             #[allow(dead_code)]

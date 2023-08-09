@@ -9,9 +9,10 @@ use ambient_core::{
 use ambient_ecs::{query, FnSystem, Resource, World};
 use ambient_element::ElementComponentExt;
 use ambient_gizmos::{gizmos, GizmoPrimitive};
+use ambient_native_std::math::SphericalCoords;
 use ambient_primitives::Cube;
 use ambient_renderer::{cast_shadows, color, RendererConfig};
-use ambient_std::{line_hash, math::SphericalCoords};
+use ambient_std::line_uid;
 use env_logger::Env;
 use glam::*;
 use winit::event::{ElementState, Event, VirtualKeyCode, WindowEvent};
@@ -172,7 +173,7 @@ pub struct GizmoState {
 
 impl GizmoState {
     pub fn update(&self, world: &World) {
-        let mut scope = world.resource(gizmos()).scope(line_hash!());
+        let mut scope = world.resource(gizmos()).scope(line_uid!());
         if self.shadow_cameras {
             unimplemented!()
             // scope.draw(ShadowCamera::draw_gizmos(world));

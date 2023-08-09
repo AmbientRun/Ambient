@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::{AbsAssetUrl, AssetUrl},
     download_asset::{AssetError, AssetsCacheOnDisk, BytesFromUrl, BytesFromUrlCachedPath},

@@ -1,7 +1,8 @@
 use ambient_app::{App, AppBuilder};
 use ambient_core::{camera::active_camera, main_scene};
 use ambient_gizmos::{gizmos, GizmoPrimitive};
-use ambient_std::{line_hash, math::SphericalCoords};
+use ambient_native_std::math::SphericalCoords;
+use ambient_std::line_uid;
 use glam::*;
 
 async fn init(app: &mut App) {
@@ -9,7 +10,7 @@ async fn init(app: &mut App) {
 
     world
         .resource(gizmos())
-        .scope(line_hash!())
+        .scope(line_uid!())
         .draw(GizmoPrimitive::sphere(vec3(0., 0., 0.), 1.));
 
     ambient_cameras::spherical::new(

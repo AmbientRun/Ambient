@@ -1,6 +1,6 @@
 use std::{borrow::Cow, sync::Arc};
 
-use ambient_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt};
 use glam::Vec4;
 use wgpu::util::DeviceExt;
 use wgpu::{

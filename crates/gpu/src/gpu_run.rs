@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     CowStr,
 };
@@ -170,7 +170,7 @@ impl GpuRun {
 mod test {
     use std::sync::Arc;
 
-    use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+    use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
     use glam::{Vec2, Vec4, Vec4Swizzles};
 
     use crate::{gpu::GpuKey, gpu_run::GpuRun};

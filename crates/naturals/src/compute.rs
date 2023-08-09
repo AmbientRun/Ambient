@@ -7,7 +7,7 @@ use ambient_gpu::{
     typed_buffer::TypedBuffer,
     wgsl_utils::wgsl_interpolate,
 };
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, AssetKeepalive, AsyncAssetKey, AsyncAssetKeyExt, SyncAssetKeyExt},
     asset_url::AbsAssetUrl,
     include_file,

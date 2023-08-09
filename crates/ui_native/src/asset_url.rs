@@ -1,6 +1,6 @@
 use ambient_core::asset_cache;
 use ambient_element::{Element, ElementComponent, ElementComponentExt, Hooks};
-use ambient_std::{
+use ambient_native_std::{
     asset_url::{select_asset, AssetUrl, AssetUrlCollection, GetAssetType, TypedAssetUrl},
     Cb,
 };

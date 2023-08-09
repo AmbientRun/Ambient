@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use ambient_core::player::get_by_user_id;
-use ambient_ecs::{WorldDiff, WorldStreamFilter};
-use ambient_std::{fps_counter::FpsSample, log_result};
+use ambient_ecs::{FrozenWorldDiff, WorldDiff, WorldStreamFilter};
+use ambient_native_std::{fps_counter::FpsSample, log_result};
 use anyhow::Context;
 use bytes::Bytes;
 use futures::{Stream, StreamExt};
@@ -59,7 +59,7 @@ impl std::fmt::Debug for ConnectedClient {
 /// Holds information relevant for all states of a given connection to a client
 pub struct ConnectionData {
     pub(crate) state: SharedServerState,
-    pub(crate) diff_tx: flume::Sender<Bytes>,
+    pub(crate) diff_tx: flume::Sender<FrozenWorldDiff>,
     /// Unique identifier for this session
     /// Used to declare ownership of the player entity when multiple simultaneous connections are made or reconnected
     pub(crate) connection_id: Uuid,
@@ -153,9 +153,8 @@ impl ServerProtoState {
         tracing::debug!("[{}] Creating init diff", user_id);
 
         let diff = data.world_stream_filter.initial_diff(&instance.world);
-        let diff = bincode::serialize(&diff).unwrap().into();
 
-        log_result!(data.diff_tx.send(diff));
+        log_result!(data.diff_tx.send(diff.into()));
         tracing::debug!("[{}] Init diff sent", user_id);
 
         let entity_data = create_player_entity_data(
@@ -358,11 +357,25 @@ pub async fn handle_stats<S>(
 /// Sends the world diffs over the network
 pub async fn handle_diffs<S>(
     mut stream: stream::FramedSendStream<WorldDiff, S>,
-    mut diffs_rx: impl Unpin + Stream<Item = Bytes>,
+    diffs_rx: flume::Receiver<FrozenWorldDiff>,
 ) where
     S: Unpin + AsyncWrite,
 {
-    while let Some(msg) = diffs_rx.next().await {
+    while let Ok(diff) = diffs_rx.recv_async().await {
+        // get all diffs waiting in the channel to clear the queue
+        let mut diffs = Vec::with_capacity(diffs_rx.len() + 1);
+        diffs.push(diff);
+        diffs.extend(diffs_rx.drain());
+        tracing::trace!(diffs_count = diffs.len());
+
+        // merge them together
+        let final_diff = FrozenWorldDiff::merge(&diffs);
+        let msg: Bytes = bincode::serialize(&final_diff).unwrap().into();
+        debug_assert!(
+            bincode::deserialize::<WorldDiff>(msg.as_ref()).is_ok(),
+            "Merged diff should deserialize as WorldDiff correctly"
+        );
+
         let span = tracing::debug_span!("send_world_diff");
         tracing::trace!(diff=?msg);
         if let Err(err) = stream.send_bytes(msg).instrument(span).await {

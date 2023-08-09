@@ -4,7 +4,7 @@ use ambient_gpu::{
     gpu::{Gpu, GpuKey},
     shader_module::{BindGroupDesc, ShaderModule},
 };
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     friendly_id, include_file,
 };

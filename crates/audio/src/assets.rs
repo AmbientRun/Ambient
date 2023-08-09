@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ambient_std::{
+use ambient_native_std::{
     asset_cache::{AsyncAssetKey, AsyncAssetKeyExt},
     asset_url::{AbsAssetUrl, AssetType, GetAssetType},
     download_asset::BytesFromUrl,
@@ -21,7 +21,7 @@ pub struct AudioFromUrl {
 impl AsyncAssetKey<Result<Arc<Track>, Arc<Error>>> for AudioFromUrl {
     async fn load(
         self,
-        assets: ambient_std::asset_cache::AssetCache,
+        assets: ambient_native_std::asset_cache::AssetCache,
     ) -> Result<Arc<Track>, Arc<Error>>
     where
         Self: 'async_trait,
@@ -54,7 +54,7 @@ pub struct VorbisFromUrl {
 impl AsyncAssetKey<Result<Arc<VorbisTrack>, Arc<Error>>> for VorbisFromUrl {
     async fn load(
         self,
-        assets: ambient_std::asset_cache::AssetCache,
+        assets: ambient_native_std::asset_cache::AssetCache,
     ) -> Result<Arc<VorbisTrack>, Arc<Error>>
     where
         Self: 'async_trait,

@@ -2,9 +2,9 @@ use std::{path::PathBuf, sync::Arc};
 
 use ambient_core::hierarchy::children;
 use ambient_model_import::{apply_model_transform, model_crate::ModelCrate, TextureResolver};
+use ambient_native_std::asset_url::AssetType;
 use ambient_physics::collider::collider_type;
 use ambient_pipeline_types::models::{Collider, ModelImporter, ModelsPipeline};
-use ambient_std::asset_url::AssetType;
 use futures::FutureExt;
 use relative_path::RelativePath;
 

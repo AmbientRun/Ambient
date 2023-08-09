@@ -91,7 +91,7 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_model",
- "ambient_std",
+ "ambient_native_std",
  "ambient_sys",
  "anyhow",
  "async-trait",
@@ -116,16 +116,16 @@ dependencies = [
  "ambient_gpu",
  "ambient_input",
  "ambient_model",
+ "ambient_native_std",
  "ambient_procedurals",
- "ambient_profiling",
  "ambient_renderer",
- "ambient_std",
  "ambient_sys",
  "ambient_ui_native",
  "anyhow",
  "flume",
  "glam",
  "parking_lot",
+ "profiling",
  "thread-priority",
  "tokio",
  "tracing",
@@ -157,7 +157,7 @@ name = "ambient_audio"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_ecs",
- "ambient_std",
+ "ambient_native_std",
  "ambient_sys",
  "ambient_ui_native",
  "async-trait",
@@ -195,7 +195,7 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_element",
- "ambient_std",
+ "ambient_native_std",
  "derive_more",
  "glam",
  "winit",
@@ -239,8 +239,7 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_ecs",
  "ambient_gpu",
- "ambient_profiling",
- "ambient_std",
+ "ambient_native_std",
  "ambient_sys",
  "bytemuck",
  "chrono",
@@ -252,6 +251,7 @@ dependencies = [
  "ordered-float 3.7.0",
  "parking_lot",
  "paste",
+ "profiling",
  "serde",
  "tokio",
  "tracing",
@@ -270,6 +270,7 @@ dependencies = [
  "ambient_element_component",
  "ambient_gizmos",
  "ambient_gpu",
+ "ambient_native_std",
  "ambient_network",
  "ambient_renderer",
  "ambient_rpc",
@@ -287,11 +288,10 @@ dependencies = [
 name = "ambient_ecs"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_profiling",
+ "ambient_native_std",
  "ambient_project_macro",
  "ambient_project_rt",
  "ambient_shared_types",
- "ambient_std",
  "anyhow",
  "atomic_refcell",
  "bit-set",
@@ -308,6 +308,7 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "paste",
+ "profiling",
  "rand",
  "reqwest",
  "serde",
@@ -328,8 +329,8 @@ dependencies = [
  "ambient_ecs",
  "ambient_element",
  "ambient_layout",
+ "ambient_native_std",
  "ambient_renderer",
- "ambient_std",
  "ambient_ui_native",
  "env_logger",
  "glam",
@@ -359,7 +360,6 @@ dependencies = [
  "ambient_element_component",
  "ambient_friendly_id",
  "ambient_guest_bridge",
- "ambient_profiling",
  "ambient_sys",
  "as-any",
  "atomic_refcell",
@@ -368,6 +368,7 @@ dependencies = [
  "futures",
  "itertools",
  "parking_lot",
+ "profiling",
  "tokio",
  "tracing",
 ]
@@ -398,14 +399,14 @@ dependencies = [
  "ambient_ecs",
  "ambient_gpu",
  "ambient_meshes",
- "ambient_profiling",
+ "ambient_native_std",
  "ambient_renderer",
- "ambient_std",
  "bytemuck",
  "dashmap",
  "glam",
  "log",
  "once_cell",
+ "profiling",
  "serde",
  "wgpu",
 ]
@@ -415,7 +416,7 @@ name = "ambient_gpu"
 version = "0.3.0-dev"
 dependencies = [
  "aho-corasick 0.7.20",
- "ambient_std",
+ "ambient_native_std",
  "ambient_sys",
  "anyhow",
  "async-trait",
@@ -464,8 +465,8 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
+ "ambient_native_std",
  "ambient_shared_types",
- "ambient_std",
  "glam",
  "serde",
  "serde_json",
@@ -480,10 +481,10 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_input",
- "ambient_profiling",
  "glam",
  "itertools",
  "log",
+ "profiling",
  "serde",
 ]
 
@@ -501,7 +502,7 @@ name = "ambient_meshes"
 version = "0.3.0-dev"
 dependencies = [
  "ambient_gpu",
- "ambient_std",
+ "ambient_native_std",
  "glam",
  "serde",
 ]
@@ -515,8 +516,8 @@ dependencies = [
  "ambient_editor_derive",
  "ambient_gpu",
  "ambient_meshes",
+ "ambient_native_std",
  "ambient_renderer",
- "ambient_std",
  "ambient_sys",
  "ambient_ui_native",
  "anyhow",
@@ -533,6 +534,53 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_native_std"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_asset_cache",
+ "ambient_cb",
+ "ambient_color",
+ "ambient_friendly_id",
+ "ambient_math",
+ "ambient_sys",
+ "anyhow",
+ "as-any",
+ "async-trait",
+ "bincode",
+ "bytemuck",
+ "chrono",
+ "convert_case 0.6.0",
+ "data-encoding",
+ "futures",
+ "git-version",
+ "glam",
+ "itertools",
+ "log",
+ "mikktspace",
+ "once_cell",
+ "ordered-float 3.7.0",
+ "parking_lot",
+ "percent-encoding",
+ "pin-project",
+ "profiling",
+ "rand",
+ "relative-path",
+ "reqwest",
+ "ring",
+ "sentry-anyhow",
+ "serde",
+ "serde_json",
+ "serde_path_to_error",
+ "thiserror",
+ "tokio",
+ "toml",
+ "tracing",
+ "ulid",
+ "url",
+ "wgpu",
+]
+
+[[package]]
 name = "ambient_network"
 version = "0.3.0-dev"
 dependencies = [
@@ -542,11 +590,10 @@ dependencies = [
  "ambient_element",
  "ambient_gizmos",
  "ambient_gpu",
- "ambient_profiling",
+ "ambient_native_std",
  "ambient_proxy",
  "ambient_renderer",
  "ambient_rpc",
- "ambient_std",
  "ambient_sys",
  "ambient_ui_native",
  "ambient_world_audio",
@@ -572,6 +619,7 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "pin-project",
+ "profiling",
  "quinn",
  "rand",
  "rustls",
@@ -599,8 +647,8 @@ dependencies = [
  "ambient_element",
  "ambient_gpu",
  "ambient_meshes",
+ "ambient_native_std",
  "ambient_renderer",
- "ambient_std",
  "glam",
 ]
 
@@ -611,34 +659,14 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_gpu",
+ "ambient_native_std",
  "ambient_renderer",
  "ambient_shared_types",
- "ambient_std",
  "parking_lot",
  "paste",
  "tracing",
  "ulid",
  "wgpu",
-]
-
-[[package]]
-name = "ambient_profiling"
-version = "1.0.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd78220128ea4004eb8072b6df5949dfa367ff16ef1a23e23b2d95f95e5db489"
-dependencies = [
- "ambient_profiling_procmacros",
- "puffin",
-]
-
-[[package]]
-name = "ambient_profiling_procmacros"
-version = "1.0.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7086fcbaeb14e6b1b49d58158591c1f39b24bcc5ea634748bebae76a71ead310"
-dependencies = [
- "quote",
- "syn 1.0.109",
 ]
 
 [[package]]
@@ -722,8 +750,8 @@ dependencies = [
  "ambient_gpu",
  "ambient_layout",
  "ambient_meshes",
+ "ambient_native_std",
  "ambient_renderer",
- "ambient_std",
  "async-trait",
  "bytemuck",
  "glam",
@@ -740,8 +768,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_gpu",
  "ambient_meshes",
- "ambient_profiling",
- "ambient_std",
+ "ambient_native_std",
  "ambient_sys",
  "anyhow",
  "async-trait",
@@ -753,6 +780,7 @@ dependencies = [
  "log",
  "ordered-float 3.7.0",
  "parking_lot",
+ "profiling",
  "serde",
  "smallvec",
  "tracing",
@@ -792,47 +820,7 @@ dependencies = [
 name = "ambient_std"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_asset_cache",
- "ambient_cb",
- "ambient_color",
- "ambient_friendly_id",
- "ambient_math",
- "ambient_profiling",
- "ambient_sys",
- "anyhow",
- "as-any",
- "async-trait",
- "bincode",
- "bytemuck",
- "chrono",
- "convert_case 0.6.0",
- "data-encoding",
- "futures",
- "git-version",
- "glam",
  "itertools",
- "log",
- "mikktspace",
- "once_cell",
- "ordered-float 3.7.0",
- "parking_lot",
- "percent-encoding",
- "pin-project",
- "rand",
- "relative-path",
- "reqwest",
- "ring",
- "sentry-anyhow",
- "serde",
- "serde_json",
- "serde_path_to_error",
- "thiserror",
- "tokio",
- "toml",
- "tracing",
- "ulid",
- "url",
- "wgpu",
 ]
 
 [[package]]
@@ -871,8 +859,8 @@ dependencies = [
  "ambient_gpu",
  "ambient_input",
  "ambient_layout",
+ "ambient_native_std",
  "ambient_renderer",
- "ambient_std",
  "anyhow",
  "async-trait",
  "glam",
@@ -906,7 +894,7 @@ dependencies = [
  "convert_case 0.6.0",
  "futures",
  "glam",
- "indexmap",
+ "indexmap 2.0.0",
  "itertools",
  "parking_lot",
  "rand",
@@ -928,10 +916,10 @@ dependencies = [
  "ambient_input",
  "ambient_layout",
  "ambient_meshes",
+ "ambient_native_std",
  "ambient_rect",
  "ambient_renderer",
  "ambient_shared_types",
- "ambient_std",
  "ambient_sys",
  "ambient_text",
  "ambient_ui",
@@ -943,7 +931,7 @@ dependencies = [
  "convert_case 0.6.0",
  "futures",
  "glam",
- "indexmap",
+ "indexmap 2.0.0",
  "itertools",
  "log",
  "ordered-float 3.7.0",
@@ -968,9 +956,9 @@ dependencies = [
  "ambient_gpu",
  "ambient_input",
  "ambient_model",
+ "ambient_native_std",
  "ambient_network",
  "ambient_procedurals",
- "ambient_profiling",
  "ambient_project",
  "ambient_renderer",
  "ambient_shared_types",
@@ -986,7 +974,7 @@ dependencies = [
  "flume",
  "fs_extra",
  "glam",
- "indexmap",
+ "indexmap 2.0.0",
  "indoc",
  "itertools",
  "log",
@@ -994,6 +982,7 @@ dependencies = [
  "parking_lot",
  "paste",
  "pollster",
+ "profiling",
  "reqwest",
  "serde",
  "serde_bytes",
@@ -1023,11 +1012,11 @@ dependencies = [
  "ambient_ecs_editor",
  "ambient_element",
  "ambient_layout",
+ "ambient_native_std",
  "ambient_network",
  "ambient_primitives",
  "ambient_renderer",
  "ambient_rpc",
- "ambient_std",
  "ambient_sys",
  "ambient_ui_native",
  "ambient_wasm",
@@ -1057,8 +1046,7 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_element",
- "ambient_profiling",
- "ambient_std",
+ "ambient_native_std",
  "ambient_sys",
  "ambient_ui_native",
  "anyhow",
@@ -1069,12 +1057,13 @@ dependencies = [
  "flume",
  "futures",
  "glam",
- "indexmap",
+ "indexmap 2.0.0",
  "itertools",
  "log",
  "once_cell",
  "ordered-float 3.7.0",
  "parking_lot",
+ "profiling",
  "rand",
  "rand_chacha",
  "serde",
@@ -1831,7 +1820,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "907076dfda823b0b36d2a1bb5f90c96660a5bbcd7729e10727f07858f22c4edc"
 dependencies = [
  "cfg-if",
- "hashbrown",
+ "hashbrown 0.12.3",
  "lock_api",
  "once_cell",
  "parking_lot_core",
@@ -1907,7 +1896,7 @@ dependencies = [
  "bumpslab",
  "futures-channel",
  "futures-util",
- "indexmap",
+ "indexmap 1.9.3",
  "log",
  "longest-increasing-subsequence",
  "rustc-hash",
@@ -2198,6 +2187,12 @@ dependencies = [
  "regex",
  "termcolor",
 ]
+
+[[package]]
+name = "equivalent"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 
 [[package]]
 name = "erased-serde"
@@ -2869,7 +2864,7 @@ checksum = "0b0c02e1ba0bdb14e965058ca34e09c020f8e507a760df1121728e0aef68d57a"
 dependencies = [
  "bitflags 1.3.2",
  "gpu-descriptor-types",
- "hashbrown",
+ "hashbrown 0.12.3",
 ]
 
 [[package]]
@@ -2893,7 +2888,7 @@ dependencies = [
  "futures-sink",
  "futures-util",
  "http",
- "indexmap",
+ "indexmap 1.9.3",
  "slab",
  "tokio",
  "tokio-util",
@@ -2959,6 +2954,12 @@ checksum = "8a9ee70c43aaf417c914396645a0fa852624801b24ebb7ae78fe8272889ac888"
 dependencies = [
  "ahash",
 ]
+
+[[package]]
+name = "hashbrown"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c6201b9ff9fd90a5a3bac2e56a830d0caa509576f0e503818ee82c181b3437a"
 
 [[package]]
 name = "hassle-rs"
@@ -3182,7 +3183,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd070e393353796e801d209ad339e89596eb4c8d430d18ede6a1cced8fafbd99"
 dependencies = [
  "autocfg",
- "hashbrown",
+ "hashbrown 0.12.3",
+ "serde",
+]
+
+[[package]]
+name = "indexmap"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d5477fe2230a79769d8dc68e0eabf5437907c0457a5614a9e8dddb67f65eb65d"
+dependencies = [
+ "equivalent",
+ "hashbrown 0.14.0",
  "serde",
 ]
 
@@ -3230,7 +3242,7 @@ version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2a798d7677f07d6f1e77be484ea8626ddb1566194de399f1206306820c406371"
 dependencies = [
- "hashbrown",
+ "hashbrown 0.12.3",
  "parking_lot",
 ]
 
@@ -3498,7 +3510,7 @@ version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6e8aaa3f231bb4bd57b84b2d5dc3ae7f350265df8aa96492e0bc394a1571909"
 dependencies = [
- "hashbrown",
+ "hashbrown 0.12.3",
 ]
 
 [[package]]
@@ -3646,7 +3658,7 @@ dependencies = [
  "bitflags 1.3.2",
  "codespan-reporting",
  "hexf-parse",
- "indexmap",
+ "indexmap 1.9.3",
  "log",
  "num-traits",
  "rustc-hash",
@@ -4290,17 +4302,33 @@ dependencies = [
 
 [[package]]
 name = "profiling"
-version = "1.0.8"
+version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "332cd62e95873ea4f41f3dfd6bbbfc5b52aec892d7e8d534197c4720a0bbbab2"
+checksum = "46b2164ebdb1dfeec5e337be164292351e11daf63a05174c6776b2f47460f0c9"
+dependencies = [
+ "profiling-procmacros",
+ "puffin",
+]
+
+[[package]]
+name = "profiling-procmacros"
+version = "1.0.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "097bf8b99121dfb8c75eed54dfbdbdb1d53e372c53d2353e8a15aad2a479249d"
+dependencies = [
+ "quote",
+ "syn 2.0.16",
+]
 
 [[package]]
 name = "puffin"
-version = "0.14.3"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7b2c7a01f569fb03e2ff1f5376537f294001447bd23ce75ca51054fcd223fe4"
+checksum = "76425abd4e1a0ad4bd6995dd974b52f414fca9974171df8e3708b3e660d05a21"
 dependencies = [
+ "anyhow",
  "byteorder",
+ "cfg-if",
  "instant",
  "once_cell",
 ]
@@ -4960,7 +4988,7 @@ version = "0.9.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9d684e3ec7de3bf5466b32bd75303ac16f0736426e5a4e0d6e489559ce1249c"
 dependencies = [
- "indexmap",
+ "indexmap 1.9.3",
  "itoa",
  "ryu",
  "serde",
@@ -5505,7 +5533,7 @@ version = "0.19.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92d964908cec0d030b812013af25a0e57fddfadb1e066ecc6681d86253129d4f"
 dependencies = [
- "indexmap",
+ "indexmap 1.9.3",
  "serde",
  "serde_spanned",
  "toml_datetime",
@@ -5866,7 +5894,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "36e5156581ff4a302405c44ca7c85347563ca431d15f1a773f12c9c7b9a6cdc9"
 dependencies = [
  "anyhow",
- "indexmap",
+ "indexmap 1.9.3",
  "serde",
  "wasm-encoder",
  "wasmparser",
@@ -5878,7 +5906,7 @@ version = "0.107.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29e3ac9b780c7dda0cac7a52a5d6d2d6707cc6e3451c9db209b6c758f40d7acb"
 dependencies = [
- "indexmap",
+ "indexmap 1.9.3",
  "semver 1.0.17",
 ]
 
@@ -6454,7 +6482,7 @@ checksum = "7cbd4c7f8f400327c482c88571f373844b7889e61460650d650fc5881bb3575c"
 dependencies = [
  "anyhow",
  "bitflags 1.3.2",
- "indexmap",
+ "indexmap 1.9.3",
  "log",
  "wasm-encoder",
  "wasm-metadata",
@@ -6470,7 +6498,7 @@ checksum = "6daec9f093dbaea0e94043eeb92ece327bbbe70c86b1f41aca9bbfefd7f050f0"
 dependencies = [
  "anyhow",
  "id-arena",
- "indexmap",
+ "indexmap 1.9.3",
  "log",
  "pulldown-cmark",
  "semver 1.0.17",

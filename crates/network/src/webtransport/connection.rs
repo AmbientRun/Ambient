@@ -3,12 +3,11 @@ use std::{
     task::{Context, Poll},
 };
 
-use anyhow::anyhow;
+use anyhow::{anyhow, Context as _};
 use bytes::Bytes;
 use futures::{ready, Future};
 use js_sys::Uint8Array;
 use parking_lot::Mutex;
-use url::Url;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{
@@ -42,12 +41,14 @@ impl Drop for Connection {
 
 impl Connection {
     /// Open a connection to `url`
-    pub async fn connect(url: Url) -> anyhow::Result<Self> {
-        let transport = WebTransport::new(url.as_str()).map_err(|e| anyhow!("{e:?}"))?;
+    pub async fn connect(url: &str) -> anyhow::Result<Self> {
+        let transport = WebTransport::new(url)
+            .map_err(|e| anyhow!("Failed to connect to game server. {e:?}"))?;
 
         JsFuture::from(transport.ready())
             .await
-            .map_err(|e| anyhow!("{e:?}"))?;
+            .map_err(|e| anyhow!("{e:?}"))
+            .context("While waiting for ready handshake")?;
 
         tracing::info!("Connection ready");
 

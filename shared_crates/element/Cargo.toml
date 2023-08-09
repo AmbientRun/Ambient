@@ -25,7 +25,7 @@ as-any = { workspace = true }
 dyn-clonable = { workspace = true }
 derivative = { workspace = true }
 tracing = { workspace = true }
-ambient_profiling = { workspace = true }
+profiling = { workspace = true }
 atomic_refcell = { workspace = true }
 futures = { workspace = true }
 

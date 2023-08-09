@@ -2,7 +2,7 @@ use std::{collections::HashMap, f32::consts::PI, ops::Neg};
 
 use ambient_core::transform::{euler_rotation, rotation, scale, translation};
 use ambient_ecs::{Component, ComponentDesc, EntityId};
-use ambient_std::{download_asset::BincodeFromUrl, math::mix};
+use ambient_native_std::{download_asset::BincodeFromUrl, math::mix};
 use glam::{EulerRot, Quat, Vec3};
 use itertools::Itertools;
 use ordered_float::OrderedFloat;

@@ -9,7 +9,7 @@ use ambient_ecs::{
     FrameEvent, QueryState, TypedReadQuery, World, WorldDiff,
 };
 use ambient_element::{Hooks, Setter};
-use ambient_std::{cb, Cb};
+use ambient_native_std::{cb, Cb};
 
 use crate::{
     client::ClientState, log_network_result, persistent_resources, rpc::rpc_world_diff,

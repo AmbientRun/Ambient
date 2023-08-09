@@ -49,7 +49,7 @@ enum Mode {
     Check,
 }
 
-pub(crate) async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
+pub async fn main(gi: &GoldenImages) -> anyhow::Result<()> {
     let start_time = Instant::now();
 
     // Get tests.

@@ -26,7 +26,7 @@ use ambient_gpu::{
     shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule},
     wgsl_utils::wgsl_interpolate,
 };
-use ambient_std::{asset_cache::*, asset_url::AbsAssetUrl, cb, include_file, Cb};
+use ambient_native_std::{asset_cache::*, asset_url::AbsAssetUrl, cb, include_file, Cb};
 use derive_more::*;
 use downcast_rs::{impl_downcast, DowncastSync};
 use glam::{uvec4, UVec2, UVec4, Vec3};

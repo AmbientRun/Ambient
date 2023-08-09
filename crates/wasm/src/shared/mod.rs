@@ -26,7 +26,7 @@ use ambient_ecs::{
     Message, SystemGroup, World, WorldEventReader,
 };
 
-use ambient_std::{asset_url::AbsAssetUrl, download_asset::download_uncached_bytes};
+use ambient_native_std::{asset_url::AbsAssetUrl, download_asset::download_uncached_bytes};
 use itertools::Itertools;
 #[cfg(feature = "wit")]
 use wasi_cap_std_sync::Dir;
@@ -184,7 +184,7 @@ pub fn systems() -> SystemGroup {
             }),
             query((module_bytecode().changed(), module_enabled().changed())).to_system(
                 move |q, world, qs, _| {
-                    ambient_profiling::scope!("WASM module reloads");
+                    profiling::scope!("WASM module reloads");
                     let modules = q
                         .iter(world, qs)
                         .map(|(id, (bytecode, enabled))| (id, enabled.then(|| bytecode.clone())))
@@ -196,7 +196,7 @@ pub fn systems() -> SystemGroup {
                 },
             ),
             Box::new(FnSystem::new(move |world, _| {
-                ambient_profiling::scope!("WASM module app events");
+                profiling::scope!("WASM module app events");
                 let events = app_events_reader
                     .iter(world.resource(world_events()))
                     .map(|(_, event)| event.clone())
@@ -215,14 +215,14 @@ pub fn systems() -> SystemGroup {
                 }
             })),
             Box::new(FnSystem::new(move |world, _| {
-                ambient_profiling::scope!("WASM module frame event");
+                profiling::scope!("WASM module frame event");
                 // trigger frame event
                 ambient_ecs::generated::messages::Frame::new()
                     .run(world, None)
                     .unwrap();
             })),
             Box::new(FnSystem::new(move |world, _| {
-                ambient_profiling::scope!("WASM module pending messages");
+                profiling::scope!("WASM module pending messages");
 
                 let pending_messages =
                     std::mem::take(world.resource_mut(message::pending_messages()));
@@ -375,13 +375,14 @@ fn run(
     message_name: &str,
     message_data: &[u8],
 ) {
-    ambient_profiling::scope!(
+    profiling::scope!(
         "run",
         format!(
             "{} - {}",
             world.get_cloned(id, module_name()).unwrap_or_default(),
             message_name
         )
+        .as_str()
     );
 
     // If it's not in the subscribed events, skip over it

@@ -6,7 +6,7 @@ use ambient_gpu::{
     shader_module::{BindGroupDesc, ComputePipeline, Shader, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
 };
-use ambient_std::asset_cache::{AssetCache, SyncAssetKeyExt};
+use ambient_native_std::asset_cache::{AssetCache, SyncAssetKeyExt};
 use glam::{uvec4, UVec4};
 use itertools::Itertools;
 use wgpu::{BindGroupLayout, BindGroupLayoutEntry};

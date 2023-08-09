@@ -7,8 +7,8 @@ use ambient_core::{
 };
 use ambient_element::ElementComponentExt;
 use ambient_model_import::model_crate::ModelCrate;
+use ambient_native_std::{asset_url::AbsAssetUrl, math::SphericalCoords};
 use ambient_primitives::Quad;
-use ambient_std::{asset_url::AbsAssetUrl, math::SphericalCoords};
 use glam::*;
 use std::str::FromStr;
 
