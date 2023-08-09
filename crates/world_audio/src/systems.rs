@@ -45,7 +45,7 @@ pub fn audio_systems() -> SystemGroup {
             query((spatial_audio_player(), play_now())).to_system(|q, world, qs, _| {
                 for (audio_player_enitty, _) in q.collect_cloned(world, qs) {
                     let amp = world.get(audio_player_enitty, amplitude()).unwrap_or(1.0);
-
+                    let looping = world.get(audio_player_enitty, looping()).unwrap_or(false);
                     world
                         .remove_component(audio_player_enitty, play_now())
                         .unwrap();
@@ -72,11 +72,11 @@ pub fn audio_systems() -> SystemGroup {
                             let rot = world.get(listener_id, rotation()).unwrap();
                             let pos_emitter = world.get(emitter_id, translation()).unwrap();
 
-                            let listener = Arc::new(parking_lot::Mutex::new(AudioListener::new(
+                            let listener = Arc::new(Mutex::new(AudioListener::new(
                                 Mat4::from_rotation_translation(rot, pos_listener),
                                 glam::Vec3::X * 0.3,
                             )));
-                            let emitter = Arc::new(parking_lot::Mutex::new(AudioEmitter {
+                            let emitter = Arc::new(Mutex::new(AudioEmitter {
                                 amplitude: amp,
                                 attenuation: Attenuation::InversePoly {
                                     quad: 0.1,
@@ -93,10 +93,15 @@ pub fn audio_systems() -> SystemGroup {
                                 .unwrap();
 
                             let hrtf_lib = world.resource(hrtf_lib());
-                            let _source =
-                                track.unwrap().decode().spatial(hrtf_lib, listener, emitter);
-                            // TODO: find a way to get looping to work
-
+                            // TODO: stop sound
+                            let mixer = world.resource(crate::audio_mixer());
+                            let source: Box<dyn Source> = if looping {
+                                Box::new(track.unwrap().decode().repeat().spatial(hrtf_lib, listener, emitter))
+                            } else {
+                                Box::new(track.unwrap().decode().spatial(hrtf_lib, listener, emitter))
+                            };
+                            let sound = mixer.play(source);
+                            world.add_component(emitter_id, crate::sound_id(), sound.id).unwrap();
                         });
                     });
                 }
@@ -118,8 +123,9 @@ pub fn audio_systems() -> SystemGroup {
                     }
                 },
             ),
-            query((playing_sound(), stop_now())).to_system(|q, world, qs, _| {
+            query(stop_now()).to_system(|q, world, qs, _| {
                 for (playing_entity, _) in q.collect_cloned(world, qs) {
+
                     let mixer = world.resource(crate::audio_mixer());
                     let id = world.get(playing_entity, crate::sound_id());
                     if id.is_err() {
@@ -127,26 +133,33 @@ pub fn audio_systems() -> SystemGroup {
                         continue;
                     }
                     mixer.stop(id.unwrap());
+                    // stopping an emitter is different
+                    if world.has_component(playing_entity, audio_emitter()) {
+                        world.remove_component(playing_entity, audio_emitter()).unwrap();
+                        continue;
+                    }
+                    if world.has_component(playing_entity, audio_listener()) {
+                        world.remove_component(playing_entity,  audio_listener()).unwrap();
+                        continue;
+                    }
+                    world.remove_component(playing_entity, stop_now()).unwrap();
                     let p = world.get(playing_entity, parent());
-                    if p.is_err() {
-                        log::error!("No parent component on playing entity; cannot stop audio.");
-                        continue;
+                    if !p.is_err() {
+                        let parent_entity = p.unwrap();
+                        let c = world.get_ref(parent_entity, children());
+                        if c.is_err() {
+                            log::error!("No children component on parent entity; cannot stop audio.");
+                            continue;
+                        }
+                        let new_children = c
+                            .unwrap()
+                            .iter()
+                            .filter(|&&e| e != playing_entity)
+                            .cloned()
+                            .collect::<Vec<_>>();
+                        world.set(parent_entity, children(), new_children).unwrap();
+                        world.despawn(playing_entity);
                     }
-                    let parent_entity = p.unwrap();
-
-                    let c = world.get_ref(parent_entity, children());
-                    if c.is_err() {
-                        log::error!("No children component on parent entity; cannot stop audio.");
-                        continue;
-                    }
-                    let new_children = c
-                        .unwrap()
-                        .iter()
-                        .filter(|&&e| e != playing_entity)
-                        .cloned()
-                        .collect::<Vec<_>>();
-                    world.set(parent_entity, children(), new_children).unwrap();
-                    world.despawn(playing_entity);
                 }
             }),
             query((playing_sound(), amplitude())).to_system(|q, world, qs, _| {
