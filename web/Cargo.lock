@@ -116,16 +116,16 @@ dependencies = [
  "ambient_gpu",
  "ambient_input",
  "ambient_model",
- "ambient_procedurals",
- "ambient_profiling",
- "ambient_renderer",
  "ambient_native_std",
+ "ambient_procedurals",
+ "ambient_renderer",
  "ambient_sys",
  "ambient_ui_native",
  "anyhow",
  "flume",
  "glam",
  "parking_lot",
+ "profiling",
  "thread-priority",
  "tokio",
  "tracing",
@@ -239,7 +239,6 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_ecs",
  "ambient_gpu",
- "ambient_profiling",
  "ambient_native_std",
  "ambient_sys",
  "bytemuck",
@@ -252,6 +251,7 @@ dependencies = [
  "ordered-float 3.7.0",
  "parking_lot",
  "paste",
+ "profiling",
  "serde",
  "tokio",
  "tracing",
@@ -270,11 +270,12 @@ dependencies = [
  "ambient_element_component",
  "ambient_gizmos",
  "ambient_gpu",
+ "ambient_native_std",
  "ambient_network",
  "ambient_renderer",
  "ambient_rpc",
  "ambient_shared_types",
- "ambient_native_std",
+ "ambient_std",
  "ambient_sys",
  "ambient_ui_native",
  "glam",
@@ -287,11 +288,10 @@ dependencies = [
 name = "ambient_ecs"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_profiling",
+ "ambient_native_std",
  "ambient_project_macro",
  "ambient_project_rt",
  "ambient_shared_types",
- "ambient_native_std",
  "anyhow",
  "atomic_refcell",
  "bit-set",
@@ -308,6 +308,7 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "paste",
+ "profiling",
  "rand",
  "reqwest",
  "serde",
@@ -328,8 +329,8 @@ dependencies = [
  "ambient_ecs",
  "ambient_element",
  "ambient_layout",
- "ambient_renderer",
  "ambient_native_std",
+ "ambient_renderer",
  "ambient_ui_native",
  "env_logger",
  "glam",
@@ -359,7 +360,6 @@ dependencies = [
  "ambient_element_component",
  "ambient_friendly_id",
  "ambient_guest_bridge",
- "ambient_profiling",
  "ambient_sys",
  "as-any",
  "atomic_refcell",
@@ -368,6 +368,7 @@ dependencies = [
  "futures",
  "itertools",
  "parking_lot",
+ "profiling",
  "tokio",
  "tracing",
 ]
@@ -398,14 +399,14 @@ dependencies = [
  "ambient_ecs",
  "ambient_gpu",
  "ambient_meshes",
- "ambient_profiling",
- "ambient_renderer",
  "ambient_native_std",
+ "ambient_renderer",
  "bytemuck",
  "dashmap",
  "glam",
  "log",
  "once_cell",
+ "profiling",
  "serde",
  "wgpu",
 ]
@@ -464,8 +465,8 @@ version = "0.3.0-dev"
 dependencies = [
  "ambient_core",
  "ambient_ecs",
- "ambient_shared_types",
  "ambient_native_std",
+ "ambient_shared_types",
  "glam",
  "serde",
  "serde_json",
@@ -480,10 +481,10 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_input",
- "ambient_profiling",
  "glam",
  "itertools",
  "log",
+ "profiling",
  "serde",
 ]
 
@@ -515,8 +516,8 @@ dependencies = [
  "ambient_editor_derive",
  "ambient_gpu",
  "ambient_meshes",
- "ambient_renderer",
  "ambient_native_std",
+ "ambient_renderer",
  "ambient_sys",
  "ambient_ui_native",
  "anyhow",
@@ -533,6 +534,53 @@ dependencies = [
 ]
 
 [[package]]
+name = "ambient_native_std"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_asset_cache",
+ "ambient_cb",
+ "ambient_color",
+ "ambient_friendly_id",
+ "ambient_math",
+ "ambient_sys",
+ "anyhow",
+ "as-any",
+ "async-trait",
+ "bincode",
+ "bytemuck",
+ "chrono",
+ "convert_case 0.6.0",
+ "data-encoding",
+ "futures",
+ "git-version",
+ "glam",
+ "itertools",
+ "log",
+ "mikktspace",
+ "once_cell",
+ "ordered-float 3.7.0",
+ "parking_lot",
+ "percent-encoding",
+ "pin-project",
+ "profiling",
+ "rand",
+ "relative-path",
+ "reqwest",
+ "ring",
+ "sentry-anyhow",
+ "serde",
+ "serde_json",
+ "serde_path_to_error",
+ "thiserror",
+ "tokio",
+ "toml",
+ "tracing",
+ "ulid",
+ "url",
+ "wgpu",
+]
+
+[[package]]
 name = "ambient_network"
 version = "0.3.0-dev"
 dependencies = [
@@ -542,11 +590,10 @@ dependencies = [
  "ambient_element",
  "ambient_gizmos",
  "ambient_gpu",
- "ambient_profiling",
+ "ambient_native_std",
  "ambient_proxy",
  "ambient_renderer",
  "ambient_rpc",
- "ambient_native_std",
  "ambient_sys",
  "ambient_ui_native",
  "ambient_world_audio",
@@ -572,6 +619,7 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "pin-project",
+ "profiling",
  "quinn",
  "rand",
  "rustls",
@@ -599,8 +647,8 @@ dependencies = [
  "ambient_element",
  "ambient_gpu",
  "ambient_meshes",
- "ambient_renderer",
  "ambient_native_std",
+ "ambient_renderer",
  "glam",
 ]
 
@@ -611,34 +659,14 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_gpu",
+ "ambient_native_std",
  "ambient_renderer",
  "ambient_shared_types",
- "ambient_native_std",
  "parking_lot",
  "paste",
  "tracing",
  "ulid",
  "wgpu",
-]
-
-[[package]]
-name = "ambient_profiling"
-version = "1.0.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd78220128ea4004eb8072b6df5949dfa367ff16ef1a23e23b2d95f95e5db489"
-dependencies = [
- "ambient_profiling_procmacros",
- "puffin",
-]
-
-[[package]]
-name = "ambient_profiling_procmacros"
-version = "1.0.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7086fcbaeb14e6b1b49d58158591c1f39b24bcc5ea634748bebae76a71ead310"
-dependencies = [
- "quote",
- "syn 1.0.109",
 ]
 
 [[package]]
@@ -722,8 +750,8 @@ dependencies = [
  "ambient_gpu",
  "ambient_layout",
  "ambient_meshes",
- "ambient_renderer",
  "ambient_native_std",
+ "ambient_renderer",
  "async-trait",
  "bytemuck",
  "glam",
@@ -740,7 +768,6 @@ dependencies = [
  "ambient_ecs",
  "ambient_gpu",
  "ambient_meshes",
- "ambient_profiling",
  "ambient_native_std",
  "ambient_sys",
  "anyhow",
@@ -753,6 +780,7 @@ dependencies = [
  "log",
  "ordered-float 3.7.0",
  "parking_lot",
+ "profiling",
  "serde",
  "smallvec",
  "tracing",
@@ -789,50 +817,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambient_native_std"
+name = "ambient_std"
 version = "0.3.0-dev"
 dependencies = [
- "ambient_asset_cache",
- "ambient_cb",
- "ambient_color",
- "ambient_friendly_id",
- "ambient_math",
- "ambient_profiling",
- "ambient_sys",
- "anyhow",
- "as-any",
- "async-trait",
- "bincode",
- "bytemuck",
- "chrono",
- "convert_case 0.6.0",
- "data-encoding",
- "futures",
- "git-version",
- "glam",
  "itertools",
- "log",
- "mikktspace",
- "once_cell",
- "ordered-float 3.7.0",
- "parking_lot",
- "percent-encoding",
- "pin-project",
- "rand",
- "relative-path",
- "reqwest",
- "ring",
- "sentry-anyhow",
- "serde",
- "serde_json",
- "serde_path_to_error",
- "thiserror",
- "tokio",
- "toml",
- "tracing",
- "ulid",
- "url",
- "wgpu",
 ]
 
 [[package]]
@@ -871,8 +859,8 @@ dependencies = [
  "ambient_gpu",
  "ambient_input",
  "ambient_layout",
- "ambient_renderer",
  "ambient_native_std",
+ "ambient_renderer",
  "anyhow",
  "async-trait",
  "glam",
@@ -928,10 +916,10 @@ dependencies = [
  "ambient_input",
  "ambient_layout",
  "ambient_meshes",
+ "ambient_native_std",
  "ambient_rect",
  "ambient_renderer",
  "ambient_shared_types",
- "ambient_native_std",
  "ambient_sys",
  "ambient_text",
  "ambient_ui",
@@ -968,13 +956,13 @@ dependencies = [
  "ambient_gpu",
  "ambient_input",
  "ambient_model",
+ "ambient_native_std",
  "ambient_network",
  "ambient_procedurals",
- "ambient_profiling",
  "ambient_project",
  "ambient_renderer",
  "ambient_shared_types",
- "ambient_native_std",
+ "ambient_std",
  "ambient_sys",
  "anyhow",
  "async-trait",
@@ -994,6 +982,7 @@ dependencies = [
  "parking_lot",
  "paste",
  "pollster",
+ "profiling",
  "reqwest",
  "serde",
  "serde_bytes",
@@ -1023,11 +1012,11 @@ dependencies = [
  "ambient_ecs_editor",
  "ambient_element",
  "ambient_layout",
+ "ambient_native_std",
  "ambient_network",
  "ambient_primitives",
  "ambient_renderer",
  "ambient_rpc",
- "ambient_native_std",
  "ambient_sys",
  "ambient_ui_native",
  "ambient_wasm",
@@ -1057,7 +1046,6 @@ dependencies = [
  "ambient_core",
  "ambient_ecs",
  "ambient_element",
- "ambient_profiling",
  "ambient_native_std",
  "ambient_sys",
  "ambient_ui_native",
@@ -1075,6 +1063,7 @@ dependencies = [
  "once_cell",
  "ordered-float 3.7.0",
  "parking_lot",
+ "profiling",
  "rand",
  "rand_chacha",
  "serde",
@@ -4313,17 +4302,33 @@ dependencies = [
 
 [[package]]
 name = "profiling"
-version = "1.0.8"
+version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "332cd62e95873ea4f41f3dfd6bbbfc5b52aec892d7e8d534197c4720a0bbbab2"
+checksum = "46b2164ebdb1dfeec5e337be164292351e11daf63a05174c6776b2f47460f0c9"
+dependencies = [
+ "profiling-procmacros",
+ "puffin",
+]
+
+[[package]]
+name = "profiling-procmacros"
+version = "1.0.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "097bf8b99121dfb8c75eed54dfbdbdb1d53e372c53d2353e8a15aad2a479249d"
+dependencies = [
+ "quote",
+ "syn 2.0.16",
+]
 
 [[package]]
 name = "puffin"
-version = "0.14.3"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7b2c7a01f569fb03e2ff1f5376537f294001447bd23ce75ca51054fcd223fe4"
+checksum = "76425abd4e1a0ad4bd6995dd974b52f414fca9974171df8e3708b3e660d05a21"
 dependencies = [
+ "anyhow",
  "byteorder",
+ "cfg-if",
  "instant",
  "once_cell",
 ]

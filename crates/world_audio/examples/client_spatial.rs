@@ -62,9 +62,8 @@ fn spawn_emitters(world: &mut World) {
 }
 
 fn init(app: &mut App) {
-    app.systems.add(Box::new(
-        ambient_world_audio::systems::spatial_audio_systems(),
-    ));
+    app.systems
+        .add(Box::new(ambient_world_audio::systems::audio_systems()));
 
     let world = &mut app.world;
     let _assets = world.resource(asset_cache()).clone();

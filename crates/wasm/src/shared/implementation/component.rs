@@ -371,8 +371,8 @@ pub fn query(
     let (components, include, exclude, changed) = with_component_registry(|cr| {
         anyhow::Ok((
             get_components(cr, &query.components)?,
-            get_components(cr, &query.include)?,
-            get_components(cr, &query.exclude)?,
+            get_components(cr, &query.includes)?,
+            get_components(cr, &query.excludes)?,
             get_components(cr, &query.changed)?,
         ))
     })?;

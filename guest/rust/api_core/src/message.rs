@@ -191,17 +191,17 @@ impl IntoBindgen for Target {
 
 #[cfg(feature = "server")]
 impl<'a> IntoBindgen for &'a Target {
-    type Item = wit::server_message::Target<'a>;
+    type Item = wit::server_message::Target;
 
     fn into_bindgen(self) -> Self::Item {
         match self {
             Target::ClientBroadcastUnreliable => Self::Item::ClientBroadcastUnreliable,
             Target::ClientBroadcastReliable => Self::Item::ClientBroadcastReliable,
             Target::ClientTargetedUnreliable(user_id) => {
-                Self::Item::ClientTargetedUnreliable(user_id.as_str())
+                Self::Item::ClientTargetedUnreliable(user_id.clone())
             }
             Target::ClientTargetedReliable(user_id) => {
-                Self::Item::ClientTargetedReliable(user_id.as_str())
+                Self::Item::ClientTargetedReliable(user_id.clone())
             }
             Target::LocalBroadcast { include_self } => Self::Item::LocalBroadcast(*include_self),
             Target::Local(id) => Self::Item::Local(id.into_bindgen()),
@@ -221,7 +221,7 @@ pub fn send<T: Message>(target: Target, data: &T) {
     );
     #[cfg(all(feature = "server", not(feature = "client")))]
     wit::server_message::send(
-        target.into_bindgen(),
+        &(&target).into_bindgen(),
         T::id(),
         &data.serialize_message().unwrap(),
     );
