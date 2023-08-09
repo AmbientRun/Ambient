@@ -36,6 +36,7 @@ pub(crate) async fn install_wasm_pack() -> anyhow::Result<()> {
     eprintln!("Installing wasm-pack from source");
     let status = Command::new("cargo")
         .args(["install", "wasm-pack"])
+        .kill_on_drop(true)
         .spawn()?
         .wait()
         .await?;
@@ -98,7 +99,10 @@ pub async fn ensure_wasm_pack() -> anyhow::Result<()> {
 pub async fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
     let mut command = Command::new("wasm-pack");
 
-    command.args(["build", "client"]).current_dir("web");
+    command
+        .args(["build", "client"])
+        .current_dir("web")
+        .kill_on_drop(true);
 
     match &opts.profile[..] {
         "dev" | "debug" => command.arg("--dev"),

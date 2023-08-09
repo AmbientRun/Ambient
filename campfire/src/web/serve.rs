@@ -78,6 +78,22 @@ pub struct Serve {
 
 impl Serve {
     pub async fn run(&self) -> anyhow::Result<()> {
+        if !tokio::fs::try_exists("web/www/node_modules")
+            .await
+            .context("Failed to query node_modules directory")?
+        {
+            log::info!("Installing node modules");
+            tokio::process::Command::new("npm")
+                .args(["install", "-d"])
+                .current_dir("web/www")
+                .kill_on_drop(true)
+                .spawn()
+                .context("Failed to spawn npm")?
+                .wait()
+                .await
+                .context("Failed to run npm install")?;
+        }
+
         build::run(&self.build).await?;
 
         let watch = self.watch_and_build();
@@ -99,6 +115,7 @@ impl Serve {
         let status = tokio::process::Command::new("npm")
             .args(["run", "dev"])
             .current_dir(dir)
+            .kill_on_drop(true)
             .spawn()
             .context("Failed to spawn npm")?
             .wait()
@@ -175,7 +192,10 @@ impl Serve {
 
             if needs_rebuild {
                 log::debug!("Rebuilding...");
-                build::run(&self.build).await?;
+                if let Err(err) = build::run(&self.build).await {
+                    log::error!("Failed to build: {err}")
+                }
+
                 log::debug!("Finished building the web client");
             }
         }
