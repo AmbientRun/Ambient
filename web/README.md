@@ -8,41 +8,18 @@ Note: you need to serve a project using `ambient` for the web client to connect 
 
 ## Build Prerequisites
 
-- [wasm-pack](https://rustwasm.github.io/wasm-pack/)
-- [wasm-bindgen](https://github.com/rustwasm/wasm-bindgen)
 - Node `>= v.19`
 - WebGPU supported web browser (recent enough)
 
-## Setup
-
-From `./web/www`
+## Building and Serving
 
 ```sh
-# Installs the dependencies and the webpack dev server
-npm install -d
-
-cd ..
-rustup target add wasm32-unknown-unknown
+cargo campfire web serve
 ```
 
-## Building
+This build the client and launch `vite dev server` binding to `:5173`. See the command output for exact url.
 
-From `./web/`
-
-```
-wasm-pack build client --dev
-```
-
-## Running
-
-From `./web/www`
-
-```
-
-npm run dev
-```
-
-This will launch `vite dev server` and bind to `:5173`. See the command output for exact url
+Whenever a file changes the client will automatically rebuild and the changes will be reflected in the browser.
 
 **Note**: the self-signed certificate is only valid for `127.0.0.1`
 
@@ -50,13 +27,14 @@ This will launch `vite dev server` and bind to `:5173`. See the command output f
 
 If using self-signed certificates, you need to toll Chrome to trust it
 
-From `./`
 
 ```sh
-./scripts/launch_chrome.sh
+cargo campfire open-browser
 ```
 
-After opening the client it will attempt connect to a locally running `ambient server` on `127.0.0.1:9000` (the default)
+**Note**: If you are on mac **make sure you close any existing Chrome instances using `Quit`**
+
+<!-- After opening the client it will attempt connect to a locally running `ambient server` on `127.0.0.1:9000` (the default) -->
 
 ## Known Issues
 
