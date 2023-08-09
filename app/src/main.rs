@@ -494,7 +494,11 @@ Ok(())
             None
         };
 
-        let mixer = audio_stream.as_ref().map(|v| v.mixer().clone());
+        let mixer = if run.mute_audio {
+            None
+        } else {
+            audio_stream.as_ref().map(|v| v.mixer().clone())
+        };
 
         let exit_status = rt.block_on(
             // If we have run parameters, start a client and join a server

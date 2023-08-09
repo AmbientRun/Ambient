@@ -44,6 +44,12 @@ pub fn audio_systems() -> SystemGroup {
         vec![
             query((spatial_audio_player(), play_now())).to_system(|q, world, qs, _| {
                 for (audio_player_enitty, _) in q.collect_cloned(world, qs) {
+                    // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
+                        continue;
+                    }
+
                     let amp = world.get(audio_player_enitty, amplitude()).unwrap_or(1.0);
                     let looping = world.get(audio_player_enitty, looping()).unwrap_or(false);
                     world
@@ -60,8 +66,11 @@ pub fn audio_systems() -> SystemGroup {
                         .unwrap();
 
                     runtime.spawn(async move {
+
+
                         let track = AudioFromUrl { url: url.clone() }.get(&assets).await;
                         async_run.run(move |world| {
+
                             let listener_id = world
                                 .get(audio_player_enitty, spatial_audio_listener())
                                 .unwrap();
@@ -93,7 +102,9 @@ pub fn audio_systems() -> SystemGroup {
                                 .unwrap();
 
                             let hrtf_lib = world.resource(hrtf_lib());
-                            // TODO: stop sound
+
+
+
                             let mixer = world.resource(crate::audio_mixer());
                             let source: Box<dyn Source> = if looping {
                                 Box::new(track.unwrap().decode().repeat().spatial(hrtf_lib, listener, emitter))
@@ -109,6 +120,11 @@ pub fn audio_systems() -> SystemGroup {
             // Updates the volume of audio emitters in the world
             query((audio_emitter(), local_to_world())).to_system(|q, world, qs, _| {
                 for (_, (emitter, ltw)) in q.iter(world, qs) {
+                    // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
+                        continue;
+                    }
                     let (_, _, pos) = ltw.to_scale_rotation_translation();
                     let mut emitter = emitter.lock();
                     emitter.pos = pos;
@@ -118,6 +134,11 @@ pub fn audio_systems() -> SystemGroup {
                 "update_audio_listener",
                 |q, world, qs, _| {
                     for (_, (listener, &ltw)) in q.iter(world, qs) {
+                        // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
+                        continue;
+                    }
                         let mut listener = listener.lock();
                         listener.transform = Y_UP_LHS * ltw;
                     }
@@ -125,6 +146,12 @@ pub fn audio_systems() -> SystemGroup {
             ),
             query(stop_now()).to_system(|q, world, qs, _| {
                 for (playing_entity, _) in q.collect_cloned(world, qs) {
+
+                    // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
+                        continue;
+                    }
 
                     let mixer = world.resource(crate::audio_mixer());
                     let id = world.get(playing_entity, crate::sound_id());
@@ -164,6 +191,11 @@ pub fn audio_systems() -> SystemGroup {
             }),
             query((playing_sound(), amplitude())).to_system(|q, world, qs, _| {
                 for (playing_entity, (_, amp)) in q.collect_cloned(world, qs) {
+                    // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
+                        continue;
+                    }
                     let amp_arc = world
                         .get_mut(playing_entity, crate::amplitude_arc())
                         .unwrap();
@@ -172,6 +204,11 @@ pub fn audio_systems() -> SystemGroup {
             }),
             query((playing_sound(), panning())).to_system(|q, world, qs, _| {
                 for (playing_entity, (_, pan)) in q.collect_cloned(world, qs) {
+                    // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
+                        continue;
+                    }
                     let pan_arc = world
                         .get_mut(playing_entity, crate::panning_arc())
                         .unwrap();
@@ -180,6 +217,11 @@ pub fn audio_systems() -> SystemGroup {
             }),
             query((playing_sound(), onepole_lpf())).to_system(|q, world, qs, _| {
                 for (playing_entity, (_, freq)) in q.collect_cloned(world, qs) {
+                    // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
+                        continue;
+                    }
                     let freq_arc = world
                         .get_mut(playing_entity, crate::onepole_arc())
                         .unwrap();
@@ -188,6 +230,12 @@ pub fn audio_systems() -> SystemGroup {
             }),
             query((audio_player(), play_now(), audio_url())).to_system(|q, world, qs, _| {
                 for (audio_player_enitty, (_, _, url)) in q.collect_cloned(world, qs) {
+                    // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
+                        continue;
+                    }
+
                     let amp = world.get(audio_player_enitty, amplitude()).unwrap_or(1.0);
                     let pan = world.get(audio_player_enitty, panning()).unwrap_or(0.0);
                     let freq = world

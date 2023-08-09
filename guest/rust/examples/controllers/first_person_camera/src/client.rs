@@ -23,9 +23,9 @@ fn main() {
 
     ambient_api::messages::Frame::subscribe(move |_| {
         let input = input::get();
-        // if !cursor_lock.auto_unlock_on_escape(&input) {
-        //     return;
-        // }
+        if !cursor_lock.auto_unlock_on_escape(&input) {
+            return;
+        }
 
         let mut displace = Vec2::ZERO;
         if input.keys.contains(&KeyCode::W) {
