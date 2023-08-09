@@ -1,5 +1,6 @@
 use std::{path::PathBuf, str::FromStr};
 
+use ambient_audio::AudioStream;
 use ambient_core::window::ExitStatus;
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
@@ -209,15 +210,18 @@ async fn load_manifest(
     }
 }
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
+fn main() -> anyhow::Result<()> {
+    let rt = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?;
+
     setup_logging()?;
 
     shared::components::init()?;
     // let runtime = tokio::runtime::Builder::new_multi_thread()
     //     .enable_all()
     //     .build()?;
-    let runtime = tokio::runtime::Handle::current();
+    let runtime = rt.handle();
     let assets = AssetCache::new(runtime.clone());
     PhysicsKey.get(&assets); // Load physics
     AssetsCacheOnDisk.insert(&assets, false); // Disable disk caching for now; see https://github.com/AmbientRun/Ambient/issues/81
@@ -255,44 +259,46 @@ async fn main() -> anyhow::Result<()> {
     }
 
     if let Commands::Assets { command } = &cli.command {
-        match command {
-            AssetCommand::MigratePipelinesToml(opt) => {
-                let path = ProjectPath::new_local(opt.path.clone())?;
-                let manifest = load_manifest(&assets, &path).await?;
-                ambient_build::migrate::toml::process(&manifest, path.fs_path.unwrap())
-                    .await
-                    .context("Failed to migrate pipelines")?;
-            }
-            AssetCommand::Import(opt) => match opt.path.extension() {
-                Some(ext) => {
-                    if ext == "wav" || ext == "mp3" || ext == "ogg" {
-                        let convert = opt.convert_audio;
-                        ambient_build::pipelines::import_audio(opt.path.clone(), convert)
-                            .context("failed to import audio")?;
-                    } else if ext == "fbx" || ext == "glb" || ext == "gltf" || ext == "obj" {
-                        let collider_from_model = opt.collider_from_model;
-                        ambient_build::pipelines::import_model(
-                            opt.path.clone(),
-                            collider_from_model,
-                        )
-                        .context("failed to import models")?;
-                    } else if ext == "jpg" || ext == "png" || ext == "gif" || ext == "webp" {
-                        // TODO: import textures API may change, so this is just a placeholder
-                        todo!();
-                    } else {
-                        bail!("Unsupported file type");
-                    }
+        return rt.block_on(async {
+            match command {
+                AssetCommand::MigratePipelinesToml(opt) => {
+                    let path = ProjectPath::new_local(opt.path.clone())?;
+                    let manifest = load_manifest(&assets, &path).await?;
+                    ambient_build::migrate::toml::process(&manifest, path.fs_path.unwrap())
+                        .await
+                        .context("Failed to migrate pipelines")?;
                 }
-                None => bail!("Unknown file type"),
-            },
-        }
+                AssetCommand::Import(opt) => match opt.path.extension() {
+                    Some(ext) => {
+                        if ext == "wav" || ext == "mp3" || ext == "ogg" {
+                            let convert = opt.convert_audio;
+                            ambient_build::pipelines::import_audio(opt.path.clone(), convert)
+                                .context("failed to import audio")?;
+                        } else if ext == "fbx" || ext == "glb" || ext == "gltf" || ext == "obj" {
+                            let collider_from_model = opt.collider_from_model;
+                            ambient_build::pipelines::import_model(
+                                opt.path.clone(),
+                                collider_from_model,
+                            )
+                            .context("failed to import models")?;
+                        } else if ext == "jpg" || ext == "png" || ext == "gif" || ext == "webp" {
+                            // TODO: import textures API may change, so this is just a placeholder
+                            todo!();
+                        } else {
+                            bail!("Unsupported file type");
+                        }
+                    }
+                    None => bail!("Unknown file type"),
+                },
+            }
 
-        return Ok(());
+            Ok(())
+        });
     }
 
     // If a project was specified, assume that assets need to be built
     let manifest = match project {
-        Some(_) => Some(load_manifest(&assets, &project_path).await?),
+        Some(_) => Some(rt.block_on(load_manifest(&assets, &project_path))?),
         None => None,
     };
 
@@ -309,27 +315,29 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let metadata = if let Some(manifest) = manifest.as_ref() {
-        let project = project.unwrap();
+        rt.block_on(async {
+            let project = project.unwrap();
 
-        if let (false, Some(build_config)) = (project.no_build, build_config.clone()) {
-            let project_name = manifest.ember.name.as_deref().unwrap_or("project");
+            if let (false, Some(build_config)) = (project.no_build, build_config.clone()) {
+                let project_name = manifest.ember.name.as_deref().unwrap_or("project");
 
-            tracing::info!("Building project {:?}", project_name);
+                tracing::info!("Building project {:?}", project_name);
 
-            let metadata = ambient_build::build(build_config)
-                .await
-                .context("Failed to build project")?;
+                let metadata = ambient_build::build(build_config)
+                    .await
+                    .context("Failed to build project")?;
 
-            Some(metadata)
-        } else {
-            let metadata_url = project_path.push("build/metadata.toml");
-            let metadata_data = metadata_url
-                .download_string(&assets)
-                .await
-                .context("Failed to load build/metadata.toml.")?;
+                anyhow::Ok(Some(metadata))
+            } else {
+                let metadata_url = project_path.push("build/metadata.toml");
+                let metadata_data = metadata_url
+                    .download_string(&assets)
+                    .await
+                    .context("Failed to load build/metadata.toml.")?;
 
-            Some(ambient_build::Metadata::parse(&metadata_data)?)
-        }
+                anyhow::Ok(Some(ambient_build::Metadata::parse(&metadata_data)?))
+            }
+        })?
     } else {
         None
     };
@@ -349,6 +357,7 @@ async fn main() -> anyhow::Result<()> {
         ..
     } = &cli.command
     {
+        return rt.block_on(async {
         let Some(project_fs_path) = &project_path.fs_path else {
             anyhow::bail!("Can only deploy a local project");
         };
@@ -379,13 +388,14 @@ async fn main() -> anyhow::Result<()> {
             .await?;
             log::info!("Deployed ember is running at {}", server.host);
         }
-        return Ok(());
-    }
+Ok(())
+});
+    };
 
     // Otherwise, either connect to a server or host one
     let server_addr = if let Commands::Join { host, .. } = &cli.command {
         if let Some(mut host) = host.clone() {
-            if host.starts_with("http://") || host.starts_with("https://") {
+            rt.block_on(async {if host.starts_with("http://") || host.starts_with("https://") {
                 tracing::info!("NOTE: Joining server by http url is still experimental and can be removed without warning.");
 
                 host = ReqwestClientKey
@@ -395,6 +405,7 @@ async fn main() -> anyhow::Result<()> {
                     .await?
                     .text()
                     .await?;
+
                 if host.is_empty() {
                     anyhow::bail!("Failed to resolve host");
                 }
@@ -402,7 +413,9 @@ async fn main() -> anyhow::Result<()> {
             if !host.contains(':') {
                 host = format!("{host}:{QUIC_INTERFACE_PORT}");
             }
-            ResolvedAddr::lookup_host(&host).await?
+
+            Ok(ResolvedAddr::lookup_host(&host).await?)
+        })?
         } else {
             ResolvedAddr::localhost_with_port(QUIC_INTERFACE_PORT)
         }
@@ -446,7 +459,7 @@ async fn main() -> anyhow::Result<()> {
             }
         };
 
-        let addr = server::start(
+        let addr = rt.block_on(server::start(
             &runtime,
             assets.clone(),
             cli.clone(),
@@ -455,8 +468,7 @@ async fn main() -> anyhow::Result<()> {
             metadata.as_ref().expect("no build metadata"),
             crypto,
             build_config,
-        )
-        .await;
+        ));
 
         ResolvedAddr::localhost_with_port(addr.port())
     } else {
@@ -466,14 +478,39 @@ async fn main() -> anyhow::Result<()> {
     // Time to join!
 
     if let Some(run) = cli.run() {
-        // If we have run parameters, start a client and join a server
-        let exit_status = client::run(assets, server_addr, run, project_path.fs_path).await;
+        // Hey! listen, it is time to setup audio
+
+        let audio_stream = if !run.mute_audio {
+            log::info!("Creating audio stream");
+            match AudioStream::new().context("Failed to initialize audio stream") {
+                Ok(v) => Some(v),
+                Err(err) => {
+                    log::error!("Failed to initialize audio stream: {err}");
+                    None
+                }
+            }
+        } else {
+            log::info!("Audio is disabled");
+            None
+        };
+
+        let mixer = if run.mute_audio {
+            None
+        } else {
+            audio_stream.as_ref().map(|v| v.mixer().clone())
+        };
+
+        let exit_status = rt.block_on(
+            // If we have run parameters, start a client and join a server
+            client::run(assets, server_addr, run, project_path.fs_path, mixer),
+        );
+
         if exit_status == ExitStatus::FAILURE {
             bail!("client::run failed with {exit_status:?}");
         }
     } else {
         // Otherwise, wait for the Ctrl+C signal
-        match tokio::signal::ctrl_c().await {
+        match rt.block_on(tokio::signal::ctrl_c()) {
             Ok(()) => {}
             Err(err) => log::error!("Unable to listen for shutdown signal: {}", err),
         }
