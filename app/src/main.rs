@@ -155,15 +155,11 @@ fn main() -> anyhow::Result<()> {
 
             anyhow::Ok((
                 ProjectPath::new_local(output_path)?,
-                AbsAssetUrl::from_file_path(build_path),
+                Some(AbsAssetUrl::from_file_path(build_path)),
             ))
         })?
     } else {
-        if project_path.is_remote() {
-            (project_path.clone(), project_path.push(".."))
-        } else {
-            (project_path.clone(), project_path.push("build"))
-        }
+        (project_path.clone(), None)
     };
 
     // If this is just a build, exit now
@@ -195,6 +191,7 @@ fn main() -> anyhow::Result<()> {
 
     let (project_path, manifest) =
         rt.block_on(get_new_project_path_and_manifest(project_path, &assets))?;
+    let build_path = build_path.unwrap_or_else(|| project_path.url.push("build").unwrap());
 
     // If this is just a deploy then deploy and exit
     if let Commands::Deploy {

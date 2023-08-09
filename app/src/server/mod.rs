@@ -8,8 +8,8 @@ use std::{
 
 use ambient_core::{asset_cache, name, no_sync, project_name, FIXED_SERVER_TICK_TIME};
 use ambient_ecs::{
-    components, dont_store, world_events, ComponentDesc, Entity, Networked, Resource, SystemGroup,
-    World, WorldEventsSystem, WorldStreamCompEvent,
+    dont_store, world_events, ComponentDesc, Entity, Networked, SystemGroup, World,
+    WorldEventsSystem, WorldStreamCompEvent,
 };
 use ambient_native_std::{
     asset_cache::{AssetCache, AsyncAssetKeyExt, SyncAssetKeyExt},
@@ -22,7 +22,7 @@ use ambient_network::{
     synced_resources,
 };
 use ambient_prefab::PrefabFromUrl;
-use ambient_project_semantic::Semantic;
+use ambient_project::BuildMetadata;
 use ambient_sys::task::RuntimeHandle;
 use anyhow::Context;
 use axum::{
@@ -40,11 +40,6 @@ use crate::{
 
 pub mod wasm;
 
-components!("server", {
-    @[Resource]
-    semantic: Arc<Mutex<Semantic>>,
-});
-
 #[allow(clippy::too_many_arguments)]
 pub async fn start(
     runtime: &tokio::runtime::Handle,
@@ -56,8 +51,6 @@ pub async fn start(
     manifest: ambient_project::Manifest,
     crypto: Crypto,
 ) -> SocketAddr {
-    self::init_components();
-
     let host_cli = cli.host().unwrap();
     let quic_interface_port = host_cli.quic_interface_port;
 
@@ -213,15 +206,27 @@ pub async fn start(
         .unwrap();
 
         let mut semantic = ambient_project_semantic::Semantic::new().await.unwrap();
-        let primary_ember_scope_id = shared::ember::add(
-            &mut semantic,
-            &project_path
-                .to_file_path()
-                .unwrap()
-                .expect("todo: project path must currently be local"),
-        )
-        .await
-        .unwrap();
+        let primary_ember_scope_id = match project_path.to_file_path().unwrap() {
+            Some(local_path) => shared::ember::add(&mut semantic, &local_path)
+                .await
+                .unwrap(),
+
+            None => {
+                let metadata = BuildMetadata::parse(
+                    &project_path
+                        .push(BuildMetadata::FILENAME)
+                        .unwrap()
+                        .download_string(&assets)
+                        .await
+                        .unwrap(),
+                )
+                .unwrap();
+
+                shared::ember::add_parsed_manifest(&mut semantic, &manifest, metadata)
+                    .await
+                    .unwrap()
+            }
+        };
 
         let mut queue = semantic
             .items
@@ -229,7 +234,7 @@ pub async fn start(
         server_world
             .add_component(
                 server_world.resource_entity(),
-                self::semantic(),
+                ambient_ember_semantic_native::semantic(),
                 Arc::new(Mutex::new(semantic)),
             )
             .unwrap();

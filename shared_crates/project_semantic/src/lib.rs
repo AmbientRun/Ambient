@@ -103,6 +103,23 @@ impl Semantic {
         .await
     }
 
+    /// HACK! This is used to allow the use of no-dependency embers for now.
+    /// Will be removed once we figure this out.
+    pub async fn add_ember_manifest(
+        &mut self,
+        ember_manifest: &Manifest,
+    ) -> anyhow::Result<ItemId<Scope>> {
+        self.add_file(
+            Path::new("ambient.toml"),
+            &ArrayFileProvider {
+                files: &[("ambient.toml", &toml::to_string(ember_manifest)?)],
+            },
+            ItemSource::User,
+            None,
+        )
+        .await
+    }
+
     pub fn resolve(&mut self) -> anyhow::Result<()> {
         let root_scopes = self
             .items
@@ -124,6 +141,10 @@ impl Semantic {
 
     pub fn root_scope(&self) -> Ref<'_, Scope> {
         self.items.get(self.root_scope_id).unwrap()
+    }
+
+    pub fn get_scope_id_by_name(&self, name: &SnakeCaseIdentifier) -> Option<ItemId<Scope>> {
+        self.root_scope().scopes.get(name).copied()
     }
 }
 impl Semantic {

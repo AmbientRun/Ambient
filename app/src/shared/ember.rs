@@ -3,10 +3,36 @@ use std::{collections::HashMap, path::Path};
 use ambient_ecs::{
     ComponentRegistry, ExternalComponentAttributes, ExternalComponentDesc, PrimitiveComponentType,
 };
+use ambient_native_std::asset_url::AbsAssetUrl;
+use ambient_project::{BuildMetadata, Manifest};
 use ambient_project_semantic::{Item, ItemId, PrimitiveType, Scope, Semantic, TypeInner};
 
 pub async fn add(semantic: &mut Semantic, path: &Path) -> anyhow::Result<ItemId<Scope>> {
     let id = semantic.add_ember(path).await?;
+    // HACK: think about how this could be supplied in the right place
+    for id in semantic.items.scope_and_dependencies(id) {
+        let mut item = semantic.items.get_mut(id)?;
+        item.url = Some(
+            AbsAssetUrl::from_asset_key(item.original_id.to_string())?
+                .0
+                .to_string(),
+        );
+    }
+    finish_add(semantic, id)
+}
+
+/// HACK! Temporary to enable remote single-ember deployments.
+pub async fn add_parsed_manifest(
+    semantic: &mut Semantic,
+    manifest: &Manifest,
+    build_metadata: BuildMetadata,
+) -> anyhow::Result<ItemId<Scope>> {
+    let id = semantic.add_ember_manifest(manifest).await?;
+    semantic.items.get_mut(id)?.build_metadata = Some(build_metadata);
+    finish_add(semantic, id)
+}
+
+fn finish_add(semantic: &mut Semantic, id: ItemId<Scope>) -> anyhow::Result<ItemId<Scope>> {
     semantic.resolve()?;
     ComponentRegistry::get_mut().add_external(all_defined_components(semantic)?);
 

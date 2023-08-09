@@ -96,9 +96,12 @@ pub struct Scope {
     pub original_id: SnakeCaseIdentifier,
     pub manifest_path: Option<PathBuf>,
     pub manifest: Option<Manifest>,
+    pub build_metadata: Option<BuildMetadata>,
 
     pub dependencies: Vec<ItemId<Scope>>,
-    pub build_metadata: Option<BuildMetadata>,
+
+    // Runtime-supplied state, not provided by the semantic state
+    pub url: Option<String>,
 
     pub scopes: IndexMap<SnakeCaseIdentifier, ItemId<Scope>>,
     pub components: IndexMap<SnakeCaseIdentifier, ItemId<Component>>,
@@ -219,9 +222,11 @@ impl Scope {
             original_id,
             manifest_path: path,
             manifest,
+            build_metadata: Default::default(),
 
             dependencies: Default::default(),
-            build_metadata: Default::default(),
+
+            url: None,
 
             scopes: Default::default(),
             components: Default::default(),

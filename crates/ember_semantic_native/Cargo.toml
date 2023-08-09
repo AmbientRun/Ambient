@@ -1,0 +1,14 @@
+[package]
+name = "ambient_ember_semantic_native"
+description = "Glues together the ember semantic system and other native code, like asset loading."
+edition = "2021"
+version.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+ambient_ecs = { path = "../ecs", version = "0.3.0-dev" }
+ambient_native_std = { path = "../native_std", version = "0.3.0-dev" }
+
+ambient_project_semantic = { path = "../../shared_crates/project_semantic", version = "0.3.0-dev" }
+
+anyhow = { workspace = true }

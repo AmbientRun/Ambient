@@ -135,6 +135,7 @@ dependencies = [
  "ambient_ecs",
  "ambient_editor_derive",
  "ambient_element",
+ "ambient_ember_semantic_native",
  "ambient_gizmos",
  "ambient_gpu",
  "ambient_input",
@@ -738,6 +739,16 @@ dependencies = [
  "proc-macro2 1.0.66",
  "quote 1.0.28",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "ambient_ember_semantic_native"
+version = "0.3.0-dev"
+dependencies = [
+ "ambient_ecs",
+ "ambient_native_std",
+ "ambient_project_semantic",
+ "anyhow",
 ]
 
 [[package]]
@@ -1606,6 +1617,7 @@ dependencies = [
  "ambient_app",
  "ambient_core",
  "ambient_ecs",
+ "ambient_ember_semantic_native",
  "ambient_gpu",
  "ambient_input",
  "ambient_model",
