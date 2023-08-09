@@ -1,6 +1,7 @@
 use anyhow::Context;
 use clap::{Args, ValueEnum};
-use std::{path::PathBuf, process::Command};
+use std::path::PathBuf;
+use tokio::process::Command;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub(crate) enum Target {
@@ -20,10 +21,10 @@ pub struct BuildOptions {
     target: Target,
 }
 
-pub fn run(opts: BuildOptions) -> anyhow::Result<()> {
-    ensure_wasm_pack()?;
+pub async fn run(opts: &BuildOptions) -> anyhow::Result<()> {
+    ensure_wasm_pack().await?;
 
-    let output_path = run_cargo_build(&opts)?;
+    let output_path = run_cargo_build(&opts).await?;
 
     eprintln!("Built package: {:?}", output_path);
 
@@ -31,12 +32,14 @@ pub fn run(opts: BuildOptions) -> anyhow::Result<()> {
 }
 
 #[cfg(not(target_os = "linux"))]
-pub(crate) fn install_wasm_pack() -> anyhow::Result<()> {
+pub(crate) async fn install_wasm_pack() -> anyhow::Result<()> {
     eprintln!("Installing wasm-pack from source");
     let status = Command::new("cargo")
         .args(["install", "wasm-pack"])
+        .kill_on_drop(true)
         .spawn()?
-        .wait()?;
+        .wait()
+        .await?;
 
     if !status.success() {
         anyhow::bail!("Failed to install wasm-pack");
@@ -46,9 +49,9 @@ pub(crate) fn install_wasm_pack() -> anyhow::Result<()> {
 }
 
 #[cfg(target_os = "linux")]
-pub(crate) fn install_wasm_pack() -> anyhow::Result<()> {
+pub(crate) async fn install_wasm_pack() -> anyhow::Result<()> {
     eprintln!("Installing wasm-pack");
-    let mut curl = Command::new("curl")
+    let mut curl = std::process::Command::new("curl")
         .args([
             "https://rustwasm.github.io/wasm-pack/installer/init.sh",
             "-sSf",
@@ -57,7 +60,7 @@ pub(crate) fn install_wasm_pack() -> anyhow::Result<()> {
         .spawn()
         .context("Failed to spawn curl")?;
 
-    let mut sh = Command::new("sh")
+    let mut sh = std::process::Command::new("sh")
         .stdin(std::process::Stdio::from(curl.stdout.take().unwrap()))
         .spawn()
         .context("Failed to spawn sh")?;
@@ -77,10 +80,10 @@ pub(crate) fn install_wasm_pack() -> anyhow::Result<()> {
     Ok(())
 }
 
-pub fn ensure_wasm_pack() -> anyhow::Result<()> {
+pub async fn ensure_wasm_pack() -> anyhow::Result<()> {
     match which::which("wasm-pack") {
         Err(_) => {
-            install_wasm_pack()?;
+            install_wasm_pack().await?;
 
             assert!(which::which("wasm-pack").is_ok(), "wasm-pack is in PATH");
 
@@ -93,10 +96,13 @@ pub fn ensure_wasm_pack() -> anyhow::Result<()> {
     }
 }
 
-pub fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
+pub async fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
     let mut command = Command::new("wasm-pack");
 
-    command.args(["build", "client"]).current_dir("web");
+    command
+        .args(["build", "client"])
+        .current_dir("web")
+        .kill_on_drop(true);
 
     match &opts.profile[..] {
         "dev" | "debug" => command.arg("--dev"),
@@ -121,7 +127,7 @@ pub fn run_cargo_build(opts: &BuildOptions) -> anyhow::Result<PathBuf> {
 
     eprintln!("Building web client");
 
-    let res = command.spawn()?.wait()?;
+    let res = command.spawn()?.wait().await?;
 
     if !res.success() {
         anyhow::bail!("Building package failed with status code: {res}");

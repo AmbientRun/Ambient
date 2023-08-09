@@ -254,8 +254,12 @@ impl ModelCrate {
         force_assimp: bool,
         resolve_texture: TextureResolver,
     ) -> anyhow::Result<()> {
-        let is_fbx = url.extension().unwrap_or_default() == "fbx";
-        let is_glb = url.extension().unwrap_or_default() == "glb";
+        let ext = url.extension();
+        let ext = ext.as_deref();
+
+        let is_fbx = ext == Some("fbx");
+        let is_glb = ext == Some("glb") || ext == Some("gltf");
+
         if force_assimp {
             crate::assimp::import_url(assets, url, self, resolve_texture).await?;
         } else if is_fbx {
