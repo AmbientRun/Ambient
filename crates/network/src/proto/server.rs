@@ -365,18 +365,24 @@ pub async fn handle_diffs<S>(
     let mut deduplicator = WorldDiffDeduplicator::default();
     while let Ok(diff) = diffs_rx.recv_async().await {
         let msg = {
-            profiling::scope!("handle_diffs prep");
+            let _span = tracing::debug_span!("handle_diffs prep").entered();
 
             // get all diffs waiting in the channel to clear the queue
             let mut diffs = Vec::with_capacity(diffs_rx.len() + 1);
             diffs.push(diff);
             diffs.extend(diffs_rx.drain());
-            tracing::trace!(diffs_count = diffs.len());
 
             // merge them together
             let merged_diff = FrozenWorldDiff::merge(&diffs);
+            let merged_diffs_count = merged_diff.changes.len();
             let final_diff = deduplicator.deduplicate(merged_diff);
             let msg: Bytes = bincode::serialize(&final_diff).unwrap().into();
+            tracing::trace!(
+                diffs_count = diffs.len(),
+                merged_diffs_count,
+                final_diffs_count = final_diff.changes.len(),
+                bytes = msg.len(),
+            );
             debug_assert!(
                 bincode::deserialize::<WorldDiff>(msg.as_ref()).is_ok(),
                 "Merged diff should deserialize as WorldDiff correctly"
