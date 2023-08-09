@@ -47,8 +47,6 @@ pub async fn run(
 
     let is_debug = std::env::var("AMBIENT_DEBUGGER").is_ok() || run.debugger;
 
-    let mute_audio = run.mute_audio;
-
     let cert = if let Some(ca) = &run.ca {
         match std::fs::read(ca) {
             Ok(v) => Some(v),
