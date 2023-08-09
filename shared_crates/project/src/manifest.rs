@@ -47,6 +47,10 @@ impl Manifest {
 
         Ok(toml::from_str(manifest)?)
     }
+
+    pub fn to_toml_string(&self) -> String {
+        toml::to_string_pretty(self).unwrap()
+    }
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Default, Serialize)]
