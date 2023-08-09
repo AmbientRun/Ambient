@@ -22,28 +22,30 @@ pub enum ManifestSource<'a> {
     Array(&'a [(&'a str, &'a str)]),
 }
 
-pub fn generate_code(
+pub async fn generate_code(
     manifest: Option<ManifestSource<'_>>,
     context: context::Context,
     generate_from_scope_path: Option<&str>,
 ) -> anyhow::Result<TokenStream> {
-    let mut semantic = Semantic::new()?;
+    let mut semantic = Semantic::new().await?;
 
     if let Some(manifest) = manifest {
         match manifest {
-            ManifestSource::Path { ember_path } => semantic.add_ember(ember_path),
-            ManifestSource::Array(files) => semantic.add_file(
-                Path::new("ambient.toml"),
-                &ArrayFileProvider { files },
-                ItemSource::User,
-                None,
-            ),
+            ManifestSource::Path { ember_path } => semantic.add_ember(ember_path).await,
+            ManifestSource::Array(files) => {
+                semantic
+                    .add_file(
+                        Path::new("ambient.toml"),
+                        &ArrayFileProvider { files },
+                        ItemSource::User,
+                        None,
+                    )
+                    .await
+            }
         }?;
     }
 
-    // let mut printer = ambient_project_semantic::Printer::new();
     semantic.resolve()?;
-    // printer.print(&semantic)?;
 
     let items = &semantic.items;
     let root_scope = &*semantic.root_scope();
@@ -91,8 +93,6 @@ pub fn generate_code(
         #generated_output
         #components_init
     };
-
-    // println!("{}", output.to_string());
 
     Ok(output)
 }

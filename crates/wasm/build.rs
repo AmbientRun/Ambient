@@ -88,12 +88,14 @@ fn main() {
             }
 
             // Generate the API project Rust code.
-            let api_generated_code = ambient_project_macro_common::generate_code(
-                None,
-                ambient_project_macro_common::Context::GuestApi,
-                None,
-            )
-            .unwrap();
+            let api_generated_code = tokio::runtime::Runtime::new()
+                .unwrap()
+                .block_on(ambient_project_macro_common::generate_code(
+                    None,
+                    ambient_project_macro_common::Context::GuestApi,
+                    None,
+                ))
+                .unwrap();
 
             let api_generated_code = format!("#![allow(missing_docs)]\n#![allow(dead_code)]\n#![allow(unused)]\n{api_generated_code}");
 

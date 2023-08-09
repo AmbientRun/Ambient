@@ -45,6 +45,7 @@ erased-serde = "0.3"
 
 [build-dependencies]
 ambient_project_macro_common = { path = "../../shared_crates/project_macro_common" , version = "0.3.0-dev" }
+tokio = { workspace = true }
 
 [target.'cfg(not(target_os = "unknown"))'.dependencies]
 tokio = { workspace = true }

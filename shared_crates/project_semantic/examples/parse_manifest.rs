@@ -2,8 +2,9 @@ use std::path::{Path, PathBuf};
 
 use ambient_project_semantic::{Printer, Semantic};
 
-pub fn main() -> anyhow::Result<()> {
-    let mut semantic = Semantic::new()?;
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    let mut semantic = Semantic::new().await?;
 
     let paths = {
         let arg = std::env::args().nth(1).expect("path or 'all' as first arg");
@@ -14,7 +15,7 @@ pub fn main() -> anyhow::Result<()> {
         }
     };
     for path in paths {
-        semantic.add_ember(&path)?;
+        semantic.add_ember(&path).await?;
     }
 
     let mut printer = Printer::new();

@@ -155,7 +155,11 @@ async fn main() -> anyhow::Result<()> {
             AbsAssetUrl::from_file_path(build_path),
         )
     } else {
-        (project_path.clone(), project_path.push("build"))
+        if project_path.is_remote() {
+            (project_path.clone(), project_path.push(".."))
+        } else {
+            (project_path.clone(), project_path.push("build"))
+        }
     };
 
     // If this is just a build, exit now

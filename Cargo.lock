@@ -1231,6 +1231,7 @@ dependencies = [
  "serde",
  "syn 1.0.109",
  "thiserror",
+ "tokio",
  "toml 0.7.4",
 ]
 
@@ -1252,11 +1253,14 @@ dependencies = [
  "ambient_shared_types",
  "ambient_std",
  "anyhow",
+ "async-recursion",
+ "async-trait",
  "data-encoding",
  "glam 0.24.0",
  "indexmap 2.0.0",
  "paste",
  "thiserror",
+ "tokio",
  "toml 0.7.4",
  "ulid",
 ]

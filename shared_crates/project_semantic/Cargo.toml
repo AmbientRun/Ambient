@@ -21,3 +21,8 @@ thiserror = { workspace = true }
 paste = { workspace = true }
 data-encoding = { workspace = true }
 indexmap = { workspace = true }
+async-trait = { workspace = true }
+async-recursion = { workspace = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] }

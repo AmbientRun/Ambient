@@ -31,12 +31,14 @@ fn main() {
 
     "#;
 
-    let api_generated_code = ambient_project_macro_common::generate_code(
-        None,
-        ambient_project_macro_common::Context::Host,
-        Some("ambient_core"),
-    )
-    .unwrap();
+    let api_generated_code = tokio::runtime::Runtime::new()
+        .unwrap()
+        .block_on(ambient_project_macro_common::generate_code(
+            None,
+            ambient_project_macro_common::Context::Host,
+            Some("ambient_core"),
+        ))
+        .unwrap();
 
     let api_generated_code = format!("{header}{api_generated_code}");
 

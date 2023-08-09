@@ -76,6 +76,7 @@ ambient_std = { path = "../../shared_crates/std" }
 wit-bindgen-core = { workspace = true }
 wit-bindgen-rust = { workspace = true }
 syn = { workspace = true }
+tokio = { workspace = true }
 
 [features]
 native = ["wasm-native", "physics", "wit"]

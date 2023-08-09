@@ -9,10 +9,10 @@ use ambient_project::{
     BuildMetadata, Dependency, Identifier, Manifest, PascalCaseIdentifier, SnakeCaseIdentifier,
 };
 use ambient_shared_types::primitive_component_definitions;
-use ambient_std::path;
 use anyhow::Context as AnyhowContext;
 
 mod scope;
+use async_recursion::async_recursion;
 pub use scope::{Context, Scope};
 
 mod item;
@@ -45,68 +45,8 @@ pub use value::{ResolvableValue, ScalarValue, Value};
 mod printer;
 pub use printer::Printer;
 
-pub trait FileProvider {
-    fn get(&self, path: &Path) -> std::io::Result<String>;
-    fn full_path(&self, path: &Path) -> PathBuf;
-}
-
-/// Implements [FileProvider] by reading from the filesystem.
-pub struct DiskFileProvider(pub PathBuf);
-impl FileProvider for DiskFileProvider {
-    fn get(&self, path: &Path) -> std::io::Result<String> {
-        std::fs::read_to_string(self.0.join(path))
-    }
-
-    fn full_path(&self, path: &Path) -> PathBuf {
-        path::normalize(&self.0.join(path))
-    }
-}
-
-/// Implements [FileProvider] by reading from an array of files.
-///
-/// Used with `ambient_schema`.
-pub struct ArrayFileProvider<'a> {
-    pub files: &'a [(&'a str, &'a str)],
-}
-impl ArrayFileProvider<'_> {
-    pub fn from_schema() -> Self {
-        Self {
-            files: ambient_schema::FILES,
-        }
-    }
-}
-impl FileProvider for ArrayFileProvider<'_> {
-    fn get(&self, path: &Path) -> std::io::Result<String> {
-        let path = path.to_str().unwrap();
-        for (name, contents) in self.files {
-            if path == *name {
-                return Ok(contents.to_string());
-            }
-        }
-        Err(std::io::Error::new(
-            std::io::ErrorKind::NotFound,
-            format!("file not found: {:?}", path),
-        ))
-    }
-
-    fn full_path(&self, path: &Path) -> PathBuf {
-        path.to_path_buf()
-    }
-}
-
-pub struct ProxyFileProvider<'a> {
-    pub provider: &'a dyn FileProvider,
-    pub base: &'a Path,
-}
-impl FileProvider for ProxyFileProvider<'_> {
-    fn get(&self, path: &Path) -> std::io::Result<String> {
-        self.provider.get(&self.base.join(path))
-    }
-
-    fn full_path(&self, path: &Path) -> PathBuf {
-        path::normalize(&self.provider.full_path(&self.base.join(path)))
-    }
-}
+mod providers;
+pub use providers::*;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Semantic {
@@ -115,7 +55,7 @@ pub struct Semantic {
     pub standard_definitions: StandardDefinitions,
 }
 impl Semantic {
-    pub fn new() -> anyhow::Result<Self> {
+    pub async fn new() -> anyhow::Result<Self> {
         let mut items = ItemMap::default();
         let (root_scope_id, standard_definitions) = create_root_scope(&mut items)?;
         let mut semantic = Self {
@@ -124,17 +64,19 @@ impl Semantic {
             standard_definitions,
         };
 
-        semantic.add_file(
-            Path::new("ambient.toml"),
-            &ArrayFileProvider::from_schema(),
-            ItemSource::Ambient,
-            None,
-        )?;
+        semantic
+            .add_file(
+                Path::new("ambient.toml"),
+                &ArrayFileProvider::from_schema(),
+                ItemSource::Ambient,
+                None,
+            )
+            .await?;
 
         Ok(semantic)
     }
 
-    pub fn add_file(
+    pub async fn add_file(
         &mut self,
         filename: &Path,
         file_provider: &dyn FileProvider,
@@ -148,14 +90,17 @@ impl Semantic {
             source,
             scope_name,
         )
+        .await
     }
-    pub fn add_ember(&mut self, ember_path: &Path) -> anyhow::Result<ItemId<Scope>> {
+
+    pub async fn add_ember(&mut self, ember_path: &Path) -> anyhow::Result<ItemId<Scope>> {
         self.add_file(
             Path::new("ambient.toml"),
             &DiskFileProvider(ember_path.to_owned()),
             ItemSource::User,
             None,
         )
+        .await
     }
 
     pub fn resolve(&mut self) -> anyhow::Result<()> {
@@ -200,7 +145,8 @@ impl Semantic {
     //   a change occurs to C, there should be absolutely no impact on P if P does not depend on C.
     //
     // At the present, there's just one big island, so P can see C, and changes to C will affect P.
-    fn add_file_internal(
+    #[async_recursion]
+    async fn add_file_internal(
         &mut self,
         filename: &Path,
         file_provider: &dyn FileProvider,
@@ -208,7 +154,7 @@ impl Semantic {
         source: ItemSource,
         scope_name: Option<SnakeCaseIdentifier>,
     ) -> anyhow::Result<ItemId<Scope>> {
-        let manifest = Manifest::parse(&file_provider.get(filename).with_context(|| {
+        let manifest = Manifest::parse(&file_provider.get(filename).await.with_context(|| {
             format!(
                 "failed to read top-level file {:?}",
                 file_provider.full_path(filename)
@@ -224,6 +170,7 @@ impl Semantic {
         let build_metadata_path = Path::new(BuildMetadata::FILENAME);
         let build_metadata = file_provider
             .get(build_metadata_path)
+            .await
             .ok()
             .map(|f| BuildMetadata::parse(&f))
             .transpose()
@@ -252,16 +199,18 @@ impl Semantic {
 
         // Create a new scope and add it to the root scope
         let manifest_path = file_provider.full_path(filename);
-        let item_id = self.add_scope_from_manifest(
-            Some(root_id),
-            file_provider,
-            visited_files,
-            manifest,
-            manifest_path,
-            build_metadata,
-            scope_name.clone(),
-            source,
-        )?;
+        let item_id = self
+            .add_scope_from_manifest(
+                Some(root_id),
+                file_provider,
+                visited_files,
+                manifest,
+                manifest_path,
+                build_metadata,
+                scope_name.clone(),
+                source,
+            )
+            .await?;
         self.items
             .get_mut(root_id)?
             .scopes
@@ -269,7 +218,8 @@ impl Semantic {
         Ok(item_id)
     }
 
-    fn add_file_at_non_toplevel(
+    #[async_recursion]
+    async fn add_file_at_non_toplevel(
         &mut self,
         parent_scope: ItemId<Scope>,
         filename: &Path,
@@ -277,13 +227,10 @@ impl Semantic {
         visited_files: &mut HashSet<PathBuf>,
         source: ItemSource,
     ) -> anyhow::Result<ItemId<Scope>> {
-        let manifest = Manifest::parse(&file_provider.get(filename).with_context(|| {
-            format!(
-                "failed to read file {:?} within parent scope {parent_scope:?}",
-                file_provider.get(filename)
-            )
+        let manifest = Manifest::parse(&file_provider.get(filename).await.with_context(|| {
+            format!("failed to read file {filename:?} within parent scope {parent_scope:?}")
         })?)
-        .with_context(|| format!("failed to parse toml for {:?}", file_provider.get(filename)))?;
+        .with_context(|| format!("failed to parse toml for {filename:?}"))?;
 
         let id = manifest.ember.id.clone();
         self.add_scope_from_manifest(
@@ -296,10 +243,11 @@ impl Semantic {
             id,
             source,
         )
+        .await
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn add_scope_from_manifest(
+    async fn add_scope_from_manifest(
         &mut self,
         parent_id: Option<ItemId<Scope>>,
         file_provider: &dyn FileProvider,
@@ -329,13 +277,9 @@ impl Semantic {
         }
 
         for include in &manifest.ember.includes {
-            let child_scope_id = self.add_file_at_non_toplevel(
-                scope_id,
-                include,
-                file_provider,
-                visited_files,
-                source,
-            )?;
+            let child_scope_id = self
+                .add_file_at_non_toplevel(scope_id, include, file_provider, visited_files, source)
+                .await?;
             let id = self.items.get(child_scope_id)?.data().id.clone();
             self.items
                 .get_mut(scope_id)?
@@ -360,7 +304,7 @@ impl Semantic {
                             visited_files,
                             source,
                             Some(dependency_name.clone()),
-                        )
+                        ).await
                         .with_context(|| {
                             format!(
                             "failed to add dependency `{dependency_name}` ({full_path:?}) for manifest {manifest_path:?}"
