@@ -36,6 +36,9 @@ impl Manifest {
         res.resolve_imports(path.as_ref().parent().context("No parent directory")?)?;
         Ok(res)
     }
+    pub fn to_toml_string(&self) -> String {
+        toml::to_string_pretty(self).unwrap()
+    }
 
     pub fn project_path(&self) -> IdentifierPathBuf {
         self.ember
