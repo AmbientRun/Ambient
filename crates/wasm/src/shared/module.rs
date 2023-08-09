@@ -75,13 +75,13 @@ impl<'de> Deserialize<'de> for ModuleBytecode {
 pub struct ModuleErrors(pub Vec<String>);
 
 #[cfg(feature = "wit")]
-struct WasmtimeContext<Bindings: BindingsBound> {
+struct ExecutionContext<Bindings: BindingsBound> {
     bindings: Bindings,
     wasi: wasi_preview2::WasiCtx,
     table: wasi_preview2::Table,
 }
 #[cfg(feature = "wit")]
-impl<B: BindingsBound> wasi_preview2::WasiView for WasmtimeContext<B> {
+impl<B: BindingsBound> wasi_preview2::WasiView for ExecutionContext<B> {
     fn table(&self) -> &wasi_preview2::Table {
         &self.table
     }
@@ -174,8 +174,9 @@ impl ModuleStateBehavior for ModuleState {
 }
 
 #[cfg(feature = "wit")]
+/// Stores the wasmtime context and loaded instances
 struct ModuleStateInnerImpl<Bindings: BindingsBound> {
-    store: wasmtime::Store<WasmtimeContext<Bindings>>,
+    store: wasmtime::Store<ExecutionContext<Bindings>>,
 
     guest_bindings: shared::wit::Bindings,
     _guest_instance: wasmtime::component::Instance,
@@ -222,14 +223,14 @@ impl<Bindings: BindingsBound> ModuleStateInnerImpl<Bindings> {
         let wasi = wasi.build(&mut table)?;
         let mut store = wasmtime::Store::new(
             engine,
-            WasmtimeContext {
+            ExecutionContext {
                 wasi,
                 bindings,
                 table,
             },
         );
 
-        let mut linker = wasmtime::component::Linker::<WasmtimeContext<Bindings>>::new(engine);
+        let mut linker = wasmtime::component::Linker::<ExecutionContext<Bindings>>::new(engine);
         wasi_preview2::wasi::command::add_to_linker(&mut linker)?;
         shared::wit::Bindings::add_to_linker(&mut linker, |x| &mut x.bindings)?;
 
