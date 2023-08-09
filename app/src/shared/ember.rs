@@ -5,8 +5,8 @@ use ambient_ecs::{
 };
 use ambient_project_semantic::{Item, ItemId, PrimitiveType, Scope, Semantic, TypeInner};
 
-pub fn add(semantic: &mut Semantic, path: &Path) -> anyhow::Result<ItemId<Scope>> {
-    let id = semantic.add_ember(path)?;
+pub async fn add(semantic: &mut Semantic, path: &Path) -> anyhow::Result<ItemId<Scope>> {
+    let id = semantic.add_ember(path).await?;
     semantic.resolve()?;
     ComponentRegistry::get_mut().add_external(all_defined_components(semantic)?);
 

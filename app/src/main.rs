@@ -122,8 +122,8 @@ fn main() -> anyhow::Result<()> {
             // The build step uses its own semantic to ensure that there is
             // no contamination, so that the built project can use its own
             // semantic based on the flat hierarchy.
-            let mut semantic = ambient_project_semantic::Semantic::new()?;
-            let primary_ember_scope_id = shared::ember::add(&mut semantic, project_path)?;
+            let mut semantic = ambient_project_semantic::Semantic::new().await?;
+            let primary_ember_scope_id = shared::ember::add(&mut semantic, project_path).await?;
 
             let manifest = semantic
                 .items

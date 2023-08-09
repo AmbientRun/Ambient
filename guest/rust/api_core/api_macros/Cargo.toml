@@ -14,12 +14,14 @@ proc-macro = true
 [dependencies]
 anyhow = "1.0"
 quote = "1.0"
-syn = { version = "1.0", features = ["full"] }
 proc-macro2 = "1.0"
 
 ambient_project = { workspace = true }
 ambient_project_macro_common = { workspace = true }
 ambient_schema = { workspace = true }
+
+syn = { version = "1.0", features = ["full"] }
+tokio = { version = "1.0", features = ["full"] }
 
 [dev-dependencies]
 indoc = "2.0.0"

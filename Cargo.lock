@@ -247,6 +247,7 @@ dependencies = [
  "proc-macro2 1.0.66",
  "quote 1.0.28",
  "syn 1.0.109",
+ "tokio",
 ]
 
 [[package]]
@@ -583,6 +584,7 @@ dependencies = [
  "ambient_project_macro_common",
  "ambient_project_rt",
  "ambient_shared_types",
+ "ambient_sys",
  "anyhow",
  "atomic_refcell",
  "bincode",
@@ -608,7 +610,6 @@ dependencies = [
  "serde_yaml",
  "smallvec",
  "thiserror",
- "tokio",
  "tracing",
  "yaml-rust-davvid",
 ]

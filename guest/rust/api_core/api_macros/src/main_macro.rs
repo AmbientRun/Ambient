@@ -13,8 +13,14 @@ pub fn main_impl(item: TokenStream, ambient_toml: ManifestSource) -> anyhow::Res
     let mut path = syn::Path::from(syn::Ident::new("ambient_api", spans));
     path.leading_colon = Some(syn::Token![::](spans));
 
-    let project_boilerplate =
-        ambient_project_macro_common::generate_code(Some(ambient_toml), Context::GuestUser, None)?;
+    let project_boilerplate = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()?
+        .block_on(ambient_project_macro_common::generate_code(
+            Some(ambient_toml),
+            Context::GuestUser,
+            None,
+        ))?;
 
     let call_expr = if is_async {
         quote! { #fn_name() }

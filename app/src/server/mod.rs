@@ -212,7 +212,7 @@ pub async fn start(
         .await
         .unwrap();
 
-        let mut semantic = ambient_project_semantic::Semantic::new().unwrap();
+        let mut semantic = ambient_project_semantic::Semantic::new().await.unwrap();
         let primary_ember_scope_id = shared::ember::add(
             &mut semantic,
             &project_path
@@ -220,6 +220,7 @@ pub async fn start(
                 .unwrap()
                 .expect("todo: project path must currently be local"),
         )
+        .await
         .unwrap();
 
         let mut queue = semantic

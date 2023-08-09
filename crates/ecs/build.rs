@@ -31,7 +31,7 @@ fn main() {
 
     "#;
 
-    let api_generated_code = tokio::runtime::Runtime::new()
+    let api_generated_code = ambient_sys::task::make_native_multithreaded_runtime()
         .unwrap()
         .block_on(ambient_project_macro_common::generate_code(
             None,
