@@ -13,6 +13,7 @@ use uuid::Uuid;
 use crate::{
     bytes_ext::BufExt,
     client::NetworkTransport,
+    diff_serialization::WorldDiffDeduplicator,
     log_network_result, log_task_result,
     proto::ServerPush,
     server::{
@@ -361,20 +362,27 @@ pub async fn handle_diffs<S>(
 ) where
     S: Unpin + AsyncWrite,
 {
+    let mut deduplicator = WorldDiffDeduplicator::default();
     while let Ok(diff) = diffs_rx.recv_async().await {
-        // get all diffs waiting in the channel to clear the queue
-        let mut diffs = Vec::with_capacity(diffs_rx.len() + 1);
-        diffs.push(diff);
-        diffs.extend(diffs_rx.drain());
-        tracing::trace!(diffs_count = diffs.len());
+        let msg = {
+            profiling::scope!("handle_diffs prep");
 
-        // merge them together
-        let final_diff = FrozenWorldDiff::merge(&diffs);
-        let msg: Bytes = bincode::serialize(&final_diff).unwrap().into();
-        debug_assert!(
-            bincode::deserialize::<WorldDiff>(msg.as_ref()).is_ok(),
-            "Merged diff should deserialize as WorldDiff correctly"
-        );
+            // get all diffs waiting in the channel to clear the queue
+            let mut diffs = Vec::with_capacity(diffs_rx.len() + 1);
+            diffs.push(diff);
+            diffs.extend(diffs_rx.drain());
+            tracing::trace!(diffs_count = diffs.len());
+
+            // merge them together
+            let merged_diff = FrozenWorldDiff::merge(&diffs);
+            let final_diff = deduplicator.deduplicate(merged_diff);
+            let msg: Bytes = bincode::serialize(&final_diff).unwrap().into();
+            debug_assert!(
+                bincode::deserialize::<WorldDiff>(msg.as_ref()).is_ok(),
+                "Merged diff should deserialize as WorldDiff correctly"
+            );
+            msg
+        };
 
         let span = tracing::debug_span!("send_world_diff");
         tracing::trace!(diff=?msg);

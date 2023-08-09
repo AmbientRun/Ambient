@@ -3,17 +3,13 @@ use std::collections::HashMap;
 use ambient_ecs::{EntityId, WorldChange, WorldDiffView};
 use bytes::Bytes;
 
+#[derive(Clone, Debug, Default)]
 pub struct WorldDiffDeduplicator {
     last_diff: HashMap<(EntityId, u32), Bytes>,
 }
 
 impl WorldDiffDeduplicator {
-    pub fn new() -> Self {
-        Self {
-            last_diff: HashMap::new(),
-        }
-    }
-
+    #[profiling::function]
     pub fn deduplicate<'a>(&mut self, mut diff: WorldDiffView<'a>) -> WorldDiffView<'a> {
         let mut new_diff = HashMap::new();
         diff.changes.retain_mut(|change| {

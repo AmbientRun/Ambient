@@ -189,13 +189,14 @@ pub struct FrozenWorldDiff {
     changes: Arc<[WorldChange]>,
 }
 impl FrozenWorldDiff {
+    #[profiling::function]
     pub fn merge(diffs: &[Self]) -> WorldDiffView<'_> {
         // indexes of the last SetComponents for each entity
         let mut set_idx: HashMap<EntityId, usize> = HashMap::new();
         // merged changes
         let mut changes = Vec::new();
 
-        for change in diffs.iter().flat_map(|diff| diff.changes.iter().rev()) {
+        for change in diffs.iter().flat_map(|diff| diff.changes.iter()) {
             if let WorldChange::SetComponents(entity_id, entity) = change {
                 if let Some(idx) = set_idx.get(entity_id) {
                     if let Some(WorldChange::SetComponents(_, existing_entity)) =
