@@ -8,6 +8,15 @@ use crate::{
     prelude::{Entity, EntityId},
 };
 
+/// stop the audio on the given entity
+pub fn stop(entity: EntityId) {
+    if entity::exists(entity) {
+        entity::add_component(entity, stop_now(), ());
+    } else {
+        eprintln!("Tried to stop audio on non-existent entity {}", entity);
+    }
+}
+
 /// play spatial audio
 #[derive(Debug, Clone)]
 pub struct SpatialAudioPlayer {
@@ -44,11 +53,6 @@ impl SpatialAudioPlayer {
 
     pub fn set_looping(&self, val: bool) {
         entity::add_component(self.player, looping(), val);
-    }
-
-    pub fn play(&self, url: String) {
-        entity::add_component(self.player, audio_url(), url);
-        entity::add_component(self.player, play_now(), ());
     }
 
     pub fn play_sound_on_entity(&self, url: String, emitter: EntityId) {

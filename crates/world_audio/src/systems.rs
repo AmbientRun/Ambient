@@ -41,37 +41,49 @@ pub fn audio_systems() -> SystemGroup {
         "audio",
         vec![
             query((spatial_audio_player(), play_now())).to_system(|q, world, qs, _| {
-                for (audio_entity, _) in q.collect_cloned(world, qs) {
-                    let amp = world.get(audio_entity, amplitude()).unwrap_or(1.0);
-                    // TODO: find a way to get looping to work
-                    // let looping = world.get(audio_entity, looping()).unwrap_or(false);
-                    world.remove_component(audio_entity, play_now()).unwrap();
+                for (audio_player_enitty, _) in q.collect_cloned(world, qs) {
+                    // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
+                        continue;
+                    }
+
+                    let amp = world.get(audio_player_enitty, amplitude()).unwrap_or(1.0);
+                    let looping = world.get(audio_player_enitty, looping()).unwrap_or(false);
+                    world
+                        .remove_component(audio_player_enitty, play_now())
+                        .unwrap();
 
                     let assets = world.resource(asset_cache()).clone();
                     let runtime = world.resource(runtime()).clone();
                     let async_run = world.resource(async_run()).clone();
-                    let url = world.get_ref(audio_entity, audio_url()).unwrap();
+                    let url = world.get_ref(audio_player_enitty, audio_url()).unwrap();
                     let url = AbsAssetUrl::from_str(url)
                         .unwrap()
                         .to_download_url(&assets)
                         .unwrap();
 
                     runtime.spawn(async move {
+
+
                         let track = AudioFromUrl { url: url.clone() }.get(&assets).await;
                         async_run.run(move |world| {
-                            let listener_id =
-                                world.get(audio_entity, spatial_audio_listener()).unwrap();
-                            let emitter_id =
-                                world.get(audio_entity, spatial_audio_emitter()).unwrap();
+
+                            let listener_id = world
+                                .get(audio_player_enitty, spatial_audio_listener())
+                                .unwrap();
+                            let emitter_id = world
+                                .get(audio_player_enitty, spatial_audio_emitter())
+                                .unwrap();
                             let pos_listener = world.get(listener_id, translation()).unwrap();
                             let rot = world.get(listener_id, rotation()).unwrap();
                             let pos_emitter = world.get(emitter_id, translation()).unwrap();
 
-                            let listener = Arc::new(parking_lot::Mutex::new(AudioListener::new(
+                            let listener = Arc::new(Mutex::new(AudioListener::new(
                                 Mat4::from_rotation_translation(rot, pos_listener),
                                 glam::Vec3::X * 0.3,
                             )));
-                            let emitter = Arc::new(parking_lot::Mutex::new(AudioEmitter {
+                            let emitter = Arc::new(Mutex::new(AudioEmitter {
                                 amplitude: amp,
                                 attenuation: Attenuation::InversePoly {
                                     quad: 0.1,
@@ -87,11 +99,18 @@ pub fn audio_systems() -> SystemGroup {
                                 .add_component(listener_id, audio_listener(), listener.clone())
                                 .unwrap();
 
-                            let sender = world.resource(crate::audio_sender());
                             let hrtf_lib = world.resource(hrtf_lib());
-                            let source =
-                                track.unwrap().decode().spatial(hrtf_lib, listener, emitter);
-                            sender.send(crate::AudioMessage::Spatial(source)).unwrap();
+
+
+
+                            let mixer = world.resource(crate::audio_mixer());
+                            let source: Box<dyn Source> = if looping {
+                                Box::new(track.unwrap().decode().repeat().spatial(hrtf_lib, listener, emitter))
+                            } else {
+                                Box::new(track.unwrap().decode().spatial(hrtf_lib, listener, emitter))
+                            };
+                            let sound = mixer.play(source);
+                            world.add_component(emitter_id, crate::sound_id(), sound.id).unwrap();
                         });
                     });
                 }
@@ -99,6 +118,11 @@ pub fn audio_systems() -> SystemGroup {
             // Updates the volume of audio emitters in the world
             query((audio_emitter(), local_to_world())).to_system(|q, world, qs, _| {
                 for (_, (emitter, ltw)) in q.iter(world, qs) {
+                    // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
+                        continue;
+                    }
                     let (_, _, pos) = ltw.to_scale_rotation_translation();
                     let mut emitter = emitter.lock();
                     emitter.pos = pos;
@@ -108,80 +132,118 @@ pub fn audio_systems() -> SystemGroup {
                 "update_audio_listener",
                 |q, world, qs, _| {
                     for (_, (listener, &ltw)) in q.iter(world, qs) {
+                        // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
+                        continue;
+                    }
                         let mut listener = listener.lock();
                         listener.transform = Y_UP_LHS * ltw;
                     }
                 },
             ),
-            query((playing_sound(), stop_now())).to_system(|q, world, qs, _| {
+            query(stop_now()).to_system(|q, world, qs, _| {
                 for (playing_entity, _) in q.collect_cloned(world, qs) {
-                    let sender = world.resource(crate::audio_sender());
-                    sender
-                        .send(crate::AudioMessage::StopById(playing_entity.to_base64()))
-                        .unwrap();
-                    let p = world.get(playing_entity, parent());
-                    if p.is_err() {
-                        eprintln!("No parent component on playing entity; cannot stop audio.");
-                        continue;
-                    }
-                    let parent_entity = p.unwrap();
 
-                    let c = world.get_ref(parent_entity, children());
-                    if c.is_err() {
-                        eprintln!("No children component on parent entity; cannot stop audio.");
+                    // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
                         continue;
                     }
-                    let new_children = c
-                        .unwrap()
-                        .iter()
-                        .filter(|&&e| e != playing_entity)
-                        .cloned()
-                        .collect::<Vec<_>>();
-                    world.set(parent_entity, children(), new_children).unwrap();
-                    world.despawn(playing_entity);
+
+                    let mixer = world.resource(crate::audio_mixer());
+                    let id = world.get(playing_entity, crate::sound_id());
+                    if id.is_err() {
+                        log::error!("No sound id component on playing entity; cannot stop audio.");
+                        continue;
+                    }
+                    mixer.stop(id.unwrap());
+                    // stopping an emitter is different
+                    if world.has_component(playing_entity, audio_emitter()) {
+                        world.remove_component(playing_entity, audio_emitter()).unwrap();
+                        continue;
+                    }
+                    if world.has_component(playing_entity, audio_listener()) {
+                        world.remove_component(playing_entity,  audio_listener()).unwrap();
+                        continue;
+                    }
+                    world.remove_component(playing_entity, stop_now()).unwrap();
+                    let p = world.get(playing_entity, parent());
+                    if !p.is_err() {
+                        let parent_entity = p.unwrap();
+                        let c = world.get_ref(parent_entity, children());
+                        if c.is_err() {
+                            log::error!("No children component on parent entity; cannot stop audio.");
+                            continue;
+                        }
+                        let new_children = c
+                            .unwrap()
+                            .iter()
+                            .filter(|&&e| e != playing_entity)
+                            .cloned()
+                            .collect::<Vec<_>>();
+                        world.set(parent_entity, children(), new_children).unwrap();
+                        world.despawn(playing_entity);
+                    }
                 }
             }),
             query((playing_sound(), amplitude())).to_system(|q, world, qs, _| {
-                for (playing_entity, (_, amp)) in q.iter(world, qs) {
-                    let sender = world.resource(crate::audio_sender());
-                    sender
-                        .send(crate::AudioMessage::UpdateVolume(
-                            playing_entity.to_base64(),
-                            *amp,
-                        ))
+                for (playing_entity, (_, amp)) in q.collect_cloned(world, qs) {
+                    // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
+                        continue;
+                    }
+                    let amp_arc = world
+                        .get_mut(playing_entity, crate::amplitude_arc())
                         .unwrap();
+                    *amp_arc.lock() = amp;
                 }
             }),
             query((playing_sound(), panning())).to_system(|q, world, qs, _| {
-                for (playing_entity, (_, pan)) in q.iter(world, qs) {
-                    let sender = world.resource(crate::audio_sender());
-                    sender
-                        .send(crate::AudioMessage::UpdatePanning(
-                            playing_entity.to_base64(),
-                            *pan,
-                        ))
+                for (playing_entity, (_, pan)) in q.collect_cloned(world, qs) {
+                    // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
+                        continue;
+                    }
+                    let pan_arc = world
+                        .get_mut(playing_entity, crate::panning_arc())
                         .unwrap();
+                    *pan_arc.lock() = pan;
                 }
             }),
             query((playing_sound(), onepole_lpf())).to_system(|q, world, qs, _| {
-                for (playing_entity, (_, freq)) in q.iter(world, qs) {
-                    let sender = world.resource(crate::audio_sender());
-                    sender
-                        .send(crate::AudioMessage::AddOnePoleLpf(
-                            playing_entity.to_base64(),
-                            *freq,
-                        ))
+                for (playing_entity, (_, freq)) in q.collect_cloned(world, qs) {
+                    // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
+                        continue;
+                    }
+                    let freq_arc = world
+                        .get_mut(playing_entity, crate::onepole_arc())
                         .unwrap();
+                    *freq_arc.lock() = freq;
                 }
             }),
             query((audio_player(), play_now(), audio_url())).to_system(|q, world, qs, _| {
-                for (audio_entity, (_, _, url)) in q.collect_cloned(world, qs) {
-                    let amp = world.get(audio_entity, amplitude()).unwrap_or(1.0);
-                    let pan = world.get(audio_entity, panning()).unwrap_or(0.0);
-                    let freq = world.get(audio_entity, onepole_lpf()).unwrap_or(20000.0);
-                    let looping = world.get(audio_entity, looping()).unwrap_or(false);
+                for (audio_player_enitty, (_, _, url)) in q.collect_cloned(world, qs) {
+                    // check if mute_audio is set
+                    let r = world.resource_entity();
+                    if !world.has_component(r, crate::audio_mixer()) {
+                        continue;
+                    }
 
-                    world.remove_component(audio_entity, play_now()).unwrap();
+                    let amp = world.get(audio_player_enitty, amplitude()).unwrap_or(1.0);
+                    let pan = world.get(audio_player_enitty, panning()).unwrap_or(0.0);
+                    let freq = world
+                        .get(audio_player_enitty, onepole_lpf())
+                        .unwrap_or(20000.0);
+                    let looping = world.get(audio_player_enitty, looping()).unwrap_or(false);
+
+                    world
+                        .remove_component(audio_player_enitty, play_now())
+                        .unwrap();
 
                     let assets = world.resource(asset_cache()).clone();
                     let runtime = world.resource(runtime()).clone();
@@ -194,66 +256,80 @@ pub fn audio_systems() -> SystemGroup {
                     runtime.spawn(async move {
                         let track = AudioFromUrl { url: url.clone() }.get(&assets).await;
                         let track = track.unwrap();
-                        let move_track = track.clone();
-                        let id_share = Arc::new(Mutex::new(None));
-                        let id_share_clone = id_share.clone();
+                        let id_arc = Arc::new(Mutex::new(None));
+                        let id_arc_clone = id_arc.clone();
+                        let count_arc = Arc::new(Mutex::new(None));
+                        let count_arc_clone = count_arc.clone();
+                        let sr_arc = Arc::new(Mutex::new(None));
+                        let sr_arc_clone = sr_arc.clone();
                         async_run.run(move |world| {
-                            let sender = world.resource(crate::audio_sender());
-                            let id_vec = world.get_ref(audio_entity, children());
+                            let id_vec = world.get_ref(audio_player_enitty, children());
                             if id_vec.is_err() {
-                                eprintln!("No children component on parent entity; cannot play audio.");
+                                log::error!(
+                                    "No children component on parent entity; cannot play audio."
+                                );
                                 return;
                             }
                             let id_vec = id_vec.unwrap();
                             if id_vec.is_empty() {
-                                eprintln!("No children component on parent entity; cannot play audio.");
+                                log::error!(
+                                    "No children component on parent entity; cannot play audio."
+                                );
                                 return;
                             }
                             let id = id_vec.last().unwrap();
-                            id_share.lock().replace(*id);
+                            id_arc.lock().replace(*id);
 
-                            let mut fx = vec![
-                                crate::AudioFx::Amplitude(amp),
-                                crate::AudioFx::Panning(pan),
-                                crate::AudioFx::OnePole(freq),
-                            ];
+                            let mut t: Box<dyn Source> = if looping {
+                                Box::new(track.decode().repeat())
+                            } else {
+                                let decoded = track.decode();
+                                let count = decoded.sample_count().unwrap();
+                                let sr = decoded.sample_rate();
+                                *count_arc.lock() = Some(count);
+                                *sr_arc.lock() = Some(sr);
+                                Box::new(decoded)
+                            };
+                            let a = Arc::new(Mutex::new(amp));
+                            t = t.gain(a.clone());
+                            let p = Arc::new(Mutex::new(pan));
+                            t = t.pan(p.clone());
+                            let f = Arc::new(Mutex::new(freq));
+                            t = t.onepole(f.clone());
 
-                            if looping {
-                                fx.push(crate::AudioFx::Looping);
-                            }
+                            let id = id_arc.lock().unwrap();
+                            world.add_component(id, crate::amplitude_arc(), a).unwrap();
+                            world.add_component(id, crate::panning_arc(), p).unwrap();
+                            world.add_component(id, crate::onepole_arc(), f).unwrap();
 
-                            sender
-                                .send(crate::AudioMessage::Track {
-                                    track: move_track,
-                                    url,
-                                    fx,
-                                    uid: id.to_base64(),
-                                })
-                                .unwrap();
+                            let mixer = world.resource(crate::audio_mixer());
+                            let sound = mixer.play(t);
+
+                            world.add_component(id, crate::sound_id(), sound.id).unwrap();
                         });
-                        if !looping {
-                            let decoded = track.decode();
-                            let count = decoded.sample_count().unwrap();
-                            let sr = decoded.sample_rate();
-                            let dur = count as f32 / sr as f32 * 1.001;
+
+                        let count = *count_arc_clone.lock();
+                        let sr = *sr_arc_clone.lock();
+                        if count.is_some() && sr.is_some() {
+                            let dur = count.unwrap() as f32 / sr.unwrap() as f32 * 1.001;
                             ambient_sys::time::sleep(std::time::Duration::from_secs_f32(dur)).await;
                             async_run.run(move |world| {
-                                world.despawn(id_share_clone.lock().unwrap());
-                                if !world.exists(audio_entity) {
+                                world.despawn(id_arc_clone.lock().unwrap());
+                                if !world.exists(audio_player_enitty) {
                                     return;
                                 }
-                                let child = world.get_ref(audio_entity, children());
+                                let child = world.get_ref(audio_player_enitty, children());
                                 if child.is_err() {
-                                    eprintln!("No children component on parent entity; cannot auto stop audio.");
+                                    log::error!("No children component on parent entity; cannot auto stop audio.");
                                     return;
                                 }
                                 let new_child = child
                                     .unwrap()
                                     .iter()
-                                    .filter(|c| *c != &id_share_clone.lock().unwrap())
+                                    .filter(|c| *c != &id_arc_clone.lock().unwrap())
                                     .cloned()
                                     .collect();
-                                world.set(audio_entity, children(), new_child).unwrap();
+                                world.set(audio_player_enitty, children(), new_child).unwrap();
                             });
                         };
                     });
