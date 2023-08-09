@@ -5,6 +5,8 @@ use self::build::BuildOptions;
 #[cfg(feature = "openssl")]
 mod browser;
 mod build;
+#[cfg(feature = "serve")]
+mod serve;
 
 #[derive(Debug, Subcommand, Clone)]
 pub enum Web {
@@ -13,11 +15,13 @@ pub enum Web {
     /// Launches chrome with the correct flags to explicitly trust
     /// the self-signed certificate
     OpenBrowser,
+    #[cfg(feature = "serve")]
+    Serve(serve::Serve),
 }
 
 pub async fn run(command: Web) -> anyhow::Result<()> {
     match command {
-        Web::Build(args) => build::run(args),
+        Web::Build(args) => build::run(&args).await,
         Web::OpenBrowser => {
             #[cfg(feature = "openssl")]
             {
@@ -28,5 +32,7 @@ pub async fn run(command: Web) -> anyhow::Result<()> {
                 anyhow::bail!("The `openssl` feature must be enabled to use this command")
             }
         }
+        #[cfg(feature = "serve")]
+        Web::Serve(args) => args.run().await,
     }
 }

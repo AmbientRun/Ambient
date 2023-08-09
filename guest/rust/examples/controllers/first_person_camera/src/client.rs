@@ -11,16 +11,19 @@ use ambient_example_first_person_camera::{
 fn main() {
     let mut cursor_lock = input::CursorLockGuard::new();
     let spatial_audio_player = audio::SpatialAudioPlayer::new();
+    spatial_audio_player.set_looping(true);
+    spatial_audio_player.set_amplitude(0.5);
 
     spawn_query((player_head_ref(), ball_ref())).bind(move |v| {
         for (_id, (head, ball)) in v {
             spatial_audio_player.set_listener(head);
-            spatial_audio_player.play_sound_on_entity(
-                ambient_example_first_person_camera::assets::url(
-                    "Kevin_MacLeod_8bit_Dungeon_Boss_ncs.ogg",
-                ),
-                ball,
-            );
+            spatial_audio_player
+                .play_sound_on_entity(ambient_example_first_person_camera::assets::url("assets/amen_break.ogg"), ball);
+            run_async(async move {
+                sleep(10.).await;
+                println!("stop audio 10 seconds...");
+                audio::stop(ball);
+            });
         }
     });
 
@@ -46,6 +49,8 @@ fn main() {
 
         Input::new(displace, input.mouse_delta).send_server_unreliable();
     });
+
+
 
     App.el().spawn_interactive();
 }

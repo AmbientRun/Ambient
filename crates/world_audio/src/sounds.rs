@@ -29,6 +29,11 @@ components!("audio", {
     audio_sender: Arc<flume::Sender<AudioMessage>>,
     @[Resource]
     audio_mixer: AudioMixer,
+    amplitude_arc: Arc<Mutex<f32>>,
+    panning_arc: Arc<Mutex<f32>>,
+    onepole_arc: Arc<Mutex<f32>>,
+    looping_arc: Arc<Mutex<bool>>,
+    sound_id: SoundId,
 });
 
 #[derive(Debug, Clone, Copy, PartialEq)]

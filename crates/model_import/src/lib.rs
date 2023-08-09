@@ -323,7 +323,7 @@ fn material_filter_matches(filter: &MaterialFilter, mat: &PbrMaterialDesc) -> bo
 //     }
 // }
 
-pub const MODEL_EXTENSIONS: &[&str] = &["glb", "fbx", "obj", "x"];
+pub const MODEL_EXTENSIONS: &[&str] = &["glb", "gltf", "fbx", "obj", "x"];
 
 /// `../[path]`
 pub fn dotdot_path(path: impl Into<RelativePathBuf>) -> RelativePathBuf {

@@ -1,6 +1,6 @@
 use anyhow::Context;
 use openssl::hash::MessageDigest;
-use tokio::process::Command;
+use std::process::Command;
 
 pub async fn open() -> anyhow::Result<()> {
     let cert_file = tokio::fs::read("./localhost.crt")
@@ -20,50 +20,44 @@ pub async fn open() -> anyhow::Result<()> {
 
     eprintln!("Got SPKI: {:?}", &spki);
 
-    open_browser(&spki, "http://localhost:5173").await?;
+    spawn(&spki, "http://localhost:5173")?;
 
     Ok(())
 }
 
-#[allow(unused_variables)]
-async fn open_browser(spki: &str, url: &str) -> anyhow::Result<()> {
-    cfg_if::cfg_if! {
-        if #[cfg(target_os = "macos")] {
-            let mut command = Command::new("open");
-            command
-                // Feeding a url to chrome here makes `--args spki` not be fed to chrome
-                .args(["-a", "Google Chrome", "--args"])
-                .arg(format!("--ignore-certificate-errors-spki-list={spki}"));
+#[cfg(target_os = "linux")]
+fn detach_process(child: &mut Command) -> &mut Command {
+    use std::os::unix::process::CommandExt;
+    // Safety
+    // Does not access any memory from *this* process.
+    unsafe {
+        child.pre_exec(|| {
+            // Detach the child by moving it to a new process group
+            if let Err(e) = nix::unistd::setsid() {
+                // Safety: e is repr(i32) and it thus safe to format
+                eprintln!("Failed to detach child {e}")
+            };
 
-        }
-        else if #[cfg(target_os = "linux")] {
-            let _spki = spki;
-            let _url = url;
-            let mut command = Command::new("google-chrome");
-            command
-                .args(["-a", "Google Chrome", url, "--args"])
-                .arg(format!("--ignore-certificate-errors-spki-list={spki}"))
-                .spawn()
-                .context("Failed to spawn browser")?;
+            Ok(())
+        })
+    };
 
-            anyhow::bail!("Launching the browser for linux is not supported. This is because cargo will cleanup the browser background process when campfire terminates")
-        }
-        else {
-            let mut command = Command::new("google-chrome");
-            command
-                .arg(format!("--ignore-certificate-errors-spki-list={spki}"))
-                .spawn()
-                .context("Failed to spawn browser")?;
+    // Prevent output from leaking into the parent terminal
+    child
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+}
 
-            anyhow::bail!("Launching the browser for windows is not yet supported.")
-        }
-    }
-
-    let status = command
+#[cfg(target_os = "macos")]
+fn spawn(spki: &str, _url: &str) -> anyhow::Result<()> {
+    let status = std::process::Command::new("open")
+        // Feeding a url to chrome here makes `--args spki` not be fed to chrome
+        .args(["-a", "Google Chrome", "--args"])
+        .arg(format!("--ignore-certificate-errors-spki-list={spki}"))
         .spawn()
-        .context("Failed to spawn browser")?
+        .context("Failed to open Google Chrome")?
         .wait()
-        .await
         .context("Failed to wait for launch command to exit")?;
 
     if !status.success() {
@@ -71,4 +65,29 @@ async fn open_browser(spki: &str, url: &str) -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn spawn(spki: &str, url: &str) -> anyhow::Result<()> {
+    let status = detach_process(
+        std::process::Command::new("google-chrome")
+            .arg(url)
+            // Feeding a url to chrome here makes `--args spki` not be fed to chrome
+            .arg(format!("--ignore-certificate-errors-spki-list={spki}")),
+    )
+    .spawn()
+    .context("Failed to open Google Chrome")?
+    .wait()
+    .context("Failed to wait for launch command to exit")?;
+
+    if !status.success() {
+        anyhow::bail!("Failed to launch browser. Process exited with {status:?}");
+    }
+
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn spawn(_spki: &str, _url: &str) -> anyhow::Result<()> {
+    anyhow::bail!("Launching the browser for windows is not yet supported.")
 }

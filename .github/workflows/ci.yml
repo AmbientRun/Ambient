@@ -214,7 +214,7 @@ jobs:
           sudo apt install -y libxcb-xfixes0-dev mesa-vulkan-drivers
 
       - name: Run golden image tests
-        run: cargo campfire-ndf golden-images --ambient-path=./ambient check
+        run: cargo campfire-slim golden-images --ambient-path=./ambient check
       - uses: actions/upload-artifact@v3
         if: always()
         with:
