@@ -170,13 +170,29 @@ fn main() -> anyhow::Result<()> {
     }
 
     // Read the project manifest from the project path (which may have been updated by the build step)
-    // We do not establish the semantic until the server has started up to unify the codepaths.
-    let manifest = ambient_project::Manifest::parse(&rt.block_on(async {
-        project_path
-            .push("ambient.toml")
-            .download_string(&assets)
-            .await
-    })?)?;
+    // We attempt both the root and build/ as `ambient.toml` is in the former for local builds,
+    // and in the latter for deployed builds. This will likely be improved if/when deployments
+    // no longer have their own build directory.
+    async fn get_new_project_path_and_manifest(
+        project_path: ProjectPath,
+        assets: &AssetCache,
+    ) -> anyhow::Result<(ProjectPath, ambient_project::Manifest)> {
+        let paths = [project_path.url.clone(), project_path.push("build")];
+
+        for path in &paths {
+            if let Ok(toml) = path.push("ambient.toml")?.download_string(&assets).await {
+                return Ok((
+                    Some(path.to_string()).try_into()?,
+                    ambient_project::Manifest::parse(&toml)?,
+                ));
+            }
+        }
+
+        anyhow::bail!("Failed to find ambient.toml in project");
+    }
+
+    let (project_path, manifest) =
+        rt.block_on(get_new_project_path_and_manifest(project_path, &assets))?;
 
     // If this is just a deploy then deploy and exit
     if let Commands::Deploy {
@@ -310,7 +326,6 @@ fn main() -> anyhow::Result<()> {
     };
 
     // Time to join!
-
     if let Some(run) = cli.run() {
         // Hey! listen, it is time to setup audio
 
@@ -500,10 +515,16 @@ impl TryFrom<Option<String>> for ProjectPath {
     fn try_from(project_path: Option<String>) -> anyhow::Result<Self> {
         match project_path {
             Some(project_path)
-                if project_path.starts_with("http://") || project_path.starts_with("https://") =>
+                if project_path.starts_with("http://")
+                    || project_path.starts_with("https://")
+                    || project_path.starts_with("file:/") =>
             {
                 let url = AbsAssetUrl::from_str(&project_path)?;
-                Ok(Self { url, fs_path: None })
+                if let Some(local) = url.to_file_path()? {
+                    Self::new_local(local)
+                } else {
+                    Ok(Self { url, fs_path: None })
+                }
             }
             Some(project_path) => Self::new_local(project_path),
             None => {
