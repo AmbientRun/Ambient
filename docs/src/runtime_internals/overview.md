@@ -1,7 +1,9 @@
 # Runtime internals
 
 This part of the documentation covers how the runtime works internally,
-and how you can make changes to it.
+and how you can make changes to it. This is mostly if you want to contribute
+to the Ambient repository itself; for most end users the user and reference
+sections of the book should be enough.
 
 ## Getting started
 
