@@ -1,6 +1,13 @@
-use ambient_api::{core::messages::Frame, input::CursorLockGuard, prelude::*};
+use ambient_api::{
+    core::{
+        app::components::name, messages::Frame, rendering::components::color,
+        transform::components::translation,
+    },
+    input::CursorLockGuard,
+    prelude::*,
+};
 use editor::{
-    components::in_editor,
+    components::{editor_camera, in_editor, mouseover_entity, mouseover_position},
     messages::{Input, ToggleEditor},
 };
 
@@ -17,6 +24,8 @@ pub fn main() {
         if !entity::get_component(player::get_local(), in_editor()).unwrap_or_default() {
             return;
         }
+
+        let Some(camera_id) = entity::get_component(player::get_local(), editor_camera()) else { return; };
 
         let (delta, input) = input::get_delta();
 
@@ -44,14 +53,16 @@ pub fn main() {
         }
 
         if fixed_tick_dt > Duration::from_millis(20) {
-            if movement.length_squared() > 0.0 || accumulated_aim_delta.length_squared() > 0.0 {
-                Input {
-                    aim_delta: accumulated_aim_delta,
-                    movement,
-                    boost: input.keys.contains(&KeyCode::LShift),
-                }
-                .send_server_reliable();
+            let ray = camera::screen_position_to_world_ray(camera_id, input.mouse_position);
+
+            Input {
+                aim_delta: accumulated_aim_delta,
+                movement,
+                boost: input.keys.contains(&KeyCode::LShift),
+                ray_origin: ray.origin,
+                ray_direction: ray.dir,
             }
+            .send_server_reliable();
 
             accumulated_aim_delta = Vec2::ZERO;
             fixed_tick_last = game_time();
@@ -84,20 +95,45 @@ pub fn App(hooks: &mut Hooks) -> Element {
     });
 
     if in_editor {
-        MenuBar::el()
+        Group::el([MenuBar::el(), MouseoverDisplay::el()])
     } else {
         Element::new()
     }
 }
 
 #[element_component]
-fn MenuBar(hooks: &mut Hooks) -> Element {
+fn MenuBar(_hooks: &mut Hooks) -> Element {
     WindowSized::el([with_rect(
         FlowRow::el([Text::el(format!("Editor {}", env!("CARGO_PKG_VERSION")))])
             .with_padding_even(4.0),
     )
     .with(fit_horizontal(), Fit::Parent)
     .with_background(vec4(0.0, 0.0, 0.0, 0.5))])
+}
+
+#[element_component]
+fn MouseoverDisplay(hooks: &mut Hooks) -> Element {
+    let player_id = player::get_local();
+    let (mouseover_position, _) = hooks.use_entity_component(player_id, mouseover_position());
+    let (mouseover_entity, _) = hooks.use_entity_component(player_id, mouseover_entity());
+    let (camera_id, _) = hooks.use_entity_component(player_id, editor_camera());
+
+    let Some(mouseover_position) = mouseover_position else { return Element::new(); };
+    let Some(camera_id) = camera_id else { return Element::new(); };
+
+    let mut text = format!("{:.02?}", mouseover_position.to_array());
+    if let Some(mouseover_entity) = mouseover_entity {
+        text += &format!(
+            "\n{}",
+            entity::get_component(mouseover_entity, name())
+                .unwrap_or_else(|| mouseover_entity.to_string())
+        );
+    }
+
+    let mouseover_position_2d = camera::world_to_screen(camera_id, mouseover_position).extend(0.0);
+    Text::el(text)
+        .with(translation(), mouseover_position_2d)
+        .with(color(), Vec4::ONE)
 }
 
 // todo: move to API

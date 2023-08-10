@@ -15,7 +15,7 @@ use ambient_api::{
 
 use afps_schema::components::player_name;
 use editor::{
-    components::{camera_angle, editor_camera, in_editor},
+    components::{camera_angle, editor_camera, in_editor, mouseover_entity, mouseover_position},
     messages::{Input, ToggleEditor},
 };
 
@@ -81,5 +81,13 @@ pub fn main() {
         entity::mutate_component(camera_id, translation(), |translation| {
             *translation += new_rotation * vec3(movement.x, 0.0, -movement.y) * movement_speed;
         });
+
+        if let Some(hit) = physics::raycast_first(msg.ray_origin, msg.ray_direction) {
+            entity::add_component(id, mouseover_position(), hit.position);
+            entity::add_component(id, mouseover_entity(), hit.entity);
+        } else {
+            entity::remove_component(id, mouseover_position());
+            entity::remove_component(id, mouseover_entity());
+        }
     });
 }

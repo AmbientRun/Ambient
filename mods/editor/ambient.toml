@@ -10,6 +10,11 @@ afps_schema = { path = "../../schema/afps" }
 # Player components
 in_editor = { type = "Bool", attributes = ["Networked", "Debuggable"] }
 editor_camera = { type = "EntityId", attributes = ["Networked", "Debuggable"] }
+mouseover_position = { type = "Vec3", attributes = ["Networked", "Debuggable"] }
+mouseover_entity = { type = "EntityId", attributes = [
+    "Networked",
+    "Debuggable",
+] }
 
 # Camera components
 camera_angle = { type = "Vec2", description = "X is yaw, Y is pitch", attributes = [
@@ -23,3 +28,5 @@ camera_angle = { type = "Vec2", description = "X is yaw, Y is pitch", attributes
 aim_delta = "Vec2"
 movement = "Vec2"
 boost = "Bool"
+ray_origin = "Vec3"
+ray_direction = "Vec3"
