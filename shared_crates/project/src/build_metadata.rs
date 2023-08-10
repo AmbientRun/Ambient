@@ -9,6 +9,8 @@ pub struct BuildMetadata {
     pub ambient_revision: String,
     pub client_component_paths: Vec<String>,
     pub server_component_paths: Vec<String>,
+    #[serde(default)]
+    pub last_build_time: Option<String>,
 }
 
 impl BuildMetadata {

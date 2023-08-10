@@ -53,3 +53,4 @@ cargo_toml = { workspace = true }
 symphonia = { workspace = true }
 vorbis_rs = { workspace = true }
 optivorbis = { workspace = true }
+chrono = { workspace = true }

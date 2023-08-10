@@ -396,6 +396,7 @@ dependencies = [
  "async-recursion",
  "async-trait",
  "cargo_toml",
+ "chrono",
  "convert_case 0.6.0",
  "dyn-clonable",
  "futures",

@@ -119,11 +119,36 @@ async fn build_ember(
         )
     };
 
+    let last_build_time = tokio::fs::read_to_string(build_path.join(BuildMetadata::FILENAME))
+        .await
+        .ok()
+        .map(|c| BuildMetadata::parse(&c))
+        .transpose()?
+        .and_then(|md| Some(chrono::DateTime::parse_from_rfc3339(&md.last_build_time?)))
+        .transpose()?
+        .map(|dt| dt.with_timezone(&chrono::Utc));
+
+    let last_modified_time = get_asset_files(&path)
+        .filter_map(|f| f.metadata().ok()?.modified().ok())
+        .map(|t| chrono::DateTime::<chrono::Utc>::from(t))
+        .max();
+
     let name = manifest
         .ember
         .name
         .as_deref()
         .unwrap_or_else(|| manifest.ember.id.as_str());
+
+    if last_build_time
+        .zip(last_modified_time)
+        .is_some_and(|(build, modified)| modified < build)
+    {
+        tracing::info!(
+            "Skipping build of unmodified project \"{name}\" ({})",
+            manifest.ember.id
+        );
+        return Ok(());
+    }
 
     tracing::info!("Building project \"{name}\" ({})", manifest.ember.id);
 
@@ -284,6 +309,7 @@ async fn store_metadata(build_path: &Path) -> anyhow::Result<BuildMetadata> {
         ambient_revision: git_revision_full().unwrap_or_default(),
         client_component_paths: get_component_paths("client", build_path),
         server_component_paths: get_component_paths("server", build_path),
+        last_build_time: Some(chrono::Utc::now().to_rfc3339()),
     };
     let metadata_path = build_path.join(BuildMetadata::FILENAME);
     tokio::fs::write(&metadata_path, toml::to_string(&metadata)?).await?;
