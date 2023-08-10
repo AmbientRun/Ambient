@@ -15,23 +15,3 @@ However, **the version of Ambient must match the version that the examples were 
 1. Clone the GitHub repository.
 2. Install Ambient with `cargo install --path app ambient`.
 3. Run the examples in the `guest/rust/example` directory: `ambient run guest/rust/examples/basics/primitives`
-
-## Running examples from main as a developer
-
-If you are a developer actively working on Ambient, you can run the examples from the `guest/rust/examples` directory directly, without having to install Ambient.
-
-1. Clone the GitHub repository.
-2. Run the examples in the `guest/rust/example` directory: `cargo run --release -- guest/rust/examples/basics/primitives`
-
-To help with this, the Ambient repository has a tool called [Campfire](../community/contributing.md#campfire).
-It offers a convenient way to run examples:
-
-```sh
-cargo cf run primitives
-```
-
-The name is based on the end of the path, so additional context can be provided if necessary:
-
-```sh
-cargo cf run basics/primitives
-```
