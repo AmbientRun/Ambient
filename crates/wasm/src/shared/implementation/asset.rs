@@ -17,7 +17,7 @@ pub(crate) fn url(
     let asset_url = ambient_ember_semantic_native::file_path(
         world,
         &ember_id,
-        &Path::new("assets").join(&path),
+        &Path::new("assets").join(path),
     )?;
 
     ok_wrap(move || {

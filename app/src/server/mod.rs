@@ -168,43 +168,9 @@ pub async fn start(
             .with(persistent_resources(), ())
             .spawn(&mut server_world);
 
-        wasm::initialize(
-            &mut server_world,
-            working_directory.join("data"),
-            // TODO: do not support rebuilds with ember yet
-            None,
-            // build_config.map(|config| {
-            //     // HACK: provide a callback to rebuild the project to WASM.
-            //     // this is not done directly within WASM due to circular dependencies.
-            //     cb(move |world: &mut World| {
-            //         let runtime = world.resource(ambient_core::runtime()).clone();
-            //         let async_run = world.resource(ambient_core::async_ecs::async_run()).clone();
-            //         let (path, manifest, build_path, optimize) = (
-            //             config.path.clone(),
-            //             config.manifest.clone(),
-            //             config.build_path(),
-            //             config.optimize,
-            //         );
-            //         runtime.spawn(async move {
-            //             let result = ambient_build::build_rust_if_available(
-            //                 &path,
-            //                 &manifest,
-            //                 &build_path,
-            //                 optimize,
-            //             )
-            //             .await;
-
-            //             async_run.run(|world| {
-            //                 world.resource_mut(ambient_ecs::world_events()).add_message(
-            //                     messages::WasmRebuild::new(result.err().map(|err| err.to_string())),
-            //                 );
-            //             });
-            //         });
-            //     }) as Cb<dyn Fn(&mut World) + Send + Sync>
-            // }),
-        )
-        .await
-        .unwrap();
+        wasm::initialize(&mut server_world, working_directory.join("data"))
+            .await
+            .unwrap();
 
         let mut semantic = ambient_project_semantic::Semantic::new().await.unwrap();
         let primary_ember_scope_id = match project_path.to_file_path().unwrap() {

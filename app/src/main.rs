@@ -179,7 +179,7 @@ fn main() -> anyhow::Result<()> {
         let paths = [project_path.url.clone(), project_path.push("build")];
 
         for path in &paths {
-            if let Ok(toml) = path.push("ambient.toml")?.download_string(&assets).await {
+            if let Ok(toml) = path.push("ambient.toml")?.download_string(assets).await {
                 return Ok((
                     Some(path.to_string()).try_into()?,
                     ambient_project::Manifest::parse(&toml)?,
@@ -209,7 +209,7 @@ fn main() -> anyhow::Result<()> {
                 anyhow::bail!("Can only deploy a local project");
             };
             let deployment_id = ambient_deploy::deploy(
-                &runtime,
+                runtime,
                 api_server,
                 token,
                 project_fs_path,
@@ -259,7 +259,7 @@ fn main() -> anyhow::Result<()> {
                 if !host.contains(':') {
                     host = format!("{host}:{QUIC_INTERFACE_PORT}");
                 }
-                Ok(ResolvedAddr::lookup_host(&host).await?)
+                ResolvedAddr::lookup_host(&host).await
             })?
         } else {
             ResolvedAddr::localhost_with_port(QUIC_INTERFACE_PORT)
@@ -310,7 +310,7 @@ fn main() -> anyhow::Result<()> {
             .unwrap_or(std::env::current_dir()?);
 
         let addr = rt.block_on(server::start(
-            &runtime,
+            runtime,
             assets.clone(),
             cli.clone(),
             working_directory,

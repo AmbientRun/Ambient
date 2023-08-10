@@ -5,7 +5,6 @@ use std::{
 };
 
 use ambient_ecs::{EntityId, SystemGroup, World};
-use ambient_native_std::Cb;
 use ambient_project_semantic::{ItemId, Scope};
 pub use ambient_wasm::server::{on_forking_systems, on_shutdown_systems};
 use ambient_wasm::shared::{module_name, remote_paired_id, spawn_module, MessageType};
@@ -15,11 +14,7 @@ pub fn systems() -> SystemGroup {
     ambient_wasm::server::systems()
 }
 
-pub async fn initialize(
-    world: &mut World,
-    data_path: PathBuf,
-    build_project: Option<Cb<dyn Fn(&mut World) + Send + Sync>>,
-) -> anyhow::Result<()> {
+pub async fn initialize(world: &mut World, data_path: PathBuf) -> anyhow::Result<()> {
     let messenger = Arc::new(
         |world: &World, id: EntityId, type_: MessageType, message: &str| {
             let name = world.get_cloned(id, module_name()).unwrap_or_default();
@@ -39,7 +34,7 @@ pub async fn initialize(
         },
     );
 
-    ambient_wasm::server::initialize(world, data_path, messenger, build_project)?;
+    ambient_wasm::server::initialize(world, data_path, messenger)?;
 
     Ok(())
 }

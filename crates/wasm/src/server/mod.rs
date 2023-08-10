@@ -1,31 +1,16 @@
 use crate::shared::{self, message::RuntimeMessageExt};
-use ambient_ecs::{
-    components, generated::messages, query, EntityId, FnSystem, Resource, SystemGroup, World,
-};
-use ambient_native_std::Cb;
+use ambient_ecs::{generated::messages, query, EntityId, FnSystem, SystemGroup, World};
 use ambient_network::server::{ForkingEvent, ShutdownEvent};
 use std::{path::PathBuf, sync::Arc};
 
 mod implementation;
 mod network;
 
-components!("wasm::server", {
-    @[Resource]
-    pub build_wasm: Cb<dyn Fn(&mut World) + Send + Sync>,
-});
-
 pub fn initialize(
     world: &mut World,
     data_path: PathBuf,
     messenger: Arc<dyn Fn(&World, EntityId, shared::MessageType, &str) + Send + Sync>,
-    build_project: Option<Cb<dyn Fn(&mut World) + Send + Sync>>,
 ) -> anyhow::Result<()> {
-    init_components();
-
-    if let Some(build_project) = build_project {
-        world.add_component(world.resource_entity(), self::build_wasm(), build_project)?;
-    }
-
     shared::initialize(
         world,
         messenger,
