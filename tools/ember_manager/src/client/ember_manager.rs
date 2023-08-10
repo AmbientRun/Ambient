@@ -76,6 +76,8 @@ fn EmberManagerInner(hooks: &mut Hooks) -> Element {
         let name = name
             .strip_suffix("_server")
             .or_else(|| name.strip_suffix("_client"))
+            .or_else(|| name.strip_prefix("client_"))
+            .or_else(|| name.strip_prefix("server_"))
             .unwrap_or(&name)
             .to_string();
 
