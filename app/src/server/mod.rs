@@ -200,6 +200,8 @@ pub async fn start(
         let mut queue = semantic
             .items
             .scope_and_dependencies(primary_ember_scope_id);
+        queue.reverse();
+
         server_world
             .add_component(
                 server_world.resource_entity(),

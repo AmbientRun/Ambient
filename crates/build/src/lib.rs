@@ -55,6 +55,7 @@ pub async fn build(
     }
 
     let mut queue = semantic.items.scope_and_dependencies(root_ember_id);
+    queue.reverse();
 
     let mut output_path = build_path.clone();
     while let Some(ember_id) = queue.pop() {
