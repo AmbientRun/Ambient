@@ -109,9 +109,14 @@ impl Default for BuildRust {
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Serialize)]
-#[serde(untagged)]
-pub enum Dependency {
-    Path { path: PathBuf },
+pub struct Dependency {
+    pub path: PathBuf,
+    #[serde(default = "return_true")]
+    pub enabled: bool,
+}
+
+fn return_true() -> bool {
+    true
 }
 
 #[cfg(test)]
@@ -540,6 +545,7 @@ mod tests {
         [dependencies]
         deps_assets = { path = "deps/assets" }
         deps_code = { path = "deps/code" }
+        deps_ignore_me = { path = "deps/ignore_me", enabled = false }
 
         "#;
 
@@ -560,14 +566,23 @@ mod tests {
                 dependencies: IndexMap::from_iter([
                     (
                         sci("deps_assets"),
-                        Dependency::Path {
-                            path: PathBuf::from("deps/assets")
+                        Dependency {
+                            path: PathBuf::from("deps/assets"),
+                            enabled: true,
                         }
                     ),
                     (
                         sci("deps_code"),
-                        Dependency::Path {
-                            path: PathBuf::from("deps/code")
+                        Dependency {
+                            path: PathBuf::from("deps/code"),
+                            enabled: true,
+                        }
+                    ),
+                    (
+                        sci("deps_ignore_me"),
+                        Dependency {
+                            path: PathBuf::from("deps/ignore_me"),
+                            enabled: false,
                         }
                     )
                 ])

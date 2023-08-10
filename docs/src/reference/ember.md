@@ -248,6 +248,11 @@ To access an item from an ember, use the following syntax: `import_name::item_id
 
 At the time of writing, only path dependencies are supported. This is likely to change in future.
 
+| Property  | Type     | Description                                                                                                        |
+| --------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
+| `path`    | `String` | _Required_. A relative path to the ember to depend on.                                                             |
+| `enabled` | `bool`   | _Optional_. Control whether or not logic associated with this ember should be enabled on load. Enabled by default. |
+
 For an example of how to use dependencies, see the [dependencies example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/intermediate/dependencies).
 
 #### Example

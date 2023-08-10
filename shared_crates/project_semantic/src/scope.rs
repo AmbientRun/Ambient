@@ -100,6 +100,8 @@ pub struct Scope {
 
     pub dependencies: Vec<ItemId<Scope>>,
 
+    pub enabled_by_default: bool,
+
     pub scopes: IndexMap<SnakeCaseIdentifier, ItemId<Scope>>,
     pub components: IndexMap<SnakeCaseIdentifier, ItemId<Component>>,
     pub concepts: IndexMap<SnakeCaseIdentifier, ItemId<Concept>>,
@@ -213,6 +215,7 @@ impl Scope {
         original_id: SnakeCaseIdentifier,
         path: Option<PathBuf>,
         manifest: Option<Manifest>,
+        enabled: bool,
     ) -> Self {
         Self {
             data,
@@ -222,6 +225,8 @@ impl Scope {
             build_metadata: Default::default(),
 
             dependencies: Default::default(),
+
+            enabled_by_default: enabled,
 
             scopes: Default::default(),
             components: Default::default(),

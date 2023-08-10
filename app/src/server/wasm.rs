@@ -42,13 +42,14 @@ pub async fn initialize(world: &mut World, data_path: PathBuf) -> anyhow::Result
 pub fn instantiate_ember(world: &mut World, ember_id: ItemId<Scope>) -> anyhow::Result<()> {
     let mut modules_to_entity_ids = HashMap::new();
     for target in ["client", "server"] {
-        let (ember_name, build_metadata) = {
+        let (ember_name, ember_enabled, build_metadata) = {
             let semantic = ambient_ember_semantic_native::world_semantic(world);
             let semantic = semantic.lock().unwrap();
             let scope = semantic.items.get(ember_id)?;
 
             (
                 scope.original_id.to_string(),
+                scope.enabled_by_default,
                 scope
                     .build_metadata
                     .as_ref()
@@ -66,7 +67,7 @@ pub fn instantiate_ember(world: &mut World, ember_id: ItemId<Scope>) -> anyhow::
                 .to_string_lossy();
 
             let bytecode_url = ambient_ember_semantic_native::file_path(world, &ember_name, path)?;
-            let id = spawn_module(world, bytecode_url, true, target == "server");
+            let id = spawn_module(world, bytecode_url, ember_enabled, target == "server");
             modules_to_entity_ids.insert(
                 (
                     target,

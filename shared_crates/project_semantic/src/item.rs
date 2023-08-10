@@ -175,6 +175,7 @@ impl ItemMap {
                         segment.clone(),
                         Some(manifest_path.clone()),
                         None,
+                        true,
                     ));
                     self.get_mut(scope_id)?
                         .scopes

@@ -89,6 +89,7 @@ impl Semantic {
             &mut HashSet::new(),
             source,
             scope_name,
+            true,
         )
         .await
     }
@@ -174,6 +175,7 @@ impl Semantic {
         visited_files: &mut HashSet<PathBuf>,
         source: ItemSource,
         scope_name: Option<SnakeCaseIdentifier>,
+        enabled: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
         let manifest = Manifest::parse(&file_provider.get(filename).await.with_context(|| {
             format!(
@@ -230,6 +232,7 @@ impl Semantic {
                 build_metadata,
                 scope_name.clone(),
                 source,
+                enabled,
             )
             .await?;
         self.items
@@ -247,6 +250,7 @@ impl Semantic {
         file_provider: &dyn FileProvider,
         visited_files: &mut HashSet<PathBuf>,
         source: ItemSource,
+        enabled: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
         let manifest = Manifest::parse(&file_provider.get(filename).await.with_context(|| {
             format!("failed to read file {filename:?} within parent scope {parent_scope:?}")
@@ -263,6 +267,7 @@ impl Semantic {
             None,
             id,
             source,
+            enabled,
         )
         .await
     }
@@ -278,6 +283,7 @@ impl Semantic {
         build_metadata: Option<BuildMetadata>,
         id: SnakeCaseIdentifier,
         source: ItemSource,
+        enabled: bool,
     ) -> anyhow::Result<ItemId<Scope>> {
         let mut scope = Scope::new(
             ItemData {
@@ -288,6 +294,7 @@ impl Semantic {
             manifest.ember.id.clone(),
             Some(manifest_path.clone()),
             Some(manifest.clone()),
+            enabled,
         );
         scope.build_metadata = build_metadata;
         let scope_id = self.items.add(scope);
@@ -299,7 +306,14 @@ impl Semantic {
 
         for include in &manifest.ember.includes {
             let child_scope_id = self
-                .add_file_at_non_toplevel(scope_id, include, file_provider, visited_files, source)
+                .add_file_at_non_toplevel(
+                    scope_id,
+                    include,
+                    file_provider,
+                    visited_files,
+                    source,
+                    enabled,
+                )
                 .await?;
             let id = self.items.get(child_scope_id)?.data().id.clone();
             self.items
@@ -310,21 +324,22 @@ impl Semantic {
 
         let mut dependency_scopes = vec![];
         for (dependency_name, dependency) in manifest.dependencies.iter() {
-            match dependency {
-                Dependency::Path { path } => {
-                    let file_provider = ProxyFileProvider {
-                        provider: file_provider,
-                        base: path,
-                    };
+            let Dependency { path, enabled } = dependency;
 
-                    let ambient_toml = Path::new("ambient.toml");
-                    let new_scope_id = self
+            let file_provider = ProxyFileProvider {
+                provider: file_provider,
+                base: path,
+            };
+
+            let ambient_toml = Path::new("ambient.toml");
+            let new_scope_id = self
                         .add_file_internal(
                             ambient_toml,
                             &file_provider,
                             visited_files,
                             source,
                             Some(dependency_name.clone()),
+                            *enabled,
                         ).await
                         .with_context(|| {
                             format!(
@@ -332,9 +347,7 @@ impl Semantic {
                         )
                         })?;
 
-                    dependency_scopes.push(new_scope_id);
-                }
-            }
+            dependency_scopes.push(new_scope_id);
         }
 
         self.items
@@ -434,6 +447,7 @@ fn create_root_scope(items: &mut ItemMap) -> anyhow::Result<(ItemId<Scope>, Stan
         SnakeCaseIdentifier::default(),
         None,
         None,
+        true,
     ));
 
     for (id, pt) in primitive_component_definitions!(define_primitive_types) {

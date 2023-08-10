@@ -177,7 +177,7 @@ async fn build_ember(
             .collect::<Result<HashMap<_, _>, _>>()?;
 
         for (orig_name, dep) in manifest.dependencies.iter_mut() {
-            let ambient_project::Dependency::Path { path, .. } = dep;
+            let ambient_project::Dependency { path, .. } = dep;
 
             if let Some(orig_dep) = orig_name_to_dep.get(orig_name) {
                 let dep_scope = semantic.items.get(*orig_dep)?;
