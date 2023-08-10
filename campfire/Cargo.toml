@@ -43,5 +43,5 @@ nix = "0.26"
 openssl = { version = "0.10", optional = true }
 
 [features]
-default = ["openssl", "serve"]
+default = ["serve"]
 serve = ["dep:notify", "dep:flume", "walkdir", "notify-debouncer-full"]
