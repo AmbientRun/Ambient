@@ -38,7 +38,13 @@ As a developer, you may find yourself needing to install (a specific version of)
 cargo campfire install [--git-revision <revision>] [--git-tag <tag>]
 ```
 
-If no revision or tag is specified, the version of Ambient in the current directory will be installed.
+If no revision or tag is specified, the version of Ambient in the current directory will be installed. Otherwise, if specified, the relevant version will be suffixed to the executable's name:
+
+```sh
+cargo campfire install --git-tag v0.1.0
+```
+
+This will install Ambient as `ambient-v0.1.0`.
 
 ## Adding to the API
 
@@ -126,8 +132,8 @@ To do so, you will need to update the following files:
 
 ### Code generation
 
-- `shared_crates/project_macro_common/src/component.rs`: Specify how to generate the type definition for `convert_primitive_type_to_rust_type`.
-- `shared_crates/project_macro_common/src/concept.rs`: Specify how to generate Rust code for a value of the type from TOML in `toml_value_to_tokens_primitive`.
+- `shared_crates/project_semantic/src/value.rs`: Specify how to parse TOML for a value of the type.
+- `shared_crates/project_macro_common/src/concepts.rs`: Specify how to generate Rust code for a value of the type.
 
 ### Runtime support
 
@@ -141,8 +147,7 @@ To do so, you will need to update the following files:
 ### Documentation
 
 - `CHANGELOG.md`: Document the addition of the new supported type.
-- `docs/src/reference/ambient.sample.toml`: Document the new type in the sample TOML file.
-- `docs/src/reference/project.md`: Document the new type in the components section.
+- `docs/src/reference/ember.md`: Document the new type in the components section.
 
 ## Golden image tests
 

@@ -2,8 +2,6 @@
 
 All Ambient embers must have an `ambient.toml` manifest that describes their functionality. This format is in flux, but is inspired by Rust's `Cargo.toml`.
 
-At present, dependencies are _not_ supported, but this will change in future.
-
 ## WebAssembly
 
 All `.wasm` components in the `build/{client, server}` directory will be loaded for the given target, regardless of provenance. The `.wasm` filenames must be snake-case ASCII identifiers, like the `id` in the manifest.
@@ -28,43 +26,16 @@ using [wasm-tools](https://github.com/bytecodealliance/wasm-tools) and a bundled
 
 ## Reference
 
-`Identifier`s are snake-case ASCII identifiers (as a string), and `IdentifierPath`s are a double-colon-separated list of `Identifier`s. For example, `my_ember` is an `Identifier`, and `my_ember::my_component` is an `IdentifierPath`.
+- `SnakeCaseIdentifier`s are snake-case ASCII identifiers (as a string)
+- `PascalCaseIdentifier`s are PascalCase ASCII identifiers (as a string)
+- `Identifiers` are either a `SnakeCaseIdentifier` or a `PascalCaseIdentifier` based on context
+- `ItemPath`s are a double-colon-separated list of `SnakeCaseIdentifier`s followed by a single `Identifier`. For example, `my_ember` is an `Identifier`, and `my_ember::my_component` is an `ItemPath`.
 
-### Ember / `[ember]`
+### `ValueType`
 
-The ember section contains metadata about the ember itself, such as its name and version.
+In Ambient, all typed values must have a type that belongs to `ValueType`. This includes component types and message fields.
 
-| Property      | Type         | Description                                                                                 |
-| ------------- | ------------ | ------------------------------------------------------------------------------------------- |
-| `id`          | `Identifier` | _Required_. The ember's snake-cased ID.                                                     |
-| `name`        | `String`     | _Required_. A human-readable name for the ember.                                            |
-| `description` | `String`     | _Required_. A human-readable description of the ember.                                      |
-| `version`     | `String`     | _Required_. The ember's version, in `(major, minor, patch)` format. Semantically versioned. |
-
-### Build / `[build]`
-
-The build section contains settings related to building the ember.
-
-#### Rust Settings / `[build.rust]`
-
-| Property             | Type       | Description                                                                                                                                                                                                                                                                                                                |
-| -------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `feature-multibuild` | `String[]` | _Optional_. An array of strings defining the features to be used when building the ember. This is used to build the same code for both client and server.<br /><br />Client and server are built by default (e.g. `["client", "server"]`); this is exposed so that you can disable building one side entirely if required. |
-
-### Components / `[components]`
-
-The components section contains custom components defined by the ember. Components are used to store data on entities.
-
-This is a TOML table, where the keys are the component IDs (`IdentifierPath`), and the values are the component definitions.
-
-| Property      | Type                   | Description                                                |
-| ------------- | ---------------------- | ---------------------------------------------------------- |
-| `type`        | `ComponentType`        | _Required_. The type of the component.                     |
-| `name`        | `String`               | _Required_. A human-readable name for the component.       |
-| `description` | `String`               | _Required_. A human-readable description of the component. |
-| `attributes`  | `ComponentAttribute[]` | _Optional_. An array of attributes for the component.      |
-
-A `ComponentType` is either:
+A `ValueType` is either:
 
 - a string that can be one of the following primitive types:
 
@@ -95,8 +66,73 @@ A `ComponentType` is either:
   - `Vec4`: a 4-element 32-bit floating point vector
   - `Duration`: A time span. Often used as a timestamp, in which case it designates the duration since Jan 1, 1970.
 
-- a contained type of the form `{ type = "Vec", element_type = ComponentType }` or `{ type = "Option", element_type = ComponentType }`
-  - Note that `Vec` and `Option` are the only supported container types, and `element_type` must be a primitive `ComponentType` (that is, you cannot have nested contained types).
+- a contained type of the form `{ type = "Vec", element_type = ValueType }` or `{ type = "Option", element_type = ValueType }`
+
+  - Note that `Vec` and `Option` are the only supported container types, and `element_type` must be a primitive `ValueType` (that is, you cannot have nested contained types).
+
+- a string that refers to an `enum` defined by an ember; see [Enums](#enums--enums).
+
+Note that `ValueType`s are not themselves values, but rather types of values. For example, `Vec2` is a `ValueType`, but `Vec2(1.0, 2.0)` is a value of type `Vec2`. Additionally, `ValueType`s from other embers can be referred to using `ItemPath`s: `my_ember::my_component::MyType`.
+
+### Ember / `[ember]`
+
+The `ember` section contains metadata about the ember itself, such as its name and version.
+
+| Property      | Type                  | Description                                                                                 |
+| ------------- | --------------------- | ------------------------------------------------------------------------------------------- |
+| `id`          | `SnakeCaseIdentifier` | _Required_. The ember's snake-cased ID.                                                     |
+| `name`        | `String`              | _Optional_. A human-readable name for the ember.                                            |
+| `description` | `String`              | _Optional_. A human-readable description of the ember.                                      |
+| `version`     | `String`              | _Optional_. The ember's version, in `(major, minor, patch)` format. Semantically versioned. |
+
+#### Example
+
+```toml
+#
+# The ember section describes all ember metadata.
+#
+[ember]
+# This must be a snake-cased name.
+id = "my_cool_ember"
+# This name is human-readable and can contain anything. Optional.
+name = "My Cool Ember"
+# This description is human-readable and can contain anything. Optional.
+description = "A sample ember that's the coolest thing ever."
+# Embers are expected to use (major, minor, patch) semantic versioning.
+# Other formats are not accepted. This requirement may be relaxed later.
+# Optional, but required for deployments.
+version = "0.0.1"
+```
+
+### Build / `[build]`
+
+The build section contains settings related to building the ember.
+
+#### Rust Settings / `[build.rust]`
+
+| Property             | Type       | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| -------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feature-multibuild` | `String[]` | _Optional_. An array of strings defining the Rust features to be used when building the ember. This is used to build the same code for both client and server.<br /><br />`cargo build` will be run with each of these features to produce a separate WASM binary, which is then componentized and copied into a folder of the corresponding name in `build/`.<br /><br />Client and server are built by default (e.g. `["client", "server"]`); this is exposed so that you can disable building one side entirely if required. |
+
+#### Example
+
+```toml
+[build.rust]
+feature-multibuild = ["client", "server"]
+```
+
+### Components / `[components]`
+
+The `components` section contains custom components defined by the ember. Components are used to store data on entities.
+
+This is a TOML table, where the keys are the component IDs (`SnakeCaseIdentifier`), and the values are the component definitions.
+
+| Property      | Type                   | Description                                                |
+| ------------- | ---------------------- | ---------------------------------------------------------- |
+| `type`        | `ValueType`            | _Required_. The type of the component.                     |
+| `name`        | `String`               | _Optional_. A human-readable name for the component.       |
+| `description` | `String`               | _Optional_. A human-readable description of the component. |
+| `attributes`  | `ComponentAttribute[]` | _Optional_. An array of attributes for the component.      |
 
 A `ComponentAttribute` is a string that can be one of the following:
 
@@ -106,41 +142,120 @@ A `ComponentAttribute` is a string that can be one of the following:
 - `MaybeResource`: this component can be used as a resource or as a component; necessary if treating this component as a resource
 - `Store`: this component's value should be persisted when the world is saved
 
+#### Example
+
+```toml
+[components]
+# Inline tables can be used.
+cool_component = { type = "I32", name = "Cool Component", description = "A cool component", attributes = ["Debuggable"] }
+
+# Explicit tables can also be used.
+[components.cool_component2]
+type = "I32"
+name = "Cool Component 2"
+description = "A cool component 2"
+attributes = ["Debuggable"]
+```
+
 ### Concepts / `[concepts]`
 
-The concepts section contains custom concepts defined by the ember. Concepts are used to define a set of components that can be attached to an entity.
+The `concepts` section contains custom concepts defined by the ember. Concepts are used to define a set of components that can be attached to an entity.
 
-This is a TOML table, where the keys are the concept IDs (`Identifier`), and the values are the concept definitions.
+This is a TOML table, where the keys are the concept IDs (`SnakeCaseIdentifier`), and the values are the concept definitions.
 
-| Property      | Type                       | Description                                                                                                                  |
-| ------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `name`        | `String`                   | _Required_. A human-readable name for the concept.                                                                           |
-| `description` | `String`                   | _Required_. A human-readable description of the concept.                                                                     |
-| `extends`     | `String[]`                 | _Optional_. An array of concepts to extend. Must be defined in this ember manifest.                                          |
-| `components`  | `Map<IdentifierPath, any>` | _Required_. An object containing the components and their default values. Must be components defined in this ember manifest. |
+| Property      | Type                 | Description                                                                         |
+| ------------- | -------------------- | ----------------------------------------------------------------------------------- |
+| `name`        | `String`             | _Optional_. A human-readable name for the concept.                                  |
+| `description` | `String`             | _Optional_. A human-readable description of the concept.                            |
+| `extends`     | `String[]`           | _Optional_. An array of concepts to extend. Must be defined in this ember manifest. |
+| `components`  | `Map<ItemPath, any>` | _Required_. An object containing the components and their default values.           |
 
-The `components` is an object where the keys are `IdentifierPath`s of components defined in the ember manifest (at this time, it must be in the same manifest), and the values are the default values for those components in the concept.
+The `components` is an object where the keys are `ItemPath`s of components defined in the ember manifest, and the values are the default values for those components in the concept.
+
+#### Example
+
+```toml
+[concepts.concept1]
+name = "Concept 1"
+description = "The best"
+[concepts.Concept1.components]
+cool_component = 0
+
+# A concept that extends `concept1` and has both `cool_component` and `cool_component2`.
+[concepts.concept2]
+extends = ["Concept1"]
+components = { cool_component2 = 1 }
+```
 
 ### Messages / `[messages]`
 
-The messages section contains custom messages defined by the ember. Messages are used to communicate between client and server.
+The `messages` section contains custom messages defined by the ember. Messages are used to communicate between client and server.
 
-For an example of how to use messages, see the [messaging example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/basics/messaging).
+For an example of how to use messages, see the [messaging example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/intermediate/messaging).
 
-This is a TOML table, where the keys are the message IDs (`Identifier`), and the values are the message definitions.
+This is a TOML table, where the keys are the message IDs (`PascalCaseIdentifier`), and the values are the message definitions.
 
-| Property      | Type                             | Description                                                                                                     |
-| ------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `name`        | `String`                         | _Required_. A human-readable name for the message.                                                              |
-| `description` | `String`                         | _Required_. A human-readable description of the message.                                                        |
-| `fields`      | `Map<Identifier, ComponentType>` | _Required_. An object containing the fields and their types. Must be one of the types supported for components. |
+| Property      | Type                                  | Description                                                                                                     |
+| ------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `description` | `String`                              | _Optional_. A human-readable description of the message.                                                        |
+| `fields`      | `Map<SnakeCaseIdentifier, ValueType>` | _Required_. An object containing the fields and their types. Must be one of the types supported for components. |
 
-## Sample `ambient.toml`
-
-A sample `ambient.toml` is shown below:
-
-<!-- TODO: autogenerate with generate-docs -->
+#### Example
 
 ```toml
-{{#include ambient.sample.toml}}
+[messages.Input]
+description = "Describes the input state of the player."
+[messages.Input.fields]
+# Each field in the message must have a type.
+direction = "Vec2"
+mouse_delta_x = "F32"
+```
+
+### Enums / `[enums]`
+
+The `enums` section contains custom enums defined by the ember. Enums are used to define a closed set of values.
+
+This is a TOML table, where the keys are the ember IDs (`PascalCaseIdentifier`), and the values are the ember definitions.
+
+| Property      | Type                                | Description                                                                                        |
+| ------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `description` | `String`                            | _Optional_. A human-readable description of the enum.                                              |
+| `members`     | `Map<PascalCaseIdentifier, String>` | _Required_. An object containing the members and their descriptions. The description can be empty. |
+
+#### Example
+
+```toml
+[enums.CakeBakeState]
+description = "Describes the state of a cake bake."
+[enums.CakeBakeState.members]
+GatheringIngredients = "Gathering ingredients"
+MixingIngredients = "Mixing ingredients"
+Baking = "Baking"
+Cooling = "Cooling"
+Decorating = "Decorating"
+Done = "Done"
+```
+
+### Dependencies / `[dependencies]`
+
+The `dependencies` section contains a list of ember IDs that this ember depends on.
+
+Depending on another ember gives you access to its items, including its components, concepts, messages, and enums. It can also provide access to any assets that the ember has.
+
+This is a TOML table, where the keys are the name that you want to access this ember by (`SnakeCaseIdentifier`), and the location of the ember is the value.
+
+To access an item from an ember, use the following syntax: `import_name::item_id`. For example, if you have an ember imported with the name `the_basics` and an enum with ID `BasicEnum`, you can access it with `the_basics::BasicEnum`.
+
+At the time of writing, only path dependencies are supported. This is likely to change in future.
+
+For an example of how to use dependencies, see the [dependencies example](https://github.com/AmbientRun/Ambient/tree/main/guest/rust/examples/intermediate/dependencies).
+
+#### Example
+
+```toml
+[dependencies]
+the_basics = { path = "../basics" }
+
+[components]
+my_component = { type = "the_basics::BasicEnum" }
 ```

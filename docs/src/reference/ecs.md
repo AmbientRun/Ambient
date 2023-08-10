@@ -124,23 +124,22 @@ name = "Transformable"
 description = "Can be translated, rotated and scaled."
 
 [concepts.transformable.components]
-"core::transform::translation" = [0.0, 0.0, 0.0]
-"core::transform::scale" = [1.0, 1.0, 1.0]
-"core::transform::rotation" = [0.0, 0.0, 0.0, 1.0]
+translation = [0.0, 0.0, 0.0]
+scale = [1.0, 1.0, 1.0]
+rotation = [0.0, 0.0, 0.0, 1.0]
 
 [concepts.camera]
 name = "Camera"
 description = "Base components for a camera. You will need other components to make a fully-functioning camera."
-extends = ["transformable"]
+extends = ["transform::transformable"]
 
 [concepts.camera.components]
-"core::app::name" = "Camera"
-"core::camera::near" = 0.1
-"core::camera::projection" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-"core::camera::projection_view" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-"core::camera::active_camera" = 0.0
-"core::transform::local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-"core::transform::inv_local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+near = 0.1
+projection = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+projection_view = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+active_camera = 0.0
+"transform::local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+"transform::inv_local_to_world" = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 ```
 
 In this example, the "camera" concept contains all of the components from a transformable, as well as components of its own. This means that any entity that has the "camera" concept will also have the components from the "transformable" concept.
