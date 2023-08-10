@@ -9,12 +9,8 @@ pub fn main() {
     });
 
     FootOnGround::subscribe(move |_, msg| {
-        if entity::has_component(msg.source, components::player_jumping()) {
-            if entity::get_component(msg.source, components::player_jumping()).unwrap() {
-                return;
-            } else {
-                WalkSound::new(msg.source).send_client_broadcast_unreliable();
-            }
+        if !entity::get_component(msg.source, components::player_jumping()).unwrap_or_default() {
+            WalkSound::new(msg.source).send_client_broadcast_unreliable();
         }
     });
 

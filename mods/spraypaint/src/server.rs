@@ -143,7 +143,7 @@ fn remove_last_history() {
             entity::synchronized_resources(),
             components::kill_log(),
             |v| {
-                if v.len() >= 1 {
+                if !v.is_empty() {
                     v.remove(0);
                 }
             },

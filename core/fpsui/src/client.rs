@@ -136,7 +136,7 @@ fn Hud(hooks: &mut Hooks) -> Element {
 #[element_component]
 fn KillHistory(hooks: &mut Hooks) -> Element {
     let history = hooks.use_query(kill_log());
-    let history = if history.len() >= 1 {
+    let history = if !history.is_empty() {
         history[0].1.clone()
     } else {
         vec![]
@@ -147,7 +147,7 @@ fn KillHistory(hooks: &mut Hooks) -> Element {
         let mut iter = history
             .into_iter()
             .rev()
-            .map(|killlog| Text::el(format!("{}", killlog)));
+            .map(|killlog| Text::el(killlog.to_string()));
         for _ in 0..3 {
             let n = iter.next();
             if let Some(n) = n {

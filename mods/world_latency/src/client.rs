@@ -39,7 +39,7 @@ fn print_player_frame_delays(current_player_id: EntityId) {
         }
         message.push_str(&format!("{}", most_recent_frame - frame));
         if id == current_player_id {
-            message.push_str("*");
+            message.push('*');
         }
     }
 

@@ -137,18 +137,14 @@ fn add_anim_clip_and_blend_to_player(id: EntityId) {
 }
 
 fn get_blend_node_for_playing(id: EntityId, index: usize) -> Option<BlendNode> {
-    let node = entity::get_component(id, components::player_anim_blend());
-    if node.is_none() {
-        return None;
-    }
-    let node = node.unwrap();
+    let node = entity::get_component(id, components::player_anim_blend())?;
     if node.len() <= index {
         return None;
     }
     let init_node = node[index];
     // let node = AnimationNode::from_entity(init_node);
     let blend_node = BlendNode::from_entity(init_node);
-    return Some(blend_node);
+    Some(blend_node)
 }
 
 fn set_blend_weights_on_entity(id: EntityId, blend_weights: Vec<f32>) {

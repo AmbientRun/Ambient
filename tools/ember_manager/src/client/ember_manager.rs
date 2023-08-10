@@ -34,7 +34,7 @@ pub fn EmberManager(hooks: &mut Hooks) -> Element {
 fn EmberManagerInner(hooks: &mut Hooks) -> Element {
     use_input_request(hooks);
 
-    let mut modules: Vec<_> = hooks
+    let modules: Vec<_> = hooks
         .use_query((
             module(),
             module_name(),

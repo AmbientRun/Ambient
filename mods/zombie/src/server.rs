@@ -1,3 +1,5 @@
+use std::f32::consts::FRAC_PI_2;
+
 use ambient_api::{
     animation::{AnimationPlayer, BlendNode, PlayClipFromUrlNode},
     core::{
@@ -20,21 +22,21 @@ use afps_zombie::components;
 
 #[main]
 pub async fn main() {
-    let chars = vec![
+    let chars = [
         afps_zombie::assets::url("Zombiegirl W Kurniawan.fbx"),
         afps_zombie::assets::url("copzombie_l_actisdato.fbx"),
         afps_zombie::assets::url("Yaku J Ignite.fbx"),
     ];
 
     run_async(async move {
-        for i in 0..3 {
+        for character_url in chars {
             let zombie = Entity::new().spawn();
 
             let model = make_transformable()
-                .with(prefab_from_url(), chars[i].clone())
+                .with(prefab_from_url(), character_url)
                 .with(parent(), zombie)
                 .with_default(local_to_parent())
-                .with(rotation(), Quat::from_rotation_z(-3.14159265359 / 2.0))
+                .with(rotation(), Quat::from_rotation_z(-FRAC_PI_2))
                 .spawn();
 
             entity::add_components(
