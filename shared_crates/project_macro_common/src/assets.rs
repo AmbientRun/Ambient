@@ -18,7 +18,7 @@ pub fn generate(context: Context, _items: &ItemMap, scope: &Scope) -> anyhow::Re
         /// Helpers for accessing the assets for this ember.
         pub mod assets {
             pub fn url(path: &str) -> String {
-                #api_path::asset::url(#ember_id, path).unwrap()
+                #api_path::asset::url_for_ember_asset(#ember_id, path).unwrap()
             }
         }
     })
