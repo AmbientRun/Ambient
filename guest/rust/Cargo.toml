@@ -10,14 +10,14 @@ members = [
     "examples/basics/physics",
     "examples/basics/primitives",
     "examples/basics/skinmesh",
-    "examples/basics/dependencies",
-    "examples/basics/dependencies/deps/code",
 
     # Intermediate
     "examples/intermediate/messaging",
     "examples/intermediate/async",
     "examples/intermediate/screen_ray",
     "examples/intermediate/clientside",
+    "examples/intermediate/dependencies",
+    "examples/intermediate/dependencies/deps/code",
 
     # Controllers
     "examples/controllers/first_person_camera",

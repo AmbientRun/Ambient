@@ -3,16 +3,11 @@ name = "dependencies"
 
 edition = "2021"
 publish = false
-rust-version = {workspace = true}
-version = {workspace = true}
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
 ambient_api = { path = "../../../api" }
-
-[[bin]]
-name = "client_dependencies"
-path = "src/client.rs"
-required-features = ["client"]
 
 [[bin]]
 name = "server_dependencies"

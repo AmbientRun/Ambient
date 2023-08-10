@@ -6,6 +6,10 @@ version = "0.0.1"
 [dependencies]
 ambient_example_deps_assets = { path = "../assets" }
 
+[components]
+spawned_by_us = { type = "Empty" }
+spin_direction = { type = "ambient_example_deps_assets::SpinDirection" }
+
 [messages.Spawn]
 name = "Spawn"
 description = "Spawn the asset."
