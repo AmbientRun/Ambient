@@ -3,8 +3,6 @@ use std::{f32::INFINITY, sync::Arc};
 use ambient_core::{
     bounding::world_bounding_sphere,
     camera::{shadow_cameras_from_world, Camera},
-    gpu_components,
-    gpu_ecs::{GpuComponentFormat, GpuWorldUpdater},
     player::local_user_id,
 };
 use ambient_ecs::{ArchetypeFilter, World};
@@ -13,6 +11,7 @@ use ambient_gpu::{
     shader_module::{BindGroupDesc, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
 };
+use ambient_gpu_ecs::{gpu_components, GpuComponentFormat, GpuWorldUpdater};
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKeyExt},
     include_file,

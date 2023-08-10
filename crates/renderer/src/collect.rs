@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use ambient_core::gpu_ecs::{GpuWorldShaderModuleKey, ENTITIES_BIND_GROUP};
 use ambient_ecs::{EntityId, World};
 use ambient_gpu::{
     gpu::Gpu,
@@ -8,6 +7,7 @@ use ambient_gpu::{
     shader_module::{BindGroupDesc, ComputePipeline, Shader, ShaderIdent, ShaderModule},
     typed_buffer::TypedBuffer,
 };
+use ambient_gpu_ecs::{GpuWorldShaderModuleKey, ENTITIES_BIND_GROUP};
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKey, SyncAssetKeyExt},
     include_file,

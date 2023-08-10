@@ -31,8 +31,11 @@
 - [Terminology](reference/terminology.md)
 - [Common pitfalls](reference/common_pitfalls.md)
 - [FAQ](reference/faq.md)
+- [Changelog](reference/changelog.md)
 
-# Community
+# Runtime internals
 
-- [Contributing](community/contributing.md)
-- [Changelog](community/changelog.md)
+- [Overview](runtime_internals/overview.md)
+- [Contributing](runtime_internals/contributing.md)
+- [ECS](runtime_internals/ecs.md)
+- [Renderer](runtime_internals/renderer.md)

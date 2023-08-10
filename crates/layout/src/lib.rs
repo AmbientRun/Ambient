@@ -1,10 +1,11 @@
 use ambient_core::{
-    gpu_components,
-    gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
     hierarchy::{children, parent},
     transform::{local_to_parent, local_to_world, mesh_to_local, translation},
 };
 use ambient_ecs::{query, query_mut, DynSystem, EntityId, SystemGroup, World};
+use ambient_gpu_ecs::{
+    gpu_components, ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent,
+};
 use ambient_input::picking::mouse_pickable;
 use glam::{vec2, vec3, vec4, Mat4, Vec2, Vec4};
 use itertools::Itertools;
@@ -17,6 +18,8 @@ pub use ambient_ecs::generated::layout::{
     },
     types::{Align, Docking, Fit, Layout, Orientation},
 };
+use ambient_gpu::gpu::Gpu;
+use std::sync::Arc;
 
 gpu_components! {
     gpu_ui_size() => ui_size: GpuComponentFormat::Vec4,
@@ -218,10 +221,11 @@ pub fn layout_systems() -> SystemGroup {
     )
 }
 
-pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
+pub fn gpu_world_systems(gpu: Arc<Gpu>) -> SystemGroup<GpuWorldSyncEvent> {
     SystemGroup::new(
         "layout/gpu_world",
         vec![Box::new(ComponentToGpuSystem::new(
+            gpu,
             GpuComponentFormat::Vec4,
             gpu_ui_size(),
             gpu_components::ui_size(),

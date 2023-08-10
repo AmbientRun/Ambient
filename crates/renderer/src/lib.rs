@@ -7,14 +7,7 @@ use std::{
 };
 
 use ambient_core::{
-    asset_cache,
-    async_ecs::async_run,
-    gpu_components,
-    gpu_ecs::{
-        ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey, GpuWorldSyncEvent,
-    },
-    mesh, runtime,
-    transform::get_world_rotation,
+    asset_cache, async_ecs::async_run, mesh, runtime, transform::get_world_rotation,
 };
 use ambient_ecs::{
     components, copy_component_recursive, query_mut, Debuggable, Entity, EntityId, Resource,
@@ -25,6 +18,10 @@ use ambient_gpu::{
     mesh_buffer::GpuMesh,
     shader_module::{BindGroupDesc, Shader, ShaderIdent, ShaderModule},
     wgsl_utils::wgsl_interpolate,
+};
+use ambient_gpu_ecs::{
+    gpu_components, ComponentToGpuSystem, GpuComponentFormat, GpuWorldShaderModuleKey,
+    GpuWorldSyncEvent,
 };
 use ambient_native_std::{asset_cache::*, asset_url::AbsAssetUrl, cb, include_file, Cb};
 use derive_more::*;
@@ -188,28 +185,31 @@ pub fn systems() -> SystemGroup {
     )
 }
 
-pub fn gpu_world_systems() -> SystemGroup<GpuWorldSyncEvent> {
+pub fn gpu_world_systems(gpu: Arc<Gpu>) -> SystemGroup<GpuWorldSyncEvent> {
     SystemGroup::new(
         "renderer/gpu_world_update",
         vec![
-            Box::new(outlines::gpu_world_systems()),
+            Box::new(outlines::gpu_world_systems(gpu.clone())),
             Box::new(ComponentToGpuSystem::new(
+                gpu.clone(),
                 GpuComponentFormat::Vec4,
                 color(),
                 gpu_components::color(),
             )),
             Box::new(ComponentToGpuSystem::new(
+                gpu.clone(),
                 GpuComponentFormat::Mat4,
                 gpu_primitives_mesh(),
                 gpu_components::gpu_primitives_mesh(),
             )),
             Box::new(ComponentToGpuSystem::new(
+                gpu.clone(),
                 GpuComponentFormat::Mat4,
                 gpu_primitives_lod(),
                 gpu_components::gpu_primitives_lod(),
             )),
-            Box::new(lod::gpu_world_system()),
-            Box::new(skinning::gpu_world_systems()),
+            Box::new(lod::gpu_world_system(gpu.clone())),
+            Box::new(skinning::gpu_world_systems(gpu)),
         ],
     )
 }

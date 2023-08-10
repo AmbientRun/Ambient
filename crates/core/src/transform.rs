@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 
 use ambient_ecs::{
     components, ensure_has_component, query, query_mut, Debuggable, ECSError, EntityId, FrameEvent,
@@ -8,18 +8,19 @@ use glam::*;
 
 use crate::{
     camera::get_active_camera,
-    gpu_components,
-    gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent},
     hierarchy::{children, parent},
     main_scene,
     player::local_user_id,
 };
+use ambient_gpu_ecs::{ComponentToGpuSystem, GpuComponentFormat, GpuWorldSyncEvent};
 
 pub use ambient_ecs::generated::transform::components::{
     cylindrical_billboard_z, euler_rotation, inv_local_to_world, local_to_parent, local_to_world,
     lookat_target, lookat_up, mesh_to_local, mesh_to_world, reset_scale, rotation, scale,
     spherical_billboard, translation,
 };
+use ambient_gpu::gpu::Gpu;
+use ambient_gpu_ecs::gpu_components;
 
 components!("transform", {
     // FBX
@@ -490,10 +491,11 @@ impl System for TransformSystem {
         self.post_parented_systems.run(world, event);
     }
 }
-pub fn transform_gpu_systems() -> SystemGroup<GpuWorldSyncEvent> {
+pub fn transform_gpu_systems(gpu: Arc<Gpu>) -> SystemGroup<GpuWorldSyncEvent> {
     SystemGroup::new(
         "transform_gpu",
         vec![Box::new(ComponentToGpuSystem::new(
+            gpu,
             GpuComponentFormat::Mat4,
             mesh_to_world(),
             gpu_components::mesh_to_world(),

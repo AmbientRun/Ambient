@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use ambient_core::gpu_ecs::ENTITIES_BIND_GROUP;
 use ambient_gpu::shader_module::{Shader, ShaderModule};
+use ambient_gpu_ecs::ENTITIES_BIND_GROUP;
 use ambient_native_std::{
     asset_cache::{AssetCache, SyncAssetKey},
     include_file,

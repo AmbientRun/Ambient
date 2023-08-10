@@ -203,7 +203,8 @@ impl FrozenWorldDiff {
                     {
                         existing_entity.merge(entity.clone());
                     } else {
-                        panic!("Expected SetComponents");
+                        // all indexes in set_idx should point to SetComponents in changes vec
+                        unreachable!();
                     }
                 } else {
                     set_idx.insert(*entity_id, changes.len());
